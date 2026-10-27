@@ -139,12 +139,17 @@ pub enum RecordShape {
         variants: Vec<ExternalVariant>,
     },
     /// One of a few fixed strings, or a value of one type (`"birth"` or a
-    /// place; a criterion's name or the criterion spelt out).
+    /// place; a criterion's name or the criterion spelt out), or a member
+    /// of one catalogue kind beside them (a natal point: `"LAGNA"`, a
+    /// graha's key, or the point spelt out).
     OrNamed {
         /// The strings, as the wire writes them.
         names: Vec<String>,
         /// The value's type.
         of: RecordType,
+        /// The catalogue kind whose member it may also be, by its key.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        member: Option<String>,
     },
 }
 
@@ -270,6 +275,7 @@ pub struct RecordVariant {
 /// let names: Vec<&str> = fields.iter().map(|field| field.name.as_str()).collect();
 /// assert_eq!(names, ["hash", "how", "sure", "year"]);
 /// assert!(fields[1].nullable && !fields[0].nullable);
+/// assert!(fields[1].null, "written as null, not only left out");
 /// assert_eq!(fields[2].ty, RecordType::Record { name: "Sure".into() });
 /// # Ok::<(), String>(())
 /// ```
@@ -284,6 +290,11 @@ pub struct RecordField {
     pub ty: RecordType,
     /// Whether it may be null or absent; a decoder answers null for both.
     pub nullable: bool,
+    /// Whether the wire may hold null for it, where [`RecordField::nullable`]
+    /// may mean only absent: a request's `Option` takes null, a field serde
+    /// defaults does not.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub null: bool,
 }
 
 /// The type of a record's field.
@@ -291,7 +302,7 @@ pub struct RecordField {
 /// ```
 /// use teistro_idl::records::RecordType;
 ///
-/// let grahas = RecordType::List { of: Box::new(RecordType::Member { catalogue: "graha".into() }) };
+/// let grahas = RecordType::List { of: Box::new(RecordType::Member { catalogue: "graha".into() }), len: None };
 /// assert_eq!(serde_json::to_string(&grahas)?, r#"{"kind":"LIST","of":{"kind":"MEMBER","catalogue":"graha"}}"#);
 /// # Ok::<(), serde_json::Error>(())
 /// ```
@@ -319,6 +330,10 @@ pub enum RecordType {
     List {
         /// What each item is.
         of: Box<RecordType>,
+        /// How many items it holds, where that is fixed (a Rust array:
+        /// `minItems` equal to `maxItems`); absent for any number.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        len: Option<u32>,
     },
     /// Two values of fixed types, written as a two-item array.
     Pair {
@@ -681,28 +696,57 @@ impl Reader<'_> {
         Ok(RecordShape::Tagged { tag, variants })
     }
 
-    /// A union of fixed strings and one other type.
+    /// A union of fixed strings and one other type, and at most one
+    /// catalogue kind's members beside them.
     fn named_of(&mut self, at: &str, options: &[Value]) -> Result<RecordShape, String> {
         let mut names = Vec::new();
+        let mut members = Vec::new();
         let mut others = Vec::new();
         for option in options {
-            match fixed_strings(option) {
-                Some(fixed) => names.extend(fixed),
-                None => others.push(option),
+            if let Some(fixed) = fixed_strings(option) {
+                names.extend(fixed);
+            } else if let Some(kind) = self.kind_of(option) {
+                members.push(kind);
+            } else {
+                others.push(option);
             }
         }
+        let member = match members.as_slice() {
+            [] => None,
+            [kind] => Some(kind.clone()),
+            _ => return Err(format!("{at}: an anyOf of two catalogue kinds")),
+        };
         match others.as_slice() {
-            [other] if !names.is_empty() => Ok(RecordShape::OrNamed {
-                names,
-                of: self
+            [other] if !names.is_empty() => {
+                let of = self
                     .type_of(&format!("{at}.value"), other, &format!("{at}Value"))?
-                    .0,
-            }),
+                    .0;
+                // A member is read from a string, so the value beside it
+                // must not be one, or a key could read as either.
+                if member.is_some() && !matches!(of, RecordType::Record { .. }) {
+                    return Err(format!(
+                        "{at}: a catalogue member beside a value that is not a record"
+                    ));
+                }
+                Ok(RecordShape::OrNamed { names, of, member })
+            }
             _ => Err(format!(
                 "{at}: an anyOf that is neither one type or null nor fixed strings or one \
                  type; list it as raw if it is a JSON value"
             )),
         }
+    }
+
+    /// The catalogue kind a `$ref` names, if it names one.
+    fn kind_of(&self, option: &Value) -> Option<String> {
+        let name = option.get("$ref")?.as_str()?.strip_prefix("#/$defs/")?;
+        Some(
+            self.defs
+                .get(name)?
+                .get("x-teistro-kind")?
+                .as_str()?
+                .to_owned(),
+        )
     }
 
     /// An object's fields in name order, leaving out the tag. Sorted here
@@ -739,6 +783,7 @@ impl Reader<'_> {
                     doc: doc_of(schema),
                     ty,
                     nullable: nullable || !required.contains(name.as_str()),
+                    null: nullable,
                 })
             })
             .collect()
@@ -866,8 +911,16 @@ impl Reader<'_> {
         let items = schema
             .get("items")
             .ok_or_else(|| format!("{at}: an array with no items"))?;
+        let bound = |key: &str| schema.get(key).and_then(Value::as_u64);
+        let len = match (bound("minItems"), bound("maxItems")) {
+            (Some(min), Some(max)) if min == max => {
+                Some(u32::try_from(min).map_err(|_| format!("{at}: an array of {min} items"))?)
+            }
+            _ => None,
+        };
         Ok(RecordType::List {
             of: Box::new(self.type_of(&format!("{at}[]"), items, inline)?.0),
+            len,
         })
     }
 
@@ -1086,7 +1139,8 @@ mod tests {
                     second: Box::new(RecordType::Record {
                         name: "Version".into()
                     }),
-                })
+                }),
+                len: None,
             }
         );
         let RecordShape::Tagged { tag, variants } = &records[1].shape else {
@@ -1160,7 +1214,8 @@ mod tests {
             RecordType::List {
                 of: Box::new(RecordType::Keyed {
                     catalogue: "graha".into()
-                })
+                }),
+                len: None,
             }
         );
         assert_eq!(
@@ -1224,12 +1279,12 @@ mod tests {
             }
         );
         assert!(field("matters").nullable);
-        let RecordShape::OrNamed { names, of } = &named("AskMatters").shape else {
+        let RecordShape::OrNamed { names, of, .. } = &named("AskMatters").shape else {
             panic!("a name or a value")
         };
         assert_eq!(names, &["all"]);
         assert!(matches!(of, RecordType::List { .. }));
-        let RecordShape::OrNamed { names, of } = &named("Place").shape else {
+        let RecordShape::OrNamed { names, of, .. } = &named("Place").shape else {
             panic!("a name or a value")
         };
         assert_eq!(
@@ -1317,6 +1372,34 @@ mod tests {
             from_schema(&untagged, &["Root"])
                 .unwrap_err()
                 .contains("no field that tags every option")
+        );
+    }
+
+    #[test]
+    fn an_array_of_a_fixed_length_keeps_its_length() {
+        let mut fixed = schema();
+        fixed["$defs"]["Root"]["properties"]["count"] = json!({"type": "array",
+            "items": {"type": "number"}, "minItems": 7, "maxItems": 7});
+        fixed["$defs"]["Root"]["properties"]["hash"] = json!({"type": "array",
+            "items": {"type": "number"}, "minItems": 1});
+        let records = from_schema(&fixed, &["Root"]).unwrap();
+        let RecordShape::Object { fields } = &records[0].shape else {
+            panic!("an object")
+        };
+        let len = |name: &str| match &fields.iter().find(|f| f.name == name).unwrap().ty {
+            RecordType::List { len, .. } => *len,
+            _ => panic!("a list"),
+        };
+        assert_eq!((len("count"), len("hash")), (Some(7), None));
+        // Written only where it is fixed, so a description without one
+        // reads as it did.
+        let open = RecordType::List {
+            of: Box::new(RecordType::Number),
+            len: None,
+        };
+        assert_eq!(
+            serde_json::to_string(&open).unwrap(),
+            r#"{"kind":"LIST","of":{"kind":"NUMBER"}}"#
         );
     }
 }

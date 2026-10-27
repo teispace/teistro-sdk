@@ -16,6 +16,8 @@
 //!   point;
 //! - [`records`]: the JSON records that cross as text, typed and decoded
 //!   in TypeScript, Python and Dart;
+//! - [`requests`]: the JSON requests a binding writes, typed in
+//!   TypeScript;
 //! - [`validators`]: the corpus every binding's validating constructors
 //!   and the Rust newtypes are held to alike.
 //!
@@ -29,6 +31,7 @@ pub mod mdx;
 pub mod node;
 pub mod python;
 pub mod records;
+pub mod requests;
 pub mod reserved;
 pub mod ts;
 pub mod validators;

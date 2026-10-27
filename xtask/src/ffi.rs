@@ -11,7 +11,7 @@ use std::io::Write as _;
 use std::path::Path;
 use std::process::{Command, Stdio};
 
-use teistro_idl::emit::{c, dart, java, mdx, node, python, records, ts, validators};
+use teistro_idl::emit::{c, dart, java, mdx, node, python, records, requests, ts, validators};
 use teistro_idl::sdk::describe;
 
 use crate::generated::{Output, check, prune, strays, write};
@@ -33,6 +33,7 @@ const PYTHON_CATALOGUE: &str = "bindings/python/teistro/catalogue.py";
 const PYTHON_FFI: &str = "bindings/python/teistro/_ffi.py";
 const PYTHON_BLOB: &str = "bindings/python/teistro/_blob.py";
 const TS_RECORDS: &str = "bindings/node/lib/records.d.ts";
+const TS_REQUESTS: &str = "bindings/node/lib/requests.d.ts";
 const JS_RECORDS: &str = "bindings/node/lib/records.js";
 const PYTHON_RECORDS: &str = "bindings/python/teistro/_records.py";
 const DART_RECORDS: &str = "bindings/dart/lib/src/records.dart";
@@ -305,7 +306,7 @@ fn check_request_catalogues(api: &teistro_idl::model::Api) {
             RecordType::Member { catalogue } | RecordType::Keyed { catalogue } => {
                 found.push(catalogue);
             }
-            RecordType::List { of } | RecordType::Map { of } => named(of, found),
+            RecordType::List { of, .. } | RecordType::Map { of } => named(of, found),
             RecordType::Pair { first, second } => {
                 named(first, found);
                 named(second, found);
@@ -461,7 +462,7 @@ fn record_is_request_only(record: &teistro_idl::records::RecordDef) -> bool {
             | RecordType::Keyed { .. }
             | RecordType::Map { .. }
             | RecordType::Json => true,
-            RecordType::List { of } => request_only(of),
+            RecordType::List { of, .. } => request_only(of),
             RecordType::Pair { first, second } => request_only(first) || request_only(second),
             RecordType::Bool
             | RecordType::Integer { .. }
@@ -521,6 +522,7 @@ fn outputs(root: &Path) -> Vec<Output> {
         Output::new(PYTHON_FFI, python::declarations(&api)),
         Output::new(PYTHON_BLOB, python::decoders(&api)),
         Output::new(TS_RECORDS, records::typescript_declarations(&api)),
+        Output::new(TS_REQUESTS, requests::typescript_declarations(&api)),
         Output::new(JS_RECORDS, records::javascript_decoders(&api)),
         Output::new(PYTHON_RECORDS, records::python_records(&api)),
         Output::new(DART_RECORDS, records::dart_records(&api)),

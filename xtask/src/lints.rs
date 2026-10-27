@@ -667,23 +667,21 @@ fn gate_runners(root: &Path, outcome: &mut Outcome) {
 /// The hand-written surface of each binding that names the composers.
 ///
 /// A `PlanRequest` crosses the boundary as **JSON**, not as a struct, so
-/// none of these is generated from the API description the way the rest of
-/// a binding is: each language spells the record itself. That is three
-/// copies of one list, which is the shape this repository keeps finding,
-/// and nothing held them together until a composer was added twice and
-/// each binding had to be remembered.
-const PLAN_SURFACES: [(&str, [&str; 2]); 3] = [
-    (
-        "bindings/node/lib/index.d.ts",
-        ["interface PlanRequest {", "interface Plans {"],
-    ),
+/// where a binding's request records are not generated from the façade's
+/// schemas each language spells the record itself. That is copies of one
+/// list, which is the shape this repository keeps finding, and nothing
+/// held them together until a composer was added twice and each binding
+/// had to be remembered. Node's `PlanRequest` is generated
+/// (`03-design/generated-requests.md`), so only its answer is held here.
+const PLAN_SURFACES: [(&str, &[&str]); 3] = [
+    ("bindings/node/lib/index.d.ts", &["interface Plans {"]),
     (
         "bindings/dart/lib/teistro.dart",
-        ["final class PlanRequest {", "final class PlanRequest {"],
+        &["final class PlanRequest {"],
     ),
     (
         "bindings/python/teistro/__init__.py",
-        ["class PlanRequest(TypedDict", "class Plans(TypedDict"],
+        &["class PlanRequest(TypedDict", "class Plans(TypedDict"],
     ),
 ];
 
@@ -974,6 +972,137 @@ fn layers_do_not_shadow_a_kind(root: &Path, outcome: &mut Outcome) {
                 text: format!(
                     "does not declare `{name}`, which the other bindings spell as their own; \
                      export the kind under it or drop it from SHADOWED"
+                ),
+                rule: RULE,
+            });
+        }
+    }
+}
+
+/// The request records a hand-written layer still declares, each with the
+/// reason: the layer takes the request in a shape of its own and writes the
+/// wire's, so the generated record (the wire's) is not what a caller hands
+/// it. Every other request record is the generated one
+/// (`03-design/generated-requests.md`).
+const REQUEST_FACADES: [(&str, &str); 11] = [
+    (
+        "AnnualPlace",
+        "the layer takes `{ latitude, longitude, altitude, utcOffsetSeconds }` and writes the residence's `latitudeDeg` and `longitudeDeg`",
+    ),
+    (
+        "AshauchQuery",
+        "the layer takes a `place` and writes the wire's `latitudeDeg` and `longitudeDeg`",
+    ),
+    (
+        "FestivalCalendarRequest",
+        "the layer takes a `place` and calendar dates and writes the wire's coordinates and day numbers",
+    ),
+    (
+        "FestivalRequest",
+        "its `rules` are a raw part the schema leaves untyped; the layer types the packs",
+    ),
+    (
+        "FirstYearQuery",
+        "the layer takes a `place` and writes the wire's `latitudeDeg` and `longitudeDeg`",
+    ),
+    (
+        "GocharRequest",
+        "the layer takes any array-like of instants, a typed array among them, and writes a plain one",
+    ),
+    (
+        "MasaPraveshaRequest",
+        "its place is the layer's `AnnualPlace`",
+    ),
+    (
+        "MuhurtaRequest",
+        "its `rules` are a raw part the schema leaves untyped; the layer types the activities",
+    ),
+    (
+        "PakshiRequest",
+        "the layer takes a `place` and calendar dates and writes the wire's coordinates and day numbers",
+    ),
+    (
+        "SankalpaRequest",
+        "the layer takes a `place` and writes the wire's `latitudeDeg` and `longitudeDeg`",
+    ),
+    ("VarshaRequest", "its place is the layer's `AnnualPlace`"),
+];
+
+/// Each binding whose request records are generated: its hand-written
+/// layer, the generated file, and the pattern a top-level declaration in
+/// either takes, the name in its first group.
+const REQUEST_LAYERS: [(&str, &str, &str); 1] = [(
+    "bindings/node/lib/index.d.ts",
+    "bindings/node/lib/requests.d.ts",
+    r"^export (?:declare )?(?:interface|type|class|const|function|enum) (\w+)",
+)];
+
+/// That no hand-written layer keeps a copy of a generated request record,
+/// except the façades [`REQUEST_FACADES`] lists, and that every listed
+/// façade is still one.
+///
+/// A twin type-checks and lags. Generating Node's found drift both ways:
+/// hand copies that refused a member's bare key or required fields serde
+/// defaults, and a schema (`PointAsked`) stating less than its reader
+/// takes, which the hand copy had right.
+fn layers_do_not_twin_a_request(root: &Path, outcome: &mut Outcome) {
+    const RULE: &str = "layer-does-not-twin-a-request";
+    let expected: Vec<&str> = REQUEST_FACADES.iter().map(|(name, _)| *name).collect();
+    for (layer, generated, pattern) in REQUEST_LAYERS {
+        let Ok(declaration) = regex::Regex::new(pattern) else {
+            continue;
+        };
+        let read = |file: &str| {
+            std::fs::read_to_string(root.join(file)).map_err(|_| Finding {
+                file: file.to_owned(),
+                line: 1,
+                text: String::from("could not be read"),
+                rule: RULE,
+            })
+        };
+        let (text, requests) = match (read(layer), read(generated)) {
+            (Ok(text), Ok(requests)) => (text, requests),
+            (Err(finding), _) | (_, Err(finding)) => {
+                outcome.failures.push(finding);
+                continue;
+            }
+        };
+        let names: std::collections::BTreeSet<&str> = requests
+            .lines()
+            .filter_map(|line| Some(declaration.captures(line)?.get(1)?.as_str()))
+            .collect();
+        let mut twinned: Vec<&str> = Vec::new();
+        for (index, line) in text.lines().enumerate() {
+            let Some(name) = declaration
+                .captures(line)
+                .and_then(|found| found.get(1))
+                .map(|name| name.as_str())
+            else {
+                continue;
+            };
+            if !names.contains(name) || twinned.contains(&name) {
+                continue;
+            }
+            twinned.push(name);
+            let finding = Finding {
+                file: layer.to_owned(),
+                line: index + 1,
+                text: format!("declares `{name}`, which is a generated request record"),
+                rule: RULE,
+            };
+            if expected.contains(&name) {
+                outcome.allowed.push(finding);
+            } else {
+                outcome.failures.push(finding);
+            }
+        }
+        for name in expected.iter().filter(|name| !twinned.contains(name)) {
+            outcome.failures.push(Finding {
+                file: layer.to_owned(),
+                line: 1,
+                text: format!(
+                    "does not declare `{name}`, which REQUEST_FACADES lists as a façade; \
+                     drop it from the list"
                 ),
                 rule: RULE,
             });
@@ -3060,7 +3189,7 @@ const ANSWERED: &str = "an answer's echo of the rules it was read under, as the 
 const WRITTEN: &str = "the readings as written, one JSON text a field";
 
 /// Every rule [`check`] reports, in the order it reports them.
-const RULES: [&str; 29] = [
+const RULES: [&str; 30] = [
     "deterministic-iteration",
     "ambient-input",
     "unsafe-inventory",
@@ -3086,6 +3215,7 @@ const RULES: [&str; 29] = [
     "composer-reaches-every-binding",
     "activity-reaches-every-binding",
     "layer-does-not-shadow-a-kind",
+    "layer-does-not-twin-a-request",
     "crate-is-listed",
     "open-question-is-named",
     "generated-page-is-gated",
@@ -3158,6 +3288,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     composers_reach_every_binding(root, &mut outcome);
     activities_reach_every_binding(root, &mut outcome);
     layers_do_not_shadow_a_kind(root, &mut outcome);
+    layers_do_not_twin_a_request(root, &mut outcome);
     crates_are_listed(root, &mut outcome);
     open_questions_are_named(root, &mut outcome);
     generated_pages_are_gated(root, &mut outcome);

@@ -16,10 +16,10 @@ import java.util.Objects;
  * @param grahas The {@code grahas} field. Null leaves the SDK's default.
  * @param mutual The {@code mutual} field. Null leaves the SDK's default.
  * @param parallels What the parallels are asked: how close two distances from the equator must stand. Null leaves the SDK's default.
- * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven. Null leaves the SDK's default.
+ * @param points A natal point: `"LAGNA"`, `"MIDHEAVEN"`, a graha's key, or the point as an answer's `to` spells it. Null leaves the SDK's default.
  * @param to The {@code to} field.
  */
-public record ContactsAsked(List<Integer> aspects, double from, List<com.teispace.teistro.Graha> grahas, Boolean mutual, ParallelRequest parallels, List<NatalPoint> points, double to) implements RequestJson {
+public record ContactsAsked(List<Integer> aspects, double from, List<com.teispace.teistro.Graha> grahas, Boolean mutual, ParallelRequest parallels, List<PointAsked> points, double to) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -61,7 +61,7 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
         private List<com.teispace.teistro.Graha> grahas;
         private Boolean mutual;
         private ParallelRequest parallels;
-        private List<NatalPoint> points;
+        private List<PointAsked> points;
         private Double to;
 
         private Builder() {}
@@ -124,10 +124,10 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
         /**
          * Sets {@code points}.
          *
-         * @param points A natal point a transit can aspect, ordered as a tie between hits is broken: the grahas in the catalogue's order, then the lagna, then the midheaven. Null leaves the SDK's default.
+         * @param points A natal point: `"LAGNA"`, `"MIDHEAVEN"`, a graha's key, or the point as an answer's `to` spells it. Null leaves the SDK's default.
          * @return this builder
          */
-        public Builder points(List<NatalPoint> points) {
+        public Builder points(List<PointAsked> points) {
             this.points = points;
             return this;
         }
@@ -169,7 +169,7 @@ public record ContactsAsked(List<Integer> aspects, double from, List<com.teispac
             Read.orNull(json.get("grahas"), present -> Read.list(present, "ContactsAsked.grahas", item0 -> Read.member(item0, "ContactsAsked.grahas", com.teispace.teistro.Graha::byKey))),
             Read.orNull(json.get("mutual"), present -> Read.bool(present, "ContactsAsked.mutual")),
             Read.orNull(json.get("parallels"), present -> ParallelRequest.of(present)),
-            Read.orNull(json.get("points"), present -> Read.list(present, "ContactsAsked.points", item0 -> NatalPoint.of(item0))),
+            Read.orNull(json.get("points"), present -> Read.list(present, "ContactsAsked.points", item0 -> PointAsked.of(item0))),
             Read.number(Read.required(json.get("to"), "ContactsAsked.to"), "ContactsAsked.to"));
     }
 
