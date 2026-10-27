@@ -190,6 +190,99 @@ static void a_refusal_names_its_field_and_hints(void) {
     expect(id == ((uint32_t)TS_KIND_GRAHA << 16 | TS_GRAHA_SUN), "the packed id is kind and member");
 }
 
+/* A chart founded from the request struct, read back from its blob: the
+ * widest struct a caller lays out, so a C compiler and the library must
+ * agree on every offset in it. */
+static void a_chart_is_founded_from_its_struct(void) {
+    ts_chart_request request;
+    ts_blob blob;
+    double instant = 2451545.0;
+    memset(&request, 0, sizeof request);
+    request.struct_size = sizeof request;
+    request.kind = TS_CHART_KIND_NATAL;
+    request.instants = &instant;
+    request.instant_count = 1;
+    request.latitude_deg = 27.7172;
+    request.longitude_deg = 85.324;
+    request.altitude_m = 1337.0;
+    request.utc_offset_seconds = 20700;
+    memset(&blob, 0, sizeof blob);
+    check(ts_chart_found(ctx, &request, &blob), "chart");
+    expect(blob.data != NULL && blob.len > 32, "a chart's blob");
+    ts_blob_free(&blob);
+}
+
+/* A week of days from the panchanga request struct. */
+static void a_week_of_days_comes_back(void) {
+    ts_panchanga_request request;
+    ts_blob blob;
+    memset(&request, 0, sizeof request);
+    request.struct_size = sizeof request;
+    request.calendar = TS_CALENDAR_GREGORIAN;
+    request.from_year = 2026;
+    request.from_month = 1;
+    request.from_day = 1;
+    request.to_year = 2026;
+    request.to_month = 1;
+    request.to_day = 7;
+    request.latitude_deg = 27.7172;
+    request.longitude_deg = 85.324;
+    request.altitude_m = 1337.0;
+    request.utc_offset_seconds = 20700;
+    memset(&blob, 0, sizeof blob);
+    check(ts_panchanga_days(ctx, &request, &blob), "days");
+    expect(blob.data != NULL && blob.len > 32, "a week's blob");
+    ts_blob_free(&blob);
+}
+
+/* An almanac rite asked as JSON, answered as JSON. */
+static void a_sankalpa_is_answered_as_json(void) {
+    ts_string answer;
+    memset(&answer, 0, sizeof answer);
+    check(ts_almanac_sankalpa(ctx, "{\"at\":2461055.59375,\"latitudeDeg\":27.7172,\"longitudeDeg\":85.324,\"altitudeM\":1400,\"utcOffsetSeconds\":20700,\"ayana\":\"TROPICAL\"}", &answer), "sankalpa");
+    expect(answer.data != NULL && strstr((const char *)answer.data, "\"tithi\"") != NULL,
+           "the sankalpa names its tithi");
+    ts_string_free(&answer);
+}
+
+/* The published pack the parity runners verify, signed by a test key made
+ * from a fixed seed: verified against that key, and refused for a version
+ * newer than it carries. */
+static const char signed_pack[] =
+"{\"format\":\"teistro.published/1\",\"publisher\":\"a patro printed in Nepal\",\"id\":\""
+    "np-2083\",\"version\":3,\"entries\":[{\"action\":\"SET\",\"rule\":\"GHATASTHAPANA\",\"da"
+    "y\":{\"calendar\":\"GREGORIAN\",\"year\":2026,\"month\":10,\"day\":11},\"source\":\"p. 4"
+    "1\"}]}";
+static const uint8_t signed_signature[64] = {
+    0xca, 0xe8, 0x7f, 0x1a, 0x99, 0xd4, 0x86, 0x9d, 0x5b, 0xa4, 0x10, 0x86,
+    0xcd, 0x6c, 0xeb, 0xa8, 0xcd, 0xb0, 0x35, 0xfd, 0x11, 0x22, 0x5f, 0x53,
+    0xe0, 0x98, 0x82, 0xe9, 0x84, 0x23, 0xe2, 0x13, 0x32, 0xfb, 0x40, 0xc9,
+    0xad, 0x56, 0x43, 0x80, 0xfb, 0x9a, 0xbc, 0xdf, 0x4c, 0x21, 0xcb, 0x27,
+    0x26, 0xf8, 0x0f, 0xb6, 0x92, 0x51, 0x1b, 0x95, 0x93, 0xf0, 0xf9, 0xe6,
+    0x0f, 0xbe, 0x32, 0x0e,
+};
+static const uint8_t signed_key[32] = {
+    0xea, 0x4a, 0x6c, 0x63, 0xe2, 0x9c, 0x52, 0x0a, 0xbe, 0xf5, 0x50, 0x7b,
+    0x13, 0x2e, 0xc5, 0xf9, 0x95, 0x47, 0x76, 0xae, 0xbe, 0xbe, 0x7b, 0x92,
+    0x42, 0x1e, 0xea, 0x69, 0x14, 0x46, 0xd2, 0x2c,
+};
+
+static void a_signed_pack_is_verified(void) {
+    ts_string answer;
+    size_t pack_len = sizeof signed_pack - 1;
+    memset(&answer, 0, sizeof answer);
+    check(ts_published_verify(ctx, (const uint8_t *)signed_pack, pack_len, signed_signature,
+                              sizeof signed_signature, signed_key, sizeof signed_key, 3, &answer),
+          "verify");
+    expect(answer.data != NULL && strstr((const char *)answer.data, "np-2083") != NULL,
+           "the verified set names its pack");
+    ts_string_free(&answer);
+    expect(ts_published_verify(ctx, (const uint8_t *)signed_pack, pack_len, signed_signature,
+                               sizeof signed_signature, signed_key, sizeof signed_key, 4,
+                               &answer) != TS_STATUS_OK,
+           "an older version than asked is refused");
+}
+
 /* A context that cannot be built has no context to keep its refusal, so
  * the call writes the whole record, owning its strings until freed. */
 static void a_context_that_cannot_be_built_says_why(void) {
@@ -234,6 +327,10 @@ int main(void) {
     a_nepali_birth_time_resolves();
     a_message_renders_in_nepali();
     positions_come_back_in_the_canonical_frame();
+    a_chart_is_founded_from_its_struct();
+    a_week_of_days_comes_back();
+    a_sankalpa_is_answered_as_json();
+    a_signed_pack_is_verified();
     a_refusal_names_its_field_and_hints();
     ts_context_free(ctx);
     if (failures > 0) {
