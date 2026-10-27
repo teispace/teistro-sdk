@@ -658,7 +658,7 @@ public record ChartOptions(
 
         /**
          * Every chart written as a dossier for a language model, as
-         * {@code DossierOptions.builder().sections(List.of("GRAHAS", "DASHAS")).at(2460676.5).build()};
+         * {@code DossierRequest.builder().sections(List.of("GRAHAS", "DASHAS")).at(2460676.5).build()};
          * a section a request flag computes widens the request with it
          * ({@code 03-design/dossier.md}).
          *
