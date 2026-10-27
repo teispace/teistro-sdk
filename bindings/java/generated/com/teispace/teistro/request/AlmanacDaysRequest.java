@@ -21,7 +21,7 @@ import java.util.Objects;
  * @param last A civil day as a request names it. Null leaves the SDK's default.
  * @param latitudeDeg The {@code latitudeDeg} field.
  * @param longitudeDeg The {@code longitudeDeg} field.
- * @param muhurta `MuhurtaRequest` as the bindings write it, camel-cased as every request record is. `rules` and `asta` are read in a second step, because each is a name or a value and the refusal should say which field was wrong rather than that no shape matched. Null leaves the SDK's default.
+ * @param muhurta A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes. Null leaves the SDK's default.
  * @param nepalSambat The {@code nepalSambat} field. Null leaves the SDK's default.
  * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
  * @param years The {@code years} field. Null leaves the SDK's default.
@@ -193,7 +193,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         /**
          * Sets {@code muhurta}.
          *
-         * @param muhurta `MuhurtaRequest` as the bindings write it, camel-cased as every request record is. `rules` and `asta` are read in a second step, because each is a name or a value and the refusal should say which field was wrong rather than that no shape matched. Null leaves the SDK's default.
+         * @param muhurta A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder muhurta(MuhurtaRequest muhurta) {

@@ -1,6 +1,6 @@
 # A request field that is a name or one of several records
 
-Status: festival rules `built`, muhurta rules `design`, 2026-10-27.
+Status: `built`, 2026-10-27.
 Extends `generated-requests.md`.
 
 Two request fields still cross every binding as a raw JSON value
@@ -121,3 +121,21 @@ carry.
   a 12th). The other eleven hand copies went, among them an
   `Anniversary` whose dated origin the SDK refused. A generator of
   exclusive unions for the flattened fields would retire the three.
+
+## As built: muhurta rules
+
+- `MuhurtaRequest.rules` takes its schema from `rules_schema`
+  (`crates/sdk/src/muhurta_request.rs`): `Activity::ALL`'s keys or an
+  `ActivityRules`, so the names are the ones the reader matches. Every
+  binding names it `MuhurtaRequestRules`.
+- The IDL reader also takes a union's names from a `oneOf` of constants,
+  which is how schemars writes an enum whose members carry docs.
+- Java: when no value of an or-named union can be a string, `of` reads
+  any string as a name (`takes_text`), so a misspelt activity is refused
+  as a name, not as a malformed `ActivityRules`.
+- Node dropped all eight hand copies; with the generated types in place
+  no negative case of the type-check compiled. `Graded<T>` stays by hand
+  (`KEPT_TWINS`), generic over the member it grades, where the schema has
+  one record per member (`GradedRashi`, `GradedTithi` ...).
+- The IDL emitters' tests carry a union of a name and two records picked
+  by a key, and one of names and a boolean, through every emitter.

@@ -859,14 +859,21 @@ impl<'s> Reader<'s> {
 
     /// The fixed strings a `$ref` names, where it names a def of nothing
     /// else that is no catalogue kind: schemars writes a unit enum used
-    /// as one option of a union by reference.
+    /// as one option of a union by reference, as an `enum`, or as a
+    /// `oneOf` of constants when its keys are documented.
     fn named_strings(&self, option: &Value) -> Option<Vec<String>> {
         let name = option.get("$ref")?.as_str()?.strip_prefix("#/$defs/")?;
         let def = self.defs.get(name)?;
         if def.get("x-teistro-kind").is_some() {
             return None;
         }
-        fixed_strings(def)
+        fixed_strings(def).or_else(|| {
+            def.get("oneOf")?
+                .as_array()?
+                .iter()
+                .map(|option| Some(option.get("const")?.as_str()?.to_owned()))
+                .collect()
+        })
     }
 
     /// The catalogue kind a `$ref` names, if it names one.

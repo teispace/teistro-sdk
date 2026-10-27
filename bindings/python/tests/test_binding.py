@@ -15,6 +15,7 @@ import unittest
 from typing import Any, Dict, Optional, Union
 
 from teistro import (
+    ActivityRules,
     EkadashiRule,
     FestivalRule,
     FollowingRule,
@@ -4085,18 +4086,17 @@ class AnEngine(WithLibrary):
 
             # A clause answered is a bar a request may name, as it was read.
             amrit = next(k for k in kinds if isinstance(k, ChoghadiyaClause) and k.choghadiya == Choghadiya.AMRIT)
-            graded = {"best": [], "middling": [], "rejected": [], "otherwise": "MIDDLING"}
-            rules = {
+            rules: ActivityRules = {
                 "day": {
-                    "tithis": graded,
-                    "nakshatras": graded,
-                    "yogas": graded,
-                    "karanas": graded,
-                    "varas": graded,
+                    "tithis": {"best": [], "middling": [], "rejected": [], "otherwise": "MIDDLING"},
+                    "nakshatras": {"best": [], "middling": [], "rejected": [], "otherwise": "MIDDLING"},
+                    "yogas": {"best": [], "middling": [], "rejected": [], "otherwise": "MIDDLING"},
+                    "karanas": {"best": [], "middling": [], "rejected": [], "otherwise": "MIDDLING"},
+                    "varas": {"best": [], "middling": [], "rejected": [], "otherwise": "MIDDLING"},
                     "chandrabala": {"avoid": []},
                 },
                 "months": {"reckoning": "ANY"},
-                "lagnas": graded,
+                "lagnas": {"best": [], "middling": [], "rejected": [], "otherwise": "MIDDLING"},
                 "padas": [],
                 "heeds": [],
                 "bars": [amrit],
@@ -4122,7 +4122,7 @@ class AnEngine(WithLibrary):
 
             self.assertIn(BlackoutKind.ADHIKA_MASA, closed_by({"rules": "RAMAN_MARRIAGE"}))
             for heed in (BlackoutKind.ADHIKA_MASA, "ADHIKA_MASA"):
-                heeding = {**rules, "bars": [], "heeds": [heed]}
+                heeding: ActivityRules = {**rules, "bars": [], "heeds": [heed]}
                 self.assertEqual(closed_by({"rules": heeding}), (BlackoutKind.ADHIKA_MASA,))
 
             refusals: list[tuple[MuhurtaRequest, str]] = [
@@ -4152,7 +4152,7 @@ class AnEngine(WithLibrary):
             self.assertTrue(all(1 <= p.house <= 12 and all(isinstance(g, Graha) for g in p.by) for p in placed))
             barring = [b for w in thread.windows for b in w.barred_by if isinstance(b, UnwantedPlacementClause)]
             self.assertTrue(all(b.house == 8 for b in barring))
-            nowhere = {**rules, "unwanted": [{"grahas": ["MARS"], "houses": [13]}]}
+            nowhere: ActivityRules = {**rules, "unwanted": [{"grahas": ["MARS"], "houses": [13]}]}
             with self.assertRaises(TeistroError) as refused:
                 ctx.almanac.of(**days, muhurta={"rules": nowhere})
             self.assertEqual(refused.exception.field, "muhurta.rules.unwanted[0].houses")

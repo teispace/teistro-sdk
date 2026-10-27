@@ -29,6 +29,7 @@ use crate::tara::TaraReading;
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "MuhurtaClauseKind"))]
 #[serde(tag = "clause", rename_all = "SCREAMING_SNAKE_CASE")]
 #[non_exhaustive]
 pub enum ClauseKind {

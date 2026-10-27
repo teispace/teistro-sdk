@@ -39,6 +39,9 @@ public sealed interface AnnualPlace extends RequestJson permits AnnualPlace.Key,
                 return key;
             }
         }
+        if (raw instanceof String) {
+            return Key.of(raw);
+        }
         return AnnualPlaceValue.of(raw);
     }
 

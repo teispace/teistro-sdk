@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * `MuhurtaRequest` as the bindings write it, camel-cased as every request record is. `rules` and `asta` are read in a second step, because each is a name or a value and the refusal should say which field was wrong rather than that no shape matched.
+ * A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes.
  *
  * @param asta How asta is seen: a criterion the SDK names, or one spelt out. Null leaves the SDK's default.
  * @param daysWithWindows The {@code daysWithWindows} field. Null leaves the SDK's default.
@@ -17,9 +17,9 @@ import java.util.Objects;
  * @param most The {@code most} field. Null leaves the SDK's default.
  * @param nativeValue The native a day is read against. Null leaves the SDK's default.
  * @param ranking How windows are ordered (crux C162); the texts' order by default. Null leaves the SDK's default.
- * @param rules The {@code rules} field.
+ * @param rules The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
  */
-public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.teispace.teistro.Direction direction, Long most, MuhurtaNative nativeValue, MuhurtaRanking ranking, Object rules) implements RequestJson {
+public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.teispace.teistro.Direction direction, Long most, MuhurtaNative nativeValue, MuhurtaRanking ranking, MuhurtaRequestRules rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -35,9 +35,9 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
-     * @param rules The {@code rules} field.
+     * @param rules The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
      */
-    public MuhurtaRequest(Object rules) {
+    public MuhurtaRequest(MuhurtaRequestRules rules) {
         this(null, null, null, null, null, null, rules);
     }
 
@@ -59,7 +59,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
         private Long most;
         private MuhurtaNative nativeValue;
         private MuhurtaRanking ranking;
-        private Object rules;
+        private MuhurtaRequestRules rules;
 
         private Builder() {}
 
@@ -132,10 +132,10 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
         /**
          * Sets {@code rules}.
          *
-         * @param rules The {@code rules} field.
+         * @param rules The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
          * @return this builder
          */
-        public Builder rules(Object rules) {
+        public Builder rules(MuhurtaRequestRules rules) {
             this.rules = rules;
             return this;
         }
@@ -167,7 +167,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
             Read.orNull(json.get("most"), present -> Read.integer(present, "MuhurtaRequest.most")),
             Read.orNull(json.get("native"), present -> MuhurtaNative.of(present)),
             Read.orNull(json.get("ranking"), present -> Read.member(present, "MuhurtaRequest.ranking", MuhurtaRanking::byKey)),
-            Read.required(json.get("rules"), "MuhurtaRequest.rules"));
+            MuhurtaRequestRules.of(Read.required(json.get("rules"), "MuhurtaRequest.rules")));
     }
 
     @Override
@@ -191,7 +191,7 @@ public record MuhurtaRequest(MuhurtaRequestAsta asta, Long daysWithWindows, com.
         if (ranking != null) {
             json.put("ranking", ranking.toJson());
         }
-        json.put("rules", rules);
+        json.put("rules", rules.toJson());
         return json;
     }
 }

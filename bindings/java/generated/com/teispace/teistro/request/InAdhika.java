@@ -48,6 +48,9 @@ public sealed interface InAdhika extends RequestJson permits InAdhika.Key, InAdh
                 return key;
             }
         }
+        if (raw instanceof String) {
+            return Key.of(raw);
+        }
         return InAdhikaValue.of(raw);
     }
 

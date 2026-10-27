@@ -114,6 +114,7 @@ __all__ = [
     "MuhurtaRequestAsta",
     "MuhurtaNative",
     "MuhurtaRanking",
+    "MuhurtaRequestRules",
     "FirstAbdika",
     "FirstYearAdhika",
     "SapindanaAt",
@@ -226,6 +227,7 @@ __all__ = [
     "CriterionTimeDegrees",
     "CriterionLongitude",
     "CriterionArcusVisionis",
+    "ActivityRules",
     "DayFifth",
     "BodyOrb",
     "AspectOrb",
@@ -413,6 +415,19 @@ __all__ = [
     "ThresholdsSuryaSiddhanta",
     "ThresholdsPtolemy",
     "ThresholdsCustom",
+    "Bar",
+    "MuhurtaBaselineEvent",
+    "DayRules",
+    "Hours",
+    "GradedRashi",
+    "MonthRule",
+    "MonthRuleAny",
+    "MonthRuleLunar",
+    "MonthRuleSolar",
+    "Pada",
+    "Shool",
+    "MuhurtaUnjudged",
+    "MuhurtaUnwanted",
     "TermEntry",
     "PartileWithin",
     "SiegeWithin",
@@ -493,6 +508,50 @@ __all__ = [
     "VrataParanaNextTithi",
     "VrataParanaAfterRite",
     "MotionThresholds",
+    "MuhurtaClauseKind",
+    "MuhurtaClauseKindTithi",
+    "MuhurtaClauseKindNakshatra",
+    "MuhurtaClauseKindYoga",
+    "MuhurtaClauseKindKarana",
+    "MuhurtaClauseKindVara",
+    "MuhurtaClauseKindMonth",
+    "MuhurtaClauseKindSolarMonth",
+    "MuhurtaClauseKindLagna",
+    "MuhurtaClauseKindPada",
+    "MuhurtaClauseKindKaala",
+    "MuhurtaClauseKindChoghadiya",
+    "MuhurtaClauseKindAbhijit",
+    "MuhurtaClauseKindMuhurtaYoga",
+    "MuhurtaClauseKindTarabala",
+    "MuhurtaClauseKindGhata",
+    "MuhurtaClauseKindAshubhaYoga",
+    "MuhurtaClauseKindChandrabala",
+    "MuhurtaClauseKindKartari",
+    "MuhurtaClauseKindMoonInDusthana",
+    "MuhurtaClauseKindMoonJoined",
+    "MuhurtaClauseKindVenusInSixth",
+    "MuhurtaClauseKindMarsInEighth",
+    "MuhurtaClauseKindAshtamaLagna",
+    "MuhurtaClauseKindKunavamsa",
+    "MuhurtaClauseKindPanchakaRemainder",
+    "MuhurtaClauseKindLagnaTyajya",
+    "MuhurtaClauseKindSeventhOccupied",
+    "MuhurtaClauseKindMaleficInLagna",
+    "MuhurtaClauseKindBeneficInLagna",
+    "MuhurtaClauseKindExaltedInLagna",
+    "MuhurtaClauseKindLuminaryInEleventh",
+    "MuhurtaClauseKindKendraBenefics",
+    "MuhurtaClauseKindUnwantedPlacement",
+    "MuhurtaClauseKindVarjyam",
+    "ChandraBala",
+    "GradedKarana",
+    "GradedNakshatra",
+    "GradedTithi",
+    "GradedVara",
+    "GradedYoga",
+    "MuhurtaGrade",
+    "GradedMasa",
+    "MonthWithSun",
     "RisingOf",
     "SaitAvoid",
     "SaitAvoidTithiStart",
@@ -524,6 +583,8 @@ __all__ = [
     "PredicateWholly",
     "PredicateGreater",
     "PredicateOnVara",
+    "TaraReading",
+    "GhataRow",
     "Portion",
     "FestivalWhich",
     "CalendarResolution",
@@ -533,6 +594,7 @@ __all__ = [
     "CalendarResolutionDivergent",
     "FestivalCase",
     "DayEdge",
+    "Tara",
     "MonthDay",
 ]
 
@@ -1028,7 +1090,7 @@ class DayAsked(TypedDict, total=False):
 
 
 class MuhurtaRequest(TypedDict, total=False):
-    """`MuhurtaRequest` as the bindings write it, camel-cased as every request record is. `rules` and `asta` are read in a second step, because each is a name or a value and the refusal should say which field was wrong rather than that no shape matched."""
+    """A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes."""
 
     asta: Optional[MuhurtaRequestAsta]
     """How asta is seen: a criterion the SDK names, or one spelt out."""
@@ -1043,7 +1105,8 @@ class MuhurtaRequest(TypedDict, total=False):
 
     ranking: MuhurtaRanking
 
-    rules: Required[Any]
+    rules: Required[MuhurtaRequestRules]
+    """The rules: an activity the SDK ships the rules of, by name, or rules spelt out."""
 
 
 class FirstYearRequest(TypedDict, total=False):
@@ -2091,6 +2154,10 @@ MuhurtaRanking: TypeAlias = Literal['TEXTS', 'BASELINE']
 `TEXTS`: Raman's rule, an excess of good and a deficiency of evil: open windows first, then the fewest clauses against, then the most for, then the earliest. No clause cancels another here — the neutralisations are reported as clauses for the time and weigh as that — because which neutralisation lifts which dosha the texts give case by case, and a table of it is not yet sourced.
 `BASELINE`: The baseline engine's weights (`muhurta.md` §4.5), which the roadmap's regression is stated in: open windows first, then those the engine would have offered by their score, highest first, then the earliest. Needs the rules' `BaselineEvent`.
 """
+
+
+MuhurtaRequestRules: TypeAlias = "Union[Literal['RAMAN_MARRIAGE', 'BASELINE_MARRIAGE', 'RAMAN_NAMAKARANA', 'RAMAN_ANNAPRASANA', 'RAMAN_UPANAYANA', 'RAMAN_GRIHA_PRAVESHA', 'RAMAN_KARNAVEDHA', 'RAMAN_CHUDAKARANA', 'RAMAN_VIDYARAMBHA', 'RAMAN_YATRA', 'RAMAN_TRADE_PURCHASE', 'RAMAN_SELLING', 'RAMAN_NEW_CLOTHES', 'RAMAN_VEHICLE'], ActivityRules]"
+"""The rules: an activity the SDK ships the rules of, by name, or rules spelt out."""
 
 
 FirstAbdika: TypeAlias = Literal['SECOND_YEAR', 'ELEVENTH_DAY']
@@ -3344,6 +3411,43 @@ class CriterionArcusVisionis(TypedDict, total=False):
 
     thresholds: Required[Thresholds]
     """The thresholds."""
+
+
+class ActivityRules(TypedDict, total=False):
+    """What one activity asks of the time."""
+
+    bars: Required[Sequence[Bar]]
+    """The clauses that bar the rite outright rather than weigh against it."""
+
+    baseline: Optional[MuhurtaBaselineEvent]
+    """The inputs the baseline engine's weights take for the rite, which `crate::Ranking::Baseline` needs and no other ranking reads."""
+
+    day: Required[DayRules]
+    """The day's limbs and vara, the rite's grades over the general ones."""
+
+    heeds: Required[Sequence[Union[_catalogue.BlackoutKind, str]]]
+    """The season's blackouts the rite is not held in."""
+
+    hours: Hours
+    """The part of the day the rite is held in."""
+
+    lagnas: Required[GradedRashi]
+    """The lagnas."""
+
+    months: Required[MonthRule]
+    """The months."""
+
+    padas: Required[Sequence[Pada]]
+    """The quarters of a star rejected though the star is good."""
+
+    shool: Sequence[Shool]
+    """For a journey asked a direction, the ghati each weekday's disha shool is lifted at. Empty, the direction is not judged; a weekday missing from a list that is not shuts its days to the direction."""
+
+    unjudged: Required[Sequence[MuhurtaUnjudged]]
+    """What the source asks that is not judged, said rather than dropped."""
+
+    unwanted: Sequence[MuhurtaUnwanted]
+    """The grahas the rite wants out of houses. Empty where the rules spelt out leave it out."""
 
 
 DayFifth: TypeAlias = Literal['PRATAH', 'SANGAVA', 'MADHYAHNA', 'APARAHNA', 'SAYAHNA']
@@ -5462,6 +5566,156 @@ class ThresholdsCustom(TypedDict, total=False):
     """Venus's."""
 
 
+Bar: TypeAlias = "Union[Literal['TITHI', 'NAKSHATRA', 'YOGA', 'KARANA', 'VARA', 'MONTH', 'SOLAR_MONTH', 'LAGNA', 'PADA', 'KAALA', 'CHOGHADIYA', 'ABHIJIT', 'MUHURTA_YOGA', 'TARABALA', 'CHANDRABALA', 'KARTARI', 'MOON_IN_DUSTHANA', 'MOON_JOINED', 'VENUS_IN_SIXTH', 'MARS_IN_EIGHTH', 'ASHTAMA_LAGNA', 'KUNAVAMSA', 'PANCHAKA_REMAINDER', 'LAGNA_TYAJYA', 'SEVENTH_OCCUPIED', 'MALEFIC_IN_LAGNA', 'BENEFIC_IN_LAGNA', 'EXALTED_IN_LAGNA', 'LUMINARY_IN_ELEVENTH', 'KENDRA_BENEFICS', 'UNWANTED_PLACEMENT', 'VARJYAM', 'GHATA', 'ASHUBHA_YOGA'], Union[MuhurtaClauseKind, _layer.MuhurtaClauseKind]]"
+"""A clause that bars a rite outright: every clause of a kind, or one clause exactly."""
+
+
+class MuhurtaBaselineEvent(TypedDict, total=False):
+    """What the engine's weights take for one activity."""
+
+    abhijitForbidden: Required[bool]
+    """Whether Abhijit's own candidate is dropped. Its minutes are still offered through the choghadiya they fall in."""
+
+    avoidedVaras: Required[Sequence[Union[_catalogue.Vara, str]]]
+    """The weekdays it avoids (−12)."""
+
+    favouredTithis: Required[Sequence[Union[_catalogue.Tithi, str]]]
+    """The tithis it favours (+6), both pakshas' named."""
+
+    favouredVaras: Required[Sequence[Union[_catalogue.Vara, str]]]
+    """The weekdays the event favours (+8)."""
+
+    karakas: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """The grahas that signify the event, judged at each window."""
+
+    seventhEmpty: Required[bool]
+    """Whether the 7th house must be empty (+4, or −12)."""
+
+    stars: Required[Sequence[Union[_catalogue.Nakshatra, str]]]
+    """The stars the activity is matched to (+25 when the Moon stands in one at sunrise)."""
+
+
+class DayRules(TypedDict, total=False):
+    """How a day's rules grade its limbs and vara, and whose Chandrabala table they read."""
+
+    chandrabala: Required[ChandraBala]
+    """The Chandrabala table."""
+
+    karanas: Required[GradedKarana]
+    """The karanas."""
+
+    nakshatras: Required[GradedNakshatra]
+    """The nakshatras."""
+
+    tithis: Required[GradedTithi]
+    """The tithis."""
+
+    varas: Required[GradedVara]
+    """The varas."""
+
+    yogas: Required[GradedYoga]
+    """The yogas."""
+
+
+Hours: TypeAlias = Literal['ANY', 'DAYLIGHT', 'FORENOON']
+"""The part of the day a rite is held in: Raman's "never during night" for the ear boring, "always in the forenoon" for the tonsure.
+
+`ANY`: Day and night alike.
+`DAYLIGHT`: Sunrise to sunset.
+`FORENOON`: Sunrise to noon.
+"""
+
+
+class GradedRashi(TypedDict, total=False):
+    """Three lists and what the rest are."""
+
+    best: Required[Sequence[Union[_catalogue.Rashi, str]]]
+    """The members named good."""
+
+    middling: Required[Sequence[Union[_catalogue.Rashi, str]]]
+    """The members named ordinary."""
+
+    otherwise: Required[MuhurtaGrade]
+    """What a member in none of the lists is."""
+
+    rejected: Required[Sequence[Union[_catalogue.Rashi, str]]]
+    """The members named bad."""
+
+
+MonthRule: TypeAlias = "Union[MonthRuleAny, MonthRuleLunar, MonthRuleSolar]"
+"""Which month a rite is keyed on (crux C161)."""
+
+
+class MonthRuleAny(TypedDict, total=False):
+    """No month is graded."""
+
+    reckoning: Required[Literal['ANY']]
+
+
+class MonthRuleLunar(TypedDict, total=False):
+    """The amanta lunar month, graded; an adhika month is left to the season, which blacks it out."""
+
+    reckoning: Required[Literal['LUNAR']]
+
+    months: Required[GradedMasa]
+    """The months."""
+
+    withSun: Required[Sequence[MonthWithSun]]
+    """Months allowed as middling while the Sun is in a sign, which the rule would otherwise reject: "some sages" allow Pausha with the Sun in Capricorn and Chaitra with it in Aries for a marriage (Raman, ch. IX)."""
+
+
+class MonthRuleSolar(TypedDict, total=False):
+    """The Sun's sign, graded: the solar month."""
+
+    reckoning: Required[Literal['SOLAR']]
+
+    signs: Required[GradedRashi]
+    """The signs."""
+
+
+class Pada(TypedDict, total=False):
+    """A nakshatra's quarter."""
+
+    nakshatra: Required[Union[_catalogue.Nakshatra, str]]
+    """The star."""
+
+    pada: Required[int]
+    """The quarter, 1 to 4."""
+
+
+class Shool(TypedDict, total=False):
+    """The ghati of a weekday past which a journey towards its disha shool may begin: Raman's "provided the journey is timed to begin beyond 22 ghaties on Thursday" (*Muhurtha*, ch. XIV, p. 157), counted from sunrise under the day's own ghati reckoning."""
+
+    afterGhatis: Required[int]
+    """The ghatis from sunrise, 0 to 59, before which the journey does not begin."""
+
+    vara: Required[Union[_catalogue.Vara, str]]
+    """The weekday."""
+
+
+class MuhurtaUnjudged(TypedDict, total=False):
+    """Something the source asks of the time that the SDK does not judge yet."""
+
+    what: Required[str]
+    """What is asked."""
+
+    why: Required[str]
+    """Why it is not judged, and where it is recorded."""
+
+
+class MuhurtaUnwanted(TypedDict, total=False):
+    """Grahas a rite wants out of houses: "the 8th house should be unoccupied" is every graha out of the 8th, "Mars and Saturn should be avoided in the 5th" is two grahas out of one house."""
+
+    bars: bool
+    """Whether a graha standing there bars the rite rather than weighs against it. Unbarring where the rules spelt out leave it out."""
+
+    grahas: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """The grahas."""
+
+    houses: Required[Sequence[int]]
+    """The houses they are wanted out of, 1 to 12."""
+
+
 class TermEntry(TypedDict, total=False):
     """One term: its lord, and the degree within the sign it ends at."""
 
@@ -6224,6 +6478,465 @@ class MotionThresholds(TypedDict, total=False):
     """The threshold while it retrogrades."""
 
 
+MuhurtaClauseKind: TypeAlias = "Union[MuhurtaClauseKindTithi, MuhurtaClauseKindNakshatra, MuhurtaClauseKindYoga, MuhurtaClauseKindKarana, MuhurtaClauseKindVara, MuhurtaClauseKindMonth, MuhurtaClauseKindSolarMonth, MuhurtaClauseKindLagna, MuhurtaClauseKindPada, MuhurtaClauseKindKaala, MuhurtaClauseKindChoghadiya, MuhurtaClauseKindAbhijit, MuhurtaClauseKindMuhurtaYoga, MuhurtaClauseKindTarabala, MuhurtaClauseKindGhata, MuhurtaClauseKindAshubhaYoga, MuhurtaClauseKindChandrabala, MuhurtaClauseKindKartari, MuhurtaClauseKindMoonInDusthana, MuhurtaClauseKindMoonJoined, MuhurtaClauseKindVenusInSixth, MuhurtaClauseKindMarsInEighth, MuhurtaClauseKindAshtamaLagna, MuhurtaClauseKindKunavamsa, MuhurtaClauseKindPanchakaRemainder, MuhurtaClauseKindLagnaTyajya, MuhurtaClauseKindSeventhOccupied, MuhurtaClauseKindMaleficInLagna, MuhurtaClauseKindBeneficInLagna, MuhurtaClauseKindExaltedInLagna, MuhurtaClauseKindLuminaryInEleventh, MuhurtaClauseKindKendraBenefics, MuhurtaClauseKindUnwantedPlacement, MuhurtaClauseKindVarjyam]"
+"""What a clause says."""
+
+
+class MuhurtaClauseKindTithi(TypedDict, total=False):
+    """A tithi the rules grade best or reject (panchanga shuddhi)."""
+
+    clause: Required[Literal['TITHI']]
+
+    grade: Required[MuhurtaGrade]
+    """Best or rejected; a middling one is not reported."""
+
+    tithi: Required[Union[_catalogue.Tithi, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindNakshatra(TypedDict, total=False):
+    """A nakshatra the rules grade best or reject."""
+
+    clause: Required[Literal['NAKSHATRA']]
+
+    grade: Required[MuhurtaGrade]
+    """Best or rejected."""
+
+    nakshatra: Required[Union[_catalogue.Nakshatra, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindYoga(TypedDict, total=False):
+    """A yoga the rules grade best or reject."""
+
+    clause: Required[Literal['YOGA']]
+
+    grade: Required[MuhurtaGrade]
+    """Best or rejected."""
+
+    yoga: Required[Union[_catalogue.Yoga, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindKarana(TypedDict, total=False):
+    """A karana the rules grade best or reject."""
+
+    clause: Required[Literal['KARANA']]
+
+    grade: Required[MuhurtaGrade]
+    """Best or rejected."""
+
+    karana: Required[Union[_catalogue.Karana, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindVara(TypedDict, total=False):
+    """A vara the rules grade best or reject (vara dosha)."""
+
+    clause: Required[Literal['VARA']]
+
+    grade: Required[MuhurtaGrade]
+    """Best or rejected."""
+
+    vara: Required[Union[_catalogue.Vara, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindMonth(TypedDict, total=False):
+    """The lunar month an activity grades best or rejects (crux C161)."""
+
+    clause: Required[Literal['MONTH']]
+
+    grade: Required[MuhurtaGrade]
+    """Best or rejected."""
+
+    masa: Required[Union[_catalogue.Masa, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindSolarMonth(TypedDict, total=False):
+    """The Sun's sign an activity keyed on the solar month grades best or rejects."""
+
+    clause: Required[Literal['SOLAR_MONTH']]
+
+    grade: Required[MuhurtaGrade]
+    """Best or rejected."""
+
+    sign: Required[Union[_catalogue.Rashi, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindLagna(TypedDict, total=False):
+    """The lagna an activity grades best or rejects."""
+
+    clause: Required[Literal['LAGNA']]
+
+    grade: Required[MuhurtaGrade]
+    """Best or rejected."""
+
+    sign: Required[Union[_catalogue.Rashi, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindPada(TypedDict, total=False):
+    """The Moon in a quarter of its star the activity rejects."""
+
+    clause: Required[Literal['PADA']]
+
+    pada: Required[Pada]
+    """Which."""
+
+
+class MuhurtaClauseKindKaala(TypedDict, total=False):
+    """One of the inauspicious eighths of the daylight: Rahu kaala, Yamaghanda or Gulika."""
+
+    clause: Required[Literal['KAALA']]
+
+    kaala: Required[Union[_catalogue.Kaala, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindChoghadiya(TypedDict, total=False):
+    """A choghadiya, for the time when the catalogue marks it auspicious and against it otherwise."""
+
+    clause: Required[Literal['CHOGHADIYA']]
+
+    choghadiya: Required[Union[_catalogue.Choghadiya, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindAbhijit(TypedDict, total=False):
+    """Abhijit, the eighth muhurta of the daylight, on a day it is effective. For the time; a rite a tradition does not hold in it names it among its bars."""
+
+    clause: Required[Literal['ABHIJIT']]
+
+
+class MuhurtaClauseKindMuhurtaYoga(TypedDict, total=False):
+    """A special yoga of vara, tithi and nakshatra (Raman, ch. VI)."""
+
+    clause: Required[Literal['MUHURTA_YOGA']]
+
+    yoga: Required[Union[_catalogue.MuhurtaYoga, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindTarabala(TypedDict, total=False):
+    """The day's star counted from the native's."""
+
+    clause: Required[Literal['TARABALA']]
+
+    reading: Required[TaraReading]
+    """The count and its tara."""
+
+
+class MuhurtaClauseKindGhata(TypedDict, total=False):
+    """A ghata of the native's: the day's Moon sign, tithi, weekday or nakshatra that strikes one born under the native's Moon sign (Muhurta Chintamani, *Yatra-prakarana* XI vv. 27–30; C758). Against the time. The text keeps it for journeys, service, disputes and war, not marriage, so a rite that will not have it names it among its bars."""
+
+    clause: Required[Literal['GHATA']]
+
+    row: Required[GhataRow]
+    """Which row struck."""
+
+
+class MuhurtaClauseKindAshubhaYoga(TypedDict, total=False):
+    """An inauspicious yoga of the day's vara with a tithi or nakshatra: dagdha, visha, hutashana or yamaghanta (Muhurta Chintamani, Shubhashubha-prakarana vv. 8–9; C760). Against the time. The verse shuns them in auspicious work and without fail on a journey; the shipped rites follow Raman, so none bars them, and a caller who keeps the verse names `ASHUBHA_YOGA` among its bars."""
+
+    clause: Required[Literal['ASHUBHA_YOGA']]
+
+    yoga: Required[Union[_catalogue.AshubhaYoga, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindChandrabala(TypedDict, total=False):
+    """The day's Moon sign counted from the native's."""
+
+    clause: Required[Literal['CHANDRABALA']]
+
+    holds: Required[bool]
+    """Whether the house gives Chandrabala under the rules' table."""
+
+    house: Required[int]
+    """The house, 1 to 12."""
+
+
+class MuhurtaClauseKindKartari(TypedDict, total=False):
+    """Kartari: malefics on both sides of the lagna, in the 2nd and the 12th (Mahadosha 3)."""
+
+    clause: Required[Literal['KARTARI']]
+
+    second: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """The malefics in the 2nd."""
+
+    twelfth: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """The malefics in the 12th."""
+
+
+class MuhurtaClauseKindMoonInDusthana(TypedDict, total=False):
+    """The Moon in the 6th, 8th or 12th from the lagna (Mahadosha 4)."""
+
+    clause: Required[Literal['MOON_IN_DUSTHANA']]
+
+    house: Required[int]
+    """Which of the three."""
+
+
+# The Moon in one sign with other grahas (sagraha Chandra, Mahadosha 5).
+MuhurtaClauseKindMoonJoined = TypedDict(
+    "MuhurtaClauseKindMoonJoined",
+    {
+        "clause": "Required[Literal['MOON_JOINED']]",
+        # The grahas with it.
+        "with": "Required[Sequence[Union[_catalogue.Graha, str]]]",
+    },
+    total=False,
+)
+
+
+class MuhurtaClauseKindVenusInSixth(TypedDict, total=False):
+    """Venus in the 6th from the lagna (Bhrigu shatka, Mahadosha 10)."""
+
+    clause: Required[Literal['VENUS_IN_SIXTH']]
+
+
+class MuhurtaClauseKindMarsInEighth(TypedDict, total=False):
+    """Mars in the 8th from the lagna (Kujashtama, Mahadosha 11)."""
+
+    clause: Required[Literal['MARS_IN_EIGHTH']]
+
+
+class MuhurtaClauseKindAshtamaLagna(TypedDict, total=False):
+    """The lagna 8th from the native's birth lagna (Mahadosha 12)."""
+
+    clause: Required[Literal['ASHTAMA_LAGNA']]
+
+
+class MuhurtaClauseKindKunavamsa(TypedDict, total=False):
+    """The lagna in a malefic's navamsa (kunavamsa, Mahadosha 14)."""
+
+    clause: Required[Literal['KUNAVAMSA']]
+
+    lord: Required[Union[_catalogue.Graha, str]]
+    """Its lord."""
+
+    navamsa: Required[Union[_catalogue.Rashi, str]]
+    """The navamsa sign."""
+
+
+class MuhurtaClauseKindPanchakaRemainder(TypedDict, total=False):
+    """The remainder of tithi, vara, nakshatra and lagna by nine leaves a panchaka (Raman, ch. III; crux C159)."""
+
+    clause: Required[Literal['PANCHAKA_REMAINDER']]
+
+    panchaka: Required[Union[_catalogue.Panchaka, str]]
+    """Which."""
+
+
+class MuhurtaClauseKindLagnaTyajya(TypedDict, total=False):
+    """The part of a sign's rising the lagna tyajya rejects (Raman, ch. II; rasi visha ghatika, Mahadosha 13)."""
+
+    clause: Required[Literal['LAGNA_TYAJYA']]
+
+    sign: Required[Union[_catalogue.Rashi, str]]
+    """The sign rising."""
+
+
+class MuhurtaClauseKindSeventhOccupied(TypedDict, total=False):
+    """A graha in the 7th from the lagna, which a marriage wants empty."""
+
+    clause: Required[Literal['SEVENTH_OCCUPIED']]
+
+    by: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """Who."""
+
+
+class MuhurtaClauseKindMaleficInLagna(TypedDict, total=False):
+    """A malefic in the lagna."""
+
+    clause: Required[Literal['MALEFIC_IN_LAGNA']]
+
+    grahas: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """Who."""
+
+
+class MuhurtaClauseKindBeneficInLagna(TypedDict, total=False):
+    """Venus, Mercury or Jupiter in the lagna, which "will completely destroy all other adverse influences" (neutralisation 6)."""
+
+    clause: Required[Literal['BENEFIC_IN_LAGNA']]
+
+    grahas: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """Who."""
+
+
+class MuhurtaClauseKindExaltedInLagna(TypedDict, total=False):
+    """An exalted graha in the lagna (neutralisation 10)."""
+
+    clause: Required[Literal['EXALTED_IN_LAGNA']]
+
+    grahas: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """Who."""
+
+
+class MuhurtaClauseKindLuminaryInEleventh(TypedDict, total=False):
+    """The Sun or the Moon in the 11th (neutralisation 8)."""
+
+    clause: Required[Literal['LUMINARY_IN_ELEVENTH']]
+
+    grahas: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """Who."""
+
+
+class MuhurtaClauseKindKendraBenefics(TypedDict, total=False):
+    """Jupiter or Venus in a kendra with the Sun, Mars and Saturn each in the 3rd, 6th or 11th (neutralisation 11). The nodes are not asked: they always stand opposite, and no two of those houses are (C167)."""
+
+    clause: Required[Literal['KENDRA_BENEFICS']]
+
+    grahas: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """The benefics in a kendra."""
+
+
+class MuhurtaClauseKindUnwantedPlacement(TypedDict, total=False):
+    """Grahas standing in a house the rite wants them out of, as its rules' `unwanted` list names them: an 8th that should be unoccupied, Mars and Saturn out of the 5th. One clause a house, whichever entries of the list named it."""
+
+    clause: Required[Literal['UNWANTED_PLACEMENT']]
+
+    by: Required[Sequence[Union[_catalogue.Graha, str]]]
+    """The grahas in it the rules name, in the catalogue's order."""
+
+    house: Required[int]
+    """The house, 1 to 12."""
+
+
+class MuhurtaClauseKindVarjyam(TypedDict, total=False):
+    """A nakshatra's varjyam, its four ghatis of poison, "to be shunned in auspicious works" (Muhurta Chintamani, Vivaha Prakarana v. 51; Raman's *tyajya kala*, ch. II), placed by `panchanga.varjyam` (crux C165). Against the time; a rite that will not have it at all names it among its bars."""
+
+    clause: Required[Literal['VARJYAM']]
+
+    nakshatra: Required[Union[_catalogue.Nakshatra, str]]
+    """Whose varjyam."""
+
+
+class ChandraBala(TypedDict, total=False):
+    """Which houses from the birth Moon sign spoil a day (crux C160)."""
+
+    avoid: Required[Sequence[int]]
+    """The houses, 1 to 12, in which the day's Moon gives no Chandrabala."""
+
+
+class GradedKarana(TypedDict, total=False):
+    """Three lists and what the rest are."""
+
+    best: Required[Sequence[Union[_catalogue.Karana, str]]]
+    """The members named good."""
+
+    middling: Required[Sequence[Union[_catalogue.Karana, str]]]
+    """The members named ordinary."""
+
+    otherwise: Required[MuhurtaGrade]
+    """What a member in none of the lists is."""
+
+    rejected: Required[Sequence[Union[_catalogue.Karana, str]]]
+    """The members named bad."""
+
+
+class GradedNakshatra(TypedDict, total=False):
+    """Three lists and what the rest are."""
+
+    best: Required[Sequence[Union[_catalogue.Nakshatra, str]]]
+    """The members named good."""
+
+    middling: Required[Sequence[Union[_catalogue.Nakshatra, str]]]
+    """The members named ordinary."""
+
+    otherwise: Required[MuhurtaGrade]
+    """What a member in none of the lists is."""
+
+    rejected: Required[Sequence[Union[_catalogue.Nakshatra, str]]]
+    """The members named bad."""
+
+
+class GradedTithi(TypedDict, total=False):
+    """Three lists and what the rest are."""
+
+    best: Required[Sequence[Union[_catalogue.Tithi, str]]]
+    """The members named good."""
+
+    middling: Required[Sequence[Union[_catalogue.Tithi, str]]]
+    """The members named ordinary."""
+
+    otherwise: Required[MuhurtaGrade]
+    """What a member in none of the lists is."""
+
+    rejected: Required[Sequence[Union[_catalogue.Tithi, str]]]
+    """The members named bad."""
+
+
+class GradedVara(TypedDict, total=False):
+    """Three lists and what the rest are."""
+
+    best: Required[Sequence[Union[_catalogue.Vara, str]]]
+    """The members named good."""
+
+    middling: Required[Sequence[Union[_catalogue.Vara, str]]]
+    """The members named ordinary."""
+
+    otherwise: Required[MuhurtaGrade]
+    """What a member in none of the lists is."""
+
+    rejected: Required[Sequence[Union[_catalogue.Vara, str]]]
+    """The members named bad."""
+
+
+class GradedYoga(TypedDict, total=False):
+    """Three lists and what the rest are."""
+
+    best: Required[Sequence[Union[_catalogue.Yoga, str]]]
+    """The members named good."""
+
+    middling: Required[Sequence[Union[_catalogue.Yoga, str]]]
+    """The members named ordinary."""
+
+    otherwise: Required[MuhurtaGrade]
+    """What a member in none of the lists is."""
+
+    rejected: Required[Sequence[Union[_catalogue.Yoga, str]]]
+    """The members named bad."""
+
+
+MuhurtaGrade: TypeAlias = Literal['BEST', 'MIDDLING', 'REJECTED']
+"""A member's grade under a rule.
+
+`BEST`: Named good: a clause for the time.
+`MIDDLING`: Named ordinary, or unlisted where the rule leaves it so: no clause.
+`REJECTED`: Named bad, or unlisted where the rule says the rest are: a clause against the time.
+"""
+
+
+class GradedMasa(TypedDict, total=False):
+    """Three lists and what the rest are."""
+
+    best: Required[Sequence[Union[_catalogue.Masa, str]]]
+    """The members named good."""
+
+    middling: Required[Sequence[Union[_catalogue.Masa, str]]]
+    """The members named ordinary."""
+
+    otherwise: Required[MuhurtaGrade]
+    """What a member in none of the lists is."""
+
+    rejected: Required[Sequence[Union[_catalogue.Masa, str]]]
+    """The members named bad."""
+
+
+class MonthWithSun(TypedDict, total=False):
+    """A month allowed while the Sun stands in a sign."""
+
+    masa: Required[Union[_catalogue.Masa, str]]
+    """The month."""
+
+    sun: Required[Union[_catalogue.Rashi, str]]
+    """The Sun's sign."""
+
+
 RisingOf: TypeAlias = Literal['NAVAMSA', 'LAGNA', 'NAVAMSA_OR_LAGNA']
 """Which rising sign a `SaitRising` reads.
 
@@ -6560,6 +7273,29 @@ PredicateOnVara = TypedDict(
 )
 
 
+class TaraReading(TypedDict, total=False):
+    """A day's star counted from a birth star."""
+
+    count: Required[int]
+    """The count, 1 (the birth star itself) to 27."""
+
+    cycle: Required[int]
+    """Which round of nine the count is in, 1 to 3."""
+
+    tara: Required[Tara]
+    """The count reduced by nine."""
+
+
+GhataRow: TypeAlias = Literal['CHANDRA', 'TITHI', 'VARA', 'NAKSHATRA']
+"""Which row of the ghata chakra struck (C758).
+
+`CHANDRA`: The Moon in the sign that strikes (v. 27).
+`TITHI`: A tithi of the class that strikes (v. 28).
+`VARA`: The weekday that strikes (v. 29).
+`NAKSHATRA`: The nakshatra that strikes (v. 30).
+"""
+
+
 class Portion(TypedDict, total=False):
     """A share of a nakshatra's arc: the `which`th of `parts` equal parts, `{1, 1}` the whole, `{4, 1}` its first quarter (pada)."""
 
@@ -6641,6 +7377,21 @@ DayEdge: TypeAlias = Literal['SUNRISE', 'SUNSET']
 
 `SUNRISE`: Sunrise, counting in thirtieths of the daylight.
 `SUNSET`: Sunset, counting in thirtieths of the night.
+"""
+
+
+Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADHANA', 'NAIDHANA', 'MITRA', 'PARAMA_MITRA']
+"""The nine taras, in the order a count from the birth star reaches them.
+
+`JANMA`: 1, the birth star itself: "danger to body".
+`SAMPAT`: 2, wealth and prosperity.
+`VIPAT`: 3, dangers, losses and accidents.
+`KSHEMA`: 4, prosperity.
+`PRATYAK`: 5, obstacles.
+`SADHANA`: 6, the realisation of ambitions.
+`NAIDHANA`: 7, dangers.
+`MITRA`: 8, good.
+`PARAMA_MITRA`: 9, very favourable.
 """
 
 

@@ -44,6 +44,24 @@ the previous release, not by nobody having looked.
 - Dart: a field named for one of ten reserved words the emitter's list
   missed (`case`, `while` ...) is renamed as the others are (`caseValue`).
 
+**Muhurta rules are typed in every binding.**
+**Numbers:** none.
+- `MuhurtaRequest.rules` was raw JSON too. It is now `MuhurtaRequestRules`,
+  an activity's name or `ActivityRules` spelt out, with every record those
+  rules reach generated (`03-design/request-unions.md`).
+- Schema names that only made sense inside the muhurta crate are made
+  specific: `MuhurtaGrade`, `MuhurtaBaselineEvent`, `MuhurtaUnwanted`,
+  `MuhurtaUnjudged` and `MuhurtaClauseKind`; `Graded<Rashi>` is
+  `GradedRashi`, not schemars's `Graded_for_Rashi`.
+- Node's hand `MuhurtaRequest`, `ActivityRules`, `Tara`, `MuhurtaGrade`,
+  `MuhurtaBaselineEvent`, `MuhurtaUnwanted`, `MuhurtaUnjudged` and
+  `MuhurtaClauseKind` are gone; the generated types fail every negative
+  case the hand ones did. `Graded<T>` stays, generic over what it grades.
+  Python's hand `MuhurtaRequest` is gone.
+- Java: an or-named union whose values cannot be a string reads any string
+  as one of its names, so a misspelt name is refused as a name rather
+  than as a malformed record.
+
 **A custom visibility table is typed in every binding.**
 **Numbers:** none.
 - A tagged variant that wraps a record (serde's internally tagged

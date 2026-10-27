@@ -30,6 +30,7 @@ use serde::{Deserialize, Serialize};
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "MuhurtaGrade"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Grade {
     /// Named good: a clause for the time.
@@ -65,6 +66,7 @@ pub enum Grade {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "Graded{T}"))]
 pub struct Graded<T> {
     /// The members named good.
     pub best: Vec<T>,

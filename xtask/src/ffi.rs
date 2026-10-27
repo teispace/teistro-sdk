@@ -107,10 +107,9 @@ const UNTYPED_REQUESTS: [&str; 2] = ["engine.call", "engine.manifest"];
 /// rule language's untagged references (a subject, a sign, a body), a
 /// record read in a second step by its own reader (a rule set, research's
 /// test and control), and a theme's open style and content.
-const RAW_REQUEST_PARTS: [&str; 10] = [
+const RAW_REQUEST_PARTS: [&str; 9] = [
     "BodyRef",
     "BodySubject",
-    "MuhurtaRequest.rules",
     "ResearchRequest.control",
     "ResearchRequest.rules",
     "ResearchRequest.test",
@@ -209,7 +208,7 @@ const REUSED_ENUMS: [&str; 15] = [
 /// almuten's rules as asked, a natal point as named). Java keeps them
 /// apart by package; any other shared name is refused, so a request type
 /// never silently reads like an unrelated answer type.
-const SHARED_NAMES: [&str; 18] = [
+const SHARED_NAMES: [&str; 21] = [
     "AccidentalRules",
     "AccidentalScores",
     "AlmutenRules",
@@ -219,6 +218,8 @@ const SHARED_NAMES: [&str; 18] = [
     "DignityScores",
     "Interval",
     "KujaLifts",
+    "MuhurtaClauseKind",
+    "MuhurtaUnjudged",
     "NakshatraBar",
     "NatalPoint",
     "Partile",
@@ -226,6 +227,7 @@ const SHARED_NAMES: [&str; 18] = [
     "ResearchReferents",
     "ResearchSubject",
     "Siege",
+    "TaraReading",
     "Terms",
     "ZoneSpec",
 ];

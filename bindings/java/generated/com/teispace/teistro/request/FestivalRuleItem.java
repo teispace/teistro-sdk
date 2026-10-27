@@ -101,6 +101,9 @@ public sealed interface FestivalRuleItem extends RequestJson permits FestivalRul
                 return key;
             }
         }
+        if (raw instanceof String) {
+            return Key.of(raw);
+        }
         if (raw instanceof Map<?, ?> object) {
             if (object.containsKey("windows")) {
                 return FestivalRuleItemSaitRule.of(raw);

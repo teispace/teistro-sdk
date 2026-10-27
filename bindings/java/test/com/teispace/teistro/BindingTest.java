@@ -218,8 +218,8 @@ public final class BindingTest {
                 CalendarDate first = Civil.date(Calendar.GREGORIAN, 2024, 11, 25);
                 CalendarDate last = Civil.date(Calendar.GREGORIAN, 2024, 11, 27);
                 TeistroException muhurta = refusal(() -> sky.almanac().of(first, last, kathmandu, 20_700,
-                        MuhurtaRequest.of(Map.of("rules", "NO_SUCH_RULES")), null, false, false, false));
-                check(muhurta.field() != null && muhurta.field().startsWith("muhurta"), "muhurta: " + muhurta.field());
+                        MuhurtaRequest.of(Map.of("rules", "RAMAN_MARRIAGE", "most", 0)), null, false, false, false));
+                check("muhurta.most".equals(muhurta.field()), "muhurta: " + muhurta.field());
                 // A key the SDK does not read is refused by the request type
                 // itself, before anything crosses, naming the field.
                 try {

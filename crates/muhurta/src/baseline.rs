@@ -36,6 +36,7 @@ use crate::instant::Sky;
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "MuhurtaBaselineEvent"))]
 #[serde(rename_all = "camelCase")]
 pub struct BaselineEvent {
     /// The stars the activity is matched to (+25 when the Moon stands in

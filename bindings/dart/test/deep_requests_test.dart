@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 210 of the examples' 221 members.
+/// The cases compare 243 of the examples' 254 members.
 library;
 
 import 'dart:convert';
@@ -282,6 +282,83 @@ void main() {
         moonSign: Rashi.taurus,
         star: Nakshatra.bharani,
       ).toJson(),
+    );
+  });
+
+  test('almanac.days at muhurta.rules: MuhurtaRequestRules', () {
+    _holds(
+      'almanac.days',
+      path: ['muhurta', 'rules'],
+      dropping: [],
+      members: 33,
+      written: MuhurtaRequestRulesValue(ActivityRules(
+        bars: [
+          BarValue(<String, Object?>{'clause': 'TITHI', 'grade': 'MIDDLING', 'tithi': 'tithi.SHUKLA_DVITIYA'}),
+        ],
+        baseline: MuhurtaBaselineEvent(
+          abhijitForbidden: true,
+          avoidedVaras: [Vara.somavara],
+          favouredTithis: [Tithi.shuklaDvitiya],
+          favouredVaras: [Vara.somavara],
+          karakas: [Graha.moon],
+          seventhEmpty: true,
+          stars: [Nakshatra.bharani],
+        ),
+        day: DayRules(
+          chandrabala: ChandraBala(avoid: [1]),
+          karanas: GradedKarana(
+            best: [Karana.balava],
+            middling: [Karana.balava],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Karana.balava],
+          ),
+          nakshatras: GradedNakshatra(
+            best: [Nakshatra.bharani],
+            middling: [Nakshatra.bharani],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Nakshatra.bharani],
+          ),
+          tithis: GradedTithi(
+            best: [Tithi.shuklaDvitiya],
+            middling: [Tithi.shuklaDvitiya],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Tithi.shuklaDvitiya],
+          ),
+          varas: GradedVara(
+            best: [Vara.somavara],
+            middling: [Vara.somavara],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Vara.somavara],
+          ),
+          yogas: GradedYoga(
+            best: [Yoga.priti],
+            middling: [Yoga.priti],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Yoga.priti],
+          ),
+        ),
+        heeds: [BlackoutKind.adhikaMasa],
+        hours: Hours.daylight,
+        lagnas: GradedRashi(
+          best: [Rashi.taurus],
+          middling: [Rashi.taurus],
+          otherwise: MuhurtaGrade.middling,
+          rejected: [Rashi.taurus],
+        ),
+        months: MonthRuleLunar(
+          months: GradedMasa(
+            best: [Masa.vaishakha],
+            middling: [Masa.vaishakha],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Masa.vaishakha],
+          ),
+          withSun: [MonthWithSun(masa: Masa.vaishakha, sun: Rashi.taurus)],
+        ),
+        padas: [Pada(nakshatra: Nakshatra.bharani, pada: 1)],
+        shool: [Shool(afterGhatis: 1, vara: Vara.somavara)],
+        unjudged: [<String, Object?>{'what': 'x', 'why': 'x'}],
+        unwanted: [MuhurtaUnwanted(bars: true, grahas: [Graha.moon], houses: [1])],
+      )).toJson(),
     );
   });
 

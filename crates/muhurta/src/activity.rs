@@ -299,6 +299,7 @@ pub struct Shool {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "MuhurtaUnwanted"))]
 pub struct Unwanted {
     /// The grahas.
     pub grahas: Vec<Graha>,
@@ -384,6 +385,7 @@ impl Unwanted {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "MuhurtaUnjudged"))]
 pub struct Unjudged {
     /// What is asked.
     pub what: String,
