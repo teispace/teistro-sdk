@@ -1,6 +1,6 @@
 # Generated request types for Node, Python and Dart
 
-Status: Node built 2026-10-27; Python and Dart to follow. Java already generates every request record
+Status: Node and Python built 2026-10-27; Dart to follow. Java already generates every request record
 (`java-binding.md` §4.1, `crates/idl/src/emit/java/requests.rs`). Node,
 Python and Dart still type their requests by hand: of the request records
 the façade's schemas describe, `index.d.ts` hand-types about 100,
@@ -22,7 +22,7 @@ of each request, so a request is typed as serde reads it) and checked by
 | Binding | File | Shapes |
 |---|---|---|
 | Node | `bindings/node/lib/requests.d.ts` | an object is an `interface` of `readonly` fields, optional where serde defaults it and `\| null` where it is an `Option`; a closed key set a literal union, or the boundary enum's type where `REUSED_ENUMS` says it is that enum (its bare keys, `Bare<catalogue.Sex>`, where the enum is a catalogue kind); a tagged union a union of interfaces with the tag's literal; external tagging the bare keys' literals or a one-key object per data variant; a catalogue member `Member<catalogue.Graha>`, its full or bare key; a registered key that or any string; a Rust array of at most seven scalars a tuple of its length, a longer one or one of records an array whose doc gives the length |
-| Python | `bindings/python/teistro/_requests.py` | an object a `TypedDict(total=False)` with `Required[...]` for a required field; a key set a `Literal[...]`, or `Union[TheEnum, Literal[...]]` for a boundary enum; a tagged union a `Union` of `TypedDict`s; a catalogue member the catalogue's enum or its key |
+| Python | `bindings/python/teistro/_requests.py` | an object a `TypedDict(total=False)` with `Required[...]` for a required field and `Optional[...]` where it takes null, in the call form where a key is a keyword (`from`); a key set a `Literal[...]`, or `Union[TheEnum, Literal[...]]` for a boundary enum (the keys alone for a catalogue kind's); a tagged union a `Union` of `TypedDict`s; external tagging the bare keys' `Literal` and a private one-key `TypedDict` per variant with data; a catalogue member `Union[TheEnum, str]`; a record the layer also answers with (`PY_TAKEN_BACK`: `NatalPoint`, `AlmutenRules`, …) that record or the layer's answer class |
 | Dart | `bindings/dart/lib/src/requests.dart` | an object a `final class` with a `const` constructor, defaults where the schema states them, and the `_record` it writes; a key set an `enum` with its `key`; a tagged union a `sealed class` of records; a catalogue member the catalogue's enum |
 
 Docs come from the schema's descriptions, which are the Rust doc comments
@@ -111,4 +111,29 @@ raw. Six generated names are also an older export's (`Partile`, `Siege`
 and `Terms` are catalogue enums, `Confidence` an answer record, `CivilTime`
 and `ZoneSpec` boundary types); `index.d.ts` exports the older under the
 name, and the request's own is reached through the field that takes it.
+
+## What generating Python found
+
+The same comparison ran through strict mypy over the layer, its tests,
+examples, `typecheck/wrong.py` and the parity runner, with every twin
+replaced. It found the Python layer's own shape:
+
+- **A member crossed as its id where the layer did not write it.** Python's
+  enums are `IntEnum`s, and the shared request writer, used at 54 call
+  sites, handed its mapping to `json.dumps` as it was, so a member anywhere but where a
+  section's own writer looked crossed as a number. Every request now
+  crosses through one writer (`_written`), which writes a member as its key
+  at any depth and a `NatalPoint` as an answer spells it; the three
+  section-specific writers it replaces are gone.
+- **A caller hands back what it was given.** The layer takes its answer
+  classes (`AlmutenRules`, `PerfectionRules`, a `NatalPoint`, …) where a
+  request takes the record, so the generated type names both
+  (`PY_TAKEN_BACK`), and strict mypy reads each against the layer's class.
+- **The annual chart's rules are written in snake case.** The layer takes
+  `saham_rules: {"add_sign": ...}` and camel-cases it all the way down, so
+  the seven rule records under it stay the layer's own; the lint lists them
+  with that reason. `AyurdayaRules` is snake case on the wire too and is
+  generated.
+- `ProgressionContacts` was a copy of the generated `ContactsAsked` under
+  its own name; it is now that type by the name the layer gave it.
 
