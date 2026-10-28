@@ -17,6 +17,7 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::binding::{library, present, step};
+use crate::binding_coverage;
 
 /// The binding's tree.
 pub(crate) const PACKAGE: &str = "bindings/java";
@@ -161,8 +162,20 @@ fn compile(root: &Path, classes: &Path, patch: &str) -> Result<PathBuf, ()> {
 
 /// `java` running a class patched into the module against a named library.
 fn patched(main: &Path, patch: &Path, class: &str, library: &Path) -> Command {
+    patched_under(main, patch, class, library, &[])
+}
+
+/// [`patched`] with JVM options before the module, such as an agent.
+fn patched_under(
+    main: &Path,
+    patch: &Path,
+    class: &str,
+    library: &Path,
+    options: &[String],
+) -> Command {
     let mut command = crate::binding::java_command();
     command
+        .args(options)
         .arg(format!("--enable-native-access={MODULE}"))
         .arg("--module-path")
         .arg(main)
@@ -406,16 +419,32 @@ pub(crate) fn check(root: &Path) -> i32 {
         return 1;
     };
     let fixtures = root.join(crate::binding::FIXTURES);
+    let coverage = match binding_coverage::asked(root).and_then(|dir| {
+        dir.map(|dir| binding_coverage::Jacoco::fetched(root, &dir))
+            .transpose()
+    }) {
+        Ok(coverage) => coverage,
+        Err(why) => {
+            println!("FAIL  {why}");
+            return 1;
+        }
+    };
+    let options = coverage
+        .as_ref()
+        .map_or_else(Vec::new, |jacoco| vec![jacoco.agent_option()]);
     let outcome = crate::binding::blob_fixtures(root, &fixtures)
         .and_then(|()| compile(root, &classes, TESTS))
         .and_then(|main| {
             step(
-                patched(&main, &classes.join(TESTS), MAIN, &library)
+                patched_under(&main, &classes.join(TESTS), MAIN, &library, &options)
                     .env("TEISTRO_FIXTURES", &fixtures)
                     .current_dir(root),
                 &format!("{PACKAGE}'s tests pass against the real library"),
                 &format!("{PACKAGE}'s tests did not pass"),
             )?;
+            if let Some(jacoco) = &coverage {
+                jacoco.report(root, &main)?;
+            }
             adapter(root, &classes, &main)?;
             wrong_usages(root, &classes, &main)?;
             // Run only by `cargo xtask measure-ffi-cost`, so compiled here

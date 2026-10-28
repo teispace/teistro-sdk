@@ -1,0 +1,9 @@
+# JaCoCo, the coverage tool `cargo xtask check-java` runs the binding's
+# tests under when TEISTRO_BINDING_COVERAGE names a directory
+# (docs/03-design/binding-coverage.md). One line per jar: its role, the
+# SHA-256 of the file (Maven Central's SHA-1 checked against it when
+# pinned, 2026-10-28) and the download. Pinned, since each release counts
+# its own way and the floors are its counts. The version is the floors'.
+version 0.8.15
+agent fb5b0036a0899ea97edfa0fc2c7985b55f3f7c5695028163e5e60d4f3cf6075d https://repo1.maven.org/maven2/org/jacoco/org.jacoco.agent/0.8.15/org.jacoco.agent-0.8.15-runtime.jar
+cli d2b74b20b415163c1f53261e7c5ef4445b788327094208ff821e0c2baf9bc8f1 https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.15/org.jacoco.cli-0.8.15-nodeps.jar

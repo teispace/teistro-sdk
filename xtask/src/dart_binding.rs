@@ -15,6 +15,7 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::binding::{FIXTURES, blob_fixtures, library, present, step};
+use crate::binding_coverage;
 use crate::examples::{Binding, Runtime};
 
 const PACKAGE: &str = "bindings/dart";
@@ -167,6 +168,20 @@ fn flutter_adapter(root: &Path) -> Result<(), ()> {
     )
 }
 
+/// The arguments that put `dart test` under its own coverage, branches
+/// included, with an LCOV report, when a run asked for the bindings'
+/// reports (`03-design/binding-coverage.md`); none otherwise.
+fn measured(root: &Path) -> Result<Vec<String>, String> {
+    let Some(dir) = binding_coverage::asked(root)? else {
+        return Ok(Vec::new());
+    };
+    binding_coverage::name_tool(&dir, "dart", "dart", Command::new("dart").arg("--version"))?;
+    Ok(vec![
+        format!("--coverage-path={}", dir.join("dart.lcov").display()),
+        String::from("--branch-coverage"),
+    ])
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("dart", "--version") {
         crate::skip::skip("no `dart` on this machine; the Dart binding's tests need it");
@@ -176,6 +191,13 @@ pub(crate) fn check(root: &Path) -> i32 {
     let fixtures = root.join(FIXTURES);
     let Ok(library) = library(root) else {
         return 1;
+    };
+    let measuring = match measured(root) {
+        Ok(measuring) => measuring,
+        Err(why) => {
+            println!("FAIL  {why}");
+            return 1;
+        }
     };
     let outcome = blob_fixtures(root, &fixtures)
         .and_then(|()| {
@@ -219,9 +241,14 @@ pub(crate) fn check(root: &Path) -> i32 {
             ]
             .into_iter()
             .try_for_each(|(select, said)| {
+                let mut suite = Command::new("dart");
+                suite.args(["test", select, "leaks"]);
+                // The layer's coverage is the suite's, not the leak checks'.
+                if select == "-x" {
+                    suite.args(&measuring);
+                }
                 step(
-                    Command::new("dart")
-                        .args(["test", select, "leaks"])
+                    suite
                         .env("TEISTRO_LIBRARY", &library)
                         .env("TEISTRO_FIXTURES", &fixtures)
                         .current_dir(&package),

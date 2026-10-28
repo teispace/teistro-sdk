@@ -16,10 +16,11 @@
 //! is on the machine the library was really built on
 //! (`03-design/binding-surface-measured.md` §3).
 
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::binding::{FIXTURES, blob_fixtures, library, present, python_command, step};
+use crate::binding_coverage;
 use crate::examples::{Binding, Runtime};
 use crate::platform::Platform;
 
@@ -153,6 +154,84 @@ fn wrong_usages(package: &Path, checker: &(String, Vec<String>)) -> Result<(), (
     Ok(())
 }
 
+/// The coverage tool's pinned requirement (`03-design/binding-coverage.md`).
+const COVERAGE_REQUIREMENTS: &str = "xtask/coverage-requirements.txt";
+
+/// The suite's interpreter, and the report it owes when a run asked for
+/// the bindings' coverage.
+struct Suite {
+    command: Command,
+    report: Option<(PathBuf, PathBuf)>,
+}
+
+impl Suite {
+    /// Writes coverage.py's LCOV report of the run, when one was asked.
+    fn report(&self, package: &Path) -> Result<(), ()> {
+        let Some((python, report)) = &self.report else {
+            return Ok(());
+        };
+        step(
+            python_command(python)
+                .args(["-m", "coverage", "lcov", "--quiet", "-o"])
+                .arg(report)
+                .current_dir(package),
+            &format!("{PACKAGE}'s coverage written to {}", report.display()),
+            &format!("{PACKAGE}'s coverage was not written"),
+        )
+    }
+}
+
+/// `python -m unittest`, or under coverage.py, branches counted and the
+/// package alone measured, when a run asked for the bindings' reports:
+/// coverage.py is installed from its pin into the binding's own venv.
+fn measured_suite(root: &Path, python: &str) -> Result<Suite, String> {
+    let Some(dir) = binding_coverage::asked(root)? else {
+        return Ok(Suite {
+            command: python_command(python),
+            report: None,
+        });
+    };
+    let venv = root.join("bindings/python/.venv");
+    let local = venv.join(Platform::host().venv_bin()).join("python");
+    if !local.exists() && !exists_with_extension(&local) {
+        step(
+            python_command(python)
+                .args(["-m", "venv", ".venv"])
+                .current_dir(root.join("bindings/python")),
+            "",
+            "the binding's venv could not be made",
+        )
+        .map_err(|()| String::from("no venv for coverage.py"))?;
+    }
+    step(
+        python_command(&local)
+            .args([
+                "-m",
+                "pip",
+                "install",
+                "--disable-pip-version-check",
+                "--quiet",
+                "-r",
+            ])
+            .arg(root.join(COVERAGE_REQUIREMENTS)),
+        "",
+        "coverage.py could not be installed from its pin",
+    )
+    .map_err(|()| String::from("no coverage.py"))?;
+    binding_coverage::name_tool(
+        &dir,
+        "python",
+        "coverage.py",
+        python_command(&local).args(["-m", "coverage", "--version"]),
+    )?;
+    let mut command = python_command(&local);
+    command.args(["-m", "coverage", "run", "--branch", "--source=teistro"]);
+    Ok(Suite {
+        command,
+        report: Some((local, dir.join("python.lcov"))),
+    })
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let python = interpreter();
     if !present(&python, "--version") {
@@ -166,10 +245,18 @@ pub(crate) fn check(root: &Path) -> i32 {
     let Ok(library) = library(root) else {
         return 1;
     };
+    let mut suite = match measured_suite(root, &python) {
+        Ok(suite) => suite,
+        Err(why) => {
+            println!("FAIL  {why}");
+            return 1;
+        }
+    };
     let outcome = blob_fixtures(root, &fixtures)
         .and_then(|()| {
             step(
-                python_command(&python)
+                suite
+                    .command
                     .args(["-m", "unittest", "discover", "-s", "tests", "-t", "."])
                     .env("TEISTRO_LIBRARY", &library)
                     .env("TEISTRO_FIXTURES", &fixtures)
@@ -179,6 +266,7 @@ pub(crate) fn check(root: &Path) -> i32 {
                 &format!("{PACKAGE}/tests did not pass"),
             )
         })
+        .and_then(|()| suite.report(&package))
         .and_then(|()| Binding::Python.run(root, &Runtime::of(root)).map(drop));
     if outcome.is_err() {
         return 1;
