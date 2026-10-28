@@ -4307,6 +4307,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_published_verify.restype = ctypes.c_int32
+        self.ts_recorded_settings: Any = library.ts_recorded_settings
+        self.ts_recorded_settings.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_recorded_settings.restype = ctypes.c_int32
 
 
 class TeistroContext:
@@ -5694,6 +5701,38 @@ class TeistroContext:
                 _key,
                 len(key),
                 _c_value(at_least),
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def recorded_settings(self, snapshot_json: str) -> str:
+        """Translates a stored baseline settings snapshot and answers with the
+        translation as canonical JSON: the natal context's profile and patch,
+        the KP context's, the ephemeris the natal chain needs at its front
+        (`SURYA_SIDDHANTA` or `null`), the locale and every field read and set
+        aside as a note (`03-design/compat-shim.md` §4.1). The context records
+        a refusal; the translation reads none of its settings.
+
+        `snapshot_json` is one object of the baseline engine's own field names,
+        `{"ayanamsaId": 1, "houseSystem": "whole-sign", ...}`, a nested record
+        under its field. A snapshot that is not an object is `INVALID_ARG` on
+        `snapshot`; a field or value the table does not know, `INVALID_ARG` on
+        `snapshot.<field>`; a value the SDK decided not to carry, such as the
+        Surya bija, `UNSUPPORTED` on `snapshot.<field>` with the crux as its
+        hint.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _snapshot_json = snapshot_json.encode("utf-8")
+            owned.append(_snapshot_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_recorded_settings(
+                self._raw,
+                _snapshot_json,
                 ctypes.byref(_out_json),
             ))
             if status != Status.OK:

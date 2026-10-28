@@ -1997,6 +1997,8 @@ typedef TsProviderFreeNative = ffi.Void Function(ffi.Pointer<Provider>);
 typedef TsProviderFreeDart = void Function(ffi.Pointer<Provider>);
 typedef TsPublishedVerifyNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Uint32, ffi.Pointer<StringStruct>);
 typedef TsPublishedVerifyDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Uint8>, int, ffi.Pointer<ffi.Uint8>, int, ffi.Pointer<ffi.Uint8>, int, int, ffi.Pointer<StringStruct>);
+typedef TsRecordedSettingsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsRecordedSettingsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 
 /// The C surface, every entry point looked up once when the library
 /// opens rather than on each call.
@@ -2069,7 +2071,8 @@ final class TeistroLibrary {
         ts_provider_load = library.lookupFunction<TsProviderLoadNative, TsProviderLoadDart>('ts_provider_load'),
         ts_context_new_with_provider = library.lookupFunction<TsContextNewWithProviderNative, TsContextNewWithProviderDart>('ts_context_new_with_provider'),
         ts_provider_free = library.lookupFunction<TsProviderFreeNative, TsProviderFreeDart>('ts_provider_free'),
-        ts_published_verify = library.lookupFunction<TsPublishedVerifyNative, TsPublishedVerifyDart>('ts_published_verify');
+        ts_published_verify = library.lookupFunction<TsPublishedVerifyNative, TsPublishedVerifyDart>('ts_published_verify'),
+        ts_recorded_settings = library.lookupFunction<TsRecordedSettingsNative, TsRecordedSettingsDart>('ts_recorded_settings');
 
   /// The open library, for a finaliser that needs its symbols.
   final ffi.DynamicLibrary library;
@@ -2721,6 +2724,22 @@ final class TeistroLibrary {
   /// older version, `INVALID_ARG` on `version`. A build without
   /// `signed-packs` answers `CAPABILITY`.
   final TsPublishedVerifyDart ts_published_verify;
+
+  /// Translates a stored baseline settings snapshot and answers with the
+  /// translation as canonical JSON: the natal context's profile and patch,
+  /// the KP context's, the ephemeris the natal chain needs at its front
+  /// (`SURYA_SIDDHANTA` or `null`), the locale and every field read and set
+  /// aside as a note (`03-design/compat-shim.md` §4.1). The context records
+  /// a refusal; the translation reads none of its settings.
+  ///
+  /// `snapshot_json` is one object of the baseline engine's own field names,
+  /// `{"ayanamsaId": 1, "houseSystem": "whole-sign", ...}`, a nested record
+  /// under its field. A snapshot that is not an object is `INVALID_ARG` on
+  /// `snapshot`; a field or value the table does not know, `INVALID_ARG` on
+  /// `snapshot.<field>`; a value the SDK decided not to carry, such as the
+  /// Surya bija, `UNSUPPORTED` on `snapshot.<field>` with the crux as its
+  /// hint.
+  final TsRecordedSettingsDart ts_recorded_settings;
 
 }
 
@@ -6451,6 +6470,31 @@ final class TeistroContext implements ffi.Finalizable {
         rawkey.asTypedList(key.length).setAll(0, key);
         final outJson = arena<StringStruct>();
         final status = _lib.ts_published_verify(_handle, rawpack, pack.length, rawsignature, signature.length, rawkey, key.length, atLeast, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Translates a stored baseline settings snapshot and answers with the
+  /// translation as canonical JSON: the natal context's profile and patch,
+  /// the KP context's, the ephemeris the natal chain needs at its front
+  /// (`SURYA_SIDDHANTA` or `null`), the locale and every field read and set
+  /// aside as a note (`03-design/compat-shim.md` §4.1). The context records
+  /// a refusal; the translation reads none of its settings.
+  ///
+  /// `snapshot_json` is one object of the baseline engine's own field names,
+  /// `{"ayanamsaId": 1, "houseSystem": "whole-sign", ...}`, a nested record
+  /// under its field. A snapshot that is not an object is `INVALID_ARG` on
+  /// `snapshot`; a field or value the table does not know, `INVALID_ARG` on
+  /// `snapshot.<field>`; a value the SDK decided not to carry, such as the
+  /// Surya bija, `UNSUPPORTED` on `snapshot.<field>` with the crux as its
+  /// hint.
+  String recordedSettings(String snapshotJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawsnapshotJson = snapshotJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_recorded_settings(_handle, rawsnapshotJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });
