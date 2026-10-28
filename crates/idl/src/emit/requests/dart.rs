@@ -154,6 +154,22 @@ impl Types<'_> {
             })
     }
 
+    /// Whether `ty` holds a record the layer keeps by hand, which is not a
+    /// value: a façade compares by identity, so a request holding one
+    /// compares by what the façade writes instead.
+    fn holds_facade(&self, ty: &RecordType) -> bool {
+        match ty {
+            RecordType::Record { name } => {
+                is_facade(name) && !self.is_key(name) && !DART_SHADOWED.contains(&name.as_str())
+            }
+            RecordType::List { of, .. } | RecordType::Map { of } => self.holds_facade(of),
+            RecordType::Pair { first, second } => {
+                self.holds_facade(first) || self.holds_facade(second)
+            }
+            _ => false,
+        }
+    }
+
     /// The Dart type a catalogue kind is.
     fn dart_kind(&self, catalogue: &str) -> String {
         self.catalogue.get(catalogue).cloned().unwrap_or_else(|| {
@@ -411,16 +427,27 @@ impl Types<'_> {
                 doc(&field.doc, "  ")
             );
             let key = quoted(&field.name);
+            let facade = self.holds_facade(&field.ty);
             if nullable {
                 let value = format!("{field_name}Value");
+                let wire = self.wire(&field.ty, &value, 0);
                 written.push(format!(
-                    "if ({field_name} case final {value}?) {key}: {}",
-                    self.wire(&field.ty, &value, 0)
+                    "if ({field_name} case final {value}?) {key}: {wire}"
                 ));
+                equal.push(if facade {
+                    format!("if ({field_name} case final {value}?) jsonEncode({wire}) else null")
+                } else {
+                    field_name
+                });
             } else {
-                written.push(format!("{key}: {}", self.wire(&field.ty, &field_name, 0)));
+                let wire = self.wire(&field.ty, &field_name, 0);
+                written.push(format!("{key}: {wire}"));
+                equal.push(if facade {
+                    format!("jsonEncode({wire})")
+                } else {
+                    field_name
+                });
             }
-            equal.push(field_name);
         }
         let constructor = if params.is_empty() {
             format!("  const {name}();")
