@@ -14,7 +14,11 @@ public enum DeerghaBeyond implements RequestJson {
     /**
      * Beyond the 7th, as "some writers hold".
      */
-    SEVENTH("SEVENTH");
+    SEVENTH("SEVENTH"),
+    /**
+     * Beyond the 10th, and the bride's own star agreeing as a whole round: the recording engine's count, which no text read gives (C779).
+     */
+    TENTH_OR_SAME_STAR("TENTH_OR_SAME_STAR");
 
     private final String key;
 
