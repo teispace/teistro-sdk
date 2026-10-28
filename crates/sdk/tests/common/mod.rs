@@ -21,6 +21,25 @@ pub(crate) fn fixture(name: &str) -> Value {
     serde_json::from_str(&std::fs::read_to_string(&path).unwrap()).unwrap()
 }
 
+/// The settings patch a corpus profile was recorded under: its snapshot in
+/// the manifest, translated by the compatibility shim. The patch is over
+/// `conformance-baseline`, the profile every translation opens.
+pub(crate) fn recorded_patch(profile: &str) -> String {
+    use teistro::settings::recorded::{Snapshot, recorded};
+
+    let manifest = fixture("manifest.json");
+    let canonical = manifest["profiles"][profile]["settings_hash"]["canonical"]
+        .as_str()
+        .unwrap();
+    let translated = recorded(&Snapshot::from_canonical(canonical).unwrap()).unwrap();
+    assert_eq!(translated.natal.profile.as_str(), "conformance-baseline");
+    assert_eq!(
+        translated.ephemeris, None,
+        "{profile} needs no other ephemeris"
+    );
+    serde_json::to_string(&translated.natal.settings).unwrap()
+}
+
 /// The corpus's first chart (Kathmandu, 1990-04-14 05:30) read under
 /// `conformance-baseline` with a settings patch, asking for what `ask` adds
 /// to the request.

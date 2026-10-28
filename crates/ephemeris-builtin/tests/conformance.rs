@@ -110,6 +110,54 @@ fn the_built_in_ephemeris_reproduces_the_corpus_within_its_tiers_band() {
     tally.record();
 }
 
+/// The recorded variants, each founded under the settings the corpus's
+/// manifest stored for it as the compatibility shim translates them
+/// (`03-design/compat-shim.md` item 2), over this tier and against its
+/// class's band. No variant's settings are written here; a profile the
+/// shim refuses is reported apart, and only the bija correction is (C777).
+#[test]
+fn the_built_in_ephemeris_reproduces_the_recorded_variants() {
+    use teistro_ephemeris_kit::corpus::Corpus;
+    use teistro_ephemeris_kit::variants;
+    use teistro_port_ephemeris::EphemerisProvider;
+
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures");
+    let corpus = Corpus::open(&root).unwrap_or_else(|why| panic!("{why}"));
+    let open = || -> Box<dyn EphemerisProvider> { Box::new(Builtin::new()) };
+    let class = format!("builtin-{TIER_NAME}");
+    let run = variants::run(&corpus, &open, &class).unwrap_or_else(|why| panic!("{why}"));
+    println!("\n{}\n", run.report.markdown());
+    for refusal in &run.refused {
+        println!(
+            "refused `{}` ({} variants): {}",
+            refusal.profile,
+            refusal.fixtures.len(),
+            refusal.why
+        );
+    }
+    let target = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../target/kit");
+    run.report
+        .write(&target, &format!("variants-{TIER_NAME}"))
+        .unwrap_or_else(|why| panic!("{why}"));
+    let refused: Vec<&str> = run
+        .refused
+        .iter()
+        .map(|refusal| refusal.profile.as_str())
+        .collect();
+    assert_eq!(refused, ["surya-bija"]);
+    let judged = run.report.against(&variants::KNOWN);
+    assert!(
+        judged.holds(),
+        "the {TIER_NAME} tier against the recorded variants:\nunexplained: {:#?}\nidle: {:#?}",
+        judged.unexplained,
+        judged
+            .idle
+            .iter()
+            .map(|divergence| divergence.name)
+            .collect::<Vec<_>>()
+    );
+}
+
 /// Under `sdk-only` a chart over the built-in ephemeris is its native
 /// positions and nothing else the provider offers.
 ///

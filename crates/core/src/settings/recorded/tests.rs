@@ -16,12 +16,12 @@ use crate::catalogue::{Ayanamsha, DashaSystem, HouseSystem};
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 use crate::settings::knobs::{
-    AyanamshaBasis, Balance, Centre, CharaKarakas, Ekadhipatya, Node, PolarDayPolicy, Shodhana,
-    Sunrise, Zodiac,
+    AyanamshaBasis, Balance, Centre, CharaKarakas, Ekadhipatya, Node, PolarDayPolicy, PolarPolicy,
+    Shodhana, Sunrise, Zodiac,
 };
 use crate::settings::{
     AyanamshaChoice, Profile, ProfileId, Settings, SettingsPatch, Siddhanta, SunriseConvention,
-    SuryaBija,
+    SuryaBija, SuryaPlanets, SuryaSunrise,
 };
 
 /// The corpus's `default` profile, as its manifest's canonical form holds it.
@@ -231,15 +231,32 @@ fn the_surya_bija_is_refused_and_its_absence_is_the_text() {
     // C777.
     let refused = of("suryaBija", Stored::Flag(true)).unwrap_err();
     assert_eq!((refused.anchor, refused.decided), ("C777", true));
-    let surya =
-        recorded(&Snapshot::from_json(r#"{"siddhanta": "surya", "suryaBija": false}"#).unwrap())
-            .unwrap();
+    let surya = recorded(
+        &Snapshot::from_canonical(
+            "ayanamsaId=1|siddhanta=surya|suryaBija=false|useTopocentric=true",
+        )
+        .unwrap(),
+    )
+    .unwrap();
+    let frame = &surya.natal.settings.frame;
     assert_eq!(
-        surya.natal.settings.frame.siddhanta,
-        Some(Siddhanta::surya(SuryaBija::None))
+        frame.siddhanta,
+        Some(Siddhanta::Surya {
+            bija: SuryaBija::None,
+            sunrise: SuryaSunrise::Modern,
+            planets: SuryaPlanets::Text,
+        })
+    );
+    // The text's places are geocentric and in its own zodiac, whatever the
+    // centre and the ayanamsha stored beside it say.
+    assert_eq!(frame.centre, Some(Centre::Geocentric));
+    assert_eq!(
+        frame.ayanamsha,
+        Some(AyanamshaChoice::from(Ayanamsha::Suryasiddhanta))
     );
     assert_eq!(surya.ephemeris, Some(RequiredEphemeris::SuryaSiddhanta));
     assert_eq!(surya.notes[0].field, "suryaBija");
+    surya.natal.resolve().unwrap();
     // Nothing stored is the engine's default, read as nothing.
     let unset = of("suryaBija", Stored::Absent).unwrap();
     assert!(unset.notes.is_empty() && unset.natal.settings.is_empty());
@@ -330,6 +347,10 @@ fn a_house_system_is_named_by_its_lower_cased_key() {
         );
         // The chalit stays the profile's, registry entry 14.
         assert_eq!(translated.natal.settings.houses.chalit_system, None);
+        // A polar arc is divided as Porphyry does, but for the profile's
+        // own whole-sign, which has none.
+        let polar = (system != HouseSystem::WholeSign).then_some(PolarPolicy::FallbackPorphyry);
+        assert_eq!(translated.natal.settings.houses.polar_policy, polar);
     }
     assert_eq!(names.len(), HouseSystem::ALL.len());
     for unknown in [text("whole_sign"), Stored::Number(1)] {
@@ -408,10 +429,13 @@ fn every_chara_karaka_count_and_balance_is_a_knob() {
             .frame
             .zodiac
     };
+    // The recording engine's tropical mode moves nothing it records.
     assert_eq!(
         (zodiac("sidereal"), zodiac("tropical")),
-        (Some(Zodiac::Sidereal), Some(Zodiac::Tropical))
+        (Some(Zodiac::Sidereal), None)
     );
+    let tropical = of("zodiacMode", text("tropical")).unwrap();
+    assert_eq!(tropical.notes[0].field, "zodiacMode");
 }
 
 #[test]
@@ -511,6 +535,12 @@ fn a_snapshot_reads_from_json_and_from_the_canonical_form() {
     assert_eq!(canonical.fields["useTopocentric"], Stored::Flag(true));
     assert_eq!(canonical.fields["swissephVersion"], text("2.10.03"));
     assert_eq!(canonical.fields["useTopocentric"].to_string(), "true");
+    // A value a row names as text stays text, though it reads as a flag.
+    let true_node = Snapshot::from_canonical("nodeType=true|useTopocentric=false").unwrap();
+    assert_eq!(true_node.fields["nodeType"], text("true"));
+    assert_eq!(true_node.fields["useTopocentric"], Stored::Flag(false));
+    let translated = recorded(&true_node).unwrap();
+    assert_eq!(translated.natal.settings.frame.node, Some(Node::True));
     let refused = Snapshot::from_canonical("nodeType=mean|siddhanta").unwrap_err();
     assert_eq!(
         (refused.status, refused.field()),

@@ -27,10 +27,13 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use super::knobs::{Balance, Centre, CharaKarakas, Ekadhipatya, Node, Shodhana, Sunrise, Zodiac};
+use super::knobs::{
+    Balance, Centre, CharaKarakas, Ekadhipatya, Node, PolarPolicy, Shodhana, Sunrise, Zodiac,
+};
 use super::profiles::conformance_baseline;
 use super::{
     Profile, ProfileId, Resolved, Settings, SettingsPatch, Siddhanta, SunriseConvention, SuryaBija,
+    SuryaPlanets, SuryaSunrise,
 };
 use crate::catalogue::{Ayanamsha, DashaSystem, HouseSystem};
 use crate::error::{Error, Status};
@@ -99,8 +102,16 @@ impl Stored {
     }
 
     /// The value as one column of the recording engine's canonical form
-    /// writes it: a flag or a number as itself, anything else as text.
-    fn of_canonical(text: &str) -> Stored {
+    /// writes it, which spells every value as text: a value a row names as
+    /// text for that field (`nodeType=true`) stays text, and otherwise a
+    /// flag or a number is itself and anything else is text.
+    fn of_canonical(field: &str, text: &str) -> Stored {
+        let named = ROWS.iter().any(|row| {
+            row.names(field) && matches!(row.value, Value::Text(named) if named == text)
+        });
+        if named {
+            return Stored::Text(text.to_owned());
+        }
         match text {
             "true" => Stored::Flag(true),
             "false" => Stored::Flag(false),
@@ -182,7 +193,7 @@ impl Snapshot {
             .map(|column| {
                 column
                     .split_once('=')
-                    .map(|(field, value)| (field.to_owned(), Stored::of_canonical(value)))
+                    .map(|(field, value)| (field.to_owned(), Stored::of_canonical(field, value)))
                     .ok_or_else(|| {
                         Error::invalid_arg(format!("the canonical column `{column}` has no value"))
                             .with_field("snapshot")
@@ -451,7 +462,10 @@ pub const ROWS: &[Row] = &[
     Row {
         field: "zodiacMode",
         value: Value::Text("tropical"),
-        becomes: Becomes::Settings(|patch| patch.frame.zodiac = Some(Zodiac::Tropical)),
+        becomes: Becomes::Note(
+            "the recording engine casts the same sidereal chart under it: the corpus's four \
+             tropical variants equal their default charts field for field",
+        ),
     },
     Row {
         field: "nodeType",
@@ -476,12 +490,20 @@ pub const ROWS: &[Row] = &[
     Row {
         field: "houseSystem",
         value: Value::Each("the 22 names, a house system's key lower-cased with hyphens"),
-        becomes: Becomes::Read(|patch, _, _, stored| {
+        becomes: Becomes::Read(|patch, settings, _, stored| {
             let system = stored
                 .text()
                 .and_then(house_system)
                 .ok_or("not one of the 22 house systems")?;
             patch.houses.placement_system = Some(system);
+            // The recording engine divides a quadrant system's undefined
+            // polar arc as Porphyry does, silently (measured on the
+            // corpus's Tromsø variant, `03-design/compat-shim.md` §4.2);
+            // the profile's own whole-sign has no such arc, so it keeps
+            // the profile's policy.
+            if system != settings.houses.placement_system {
+                patch.houses.polar_policy = Some(PolarPolicy::FallbackPorphyry);
+            }
             Ok(())
         }),
     },
@@ -493,8 +515,21 @@ pub const ROWS: &[Row] = &[
     Row {
         field: "siddhanta",
         value: Value::Text("surya"),
+        // What the recording engine computes under it, measured on the
+        // corpus's two surya variants (`03-design/compat-shim.md` §4.2):
+        // the text's places, geocentric whatever `useTopocentric` stores
+        // and in the text's own zodiac whatever `ayanamsaId` stores, under
+        // the modern sunrise. This row is read after both, so it wins.
         becomes: Becomes::Ephemeris(
-            |patch| patch.frame.siddhanta = Some(Siddhanta::surya(SuryaBija::None)),
+            |patch| {
+                patch.frame.siddhanta = Some(Siddhanta::Surya {
+                    bija: SuryaBija::None,
+                    sunrise: SuryaSunrise::Modern,
+                    planets: SuryaPlanets::Text,
+                });
+                patch.frame.centre = Some(Centre::Geocentric);
+                patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
+            },
             RequiredEphemeris::SuryaSiddhanta,
         ),
     },

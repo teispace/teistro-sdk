@@ -125,7 +125,7 @@ fn a_reading_carries_the_corpus_s_spatial_dasha() {
 #[test]
 fn a_temporal_balance_searches_the_moon_s_nakshatra_in_the_chart_s_frame() {
     let (sdk, document) = reading(
-        r#"{"dasha": {"balance": "TEMPORAL"}}"#,
+        &common::recorded_patch("temporal"),
         &[DashaSystem::Vimshottari],
     );
     let recorded = fixture("variants/c001-kathmandu-1990-04-14--temporal.json");
@@ -169,15 +169,11 @@ fn a_reading_carries_every_built_system_and_each_agrees_with_the_corpus() {
         })
         .collect();
     assert_eq!(systems.len(), teistro::dasha::ROWS.len() - 3);
-    for (patch, method, fraction) in [
-        ("{}", "spatial", SPATIAL_FRACTION),
-        (
-            r#"{"dasha": {"balance": "TEMPORAL"}}"#,
-            "temporal",
-            TEMPORAL_FRACTION,
-        ),
+    for (profile, method, fraction) in [
+        ("default", "spatial", SPATIAL_FRACTION),
+        ("temporal", "temporal", TEMPORAL_FRACTION),
     ] {
-        let (_, document) = reading(patch, &systems);
+        let (_, document) = reading(&common::recorded_patch(profile), &systems);
         assert_eq!(document.dashas.len(), systems.len());
         for dasha in document.dashas.iter().skip(1) {
             let key = dasha.system.key().to_ascii_lowercase();
@@ -527,18 +523,14 @@ fn tara_at(sdk: &Context, measure: &str, birth: JulianDay<teistro::quantity::Utc
 #[test]
 fn a_reading_carries_the_kalachakra_and_it_agrees_with_the_corpus() {
     let recorded = fixture("kalachakra/charts/c001-kathmandu-1990-04-14.json");
-    for (patch, method, fraction) in [
-        ("{}", "spatial", SPATIAL_FRACTION),
-        (
-            r#"{"dasha": {"balance": "TEMPORAL"}}"#,
-            "temporal",
-            TEMPORAL_FRACTION,
-        ),
+    for (profile, method, fraction) in [
+        ("default", "spatial", SPATIAL_FRACTION),
+        ("temporal", "temporal", TEMPORAL_FRACTION),
     ] {
         // The corpus's tolerance on a nakshatra's remaining fraction, in a
         // pada a quarter of the span, of a sign of at most 21 years.
         let bound = fraction * 4.0 * 21.0 * 365.25;
-        let (sdk, document) = reading(patch, &[DashaSystem::Kalachakra]);
+        let (sdk, document) = reading(&common::recorded_patch(profile), &[DashaSystem::Kalachakra]);
         let dasha = &document.dashas[0];
         let answer = &recorded["methods"][method];
         assert!(

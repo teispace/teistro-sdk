@@ -4,6 +4,7 @@
 use teistro_astro::DeltaTModel;
 use teistro_core::Status;
 use teistro_core::error::Error;
+use teistro_core::settings::recorded::RequiredEphemeris;
 use teistro_core::settings::{Siddhanta, SuryaPlanets, SuryaSunrise};
 use teistro_port_ephemeris::{Astronomy, EphemerisProvider, TestProvider};
 use teistro_siddhanta::{ModernParts, SiddhantaProvider};
@@ -63,6 +64,23 @@ impl core::fmt::Debug for Opening {
         out.debug_struct("Opening")
             .field("name", &self.name)
             .finish_non_exhaustive()
+    }
+}
+
+/// The ephemeris a translated baseline snapshot asks for at the front of
+/// its chain (`03-design/compat-shim.md` §4.1).
+///
+/// ```
+/// use teistro::Ephemeris;
+/// use teistro::settings::recorded::RequiredEphemeris;
+///
+/// assert!(matches!(Ephemeris::from(RequiredEphemeris::SuryaSiddhanta), Ephemeris::SuryaSiddhanta));
+/// ```
+impl From<RequiredEphemeris> for Ephemeris {
+    fn from(required: RequiredEphemeris) -> Ephemeris {
+        match required {
+            RequiredEphemeris::SuryaSiddhanta => Ephemeris::SuryaSiddhanta,
+        }
     }
 }
 
