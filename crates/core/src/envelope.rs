@@ -1419,4 +1419,57 @@ mod tests {
         assert_eq!(format!("{hash:?}"), format!("Hash({hash})"));
         assert_eq!(MonthDay { month: 3, day: 7 }.to_string(), "03-07");
     }
+
+    fn provenance() -> Provenance {
+        Provenance::new(
+            Version::new(0, 1, 0),
+            1,
+            1,
+            "nepali-default",
+            Hash::of(b"settings"),
+            Hash::of(b"input"),
+        )
+    }
+
+    /// A provenance is written with its answer key last, taken from the
+    /// rest, and read back without it: a stale key in stored JSON is
+    /// ignored, never believed.
+    #[test]
+    fn a_provenance_is_written_with_its_answer_key_and_read_without_it() {
+        let provenance = provenance();
+        let written = serde_json::to_string(&provenance).unwrap();
+        let key = written.find("\"answer_key\"").unwrap();
+        assert!(written.find("\"content_hash\"").unwrap() < key, "{written}");
+        let json: serde_json::Value = serde_json::from_str(&written).unwrap();
+        assert_eq!(json["answer_key"], provenance.answer_key().to_string());
+        let mut stale = json;
+        stale["answer_key"] = serde_json::Value::from(Hash::of(b"stale").to_string());
+        let read: Provenance = serde_json::from_value(stale).unwrap();
+        assert_eq!(read, provenance);
+        assert_eq!(read.answer_key(), provenance.answer_key());
+    }
+
+    /// The schema states the written key beside `content_hash`, required,
+    /// and the transform leaves a schema it cannot extend as it was.
+    #[cfg(feature = "schema")]
+    #[test]
+    fn the_schema_states_the_answer_key_it_is_written_with() {
+        let schema = schemars::schema_for!(Provenance);
+        let properties = schema.get("properties").unwrap();
+        assert_eq!(
+            properties["answer_key"]["type"],
+            properties["content_hash"]["type"]
+        );
+        let required = schema
+            .get("required")
+            .and_then(serde_json::Value::as_array)
+            .unwrap();
+        assert!(required.contains(&serde_json::Value::from("answer_key")));
+        let mut boolean = schemars::Schema::from(true);
+        written_with_its_answer_key(&mut boolean);
+        assert_eq!(boolean, schemars::Schema::from(true));
+        let mut bare = schemars::json_schema!({"type": "object"});
+        written_with_its_answer_key(&mut bare);
+        assert_eq!(bare, schemars::json_schema!({"type": "object"}));
+    }
 }

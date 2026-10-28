@@ -185,3 +185,98 @@ pub fn schema<T: Presets + schemars::JsonSchema>(
         ],
     })
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
+
+    use super::*;
+
+    #[derive(Clone, Copy, Debug, PartialEq, serde::Deserialize)]
+    #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+    #[serde(deny_unknown_fields)]
+    struct Orb {
+        degrees: u8,
+    }
+
+    impl Presets for Orb {
+        const PRESETS: &'static [(&'static str, Orb)] =
+            &[("WIDE", Orb { degrees: 8 }), ("TIGHT", Orb { degrees: 3 })];
+    }
+
+    fn read_json(json: &str) -> Result<Orb, serde_json::Error> {
+        read(&mut serde_json::Deserializer::from_str(json))
+    }
+
+    /// A name is matched exactly, and every preset is reachable by its own.
+    #[test]
+    fn every_preset_is_named_and_nothing_else_is() {
+        for (name, value) in Orb::PRESETS {
+            assert_eq!(Orb::named(name), Some(*value));
+            assert_eq!(read_json(&format!("\"{name}\"")).unwrap(), *value);
+        }
+        assert_eq!(Orb::named("tight"), None);
+        assert_eq!(names::<Orb>(), "WIDE, TIGHT");
+    }
+
+    /// A wrong name is refused naming every preset, and that a record may
+    /// be spelt out instead.
+    #[test]
+    fn a_wrong_name_is_refused_naming_the_presets() {
+        let refused = read_json(r#""NARROW""#).unwrap_err().to_string();
+        assert!(
+            refused.contains("`NARROW` is not one the SDK names"),
+            "{refused}"
+        );
+        assert!(refused.contains("it names WIDE, TIGHT"), "{refused}");
+        assert!(refused.contains("spelt out"), "{refused}");
+    }
+
+    /// A record is read as the type reads it: its own refusals stay its own.
+    #[test]
+    fn a_record_is_read_as_its_type_reads_it() {
+        assert_eq!(read_json(r#"{"degrees": 5}"#).unwrap(), Orb { degrees: 5 });
+        let unknown = read_json(r#"{"degrees": 5, "width": 1}"#)
+            .unwrap_err()
+            .to_string();
+        assert!(unknown.contains("width"), "{unknown}");
+        let missing = read_json("{}").unwrap_err().to_string();
+        assert!(missing.contains("degrees"), "{missing}");
+    }
+
+    /// Neither a name nor a record is refused saying what was expected.
+    #[test]
+    fn neither_shape_is_refused_saying_what_was_expected() {
+        for json in ["5", "true", "null", "[]"] {
+            let refused = read_json(json).unwrap_err().to_string();
+            assert!(
+                refused.contains("one of WIDE, TIGHT, or the rules spelt out"),
+                "{json}: {refused}"
+            );
+        }
+    }
+
+    /// The schema lists every name, then the record by its reference.
+    #[cfg(feature = "schema")]
+    #[test]
+    fn the_schema_is_the_names_or_the_record() {
+        let mut generator = schemars::SchemaGenerator::default();
+        let union = schema::<Orb>(&mut generator);
+        let options = union
+            .get("anyOf")
+            .and_then(serde_json::Value::as_array)
+            .unwrap();
+        assert_eq!(options.len(), 2);
+        assert_eq!(
+            options.first(),
+            Some(&serde_json::json!({"type": "string", "enum": ["WIDE", "TIGHT"]}))
+        );
+        assert!(
+            options
+                .get(1)
+                .and_then(|record| record.get("$ref"))
+                .is_some()
+        );
+    }
+}
