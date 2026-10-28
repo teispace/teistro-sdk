@@ -4310,6 +4310,31 @@ class Context:
         """The settings hash, as the hexadecimal every result stamps."""
         return self.inner.settings_hash().bytes.hex()
 
+    def recorded_settings(self, snapshot: Union[Mapping[str, Any], str]) -> Any:
+        """A stored baseline settings snapshot translated into what a
+        context opens with (`03-design/compat-shim.md` §4): ``natal`` and
+        ``kp``, each a ``{"profile", "settings"}`` to open a context with,
+        the ``ephemeris`` the natal chain needs at its front
+        (``"SURYA_SIDDHANTA"`` or ``None``), the ``locale``, and the
+        ``notes`` on every field read and set aside. It reads none of this
+        context's settings.
+
+        A field or value the translation does not know raises
+        `TeistroError` with ``INVALID_ARG`` on ``snapshot.<field>``; one
+        the SDK decided not to carry, such as the Surya bija,
+        ``UNSUPPORTED``, with the crux as its hint.
+        """
+        if isinstance(snapshot, str):
+            text = snapshot
+        elif isinstance(snapshot, Mapping):
+            text = json.dumps(dict(snapshot))
+        else:
+            raise TypeError(
+                "snapshot: expected the stored settings, e.g. "
+                "{'ayanamsaId': 1, 'houseSystem': 'whole-sign'}"
+            )
+        return json.loads(self.inner.recorded_settings(text))
+
     @property
     def last_error(self) -> Error:
         """The outcome of the last call on the context."""

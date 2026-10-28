@@ -90,6 +90,7 @@ import type {
   NaamRules,
   NumerologyProfile,
   NumerologyRules,
+  RecordedSettings,
   RashifalAnswer,
   RashifalAnswers,
   RashifalSealed,
@@ -2177,6 +2178,23 @@ function theNumerology(ctx: Context): string {
 }
 
 void theNumerology;
+
+// A stored baseline snapshot translated into the contexts to open.
+function theRecordedSettings(ctx: Context): string {
+  const translated: RecordedSettings = ctx.recordedSettings({ ayanamsaId: 1, houseSystem: 'placidus' });
+  const fromText = ctx.recordedSettings('{"siddhanta": "surya"}');
+  // @ts-expect-error a snapshot is the stored record or its JSON
+  ctx.recordedSettings(1);
+  return [
+    translated.natal.profile,
+    translated.kp.profile,
+    fromText.ephemeris ?? 'NONE',
+    translated.locale ?? 'NONE',
+    translated.notes.map((note) => note.field).join(','),
+  ].join();
+}
+
+void theRecordedSettings;
 
 // A rashifal week read all the way down: a sign's gochar, Saturn, an event's
 // hit and the baseline's score.

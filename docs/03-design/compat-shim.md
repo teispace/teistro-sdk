@@ -1,6 +1,7 @@
 # The compatibility shim: the baseline engine's inputs, forwarded
 
-Status: `design`, 2026-10-28. Nothing below is built. The last "not met"
+Status: `design`, 2026-10-28; items 1 to 3 (§7) built the same day, the
+rest not. The last "not met"
 row of the parity checklist
 ([`02-parity-requirements.md`](../01-research/baseline-engine/02-parity-requirements.md),
 "migration guide") and the Phase 9 deliverable "the baseline migration
@@ -291,15 +292,21 @@ shim would be a fifth. Instead there is one:
   them explicitly: the ayanamsha number is the `ayanamsha` member's
   `swiss_mode` (`catalogue/ayanamsha.yaml`). Where no attribute exists,
   the table lists the values. The 18 dasha systems' stored spellings are
-  listed one by one, because one of them is spelt differently in the SDK
-  (Padanadhamsa), so a case rule would have mapped it wrongly.
+  listed one by one (`DASHA_SYSTEMS`). Built, every one of them turned
+  out to be its SDK key lower-cased, Padanadhamsa included, so a case
+  rule would have mapped them; they stay listed so a spelling the SDK
+  changes cannot be mapped wrongly in silence.
 - **The function** is `recorded(snapshot) -> Result<Recorded, Refused>`.
   It folds the rows over the `conformance-baseline` profile. A stored
   field the table does not know is refused, never skipped, and so is a
   stored value it does not know.
-- **The boundary** carries it as one JSON-in, JSON-out entry, generated
-  into every binding as `recordedSettings(snapshot)` (Node, wasm),
-  `recorded_settings` (Python, Rust), `recordedSettings` (Dart, Java).
+- **The boundary** carries it as one JSON-in, JSON-out entry,
+  `ts_recorded_settings(context, snapshot_json, out_json)`, generated
+  into every binding and wrapped as the context's `recordedSettings(snapshot)`
+  (Node, wasm, Dart, Java) and `recorded_settings` (Python); Rust calls
+  `recorded` itself. It hangs off a context, as every JSON entry does, so
+  a refusal crosses whole as the context's error record (field and crux);
+  the translation reads none of the context's settings.
 - **The page** is generated: `cargo xtask compat` renders the table into
   the generated map (§4.4), and the guide links that page instead of
   carrying the table. The guide's §5.1 knob table already comes from the
@@ -313,10 +320,11 @@ shim would be a fifth. Instead there is one:
   `CONVENTIONS.same` is deleted and the runner calls `recorded` on the
   default snapshot instead, so the A/B and the shim cannot drift apart.
 
-`Recorded` holds `profile`, then `natal` and `kp`, each a settings
-patch over its profile. It also holds `ephemeris`, a required
-entry such as `'SURYA_SIDDHANTA'` or none, `locale` (a locale tag or
-none) and `notes`, the stored fields read and deliberately ignored.
+`Recorded` holds `natal` and `kp`, each an `Opening`: a profile and a
+settings patch over it, which `Opening::resolve` resolves. It also holds
+`ephemeris`, a required entry such as `'SURYA_SIDDHANTA'` or none,
+`locale` (a locale tag or none) and `notes`, the stored fields read and
+deliberately ignored.
 
 ### 4.2 The rows
 
@@ -325,11 +333,13 @@ In the snapshot's own terms, as the inventory lists the fields:
 | stored field | stored values | becomes |
 |---|---|---|
 | the ayanamsha's number | any of the 47 | `frame.ayanamsha`, the member whose `swiss_mode` is the number. A number no member has is refused |
-| the zodiac | sidereal, tropical | `frame.zodiac` |
+| the zodiac | sidereal | `frame.zodiac`, the profile's own |
+| | tropical | a note: the recording engine casts the same sidereal chart under it. Measured: the corpus's four tropical variants equal their default charts field for field (positions, houses, vargas) |
 | the node | mean, true | `frame.node` |
 | topocentric | true, false | `frame.centre`: `TOPOCENTRIC`, `GEOCENTRIC` |
-| the house system | the 22 names | `houses.placement_system`, the member whose key, lower-cased with hyphens, is the name. The chalit stays `VEHLOW` (registry entry 14) |
-| the siddhanta | drik, surya | drik: the profile's own. surya: `frame.siddhanta` `SURYA` with bija `NONE`, and `ephemeris: 'SURYA_SIDDHANTA'` |
+| the house system | the 22 names | `houses.placement_system`, the member whose key, lower-cased with hyphens, is the name. The chalit stays `VEHLOW` (registry entry 14). Any system but the profile's whole-sign also sets `houses.polar_policy` `FALLBACK_PORPHYRY`: the recording engine divides an undefined polar arc as Porphyry does, silently, as its Tromsø Placidus variant shows (reproduced to 4e-8 degrees) |
+| the siddhanta | drik | the profile's own |
+| | surya | `frame.siddhanta` `SURYA` with bija `NONE`, the modern sunrise and the text's planets; `frame.centre` `GEOCENTRIC` and `frame.ayanamsha` `SURYASIDDHANTA`, whatever the snapshot's centre and ayanamsha say; and `ephemeris: 'SURYA_SIDDHANTA'`. Each is what the recording computes, measured on its two surya variants: its sunrise is the modern one (reproduced to 1.5e-5 days), its places are the text's own zodiac (1.3 to 5.1 degrees off under Lahiri, 0.04 to 3.7 under the text's) and geocentric (the text has no observer) |
 | the Surya bija | true | refused (C777) |
 | the sunrise mode | apparent-refraction | the profile's own, `UPPER_LIMB_REFRACTION` (registry entry 12) |
 | | geometric | `day.sunrise` `CENTRE_NO_REFRACTION` |
@@ -514,9 +524,9 @@ In order. Each is one pull request.
 
 | # | item | touches | estimate |
 |---|---|---|---|
-| 1 | `teistro_core::settings::recorded`: `ROWS`, `recorded()`, `Recorded`, `Refused`; unit tests over every row; crux rows C776 and C777 | core, cruxes | 1 day |
-| 2 | the corpus founded through the translation: the variant fixtures read under `recorded(canonical)`, the ad hoc patches deleted, the `default` snapshot held to `conformance-baseline` knob by knob | sdk tests, ephemeris-kit | 1 day |
-| 3 | the boundary: one JSON entry through the IDL, generated `recordedSettings` in Node, wasm, Python, Dart, Java; a parity example | ffi, idl, bindings | 1 day |
+| 1 | built: `teistro_core::settings::recorded`: `ROWS`, `recorded()`, `Recorded`, `Refused`; unit tests over every row; crux rows C776 and C777 | core, cruxes | 1 day |
+| 2 | built: the corpus founded through the translation (`ephemeris_kit::variants`, held on every built-in tier with its measured divergences), the ad hoc patches deleted, the `default` snapshot held to `conformance-baseline` knob by knob | sdk tests, ephemeris-kit | 1 day |
+| 3 | built: the boundary, one JSON entry through the IDL, generated into every binding and wrapped as the context's `recordedSettings` in Node, wasm, Dart and Java and `recorded_settings` in Python; the parity example is not written | ffi, idl, bindings | 1 day |
 | 4 | `@teistro/compat` skeleton: `compat()`, the context cache, the birth record (§3.7), `CompatRefused`, `calls()`, README with the end (§6.3), typecheck consumer | bindings/node/compat | 1 day |
 | 5 | the A/B's SDK side moved into the package (`chart`, `full`, `vargas`, `yogas`, `strength`, `dashas`, `day`, `month`, `milan`, `varsha`, `kp`, `gochar`, `sadeSati`, `batch`); `CONVENTIONS.same` replaced by `recordedSettings`; `agree.test.mjs` | node bench, compat | 1 day |
 | 6 | the remaining forward and compose rows of §3, with `facts()` moved from `ab-agree.mjs` | compat | 2 days |
@@ -538,10 +548,21 @@ zero unmapped entry points.
   with the warning. If so, its default should be the natal context with
   `anyAyanamsha`. Settle it by reading the application's KP call when
   item 5 is built.
-- **The surya variant.** The corpus records a Surya Siddhanta profile
-  without the bija. Whether the SDK's `SURYA` with bija `NONE` reproduces
-  it within the golden tolerance is not yet measured. Item 2 measures it,
-  and a miss becomes a registered difference rather than a patch.
+- **The surya variant (measured: it does not reproduce).** Under the
+  §4.2 row the sunrise and sunset reproduce to 1.5e-5 days and the node
+  to 0.015 degrees, but the star planets stand 0.04 to 0.95 degrees from
+  the recording, the Moon 3.5 and 3.7, the lagna 0.66 and 1.37, and the
+  speeds up to 1.75 degrees a day; the recording writes no latitude or
+  distance (0). The recording engine's Surya Siddhanta is a different
+  reading of the text, not a different setting, so the miss is
+  registered (`surya-text-theory` in `ephemeris_kit::variants::KNOWN`)
+  rather than patched. Open: which reading the application's stored
+  surya charts should keep. A consumer migrating them sees the SDK's
+  reading, and its own stored positions differ by the figures above.
+- **The stored ayanamsha's spelling.** The rows read `ayanamsaId` as the
+  number the recording engine's settings hold. The application's own
+  rows were not read, so whether it stores that number or a key of its
+  own is open until item 5 reads its stored charts.
 - **Locale pairings.** The baseline lets a language be paired with
   another script, such as Nepali in Latin script. The SDK ships four
   locales. Whether any stored snapshot actually holds another pairing is

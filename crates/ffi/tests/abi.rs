@@ -9282,6 +9282,53 @@ fn a_child_is_named_across_the_boundary() {
         );
         assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
     }
+/// A stored baseline snapshot crosses as the translation reads it, the
+/// translation as its own JSON; a refusal names the stored field under
+/// `snapshot`, a decision with its crux as the hint
+/// (`03-design/compat-shim.md` §4).
+#[test]
+fn a_stored_baseline_snapshot_crosses_as_the_translation_reads_it() {
+    use teistro_core::settings::recorded::{Snapshot, recorded};
+
+    let ctx = Ctx::defaults();
+    let entry = teistro_ffi::recorded::ts_recorded_settings;
+    let snapshot = r#"{"ayanamsaId": 3, "houseSystem": "placidus", "locale": {"language": "ne", "script": "Deva"}}"#;
+    let crossed = entry_json(entry, &ctx, snapshot).unwrap();
+    let kernel = recorded(&Snapshot::from_json(snapshot).unwrap()).unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    assert_eq!(read["locale"], "ne-Deva-NP");
+
+    for (snapshot, status, field, hint) in [
+        (
+            r#"{"suryaBija": true}"#,
+            Status::Unsupported,
+            "snapshot.suryaBija",
+            Some("C777"),
+        ),
+        (
+            r#"{"nodeType": "osculating"}"#,
+            Status::InvalidArg,
+            "snapshot.nodeType",
+            Some("03-design/compat-shim.md §4.2"),
+        ),
+        ("[1]", Status::InvalidArg, "snapshot", None),
+    ] {
+        assert_eq!(
+            entry_json(entry, &ctx, snapshot).unwrap_err(),
+            status,
+            "{snapshot}"
+        );
+        let record = ctx.last_error();
+        assert_eq!(record.2.as_deref(), Some(field), "{snapshot}");
+        assert_eq!(record.3.as_deref(), hint, "{snapshot}");
+    }
+    // A null snapshot is named, and nothing is written.
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a null snapshot the entry refuses, a valid slot.
+    let status = unsafe { entry(ctx.handle, core::ptr::null(), &raw mut json) };
+    assert_eq!(status, Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("snapshot_json"));
 }
 
 /// Prashna crosses: a request's `prashna_json` answers every chart as the

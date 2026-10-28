@@ -2197,6 +2197,33 @@ export interface BaselineNumerology {
   readonly chaldeanDestiny: Reduction;
 }
 
+/** A context to open: a profile and the settings patch over it. */
+export interface RecordedOpening {
+  readonly profile: string;
+  readonly settings: Readonly<Record<string, unknown>>;
+}
+
+/** A stored field read and set aside: nothing computes from it. */
+export interface RecordedNote {
+  readonly field: string;
+  readonly value: unknown;
+  readonly why: string;
+}
+
+/** A stored baseline settings snapshot, translated. */
+export interface RecordedSettings {
+  /** The chart's context. */
+  readonly natal: RecordedOpening;
+  /** The KP context, on the natal frame. */
+  readonly kp: RecordedOpening;
+  /** The ephemeris the natal chain needs at its front, when it needs one. */
+  readonly ephemeris: 'SURYA_SIDDHANTA' | null;
+  /** The locale the stored language is, when one is stored. */
+  readonly locale: string | null;
+  /** Every field read and set aside, in table order. */
+  readonly notes: readonly RecordedNote[];
+}
+
 /** Everything numerology says of a name and a birth date. */
 export interface NumerologyProfile {
   readonly pythagoreanName: NameNumber;
@@ -8134,6 +8161,13 @@ export declare class Context {
   readonly settingsJson: string;
   /** The SHA-256 of the canonical settings, in hex. */
   readonly settingsHash: string;
+  /**
+   * A stored baseline settings snapshot translated into what a context
+   * opens with; reads none of this context's settings. A field the
+   * translation does not know is `INVALID_ARG`, one it decided not to
+   * carry `UNSUPPORTED`, each on `snapshot.<field>`.
+   */
+  recordedSettings(snapshot: Readonly<Record<string, unknown>> | string): RecordedSettings;
   /**
    * Positions over a grid, completed into the frame asked for.
    *

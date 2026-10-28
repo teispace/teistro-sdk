@@ -1560,6 +1560,28 @@ public final class BindingTest {
                 same("naming.book.names[0].devanagari", refusal(() -> sky.naming().load(
                         Book.of(Map.of("names", List.of(Map.of("devanagari", "Ram")))))).field(),
                         "a name with no Devanagari refuses the book");
+        tests.put("a stored baseline settings snapshot translates into the contexts it opens", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    .ephemeris(Ephemeris.NONE).build())) {
+                Map<?, ?> translated = (Map<?, ?>) sky.recordedSettings(
+                        Map.of("ayanamsaId", 3, "houseSystem", "placidus", "engineVersion", "1.8.0"));
+                Map<?, ?> natal = (Map<?, ?>) translated.get("natal");
+                same("conformance-baseline", natal.get("profile"), "the natal profile");
+                same("kp-default", ((Map<?, ?>) translated.get("kp")).get("profile"), "the KP profile");
+                Map<?, ?> settings = (Map<?, ?>) natal.get("settings");
+                same("PLACIDUS", ((Map<?, ?>) settings.get("houses")).get("placement_system"), "the house system");
+                check(translated.get("ephemeris") == null && translated.get("locale") == null,
+                        "no ephemeris and no locale asked");
+                same("engineVersion", ((Map<?, ?>) ((List<?>) translated.get("notes")).get(0)).get("field"),
+                        "the version, set aside");
+                same("SURYA_SIDDHANTA", ((Map<?, ?>) sky.recordedSettings(Map.of("siddhanta", "surya")))
+                        .get("ephemeris"), "the text's ephemeris");
+                TeistroException bija = refusal(() -> sky.recordedSettings(Map.of("suryaBija", true)));
+                same(Status.UNSUPPORTED, bija.status(), "a decision is unsupported");
+                same("snapshot.suryaBija", bija.field(), "naming its field");
+                same("C777", bija.hint(), "and its crux");
+                same("snapshot.nodeType", refusal(() -> sky.recordedSettings(Map.of("nodeType", "osculating")))
+                        .field(), "a value the table lacks names its field");
             }
         });
 

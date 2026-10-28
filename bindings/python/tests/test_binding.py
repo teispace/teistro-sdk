@@ -3753,6 +3753,33 @@ class AnEngine(WithLibrary):
                 with self.assertRaises(TeistroError) as caught:
                     run()
                 self.assertEqual(caught.exception.field, field)
+    def test_a_stored_baseline_settings_snapshot_translates_into_the_contexts_it_opens(self) -> None:
+        """The baseline engine's own fields read into a profile and a patch
+        a context opens with; a decision refused with its crux
+        (`03-design/compat-shim.md` §4)."""
+        with self.teistro.context(test_provider=True) as ctx:
+            snapshot = {"ayanamsaId": 3, "houseSystem": "placidus", "engineVersion": "1.8.0"}
+            translated = ctx.recorded_settings(snapshot)
+            self.assertEqual((translated["natal"]["profile"], translated["kp"]["profile"]), ("conformance-baseline", "kp-default"))
+            self.assertEqual(translated["natal"]["settings"]["houses"]["placement_system"], "PLACIDUS")
+            self.assertEqual((translated["ephemeris"], translated["locale"]), (None, None))
+            self.assertEqual([note["field"] for note in translated["notes"]], ["engineVersion"])
+            # The same snapshot as its JSON reads the same.
+            self.assertEqual(ctx.recorded_settings(json.dumps(snapshot)), translated)
+            self.assertEqual(ctx.recorded_settings({"siddhanta": "surya"})["ephemeris"], "SURYA_SIDDHANTA")
+            # The translation opens a context as it is.
+            natal = translated["natal"]
+            with self.teistro.context(test_provider=True, profile=natal["profile"], settings=natal["settings"]) as opened:
+                self.assertEqual(opened.profile, "conformance-baseline")
+            with self.assertRaises(TeistroError) as caught:
+                ctx.recorded_settings({"suryaBija": True})
+            refused = caught.exception
+            self.assertEqual((refused.status, refused.field, refused.hint), (Status.UNSUPPORTED, "snapshot.suryaBija", "C777"))
+            with self.assertRaises(TeistroError) as caught:
+                ctx.recorded_settings({"nodeType": "osculating"})
+            self.assertEqual(caught.exception.field, "snapshot.nodeType")
+            with self.assertRaises(TypeError):
+                ctx.recorded_settings([1])  # type: ignore[arg-type]
 
     def test_a_rule_set_the_sdk_ships_whole_is_asked_by_its_name(self) -> None:
         """`"BASELINE"` names every reading the baseline engine takes, and
