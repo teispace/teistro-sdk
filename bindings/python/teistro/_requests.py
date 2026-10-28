@@ -3586,11 +3586,12 @@ class GeoPlace(TypedDict, total=False):
     """East positive."""
 
 
-DeerghaBeyond: TypeAlias = Literal['THIRTEENTH', 'SEVENTH']
+DeerghaBeyond: TypeAlias = Literal['THIRTEENTH', 'SEVENTH', 'TENTH_OR_SAME_STAR']
 """How far the groom's star must stand from the bride's for Sthree-Dheergham (C272).
 
 `THIRTEENTH`: Beyond the 13th (p. 72).
 `SEVENTH`: Beyond the 7th, as "some writers hold".
+`TENTH_OR_SAME_STAR`: Beyond the 10th, and the bride's own star agreeing as a whole round: the recording engine's count, which no text read gives (C779).
 """
 
 

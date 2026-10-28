@@ -3448,8 +3448,9 @@ export interface GeoPlace {
  *
  * `THIRTEENTH`: Beyond the 13th (p. 72).
  * `SEVENTH`: Beyond the 7th, as "some writers hold".
+ * `TENTH_OR_SAME_STAR`: Beyond the 10th, and the bride's own star agreeing as a whole round: the recording engine's count, which no text read gives (C779).
  */
-export type DeerghaBeyond = 'THIRTEENTH' | 'SEVENTH';
+export type DeerghaBeyond = 'THIRTEENTH' | 'SEVENTH' | 'TENTH_OR_SAME_STAR';
 
 /**
  * Which friendship of the lords agrees on Rasyadhipathi and lifts by the p. 76 exception (C273).

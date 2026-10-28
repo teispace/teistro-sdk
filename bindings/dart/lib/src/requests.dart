@@ -4624,7 +4624,9 @@ enum DeerghaBeyond implements _Keyed {
   /// Beyond the 13th (p. 72).
   thirteenth('THIRTEENTH'),
   /// Beyond the 7th, as "some writers hold".
-  seventh('SEVENTH');
+  seventh('SEVENTH'),
+  /// Beyond the 10th, and the bride's own star agreeing as a whole round: the recording engine's count, which no text read gives (C779).
+  tenthOrSameStar('TENTH_OR_SAME_STAR');
 
   const DeerghaBeyond(this.key);
 
