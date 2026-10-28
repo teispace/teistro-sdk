@@ -314,6 +314,8 @@ compared. The families, their units and their tolerances:
 | `koota`, `porutham` | each koota's points and the total; Rajju, Vedha, Mahendra and Stree-deergha | exact | — |
 | `office` | the year lord, the five office-bearers, the muntha's sign | exact | — |
 | `kpLord` | every cusp's and graha's sign, star, sub and sub-sub lord | exact | — |
+| `kpSignificator` | each house's four levels (planets in the occupants' stars, the occupants, planets in the lord's star, the lord), each as a set of the nine grahas; the baseline counts an intercepted sign's lord into the last two levels, the SDK reports the sign and not its lord (crux C154) | exact | — |
+| `kpRuler` | the lagna's and the Moon's sign and star lords and the day's lord, each by its slot; the sub lords are `kpLord`'s | exact | — |
 | `house` | a transit's house from the Moon | exact | — |
 
 A continuous family reports the median and the largest difference and the

@@ -41,11 +41,22 @@ export const FAMILIES = {
   porutham: { kind: 'category', what: 'whether Rajju, Vedha, Mahendra and Stree-deergha agree' },
   office: { kind: 'category', what: 'the varshaphala\'s muntha sign, its five office-bearers and its year lord' },
   kpLord: { kind: 'category', what: 'the sign, star, sub and sub-sub lords of each cusp and graha' },
+  kpSignificator: { kind: 'category', what: 'each house\'s four significator levels, each a set of the nine grahas' },
+  kpRuler: { kind: 'category', what: 'the ruling planets: the lagna\'s and the Moon\'s sign and star lords, and the day\'s lord' },
   house: { kind: 'category', what: 'the house a transit stands in, from the Moon' },
 };
 
 /** The grahas both sides place, in the SDK's order, and the lagna. */
 const GRAHAS = ['SUN', 'MOON', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN', 'RAHU', 'KETU'];
+
+/** A KP house's four significator levels, the strongest first. */
+export const SIGNIFICATOR_LEVELS = ['inOccupantsStars', 'occupants', 'inLordsStar', 'lord'];
+
+/** The ruling planets both sides name, each by why it rules. */
+export const RULER_SLOTS = ['LAGNA_SIGN', 'LAGNA_STAR', 'MOON_SIGN', 'MOON_STAR', 'DAY_LORD'];
+
+/** A level's grahas as one comparable value: the nine's, in their order. */
+export const grahaSet = (grahas) => GRAHAS.filter((g) => grahas.includes(g)).join(',');
 
 /** A key's last part: `graha.SUN` is `SUN`. */
 const bare = (key) => key.slice(key.indexOf('.') + 1);
@@ -235,6 +246,13 @@ export function sdkFacts(request, answer, input, joined) {
       ];
       for (const c of answer.kp.chart.cusps) out.push([`longitude/cusp/${c.house}`, c.longitude / KP_UNIT], ...lords(`cusp/${c.house}`, c.lords));
       for (const p of answer.kp.chart.planets) out.push([`longitude/kp/${bare(p.graha)}`, p.longitude / KP_UNIT], ...lords(bare(p.graha), p.lords));
+      for (const h of answer.kp.significators.houses) {
+        const levels = [h.inOccupantsStars, h.occupants, h.inLordsStar, [h.lord]];
+        levels.forEach((level, n) => out.push([`kpSignificator/${h.house}/${SIGNIFICATOR_LEVELS[n]}`, grahaSet(level.map(bare))]));
+      }
+      for (const r of answer.kp.ruling.rulers) {
+        for (const { kind } of r.reasons) if (RULER_SLOTS.includes(kind)) out.push([`kpRuler/${kind}`, bare(r.graha)]);
+      }
       return out;
     }
     case 'gochar': {
