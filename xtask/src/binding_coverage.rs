@@ -4,7 +4,7 @@
 //! [`VARIABLE`] names a directory, read into the crates' record.
 //!
 //! Three tools write LCOV, whose `SF:` opens a file and whose `LF`/`LH`
-//! and `BRF`/`BRH` count its lines and branches; JaCoCo writes XML whose
+//! and `BRF`/`BRH` count its lines and branches; `JaCoCo` writes XML whose
 //! report-level `LINE` and `BRANCH` counters are its last of each type.
 //! Each report sits beside a `.tool` file naming the tool and its version
 //! that counted it, since each counts its own way.
@@ -62,19 +62,33 @@ pub(crate) fn name_tool(
     .unwrap_or_default()
     .trim()
     .to_owned();
-    if !out.status.success() || said.is_empty() {
-        return Err(format!("`{name}` did not say its version"));
-    }
+    let version = version_in(&said).filter(|_| out.status.success());
+    let Some(version) = version else {
+        return Err(format!("`{name}` did not say its version: `{said}`"));
+    };
     let file = dir.join(format!("{binding}.tool"));
-    fs::write(&file, format!("{name} {said}\n")).map_err(|e| format!("{}: {e}", file.display()))
+    fs::write(&file, format!("{name} {version}\n")).map_err(|e| format!("{}: {e}", file.display()))
 }
 
-/// JaCoCo's pin: its version and each jar's SHA-256 and download.
+/// The first dotted version a tool's banner names, its `v` dropped:
+/// `26.12.0` of `v26.12.0`, `3.13.5` of `Dart SDK version: 3.13.5 (stable)`.
+fn version_in(said: &str) -> Option<&str> {
+    said.split(|c: char| c.is_whitespace() || c == ',')
+        .map(|word| word.trim_start_matches('v'))
+        .find(|word| {
+            word.contains('.')
+                && word
+                    .split('.')
+                    .all(|part| !part.is_empty() && part.bytes().all(|b| b.is_ascii_digit()))
+        })
+}
+
+/// `JaCoCo`'s pin: its version and each jar's SHA-256 and download.
 const JACOCO: &str = "xtask/jacoco.txt";
 /// Where the pinned jars are kept once fetched.
 const JACOCO_JARS: &str = "target/jacoco";
 
-/// The pinned JaCoCo, fetched and verified, and the directory its report
+/// The pinned `JaCoCo`, fetched and verified, and the directory its report
 /// goes to.
 pub(crate) struct Jacoco {
     agent: PathBuf,
@@ -95,7 +109,7 @@ impl Jacoco {
         let (version, jars) = pinned(&pin)?;
         let store = root.join(JACOCO_JARS);
         fs::create_dir_all(&store).map_err(|e| format!("{}: {e}", store.display()))?;
-        let mut fetch = |role: &str| -> Result<PathBuf, String> {
+        let fetch = |role: &str| -> Result<PathBuf, String> {
             let (sha256, url) = jars
                 .get(role)
                 .ok_or(format!("{JACOCO} pins no `{role}` jar"))?;
@@ -174,8 +188,11 @@ impl Jacoco {
     }
 }
 
-/// The pin's version and each role's SHA-256 and download.
-fn pinned(text: &str) -> Result<(String, BTreeMap<String, (String, String)>), String> {
+/// The pin's version, and each role's SHA-256 and download.
+type Pin = (String, BTreeMap<String, (String, String)>);
+
+/// Reads the pin, refusing a line that is neither its version nor a jar.
+fn pinned(text: &str) -> Result<Pin, String> {
     let mut version = None;
     let mut jars = BTreeMap::new();
     for line in text.lines().map(str::trim) {
@@ -305,44 +322,81 @@ pub(crate) fn measured(dir: &Path) -> Result<BTreeMap<String, Measured>, String>
 
 /// An LCOV report's lines and branches over the files whose path holds
 /// `layer` and no test directory; no branch at all is none measured.
+///
+/// A file's branches are its `BRF`/`BRH` totals, or, where a tool writes
+/// only the branches themselves (Dart's), its `BRDA` records: one each,
+/// taken when its count is a number above zero.
 fn lcov(text: &str, layer: &str) -> Result<(Counts, Option<Counts>), String> {
-    let (mut lines, mut branches, mut any_branch) = (Counts::default(), Counts::default(), false);
-    let mut counted = false;
+    let mut lines = Counts::default();
+    let mut branches: Option<Counts> = None;
+    let mut file = File::default();
     for line in text.lines().map(str::trim) {
         if let Some(path) = line.strip_prefix("SF:") {
+            file.close(&mut branches);
             let path = path.replace('\\', "/");
-            counted = path.contains(layer) && !path.contains("/test");
+            file = File {
+                counted: path.contains(layer) && !path.contains("/test"),
+                ..File::default()
+            };
             continue;
         }
         let Some((key, value)) = line.split_once(':') else {
             continue;
         };
-        if !counted || !matches!(key, "LF" | "LH" | "BRF" | "BRH") {
+        if !file.counted {
             continue;
         }
-        let value: u64 = value
-            .parse()
-            .map_err(|_| format!("`{line}` is not a count"))?;
+        let count = || -> Result<u64, String> {
+            value
+                .parse()
+                .map_err(|_| format!("`{line}` is not a count"))
+        };
         match key {
-            "LF" => lines.count += value,
-            "LH" => lines.covered += value,
-            "BRF" => {
-                branches.count += value;
-                any_branch = true;
+            "LF" => lines.count += count()?,
+            "LH" => lines.covered += count()?,
+            "BRF" => file.totals.get_or_insert_with(Counts::default).count += count()?,
+            "BRH" => file.totals.get_or_insert_with(Counts::default).covered += count()?,
+            "BRDA" => {
+                let taken = value.rsplit(',').next().unwrap_or("-");
+                file.records.count += 1;
+                file.records.covered += u64::from(taken.parse::<u64>().is_ok_and(|n| n > 0));
             }
-            _ => branches.covered += value,
+            _ => {}
         }
     }
-    if lines.covered > lines.count || branches.covered > branches.count {
+    file.close(&mut branches);
+    let over = |c: Counts| c.covered > c.count;
+    if over(lines) || branches.is_some_and(over) {
         return Err(String::from("more covered than counted"));
     }
-    Ok((
-        lines,
-        (any_branch && branches.count > 0).then_some(branches),
-    ))
+    Ok((lines, branches.filter(|b| b.count > 0)))
 }
 
-/// A JaCoCo XML report's own `LINE` and `BRANCH` counters: the last of
+/// One LCOV file's branches as read so far.
+#[derive(Default)]
+struct File {
+    counted: bool,
+    totals: Option<Counts>,
+    records: Counts,
+}
+
+impl File {
+    /// Adds the file's branches to the report's: its totals where it gave
+    /// them, else its records, else none.
+    fn close(&self, branches: &mut Option<Counts>) {
+        if !self.counted {
+            return;
+        }
+        let file = self
+            .totals
+            .or((self.records.count > 0).then_some(self.records));
+        if let Some(file) = file {
+            branches.get_or_insert_with(Counts::default).add(file);
+        }
+    }
+}
+
+/// A `JaCoCo` XML report's own `LINE` and `BRANCH` counters: the last of
 /// each type, since the report's come after every package's.
 fn jacoco(text: &str) -> Result<(Counts, Option<Counts>), String> {
     let counter = |kind: &str| -> Result<Option<Counts>, String> {
@@ -501,6 +555,20 @@ mod tests {
 
     /// Only the layer's files count, never a test file, and a report with
     /// no branch record measures no branch.
+    #[test]
+    fn a_tool_s_version_is_read_from_its_banner() {
+        assert_eq!(version_in("v26.12.0"), Some("26.12.0"));
+        assert_eq!(
+            version_in("Dart SDK version: 3.13.5 (stable) (Tue Sep 29) on \"macos_arm64\""),
+            Some("3.13.5")
+        );
+        assert_eq!(
+            version_in("Coverage.py, version 7.16.2 with C extension"),
+            Some("7.16.2")
+        );
+        assert_eq!(version_in("no version here, v.1 or 1."), None);
+    }
+
     /// The pin names a version and each jar by its SHA-256.
     #[test]
     fn the_jacoco_pin_reads_its_version_and_jars() {
@@ -536,10 +604,17 @@ mod tests {
             lcov(text, "lib/").unwrap(),
             (counts(15, 13), Some(counts(4, 3)))
         );
+        let records = "SF:/w/lib/a.dart\nBRDA:1,0,0,5\nBRDA:1,0,1,0\nBRDA:2,0,0,-\nLF:3\nLH:2\n\
+                       SF:/w/lib/b.dart\nBRDA:9,0,0,1\nBRF:4\nBRH:3\nLF:1\nLH:1\n";
+        assert_eq!(
+            lcov(records, "lib/").unwrap(),
+            (counts(4, 3), Some(counts(7, 4)))
+        );
         let lines_only = "SF:/w/lib/a.dart\nDA:1,1\nLF:3\nLH:2\nend_of_record\n";
         assert_eq!(lcov(lines_only, "lib/").unwrap(), (counts(3, 2), None));
         assert!(lcov("SF:/w/lib/a.js\nLF:x\n", "lib/").is_err());
         assert!(lcov("SF:/w/lib/a.js\nLF:1\nLH:2\n", "lib/").is_err());
+        assert!(lcov("SF:/w/lib/a.js\nBRF:1\nBRH:2\n", "lib/").is_err());
     }
 
     /// The report's own counters are the last of each type.
@@ -678,7 +753,7 @@ mod tests {
         );
         assert_eq!(raised(&old, &run)["python"].lines, 66);
         // Java's floor fell only by a new tool's count, which re-bases it.
-        assert!(lowered(&old, &floors).is_empty());
+        assert_eq!(lowered(&old, &floors), Vec::<String>::new());
         let fell: BTreeMap<String, Floors> = [(
             "node".into(),
             Floors {
@@ -786,6 +861,6 @@ mod tests {
             .into_iter()
             .filter(|(name, _)| name == "node")
             .collect();
-        assert!(findings(&node, &at).is_empty());
+        assert_eq!(findings(&node, &at), Vec::<String>::new());
     }
 }

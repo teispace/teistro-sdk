@@ -1,6 +1,6 @@
 # Binding coverage: each binding's own layer, measured and floored
 
-Status: `design`, 2026-10-28. Derives from the quality bar's coverage row
+Status: `built`, 2026-10-28 (items 1 to 6; the first record comes from verify's run, since its tools' versions are the floors'). Derives from the quality bar's coverage row
 ([`05-testing/01-quality-bar.md`](../05-testing/01-quality-bar.md),
 "coverage floors"), whose **not yet enforced** half this closes: "80% on
 binding ergonomic layers". The crates' half is built

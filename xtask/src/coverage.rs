@@ -130,7 +130,7 @@ pub(crate) struct Counts {
 }
 
 impl Counts {
-    fn add(&mut self, other: Counts) {
+    pub(crate) fn add(&mut self, other: Counts) {
         self.count += other.count;
         self.covered += other.covered;
     }
