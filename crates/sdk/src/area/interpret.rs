@@ -57,7 +57,11 @@ impl<'a> InterpretArea<'a> {
     /// A document a rule cannot read: one without its graha states, naming
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn placements(self, document: &Document) -> Result<Plan, Error> {
-        Ok(placements(&RuleInputs::of(document)?.chart))
+        Ok(placements(
+            &RuleInputs::of(document)?
+                .under(self.context.settings())
+                .chart,
+        ))
     }
 
     /// Where each of the nine grahas stands, to the degree.
@@ -71,7 +75,11 @@ impl<'a> InterpretArea<'a> {
     /// A document a rule cannot read: one without its graha states, naming
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn positions(self, document: &Document) -> Result<Plan, Error> {
-        Ok(positions(&RuleInputs::of(document)?.chart))
+        Ok(positions(
+            &RuleInputs::of(document)?
+                .under(self.context.settings())
+                .chart,
+        ))
     }
 
     /// What each of the nine grahas **is** where it stands: its dignity,
@@ -88,7 +96,12 @@ impl<'a> InterpretArea<'a> {
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn conditions(self, document: &Document) -> Result<Plan, Error> {
         let engine = self.context.locale_engine();
-        Ok(conditions(&RuleInputs::of(document)?.chart, &*engine))
+        Ok(conditions(
+            &RuleInputs::of(document)?
+                .under(self.context.settings())
+                .chart,
+            &*engine,
+        ))
     }
 
     /// Which chara karaka each of the nine grahas holds, under the
@@ -105,7 +118,11 @@ impl<'a> InterpretArea<'a> {
     /// A document a rule cannot read: one without its graha states, naming
     /// the section to ask for ([`RuleInputs::of`]).
     pub fn karakas(self, document: &Document) -> Result<Plan, Error> {
-        Ok(karakas(&RuleInputs::of(document)?.chart))
+        Ok(karakas(
+            &RuleInputs::of(document)?
+                .under(self.context.settings())
+                .chart,
+        ))
     }
 
     /// Where the placement system and the chalit put a graha in different
@@ -142,7 +159,7 @@ impl<'a> InterpretArea<'a> {
     pub fn phala(self, document: &Document) -> Result<Plan, Error> {
         // The states first, as every composer over `RuleInputs` refuses a
         // bare document for those.
-        let inputs = RuleInputs::of(document)?;
+        let inputs = RuleInputs::of(document)?.under(self.context.settings());
         if document.panchanga.is_none() {
             return Err(Error::invalid_arg(
                 "the document carries no panchanga, whose limbs the phala composer says; ask \
@@ -267,7 +284,9 @@ impl<'a> InterpretArea<'a> {
             )
             .with_field("ashtakavarga"));
         };
-        let chart = RuleInputs::of(document)?.chart;
+        let chart = RuleInputs::of(document)?
+            .under(self.context.settings())
+            .chart;
         Ok(say_ashtakavarga(reading, &chart))
     }
 
@@ -278,7 +297,9 @@ impl<'a> InterpretArea<'a> {
     ///
     /// A document without its panchanga, naming the section to ask for.
     pub fn panchanga(self, document: &Document) -> Result<Plan, Error> {
-        let chart = RuleInputs::of(document)?.chart;
+        let chart = RuleInputs::of(document)?
+            .under(self.context.settings())
+            .chart;
         if chart.panchanga.is_none() {
             return Err(Error::invalid_arg(
                 "the document carries no panchanga, which the panchanga composer says; ask for \

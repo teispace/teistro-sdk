@@ -587,6 +587,14 @@ knob!(
         Eight = "EIGHT" }
 );
 knob!(
+    /// Which karaka each rank carries when eight are counted (crux C101).
+    EightKarakaOrder { /// BPHS ch. 32 vv. 13 to 17: the Amatyakaraka, Bhratri, Matri, Pitri,
+        /// Putra, Gnati and Dara karakas in turn, the Darakaraka the least.
+        Parashara = "PARASHARA", /// The Pitrikaraka after the Darakaraka, the least: the recording
+        /// engine's naming, which every chart of its corpus reproduces.
+        PitrikarakaLast = "PITRIKARAKA_LAST" }
+);
+knob!(
     /// Which rule finds the Brahma graha, the planet the Sthira dasa starts
     /// from (BPHS ch. 46 vv. 170 to 173; crux C128).
     BrahmaRule { /// The verses: the lords of the 6th, 8th and 12th from the stronger

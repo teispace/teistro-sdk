@@ -12,6 +12,23 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The eight chara karakas named as the settings name them.**
+**Numbers:** every settings hash moves with the new knob. Under the root
+and every shipped profile but `conformance-baseline` no answer moves: they
+keep the verses' order. Under `conformance-baseline` (version 13) the
+least of eight karakas is the Pitrikaraka and the Putra, Gnati and Dara
+karakas move up one rank, wherever a context names them: the
+interpretation's karakas, a karaka's holder and the rules over a chart.
+- `jaimini.eight_karaka_order` (`PARASHARA`, the root's, BPHS ch. 32
+  vv. 13 to 17; `PITRIKARAKA_LAST`, the baseline engine's, crux C101).
+  The ranking is the sky's under either; the knob names its ranks.
+- `RuleInputs::under(settings)` names a document's karakas as a context's
+  settings do; every context path applies it.
+- `baseline_chara_karakas.rs`: every recorded birth whose ranking agrees
+  carries the recorded name on every graha under `conformance-baseline`,
+  and the verses' naming carries it on none. The migration guide's "no
+  knob" gap is closed.
+
 **The A/B compares KP's significators and ruling planets.**
 **Numbers:** none; a comparison, not a computation.
 - Two families join `kpLord` (`ab-baseline.md` §10): `kpSignificator`,

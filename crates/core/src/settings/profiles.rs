@@ -13,11 +13,11 @@ use super::knobs::{
     AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaBalaDivision, BhavaDig,
     BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
     DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap,
-    DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
-    GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords,
-    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents, MoonPaksha,
-    Naisargika, NaisargikaDivision, NakshatraScheme, Nathonnatha, Node, NodeAspects,
+    DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
+    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning,
+    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents,
+    MoonPaksha, Naisargika, NaisargikaDivision, NakshatraScheme, Nathonnatha, Node, NodeAspects,
     NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaStart,
     PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable, PushkaraBhaga,
     RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
@@ -167,6 +167,22 @@ fn kp_readers() -> Kp {
     }
 }
 
+/// The Jaimini readers: seven karakas, the verses' order and rules as read.
+fn jaimini() -> Jaimini {
+    Jaimini {
+        chara_karakas: CharaKarakas::Seven,
+        // The verses' order (BPHS ch. 32 vv. 13 to 17; crux C101).
+        eight_karaka_order: EightKarakaOrder::Parashara,
+        node_co_lordship: NodeCoLordship::None,
+        // BPHS ch. 46 vv. 170 to 173 as read; the translator's note is
+        // the knob's other value (`03-design/jaimini-significators.md`).
+        brahma: BrahmaRule::Verses,
+        // BPHS ch. 29 vv. 6 and 7 state the count and no move
+        // (`03-design/graha-arudhas.md`).
+        graha_arudha_exception: GrahaArudhaException::None,
+    }
+}
+
 /// The civil calendar, the lunar month and the year's names: the
 /// Surya Siddhanta's Jovian count (I.55), read as Nepal's committee reads
 /// it (C180, C184; `03-design/samvatsara-measured.md`).
@@ -302,16 +318,7 @@ pub fn root() -> Settings {
             ayurdaya_span: AyurdayaSpan::Strongest,
             ayurdaya_readings: AyurdayaReadings::Bphs,
         },
-        jaimini: Jaimini {
-            chara_karakas: CharaKarakas::Seven,
-            node_co_lordship: NodeCoLordship::None,
-            // BPHS ch. 46 vv. 170 to 173 as read; the translator's note is
-            // the knob's other value (`03-design/jaimini-significators.md`).
-            brahma: BrahmaRule::Verses,
-            // BPHS ch. 29 vv. 6 and 7 state the count and no move
-            // (`03-design/graha-arudhas.md`).
-            graha_arudha_exception: GrahaArudhaException::None,
-        },
+        jaimini: jaimini(),
         // Phaladeepika ch. 26 read whole: the nodes "like the Sun", and
         // "planets" obstructing (`03-design/gochar.md`, C136 and C137).
         gochar: Gochar {
@@ -781,6 +788,8 @@ fn conformance_baseline() -> Profile {
     // The engine ranks eight chara karakas: every profile of the corpus's
     // manifest records `chara_karaka: 8`.
     patch.jaimini.chara_karakas = Some(CharaKarakas::Eight);
+    // And names the eighth rank the Pitrikaraka (crux C101).
+    patch.jaimini.eight_karaka_order = Some(EightKarakaOrder::PitrikarakaLast);
     // The engine's KP ruling planets: seven, the sub lords too, and the
     // civil weekday's lord (cruxes C150, C151).
     patch.kp.ruling_count = Some(RulingCount::WithSubs);
@@ -801,7 +810,9 @@ fn conformance_baseline() -> Profile {
         // (cruxes C51, C53).
         // 12: the chara karakas became the engine's eight, and the KP ruling
         // planets its seven by the civil weekday (cruxes C150, C151).
-        version: 12,
+        // 13: the least of eight karakas became the engine's Pitrikaraka
+        // (crux C101).
+        version: 13,
         base: None,
         patch,
         sources: conformance_sources(),
@@ -867,6 +878,13 @@ fn conformance_sources() -> Vec<Citation> {
             Source::new(
                 "baseline-engine",
                 "recorded: the corpus's manifest names eight chara karakas under all thirteen of its profiles",
+            ),
+        ),
+        Citation::new(
+            "jaimini.eight_karaka_order",
+            Source::new(
+                "baseline-engine",
+                "recorded: the corpus names the least of eight karakas the Pitrikaraka, in every chart",
             ),
         ),
         Citation::new(

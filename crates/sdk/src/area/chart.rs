@@ -462,7 +462,7 @@ impl<'a> ChartArea<'a> {
         let readings = set.readings().readings();
         let mut answered = Vec::with_capacity(documents.len());
         for document in documents {
-            let inputs = RuleInputs::of(&document)?;
+            let inputs = RuleInputs::of(&document)?.under(self.context.settings());
             let lords = self.pada_lords_of(&document)?;
             let evaluator = inputs
                 .evaluator(readings)
@@ -933,7 +933,7 @@ impl<'a> ChartArea<'a> {
     ) -> Result<GrahaDasha, Error> {
         let settings = self.context.settings();
         let states = state(foundation, settings)?;
-        let karakas = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
+        let karakas = crate::rules_bridge::ruled(foundation, &states, settings)?;
         let lagna = karakas.lagna();
         let eight = settings.jaimini.chara_karakas == CharaKarakas::Eight;
         let lords = karakas
@@ -972,7 +972,7 @@ impl<'a> ChartArea<'a> {
     ) -> Result<GrahaDasha, Error> {
         let settings = self.context.settings();
         let states = state(foundation, settings)?;
-        let houses = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
+        let houses = crate::rules_bridge::ruled(foundation, &states, settings)?;
         let measure = settings.dasha.strongest_graha;
         let grahas: Vec<(Graha, teistro_core::house::House, f64)> = shadbala
             .grahas
@@ -1024,7 +1024,7 @@ impl<'a> ChartArea<'a> {
             _ => {
                 let shadbala = shadbala()?;
                 let states = state(foundation, settings)?;
-                let chart = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
+                let chart = crate::rules_bridge::ruled(foundation, &states, settings)?;
                 let givers: Vec<teistro_dasha::Giver> = lords
                     .iter()
                     .map(|&(graha, years)| teistro_dasha::Giver {
@@ -1094,7 +1094,7 @@ impl<'a> ChartArea<'a> {
         if whole.state.is_none() {
             whole = whole.with_state(state(foundation, settings)?);
         }
-        let inputs = crate::rules_bridge::RuleInputs::of(&whole)?;
+        let inputs = crate::rules_bridge::RuleInputs::of(&whole)?.under(settings);
         let evaluator = inputs.evaluator(teistro_rules::Readings::default());
         let readings = match settings.dasha.ayurdaya_readings {
             AyurdayaReadings::JatakaParijata => AyurdayaRules::PARIJATA,
@@ -1456,7 +1456,7 @@ impl<'a> ChartArea<'a> {
     ) -> Result<teistro_dasha::jaimini::JaiminiReading, Error> {
         let settings = self.context.settings();
         let states = state(foundation, settings)?;
-        let ruled = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
+        let ruled = crate::rules_bridge::ruled(foundation, &states, settings)?;
         let placed = |graha: Graha| ruled.placement(teistro_rules::Body::Graha(graha));
         let atmakaraka = holder(
             &ruled,
@@ -1496,7 +1496,7 @@ impl<'a> ChartArea<'a> {
     ) -> Result<Graha, Error> {
         let settings = self.context.settings();
         let states = state(foundation, settings)?;
-        let ruled = crate::rules_bridge::rule_chart(foundation, &states, None, None)?;
+        let ruled = crate::rules_bridge::ruled(foundation, &states, settings)?;
         holder(&ruled, settings.jaimini.chara_karakas, karaka)
     }
 
