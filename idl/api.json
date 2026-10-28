@@ -15260,7 +15260,7 @@
     },
     {
       "name": "ts_time_resolve",
-      "doc": "Resolves a civil date-time in a zone to a UTC instant under the\ncontext's daylight-saving and unknown-time policies, with the metadata\na stored chart keeps. An unknown zone is `UNSUPPORTED` with the nearest\nnames as the hint; a civil time inside a gap under the `error` policy\nis `INVALID_ARG` with the `DST_GAP` detail.",
+      "doc": "Resolves a civil date-time in a zone to a UTC instant under the\ncontext's daylight-saving and unknown-time policies, with the metadata\na stored chart keeps. An unknown zone is `INVALID_ARG` on the `zone`\nfield with the nearest names as the hint; a civil time inside a gap\nunder the `error` policy is `INVALID_ARG` with the `DST_GAP` detail.",
       "safety": "`context` must be a live handle; `civil` and `zone` valid for reads;\n`out_resolution` valid for a read of its `struct_size` and a write.",
       "params": [
         {

@@ -9516,9 +9516,9 @@ ts_status ts_chart_found(const ts_context * context, const ts_chart_request * re
 /**
  * Resolves a civil date-time in a zone to a UTC instant under the
  * context's daylight-saving and unknown-time policies, with the metadata
- * a stored chart keeps. An unknown zone is `UNSUPPORTED` with the nearest
- * names as the hint; a civil time inside a gap under the `error` policy
- * is `INVALID_ARG` with the `DST_GAP` detail.
+ * a stored chart keeps. An unknown zone is `INVALID_ARG` on the `zone`
+ * field with the nearest names as the hint; a civil time inside a gap
+ * under the `error` policy is `INVALID_ARG` with the `DST_GAP` detail.
  * Safety: `context` must be a live handle; `civil` and `zone` valid for reads;
  * `out_resolution` valid for a read of its `struct_size` and a write.
  */

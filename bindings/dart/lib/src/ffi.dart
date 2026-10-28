@@ -2214,9 +2214,9 @@ final class TeistroLibrary {
 
   /// Resolves a civil date-time in a zone to a UTC instant under the
   /// context's daylight-saving and unknown-time policies, with the metadata
-  /// a stored chart keeps. An unknown zone is `UNSUPPORTED` with the nearest
-  /// names as the hint; a civil time inside a gap under the `error` policy
-  /// is `INVALID_ARG` with the `DST_GAP` detail.
+  /// a stored chart keeps. An unknown zone is `INVALID_ARG` on the `zone`
+  /// field with the nearest names as the hint; a civil time inside a gap
+  /// under the `error` policy is `INVALID_ARG` with the `DST_GAP` detail.
   final TsTimeResolveDart ts_time_resolve;
 
   /// The civil date-time of a UTC instant in a zone, in a calendar, with
@@ -5586,9 +5586,9 @@ final class TeistroContext implements ffi.Finalizable {
 
   /// Resolves a civil date-time in a zone to a UTC instant under the
   /// context's daylight-saving and unknown-time policies, with the metadata
-  /// a stored chart keeps. An unknown zone is `UNSUPPORTED` with the nearest
-  /// names as the hint; a civil time inside a gap under the `error` policy
-  /// is `INVALID_ARG` with the `DST_GAP` detail.
+  /// a stored chart keeps. An unknown zone is `INVALID_ARG` on the `zone`
+  /// field with the nearest names as the hint; a civil time inside a gap
+  /// under the `error` policy is `INVALID_ARG` with the `DST_GAP` detail.
   ZoneResolution timeResolve(CivilDateTime civil, ZoneSpec zone) {
     _alive();
     return pkg_ffi.using((arena) {
