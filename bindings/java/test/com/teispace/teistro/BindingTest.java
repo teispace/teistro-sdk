@@ -22,7 +22,7 @@ public final class BindingTest {
     private BindingTest() {}
 
     @FunctionalInterface
-    private interface Test {
+    interface Test {
         void run() throws Exception;
     }
 
@@ -2637,6 +2637,11 @@ public final class BindingTest {
             same("rwx------", java.nio.file.attribute.PosixFilePermissions.toString(
                     java.nio.file.Files.getPosixFilePermissions(fresh.getParent())), "a new directory is private");
         });
+
+        SweepTest.add(tests, teistro);
+        WesternTest.add(tests, teistro);
+        UnitsTest.add(tests, teistro);
+        VedicTest.add(tests, teistro);
 
         for (Map.Entry<String, Test> test : tests.entrySet()) {
             try {
