@@ -10,6 +10,11 @@
 //! - the **document** ([`document`]), which holds everything the chart
 //!   layer computes under one envelope.
 //!
+//! Beside the document, its **dossier** ([`dossier`]), the chart as
+//! date-free text, and its **gochar sidecar** ([`sidecar`]), the natal
+//! facts kept with that text so the chart's transits can be read on any
+//! later day.
+//!
 //! Three things the falsification pass found, and each shapes the module
 //! (`03-design/serial-measured.md`, over
 //! `03-design/serial-and-the-envelope.md`):
@@ -59,7 +64,9 @@ pub mod document;
 pub mod dossier;
 pub mod schema;
 pub mod seal;
+pub mod sidecar;
 
 pub use canonical::{hash_of, to_hash_form, to_rendered};
 pub use document::Document;
 pub use seal::Sealed;
+pub use sidecar::GocharSidecar;

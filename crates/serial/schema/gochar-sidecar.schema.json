@@ -1,0 +1,2964 @@
+{
+  "$defs": {
+    "Altitude": {
+      "description": "An altitude above sea level in metres.",
+      "format": "double",
+      "type": "number"
+    },
+    "Apogee": {
+      "description": "Which of the Moon's two apogees a chart places as the Black Moon Lilith (`03-design/lilith.md`).",
+      "oneOf": [
+        {
+          "const": "MEAN",
+          "description": "The mean lunar apogee: ELP2000-82B's mean perigee plus 180°.",
+          "type": "string"
+        },
+        {
+          "const": "OSCULATING",
+          "description": "The osculating lunar apogee: the apogee of the instantaneous Keplerian ellipse.",
+          "type": "string"
+        }
+      ]
+    },
+    "Atmosphere": {
+      "additionalProperties": false,
+      "description": "The air a refracted horizon is seen through, as a convention names it: each part given, or left to the engines' standard at the place (`03-design/horizon-atmosphere.md` §5).",
+      "properties": {
+        "pressure_hpa": {
+          "description": "The pressure at the observer, hectopascals (millibars); absent for the standard atmosphere's at the observer's height.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "temperature_c": {
+          "description": "The temperature at the observer, degrees Celsius; absent for 15 °C.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        }
+      },
+      "type": "object"
+    },
+    "Ayana": {
+      "anyOf": [
+        {
+          "description": "A key of the `ayana` catalogue, as a document writes it.",
+          "enum": [
+            "UTTARAYANA",
+            "DAKSHINAYANA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `ayana` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "ayana.UTTARAYANA",
+            "ayana.DAKSHINAYANA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `ayana` catalogue, bare or full.",
+      "x-teistro-kind": "ayana"
+    },
+    "Ayanamsha": {
+      "anyOf": [
+        {
+          "description": "A key of the `ayanamsha` catalogue, as a document writes it.",
+          "enum": [
+            "FAGAN_BRADLEY",
+            "LAHIRI",
+            "DELUCE",
+            "RAMAN",
+            "USHASHASHI",
+            "KRISHNAMURTI",
+            "DJWHAL_KHUL",
+            "YUKTESHWAR",
+            "JN_BHASIN",
+            "BABYL_KUGLER1",
+            "BABYL_KUGLER2",
+            "BABYL_KUGLER3",
+            "BABYL_HUBER",
+            "BABYL_ETPSC",
+            "ALDEBARAN_15TAU",
+            "HIPPARCHOS",
+            "SASSANIAN",
+            "GALCENT_0SAG",
+            "J2000",
+            "J1900",
+            "B1950",
+            "SURYASIDDHANTA",
+            "SURYASIDDHANTA_MSUN",
+            "ARYABHATA",
+            "ARYABHATA_MSUN",
+            "SS_REVATI",
+            "SS_CITRA",
+            "TRUE_CHITRA",
+            "TRUE_REVATI",
+            "TRUE_PUSHYA",
+            "GALCENT_RGILBRAND",
+            "GALEQU_IAU1958",
+            "GALEQU_TRUE",
+            "GALEQU_MULA",
+            "GALALIGN_MARDYKS",
+            "TRUE_MULA",
+            "GALCENT_MULA_WILHELM",
+            "ARYABHATA_522",
+            "BABYL_BRITTON",
+            "TRUE_SHEORAN",
+            "GALCENT_COCHRANE",
+            "GALEQU_FIORENZA",
+            "VALENS_MOON",
+            "LAHIRI_1940",
+            "LAHIRI_VP285",
+            "KRISHNAMURTI_VP291",
+            "LAHIRI_ICRC"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `ayanamsha` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "ayanamsha.FAGAN_BRADLEY",
+            "ayanamsha.LAHIRI",
+            "ayanamsha.DELUCE",
+            "ayanamsha.RAMAN",
+            "ayanamsha.USHASHASHI",
+            "ayanamsha.KRISHNAMURTI",
+            "ayanamsha.DJWHAL_KHUL",
+            "ayanamsha.YUKTESHWAR",
+            "ayanamsha.JN_BHASIN",
+            "ayanamsha.BABYL_KUGLER1",
+            "ayanamsha.BABYL_KUGLER2",
+            "ayanamsha.BABYL_KUGLER3",
+            "ayanamsha.BABYL_HUBER",
+            "ayanamsha.BABYL_ETPSC",
+            "ayanamsha.ALDEBARAN_15TAU",
+            "ayanamsha.HIPPARCHOS",
+            "ayanamsha.SASSANIAN",
+            "ayanamsha.GALCENT_0SAG",
+            "ayanamsha.J2000",
+            "ayanamsha.J1900",
+            "ayanamsha.B1950",
+            "ayanamsha.SURYASIDDHANTA",
+            "ayanamsha.SURYASIDDHANTA_MSUN",
+            "ayanamsha.ARYABHATA",
+            "ayanamsha.ARYABHATA_MSUN",
+            "ayanamsha.SS_REVATI",
+            "ayanamsha.SS_CITRA",
+            "ayanamsha.TRUE_CHITRA",
+            "ayanamsha.TRUE_REVATI",
+            "ayanamsha.TRUE_PUSHYA",
+            "ayanamsha.GALCENT_RGILBRAND",
+            "ayanamsha.GALEQU_IAU1958",
+            "ayanamsha.GALEQU_TRUE",
+            "ayanamsha.GALEQU_MULA",
+            "ayanamsha.GALALIGN_MARDYKS",
+            "ayanamsha.TRUE_MULA",
+            "ayanamsha.GALCENT_MULA_WILHELM",
+            "ayanamsha.ARYABHATA_522",
+            "ayanamsha.BABYL_BRITTON",
+            "ayanamsha.TRUE_SHEORAN",
+            "ayanamsha.GALCENT_COCHRANE",
+            "ayanamsha.GALEQU_FIORENZA",
+            "ayanamsha.VALENS_MOON",
+            "ayanamsha.LAHIRI_1940",
+            "ayanamsha.LAHIRI_VP285",
+            "ayanamsha.KRISHNAMURTI_VP291",
+            "ayanamsha.LAHIRI_ICRC"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `ayanamsha` catalogue, bare or full.",
+      "x-teistro-kind": "ayanamsha"
+    },
+    "AyanamshaChoice": {
+      "description": "Which ayanamsha: a catalogued one, or a custom definition.",
+      "oneOf": [
+        {
+          "description": "A catalogued ayanamsha.",
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/Ayanamsha",
+              "description": "The member."
+            },
+            "kind": {
+              "const": "CATALOGUED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "id"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "A custom ayanamsha: a value at an epoch and a yearly rate.",
+          "properties": {
+            "epoch_jd_tt": {
+              "description": "The epoch, a Julian day in TT.",
+              "format": "double",
+              "type": "number"
+            },
+            "kind": {
+              "const": "CUSTOM",
+              "type": "string"
+            },
+            "rate_deg_per_year": {
+              "description": "The rate, degrees per Julian year.",
+              "format": "double",
+              "type": "number"
+            },
+            "value_deg": {
+              "description": "The value at the epoch, degrees.",
+              "format": "double",
+              "type": "number"
+            }
+          },
+          "required": [
+            "kind",
+            "epoch_jd_tt",
+            "value_deg",
+            "rate_deg_per_year"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "BhavaPlacement": {
+      "description": "Where one graha sits in the bhavas.",
+      "properties": {
+        "bhava": {
+          "description": "The bhava, 1 to 12.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "from_madhya_deg": {
+          "description": "How far from the bhava's madhya, degrees, signed: negative before the middle, positive after. What bhava bala is measured from.",
+          "format": "double",
+          "type": "number"
+        },
+        "method": {
+          "$ref": "#/$defs/HouseSystem",
+          "description": "The chalit that put it there."
+        },
+        "through": {
+          "description": "How far through the bhava, 0 at the sandhi that opens it and approaching 1 at the one that closes it.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "bhava",
+        "method",
+        "through",
+        "from_madhya_deg"
+      ],
+      "type": "object"
+    },
+    "Bhavas": {
+      "description": "The twelve bhavas of a chart: where each begins and where its middle is, bhava 1 first.",
+      "properties": {
+        "chalit": {
+          "$ref": "#/$defs/Chalit",
+          "description": "Which chalit these are, which every placement reports."
+        },
+        "madhya": {
+          "description": "The middles, in the chart's own zodiac, degrees.",
+          "items": {
+            "format": "double",
+            "type": "number"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "type": "array"
+        },
+        "sandhi": {
+          "description": "The boundaries, in the chart's own zodiac, degrees.",
+          "items": {
+            "format": "double",
+            "type": "number"
+          },
+          "maxItems": 12,
+          "minItems": 12,
+          "type": "array"
+        }
+      },
+      "required": [
+        "sandhi",
+        "madhya",
+        "chalit"
+      ],
+      "type": "object"
+    },
+    "BirthTiming": {
+      "description": "What the birth timing is, taken from the day's arc and the profile's reckonings.",
+      "properties": {
+        "ghati_reckoning": {
+          "$ref": "#/$defs/GhatiReckoning",
+          "description": "How that count was reckoned."
+        },
+        "hora": {
+          "$ref": "#/$defs/Hora",
+          "description": "The planetary hour holding the moment, with its lord."
+        },
+        "hora_reckoning": {
+          "$ref": "#/$defs/HoraReckoning",
+          "description": "How the horas were reckoned."
+        },
+        "ishtakaal": {
+          "$ref": "#/$defs/GhatiPala",
+          "description": "The ishtakaal: how far into the day the moment is, in ghati, pala and vipala, measured from the sunrise that opened **the chart's day** — which for a birth before dawn is the previous morning's."
+        }
+      },
+      "required": [
+        "ishtakaal",
+        "ghati_reckoning",
+        "hora",
+        "hora_reckoning"
+      ],
+      "type": "object"
+    },
+    "Calendar": {
+      "anyOf": [
+        {
+          "description": "A key of the `calendar` catalogue, as a document writes it.",
+          "enum": [
+            "GREGORIAN",
+            "JULIAN",
+            "MIXED",
+            "ISO_WEEK",
+            "BIKRAM_SAMBAT",
+            "INDIAN_LUNISOLAR",
+            "INDIAN_NATIONAL",
+            "HIJRI_TABULAR",
+            "TIBETAN_PHUGPA",
+            "BANGLADESHI",
+            "TAMIL_SOLAR",
+            "BENGAL_SOLAR",
+            "ODIA_SOLAR",
+            "MALAYALAM_SOLAR"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `calendar` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "calendar.GREGORIAN",
+            "calendar.JULIAN",
+            "calendar.MIXED",
+            "calendar.ISO_WEEK",
+            "calendar.BIKRAM_SAMBAT",
+            "calendar.INDIAN_LUNISOLAR",
+            "calendar.INDIAN_NATIONAL",
+            "calendar.HIJRI_TABULAR",
+            "calendar.TIBETAN_PHUGPA",
+            "calendar.BANGLADESHI",
+            "calendar.TAMIL_SOLAR",
+            "calendar.BENGAL_SOLAR",
+            "calendar.ODIA_SOLAR",
+            "calendar.MALAYALAM_SOLAR"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `calendar` catalogue, bare or full.",
+      "x-teistro-kind": "calendar"
+    },
+    "CalendarDate": {
+      "description": "A date in a calendar. Years are astronomical (1 BCE is 0); an era is attached for presentation only.",
+      "properties": {
+        "calendar": {
+          "$ref": "#/$defs/Calendar",
+          "description": "The calendar."
+        },
+        "day": {
+          "description": "The day, 1-based; for the ISO week date, the weekday 1 to 7.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "era": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EraNumber"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The era view, when the calendar has one."
+        },
+        "leap": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Leap"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Whether the month or the day is the first of two bearing the same number, in a calendar that repeats them (the Tibetan); left out of the wire when absent, and refused by every calendar that repeats neither."
+        },
+        "month": {
+          "description": "The month, 1-based; for the ISO week date, the week.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "resolution": {
+          "$ref": "#/$defs/CalendarResolution",
+          "description": "How the date was resolved."
+        },
+        "year": {
+          "description": "The astronomical year.",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "calendar",
+        "year",
+        "month",
+        "day",
+        "resolution"
+      ],
+      "type": "object"
+    },
+    "CalendarResolution": {
+      "description": "How a calendar date was resolved (`docs/03-design/calendar-bikram-sambat.md`).",
+      "oneOf": [
+        {
+          "description": "A mathematical definition; exact by construction.",
+          "properties": {
+            "kind": {
+              "const": "DEFINED",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "From the authority's published table.",
+          "properties": {
+            "authority": {
+              "description": "The authority.",
+              "type": "string"
+            },
+            "edition": {
+              "description": "The table's edition.",
+              "type": "string"
+            },
+            "kind": {
+              "const": "TABULAR",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "authority",
+            "edition"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Computed outside the table's range.",
+          "properties": {
+            "kind": {
+              "const": "COMPUTED",
+              "type": "string"
+            },
+            "model": {
+              "description": "The rule or model.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "model"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "Inside the range and the two disagree; the table was followed.",
+          "properties": {
+            "computed": {
+              "$ref": "#/$defs/MonthDay",
+              "description": "The computed month and day."
+            },
+            "kind": {
+              "const": "DIVERGENT",
+              "type": "string"
+            },
+            "model": {
+              "description": "The rule or model that computed the other answer.",
+              "type": "string"
+            },
+            "tabular": {
+              "$ref": "#/$defs/MonthDay",
+              "description": "The table's month and day."
+            }
+          },
+          "required": [
+            "kind",
+            "tabular",
+            "computed",
+            "model"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Centre": {
+      "description": "Where a position is seen from.",
+      "oneOf": [
+        {
+          "const": "GEOCENTRIC",
+          "description": "The centre of the Earth.",
+          "type": "string"
+        },
+        {
+          "const": "TOPOCENTRIC",
+          "description": "An observer on the Earth; the request carries the place.",
+          "type": "string"
+        },
+        {
+          "const": "HELIOCENTRIC",
+          "description": "The centre of the Sun.",
+          "type": "string"
+        },
+        {
+          "const": "BARYCENTRIC",
+          "description": "The solar-system barycentre.",
+          "type": "string"
+        }
+      ]
+    },
+    "Chalit": {
+      "description": "A bhava chalit: which house system's cusps it is built from, and which of the two things those cusps are.",
+      "properties": {
+        "method": {
+          "$ref": "#/$defs/HouseSystem",
+          "description": "The chalit's own name, which is what a result reports."
+        },
+        "reading": {
+          "$ref": "#/$defs/CuspReading",
+          "description": "What those cusps are."
+        },
+        "source": {
+          "$ref": "#/$defs/HouseSystem",
+          "description": "The system whose cusps it is built from. The same as `method` except for Sripati, whose madhya are Porphyry's cusps."
+        }
+      },
+      "required": [
+        "method",
+        "source",
+        "reading"
+      ],
+      "type": "object"
+    },
+    "ChartDay": {
+      "description": "The day a chart belongs to, and where in it the chart's instant falls.",
+      "properties": {
+        "day": {
+          "$ref": "#/$defs/LocalDay",
+          "description": "The day, which may be the civil date before the instant's."
+        },
+        "elapsed": {
+          "description": "How far through that part the instant is: 0 at its start and approaching 1 at its end.",
+          "format": "double",
+          "type": "number"
+        },
+        "part": {
+          "$ref": "#/$defs/DayPart",
+          "description": "Which part of its arc holds the instant."
+        }
+      },
+      "required": [
+        "day",
+        "part",
+        "elapsed"
+      ],
+      "type": "object"
+    },
+    "ChartFoundation": {
+      "description": "One moment at one place, founded.",
+      "properties": {
+        "chalit": {
+          "$ref": "#/$defs/Bhavas",
+          "description": "The bhavas of the chart's chalit, which is a different question and often a different answer."
+        },
+        "day": {
+          "$ref": "#/$defs/ChartDay",
+          "description": "The day it belongs to, which is not always its civil date."
+        },
+        "day_lagna_deg": {
+          "description": "The lagna at the sunrise that opened the day: what the arudhas, the birth timing's proportions and the Lagna dashas measure from, and for a birth before dawn the previous morning's.",
+          "format": "double",
+          "type": "number"
+        },
+        "grahas": {
+          "description": "The grahas, in the catalogue's order.",
+          "items": {
+            "$ref": "#/$defs/GrahaPosition"
+          },
+          "type": "array"
+        },
+        "houses": {
+          "$ref": "#/$defs/Bhavas",
+          "description": "The bhavas a graha is placed in for \"which house is it in\"."
+        },
+        "instant": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "The instant."
+        },
+        "kind": {
+          "$ref": "#/$defs/ChartKind",
+          "description": "What kind of chart this is."
+        },
+        "lagna_deg": {
+          "description": "The lagna at the instant, in the chart's zodiac, degrees.",
+          "format": "double",
+          "type": "number"
+        },
+        "lilith": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LilithPosition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The Black Moon Lilith, when the chart was asked to place it (`Carried::lilith`); absent, and left out of the document, when it was not (`03-design/lilith.md`)."
+        },
+        "outer": {
+          "description": "Uranus, Neptune and Pluto, in the catalogue's order, when the chart was asked to place them (`OuterPlanets::Placed`); empty, and left out of the document, when it was not (`03-design/western-outer-planets.md`). Beside the nine rather than among them, because every reader of `ChartFoundation::grahas` counts nine.",
+          "items": {
+            "$ref": "#/$defs/GrahaPosition"
+          },
+          "type": "array"
+        },
+        "place": {
+          "$ref": "#/$defs/GeoPlace",
+          "description": "The place."
+        },
+        "steps": {
+          "description": "What the provider and the completion did, for the stamp.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "timing": {
+          "$ref": "#/$defs/BirthTiming",
+          "description": "When in its day the moment falls, and which planetary hour holds it."
+        },
+        "zodiac": {
+          "$ref": "#/$defs/ChartZodiac",
+          "description": "The zodiac it is measured in."
+        }
+      },
+      "required": [
+        "instant",
+        "place",
+        "kind",
+        "day",
+        "zodiac",
+        "lagna_deg",
+        "day_lagna_deg",
+        "houses",
+        "chalit",
+        "timing",
+        "grahas",
+        "steps"
+      ],
+      "type": "object"
+    },
+    "ChartKind": {
+      "anyOf": [
+        {
+          "description": "A key of the `chart_kind` catalogue, as a document writes it.",
+          "enum": [
+            "NATAL",
+            "TRANSIT",
+            "EVENT",
+            "PRASHNA",
+            "RETURN",
+            "RELOCATED",
+            "COMPOSITE"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `chart_kind` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "chart_kind.NATAL",
+            "chart_kind.TRANSIT",
+            "chart_kind.EVENT",
+            "chart_kind.PRASHNA",
+            "chart_kind.RETURN",
+            "chart_kind.RELOCATED",
+            "chart_kind.COMPOSITE"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `chart_kind` catalogue, bare or full.",
+      "x-teistro-kind": "chart_kind"
+    },
+    "ChartZodiac": {
+      "description": "The zodiac of one chart: what to ask the provider for, and how far to shift what comes back.",
+      "properties": {
+        "ayanamsha": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AyanamshaChoice"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The ayanamsha the offset came from, for the stamp; `None` for a tropical chart."
+        },
+        "offset_deg": {
+          "description": "Degrees to subtract from a tropical longitude to reach the chart's zodiac. Zero for a tropical chart.",
+          "format": "double",
+          "type": "number"
+        },
+        "request": {
+          "$ref": "#/$defs/Frame",
+          "description": "The frame to ask the provider for. Always tropical, so that the grahas and the cusps are shifted by the same value."
+        }
+      },
+      "required": [
+        "request",
+        "offset_deg"
+      ],
+      "type": "object"
+    },
+    "Choghadiya": {
+      "anyOf": [
+        {
+          "description": "A key of the `choghadiya` catalogue, as a document writes it.",
+          "enum": [
+            "UDVEG",
+            "CHAR",
+            "LAABH",
+            "AMRIT",
+            "KAAL",
+            "SHUBHA",
+            "ROG"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `choghadiya` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "choghadiya.UDVEG",
+            "choghadiya.CHAR",
+            "choghadiya.LAABH",
+            "choghadiya.AMRIT",
+            "choghadiya.KAAL",
+            "choghadiya.SHUBHA",
+            "choghadiya.ROG"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `choghadiya` catalogue, bare or full.",
+      "x-teistro-kind": "choghadiya"
+    },
+    "Coordinates": {
+      "description": "The coordinate system of a position.",
+      "oneOf": [
+        {
+          "const": "ECLIPTIC",
+          "description": "Ecliptic longitude and latitude.",
+          "type": "string"
+        },
+        {
+          "const": "EQUATORIAL",
+          "description": "Right ascension and declination.",
+          "type": "string"
+        }
+      ]
+    },
+    "Corrections": {
+      "description": "Which corrections a position includes.",
+      "properties": {
+        "aberration": {
+          "description": "Annual aberration applied.",
+          "type": "boolean"
+        },
+        "deflection": {
+          "description": "Gravitational deflection applied.",
+          "type": "boolean"
+        },
+        "light_time": {
+          "description": "Light-time correction applied.",
+          "type": "boolean"
+        },
+        "nutation": {
+          "description": "Nutation applied (the true equinox rather than the mean).",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "light_time",
+        "aberration",
+        "deflection",
+        "nutation"
+      ],
+      "type": "object"
+    },
+    "CuspReading": {
+      "description": "Whether a system's cusps are the boundaries of its houses or their middles.",
+      "oneOf": [
+        {
+          "const": "SANDHI",
+          "description": "The cusps are the sandhi: a house runs from one cusp to the next, and its madhya is midway between them. Every system but Sripati.",
+          "type": "string"
+        },
+        {
+          "const": "MADHYA",
+          "description": "The cusps are the madhya: each cusp is the middle of its house, and the sandhi are midway between consecutive middles. Sripati, which is the classical Indian bhava.",
+          "type": "string"
+        }
+      ]
+    },
+    "DayPart": {
+      "description": "Which part of a day's arc holds an instant.",
+      "oneOf": [
+        {
+          "const": "DAYLIGHT",
+          "description": "Between the day's sunrise and its sunset.",
+          "type": "string"
+        },
+        {
+          "const": "NIGHT",
+          "description": "Between the day's sunset and the next sunrise. A birth in the small hours is here, in the night of the day before.",
+          "type": "string"
+        }
+      ]
+    },
+    "DayState": {
+      "description": "Whether the day had a sunrise, and what was done when it had not.",
+      "oneOf": [
+        {
+          "description": "Sunrise and sunset occurred.",
+          "properties": {
+            "state": {
+              "const": "NORMAL",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "No horizon crossing; the policy synthesised the bounds.",
+          "properties": {
+            "kind": {
+              "$ref": "#/$defs/PolarKind",
+              "description": "Day or night."
+            },
+            "policy": {
+              "$ref": "#/$defs/PolarDayPolicy",
+              "description": "The policy applied."
+            },
+            "state": {
+              "const": "POLAR",
+              "type": "string"
+            }
+          },
+          "required": [
+            "state",
+            "kind",
+            "policy"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Direction": {
+      "anyOf": [
+        {
+          "description": "A key of the `direction` catalogue, as a document writes it.",
+          "enum": [
+            "EAST",
+            "WEST",
+            "NORTH",
+            "SOUTH",
+            "NORTHEAST",
+            "NORTHWEST",
+            "SOUTHEAST",
+            "SOUTHWEST"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `direction` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "direction.EAST",
+            "direction.WEST",
+            "direction.NORTH",
+            "direction.SOUTH",
+            "direction.NORTHEAST",
+            "direction.NORTHWEST",
+            "direction.SOUTHEAST",
+            "direction.SOUTHWEST"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `direction` catalogue, bare or full.",
+      "x-teistro-kind": "direction"
+    },
+    "Durmuhurta": {
+      "description": "One censured muhurta of a day, a durmuhurta.",
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/Interval",
+          "description": "When it runs."
+        },
+        "is_daytime": {
+          "description": "Whether it is a muhurta of the daylight; false for one of the night that follows it.",
+          "type": "boolean"
+        },
+        "number": {
+          "description": "The muhurta's number in its half, 1 to 15, as the texts count it.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "number",
+        "is_daytime",
+        "at"
+      ],
+      "type": "object"
+    },
+    "Equinox": {
+      "description": "The equinox and equator the coordinates refer to.",
+      "oneOf": [
+        {
+          "const": "OF_DATE",
+          "description": "The equinox of date.",
+          "type": "string"
+        },
+        {
+          "const": "J2000",
+          "description": "The J2000.0 equinox.",
+          "type": "string"
+        }
+      ]
+    },
+    "Era": {
+      "anyOf": [
+        {
+          "description": "A key of the `era` catalogue, as a document writes it.",
+          "enum": [
+            "VIKRAMA",
+            "SHAKA",
+            "KALI",
+            "NEPAL_SAMBAT",
+            "BUDDHA",
+            "KOLLAM",
+            "BENGALI",
+            "COMMON_ERA",
+            "BEFORE_COMMON_ERA",
+            "HIJRI"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `era` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "era.VIKRAMA",
+            "era.SHAKA",
+            "era.KALI",
+            "era.NEPAL_SAMBAT",
+            "era.BUDDHA",
+            "era.KOLLAM",
+            "era.BENGALI",
+            "era.COMMON_ERA",
+            "era.BEFORE_COMMON_ERA",
+            "era.HIJRI"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `era` catalogue, bare or full.",
+      "x-teistro-kind": "era"
+    },
+    "EraNumber": {
+      "description": "A year in an era, for presentation.",
+      "properties": {
+        "era": {
+          "$ref": "#/$defs/Era",
+          "description": "The era."
+        },
+        "year": {
+          "description": "The year in it, 1-based.",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "era",
+        "year"
+      ],
+      "type": "object"
+    },
+    "Frame": {
+      "description": "A position frame.",
+      "properties": {
+        "centre": {
+          "$ref": "#/$defs/Centre",
+          "description": "Where the position is seen from."
+        },
+        "coordinates": {
+          "$ref": "#/$defs/Coordinates",
+          "description": "Which coordinates."
+        },
+        "corrections": {
+          "$ref": "#/$defs/Corrections",
+          "description": "Which corrections."
+        },
+        "equinox": {
+          "$ref": "#/$defs/Equinox",
+          "description": "Which equinox."
+        },
+        "zodiac": {
+          "$ref": "#/$defs/Zodiac",
+          "description": "Which zodiac."
+        }
+      },
+      "required": [
+        "centre",
+        "equinox",
+        "coordinates",
+        "zodiac",
+        "corrections"
+      ],
+      "type": "object"
+    },
+    "GeoPlace": {
+      "description": "A place on Earth.",
+      "properties": {
+        "altitude": {
+          "$ref": "#/$defs/Altitude",
+          "description": "Above sea level."
+        },
+        "latitude": {
+          "$ref": "#/$defs/Latitude",
+          "description": "North positive."
+        },
+        "longitude": {
+          "$ref": "#/$defs/Longitude",
+          "description": "East positive."
+        }
+      },
+      "required": [
+        "latitude",
+        "longitude",
+        "altitude"
+      ],
+      "type": "object"
+    },
+    "GhatiPala": {
+      "description": "A ghati-pala count from sunrise.",
+      "properties": {
+        "ghati": {
+          "description": "Ghatis, 0 to 59 (60 when the sunrise-to-sunrise day exceeds twenty-four hours under civil reckoning).",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "pala": {
+          "description": "Palas, 0 to 59.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "vipala": {
+          "description": "Vipalas, 0 to 59.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "ghati",
+        "pala",
+        "vipala"
+      ],
+      "type": "object"
+    },
+    "GhatiReckoning": {
+      "description": "How ghatis are counted.",
+      "oneOf": [
+        {
+          "const": "CIVIL",
+          "description": "Twenty-four minutes each.",
+          "type": "string"
+        },
+        {
+          "const": "PROPORTIONAL",
+          "description": "Thirty over the actual day and night.",
+          "type": "string"
+        }
+      ]
+    },
+    "Graha": {
+      "anyOf": [
+        {
+          "description": "A key of the `graha` catalogue, as a document writes it.",
+          "enum": [
+            "SUN",
+            "MOON",
+            "MARS",
+            "MERCURY",
+            "JUPITER",
+            "VENUS",
+            "SATURN",
+            "RAHU",
+            "KETU",
+            "URANUS",
+            "NEPTUNE",
+            "PLUTO"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `graha` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "graha.SUN",
+            "graha.MOON",
+            "graha.MARS",
+            "graha.MERCURY",
+            "graha.JUPITER",
+            "graha.VENUS",
+            "graha.SATURN",
+            "graha.RAHU",
+            "graha.KETU",
+            "graha.URANUS",
+            "graha.NEPTUNE",
+            "graha.PLUTO"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `graha` catalogue, bare or full.",
+      "x-teistro-kind": "graha"
+    },
+    "GrahaPosition": {
+      "description": "Where one graha is, in the chart's own zodiac.",
+      "properties": {
+        "distance_au": {
+          "description": "Distance, astronomical units; zero for a point that has none.",
+          "format": "double",
+          "type": "number"
+        },
+        "graha": {
+          "$ref": "#/$defs/Graha",
+          "description": "Which graha."
+        },
+        "house": {
+          "$ref": "#/$defs/BhavaPlacement",
+          "description": "Where it falls under the chart's placement system, which is the one that answers \"in the seventh\" for most of the tradition."
+        },
+        "latitude_deg": {
+          "description": "Ecliptic latitude, degrees.",
+          "format": "double",
+          "type": "number"
+        },
+        "longitude_deg": {
+          "description": "Longitude in the chart's zodiac, degrees.",
+          "format": "double",
+          "type": "number"
+        },
+        "placement": {
+          "$ref": "#/$defs/BhavaPlacement",
+          "description": "Where it falls under the chart's chalit."
+        },
+        "speed_deg_per_day": {
+          "description": "Motion in the chart's longitude, degrees a day; negative when retrograde. In a sidereal chart it is the tropical motion less the ayanamsha's own rate, so it is the rate of `longitude_deg` and not of `tropical_deg`.",
+          "format": "double",
+          "type": "number"
+        },
+        "tropical_deg": {
+          "description": "The same longitude in the tropical zodiac of date, degrees.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "graha",
+        "longitude_deg",
+        "tropical_deg",
+        "latitude_deg",
+        "distance_au",
+        "speed_deg_per_day",
+        "placement",
+        "house"
+      ],
+      "type": "object"
+    },
+    "GrahaSpan": {
+      "description": "One member of a limb, and when it ran.",
+      "properties": {
+        "inside": {
+          "$ref": "#/$defs/Interval",
+          "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "member": {
+          "$ref": "#/$defs/Graha",
+          "description": "Which member ran."
+        },
+        "whole": {
+          "$ref": "#/$defs/Interval",
+          "description": "When the member itself began and ended, whether or not either instant lies inside the day."
+        }
+      },
+      "required": [
+        "member",
+        "whole",
+        "inside"
+      ],
+      "type": "object"
+    },
+    "Hash": {
+      "description": "A SHA-256, as sixty-four hex digits.",
+      "pattern": "^[0-9a-fA-F]{64}$",
+      "type": "string"
+    },
+    "Hora": {
+      "description": "One hora of a day.",
+      "properties": {
+        "end": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "When it ends: the next hora's start."
+        },
+        "lord": {
+          "$ref": "#/$defs/Graha",
+          "description": "The graha that rules it."
+        },
+        "number": {
+          "description": "The hora's number, 1 to 24 from sunrise.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "start": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "When it begins."
+        }
+      },
+      "required": [
+        "number",
+        "lord",
+        "start",
+        "end"
+      ],
+      "type": "object"
+    },
+    "HoraReckoning": {
+      "description": "How the planetary hours (horas) are counted.",
+      "oneOf": [
+        {
+          "const": "PROPORTIONAL",
+          "description": "Twelve over the daylight and twelve over the night.",
+          "type": "string"
+        },
+        {
+          "const": "EQUAL",
+          "description": "Twenty-four of sixty minutes from sunrise.",
+          "type": "string"
+        }
+      ]
+    },
+    "HouseSystem": {
+      "anyOf": [
+        {
+          "description": "A key of the `house_system` catalogue, as a document writes it.",
+          "enum": [
+            "WHOLE_SIGN",
+            "PLACIDUS",
+            "KOCH",
+            "REGIOMONTANUS",
+            "CAMPANUS",
+            "EQUAL",
+            "MERIDIAN",
+            "ALCABITIUS",
+            "PORPHYRY",
+            "TOPOCENTRIC",
+            "MORINUS",
+            "SRIPATI",
+            "EQUAL_MC",
+            "EQUAL_ARIES",
+            "VEHLOW",
+            "CARTER",
+            "HORIZON",
+            "SUNSHINE",
+            "PULLEN_SD",
+            "PULLEN_SR",
+            "KRUSINSKI",
+            "APC"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `house_system` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "house_system.WHOLE_SIGN",
+            "house_system.PLACIDUS",
+            "house_system.KOCH",
+            "house_system.REGIOMONTANUS",
+            "house_system.CAMPANUS",
+            "house_system.EQUAL",
+            "house_system.MERIDIAN",
+            "house_system.ALCABITIUS",
+            "house_system.PORPHYRY",
+            "house_system.TOPOCENTRIC",
+            "house_system.MORINUS",
+            "house_system.SRIPATI",
+            "house_system.EQUAL_MC",
+            "house_system.EQUAL_ARIES",
+            "house_system.VEHLOW",
+            "house_system.CARTER",
+            "house_system.HORIZON",
+            "house_system.SUNSHINE",
+            "house_system.PULLEN_SD",
+            "house_system.PULLEN_SR",
+            "house_system.KRUSINSKI",
+            "house_system.APC"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `house_system` catalogue, bare or full.",
+      "x-teistro-kind": "house_system"
+    },
+    "Interval": {
+      "description": "A half-open interval of time, `[from, to)`.",
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "When it begins."
+        },
+        "to": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "When it ends."
+        }
+      },
+      "required": [
+        "from",
+        "to"
+      ],
+      "type": "object"
+    },
+    "JulianDay": {
+      "description": "A Julian day on one time scale.",
+      "format": "double",
+      "type": "number"
+    },
+    "Kaala": {
+      "anyOf": [
+        {
+          "description": "A key of the `kaala` catalogue, as a document writes it.",
+          "enum": [
+            "RAHU_KAALA",
+            "YAMAGHANDA",
+            "GULIKA_KAALA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `kaala` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "kaala.RAHU_KAALA",
+            "kaala.YAMAGHANDA",
+            "kaala.GULIKA_KAALA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `kaala` catalogue, bare or full.",
+      "x-teistro-kind": "kaala"
+    },
+    "Kaalas": {
+      "description": "One inauspicious eighth of the daylight.",
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/Interval",
+          "description": "When it runs."
+        },
+        "kaala": {
+          "$ref": "#/$defs/Kaala",
+          "description": "Which one."
+        }
+      },
+      "required": [
+        "kaala",
+        "at"
+      ],
+      "type": "object"
+    },
+    "Karana": {
+      "anyOf": [
+        {
+          "description": "A key of the `karana` catalogue, as a document writes it.",
+          "enum": [
+            "BAVA",
+            "BALAVA",
+            "KAULAVA",
+            "TAITILA",
+            "GARIJA",
+            "VANIJA",
+            "VISHTI",
+            "SHAKUNI",
+            "CHATUSHPADA",
+            "NAGA",
+            "KIMSTUGHNA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `karana` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "karana.BAVA",
+            "karana.BALAVA",
+            "karana.KAULAVA",
+            "karana.TAITILA",
+            "karana.GARIJA",
+            "karana.VANIJA",
+            "karana.VISHTI",
+            "karana.SHAKUNI",
+            "karana.CHATUSHPADA",
+            "karana.NAGA",
+            "karana.KIMSTUGHNA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `karana` catalogue, bare or full.",
+      "x-teistro-kind": "karana"
+    },
+    "KaranaSpan": {
+      "description": "One member of a limb, and when it ran.",
+      "properties": {
+        "inside": {
+          "$ref": "#/$defs/Interval",
+          "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "member": {
+          "$ref": "#/$defs/Karana",
+          "description": "Which member ran."
+        },
+        "whole": {
+          "$ref": "#/$defs/Interval",
+          "description": "When the member itself began and ended, whether or not either instant lies inside the day."
+        }
+      },
+      "required": [
+        "member",
+        "whole",
+        "inside"
+      ],
+      "type": "object"
+    },
+    "Latitude": {
+      "description": "A geographic latitude in degrees, north positive.",
+      "format": "double",
+      "type": "number"
+    },
+    "Leap": {
+      "description": "Which part of a date is the first of a repeated pair: the leap month comes before the month whose number it takes, and the leap day before the day whose number it repeats.",
+      "oneOf": [
+        {
+          "const": "MONTH",
+          "description": "The leap month.",
+          "type": "string"
+        },
+        {
+          "const": "DAY",
+          "description": "The leap day.",
+          "type": "string"
+        },
+        {
+          "const": "MONTH_AND_DAY",
+          "description": "The leap day of the leap month.",
+          "type": "string"
+        }
+      ]
+    },
+    "LilithPosition": {
+      "description": "Where the Black Moon Lilith is, in the chart's own zodiac: the lunar apogee the chart was asked for (`03-design/lilith.md`).",
+      "properties": {
+        "apogee": {
+          "$ref": "#/$defs/Apogee",
+          "description": "Which apogee."
+        },
+        "distance_au": {
+          "description": "Distance, astronomical units: zero for the mean apogee, which has none, and the osculating ellipse's apogee distance, `a(1 + e)`, for the osculating one.",
+          "format": "double",
+          "type": "number"
+        },
+        "house": {
+          "$ref": "#/$defs/BhavaPlacement",
+          "description": "Where it falls under the chart's placement system."
+        },
+        "latitude_deg": {
+          "description": "Ecliptic latitude, degrees: zero for the mean apogee, which the SDK answers as a direction on the ecliptic, and the orbit's own for the osculating one.",
+          "format": "double",
+          "type": "number"
+        },
+        "longitude_deg": {
+          "description": "Longitude in the chart's zodiac, degrees.",
+          "format": "double",
+          "type": "number"
+        },
+        "placement": {
+          "$ref": "#/$defs/BhavaPlacement",
+          "description": "Where it falls under the chart's chalit."
+        },
+        "speed_deg_per_day": {
+          "description": "Motion in the chart's longitude, degrees a day; negative when retrograde, which only the osculating apogee ever is.",
+          "format": "double",
+          "type": "number"
+        },
+        "tropical_deg": {
+          "description": "The same longitude in the tropical zodiac of date, degrees.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "apogee",
+        "longitude_deg",
+        "tropical_deg",
+        "latitude_deg",
+        "distance_au",
+        "speed_deg_per_day",
+        "placement",
+        "house"
+      ],
+      "type": "object"
+    },
+    "Limbs": {
+      "description": "The four moving limbs of one day.",
+      "properties": {
+        "karana": {
+          "description": "The karanas; half-tithis, so there are three or four of them.",
+          "items": {
+            "$ref": "#/$defs/KaranaSpan"
+          },
+          "type": "array"
+        },
+        "nakshatra": {
+          "description": "The nakshatras the Moon was in.",
+          "items": {
+            "$ref": "#/$defs/NakshatraSpan"
+          },
+          "type": "array"
+        },
+        "tithi": {
+          "description": "The tithis that touch the day.",
+          "items": {
+            "$ref": "#/$defs/TithiSpan"
+          },
+          "type": "array"
+        },
+        "yoga": {
+          "description": "The nitya yogas.",
+          "items": {
+            "$ref": "#/$defs/YogaSpan"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "tithi",
+        "nakshatra",
+        "yoga",
+        "karana"
+      ],
+      "type": "object"
+    },
+    "LocalDay": {
+      "description": "A local day.",
+      "properties": {
+        "convention": {
+          "$ref": "#/$defs/SunriseConvention",
+          "description": "The sunrise convention the arc was reckoned by."
+        },
+        "date": {
+          "$ref": "#/$defs/CalendarDate",
+          "description": "The civil date."
+        },
+        "model": {
+          "description": "The model that gave the arc, for provenance.",
+          "type": "string"
+        },
+        "next_sunrise": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "The next sunrise."
+        },
+        "place": {
+          "$ref": "#/$defs/GeoPlace",
+          "description": "The place."
+        },
+        "state": {
+          "$ref": "#/$defs/DayState",
+          "description": "Whether the day is normal or polar."
+        },
+        "sunrise": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "Sunrise, or what the policy put in its place."
+        },
+        "sunset": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "Sunset."
+        },
+        "vara": {
+          "$ref": "#/$defs/Vara",
+          "description": "The day's vara: the weekday of the date, which the sunrise-anchored reckoning keeps for the whole day from sunrise to sunrise."
+        }
+      },
+      "required": [
+        "place",
+        "date",
+        "vara",
+        "sunrise",
+        "sunset",
+        "next_sunrise",
+        "state",
+        "convention",
+        "model"
+      ],
+      "type": "object"
+    },
+    "Longitude": {
+      "description": "A geographic longitude in degrees, east positive.",
+      "format": "double",
+      "type": "number"
+    },
+    "LunarMonth": {
+      "description": "The lunar month system.",
+      "oneOf": [
+        {
+          "const": "AMANTA",
+          "description": "New moon to new moon.",
+          "type": "string"
+        },
+        {
+          "const": "PURNIMANTA",
+          "description": "Full moon to full moon.",
+          "type": "string"
+        }
+      ]
+    },
+    "Masa": {
+      "anyOf": [
+        {
+          "description": "A key of the `masa` catalogue, as a document writes it.",
+          "enum": [
+            "CHAITRA",
+            "VAISHAKHA",
+            "JYESHTHA",
+            "ASHADHA",
+            "SHRAVANA",
+            "BHADRAPADA",
+            "ASHWINA",
+            "KARTIKA",
+            "MARGASHIRSHA",
+            "PAUSHA",
+            "MAGHA",
+            "PHALGUNA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `masa` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "masa.CHAITRA",
+            "masa.VAISHAKHA",
+            "masa.JYESHTHA",
+            "masa.ASHADHA",
+            "masa.SHRAVANA",
+            "masa.BHADRAPADA",
+            "masa.ASHWINA",
+            "masa.KARTIKA",
+            "masa.MARGASHIRSHA",
+            "masa.PAUSHA",
+            "masa.MAGHA",
+            "masa.PHALGUNA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `masa` catalogue, bare or full.",
+      "x-teistro-kind": "masa"
+    },
+    "MonthDay": {
+      "description": "A month and a day inside a year, for a divergence report.",
+      "properties": {
+        "day": {
+          "description": "The day, 1-based.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "month": {
+          "description": "The month, 1-based.",
+          "format": "uint8",
+          "maximum": 255,
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "month",
+        "day"
+      ],
+      "type": "object"
+    },
+    "MonthKind": {
+      "description": "What a lunar month is, beyond its name.",
+      "oneOf": [
+        {
+          "const": "NIJA",
+          "description": "One sankranti: the ordinary month.",
+          "type": "string"
+        },
+        {
+          "const": "ADHIKA",
+          "description": "None: intercalary, and the name repeats — the next month takes it too, as the *nija* one.",
+          "type": "string"
+        },
+        {
+          "const": "KSHAYA",
+          "description": "Two: the second name is skipped this year.",
+          "type": "string"
+        }
+      ]
+    },
+    "MoonDay": {
+      "description": "What the Moon did in the day.",
+      "properties": {
+        "rises": {
+          "description": "Every moonrise inside the window, in order.",
+          "items": {
+            "$ref": "#/$defs/JulianDay"
+          },
+          "type": "array"
+        },
+        "sets": {
+          "description": "Every moonset inside the window.",
+          "items": {
+            "$ref": "#/$defs/JulianDay"
+          },
+          "type": "array"
+        },
+        "signs": {
+          "description": "The signs the Moon stood in, with when it entered and left each.",
+          "items": {
+            "$ref": "#/$defs/RashiSpan"
+          },
+          "type": "array"
+        },
+        "window": {
+          "$ref": "#/$defs/Interval",
+          "description": "Which window the rises and sets were found in, for the stamp."
+        }
+      },
+      "required": [
+        "rises",
+        "sets",
+        "signs",
+        "window"
+      ],
+      "type": "object"
+    },
+    "MuhurtaYoga": {
+      "anyOf": [
+        {
+          "description": "A key of the `muhurta_yoga` catalogue, as a document writes it.",
+          "enum": [
+            "AMRIT_SIDDHI",
+            "SARVARTHA_SIDDHI",
+            "SIDDHA",
+            "DWIPUSHKAR",
+            "TRIPUSHKAR"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `muhurta_yoga` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "muhurta_yoga.AMRIT_SIDDHI",
+            "muhurta_yoga.SARVARTHA_SIDDHI",
+            "muhurta_yoga.SIDDHA",
+            "muhurta_yoga.DWIPUSHKAR",
+            "muhurta_yoga.TRIPUSHKAR"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `muhurta_yoga` catalogue, bare or full.",
+      "x-teistro-kind": "muhurta_yoga"
+    },
+    "Muhurtas": {
+      "description": "The thirty muhurtas of a day, with the two that have names.",
+      "properties": {
+        "abhijit": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Interval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Abhijit: the eighth muhurta of the daylight, straddling noon. Absent on a day with no daylight."
+        },
+        "abhijit_effective": {
+          "description": "Whether Abhijit is effective, which it is on every day but a Wednesday — measured on all 55 recorded days (`03-design/panchanga-day-conventions.md` §5).",
+          "type": "boolean"
+        },
+        "brahma": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Interval"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Brahma muhurta: the fourteenth of the fifteen muhurtas of the night that **ends** at this day's sunrise. Absent when that night is not known, which is the polar case."
+        },
+        "daylight": {
+          "description": "The fifteen of the daylight, in order.",
+          "items": {
+            "$ref": "#/$defs/Interval"
+          },
+          "type": "array"
+        },
+        "night": {
+          "description": "The fifteen of the night that follows it, in order.",
+          "items": {
+            "$ref": "#/$defs/Interval"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "daylight",
+        "night",
+        "abhijit_effective"
+      ],
+      "type": "object"
+    },
+    "Nakshatra": {
+      "anyOf": [
+        {
+          "description": "A key of the `nakshatra` catalogue, as a document writes it.",
+          "enum": [
+            "ASHWINI",
+            "BHARANI",
+            "KRITTIKA",
+            "ROHINI",
+            "MRIGASHIRA",
+            "ARDRA",
+            "PUNARVASU",
+            "PUSHYA",
+            "ASHLESHA",
+            "MAGHA",
+            "PURVA_PHALGUNI",
+            "UTTARA_PHALGUNI",
+            "HASTA",
+            "CHITRA",
+            "SWATI",
+            "VISHAKHA",
+            "ANURADHA",
+            "JYESHTHA",
+            "MULA",
+            "PURVA_ASHADHA",
+            "UTTARA_ASHADHA",
+            "SHRAVANA",
+            "DHANISHTHA",
+            "SHATABHISHA",
+            "PURVA_BHADRAPADA",
+            "UTTARA_BHADRAPADA",
+            "REVATI"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `nakshatra` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "nakshatra.ASHWINI",
+            "nakshatra.BHARANI",
+            "nakshatra.KRITTIKA",
+            "nakshatra.ROHINI",
+            "nakshatra.MRIGASHIRA",
+            "nakshatra.ARDRA",
+            "nakshatra.PUNARVASU",
+            "nakshatra.PUSHYA",
+            "nakshatra.ASHLESHA",
+            "nakshatra.MAGHA",
+            "nakshatra.PURVA_PHALGUNI",
+            "nakshatra.UTTARA_PHALGUNI",
+            "nakshatra.HASTA",
+            "nakshatra.CHITRA",
+            "nakshatra.SWATI",
+            "nakshatra.VISHAKHA",
+            "nakshatra.ANURADHA",
+            "nakshatra.JYESHTHA",
+            "nakshatra.MULA",
+            "nakshatra.PURVA_ASHADHA",
+            "nakshatra.UTTARA_ASHADHA",
+            "nakshatra.SHRAVANA",
+            "nakshatra.DHANISHTHA",
+            "nakshatra.SHATABHISHA",
+            "nakshatra.PURVA_BHADRAPADA",
+            "nakshatra.UTTARA_BHADRAPADA",
+            "nakshatra.REVATI"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `nakshatra` catalogue, bare or full.",
+      "x-teistro-kind": "nakshatra"
+    },
+    "NakshatraSpan": {
+      "description": "One member of a limb, and when it ran.",
+      "properties": {
+        "inside": {
+          "$ref": "#/$defs/Interval",
+          "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "member": {
+          "$ref": "#/$defs/Nakshatra",
+          "description": "Which member ran."
+        },
+        "whole": {
+          "$ref": "#/$defs/Interval",
+          "description": "When the member itself began and ended, whether or not either instant lies inside the day."
+        }
+      },
+      "required": [
+        "member",
+        "whole",
+        "inside"
+      ],
+      "type": "object"
+    },
+    "Omens": {
+      "description": "What a day is said to be.",
+      "properties": {
+        "amrit_kalam": {
+          "description": "The amrita kalam: each nakshatra's four auspicious ghatis, placed by `panchanga.amrit_kalam` (crux C677), `whole` and `inside` as the varjyam's.",
+          "items": {
+            "$ref": "#/$defs/NakshatraSpan"
+          },
+          "type": "array"
+        },
+        "disha_shool": {
+          "$ref": "#/$defs/Direction",
+          "description": "The direction not to travel in, which is the vara's."
+        },
+        "panchaka": {
+          "description": "Panchaka, while the Moon is in the last five nakshatras.",
+          "items": {
+            "$ref": "#/$defs/PanchakaSpan"
+          },
+          "type": "array"
+        },
+        "varjyam": {
+          "description": "The varjyam: each nakshatra's four ghatis of poison, the window itself in `whole` and the part inside the day in `inside`, placed by `panchanga.varjyam` (crux C165).",
+          "items": {
+            "$ref": "#/$defs/NakshatraSpan"
+          },
+          "type": "array"
+        },
+        "yogas": {
+          "description": "The muhurta yogas that held.",
+          "items": {
+            "$ref": "#/$defs/PanchangaMuhurtaYoga"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "panchaka",
+        "yogas",
+        "varjyam",
+        "amrit_kalam",
+        "disha_shool"
+      ],
+      "type": "object"
+    },
+    "Paksha": {
+      "anyOf": [
+        {
+          "description": "A key of the `paksha` catalogue, as a document writes it.",
+          "enum": [
+            "SHUKLA",
+            "KRISHNA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `paksha` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "paksha.SHUKLA",
+            "paksha.KRISHNA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `paksha` catalogue, bare or full.",
+      "x-teistro-kind": "paksha"
+    },
+    "Panchaka": {
+      "anyOf": [
+        {
+          "description": "A key of the `panchaka` catalogue, as a document writes it.",
+          "enum": [
+            "MRITYU",
+            "AGNI",
+            "RAJA",
+            "CHORA",
+            "ROGA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `panchaka` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "panchaka.MRITYU",
+            "panchaka.AGNI",
+            "panchaka.RAJA",
+            "panchaka.CHORA",
+            "panchaka.ROGA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `panchaka` catalogue, bare or full.",
+      "x-teistro-kind": "panchaka"
+    },
+    "PanchakaSpan": {
+      "description": "One member of a limb, and when it ran.",
+      "properties": {
+        "inside": {
+          "$ref": "#/$defs/Interval",
+          "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "member": {
+          "$ref": "#/$defs/Panchaka",
+          "description": "Which member ran."
+        },
+        "whole": {
+          "$ref": "#/$defs/Interval",
+          "description": "When the member itself began and ended, whether or not either instant lies inside the day."
+        }
+      },
+      "required": [
+        "member",
+        "whole",
+        "inside"
+      ],
+      "type": "object"
+    },
+    "Panchanga": {
+      "description": "The almanac of one day at one place.",
+      "properties": {
+        "choghadiya": {
+          "description": "Eight choghadiya of the daylight and eight of the night, when the day has both.",
+          "items": {
+            "$ref": "#/$defs/Part"
+          },
+          "type": "array"
+        },
+        "day": {
+          "$ref": "#/$defs/LocalDay",
+          "description": "The day, with its arc, its vara, its polar state and the sunrise convention it was reckoned under."
+        },
+        "durmuhurtas": {
+          "description": "The day's censured muhurtas under `panchanga.durmuhurta`, in the order they run (`03-design/panchanga-day.md` §21, crux C398).",
+          "items": {
+            "$ref": "#/$defs/Durmuhurta"
+          },
+          "type": "array"
+        },
+        "ghati_reckoning": {
+          "$ref": "#/$defs/GhatiReckoning",
+          "description": "How the day's ghatis are counted, `day.ghati_reckoning` as applied: what `Panchanga::ghati_pala` reads."
+        },
+        "homa_ahuti": {
+          "description": "The day's homa ahuti: the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, one span for each stretch the two stars both held (Muhurta Chintamani, Nakshatra-prakarana v. 35; crux C751). **Empty unless asked for** (the façade's `AlmanacRequest::with_homa_ahuti`), since the Sun's stars cost a search a day does not otherwise make; and left out of the day's document when empty.",
+          "items": {
+            "$ref": "#/$defs/GrahaSpan"
+          },
+          "type": "array"
+        },
+        "horas": {
+          "description": "Twenty-four horas, from `time::hora`.",
+          "items": {
+            "$ref": "#/$defs/Hora"
+          },
+          "type": "array"
+        },
+        "kaalas": {
+          "description": "The inauspicious eighths of the daylight the day has.",
+          "items": {
+            "$ref": "#/$defs/Kaalas"
+          },
+          "type": "array"
+        },
+        "lagnas": {
+          "description": "The day's lagna table: each sign rising from sunrise to the next sunrise, its `whole` span and the part `inside` that arc, under `panchanga.lagna_table` (crux C680, C681). **Empty unless asked for** (the façade's `AlmanacRequest::with_lagnas`), since a day's cuts cost some four hundred ascendants; and left out of the day's document when empty, so a day not asked for it hashes as it did before the table existed.",
+          "items": {
+            "$ref": "#/$defs/RashiSpan"
+          },
+          "type": "array"
+        },
+        "limbs": {
+          "$ref": "#/$defs/Limbs",
+          "description": "The four moving limbs."
+        },
+        "month": {
+          "$ref": "#/$defs/PanchangaLunarMonth",
+          "description": "The lunar month, under both conventions."
+        },
+        "moon": {
+          "$ref": "#/$defs/MoonDay",
+          "description": "What the Moon did."
+        },
+        "muhurtas": {
+          "$ref": "#/$defs/Muhurtas",
+          "description": "The thirty muhurtas, with Abhijit and Brahma muhurta named."
+        },
+        "omens": {
+          "$ref": "#/$defs/Omens",
+          "description": "What the day is said to be."
+        },
+        "punya_kala": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PunyaKala"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The punya kala that falls in the day's daylight, of a sankranti in the day or in the night either side of it, under `panchanga.punya_kala` (`03-design/panchanga-day.md` §21.5, crux C752). Left out of the day's document when the day holds none, which is all but some twelve days a year."
+        },
+        "sun": {
+          "$ref": "#/$defs/SunDay",
+          "description": "What the Sun did."
+        },
+        "window": {
+          "$ref": "#/$defs/Interval",
+          "description": "What the limb spans are clipped to: the arc under a sunrise boundary, the civil day under a midnight one."
+        }
+      },
+      "required": [
+        "day",
+        "window",
+        "limbs",
+        "kaalas",
+        "choghadiya",
+        "horas",
+        "muhurtas",
+        "durmuhurtas",
+        "month",
+        "moon",
+        "sun",
+        "omens",
+        "ghati_reckoning"
+      ],
+      "type": "object"
+    },
+    "PanchangaLunarMonth": {
+      "description": "The lunar month a day falls in, under both conventions.",
+      "properties": {
+        "amanta": {
+          "$ref": "#/$defs/Masa",
+          "description": "The amanta month: new moon to new moon."
+        },
+        "convention": {
+          "$ref": "#/$defs/LunarMonth",
+          "description": "Which convention that is."
+        },
+        "kind": {
+          "$ref": "#/$defs/MonthKind",
+          "description": "Whether the month is ordinary, intercalary or omitted."
+        },
+        "month": {
+          "$ref": "#/$defs/Masa",
+          "description": "The month under the profile's own convention."
+        },
+        "paksha": {
+          "$ref": "#/$defs/Paksha",
+          "description": "Which fortnight the day opens in."
+        },
+        "purnimanta": {
+          "$ref": "#/$defs/Masa",
+          "description": "The purnimanta month: full moon to full moon."
+        }
+      },
+      "required": [
+        "month",
+        "convention",
+        "amanta",
+        "purnimanta",
+        "paksha",
+        "kind"
+      ],
+      "type": "object"
+    },
+    "PanchangaMuhurtaYoga": {
+      "description": "A muhurta yoga that held, and for how long.",
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/Interval",
+          "description": "While it held, clipped to the day."
+        },
+        "because": {
+          "$ref": "#/$defs/YogaCause",
+          "description": "What made it, so a reader can see why."
+        },
+        "yoga": {
+          "$ref": "#/$defs/MuhurtaYoga",
+          "description": "Which yoga."
+        }
+      },
+      "required": [
+        "yoga",
+        "at",
+        "because"
+      ],
+      "type": "object"
+    },
+    "Part": {
+      "description": "One choghadiya, of the daylight or of the night.",
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/Interval",
+          "description": "When it runs."
+        },
+        "choghadiya": {
+          "$ref": "#/$defs/Choghadiya",
+          "description": "Which choghadiya, which carries its lord and whether it is auspicious."
+        },
+        "is_daytime": {
+          "description": "Whether it is one of the eight of the daylight.",
+          "type": "boolean"
+        },
+        "lord": {
+          "$ref": "#/$defs/Graha",
+          "description": "The graha that rules it."
+        }
+      },
+      "required": [
+        "choghadiya",
+        "lord",
+        "at",
+        "is_daytime"
+      ],
+      "type": "object"
+    },
+    "PolarDayPolicy": {
+      "description": "What a day without a sunrise is.",
+      "oneOf": [
+        {
+          "const": "UNDEFINED",
+          "description": "An undefined state.",
+          "type": "string"
+        },
+        {
+          "const": "NEAREST_EVENT",
+          "description": "The nearest rise or set.",
+          "type": "string"
+        },
+        {
+          "const": "CIVIL_MIDNIGHT",
+          "description": "Civil midnight.",
+          "type": "string"
+        }
+      ]
+    },
+    "PolarKind": {
+      "description": "Which polar state a day is in.",
+      "oneOf": [
+        {
+          "const": "DAY",
+          "description": "The Sun does not set.",
+          "type": "string"
+        },
+        {
+          "const": "NIGHT",
+          "description": "The Sun does not rise.",
+          "type": "string"
+        }
+      ]
+    },
+    "PunyaKala": {
+      "description": "A sankranti's punya kala, on the day it falls.",
+      "properties": {
+        "sankranti": {
+          "$ref": "#/$defs/JulianDay",
+          "description": "When the Sun entered the sign, which may be in the night before or after the day."
+        },
+        "span": {
+          "$ref": "#/$defs/RashiSpan",
+          "description": "The sign entered; `whole` the ghatis the text gives, or the half day a night's entry makes meritorious; `inside` their part in the day's daylight, the window itself."
+        }
+      },
+      "required": [
+        "sankranti",
+        "span"
+      ],
+      "type": "object"
+    },
+    "Rashi": {
+      "anyOf": [
+        {
+          "description": "A key of the `rashi` catalogue, as a document writes it.",
+          "enum": [
+            "ARIES",
+            "TAURUS",
+            "GEMINI",
+            "CANCER",
+            "LEO",
+            "VIRGO",
+            "LIBRA",
+            "SCORPIO",
+            "SAGITTARIUS",
+            "CAPRICORN",
+            "AQUARIUS",
+            "PISCES"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `rashi` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "rashi.ARIES",
+            "rashi.TAURUS",
+            "rashi.GEMINI",
+            "rashi.CANCER",
+            "rashi.LEO",
+            "rashi.VIRGO",
+            "rashi.LIBRA",
+            "rashi.SCORPIO",
+            "rashi.SAGITTARIUS",
+            "rashi.CAPRICORN",
+            "rashi.AQUARIUS",
+            "rashi.PISCES"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `rashi` catalogue, bare or full.",
+      "x-teistro-kind": "rashi"
+    },
+    "RashiSpan": {
+      "description": "One member of a limb, and when it ran.",
+      "properties": {
+        "inside": {
+          "$ref": "#/$defs/Interval",
+          "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "member": {
+          "$ref": "#/$defs/Rashi",
+          "description": "Which member ran."
+        },
+        "whole": {
+          "$ref": "#/$defs/Interval",
+          "description": "When the member itself began and ended, whether or not either instant lies inside the day."
+        }
+      },
+      "required": [
+        "member",
+        "whole",
+        "inside"
+      ],
+      "type": "object"
+    },
+    "Ritu": {
+      "anyOf": [
+        {
+          "description": "A key of the `ritu` catalogue, as a document writes it.",
+          "enum": [
+            "VASANTA",
+            "GRISHMA",
+            "VARSHA",
+            "SHARAD",
+            "HEMANTA",
+            "SHISHIRA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `ritu` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "ritu.VASANTA",
+            "ritu.GRISHMA",
+            "ritu.VARSHA",
+            "ritu.SHARAD",
+            "ritu.HEMANTA",
+            "ritu.SHISHIRA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `ritu` catalogue, bare or full.",
+      "x-teistro-kind": "ritu"
+    },
+    "SunDay": {
+      "description": "What the Sun did in the day.",
+      "properties": {
+        "ayana": {
+          "$ref": "#/$defs/Ayana",
+          "description": "Which half of the year the day falls in."
+        },
+        "ritu": {
+          "$ref": "#/$defs/Ritu",
+          "description": "Which season the day falls in, under `panchanga.ritu`."
+        },
+        "sankranti": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/JulianDay"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The sankranti inside the day, when the Sun entered a new sign."
+        },
+        "signs": {
+          "description": "The signs the Sun stood in; two only on a sankranti day.",
+          "items": {
+            "$ref": "#/$defs/RashiSpan"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "signs",
+        "ayana",
+        "ritu"
+      ],
+      "type": "object"
+    },
+    "Sunrise": {
+      "description": "Which moment sunrise is.",
+      "oneOf": [
+        {
+          "const": "CENTRE_NO_REFRACTION",
+          "description": "The centre of the disc on the geometric horizon.",
+          "type": "string"
+        },
+        {
+          "const": "UPPER_LIMB_REFRACTION",
+          "description": "The upper limb with refraction.",
+          "type": "string"
+        },
+        {
+          "const": "LOWER_LIMB_REFRACTION",
+          "description": "The lower limb with refraction.",
+          "type": "string"
+        },
+        {
+          "const": "CENTRE_REFRACTION",
+          "description": "The centre of the disc with standard refraction: the Indian almanacs' disc middle, and Nepal's daily print (`03-design/nepal-day-measured.md`, C39).",
+          "type": "string"
+        }
+      ]
+    },
+    "SunriseConvention": {
+      "description": "The sunrise convention, with a custom altitude when asked.",
+      "oneOf": [
+        {
+          "description": "One of the named conventions.",
+          "properties": {
+            "kind": {
+              "const": "NAMED",
+              "type": "string"
+            },
+            "which": {
+              "$ref": "#/$defs/Sunrise",
+              "description": "The convention."
+            }
+          },
+          "required": [
+            "kind",
+            "which"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "The centre of the disc at a given altitude.",
+          "properties": {
+            "altitude_deg": {
+              "description": "The altitude of the centre, degrees; negative below the horizon.",
+              "format": "double",
+              "type": "number"
+            },
+            "kind": {
+              "const": "CUSTOM",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "altitude_deg"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "A named convention that refracts, refracted by the given air rather than by the almanac's 34 arcminutes (`03-design/horizon-atmosphere.md`).",
+          "properties": {
+            "air": {
+              "$ref": "#/$defs/Atmosphere",
+              "description": "The air."
+            },
+            "kind": {
+              "const": "ATMOSPHERIC",
+              "type": "string"
+            },
+            "which": {
+              "$ref": "#/$defs/Sunrise",
+              "description": "The convention, which must refract."
+            }
+          },
+          "required": [
+            "kind",
+            "which",
+            "air"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "Tithi": {
+      "anyOf": [
+        {
+          "description": "A key of the `tithi` catalogue, as a document writes it.",
+          "enum": [
+            "SHUKLA_PRATIPADA",
+            "SHUKLA_DVITIYA",
+            "SHUKLA_TRITIYA",
+            "SHUKLA_CHATURTHI",
+            "SHUKLA_PANCHAMI",
+            "SHUKLA_SHASHTHI",
+            "SHUKLA_SAPTAMI",
+            "SHUKLA_ASHTAMI",
+            "SHUKLA_NAVAMI",
+            "SHUKLA_DASHAMI",
+            "SHUKLA_EKADASHI",
+            "SHUKLA_DWADASHI",
+            "SHUKLA_TRAYODASHI",
+            "SHUKLA_CHATURDASHI",
+            "PURNIMA",
+            "KRISHNA_PRATIPADA",
+            "KRISHNA_DVITIYA",
+            "KRISHNA_TRITIYA",
+            "KRISHNA_CHATURTHI",
+            "KRISHNA_PANCHAMI",
+            "KRISHNA_SHASHTHI",
+            "KRISHNA_SAPTAMI",
+            "KRISHNA_ASHTAMI",
+            "KRISHNA_NAVAMI",
+            "KRISHNA_DASHAMI",
+            "KRISHNA_EKADASHI",
+            "KRISHNA_DWADASHI",
+            "KRISHNA_TRAYODASHI",
+            "KRISHNA_CHATURDASHI",
+            "AMAVASYA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `tithi` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "tithi.SHUKLA_PRATIPADA",
+            "tithi.SHUKLA_DVITIYA",
+            "tithi.SHUKLA_TRITIYA",
+            "tithi.SHUKLA_CHATURTHI",
+            "tithi.SHUKLA_PANCHAMI",
+            "tithi.SHUKLA_SHASHTHI",
+            "tithi.SHUKLA_SAPTAMI",
+            "tithi.SHUKLA_ASHTAMI",
+            "tithi.SHUKLA_NAVAMI",
+            "tithi.SHUKLA_DASHAMI",
+            "tithi.SHUKLA_EKADASHI",
+            "tithi.SHUKLA_DWADASHI",
+            "tithi.SHUKLA_TRAYODASHI",
+            "tithi.SHUKLA_CHATURDASHI",
+            "tithi.PURNIMA",
+            "tithi.KRISHNA_PRATIPADA",
+            "tithi.KRISHNA_DVITIYA",
+            "tithi.KRISHNA_TRITIYA",
+            "tithi.KRISHNA_CHATURTHI",
+            "tithi.KRISHNA_PANCHAMI",
+            "tithi.KRISHNA_SHASHTHI",
+            "tithi.KRISHNA_SAPTAMI",
+            "tithi.KRISHNA_ASHTAMI",
+            "tithi.KRISHNA_NAVAMI",
+            "tithi.KRISHNA_DASHAMI",
+            "tithi.KRISHNA_EKADASHI",
+            "tithi.KRISHNA_DWADASHI",
+            "tithi.KRISHNA_TRAYODASHI",
+            "tithi.KRISHNA_CHATURDASHI",
+            "tithi.AMAVASYA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `tithi` catalogue, bare or full.",
+      "x-teistro-kind": "tithi"
+    },
+    "TithiSpan": {
+      "description": "One member of a limb, and when it ran.",
+      "properties": {
+        "inside": {
+          "$ref": "#/$defs/Interval",
+          "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "member": {
+          "$ref": "#/$defs/Tithi",
+          "description": "Which member ran."
+        },
+        "whole": {
+          "$ref": "#/$defs/Interval",
+          "description": "When the member itself began and ended, whether or not either instant lies inside the day."
+        }
+      },
+      "required": [
+        "member",
+        "whole",
+        "inside"
+      ],
+      "type": "object"
+    },
+    "Vara": {
+      "anyOf": [
+        {
+          "description": "A key of the `vara` catalogue, as a document writes it.",
+          "enum": [
+            "RAVIVARA",
+            "SOMAVARA",
+            "MANGALAVARA",
+            "BUDHAVARA",
+            "GURUVARA",
+            "SHUKRAVARA",
+            "SHANIVARA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `vara` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "vara.RAVIVARA",
+            "vara.SOMAVARA",
+            "vara.MANGALAVARA",
+            "vara.BUDHAVARA",
+            "vara.GURUVARA",
+            "vara.SHUKRAVARA",
+            "vara.SHANIVARA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `vara` catalogue, bare or full.",
+      "x-teistro-kind": "vara"
+    },
+    "Yoga": {
+      "anyOf": [
+        {
+          "description": "A key of the `yoga` catalogue, as a document writes it.",
+          "enum": [
+            "VISHKAMBHA",
+            "PRITI",
+            "AYUSHMAN",
+            "SAUBHAGYA",
+            "SHOBHANA",
+            "ATIGANDA",
+            "SUKARMA",
+            "DHRITI",
+            "SHOOLA",
+            "GANDA",
+            "VRIDDHI",
+            "DHRUVA",
+            "VYAGHATA",
+            "HARSHANA",
+            "VAJRA",
+            "SIDDHI",
+            "VYATIPATA",
+            "VARIYANA",
+            "PARIGHA",
+            "SHIVA",
+            "SIDDHA",
+            "SADHYA",
+            "SHUBHA",
+            "SHUKLA",
+            "BRAHMA",
+            "INDRA",
+            "VAIDHRITI",
+            "VISHKAMBA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `yoga` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "yoga.VISHKAMBHA",
+            "yoga.PRITI",
+            "yoga.AYUSHMAN",
+            "yoga.SAUBHAGYA",
+            "yoga.SHOBHANA",
+            "yoga.ATIGANDA",
+            "yoga.SUKARMA",
+            "yoga.DHRITI",
+            "yoga.SHOOLA",
+            "yoga.GANDA",
+            "yoga.VRIDDHI",
+            "yoga.DHRUVA",
+            "yoga.VYAGHATA",
+            "yoga.HARSHANA",
+            "yoga.VAJRA",
+            "yoga.SIDDHI",
+            "yoga.VYATIPATA",
+            "yoga.VARIYANA",
+            "yoga.PARIGHA",
+            "yoga.SHIVA",
+            "yoga.SIDDHA",
+            "yoga.SADHYA",
+            "yoga.SHUBHA",
+            "yoga.SHUKLA",
+            "yoga.BRAHMA",
+            "yoga.INDRA",
+            "yoga.VAIDHRITI",
+            "yoga.VISHKAMBA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `yoga` catalogue, bare or full.",
+      "x-teistro-kind": "yoga"
+    },
+    "YogaCause": {
+      "description": "What made a muhurta yoga hold.",
+      "oneOf": [
+        {
+          "description": "The vara and the nakshatra the Moon was in.",
+          "properties": {
+            "cause": {
+              "const": "VARA_NAKSHATRA",
+              "type": "string"
+            },
+            "nakshatra": {
+              "$ref": "#/$defs/Nakshatra",
+              "description": "The nakshatra that makes it."
+            },
+            "vara": {
+              "$ref": "#/$defs/Vara",
+              "description": "The day's vara."
+            }
+          },
+          "required": [
+            "cause",
+            "vara",
+            "nakshatra"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "The vara, the tithi's class and the nakshatra's number of feet.",
+          "properties": {
+            "cause": {
+              "const": "VARA_TITHI_NAKSHATRA",
+              "type": "string"
+            },
+            "nakshatra": {
+              "$ref": "#/$defs/Nakshatra",
+              "description": "The nakshatra that makes it."
+            },
+            "tithi": {
+              "$ref": "#/$defs/Tithi",
+              "description": "The tithi that makes it."
+            },
+            "vara": {
+              "$ref": "#/$defs/Vara",
+              "description": "The day's vara."
+            }
+          },
+          "required": [
+            "cause",
+            "vara",
+            "tithi",
+            "nakshatra"
+          ],
+          "type": "object"
+        }
+      ]
+    },
+    "YogaSpan": {
+      "description": "One member of a limb, and when it ran.",
+      "properties": {
+        "inside": {
+          "$ref": "#/$defs/Interval",
+          "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "member": {
+          "$ref": "#/$defs/Yoga",
+          "description": "Which member ran."
+        },
+        "whole": {
+          "$ref": "#/$defs/Interval",
+          "description": "When the member itself began and ended, whether or not either instant lies inside the day."
+        }
+      },
+      "required": [
+        "member",
+        "whole",
+        "inside"
+      ],
+      "type": "object"
+    },
+    "Zodiac": {
+      "description": "Which zodiac longitudes are measured in.",
+      "oneOf": [
+        {
+          "description": "From the equinox.",
+          "properties": {
+            "kind": {
+              "const": "TROPICAL",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "type": "object"
+        },
+        {
+          "description": "From the equinox less a catalogued ayanamsha (the mean value, without the nutation in longitude).",
+          "properties": {
+            "ayanamsha": {
+              "$ref": "#/$defs/Ayanamsha",
+              "description": "The ayanamsha."
+            },
+            "kind": {
+              "const": "SIDEREAL",
+              "type": "string"
+            }
+          },
+          "required": [
+            "kind",
+            "ayanamsha"
+          ],
+          "type": "object"
+        }
+      ]
+    }
+  },
+  "$id": "urn:teistro:schema:gochar-sidecar:0.0.0",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "description": "A chart's natal facts for its transits: its foundation and, when the chart carries one, its panchanga, with the hashes that tie them to the chart they were cut from.",
+  "properties": {
+    "chart": {
+      "$ref": "#/$defs/Hash",
+      "description": "The content hash of the sealed chart document it was cut from."
+    },
+    "format": {
+      "description": "The sidecar's own shape, `1`.",
+      "format": "uint32",
+      "minimum": 0,
+      "type": "integer"
+    },
+    "foundation": {
+      "$ref": "#/$defs/ChartFoundation",
+      "description": "The chart's foundation, in the document's own shape."
+    },
+    "natal_hash": {
+      "$ref": "#/$defs/Hash",
+      "description": "The content hash of the natal document it opens to: the foundation, and the panchanga when carried."
+    },
+    "panchanga": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Panchanga"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "description": "The chart's panchanga, which the Sarvatobhadra reads the birth's tithi and weekday from; absent when the chart was founded without one."
+    },
+    "settings": {
+      "$ref": "#/$defs/Hash",
+      "description": "The settings hash that document was computed under."
+    }
+  },
+  "required": [
+    "format",
+    "chart",
+    "settings",
+    "natal_hash",
+    "foundation"
+  ],
+  "title": "A chart's gochar sidecar",
+  "type": "object"
+}

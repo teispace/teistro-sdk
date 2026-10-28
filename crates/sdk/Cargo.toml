@@ -408,6 +408,10 @@ name = "sarvatobhadra"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "sidecar"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "dossier"
 required-features = ["builtin-ephemeris"]
 

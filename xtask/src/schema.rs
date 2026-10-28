@@ -759,6 +759,12 @@ fn round_trip(root: &Path) -> String {
          tables have moved is an error rather than a quiet
          reinterpretation.
 
+         The gochar sidecar does not derive it either, by choice rather
+         than of necessity: it is read only through `GocharSidecar::read`,
+         which checks the hash of what it read against the one it was cut
+         with (`gochar-sidecar.md` §4), so a derive would be a reader that
+         skips the check.
+
          `serial-measured.md` found the opposite end of this shape —
          `ChartFoundation` derived no `Serialize`, so the SDK could not
          publish a chart at all. It can now publish one and read it back.\n\n",

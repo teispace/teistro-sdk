@@ -34,6 +34,22 @@ pub const DOCUMENT_ID: &str = concat!(
     env!("CARGO_PKG_VERSION")
 );
 
+/// The JSON Schema (draft 2020-12) of a
+/// [`GocharSidecar`](crate::sidecar::GocharSidecar), as generated for this
+/// release (`docs/03-design/gochar-sidecar.md` §7).
+///
+/// ```
+/// let schema: serde_json::Value = serde_json::from_str(teistro_serial::schema::GOCHAR_SIDECAR).unwrap();
+/// assert_eq!(schema["$id"], teistro_serial::schema::GOCHAR_SIDECAR_ID);
+/// ```
+pub const GOCHAR_SIDECAR: &str = include_str!("../schema/gochar-sidecar.schema.json");
+
+/// The sidecar schema's identifier, one per release as the document's is.
+pub const GOCHAR_SIDECAR_ID: &str = concat!(
+    "urn:teistro:schema:gochar-sidecar:",
+    env!("CARGO_PKG_VERSION")
+);
+
 /// Generates the schema from the types, as the text [`DOCUMENT`] holds.
 ///
 /// Every object's keys are written in code-point order and arrays in the
@@ -52,12 +68,27 @@ pub const DOCUMENT_ID: &str = concat!(
 /// with `#[schemars(rename = ...)]` instead.
 #[cfg(feature = "schema")]
 pub fn generate() -> Result<String, String> {
-    use crate::{Document, Sealed};
+    generate_for::<crate::Sealed<crate::Document>>(DOCUMENT_ID, "A sealed chart document")
+}
 
+/// Generates the gochar sidecar's schema, as the text [`GOCHAR_SIDECAR`]
+/// holds, by the rules [`generate`] states.
+///
+/// # Errors
+///
+/// As [`generate`].
+#[cfg(feature = "schema")]
+pub fn generate_sidecar() -> Result<String, String> {
+    generate_for::<crate::sidecar::GocharSidecar>(GOCHAR_SIDECAR_ID, "A chart's gochar sidecar")
+}
+
+/// One root type's schema under `id` and `title`.
+#[cfg(feature = "schema")]
+fn generate_for<T: schemars::JsonSchema>(id: &str, title: &str) -> Result<String, String> {
     let generator = schemars::generate::SchemaSettings::draft2020_12().into_generator();
-    let mut schema = generator.into_root_schema_for::<Sealed<Document>>();
-    schema.insert("$id".to_owned(), DOCUMENT_ID.into());
-    schema.insert("title".to_owned(), "A sealed chart document".into());
+    let mut schema = generator.into_root_schema_for::<T>();
+    schema.insert("$id".to_owned(), id.into());
+    schema.insert("title".to_owned(), title.into());
     let value = schema.to_value();
     let numbered = numbered_names(&value);
     if !numbered.is_empty() {
