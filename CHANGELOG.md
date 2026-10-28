@@ -55,6 +55,29 @@ new reader of what the recording engine stored.
   registered rather than patched. The tests' hand-written variant
   patches are gone.
 
+**`@teistro/compat`, the shim's package, as a skeleton.**
+**Numbers:** none move. A new package of plain JavaScript over the Node
+binding; nothing it does computes.
+- `compat(options)` opens the shim: a natal context per distinct
+  translated snapshot and a KP context beside it on first use, at most
+  sixteen kept and the one used longest ago disposed; `shim.dispose()`
+  frees them all. `profile` and `settings` are refused as options, since
+  each stored snapshot decides them.
+- The stored birth record is read as the design's §3.7 maps it: the Julian
+  day is the instant, refused as `CompatRefused` (`birth.instant`) when
+  the stored UTC date stands more than a millisecond from it; the clock is
+  read in the stored IANA zone or local mean time.
+- `CompatRefused` carries the row and the guide anchor; a stored settings
+  field or value the translation refuses becomes one, the SDK's
+  `TeistroError` its cause. Any other SDK error passes through untouched.
+- `shim.calls()` counts each row's calls per thread, so an application
+  sees when it has finished porting. The README states the package's end:
+  deprecated once no application reports a call, unreleased at the next
+  SDK minor version or 2.0, whichever comes first; `recordedSettings`
+  stays in the SDK.
+- `check-node` runs the package's tests and type-checks its consumer;
+  `check-guides` holds its README.
+
 **A transit seen from a centre of its own.**
 **Numbers:** every settings hash moves with the new knob. Under the root
 and every shipped profile but `conformance-baseline` no answer moves:

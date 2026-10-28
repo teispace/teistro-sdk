@@ -47,13 +47,14 @@ const GUIDES: &str = "site/content/docs";
 
 /// The READMEs each binding and adapter publishes with its package, held
 /// as the guides are.
-const READMES: [&str; 13] = [
+const READMES: [&str; 14] = [
     "README.md",
     "bindings/c/README.md",
     "bindings/dart/README.md",
     "bindings/flutter/README.md",
     "bindings/java/README.md",
     "bindings/node/README.md",
+    "bindings/node/compat/README.md",
     "bindings/python/README.md",
     "bindings/wasm/README.md",
     "adapters/ephemeris-teimeris/dart/README.md",
@@ -73,7 +74,13 @@ const REFERENCE: &str = "reference";
 /// consumer needs the engine's data, which a checkout does not have, and
 /// running the Flutter app needs a device; the gate's report says which
 /// is which.
-const EXECUTED: [Source; 5] = [
+const EXECUTED: [Source; 6] = [
+    Source {
+        file: "bindings/node/compat/typecheck/consumer.ts",
+        module: "xtask/src/node_binding.rs",
+        names: "bindings/node/compat",
+        held: "type-checked by `check-node`",
+    },
     Source {
         file: "adapters/ephemeris-teimeris/node/typecheck/consumer.ts",
         module: "xtask/src/node_binding.rs",

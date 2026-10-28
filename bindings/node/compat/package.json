@@ -1,0 +1,32 @@
+{
+  "name": "@teistro/compat",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The baseline engine's stored birth records and settings snapshots, forwarded to the Teistro SDK one call at a time: a migration aid with a stated end.",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/teispace/teistro-sdk.git",
+    "directory": "bindings/node/compat"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    }
+  },
+  "files": [
+    "lib/"
+  ],
+  "scripts": {
+    "test": "node --import ./test/sdk.mjs --test test/*.test.mjs"
+  },
+  "peerDependencies": {
+    "@teistro/sdk": "0.0.0"
+  }
+}

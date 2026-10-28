@@ -1,6 +1,6 @@
 # The compatibility shim: the baseline engine's inputs, forwarded
 
-Status: `design`, 2026-10-28; items 1 to 3 (§7) built the same day, the
+Status: `design`, 2026-10-28; items 1 to 4 (§7) built the same day, the
 rest not. The last "not met"
 row of the parity checklist
 ([`02-parity-requirements.md`](../01-research/baseline-engine/02-parity-requirements.md),
@@ -123,6 +123,15 @@ charts share a handful of snapshots, so the cache is bounded at 16 and
 disposes what it evicts. `shim.dispose()` frees them all. The cache
 belongs to the module instance, so each worker thread has its own, as
 the SDK requires (guide §7, "threads").
+
+Built (item 4): the translations are kept too, at most 64 by the
+snapshot's text, so a snapshot costs one `recordedSettings` call however
+often it is used (§6.5); two snapshots differing only in a field set
+aside share one context. The locale a context opens with is the
+snapshot's stored one, else the one `compat` was given. `profile` and
+`settings` are refused as options, since each snapshot decides them. The
+counts `calls()` reads belong to the module instance, so they are per
+thread.
 
 ## 3. The call surface
 
@@ -446,6 +455,14 @@ comparison.
   sentence.
 - A birth record whose Julian day and UTC date disagree throws
   `CompatRefused` with row `birth.instant`.
+- A stored field or value the translation refuses reaches the shim as
+  the SDK's `TeistroError` on `snapshot.<field>`. The shim throws it as
+  `CompatRefused` with that field as its row and the SDK's error as its
+  `cause`, record whole (built, item 4): the refusal is of the stored
+  row, not of a computation, and the crux stays on `cause.hint`. Any other
+  error the translation raises passes through untouched. Until the
+  generated map exists (item 8), the guide anchor of a settings refusal
+  is the guide's §8.3 and of a birth refusal its §8.2.
 
 ### 6.2 Versions
 
@@ -527,7 +544,7 @@ In order. Each is one pull request.
 | 1 | built: `teistro_core::settings::recorded`: `ROWS`, `recorded()`, `Recorded`, `Refused`; unit tests over every row; crux rows C776 and C777 | core, cruxes | 1 day |
 | 2 | built: the corpus founded through the translation (`ephemeris_kit::variants`, held on every built-in tier with its measured divergences), the ad hoc patches deleted, the `default` snapshot held to `conformance-baseline` knob by knob | sdk tests, ephemeris-kit | 1 day |
 | 3 | built: the boundary, one JSON entry through the IDL, generated into every binding and wrapped as the context's `recordedSettings` in Node, wasm, Dart and Java and `recorded_settings` in Python; the parity example is not written | ffi, idl, bindings | 1 day |
-| 4 | `@teistro/compat` skeleton: `compat()`, the context cache, the birth record (§3.7), `CompatRefused`, `calls()`, README with the end (§6.3), typecheck consumer | bindings/node/compat | 1 day |
+| 4 | built: `@teistro/compat` skeleton: `compat()`, the context cache, the birth record (§3.7), `CompatRefused`, `calls()`, README with the end (§6.3), typecheck consumer; its tests and the consumer run under `check-node`, the README is held by `check-guides` | bindings/node/compat, xtask | 1 day |
 | 5 | the A/B's SDK side moved into the package (`chart`, `full`, `vargas`, `yogas`, `strength`, `dashas`, `day`, `month`, `milan`, `varsha`, `kp`, `gochar`, `sadeSati`, `batch`); `CONVENTIONS.same` replaced by `recordedSettings`; `agree.test.mjs` | node bench, compat | 1 day |
 | 6 | the remaining forward and compose rows of §3, with `facts()` moved from `ab-agree.mjs` | compat | 2 days |
 | 7 | `surface.json`, the refused rows typed `never`, `surface.test.mjs` | compat | 0.5 day |

@@ -43,6 +43,16 @@ const SURFACE: &str = "typecheck/surface.mjs";
 /// would be a broken package however green the SDK's own gate was. The
 /// generated façade is most of what it holds (ADR-0030).
 const ADAPTER_TSCONFIG: &str = "adapters/ephemeris-teimeris/node/tsconfig.json";
+/// `@teistro/compat`, the baseline engine's inputs forwarded to the SDK
+/// (`docs/03-design/compat-shim.md`): a package of plain JavaScript that
+/// takes the SDK as a peer, so its tests run here, after the binding's,
+/// against the binding beside it.
+const COMPAT: &str = "bindings/node/compat";
+/// Its suite, with `@teistro/sdk` resolved to the binding beside it: a
+/// checkout has no `node_modules` to find the peer in.
+const COMPAT_SUITE: [&str; 4] = ["--import", "./test/sdk.mjs", "--test", "test/*.test.mjs"];
+/// Its declarations and the consumer that holds them.
+const COMPAT_TSCONFIG: &str = "bindings/node/compat/tsconfig.json";
 /// Where the leak test's foreign-function library is pinned and installed:
 /// Node has no FFI of its own to read the C allocator with, and the
 /// package must not depend on one.
@@ -196,6 +206,16 @@ pub(crate) fn check(root: &Path) -> i32 {
     if outcome.is_err() {
         return 1;
     }
+    let compat = step(
+        Command::new("node")
+            .args(COMPAT_SUITE)
+            .current_dir(root.join(COMPAT)),
+        &format!("{COMPAT}/test/ reads stored rows and keeps its contexts"),
+        &format!("{COMPAT}/test/ did not pass"),
+    );
+    if compat.is_err() {
+        return 1;
+    }
     if Binding::Node.run(root, &Runtime::of(root)).is_err() {
         return 1;
     }
@@ -241,7 +261,18 @@ pub(crate) fn check(root: &Path) -> i32 {
         &format!("{ADAPTER_TSCONFIG}: the typed engine façade composes with the SDK"),
         &format!("{ADAPTER_TSCONFIG} does not type-check"),
     );
-    i32::from(adapter.is_err())
+    if adapter.is_err() {
+        return 1;
+    }
+    let shim = step(
+        Command::new(&tsc)
+            .args(&args)
+            .args(["-p", COMPAT_TSCONFIG])
+            .current_dir(root),
+        &format!("{COMPAT_TSCONFIG}: the shim's declarations compose with the SDK"),
+        &format!("{COMPAT_TSCONFIG} does not type-check"),
+    );
+    i32::from(shim.is_err())
 }
 
 #[cfg(test)]
@@ -257,6 +288,21 @@ mod tests {
         assert_eq!(
             json["scripts"]["test"],
             format!("node --test {}", super::SUITE)
+        );
+    }
+
+    /// The shim's `npm test` runs the suite the gate runs.
+    #[test]
+    fn the_shims_npm_test_runs_the_suite_the_gate_runs() {
+        let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("..")
+            .join(super::COMPAT)
+            .join("package.json");
+        let text = std::fs::read_to_string(manifest).unwrap_or_default();
+        let json: serde_json::Value = serde_json::from_str(&text).unwrap_or_default();
+        assert_eq!(
+            json["scripts"]["test"],
+            format!("node {}", super::COMPAT_SUITE.join(" "))
         );
     }
 }
