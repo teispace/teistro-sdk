@@ -34,6 +34,27 @@ the previous release, not by nobody having looked.
   counts: "beyond the 9th" from zero is beyond the 10th in the
   chapter's inclusive count.
 
+**A stored baseline settings snapshot, read as the SDK's settings.**
+**Numbers:** none move. No profile or knob changes; the translation is a
+new reader of what the recording engine stored.
+- `settings::recorded`: `recorded(snapshot)` reads the baseline engine's
+  own settings fields, row by row from one table (`ROWS`), into the
+  profile and patch the natal and KP contexts open with, the ephemeris
+  the chain needs, the locale, and notes on what it sets aside. A field
+  or value it does not know is refused, never skipped; the Surya bija
+  (C777) and the legacy Ekadhipatya methods (C60) are refused as
+  decisions, and the two limb sunrise modes become their altitudes
+  (C776) (`03-design/compat-shim.md` §4).
+- `ts_recorded_settings`, and `recordedSettings` on the context in Node,
+  wasm, Dart and Java and `recorded_settings` in Python: the translation
+  across the boundary, a refusal named by its stored field and crux.
+- `ephemeris_kit::variants`: the corpus's 60 recorded variants founded
+  under the settings the manifest stored for them, through the
+  translation, on every built-in tier; the surya variant does not
+  reproduce (the planets 0.04 to 3.7 degrees from the recording) and is
+  registered rather than patched. The tests' hand-written variant
+  patches are gone.
+
 **A transit seen from a centre of its own.**
 **Numbers:** every settings hash moves with the new knob. Under the root
 and every shipped profile but `conformance-baseline` no answer moves:

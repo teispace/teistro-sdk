@@ -69,6 +69,7 @@ pub mod positions;
 pub mod provider;
 pub mod published;
 pub mod rashifal;
+pub mod recorded;
 pub mod research;
 pub mod schemas;
 pub mod string;

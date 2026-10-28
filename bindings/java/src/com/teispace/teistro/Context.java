@@ -378,6 +378,27 @@ public final class Context implements AutoCloseable {
     }
 
     /**
+     * A stored baseline settings snapshot translated into what a context
+     * opens with ({@code 03-design/compat-shim.md} §4): {@code natal} and
+     * {@code kp}, each a {@code {profile, settings}} to open a context
+     * with, the {@code ephemeris} the natal chain needs at its front
+     * ({@code SURYA_SIDDHANTA} or {@code null}), the {@code locale}, and
+     * the {@code notes} on every field read and set aside, as
+     * {@link Json#read} reads them. It reads none of this context's
+     * settings.
+     *
+     * @param snapshot the baseline engine's own fields, as {@link Json#write} writes them
+     * @return the translation
+     * @throws TeistroException {@code INVALID_ARG} on {@code snapshot.<field>} for a field or
+     *     value the translation does not know; {@code UNSUPPORTED}, with the crux as its hint,
+     *     for one the SDK decided not to carry, such as the Surya bija
+     */
+    public Object recordedSettings(Map<String, ?> snapshot) {
+        String json = Json.write(snapshot);
+        return Json.read(locked((lib, raw) -> Calls.recordedSettings(lib, raw, json)));
+    }
+
+    /**
      * The calendars: dates by fixed day, conversion, month lengths, leap
      * years and weekdays.
      *

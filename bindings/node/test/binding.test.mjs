@@ -3334,6 +3334,34 @@ test('a name and a birth date read under numerology without a chart', () => {
   ctx.dispose();
 });
 
+test('a stored baseline settings snapshot translates into the contexts it opens', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'NONE' });
+  const translated = ctx.recordedSettings({ ayanamsaId: 3, houseSystem: 'placidus', engineVersion: '1.8.0' });
+  assert.ok(Object.isFrozen(translated.natal.settings), 'frozen');
+  assert.deepEqual([translated.natal.profile, translated.kp.profile], ['conformance-baseline', 'kp-default']);
+  assert.equal(translated.natal.settings.houses.placement_system, 'PLACIDUS');
+  assert.deepEqual([translated.ephemeris, translated.locale], [null, null]);
+  assert.deepEqual(translated.notes.map((note) => note.field), ['engineVersion']);
+  // The translation opens a context as it is.
+  const opened = context({ testProvider: false, ephemeris: 'NONE', profile: translated.natal.profile, settings: translated.natal.settings });
+  assert.equal(opened.profile, 'conformance-baseline');
+  opened.dispose();
+  // The same snapshot as its JSON reads the same.
+  assert.deepEqual(ctx.recordedSettings('{"ayanamsaId": 3, "houseSystem": "placidus", "engineVersion": "1.8.0"}'), translated);
+  assert.equal(ctx.recordedSettings({ siddhanta: 'surya' }).ephemeris, 'SURYA_SIDDHANTA');
+  // A decision is refused with its crux; a value the table lacks names its field.
+  assert.throws(
+    () => ctx.recordedSettings({ suryaBija: true }),
+    (error) => error instanceof TeistroError && error.status === 'UNSUPPORTED' && error.field === 'snapshot.suryaBija' && error.hint === 'C777',
+  );
+  assert.throws(
+    () => ctx.recordedSettings({ nodeType: 'osculating' }),
+    (error) => error instanceof TeistroError && error.field === 'snapshot.nodeType',
+  );
+  assert.throws(() => ctx.recordedSettings([1]), TypeError);
+  ctx.dispose();
+});
+
 /**
  * A chart's avakahada crosses whole, and its syllable names the child back
  * to the Moon's own star and pada (C297): read as a name, the birth syllable

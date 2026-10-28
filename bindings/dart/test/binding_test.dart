@@ -5556,6 +5556,66 @@ void _engineTests() {
     expect(() => ctx.naming.suggest(3, ardra), throwsArgumentError);
     ctx.dispose();
   });
+  test(
+    'a stored baseline settings snapshot translates into the contexts it opens',
+    () {
+      final ctx = context();
+      final translated = ctx.recordedSettings({
+        'ayanamsaId': 3,
+        'houseSystem': 'placidus',
+        'engineVersion': '1.8.0',
+      });
+      final natal = translated['natal']! as Map<String, Object?>;
+      final kp = translated['kp']! as Map<String, Object?>;
+      expect(
+        (natal['profile'], kp['profile']),
+        ('conformance-baseline', 'kp-default'),
+      );
+      final settings = natal['settings']! as Map<String, Object?>;
+      expect(
+        (settings['houses']! as Map<String, Object?>)['placement_system'],
+        'PLACIDUS',
+      );
+      expect((translated['ephemeris'], translated['locale']), (null, null));
+      expect(
+        (translated['notes']! as List<Object?>).map(
+          (note) => (note! as Map<String, Object?>)['field'],
+        ),
+        ['engineVersion'],
+      );
+      expect(
+        ctx.recordedSettings({'siddhanta': 'surya'})['ephemeris'],
+        'SURYA_SIDDHANTA',
+      );
+      // The translation opens a context as it is.
+      final opened = context(
+        profile: natal['profile']! as String,
+        settings: settings,
+      );
+      expect(opened.profile, 'conformance-baseline');
+      opened.dispose();
+      expect(
+        () => ctx.recordedSettings({'suryaBija': true}),
+        throwsA(
+          isA<TeistroException>()
+              .having((e) => e.status, 'status', Status.unsupported)
+              .having((e) => e.field, 'field', 'snapshot.suryaBija')
+              .having((e) => e.hint, 'hint', 'C777'),
+        ),
+      );
+      expect(
+        () => ctx.recordedSettings({'nodeType': 'osculating'}),
+        throwsA(
+          isA<TeistroException>().having(
+            (e) => e.field,
+            'field',
+            'snapshot.nodeType',
+          ),
+        ),
+      );
+      ctx.dispose();
+    },
+  );
 
   test('a name and a birth date read under numerology without a chart', () {
     // Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6; born

@@ -8065,6 +8065,29 @@ export class Context {
   }
 
   /**
+   * A stored baseline settings snapshot translated into what a context
+   * opens with (`03-design/compat-shim.md` §4): `natal` and `kp`, each a
+   * `{ profile, settings }` to open a context with, the `ephemeris` the
+   * natal chain needs at its front (`'SURYA_SIDDHANTA'` or `null`), the
+   * `locale`, and the `notes` on every field read and set aside. It reads
+   * none of this context's settings.
+   *
+   * A field or value the translation does not know is refused as
+   * `INVALID_ARG` on `snapshot.<field>`; one the SDK decided not to carry,
+   * such as the Surya bija, as `UNSUPPORTED`, with the crux as its hint.
+   *
+   * @param {object|string} snapshot the baseline engine's own fields, `{ ayanamsaId: 1, houseSystem: 'whole-sign', ... }`, or their JSON
+   * @returns {object}
+   */
+  recordedSettings(snapshot) {
+    if (typeof snapshot !== 'string' && (typeof snapshot !== 'object' || snapshot === null || Array.isArray(snapshot))) {
+      throw new TypeError("snapshot: expected the stored settings, e.g. { ayanamsaId: 1, houseSystem: 'whole-sign' }");
+    }
+    const json = typeof snapshot === 'string' ? snapshot : JSON.stringify(snapshot);
+    return deepFreeze(JSON.parse(this.#call(() => this.#inner.recordedSettings(json))));
+  }
+
+  /**
    * Positions over a grid of instants and bodies, completed into the
    * frame asked for.
    *

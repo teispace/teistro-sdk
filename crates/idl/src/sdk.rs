@@ -75,6 +75,7 @@ pub const SOURCES: [&str; 28] = [
     "crates/ffi/src/ephemeris.rs",
     "crates/ffi/src/provider.rs",
     "crates/ffi/src/published.rs",
+    "crates/ffi/src/recorded.rs",
 ];
 
 /// The catalogue's generated JSON, relative to the repository root.
