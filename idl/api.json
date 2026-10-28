@@ -31,7 +31,8 @@
     "crates/ffi/src/research.rs",
     "crates/ffi/src/ephemeris.rs",
     "crates/ffi/src/provider.rs",
-    "crates/ffi/src/published.rs"
+    "crates/ffi/src/published.rs",
+    "crates/ffi/src/recorded.rs"
   ],
   "constants": [
     {
@@ -17294,6 +17295,57 @@
       },
       "meta": {},
       "source": "crates/ffi/src/published.rs"
+    },
+    {
+      "name": "ts_recorded_settings",
+      "doc": "Translates a stored baseline settings snapshot and answers with the\ntranslation as canonical JSON: the natal context's profile and patch,\nthe KP context's, the ephemeris the natal chain needs at its front\n(`SURYA_SIDDHANTA` or `null`), the locale and every field read and set\naside as a note (`03-design/compat-shim.md` §4.1). The context records\na refusal; the translation reads none of its settings.\n\n`snapshot_json` is one object of the baseline engine's own field names,\n`{\"ayanamsaId\": 1, \"houseSystem\": \"whole-sign\", ...}`, a nested record\nunder its field. A snapshot that is not an object is `INVALID_ARG` on\n`snapshot`; a field or value the table does not know, `INVALID_ARG` on\n`snapshot.<field>`; a value the SDK decided not to carry, such as the\nSurya bija, `UNSUPPORTED` on `snapshot.<field>` with the crux as its\nhint.",
+      "safety": "`context` must be a live handle; `snapshot_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "snapshot_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/recorded.rs"
     }
   ],
   "blobs": [

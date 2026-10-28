@@ -1195,6 +1195,34 @@ final class Calls {
     }
 
     /**
+     * `ts_recorded_settings`: Translates a stored baseline settings snapshot and answers with the
+     * translation as canonical JSON: the natal context's profile and patch,
+     * the KP context's, the ephemeris the natal chain needs at its front
+     * (`SURYA_SIDDHANTA` or `null`), the locale and every field read and set
+     * aside as a note (`03-design/compat-shim.md` §4.1). The context records
+     * a refusal; the translation reads none of its settings.
+     *
+     * `snapshot_json` is one object of the baseline engine's own field names,
+     * `{"ayanamsaId": 1, "houseSystem": "whole-sign", ...}`, a nested record
+     * under its field. A snapshot that is not an object is `INVALID_ARG` on
+     * `snapshot`; a field or value the table does not know, `INVALID_ARG` on
+     * `snapshot.&lt;field&gt;`; a value the SDK decided not to carry, such as the
+     * Surya bija, `UNSUPPORTED` on `snapshot.&lt;field&gt;` with the crux as its
+     * hint.
+     */
+    static String recordedSettings(Native lib, MemorySegment context, String snapshotJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment snapshotJsonRaw = Boundary.cString(arena, Objects.requireNonNull(snapshotJson, "snapshotJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_recorded_settings.invokeExact(context, snapshotJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_frame_canonical`: Writes the SDK's canonical frame: apparent geocentric ecliptic of date,
      * tropical, which both licensed engines return by default and every chart
      * module consumes. Set `struct_size` before the call.

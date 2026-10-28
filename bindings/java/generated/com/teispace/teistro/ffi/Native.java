@@ -3984,7 +3984,8 @@ public final class Native {
         "ts_provider_load",
         "ts_context_new_with_provider",
         "ts_provider_free",
-        "ts_published_verify"
+        "ts_published_verify",
+        "ts_recorded_settings"
     );
 
     /**
@@ -4770,6 +4771,24 @@ public final class Native {
     public final MethodHandle ts_published_verify;
 
     /**
+     * Translates a stored baseline settings snapshot and answers with the
+     * translation as canonical JSON: the natal context's profile and patch,
+     * the KP context's, the ephemeris the natal chain needs at its front
+     * (`SURYA_SIDDHANTA` or `null`), the locale and every field read and set
+     * aside as a note (`03-design/compat-shim.md` §4.1). The context records
+     * a refusal; the translation reads none of its settings.
+     *
+     * `snapshot_json` is one object of the baseline engine's own field names,
+     * `{"ayanamsaId": 1, "houseSystem": "whole-sign", ...}`, a nested record
+     * under its field. A snapshot that is not an object is `INVALID_ARG` on
+     * `snapshot`; a field or value the table does not know, `INVALID_ARG` on
+     * `snapshot.&lt;field&gt;`; a value the SDK decided not to carry, such as the
+     * Surya bija, `UNSUPPORTED` on `snapshot.&lt;field&gt;` with the crux as its
+     * hint.
+     */
+    public final MethodHandle ts_recorded_settings;
+
+    /**
      * Every entry point, bound in a library.
      *
      * @param symbols the library's symbols
@@ -4847,6 +4866,7 @@ public final class Native {
         ts_context_new_with_provider = linker.downcallHandle(symbols.find("ts_context_new_with_provider").orElseThrow(() -> missing("ts_context_new_with_provider")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_provider_free = linker.downcallHandle(symbols.find("ts_provider_free").orElseThrow(() -> missing("ts_provider_free")), FunctionDescriptor.ofVoid(ADDRESS));
         ts_published_verify = linker.downcallHandle(symbols.find("ts_published_verify").orElseThrow(() -> missing("ts_published_verify")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_LONG, ADDRESS, JAVA_LONG, ADDRESS, JAVA_LONG, JAVA_INT, ADDRESS));
+        ts_recorded_settings = linker.downcallHandle(symbols.find("ts_recorded_settings").orElseThrow(() -> missing("ts_recorded_settings")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
     }
 
     private static IllegalStateException missing(String symbol) {
