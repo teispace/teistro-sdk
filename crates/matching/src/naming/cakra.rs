@@ -312,6 +312,11 @@ pub(crate) fn consonant_of(letter: char) -> Option<char> {
     matches!(base, 'क'..='न' | 'प'..='र' | 'ल' | 'व'..='ह').then_some(base)
 }
 
+/// Whether a letter is in Unicode's Devanagari block.
+pub(crate) fn is_devanagari(letter: char) -> bool {
+    ('\u{0900}'..='\u{097F}').contains(&letter)
+}
+
 pub(crate) const VIRAMA: char = '्';
 pub(crate) const NUKTA: char = '़';
 

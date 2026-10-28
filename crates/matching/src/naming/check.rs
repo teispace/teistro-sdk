@@ -6,9 +6,9 @@ use teistro_core::catalogue::{Deity, Nakshatra};
 use teistro_core::error::Error;
 
 use super::NamingRules;
-use super::cakra::{NameSyllable, consonant_of};
+use super::cakra::NameSyllable;
 use super::clauses::NameClauses;
-use super::pada::{PadaSyllable, pada_of, substitute_letter};
+use super::pada::{InitialBy, PadaSyllable, pada_of, reached_by};
 use super::read::read_name;
 
 /// A birth, as the names it gives are read from it: the Moon's star and
@@ -108,12 +108,7 @@ pub fn name_check(name: &str, birth: Birth, rules: NamingRules) -> Result<NameCh
     // A cell is a pada: four to a star's row, so the row is the star.
     let same_star = read.nakshatra.is_some() && read.cell / 4 == prescribed.cell / 4;
     let same_pada = read.cell == prescribed.cell;
-    let first = reading.spelled.chars().next().and_then(consonant_of);
-    let by_substitute = !same_pada
-        && prescribed
-            .initials
-            .iter()
-            .any(|initial| substitute_letter(initial).is_some_and(|letter| Some(letter) == first));
+    let by_substitute = reached_by(&prescribed, &reading.spelled) == InitialBy::Substitute;
     Ok(NameCheck {
         read,
         prescribed,

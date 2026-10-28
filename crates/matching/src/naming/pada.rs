@@ -181,6 +181,20 @@ pub(crate) fn substitute_letter(initial: &Initial) -> Option<char> {
         .flatten()
 }
 
+/// How a name, spelled in Devanagari, reaches `prescribed`: by the
+/// initial whose consonant it begins with, and by the cell's own when no
+/// initial's is (a vowel's cell). Asked of a name in the cell or
+/// beginning with one of its initials.
+pub(crate) fn reached_by(prescribed: &PadaSyllable, spelled: &str) -> InitialBy {
+    let first = |text: &str| text.chars().next().and_then(consonant_of);
+    let begins = first(spelled);
+    prescribed
+        .initials
+        .iter()
+        .find(|initial| begins.is_some() && first(&initial.devanagari) == begins)
+        .map_or(InitialBy::Cell, |initial| initial.by)
+}
+
 /// What syllables are asked for (C771).
 ///
 /// ```

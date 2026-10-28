@@ -1,8 +1,8 @@
 # Namakarana: the four names, the pada's syllables and a consumer's name book (the `naming` area)
 
 Status: `decided`, 2026-10-28, from the sources before any code. Work
-items 1 to 4 and 6 are built in Rust (`crates/matching/src/naming`,
-2026-10-28; §10 says where the build reads the page); items 5 and 7 to
+items 1 to 4, 6 and 7 are built in Rust (`crates/matching/src/naming`,
+2026-10-28; §10 says where the build reads the page); items 5 and 8 to
 10 are not. Part of it was already built inside naam milan and the
 avakahada (`matching.md`, C291 to C299 and C334), and this page builds
 on that cakra rather than beside it.
@@ -43,7 +43,8 @@ Not built:
 - The rules for a name past its first letter are not read: its
   syllables, its first and last letters, and the month name and star
   name the texts also prescribe.
-- No name corpus exists, and no way to search one.
+- No name corpus exists. The search over a consumer's book is built in
+  Rust only (§10, item 7).
 
 ## 2. What the sources decide
 
@@ -607,6 +608,14 @@ yet):
 - **Item 6.** `name_check(name, Birth, NamingRules)` adds `prescribed`
   as a `PadaSyllable`, `by_substitute` and `clauses`; `names_of(Birth,
   NamingRules)` answers `Names`.
+- **Item 7.** `Book` and `BookName` are §3's JSON, read strictly.
+  `NameBook::load(Book)` reads every name once into its cell, indexes the
+  names by cell in the book's order, and keeps a `BookId`: the SHA-256 of
+  the book's canonical JSON (`teistro_core::envelope::content_hash`).
+  `NameBook::suggest(Birth, &SuggestFilter, NamingRules)` answers
+  `Suggestions`: the `BookId`, the birth pada's `PadaSyllable`, the
+  `Suggested` names in cakra order and then the book's, and every refused
+  name.
 
 Where the build reads the page, it says so here:
 
@@ -635,6 +644,58 @@ Where the build reads the page, it says so here:
 - **Names.** The Rust functions are `read_name`, `name_check`,
   `names_of` and `syllables`, so a crate-root name says what it reads;
   the area's operations keep §4.2's names.
+- **The book's two operations are methods.** `load` and `suggest` are
+  `NameBook::load` and `NameBook::suggest`, so the crate root gains the
+  type and not two bare verbs. The context that holds books by `BookId`,
+  and a book carried inline in a request, belong to the boundary
+  (item 8).
+- **A book's names are read as Devanagari under every rule.** Its
+  `devanagari` is read with `latin: REFUSE` at load, so the index does
+  not depend on a request's rules. A suggestion recomputes each name's
+  clauses under the request's `sutra` and `final_a`, and the request's
+  `nasal` decides the substitutes.
+- **"No Devanagari" means no letter of the Devanagari block.** An
+  empty, blank or Latin-only `devanagari` refuses the whole book under
+  `book.names[i].devanagari`. A name that holds Devanagari but that the
+  cakra refuses (an ai or au initial, or a Latin letter first) is kept:
+  it is listed in `refused` with the reader's refusal, renamed to
+  `book.names[i].devanagari`, and every `suggest` answer carries the
+  list.
+- **`sex` is typed.** `BookName::sex` is an `Option<Sex>`, so a key that
+  is not one fails when the book is read. At the boundary the strict
+  reader names it `book.names[i].sex` (item 8). Rust never holds such a
+  key.
+- **A `BookId` hashes the book as given.** Nothing is trimmed and no
+  Unicode normalisation is applied, since the area has no Unicode
+  dependency (§4.5). The JSON's spacing and key order do not move it.
+  Any change to a name, the order, a `latin`, a `sex` or a tag does. A
+  name the book lists twice is kept twice, and each copy is suggested at
+  its own index.
+- **The filter.** `SuggestFilter { sex, syllables, clauses }`, read
+  strictly.
+  - `sex` keeps names of that sex and names the book gives no sex: a
+    name the book leaves open is anyone's.
+  - `syllables` is a list of counts, any of which passes, counted as
+    `final_a` says. Empty keeps every count. A list, because §2.3's own
+    clause is "two or four".
+  - `clauses` must all hold. A clause the rules' sutra does not report
+    (`EVEN_FOR_A_BOY` under Pāraskara, `LONG_A_FOR_A_GIRL` under
+    Āśvalāyana) is refused under `filter.clauses` rather than matching
+    nothing.
+- **What a suggestion searches.** It reads the pada's own cell, then
+  every cell whose letter is a substitute the pada lists. ग, ड and ज are
+  row heads only, so a name beginning with one reads in its row's cells,
+  whatever its vowel. ज's row runs into Abhijit's, so Uttara Bhadrapada's
+  4th pada also reaches names in जू, जे and जो. `by` is read from the
+  pada's initials by the name's first consonant, and a vowel's cell is
+  reached by `CELL`. `name_check`'s `by_substitute` now asks the same
+  question. `same_pada` is false exactly for a substitute.
+- **`Suggestions` carries `prescribed`.** The answer names the syllable
+  it searched for, with its initials.
+- **Scale.** A synthetic book of 25,000 names (each cell's syllable with
+  a two-letter tail) loads, and all 108 padas are suggested from it, in
+  one unit test in 1.8 s, unoptimised, under nextest. That is the
+  measurement §5 asks for, recorded and not gated.
 - **The bindings' `LatinName`.** Naam milan already crosses the
   boundary with `NameRules`, so its generated request types gain the
   four new keys; nothing else crosses yet.

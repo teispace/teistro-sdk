@@ -14,6 +14,7 @@
 //! # Ok::<(), teistro_core::error::Error>(())
 //! ```
 
+mod book;
 mod cakra;
 mod check;
 mod clauses;
@@ -21,6 +22,9 @@ mod latin;
 mod pada;
 mod read;
 
+pub use book::{
+    Book, BookId, BookName, NameBook, RefusedName, SuggestFilter, Suggested, Suggestions,
+};
 pub use cakra::{NameSyllable, NameVarga};
 pub use check::{Birth, NameCheck, Names, name_check, names_of};
 pub use clauses::{Clause, ClauseRow, ClauseSource, FinalA, GrhyaSutra, NameClauses, name_clauses};
