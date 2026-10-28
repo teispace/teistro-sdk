@@ -33,6 +33,11 @@ jobs:
   bindings:
     name: bindings (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
+    # Each binding's layer under its own coverage tool, on one row: the
+    # figure is the layer's, not the platform's
+    # (`03-design/binding-coverage.md`). Empty elsewhere, which is unset.
+    env:
+      TEISTRO_BINDING_COVERAGE: ${{ matrix.platform == 'linux-x64' && 'target/binding-coverage' || '' }}
     strategy:
       fail-fast: false
       matrix:
@@ -117,8 +122,19 @@ jobs:
         with:
           distribution: temurin
           java-version: "22"
+      - uses: actions/upload-artifact@v4
+        if: always() && matrix.platform == 'linux-x64'
+        with:
+          name: binding-coverage
+          path: target/binding-coverage
+          if-no-files-found: ignore
+      - name: Each binding's layer at or over its coverage floors
+        if: matrix.platform == 'linux-x64'
+        run: cargo xtask check-coverage --bindings target/binding-coverage
       - name: The Java binding on the JDK 22 floor
         if: matrix.platform == 'linux-x64'
+        env:
+          TEISTRO_BINDING_COVERAGE: ""
         run: cargo xtask check-java
       - name: The Rust facade's examples and its own tests
         run: cargo xtask check-rust
