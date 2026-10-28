@@ -189,23 +189,25 @@ const CAUSES: [(&str, Cause, &str); 14] = [
 
 /// The least share of compared facts each request agrees on, under
 /// `timed` and under `same`: the record's of 26 October 2026, to the
-/// tenth of a percent below; `kp`'s of 28 October, when its significators
-/// and ruling planets joined the comparison.
+/// tenth of a percent below; `full`'s, `milan`'s, `kp`'s, `gochar`'s and
+/// `batch`'s of 28 October, when drishti, longevity, the transits' vedha,
+/// the Kuja and marriage doshas and KP's significators and ruling planets
+/// joined the comparison, each share truncated rather than rounded.
 const AGREEMENT_FLOORS: [(&str, f64, f64); 14] = [
     ("chart", 0.545, 0.999),
     ("day", 0.991, 0.965),
-    ("full", 0.643, 0.999),
+    ("full", 0.641, 0.996),
     ("vargas", 0.97, 1.0),
     ("yogas", 0.968, 0.97),
     ("strength", 0.691, 0.986),
     ("dashas", 0.619, 1.0),
     ("month", 0.991, 1.0),
-    ("milan", 0.734, 0.763),
+    ("milan", 0.739, 0.819),
     ("varsha", 0.26, 0.243),
-    ("kp", 0.808, 0.968),
-    ("gochar", 0.659, 0.997),
+    ("kp", 0.808, 0.971),
+    ("gochar", 0.816, 0.984),
     ("sadeSati", 0.076, 1.0),
-    ("batch", 0.653, 0.999),
+    ("batch", 0.651, 0.996),
 ];
 
 /// The least share each side keeps on a rung for a request, under a
