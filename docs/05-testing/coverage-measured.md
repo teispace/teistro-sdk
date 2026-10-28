@@ -49,3 +49,14 @@ Each crate has two floors: the share of its lines its tests run and the share of
 | `time` | 91% | 84% | no |
 | `vargas` | 90% | 94% | yes |
 | `western` | 96% | 89% | no |
+
+## The bindings
+
+Each binding's own layer, its generated readers and its ergonomic code, under its own tool (`03-design/binding-coverage.md`), recorded by `cargo xtask coverage --bindings DIR` from the reports the binding checks write when `TEISTRO_BINDING_COVERAGE` names a directory. A floor rises as a crate's does, and a tool's new version re-bases it. The quality bar asks 80% of a binding's lines, and of its branches where its tool counts them.
+
+| binding | lines | branches | counted by | at 80% |
+|---|---:|---:|---|---|
+| dart | 65% | 48% | `dart 3.13.7` | no |
+| java | 59% | 50% | `jacoco 0.8.15` | no |
+| node | 98% | 83% | `node 22.23.4` | yes |
+| python | 92% | 77% | `coverage.py 7.16.2` | no |
