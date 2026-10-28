@@ -149,7 +149,10 @@ const CAUSES: [(&str, Cause, &str); 14] = [
         "the frame: `kp-default` casts from the Earth's centre on its own node, the baseline from \
          the birthplace on the mean node; under `same` c043's cusps, where the baseline's \
          Placidus falls back at 64.8° N and Swiss Ephemeris and the SDK do not, and the lagnas \
-         of 2350 and 2399, as `chart`",
+         of 2350 and 2399, as `chart`; the day lord, which the SDK takes from sunrise to sunrise \
+         as KP Reader VI does and the baseline from midnight, so a birth before sunrise rules by \
+         the day before; and an intercepted sign's lord, which the baseline counts a significator \
+         of its house and the SDK reports and does not count (crux C154)",
     ),
     (
         "gochar",
@@ -169,7 +172,8 @@ const CAUSES: [(&str, Cause, &str); 14] = [
 
 /// The least share of compared facts each request agrees on, under
 /// `timed` and under `same`: the record's of 26 October 2026, to the
-/// tenth of a percent below.
+/// tenth of a percent below; `kp`'s of 28 October, when its significators
+/// and ruling planets joined the comparison.
 const AGREEMENT_FLOORS: [(&str, f64, f64); 14] = [
     ("chart", 0.545, 0.999),
     ("day", 0.991, 0.965),
@@ -181,7 +185,7 @@ const AGREEMENT_FLOORS: [(&str, f64, f64); 14] = [
     ("month", 0.991, 1.0),
     ("milan", 0.734, 0.763),
     ("varsha", 0.26, 0.243),
-    ("kp", 0.746, 0.979),
+    ("kp", 0.808, 0.969),
     ("gochar", 0.659, 0.997),
     ("sadeSati", 0.076, 1.0),
     ("batch", 0.653, 0.999),
