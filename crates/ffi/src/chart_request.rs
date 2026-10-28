@@ -446,7 +446,7 @@ pub struct TsChartRequest {
     /// and `vashya` (`VERSE` or `PRINTED_IN_NEPAL`); `porutham`, the ten considerations of
     /// *Kalaprakasika* XIII, every field optional: `twoSignStar`
     /// (`GROOM_EARLIER` or `BRIDE_FIRST_SIGN`), `deerghaBeyond`
-    /// (`THIRTEENTH` or `SEVENTH`) and `lordsFriendship` (`MUTUAL` or
+    /// (`THIRTEENTH`, `SEVENTH` or `TENTH_OR_SAME_STAR`) and `lordsFriendship` (`MUTUAL` or
     /// `ONE_WAY`); and `kuja`, the Kuja dosha of *Manasagari*, every field
     /// optional: `houses` (`MANASAGARI` or `WITH_SECOND`) and `from`
     /// (`LAGNA` or `LAGNA_MOON_VENUS`). The answers come back in

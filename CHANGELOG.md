@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The recording engine's Sthree-Dheergham, asked for by name.**
+**Numbers:** none. A new value; the default stays *Kalaprakasika*'s.
+- `deerghaBeyond` `TENTH_OR_SAME_STAR` (crux C779): the groom's star
+  beyond the 10th from the bride's, or her own, as the baseline engine
+  counts: "beyond the 9th" from zero is beyond the 10th in the
+  chapter's inclusive count.
+
 **A transit seen from a centre of its own.**
 **Numbers:** every settings hash moves with the new knob. Under the root
 and every shipped profile but `conformance-baseline` no answer moves:

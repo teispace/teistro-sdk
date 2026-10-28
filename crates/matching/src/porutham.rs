@@ -105,6 +105,10 @@ pub enum DeerghaBeyond {
     Thirteenth,
     /// Beyond the 7th, as "some writers hold".
     Seventh,
+    /// Beyond the 10th, and the bride's own star agreeing as a whole
+    /// round: the recording engine's count, which no text read gives
+    /// (C779).
+    TenthOrSameStar,
 }
 
 /// Which friendship of the lords agrees on Rasyadhipathi and lifts by the
@@ -545,11 +549,11 @@ pub fn porutham(bride: Native, groom: Native, rules: PoruthamRules) -> Porutham 
             PoruthamReading::Mahendra { count },
         ),
         plain(
-            count
-                > match rules.deergha_beyond {
-                    DeerghaBeyond::Thirteenth => 13,
-                    DeerghaBeyond::Seventh => 7,
-                },
+            match rules.deergha_beyond {
+                DeerghaBeyond::Thirteenth => count > 13,
+                DeerghaBeyond::Seventh => count > 7,
+                DeerghaBeyond::TenthOrSameStar => count > 10 || count == 1,
+            },
             PoruthamReading::StreeDeergha { count },
         ),
         plain(
