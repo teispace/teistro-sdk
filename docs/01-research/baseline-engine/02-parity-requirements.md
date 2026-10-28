@@ -120,4 +120,4 @@ by `check-ab`. Code with nothing comparing it to the baseline is "partly".
 | serialiser | met | the dossier and its presets, the same bytes for the same chart (`check-dossier`); the gochar sidecar in Rust (`GocharSidecar`, `03-design/gochar-sidecar.md`), checked against its chart and its settings, its transits the whole document's (`gochar-sidecar-measured.md`); a binding asks for transits on the chart request instead of storing one, decided 2026-10-28 |
 | layouts | met | all three styles (`crates/render-svg/tests/render.rs`) |
 | speed, workers, the same JSON | met | `check-ab`, `bindings/node/test/workers.test.mjs`, `check-parity` |
-| migration guide | not met | being written (`09-guidelines/baseline-migration.md`); the compatibility shim is not built |
+| migration guide | not met | being written (`09-guidelines/baseline-migration.md`); the compatibility shim is designed, not built (`03-design/compat-shim.md`, met when its `check-compat` counts no unmapped entry point) |
