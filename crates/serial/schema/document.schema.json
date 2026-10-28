@@ -1095,7 +1095,7 @@
       ]
     },
     "BirthSyllable": {
-      "description": "The syllable a birth names a child by: the cakra's cell for the Moon's pada, as the catalogue spells it after the print (C297 to C299).",
+      "description": "The syllable a birth names a child by: the cakra's cell for the Moon's pada, as the catalogue spells it after the print (C297 to C299). The cell's own syllable alone, without the initials `syllables` lists, as a chart's avakahada carries it.",
       "properties": {
         "cell": {
           "description": "Its place among the cakra's 112 cells, 0 for a, Krittika's first; never one of Abhijit's four (C298).",

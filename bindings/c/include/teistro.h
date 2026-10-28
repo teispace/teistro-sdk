@@ -9849,11 +9849,11 @@ ts_status ts_almanac_festival_calendar(const ts_context * context, const char * 
  * name stars (`03-design/matching.md`, C291 to C296).
  *
  * `request_json` is `{"bride", "groom", "rules"}`: the two names, in
- * Devanagari or, when `rules.name.latin` is `IAST`, in IAST, and the
+ * Devanagari or in the Latin scheme `rules.name.latin` declares, and the
  * `NaamRules` with every field optional. A name the cakra does not read,
- * a Latin name while `latin` refuses, or an Abhijit syllable while
- * `abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or
- * `naam.groom`.
+ * a Latin name while `latin` refuses, a `CASUAL` name read more than one
+ * way, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`,
+ * named under `naam.bride` or `naam.groom`.
  * The blob follows the `naam` schema of idl/api.json.
  * Safety: `context` must be a live handle; `request_json` NUL-terminated;
  * `out_blob` valid for a write.

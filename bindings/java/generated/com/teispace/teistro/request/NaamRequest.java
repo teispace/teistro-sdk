@@ -11,7 +11,7 @@ import java.util.Objects;
 /**
  * Two names to match star to star, and the readings they are matched under. Naam milan needs no chart, so this is the whole request.
  *
- * @param bride The bride's name, in Devanagari or, when `rules.name.latin` says so, IAST.
+ * @param bride The bride's name, in Devanagari or in the Latin scheme `rules.name.latin` declares.
  * @param groom The groom's.
  * @param rules How the names are read and matched; the sources' own when left out. Null leaves the SDK's default.
  */
@@ -32,7 +32,7 @@ public record NaamRequest(String bride, String groom, NaamRules rules) implement
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
-     * @param bride The bride's name, in Devanagari or, when `rules.name.latin` says so, IAST.
+     * @param bride The bride's name, in Devanagari or in the Latin scheme `rules.name.latin` declares.
      * @param groom The groom's.
      */
     public NaamRequest(String bride, String groom) {
@@ -60,7 +60,7 @@ public record NaamRequest(String bride, String groom, NaamRules rules) implement
         /**
          * Sets {@code bride}.
          *
-         * @param bride The bride's name, in Devanagari or, when `rules.name.latin` says so, IAST.
+         * @param bride The bride's name, in Devanagari or in the Latin scheme `rules.name.latin` declares.
          * @return this builder
          */
         public Builder bride(String bride) {

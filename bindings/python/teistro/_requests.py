@@ -903,7 +903,7 @@ class NaamRequest(TypedDict, total=False):
     """Two names to match star to star, and the readings they are matched under. Naam milan needs no chart, so this is the whole request."""
 
     bride: Required[str]
-    """The bride's name, in Devanagari or, when `rules.name.latin` says so, IAST."""
+    """The bride's name, in Devanagari or in the Latin scheme `rules.name.latin` declares."""
 
     groom: Required[str]
     """The groom's."""
@@ -5190,11 +5190,15 @@ AbhijitPada: TypeAlias = Literal['REFUSE', 'UTTARA_ASHADHA', 'SHRAVANA']
 """
 
 
-LatinName: TypeAlias = Literal['REFUSE', 'IAST']
-"""How a name written in Latin letters is read (C293).
+LatinName: TypeAlias = Literal['REFUSE', 'IAST', 'ISO_15919', 'HARVARD_KYOTO', 'ITRANS', 'CASUAL']
+"""How a name written in Latin letters is read (C293, C772).
 
 `REFUSE`: Refused: an English spelling is not guessed at, since its "ch" is च where IAST's is छ.
-`IAST`: Read as IAST.
+`IAST`: Read as IAST, case folded and combining marks composed.
+`ISO_15919`: Read as ISO 15919 (IAST with ṁ, r̥, ē and ō), case folded and combining marks composed.
+`HARVARD_KYOTO`: Read as Harvard-Kyoto, whose capitals are letters: case as written.
+`ITRANS`: Read as ITRANS 5.3, whose capitals are letters: case as written.
+`CASUAL`: Read every way `CASUAL`'s list allows an everyday spelling to be read, and answered with every cell those readings reach; never one chosen among them (C772).
 """
 
 

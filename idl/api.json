@@ -16356,7 +16356,7 @@
     },
     {
       "name": "ts_naam_milan",
-      "doc": "Matches two names star to star (naam milan) and answers with the\n`naam` blob: each name's first syllable in the śatapada cakra, the\nvarga koota, and the Ashta Koota and the ten considerations of the two\nname stars (`03-design/matching.md`, C291 to C296).\n\n`request_json` is `{\"bride\", \"groom\", \"rules\"}`: the two names, in\nDevanagari or, when `rules.name.latin` is `IAST`, in IAST, and the\n`NaamRules` with every field optional. A name the cakra does not read,\na Latin name while `latin` refuses, or an Abhijit syllable while\n`abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or\n`naam.groom`.",
+      "doc": "Matches two names star to star (naam milan) and answers with the\n`naam` blob: each name's first syllable in the śatapada cakra, the\nvarga koota, and the Ashta Koota and the ten considerations of the two\nname stars (`03-design/matching.md`, C291 to C296).\n\n`request_json` is `{\"bride\", \"groom\", \"rules\"}`: the two names, in\nDevanagari or in the Latin scheme `rules.name.latin` declares, and the\n`NaamRules` with every field optional. A name the cakra does not read,\na Latin name while `latin` refuses, a `CASUAL` name read more than one\nway, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`,\nnamed under `naam.bride` or `naam.groom`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_blob` valid for a write.",
       "params": [
         {

@@ -4804,11 +4804,11 @@ impl Context {
     /// name stars (`03-design/matching.md`, C291 to C296).
     ///
     /// `request_json` is `{"bride", "groom", "rules"}`: the two names, in
-    /// Devanagari or, when `rules.name.latin` is `IAST`, in IAST, and the
+    /// Devanagari or in the Latin scheme `rules.name.latin` declares, and the
     /// `NaamRules` with every field optional. A name the cakra does not read,
-    /// a Latin name while `latin` refuses, or an Abhijit syllable while
-    /// `abhijit` refuses is `INVALID_ARG`, named under `naam.bride` or
-    /// `naam.groom`.
+    /// a Latin name while `latin` refuses, a `CASUAL` name read more than one
+    /// way, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`,
+    /// named under `naam.bride` or `naam.groom`.
     #[napi]
     pub fn naam_milan(&self, env: Env, request_json: String) -> Result<Buffer> {
         let request_json =

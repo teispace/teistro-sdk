@@ -1,17 +1,17 @@
-//! A name's star and varga from its first syllable, and naam milan: the
-//! match of two names (`03-design/matching.md`, C291 to C296).
+//! *Svarodaya*'s śatapada cakra: its 112 cells, the vargas of VI.35, and
+//! the first akshara of a name in Devanagari read into a cell (C291 to
+//! C295).
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::Nakshatra;
+use teistro_core::catalogue::{Nakshatra, Rashi};
 use teistro_core::error::Error;
 
-use crate::{
-    AshtaKoota, KootaRules, MatchRole, Native, Porutham, PoruthamRules, ashta_koota, porutham,
-};
+use super::read::AbhijitPada;
+use crate::Native;
 
 /// The five vowels the cakra reads, length folded (C291).
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Svara {
+pub(crate) enum Svara {
     A,
     I,
     U,
@@ -57,15 +57,31 @@ const PILLARS: [(char, [char; 3]); 4] = [
 
 /// One cell of the cakra.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Cell {
+pub(crate) enum Cell {
     /// A row's head with one vowel.
     Syllable(Option<char>, Svara),
     /// A pillar's letter, with any vowel.
     Letter(char),
 }
 
+impl Cell {
+    /// The consonant the cell begins with, `None` for a vowel.
+    pub(crate) fn consonant(self) -> Option<char> {
+        match self {
+            Cell::Syllable(head, _) => head,
+            Cell::Letter(letter) => Some(letter),
+        }
+    }
+}
+
+/// The cakra's cells: 28 rows of four, one for each star with Abhijit.
+pub(crate) const CELLS: usize = 112;
+
+/// Abhijit's row, the 20th from Krittika's (C292).
+const ABHIJIT_ROW: usize = 19;
+
 /// The 112 cells from Krittika's first, in order (v. 8).
-fn cells() -> impl Iterator<Item = Cell> {
+pub(crate) fn cells() -> impl Iterator<Item = Cell> {
     ROW_HEADS.into_iter().flat_map(|head| {
         SVARAS.into_iter().flat_map(move |svara| {
             let pillar = PILLARS
@@ -78,9 +94,39 @@ fn cells() -> impl Iterator<Item = Cell> {
     })
 }
 
+/// The cell at `at`, `at` below [`CELLS`].
+pub(crate) fn cell(at: usize) -> Cell {
+    cells().nth(at).unwrap_or(Cell::Syllable(None, Svara::A))
+}
+
+/// The row a star's four padas fill: Krittika's first, Abhijit's 20th.
+pub(crate) fn row_of(nakshatra: Nakshatra) -> usize {
+    let star = (usize::from(nakshatra.id()) + 25) % 27;
+    star + usize::from(star >= ABHIJIT_ROW)
+}
+
+/// The star whose padas fill `row`, `None` for Abhijit's.
+pub(crate) fn star_of_row(row: usize) -> Option<Nakshatra> {
+    match row {
+        ABHIJIT_ROW => None,
+        _ => Nakshatra::ALL
+            .get((row - usize::from(row > ABHIJIT_ROW) + 2) % 27)
+            .copied(),
+    }
+}
+
+/// The sign a cell's pada stands in: Makara for Abhijit's four, wherever
+/// a koota places them (C771).
+pub(crate) fn rashi_of_cell(at: usize) -> Rashi {
+    star_of_row(at / 4).map_or(Rashi::Capricorn, |nakshatra| {
+        let pada = usize::from(nakshatra.id()) * 4 + at % 4;
+        Rashi::ALL.get(pada / 9).copied().unwrap_or(Rashi::Aries)
+    })
+}
+
 /// The letters the cakra lacks, read as the letter *Svarodaya*'s
 /// sarvatobhadra v. 22 pairs them with (C294).
-const PAIRED: [(char, char); 2] = [('ब', 'व'), ('श', 'स')];
+pub(crate) const PAIRED: [(char, char); 2] = [('ब', 'व'), ('श', 'स')];
 
 /// Which of the eight letter groups a name begins in, by the animal VI.35
 /// gives it (C295).
@@ -129,7 +175,7 @@ impl NameVarga {
     /// The varga a name's first letter stands in, `None` for a vowel. The
     /// letter is one [`consonant_of`] passed, so the last arm is ś, ṣ, s
     /// and h.
-    fn of(first: Option<char>) -> NameVarga {
+    pub(crate) fn of(first: Option<char>) -> NameVarga {
         match first {
             None => NameVarga::Garuda,
             Some('क'..='ङ') => NameVarga::Cat,
@@ -143,141 +189,9 @@ impl NameVarga {
     }
 
     /// The varga's place in VI.35's order, 0 for Garuda.
-    fn place(self) -> usize {
+    pub(crate) fn place(self) -> usize {
         VARGAS.iter().position(|&v| v == self).unwrap_or(0)
     }
-}
-
-/// How two vargas stand (VI.35).
-///
-/// ```
-/// use teistro_matching::{NameVarga, VargaRelation, varga_koota};
-///
-/// // The cat eats the rat, the 5th from it.
-/// assert_eq!(varga_koota(NameVarga::Cat, NameVarga::Rat).relation, VargaRelation::Enemy);
-/// assert_eq!(varga_koota(NameVarga::Cat, NameVarga::Lion).relation, VargaRelation::Neutral);
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum VargaRelation {
-    /// One varga: good.
-    Same,
-    /// Each the 5th from the other, eater and eaten: bad.
-    Enemy,
-    /// Neither: good.
-    Neutral,
-}
-
-/// The varga koota of two names.
-///
-/// ```
-/// use teistro_matching::{NameVarga, VargaRelation, varga_koota};
-///
-/// let koota = varga_koota(NameVarga::Deer, NameVarga::Deer);
-/// assert_eq!((koota.bride, koota.relation), (NameVarga::Deer, VargaRelation::Same));
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase")]
-pub struct VargaKoota {
-    /// The bride's varga.
-    pub bride: NameVarga,
-    /// The groom's.
-    pub groom: NameVarga,
-    /// How they stand.
-    pub relation: VargaRelation,
-}
-
-/// The varga koota of two vargas.
-///
-/// ```
-/// use teistro_matching::{NameVarga, VargaRelation, varga_koota};
-///
-/// // Garuda and the serpent, either way round.
-/// assert_eq!(varga_koota(NameVarga::Garuda, NameVarga::Serpent).relation, VargaRelation::Enemy);
-/// assert_eq!(varga_koota(NameVarga::Serpent, NameVarga::Garuda).relation, VargaRelation::Enemy);
-/// ```
-#[must_use]
-pub fn varga_koota(bride: NameVarga, groom: NameVarga) -> VargaKoota {
-    let apart = (bride.place() + 8 - groom.place()) % 8;
-    let relation = match apart {
-        0 => VargaRelation::Same,
-        4 => VargaRelation::Enemy,
-        _ => VargaRelation::Neutral,
-    };
-    VargaKoota {
-        bride,
-        groom,
-        relation,
-    }
-}
-
-/// How a name written in Latin letters is read (C293).
-///
-/// ```
-/// use teistro_matching::{LatinName, NameRules, name_syllable};
-///
-/// assert_eq!(name_syllable("Rāma", NameRules::default()).unwrap_err().field(), Some("name"));
-/// let iast = NameRules { latin: LatinName::Iast, ..NameRules::default() };
-/// assert_eq!(name_syllable("Rāma", iast)?, name_syllable("राम", NameRules::default())?);
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum LatinName {
-    /// Refused: an English spelling is not guessed at, since its "ch" is
-    /// च where IAST's is छ.
-    #[default]
-    Refuse,
-    /// Read as IAST.
-    Iast,
-}
-
-/// Where a name in Abhijit's row stands when a koota needs one of the 108
-/// padas (C292).
-///
-/// ```
-/// use teistro_core::catalogue::Nakshatra;
-/// use teistro_matching::{AbhijitPada, NameRules, name_syllable};
-///
-/// // जू is in Abhijit's row, which is no star's.
-/// let ju = name_syllable("जूही", NameRules::default())?;
-/// assert_eq!(ju.nakshatra, None);
-/// assert_eq!(ju.native(AbhijitPada::Refuse).unwrap_err().field(), Some("abhijit"));
-/// assert_eq!(ju.native(AbhijitPada::Shravana)?.nakshatra, Nakshatra::Shravana);
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum AbhijitPada {
-    /// Refused, naming this knob: no source read places it.
-    #[default]
-    Refuse,
-    /// Uttarashadha's 4th pada, which holds most of Abhijit's span.
-    UttaraAshadha,
-    /// Shravana's 1st pada.
-    Shravana,
-}
-
-/// The readings a name is taken under; each default is the one no source
-/// read contradicts.
-///
-/// ```
-/// use teistro_matching::{AbhijitPada, LatinName, NameRules};
-///
-/// assert_eq!(NameRules::default(), NameRules { latin: LatinName::Refuse, abhijit: AbhijitPada::Refuse });
-/// ```
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase", default, deny_unknown_fields)]
-pub struct NameRules {
-    /// How a Latin spelling is read.
-    pub latin: LatinName,
-    /// Where Abhijit's syllables stand.
-    pub abhijit: AbhijitPada,
 }
 
 /// A name's first syllable as the cakra reads it.
@@ -343,13 +257,13 @@ impl NameSyllable {
 /// A name's first akshara: its first consonant as written, if any, and
 /// its vowel.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-struct Akshara {
-    consonant: Option<char>,
+pub(crate) struct Akshara {
+    pub(crate) consonant: Option<char>,
     svara: Svara,
 }
 
 /// A refusal of a name's first letter.
-fn refuse(what: &str) -> Error {
+pub(crate) fn refuse(what: &str) -> Error {
     Error::invalid_arg(format!("a name {what}"))
         .with_field("name")
         .with_hint("a caller who knows the name's star passes it as a native instead")
@@ -357,7 +271,7 @@ fn refuse(what: &str) -> Error {
 
 /// What a Devanagari mark is to a name's first syllable.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum Mark {
+pub(crate) enum Mark {
     /// A vowel or vowel sign the cakra reads (ṛ as i, C293).
     Vowel(Svara),
     /// A vowel or vowel sign it does not: ai, au, ḷ and the borrowed ones.
@@ -366,7 +280,7 @@ enum Mark {
     Other,
 }
 
-fn mark_of(mark: char) -> Mark {
+pub(crate) fn mark_of(mark: char) -> Mark {
     Mark::Vowel(match mark {
         'अ' | 'आ' | 'ा' => Svara::A,
         'इ' | 'ई' | 'ि' | 'ी' | 'ऋ' | 'ॠ' | 'ृ' | 'ॄ' => Svara::I,
@@ -381,7 +295,7 @@ fn mark_of(mark: char) -> Mark {
 
 /// A Devanagari consonant the vargas name, with a nukta's letter read as
 /// its base.
-fn consonant_of(letter: char) -> Option<char> {
+pub(crate) fn consonant_of(letter: char) -> Option<char> {
     // The precomposed nukta letters; a nukta written apart is passed over
     // by the reader.
     let base = match letter {
@@ -398,12 +312,12 @@ fn consonant_of(letter: char) -> Option<char> {
     matches!(base, 'क'..='न' | 'प'..='र' | 'ल' | 'व'..='ह').then_some(base)
 }
 
-const VIRAMA: char = '्';
-const NUKTA: char = '़';
+pub(crate) const VIRAMA: char = '्';
+pub(crate) const NUKTA: char = '़';
 
 /// The first akshara of a name in Devanagari: a conjunct by its first
 /// consonant with the cluster's vowel, the inherent a when none is written.
-fn devanagari(name: &str) -> Result<Akshara, Error> {
+pub(crate) fn devanagari(name: &str) -> Result<Akshara, Error> {
     let mut letters = name.chars().filter(|&c| c != NUKTA);
     let first = letters.next().ok_or_else(|| refuse("has a first letter"))?;
     let consonant = match mark_of(first) {
@@ -450,129 +364,9 @@ fn devanagari(name: &str) -> Result<Akshara, Error> {
     })
 }
 
-/// IAST's consonants, the aspirates before the letters they begin with.
-pub(crate) const IAST_CONSONANTS: [(&str, char); 33] = [
-    ("kh", 'ख'),
-    ("gh", 'घ'),
-    ("ch", 'छ'),
-    ("jh", 'झ'),
-    ("ṭh", 'ठ'),
-    ("ḍh", 'ढ'),
-    ("th", 'थ'),
-    ("dh", 'ध'),
-    ("ph", 'फ'),
-    ("bh", 'भ'),
-    ("k", 'क'),
-    ("g", 'ग'),
-    ("ṅ", 'ङ'),
-    ("c", 'च'),
-    ("j", 'ज'),
-    ("ñ", 'ञ'),
-    ("ṭ", 'ट'),
-    ("ḍ", 'ड'),
-    ("ṇ", 'ण'),
-    ("t", 'त'),
-    ("d", 'द'),
-    ("n", 'न'),
-    ("p", 'प'),
-    ("b", 'ब'),
-    ("m", 'म'),
-    ("y", 'य'),
-    ("r", 'र'),
-    ("l", 'ल'),
-    ("v", 'व'),
-    ("ś", 'श'),
-    ("ṣ", 'ष'),
-    ("s", 'स'),
-    ("h", 'ह'),
-];
-
-/// IAST's vowels, the diphthongs before the vowels they begin with; `None`
-/// for the ones the cakra does not read.
-const IAST_VOWELS: [(&str, Option<Svara>); 13] = [
-    ("ai", None),
-    ("au", None),
-    ("a", Some(Svara::A)),
-    ("ā", Some(Svara::A)),
-    ("i", Some(Svara::I)),
-    ("ī", Some(Svara::I)),
-    ("u", Some(Svara::U)),
-    ("ū", Some(Svara::U)),
-    ("ṛ", Some(Svara::I)),
-    ("ṝ", Some(Svara::I)),
-    ("ḷ", None),
-    ("e", Some(Svara::E)),
-    ("o", Some(Svara::O)),
-];
-
-/// The first akshara of a name in IAST, written precomposed.
-fn iast(name: &str) -> Result<Akshara, Error> {
-    let lower = name.to_lowercase();
-    let mut rest = lower.as_str();
-    let mut first = None;
-    loop {
-        if let Some((spelled, svara)) = IAST_VOWELS.iter().find(|(v, _)| rest.starts_with(v)) {
-            let svara = svara.ok_or_else(|| {
-                refuse(&format!(
-                    "whose first vowel is {spelled} is not in the cakra"
-                ))
-            })?;
-            return Ok(Akshara {
-                consonant: first,
-                svara,
-            });
-        }
-        let Some((spelled, letter)) = IAST_CONSONANTS.iter().find(|(c, _)| rest.starts_with(c))
-        else {
-            let at = rest.chars().next().map_or_else(String::new, String::from);
-            return Err(refuse(&if at.is_empty() {
-                "has a vowel".to_owned()
-            } else {
-                format!("in IAST has no letter {at}; combining marks are written precomposed")
-            }));
-        };
-        first.get_or_insert(*letter);
-        rest = &rest[spelled.len()..];
-    }
-}
-
-/// A name's first syllable under the rules (C291 to C294).
-///
-/// ```
-/// use teistro_core::catalogue::Nakshatra;
-/// use teistro_matching::{NameRules, NameVarga, name_syllable};
-///
-/// // रा: ra, Chitra's third syllable.
-/// let ram = name_syllable("राम", NameRules::default())?;
-/// assert_eq!((ram.nakshatra, ram.quarter, ram.varga), (Some(Nakshatra::Chitra), 3, NameVarga::Deer));
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-///
-/// # Errors
-///
-/// A name with no first letter, one beginning with a letter or vowel the
-/// cakra does not read, or a Latin spelling while `latin` refuses; each
-/// is named `name`.
-pub fn name_syllable(name: &str, rules: NameRules) -> Result<NameSyllable, Error> {
-    let name = name.trim_start();
-    let latin = name.chars().next().is_some_and(char::is_alphabetic)
-        && !name
-            .chars()
-            .next()
-            .is_some_and(|c| ('\u{0900}'..='\u{097F}').contains(&c));
-    let akshara = match (latin, rules.latin) {
-        (false, _) => devanagari(name)?,
-        (true, LatinName::Iast) => iast(name)?,
-        (true, LatinName::Refuse) => {
-            return Err(Error::invalid_arg(
-                "a name in Latin letters is read only as IAST, never guessed from English",
-            )
-            .with_field("name")
-            .with_hint(
-                "pass the name in Devanagari, or set latin to IAST if it is spelled in IAST",
-            ));
-        }
-    };
+/// The cell an akshara falls in, with the star and quarter of its row
+/// (C291 to C294): ब read as व and श as स.
+pub(crate) fn place(akshara: Akshara) -> Result<NameSyllable, Error> {
     let read = akshara.consonant.map(|letter| {
         PAIRED
             .iter()
@@ -585,237 +379,10 @@ pub fn name_syllable(name: &str, rules: NameRules) -> Result<NameSyllable, Error
             Cell::Letter(letter) => Some(letter) == read,
         })
         .ok_or_else(|| refuse("whose first syllable is in no cell of the cakra"))?;
-    let row = at / 4;
-    // Krittika's row first; Abhijit's is the 20th.
-    let nakshatra = match row {
-        19 => None,
-        _ => Nakshatra::ALL
-            .get((row - usize::from(row > 19) + 2) % 27)
-            .copied(),
-    };
     Ok(NameSyllable {
         cell: u8::try_from(at).unwrap_or(0),
-        nakshatra,
+        nakshatra: star_of_row(at / 4),
         quarter: u8::try_from(at % 4 + 1).unwrap_or(1),
         varga: NameVarga::of(akshara.consonant),
-    })
-}
-
-/// The syllable a birth names a child by: the cakra's cell for the
-/// Moon's pada, as the catalogue spells it after the print (C297 to C299).
-///
-/// ```
-/// use teistro_core::catalogue::Nakshatra;
-/// use teistro_matching::birth_syllable;
-///
-/// // Krittika's first pada is the cakra's first cell.
-/// assert_eq!(birth_syllable(Nakshatra::Krittika, 1)?.cell, 0);
-/// assert_eq!(birth_syllable(Nakshatra::Krittika, 5).unwrap_err().field(), Some("pada"));
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase")]
-pub struct BirthSyllable {
-    /// Its place among the cakra's 112 cells, 0 for a, Krittika's first;
-    /// never one of Abhijit's four (C298).
-    pub cell: u8,
-    /// As *Muhurta Chintamani* p. 173 prints it.
-    pub devanagari: String,
-    /// The same spelling in IAST.
-    pub iast: String,
-    /// The varga a name beginning with it stands in (VI.35).
-    pub varga: NameVarga,
-}
-
-/// The syllable a child born with the Moon in `pada` of `nakshatra` is
-/// named by: the letter *Svarodaya*'s śatapada cakra gives the birth
-/// pada, as *Muhurta Chintamani*'s nāmakarma commentary asks (C297). A
-/// birth's pada is one of the 108, so Abhijit's four syllables are never
-/// answered (C298).
-///
-/// ```
-/// use teistro_core::catalogue::Nakshatra;
-/// use teistro_matching::{NameVarga, birth_syllable};
-///
-/// let first = birth_syllable(Nakshatra::Ashwini, 1)?;
-/// assert_eq!((first.devanagari.as_str(), first.iast.as_str()), ("चू", "cū"));
-/// assert_eq!(first.varga, NameVarga::Lion);
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-///
-/// # Errors
-///
-/// A `pada` outside 1 to 4, named `pada`.
-pub fn birth_syllable(nakshatra: Nakshatra, pada: u8) -> Result<BirthSyllable, Error> {
-    let at = usize::from(pada).checked_sub(1);
-    let printed = at
-        .and_then(|at| nakshatra.attributes().padas.get(at).copied())
-        .ok_or_else(|| {
-            Error::invalid_arg(format!("a pada is 1 to 4, not {pada}")).with_field("pada")
-        })?;
-    // Krittika's row first, Abhijit's 20th, as `name_syllable` counts.
-    let star = (usize::from(nakshatra.id()) + 25) % 27;
-    let row = star + usize::from(star >= 19);
-    Ok(BirthSyllable {
-        cell: u8::try_from(row * 4 + at.unwrap_or(0)).unwrap_or(0),
-        devanagari: printed.devanagari.to_owned(),
-        iast: printed.akshara.to_owned(),
-        varga: NameVarga::of(printed.devanagari.chars().next().and_then(consonant_of)),
-    })
-}
-
-/// A name read against the syllable a birth names a child by
-/// (nāmakaraṇa, C297 and C334): where the name's first syllable falls in
-/// the śatapada cakra, the birth pada's own cell, and whether the two are
-/// one star and one pada. Facts, not a score.
-///
-/// ```
-/// use teistro_core::catalogue::Nakshatra;
-/// use teistro_matching::{NameRules, name_check};
-///
-/// let check = name_check("राम", NameRules::default(), Nakshatra::Ashwini, 1)?;
-/// // Answered, not refused: the name is Chitra's, the birth Ashvini's.
-/// assert!(!check.same_star && !check.same_pada);
-/// assert_eq!(check.prescribed.devanagari, "चू");
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase")]
-pub struct NameCheck {
-    /// The name's first syllable, as [`name_syllable`] reads it.
-    pub read: NameSyllable,
-    /// The birth pada's syllable, as [`birth_syllable`] gives it.
-    pub prescribed: BirthSyllable,
-    /// Whether the name begins in the birth star's row: "the letter of
-    /// its star". Never for a syllable in Abhijit's row, which is no
-    /// star's.
-    pub same_star: bool,
-    /// Whether it begins in the birth pada's own cell, the syllable the
-    /// rule prescribes.
-    pub same_pada: bool,
-}
-
-/// Reads a name against a birth's nakshatra and pada: the name's first
-/// syllable in the śatapada cakra beside the syllable *Muhurta
-/// Chintamani*'s nāmakarma commentary prescribes for the pada, and
-/// whether they share a star and a pada (C334). A name the cakra reads in
-/// another star is answered, not refused; the reader decides.
-///
-/// ```
-/// use teistro_core::catalogue::Nakshatra;
-/// use teistro_matching::{NameRules, name_check};
-///
-/// // चू is Ashwini's first pada; चे its second.
-/// let named = name_check("चूडामणि", NameRules::default(), Nakshatra::Ashwini, 1)?;
-/// assert!(named.same_pada);
-/// let other = name_check("चेतन", NameRules::default(), Nakshatra::Ashwini, 1)?;
-/// assert!(other.same_star && !other.same_pada);
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-///
-/// # Errors
-///
-/// As [`name_syllable`] for the name, named `name`, and as
-/// [`birth_syllable`] for a `pada` outside 1 to 4, named `pada`.
-pub fn name_check(
-    name: &str,
-    rules: NameRules,
-    nakshatra: Nakshatra,
-    pada: u8,
-) -> Result<NameCheck, Error> {
-    let prescribed = birth_syllable(nakshatra, pada)?;
-    let read = name_syllable(name, rules)?;
-    // A cell is a pada: four to a star's row, so the row is the star.
-    let same_star = read.nakshatra.is_some() && read.cell / 4 == prescribed.cell / 4;
-    let same_pada = read.cell == prescribed.cell;
-    Ok(NameCheck {
-        read,
-        prescribed,
-        same_star,
-        same_pada,
-    })
-}
-
-/// The readings two names are matched under.
-///
-/// ```
-/// use teistro_matching::{EqualVarna, KootaRules, NaamRules, NameRules, PoruthamRules};
-///
-/// let rules = NaamRules { koota: KootaRules { equal_varna: EqualVarna::Half, ..KootaRules::default() }, ..NaamRules::default() };
-/// assert_eq!((rules.name, rules.porutham), (NameRules::default(), PoruthamRules::default()));
-/// ```
-#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase", default, deny_unknown_fields)]
-pub struct NaamRules {
-    /// How each name is read.
-    pub name: NameRules,
-    /// The Ashta Koota's.
-    pub koota: KootaRules,
-    /// The ten considerations'.
-    pub porutham: PoruthamRules,
-}
-
-/// The match of two names (C296).
-///
-/// ```
-/// use teistro_matching::{NaamRules, VargaRelation, naam_milan};
-///
-/// let milan = naam_milan("राधा", "रमेश", NaamRules::default())?;
-/// // Both names begin with र: one varga, one star.
-/// assert_eq!(milan.varga.relation, VargaRelation::Same);
-/// assert_eq!(milan.bride.nakshatra, milan.groom.nakshatra);
-/// assert!(milan.ashta.total <= 36.0);
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "camelCase")]
-pub struct NaamMilan {
-    /// The bride's name's first syllable.
-    pub bride: NameSyllable,
-    /// The groom's.
-    pub groom: NameSyllable,
-    /// Their vargas (VI.35).
-    pub varga: VargaKoota,
-    /// The Ashta Koota of the two name stars.
-    pub ashta: AshtaKoota,
-    /// The ten considerations of the two name stars.
-    pub porutham: Porutham,
-}
-
-/// Two names matched name star to name star, as Vasishtha asks when a
-/// birth is unknown (C296).
-///
-/// ```
-/// use teistro_matching::{AbhijitPada, NaamRules, NameRules, naam_milan};
-///
-/// // A bride's name in Abhijit's row is refused unless a pada is named.
-/// let refused = naam_milan("जूही", "राम", NaamRules::default()).unwrap_err();
-/// assert_eq!(refused.field(), Some("bride.abhijit"));
-/// let rules = NaamRules { name: NameRules { abhijit: AbhijitPada::UttaraAshadha, ..NameRules::default() }, ..NaamRules::default() };
-/// assert!(naam_milan("जूही", "राम", rules).is_ok());
-/// ```
-///
-/// # Errors
-///
-/// Either name refused by [`name_syllable`] or [`NameSyllable::native`],
-/// named under `bride` or `groom`.
-pub fn naam_milan(bride: &str, groom: &str, rules: NaamRules) -> Result<NaamMilan, Error> {
-    let read = |name: &str, role: MatchRole| {
-        name_syllable(name, rules.name)
-            .and_then(|syllable| Ok((syllable, syllable.native(rules.name.abhijit)?)))
-            .map_err(|error| error.under(role.name()))
-    };
-    let (bride, bride_star) = read(bride, MatchRole::Bride)?;
-    let (groom, groom_star) = read(groom, MatchRole::Groom)?;
-    Ok(NaamMilan {
-        bride,
-        groom,
-        varga: varga_koota(bride.varga, groom.varga),
-        ashta: ashta_koota(bride_star, groom_star, rules.koota),
-        porutham: porutham(bride_star, groom_star, rules.porutham),
     })
 }
