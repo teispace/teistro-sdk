@@ -632,6 +632,8 @@ mod tests {
         assert_eq!(json, "2451545.0");
         let place = Place::try_from_degrees(-33.9, 151.2, 5.0).unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(place.to_string(), "33.9°S 151.2°E 5 m");
+        let west = Place::try_from_degrees(40.7, -74.0, 10.0).unwrap_or_else(|e| panic!("{e}"));
+        assert_eq!(west.to_string(), "40.7°N 74°W 10 m");
         let back: Place = serde_json::from_str(&serde_json::to_string(&place).unwrap_or_default())
             .unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(back, place);

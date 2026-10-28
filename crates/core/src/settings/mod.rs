@@ -2014,6 +2014,45 @@ mod tests {
         }
     }
 
+    /// Each number of a custom ayanamsha and a custom sunrise altitude is
+    /// held to being finite (and the altitude to ±90°), one at a time, and
+    /// finite ones pass.
+    #[test]
+    fn every_custom_number_is_checked_on_its_own() {
+        let rules = |settings: Settings| -> Vec<&'static str> {
+            coherence(&settings).iter().map(|d| d.rule).collect()
+        };
+        let ayanamsha = |epoch_jd_tt, value_deg, rate_deg_per_year| {
+            let mut settings = root();
+            settings.frame.ayanamsha = AyanamshaChoice::Custom {
+                epoch_jd_tt,
+                value_deg,
+                rate_deg_per_year,
+            };
+            rules(settings)
+        };
+        for (epoch, value, rate) in [
+            (f64::NAN, 23.0, 0.01),
+            (2_451_545.0, f64::INFINITY, 0.01),
+            (2_451_545.0, 23.0, f64::NEG_INFINITY),
+        ] {
+            assert!(ayanamsha(epoch, value, rate).contains(&"custom-ayanamsha-finite"));
+        }
+        assert!(!ayanamsha(2_451_545.0, 23.0, 0.01).contains(&"custom-ayanamsha-finite"));
+        let sunrise = |altitude_deg| {
+            let mut settings = root();
+            settings.day.sunrise = SunriseConvention::Custom { altitude_deg };
+            rules(settings)
+        };
+        for altitude in [f64::NAN, 90.5, -91.0] {
+            assert!(
+                sunrise(altitude).contains(&"sunrise-altitude"),
+                "{altitude}"
+            );
+        }
+        assert!(!sunrise(-6.0).contains(&"sunrise-altitude"));
+    }
+
     #[test]
     fn coherence_rules_fire_with_fields() {
         let mut patch = SettingsPatch::default();
