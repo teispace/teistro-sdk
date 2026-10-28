@@ -1,0 +1,9 @@
+{
+  "pada": ".input {$pada :integer select=ordinal} .input {$nakshatra :entity kind=nakshatra} .match $pada 1 {{{$nakshatra}को पहिलो पादको नामाक्षर {$syllable}}} 2 {{{$nakshatra}को दोस्रो पादको नामाक्षर {$syllable}}} 3 {{{$nakshatra}को तेस्रो पादको नामाक्षर {$syllable}}} 4 {{{$nakshatra}को चौथो पादको नामाक्षर {$syllable}}} * {{{$nakshatra}को {$pada}औं पादको नामाक्षर {$syllable}}}",
+  "by": ".input {$by :string} .match $by CELL {{पादको आफ्नै अक्षर}} PAIRED {{जोडीको रूपमा पढिने अक्षर}} SUBSTITUTE {{सट्टाको अक्षर}} * {{पादको अक्षर}}",
+  "syllables": "{$count :integer} अक्षर",
+  "counted": ".input {$counted :string} .match $counted SOUNDED {{लेखाइअनुसार गनिएको, अन्तिम अ समेत}} SILENT {{बोलाइअनुसार गनिएको, अन्तिम अ छोडेर}} * {{स्वरअनुसार गनिएको}}",
+  "clause": ".input {$clause :string} .match $clause SONANT_INITIAL {{घोष वर्णबाट सुरु हुने}} SEMIVOWEL_WITHIN {{पहिलो वर्णपछि अन्तःस्थ वर्ण भएको}} VISARGA_FINAL {{विसर्गमा अन्त्य हुने}} TWO_OR_FOUR_SYLLABLES {{दुई वा चार अक्षरको}} EVEN_FOR_A_BOY {{बालकका लागि, जोर सङ्ख्यामा अक्षर भएको}} ODD_FOR_A_GIRL {{बालिकाका लागि, बिजोर सङ्ख्यामा अक्षर भएको}} LONG_A_FOR_A_GIRL {{बालिकाका लागि, आकारमा अन्त्य हुने}} NO_FINAL_L_OR_R {{ल वा रमा अन्त्य नहुने}} * {{अर्को नियम}}",
+  "holds": ".input {$holds :string} .match $holds yes {{मिल्छ}} * {{मिल्दैन}}",
+  "source": ".input {$source :string} .match $source PARASKARA {{पारस्कर गृह्यसूत्र}} ASHVALAYANA {{आश्वलायन गृह्यसूत्र}} APASTAMBA_HIRANYAKESHIN {{धर्मसिन्धुले उद्धृत गरेका आपस्तम्ब र हिरण्यकेशी}} * {{गृह्यसूत्र}}"
+}

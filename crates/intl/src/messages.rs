@@ -3201,6 +3201,230 @@ pub mod sdk {
 
     }
 
+    /// The `naming` group.
+    pub mod naming {
+        /// The message `sdk.naming.by`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::naming::By;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = By { by: String::from("by") };
+        /// assert_eq!(By::KEY, "sdk.naming.by");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct By {
+            /// The `by` parameter.
+            pub by: String,
+        }
+
+        impl crate::TypedMessage for By {
+            const KEY: &'static str = "sdk.naming.by";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("by", crate::Value::Str(self.by.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.naming.clause`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::naming::Clause;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Clause { clause: String::from("clause") };
+        /// assert_eq!(Clause::KEY, "sdk.naming.clause");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Clause {
+            /// The `clause` parameter.
+            pub clause: String,
+        }
+
+        impl crate::TypedMessage for Clause {
+            const KEY: &'static str = "sdk.naming.clause";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("clause", crate::Value::Str(self.clause.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.naming.counted`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::naming::Counted;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Counted { counted: String::from("counted") };
+        /// assert_eq!(Counted::KEY, "sdk.naming.counted");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Counted {
+            /// The `counted` parameter.
+            pub counted: String,
+        }
+
+        impl crate::TypedMessage for Counted {
+            const KEY: &'static str = "sdk.naming.counted";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("counted", crate::Value::Str(self.counted.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.naming.holds`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::naming::Holds;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Holds { holds: String::from("holds") };
+        /// assert_eq!(Holds::KEY, "sdk.naming.holds");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Holds {
+            /// The `holds` parameter.
+            pub holds: String,
+        }
+
+        impl crate::TypedMessage for Holds {
+            const KEY: &'static str = "sdk.naming.holds";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("holds", crate::Value::Str(self.holds.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.naming.pada`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::naming::Pada;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Pada {
+        ///     nakshatra: teistro_core::catalogue::Nakshatra::ALL[0],
+        ///     pada: 2,
+        ///     syllable: String::from("syllable"),
+        /// };
+        /// assert_eq!(Pada::KEY, "sdk.naming.pada");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Pada {
+            /// The `nakshatra` parameter.
+            pub nakshatra: teistro_core::catalogue::Nakshatra,
+            /// The `pada` parameter.
+            pub pada: i64,
+            /// The `syllable` parameter.
+            pub syllable: String,
+        }
+
+        impl crate::TypedMessage for Pada {
+            const KEY: &'static str = "sdk.naming.pada";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                    ("pada", crate::Value::Int(self.pada)),
+                    ("syllable", crate::Value::Str(self.syllable.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.naming.source`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::naming::Source;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Source { source: String::from("source") };
+        /// assert_eq!(Source::KEY, "sdk.naming.source");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Source {
+            /// The `source` parameter.
+            pub source: String,
+        }
+
+        impl crate::TypedMessage for Source {
+            const KEY: &'static str = "sdk.naming.source";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("source", crate::Value::Str(self.source.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.naming.syllables`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::naming::Syllables;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Syllables { count: 2 };
+        /// assert_eq!(Syllables::KEY, "sdk.naming.syllables");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Syllables {
+            /// The `count` parameter.
+            pub count: i64,
+        }
+
+        impl crate::TypedMessage for Syllables {
+            const KEY: &'static str = "sdk.naming.syllables";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("count", crate::Value::Int(self.count)),
+                ])
+            }
+        }
+
+    }
+
     /// The `phala` group.
     pub mod phala {
         /// The message `sdk.phala.avasthaBaladi`.

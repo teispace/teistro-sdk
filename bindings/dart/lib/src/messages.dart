@@ -2999,6 +2999,27 @@ final class MessagesSdkKaraka {
       _r.render('sdk.karaka.ofSeven', {'graha': {r'$entity': graha.key}, 'karaka': {r'$entity': karaka.key}});
 }
 
+final class MessagesSdkNaming {
+  const MessagesSdkNaming(this._r);
+
+  final Renderer _r;
+
+  String by({required String by}) =>
+      _r.render('sdk.naming.by', {'by': by});
+  String clause({required String clause}) =>
+      _r.render('sdk.naming.clause', {'clause': clause});
+  String counted({required String counted}) =>
+      _r.render('sdk.naming.counted', {'counted': counted});
+  String holds({required String holds}) =>
+      _r.render('sdk.naming.holds', {'holds': holds});
+  String pada({required NakshatraKey nakshatra, required int pada, required String syllable}) =>
+      _r.render('sdk.naming.pada', {'nakshatra': {r'$entity': nakshatra.key}, 'pada': pada, 'syllable': syllable});
+  String source({required String source}) =>
+      _r.render('sdk.naming.source', {'source': source});
+  String syllables({required int count}) =>
+      _r.render('sdk.naming.syllables', {'count': count});
+}
+
 final class MessagesSdkPhala {
   const MessagesSdkPhala(this._r);
 
@@ -3194,6 +3215,7 @@ final class MessagesSdk {
   MessagesSdkCondition get condition => MessagesSdkCondition(_r);
   MessagesSdkEntity get entity => MessagesSdkEntity(_r);
   MessagesSdkKaraka get karaka => MessagesSdkKaraka(_r);
+  MessagesSdkNaming get naming => MessagesSdkNaming(_r);
   MessagesSdkPhala get phala => MessagesSdkPhala(_r);
   MessagesSdkReading get reading => MessagesSdkReading(_r);
   MessagesSdkReason get reason => MessagesSdkReason(_r);
