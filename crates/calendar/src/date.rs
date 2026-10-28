@@ -496,16 +496,29 @@ pub(crate) fn nonexistent(message: String) -> Error {
 
 /// Refuses a leap mark on a date of a calendar that repeats neither a
 /// month nor a day.
+///
+/// One branch, inlined into every conversion; the refusal is built out of
+/// line, since a shared check that formats its message inline is too big
+/// to inline and costs each conversion a call (the benchmarks' `calendar`
+/// section, +3% when it was).
+#[inline]
 pub(crate) fn check_no_leap(date: &CalendarDate) -> Result<(), Error> {
     match date.leap {
         None => Ok(()),
-        Some(leap) => Err(nonexistent(format!(
-            "{} repeats neither a month nor a day, so a date cannot be marked {}",
-            date.calendar.key(),
-            leap.key()
-        ))
-        .with_field("leap")),
+        Some(leap) => Err(leap_refused(date.calendar, leap)),
     }
+}
+
+/// The refusal of [`check_no_leap`].
+#[cold]
+#[inline(never)]
+fn leap_refused(calendar: Calendar, leap: Leap) -> Error {
+    nonexistent(format!(
+        "{} repeats neither a month nor a day, so a date cannot be marked {}",
+        calendar.key(),
+        leap.key()
+    ))
+    .with_field("leap")
 }
 
 /// `OUT_OF_RANGE`.
