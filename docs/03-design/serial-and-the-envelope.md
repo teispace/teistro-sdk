@@ -23,8 +23,11 @@ bindings agree on byte for byte. Three parts:
   under one envelope.
 
 It is not: the binary blob at the C boundary (`ffi`, which has its own
-schemas), the dossier text and its presets, the gochar sidecar, or the
-chart layout geometry. Those are the module's later rows.
+schemas), the dossier text and its presets ([`dossier.md`](dossier.md)),
+the gochar sidecar ([`gochar-sidecar.md`](gochar-sidecar.md): a chart's
+natal facts, kept beside its date-free dossier so its transits can be
+read later), or the chart layout geometry. Those are the module's later
+rows, and the first two are built.
 
 ## 2. What the pass found
 

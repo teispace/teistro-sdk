@@ -1090,7 +1090,8 @@ hands is about two to three weeks of one chain of builds:
 - the regional solar calendars against the Rashtriya Panchang's tables;
 - the parity checklist (`01-research/baseline-engine/02-parity-requirements.md`);
 - Phase 9's baseline migration guide and compatibility shim, and
-  `serial`'s gochar sidecar and binary blob;
+  `serial`'s binary blob (its gochar sidecar built 2026-10-28,
+  `03-design/gochar-sidecar.md`);
 - the baseline's golden vectors for aspects, Jaimini, KP and milan, and an
   oracle for the Western and Hellenistic fixtures;
 - the quality bar's unenforced rows (the coverage floors, the binding

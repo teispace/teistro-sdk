@@ -14,6 +14,8 @@ bindings agree on byte for byte.
 | [`canonical`](src/canonical.rs) | the two forms: the fixed hash form, and the rendering that reads `output.precision` |
 | [`seal`](src/seal.rs) | a value and its provenance, with the hash the constructor computes |
 | [`document`](src/document.rs) | every section the chart layer produces, under one envelope |
+| [`dossier`](src/dossier.rs) | the document as date-free text for a language model |
+| [`sidecar`](src/sidecar.rs) | the gochar sidecar: the natal facts kept beside the dossier, for transits read later ([`gochar-sidecar.md`](../../docs/03-design/gochar-sidecar.md)) |
 
 ## What the pass found
 

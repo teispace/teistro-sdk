@@ -266,6 +266,10 @@ pub use teistro_serial::schema;
 // A chart as text for a language model (`03-design/dossier.md`).
 #[cfg(feature = "chart")]
 pub use teistro_serial::dossier;
+// A chart's natal facts, kept beside its date-free dossier so its
+// transits can be read on any later day (`03-design/gochar-sidecar.md`).
+#[cfg(feature = "chart")]
+pub use teistro_serial::sidecar::{self, GocharSidecar};
 pub use teistro_state::{Anka, GrahaState, Sayanadi};
 pub use teistro_vargas::chart::{Axis, VargaChart};
 // Chart geometry: the layouts a chart is drawn in, a consumer's own, and a

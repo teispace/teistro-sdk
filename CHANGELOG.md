@@ -12,6 +12,27 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The gochar sidecar.**
+**Numbers:** none.
+- `teistro_serial::sidecar::GocharSidecar` (`teistro::GocharSidecar`):
+  a chart's foundation and, when carried, its panchanga — what every
+  transit operation reads of a natal chart — cut from a sealed document
+  (`GocharSidecar::cut(&read.value, &read.provenance)`) and written as
+  canonical JSON (`to_text`), the same bytes for the same chart. It
+  carries the chart's content hash, its settings hash and the hash of
+  its own sections, and is refused when read back with another format
+  (`SCHEMA_VERSION`, `sidecar.format`), an edited section
+  (`sidecar.natal_hash`) or a key it does not have; `check_chart`
+  refuses it beside another chart (`sidecar.chart`).
+- `sdk.chart().natal(&sidecar)` opens it for `gochar`, `sade_sati`,
+  `hits` and `sarvatobhadra`, refusing a context of other settings
+  (`sidecar.settings`). Its JSON Schema is
+  `teistro::schema::GOCHAR_SIDECAR`, generated beside the document's.
+- `gochar-sidecar-measured.md` (`check-dossier`): every corpus birth's
+  sidecar reads back to the byte, and its transits are the whole
+  document's. No binding carries it: a binding asks for transits on the
+  chart request (`03-design/gochar-sidecar.md` §8).
+
 **Festival rules are typed in every binding.**
 **Numbers:** none.
 - `FestivalRequest.rules` crossed every binding as raw JSON: Java took
