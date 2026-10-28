@@ -96,8 +96,16 @@ const CAUSES: [(&str, Cause, &str); 14] = [
         "full",
         Cause::Convention,
         "the centre, and the classical Shadbala readings; under `same` the yogas' readings (as \
-         `yogas`), and c022's kaala bala, a birth the baseline places in the wrong Hindu day \
-         (crux C35)",
+         `yogas`), c022's kaala bala, a birth the baseline places in the wrong Hindu day (crux \
+         C35), and longevity's: BPHS ch. 43 v. 33 pairs Saturn with the Moon where the baseline \
+         pairs the lagna with it, which moves the class the pairs decide; v. 11 takes the Moon \
+         for a benefic waxing or waning in the visible half's reduction, the baseline a waning \
+         Moon for a malefic; vv. 20 to 22 treble Amsayu's years exalted or in its own sign and \
+         double them in its own navamsha or drekkana, where the baseline doubles its own sign, \
+         trebles a retrograde graha and halves a debilitated one; Nisargayu's listed years are \
+         taken whole, which the baseline reduces; and the cancellations of Balarishta. Under \
+         `timed` also the hora lagna, counted in `parashari-classical`'s proportional ghatis, \
+         and BPHS's own readings of the three spans (cruxes C104, C303)",
     ),
     (
         "vargas",
@@ -133,8 +141,11 @@ const CAUSES: [(&str, Cause, &str); 14] = [
         "milan",
         Cause::Method,
         "the koota tables: Vashya, Gana, Yoni and Bhakoot score apart under `same`, and the \
-         baseline's Stree-deergha is Brihaspati's count beyond 9 where *Kalaprakasika* prints \
-         beyond 13",
+         baseline's Stree-deergha agrees beyond the 10th or on the bride's own star (crux \
+         C779), where *Kalaprakasika* prints beyond the 13th; the Kuja dosha, under `timed` the verse's (Mars from the lagna in five \
+         houses, *Manasagari*, cruxes C285, C286) where the baseline reads three references \
+         and six houses, and under `same` the baseline's own cancellations, three of nine, \
+         which lift a dosha the SDK keeps",
     ),
     (
         "varsha",
@@ -149,17 +160,23 @@ const CAUSES: [(&str, Cause, &str); 14] = [
         "the frame: `kp-default` casts from the Earth's centre on its own node, the baseline from \
          the birthplace on the mean node; under `same` c043's cusps, where the baseline's \
          Placidus falls back at 64.8° N and Swiss Ephemeris and the SDK do not, and the lagnas \
-         of 2350 and 2399, as `chart`; the day lord, which the SDK takes from sunrise to sunrise \
-         as KP Reader VI does and the baseline from midnight, so a birth before sunrise rules by \
-         the day before; and an intercepted sign's lord, which the baseline counts a significator \
-         of its house and the SDK reports and does not count (crux C154)",
+         of 2350 and 2399, as `chart`; and an intercepted sign's lord, which the baseline counts \
+         a significator of its house and the SDK reports and does not count (crux C154). Under \
+         `timed` also the day lord, which `kp-default` takes from sunrise to sunrise as KP \
+         Reader VI does and the baseline from the civil day, so a birth before sunrise rules by \
+         the day before (c001); `same` asks the civil day (`kp.day_lord_day = CIVIL`, crux C151)",
     ),
     (
         "gochar",
         Cause::Convention,
         "the ayanamsha's basis: `timed` takes the mean and the baseline the nutated, about 12″ \
          apart; under `same`, cast from the Earth's centre as the baseline casts a transit, the \
-         transits agree to a hundredth of an arcsecond and only c051's transit bindus differ",
+         transits agree to a hundredth of an arcsecond and only c051's transit bindus differ; \
+         and the vedha of Phaladeepika ch. 26: the nodes take the Sun's pairs (v. 2, crux C136) \
+         where the baseline gives them Mars's for the 3rd and the 6th, never obstruct each other \
+         (C140), Venus's 11th and 12th pair with the 3rd and the 6th (v. 8), and the Sun and \
+         Saturn, the Moon and Mercury do not obstruct each other (vv. 3 to 6), where the \
+         baseline exempts the Sun and the Moon",
     ),
     (
         "sadeSati",
