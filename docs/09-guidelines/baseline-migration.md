@@ -392,6 +392,19 @@ need it.
    canonical JSON, the same bytes in every binding.
 4. **The text, if you keep text.** `dossier: { preset: 'FULL' }` writes
    a date-free dossier. Give it `at` for a dated one.
+5. **The gochar sidecar, in Rust, if you keep text and read transits
+   later.** The baseline's `gocharInputs` column becomes
+   `GocharSidecar::cut(&read.value, &read.provenance)?.to_text()`: the
+   chart's foundation and panchanga, tied to the chart's content hash and
+   settings hash. On a later day `GocharSidecar::read` takes it back in
+   any JSON spelling (a `jsonb` column reorders keys), `check_chart`
+   refuses it beside a chart recomputed since, and `sdk.chart().natal`
+   opens it for `gochar`, `sade_sati`, `hits` and `sarvatobhadra` under
+   the settings it was cut with
+   ([`03-design/gochar-sidecar.md`](../03-design/gochar-sidecar.md)).
+   The baseline's sidecar cannot be read: it holds signs and tables
+   where the SDK's holds the foundation, so cut a new one when the chart
+   is recomputed (§8.3).
 
 To decide whether a stored answer is still valid, compare the answer key
 the serial page defines: the SHA-256 of the canonical JSON of the
@@ -471,9 +484,11 @@ the baseline's beside it
   offline name corpus have no SDK equivalent. The design page is planned
   for Phase 6 ([`03-design/README.md`](../03-design/README.md), "Planned
   pages").
-- **The gochar sidecar.** The serial module lists it as a later row
-  ([`serial-and-the-envelope.md`](../03-design/serial-and-the-envelope.md) §1).
-  Recompute transits from the stored natal input.
+- **The gochar sidecar in a binding.** Rust has it (§8.2); Node,
+  Python, Dart and Java do not. Ask for the transits on the chart
+  request (its `gochar`, `sadeSati` and `dossier` records) from the
+  stored natal input, which founds the natal chart and reads its
+  transits in one call.
 - **The chart document in a binding.** Rust has the document and its
   schema; Node, Python, Dart and Java decode the result blob and do not
   hand out the document's JSON

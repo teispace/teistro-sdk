@@ -72,7 +72,7 @@ golden vectors exported from the baseline engine before migration.
       exported from the baseline engine's interpretation records with citations.
 - [ ] The composers produce byte-identical text to the baseline engine's for the same
       inputs (a translation-quality gate, not only a computation gate).
-- [ ] Chart serialiser: the date-free dossier with presets, byte-identical
+- [x] Chart serialiser: the date-free dossier with presets, byte-identical
       for the same chart, and the gochar sidecar.
 - [x] Chart layout geometry for North, South and East Indian styles.
 
@@ -117,7 +117,7 @@ by `check-ab`. Code with nothing comparing it to the baseline is "partly".
 | prashna, rashifal, Track B modules | partly | built and hand-worked; no baseline vectors; name suggestions and gemstone safety not built |
 | text in ne, en, sa, hi | partly | 639 of 657 rules carry a reading; Hindi and Sanskrit messages wait on vetted translators (`locale-coverage-measured.md`) |
 | composers byte-identical | decided otherwise | the SDK composes through Teistro Intl's own grammar, so the same bytes are not a goal; parity is on what a record says, and the baseline's records are migrated (`teistro-intl migrate baseline`). Decided 2026-10-27 |
-| serialiser | partly | the dossier and its presets, the same bytes for the same chart (`check-dossier`); the gochar sidecar is not built |
+| serialiser | met | the dossier and its presets, the same bytes for the same chart (`check-dossier`); the gochar sidecar in Rust (`GocharSidecar`, `03-design/gochar-sidecar.md`), checked against its chart and its settings, its transits the whole document's (`gochar-sidecar-measured.md`); a binding asks for transits on the chart request instead of storing one, decided 2026-10-28 |
 | layouts | met | all three styles (`crates/render-svg/tests/render.rs`) |
 | speed, workers, the same JSON | met | `check-ab`, `bindings/node/test/workers.test.mjs`, `check-parity` |
 | migration guide | not met | being written (`09-guidelines/baseline-migration.md`); the compatibility shim is not built |

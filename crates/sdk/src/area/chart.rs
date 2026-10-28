@@ -1532,6 +1532,61 @@ impl<'a> ChartArea<'a> {
         )
     }
 
+    /// The natal document a stored [`GocharSidecar`](crate::GocharSidecar)
+    /// opens to, for the transit operations — [`gochar`](Self::gochar),
+    /// [`sade_sati`](Self::sade_sati), [`hits`](Self::hits) and
+    /// [`sarvatobhadra`](Self::sarvatobhadra) — to read on any later day
+    /// without the chart's input (`03-design/gochar-sidecar.md`).
+    ///
+    /// Refused unless this context's settings are the ones the chart was
+    /// computed under: a transit is founded in this context's zodiac and
+    /// counted against the sidecar's natal signs, and under another
+    /// ayanamsha or frame the two would not be one zodiac.
+    ///
+    /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
+    /// # use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
+    /// # use teistro::{ChartRequest, Context, Ephemeris, GocharRequest, GocharSidecar, UtcOffset};
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let read = sdk.chart().reading(
+    ///     JulianDay::literal(2_447_995.489_583_333_5),
+    ///     &ChartRequest::at(place, UtcOffset::literal(5, 45, 0)).with_panchanga(),
+    /// )?;
+    /// // When the chart is computed: keep the sidecar's text and the chart's hash.
+    /// let stored = GocharSidecar::cut(&read.value, &read.provenance)?.to_text();
+    /// let chart = read.provenance.content_hash;
+    ///
+    /// // On any later day: read it back, check it is the chart's, open it.
+    /// let sidecar = GocharSidecar::read(&stored)?;
+    /// sidecar.check_chart(chart)?;
+    /// let natal = sdk.chart().natal(&sidecar)?;
+    /// let today = sdk.chart().gochar(&natal, &GocharRequest::at(JulianDay::<Utc>::literal(2_461_000.5)))?;
+    /// # let _ = today;
+    /// # }
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming `sidecar.settings` when the sidecar was cut under
+    /// other settings than this context's.
+    pub fn natal(self, sidecar: &crate::GocharSidecar) -> Result<Document, Error> {
+        let settings = self.context.settings_hash();
+        if sidecar.settings() != settings {
+            return Err(Error::invalid_arg(format!(
+                "the sidecar's chart was computed under the settings {}, and this context's \
+                 are {settings}",
+                sidecar.settings()
+            ))
+            .with_field("sidecar.settings")
+            .with_hint(
+                "open it with a context built with the settings the chart was computed under",
+            ));
+        }
+        Ok(sidecar.natal())
+    }
+
     /// Gochar: the grahas in transit at each instant asked for, each read
     /// from the natal chart's reference sign — its Moon's by Phaladeepika
     /// ch. 26 v. 1 — with its good houses, its vedha and who obstructs it,
