@@ -300,6 +300,10 @@ name = "sade_sati"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "transit_centre"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "dignities"
 required-features = ["builtin-ephemeris"]
 
