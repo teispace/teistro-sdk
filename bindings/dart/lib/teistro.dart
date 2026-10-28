@@ -7868,10 +7868,13 @@ abstract base class _Value {
           _sameList(other._fields, _fields));
 
   @override
-  int get hashCode => Object.hashAll(
-    _fields.map((field) => field is List ? Object.hashAll(field) : field),
-  );
+  int get hashCode => Object.hashAll(_fields.map(_deepHash));
 }
+
+/// A field's hash, a list's from its members however deep, as `==` compares
+/// it ([_sameList]): two values that are equal hash alike.
+int _deepHash(Object? field) =>
+    field is List ? Object.hashAll(field.map(_deepHash)) : field.hashCode;
 
 /// One term of a table of the caller's own: its lord, and the degree within
 /// the sign it ends at, exclusive.
