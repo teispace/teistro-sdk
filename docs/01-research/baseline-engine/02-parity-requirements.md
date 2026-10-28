@@ -39,7 +39,7 @@ golden vectors exported from the baseline engine before migration.
 - [x] Dashas: all 18 systems, trees to the baseline depths, spatial and
       temporal balances, active chain at an instant, tiered persistence
       depths for the dossier.
-- [ ] Jaimini: karakas (7 and 8), arudhas, three pairs.
+- [x] Jaimini: karakas (7 and 8), arudhas, three pairs.
 - [ ] Ayurdaya (three methods, headline and spread), Maraka, longevity
       windows, Balarishta states.
 - [x] Birth timing: Ishtakaal, bhayat, bhabhoga, ghati-pala both reckonings,
@@ -99,20 +99,20 @@ by `check-ab`. Code with nothing comparing it to the baseline is "partly".
 | settings, profile | met | 47 ayanamshas and a custom one, 22 house systems and the chalit, every knob; `conformance-baseline` is the baseline's default, and every corpus test founds under it |
 | positions, dignities, avasthas, war | met | `crates/ephemeris-builtin/tests/conformance.rs`, `crates/state/tests/baseline.rs` (four avastha families; the corpus records no fifth) |
 | houses, vargas | met | `crates/astro/tests/baseline_houses.rs`, `crates/houses/tests/baseline.rs`, `crates/vargas/tests/baseline.rs` |
-| aspects | partly | built (`crates/aspect`); the corpus records no drishti, so a baseline export of graha, sphuta and rashi drishti is owed |
+| aspects | partly | graha drishti by the A/B: each graha's full aspects agree on every chart under `same` (`drishti`, 100%; `ab-measured.md`); the graded aspects, the sphuta drishti and the rashi drishti are in no answer of the SDK's chart, so they are not compared |
 | points | partly | upagrahas, yogi points, special lagnas, mrityu bhaga, pushkara navamshas and bhagas (C767) and marana karaka sthana (C768) held; Bhrigu bindu is catalogued and not computed: no text defining it has been read (C769) |
 | yogas, doshas | met | 76 921 and 8 565 comparisons agree; the engine records no yoga strength, so none is compared; its corpus holds 605 yogas and 69 doshas, not the 562 and 62 above |
 | balas, ashtakavarga | met | 11 431, 3 408 and 1 848 comparisons; kakshya by a unit test only |
 | dashas | met | every recorded system, both balances, the chains and the dossier depths |
-| Jaimini | partly | arudhas held; the whole chara karaka order under seven and eight karakas, 54 of 55 each, the miss a graha within an arc-second of a sign edge (`crates/sdk/tests/baseline_chara_karakas.rs`); the three pairs have no vector |
-| ayurdaya, maraka, balarishta | partly | built (`crates/rules/src/longevity`); no baseline vectors |
+| Jaimini | met | arudhas held; the whole chara karaka order under seven and eight karakas, 54 of 55 each, the miss a graha within an arc-second of a sign edge (`crates/sdk/tests/baseline_chara_karakas.rs`); the three pairs by the A/B (`jaiminiPair`, 81.7% under `same`): the lagna lord with the eighth lord and the lagna with the hora lagna agree on every chart, and the second pair is BPHS ch. 43 v. 33's Saturn and Moon where the baseline pairs the lagna and the Moon, which alone moves the class they decide |
+| ayurdaya, maraka, balarishta | partly | by the A/B under `same`: Pindayu, Amsayu and Nisargayu year by year 73.4% (`ayurdaya`), every miss a reading: v. 11's Moon a benefic in the visible half, vv. 20 to 22's Amsayu multipliers, Nisargayu's listed years unreduced; the marakas by lordship 100% (`maraka`); Balarishta 98.1%, the misses its cancellations (`balarishta`). The longevity windows are not compared |
 | birth timing | met | `crates/chart/tests/baseline_day.rs` |
 | daily panchanga | met | periods, classification, month, panchaka, ayana and shool held; muhurta yogas 253 of 265 flags (the 12 the recording's own weekday-and-nakshatra table), moonrise and moonset within 30 s over 104 events, and 271 limb changes within 10 s in TT (`crates/sdk/tests/baseline_panchanga_day.rs`) |
 | muhurta ranking | partly | `Ranking::Baseline`, one regression; no exported regression set compared rank for rank |
-| gochar | partly | longitude, house and bindus by the A/B; transit strength, vedha phala and the calendar have no vectors |
+| gochar | partly | longitude, house, bindus (each transit sign's own and sarva) and transit strength by the A/B; the good houses and a good transit's vedha 96.7% under `same` (`gochar`), every miss Phaladeepika ch. 26's pairs and exemptions (vv. 2 to 8, cruxes C136, C140); the calendar has no vectors |
 | Tajika | decided otherwise | the SDK follows Charak and the *Tajika Nilakanthi* and matches Charak's worked year in full; the A/B counts where the baseline differs (24.4% agreement, the sahams by other formulas). "As implemented" is not a goal; a baseline-reading mode is v1.x, if a consumer asks. Decided 2026-10-27 |
-| KP | met | by the A/B under `same`: the four lord levels 98.4%, the significators' four levels 95.2% and the ruling planets 92.0%; every miss a convention the SDK takes from KP Reader VI and crux C154 (the day lord from sunrise, an intercepted sign's lord reported and not counted) (`ab-measured.md`) |
-| milan | decided otherwise, partly | the SDK follows the *Kalaprakasika* (100% against it; 68.5% koota and 94.1% porutham agreement with the baseline, method differences); the recommendation bands wait on a rank 1 text, and the extended checks and marriage doshas have no vectors. Decided 2026-10-27 |
+| KP | met | by the A/B under `same`: the four lord levels 98.4%, the significators' four levels 95.2% and the ruling planets 100%, `same` asking the baseline's ruling count and civil day lord (cruxes C150, C151); every miss an intercepted sign's lord, which the baseline counts a significator and the SDK reports and does not count (crux C154), or the frame. Under `timed` the day lord also differs, KP Reader VI's day turning at sunrise (`ab-measured.md`) |
+| milan | decided otherwise, partly | the SDK follows the *Kalaprakasika* (100% against it; 68.5% koota and 94.1% porutham agreement with the baseline, method differences); the recommendation bands wait on a rank 1 text; by the A/B under `same`, the Kuja dosha 90.9% (`kuja`, the misses the baseline's own cancellations) and the Ashta Koota's marriage doshas 100% (`marriageDosha`). Decided 2026-10-27 |
 | rectification | met | the black-box run, 8 cases, intervals to a second (`crates/sdk/tests/rectify.rs`) |
 | prashna, rashifal, Track B modules | partly | built and hand-worked; no baseline vectors; gemstone safety not built; names: the reading (declared schemes and `CASUAL`), the check with its clauses, a pada's syllables, and the consumer's name book loaded and searched, built 2026-10-28 in Rust and as `naming` in every binding and as MCP tools (`03-design/namakarana.md` §10); no corpus ships |
 | text in ne, en, sa, hi | partly | 639 of 657 rules carry a reading; Hindi and Sanskrit messages wait on vetted translators (`locale-coverage-measured.md`) |

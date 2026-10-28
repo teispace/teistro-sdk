@@ -122,6 +122,32 @@ interpretation's karakas, a karaka's holder and the rules over a chart.
   quality bar's 80% is the target, the measured figure the floor
   (`03-design/binding-coverage.md`).
 
+**The A/B compares drishti, longevity, the transits' vedha and the
+marriage doshas.**
+**Numbers:** none; a comparison, not a computation.
+- Eight families join the comparison (`ab-baseline.md` §10), each with
+  its share under `same` (`ab-measured.md`): `drishti`, the grahas each
+  graha aspects in full, 100%; `jaiminiPair`, the three pairs' classes
+  and the class they decide, 81.7%; `ayurdaya`, Pindayu, Amsayu and
+  Nisargayu year by year, 73.4%; `maraka`, the lords of the second and
+  the seventh, 100%; `balarishta`, 98.1%; `gochar`, a transit's good
+  house, a good one's vedha and its Ashtakavarga strength, 96.7%;
+  `kuja`, 90.9%; and `marriageDosha`, the nadi, bhakoot and gana
+  doshas, 100%. Every miss is a reading the SDK takes from its text:
+  BPHS ch. 43's Saturn and Moon pair, v. 11's Moon a benefic in the
+  visible half, vv. 20 to 22's Amsayu multipliers, Phaladeepika ch.
+  26's vedha pairs and exemptions, and the baseline's own Kuja and
+  Balarishta cancellations.
+- Under `same` the SDK asks the readings the baseline takes where a
+  request names its own: the Kuja dosha from the lagna, the Moon and
+  Venus in six houses, the three spans' multiplied Amsayu, compound
+  enmity, reductions in turn and listed Nisargayu, and KP's ruling
+  planets with the sub lords and the civil weekday's lord. KP's ruling
+  planets now agree on every chart under `same` (92.0% before).
+- A pool of worker threads that hangs is killed after ten minutes and
+  reported unloaded, where the runner waited on it for ever: the
+  baseline's native ephemeris aborts or wedges across threads.
+
 **The A/B compares KP's significators and ruling planets.**
 **Numbers:** none; a comparison, not a computation.
 - Two families join `kpLord` (`ab-baseline.md` §10): `kpSignificator`,
