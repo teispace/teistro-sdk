@@ -219,6 +219,7 @@ Its knobs, each with the crux or registry entry that measured it:
 | `kp.ruling_count`, `kp.day_lord_day` | `WITH_SUBS`, `CIVIL` | C150, C151: seven ruling planets, the clock's weekday |
 | `jaimini.chara_karakas` | `EIGHT` | the recorded `chara_karaka: 8` ([`03-design/jaimini-measured.md`](../03-design/jaimini-measured.md)) |
 | `jaimini.eight_karaka_order` | `PITRIKARAKA_LAST` | C101: the least of eight is named the Pitrikaraka |
+| `gochar.transit_centre` | `GEOCENTRIC` | C778: a transit from the Earth's centre under a topocentric birth |
 
 The registry entries are in
 [`05-testing/01-golden-vectors.md`](../05-testing/01-golden-vectors.md),
@@ -292,10 +293,15 @@ each value, as in the table.
 ### 5.4 Transits
 
 The baseline casts a natal chart from the birthplace and a transit from
-the Earth's centre. A context has one `frame.centre`. To reproduce both,
-open a second context with `{ frame: { centre: 'GEOCENTRIC' } }` for the
-transit requests (`gochar`, `sadeSati`), as the A/B harness does
-([`03-design/ab-baseline.md`](../03-design/ab-baseline.md) §10).
+the Earth's centre. `conformance-baseline` does the same: its
+`gochar.transit_centre` is `GEOCENTRIC`, so one context answers the
+natal requests topocentric and the transit requests (`gochar`,
+`sadeSati`, `hits`) geocentric (crux C778). On another profile, set it
+yourself:
+
+```js
+settings: { gochar: { transit_centre: 'GEOCENTRIC' } },
+```
 
 ## 6. Where the SDK's default differs on purpose
 
@@ -514,5 +520,3 @@ the baseline's beside it
   ([`interpret-composers.md`](../03-design/interpret-composers.md) §2).
 - **The baseline's koota tables, Stree-deergha count and Tajika year
   lord** have no knob (§7).
-- **One context with two centres.** A natal chart from the birthplace
-  and its transits from the Earth's centre need two contexts (§5.4).

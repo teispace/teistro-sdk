@@ -88,6 +88,7 @@ every shipped profile. The v1 inventory:
 | jaimini | `brahma` | enum | `VERSES`, `TRANSLATORS_NOTE`: the rule the Brahma graha is found by (BPHS ch. 46 vv. 170 to 173, or the translator's note; C128) |
 | gochar | `node_vedha` | enum | `LIKE_THE_SUN`, `NONE`: whether the nodes take the Sun's vedha pairs in transit (Phaladeepika ch. 26 v. 2 makes them "like the Sun"; C136) |
 | gochar | `ashtakavarga_good_from` | enum | `FIVE`, `FOUR`: how many bindus in a graha's own Ashtakavarga make its transit good (Phaladeepika ch. 23 v. 11 makes four a fear; C141) |
+| gochar | `transit_centre` | enum | `AS_CHART`, `GEOCENTRIC`, `TOPOCENTRIC`: where the gochar readings, Sade Sati and the hit list see a transit from; `AS_CHART` is the chart's own `frame.centre` (C778) |
 | gochar | `node_obstruction` | enum | `NOT_EACH_OTHER`, `EACH_OTHER_TOO`, `NONE`: whether the nodes obstruct another graha's transit from its vedha house (vv. 3 to 8 say "planets"; C137), and each other's, which would leave them never good since they stand opposite (C140) |
 | kp | `ruling_count` | enum | `FIVE`, `WITH_SUBS`: how many ruling planets KP counts, KP Reader VI's five or the baseline engine's seven with the lagna's and the Moon's sub lords (C150) |
 | kp | `day_lord_day` | enum | `SUNRISE`, `CIVIL`: the day the ruling day lord belongs to, the chart's own from sunrise as Reader VI says or the civil weekday on a clock the request names (C151) |

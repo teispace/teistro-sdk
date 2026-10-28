@@ -152,8 +152,11 @@ fn every_transit_is_the_founded_chart_s_graha_to_the_bit() {
     let instants: Vec<_> = (0_u32..12)
         .map(|month| JulianDay::<Utc>::literal(2_451_545.0 + 30.4375 * f64::from(month)))
         .collect();
+    // Its transits in its own topocentric frame, so the founded chart is
+    // the transit's (the profile casts them geocentric: `transit_centre.rs`).
     let conformance = Context::builder()
         .profile("conformance-baseline")
+        .settings_json(r#"{"gochar": {"transit_centre": "AS_CHART"}}"#)
         .ephemeris([Ephemeris::Builtin])
         .build()
         .unwrap();

@@ -23,7 +23,7 @@ use super::knobs::{
     RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
     RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
     ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
-    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -325,6 +325,8 @@ pub fn root() -> Settings {
             node_vedha: NodeVedha::LikeTheSun,
             node_obstruction: NodeObstruction::NotEachOther,
             ashtakavarga_good_from: AshtakavargaGoodFrom::Five,
+            // Each transit from the chart's own centre (C778).
+            transit_centre: TransitCentre::AsChart,
         },
         kp: kp_readers(),
         aspect: Aspect {
@@ -794,6 +796,8 @@ fn conformance_baseline() -> Profile {
     // civil weekday's lord (cruxes C150, C151).
     patch.kp.ruling_count = Some(RulingCount::WithSubs);
     patch.kp.day_lord_day = Some(DayLordDay::Civil);
+    // A birth from its place, a transit from the Earth's centre (C778).
+    patch.gochar.transit_centre = Some(TransitCentre::Geocentric);
     Profile {
         id: ProfileId::new("conformance-baseline"),
         // 2: the ayanamsha basis became `TRUE`, which is what the engine
@@ -812,7 +816,9 @@ fn conformance_baseline() -> Profile {
         // planets its seven by the civil weekday (cruxes C150, C151).
         // 13: the least of eight karakas became the engine's Pitrikaraka
         // (crux C101).
-        version: 13,
+        // 14: a transit became the engine's, cast from the Earth's centre
+        // (crux C778).
+        version: 14,
         base: None,
         patch,
         sources: conformance_sources(),
@@ -885,6 +891,13 @@ fn conformance_sources() -> Vec<Citation> {
             Source::new(
                 "baseline-engine",
                 "recorded: the corpus names the least of eight karakas the Pitrikaraka, in every chart",
+            ),
+        ),
+        Citation::new(
+            "gochar.transit_centre",
+            Source::new(
+                "baseline-engine",
+                "measured: its transits are cast geocentric under a topocentric birth (`03-design/ab-baseline.md` §10)",
             ),
         ),
         Citation::new(

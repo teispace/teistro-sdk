@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A transit seen from a centre of its own.**
+**Numbers:** every settings hash moves with the new knob. Under the root
+and every shipped profile but `conformance-baseline` no answer moves:
+`AS_CHART` casts a transit from the chart's own centre, as before. Under
+`conformance-baseline` (version 14) the gochar readings, Sade Sati's
+bounds and the hit list are cast from the Earth's centre while its charts
+stay topocentric, which moves the Moon's transit by up to a degree and
+any bound or ingress that crosses a sign's edge with it.
+- `gochar.transit_centre` (`AS_CHART`, `GEOCENTRIC`, `TOPOCENTRIC`;
+  crux C778): one context casts a birth from its place and its transits
+  from the Earth's centre, as the baseline engine does, where it took two.
+- A transit's provenance keeps its context's settings hash.
+- `transit_centre.rs`: each transit request under the knob answers to the
+  bit as a second context on that centre does, both ways round.
+
 **The eight chara karakas named as the settings name them.**
 **Numbers:** every settings hash moves with the new knob. Under the root
 and every shipped profile but `conformance-baseline` no answer moves: they

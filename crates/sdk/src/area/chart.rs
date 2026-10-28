@@ -18,7 +18,7 @@ use teistro_core::angle::Nas;
 use teistro_core::catalogue::{
     CharaKaraka, ChartKind, DashaSystem, Graha, HouseSystem, Rashi, Star, Vara, Varga,
 };
-use teistro_core::envelope::{Envelope, Hash};
+use teistro_core::envelope::{Envelope, Hash, Provenance};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::key::KeyId;
@@ -28,7 +28,7 @@ use teistro_core::settings::{
     AyurdayaReadings, AyurdayaSpan, CharaKarakas, DecennialDivision, GrahaDivision,
     NaisargikaDivision, ReleasingSharedSign, StrongestGraha,
 };
-use teistro_core::settings::{Balance, BhavaBalaDivision};
+use teistro_core::settings::{Balance, BhavaBalaDivision, Centre, Resolved, TransitCentre};
 use teistro_core::time::UtcOffset;
 use teistro_dasha::jaimini::{
     JaiminiReading, brahma, graha_arudhas, karaka_bhavas, karakamsha, pada_lord, pada_lords,
@@ -308,8 +308,60 @@ impl<'a> ChartArea<'a> {
         offset: UtcOffset,
         work: impl for<'f> FnOnce(&Founder<'f, dyn EphemerisProvider + 'f>) -> Result<T, Error>,
     ) -> Result<T, Error> {
-        let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
+        self.founding_under(self.context.resolved(), offset, work)
+    }
+
+    /// [`ChartArea::founding`] for a transit: the founder stands where
+    /// `gochar.transit_centre` puts it (crux C778), which is the context's
+    /// own founder unless the knob names the other centre. A transit's
+    /// envelope keeps the context's settings hash
+    /// ([`ChartArea::transit_stamped`]).
+    ///
+    /// # Errors
+    ///
+    /// As [`ChartArea::founding`].
+    fn transiting<T>(
+        self,
+        work: impl for<'f> FnOnce(&Founder<'f, dyn EphemerisProvider + 'f>) -> Result<T, Error>,
+    ) -> Result<T, Error> {
         let resolved = self.context.resolved();
+        let centre = self.transit_centre();
+        if centre == resolved.settings.frame.centre {
+            return self.founding_under(resolved, UtcOffset::UTC, work);
+        }
+        let mut moved = resolved.clone();
+        moved.settings.frame.centre = centre;
+        self.founding_under(&moved, UtcOffset::UTC, work)
+    }
+
+    /// The centre a transit is seen from (`gochar.transit_centre`).
+    fn transit_centre(self) -> Centre {
+        let settings = self.context.settings();
+        match settings.gochar.transit_centre {
+            TransitCentre::Geocentric => Centre::Geocentric,
+            TransitCentre::Topocentric => Centre::Topocentric,
+            // `AS_CHART`.
+            _ => settings.frame.centre,
+        }
+    }
+
+    /// A transit's provenance with the context's settings hash, which a
+    /// founder moved to another centre stamped with its own.
+    fn transit_stamped(self, mut provenance: Provenance) -> Provenance {
+        if self.transit_centre() != self.context.settings().frame.centre {
+            provenance.settings_hash = self.context.settings_hash();
+        }
+        provenance
+    }
+
+    /// [`ChartArea::founding`] under the given resolved settings.
+    fn founding_under<T>(
+        self,
+        resolved: &Resolved,
+        offset: UtcOffset,
+        work: impl for<'f> FnOnce(&Founder<'f, dyn EphemerisProvider + 'f>) -> Result<T, Error>,
+    ) -> Result<T, Error> {
+        let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
         let calendar = system_of(resolved.settings.calendars.civil_calendar)?;
         let model = drik_sun(self.context, provider);
         work(&Founder::new(
@@ -1643,9 +1695,7 @@ impl<'a> ChartArea<'a> {
         // reading reads nothing else of a transit chart, so founding one
         // (its day, houses and lagna) would be work thrown away.
         let place = natal.foundation.place;
-        let read = self.founding(UtcOffset::UTC, |founder| {
-            founder.longitudes(request.instants(), &place)
-        })?;
+        let read = self.transiting(|founder| founder.longitudes(request.instants(), &place))?;
         let readings = read
             .value
             .iter()
@@ -1653,7 +1703,10 @@ impl<'a> ChartArea<'a> {
                 crate::gochar_request::reading(longitudes, reference, rules, prastara.as_ref())
             })
             .collect();
-        Ok(Envelope::sealing(readings, read.provenance))
+        Ok(Envelope::sealing(
+            readings,
+            self.transit_stamped(read.provenance),
+        ))
     }
 
     /// Every ingress, station and aspect to a natal point of a window,
@@ -1736,7 +1789,6 @@ impl<'a> ChartArea<'a> {
         request: &crate::hit_request::HitRequest,
     ) -> Result<Envelope<Vec<Vec<teistro_gochar::hits::Hit>>>, Error> {
         use crate::hit_request::groups;
-        use teistro_core::settings::Centre;
         use teistro_gochar::hits::{self, Hit, NatalPoint};
 
         request.check()?;
@@ -1747,7 +1799,7 @@ impl<'a> ChartArea<'a> {
                     .with_field("natals"),
             );
         }
-        let topocentric = self.context.settings().frame.centre == Centre::Topocentric;
+        let topocentric = self.transit_centre() == Centre::Topocentric;
         // The midheaven is no field of a chart, so it is read from each
         // chart's angles, and only when it is asked for.
         let midheavens = if request.points().contains(&NatalPoint::Midheaven) {
@@ -1791,7 +1843,7 @@ impl<'a> ChartArea<'a> {
         }
         let provenance = provenance
             .ok_or_else(|| Error::internal("a batch of charts was searched in no group"))?;
-        Ok(Envelope::sealing(lists, provenance))
+        Ok(Envelope::sealing(lists, self.transit_stamped(provenance)))
     }
 
     /// One group's hits, each with the one chart it belongs to, or `None`
@@ -1819,7 +1871,7 @@ impl<'a> ChartArea<'a> {
         let phase_lattices: Vec<_> = phase_meanings.iter().map(|(_, lattice)| *lattice).collect();
         let instants: Vec<JulianDay<Utc>> =
             eclipses.iter().map(|eclipse| eclipse.instant()).collect();
-        let (found, phased, luminaries) = self.founding(UtcOffset::UTC, |founder| {
+        let (found, phased, luminaries) = self.transiting(|founder| {
             let window = (request.from(), request.to());
             let found = founder.transit_events(
                 place,
@@ -1993,7 +2045,6 @@ impl<'a> ChartArea<'a> {
     ) -> Result<Envelope<Vec<teistro_gochar::sade_sati::Report>>, Error> {
         use crate::hit_request::groups;
         use crate::sade_sati_request::{Widening, crossings_of, lattices_of};
-        use teistro_core::settings::Centre;
         use teistro_gochar::sade_sati::{self, Outcome, Report, Searched};
 
         request.check()?;
@@ -2010,7 +2061,7 @@ impl<'a> ChartArea<'a> {
             .ok_or_else(no_ephemeris)?
             .capabilities()
             .jd_range;
-        let topocentric = self.context.settings().frame.centre == Centre::Topocentric;
+        let topocentric = self.transit_centre() == Centre::Topocentric;
         let mut reports: Vec<Option<Report>> = vec![None; natals.len()];
         let mut provenance = None;
         for (place, members) in groups(&natals, topocentric) {
@@ -2018,7 +2069,7 @@ impl<'a> ChartArea<'a> {
             let mut widening = Widening::new((request.start(), request.end()), coverage);
             let (found, periods) = loop {
                 let (start, end) = widening.window();
-                let found = self.founding(UtcOffset::UTC, |founder| {
+                let found = self.transiting(|founder| {
                     founder.transit_events(&place, &[Graha::Saturn], &lattices, false, (start, end))
                 })?;
                 let crossings = crossings_of(&found.value, lattices.len());
@@ -2061,7 +2112,7 @@ impl<'a> ChartArea<'a> {
             .collect::<Result<Vec<_>, Error>>()?;
         let provenance = provenance
             .ok_or_else(|| Error::internal("a batch of charts was searched in no group"))?;
-        Ok(Envelope::sealing(reports, provenance))
+        Ok(Envelope::sealing(reports, self.transit_stamped(provenance)))
     }
 
     /// Where a founded chart places one of the grahas.
