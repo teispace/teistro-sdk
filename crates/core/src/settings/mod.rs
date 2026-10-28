@@ -20,6 +20,7 @@
 
 pub mod knobs;
 mod profiles;
+pub mod recorded;
 
 use std::collections::{BTreeMap, BTreeSet};
 
