@@ -112,6 +112,33 @@ pub const KNOWN: [Divergence; 5] = [
 ];
 
 /// A variant profile the shim refused, with the variants it holds.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::Corpus;
+/// #
+/// # const TOLERANCES: &str = r#"{"provider_classes": {"builtin-compact": "the compact tier"}, "fields": {}}"#;
+/// # // A corpus of one refused variant profile, written where the example can.
+/// # let dir = std::env::temp_dir().join(format!("teistro-kit-doc-{}-refusal", std::process::id()));
+/// # std::fs::create_dir_all(dir.join("baseline"))?;
+/// # std::fs::write(dir.join("corpus.json"), r#"{"version": "0.0.1"}"#)?;
+/// # std::fs::write(dir.join("tolerances.json"), TOLERANCES)?;
+/// # std::fs::write(dir.join("baseline/manifest.json"), r#"{
+/// #     "profiles": {"surya-bija": {"settings_hash": {"canonical": "siddhanta=surya|suryaBija=true"}}},
+/// #     "fixtures": [{"profile": "surya-bija", "file": "variants/c001--surya-bija.json"}]
+/// # }"#)?;
+/// # let corpus = Corpus::open(&dir)?;
+/// use teistro_ephemeris_kit::variants;
+/// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+///
+/// let open = || -> Box<dyn EphemerisProvider> { Box::new(TestProvider::new()) };
+/// let run = variants::run(&corpus, &open, "builtin-compact")?;
+/// // The bija is a decision (C777): the profile and its variants, with why.
+/// let refusal = &run.refused[0];
+/// assert_eq!((refusal.profile.as_str(), refusal.fixtures.len()), ("surya-bija", 1));
+/// assert!(refusal.why.contains("suryaBija"));
+/// # std::fs::remove_dir_all(&dir)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Refusal {
     /// The manifest's name for the profile.
@@ -124,6 +151,32 @@ pub struct Refusal {
 
 /// What a variant run found: the report of every variant founded, and
 /// every profile refused.
+///
+/// ```
+/// # use teistro_ephemeris_kit::corpus::Corpus;
+/// #
+/// # const TOLERANCES: &str = r#"{"provider_classes": {"builtin-compact": "the compact tier"}, "fields": {}}"#;
+/// # // A corpus of one refused variant profile, written where the example can.
+/// # let dir = std::env::temp_dir().join(format!("teistro-kit-doc-{}-run", std::process::id()));
+/// # std::fs::create_dir_all(dir.join("baseline"))?;
+/// # std::fs::write(dir.join("corpus.json"), r#"{"version": "0.0.1"}"#)?;
+/// # std::fs::write(dir.join("tolerances.json"), TOLERANCES)?;
+/// # std::fs::write(dir.join("baseline/manifest.json"), r#"{
+/// #     "profiles": {"surya-bija": {"settings_hash": {"canonical": "siddhanta=surya|suryaBija=true"}}},
+/// #     "fixtures": [{"profile": "surya-bija", "file": "variants/c001--surya-bija.json"}]
+/// # }"#)?;
+/// # let corpus = Corpus::open(&dir)?;
+/// use teistro_ephemeris_kit::variants;
+/// use teistro_port_ephemeris::{EphemerisProvider, TestProvider};
+///
+/// let open = || -> Box<dyn EphemerisProvider> { Box::new(TestProvider::new()) };
+/// let run = variants::run(&corpus, &open, "builtin-compact")?;
+/// // Nothing founded is a report of nothing, under no one settings hash.
+/// assert!(run.report.results.is_empty() && run.report.implementation.settings_hash.is_none());
+/// assert_eq!(run.refused.len(), 1);
+/// # std::fs::remove_dir_all(&dir)?;
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
 #[derive(Clone, Debug, PartialEq)]
 pub struct VariantRun {
     /// The variants founded, in the corpus's report format. Its settings
