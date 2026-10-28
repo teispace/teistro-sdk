@@ -712,9 +712,9 @@ impl TsZoneResolution {
 
 /// Resolves a civil date-time in a zone to a UTC instant under the
 /// context's daylight-saving and unknown-time policies, with the metadata
-/// a stored chart keeps. An unknown zone is `UNSUPPORTED` with the nearest
-/// names as the hint; a civil time inside a gap under the `error` policy
-/// is `INVALID_ARG` with the `DST_GAP` detail.
+/// a stored chart keeps. An unknown zone is `INVALID_ARG` on the `zone`
+/// field with the nearest names as the hint; a civil time inside a gap
+/// under the `error` policy is `INVALID_ARG` with the `DST_GAP` detail.
 ///
 /// ```
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
