@@ -732,7 +732,7 @@ fn western_tropical_default() -> Profile {
 
 /// The recording engine's defaults exactly, so that the corpus's charts
 /// reproduce (`05-testing/01-golden-vectors.md`).
-fn conformance_baseline() -> Profile {
+pub(super) fn conformance_baseline() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.centre = Some(Centre::Topocentric);
     // The engine has no basis knob and applies the nutated value.
@@ -957,6 +957,21 @@ impl Profile {
     ///
     /// The coherence errors, every one.
     pub fn resolve(&self, patch: &SettingsPatch) -> Result<Resolved, Diagnostics> {
+        self.settings().patched(patch).validated(self.id.clone())
+    }
+
+    /// The profile's own settings, unvalidated: root, then the base, then
+    /// this profile. What [`Profile::resolve`] lays a request's patch over.
+    ///
+    /// ```
+    /// use teistro_core::settings::{Profile, SettingsPatch};
+    ///
+    /// let surya = Profile::shipped("surya-siddhanta").unwrap();
+    /// // The base's knobs and the profile's own, with nothing patched.
+    /// assert_eq!(surya.settings(), surya.resolve(&SettingsPatch::default()).unwrap().settings);
+    /// ```
+    #[must_use]
+    pub fn settings(&self) -> Settings {
         let mut settings = root();
         if let Some(base) = self
             .base
@@ -965,7 +980,6 @@ impl Profile {
         {
             settings = settings.patched(&base.patch);
         }
-        settings = settings.patched(&self.patch).patched(patch);
-        settings.validated(self.id.clone())
+        settings.patched(&self.patch)
     }
 }
