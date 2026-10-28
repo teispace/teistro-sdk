@@ -571,11 +571,6 @@ pub(crate) fn check_day(
 /// // The lunisolar calendar needs an ephemeris, so a context builds it.
 /// assert!(shipped(Calendar::IndianLunisolar).is_none());
 /// ```
-// Inlined across crates so a caller naming its calendar resolves it at
-// compile time: the regional solar arms took the match past the size Rust
-// inlines unasked, and each conversion paid a call (benchmarks'
-// `calendar`, +4.2%).
-#[inline]
 #[must_use]
 pub fn shipped(id: Calendar) -> Option<&'static dyn CalendarSystem> {
     match id {
