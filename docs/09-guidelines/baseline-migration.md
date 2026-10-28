@@ -491,8 +491,9 @@ the baseline's beside it
 - **Namakarana.** The phonetic matcher, the name validation and the
   offline name corpus have no equivalent in a binding yet. In Rust,
   `read_name` reads a Latin name under a declared scheme or every
-  `CASUAL` way, `name_check` checks a name with its clauses and
-  `syllables` gives a pada's, a star's or a sign's syllables
+  `CASUAL` way, `name_check` checks a name with its clauses,
+  `syllables` gives a pada's, a star's or a sign's syllables, and
+  `NameBook::load` and `suggest` search a book you load
   (`namakarana.md` §10). The design is
   [`03-design/namakarana.md`](../03-design/namakarana.md): a `naming`
   area that reads a Latin name under a declared scheme or reports every

@@ -4,7 +4,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use super::cakra::{NUKTA, VIRAMA, consonant_of};
+use super::cakra::{NUKTA, VIRAMA, consonant_of, is_devanagari};
 
 /// How a name's syllables are counted (C774).
 ///
@@ -181,6 +181,14 @@ const CLAUSES: [(Option<GrhyaSutra>, Clause, ClauseSource); 13] = [
     ),
 ];
 
+/// The clauses `sutra` reports, in its order, with their sources.
+pub(crate) fn reported(sutra: GrhyaSutra) -> impl Iterator<Item = (Clause, ClauseSource)> {
+    CLAUSES
+        .iter()
+        .filter(move |(of, _, _)| of.is_none_or(|of| of == sutra))
+        .map(|&(_, clause, source)| (clause, source))
+}
+
 /// The sonants: each varga's 3rd, 4th and 5th letters, and h.
 const SONANTS: [char; 16] = [
     'ग', 'घ', 'ङ', 'ज', 'झ', 'ञ', 'ड', 'ढ', 'ण', 'द', 'ध', 'न', 'ब', 'भ', 'म', 'ह',
@@ -261,7 +269,7 @@ fn word_syllables(word: &[char], final_a: FinalA) -> usize {
 pub fn name_clauses(spelled: &str, rules: super::NamingRules) -> NameClauses {
     let letters: Vec<char> = spelled.trim().chars().filter(|&c| c != NUKTA).collect();
     let syllables: usize = letters
-        .split(|letter| !('\u{0900}'..='\u{097F}').contains(letter))
+        .split(|&letter| !is_devanagari(letter))
         .map(|word| word_syllables(word, rules.final_a))
         .sum();
     let last = letters.last().copied();
@@ -293,10 +301,8 @@ pub fn name_clauses(spelled: &str, rules: super::NamingRules) -> NameClauses {
     NameClauses {
         syllables: u8::try_from(syllables).unwrap_or(u8::MAX),
         counted: rules.final_a,
-        rows: CLAUSES
-            .iter()
-            .filter(|(sutra, _, _)| sutra.is_none_or(|sutra| sutra == rules.sutra))
-            .map(|&(_, clause, source)| ClauseRow {
+        rows: reported(rules.sutra)
+            .map(|(clause, source)| ClauseRow {
                 clause,
                 holds: holds(clause),
                 source,

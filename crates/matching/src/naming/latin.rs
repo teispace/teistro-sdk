@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 use teistro_intl::translit::{Scheme, to_devanagari};
 
-use super::cakra::{VIRAMA, consonant_of};
+use super::cakra::{VIRAMA, consonant_of, is_devanagari};
 
 /// How a name written in Latin letters is read (C293, C772).
 ///
@@ -132,7 +132,7 @@ pub(crate) fn spellings(name: &str, latin: LatinName) -> Result<Vec<String>, Err
     let is_latin = name
         .chars()
         .next()
-        .is_some_and(|first| first.is_alphabetic() && !('\u{0900}'..='\u{097F}').contains(&first));
+        .is_some_and(|first| first.is_alphabetic() && !is_devanagari(first));
     if !is_latin {
         return Ok(vec![name.to_owned()]);
     }

@@ -84,6 +84,27 @@ interpretation's karakas, a karaka's holder and the rules over a chart.
   document's. No binding carries it: a binding asks for transits on the
   chart request (`03-design/gochar-sidecar.md` §8).
 
+**Namakarana: a consumer's name book, loaded and searched.**
+**Numbers:** none. Nothing computed before is touched: the book is a new
+type read only by its own two methods, it adds no settings knob (so no
+settings hash moves), and `name_check` answers as before.
+- `NameBook::load(Book)` reads a book in `03-design/namakarana.md` §3's
+  JSON (`{"names": [{"devanagari", "latin"?, "sex"?, "tags"?}]}`). It
+  reads each name once into the śatapada cakra, indexes it by cell, and
+  keeps a `BookId`, the SHA-256 of the book's canonical JSON, so the
+  same book loaded twice is one book. A name with no Devanagari refuses
+  the book under `book.names[i].devanagari`. A name the cakra does not
+  read is listed in `refused`, never dropped.
+- `NameBook::suggest(Birth, &SuggestFilter, NamingRules)` answers the
+  names that reach the birth pada: by its own letter, a paired letter
+  (ब for व, श for स), or the substitute the Nepali patro lists for ङ, ण
+  and ञ (C770). They come in cakra order, then the book's, each with its
+  clauses under the request's rules. `SuggestFilter` keeps by `sex` (a
+  name the book gives no sex is anyone's), by syllable count and by
+  clauses that must hold, and never ranks.
+- The SDK ships no names. The boundary, the bindings and the context
+  that holds a loaded book are items 8 and 9 of the page.
+
 **Namakarana, the first part: a name read in any declared scheme or
 every casual way, a pada's syllables, and a name's clauses.**
 **Numbers:** none. Every answer built before is unchanged: a Devanagari
@@ -115,7 +136,7 @@ knob is added, so no settings hash moves.
   and adds the prescribed pada's initials, `by_substitute` and the
   clauses; `names_of` gives the pada's syllable beside the star's deity
   (C773). The rest of `03-design/namakarana.md` (the month and star
-  names, the name book, the boundary and the bindings) is not built.
+  names, the boundary and the bindings) is not built.
 
 **Festival rules are typed in every binding.**
 **Numbers:** none.

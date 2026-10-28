@@ -47,9 +47,10 @@ pub use kuja::{
 };
 pub use name::{NaamMilan, NaamRules, VargaKoota, VargaRelation, naam_milan, varga_koota};
 pub use naming::{
-    AbhijitPada, Birth, BirthSyllable, CASUAL, Clause, ClauseRow, ClauseSource, FinalA, GrhyaSutra,
-    Initial, InitialBy, LatinName, NameCheck, NameClauses, NameReading, NameRules, NameSyllable,
-    NameVarga, Names, NamingRules, NasalInitial, PadaSyllable, Reading, SyllablesOf,
+    AbhijitPada, Birth, BirthSyllable, Book, BookId, BookName, CASUAL, Clause, ClauseRow,
+    ClauseSource, FinalA, GrhyaSutra, Initial, InitialBy, LatinName, NameBook, NameCheck,
+    NameClauses, NameReading, NameRules, NameSyllable, NameVarga, Names, NamingRules, NasalInitial,
+    PadaSyllable, Reading, RefusedName, SuggestFilter, Suggested, Suggestions, SyllablesOf,
     birth_syllable, name_check, name_clauses, name_syllable, names_of, read_name, syllables,
 };
 pub use native::Native;
@@ -68,6 +69,9 @@ mod kuja_tests;
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod name_tests;
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod naming_book_tests;
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod naming_tests;
