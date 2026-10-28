@@ -172,6 +172,7 @@ impl Suite {
         };
         step(
             python_command(python)
+                .env("COVERAGE_FILE", report.with_extension("coverage"))
                 .args(["-m", "coverage", "lcov", "--quiet", "-o"])
                 .arg(report)
                 .current_dir(package),
@@ -224,8 +225,12 @@ fn measured_suite(root: &Path, python: &str) -> Result<Suite, String> {
         "coverage.py",
         python_command(&local).args(["-m", "coverage", "--version"]),
     )?;
+    // The data file beside the report, not in the package's tree.
+    let data = dir.join("python.coverage");
     let mut command = python_command(&local);
-    command.args(["-m", "coverage", "run", "--branch", "--source=teistro"]);
+    command
+        .args(["-m", "coverage", "run", "--branch", "--source=teistro"])
+        .env("COVERAGE_FILE", &data);
     Ok(Suite {
         command,
         report: Some((local, dir.join("python.lcov"))),

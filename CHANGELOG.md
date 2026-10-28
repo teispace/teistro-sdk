@@ -51,6 +51,18 @@ interpretation's karakas, a karaka's holder and the rules over a chart.
   and the verses' naming carries it on none. The migration guide's "no
   knob" gap is closed.
 
+**Each binding's own layer, measured.**
+**Numbers:** none.
+- `TEISTRO_BINDING_COVERAGE=DIR` runs `check-node`, `check-python`,
+  `check-dart` and `check-java` under Node's and Dart's own coverage,
+  coverage.py 7.16.2 and JaCoCo 0.8.15 (pinned by SHA-256), each writing
+  LCOV or JaCoCo XML with the tool's version beside it.
+- `cargo xtask coverage --bindings DIR` records each binding's line and
+  branch floors in `coverage.json` beside the crates'; `check-coverage
+  --bindings DIR` holds a run to them, on verify's `linux-x64` row. The
+  quality bar's 80% is the target, the measured figure the floor
+  (`03-design/binding-coverage.md`).
+
 **The A/B compares KP's significators and ruling planets.**
 **Numbers:** none; a comparison, not a computation.
 - Two families join `kpLord` (`ab-baseline.md` §10): `kpSignificator`,
