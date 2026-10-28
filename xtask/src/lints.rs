@@ -3386,6 +3386,10 @@ const NOT_A_TOOL: [(&str, &str); 4] = [
         "a resolved settings record; a call names its settings as a patch over a profile (`mcp-server.md` D5)",
     ),
     (
+        "Snapshot",
+        "the baseline engine's stored settings, which a migrating application translates once into a profile and a patch; an agent names its settings as a patch over a profile (`mcp-server.md` D5) and has no stored snapshot to read",
+    ),
+    (
         "Tolerances",
         "the ephemeris kit's corpus tolerances, a development tool's file and no request",
     ),
@@ -3515,13 +3519,17 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
 /// taken does not compile, and this list keeps a new area method from
 /// taking a map in the first place. An entry that no longer matches is
 /// refused too, so the list cannot outlive the parameter it excuses.
-const JAVA_UNTYPED: [(&str, &str); 19] = [
+const JAVA_UNTYPED: [(&str, &str); 20] = [
     ("ChartArea.layout(layout)", MEMBER_OR_KEY),
     ("ChartOptions.ChartOptions(readings)", WRITTEN),
     ("ChartOptions.Drawing(layout)", MEMBER_OR_KEY),
     ("ChartOptions.dashas(systems)", MEMBER_OR_KEY),
     ("ChartOptions.drawing(layout)", MEMBER_OR_KEY),
     ("ChartOptions.reading(request)", OPEN),
+    (
+        "Context.recordedSettings(snapshot)",
+        "the baseline engine's own stored fields, which no SDK request type describes (`compat-shim.md` §4.1)",
+    ),
     ("Dasha.Dasha(system)", MEMBER_OR_KEY),
     ("Drawing.Drawing(layout)", MEMBER_OR_KEY),
     ("Engine.call(arguments)", OPEN),

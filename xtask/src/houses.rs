@@ -687,7 +687,6 @@ fn decides(readings: &[Reading]) -> Result<String, String> {
 #[cfg(test)]
 mod tests {
     use super::{apart, house_of, whole_sign_house};
-    use teistro_core::catalogue::HouseSystem;
 
     #[test]
     fn a_house_holds_a_longitude_between_its_own_sandhi() {

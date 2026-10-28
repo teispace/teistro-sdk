@@ -78,6 +78,7 @@ const PAIRINGS: &str = "03-design/compat-shim.md §8";
 /// # Ok::<(), serde_json::Error>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(untagged)]
 pub enum Stored {
     /// Nothing: the engine's default stands.
@@ -139,6 +140,7 @@ impl core::fmt::Display for Stored {
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(transparent)]
 pub struct Snapshot {
     /// Every field, by its stored name.
@@ -267,6 +269,7 @@ impl Value {
 /// # Ok::<(), serde_json::Error>(())
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum RequiredEphemeris {
     /// The Surya Siddhanta, which the text's chart is computed by.
@@ -722,6 +725,7 @@ pub const ROWS: &[Row] = &[
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Opening {
     /// The profile.
     pub profile: ProfileId,
@@ -731,6 +735,15 @@ pub struct Opening {
 
 impl Opening {
     /// The settings a context opened this way holds.
+    ///
+    /// ```
+    /// use teistro_core::settings::recorded::{Snapshot, recorded};
+    ///
+    /// let translated = recorded(&Snapshot::from_json(r#"{"houseSystem": "koch"}"#)?)?;
+    /// let natal = translated.natal.resolve()?;
+    /// assert_eq!(natal.settings.houses.placement_system.key(), "KOCH");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     ///
     /// # Errors
     ///
@@ -756,6 +769,7 @@ impl Opening {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Note {
     /// The stored field's path.
     pub field: String,
@@ -783,6 +797,7 @@ pub struct Note {
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Recorded {
     /// The chart's context: [`PROFILE`] and the snapshot's knobs.
     pub natal: Opening,
