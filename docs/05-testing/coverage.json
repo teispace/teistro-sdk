@@ -91,5 +91,27 @@
     "time": 84,
     "vargas": 94,
     "western": 89
+  },
+  "bindings": {
+    "dart": {
+      "counted_by": "dart 3.13.7",
+      "lines": 65,
+      "branches": 48
+    },
+    "java": {
+      "counted_by": "jacoco 0.8.15",
+      "lines": 59,
+      "branches": 50
+    },
+    "node": {
+      "counted_by": "node 22.23.4",
+      "lines": 98,
+      "branches": 83
+    },
+    "python": {
+      "counted_by": "coverage.py 7.16.2",
+      "lines": 92,
+      "branches": 77
+    }
   }
 }

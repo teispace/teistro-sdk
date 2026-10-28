@@ -4,7 +4,6 @@
 //! settings hash.
 
 #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
-#![cfg_attr(coverage_nightly, coverage(off))]
 
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
