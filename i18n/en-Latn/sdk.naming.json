@@ -1,0 +1,9 @@
+{
+  "pada": ".input {$pada :integer select=ordinal} .input {$nakshatra :entity kind=nakshatra} .match $pada one {{the {$pada}st pada of {$nakshatra} names a child by {$syllable}}} two {{the {$pada}nd pada of {$nakshatra} names a child by {$syllable}}} few {{the {$pada}rd pada of {$nakshatra} names a child by {$syllable}}} * {{the {$pada}th pada of {$nakshatra} names a child by {$syllable}}}",
+  "by": ".input {$by :string} .match $by CELL {{the pada's own letter}} PAIRED {{a letter read as its pair}} SUBSTITUTE {{a substitute letter}} * {{a letter of the pada}}",
+  "syllables": ".input {$count :integer} .match $count one {{{$count} syllable}} * {{{$count} syllables}}",
+  "counted": ".input {$counted :string} .match $counted SOUNDED {{counted as written, the final a included}} SILENT {{counted as spoken, a final a left out}} * {{counted by its vowels}}",
+  "clause": ".input {$clause :string} .match $clause SONANT_INITIAL {{begins with a sonant}} SEMIVOWEL_WITHIN {{has a semivowel after its first letter}} VISARGA_FINAL {{ends in a visarga}} TWO_OR_FOUR_SYLLABLES {{has two syllables or four}} EVEN_FOR_A_BOY {{has an even count of syllables, for a boy}} ODD_FOR_A_GIRL {{has an odd count of syllables, for a girl}} LONG_A_FOR_A_GIRL {{ends in a long a, for a girl}} NO_FINAL_L_OR_R {{does not end in l or r}} * {{another clause}}",
+  "holds": ".input {$holds :string} .match $holds yes {{met}} * {{not met}}",
+  "source": ".input {$source :string} .match $source PARASKARA {{Paraskara Grihyasutra}} ASHVALAYANA {{Ashvalayana Grihyasutra}} APASTAMBA_HIRANYAKESHIN {{Apastamba and Hiranyakeshin, as Dharmasindhu reports them}} * {{a grihyasutra}}"
+}

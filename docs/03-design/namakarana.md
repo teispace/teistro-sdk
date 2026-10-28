@@ -1,9 +1,10 @@
 # Namakarana: the four names, the pada's syllables and a consumer's name book (the `naming` area)
 
 Status: `decided`, 2026-10-28, from the sources before any code. Work
-items 1 to 4 and 6 to 9 are built (`crates/matching/src/naming`, the
-`naming` area, the boundary and every binding, 2026-10-28; §10 says
-where the build reads the page); items 5 and 10 are not. Part of it was already built inside naam milan and the
+items 1 to 4 and 6 to 10 are built (`crates/matching/src/naming`, the
+`naming` area, the boundary and every binding, the messages, the guide
+and the example, 2026-10-28; §10 says where the build reads the page);
+item 5 is not. Part of it was already built inside naam milan and the
 avakahada (`matching.md`, C291 to C299 and C334), and this page builds
 on that cakra rather than beside it.
 
@@ -38,8 +39,6 @@ Not built:
 
 - The month name and the star's taddhita, which wait on the page
   images (item 5).
-- The messages in `en-Latn` and `ne-Deva-NP`, and the wasm size
-  measured (item 10).
 - No name corpus exists, by decision (§3): the consumer's book is
   searched.
 
@@ -781,3 +780,57 @@ Built 2026-10-28, items 8 and 9: the boundary and the bindings.
   own (`pub use`): the same `MALE` and `FEMALE` on the wire, a request
   may also send the full key, and Rust code that matched on it needs a
   wildcard arm, since the catalogue's enum is `non_exhaustive`.
+
+Built 2026-10-28, item 10: the messages, the guide and the example.
+
+- **Seven messages, `sdk.naming`, in `en-Latn` and `ne-Deva-NP`.** They
+  give words to the keys an answer carries, which a consumer otherwise
+  prints raw: `clause` (each `NameClause`), `holds` (met or not),
+  `source` (each `ClauseSource`), `by` (each `InitialBy`), `counted`
+  (each `FinalA`), `syllables` (a count) and `pada` (the syllable a
+  pada names a child by, the star an entity slot). Each selects on the
+  key as the wire spells it, the way `sdk.reading.lifeClass` does, since
+  none of these is a catalogue kind a locale names (§4.4: the clause
+  names and the vocabulary are messages, not entities). Every member has
+  an arm of its own and the catch-all says "another clause", so a member
+  added later reads as nothing in particular rather than as the last
+  one. `crates/sdk/tests/naming.rs` reads the keys from the answers
+  (every clause both sutras report, every `by` over the twelve signs,
+  both counts) and fails on one that falls to the catch-all, that two
+  keys share words, or that a strict locale falls back.
+- **The Nepali** keeps the corpus's own terms: पाद for a pada (as
+  `sdk.reason.panchanga.pada` has it), अक्षर for a syllable, the
+  ordinals पहिलो to चौथो, the participle phrasing of `sdk.condition`.
+  The new terms are the grammar's and the patro's: नामाक्षर for the
+  syllable a name begins with, घोष वर्ण for a sonant, अन्तःस्थ वर्ण for a
+  semivowel, विसर्ग, जोर and बिजोर for even and odd, and the sutras'
+  Sanskrit names. They are flagged for the native review every Nepali
+  message is (§4.4: "handed to a speaker, not guessed").
+- **A refusal is not a message.** §4.4 named "the refusals" among the
+  messages. No area's refusal carries a message key: `Error::with_key`
+  has no caller outside its own tests, no binding's error reads a key,
+  and every refusal's `message` and `hint` are English. Keying naming's
+  alone would make it the one area whose refusals a binding could say
+  in Nepali, through a record no binding reads yet. So the refusals stay
+  as every area's are, and a localised refusal is a decision for every
+  area at once (open, and not this page's).
+- **The example is `naming`, in all five sets** (`crates/sdk/examples`,
+  and Node, Python, Dart and Java), and prints the same lines in each:
+  Ardra's third pada and its substitute, three names checked, `CASUAL`'s
+  readings of Krishna and Shiva, a book loaded and suggested from, and
+  one check said in both locales. It names no ephemeris, since it reads
+  no sky; every other example names the built-in one. The guide is
+  `site/content/docs/naming.mdx`, its programs cut from the Node example
+  and its outputs what the examples print (`check-guides`,
+  `check-parity`).
+- **The migration guide** already maps the baseline's three to
+  `ctx.naming` (items 8 and 9); nothing in it moved.
+- **The wasm size, measured.** `check-wasm` on this Mac (rustc 1.99.1),
+  with items 1 to 10 in: the full module is 12,794,384 bytes raw and
+  2,988,137 gzipped, 0.7% under its 3,010,000 budget; the `panchanga`
+  module is 1,484,646 gzipped, 1.7% under. Against the record
+  (`docs/05-testing/sizes.json`, run 40643786235 on CI's Linux, before
+  the area crossed the boundary) the full module grew 149,872 bytes raw
+  and 24,083 gzipped (0.8%), inside verify's 2% drift. No budget moved:
+  a budget moves only from a CI run's artefact, so the next verify run
+  records these figures.

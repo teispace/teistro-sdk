@@ -12611,6 +12611,97 @@ public final class Messages {
 
 
         /**
+         * The messages under `naming`.
+         *
+         * @return the group
+         */
+        public SdkNaming naming() {
+            return new SdkNaming(r);
+        }
+
+        /** The messages under `SdkNaming`, each rendered by its own key. */
+        public static final class SdkNaming {
+            private final Renderer r;
+
+            SdkNaming(Renderer r) {
+                this.r = r;
+            }
+
+            /**
+             * `sdk.naming.by`
+             *
+             * @param by `by`
+             * @return the text
+             */
+            public String by(String by) {
+                return r.render("sdk.naming.by", Map.ofEntries(Map.entry("by", by)));
+            }
+
+            /**
+             * `sdk.naming.clause`
+             *
+             * @param clause `clause`
+             * @return the text
+             */
+            public String clause(String clause) {
+                return r.render("sdk.naming.clause", Map.ofEntries(Map.entry("clause", clause)));
+            }
+
+            /**
+             * `sdk.naming.counted`
+             *
+             * @param counted `counted`
+             * @return the text
+             */
+            public String counted(String counted) {
+                return r.render("sdk.naming.counted", Map.ofEntries(Map.entry("counted", counted)));
+            }
+
+            /**
+             * `sdk.naming.holds`
+             *
+             * @param holds `holds`
+             * @return the text
+             */
+            public String holds(String holds) {
+                return r.render("sdk.naming.holds", Map.ofEntries(Map.entry("holds", holds)));
+            }
+
+            /**
+             * `sdk.naming.pada`
+             *
+             * @param nakshatra `nakshatra`
+             * @param pada `pada`
+             * @param syllable `syllable`
+             * @return the text
+             */
+            public String pada(NakshatraKey nakshatra, long pada, String syllable) {
+                return r.render("sdk.naming.pada", Map.ofEntries(Map.entry("nakshatra", Map.of("$entity", nakshatra.value())), Map.entry("pada", pada), Map.entry("syllable", syllable)));
+            }
+
+            /**
+             * `sdk.naming.source`
+             *
+             * @param source `source`
+             * @return the text
+             */
+            public String source(String source) {
+                return r.render("sdk.naming.source", Map.ofEntries(Map.entry("source", source)));
+            }
+
+            /**
+             * `sdk.naming.syllables`
+             *
+             * @param count `count`
+             * @return the text
+             */
+            public String syllables(long count) {
+                return r.render("sdk.naming.syllables", Map.ofEntries(Map.entry("count", count)));
+            }
+        }
+
+
+        /**
          * The messages under `phala`.
          *
          * @return the group

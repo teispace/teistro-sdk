@@ -111,6 +111,25 @@ interpretation's karakas, a karaka's holder and the rules over a chart.
   document's. No binding carries it: a binding asks for transits on the
   chart request (`03-design/gochar-sidecar.md` §8).
 
+**Namakarana said in English and Nepali, with a guide and an example.**
+**Numbers:** none; words for keys the answers already carry.
+- `sdk.naming`, seven messages in `en-Latn` and `ne-Deva-NP`: `pada`
+  (the syllable a pada names a child by), `clause`, `holds` and
+  `source` (a clause of a name in daily use, whether it is met and whose
+  text gives it), `syllables` and `counted` (the count and how it was
+  counted), and `by` (how an initial reaches a cell). Each answer key
+  has an arm of its own; a test reads the keys from the answers and
+  fails on one that falls to the catch-all or says another's words. The
+  typed accessors are generated in every binding
+  (`messages.sdk.naming.clause(...)`).
+- A refusal is not a message: its `message` and `hint` stay English, as
+  every area's do (`03-design/namakarana.md` §10).
+- The `naming` example in Rust, Node, Python, Dart and Java, run and
+  compared by `check-parity`, and the guide `site/content/docs/naming.mdx`
+  cut from it.
+- The full wasm module, measured with the area in: 2,988,137 bytes
+  gzipped, 0.7% under its budget, which does not move.
+
 **Namakarana in every binding: the `naming` area.**
 **Numbers:** none. The area answers what `teistro_matching` answered
 before, through new calls only; no settings knob is added, so no

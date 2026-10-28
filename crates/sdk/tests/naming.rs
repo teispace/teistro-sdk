@@ -343,3 +343,113 @@ fn every_naming_record_answers_as_its_request_does() {
     );
     assert_eq!(suggested["names"][0]["index"], 0);
 }
+
+/// A key as the wire spells it.
+fn wire<T: serde::Serialize>(member: &T) -> String {
+    serde_json::to_value(member)
+        .unwrap()
+        .as_str()
+        .unwrap()
+        .to_owned()
+}
+
+/// Every key a naming answer carries is said in words of its own in each
+/// strict locale (`03-design/namakarana.md` §4.4): from that locale's own
+/// message, never the catch-all, and no two keys alike. The keys are read
+/// from the answers, every clause both sutras report and every way an
+/// initial reaches a cell, so a member added to the kernel without its
+/// words fails here rather than reading as "another clause".
+#[test]
+fn every_key_an_answer_carries_has_words_of_its_own_in_each_strict_locale() {
+    use std::collections::BTreeSet;
+    use teistro::Rendered;
+    use teistro::matching::{FinalA, GrhyaSutra, name_clauses};
+    use teistro::messages::sdk::naming;
+
+    let sdk = context();
+    let mut clauses = BTreeSet::new();
+    let mut sources = BTreeSet::new();
+    for sutra in [GrhyaSutra::Paraskara, GrhyaSutra::Ashvalayana] {
+        let rules = NamingRules {
+            sutra,
+            ..NamingRules::default()
+        };
+        for row in name_clauses("राम", rules).rows {
+            clauses.insert(wire(&row.clause));
+            sources.insert(wire(&row.source));
+        }
+    }
+    let mut by = BTreeSet::new();
+    for rashi in Rashi::ALL {
+        let of = SyllablesOf::Rashi { rashi };
+        for one in sdk.naming().syllables(of, NamingRules::default()).unwrap() {
+            by.extend(one.initials.iter().map(|initial| wire(&initial.by)));
+        }
+    }
+    let counted: BTreeSet<String> = [FinalA::Sounded, FinalA::Silent].iter().map(wire).collect();
+    assert_eq!(
+        (clauses.len(), sources.len(), by.len(), counted.len()),
+        (8, 3, 3, 2)
+    );
+
+    for locale in ["en-Latn", "ne-Deva-NP"] {
+        sdk.intl().set_locale(locale).unwrap();
+        let said = |message: &dyn Fn(String) -> Rendered, keys: &BTreeSet<String>| {
+            let other = message(String::from("NOT_A_KEY")).text;
+            let mut words = BTreeSet::new();
+            for key in keys {
+                let one = message(key.clone());
+                assert_eq!(one.resolved_from.as_deref(), Some(locale), "{key}");
+                assert!(
+                    !one.is_fallback && one.warnings.is_empty(),
+                    "{key} in {locale}"
+                );
+                assert_ne!(one.text, other, "{key} falls to the catch-all in {locale}");
+                assert!(
+                    words.insert(one.text),
+                    "{key} says another key's words in {locale}"
+                );
+            }
+        };
+        let intl = sdk.intl();
+        said(
+            &|clause| intl.render_typed(&naming::Clause { clause }),
+            &clauses,
+        );
+        said(
+            &|source| intl.render_typed(&naming::Source { source }),
+            &sources,
+        );
+        said(&|by| intl.render_typed(&naming::By { by }), &by);
+        said(
+            &|counted| intl.render_typed(&naming::Counted { counted }),
+            &counted,
+        );
+        // A clause met or not: `yes`, and anything else is not.
+        let holds = ["yes", "no"].map(|holds| {
+            intl.render_typed(&naming::Holds {
+                holds: holds.to_owned(),
+            })
+        });
+        assert!(
+            holds
+                .iter()
+                .all(|one| one.resolved_from.as_deref() == Some(locale) && one.warnings.is_empty())
+        );
+        assert_ne!(holds[0].text, holds[1].text);
+        // The pada's four ordinals, each its own words.
+        let padas: BTreeSet<String> = (1..=4)
+            .map(|pada| {
+                let one = sdk.intl().render_typed(&naming::Pada {
+                    nakshatra: Nakshatra::Ardra,
+                    pada,
+                    syllable: String::from("ङ"),
+                });
+                assert_eq!(one.resolved_from.as_deref(), Some(locale));
+                assert!(one.warnings.is_empty(), "{:?}", one.warnings);
+                one.text
+            })
+            .collect();
+        assert_eq!(padas.len(), 4, "{padas:?}");
+    }
+}

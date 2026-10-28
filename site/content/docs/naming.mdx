@@ -1,0 +1,122 @@
+---
+title: Naming a child
+description: The syllable a birth pada names a child by, names checked against it as facts rather than a score, a Latin spelling read every way it can be, and a book of names that is yours.
+---
+
+Nāmakaraṇa is the naming of a child. The avakahada cakra gives each of
+the 108 padas a syllable a name may begin with, and the gṛhyasūtras give
+the shape of a name in daily use. `ctx.naming` answers both, in every
+binding, and reads no sky: a birth is a nakshatra and a pada, which a
+chart's `avakahada` already holds.
+
+## The syllable of a birth
+
+A birth names a child by its pada's syllable. Ardra's third pada is ङ,
+which no name begins with, so the Nepali patro glosses it with ग; the
+answer lists that substitute after the cell's own letter, and says how
+each letter reaches the cell:
+
+```js title="bindings/node/example/naming.mjs"
+const birth = { nakshatra: 'ARDRA', pada: 3 };
+const names = ctx.naming.of(birth);
+const syllable = names.syllable;
+```
+
+```text output="naming"
+nakshatra.ARDRA 3: ङ ṅa, deity deity.RUDRA
+initials ङ CELL, ग SUBSTITUTE
+```
+
+The star's deity is beside it, for the families who name a child after
+the deity of the birth star.
+
+## A name checked: facts, not a score
+
+A check says whether a name begins in the birth star's row, in the pada's
+own cell, or by the substitute, and counts its syllables. Nothing adds
+these up into a verdict. Each name is answered on its own, so a name the
+cakra cannot read (ऐ is in no cell) is refused alone:
+
+```js title="bindings/node/example/naming.mjs"
+const asked = ['गणेश', 'चूडामणि', 'ऐश्वर्य'];
+ctx.naming.check(asked, birth).forEach((one, i) => {
+  const c = one.check;
+```
+
+```text output="naming"
+गणेश: same star no, same pada no, by substitute yes, 3 syllables
+चूडामणि: same star no, same pada no, by substitute no, 4 syllables
+ऐश्वर्य: refused, a name beginning with ऐ is not in the cakra
+```
+
+## A Latin spelling, read every way
+
+A name typed in Latin letters is read under a scheme you declare: IAST,
+ISO 15919, Harvard-Kyoto, ITRANS, or `CASUAL` for the spellings people
+actually type. `CASUAL` does not guess. Where a spelling reaches more
+than one cell it answers each, and says it is ambiguous:
+
+```js title="bindings/node/example/naming.mjs"
+ctx.naming.read(spellings, { name: { latin: 'CASUAL' } }).forEach((one, i) => {
+```
+
+```text output="naming"
+Krishna: ambiguous no, क्रिश्न nakshatra.MRIGASHIRA 4
+Shiva: ambiguous yes, षिव nakshatra.HASTA 2 | शिव nakshatra.SHATABHISHA 3
+```
+
+Naam milan refuses an ambiguous name rather than matching the one it
+happened to choose.
+
+## Your own book of names
+
+The SDK ships no names. A book of names is yours: load it once, and the
+context indexes it by the cakra's cell and gives you its id, the SHA-256
+of the book, so the same book loaded twice is one book. A name the cakra
+cannot read is listed with its refusal, never dropped. A suggestion
+filters by sex, syllable count and clauses, and never ranks:
+
+```js title="bindings/node/example/naming.mjs"
+const found = ctx.naming.suggest(loaded.book, birth, { sex: 'MALE' });
+```
+
+```text output="naming"
+a book of 4 names, refused: 3 book.names[3].devanagari
+suggested for a boy: गणेश SUBSTITUTE, गोपाल SUBSTITUTE
+```
+
+A name the book gives no sex is anyone's, so गोपाल is suggested for a
+boy as well as गणेश.
+
+## Said in your reader's language
+
+An answer holds keys: a clause is `SONANT_INITIAL`, a source is
+`PARASKARA`. The `sdk.naming` messages turn each into words, in English
+and in Nepali, so one answer reads in either:
+
+```js title="bindings/node/example/naming.mjs"
+for (const row of clauses.rows) {
+  const clause = say.sdk.naming.clause({ clause: row.clause });
+```
+
+```text output="naming"
+en-Latn
+  the 3rd pada of Ardra names a child by ङ
+  गणेश: 3 syllables, counted as written, the final a included
+    begins with a sonant: met (Paraskara Grihyasutra)
+```
+
+```text output="naming"
+ne-Deva-NP
+  आर्द्राको तेस्रो पादको नामाक्षर ङ
+  गणेश: ३ अक्षर, लेखाइअनुसार गनिएको, अन्तिम अ समेत
+    घोष वर्णबाट सुरु हुने: मिल्छ (पारस्कर गृह्यसूत्र)
+```
+
+Which sutra's clauses are reported is a rule you choose (`PARASKARA` by
+default, or `ASHVALAYANA`), and so is whether a final inherent a is
+counted as the texts count it or dropped as speech drops it.
+
+The whole program is `naming` in every binding's examples. The design,
+with the sources each rule is read from, is
+`docs/03-design/namakarana.md`.

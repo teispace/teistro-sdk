@@ -1307,6 +1307,11 @@ class MessagesSdk:
         return MessagesSdkKaraka(self._r)
 
     @property
+    def naming(self) -> MessagesSdkNaming:
+        """The messages under `naming`."""
+        return MessagesSdkNaming(self._r)
+
+    @property
     def phala(self) -> MessagesSdkPhala:
         """The messages under `phala`."""
         return MessagesSdkPhala(self._r)
@@ -1858,6 +1863,63 @@ class MessagesSdkPhala:
         return self._r.render(
             "sdk.phala.yoni",
             {"yoni": {"$entity": yoni.value}},
+        )
+
+
+class MessagesSdkNaming:
+    """The messages under `MessagesSdkNaming`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def by(self, *, by: str) -> str:
+        """`sdk.naming.by`"""
+        return self._r.render(
+            "sdk.naming.by",
+            {"by": by},
+        )
+
+    def clause(self, *, clause: str) -> str:
+        """`sdk.naming.clause`"""
+        return self._r.render(
+            "sdk.naming.clause",
+            {"clause": clause},
+        )
+
+    def counted(self, *, counted: str) -> str:
+        """`sdk.naming.counted`"""
+        return self._r.render(
+            "sdk.naming.counted",
+            {"counted": counted},
+        )
+
+    def holds(self, *, holds: str) -> str:
+        """`sdk.naming.holds`"""
+        return self._r.render(
+            "sdk.naming.holds",
+            {"holds": holds},
+        )
+
+    def pada(self, *, nakshatra: NakshatraKey, pada: int, syllable: str) -> str:
+        """`sdk.naming.pada`"""
+        return self._r.render(
+            "sdk.naming.pada",
+            {"nakshatra": {"$entity": nakshatra.value}, "pada": pada, "syllable": syllable},
+        )
+
+    def source(self, *, source: str) -> str:
+        """`sdk.naming.source`"""
+        return self._r.render(
+            "sdk.naming.source",
+            {"source": source},
+        )
+
+    def syllables(self, *, count: int) -> str:
+        """`sdk.naming.syllables`"""
+        return self._r.render(
+            "sdk.naming.syllables",
+            {"count": count},
         )
 
 

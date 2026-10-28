@@ -1136,6 +1136,15 @@ export function messages(r) {
         ofEight: (p) => r.render('sdk.karaka.ofEight', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
         ofSeven: (p) => r.render('sdk.karaka.ofSeven', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
       },
+      naming: {
+        by: (p) => r.render('sdk.naming.by', { by: p.by }),
+        clause: (p) => r.render('sdk.naming.clause', { clause: p.clause }),
+        counted: (p) => r.render('sdk.naming.counted', { counted: p.counted }),
+        holds: (p) => r.render('sdk.naming.holds', { holds: p.holds }),
+        pada: (p) => r.render('sdk.naming.pada', { nakshatra: { '$entity': p.nakshatra }, pada: p.pada, syllable: p.syllable }),
+        source: (p) => r.render('sdk.naming.source', { source: p.source }),
+        syllables: (p) => r.render('sdk.naming.syllables', { count: p.count }),
+      },
       phala: {
         avasthaBaladi: (p) => r.render('sdk.phala.avasthaBaladi', { avastha: { '$entity': p.avastha } }),
         avasthaDeeptadi: (p) => r.render('sdk.phala.avasthaDeeptadi', { avastha: { '$entity': p.avastha } }),
