@@ -45,6 +45,15 @@ export const MEMORY_RUNS = 3;
 export const MEMORY_WARM = 200;
 export const MEMORY_REQUESTS = 10_000;
 
+/**
+ * How long a pool's process may run before it is taken to have hung and is
+ * killed, in seconds: far past warming every input on every thread and
+ * the trials. A side whose native engine is not safe across threads can
+ * leave a worker wedged rather than dead, and the pool would wait on it
+ * for ever.
+ */
+export const POOL_DEADLINE_SECONDS = 600;
+
 /** How far ahead of now a trial is set to start, so every agent is waiting when it does. */
 const LEAD_MS = 250;
 
@@ -148,23 +157,31 @@ function report(kind, value) {
 
 /**
  * Runs this module as a measured process and settles with every `ab`
- * line it printed, or refuses with why it failed: its own error, or the
- * signal it died of and what it wrote to stderr.
+ * line it printed, or refuses with why it failed: its own error, the
+ * signal it died of and what it wrote to stderr, or, given a deadline in
+ * seconds, that it had not ended by then, when it is killed.
  */
-function run(args, node = []) {
+function run(args, node = [], deadline = undefined) {
   return new Promise((resolve, reject) => {
     const started = now();
     const child = spawn(process.execPath, [...node, self, ...args], { stdio: ['ignore', 'pipe', 'pipe'] });
     const seen = [];
     let stderr = '';
+    let late = false;
+    const timer = deadline === undefined ? undefined : setTimeout(() => {
+      late = true;
+      child.kill('SIGKILL');
+    }, deadline * 1000);
     lines(child.stdout, (line) => seen.push(line));
     child.stderr.on('data', (chunk) => {
       stderr += chunk;
     });
     child.on('error', reject);
     child.on('close', (code, signal) => {
+      clearTimeout(timer);
       const failed = seen.find((line) => line.ab === 'error');
-      if (code === 0 && !failed) resolve({ lines: seen, ms: now() - started });
+      if (late) reject(new Error(`had not ended in ${deadline} s, and was killed`));
+      else if (code === 0 && !failed) resolve({ lines: seen, ms: now() - started });
       else reject(new Error(failed?.reason ?? died(code, signal, stderr)));
     });
   });
@@ -237,6 +254,13 @@ export function threadAgent(name, request, ids, ephemeris) {
       reject(error);
       for (const pending of waiting.splice(0)) pending.reject(error);
     });
+    // A worker that ends without an error, as one whose engine exits it
+    // does, would otherwise leave its pool waiting on it.
+    worker.on('exit', (code) => {
+      const why = new Error(`the worker exited with ${code}`);
+      reject(why);
+      for (const pending of waiting.splice(0)) pending.reject(why);
+    });
   });
   return {
     ready,
@@ -288,7 +312,7 @@ export async function* measureLoad(keptBy) {
       for (const name of alternating()) {
         // A pool runs in a process of its own, so that a side whose engine
         // cannot live in a worker brings down that process and no other.
-        const pool = await run(['pool', name, request, String(threads), JSON.stringify(ids(request))]).then(
+        const pool = await run(['pool', name, request, String(threads), JSON.stringify(ids(request))], [], POOL_DEADLINE_SECONDS).then(
           ({ lines: [line] }) => line,
           (error) => ({ kind: 'unloaded', side: name, request, mode: 'threads', threads, reason: error.message }),
         );
