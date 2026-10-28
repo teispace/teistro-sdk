@@ -88,6 +88,7 @@ pub enum ClauseSource {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "NameClause"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Clause {
     /// Begins with a sonant (*ghoṣavat*): the 3rd, 4th or 5th letter of a

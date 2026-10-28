@@ -3242,6 +3242,54 @@ test('two names match star to star without a chart', () => {
   ctx.dispose();
 });
 
+test('a child named by the cakra, and a name book suggested from', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  // Ashvini's four padas are cū ce co la; Makara holds nine and Abhijit's four.
+  const ashvini = ctx.naming.syllables({ of: 'NAKSHATRA', nakshatra: 'ASHWINI' });
+  assert.deepEqual(ashvini.map((one) => one.devanagari), ['चू', 'चे', 'चो', 'ला']);
+  assert.ok(Object.isFrozen(ashvini) && Object.isFrozen(ashvini[0].initials), 'frozen');
+  assert.deepEqual([ashvini[0].nakshatra, ashvini[0].rashi, ashvini[0].pada], ['nakshatra.ASHWINI', 'rashi.ARIES', 1]);
+  const makara = ctx.naming.syllables({ of: 'RASHI', rashi: 'rashi.CAPRICORN' });
+  assert.equal(makara.filter((one) => one.pada === null).length, 4);
+
+  // राम is two syllables; ऐ is no cell, refused alone by its place.
+  const [ram, aishvarya] = ctx.naming.read(['राम', 'ऐश्वर्य']);
+  assert.deepEqual([ram.reading.readings[0].clauses.syllables, ram.reading.readings[0].rashi], [2, 'rashi.LIBRA']);
+  assert.equal(aishvarya.reading, null);
+  assert.equal(aishvarya.refused.field, 'naming.names[1]');
+  // CASUAL answers every cell a spelling reaches.
+  const [shiva] = ctx.naming.read(['Shiva'], { name: { latin: 'CASUAL' } });
+  assert.ok(shiva.reading.ambiguous);
+
+  // Dharmasindhu's Cūḍāmaṇi for an Ashvini first-pada birth.
+  const [chudamani] = ctx.naming.check(['चूडामणि'], { nakshatra: 'ASHWINI', pada: 1 });
+  assert.deepEqual([chudamani.check.samePada, chudamani.check.prescribed.devanagari], [true, 'चू']);
+  // Dharmasindhu's Āgniśarman: a Krittika birth named after Agni.
+  assert.equal(ctx.naming.of({ nakshatra: 'KRITTIKA', pada: 1 }).deity, 'deity.AGNI');
+
+  // A book loaded once, suggested from by its id; the same book is one book.
+  const book = { names: [{ devanagari: 'गणेश', sex: 'MALE' }, { devanagari: 'गीता', sex: 'FEMALE' }, { devanagari: 'औषधि' }] };
+  const loaded = ctx.naming.load(book);
+  assert.deepEqual([loaded.names, loaded.refused[0].index], [3, 2]);
+  assert.equal(ctx.naming.load(book).book, loaded.book);
+  // Ardra's third pada is ङ, which the patro reads as ग.
+  const found = ctx.naming.suggest(loaded.book, { nakshatra: 'ARDRA', pada: 3 }, { sex: 'FEMALE' });
+  assert.deepEqual(found.names.map((name) => [name.index, name.by, name.samePada]), [[1, 'SUBSTITUTE', false]]);
+  assert.deepEqual(ctx.naming.suggest(book, { nakshatra: 'ARDRA', pada: 3 }, { sex: 'FEMALE' }), found);
+
+  for (const [run, field] of [
+    [() => ctx.naming.of({ nakshatra: 'KRITTIKA', pada: 5 }), 'naming.birth.pada'],
+    [() => ctx.naming.load({ names: [{ devanagari: 'राम', sex: 'BOY' }] }), 'naming.book.names[0].sex'],
+    [() => ctx.naming.suggest('0'.repeat(64), { nakshatra: 'ASHWINI', pada: 1 }), 'naming.bookId'],
+    [() => ctx.naming.check([], { nakshatra: 'ASHWINI', pada: 1 }, { sutras: 'PARASKARA' }), 'naming.rules.sutras'],
+  ]) {
+    assert.throws(run, (error) => error instanceof TeistroError && error.field === field, field);
+  }
+  assert.throws(() => ctx.naming.read('राम'), TypeError);
+  assert.throws(() => ctx.naming.of(null), TypeError);
+  ctx.dispose();
+});
+
 test('a name and a birth date read under numerology without a chart', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   // Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6; born

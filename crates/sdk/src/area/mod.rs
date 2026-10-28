@@ -29,6 +29,8 @@ mod intl;
 mod keys;
 #[cfg(feature = "chart")]
 mod matching;
+#[cfg(feature = "chart")]
+mod naming;
 #[cfg(feature = "numerology")]
 mod numerology;
 #[cfg(feature = "research")]
@@ -109,6 +111,8 @@ pub use intl::IntlArea;
 pub use keys::KeysArea;
 #[cfg(feature = "chart")]
 pub use matching::MatchingArea;
+#[cfg(feature = "chart")]
+pub use naming::NamingArea;
 #[cfg(feature = "numerology")]
 pub use numerology::NumerologyArea;
 #[cfg(feature = "research")]

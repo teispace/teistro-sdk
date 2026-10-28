@@ -872,3 +872,13 @@ fn a_nukta_letter_reads_as_its_base_and_a_diphthong_after_a_consonant_is_refused
         assert_eq!(refused.field(), Some("name"), "{name}");
     }
 }
+
+#[test]
+fn a_charts_birth_is_its_avakahadas_moon() {
+    let moon = crate::avakahada(Native::of_moon(45.0).unwrap()).unwrap();
+    let birth = Birth::from(&moon);
+    assert_eq!((birth.nakshatra, birth.pada), (Nakshatra::Rohini, 2));
+    // The name the chart prints is the one the birth prescribes.
+    let names = names_of(birth, NamingRules::default()).unwrap();
+    assert_eq!(names.syllable.cell, moon.syllable.cell);
+}

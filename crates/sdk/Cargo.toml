@@ -436,6 +436,10 @@ name = "matching"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "naming"
+required-features = ["chart"]
+
+[[test]]
 name = "moment"
 required-features = ["builtin-ephemeris"]
 

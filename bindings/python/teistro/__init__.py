@@ -383,6 +383,24 @@ from ._requests import (
     MunthaDegree as MunthaDegree,
     NaamRequest as NaamRequest,
     NaamRules as NaamRules,
+    Birth as Birth,
+    Book as Book,
+    BookName as BookName,
+    NameClause as NameClause,
+    FinalA as FinalA,
+    GrhyaSutra as GrhyaSutra,
+    NamingCheckRequest as NamingCheckRequest,
+    NamingOfRequest as NamingOfRequest,
+    NamingReadRequest as NamingReadRequest,
+    NamingRules as NamingRules,
+    NamingSuggestRequest as NamingSuggestRequest,
+    NamingSyllablesRequest as NamingSyllablesRequest,
+    NasalInitial as NasalInitial,
+    SuggestFilter as SuggestFilter,
+    SyllablesOf as SyllablesOf,
+    SyllablesOfNakshatra as SyllablesOfNakshatra,
+    SyllablesOfPada as SyllablesOfPada,
+    SyllablesOfRashi as SyllablesOfRashi,
     NadiDosha as NadiDosha,
     NameReduction as NameReduction,
     NameRules as NameRules,
@@ -1198,6 +1216,37 @@ __all__ = [
     "ChaldeanDate",
     "BaselineNumerology",
     "NumerologyProfile",
+    "NamingArea",
+    "Birth",
+    "Book",
+    "BookName",
+    "NameClause",
+    "FinalA",
+    "GrhyaSutra",
+    "NamingRules",
+    "NasalInitial",
+    "SuggestFilter",
+    "SyllablesOf",
+    "SyllablesOfNakshatra",
+    "SyllablesOfPada",
+    "SyllablesOfRashi",
+    "InitialBy",
+    "ClauseSource",
+    "NameInitial",
+    "PadaSyllable",
+    "NameClauseRow",
+    "NameClauses",
+    "SpelledName",
+    "NameReading",
+    "NameRefusal",
+    "NameRead",
+    "NameCheck",
+    "NameChecked",
+    "Names",
+    "RefusedName",
+    "LoadedBook",
+    "Suggested",
+    "Suggestions",
     "KujaRules",
     "KujaReading",
     "KujaSide",
@@ -3603,6 +3652,138 @@ class NumerologyArea(_Area):
                 request["rules"] = json.loads(written)
         return NumerologyProfile._of(json.loads(self._context.inner.numerology_profile(json.dumps(request))))
 
+def _naming_record(value: Any, field: str, example: str) -> Optional[Any]:
+    """A record a naming call takes, written as JSON; nothing where it was
+    not given."""
+    written = _record_json(value, field, example)
+    return None if written is None else json.loads(written)
+
+
+class NamingArea(_Area):
+    """`sdk.naming` — the naming of a child (nāmakaraṇa,
+    `03-design/namakarana.md`): the syllables a pada, a star or a sign names
+    a child by, names read and checked, the names a birth gives, and a
+    consumer's own name book. It reads no sky, and the SDK ships no names.
+    Every refusal is named under `naming`."""
+
+    def _ask(self, call: Callable[[str], str], request: Dict[str, Any]) -> Any:
+        return json.loads(call(json.dumps(request)))
+
+    def syllables(self, of: SyllablesOf, rules: Optional[NamingRules] = None) -> Tuple[PadaSyllable, ...]:
+        """The syllables a pada, a star or a sign names a child by, in cakra
+        order, each with every initial that reaches it.
+
+        >>> sdk.naming.syllables({"of": "RASHI", "rashi": "CAPRICORN"})  # doctest: +SKIP
+        """
+        request: Dict[str, Any] = {"of": _naming_record(of, "of", "{'of': 'PADA', 'nakshatra': 'ASHWINI', 'pada': 1}")}
+        written = _naming_record(rules, "rules", "{'sutra': 'ASHVALAYANA'}")
+        if written is not None:
+            request["rules"] = written
+        return tuple(PadaSyllable._of(one) for one in self._ask(self._context.inner.naming_syllables, request))
+
+    def read(self, names: Sequence[str], rules: Optional[NamingRules] = None) -> Tuple[NameRead, ...]:
+        """Names read into the cakra, each on its own; a name refused is its
+        row's `refused`, named `naming.names[i]`."""
+        request: Dict[str, Any] = {"names": list(names)}
+        written = _naming_record(rules, "rules", "{'name': {'latin': 'CASUAL'}}")
+        if written is not None:
+            request["rules"] = written
+        return tuple(
+            NameRead(
+                reading=None
+                if one["reading"] is None
+                else NameReading(
+                    readings=tuple(SpelledName._of(r) for r in one["reading"]["readings"]),
+                    ambiguous=one["reading"]["ambiguous"],
+                ),
+                refused=None if one["refused"] is None else NameRefusal._of(one["refused"]),
+            )
+            for one in self._ask(self._context.inner.naming_read, request)
+        )
+
+    def check(self, names: Sequence[str], birth: Birth, rules: Optional[NamingRules] = None) -> Tuple[NameChecked, ...]:
+        """Names checked against a birth's pada, each on its own: facts, not
+        a score."""
+        request: Dict[str, Any] = {
+            "names": list(names),
+            "birth": _naming_record(birth, "birth", "{'nakshatra': 'ASHWINI', 'pada': 1}"),
+        }
+        written = _naming_record(rules, "rules", "{'finalA': 'SILENT'}")
+        if written is not None:
+            request["rules"] = written
+        checked = []
+        for one in self._ask(self._context.inner.naming_check, request):
+            raw = one["check"]
+            checked.append(
+                NameChecked(
+                    check=None
+                    if raw is None
+                    else NameCheck(
+                        read=_name_syllable(raw["read"]),
+                        prescribed=PadaSyllable._of(raw["prescribed"]),
+                        same_star=raw["sameStar"],
+                        same_pada=raw["samePada"],
+                        by_substitute=raw["bySubstitute"],
+                        clauses=NameClauses._of(raw["clauses"]),
+                    ),
+                    refused=None if one["refused"] is None else NameRefusal._of(one["refused"]),
+                )
+            )
+        return tuple(checked)
+
+    def of(self, birth: Birth, rules: Optional[NamingRules] = None) -> Names:
+        """The names a birth gives: its pada's syllable and its star's
+        deity."""
+        request: Dict[str, Any] = {"birth": _naming_record(birth, "birth", "{'nakshatra': 'KRITTIKA', 'pada': 1}")}
+        written = _naming_record(rules, "rules", "{'nasal': 'NONE'}")
+        if written is not None:
+            request["rules"] = written
+        raw = self._ask(self._context.inner.naming_of, request)
+        return Names(syllable=PadaSyllable._of(raw["syllable"]), deity=_member(Deity, raw["deity"]))
+
+    def load(self, book: Book) -> LoadedBook:
+        """Loads a name book into this context, indexed by the cakra's cell,
+        and answers its id; the same book loaded again is the same book."""
+        request = {"book": _naming_record(book, "book", "{'names': [{'devanagari': 'राम'}]}")}
+        raw = self._ask(self._context.inner.naming_load, request)
+        return LoadedBook(book=raw["book"], names=raw["names"], refused=_refused_names(raw["refused"]))
+
+    def suggest(
+        self,
+        book: Union[str, Book],
+        birth: Birth,
+        filter: Optional[SuggestFilter] = None,
+        rules: Optional[NamingRules] = None,
+    ) -> Suggestions:
+        """The names a book suggests for a birth: a loaded book by its id, or
+        a book given whole for this one call."""
+        request: Dict[str, Any] = (
+            {"bookId": book}
+            if isinstance(book, str)
+            else {"book": _naming_record(book, "book", "a loaded book's id, or {'names': [{'devanagari': 'राम'}]}")}
+        )
+        request["birth"] = _naming_record(birth, "birth", "{'nakshatra': 'ASHWINI', 'pada': 1}")
+        for name, value, example in (("filter", filter, "{'sex': 'FEMALE'}"), ("rules", rules, "{'sutra': 'ASHVALAYANA'}")):
+            written = _naming_record(value, name, example)
+            if written is not None:
+                request[name] = written
+        raw = self._ask(self._context.inner.naming_suggest, request)
+        return Suggestions(
+            book=raw["book"],
+            prescribed=PadaSyllable._of(raw["prescribed"]),
+            names=tuple(
+                Suggested(
+                    index=one["index"],
+                    reading=SpelledName._of(one["reading"]),
+                    by=one["by"],
+                    same_pada=one["samePada"],
+                )
+                for one in raw["names"]
+            ),
+            refused=_refused_names(raw["refused"]),
+        )
+
+
 @dataclass(frozen=True)
 class ResearchBirth:
     """One birth of a study (`03-design/research.md`): its instant, a Julian
@@ -4077,6 +4258,12 @@ class Context:
     def numerology(self) -> NumerologyArea:
         """What a name and a birth date say under numerology's two systems."""
         return NumerologyArea(self)
+
+    @cached_property
+    def naming(self) -> NamingArea:
+        """The naming of a child: syllables, names read and checked, and a
+        name book."""
+        return NamingArea(self)
 
     @cached_property
     def research(self) -> ResearchArea:
@@ -6857,6 +7044,251 @@ class NameSyllable:
 
     varga: NameVarga
     """The letter group the name begins in, as written (VI.35)."""
+
+
+InitialBy = Literal["CELL", "PAIRED", "SUBSTITUTE"]
+"""How an initial reaches a pada's cell: its own letter, a paired letter
+(C294), or the patro's substitute for a nasal no name begins with (C770)."""
+
+ClauseSource = Literal["PARASKARA", "ASHVALAYANA", "APASTAMBA_HIRANYAKESHIN"]
+"""Whose text a clause of a name in daily use is reported from (C774)."""
+
+
+@dataclass(frozen=True)
+class NameInitial:
+    """A letter a name may begin with to take a pada's syllable."""
+
+    devanagari: str
+    iast: str
+    by: InitialBy
+    """How it reaches the cell."""
+
+
+@dataclass(frozen=True)
+class PadaSyllable:
+    """One cell of the cakra as a name may begin with it (C297, C770,
+    C771)."""
+
+    cell: int
+    """Its place among the cakra's 112 cells, 0 for a, Krittika's first."""
+
+    nakshatra: Optional[Nakshatra]
+    """Its star, or `None` for Abhijit's row."""
+
+    pada: Optional[int]
+    """Its pada, 1 to 4, or `None` for Abhijit's, which is no pada (C298)."""
+
+    rashi: Rashi
+    """The sign it stands in; Makara for Abhijit's (C771)."""
+
+    devanagari: str
+    """The print's spelling (C299)."""
+
+    iast: str
+    varga: NameVarga
+    initials: Tuple[NameInitial, ...]
+    """Every letter that reaches the cell, its own first."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "PadaSyllable":
+        return PadaSyllable(
+            cell=raw["cell"],
+            nakshatra=None if raw["nakshatra"] is None else _member(Nakshatra, raw["nakshatra"]),
+            pada=raw["pada"],
+            rashi=_member(Rashi, raw["rashi"]),
+            devanagari=raw["devanagari"],
+            iast=raw["iast"],
+            varga=_member(NameVarga, raw["varga"]),
+            initials=tuple(NameInitial(one["devanagari"], one["iast"], one["by"]) for one in raw["initials"]),
+        )
+
+
+def _name_syllable(raw: Mapping[str, Any]) -> NameSyllable:
+    return NameSyllable(
+        cell=raw["cell"],
+        nakshatra=None if raw["nakshatra"] is None else _member(Nakshatra, raw["nakshatra"]),
+        quarter=raw["quarter"],
+        varga=_member(NameVarga, raw["varga"]),
+    )
+
+
+@dataclass(frozen=True)
+class NameClauseRow:
+    """One clause of a name in daily use, as one sutra gives it (C774)."""
+
+    clause: NameClause
+    holds: bool
+    """Whether the name meets it."""
+
+    source: ClauseSource
+
+
+@dataclass(frozen=True)
+class NameClauses:
+    """A name's syllables and the clauses of a name in daily use (C774)."""
+
+    syllables: int
+    """Its syllables, counted by their vowels."""
+
+    counted: FinalA
+    """How the final inherent a was counted."""
+
+    rows: Tuple[NameClauseRow, ...]
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "NameClauses":
+        return NameClauses(
+            syllables=raw["syllables"],
+            counted=raw["counted"],
+            rows=tuple(NameClauseRow(row["clause"], row["holds"], row["source"]) for row in raw["rows"]),
+        )
+
+
+@dataclass(frozen=True)
+class SpelledName:
+    """One cell a name's spelling reaches."""
+
+    spelled: str
+    """The Devanagari it was read as."""
+
+    syllable: NameSyllable
+    rashi: Rashi
+    """The sign that syllable's pada stands in."""
+
+    clauses: NameClauses
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "SpelledName":
+        return SpelledName(
+            spelled=raw["spelled"],
+            syllable=_name_syllable(raw["syllable"]),
+            rashi=_member(Rashi, raw["rashi"]),
+            clauses=NameClauses._of(raw["clauses"]),
+        )
+
+
+@dataclass(frozen=True)
+class NameReading:
+    """A name read: one entry per first syllable its spelling reaches."""
+
+    readings: Tuple[SpelledName, ...]
+    ambiguous: bool
+    """Whether there is more than one."""
+
+
+@dataclass(frozen=True)
+class NameRefusal:
+    """Why a name of a batch, or of a book, was refused: the SDK's error
+    as a record."""
+
+    status: str
+    detail: Optional[str]
+    message: str
+    field: Optional[str]
+    """The field it names: `naming.names[2]`, `book.names[4].devanagari`."""
+
+    hint: Optional[str]
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "NameRefusal":
+        return NameRefusal(raw["status"], raw["detail"], raw["message"], raw["field"], raw["hint"])
+
+
+@dataclass(frozen=True)
+class NameRead:
+    """One name of a batch read: its reading, or its refusal."""
+
+    reading: Optional[NameReading]
+    refused: Optional[NameRefusal]
+
+
+@dataclass(frozen=True)
+class NameCheck:
+    """A name read against a birth's pada: facts, not a score (C334,
+    C770)."""
+
+    read: NameSyllable
+    prescribed: PadaSyllable
+    """The birth pada's syllable, with every initial that reaches it."""
+
+    same_star: bool
+    same_pada: bool
+    by_substitute: bool
+    """Whether it begins with the pada's substitute (C770)."""
+
+    clauses: NameClauses
+
+
+@dataclass(frozen=True)
+class NameChecked:
+    """One name of a batch checked: its check, or its refusal."""
+
+    check: Optional[NameCheck]
+    refused: Optional[NameRefusal]
+
+
+@dataclass(frozen=True)
+class Names:
+    """The names a birth gives, of Dharmasindhu's four the SDK computes
+    (C773)."""
+
+    syllable: PadaSyllable
+    """The pada's syllable: the default, the avakahada reading."""
+
+    deity: Deity
+    """The star's deity, whose name the Śāṅkhāyanas give."""
+
+
+@dataclass(frozen=True)
+class RefusedName:
+    """A name a book holds that the cakra refused."""
+
+    index: int
+    error: NameRefusal
+
+
+def _refused_names(raw: Sequence[Mapping[str, Any]]) -> Tuple[RefusedName, ...]:
+    return tuple(RefusedName(one["index"], NameRefusal._of(one["error"])) for one in raw)
+
+
+@dataclass(frozen=True)
+class LoadedBook:
+    """A book loaded into a context."""
+
+    book: str
+    """Its id, the SHA-256 of its canonical JSON, which a suggestion names
+    it by."""
+
+    names: int
+    """How many names it holds."""
+
+    refused: Tuple[RefusedName, ...]
+
+
+@dataclass(frozen=True)
+class Suggested:
+    """A name a book suggests for a birth."""
+
+    index: int
+    """Its place in the book."""
+
+    reading: SpelledName
+    by: InitialBy
+    same_pada: bool
+
+
+@dataclass(frozen=True)
+class Suggestions:
+    """The names a book suggests for a birth."""
+
+    book: str
+    prescribed: PadaSyllable
+    names: Tuple[Suggested, ...]
+    """In cakra order, then the book's."""
+
+    refused: Tuple[RefusedName, ...]
+    """Every name the book holds that the cakra refused, listed, never
+    dropped."""
 
 
 @dataclass(frozen=True)

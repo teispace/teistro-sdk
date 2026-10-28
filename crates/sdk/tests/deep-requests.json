@@ -2124,7 +2124,7 @@
               "until": 1.5
             }
           ],
-          "sex": "FEMALE",
+          "sex": "sex.FEMALE",
           "uncertaintyMinutes": 1.5
         },
         "circumstance": {
@@ -2557,6 +2557,121 @@
           "lordsFriendship": "ONE_WAY",
           "twoSignStar": "BRIDE_FIRST_SIGN"
         }
+      }
+    }
+  },
+  {
+    "record": "naming.check",
+    "request": {
+      "birth": {
+        "nakshatra": "nakshatra.BHARANI",
+        "pada": 1
+      },
+      "names": [
+        "x"
+      ],
+      "rules": {
+        "finalA": "SILENT",
+        "name": {
+          "abhijit": "UTTARA_ASHADHA",
+          "latin": "IAST"
+        },
+        "nasal": "NONE",
+        "sutra": "ASHVALAYANA"
+      }
+    }
+  },
+  {
+    "record": "naming.of",
+    "request": {
+      "birth": {
+        "nakshatra": "nakshatra.BHARANI",
+        "pada": 1
+      },
+      "rules": {
+        "finalA": "SILENT",
+        "name": {
+          "abhijit": "UTTARA_ASHADHA",
+          "latin": "IAST"
+        },
+        "nasal": "NONE",
+        "sutra": "ASHVALAYANA"
+      }
+    }
+  },
+  {
+    "record": "naming.read",
+    "request": {
+      "names": [
+        "x"
+      ],
+      "rules": {
+        "finalA": "SILENT",
+        "name": {
+          "abhijit": "UTTARA_ASHADHA",
+          "latin": "IAST"
+        },
+        "nasal": "NONE",
+        "sutra": "ASHVALAYANA"
+      }
+    }
+  },
+  {
+    "record": "naming.suggest",
+    "request": {
+      "birth": {
+        "nakshatra": "nakshatra.BHARANI",
+        "pada": 1
+      },
+      "book": {
+        "names": [
+          {
+            "devanagari": "x",
+            "latin": "x",
+            "sex": "sex.FEMALE",
+            "tags": {
+              "meaning.en": "x"
+            }
+          }
+        ]
+      },
+      "bookId": "x",
+      "filter": {
+        "clauses": [
+          "SEMIVOWEL_WITHIN"
+        ],
+        "sex": "sex.FEMALE",
+        "syllables": [
+          1
+        ]
+      },
+      "rules": {
+        "finalA": "SILENT",
+        "name": {
+          "abhijit": "UTTARA_ASHADHA",
+          "latin": "IAST"
+        },
+        "nasal": "NONE",
+        "sutra": "ASHVALAYANA"
+      }
+    }
+  },
+  {
+    "record": "naming.syllables",
+    "request": {
+      "of": {
+        "of": "PADA",
+        "nakshatra": "nakshatra.BHARANI",
+        "pada": 1
+      },
+      "rules": {
+        "finalA": "SILENT",
+        "name": {
+          "abhijit": "UTTARA_ASHADHA",
+          "latin": "IAST"
+        },
+        "nasal": "NONE",
+        "sutra": "ASHVALAYANA"
       }
     }
   },

@@ -169,7 +169,7 @@ of the `Chart` it fills.
 | remedies | `remedies: {...}`; `chart.remedies` |
 | research: batch, statistics | `ctx.chart.foundMany(...)`; `ctx.research.counts(...)` and the rest of `ctx.research` |
 | research: synastry, composites | `synastry: {...}`; `chart.synastry`, `chart.synastryComposite` |
-| namakarana | the syllables in `chart.avakahada` and `ctx.matching.naam`; in Rust, `teistro::matching::{read_name, name_check, syllables, names_of}`; the rest designed, not built (§10) |
+| namakarana | `ctx.naming` (`syllables`, `read`, `check`, `of`, `load`, `suggest`); in Rust, `sdk.naming()`; no corpus ships: load your own book (§10) |
 
 ### 4.6 The rashifal and interpretation packages
 
@@ -488,20 +488,20 @@ the baseline's beside it
   Phase 9 deliverable beside this guide. There is no module that accepts
   the baseline's calls and settings and forwards them to the SDK. You
   port each call.
-- **Namakarana.** The phonetic matcher, the name validation and the
-  offline name corpus have no equivalent in a binding yet. In Rust,
-  `read_name` reads a Latin name under a declared scheme or every
-  `CASUAL` way, `name_check` checks a name with its clauses,
-  `syllables` gives a pada's, a star's or a sign's syllables, and
-  `NameBook::load` and `suggest` search a book you load
-  (`namakarana.md` §10). The design is
-  [`03-design/namakarana.md`](../03-design/namakarana.md): a `naming`
-  area that reads a Latin name under a declared scheme or reports every
-  casual reading rather than picking one, checks a name as facts and
-  clauses rather than a score, and searches a name book the consumer
-  loads. No corpus ships, so the baseline's corpus migrates as your own
-  book (§3 of the page). Until it is built, `chart.avakahada` gives the
-  Moon's syllable and `ctx.matching.naam` reads a name's star.
+- **Namakarana.** The phonetic matcher and the name validation map to
+  `ctx.naming` in every binding (`sdk.naming()` in Rust): `syllables`
+  gives a pada's, a star's or a sign's syllables, `read` reads names in
+  Devanagari or a declared Latin scheme (or every `CASUAL` way, rather
+  than picking one), `check` checks names against a birth as facts and
+  clauses rather than a score, and `of` gives the names a birth gives.
+  A name refused in a batch is that row's `refused`, never the batch's.
+  The offline name corpus has no equivalent: no corpus ships, so the
+  baseline's corpus migrates as your own book (§3 of
+  [`03-design/namakarana.md`](../03-design/namakarana.md)), loaded once
+  with `naming.load` and searched with `naming.suggest` by its id, or
+  carried whole in one `suggest` request. A chart's own birth is
+  `Birth::from(&avakahada)` in Rust, or the nakshatra and pada of
+  `chart.avakahada` in a binding.
 - **The gochar sidecar in a binding.** Rust has it (§8.2); Node,
   Python, Dart and Java do not. Ask for the transits on the chart
   request (its `gochar`, `sadeSati` and `dossier` records) from the

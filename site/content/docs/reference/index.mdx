@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 61 entry points over 27 structs and 168 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 67 entry points over 27 structs and 168 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 
@@ -125,6 +125,17 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 |---|---|
 | [`ts_naam_milan`](naam/ts_naam_milan) | Matches two names star to star (naam milan) and answers with the `naam` blob: each name's first syllable in the śatapada cakra, the varga koota, and the Ashta Koota and the ten considerations of the two name stars (`03-design/matching.md`, C291 to C296). |
 
+### Naming
+
+| entry point | what it does |
+|---|---|
+| [`ts_naming_syllables`](naming/ts_naming_syllables) | The syllables a pada, a star or a sign names a child by, in the śatapada cakra's order, each with every initial that reaches it: its own letter, a paired letter (C294) and the patro's substitute for a nasal no name begins with (C770). |
+| [`ts_naming_read`](naming/ts_naming_read) | Names read into the śatapada cakra, each on its own: every first syllable its spelling reaches (one, unless `CASUAL` reads it more ways), each with the Devanagari it was read as, its sign, its syllable count and the clauses of a name in daily use (C291 to C294, C772, C774). |
+| [`ts_naming_check`](naming/ts_naming_check) | Names checked against a birth's pada, each on its own: where each begins, the pada's own syllable with its initials, whether the two share a star or a pada, whether the name took the pada's substitute, and its clauses (C334, C770, C774). |
+| [`ts_naming_of`](naming/ts_naming_of) | The names a birth gives, of *Dharmasindhu*'s four that the SDK computes (C773): the birth pada's syllable with its initials, and the star's deity, whose name the Śāṅkhāyanas give. |
+| [`ts_naming_load`](naming/ts_naming_load) | Loads a consumer's name book into the context: every name read once into the cakra and indexed by its cell, kept for the context's life under the book's id, the SHA-256 of its canonical JSON, so the same book loaded twice is one book (`03-design/namakarana.md` §3). |
+| [`ts_naming_suggest`](naming/ts_naming_suggest) | The names a book suggests for a birth: those whose first syllable is the birth pada's, or reaches it by a paired letter or the pada's substitute, in the cakra's order and then the book's, each with its clauses under the rules; and every name the book holds that the cakra refused. |
+
 ### Numerology
 
 | entry point | what it does |
@@ -199,6 +210,7 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 - `crates/ffi/src/positions.rs`
 - `crates/ffi/src/panchanga.rs`
 - `crates/ffi/src/naam.rs`
+- `crates/ffi/src/naming.rs`
 - `crates/ffi/src/numerology.rs`
 - `crates/ffi/src/pakshi.rs`
 - `crates/ffi/src/rashifal.rs`

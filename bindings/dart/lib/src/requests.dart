@@ -691,6 +691,141 @@ final class NaamRequest extends _Request {
   List<Object?> get _fields => [bride, groom, rules];
 }
 
+/// Names to check against a birth's pada, each on its own.
+final class NamingCheckRequest extends _Request {
+  const NamingCheckRequest({
+    required this.birth,
+    required this.names,
+    this.rules = const NamingRules(name: NameRules(latin: LatinName.refuse, abhijit: AbhijitPada.refuse), nasal: NasalInitial.vargaThird, sutra: GrhyaSutra.paraskara, finalA: FinalA.sounded),
+  });
+
+  /// The birth: the Moon's nakshatra and pada.
+  final Birth birth;
+
+  /// The names, in Devanagari or in the Latin scheme `rules.name.latin` declares.
+  final List<String> names;
+
+  /// The rules; the sources' own when left out.
+  final NamingRules rules;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'birth': birth._wire,
+    'names': names,
+    'rules': rules._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [birth, names, rules];
+}
+
+/// A birth, for the names it gives.
+final class NamingOfRequest extends _Request {
+  const NamingOfRequest({
+    required this.birth,
+    this.rules = const NamingRules(name: NameRules(latin: LatinName.refuse, abhijit: AbhijitPada.refuse), nasal: NasalInitial.vargaThird, sutra: GrhyaSutra.paraskara, finalA: FinalA.sounded),
+  });
+
+  /// The birth: the Moon's nakshatra and pada.
+  final Birth birth;
+
+  /// The rules; the sources' own when left out.
+  final NamingRules rules;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'birth': birth._wire,
+    'rules': rules._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [birth, rules];
+}
+
+/// Names to read into the cakra, each on its own.
+final class NamingReadRequest extends _Request {
+  const NamingReadRequest({
+    required this.names,
+    this.rules = const NamingRules(name: NameRules(latin: LatinName.refuse, abhijit: AbhijitPada.refuse), nasal: NasalInitial.vargaThird, sutra: GrhyaSutra.paraskara, finalA: FinalA.sounded),
+  });
+
+  /// The names, in Devanagari or in the Latin scheme `rules.name.latin` declares.
+  final List<String> names;
+
+  /// The rules; the sources' own when left out.
+  final NamingRules rules;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'names': names,
+    'rules': rules._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [names, rules];
+}
+
+/// A birth and the book to suggest its names from: a book loaded into the context, named by `bookId`, or one carried here as `book` for one use.
+final class NamingSuggestRequest extends _Request {
+  const NamingSuggestRequest({
+    required this.birth,
+    this.book,
+    this.bookId,
+    this.filter = const SuggestFilter(syllables: [], clauses: []),
+    this.rules = const NamingRules(name: NameRules(latin: LatinName.refuse, abhijit: AbhijitPada.refuse), nasal: NasalInitial.vargaThird, sutra: GrhyaSutra.paraskara, finalA: FinalA.sounded),
+  });
+
+  /// The birth: the Moon's nakshatra and pada.
+  final Birth birth;
+
+  /// A book carried in the request, loaded for this one suggestion; exactly one of `bookId` and `book` is given.
+  final Book? book;
+
+  /// A book loaded into this context, by the id its load answered: sixty-four hex digits, held as text so that an id this context never answered is refused like one it did not load; exactly one of `bookId` and `book` is given.
+  final String? bookId;
+
+  /// What a suggestion keeps; every name the pada reaches when left out.
+  final SuggestFilter filter;
+
+  /// The rules; the sources' own when left out.
+  final NamingRules rules;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'birth': birth._wire,
+    if (book case final bookValue?) 'book': bookValue._wire,
+    if (bookId case final bookIdValue?) 'bookId': bookIdValue,
+    'filter': filter._wire,
+    'rules': rules._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [birth, book, bookId, filter, rules];
+}
+
+/// The syllables a pada, a star or a sign names a child by.
+final class NamingSyllablesRequest extends _Request {
+  const NamingSyllablesRequest({
+    required this.of,
+    this.rules = const NamingRules(name: NameRules(latin: LatinName.refuse, abhijit: AbhijitPada.refuse), nasal: NasalInitial.vargaThird, sutra: GrhyaSutra.paraskara, finalA: FinalA.sounded),
+  });
+
+  /// What is asked: one pada, a star's four, or a sign's nine (and Abhijit's four for Makara).
+  final SyllablesOf of;
+
+  /// The rules; the sources' own when left out.
+  final NamingRules rules;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'of': of._wire,
+    'rules': rules._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [of, rules];
+}
+
 /// A name and a birth date, and the readings they are taken under. Numerology reads no sky, so this is the whole request.
 final class NumerologyRequest extends _Request {
   const NumerologyRequest({
@@ -1666,6 +1801,175 @@ final class NaamRules extends _Request {
 
   @override
   List<Object?> get _fields => [koota, name, porutham];
+}
+
+/// A birth, as the names it gives are read from it: the Moon's star and pada.
+final class Birth extends _Request {
+  const Birth({
+    required this.nakshatra,
+    required this.pada,
+  });
+
+  /// The Moon's nakshatra.
+  final Nakshatra nakshatra;
+
+  /// Its pada, 1 to 4.
+  final int pada;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'nakshatra': nakshatra.key,
+    'pada': pada,
+  };
+
+  @override
+  List<Object?> get _fields => [nakshatra, pada];
+}
+
+/// The rules a name is read and judged under (`03-design/namakarana.md` §4.1); each default is the one no source read contradicts.
+final class NamingRules extends _Request {
+  const NamingRules({
+    this.finalA = FinalA.sounded,
+    this.name = const NameRules(latin: LatinName.refuse, abhijit: AbhijitPada.refuse),
+    this.nasal = NasalInitial.vargaThird,
+    this.sutra = GrhyaSutra.paraskara,
+  });
+
+  /// How syllables are counted (C774).
+  final FinalA finalA;
+
+  /// How a name is read: its Latin spelling and Abhijit's place.
+  final NameRules name;
+
+  /// Whether a nasal's pada lists a substitute initial (C770).
+  final NasalInitial nasal;
+
+  /// Which gṛhyasūtra's clauses are reported (C774).
+  final GrhyaSutra sutra;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'finalA': finalA.key,
+    'name': name._wire,
+    'nasal': nasal.key,
+    'sutra': sutra.key,
+  };
+
+  @override
+  List<Object?> get _fields => [finalA, name, nasal, sutra];
+}
+
+/// A name book as the consumer writes it: `{"names": [...]}`.
+final class Book extends _Request {
+  const Book({
+    required this.names,
+  });
+
+  /// The names, in the book's order, which is the order a suggestion keeps within a cell.
+  final List<BookName> names;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'names': [for (final e0 in names) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [names];
+}
+
+/// What a suggestion keeps. A filter never ranks; an empty one keeps every name that reaches the pada.
+final class SuggestFilter extends _Request {
+  const SuggestFilter({
+    this.clauses = const [],
+    this.sex,
+    this.syllables = const [],
+  });
+
+  /// Keeps names meeting every one of these clauses, each one the rules' sutra reports.
+  final List<NameClause> clauses;
+
+  /// Keeps names of this sex and names the book gives no sex: a name the book leaves open is anyone's.
+  final Sex? sex;
+
+  /// Keeps names of one of these syllable counts, counted as the rules' `finalA` says; empty keeps every count.
+  final List<int> syllables;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'clauses': [for (final e0 in clauses) e0.key],
+    if (sex case final sexValue?) 'sex': sexValue.key,
+    'syllables': syllables,
+  };
+
+  @override
+  List<Object?> get _fields => [clauses, sex, syllables];
+}
+
+/// What syllables are asked for (C771).
+sealed class SyllablesOf extends _Request {
+  const SyllablesOf();
+}
+
+/// One pada's syllable.
+final class SyllablesOfPada extends SyllablesOf {
+  const SyllablesOfPada({
+    required this.nakshatra,
+    required this.pada,
+  });
+
+  /// The star.
+  final Nakshatra nakshatra;
+
+  /// Its pada, 1 to 4.
+  final int pada;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'of': 'PADA',
+    'nakshatra': nakshatra.key,
+    'pada': pada,
+  };
+
+  @override
+  List<Object?> get _fields => [nakshatra, pada];
+}
+
+/// A star's four.
+final class SyllablesOfNakshatra extends SyllablesOf {
+  const SyllablesOfNakshatra({
+    required this.nakshatra,
+  });
+
+  /// The star.
+  final Nakshatra nakshatra;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'of': 'NAKSHATRA',
+    'nakshatra': nakshatra.key,
+  };
+
+  @override
+  List<Object?> get _fields => [nakshatra];
+}
+
+/// A sign's nine padas, and for Makara Abhijit's four as well.
+final class SyllablesOfRashi extends SyllablesOf {
+  const SyllablesOfRashi({
+    required this.rashi,
+  });
+
+  /// The sign.
+  final Rashi rashi;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'of': 'RASHI',
+    'rashi': rashi.key,
+  };
+
+  @override
+  List<Object?> get _fields => [rashi];
 }
 
 /// The readings; the sources' own when left out, and `"BASELINE"` names [`NumerologyRules::baseline`], every reading the baseline engine takes.
@@ -3803,6 +4107,107 @@ final class NameRules extends _Request {
 
   @override
   List<Object?> get _fields => [abhijit, latin];
+}
+
+/// How a name's syllables are counted (C774).
+enum FinalA implements _Keyed {
+  /// The text's count: every vowel written or inherent, the final `a` too (*Dharmasindhu* p. 164, *akṣaram aj svaraḥ*), so राम is rā-ma.
+  sounded('SOUNDED'),
+  /// Speech's: a word's final inherent `a` dropped, as Hindi and Nepali say "rām", unless it is the word's only vowel.
+  silent('SILENT');
+
+  const FinalA(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Whether a pada whose letter no name begins with lists a substitute (C770).
+enum NasalInitial implements _Keyed {
+  /// ङ, ण and ञ each list their varga's third letter (ग, ड, ज) as a substitute initial, as the Nepali patro glosses them.
+  vargaThird('VARGA_THIRD'),
+  /// No substitute: the cell's own letter only, as *Muhurta Chintamani*'s commentary gives it.
+  none('NONE');
+
+  const NasalInitial(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Which gṛhyasūtra's clauses are reported (C774).
+enum GrhyaSutra implements _Keyed {
+  /// *Pāraskara* I.17.2–3, which *Muhurta Chintamani*'s commentary quotes (p. 173): a girl's name odd and ending in ā.
+  paraskara('PARASKARA'),
+  /// *Āśvalāyana* I.15.4–7 (SBE 29 pp. 182–183): a man's even and a woman's odd, "in every case".
+  ashvalayana('ASHVALAYANA');
+
+  const GrhyaSutra(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// One name of a book.
+final class BookName extends _Request {
+  const BookName({
+    required this.devanagari,
+    this.latin,
+    this.sex,
+    this.tags,
+  });
+
+  /// The name in Devanagari, which the cakra reads.
+  final String devanagari;
+
+  /// A display spelling, carried and never read.
+  final String? latin;
+
+  /// Whose name it is, when the book says.
+  final Sex? sex;
+
+  /// The book's own fields (a meaning, a source), carried and never read.
+  final Map<String, String>? tags;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'devanagari': devanagari,
+    if (latin case final latinValue?) 'latin': latinValue,
+    if (sex case final sexValue?) 'sex': sexValue.key,
+    if (tags case final tagsValue?) 'tags': tagsValue,
+  };
+
+  @override
+  List<Object?> get _fields => [devanagari, latin, sex, tags];
+}
+
+/// One clause of a name in daily use. The kṛt and taddhita clauses are grammar the letters do not show, and the varṇa endings are a rule about the family, so none of them is a row.
+enum NameClause implements _Keyed {
+  /// Begins with a sonant (*ghoṣavat*): the 3rd, 4th or 5th letter of a varga, or h.
+  sonantInitial('SONANT_INITIAL'),
+  /// A semivowel (y r l v) among the letters after the first.
+  semivowelWithin('SEMIVOWEL_WITHIN'),
+  /// Ends in a visarga (*abhiniṣṭhāna*).
+  visargaFinal('VISARGA_FINAL'),
+  /// Two syllables (for steadiness) or four (for holy lustre).
+  twoOrFourSyllables('TWO_OR_FOUR_SYLLABLES'),
+  /// An even count, for a man.
+  evenForABoy('EVEN_FOR_A_BOY'),
+  /// An odd count, for a woman.
+  oddForAGirl('ODD_FOR_A_GIRL'),
+  /// Ends in ā, for a girl (*Pāraskara* I.17.3 alone).
+  longAForAGirl('LONG_A_FOR_A_GIRL'),
+  /// Does not end in the sound l or r: a last ल or र under a virama, or with its inherent `a` when speech drops it (`final_a: SILENT`). *Dharmasindhu*'s Hari, ending in i, meets it.
+  noFinalLOrR('NO_FINAL_L_OR_R');
+
+  const NameClause(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }
 
 /// Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.

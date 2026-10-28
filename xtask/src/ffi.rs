@@ -181,11 +181,11 @@ fn requests() -> teistro_idl::records::Requests {
 }
 
 /// The request records that are a boundary enum, keys and all: a binding
-/// writes the enum it already has (`Sex`) rather than a second of the same
+/// writes the enum it already has (`Saham`) rather than a second of the same
 /// name. Each is checked to have the enum's keys, and a request key set
 /// named like a boundary enum and not listed is refused, so the two never
 /// drift apart unseen.
-const REUSED_ENUMS: [&str; 15] = [
+const REUSED_ENUMS: [&str; 14] = [
     "Balance",
     "FortuneRule",
     "GocharFrom",
@@ -198,7 +198,6 @@ const REUSED_ENUMS: [&str; 15] = [
     "Saham",
     "Scale",
     "SectRule",
-    "Sex",
     "Triplicities",
     "WesternAspect",
 ];

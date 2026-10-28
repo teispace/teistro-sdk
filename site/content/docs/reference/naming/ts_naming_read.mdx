@@ -1,0 +1,73 @@
+---
+title: ts_naming_read
+description: "Names read into the śatapada cakra, each on its own: every first syllable its spelling reaches (one, unless `CASUAL` reads it more ways), each with the Devanagari it was read as, its sign, its syllable count and the clauses of a name in daily use (C291 to C294, C772, C774)."
+---
+
+Names read into the śatapada cakra, each on its own: every first syllable its spelling reaches (one, unless `CASUAL` reads it more ways), each with the Devanagari it was read as, its sign, its syllable count and the clauses of a name in daily use (C291 to C294, C772, C774).
+
+`request_json` is `{"names", "rules"}`: the names, in Devanagari or in the Latin scheme `rules.name.latin` declares, and the `NamingRules` with every field optional. The answer is a list with one entry a name, in the request's order, each `{"reading", "refused"}` with one of the two null: a name the cakra does not read is refused alone, named `naming.names[i]`, and the batch never fails as a whole.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.naming.read
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.naming.read
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.naming.read
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.naming().read
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.naming().read
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_naming_read(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `naming.read` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/naming.rs`.

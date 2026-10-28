@@ -3,6 +3,8 @@
 
 use core::cell::{Ref, RefCell, RefMut};
 use std::collections::BTreeMap;
+#[cfg(feature = "chart")]
+use std::rc::Rc;
 use std::sync::{Arc, OnceLock};
 
 use serde::Serialize;
@@ -20,6 +22,8 @@ use teistro_geometry::{Layout, Layouts};
 use teistro_intl::Intl;
 use teistro_intl::pack::locales_from_packs;
 use teistro_intl::source::LocaleSource;
+#[cfg(feature = "chart")]
+use teistro_matching::{BookId, NameBook};
 use teistro_port_ephemeris::{
     Astronomy, CachingProvider, EphemerisProvider, Frame, PositionRequest,
 };
@@ -32,7 +36,7 @@ use crate::area::NumerologyArea;
 use crate::area::ResearchArea;
 use crate::area::{AlmanacArea, CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea};
 #[cfg(feature = "chart")]
-use crate::area::{ChartArea, InterpretArea, MatchingArea};
+use crate::area::{ChartArea, InterpretArea, MatchingArea, NamingArea};
 use crate::ephemeris::{self, Ephemeris, no_ephemeris};
 
 /// One context: built once, read many times.
@@ -71,6 +75,12 @@ pub struct Context {
     /// are.
     #[cfg(feature = "chart")]
     dashas: DashaSystems,
+    /// The name books loaded into this context, by their identity: the
+    /// one thing a context gains after it is built, and only by
+    /// [`NamingArea::load`], which adds and never replaces (the same book
+    /// is the same id).
+    #[cfg(feature = "chart")]
+    books: RefCell<std::collections::HashMap<BookId, Rc<NameBook>>>,
 }
 
 impl core::fmt::Debug for Context {
@@ -329,6 +339,33 @@ impl Context {
     #[must_use]
     pub fn almanac(&self) -> AlmanacArea<'_> {
         AlmanacArea::of_context(self)
+    }
+
+    /// The naming of a child (nāmakaraṇa): the syllables a pada names a
+    /// child by, a name read and checked, the names a birth gives, and a
+    /// consumer's name book.
+    #[cfg(feature = "chart")]
+    #[must_use]
+    pub fn naming(&self) -> NamingArea<'_> {
+        NamingArea::new(self)
+    }
+
+    /// The name book loaded under `id`, when one is.
+    #[cfg(feature = "chart")]
+    pub(crate) fn book(&self, id: BookId) -> Option<Rc<NameBook>> {
+        self.books.borrow().get(&id).cloned()
+    }
+
+    /// Keeps a loaded book under its id; the same book loaded again is
+    /// the one already kept.
+    #[cfg(feature = "chart")]
+    pub(crate) fn keep_book(&self, book: NameBook) -> Rc<NameBook> {
+        Rc::clone(
+            self.books
+                .borrow_mut()
+                .entry(book.id())
+                .or_insert_with(|| Rc::new(book)),
+        )
     }
 
     /// What matches without a chart: two names, star to star.
@@ -643,6 +680,8 @@ impl ContextBuilder {
             layouts,
             #[cfg(feature = "chart")]
             dashas,
+            #[cfg(feature = "chart")]
+            books: RefCell::default(),
         })
     }
 }

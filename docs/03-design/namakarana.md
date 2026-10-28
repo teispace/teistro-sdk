@@ -1,9 +1,9 @@
 # Namakarana: the four names, the pada's syllables and a consumer's name book (the `naming` area)
 
 Status: `decided`, 2026-10-28, from the sources before any code. Work
-items 1 to 4, 6 and 7 are built in Rust (`crates/matching/src/naming`,
-2026-10-28; §10 says where the build reads the page); items 5 and 8 to
-10 are not. Part of it was already built inside naam milan and the
+items 1 to 4 and 6 to 9 are built (`crates/matching/src/naming`, the
+`naming` area, the boundary and every binding, 2026-10-28; §10 says
+where the build reads the page); items 5 and 10 are not. Part of it was already built inside naam milan and the
 avakahada (`matching.md`, C291 to C299 and C334), and this page builds
 on that cakra rather than beside it.
 
@@ -36,15 +36,12 @@ avakahada, decided"):
 
 Not built:
 
-- `birth_syllable` and `name_check` exist only in Rust. No binding can
-  check a name.
-- Nothing gives a sign's syllables or a star's four.
-- A Latin name spelled any way but IAST is refused, with no other way in.
-- The rules for a name past its first letter are not read: its
-  syllables, its first and last letters, and the month name and star
-  name the texts also prescribe.
-- No name corpus exists. The search over a consumer's book is built in
-  Rust only (§10, item 7).
+- The month name and the star's taddhita, which wait on the page
+  images (item 5).
+- The messages in `en-Latn` and `ne-Deva-NP`, and the wasm size
+  measured (item 10).
+- No name corpus exists, by decision (§3): the consumer's book is
+  searched.
 
 ## 2. What the sources decide
 
@@ -699,3 +696,88 @@ Where the build reads the page, it says so here:
 - **The bindings' `LatinName`.** Naam milan already crosses the
   boundary with `NameRules`, so its generated request types gain the
   four new keys; nothing else crosses yet.
+
+Built 2026-10-28, items 8 and 9: the boundary and the bindings.
+
+- **The area.** `sdk.naming()` answers `syllables`, `read`, `check`,
+  `of`, `load` and `suggest`, the six operations of §4.2. `read` and
+  `check` answer one `Result` a name, so a refused name never refuses
+  the batch; `check` refuses the whole batch only for its birth's pada,
+  which every name is read against. Every binding's area is the same
+  six (`naming.syllables` … `naming.suggest` in the parity runners'
+  shape lines).
+- **The requests.** `NamingSyllablesRequest`, `NamingReadRequest`,
+  `NamingCheckRequest`, `NamingOfRequest`, `NamingLoadRequest` and
+  `NamingSuggestRequest`, each read strictly (`deny_unknown_fields` and
+  `teistro_core::strict`) under the root `naming`. A field of the page's
+  refusal table is named under it: `naming.birth.pada`,
+  `naming.names[2]`, `naming.book.names[0].sex`,
+  `naming.book.names[0].devanagari`, `naming.filter.clauses`. The root is
+  the area's, as `naam` is naam milan's, so the page's bare `pada` and
+  `book.names[i].sex` are these with `naming.` before them. A book's own
+  refused names keep the kernel's `book.names[i].devanagari`, since they
+  are rows of an answer, not a refusal of the request.
+- **`syllables` takes `of` as a record:** `{"of": {"of": "PADA",
+  "nakshatra", "pada"}, "rules"}`. Flattening the tagged `SyllablesOf`
+  into the request would name a refusal inside it by the request's root
+  (serde's `flatten`), and the strict reader could not say which field.
+- **A book is named or carried.** `NamingSuggestRequest` has `bookId`
+  and `book`, exactly one given: neither is refused under `naming.book`,
+  both under `naming.bookId`, and an id the context has not loaded under
+  `naming.bookId`, the hint saying to load it or carry it. Two fields
+  rather than a union picked by its keys, so every binding's generated
+  request reads it with no new shape.
+- **The context keeps books.** A `Context` holds its loaded books by
+  `BookId`, each kept once (the same book loaded again is the book
+  already kept). It is the one thing a context gains after it is built,
+  and only by `load`. Nothing unloads a book; a context's books go with
+  it.
+- **`naming.load` is not a record of the agent server.** The server's
+  contexts are a cache that keeps no state between calls
+  (`mcp-server.md`), so a tool cannot load a book for a later one. The
+  server has the other five as tools (`naming.syllables`, `naming.read`,
+  `naming.check`, `naming.of`, `naming.suggest`), and its suggestion
+  carries its book. Every binding has `load`.
+- **The answers cross as canonical JSON, not as blobs.** §4.2 named five
+  blob sections. Every answer is nested records of text: a pada's
+  spellings and its ragged initials, a reading's clause rows, a refusal a
+  name, a book's own tags. A blob would carry each as a numeric column
+  beside a section of JSON text, which every binding would then parse
+  as well as decode. So each crosses as the JSON the façade's own type
+  serialises to, as numerology's profile does, through one `ts_naming_*`
+  entry point an operation (`crates/ffi/src/naming.rs`). The agent
+  server answers the same bytes, which is what §5 asks of it.
+- **A refusal inside an answer is the SDK's error as a record:**
+  `{status, detail, message, field, hint, key}`, the one serde writes.
+  Each binding reads it into a `NameRefusal`.
+- **The answer types are hand-written in each binding**, as numerology's
+  are: the generator's answer records (`idl::records`) do not render a
+  catalogue member yet. The request types are generated
+  (`requests.d.ts`, `_requests.py`, `requests.dart`, Java's `request`
+  package). In Node a member is its full key (`nakshatra.ASHWINI`), as
+  every Node answer gives it. `Reading` is `SpelledName` in the bindings,
+  since Python's catalogue has a kind named `Reading`.
+- **`ChartRequest::with_naming` is not built.** A chart's `avakahada`
+  already holds the Moon's nakshatra and pada, which is the whole of
+  `Birth` until the month (item 5) adds what the avakahada lacks. A
+  `Document::naming` section now would copy the avakahada's two fields.
+  So `Birth::from(&Avakahada)` reads the chart's own Moon, and the two
+  cannot disagree. A binding passes `avakahada`'s `nakshatra` and `pada`
+  as the birth. The section is built with the month.
+- **A request's `bookId` is text.** The id is a SHA-256, whose schema
+  pattern is sixty-four hex digits, and the generated deep examples write
+  any text field as `x`. So the request holds it as text and reads it
+  into a `BookId` when it answers: text that is no id is refused like an
+  id this context never loaded, as `naming.bookId`, with a hint saying
+  what an id is. The answer's `book` stays a `BookId`.
+- **One schema name a type across the agent server's tools**
+  (`crates/mcp/tests/facade.rs`). Three names collided once naming had
+  tools: `Clause` (prashna's), `Reading` (Pancha Pakshi's) and the
+  catalogue's `Sex` and `Deity` beside rectification's and the ishta
+  devata's own. The naming types are named at their source:
+  `NameClause` and `SpelledName`. The ishta devata's deity is
+  `IshtaDeity`, an answer's name only. Rectification's `Sex` was the
+  catalogue's two keys under a second type, so it is now the catalogue's
+  own (`pub use`): the same `MALE` and `FEMALE` on the wire, a request
+  may also send the full key, and Rust code that matched on it needs a
+  wildcard arm, since the catalogue's enum is `non_exhaustive`.

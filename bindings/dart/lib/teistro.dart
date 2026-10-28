@@ -1785,6 +1785,111 @@ final class NumerologyArea extends _Area {
   );
 }
 
+/// `sdk.naming` — the naming of a child (nāmakaraṇa,
+/// `03-design/namakarana.md`): the syllables a pada, a star or a sign
+/// names a child by, names read into the śatapada cakra and checked
+/// against a birth, the names a birth gives, and the names a consumer's
+/// own book suggests. It reads no sky, and the SDK ships no names. Every
+/// refusal is named under `naming`.
+final class NamingArea extends _Area {
+  const NamingArea._(super.context);
+
+  Object? _ask(
+    String Function(String) call,
+    Map<String, Object?> request,
+    NamingRules rules,
+  ) => jsonDecode(call(jsonEncode(request..['rules'] = rules._wire)));
+
+  /// The syllables a pada, a star or a sign names a child by, in cakra
+  /// order, each with every initial that reaches it.
+  ///
+  /// ```dart
+  /// final makara = sdk.naming.syllables(const SyllablesOfRashi(rashi: Rashi.capricorn));
+  /// print(makara.length); // 13: nine padas and Abhijit's four
+  /// ```
+  List<PadaSyllable> syllables(
+    SyllablesOf of, [
+    NamingRules rules = const NamingRules(),
+  ]) => List.unmodifiable([
+    for (final one
+        in _ask(_context._inner.namingSyllables, {'of': of._wire}, rules)!
+            as List<Object?>)
+      PadaSyllable._of(one),
+  ]);
+
+  /// Names read into the cakra, each on its own; a name refused is its
+  /// row's [NameRead.refused], named `naming.names[i]`.
+  List<NameRead> read(
+    List<String> names, [
+    NamingRules rules = const NamingRules(),
+  ]) => List.unmodifiable([
+    for (final one
+        in _ask(_context._inner.namingRead, {'names': names}, rules)!
+            as List<Object?>)
+      NameRead._of(one),
+  ]);
+
+  /// Names checked against a birth's pada, each on its own: facts, not a
+  /// score.
+  List<NameChecked> check(
+    List<String> names,
+    Birth birth, [
+    NamingRules rules = const NamingRules(),
+  ]) => List.unmodifiable([
+    for (final one
+        in _ask(_context._inner.namingCheck, {
+              'names': names,
+              'birth': birth._wire,
+            }, rules)!
+            as List<Object?>)
+      NameChecked._of(one),
+  ]);
+
+  /// The names a birth gives: its pada's syllable and its star's deity.
+  ///
+  /// ```dart
+  /// sdk.naming.of(const Birth(nakshatra: Nakshatra.krittika, pada: 1)).deity; // Deity.agni
+  /// ```
+  Names of(Birth birth, [NamingRules rules = const NamingRules()]) {
+    final raw =
+        _ask(_context._inner.namingOf, {'birth': birth._wire}, rules)!
+            as Map<String, Object?>;
+    return Names(
+      syllable: PadaSyllable._of(raw['syllable']),
+      deity: _key(raw['deity'], Deity.byKey, Deity.unknown),
+    );
+  }
+
+  /// Loads a name book into this context, indexed by the cakra's cell, and
+  /// answers its id; the same book loaded again is the same book.
+  LoadedBook load(Book book) => LoadedBook._of(
+    jsonDecode(_context._inner.namingLoad(jsonEncode({'book': book._wire}))),
+  );
+
+  /// The names a book suggests for a birth: [book] is a loaded book's id
+  /// (a [String]) or a [Book] given whole for this one call.
+  Suggestions suggest(
+    Object book,
+    Birth birth, [
+    SuggestFilter filter = const SuggestFilter(),
+    NamingRules rules = const NamingRules(),
+  ]) {
+    final Map<String, Object?> request = switch (book) {
+      String id => {'bookId': id},
+      Book whole => {'book': whole._wire},
+      _ =>
+        throw ArgumentError.value(book, 'book', "a loaded book's id or a Book"),
+    };
+    return Suggestions._of(
+      _ask(_context._inner.namingSuggest, {
+        ...request,
+        'birth': birth._wire,
+        'filter': filter._wire,
+      }, rules),
+    );
+  }
+}
+
 /// `sdk.research` — counts and permutation tests over a batch of births
 /// (`03-design/research.md`). Every rule of the request is a predicate,
 /// read once on every chart, and the predicates are one family for the
@@ -2019,6 +2124,10 @@ final class Context {
 
   /// What a name and a birth date say under numerology's two systems.
   late final NumerologyArea numerology = NumerologyArea._(this);
+
+  /// The naming of a child: syllables, names read and checked, and a name
+  /// book.
+  late final NamingArea naming = NamingArea._(this);
 
   /// Counts and permutation tests over a batch of births.
   late final ResearchArea research = ResearchArea._(this);
@@ -10414,6 +10523,549 @@ final class NumerologyProfile extends _Value {
     chaldeanBirth,
     baseline,
   ];
+}
+
+/// How an initial reaches a pada's cell (C294, C770).
+enum InitialBy implements _Keyed {
+  /// The cell's own letter.
+  cell('CELL'),
+
+  /// A letter paired with it: ब for व, श for स (C294).
+  paired('PAIRED'),
+
+  /// The patro's substitute for a nasal no name begins with (C770).
+  substitute('SUBSTITUTE');
+
+  const InitialBy(this.key);
+
+  @override
+  final String key;
+}
+
+/// Whose text a clause of a name in daily use is reported from (C774).
+enum ClauseSource implements _Keyed {
+  /// Pāraskara's gṛhyasūtra.
+  paraskara('PARASKARA'),
+
+  /// Āśvalāyana's gṛhyasūtra.
+  ashvalayana('ASHVALAYANA'),
+
+  /// Āpastamba and Hiraṇyakeśin, as *Dharmasindhu* reports them.
+  apastambaHiranyakeshin('APASTAMBA_HIRANYAKESHIN');
+
+  const ClauseSource(this.key);
+
+  @override
+  final String key;
+}
+
+/// The member of [values] whose key [raw] is.
+T _keyed<T extends _Keyed>(List<T> values, Object? raw) =>
+    values.firstWhere((one) => one.key == raw);
+
+/// The varga a name's letter is in: the catalogue has no unknown member,
+/// and the SDK writes no varga outside it.
+NameVarga _varga(Object? raw) => NameVarga.byKey(raw! as String)!;
+
+/// A letter a name may begin with to take a pada's syllable.
+final class NameInitial extends _Value {
+  const NameInitial({
+    required this.devanagari,
+    required this.iast,
+    required this.by,
+  });
+
+  /// The letter, as Devanagari.
+  final String devanagari;
+
+  /// Its IAST.
+  final String iast;
+
+  /// How it reaches the cell.
+  final InitialBy by;
+
+  @override
+  List<Object?> get _fields => [devanagari, iast, by];
+}
+
+/// One cell of the śatapada cakra as a name may begin with it (C297, C770,
+/// C771).
+final class PadaSyllable extends _Value {
+  const PadaSyllable({
+    required this.cell,
+    required this.nakshatra,
+    required this.pada,
+    required this.rashi,
+    required this.devanagari,
+    required this.iast,
+    required this.varga,
+    required this.initials,
+  });
+
+  /// Its place among the cakra's 112 cells, 0 for a, Krittika's first.
+  final int cell;
+
+  /// Its star, or null for Abhijit's row.
+  final Nakshatra? nakshatra;
+
+  /// Its pada, 1 to 4, or null for Abhijit's, which is no pada (C298).
+  final int? pada;
+
+  /// The sign it stands in; Makara for Abhijit's (C771).
+  final Rashi rashi;
+
+  /// The print's spelling (C299).
+  final String devanagari;
+
+  /// Its IAST.
+  final String iast;
+
+  /// The varga of its letter (C295).
+  final NameVarga varga;
+
+  /// Every letter that reaches the cell, its own first.
+  final List<NameInitial> initials;
+
+  static PadaSyllable _of(Object? json) {
+    final raw = json! as Map<String, Object?>;
+    final star = raw['nakshatra'];
+    return PadaSyllable(
+      cell: raw['cell']! as int,
+      nakshatra:
+          star == null ? null : _key(star, Nakshatra.byKey, Nakshatra.unknown),
+      pada: raw['pada'] as int?,
+      rashi: _key(raw['rashi'], Rashi.byKey, Rashi.unknown),
+      devanagari: raw['devanagari']! as String,
+      iast: raw['iast']! as String,
+      varga: _varga(raw['varga']),
+      initials: List.unmodifiable([
+        for (final one
+            in (raw['initials']! as List<Object?>).cast<Map<String, Object?>>())
+          NameInitial(
+            devanagari: one['devanagari']! as String,
+            iast: one['iast']! as String,
+            by: _keyed(InitialBy.values, one['by']),
+          ),
+      ]),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [
+    cell,
+    nakshatra,
+    pada,
+    rashi,
+    devanagari,
+    iast,
+    varga,
+    initials,
+  ];
+}
+
+NameSyllable _nameSyllable(Object? json) {
+  final raw = json! as Map<String, Object?>;
+  final star = raw['nakshatra'];
+  return NameSyllable(
+    cell: raw['cell']! as int,
+    nakshatra:
+        star == null ? null : _key(star, Nakshatra.byKey, Nakshatra.unknown),
+    quarter: raw['quarter']! as int,
+    varga: _varga(raw['varga']),
+  );
+}
+
+/// One clause of a name in daily use, as one sutra gives it (C774).
+final class NameClauseRow extends _Value {
+  const NameClauseRow({
+    required this.clause,
+    required this.holds,
+    required this.source,
+  });
+
+  /// The clause.
+  final NameClause clause;
+
+  /// Whether the name meets it.
+  final bool holds;
+
+  /// Whose text gives it.
+  final ClauseSource source;
+
+  @override
+  List<Object?> get _fields => [clause, holds, source];
+}
+
+/// A name's syllables and the clauses of a name in daily use (C774).
+final class NameClauses extends _Value {
+  const NameClauses({
+    required this.syllables,
+    required this.counted,
+    required this.rows,
+  });
+
+  /// Its syllables, counted by their vowels.
+  final int syllables;
+
+  /// How the final inherent a was counted.
+  final FinalA counted;
+
+  /// The rows of the rules' sutra.
+  final List<NameClauseRow> rows;
+
+  static NameClauses _of(Object? json) {
+    final raw = json! as Map<String, Object?>;
+    return NameClauses(
+      syllables: raw['syllables']! as int,
+      counted: _keyed(FinalA.values, raw['counted']),
+      rows: List.unmodifiable([
+        for (final one
+            in (raw['rows']! as List<Object?>).cast<Map<String, Object?>>())
+          NameClauseRow(
+            clause: _keyed(NameClause.values, one['clause']),
+            holds: one['holds']! as bool,
+            source: _keyed(ClauseSource.values, one['source']),
+          ),
+      ]),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [syllables, counted, rows];
+}
+
+/// One cell a name's spelling reaches.
+final class SpelledName extends _Value {
+  const SpelledName({
+    required this.spelled,
+    required this.syllable,
+    required this.rashi,
+    required this.clauses,
+  });
+
+  /// The Devanagari it was read as.
+  final String spelled;
+
+  /// Its first syllable in the cakra.
+  final NameSyllable syllable;
+
+  /// The sign that syllable's pada stands in.
+  final Rashi rashi;
+
+  /// Its syllables and clauses.
+  final NameClauses clauses;
+
+  static SpelledName _of(Object? json) {
+    final raw = json! as Map<String, Object?>;
+    return SpelledName(
+      spelled: raw['spelled']! as String,
+      syllable: _nameSyllable(raw['syllable']),
+      rashi: _key(raw['rashi'], Rashi.byKey, Rashi.unknown),
+      clauses: NameClauses._of(raw['clauses']),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [spelled, syllable, rashi, clauses];
+}
+
+/// A name read: one entry per first syllable its spelling reaches.
+final class NameReading extends _Value {
+  const NameReading({required this.readings, required this.ambiguous});
+
+  /// Each distinct first syllable, in cakra order.
+  final List<SpelledName> readings;
+
+  /// Whether there is more than one.
+  final bool ambiguous;
+
+  @override
+  List<Object?> get _fields => [readings, ambiguous];
+}
+
+/// Why a name of a batch, or of a book, was refused: the SDK's error as a
+/// record.
+final class NameRefusal extends _Value {
+  const NameRefusal({
+    required this.status,
+    required this.detail,
+    required this.message,
+    required this.field,
+    required this.hint,
+  });
+
+  /// Its status's key, such as `INVALID_ARG`.
+  final String status;
+
+  /// Its detail's key, when it has one.
+  final String? detail;
+
+  /// What was refused.
+  final String message;
+
+  /// The field it names: `naming.names[2]`, `book.names[4].devanagari`.
+  final String? field;
+
+  /// What to do instead, when the SDK says.
+  final String? hint;
+
+  static NameRefusal? _of(Object? json) {
+    if (json == null) return null;
+    final raw = json as Map<String, Object?>;
+    return NameRefusal(
+      status: raw['status']! as String,
+      detail: raw['detail'] as String?,
+      message: raw['message']! as String,
+      field: raw['field'] as String?,
+      hint: raw['hint'] as String?,
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [status, detail, message, field, hint];
+}
+
+/// One name of a batch read: its reading, or its refusal.
+final class NameRead extends _Value {
+  const NameRead({required this.reading, required this.refused});
+
+  /// The name read; null when it was refused.
+  final NameReading? reading;
+
+  /// The refusal, named `naming.names[i]`; null when it was read.
+  final NameRefusal? refused;
+
+  static NameRead _of(Object? json) {
+    final raw = json! as Map<String, Object?>;
+    final reading = raw['reading'] as Map<String, Object?>?;
+    return NameRead(
+      reading:
+          reading == null
+              ? null
+              : NameReading(
+                readings: List.unmodifiable([
+                  for (final one in reading['readings']! as List<Object?>)
+                    SpelledName._of(one),
+                ]),
+                ambiguous: reading['ambiguous']! as bool,
+              ),
+      refused: NameRefusal._of(raw['refused']),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [reading, refused];
+}
+
+/// A name read against a birth's pada: facts, not a score (C334, C770).
+final class NameCheck extends _Value {
+  const NameCheck({
+    required this.read,
+    required this.prescribed,
+    required this.sameStar,
+    required this.samePada,
+    required this.bySubstitute,
+    required this.clauses,
+  });
+
+  /// The name's first syllable.
+  final NameSyllable read;
+
+  /// The birth pada's syllable, with every initial that reaches it.
+  final PadaSyllable prescribed;
+
+  /// Whether the name begins in the birth star's row.
+  final bool sameStar;
+
+  /// Whether it begins in the birth pada's own cell.
+  final bool samePada;
+
+  /// Whether it begins with the pada's substitute (C770).
+  final bool bySubstitute;
+
+  /// Its syllables and clauses.
+  final NameClauses clauses;
+
+  @override
+  List<Object?> get _fields => [
+    read,
+    prescribed,
+    sameStar,
+    samePada,
+    bySubstitute,
+    clauses,
+  ];
+}
+
+/// One name of a batch checked: its check, or its refusal.
+final class NameChecked extends _Value {
+  const NameChecked({required this.check, required this.refused});
+
+  /// The name checked; null when it was refused.
+  final NameCheck? check;
+
+  /// The refusal, named `naming.names[i]`; null when it was checked.
+  final NameRefusal? refused;
+
+  static NameChecked _of(Object? json) {
+    final raw = json! as Map<String, Object?>;
+    final check = raw['check'] as Map<String, Object?>?;
+    return NameChecked(
+      check:
+          check == null
+              ? null
+              : NameCheck(
+                read: _nameSyllable(check['read']),
+                prescribed: PadaSyllable._of(check['prescribed']),
+                sameStar: check['sameStar']! as bool,
+                samePada: check['samePada']! as bool,
+                bySubstitute: check['bySubstitute']! as bool,
+                clauses: NameClauses._of(check['clauses']),
+              ),
+      refused: NameRefusal._of(raw['refused']),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [check, refused];
+}
+
+/// The names a birth gives, of *Dharmasindhu*'s four that the SDK
+/// computes (C773).
+final class Names extends _Value {
+  const Names({required this.syllable, required this.deity});
+
+  /// The pada's syllable: the default, the avakahada reading.
+  final PadaSyllable syllable;
+
+  /// The star's deity, whose name the Śāṅkhāyanas give.
+  final Deity deity;
+
+  @override
+  List<Object?> get _fields => [syllable, deity];
+}
+
+/// A name a book holds that the cakra refused.
+final class RefusedName extends _Value {
+  const RefusedName({required this.index, required this.error});
+
+  /// Its place in the book.
+  final int index;
+
+  /// Why, named `book.names[index].devanagari`.
+  final NameRefusal error;
+
+  static List<RefusedName> _all(Object? json) => List.unmodifiable([
+    for (final one in (json! as List<Object?>).cast<Map<String, Object?>>())
+      RefusedName(
+        index: one['index']! as int,
+        error: NameRefusal._of(one['error'])!,
+      ),
+  ]);
+
+  @override
+  List<Object?> get _fields => [index, error];
+}
+
+/// A name book loaded into a context.
+final class LoadedBook extends _Value {
+  const LoadedBook({
+    required this.book,
+    required this.names,
+    required this.refused,
+  });
+
+  /// Its id, the SHA-256 of its canonical JSON, which a suggestion names
+  /// it by.
+  final String book;
+
+  /// How many names it holds.
+  final int names;
+
+  /// Every name it holds that the cakra refused, in the book's order.
+  final List<RefusedName> refused;
+
+  static LoadedBook _of(Object? json) {
+    final raw = json! as Map<String, Object?>;
+    return LoadedBook(
+      book: raw['book']! as String,
+      names: raw['names']! as int,
+      refused: RefusedName._all(raw['refused']),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [book, names, refused];
+}
+
+/// A name a book suggests for a birth.
+final class Suggested extends _Value {
+  const Suggested({
+    required this.index,
+    required this.reading,
+    required this.by,
+    required this.samePada,
+  });
+
+  /// Its place in the book.
+  final int index;
+
+  /// The name read, with its clauses under the request's rules.
+  final SpelledName reading;
+
+  /// How it reaches the birth pada.
+  final InitialBy by;
+
+  /// Whether it begins in the pada's own cell.
+  final bool samePada;
+
+  @override
+  List<Object?> get _fields => [index, reading, by, samePada];
+}
+
+/// The names a book suggests for a birth.
+final class Suggestions extends _Value {
+  const Suggestions({
+    required this.book,
+    required this.prescribed,
+    required this.names,
+    required this.refused,
+  });
+
+  /// The book asked.
+  final String book;
+
+  /// The birth pada's syllable, with its initials.
+  final PadaSyllable prescribed;
+
+  /// The names, in cakra order and then the book's.
+  final List<Suggested> names;
+
+  /// Every name the book holds that the cakra refused, listed, never
+  /// dropped.
+  final List<RefusedName> refused;
+
+  static Suggestions _of(Object? json) {
+    final raw = json! as Map<String, Object?>;
+    return Suggestions(
+      book: raw['book']! as String,
+      prescribed: PadaSyllable._of(raw['prescribed']),
+      names: List.unmodifiable([
+        for (final one
+            in (raw['names']! as List<Object?>).cast<Map<String, Object?>>())
+          Suggested(
+            index: one['index']! as int,
+            reading: SpelledName._of(one['reading']),
+            by: _keyed(InitialBy.values, one['by']),
+            samePada: one['samePada']! as bool,
+          ),
+      ]),
+      refused: RefusedName._all(raw['refused']),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [book, prescribed, names, refused];
 }
 
 /// A name's first syllable in the śatapada cakra (*Svarodaya* vv. 3–8).

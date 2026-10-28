@@ -1,0 +1,73 @@
+---
+title: ts_naming_check
+description: "Names checked against a birth's pada, each on its own: where each begins, the pada's own syllable with its initials, whether the two share a star or a pada, whether the name took the pada's substitute, and its clauses (C334, C770, C774)."
+---
+
+Names checked against a birth's pada, each on its own: where each begins, the pada's own syllable with its initials, whether the two share a star or a pada, whether the name took the pada's substitute, and its clauses (C334, C770, C774). Facts, not a score.
+
+`request_json` is `{"names", "birth", "rules"}`: the names, the birth as `{"nakshatra", "pada"}`, and the `NamingRules` with every field optional. The answer is a list with one entry a name, each `{"check", "refused"}` with one of the two null; a name refused alone is named `naming.names[i]`. A pada outside 1 to 4 refuses the call, named `naming.birth.pada`.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.naming.check
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.naming.check
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.naming.check
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.naming().check
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.naming().check
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_naming_check(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `naming.check` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/naming.rs`.

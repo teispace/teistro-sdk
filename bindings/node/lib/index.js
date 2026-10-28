@@ -6962,6 +6962,174 @@ export class NumerologyArea extends Area {
   }
 }
 
+/** A pada's syllable with its members as full keys. */
+function padaSyllableFrom(syllable) {
+  return {
+    ...syllable,
+    nakshatra: syllable.nakshatra === null ? null : `nakshatra.${syllable.nakshatra}`,
+    rashi: `rashi.${syllable.rashi}`,
+  };
+}
+
+/** A name's first syllable with its star as a full key. */
+function nameSyllableFrom(syllable) {
+  return { ...syllable, nakshatra: syllable.nakshatra === null ? null : `nakshatra.${syllable.nakshatra}` };
+}
+
+/** One cell a name's spelling reaches, its members as full keys. */
+function spelledFrom(reading) {
+  return { ...reading, syllable: nameSyllableFrom(reading.syllable), rashi: `rashi.${reading.rashi}` };
+}
+
+/** A name check, its members as full keys. */
+function nameCheckFrom(check) {
+  return { ...check, read: nameSyllableFrom(check.read), prescribed: padaSyllableFrom(check.prescribed) };
+}
+
+/** A record a naming call takes, or the `TypeError` naming the argument. */
+function namingRecord(value, name, example, optional = true) {
+  if (optional && (value === undefined || value === null)) return undefined;
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+    throw new TypeError(`${name}: expected a record, e.g. ${example}`);
+  }
+  return value;
+}
+
+/** A list of names, or the `TypeError` naming it. */
+function namingNames(names) {
+  if (!Array.isArray(names)) {
+    throw new TypeError("names: expected a list of names, e.g. ['राम']");
+  }
+  return names;
+}
+
+/**
+ * `sdk.naming` — the naming of a child (nāmakaraṇa,
+ * `03-design/namakarana.md`): the syllables a pada, a star or a sign names
+ * a child by, names read into the śatapada cakra and checked against a
+ * birth, the names a birth gives, and the names a consumer's own book
+ * suggests. It reads no sky, and the SDK ships no names.
+ *
+ * Every refusal is named under `naming`: `naming.birth.pada`,
+ * `naming.book.names[0].sex`, `naming.rules.sutra`. A name of a batch the
+ * cakra does not read is that name's refusal alone, carried in its row.
+ */
+export class NamingArea extends Area {
+  /**
+   * The syllables a pada, a star or a sign names a child by, in cakra
+   * order, each with every initial that reaches it.
+   *
+   * @param {object} of `{ of: 'PADA', nakshatra, pada }`, `{ of: 'NAKSHATRA', nakshatra }` or `{ of: 'RASHI', rashi }`
+   * @param {object} [rules] the naming rules, each optional
+   * @returns {object[]}
+   */
+  syllables(of, rules) {
+    const request = { of: namingRecord(of, 'of', "{ of: 'PADA', nakshatra: 'ASHWINI', pada: 1 }", false) };
+    const asked = namingRecord(rules, 'rules', "{ sutra: 'ASHVALAYANA' }");
+    if (asked !== undefined) request.rules = asked;
+    const read = JSON.parse(run(this, (inner) => inner.namingSyllables(JSON.stringify(request))));
+    return deepFreeze(read.map(padaSyllableFrom));
+  }
+
+  /**
+   * Names read into the cakra, each on its own: every first syllable its
+   * spelling reaches, with its sign and clauses, or its refusal.
+   *
+   * @param {string[]} names in Devanagari, or in the Latin scheme `rules.name.latin` declares
+   * @param {object} [rules] the naming rules, each optional
+   * @returns {object[]}
+   */
+  read(names, rules) {
+    const request = { names: namingNames(names) };
+    const asked = namingRecord(rules, 'rules', "{ name: { latin: 'CASUAL' } }");
+    if (asked !== undefined) request.rules = asked;
+    const read = JSON.parse(run(this, (inner) => inner.namingRead(JSON.stringify(request))));
+    return deepFreeze(
+      read.map(({ reading, refused }) => ({
+        reading: reading === null ? null : { ...reading, readings: reading.readings.map(spelledFrom) },
+        refused,
+      })),
+    );
+  }
+
+  /**
+   * Names checked against a birth's pada, each on its own: facts, not a
+   * score.
+   *
+   * @param {string[]} names the names
+   * @param {object} birth `{ nakshatra, pada }`
+   * @param {object} [rules] the naming rules, each optional
+   * @returns {object[]}
+   */
+  check(names, birth, rules) {
+    const request = {
+      names: namingNames(names),
+      birth: namingRecord(birth, 'birth', "{ nakshatra: 'ASHWINI', pada: 1 }", false),
+    };
+    const asked = namingRecord(rules, 'rules', "{ finalA: 'SILENT' }");
+    if (asked !== undefined) request.rules = asked;
+    const checked = JSON.parse(run(this, (inner) => inner.namingCheck(JSON.stringify(request))));
+    return deepFreeze(
+      checked.map(({ check, refused }) => ({ check: check === null ? null : nameCheckFrom(check), refused })),
+    );
+  }
+
+  /**
+   * The names a birth gives: its pada's syllable and its star's deity.
+   *
+   * @param {object} birth `{ nakshatra, pada }`
+   * @param {object} [rules] the naming rules, each optional
+   * @returns {object}
+   */
+  of(birth, rules) {
+    const request = { birth: namingRecord(birth, 'birth', "{ nakshatra: 'KRITTIKA', pada: 1 }", false) };
+    const asked = namingRecord(rules, 'rules', "{ nasal: 'NONE' }");
+    if (asked !== undefined) request.rules = asked;
+    const names = JSON.parse(run(this, (inner) => inner.namingOf(JSON.stringify(request))));
+    return deepFreeze({ syllable: padaSyllableFrom(names.syllable), deity: `deity.${names.deity}` });
+  }
+
+  /**
+   * Loads a name book into this context, indexed by the cakra's cell, and
+   * answers its id; the same book loaded again is the same book.
+   *
+   * @param {object} book `{ names: [{ devanagari, latin?, sex?, tags? }] }`
+   * @returns {object}
+   */
+  load(book) {
+    const request = { book: namingRecord(book, 'book', "{ names: [{ devanagari: 'राम' }] }", false) };
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.namingLoad(JSON.stringify(request)))));
+  }
+
+  /**
+   * The names a book suggests for a birth: the loaded book `book` names by
+   * its id, or a book given whole for this one call.
+   *
+   * @param {string|object} book a loaded book's id, or a book
+   * @param {object} birth `{ nakshatra, pada }`
+   * @param {object} [filter] `{ sex, syllables, clauses }`, each optional
+   * @param {object} [rules] the naming rules, each optional
+   * @returns {object}
+   */
+  suggest(book, birth, filter, rules) {
+    const request =
+      typeof book === 'string'
+        ? { bookId: book }
+        : { book: namingRecord(book, 'book', "a loaded book's id, or { names: [{ devanagari: 'राम' }] }", false) };
+    request.birth = namingRecord(birth, 'birth', "{ nakshatra: 'ASHWINI', pada: 1 }", false);
+    const kept = namingRecord(filter, 'filter', "{ sex: 'FEMALE' }");
+    if (kept !== undefined) request.filter = kept;
+    const asked = namingRecord(rules, 'rules', "{ sutra: 'ASHVALAYANA' }");
+    if (asked !== undefined) request.rules = asked;
+    const found = JSON.parse(run(this, (inner) => inner.namingSuggest(JSON.stringify(request))));
+    return deepFreeze({
+      ...found,
+      prescribed: padaSyllableFrom(found.prescribed),
+      names: found.names.map((name) => ({ ...name, reading: spelledFrom(name.reading) })),
+    });
+  }
+}
+
 /**
  * `sdk.research` — counts and permutation tests over a batch of births
  * (`03-design/research.md`). Every rule of the request is a predicate,
@@ -7847,6 +8015,8 @@ export class Context {
     this.matching = new MatchingArea(reach);
     /** What a name and a birth date say under numerology's two systems. */
     this.numerology = new NumerologyArea(reach);
+    /** The naming of a child: syllables, names read and checked, and a name book. */
+    this.naming = new NamingArea(reach);
     /** Counts and permutation tests over a batch of births. */
     this.research = new ResearchArea(reach);
     this.#engine = new Engine(reach);

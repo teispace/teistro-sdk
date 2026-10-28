@@ -9185,6 +9185,105 @@ fn a_name_and_a_date_cross_as_the_kernel_reads_them() {
     }
 }
 
+/// The naming of a child crosses as the façade answers it: each entry's
+/// JSON is the façade's own, a book loaded through the boundary is the
+/// context's for a later suggestion, and every refusal is named under
+/// `naming` (`03-design/namakarana.md` §10).
+#[test]
+fn a_child_is_named_across_the_boundary() {
+    use teistro_ffi::naming::{
+        ts_naming_check, ts_naming_load, ts_naming_of, ts_naming_read, ts_naming_suggest,
+        ts_naming_syllables,
+    };
+    let ctx = Ctx::defaults();
+    let facade = teistro::Context::builder().build().unwrap();
+    let syllables = r#"{"of": {"of": "RASHI", "rashi": "CAPRICORN"}}"#;
+    assert_eq!(
+        entry_json(ts_naming_syllables, &ctx, syllables).unwrap(),
+        teistro_core::envelope::canonical_json(
+            &teistro::NamingSyllablesRequest::from_json(syllables)
+                .and_then(|asked| asked.answer(&facade))
+                .unwrap()
+        )
+    );
+    let read = r#"{"names": ["राम", "ऐश्वर्य"]}"#;
+    assert_eq!(
+        entry_json(ts_naming_read, &ctx, read).unwrap(),
+        teistro_core::envelope::canonical_json(
+            &teistro::NamingReadRequest::from_json(read)
+                .unwrap()
+                .answer(&facade)
+        )
+    );
+    let check = r#"{"names": ["चूडामणि"], "birth": {"nakshatra": "ASHWINI", "pada": 1}}"#;
+    assert_eq!(
+        entry_json(ts_naming_check, &ctx, check).unwrap(),
+        teistro_core::envelope::canonical_json(
+            &teistro::NamingCheckRequest::from_json(check)
+                .and_then(|asked| asked.answer(&facade))
+                .unwrap()
+        )
+    );
+    let of = r#"{"birth": {"nakshatra": "KRITTIKA", "pada": 1}}"#;
+    assert_eq!(
+        entry_json(ts_naming_of, &ctx, of).unwrap(),
+        teistro_core::envelope::canonical_json(
+            &teistro::NamingOfRequest::from_json(of)
+                .and_then(|asked| asked.answer(&facade))
+                .unwrap()
+        )
+    );
+
+    let book =
+        r#"{"book": {"names": [{"devanagari": "गणेश"}, {"devanagari": "गीता", "sex": "FEMALE"}]}}"#;
+    let loaded: serde_json::Value =
+        serde_json::from_str(&entry_json(ts_naming_load, &ctx, book).unwrap()).unwrap();
+    assert_eq!(loaded["names"], 2);
+    let id = loaded["book"].as_str().unwrap();
+    let asked = format!(r#"{{"bookId": "{id}", "birth": {{"nakshatra": "ARDRA", "pada": 3}}}}"#);
+    let found: serde_json::Value =
+        serde_json::from_str(&entry_json(ts_naming_suggest, &ctx, &asked).unwrap()).unwrap();
+    assert_eq!(found["book"], id);
+    assert_eq!(found["names"].as_array().map(Vec::len), Some(2));
+
+    let refusals: [(JsonEntry, &str, &str); 6] = [
+        (
+            ts_naming_syllables,
+            r#"{"of": {"of": "PADA", "nakshatra": "ASHWINI", "pada": 9}}"#,
+            "naming.of.pada",
+        ),
+        (ts_naming_read, r#"{"names": "राम"}"#, "naming.names"),
+        (
+            ts_naming_check,
+            r#"{"names": [], "birth": {"nakshatra": "ASHWINI", "pada": 0}}"#,
+            "naming.birth.pada",
+        ),
+        (
+            ts_naming_of,
+            r#"{"birth": {"nakshatra": "ASHWINI", "pada": 1}, "colour": 1}"#,
+            "naming.colour",
+        ),
+        (
+            ts_naming_load,
+            r#"{"book": {"names": [{"devanagari": "Ram"}]}}"#,
+            "naming.book.names[0].devanagari",
+        ),
+        (
+            ts_naming_suggest,
+            r#"{"bookId": "x", "birth": {"nakshatra": "ASHWINI", "pada": 1}}"#,
+            "naming.bookId",
+        ),
+    ];
+    for (entry, request, field) in refusals {
+        assert_eq!(
+            entry_json(entry, &ctx, request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}
+
 /// Prashna crosses: a request's `prashna_json` answers every chart as the
 /// chart of its question's moment, canonical JSON in the `prashna`
 /// section, the façade's own reading over the Shadbala the request asks

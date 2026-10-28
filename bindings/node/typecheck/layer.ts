@@ -64,6 +64,22 @@ import type {
   WesternHouses,
   AshtaKoota,
   NaamMilan,
+  NameChecked,
+  NameClauseRow,
+  NameInitial,
+  NameRead,
+  NameRefusal,
+  Names,
+  LoadedBook,
+  PadaSyllable,
+  SpelledName,
+  Suggested,
+  Suggestions,
+  Birth,
+  Book,
+  NamingRules,
+  SuggestFilter,
+  SyllablesOf,
   Avakahada,
   BirthEclipse,
   BirthSyllable,
@@ -2101,6 +2117,40 @@ function theNaam(ctx: Context): string {
 }
 
 void theNaam;
+
+// A child named by the cakra, read all the way down to a clause's source.
+function theNaming(ctx: Context): string {
+  const rules: NamingRules = { name: { latin: 'CASUAL' }, sutra: 'ASHVALAYANA', finalA: 'SILENT' };
+  // @ts-expect-error a sutra is one of the two the clauses are read from
+  const missutra: NamingRules = { sutra: 'GOBHILA' };
+  const of: SyllablesOf = { of: 'PADA', nakshatra: 'ASHWINI', pada: 1 };
+  const syllables: readonly PadaSyllable[] = ctx.naming.syllables(of, rules);
+  const initial: NameInitial | undefined = syllables[0]?.initials[0];
+  const read: readonly NameRead[] = ctx.naming.read(['राम'], rules);
+  const spelled: SpelledName | undefined = read[0]?.reading?.readings[0];
+  const row: NameClauseRow | undefined = spelled?.clauses.rows[0];
+  const birth: Birth = { nakshatra: 'ASHWINI', pada: 1 };
+  const checked: readonly NameChecked[] = ctx.naming.check(['चूडामणि'], birth);
+  const names: Names = ctx.naming.of(birth);
+  const book: Book = { names: [{ devanagari: 'चूडामणि', sex: 'MALE', tags: { 'meaning.en': 'crest jewel' } }] };
+  const loaded: LoadedBook = ctx.naming.load(book);
+  const filter: SuggestFilter = { sex: 'FEMALE', syllables: [3], clauses: ['ODD_FOR_A_GIRL'] };
+  const found: Suggestions = ctx.naming.suggest(loaded.book, birth, filter, rules);
+  const inline: Suggestions = ctx.naming.suggest(book, birth);
+  const first: Suggested | undefined = found.names[0];
+  const refusal: NameRefusal | undefined = read[0]?.refused ?? loaded.refused[0]?.error;
+  return [
+    `${initial?.devanagari ?? ''} ${initial?.by ?? ''}`,
+    `${row?.clause ?? ''} ${row?.holds ?? ''} ${row?.source ?? ''}`,
+    checked[0]?.check?.samePada ?? '',
+    `${names.deity} ${names.syllable.rashi}`,
+    `${first?.index ?? ''} ${first?.by ?? ''} ${inline.book}`,
+    refusal?.field ?? '',
+    String(missutra),
+  ].join();
+}
+
+void theNaming;
 
 // A name and a date read under numerology, all the way down to a letter.
 function theNumerology(ctx: Context): string {

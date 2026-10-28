@@ -180,11 +180,29 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
             Status::Ok
         );
     });
-    let entries: [JsonEntry; 4] = [
+    holds_nothing("a book loaded and suggested from", || {
+        let book = r#"{"book": {"names": [{"devanagari": "गणेश"}]}}"#;
+        assert_eq!(
+            json(&ctx, teistro_ffi::naming::ts_naming_load, book),
+            Status::Ok
+        );
+        let asked = r#"{"book": {"names": [{"devanagari": "गणेश"}]}, "birth": {"nakshatra": "ARDRA", "pada": 3}}"#;
+        assert_eq!(
+            json(&ctx, teistro_ffi::naming::ts_naming_suggest, asked),
+            Status::Ok
+        );
+    });
+    let entries: [JsonEntry; 10] = [
         teistro_ffi::numerology::ts_numerology_profile,
         teistro_ffi::pakshi::ts_pakshi,
         teistro_ffi::rashifal::ts_rashifal,
         teistro_ffi::research::ts_research,
+        teistro_ffi::naming::ts_naming_syllables,
+        teistro_ffi::naming::ts_naming_read,
+        teistro_ffi::naming::ts_naming_check,
+        teistro_ffi::naming::ts_naming_of,
+        teistro_ffi::naming::ts_naming_load,
+        teistro_ffi::naming::ts_naming_suggest,
     ];
     holds_nothing("refused JSON requests and their records", || {
         for entry in entries {

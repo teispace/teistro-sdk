@@ -403,11 +403,72 @@ pub fn records() -> Vec<Record> {
             schemas: schemas!(crate::research_request::RequestAsked => crate::research_request::Studied),
         },
     ];
+    #[cfg(feature = "chart")]
+    all.extend(naming_records());
     all.extend(almanac_records());
     all.extend(time_records());
     all.extend(engine_records());
     all.sort_by_key(|record| record.name);
     all
+}
+
+/// The naming of a child's records: the five `NamingArea` operations a
+/// request answers whole. `load` is none, since what it answers is the
+/// context it changes (`03-design/namakarana.md` §10).
+#[cfg(feature = "chart")]
+fn naming_records() -> [Record; 5] {
+    [
+        Record {
+            name: "naming.syllables",
+            boundary: "ts_naming_syllables",
+            title: "The syllables a pada, a star or a sign names a child by",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(&crate::NamingSyllablesRequest::from_json(json)?.answer(context)?)
+            },
+            schemas: schemas!(crate::NamingSyllablesRequest => Vec<teistro_matching::PadaSyllable>),
+        },
+        Record {
+            name: "naming.read",
+            boundary: "ts_naming_read",
+            title: "Names read into the cakra, each with its clauses",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(&crate::NamingReadRequest::from_json(json)?.answer(context))
+            },
+            schemas: schemas!(crate::NamingReadRequest => Vec<crate::NameRead>),
+        },
+        Record {
+            name: "naming.check",
+            boundary: "ts_naming_check",
+            title: "Names checked against a birth's pada",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(&crate::NamingCheckRequest::from_json(json)?.answer(context)?)
+            },
+            schemas: schemas!(crate::NamingCheckRequest => Vec<crate::NameChecked>),
+        },
+        Record {
+            name: "naming.of",
+            boundary: "ts_naming_of",
+            title: "The names a birth gives",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(&crate::NamingOfRequest::from_json(json)?.answer(context)?)
+            },
+            schemas: schemas!(crate::NamingOfRequest => teistro_matching::Names),
+        },
+        Record {
+            name: "naming.suggest",
+            boundary: "ts_naming_suggest",
+            title: "The names a book suggests for a birth",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(&crate::NamingSuggestRequest::from_json(json)?.answer(context)?)
+            },
+            schemas: schemas!(crate::NamingSuggestRequest => teistro_matching::Suggestions),
+        },
+    ]
 }
 
 /// The almanac's records every build carries: a range's days with what is

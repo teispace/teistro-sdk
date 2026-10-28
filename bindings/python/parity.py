@@ -732,6 +732,76 @@ def put_porutham(prefix: str, ten: Porutham) -> None:
         )
 
 
+def put_naming(ctx: Context) -> None:
+    """A child named by the cakra, as every runner asks it: Makara's
+    syllables, three names read under CASUAL and checked against Ardra's
+    third pada, a Krittika birth's names, and a book loaded and suggested
+    from, with one refusal."""
+
+    def star(member: Any) -> str:
+        return "NONE" if member is None else str(member.full_key)
+
+    def rows(clauses: Any) -> str:
+        return ",".join(f"{row.clause}:{int(row.holds)}:{row.source}" for row in clauses.rows)
+
+    for i, one in enumerate(ctx.naming.syllables({"of": "RASHI", "rashi": "CAPRICORN"})):
+        initials = ",".join(f"{initial.devanagari}:{initial.by}" for initial in one.initials)
+        pada = "NONE" if one.pada is None else str(one.pada)
+        put(
+            f"naming-syllables-{i}",
+            f"{one.cell} {star(one.nakshatra)} {pada} {one.rashi.full_key} {one.devanagari} {one.iast} {one.varga.key} {initials}",
+        )
+    for i, read in enumerate(ctx.naming.read(["राम", "Shiva", "ऐश्वर्य"], {"name": {"latin": "CASUAL"}})):
+        if read.refused is not None:
+            put(f"naming-read-{i}", f"refused {read.refused.field}")
+            continue
+        assert read.reading is not None
+        put(f"naming-read-{i}", f"{int(read.reading.ambiguous)} {len(read.reading.readings)}")
+        for j, reading in enumerate(read.reading.readings):
+            s = reading.syllable
+            put(
+                f"naming-read-{i}-{j}",
+                f"{reading.spelled} {s.cell} {star(s.nakshatra)} {s.quarter} {s.varga.key} {reading.rashi.full_key} "
+                f"{reading.clauses.syllables} {reading.clauses.counted} {rows(reading.clauses)}",
+            )
+    for i, checked in enumerate(ctx.naming.check(["चूडामणि", "गणेश", "ऐश्वर्य"], {"nakshatra": "ARDRA", "pada": 3})):
+        c = checked.check
+        if c is None:
+            assert checked.refused is not None
+            put(f"naming-check-{i}", f"refused {checked.refused.field}")
+        else:
+            put(
+                f"naming-check-{i}",
+                f"{c.read.cell} {c.prescribed.cell} {int(c.same_star)} {int(c.same_pada)} {int(c.by_substitute)} {c.clauses.syllables}",
+            )
+    names = ctx.naming.of({"nakshatra": "KRITTIKA", "pada": 1})
+    put("naming-of", f"{names.syllable.cell} {names.syllable.devanagari} {names.deity.full_key}")
+    loaded = ctx.naming.load(
+        {
+            "names": [
+                {"devanagari": "गणेश", "sex": "MALE"},
+                {"devanagari": "गीता", "sex": "FEMALE"},
+                {"devanagari": "गोपाल"},
+                {"devanagari": "औषधि"},
+            ]
+        }
+    )
+    refused = ",".join(f"{one.index}:{one.error.field}" for one in loaded.refused)
+    put("naming-load", f"{loaded.book} {loaded.names} {refused}")
+    found = ctx.naming.suggest(loaded.book, {"nakshatra": "ARDRA", "pada": 3}, {}, {"finalA": "SILENT"})
+    put("naming-suggest-prescribed", f"{found.prescribed.cell} {found.prescribed.devanagari}")
+    for k, suggested in enumerate(found.names):
+        put(
+            f"naming-suggest-{k}",
+            f"{suggested.index} {suggested.by} {int(suggested.same_pada)} {suggested.reading.spelled} {suggested.reading.clauses.syllables}",
+        )
+    try:
+        ctx.naming.of({"nakshatra": "KRITTIKA", "pada": 5})
+        put("naming-refusal", "none")
+    except TeistroError as error:
+        put("naming-refusal", f"{error.status.key} {error.field}")
+
+
 def put_numerology(ctx: Context) -> None:
     """Two numerology requests, as every runner asks them: Balliett's own
     example under the sources' readings, and her John Wanamaker under every
@@ -1128,6 +1198,7 @@ def main() -> None:
     put("settings-hash", ctx.settings_hash)
     put("settings-fnv", fnv(ctx.settings_json))
     put_naam(ctx)
+    put_naming(ctx)
     put_numerology(ctx)
 
     # ── The calendars ─────────────────────────────────────────────────
@@ -3082,6 +3153,12 @@ def main() -> None:
         ("keys.name", ctx.keys.name),
         ("matching.naam", ctx.matching.naam),
         ("numerology.profile", ctx.numerology.profile),
+        ("naming.syllables", ctx.naming.syllables),
+        ("naming.read", ctx.naming.read),
+        ("naming.check", ctx.naming.check),
+        ("naming.of", ctx.naming.of),
+        ("naming.load", ctx.naming.load),
+        ("naming.suggest", ctx.naming.suggest),
         ("frame.canonical", ctx.frame.canonical),
         ("frame.pack", ctx.frame.pack),
         ("frame.unpack", ctx.frame.unpack),

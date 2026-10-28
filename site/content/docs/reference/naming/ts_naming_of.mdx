@@ -1,0 +1,73 @@
+---
+title: ts_naming_of
+description: "The names a birth gives, of *Dharmasindhu*'s four that the SDK computes (C773): the birth pada's syllable with its initials, and the star's deity, whose name the Śāṅkhāyanas give."
+---
+
+The names a birth gives, of *Dharmasindhu*'s four that the SDK computes (C773): the birth pada's syllable with its initials, and the star's deity, whose name the Śāṅkhāyanas give.
+
+`request_json` is `{"birth", "rules"}`. The answer is `Names`. A pada outside 1 to 4 is `INVALID_ARG`, named `naming.birth.pada`.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.naming.of
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.naming.of
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.naming.of
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.naming().of
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.naming().of
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_naming_of(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `naming.of` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/naming.rs`.

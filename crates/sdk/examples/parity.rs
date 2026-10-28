@@ -818,6 +818,12 @@ fn the_surface(report: &mut Report) {
         ("keys.id", "present"),
         ("keys.name", "present"),
         ("matching.naam", "present"),
+        ("naming.check", "present"),
+        ("naming.load", "present"),
+        ("naming.of", "present"),
+        ("naming.read", "present"),
+        ("naming.suggest", "present"),
+        ("naming.syllables", "present"),
         ("numerology.profile", "present"),
         ("research.compare", "present"),
         ("research.counts", "present"),
@@ -3933,6 +3939,231 @@ fn steps(reduction: &teistro::numerology::Reduction) -> String {
         .map(u32::to_string)
         .collect::<Vec<_>>()
         .join("/")
+}
+
+/// A child named by the cakra, as every runner asks it: Makara's
+/// syllables, three names read under `CASUAL` and checked against Ardra's
+/// third pada, a Krittika birth's names, and a book loaded and suggested
+/// from, with one refusal.
+fn the_naming(report: &mut Report, sdk: &Context) {
+    use teistro::NamingReadRequest;
+    use teistro::matching::{NameClauses, NamingRules, SyllablesOf};
+    let rows = |clauses: &NameClauses| {
+        clauses
+            .rows
+            .iter()
+            .map(|row| {
+                format!(
+                    "{}:{}:{}",
+                    wire_key(&row.clause),
+                    u8::from(row.holds),
+                    wire_key(&row.source)
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(",")
+    };
+    let makara = sdk
+        .naming()
+        .syllables(
+            SyllablesOf::Rashi {
+                rashi: teistro::catalogue::Rashi::Capricorn,
+            },
+            NamingRules::default(),
+        )
+        .expect("a sign's syllables");
+    for (i, one) in makara.iter().enumerate() {
+        let initials = one
+            .initials
+            .iter()
+            .map(|initial| format!("{}:{}", initial.devanagari, wire_key(&initial.by)))
+            .collect::<Vec<_>>()
+            .join(",");
+        put(
+            report,
+            &format!("naming-syllables-{i}"),
+            format!(
+                "{} {} {} {} {} {} {} {initials}",
+                one.cell,
+                naming_star(one.nakshatra),
+                one.pada
+                    .map_or_else(|| "NONE".to_owned(), |pada| pada.to_string()),
+                one.rashi.full_key(),
+                one.devanagari,
+                one.iast,
+                wire_key(&one.varga)
+            ),
+        );
+    }
+    let read = NamingReadRequest::from_json(
+        r#"{"names": ["राम", "Shiva", "ऐश्वर्य"], "rules": {"name": {"latin": "CASUAL"}}}"#,
+    )
+    .expect("a read request")
+    .answer(sdk);
+    for (i, one) in read.iter().enumerate() {
+        let (Some(reading), None) = (&one.reading, &one.refused) else {
+            let field = one
+                .refused
+                .as_ref()
+                .and_then(|error| error.field())
+                .unwrap_or_default();
+            put(
+                report,
+                &format!("naming-read-{i}"),
+                format!("refused {field}"),
+            );
+            continue;
+        };
+        put(
+            report,
+            &format!("naming-read-{i}"),
+            format!("{} {}", u8::from(reading.ambiguous), reading.readings.len()),
+        );
+        for (j, spelled) in reading.readings.iter().enumerate() {
+            let s = &spelled.syllable;
+            put(
+                report,
+                &format!("naming-read-{i}-{j}"),
+                format!(
+                    "{} {} {} {} {} {} {} {} {}",
+                    spelled.spelled,
+                    s.cell,
+                    naming_star(s.nakshatra),
+                    s.quarter,
+                    wire_key(&s.varga),
+                    spelled.rashi.full_key(),
+                    spelled.clauses.syllables,
+                    wire_key(&spelled.clauses.counted),
+                    rows(&spelled.clauses)
+                ),
+            );
+        }
+    }
+    the_naming_book(report, sdk);
+}
+
+/// A star a syllable is in, or `NONE` for Abhijit's.
+fn naming_star(nakshatra: Option<teistro::catalogue::Nakshatra>) -> String {
+    nakshatra.map_or_else(|| "NONE".to_owned(), |one| one.full_key().to_owned())
+}
+
+/// Three names checked against Ardra's third pada, one refused.
+fn the_naming_check(report: &mut Report, sdk: &Context) {
+    use teistro::NamingCheckRequest;
+    let checked = NamingCheckRequest::from_json(
+        r#"{"names": ["चूडामणि", "गणेश", "ऐश्वर्य"], "birth": {"nakshatra": "ARDRA", "pada": 3}}"#,
+    )
+    .and_then(|asked| asked.answer(sdk))
+    .expect("a birth in the four padas");
+    for (i, one) in checked.iter().enumerate() {
+        let line = match (&one.check, &one.refused) {
+            (Some(c), _) => format!(
+                "{} {} {} {} {} {}",
+                c.read.cell,
+                c.prescribed.cell,
+                u8::from(c.same_star),
+                u8::from(c.same_pada),
+                u8::from(c.by_substitute),
+                c.clauses.syllables
+            ),
+            (None, refused) => format!(
+                "refused {}",
+                refused
+                    .as_ref()
+                    .and_then(|error| error.field())
+                    .unwrap_or_default()
+            ),
+        };
+        put(report, &format!("naming-check-{i}"), line);
+    }
+}
+
+/// The naming scenario's second half: names checked against Ardra's third
+/// pada, a Krittika birth's names, a book loaded and suggested from, and
+/// one refusal.
+fn the_naming_book(report: &mut Report, sdk: &Context) {
+    use teistro::matching::{Birth, NamingRules, SuggestFilter};
+    use teistro::{NamingLoadRequest, NamingOfRequest, NamingSuggestRequest};
+    the_naming_check(report, sdk);
+    let names = NamingOfRequest::from_json(r#"{"birth": {"nakshatra": "KRITTIKA", "pada": 1}}"#)
+        .and_then(|asked| asked.answer(sdk))
+        .expect("a birth in the four padas");
+    put(
+        report,
+        "naming-of",
+        format!(
+            "{} {} {}",
+            names.syllable.cell,
+            names.syllable.devanagari,
+            names.deity.full_key()
+        ),
+    );
+    let loaded = NamingLoadRequest::from_json(
+        r#"{"book": {"names": [{"devanagari": "गणेश", "sex": "MALE"}, {"devanagari": "गीता", "sex": "FEMALE"}, {"devanagari": "गोपाल"}, {"devanagari": "औषधि"}]}}"#,
+    )
+    .and_then(|asked| asked.answer(sdk))
+    .expect("a book of Devanagari names");
+    let refused = loaded
+        .refused
+        .iter()
+        .map(|one| format!("{}:{}", one.index, one.error.field().unwrap_or_default()))
+        .collect::<Vec<_>>()
+        .join(",");
+    put(
+        report,
+        "naming-load",
+        format!("{} {} {refused}", loaded.book, loaded.names),
+    );
+    let found = NamingSuggestRequest {
+        book_id: Some(loaded.book.to_string()),
+        book: None,
+        birth: Birth {
+            nakshatra: teistro::catalogue::Nakshatra::Ardra,
+            pada: 3,
+        },
+        filter: SuggestFilter::default(),
+        rules: NamingRules {
+            final_a: teistro::matching::FinalA::Silent,
+            ..NamingRules::default()
+        },
+    }
+    .answer(sdk)
+    .expect("a loaded book");
+    put(
+        report,
+        "naming-suggest-prescribed",
+        format!("{} {}", found.prescribed.cell, found.prescribed.devanagari),
+    );
+    for (k, one) in found.names.iter().enumerate() {
+        put(
+            report,
+            &format!("naming-suggest-{k}"),
+            format!(
+                "{} {} {} {} {}",
+                one.index,
+                wire_key(&one.by),
+                u8::from(one.same_pada),
+                one.reading.spelled,
+                one.reading.clauses.syllables
+            ),
+        );
+    }
+    let refusal = NamingOfRequest::from_json(r#"{"birth": {"nakshatra": "KRITTIKA", "pada": 5}}"#)
+        .and_then(|asked| asked.answer(sdk));
+    put(
+        report,
+        "naming-refusal",
+        refusal.map_or_else(
+            |error| {
+                format!(
+                    "{} {}",
+                    wire_key(&error.status),
+                    error.field().unwrap_or_default()
+                )
+            },
+            |_| "none".to_owned(),
+        ),
+    );
 }
 
 /// Each numerology request as the other three print it: each system's
@@ -7699,6 +7930,7 @@ fn main() {
     the_constants(&mut report);
     the_surface(&mut report);
     the_naam(&mut report);
+    the_naming(&mut report, &sdk);
     the_numerology(&mut report);
     let place = Place::new(
         Latitude::try_new(27.7172).expect("a latitude"),
