@@ -31,6 +31,7 @@ use teistro_astro::houses::{ChartFrame, Outcome, houses_at};
 use teistro_astro::scale::tt_of;
 use teistro_core::catalogue::{Degeneracy, HouseSystem};
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Ut1};
+use teistro_core::settings::recorded::house_system;
 use teistro_core::settings::{PolarPolicy, Profile, SHIPPED_PROFILES, SettingsPatch};
 
 use crate::classical::{GRAHAS, sign_of};
@@ -111,14 +112,6 @@ fn readings(root: &Path) -> Result<Vec<Reading>, String> {
     Ok(found)
 }
 
-/// The house system the corpus's own name for it stands for. The engine
-/// writes the catalogue's key in lower case with hyphens.
-fn system_of(name: &str) -> Option<HouseSystem> {
-    HouseSystem::ALL
-        .into_iter()
-        .find(|system| system.key().to_lowercase().replace('_', "-") == name)
-}
-
 fn read(name: &str, fixture: &Value) -> Option<Reading> {
     let selected = fixture["houses"]["selected"].as_object()?;
     // A variant may carry its houses and nothing else, which is exactly
@@ -133,7 +126,8 @@ fn read(name: &str, fixture: &Value) -> Option<Reading> {
     let bodies = fixture["positions"]["bodies"].as_object();
     Some(Reading {
         fixture: name.to_string(),
-        system: system_of(selected.get("system")?.as_str()?)?,
+        // The corpus's own name, read as the settings translation reads it.
+        system: house_system(selected.get("system")?.as_str()?)?,
         cusps: numbers(selected.get("cusps")?),
         cusp_signs: selected
             .get("cusp_sign_index")?
@@ -692,22 +686,8 @@ fn decides(readings: &[Reading]) -> Result<String, String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{apart, house_of, system_of, whole_sign_house};
+    use super::{apart, house_of, whole_sign_house};
     use teistro_core::catalogue::HouseSystem;
-
-    #[test]
-    fn the_corpus_names_a_system_the_catalogue_has() {
-        assert_eq!(system_of("whole-sign"), Some(HouseSystem::WholeSign));
-        assert_eq!(system_of("placidus"), Some(HouseSystem::Placidus));
-        assert_eq!(system_of("equal-mc"), Some(HouseSystem::EqualMc));
-        assert_eq!(system_of("pullen-sd"), Some(HouseSystem::PullenSd));
-        assert_eq!(system_of("not-a-system"), None);
-        // Every system the catalogue has is named the same way.
-        for system in HouseSystem::ALL {
-            let name = system.key().to_lowercase().replace('_', "-");
-            assert_eq!(system_of(&name), Some(system), "{}", system.key());
-        }
-    }
 
     #[test]
     fn a_house_holds_a_longitude_between_its_own_sandhi() {

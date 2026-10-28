@@ -328,6 +328,41 @@ impl Corpus {
         self.root.join(relative)
     }
 
+    /// A JSON file of the corpus, by its path under the root.
+    pub(crate) fn read(&self, relative: &str) -> Result<Value, String> {
+        let path = self.path(relative);
+        let text =
+            std::fs::read_to_string(&path).map_err(|why| format!("{}: {why}", path.display()))?;
+        serde_json::from_str(&text).map_err(|why| format!("{relative}: {why}"))
+    }
+
+    /// The report of a run over this corpus: what it compared, by whom.
+    pub(crate) fn report(
+        &self,
+        identity: &teistro_port_ephemeris::Identity,
+        class: &str,
+        settings_hash: Option<String>,
+        results: Vec<FixtureResult>,
+    ) -> CorpusReport {
+        CorpusReport {
+            schema: REPORT_SCHEMA,
+            corpus: CorpusId {
+                version: self.version.clone(),
+                commit: self.commit.clone(),
+            },
+            implementation: Implementation {
+                name: format!("teistro over {}", identity.name),
+                version: identity.version.clone(),
+                binding: "rust",
+                provider_class: class.to_owned(),
+                platform: format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH),
+                settings_hash,
+            },
+            counts: Counts::of(&results),
+            results,
+        }
+    }
+
     /// The recorded charts, in name order.
     ///
     /// # Errors
@@ -1282,6 +1317,34 @@ impl Divergence {
     }
 }
 
+/// The recording engine's topocentric Moon speed, which a variant run
+/// meets too.
+pub const MOON_TOPOCENTRIC_SPEED: Divergence = Divergence {
+    name: "moon-topocentric-speed",
+    fields: &["positions.bodies.MOON.speed_deg_per_day"],
+    fixtures: &[],
+    classes: &["builtin-standard", "builtin-full"],
+    why: "the recording engine's topocentric Moon speed is not the derivative of its own \
+          topocentric places, by 1.1e-3 to 1.6e-3 degrees a day at Kiritimati measured \
+          over Teimeris itself, and the SDK's is: 3e-3 apart at worst",
+};
+
+/// The full tier's truncated series, which a variant run meets too.
+pub const FULL_TIER_TRUNCATION: Divergence = Divergence {
+    name: "full-tier-truncation",
+    fields: &[
+        "positions.bodies.SATURN.distance_au",
+        "positions.bodies.JUPITER.distance_au",
+        "positions.bodies.MERCURY.distance_au",
+        "positions.bodies.MERCURY.speed_deg_per_day",
+    ],
+    fixtures: &[],
+    classes: &["builtin-full"],
+    why: "the full tier's truncated series carry the outer planets' distances to 4e-6 \
+          AU (0.09 arcseconds at Saturn's) and Mercury's speed to 2e-4 degrees a day, \
+          inside its arcsecond class; the corpus's provisional band asks 1e-6 AU and 1e-4",
+};
+
 /// Where the SDK parts from corpus 0.11.0, and why; each measured on
 /// 2026-09-25 over every built-in tier and over Teimeris, the corpus's own
 /// ephemeris (`docs/03-design/ephemeris-port-and-adapters.md` §9).
@@ -1337,29 +1400,8 @@ pub const KNOWN: [Divergence; 6] = [
         why: "at Fairbanks the ascendant turns three times as fast as at the equator, and \
               two implementations' last digits part by 1.08e-6 degrees against a band of 1e-6",
     },
-    Divergence {
-        name: "moon-topocentric-speed",
-        fields: &["positions.bodies.MOON.speed_deg_per_day"],
-        fixtures: &[],
-        classes: &["builtin-standard", "builtin-full"],
-        why: "the recording engine's topocentric Moon speed is not the derivative of its own \
-              topocentric places, by 1.1e-3 to 1.6e-3 degrees a day at Kiritimati measured \
-              over Teimeris itself, and the SDK's is: 3e-3 apart at worst",
-    },
-    Divergence {
-        name: "full-tier-truncation",
-        fields: &[
-            "positions.bodies.SATURN.distance_au",
-            "positions.bodies.JUPITER.distance_au",
-            "positions.bodies.MERCURY.distance_au",
-            "positions.bodies.MERCURY.speed_deg_per_day",
-        ],
-        fixtures: &[],
-        classes: &["builtin-full"],
-        why: "the full tier's truncated series carry the outer planets' distances to 4e-6 \
-              AU (0.09 arcseconds at Saturn's) and Mercury's speed to 2e-4 degrees a day, \
-              inside its arcsecond class; the corpus's provisional band asks 1e-6 AU and 1e-4",
-    },
+    MOON_TOPOCENTRIC_SPEED,
+    FULL_TIER_TRUNCATION,
 ];
 
 /// What [`CorpusReport::against`] found.
@@ -1483,7 +1525,7 @@ impl Judged<'_> {
 }
 
 /// A recorded birth: its instant, place and zone.
-fn birth(chart: &Value) -> Result<(JulianDay<Utc>, Place, UtcOffset), String> {
+pub(crate) fn birth(chart: &Value) -> Result<(JulianDay<Utc>, Place, UtcOffset), String> {
     let number = |pointer: &str| {
         chart
             .pointer(pointer)
@@ -1529,9 +1571,13 @@ const GRAHAS: [(&str, Graha, bool); 9] = [
     ("KETU", Graha::Ketu, false),
 ];
 
-/// Every position both the recording and the founded chart carry, with
-/// whether the field is an angle compared the shorter way round.
-fn positions(recorded: &Value, founded: &ChartFoundation) -> Vec<(String, f64, f64, bool)> {
+/// One value both the recording and the founded chart carry: its path in
+/// the recording, what was recorded, what was founded, and whether it is
+/// an angle compared the shorter way round.
+pub(crate) type Compared = (String, f64, f64, bool);
+
+/// Every position both the recording and the founded chart carry.
+pub(crate) fn positions(recorded: &Value, founded: &ChartFoundation) -> Vec<Compared> {
     let mut out = Vec::new();
     let recorded_at = |key: &str, name: &str| {
         recorded
@@ -1574,13 +1620,14 @@ fn positions(recorded: &Value, founded: &ChartFoundation) -> Vec<(String, f64, f
     out
 }
 
-/// One recorded chart against the provider.
-fn compare(
+/// One recorded chart against the provider, on the values `read` finds in
+/// both.
+pub(crate) fn compare(
     sdk: &Context,
     tolerances: &Tolerances,
     class: &str,
-    name: &str,
-    chart: &Value,
+    (name, chart): (&str, &Value),
+    read: fn(&Value, &ChartFoundation) -> Vec<Compared>,
 ) -> FixtureResult {
     let skipped = |reason: String| FixtureResult {
         fixture: name.to_owned(),
@@ -1596,7 +1643,7 @@ fn compare(
         Ok(sealed) => sealed.value,
         Err(why) => return skipped(format!("the SDK could not found it: {why}")),
     };
-    let fields: Vec<Field> = positions(chart, &founded)
+    let fields: Vec<Field> = read(chart, &founded)
         .into_iter()
         .map(|(path, expected, found, angle)| {
             let difference = if angle {
@@ -1604,7 +1651,11 @@ fn compare(
             } else {
                 (found - expected).abs()
             };
-            let tolerance = tolerances.band(&path, class);
+            // An element of a recorded array is held to its array's band.
+            let banded = path
+                .split_once('[')
+                .map_or(path.as_str(), |(array, _)| array);
+            let tolerance = tolerances.band(banded, class);
             Field {
                 within: difference <= tolerance,
                 path,
@@ -1679,26 +1730,14 @@ pub fn run(corpus: &Corpus, open: Open<'_>, class: &str) -> Result<CorpusReport,
     let results: Vec<FixtureResult> = corpus
         .charts()?
         .into_iter()
-        .map(|(name, chart)| compare(&sdk, &corpus.tolerances, class, &name, &chart))
+        .map(|(name, chart)| compare(&sdk, &corpus.tolerances, class, (&name, &chart), positions))
         .collect();
-    let counts = Counts::of(&results);
-    Ok(CorpusReport {
-        schema: REPORT_SCHEMA,
-        corpus: CorpusId {
-            version: corpus.version.clone(),
-            commit: corpus.commit.clone(),
-        },
-        implementation: Implementation {
-            name: format!("teistro over {}", identity.name),
-            version: identity.version,
-            binding: "rust",
-            provider_class: class.to_owned(),
-            platform: format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH),
-            settings_hash: Some(sdk.settings_hash().to_string()),
-        },
+    Ok(corpus.report(
+        &identity,
+        class,
+        Some(sdk.settings_hash().to_string()),
         results,
-        counts,
-    })
+    ))
 }
 
 #[cfg(test)]

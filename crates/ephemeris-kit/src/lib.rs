@@ -2,11 +2,13 @@
 //! (`docs/03-design/ephemeris-port-and-adapters.md`, §9): the checks every
 //! adapter and every built-in tier must pass, with a machine-readable
 //! report, under one published set of bounds; the timing rows; and the
-//! runner the kit binaries share. Two checks are made through the
+//! runner the kit binaries share. Three checks are made through the
 //! façade, because what they measure is a chart and not a position:
 //! [`corpus`], a provider against the conformance corpus's recorded charts
-//! under its class's band, and [`sdk_only`], that under the `sdk-only`
-//! policy a chart is its provider's native positions and nothing else. One
+//! under its class's band; [`variants`], the corpus's recorded variants
+//! under the settings its manifest stored for them; and [`sdk_only`], that
+//! under the `sdk-only` policy a chart is its provider's native positions
+//! and nothing else. One
 //! is made against JPL directly: [`jpl`], a provider's geometric positions
 //! against DE440's own, CSPICE's states over NAIF's kernel.
 //!
@@ -26,5 +28,6 @@ pub mod jpl;
 pub mod kit;
 pub mod runner;
 pub mod sdk_only;
+pub mod variants;
 
 pub use kit::{Bounds, Check, Refusing, Report, Results, run};
