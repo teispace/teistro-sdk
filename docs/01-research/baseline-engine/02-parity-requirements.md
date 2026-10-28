@@ -114,7 +114,7 @@ by `check-ab`. Code with nothing comparing it to the baseline is "partly".
 | KP | partly | the four lord levels 98.4% by the A/B; significators and ruling planets are not compared |
 | milan | decided otherwise, partly | the SDK follows the *Kalaprakasika* (100% against it; 68.5% koota and 94.1% porutham agreement with the baseline, method differences); the recommendation bands wait on a rank 1 text, and the extended checks and marriage doshas have no vectors. Decided 2026-10-27 |
 | rectification | met | the black-box run, 8 cases, intervals to a second (`crates/sdk/tests/rectify.rs`) |
-| prashna, rashifal, Track B modules | partly | built and hand-worked; no baseline vectors; name suggestions and gemstone safety not built |
+| prashna, rashifal, Track B modules | partly | built and hand-worked; no baseline vectors; name suggestions and gemstone safety not built (names designed in `03-design/namakarana.md`) |
 | text in ne, en, sa, hi | partly | 639 of 657 rules carry a reading; Hindi and Sanskrit messages wait on vetted translators (`locale-coverage-measured.md`) |
 | composers byte-identical | decided otherwise | the SDK composes through Teistro Intl's own grammar, so the same bytes are not a goal; parity is on what a record says, and the baseline's records are migrated (`teistro-intl migrate baseline`). Decided 2026-10-27 |
 | serialiser | met | the dossier and its presets, the same bytes for the same chart (`check-dossier`); the gochar sidecar in Rust (`GocharSidecar`, `03-design/gochar-sidecar.md`), checked against its chart and its settings, its transits the whole document's (`gochar-sidecar-measured.md`); a binding asks for transits on the chart request instead of storing one, decided 2026-10-28 |
