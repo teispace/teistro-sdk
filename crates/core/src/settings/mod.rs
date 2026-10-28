@@ -36,11 +36,11 @@ pub use knobs::{
     AyanamshaBasis, AyurdayaReadings, AyurdayaSpan, Balance, Benefics, BhavaBalaDivision, BhavaDig,
     BhavaDrishti, BhavaSpecialRules, BirthPeriod, BrahmaRule, Centre, CharaKarakas, Cheshta,
     DayBoundary, DayLordDay, DecennialDivision, DeltaT, DigKendras, Drekkana, Drik, DstGap,
-    DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, Ekadhipatya, FirdariaNodes,
-    GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning, IshtaKashta, KaalaLords,
-    KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti, LuminaryCheshta,
-    LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents, MoonPaksha,
-    Naisargika, NaisargikaDivision, NakshatraScheme, Nathonnatha, Node, NodeAspects,
+    DstOverlap, DualLord, DurmuhurtaTable, EclipseShadow, EclipseVedha, EightKarakaOrder,
+    Ekadhipatya, FirdariaNodes, GhatiReckoning, GrahaArudhaException, GrahaDivision, HoraReckoning,
+    IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
+    LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents,
+    MoonPaksha, Naisargika, NaisargikaDivision, NakshatraScheme, Nathonnatha, Node, NodeAspects,
     NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaStart,
     PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable, PushkaraBhaga,
     RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
@@ -881,6 +881,9 @@ group!(
         /// Seven or eight chara karakas: which ranks the Atmakaraka the
         /// karakamsha is read from.
         chara_karakas: CharaKarakas,
+        /// Which karaka each rank carries when eight are counted (crux
+        /// C101): the ranking is the sky's, the names are this.
+        eight_karaka_order: EightKarakaOrder,
         /// The nodes' co-lordship of Scorpio and Aquarius: which lords of
         /// the 6th, 8th and 12th the Brahma graha is chosen among (C126).
         node_co_lordship: NodeCoLordship,
@@ -2227,6 +2230,10 @@ mod tests {
         // What the texts give it.
         assert_eq!(resolved.settings.houses.chalit_system, HouseSystem::Sripati);
         assert_eq!(resolved.settings.jaimini.chara_karakas, CharaKarakas::Eight);
+        assert_eq!(
+            resolved.settings.jaimini.eight_karaka_order,
+            EightKarakaOrder::Parashara
+        );
         assert_eq!(resolved.settings.state.combustion_orbs, "SURYA_SIDDHANTA");
         // What it must not have taken from anywhere else. The centre is
         // the one that moves numbers: up to 39 arcminutes of Moon, which

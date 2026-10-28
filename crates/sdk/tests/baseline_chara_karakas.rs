@@ -21,7 +21,7 @@
 mod common;
 
 use serde_json::Value;
-use teistro::catalogue::Graha;
+use teistro::catalogue::{CharaKaraka, Graha};
 use teistro::settings::CharaKarakas;
 use teistro::{ChartRequest, Context, Document, Ephemeris, RuleInputs};
 
@@ -175,4 +175,71 @@ fn the_whole_chara_karaka_order_is_the_recorded_one() {
         .collect();
     let known: Vec<(&str, &str)> = KNOWN.iter().map(|(id, scheme, _)| (*id, *scheme)).collect();
     assert_eq!(met, known, "the disagreements are the explained ones");
+}
+
+/// The recording's abbreviation of each of the eight karakas.
+fn abbreviation(karaka: CharaKaraka) -> &'static str {
+    match karaka {
+        CharaKaraka::Atmakaraka => "AK",
+        CharaKaraka::Amatyakaraka => "AmK",
+        CharaKaraka::Bhratrikaraka => "BK",
+        CharaKaraka::Matrikaraka => "MK",
+        CharaKaraka::Putrakaraka => "PK",
+        CharaKaraka::Gnatikaraka => "GK",
+        CharaKaraka::Darakaraka => "DK",
+        CharaKaraka::Pitrikaraka => "PiK",
+        _ => "?",
+    }
+}
+
+#[test]
+fn the_eight_karakas_carry_the_recorded_names() {
+    // The ranking is the sky's; which karaka each rank is called is
+    // `jaimini.eight_karaka_order`, which the profile sets to the
+    // recording's (crux C101). Every birth whose ranking agrees carries the
+    // recorded name on every graha, and the verses' naming carries none.
+    let sdk = Context::builder()
+        .profile("conformance-baseline")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let edge: Vec<&str> = KNOWN
+        .iter()
+        .filter(|(_, scheme, _)| *scheme == "system8")
+        .map(|(id, _, _)| *id)
+        .collect();
+    let (mut named, mut verses) = (0_usize, 0_usize);
+    let charts = common::charts();
+    for (file, chart) in &charts {
+        if edge.contains(&chart["id"].as_str().unwrap()) {
+            continue;
+        }
+        let document = common::reading_of(&sdk, chart, ChartRequest::with_state).unwrap();
+        let recorded = chart["houses"]["chara_karakas"]["system8"]
+            .as_object()
+            .unwrap();
+        let carries = |chart: &teistro::rules::RuleChart| {
+            recorded.iter().all(|(graha, name)| {
+                let graha = Graha::from_key(graha).unwrap();
+                let karaka = chart.placement(teistro::rules::Body::Graha(graha)).karaka8;
+                karaka.map(abbreviation) == name.as_str()
+            })
+        };
+        let ours = RuleInputs::of(&document)
+            .unwrap()
+            .under(sdk.settings())
+            .chart;
+        assert!(
+            carries(&ours),
+            "{file}: the recorded names under the profile"
+        );
+        named += 1;
+        verses += usize::from(carries(&RuleInputs::of(&document).unwrap().chart));
+    }
+    println!("{named} births carry the recorded names; the verses' naming carries {verses}");
+    assert_eq!(named, charts.len() - edge.len());
+    assert_eq!(
+        verses, 0,
+        "the verses' naming differs from the recording's in every birth"
+    );
 }

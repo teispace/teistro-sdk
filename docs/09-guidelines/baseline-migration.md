@@ -216,6 +216,9 @@ Its knobs, each with the crux or registry entry that measured it:
 | the Bhava bala knobs (`bhava_division`, `bhava_dig`, `bhava_drishti`, `bhava_special_rules`) | the baseline's reading of each | C73 to C75 |
 | `dasha.ashtottari_grouping` | `THREE_EACH` | C5 |
 | `dasha.dual_lord`, `dasha.rashi_start` | `KENDRA`, `LAGNA` | C51, C53 |
+| `kp.ruling_count`, `kp.day_lord_day` | `WITH_SUBS`, `CIVIL` | C150, C151: seven ruling planets, the clock's weekday |
+| `jaimini.chara_karakas` | `EIGHT` | the recorded `chara_karaka: 8` ([`03-design/jaimini-measured.md`](../03-design/jaimini-measured.md)) |
+| `jaimini.eight_karaka_order` | `PITRIKARAKA_LAST` | C101: the least of eight is named the Pitrikaraka |
 
 The registry entries are in
 [`05-testing/01-golden-vectors.md`](../05-testing/01-golden-vectors.md),
@@ -252,15 +255,14 @@ const kp = new Context({
 A catalogued ayanamsha in a patch is written
 `{ kind: 'CATALOGUED', id: 'RAMAN' }`.
 
-Three knobs the baseline reads differently are not in
-`conformance-baseline`, because the corpus does not record them. Set
-them yourself when you want the baseline's answer:
+`conformance-baseline` carries the baseline's KP and Jaimini readings
+(§5.1), but a context opened on another profile does not. A KP context
+on `kp-default`, as above, reads Krishnamurti's own rules; patch these
+two knobs when you want the baseline's ruling planets:
 
-| knob | the baseline's value | the SDK's default | evidence |
-|---|---|---|---|
-| `kp.ruling_count` | `WITH_SUBS` (seven ruling planets) | `FIVE` | C150, [`03-design/kp.md`](../03-design/kp.md) §3 |
-| `kp.day_lord_day` | `CIVIL` (the clock's weekday) | `SUNRISE` | C151 |
-| `jaimini.chara_karakas` | `EIGHT` (the recorded `chara_karaka: 8`) | `SEVEN` in the root, `EIGHT` in `parashari-classical` | [`03-design/jaimini-measured.md`](../03-design/jaimini-measured.md) |
+```js
+settings: { kp: { ruling_count: 'WITH_SUBS', day_lord_day: 'CIVIL' } },
+```
 
 ### 5.3 The baseline's readings, asked for per request
 
@@ -512,9 +514,5 @@ the baseline's beside it
   ([`interpret-composers.md`](../03-design/interpret-composers.md) §2).
 - **The baseline's koota tables, Stree-deergha count and Tajika year
   lord** have no knob (§7).
-- **The baseline's order of the eight chara karakas.** The baseline puts
-  the Pitrikaraka last. The SDK reaches that order only inside the
-  rules crate (`EightKarakas::PitrikarakaLast`); no settings knob or
-  binding value selects it.
 - **One context with two centres.** A natal chart from the birthplace
   and its transits from the Earth's centre need two contexts (§5.4).

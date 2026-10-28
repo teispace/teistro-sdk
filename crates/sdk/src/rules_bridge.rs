@@ -29,6 +29,7 @@ use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::Degrees;
 use teistro_core::quantity::{Depth, JulianDay, Utc};
+use teistro_core::settings::{EightKarakaOrder, Settings};
 use teistro_dasha::{Chain, Period, Timeline};
 use teistro_rules::longevity::{Vulnerability, age_span};
 use teistro_rules::{
@@ -307,6 +308,34 @@ impl RuleInputs {
         })
     }
 
+    /// The inputs with the eight chara karakas named as the settings name
+    /// them (`jaimini.eight_karaka_order`, crux C101): the ranking is the
+    /// sky's, and [`RuleInputs::of`] names it in the verses' order.
+    ///
+    /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, Context, Ephemeris, RuleInputs, UtcOffset};
+    ///
+    /// // The baseline engine's naming: the least of eight is the Pitrikaraka.
+    /// let sdk = Context::builder()
+    ///     .profile("conformance-baseline")
+    ///     .ephemeris([Ephemeris::Builtin])
+    ///     .build()?;
+    /// let place = Place::new(Latitude::try_new(27.7)?, Longitude::try_new(85.3)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::at(place, UtcOffset::try_from_seconds(20_700)?).with_state();
+    /// let document = sdk.chart().reading(JulianDay::literal(2_447_995.489_583_333_5), &request)?.value;
+    /// let inputs = RuleInputs::of(&document)?.under(sdk.settings());
+    /// # let _ = inputs;
+    /// # }
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn under(mut self, settings: &Settings) -> RuleInputs {
+        self.chart = self.chart.with_chara_karakas(karaka_order(settings));
+        self
+    }
+
     /// An evaluator over the chart under `readings`, given the points, the
     /// divisions and the tables the SDK ships ([`Tables::classical`], which
     /// [`RuleRequest::rule_set`](crate::RuleRequest::rule_set) holds every
@@ -318,6 +347,26 @@ impl RuleInputs {
             .with_points(&self.points)
             .with_vargas(&self.vargas)
             .with_tables(Tables::classical())
+    }
+}
+
+/// The rule chart of a foundation and its states, its eight karakas named
+/// as the settings name them: what every context reading of the karakas
+/// starts from.
+pub(crate) fn ruled(
+    foundation: &ChartFoundation,
+    states: &[GrahaState],
+    settings: &Settings,
+) -> Result<RuleChart, Error> {
+    Ok(rule_chart(foundation, states, None, None)?.with_chara_karakas(karaka_order(settings)))
+}
+
+/// The rules' naming of eight chara karakas under the settings
+/// (`jaimini.eight_karaka_order`, crux C101).
+pub(crate) fn karaka_order(settings: &Settings) -> EightKarakas {
+    match settings.jaimini.eight_karaka_order {
+        EightKarakaOrder::PitrikarakaLast => EightKarakas::PitrikarakaLast,
+        _ => EightKarakas::Parashara,
     }
 }
 

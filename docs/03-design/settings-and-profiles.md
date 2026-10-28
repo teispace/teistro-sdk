@@ -83,6 +83,7 @@ every shipped profile. The v1 inventory:
 | dasha | `naisargika_division` | enum | `SHARES` (the default: BPHS ch. 51 vv. 13 to 16's shares among the seven, by their signs and shadbala), `PROPORTIONAL` (vv. 1 and 2), `EQUAL` (vv. 3 and 4); how the Naisargika dasha divides a period, which ch. 43 vv. 16 and 17 leave unstated (crux C743) |
 | dasha | `shanta_sign` | enum | `FRIENDLY` (the default, a friend's or great friend's sign), `FRIEND` (crux C79) |
 | jaimini | `chara_karakas` | enum | `SEVEN`, `EIGHT` |
+| jaimini | `eight_karaka_order` | enum | `PARASHARA`, `PITRIKARAKA_LAST` (crux C101) |
 | jaimini | `node_co_lordship` | enum | `NONE`, `STRONGER_LORD`, `BOTH` |
 | jaimini | `brahma` | enum | `VERSES`, `TRANSLATORS_NOTE`: the rule the Brahma graha is found by (BPHS ch. 46 vv. 170 to 173, or the translator's note; C128) |
 | gochar | `node_vedha` | enum | `LIKE_THE_SUN`, `NONE`: whether the nodes take the Sun's vedha pairs in transit (Phaladeepika ch. 26 v. 2 makes them "like the Sun"; C136) |
