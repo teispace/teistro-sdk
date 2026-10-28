@@ -27,6 +27,19 @@ fn context(profile: Option<&str>) -> Context {
     builder.build().unwrap()
 }
 
+/// A context whose transits are cast in its charts' own frame, so a
+/// founded chart is the transit's: the conformance profile casts them
+/// geocentric under its topocentric charts (`transit_centre.rs`).
+fn transits_as_charted(profile: Option<&str>) -> Context {
+    let mut builder = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .settings_json(r#"{"gochar": {"transit_centre": "AS_CHART"}}"#);
+    if let Some(profile) = profile {
+        builder = builder.profile(profile);
+    }
+    builder.build().unwrap()
+}
+
 fn place() -> Place {
     Place::new(
         Latitude::literal(27.7172),
@@ -59,7 +72,7 @@ fn year() -> HitRequest {
 #[test]
 fn every_sign_ingress_is_where_a_founded_chart_puts_it() {
     for profile in [None, Some("conformance-baseline")] {
-        let sdk = context(profile);
+        let sdk = transits_as_charted(profile);
         let natal = natal(&sdk);
         let hits = sdk
             .chart()

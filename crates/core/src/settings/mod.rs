@@ -46,7 +46,7 @@ pub use knobs::{
     RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
     RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
     ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
-    UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -905,6 +905,8 @@ group!(
         /// How many bindus in a graha's own Ashtakavarga make its transit
         /// good (crux C141; `03-design/gochar-ashtakavarga.md`).
         ashtakavarga_good_from: AshtakavargaGoodFrom,
+        /// Where a transit is seen from (crux C778).
+        transit_centre: TransitCentre,
     }
 );
 

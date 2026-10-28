@@ -635,6 +635,15 @@ knob!(
         Four = "FOUR" }
 );
 knob!(
+    /// Where a transit is seen from, beside the chart it is read against
+    /// (crux C778): the gochar readings, Sade Sati and the hit list.
+    TransitCentre { /// The chart's own `frame.centre`.
+        AsChart = "AS_CHART", /// The Earth's centre, whatever the chart's: the recording
+        /// engine's transits, cast geocentric under a topocentric birth.
+        Geocentric = "GEOCENTRIC", /// The birthplace, whatever the chart's.
+        Topocentric = "TOPOCENTRIC" }
+);
+knob!(
     /// Whether a graha's arudha moves as a bhava's does, when the count
     /// lands on the graha's own sign or the 7th from it (BPHS ch. 29 vv. 6
     /// and 7; crux C132).

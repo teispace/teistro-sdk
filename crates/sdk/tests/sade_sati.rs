@@ -18,8 +18,13 @@ use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::sade_sati::{Phase, Reckoning, Report, SadeSati, Spell};
 use teistro::{ChartRequest, Context, Document, Ephemeris, GocharFrom, SadeSatiRequest, UtcOffset};
 
+/// A context whose transits are cast in its charts' own frame, so a
+/// founded chart is Saturn's transit: the conformance profile casts them
+/// geocentric under its topocentric charts (`transit_centre.rs`).
 fn context(profile: Option<&str>) -> Context {
-    let mut builder = Context::builder().ephemeris([Ephemeris::Builtin]);
+    let mut builder = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .settings_json(r#"{"gochar": {"transit_centre": "AS_CHART"}}"#);
     if let Some(profile) = profile {
         builder = builder.profile(profile);
     }
