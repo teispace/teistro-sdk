@@ -309,7 +309,7 @@ compared. The families, their units and their tolerances:
 | `event` | a sunrise, a sunset, a limb's end, a solar return, a Sade Sati edge | seconds | 60 s |
 | `limb` | the tithi, nakshatra, yoga, karana and vara at sunrise and each that follows | exact | — |
 | `shadbala`, `bhavaBala` | the six components and the total, each bhava's | virupas | 1 |
-| `bindus` | every Ashtakavarga bindu, and each transit's | exact | — |
+| `bindus` | every Ashtakavarga bindu, and each transit sign's in its graha's own and in the sarva | exact | — |
 | `yoga` | a yoga or dosha present or absent, by the pairs of `crates/rules/tests/same-figures.json` (the golden tests' own, which `baseline.rs` reads) | exact | — |
 | `koota`, `porutham` | each koota's points and the total; Rajju, Vedha, Mahendra and Stree-deergha | exact | — |
 | `office` | the year lord, the five office-bearers, the muntha's sign | exact | — |
@@ -317,6 +317,14 @@ compared. The families, their units and their tolerances:
 | `kpSignificator` | each house's four levels (planets in the occupants' stars, the occupants, planets in the lord's star, the lord), each as a set of the nine grahas; the baseline counts an intercepted sign's lord into the last two levels, the SDK reports the sign and not its lord (crux C154) | exact | — |
 | `kpRuler` | the lagna's and the Moon's sign and star lords and the day's lord, each by its slot; the sub lords are `kpLord`'s | exact | — |
 | `house` | a transit's house from the Moon | exact | — |
+| `drishti` | the grahas each graha aspects in full, counted by sign, as a set of the nine (`full`, `batch`); the baseline's answer holds a graha's fully aspected houses, read here through the grahas in them. The graded aspects, the sphuta drishti and the rashi drishti are in no answer of the SDK's chart | exact | — |
+| `jaiminiPair` | the class of life each of the three pairs gives and the class they decide, before Saturn's or Jupiter's shift (BPHS ch. 43 vv. 33 to 40); the SDK's second pair is Saturn and the Moon, the baseline's the lagna and the Moon, so those two are unpaired | exact | — |
+| `ayurdaya` | Pindayu, Amsayu and Nisargayu: each graha's years before and after the reductions, the lagna's, and the total | years | 0.01 |
+| `maraka` | the marakas by lordship, the lords of the second and the seventh, each a set | exact | — |
+| `balarishta` | whether the Moon in the sixth, eighth or twelfth is afflicted, and whether that stands uncancelled; the SDK's figure is `ARISHTA_MOON_IN_DUSTHANA_MALEFIC_ASPECT` (BPHS ch. 9 vv. 3 to 6) | exact | — |
+| `gochar` | whether a transit stands in a good house from the Moon, whether a good one is obstructed (Phaladeepika ch. 26 vv. 2 to 8; the SDK obstructs a good transit only, so a bad one's vedha is not compared), and whether its own Ashtakavarga makes it strong | exact | — |
+| `kuja` | whether the bride and the groom each carry the Kuja dosha, after any lift the rules asked count | exact | — |
+| `marriageDosha` | whether a match carries the Ashta Koota's nadi, bhakoot and gana doshas, lifted or not; the considerations' are `porutham`'s | exact | — |
 
 A continuous family reports the median and the largest difference and the
 share within its tolerance; a categorical one the share of exact matches.
@@ -335,9 +343,15 @@ classical Shadbala readings. **`same`** is the SDK as the baseline casts:
 `conformance-baseline`, whose every knob is the recording engine's
 measured default (topocentric, the nutated basis, the refracted upper
 limb, the engine's Ashtakavarga reductions), with `kp-default` given the
-same frame and the baseline's mean node, and the transit requests
-(`gochar`, `sadeSati`) cast from the Earth's centre as the baseline casts
-a transit. What still differs under `same` is method, not convention.
+same frame, the baseline's mean node and its ruling planets (the sub
+lords counted, the civil weekday's lord: cruxes C150, C151), and the
+transit requests (`gochar`, `sadeSati`) cast from the Earth's centre as
+the baseline casts a transit. Where a request names readings of its own,
+`same` asks the baseline's: `milan` the Kuja dosha from the lagna, the
+Moon and Venus in the six houses with the 2nd (C285, C286), and `full`
+and `batch` the three spans with Amsayu multiplied, compound enmity,
+each reduction taken in turn and Nisargayu's listed years (C104, C303).
+What still differs under `same` is method, not convention.
 Under `same` a polar day is reckoned by the conformance profile's own
 policy, from the nearest sunrise and sunset, given to `kp-default` too,
 where `timed` reckons it from civil midnight; at the corpus's polar

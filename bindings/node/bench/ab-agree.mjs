@@ -35,7 +35,7 @@ export const FAMILIES = {
   limb: { kind: 'category', what: 'the tithi, nakshatra, yoga and karana spans of a day' },
   shadbala: { kind: 'number', unit: 'virupas', scale: 1, tolerance: 1, what: 'Shadbala, each of its six parts and the total' },
   bhavaBala: { kind: 'number', unit: 'virupas', scale: 1, tolerance: 1, what: 'Bhava bala, each house\'s total' },
-  bindus: { kind: 'category', what: 'Ashtakavarga bindus, each graha\'s and the sarva, and a transit\'s' },
+  bindus: { kind: 'category', what: 'Ashtakavarga bindus, each graha\'s and the sarva, and a transit sign\'s in its graha\'s own and in the sarva' },
   yoga: { kind: 'category', what: 'whether each yoga or dosha both catalogues name is present' },
   koota: { kind: 'category', what: 'the points of each of the eight kootas and their total' },
   porutham: { kind: 'category', what: 'whether Rajju, Vedha, Mahendra and Stree-deergha agree' },
@@ -44,6 +44,14 @@ export const FAMILIES = {
   kpSignificator: { kind: 'category', what: 'each house\'s four significator levels, each a set of the nine grahas' },
   kpRuler: { kind: 'category', what: 'the ruling planets: the lagna\'s and the Moon\'s sign and star lords, and the day\'s lord' },
   house: { kind: 'category', what: 'the house a transit stands in, from the Moon' },
+  drishti: { kind: 'category', what: 'the grahas each graha aspects in full, counted by sign, as a set of the nine' },
+  jaiminiPair: { kind: 'category', what: 'the class of life each of the three pairs gives, and the class they decide' },
+  ayurdaya: { kind: 'number', unit: 'y', scale: 1, tolerance: 0.01, what: 'Pindayu, Amsayu and Nisargayu: each graha\'s years before and after the reductions, the lagna\'s, and the total' },
+  maraka: { kind: 'category', what: 'the marakas by lordship: the lords of the second and the seventh' },
+  balarishta: { kind: 'category', what: 'whether the Moon in the sixth, eighth or twelfth is afflicted, and whether that stands uncancelled' },
+  gochar: { kind: 'category', what: 'whether a transit is in a good house from the Moon, whether a good one is obstructed (vedha), and whether its own Ashtakavarga makes it strong' },
+  kuja: { kind: 'category', what: 'whether the bride and the groom each carry the Kuja dosha' },
+  marriageDosha: { kind: 'category', what: 'whether a match carries the Ashta Koota\'s nadi, bhakoot and gana doshas' },
 };
 
 /** The grahas both sides place, in the SDK's order, and the lagna. */
@@ -170,10 +178,67 @@ function sdkDay(day, at = '') {
   return out;
 }
 
+/** Each graha's full aspects, as the set of the grahas they reach. */
+function sdkDrishti(chart) {
+  const full = new Map(GRAHAS.map((g) => [g, []]));
+  for (const d of chart.aspects) if (d.strength === 'FULL') full.get(bare(d.from))?.push(bare(d.to));
+  return GRAHAS.map((g) => [`drishti/${g}`, grahaSet(full.get(g))]);
+}
+
+/** The three Ayurdaya methods both sides compute, each with its graha givers and the lagna's. */
+export const AYURDAYAS = ['pindayu', 'amsayu', 'nisargayu'];
+
+/** Why a graha is a maraka by lordship, as both sides name the house. */
+export const MARAKA_LORDS = { 'lord-of-second': 'second', 'lord-of-seventh': 'seventh' };
+
+/** The rule the SDK reads Balarishta's afflicted Moon by (BPHS ch. 9 vv. 3 to 6). */
+export const BALARISHTA = 'ARISHTA_MOON_IN_DUSTHANA_MALEFIC_ASPECT';
+
+/** The longevity a full chart's rules hold: the three pairs, the Ayurdayas, the marakas and Balarishta. */
+function sdkLongevity(chart) {
+  const longevity = chart.rules?.longevity;
+  if (!longevity) return [];
+  const out = [];
+  const pairs = longevity.threePairs;
+  if (pairs) {
+    for (const p of pairs.pairs) out.push([`jaiminiPair/${p.pair}`, p.class]);
+    // The class the pairs decide, before Saturn's or Jupiter's shift.
+    out.push(['jaiminiPair/decided', pairs.decided_class]);
+  }
+  for (const method of AYURDAYAS) {
+    const span = longevity.ayurdaya[method];
+    for (const c of span.contributions) {
+      const giver = typeof c.giver === 'string' ? 'LAGNA' : c.giver.graha;
+      if (giver !== 'LAGNA') out.push([`ayurdaya/${method}/${giver}/basic`, c.basic]);
+      out.push([`ayurdaya/${method}/${giver}/net`, c.net]);
+    }
+    out.push([`ayurdaya/${method}/total`, span.years]);
+  }
+  const lords = Object.fromEntries(Object.values(MARAKA_LORDS).map((house) => [house, []]));
+  longevity.marakas.by_graha.forEach((reasons, i) => {
+    for (const reason of reasons) if (reason in MARAKA_LORDS) lords[MARAKA_LORDS[reason]].push(GRAHAS[i]);
+  });
+  for (const [house, grahas] of Object.entries(lords)) out.push([`maraka/${house}`, grahaSet(grahas)]);
+  const moon = (chart.rules.present ?? []).find((p) => p.rule === BALARISHTA);
+  out.push(['balarishta/present', moon !== undefined], ['balarishta/standing', moon?.result.status === 'active']);
+  return out;
+}
+
 /** Everything a full chart holds that the baseline's whole chart holds too. */
 function sdkFull(chart, joined) {
-  return [...sdkPositions(chart), ...sdkVargas(chart), ...sdkDashas(chart.dashas), ...sdkStrength(chart), ...sdkYogas(chart, joined)];
+  return [
+    ...sdkPositions(chart),
+    ...sdkVargas(chart),
+    ...sdkDashas(chart.dashas),
+    ...sdkStrength(chart),
+    ...sdkYogas(chart, joined),
+    ...sdkDrishti(chart),
+    ...sdkLongevity(chart),
+  ];
 }
+
+/** The Ashta Koota's marriage doshas the baseline lists too. */
+export const MARRIAGE_DOSHAS = ['NADI', 'BHAKOOT', 'GANA'];
 
 /** The four of the ten South Indian considerations the baseline answers too. */
 export const PORUTHAMS = ['RAJJU', 'VEDHA', 'MAHENDRA', 'STREE_DEERGHA'];
@@ -221,6 +286,13 @@ export function sdkFacts(request, answer, input, joined) {
         const koota = bare(c.reading.koota);
         if (PORUTHAMS.includes(koota)) out.push([`porutham/${koota}`, c.agrees && !c.lifted]);
       }
+      // Each side's Kuja dosha as the rules asked count it, after any lift
+      // they count; and the Ashta Koota's doshas the match carries, lifted
+      // or not, as the baseline lists them.
+      out.push(['kuja/BRIDE', answer.kuja.bride.dosha && !answer.kuja.bride.lifted]);
+      out.push(['kuja/GROOM', answer.kuja.groom.dosha && !answer.kuja.groom.lifted]);
+      const doshas = new Set(answer.marriageDoshas.filter((d) => d.system === 'ASHTA_KOOTA').map((d) => bare(d.koota)));
+      for (const koota of MARRIAGE_DOSHAS) out.push([`marriageDosha/${koota}`, doshas.has(koota)]);
       return [...out, ['koota/TOTAL', answer.matching.total]];
     }
     case 'varsha': {
@@ -261,8 +333,15 @@ export function sdkFacts(request, answer, input, joined) {
       for (const g of at.grahas) {
         const name = bare(g.graha);
         out.push([`longitude/transit/${name}`, SIGNS.indexOf(g.transit.sign) * 30 + g.transit.degrees], [`house/${name}`, g.house]);
+        // Phaladeepika ch. 26: v. 2's good houses, and vv. 3 to 8's vedha,
+        // which obstructs a good transit only.
+        out.push([`gochar/${name}/good`, g.goodHouse]);
+        if (g.goodHouse) out.push([`gochar/${name}/vedha`, g.obstructedBy.length > 0]);
       }
-      for (const a of at.ashtakavarga) out.push([`bindus/transit/${bare(a.graha)}`, a.bindus]);
+      for (const a of at.ashtakavarga) {
+        const name = bare(a.graha);
+        out.push([`bindus/transit/${name}`, a.bindus], [`bindus/transitSarva/${name}`, a.sarva], [`gochar/${name}/strong`, a.good]);
+      }
       return out;
     }
     case 'sadeSati':
