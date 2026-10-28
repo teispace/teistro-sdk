@@ -487,7 +487,11 @@ the baseline's beside it
 - **The compatibility shim is not built.** The roadmap lists it as a
   Phase 9 deliverable beside this guide. There is no module that accepts
   the baseline's calls and settings and forwards them to the SDK. You
-  port each call.
+  port each call. Its design is
+  [`03-design/compat-shim.md`](../03-design/compat-shim.md): a settings
+  translation for stored snapshots in every binding, and a Node package,
+  `@teistro/compat`, that takes stored birth records and answers the
+  SDK's own results, so the calls can be moved one at a time.
 - **Namakarana.** The phonetic matcher and the name validation map to
   `ctx.naming` in every binding (`sdk.naming()` in Rust): `syllables`
   gives a pada's, a star's or a sign's syllables, `read` reads names in
