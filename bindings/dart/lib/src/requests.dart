@@ -138,7 +138,7 @@ final class AlmanacDaysRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, muhurta, nepalSambat, utcOffsetSeconds, years];
+  List<Object?> get _fields => [altitudeM, calendar, eclipses, if (festivals case final festivalsValue?) jsonEncode(festivalsValue._wire) else null, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, if (muhurta case final muhurtaValue?) jsonEncode(muhurtaValue._wire) else null, nepalSambat, utcOffsetSeconds, years];
 }
 
 /// The request as a binding writes it.
@@ -201,7 +201,7 @@ final class FestivalCalendarRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, festivals, first, last, latitudeDeg, longitudeDeg, name, product, refreshMinutes, stampUnixSeconds, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, calendar, jsonEncode(festivals._wire), first, last, latitudeDeg, longitudeDeg, name, product, refreshMinutes, stampUnixSeconds, utcOffsetSeconds];
 }
 
 /// The query as a binding writes it.
@@ -239,7 +239,7 @@ final class FirstYearQuery extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg, request, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg, jsonEncode(request._wire), utcOffsetSeconds];
 }
 
 /// The request as a binding writes it.
@@ -338,7 +338,7 @@ final class PublishedReasonsRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, festivals, first, last, latitudeDeg, longitudeDeg, places, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, calendar, jsonEncode(festivals._wire), first, last, latitudeDeg, longitudeDeg, jsonEncode([for (final e0 in places) e0._wire]), utcOffsetSeconds];
 }
 
 /// The request as a binding writes it.
@@ -639,7 +639,7 @@ final class ChartFoundRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, dossier, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, latitudeDeg, longitudeDeg, lots, masaPravesha, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, utcOffsetSeconds, vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernConfigurations, westernHouses];
+  List<Object?> get _fields => [altitudeM, if (antiscia case final antisciaValue?) jsonEncode(antisciaValue._wire) else null, ashtakavarga, aspects, avakahada, bhavaBala, if (considerations case final considerationsValue?) jsonEncode(considerationsValue._wire) else null, dashaPhala, dashas, if (dignities case final dignitiesValue?) jsonEncode(dignitiesValue._wire) else null, if (dossier case final dossierValue?) jsonEncode(dossierValue._wire) else null, drawings, fortitudes, gochar, if (harmonic case final harmonicValue?) jsonEncode(harmonicValue._wire) else null, if (hits case final hitsValue?) jsonEncode(hitsValue._wire) else null, houses, instant, instants, interpret, jaimini, kind, kp, if (lalkitab case final lalkitabValue?) jsonEncode(lalkitabValue._wire) else null, latitudeDeg, longitudeDeg, if (lots case final lotsValue?) jsonEncode(lotsValue._wire) else null, if (masaPravesha case final masaPraveshaValue?) jsonEncode(masaPraveshaValue._wire) else null, if (matching case final matchingValue?) jsonEncode(matchingValue._wire) else null, midpoints, moment, outerPlanets, parallels, if (perfection case final perfectionValue?) jsonEncode(perfectionValue._wire) else null, points, if (prashna case final prashnaValue?) jsonEncode(prashnaValue._wire) else null, if (progressions case final progressionsValue?) jsonEncode(progressionsValue._wire) else null, if (rectification case final rectificationValue?) jsonEncode(rectificationValue._wire) else null, remedies, if (rules case final rulesValue?) jsonEncode(rulesValue._wire) else null, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, utcOffsetSeconds, vaiseshikamsa, vargas, if (varsha case final varshaValue?) jsonEncode(varshaValue._wire) else null, vimshopaka, if (westernAspects case final westernAspectsValue?) jsonEncode(westernAspectsValue._wire) else null, westernConfigurations, westernHouses];
 }
 
 /// Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked.
@@ -716,7 +716,7 @@ final class NumerologyRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [date, name, rules];
+  List<Object?> get _fields => [jsonEncode(date._wire), name, rules];
 }
 
 /// The request as a binding writes it. `rules`, `test` and `control` stay JSON until the study is known, because each is read by the reader the study gives it.
@@ -785,7 +785,7 @@ final class ResearchRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [births, control, dasha, depth, design, holds, referents, rules, shuffle, strata, study, subjects, test, uncertaintyStepMinutes];
+  List<Object?> get _fields => [births, control, dasha, depth, if (design case final designValue?) jsonEncode(designValue._wire) else null, holds, if (referents case final referentsValue?) jsonEncode(referentsValue._wire) else null, rules, shuffle, strata, study, if (subjects case final subjectsValue?) jsonEncode([for (final e0 in subjectsValue) e0._wire]) else null, test, uncertaintyStepMinutes];
 }
 
 /// A civil request as a binding writes it.
@@ -920,7 +920,7 @@ final class AshauchRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [abroad, during, event, fullDays, heardAt, key, nearness, relation];
+  List<Object?> get _fields => [abroad, during, jsonEncode(event._wire), fullDays, heardAt, key, nearness, relation];
 }
 
 /// A tradition, as data: every row with its clause and source. A consumer loads one from JSON and changes any row ([`AshauchTable::dharmasindhu`] is the default).
@@ -1143,7 +1143,7 @@ final class FortitudeRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [almuten, dignities, rules, scores];
+  List<Object?> get _fields => [if (almuten case final almutenValue?) jsonEncode(almutenValue._wire) else null, if (dignities case final dignitiesValue?) jsonEncode(dignitiesValue._wire) else null, if (rules case final rulesValue?) jsonEncode(rulesValue._wire) else null, if (scores case final scoresValue?) jsonEncode(scoresValue._wire) else null];
 }
 
 /// [`GocharRequest`] as the bindings write it.
@@ -1417,7 +1417,7 @@ final class SarvatobhadraRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [instants, motion, name, rules];
+  List<Object?> get _fields => [instants, if (motion case final motionValue?) jsonEncode(motionValue._wire) else null, name, rules];
 }
 
 /// What a synastry is asked: the aspects and orbs a chart's own table reads, whether each chart's lagna joins its planets, and the zodiac.
@@ -1470,7 +1470,7 @@ final class PartnerSynastry extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [antiscia, aspects, composite, davison, lagna, midpoints, orbs, parallels, partner, zodiac];
+  List<Object?> get _fields => [if (antiscia case final antisciaValue?) jsonEncode(antisciaValue._wire) else null, aspects, composite, davison, lagna, midpoints, if (orbs case final orbsValue?) jsonEncode(orbsValue._wire) else null, parallels, if (partner case final partnerValue?) jsonEncode(partnerValue._wire) else null, zodiac];
 }
 
 final class ThemePatch extends _Request {
@@ -1548,7 +1548,7 @@ final class ConfigurationRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [aspects, orbs, stelliumLeast];
+  List<Object?> get _fields => [aspects, if (orbs case final orbsValue?) jsonEncode(orbsValue._wire) else null, stelliumLeast];
 }
 
 /// What a chart's Western houses are asked with.
@@ -1829,7 +1829,7 @@ final class AshauchRunning extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [days, end, key, kind, length, relation, sex, start];
+  List<Object?> get _fields => [days, end, key, kind, jsonEncode(length._wire), relation, sex, start];
 }
 
 /// Where the death was, to the observer: the rows that turn on it.
@@ -1952,7 +1952,7 @@ final class AshauchBand extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [before, buried, chudakarana, clause, parents, samanodakas, sapindas, sex];
+  List<Object?> get _fields => [before, buried, chudakarana, clause, jsonEncode(parents._wire), if (samanodakas case final samanodakasValue?) jsonEncode(samanodakasValue._wire) else null, jsonEncode(sapindas._wire), sex];
 }
 
 /// Late news, past the period, within some days of the event.
@@ -1975,7 +1975,7 @@ final class AshauchLateRow extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [length, withinDays];
+  List<Object?> get _fields => [jsonEncode(length._wire), withinDays];
 }
 
 /// A loss before the 7th month, by the month (*Dharmasindhu* p. 299).
@@ -2008,7 +2008,7 @@ final class AshauchLossRow extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [clause, mother, others, toMonth];
+  List<Object?> get _fields => [clause, jsonEncode(mother._wire), jsonEncode(others._wire), toMonth];
 }
 
 /// The mother's further bar on rites after a birth period, to the `son`th or `daughter`th day (*Dharmasindhu* p. 299, Paiṭhīnasi).
@@ -2134,7 +2134,7 @@ final class AshauchRelationRow extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [clause, heardLate, kind, length, marriedDaughter, nearness, relation];
+  List<Object?> get _fields => [clause, if (heardLate case final heardLateValue?) jsonEncode(heardLateValue._wire) else null, kind, jsonEncode(length._wire), marriedDaughter, nearness, relation];
 }
 
 /// A publisher's days for a span, read from JSON or built in code.
@@ -2951,7 +2951,7 @@ final class MaseshaRules extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [chain, muntha, reading];
+  List<Object?> get _fields => [if (chain case final chainValue?) jsonEncode(chainValue._wire) else null, muntha, reading];
 }
 
 /// Which longitude a return returns to.
@@ -3023,7 +3023,7 @@ final class KujaRules extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [from, houses, lifts];
+  List<Object?> get _fields => [from, houses, if (lifts case final liftsValue?) jsonEncode(liftsValue._wire) else null];
 }
 
 /// The readings the ten are computed under; each default is the source's own.
@@ -3273,7 +3273,7 @@ final class ConceptionRules extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [moon, nisheka, pranapadaHouse, purifier];
+  List<Object?> get _fields => [moon, nisheka, pranapadaHouse, if (purifier case final purifierValue?) jsonEncode(purifierValue._wire) else null];
 }
 
 /// The Shiva Svarodaya's nadis and tattvas over the minutes either side of the chart's instant.
@@ -3559,7 +3559,7 @@ final class AnnualDashaRules extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [balance, birthPeriod, clock, depth, measure];
+  List<Object?> get _fields => [balance, birthPeriod, if (clock case final clockValue?) jsonEncode(clockValue._wire) else null, depth, measure];
 }
 
 /// "all", or a list of annual dasha keys: "dasha_system.PATYAYINI", "dasha_system.MUDDA", "dasha_system.VARSHA_YOGINI", with or without the kind
@@ -4041,7 +4041,7 @@ final class PublishedEntrySet extends PublishedEntry {
   };
 
   @override
-  List<Object?> get _fields => [adhika, day, month, rule, source, window];
+  List<Object?> get _fields => [adhika, day, month, rule, source, if (window case final windowValue?) jsonEncode(windowValue._wire) else null];
 }
 
 /// A day no rule computes, under its own key.
@@ -4080,7 +4080,7 @@ final class PublishedEntryAdd extends PublishedEntry {
   };
 
   @override
-  List<Object?> get _fields => [day, key, names, source, window];
+  List<Object?> get _fields => [day, key, names, source, if (window case final windowValue?) jsonEncode(windowValue._wire) else null];
 }
 
 /// A rule's occurrence the publisher does not keep, found as `SET` finds one.

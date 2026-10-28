@@ -923,6 +923,44 @@ mod tests {
     }
 
     #[test]
+    fn dart_compares_a_part_the_layer_keeps_by_hand_by_what_it_writes() {
+        // `Interval` is a façade: the layer's class compares by identity, so
+        // a generated request holding one compares it by its JSON.
+        let mut api = fixture();
+        let schema = json!({"$defs": {
+            "Hold": {"type": "object", "properties": {
+                "window": {"$ref": "#/$defs/Interval"},
+                "windows": {"type": "array", "items": {"$ref": "#/$defs/Interval"}},
+                "end": {"$ref": "#/$defs/Entry"}
+            }, "required": ["window", "end"]},
+            "Interval": {"type": "object", "properties": {"from": {"type": "number"},
+                "to": {"type": "number"}}, "required": ["from", "to"]},
+            "Entry": {"type": "object", "properties": {"end": {"type": "number"}}, "required": ["end"]}
+        }});
+        let known: Vec<String> = api
+            .requests
+            .records
+            .iter()
+            .map(|r| r.name.clone())
+            .collect();
+        api.requests.records.extend(
+            from_schema(&schema, &["Hold"])
+                .unwrap()
+                .into_iter()
+                .filter(|record| !known.contains(&record.name)),
+        );
+        let out = dart_declarations(&api);
+        assert!(
+            !out.contains("final class Interval "),
+            "the layer declares it"
+        );
+        assert!(
+            out.contains("List<Object?> get _fields => [end, jsonEncode(window._wire), if (windows case final windowsValue?) jsonEncode([for (final e0 in windowsValue) e0._wire]) else null];"),
+            "a generated part compares as itself, a hand-kept one by its JSON: {out}"
+        );
+    }
+
+    #[test]
     fn python_types_each_field_as_serde_reads_it() {
         let out = python_declarations(&fixture());
         // A key no class body can declare (`with-dash`) puts the record in
