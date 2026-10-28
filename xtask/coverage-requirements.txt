@@ -1,0 +1,6 @@
+# The coverage tool `cargo xtask check-python` runs the binding's tests
+# under when TEISTRO_BINDING_COVERAGE names a directory
+# (docs/03-design/binding-coverage.md). Pinned, since each release of it
+# counts lines and branches its own way and the floors are its counts;
+# installed into bindings/python/.venv beside the pinned type checker.
+coverage==7.16.2

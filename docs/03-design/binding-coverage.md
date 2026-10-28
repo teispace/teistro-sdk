@@ -21,7 +21,7 @@ files are readers, not data.
 |---|---|---|---|---|
 | Node | `bindings/node/lib/**/*.js` | Node's own `--experimental-test-coverage`, LCOV reporter | yes | yes |
 | Python | `bindings/python/teistro/**/*.py` | coverage.py, `--branch`, its LCOV report | yes | yes |
-| Dart | `bindings/dart/lib/**/*.dart` | `dart test --coverage-path`, LCOV | yes | no: the VM counts none |
+| Dart | `bindings/dart/lib/**/*.dart` | `dart test --coverage-path --branch-coverage`, LCOV | yes | yes |
 | Java | `bindings/java/src` and `generated` | JaCoCo's agent, its XML report | yes | yes |
 
 The C binding is the header and the library, which the crates' row
@@ -33,9 +33,10 @@ Each tool's own format is read, never re-implemented: three write LCOV
 (`LF`/`LH` lines, `BRF`/`BRH` branches per file), JaCoCo writes XML with
 its `LINE` and `BRANCH` counters. Node needs nothing installed; its
 coverage is the runtime's own. coverage.py and the JaCoCo agent are
-pinned (a requirements file with hashes; a Maven coordinate with its
-SHA-256, fetched as `check-java` fetches nothing else today), so a
-tool's upgrade, which moves its counts, is a commit.
+pinned (`xtask/coverage-requirements.txt`; a Maven coordinate with its
+SHA-256), so a tool's upgrade, which moves its counts, is a commit. Node
+and Dart count with the runtime itself, so their version is the
+runtime's, which each `.tool` file names.
 
 ## 2. How a run is asked for
 
@@ -82,6 +83,7 @@ run is the same command with the variable set.
    with unit tests on small fixtures of each format.
 2. Node under its own coverage in `check-node`.
 3. Python under coverage.py in `check-python`, the pinned requirement.
-4. Dart's `--coverage-path` in `check-dart`.
+4. Dart's `--coverage-path --branch-coverage` in `check-dart`, on the
+   suite and not the leak checks, which read the allocator.
 5. Java under the pinned JaCoCo agent in `check-java`.
 6. Verify's `linux-x64` row, the first record, the quality bar row.

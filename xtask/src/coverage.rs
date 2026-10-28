@@ -43,6 +43,7 @@ use std::path::Path;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::binding_coverage;
 use crate::generated::{Output, check, on_main, write};
 
 /// The record the floors are kept in.
@@ -63,6 +64,8 @@ const COVERAGE_OFF: &str = "#[cfg_attr(coverage_nightly, coverage(off))]";
 const WORKFLOW: &str = ".github/workflows/verify.yml";
 /// The line coverage the quality bar asks of a computation crate.
 const TARGET: u8 = 90;
+/// What it asks of a binding's layer.
+const BINDING_TARGET: u8 = 80;
 /// Crates under `crates/` that are not measured, each with why.
 const NOT_MEASURED: [(&str, &str); 1] = [(
     "scenario",
@@ -84,6 +87,9 @@ struct Record {
     floors: BTreeMap<String, u8>,
     #[serde(default)]
     branch_floors: BTreeMap<String, u8>,
+    /// Each binding's floors (`03-design/binding-coverage.md`).
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    bindings: BTreeMap<String, binding_coverage::Floors>,
 }
 
 /// What counted a record from before the toolchain was named.
@@ -118,9 +124,9 @@ struct Measured {
 
 /// How many of a crate's lines or branches count, and how many ran.
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq)]
-struct Counts {
-    count: u64,
-    covered: u64,
+pub(crate) struct Counts {
+    pub(crate) count: u64,
+    pub(crate) covered: u64,
 }
 
 impl Counts {
@@ -134,7 +140,7 @@ impl Counts {
         clippy::cast_precision_loss,
         reason = "line counts far below 2^52, read to a percent"
     )]
-    fn percent(self) -> f64 {
+    pub(crate) fn percent(self) -> f64 {
         if self.count == 0 {
             100.0
         } else {
@@ -148,24 +154,32 @@ impl Counts {
         clippy::cast_sign_loss,
         reason = "a percent between 0 and 100"
     )]
-    fn floor(self) -> u8 {
+    pub(crate) fn floor(self) -> u8 {
         self.percent().floor().clamp(0.0, 100.0) as u8
     }
 }
 
-/// `coverage --from FILE` and `check-coverage [--from FILE]`.
+/// `coverage --from FILE | --bindings DIR` and `check-coverage [--from
+/// FILE] [--bindings DIR]`.
 pub(crate) fn command(root: &Path, command: &str, args: &[String]) -> i32 {
-    let from = args
-        .iter()
-        .position(|arg| arg == "--from")
-        .and_then(|at| args.get(at + 1));
-    let result = match (command, from) {
-        ("coverage", Some(from)) => record(root, Path::new(from)),
-        ("coverage", None) => {
-            eprintln!("usage: cargo xtask coverage --from FILE | check-coverage [--from FILE]");
+    let value = |flag: &str| {
+        args.iter()
+            .position(|arg| arg == flag)
+            .and_then(|at| args.get(at + 1))
+            .map(Path::new)
+    };
+    let (from, bindings) = (value("--from"), value("--bindings"));
+    let result = match (command, from, bindings) {
+        ("coverage", Some(from), None) => record(root, from),
+        ("coverage", None, Some(dir)) => record_bindings(root, dir),
+        ("coverage", _, _) => {
+            eprintln!(
+                "usage: cargo xtask coverage --from FILE | coverage --bindings DIR | \
+                 check-coverage [--from FILE] [--bindings DIR]"
+            );
             return 2;
         }
-        (_, from) => check_coverage(root, from.map(Path::new)),
+        (_, from, bindings) => check_coverage(root, from, bindings),
     };
     match result {
         Ok(code) => code,
@@ -317,6 +331,10 @@ fn record(root: &Path, from: &Path) -> Result<i32, String> {
     // nothing of this count, so the run re-bases every floor.
     let old = read_record(root).ok().filter(Record::counted_here);
     let exists = |name: &str| root.join("crates").join(name).is_dir();
+    // The bindings' floors are another count's, kept whatever this one is.
+    let bindings = read_record(root)
+        .map(|record| record.bindings)
+        .unwrap_or_default();
     let (old_lines, old_branches) =
         old.map_or_else(Default::default, |old| (old.floors, old.branch_floors));
     let record = Record {
@@ -325,14 +343,29 @@ fn record(root: &Path, from: &Path) -> Result<i32, String> {
         counts: COUNTS.to_owned(),
         floors: raised(&old_lines, &lines_of(&run), exists),
         branch_floors: raised(&old_branches, &branches_of(&run), exists),
+        bindings,
     };
-    let text = serde_json::to_string_pretty(&record).map_err(|e| e.to_string())? + "\n";
+    written(root, &record)
+}
+
+/// Raises the bindings' floors to a directory of reports, the crates'
+/// left as they are.
+fn record_bindings(root: &Path, dir: &Path) -> Result<i32, String> {
+    let run = binding_coverage::measured(dir)?;
+    if run.is_empty() {
+        return Err(format!("{} holds no binding's report", dir.display()));
+    }
+    let mut record = read_record(root)?;
+    record.bindings = binding_coverage::raised(&record.bindings, &run);
+    written(root, &record)
+}
+
+/// Writes the record and its page.
+fn written(root: &Path, record: &Record) -> Result<i32, String> {
+    let text = serde_json::to_string_pretty(record).map_err(|e| e.to_string())? + "\n";
     Ok(write(
         root,
-        &[
-            Output::new(RECORD, text),
-            Output::new(PAGE, render(&record)),
-        ],
+        &[Output::new(RECORD, text), Output::new(PAGE, render(record))],
     ))
 }
 
@@ -347,7 +380,11 @@ fn lowered(kind: &str, main: &BTreeMap<String, u8>, now: &BTreeMap<String, u8>) 
         .collect()
 }
 
-fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
+fn check_coverage(
+    root: &Path,
+    from: Option<&Path>,
+    bindings: Option<&Path>,
+) -> Result<i32, String> {
     let record = read_record(root)?;
     let mut failures = check(
         root,
@@ -397,6 +434,7 @@ fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
                     &main.branch_floors,
                     &record.branch_floors,
                 ))
+                .chain(binding_coverage::lowered(&main.bindings, &record.bindings))
                 .for_each(&mut fail);
         }
         Some(Err(why)) => {
@@ -408,17 +446,31 @@ fn check_coverage(root: &Path, from: Option<&Path>) -> Result<i32, String> {
     }
     if let Some(from) = from {
         let run = read_export(from)?;
-        findings("lines", &record.floors, &lines_of(&run))
+        let found: Vec<String> = findings("lines", &record.floors, &lines_of(&run))
             .into_iter()
             .chain(findings(
                 "branches",
                 &record.branch_floors,
                 &branches_of(&run),
             ))
-            .for_each(&mut fail);
-        if failures == 0 {
+            .collect();
+        let clean = found.is_empty();
+        found.into_iter().for_each(&mut fail);
+        if clean {
             println!(
                 "ok    {} crates at or over their line and branch floors",
+                run.len()
+            );
+        }
+    }
+    if let Some(dir) = bindings {
+        let run = binding_coverage::measured(dir)?;
+        let found = binding_coverage::findings(&record.bindings, &run);
+        let clean = found.is_empty();
+        found.into_iter().for_each(&mut fail);
+        if clean {
+            println!(
+                "ok    {} bindings at or over their line and branch floors",
                 run.len()
             );
         }
@@ -537,8 +589,9 @@ fn render(record: &Record) -> String {
          by hand fails against `main`'s. The quality bar asks {TARGET}% of lines and of \
          branches of a computation crate; {at_target} of the {total} crates have reached \
          both.\n\n\
-         | crate | lines | branches | at {TARGET}% |\n|---|---:|---:|---|\n{rows}",
+         | crate | lines | branches | at {TARGET}% |\n|---|---:|---:|---|\n{rows}{bindings}",
         total = record.floors.len(),
+        bindings = render_bindings(&record.bindings),
         counted_by = record.counted_by,
         counts = record.counts,
         skipped = NOT_MEASURED
@@ -547,6 +600,42 @@ fn render(record: &Record) -> String {
                 let _ = write!(out, ", and `{name}` is not measured: {why}");
                 out
             }),
+    )
+}
+
+/// The bindings' section of the page, or nothing before any is recorded.
+fn render_bindings(bindings: &BTreeMap<String, binding_coverage::Floors>) -> String {
+    if bindings.is_empty() {
+        return String::new();
+    }
+    let mut rows = String::new();
+    for (name, floor) in bindings {
+        let branches = floor
+            .branches
+            .map_or_else(|| String::from("not counted"), |b| format!("{b}%"));
+        let mark = if floor.lines >= BINDING_TARGET
+            && floor.branches.is_none_or(|b| b >= BINDING_TARGET)
+        {
+            "yes"
+        } else {
+            "no"
+        };
+        let _ = writeln!(
+            rows,
+            "| {name} | {}% | {branches} | `{}` | {mark} |",
+            floor.lines, floor.counted_by
+        );
+    }
+    format!(
+        "\n## The bindings\n\n\
+         Each binding's own layer, its generated readers and its ergonomic code, under its own \
+         tool (`03-design/binding-coverage.md`), recorded by `cargo xtask coverage --bindings \
+         DIR` from the reports the binding checks write when `{variable}` names a directory. \
+         A floor rises as a crate's does, and a tool's new version re-bases it. The quality bar \
+         asks {BINDING_TARGET}% of a binding's lines, and of its branches where its tool counts \
+         them.\n\n\
+         | binding | lines | branches | counted by | at {BINDING_TARGET}% |\n|---|---:|---:|---|---|\n{rows}",
+        variable = binding_coverage::VARIABLE,
     )
 }
 
@@ -711,6 +800,7 @@ mod tests {
             counts: COUNTS.into(),
             floors: [("a".into(), 95), ("b".into(), 95), ("c".into(), 95)].into(),
             branch_floors: [("a".into(), 91), ("b".into(), 85)].into(),
+            bindings: BTreeMap::new(),
         };
         let page = render(&record);
         assert!(page.contains("| `a` | 95% | 91% | yes |"), "{page}");
@@ -731,5 +821,37 @@ mod tests {
             lowered("branch", &[("b".into(), 90)].into(), &record.branch_floors),
             ["`b`'s branch floor fell from 90% on main to 85%"]
         );
+        assert!(!page.contains("## The bindings"), "{page}");
+    }
+
+    /// The bindings' table marks a binding at the target on its lines and,
+    /// where its tool counts them, its branches.
+    #[test]
+    fn the_page_lists_the_bindings_once_recorded() {
+        let floors = |lines, branches| binding_coverage::Floors {
+            counted_by: "tool 1".into(),
+            lines,
+            branches,
+        };
+        let bindings = [
+            ("dart".into(), floors(85, None)),
+            ("node".into(), floors(85, Some(70))),
+        ]
+        .into();
+        let page = render_bindings(&bindings);
+        assert!(
+            page.contains("| dart | 85% | not counted | `tool 1` | yes |"),
+            "{page}"
+        );
+        assert!(
+            page.contains("| node | 85% | 70% | `tool 1` | no |"),
+            "{page}"
+        );
+        let record = parse_record(
+            r#"{"schema": "teistro-coverage/1", "floors": {}, "bindings": {"node": {"counted_by": "node 26", "lines": 81}}}"#,
+        )
+        .unwrap();
+        assert_eq!(record.bindings["node"].branches, None);
+        assert!(render(&record).contains("| node | 81% | not counted | `node 26` | yes |"));
     }
 }

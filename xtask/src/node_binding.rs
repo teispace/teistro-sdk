@@ -12,6 +12,7 @@ use std::path::Path;
 use std::process::Command;
 
 use crate::binding::{FIXTURES, blob_fixtures, build, pinned_npm_tool, present, step, tool};
+use crate::binding_coverage;
 use crate::examples::{Binding, Runtime};
 use crate::platform::Platform;
 
@@ -140,6 +141,30 @@ fn leak_reader(root: &Path) {
     }
 }
 
+/// `node --test`, and under the runtime's own coverage when a run asked
+/// for the bindings' reports (`03-design/binding-coverage.md`): the
+/// layer's files alone, an LCOV report beside the usual one.
+fn measured_suite(root: &Path, suite: &mut Command) -> Result<(), String> {
+    suite.arg("--test");
+    let Some(dir) = binding_coverage::asked(root)? else {
+        return Ok(());
+    };
+    binding_coverage::name_tool(&dir, "node", "node", Command::new("node").arg("--version"))?;
+    suite
+        .args([
+            "--experimental-test-coverage",
+            "--test-coverage-include=lib/**",
+            "--test-reporter=spec",
+            "--test-reporter-destination=stdout",
+            "--test-reporter=lcov",
+        ])
+        .arg(format!(
+            "--test-reporter-destination={}",
+            dir.join("node.lcov").display()
+        ));
+    Ok(())
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     if !present("node", "--version") {
         crate::skip::skip("no `node` on this machine; the Node binding's tests need it");
@@ -150,10 +175,18 @@ pub(crate) fn check(root: &Path) -> i32 {
         return 1;
     }
     leak_reader(root);
+    let mut suite = Command::new("node");
+    match measured_suite(root, &mut suite) {
+        Ok(()) => {}
+        Err(why) => {
+            println!("FAIL  {why}");
+            return 1;
+        }
+    }
     let outcome = blob_fixtures(root, &fixtures).and_then(|()| {
         step(
-            Command::new("node")
-                .args(["--test", SUITE])
+            suite
+                .arg(SUITE)
                 .env("TEISTRO_FIXTURES", &fixtures)
                 .current_dir(root.join("bindings/node")),
             &format!("{TESTS} decodes what the library produced"),
