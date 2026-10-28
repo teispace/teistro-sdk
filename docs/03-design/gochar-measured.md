@@ -17,8 +17,8 @@ through `sdk.chart().gochar` on the first of each month of 2026:
 
 | graha | good | obstructed | not good | obstructed, of the good houses |
 |---|---:|---:|---:|---:|
-| Sun | 136 | 84 | 440 | 38.2% |
-| Moon | 155 | 190 | 315 | 55.1% |
+| Sun | 134 | 86 | 440 | 39.1% |
+| Moon | 156 | 195 | 309 | 55.6% |
 | Mars | 99 | 68 | 493 | 40.7% |
 | Mercury | 197 | 130 | 333 | 39.8% |
 | Jupiter | 102 | 185 | 373 | 64.5% |
@@ -31,10 +31,10 @@ What each fork moves, over the same readings:
 
 | counted or read otherwise | verdicts moved, of 5940 |
 |---|---:|
-| from the lagna instead of the Moon (C139) | 3146 |
+| from the lagna instead of the Moon (C139) | 3145 |
 | `node_vedha = NONE` (C136) | 125 |
 | `node_obstruction = EACH_OTHER_TOO` (C140) | 307 |
-| `node_obstruction = NONE` (C137) | 238 |
+| `node_obstruction = NONE` (C137) | 240 |
 
 ## 2. Who obstructs whom, over sixty years of sky
 
@@ -43,14 +43,14 @@ reference signs: 262 980 readings. The verdicts:
 
 | graha | good | obstructed | not good | obstructed, of the good houses |
 |---|---:|---:|---:|---:|
-| Sun | 60 252 | 27 408 | 175 320 | 31.3% |
-| Moon | 73 511 | 57 979 | 131 490 | 44.1% |
-| Mars | 35 813 | 29 932 | 197 235 | 45.5% |
+| Sun | 60 228 | 27 432 | 175 320 | 31.3% |
+| Moon | 73 559 | 57 931 | 131 490 | 44.1% |
+| Mars | 35 817 | 29 928 | 197 235 | 45.5% |
 | Mercury | 70 119 | 61 371 | 131 490 | 46.7% |
-| Jupiter | 59 060 | 50 515 | 153 405 | 46.1% |
-| Venus | 116 077 | 81 158 | 65 745 | 41.1% |
-| Saturn | 36 533 | 29 212 | 197 235 | 44.4% |
-| Rahu | 51 164 | 36 496 | 175 320 | 41.6% |
+| Jupiter | 59 046 | 50 529 | 153 405 | 46.1% |
+| Venus | 116 056 | 81 179 | 65 745 | 41.2% |
+| Saturn | 36 531 | 29 214 | 197 235 | 44.4% |
+| Rahu | 51 148 | 36 512 | 175 320 | 41.7% |
 | Ketu | 51 720 | 35 940 | 175 320 | 41.0% |
 
 Each cell counts the times the column's graha **obstructed** the row's,
@@ -60,15 +60,15 @@ it stood; `never` is a pair the sky never put there.
 
 | obstructed ↓ by → | Sun | Moon | Mars | Mercury | Jupiter | Venus | Saturn | Rahu | Ketu |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Sun | — | 7132 | 2668 | never | 6356 | never | spared (6600) | 7352 | 7240 |
-| Moon | 10 879 | — | 10 993 | spared (10 948) | 10 888 | 10 926 | 10 958 | 10 989 | 10 963 |
-| Mars | 4280 | 5477 | — | 4549 | 5940 | 4531 | 5519 | 5759 | 5917 |
-| Mercury | 10 697 | spared (11 020) | 12 893 | — | 11 295 | 13 602 | 11 229 | 9874 | 11 740 |
-| Jupiter | 9581 | 9228 | 8741 | 9553 | — | 9340 | 8602 | 9114 | 9269 |
-| Venus | 3916 | 16 399 | 12 415 | 5573 | 15 889 | — | 15 836 | 16 291 | 16 428 |
-| Saturn | spared (5308) | 5482 | 5519 | 5182 | 5375 | 5263 | — | 5856 | 5477 |
-| Rahu | 7352 | 7352 | 7340 | 6796 | 7180 | 6808 | 8616 | — | spared (87 660) |
-| Ketu | 7240 | 7336 | 7972 | 7748 | 6948 | 7528 | 7100 | spared (87 660) | — |
+| Sun | — | 7176 | 2668 | never | 6356 | never | spared (6596) | 7352 | 7240 |
+| Moon | 10 904 | — | 10 976 | spared (10 921) | 10 868 | 10 933 | 10 960 | 10 969 | 10 971 |
+| Mars | 4280 | 5473 | — | 4549 | 5940 | 4530 | 5519 | 5759 | 5917 |
+| Mercury | 10 697 | spared (10 975) | 12 894 | — | 11 293 | 13 602 | 11 228 | 9876 | 11 740 |
+| Jupiter | 9581 | 9237 | 8741 | 9553 | — | 9340 | 8602 | 9114 | 9269 |
+| Venus | 3915 | 16 409 | 12 415 | 5573 | 15 890 | — | 15 835 | 16 291 | 16 429 |
+| Saturn | spared (5307) | 5479 | 5519 | 5182 | 5375 | 5263 | — | 5856 | 5477 |
+| Rahu | 7352 | 7348 | 7340 | 6796 | 7180 | 6808 | 8616 | — | spared (87 660) |
+| Ketu | 7240 | 7320 | 7972 | 7748 | 6948 | 7532 | 7100 | spared (87 660) | — |
 
 The pairs spared, as the verses name them:
 
