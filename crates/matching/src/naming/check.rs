@@ -10,6 +10,7 @@ use super::cakra::NameSyllable;
 use super::clauses::NameClauses;
 use super::pada::{InitialBy, PadaSyllable, pada_of, reached_by};
 use super::read::read_name;
+use crate::avakahada::Avakahada;
 
 /// A birth, as the names it gives are read from it: the Moon's star and
 /// pada.
@@ -30,6 +31,28 @@ pub struct Birth {
     pub nakshatra: Nakshatra,
     /// Its pada, 1 to 4.
     pub pada: u8,
+}
+
+/// A chart's birth for naming: the avakahada's own Moon, so a name read
+/// against a chart and the syllable the chart prints cannot disagree
+/// (`03-design/namakarana.md` §4.2, `with_naming`).
+///
+/// ```
+/// use teistro_matching::{Birth, Native, avakahada};
+///
+/// // A Moon at 45° stands in Rohini's 2nd pada.
+/// let moon = avakahada(Native::of_moon(45.0)?)?;
+/// let birth = Birth::from(&moon);
+/// assert_eq!((birth.nakshatra, birth.pada), (moon.nakshatra, moon.pada));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+impl From<&Avakahada> for Birth {
+    fn from(avakahada: &Avakahada) -> Birth {
+        Birth {
+            nakshatra: avakahada.nakshatra,
+            pada: avakahada.pada,
+        }
+    }
 }
 
 /// A name read against the syllable a birth names a child by

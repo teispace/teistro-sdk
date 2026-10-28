@@ -684,6 +684,117 @@ void putPorutham(String prefix, Porutham ten) {
   }
 }
 
+/// A child named by the cakra, as every runner asks it: Makara's
+/// syllables, three names read under CASUAL and checked against Ardra's
+/// third pada, a Krittika birth's names, and a book loaded and suggested
+/// from, with one refusal.
+void putNaming(Context ctx) {
+  String star(Nakshatra? member) => member?.fullKey ?? 'NONE';
+  String rows(NameClauses clauses) => [
+    for (final row in clauses.rows)
+      '${row.clause.key}:${flag(row.holds)}:${row.source.key}',
+  ].join(',');
+  for (final (i, one)
+      in ctx.naming
+          .syllables(const SyllablesOfRashi(rashi: Rashi.capricorn))
+          .indexed) {
+    final initials = [
+      for (final initial in one.initials)
+        '${initial.devanagari}:${initial.by.key}',
+    ].join(',');
+    put(
+      'naming-syllables-$i',
+      '${one.cell} ${star(one.nakshatra)} ${one.pada ?? 'NONE'} '
+          '${one.rashi.fullKey} ${one.devanagari} ${one.iast} '
+          '${one.varga.key} $initials',
+    );
+  }
+  final read = ctx.naming.read([
+    'राम',
+    'Shiva',
+    'ऐश्वर्य',
+  ], const NamingRules(name: NameRules(latin: LatinName.casual)));
+  for (final (i, one) in read.indexed) {
+    final reading = one.reading;
+    if (reading == null) {
+      put('naming-read-$i', 'refused ${one.refused?.field}');
+      continue;
+    }
+    put(
+      'naming-read-$i',
+      '${flag(reading.ambiguous)} ${reading.readings.length}',
+    );
+    for (final (j, spelled) in reading.readings.indexed) {
+      final s = spelled.syllable;
+      put(
+        'naming-read-$i-$j',
+        '${spelled.spelled} ${s.cell} ${star(s.nakshatra)} ${s.quarter} '
+            '${s.varga.key} ${spelled.rashi.fullKey} '
+            '${spelled.clauses.syllables} ${spelled.clauses.counted.key} '
+            '${rows(spelled.clauses)}',
+      );
+    }
+  }
+  const ardra = Birth(nakshatra: Nakshatra.ardra, pada: 3);
+  for (final (i, one)
+      in ctx.naming.check(['चूडामणि', 'गणेश', 'ऐश्वर्य'], ardra).indexed) {
+    final c = one.check;
+    put(
+      'naming-check-$i',
+      c == null
+          ? 'refused ${one.refused?.field}'
+          : '${c.read.cell} ${c.prescribed.cell} ${flag(c.sameStar)} '
+              '${flag(c.samePada)} ${flag(c.bySubstitute)} '
+              '${c.clauses.syllables}',
+    );
+  }
+  final names = ctx.naming.of(
+    const Birth(nakshatra: Nakshatra.krittika, pada: 1),
+  );
+  put(
+    'naming-of',
+    '${names.syllable.cell} ${names.syllable.devanagari} '
+        '${names.deity.fullKey}',
+  );
+  final loaded = ctx.naming.load(
+    const Book(
+      names: [
+        BookName(devanagari: 'गणेश', sex: Sex.male),
+        BookName(devanagari: 'गीता', sex: Sex.female),
+        BookName(devanagari: 'गोपाल'),
+        BookName(devanagari: 'औषधि'),
+      ],
+    ),
+  );
+  final refused = [
+    for (final one in loaded.refused) '${one.index}:${one.error.field}',
+  ].join(',');
+  put('naming-load', '${loaded.book} ${loaded.names} $refused');
+  final found = ctx.naming.suggest(
+    loaded.book,
+    ardra,
+    const SuggestFilter(),
+    const NamingRules(finalA: FinalA.silent),
+  );
+  put(
+    'naming-suggest-prescribed',
+    '${found.prescribed.cell} ${found.prescribed.devanagari}',
+  );
+  for (final (k, one) in found.names.indexed) {
+    put(
+      'naming-suggest-$k',
+      '${one.index} ${one.by.key} ${flag(one.samePada)} '
+          '${one.reading.spelled} ${one.reading.clauses.syllables}',
+    );
+  }
+  try {
+    ctx.naming.of(const Birth(nakshatra: Nakshatra.krittika, pada: 5));
+    put('naming-refusal', 'none');
+  } on TeistroException catch (error) {
+    put('naming-refusal', '${error.status.key} ${error.field}');
+  }
+}
+
 /// Two pairs of names, as every runner asks them: a Devanagari pair whose
 /// groom's syllable is Abhijit's, placed in Shravana, and an IAST pair.
 void putNaam(Context ctx) {
@@ -994,6 +1105,7 @@ void main() {
   put('settings-hash', ctx.settingsHash);
   put('settings-fnv', fnv(ctx.settingsJson));
   putNaam(ctx);
+  putNaming(ctx);
   putNumerology(ctx);
 
   // ── The calendars ────────────────────────────────────────────────────
@@ -3640,6 +3752,12 @@ void main() {
     ('keys.id', ctx.keys.id),
     ('keys.name', ctx.keys.name),
     ('matching.naam', ctx.matching.naam),
+    ('naming.syllables', ctx.naming.syllables),
+    ('naming.read', ctx.naming.read),
+    ('naming.check', ctx.naming.check),
+    ('naming.of', ctx.naming.of),
+    ('naming.load', ctx.naming.load),
+    ('naming.suggest', ctx.naming.suggest),
     ('numerology.profile', ctx.numerology.profile),
     ('frame.canonical', ctx.frame.canonical),
     ('frame.pack', ctx.frame.pack),

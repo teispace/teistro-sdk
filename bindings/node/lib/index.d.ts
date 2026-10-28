@@ -41,6 +41,7 @@ import type {
   MonthKind,
   MuhurtaYoga,
   Sunrises,
+  Deity,
   Nakshatra,
   Paksha,
   Panchaka,
@@ -224,6 +225,13 @@ import type {
   MunthaDegree,
   NaamRules,
   NameSounds,
+  Birth,
+  Book,
+  NameClause,
+  FinalA,
+  NamingRules,
+  SuggestFilter,
+  SyllablesOf,
   NatalPoint,
   NightRule,
   NumerologyRequestRules,
@@ -1943,6 +1951,165 @@ export interface NameSyllable {
   readonly quarter: number;
   /** The letter group the name begins in (VI.35). */
   readonly varga: NameVarga | 'unknown';
+}
+
+/** How an initial reaches a pada's cell: its own letter, a paired letter (C294), or the patro's substitute for a nasal no name begins with (C770). */
+export type InitialBy = 'CELL' | 'PAIRED' | 'SUBSTITUTE';
+
+/** Whose text a clause of a name in daily use is reported from (C774). */
+export type ClauseSource = 'PARASKARA' | 'ASHVALAYANA' | 'APASTAMBA_HIRANYAKESHIN';
+
+/** A letter a name may begin with to take a pada's syllable. */
+export interface NameInitial {
+  /** The letter, as Devanagari. */
+  readonly devanagari: string;
+  /** Its IAST. */
+  readonly iast: string;
+  /** How it reaches the cell. */
+  readonly by: InitialBy;
+}
+
+/** One cell of the cakra as a name may begin with it (C297, C770, C771). */
+export interface PadaSyllable {
+  /** Its place among the cakra's 112 cells, 0 for a, Krittika's first. */
+  readonly cell: number;
+  /** Its star, or null for Abhijit's row. */
+  readonly nakshatra: Nakshatra | null;
+  /** Its pada, 1 to 4, or null for Abhijit's, which is no pada (C298). */
+  readonly pada: number | null;
+  /** The sign it stands in; Makara for Abhijit's (C771). */
+  readonly rashi: Rashi;
+  /** The print's spelling (C299). */
+  readonly devanagari: string;
+  /** Its IAST. */
+  readonly iast: string;
+  /** The varga of its letter (C295). */
+  readonly varga: NameVarga;
+  /** Every letter that reaches the cell: its own first. */
+  readonly initials: readonly NameInitial[];
+}
+
+/** One clause of a name in daily use, as one sutra gives it (C774). */
+export interface NameClauseRow {
+  readonly clause: NameClause;
+  /** Whether the name meets it. */
+  readonly holds: boolean;
+  /** Whose text gives it. */
+  readonly source: ClauseSource;
+}
+
+/** A name's syllables and the clauses of a name in daily use (C774). */
+export interface NameClauses {
+  /** Its syllables, counted by their vowels. */
+  readonly syllables: number;
+  /** How the final inherent a was counted. */
+  readonly counted: FinalA;
+  /** The rows of the rules' sutra. */
+  readonly rows: readonly NameClauseRow[];
+}
+
+/** One cell a name's spelling reaches. */
+export interface SpelledName {
+  /** The Devanagari it was read as. */
+  readonly spelled: string;
+  /** Its first syllable in the cakra. */
+  readonly syllable: NameSyllable;
+  /** The sign that syllable's pada stands in. */
+  readonly rashi: Rashi;
+  /** Its syllables and clauses. */
+  readonly clauses: NameClauses;
+}
+
+/** A name read: one entry per first syllable its spelling reaches. */
+export interface NameReading {
+  readonly readings: readonly SpelledName[];
+  /** Whether there is more than one. */
+  readonly ambiguous: boolean;
+}
+
+/** Why a name of a batch, or of a book, was refused: the SDK's error as a record. */
+export interface NameRefusal {
+  readonly status: string;
+  readonly detail: string | null;
+  readonly message: string;
+  /** The field it names: `naming.names[2]`, `book.names[4].devanagari`. */
+  readonly field: string | null;
+  readonly hint: string | null;
+  readonly key: unknown;
+}
+
+/** One name of a batch read: its reading, or its refusal. */
+export interface NameRead {
+  readonly reading: NameReading | null;
+  readonly refused: NameRefusal | null;
+}
+
+/** A name read against a birth's pada: facts, not a score (C334, C770). */
+export interface NameCheck {
+  /** The name's first syllable. */
+  readonly read: NameSyllable;
+  /** The birth pada's syllable, with every initial that reaches it. */
+  readonly prescribed: PadaSyllable;
+  /** Whether the name begins in the birth star's row. */
+  readonly sameStar: boolean;
+  /** Whether it begins in the birth pada's own cell. */
+  readonly samePada: boolean;
+  /** Whether it begins with the pada's substitute (C770). */
+  readonly bySubstitute: boolean;
+  readonly clauses: NameClauses;
+}
+
+/** One name of a batch checked: its check, or its refusal. */
+export interface NameChecked {
+  readonly check: NameCheck | null;
+  readonly refused: NameRefusal | null;
+}
+
+/** The names a birth gives, of Dharmasindhu's four the SDK computes (C773). */
+export interface Names {
+  /** The pada's syllable: the default, the avakahada reading. */
+  readonly syllable: PadaSyllable;
+  /** The star's deity, whose name the Śāṅkhāyanas give. */
+  readonly deity: Deity;
+}
+
+/** A name a book holds that the cakra refused. */
+export interface RefusedName {
+  /** Its place in the book. */
+  readonly index: number;
+  readonly error: NameRefusal;
+}
+
+/** A book loaded into a context. */
+export interface LoadedBook {
+  /** Its id, the SHA-256 of its canonical JSON, which a suggestion names it by. */
+  readonly book: string;
+  /** How many names it holds. */
+  readonly names: number;
+  readonly refused: readonly RefusedName[];
+}
+
+/** A name a book suggests for a birth. */
+export interface Suggested {
+  /** Its place in the book. */
+  readonly index: number;
+  readonly reading: SpelledName;
+  /** How it reaches the birth pada. */
+  readonly by: InitialBy;
+  /** Whether it begins in the pada's own cell. */
+  readonly samePada: boolean;
+}
+
+/** The names a book suggests for a birth. */
+export interface Suggestions {
+  /** The book asked. */
+  readonly book: string;
+  /** The birth pada's syllable, with its initials. */
+  readonly prescribed: PadaSyllable;
+  /** In cakra order, then the book's. */
+  readonly names: readonly Suggested[];
+  /** Every name the book holds that the cakra refused, listed, never dropped. */
+  readonly refused: readonly RefusedName[];
 }
 
 /** Two names' vargas and how they stand (*Muhurta Chintamani* VI.35, C295). */
@@ -7643,6 +7810,62 @@ export declare class NumerologyArea {
   profile(name: string, date: BirthDate, rules?: NumerologyRequestRules): NumerologyProfile;
 }
 
+/**
+ * `sdk.naming` — the naming of a child (nāmakaraṇa): the syllables a
+ * pada, a star or a sign names a child by, names read and checked, the
+ * names a birth gives, and a consumer's own name book. It reads no sky,
+ * and the SDK ships no names. Every refusal is named under `naming`.
+ */
+export declare class NamingArea {
+  /**
+   * The syllables a pada, a star or a sign names a child by, in cakra order.
+   *
+   * @example
+   * const makara = ctx.naming.syllables({ of: 'RASHI', rashi: 'CAPRICORN' });
+   * console.log(makara.length); // 13: nine padas and Abhijit's four
+   */
+  syllables(of: SyllablesOf, rules?: NamingRules): readonly PadaSyllable[];
+  /**
+   * Names read into the cakra, each on its own; a name refused is its row's
+   * `refused`, named `naming.names[i]`.
+   *
+   * @example
+   * const [ram] = ctx.naming.read(['राम']);
+   * console.log(ram.reading?.readings[0]?.clauses.syllables); // 2
+   */
+  read(names: readonly string[], rules?: NamingRules): readonly NameRead[];
+  /**
+   * Names checked against a birth's pada, each on its own.
+   *
+   * @example
+   * const [checked] = ctx.naming.check(['चूडामणि'], { nakshatra: 'ASHWINI', pada: 1 });
+   * console.log(checked.check?.samePada); // true
+   */
+  check(names: readonly string[], birth: Birth, rules?: NamingRules): readonly NameChecked[];
+  /**
+   * The names a birth gives: its pada's syllable and its star's deity.
+   *
+   * @example
+   * ctx.naming.of({ nakshatra: 'KRITTIKA', pada: 1 }).deity; // 'deity.AGNI'
+   */
+  of(birth: Birth, rules?: NamingRules): Names;
+  /**
+   * Loads a name book into this context and answers its id.
+   *
+   * @example
+   * const { book } = ctx.naming.load({ names: [{ devanagari: 'चूडामणि', sex: 'MALE' }] });
+   */
+  load(book: Book): LoadedBook;
+  /**
+   * The names a book suggests for a birth: a loaded book by its id, or a
+   * book given whole for this one call.
+   *
+   * @example
+   * const found = ctx.naming.suggest(book, { nakshatra: 'ASHWINI', pada: 1 }, { sex: 'MALE' });
+   */
+  suggest(book: string | Book, birth: Birth, filter?: SuggestFilter, rules?: NamingRules): Suggestions;
+}
+
 /** A birth of a study (`03-design/research.md`). */
 export interface ResearchBirth {
   /** The instant, a Julian day in UTC. */
@@ -7896,6 +8119,8 @@ export declare class Context {
   readonly matching: MatchingArea;
   /** What a name and a birth date say under numerology's two systems. */
   readonly numerology: NumerologyArea;
+  /** The naming of a child: syllables, names read and checked, and a name book. */
+  readonly naming: NamingArea;
   /** Counts and permutation tests over a batch of births. */
   readonly research: ResearchArea;
   /** The id of the profile the settings came from. */

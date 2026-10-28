@@ -12,7 +12,7 @@ import dataclasses
 import json
 import os
 import unittest
-from typing import Any, Dict, Optional, Union
+from typing import Any, Callable, Dict, Optional, Union
 
 from teistro import (
     ActivityRules,
@@ -3696,6 +3696,62 @@ class AnEngine(WithLibrary):
             for (asked, born, rules), field in refusals:
                 with self.assertRaises(TeistroError) as caught:
                     ctx.numerology.profile(asked, born, rules)
+                self.assertEqual(caught.exception.field, field)
+
+    def test_a_child_named_by_the_cakra_and_a_name_book_suggested_from(self) -> None:
+        """Ashvini's padas are cū ce co la; Dharmasindhu's Cūḍāmaṇi meets an
+        Ashvini first-pada birth and Āgniśarman a Krittika one; a book is
+        loaded once and suggested from, Ardra's third pada reaching ग by the
+        patro's gloss; every refusal named under `naming`
+        (`03-design/namakarana.md`)."""
+        from teistro import Book, LoadedBook, NameRead, Nakshatra, PadaSyllable, Rashi
+
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            ashvini: tuple[PadaSyllable, ...] = ctx.naming.syllables({"of": "NAKSHATRA", "nakshatra": "ASHWINI"})
+            self.assertEqual([one.devanagari for one in ashvini], ["चू", "चे", "चो", "ला"])
+            self.assertEqual((ashvini[0].nakshatra, ashvini[0].rashi, ashvini[0].pada), (Nakshatra.ASHWINI, Rashi.ARIES, 1))
+            makara = ctx.naming.syllables({"of": "RASHI", "rashi": "CAPRICORN"})
+            self.assertEqual(sum(1 for one in makara if one.pada is None), 4)
+
+            read: tuple[NameRead, ...] = ctx.naming.read(["राम", "ऐश्वर्य"])
+            ram = read[0].reading
+            assert ram is not None
+            self.assertEqual((ram.readings[0].clauses.syllables, ram.readings[0].rashi), (2, Rashi.LIBRA))
+            refused = read[1].refused
+            assert refused is not None
+            self.assertEqual(refused.field, "naming.names[1]")
+            shiva = ctx.naming.read(["Shiva"], {"name": {"latin": "CASUAL"}})[0].reading
+            assert shiva is not None
+            self.assertTrue(shiva.ambiguous)
+
+            checked = ctx.naming.check(["चूडामणि"], {"nakshatra": "ASHWINI", "pada": 1})[0].check
+            assert checked is not None
+            self.assertEqual((checked.same_pada, checked.prescribed.devanagari), (True, "चू"))
+            self.assertEqual(ctx.naming.of({"nakshatra": "KRITTIKA", "pada": 1}).deity.key, "AGNI")
+
+            book: Book = {
+                "names": [
+                    {"devanagari": "गणेश", "sex": "MALE"},
+                    {"devanagari": "गीता", "sex": "FEMALE"},
+                    {"devanagari": "औषधि"},
+                ]
+            }
+            loaded: LoadedBook = ctx.naming.load(book)
+            self.assertEqual((loaded.names, loaded.refused[0].index), (3, 2))
+            self.assertEqual(ctx.naming.load(book).book, loaded.book)
+            found = ctx.naming.suggest(loaded.book, {"nakshatra": "ARDRA", "pada": 3}, {"sex": "FEMALE"})
+            self.assertEqual([(one.index, one.by, one.same_pada) for one in found.names], [(1, "SUBSTITUTE", False)])
+            self.assertEqual(ctx.naming.suggest(book, {"nakshatra": "ARDRA", "pada": 3}, {"sex": "FEMALE"}), found)
+
+            refusals: list[tuple[Callable[[], object], str]] = [
+                (lambda: ctx.naming.of({"nakshatra": "KRITTIKA", "pada": 5}), "naming.birth.pada"),
+                (lambda: ctx.naming.load({"names": [{"devanagari": "राम", "sex": "BOY"}]}), "naming.book.names[0].sex"),
+                (lambda: ctx.naming.suggest("0" * 64, {"nakshatra": "ASHWINI", "pada": 1}), "naming.bookId"),
+                (lambda: ctx.naming.of(7), "birth"),  # type: ignore[arg-type]
+            ]
+            for run, field in refusals:
+                with self.assertRaises(TeistroError) as caught:
+                    run()
                 self.assertEqual(caught.exception.field, field)
 
     def test_a_rule_set_the_sdk_ships_whole_is_asked_by_its_name(self) -> None:

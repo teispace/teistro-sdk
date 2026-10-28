@@ -680,6 +680,63 @@ for (const [n, [bride, groom, rules]] of [
   putPorutham(`naam-${n}`, read.porutham);
 }
 
+// A child named by the cakra, as every runner asks it: Makara's
+// syllables, three names read under CASUAL and checked against Ardra's
+// third pada, a Krittika birth's names, and a book loaded and suggested
+// from, with one refusal.
+{
+  const star = (member) => member ?? 'NONE';
+  const rows = (clauses) => clauses.rows.map((row) => `${row.clause}:${flag(row.holds)}:${row.source}`).join(',');
+  ctx.naming.syllables({ of: 'RASHI', rashi: 'CAPRICORN' }).forEach((one, i) => {
+    const initials = one.initials.map((initial) => `${initial.devanagari}:${initial.by}`).join(',');
+    put(
+      `naming-syllables-${i}`,
+      `${one.cell} ${star(one.nakshatra)} ${one.pada ?? 'NONE'} ${one.rashi} ${one.devanagari} ${one.iast} ${one.varga} ${initials}`,
+    );
+  });
+  ctx.naming.read(['राम', 'Shiva', 'ऐश्वर्य'], { name: { latin: 'CASUAL' } }).forEach((one, i) => {
+    if (one.refused !== null) {
+      put(`naming-read-${i}`, `refused ${one.refused.field}`);
+      return;
+    }
+    put(`naming-read-${i}`, `${flag(one.reading.ambiguous)} ${one.reading.readings.length}`);
+    one.reading.readings.forEach((reading, j) => {
+      const s = reading.syllable;
+      put(
+        `naming-read-${i}-${j}`,
+        `${reading.spelled} ${s.cell} ${star(s.nakshatra)} ${s.quarter} ${s.varga} ${reading.rashi} ${reading.clauses.syllables} ${reading.clauses.counted} ${rows(reading.clauses)}`,
+      );
+    });
+  });
+  ctx.naming.check(['चूडामणि', 'गणेश', 'ऐश्वर्य'], { nakshatra: 'ARDRA', pada: 3 }).forEach((one, i) => {
+    const c = one.check;
+    put(
+      `naming-check-${i}`,
+      c === null
+        ? `refused ${one.refused.field}`
+        : `${c.read.cell} ${c.prescribed.cell} ${flag(c.sameStar)} ${flag(c.samePada)} ${flag(c.bySubstitute)} ${c.clauses.syllables}`,
+    );
+  });
+  const names = ctx.naming.of({ nakshatra: 'KRITTIKA', pada: 1 });
+  put('naming-of', `${names.syllable.cell} ${names.syllable.devanagari} ${names.deity}`);
+  const loaded = ctx.naming.load({
+    names: [{ devanagari: 'गणेश', sex: 'MALE' }, { devanagari: 'गीता', sex: 'FEMALE' }, { devanagari: 'गोपाल' }, { devanagari: 'औषधि' }],
+  });
+  const refused = loaded.refused.map((one) => `${one.index}:${one.error.field}`).join(',');
+  put('naming-load', `${loaded.book} ${loaded.names} ${refused}`);
+  const found = ctx.naming.suggest(loaded.book, { nakshatra: 'ARDRA', pada: 3 }, {}, { finalA: 'SILENT' });
+  put('naming-suggest-prescribed', `${found.prescribed.cell} ${found.prescribed.devanagari}`);
+  found.names.forEach((one, k) => {
+    put(`naming-suggest-${k}`, `${one.index} ${one.by} ${flag(one.samePada)} ${one.reading.spelled} ${one.reading.clauses.syllables}`);
+  });
+  try {
+    ctx.naming.of({ nakshatra: 'KRITTIKA', pada: 5 });
+    put('naming-refusal', 'none');
+  } catch (error) {
+    put('naming-refusal', `${error.status} ${error.field}`);
+  }
+}
+
 // Two numerology requests, as every runner asks them: Balliett's own
 // example under the sources' readings, and her John Wanamaker under every
 // baseline reading.
@@ -2336,6 +2393,12 @@ for (const [path, member] of [
   ['keys.name', shape.keys.name],
   ['matching.naam', shape.matching.naam],
   ['numerology.profile', shape.numerology.profile],
+  ['naming.syllables', shape.naming.syllables],
+  ['naming.read', shape.naming.read],
+  ['naming.check', shape.naming.check],
+  ['naming.of', shape.naming.of],
+  ['naming.load', shape.naming.load],
+  ['naming.suggest', shape.naming.suggest],
   ['frame.canonical', shape.frame.canonical],
   ['frame.pack', shape.frame.pack],
   ['frame.unpack', shape.frame.unpack],

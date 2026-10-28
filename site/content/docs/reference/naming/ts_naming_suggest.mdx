@@ -1,0 +1,73 @@
+---
+title: ts_naming_suggest
+description: "The names a book suggests for a birth: those whose first syllable is the birth pada's, or reaches it by a paired letter or the pada's substitute, in the cakra's order and then the book's, each with its clauses under the rules; and every name the book holds that the cakra refused."
+---
+
+The names a book suggests for a birth: those whose first syllable is the birth pada's, or reaches it by a paired letter or the pada's substitute, in the cakra's order and then the book's, each with its clauses under the rules; and every name the book holds that the cakra refused. A filter keeps some and never ranks.
+
+`request_json` is `{"bookId" | "book", "birth", "filter", "rules"}`: a book this context loaded, by the id its load answered, or a book carried for this one call; the birth; the `SuggestFilter` (`sex`, `syllables`, `clauses`); and the `NamingRules`. The answer is `Suggestions`. Neither or both of `bookId` and `book`, a book not loaded in this context, a pada outside 1 to 4 or a filter clause the sutra does not report is `INVALID_ARG`, named under `naming`.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.naming.suggest
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.naming.suggest
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.naming.suggest
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.naming().suggest
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.naming().suggest
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_naming_suggest(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `naming.suggest` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/naming.rs`.

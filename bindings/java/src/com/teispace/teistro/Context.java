@@ -43,6 +43,7 @@ public final class Context implements AutoCloseable {
     private final AlmanacArea almanac = new AlmanacArea(this);
     private final MatchingArea matching = new MatchingArea(this);
     private final NumerologyArea numerology = new NumerologyArea(this);
+    private final NamingArea naming = new NamingArea(this);
     private final ResearchArea research = new ResearchArea(this);
     private final Engine engine = new Engine(this);
     private final FrameArea frame;
@@ -448,6 +449,16 @@ public final class Context implements AutoCloseable {
      */
     public NumerologyArea numerology() {
         return numerology;
+    }
+
+    /**
+     * The naming of a child: syllables, names read and checked, and a name
+     * book.
+     *
+     * @return the naming area of this context
+     */
+    public NamingArea naming() {
+        return naming;
     }
 
     /**

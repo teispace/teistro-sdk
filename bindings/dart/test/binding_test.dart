@@ -5492,6 +5492,71 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a child named by the cakra, and a name book suggested from', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final makara = ctx.naming.syllables(
+      const SyllablesOfRashi(rashi: Rashi.capricorn),
+    );
+    expect(makara, hasLength(13));
+    expect(makara.where((one) => one.pada == null), hasLength(4));
+    const ardra = Birth(nakshatra: Nakshatra.ardra, pada: 3);
+    final read = ctx.naming.read(['राम', 'ऐश्वर्य']);
+    expect(read.first.reading?.readings, hasLength(1));
+    expect(read.last.refused?.field, 'naming.names[1]');
+    expect(
+      ctx.naming.check(['चूडामणि'], ardra).single.check?.samePada,
+      isFalse,
+    );
+    expect(
+      ctx.naming.of(const Birth(nakshatra: Nakshatra.krittika, pada: 1)).deity,
+      Deity.agni,
+    );
+    const book = Book(
+      names: [
+        BookName(devanagari: 'गणेश', sex: Sex.male),
+        BookName(devanagari: 'गीता', sex: Sex.female),
+      ],
+    );
+    final loaded = ctx.naming.load(book);
+    expect(loaded.book, matches(RegExp(r'^[0-9a-f]{64}$')));
+    expect(loaded.names, 2);
+    expect(loaded.refused, isEmpty);
+    const girls = SuggestFilter(sex: Sex.female);
+    final byId = ctx.naming.suggest(loaded.book, ardra, girls);
+    expect(
+      [for (final one in byId.names) (one.index, one.by)],
+      [(1, InitialBy.substitute)],
+    );
+    expect(ctx.naming.suggest(book, ardra, girls), byId);
+    String? field(void Function() call) {
+      try {
+        call();
+      } on TeistroException catch (error) {
+        return error.field;
+      }
+      return null;
+    }
+
+    expect(field(() => ctx.naming.suggest('0' * 64, ardra)), 'naming.bookId');
+    expect(
+      field(
+        () =>
+            ctx.naming.of(const Birth(nakshatra: Nakshatra.krittika, pada: 5)),
+      ),
+      'naming.birth.pada',
+    );
+    expect(
+      field(
+        () => ctx.naming.load(const Book(names: [BookName(devanagari: 'Ram')])),
+      ),
+      'naming.book.names[0].devanagari',
+    );
+    expect(() => ctx.naming.suggest(3, ardra), throwsArgumentError);
+    ctx.dispose();
+  });
+
   test('a name and a birth date read under numerology without a chart', () {
     // Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6; born
     // 17 January 1872, 1 + 8 + 9 = 18 = 9. Cheiro p. 70: Henry 18/9 and

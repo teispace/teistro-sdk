@@ -61,6 +61,86 @@
     }
   },
   {
+    "record": "naming.syllables",
+    "request": {
+      "of": {
+        "of": "RASHI",
+        "rashi": "CAPRICORN"
+      }
+    }
+  },
+  {
+    "record": "naming.read",
+    "request": {
+      "names": [
+        "राम",
+        "Shiva"
+      ],
+      "rules": {
+        "name": {
+          "latin": "CASUAL"
+        }
+      }
+    }
+  },
+  {
+    "record": "naming.check",
+    "request": {
+      "names": [
+        "चूडामणि",
+        "गणेश"
+      ],
+      "birth": {
+        "nakshatra": "ARDRA",
+        "pada": 3
+      }
+    }
+  },
+  {
+    "record": "naming.of",
+    "request": {
+      "birth": {
+        "nakshatra": "KRITTIKA",
+        "pada": 1
+      }
+    }
+  },
+  {
+    "record": "naming.suggest",
+    "request": {
+      "book": {
+        "names": [
+          {
+            "devanagari": "गणेश",
+            "latin": "Ganesh",
+            "sex": "MALE",
+            "tags": {
+              "meaning.en": "lord of the ganas"
+            }
+          },
+          {
+            "devanagari": "गीता",
+            "sex": "FEMALE"
+          }
+        ]
+      },
+      "birth": {
+        "nakshatra": "ARDRA",
+        "pada": 3
+      },
+      "filter": {
+        "sex": "FEMALE",
+        "syllables": [
+          2
+        ],
+        "clauses": [
+          "SONANT_INITIAL",
+          "LONG_A_FOR_A_GIRL"
+        ]
+      }
+    }
+  },
+  {
     "record": "time.resolve",
     "request": {
       "date": {

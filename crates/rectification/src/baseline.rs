@@ -80,7 +80,8 @@ impl Accuracy {
     }
 }
 
-/// The child's sex, which the tattva prior reads.
+/// The child's sex, which the tattva prior reads: the catalogue's own
+/// `sex`, so a request spells it as every other does (`MALE`, `FEMALE`).
 ///
 /// ```
 /// use teistro_rectification::{Sex, Tattva};
@@ -88,15 +89,7 @@ impl Accuracy {
 /// assert_eq!(Tattva::Jala.sex(), Sex::Female);
 /// assert_eq!(Tattva::Agni.sex(), Sex::Male);
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum Sex {
-    /// Male.
-    Male,
-    /// Female.
-    Female,
-}
+pub use teistro_core::catalogue::Sex;
 
 /// What happened, which decides the houses and karakas a period's lord is
 /// scored against.

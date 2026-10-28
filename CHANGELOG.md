@@ -111,6 +111,33 @@ interpretation's karakas, a karaka's holder and the rules over a chart.
   document's. No binding carries it: a binding asks for transits on the
   chart request (`03-design/gochar-sidecar.md` §8).
 
+**Namakarana in every binding: the `naming` area.**
+**Numbers:** none. The area answers what `teistro_matching` answered
+before, through new calls only; no settings knob is added, so no
+settings hash moves.
+- `sdk.naming()` (Rust) and `ctx.naming` (Node, Python, Dart, Java,
+  wasm): `syllables`, `read` and `check` (a batch, each name answered or
+  refused on its own row, named `naming.names[i]`), `of`, `load` and
+  `suggest`. A context keeps the books loaded into it by `BookId`; a
+  `suggest` request names a loaded book by `bookId` or carries one whole
+  as `book`, exactly one of them.
+- Requests are strict, and a refusal names its path: an unknown field
+  (`naming.book.names[0].gender`), a value out of range
+  (`naming.birth.pada`), a book's name with no Devanagari
+  (`naming.book.names[i].devanagari`). The five
+  stateless operations are records, so they are MCP tools
+  (`naming.syllables`, `naming.read`, `naming.check`, `naming.of`,
+  `naming.suggest`) and generated request types in every binding;
+  `load` is not, since an MCP context keeps nothing between calls.
+- The C boundary answers JSON (`ts_naming_*`), as numerology does.
+  `Birth::from(&Avakahada)` gives a chart's own birth.
+- `teistro_rectification::Sex` is the catalogue's `Sex`, re-exported:
+  the same keys on the wire, so no stored answer moves, but a Rust
+  `match` on it needs a wildcard arm. The naming clause enum's schema is
+  `NameClause` (so the generated request type is `NameClause` in every
+  binding), and the ishta devata's deity's is `IshtaDeity`, so the agent
+  server's tools name one type a name.
+
 **Namakarana: a consumer's name book, loaded and searched.**
 **Numbers:** none. Nothing computed before is touched: the book is a new
 type read only by its own two methods, it adds no settings knob (so no

@@ -72,7 +72,7 @@ pub use area::{
     ReckonedLimb, TimeArea,
 };
 #[cfg(feature = "chart")]
-pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, Plans};
+pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, NamingArea, Plans};
 pub use area::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
@@ -108,6 +108,8 @@ mod midpoints;
 mod muhurta_request;
 #[cfg(feature = "chart")]
 mod naam_request;
+#[cfg(feature = "chart")]
+mod naming_request;
 #[cfg(feature = "numerology")]
 mod numerology_request;
 #[cfg(feature = "pakshi")]
@@ -494,6 +496,13 @@ pub use teistro_western::{
 pub use matching_chart::{Matched, PartnerMatching};
 #[cfg(feature = "chart")]
 pub use naam_request::NaamRequest;
+// Naming a child (nāmakaraṇa) by the same cakra, and a consumer's name
+// book, which read no sky (`03-design/namakarana.md`).
+#[cfg(feature = "chart")]
+pub use naming_request::{
+    LoadedBook, NameChecked, NameRead, NamingCheckRequest, NamingLoadRequest, NamingOfRequest,
+    NamingReadRequest, NamingSuggestRequest, NamingSyllablesRequest,
+};
 #[cfg(feature = "numerology")]
 pub use numerology_request::NumerologyRequest;
 #[cfg(feature = "chart")]

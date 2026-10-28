@@ -1965,6 +1965,18 @@ typedef TsAlmanacFestivalCalendarNative = ffi.Int32 Function(ffi.Pointer<Context
 typedef TsAlmanacFestivalCalendarDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
+typedef TsNamingSyllablesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingSyllablesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingReadNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingReadDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingCheckNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingCheckDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingOfNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingOfDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingLoadNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingLoadDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingSuggestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNamingSuggestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsPakshiNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2042,6 +2054,12 @@ final class TeistroLibrary {
         ts_almanac_first_year = library.lookupFunction<TsAlmanacFirstYearNative, TsAlmanacFirstYearDart>('ts_almanac_first_year'),
         ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
+        ts_naming_syllables = library.lookupFunction<TsNamingSyllablesNative, TsNamingSyllablesDart>('ts_naming_syllables'),
+        ts_naming_read = library.lookupFunction<TsNamingReadNative, TsNamingReadDart>('ts_naming_read'),
+        ts_naming_check = library.lookupFunction<TsNamingCheckNative, TsNamingCheckDart>('ts_naming_check'),
+        ts_naming_of = library.lookupFunction<TsNamingOfNative, TsNamingOfDart>('ts_naming_of'),
+        ts_naming_load = library.lookupFunction<TsNamingLoadNative, TsNamingLoadDart>('ts_naming_load'),
+        ts_naming_suggest = library.lookupFunction<TsNamingSuggestNative, TsNamingSuggestDart>('ts_naming_suggest'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
         ts_pakshi = library.lookupFunction<TsPakshiNative, TsPakshiDart>('ts_pakshi'),
         ts_rashifal = library.lookupFunction<TsRashifalNative, TsRashifalDart>('ts_rashifal'),
@@ -2474,6 +2492,84 @@ final class TeistroLibrary {
   /// way, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`,
   /// named under `naam.bride` or `naam.groom`.
   final TsNaamMilanDart ts_naam_milan;
+
+  /// The syllables a pada, a star or a sign names a child by, in the
+  /// śatapada cakra's order, each with every initial that reaches it: its
+  /// own letter, a paired letter (C294) and the patro's substitute for a
+  /// nasal no name begins with (C770). A sign's nine padas, and Makara's
+  /// four more of Abhijit's (C771), whose `pada` is null.
+  ///
+  /// `request_json` is `{"of", "rules"}`: `of` is `{"of": "PADA",
+  /// "nakshatra", "pada"}`, `{"of": "NAKSHATRA", "nakshatra"}` or `{"of":
+  /// "RASHI", "rashi"}`, and `rules` the `NamingRules` with every field
+  /// optional. The answer is a list of `PadaSyllable`. A pada outside 1 to
+  /// 4 is `INVALID_ARG`, named `naming.of.pada`; an unknown key is refused
+  /// by its path under `naming`.
+  final TsNamingSyllablesDart ts_naming_syllables;
+
+  /// Names read into the śatapada cakra, each on its own: every first
+  /// syllable its spelling reaches (one, unless `CASUAL` reads it more
+  /// ways), each with the Devanagari it was read as, its sign, its
+  /// syllable count and the clauses of a name in daily use (C291 to C294,
+  /// C772, C774).
+  ///
+  /// `request_json` is `{"names", "rules"}`: the names, in Devanagari or
+  /// in the Latin scheme `rules.name.latin` declares, and the
+  /// `NamingRules` with every field optional. The answer is a list with one
+  /// entry a name, in the request's order, each `{"reading", "refused"}`
+  /// with one of the two null: a name the cakra does not read is refused
+  /// alone, named `naming.names[i]`, and the batch never fails as a whole.
+  final TsNamingReadDart ts_naming_read;
+
+  /// Names checked against a birth's pada, each on its own: where each
+  /// begins, the pada's own syllable with its initials, whether the two
+  /// share a star or a pada, whether the name took the pada's substitute,
+  /// and its clauses (C334, C770, C774). Facts, not a score.
+  ///
+  /// `request_json` is `{"names", "birth", "rules"}`: the names, the birth
+  /// as `{"nakshatra", "pada"}`, and the `NamingRules` with every field
+  /// optional. The answer is a list with one entry a name, each `{"check",
+  /// "refused"}` with one of the two null; a name refused alone is named
+  /// `naming.names[i]`. A pada outside 1 to 4 refuses the call, named
+  /// `naming.birth.pada`.
+  final TsNamingCheckDart ts_naming_check;
+
+  /// The names a birth gives, of *Dharmasindhu*'s four that the SDK
+  /// computes (C773): the birth pada's syllable with its initials, and the
+  /// star's deity, whose name the Śāṅkhāyanas give.
+  ///
+  /// `request_json` is `{"birth", "rules"}`. The answer is `Names`. A pada
+  /// outside 1 to 4 is `INVALID_ARG`, named `naming.birth.pada`.
+  final TsNamingOfDart ts_naming_of;
+
+  /// Loads a consumer's name book into the context: every name read once
+  /// into the cakra and indexed by its cell, kept for the context's life
+  /// under the book's id, the SHA-256 of its canonical JSON, so the same
+  /// book loaded twice is one book (`03-design/namakarana.md` §3).
+  ///
+  /// `request_json` is `{"book"}`, the book `{"names": [{"devanagari",
+  /// "latin", "sex", "tags"}]}` with only `devanagari` required. The answer
+  /// is `{"book", "names", "refused"}`: the id a suggestion names it by,
+  /// how many names it holds, and every name the cakra refused (an ai or
+  /// au initial), listed and not dropped. A name with no Devanagari letter
+  /// is `INVALID_ARG`, named `naming.book.names[i].devanagari`; a `sex`
+  /// that is not a key, `naming.book.names[i].sex`.
+  final TsNamingLoadDart ts_naming_load;
+
+  /// The names a book suggests for a birth: those whose first syllable is
+  /// the birth pada's, or reaches it by a paired letter or the pada's
+  /// substitute, in the cakra's order and then the book's, each with its
+  /// clauses under the rules; and every name the book holds that the cakra
+  /// refused. A filter keeps some and never ranks.
+  ///
+  /// `request_json` is `{"bookId" | "book", "birth", "filter", "rules"}`:
+  /// a book this context loaded, by the id its load answered, or a book
+  /// carried for this one call; the birth; the `SuggestFilter` (`sex`,
+  /// `syllables`, `clauses`); and the `NamingRules`. The answer is
+  /// `Suggestions`. Neither or both of `bookId` and `book`, a book not
+  /// loaded in this context, a pada outside 1 to 4 or a filter clause the
+  /// sutra does not report is `INVALID_ARG`, named under `naming`.
+  final TsNamingSuggestDart ts_naming_suggest;
 
   /// Reads a name and a birth date under numerology's two systems and
   /// answers with the profile as canonical JSON: the name under each
@@ -6038,6 +6134,138 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_naam_milan(_handle, rawrequestJson, outBlob);
         if (status != 0) _fail(status);
         return _takeBlob(_lib, outBlob);
+    });
+  }
+
+  /// The syllables a pada, a star or a sign names a child by, in the
+  /// śatapada cakra's order, each with every initial that reaches it: its
+  /// own letter, a paired letter (C294) and the patro's substitute for a
+  /// nasal no name begins with (C770). A sign's nine padas, and Makara's
+  /// four more of Abhijit's (C771), whose `pada` is null.
+  ///
+  /// `request_json` is `{"of", "rules"}`: `of` is `{"of": "PADA",
+  /// "nakshatra", "pada"}`, `{"of": "NAKSHATRA", "nakshatra"}` or `{"of":
+  /// "RASHI", "rashi"}`, and `rules` the `NamingRules` with every field
+  /// optional. The answer is a list of `PadaSyllable`. A pada outside 1 to
+  /// 4 is `INVALID_ARG`, named `naming.of.pada`; an unknown key is refused
+  /// by its path under `naming`.
+  String namingSyllables(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_naming_syllables(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Names read into the śatapada cakra, each on its own: every first
+  /// syllable its spelling reaches (one, unless `CASUAL` reads it more
+  /// ways), each with the Devanagari it was read as, its sign, its
+  /// syllable count and the clauses of a name in daily use (C291 to C294,
+  /// C772, C774).
+  ///
+  /// `request_json` is `{"names", "rules"}`: the names, in Devanagari or
+  /// in the Latin scheme `rules.name.latin` declares, and the
+  /// `NamingRules` with every field optional. The answer is a list with one
+  /// entry a name, in the request's order, each `{"reading", "refused"}`
+  /// with one of the two null: a name the cakra does not read is refused
+  /// alone, named `naming.names[i]`, and the batch never fails as a whole.
+  String namingRead(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_naming_read(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Names checked against a birth's pada, each on its own: where each
+  /// begins, the pada's own syllable with its initials, whether the two
+  /// share a star or a pada, whether the name took the pada's substitute,
+  /// and its clauses (C334, C770, C774). Facts, not a score.
+  ///
+  /// `request_json` is `{"names", "birth", "rules"}`: the names, the birth
+  /// as `{"nakshatra", "pada"}`, and the `NamingRules` with every field
+  /// optional. The answer is a list with one entry a name, each `{"check",
+  /// "refused"}` with one of the two null; a name refused alone is named
+  /// `naming.names[i]`. A pada outside 1 to 4 refuses the call, named
+  /// `naming.birth.pada`.
+  String namingCheck(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_naming_check(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// The names a birth gives, of *Dharmasindhu*'s four that the SDK
+  /// computes (C773): the birth pada's syllable with its initials, and the
+  /// star's deity, whose name the Śāṅkhāyanas give.
+  ///
+  /// `request_json` is `{"birth", "rules"}`. The answer is `Names`. A pada
+  /// outside 1 to 4 is `INVALID_ARG`, named `naming.birth.pada`.
+  String namingOf(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_naming_of(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Loads a consumer's name book into the context: every name read once
+  /// into the cakra and indexed by its cell, kept for the context's life
+  /// under the book's id, the SHA-256 of its canonical JSON, so the same
+  /// book loaded twice is one book (`03-design/namakarana.md` §3).
+  ///
+  /// `request_json` is `{"book"}`, the book `{"names": [{"devanagari",
+  /// "latin", "sex", "tags"}]}` with only `devanagari` required. The answer
+  /// is `{"book", "names", "refused"}`: the id a suggestion names it by,
+  /// how many names it holds, and every name the cakra refused (an ai or
+  /// au initial), listed and not dropped. A name with no Devanagari letter
+  /// is `INVALID_ARG`, named `naming.book.names[i].devanagari`; a `sex`
+  /// that is not a key, `naming.book.names[i].sex`.
+  String namingLoad(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_naming_load(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// The names a book suggests for a birth: those whose first syllable is
+  /// the birth pada's, or reaches it by a paired letter or the pada's
+  /// substitute, in the cakra's order and then the book's, each with its
+  /// clauses under the rules; and every name the book holds that the cakra
+  /// refused. A filter keeps some and never ranks.
+  ///
+  /// `request_json` is `{"bookId" | "book", "birth", "filter", "rules"}`:
+  /// a book this context loaded, by the id its load answered, or a book
+  /// carried for this one call; the birth; the `SuggestFilter` (`sex`,
+  /// `syllables`, `clauses`); and the `NamingRules`. The answer is
+  /// `Suggestions`. Neither or both of `bookId` and `book`, a book not
+  /// loaded in this context, a pada outside 1 to 4 or a filter clause the
+  /// sutra does not report is `INVALID_ARG`, named under `naming`.
+  String namingSuggest(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_naming_suggest(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 

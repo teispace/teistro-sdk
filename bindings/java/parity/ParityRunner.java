@@ -1025,6 +1025,77 @@ public final class ParityRunner {
     }
 
     /**
+     * A child named by the cakra, as every runner asks it: Makara's
+     * syllables, three names read under CASUAL and checked against Ardra's
+     * third pada, a Krittika birth's names, and a book loaded and suggested
+     * from, with one refusal.
+     */
+    private static void putNaming(Context ctx) {
+        Function<Nakshatra, String> star = member -> member == null ? "NONE" : member.fullKey();
+        Function<NameClauses, String> rows = clauses -> String.join(",", clauses.rows().stream()
+                .map(row -> row.clause().key() + ":" + flag(row.holds()) + ":" + row.source().name()).toList());
+        List<PadaSyllable> makara = ctx.naming().syllables(
+                SyllablesOf.of(map("of", "RASHI", "rashi", "CAPRICORN")), null);
+        for (int i = 0; i < makara.size(); i += 1) {
+            PadaSyllable one = makara.get(i);
+            String initials = String.join(",", one.initials().stream()
+                    .map(initial -> initial.devanagari() + ":" + initial.by().name()).toList());
+            put("naming-syllables-" + i, one.cell() + " " + star.apply(one.nakshatra()) + " "
+                    + (one.pada() == null ? "NONE" : one.pada()) + " " + one.rashi().fullKey() + " "
+                    + one.devanagari() + " " + one.iast() + " " + one.varga().key() + " " + initials);
+        }
+        List<NameRead> read = ctx.naming().read(List.of("राम", "Shiva", "ऐश्वर्य"),
+                NamingRules.of(map("name", map("latin", "CASUAL"))));
+        for (int i = 0; i < read.size(); i += 1) {
+            NameRead one = read.get(i);
+            if (one.refused() != null) {
+                put("naming-read-" + i, "refused " + one.refused().field());
+                continue;
+            }
+            put("naming-read-" + i, flag(one.reading().ambiguous()) + " " + one.reading().readings().size());
+            for (int j = 0; j < one.reading().readings().size(); j += 1) {
+                SpelledName reading = one.reading().readings().get(j);
+                NameSyllable s = reading.syllable();
+                put("naming-read-" + i + "-" + j, reading.spelled() + " " + s.cell() + " " + star.apply(s.nakshatra())
+                        + " " + s.quarter() + " " + s.varga().key() + " " + reading.rashi().fullKey() + " "
+                        + reading.clauses().syllables() + " " + reading.clauses().counted().key() + " "
+                        + rows.apply(reading.clauses()));
+            }
+        }
+        Birth ardra = Birth.of(map("nakshatra", "ARDRA", "pada", 3));
+        List<NameChecked> checked = ctx.naming().check(List.of("चूडामणि", "गणेश", "ऐश्वर्य"), ardra, null);
+        for (int i = 0; i < checked.size(); i += 1) {
+            NameCheck c = checked.get(i).check();
+            put("naming-check-" + i, c == null
+                    ? "refused " + checked.get(i).refused().field()
+                    : c.read().cell() + " " + c.prescribed().cell() + " " + flag(c.sameStar()) + " "
+                            + flag(c.samePada()) + " " + flag(c.bySubstitute()) + " " + c.clauses().syllables());
+        }
+        Names names = ctx.naming().of(Birth.of(map("nakshatra", "KRITTIKA", "pada", 1)), null);
+        put("naming-of", names.syllable().cell() + " " + names.syllable().devanagari() + " " + names.deity().fullKey());
+        LoadedBook loaded = ctx.naming().load(Book.of(map("names", List.of(
+                map("devanagari", "गणेश", "sex", "MALE"), map("devanagari", "गीता", "sex", "FEMALE"),
+                map("devanagari", "गोपाल"), map("devanagari", "औषधि")))));
+        String refused = String.join(",", loaded.refused().stream()
+                .map(one -> one.index() + ":" + one.error().field()).toList());
+        put("naming-load", loaded.book() + " " + loaded.names() + " " + refused);
+        Suggestions found = ctx.naming().suggest(loaded.book(), ardra, null,
+                NamingRules.of(map("finalA", "SILENT")));
+        put("naming-suggest-prescribed", found.prescribed().cell() + " " + found.prescribed().devanagari());
+        for (int k = 0; k < found.names().size(); k += 1) {
+            Suggested one = found.names().get(k);
+            put("naming-suggest-" + k, one.index() + " " + one.by().name() + " " + flag(one.samePada()) + " "
+                    + one.reading().spelled() + " " + one.reading().clauses().syllables());
+        }
+        try {
+            ctx.naming().of(Birth.of(map("nakshatra", "KRITTIKA", "pada", 5)), null);
+            put("naming-refusal", "none");
+        } catch (TeistroException error) {
+            put("naming-refusal", error.status().key() + " " + error.field());
+        }
+    }
+
+    /**
      * A local day's every field, under the same keys for a chart's day and an
      * almanac's, because the two layers hand back one record.
      */
@@ -1205,6 +1276,7 @@ public final class ParityRunner {
             put("settings-hash", ctx.settingsHash());
             put("settings-fnv", fnv(ctx.settingsJson()));
             putNaam(ctx);
+            putNaming(ctx);
             putNumerology(ctx);
 
             // ── The calendars ─────────────────────────────────────────────
@@ -1483,6 +1555,12 @@ public final class ParityRunner {
             surface("keys.id", () -> ctx.keys().id(""));
             surface("keys.name", () -> ctx.keys().name(0));
             surface("matching.naam", () -> ctx.matching().naam("", ""));
+            surface("naming.syllables", () -> ctx.naming().syllables(null, null));
+            surface("naming.read", () -> ctx.naming().read(List.of(), null));
+            surface("naming.check", () -> ctx.naming().check(List.of(), null, null));
+            surface("naming.of", () -> ctx.naming().of(null, null));
+            surface("naming.load", () -> ctx.naming().load(null));
+            surface("naming.suggest", () -> ctx.naming().suggest("", null, null, null));
             surface("numerology.profile", () -> ctx.numerology().profile("", LocalDate.of(2000, 1, 1)));
             surface("frame.canonical", () -> ctx.frame().canonical());
             surface("frame.pack", () -> ctx.frame().pack(frame));

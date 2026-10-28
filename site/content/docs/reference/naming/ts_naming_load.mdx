@@ -1,0 +1,73 @@
+---
+title: ts_naming_load
+description: "Loads a consumer's name book into the context: every name read once into the cakra and indexed by its cell, kept for the context's life under the book's id, the SHA-256 of its canonical JSON, so the same book loaded twice is one book (`03-design/namakarana.md` §3)."
+---
+
+Loads a consumer's name book into the context: every name read once into the cakra and indexed by its cell, kept for the context's life under the book's id, the SHA-256 of its canonical JSON, so the same book loaded twice is one book (`03-design/namakarana.md` §3).
+
+`request_json` is `{"book"}`, the book `{"names": [{"devanagari", "latin", "sex", "tags"}]}` with only `devanagari` required. The answer is `{"book", "names", "refused"}`: the id a suggestion names it by, how many names it holds, and every name the cakra refused (an ai or au initial), listed and not dropped. A name with no Devanagari letter is `INVALID_ARG`, named `naming.book.names[i].devanagari`; a `sex` that is not a key, `naming.book.names[i].sex`.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.naming.load
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.naming.load
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.naming.load
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.naming().load
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.naming().load
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_naming_load(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `naming.load` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/naming.rs`.

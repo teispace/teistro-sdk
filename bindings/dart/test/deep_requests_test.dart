@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 243 of the examples' 254 members.
+/// The cases compare 249 of the examples' 261 members.
 library;
 
 import 'dart:convert';
@@ -1479,6 +1479,113 @@ void main() {
             lordsFriendship: LordsFriendship.oneWay,
             twoSignStar: TwoSignStar.brideFirstSign,
           ),
+        ),
+      ).toJson(),
+    );
+  });
+
+  test('naming.check: NamingCheckRequest', () {
+    _holds(
+      'naming.check',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: NamingCheckRequest(
+        birth: Birth(nakshatra: Nakshatra.bharani, pada: 1),
+        names: ['x'],
+        rules: NamingRules(
+          finalA: FinalA.silent,
+          name: NameRules(abhijit: AbhijitPada.uttaraAshadha, latin: LatinName.iast),
+          nasal: NasalInitial.none,
+          sutra: GrhyaSutra.ashvalayana,
+        ),
+      ).toJson(),
+    );
+  });
+
+  test('naming.of: NamingOfRequest', () {
+    _holds(
+      'naming.of',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: NamingOfRequest(
+        birth: Birth(nakshatra: Nakshatra.bharani, pada: 1),
+        rules: NamingRules(
+          finalA: FinalA.silent,
+          name: NameRules(abhijit: AbhijitPada.uttaraAshadha, latin: LatinName.iast),
+          nasal: NasalInitial.none,
+          sutra: GrhyaSutra.ashvalayana,
+        ),
+      ).toJson(),
+    );
+  });
+
+  test('naming.read: NamingReadRequest', () {
+    _holds(
+      'naming.read',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: NamingReadRequest(
+        names: ['x'],
+        rules: NamingRules(
+          finalA: FinalA.silent,
+          name: NameRules(abhijit: AbhijitPada.uttaraAshadha, latin: LatinName.iast),
+          nasal: NasalInitial.none,
+          sutra: GrhyaSutra.ashvalayana,
+        ),
+      ).toJson(),
+    );
+  });
+
+  test('naming.suggest: NamingSuggestRequest', () {
+    _holds(
+      'naming.suggest',
+      path: [],
+      dropping: [],
+      members: 3,
+      written: NamingSuggestRequest(
+        birth: Birth(nakshatra: Nakshatra.bharani, pada: 1),
+        book: Book(
+          names: [
+            BookName(
+              devanagari: 'x',
+              latin: 'x',
+              sex: Sex.female,
+              tags: {'meaning.en': 'x'},
+            ),
+          ],
+        ),
+        bookId: 'x',
+        filter: SuggestFilter(
+          clauses: [NameClause.semivowelWithin],
+          sex: Sex.female,
+          syllables: [1],
+        ),
+        rules: NamingRules(
+          finalA: FinalA.silent,
+          name: NameRules(abhijit: AbhijitPada.uttaraAshadha, latin: LatinName.iast),
+          nasal: NasalInitial.none,
+          sutra: GrhyaSutra.ashvalayana,
+        ),
+      ).toJson(),
+    );
+  });
+
+  test('naming.syllables: NamingSyllablesRequest', () {
+    _holds(
+      'naming.syllables',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: NamingSyllablesRequest(
+        of: SyllablesOfPada(nakshatra: Nakshatra.bharani, pada: 1),
+        rules: NamingRules(
+          finalA: FinalA.silent,
+          name: NameRules(abhijit: AbhijitPada.uttaraAshadha, latin: LatinName.iast),
+          nasal: NasalInitial.none,
+          sutra: GrhyaSutra.ashvalayana,
         ),
       ).toJson(),
     );

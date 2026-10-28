@@ -223,6 +223,30 @@ fn the_chart_area_is_refused_without_it() {
                 "ts_naam_milan",
                 teistro_ffi::naam::ts_naam_milan(ctx.handle, key.as_ptr(), &raw mut blob),
             ),
+            (
+                "ts_naming_syllables",
+                teistro_ffi::naming::ts_naming_syllables(ctx.handle, key.as_ptr(), &raw mut json),
+            ),
+            (
+                "ts_naming_read",
+                teistro_ffi::naming::ts_naming_read(ctx.handle, key.as_ptr(), &raw mut json),
+            ),
+            (
+                "ts_naming_check",
+                teistro_ffi::naming::ts_naming_check(ctx.handle, key.as_ptr(), &raw mut json),
+            ),
+            (
+                "ts_naming_of",
+                teistro_ffi::naming::ts_naming_of(ctx.handle, key.as_ptr(), &raw mut json),
+            ),
+            (
+                "ts_naming_load",
+                teistro_ffi::naming::ts_naming_load(ctx.handle, key.as_ptr(), &raw mut json),
+            ),
+            (
+                "ts_naming_suggest",
+                teistro_ffi::naming::ts_naming_suggest(ctx.handle, key.as_ptr(), &raw mut json),
+            ),
         ]
     };
     for (entry, status) in statuses {

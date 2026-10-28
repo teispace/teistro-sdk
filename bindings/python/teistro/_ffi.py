@@ -4189,6 +4189,48 @@ class TeistroLibrary:
             ctypes.POINTER(_BlobStruct),
         ]
         self.ts_naam_milan.restype = ctypes.c_int32
+        self.ts_naming_syllables: Any = library.ts_naming_syllables
+        self.ts_naming_syllables.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_naming_syllables.restype = ctypes.c_int32
+        self.ts_naming_read: Any = library.ts_naming_read
+        self.ts_naming_read.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_naming_read.restype = ctypes.c_int32
+        self.ts_naming_check: Any = library.ts_naming_check
+        self.ts_naming_check.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_naming_check.restype = ctypes.c_int32
+        self.ts_naming_of: Any = library.ts_naming_of
+        self.ts_naming_of.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_naming_of.restype = ctypes.c_int32
+        self.ts_naming_load: Any = library.ts_naming_load
+        self.ts_naming_load.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_naming_load.restype = ctypes.c_int32
+        self.ts_naming_suggest: Any = library.ts_naming_suggest
+        self.ts_naming_suggest.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_naming_suggest.restype = ctypes.c_int32
         self.ts_numerology_profile: Any = library.ts_numerology_profile
         self.ts_numerology_profile.argtypes = [
             ctypes.POINTER(_Context),
@@ -5246,6 +5288,180 @@ class TeistroContext:
             owned.clear()
             blob = _take_blob(self._lib, _out_blob)
             return blob
+
+    def naming_syllables(self, request_json: str) -> str:
+        """The syllables a pada, a star or a sign names a child by, in the
+        śatapada cakra's order, each with every initial that reaches it: its
+        own letter, a paired letter (C294) and the patro's substitute for a
+        nasal no name begins with (C770). A sign's nine padas, and Makara's
+        four more of Abhijit's (C771), whose `pada` is null.
+
+        `request_json` is `{"of", "rules"}`: `of` is `{"of": "PADA",
+        "nakshatra", "pada"}`, `{"of": "NAKSHATRA", "nakshatra"}` or `{"of":
+        "RASHI", "rashi"}`, and `rules` the `NamingRules` with every field
+        optional. The answer is a list of `PadaSyllable`. A pada outside 1 to
+        4 is `INVALID_ARG`, named `naming.of.pada`; an unknown key is refused
+        by its path under `naming`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_naming_syllables(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def naming_read(self, request_json: str) -> str:
+        """Names read into the śatapada cakra, each on its own: every first
+        syllable its spelling reaches (one, unless `CASUAL` reads it more
+        ways), each with the Devanagari it was read as, its sign, its
+        syllable count and the clauses of a name in daily use (C291 to C294,
+        C772, C774).
+
+        `request_json` is `{"names", "rules"}`: the names, in Devanagari or
+        in the Latin scheme `rules.name.latin` declares, and the
+        `NamingRules` with every field optional. The answer is a list with one
+        entry a name, in the request's order, each `{"reading", "refused"}`
+        with one of the two null: a name the cakra does not read is refused
+        alone, named `naming.names[i]`, and the batch never fails as a whole.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_naming_read(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def naming_check(self, request_json: str) -> str:
+        """Names checked against a birth's pada, each on its own: where each
+        begins, the pada's own syllable with its initials, whether the two
+        share a star or a pada, whether the name took the pada's substitute,
+        and its clauses (C334, C770, C774). Facts, not a score.
+
+        `request_json` is `{"names", "birth", "rules"}`: the names, the birth
+        as `{"nakshatra", "pada"}`, and the `NamingRules` with every field
+        optional. The answer is a list with one entry a name, each `{"check",
+        "refused"}` with one of the two null; a name refused alone is named
+        `naming.names[i]`. A pada outside 1 to 4 refuses the call, named
+        `naming.birth.pada`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_naming_check(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def naming_of(self, request_json: str) -> str:
+        """The names a birth gives, of *Dharmasindhu*'s four that the SDK
+        computes (C773): the birth pada's syllable with its initials, and the
+        star's deity, whose name the Śāṅkhāyanas give.
+
+        `request_json` is `{"birth", "rules"}`. The answer is `Names`. A pada
+        outside 1 to 4 is `INVALID_ARG`, named `naming.birth.pada`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_naming_of(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def naming_load(self, request_json: str) -> str:
+        """Loads a consumer's name book into the context: every name read once
+        into the cakra and indexed by its cell, kept for the context's life
+        under the book's id, the SHA-256 of its canonical JSON, so the same
+        book loaded twice is one book (`03-design/namakarana.md` §3).
+
+        `request_json` is `{"book"}`, the book `{"names": [{"devanagari",
+        "latin", "sex", "tags"}]}` with only `devanagari` required. The answer
+        is `{"book", "names", "refused"}`: the id a suggestion names it by,
+        how many names it holds, and every name the cakra refused (an ai or
+        au initial), listed and not dropped. A name with no Devanagari letter
+        is `INVALID_ARG`, named `naming.book.names[i].devanagari`; a `sex`
+        that is not a key, `naming.book.names[i].sex`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_naming_load(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def naming_suggest(self, request_json: str) -> str:
+        """The names a book suggests for a birth: those whose first syllable is
+        the birth pada's, or reaches it by a paired letter or the pada's
+        substitute, in the cakra's order and then the book's, each with its
+        clauses under the rules; and every name the book holds that the cakra
+        refused. A filter keeps some and never ranks.
+
+        `request_json` is `{"bookId" | "book", "birth", "filter", "rules"}`:
+        a book this context loaded, by the id its load answered, or a book
+        carried for this one call; the birth; the `SuggestFilter` (`sex`,
+        `syllables`, `clauses`); and the `NamingRules`. The answer is
+        `Suggestions`. Neither or both of `bookId` and `book`, a book not
+        loaded in this context, a pada outside 1 to 4 or a filter clause the
+        sutra does not report is `INVALID_ARG`, named under `naming`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_naming_suggest(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def numerology_profile(self, request_json: str) -> str:
         """Reads a name and a birth date under numerology's two systems and

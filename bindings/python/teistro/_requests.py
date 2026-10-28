@@ -29,6 +29,11 @@ __all__ = [
     "ChartFoundRequest",
     "BatchAsked",
     "NaamRequest",
+    "NamingCheckRequest",
+    "NamingOfRequest",
+    "NamingReadRequest",
+    "NamingSuggestRequest",
+    "NamingSyllablesRequest",
     "NumerologyRequest",
     "ResearchRequest",
     "CivilAsked",
@@ -80,6 +85,14 @@ __all__ = [
     "BaselinePeriod",
     "PeriodAsked",
     "NaamRules",
+    "Birth",
+    "NamingRules",
+    "Book",
+    "SuggestFilter",
+    "SyllablesOf",
+    "SyllablesOfPada",
+    "SyllablesOfNakshatra",
+    "SyllablesOfRashi",
     "BirthDate",
     "NumerologyRequestRules",
     "BirthAsked",
@@ -196,6 +209,11 @@ __all__ = [
     "SnapshotSunrise",
     "SnapshotClock",
     "NameRules",
+    "FinalA",
+    "NasalInitial",
+    "GrhyaSutra",
+    "BookName",
+    "NameClause",
     "NumerologyRules",
     "AshauchKind",
     "AshauchLength",
@@ -910,6 +928,68 @@ class NaamRequest(TypedDict, total=False):
 
     rules: NaamRules
     """How the names are read and matched; the sources' own when left out."""
+
+
+class NamingCheckRequest(TypedDict, total=False):
+    """Names to check against a birth's pada, each on its own."""
+
+    birth: Required[Birth]
+    """The birth: the Moon's nakshatra and pada."""
+
+    names: Required[Sequence[str]]
+    """The names, in Devanagari or in the Latin scheme `rules.name.latin` declares."""
+
+    rules: NamingRules
+    """The rules; the sources' own when left out."""
+
+
+class NamingOfRequest(TypedDict, total=False):
+    """A birth, for the names it gives."""
+
+    birth: Required[Birth]
+    """The birth: the Moon's nakshatra and pada."""
+
+    rules: NamingRules
+    """The rules; the sources' own when left out."""
+
+
+class NamingReadRequest(TypedDict, total=False):
+    """Names to read into the cakra, each on its own."""
+
+    names: Required[Sequence[str]]
+    """The names, in Devanagari or in the Latin scheme `rules.name.latin` declares."""
+
+    rules: NamingRules
+    """The rules; the sources' own when left out."""
+
+
+class NamingSuggestRequest(TypedDict, total=False):
+    """A birth and the book to suggest its names from: a book loaded into the context, named by `bookId`, or one carried here as `book` for one use."""
+
+    birth: Required[Birth]
+    """The birth: the Moon's nakshatra and pada."""
+
+    book: Optional[Book]
+    """A book carried in the request, loaded for this one suggestion; exactly one of `bookId` and `book` is given."""
+
+    bookId: Optional[str]
+    """A book loaded into this context, by the id its load answered: sixty-four hex digits, held as text so that an id this context never answered is refused like one it did not load; exactly one of `bookId` and `book` is given."""
+
+    filter: SuggestFilter
+    """What a suggestion keeps; every name the pada reaches when left out."""
+
+    rules: NamingRules
+    """The rules; the sources' own when left out."""
+
+
+class NamingSyllablesRequest(TypedDict, total=False):
+    """The syllables a pada, a star or a sign names a child by."""
+
+    of: Required[SyllablesOf]
+    """What is asked: one pada, a star's four, or a sign's nine (and Abhijit's four for Makara)."""
+
+    rules: NamingRules
+    """The rules; the sources' own when left out."""
 
 
 class NumerologyRequest(TypedDict, total=False):
@@ -1729,6 +1809,86 @@ class NaamRules(TypedDict, total=False):
 
     porutham: PoruthamRules
     """The ten considerations'."""
+
+
+class Birth(TypedDict, total=False):
+    """A birth, as the names it gives are read from it: the Moon's star and pada."""
+
+    nakshatra: Required[Union[_catalogue.Nakshatra, str]]
+    """The Moon's nakshatra."""
+
+    pada: Required[int]
+    """Its pada, 1 to 4."""
+
+
+class NamingRules(TypedDict, total=False):
+    """The rules a name is read and judged under (`03-design/namakarana.md` §4.1); each default is the one no source read contradicts."""
+
+    finalA: FinalA
+    """How syllables are counted (C774)."""
+
+    name: NameRules
+    """How a name is read: its Latin spelling and Abhijit's place."""
+
+    nasal: NasalInitial
+    """Whether a nasal's pada lists a substitute initial (C770)."""
+
+    sutra: GrhyaSutra
+    """Which gṛhyasūtra's clauses are reported (C774)."""
+
+
+class Book(TypedDict, total=False):
+    """A name book as the consumer writes it: `{"names": [...]}`."""
+
+    names: Required[Sequence[BookName]]
+    """The names, in the book's order, which is the order a suggestion keeps within a cell."""
+
+
+class SuggestFilter(TypedDict, total=False):
+    """What a suggestion keeps. A filter never ranks; an empty one keeps every name that reaches the pada."""
+
+    clauses: Sequence[NameClause]
+    """Keeps names meeting every one of these clauses, each one the rules' sutra reports."""
+
+    sex: Optional[Union[_catalogue.Sex, str]]
+    """Keeps names of this sex and names the book gives no sex: a name the book leaves open is anyone's."""
+
+    syllables: Sequence[int]
+    """Keeps names of one of these syllable counts, counted as the rules' `finalA` says; empty keeps every count."""
+
+
+SyllablesOf: TypeAlias = "Union[SyllablesOfPada, SyllablesOfNakshatra, SyllablesOfRashi]"
+"""What syllables are asked for (C771)."""
+
+
+class SyllablesOfPada(TypedDict, total=False):
+    """One pada's syllable."""
+
+    of: Required[Literal['PADA']]
+
+    nakshatra: Required[Union[_catalogue.Nakshatra, str]]
+    """The star."""
+
+    pada: Required[int]
+    """Its pada, 1 to 4."""
+
+
+class SyllablesOfNakshatra(TypedDict, total=False):
+    """A star's four."""
+
+    of: Required[Literal['NAKSHATRA']]
+
+    nakshatra: Required[Union[_catalogue.Nakshatra, str]]
+    """The star."""
+
+
+class SyllablesOfRashi(TypedDict, total=False):
+    """A sign's nine padas, and for Makara Abhijit's four as well."""
+
+    of: Required[Literal['RASHI']]
+
+    rashi: Required[Union[_catalogue.Rashi, str]]
+    """The sign."""
 
 
 class BirthDate(TypedDict, total=False):
@@ -2708,7 +2868,7 @@ class BaselineRectificationRequest(TypedDict, total=False):
     events: Sequence[LifeEvent]
     """The dated events."""
 
-    sex: Optional[Literal['MALE', 'FEMALE']]
+    sex: Optional[Union[_catalogue.Sex, str]]
     """The child's sex, for the tattva prior; none skips it."""
 
     uncertaintyMinutes: Required[float]
@@ -3082,6 +3242,60 @@ class NameRules(TypedDict, total=False):
 
     latin: LatinName
     """How a Latin spelling is read."""
+
+
+FinalA: TypeAlias = Literal['SOUNDED', 'SILENT']
+"""How a name's syllables are counted (C774).
+
+`SOUNDED`: The text's count: every vowel written or inherent, the final `a` too (*Dharmasindhu* p. 164, *akṣaram aj svaraḥ*), so राम is rā-ma.
+`SILENT`: Speech's: a word's final inherent `a` dropped, as Hindi and Nepali say "rām", unless it is the word's only vowel.
+"""
+
+
+NasalInitial: TypeAlias = Literal['VARGA_THIRD', 'NONE']
+"""Whether a pada whose letter no name begins with lists a substitute (C770).
+
+`VARGA_THIRD`: ङ, ण and ञ each list their varga's third letter (ग, ड, ज) as a substitute initial, as the Nepali patro glosses them.
+`NONE`: No substitute: the cell's own letter only, as *Muhurta Chintamani*'s commentary gives it.
+"""
+
+
+GrhyaSutra: TypeAlias = Literal['PARASKARA', 'ASHVALAYANA']
+"""Which gṛhyasūtra's clauses are reported (C774).
+
+`PARASKARA`: *Pāraskara* I.17.2–3, which *Muhurta Chintamani*'s commentary quotes (p. 173): a girl's name odd and ending in ā.
+`ASHVALAYANA`: *Āśvalāyana* I.15.4–7 (SBE 29 pp. 182–183): a man's even and a woman's odd, "in every case".
+"""
+
+
+class BookName(TypedDict, total=False):
+    """One name of a book."""
+
+    devanagari: Required[str]
+    """The name in Devanagari, which the cakra reads."""
+
+    latin: Optional[str]
+    """A display spelling, carried and never read."""
+
+    sex: Optional[Union[_catalogue.Sex, str]]
+    """Whose name it is, when the book says."""
+
+    tags: Mapping[str, str]
+    """The book's own fields (a meaning, a source), carried and never read."""
+
+
+NameClause: TypeAlias = Literal['SONANT_INITIAL', 'SEMIVOWEL_WITHIN', 'VISARGA_FINAL', 'TWO_OR_FOUR_SYLLABLES', 'EVEN_FOR_A_BOY', 'ODD_FOR_A_GIRL', 'LONG_A_FOR_A_GIRL', 'NO_FINAL_L_OR_R']
+"""One clause of a name in daily use. The kṛt and taddhita clauses are grammar the letters do not show, and the varṇa endings are a rule about the family, so none of them is a row.
+
+`SONANT_INITIAL`: Begins with a sonant (*ghoṣavat*): the 3rd, 4th or 5th letter of a varga, or h.
+`SEMIVOWEL_WITHIN`: A semivowel (y r l v) among the letters after the first.
+`VISARGA_FINAL`: Ends in a visarga (*abhiniṣṭhāna*).
+`TWO_OR_FOUR_SYLLABLES`: Two syllables (for steadiness) or four (for holy lustre).
+`EVEN_FOR_A_BOY`: An even count, for a man.
+`ODD_FOR_A_GIRL`: An odd count, for a woman.
+`LONG_A_FOR_A_GIRL`: Ends in ā, for a girl (*Pāraskara* I.17.3 alone).
+`NO_FINAL_L_OR_R`: Does not end in the sound l or r: a last ल or र under a virama, or with its inherent `a` when speech drops it (`final_a: SILENT`). *Dharmasindhu*'s Hari, ending in i, meets it.
+"""
 
 
 class NumerologyRules(TypedDict, total=False):

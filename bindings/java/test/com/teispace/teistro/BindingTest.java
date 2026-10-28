@@ -1528,6 +1528,41 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a child is named by the cakra, and a name book suggested from", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                List<PadaSyllable> makara = sky.naming().syllables(
+                        SyllablesOf.of(Map.of("of", "RASHI", "rashi", "CAPRICORN")), null);
+                same(13, makara.size(), "Makara's nine padas and Abhijit's four");
+                same(4L, makara.stream().filter(one -> one.pada() == null).count(), "Abhijit's rows are no pada");
+                Birth ardra = Birth.of(Map.of("nakshatra", "ARDRA", "pada", 3));
+                List<NameRead> read = sky.naming().read(List.of("राम", "ऐश्वर्य"), null);
+                check(read.get(0).refused() == null && read.get(0).reading().readings().size() == 1, "राम is read");
+                same("naming.names[1]", read.get(1).refused().field(), "ऐ is refused on its own row");
+                List<NameChecked> checked = sky.naming().check(List.of("चूडामणि"), ardra, null);
+                same(false, checked.get(0).check().samePada(), "चू is Ashwini's, not Ardra's");
+                same(Deity.AGNI, sky.naming().of(Birth.of(Map.of("nakshatra", "KRITTIKA", "pada", 1)), null).deity(),
+                        "Krittika's deity");
+                Book book = Book.of(Map.of("names", List.of(Map.of("devanagari", "गणेश", "sex", "MALE"),
+                        Map.of("devanagari", "गीता", "sex", "FEMALE"))));
+                LoadedBook loaded = sky.naming().load(book);
+                check(loaded.book().matches("[0-9a-f]{64}") && loaded.names() == 2 && loaded.refused().isEmpty(),
+                        "a book loaded");
+                SuggestFilter girls = SuggestFilter.of(Map.of("sex", "FEMALE"));
+                Suggestions byId = sky.naming().suggest(loaded.book(), ardra, girls, null);
+                same(List.of(1), byId.names().stream().map(Suggested::index).toList(), "गीता alone, by the substitute");
+                same(InitialBy.SUBSTITUTE, byId.names().get(0).by(), "ग stands in for ङ");
+                same(byId, sky.naming().suggest(book, ardra, girls, null), "a book carried whole answers alike");
+                same("naming.bookId", refusal(() -> sky.naming().suggest("0".repeat(64), ardra, null, null)).field(),
+                        "a book this context never loaded");
+                same("naming.birth.pada", refusal(() -> sky.naming().of(
+                        Birth.of(Map.of("nakshatra", "KRITTIKA", "pada", 5)), null)).field(), "a fifth pada");
+                same("naming.book.names[0].devanagari", refusal(() -> sky.naming().load(
+                        Book.of(Map.of("names", List.of(Map.of("devanagari", "Ram")))))).field(),
+                        "a name with no Devanagari refuses the book");
+            }
+        });
+
         tests.put("the areas beside the chart answer", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
                     .ephemeris(Ephemeris.BUILTIN).build())) {

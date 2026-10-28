@@ -96,6 +96,7 @@ impl From<NameRules> for NamingRules {
 /// One cell a name's spelling reaches.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "SpelledName"))]
 #[serde(rename_all = "camelCase")]
 pub struct Reading {
     /// The Devanagari it was read as: the name itself, or its Latin

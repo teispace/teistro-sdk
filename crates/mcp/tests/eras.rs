@@ -107,6 +107,7 @@ fn the_modern_revision_is_served_without_a_handshake() {
         "chart.rashifal",
         "numerology.profile",
         "matching.naam",
+        "naming.suggest",
         "settings.describe",
     ] {
         assert!(names.contains(&tool), "{tool}");
@@ -192,6 +193,10 @@ fn a_refusal_is_a_tool_error_naming_its_field() {
                     "first": {"year": 1984, "month": 10, "day": 30},
                     "latitudeDeg": 13.0827, "longitudeDeg": 80.2707, "altitudeM": 6,
                     "utcOffsetSeconds": 19800, "native": {"bird": "COCK"}}}}}),
+            json!({"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"_meta": meta(),
+                "name": "naming.suggest", "arguments": {"request": {
+                    "book": {"names": [{"devanagari": "राम", "sex": "MALE", "gender": "M"}]},
+                    "birth": {"nakshatra": "ASHWINI", "pada": 1}}}}}),
         ],
     );
     let fields: Vec<(&str, &str)> = replies
@@ -216,6 +221,7 @@ fn a_refusal_is_a_tool_error_naming_its_field() {
         fields[3]
     );
     assert_eq!(fields[4].0, "CAPABILITY", "a position without an ephemeris");
+    assert_eq!(fields[5].1, "naming.book.names[0].gender");
 }
 
 #[test]

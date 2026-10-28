@@ -49,6 +49,7 @@ use crate::subjects::NINE;
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "IshtaDeity"))]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum Deity {
     /// Śiva.

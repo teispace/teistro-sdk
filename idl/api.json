@@ -24,6 +24,7 @@
     "crates/ffi/src/positions.rs",
     "crates/ffi/src/panchanga.rs",
     "crates/ffi/src/naam.rs",
+    "crates/ffi/src/naming.rs",
     "crates/ffi/src/numerology.rs",
     "crates/ffi/src/pakshi.rs",
     "crates/ffi/src/rashifal.rs",
@@ -16406,6 +16407,312 @@
         "blob": "naam"
       },
       "source": "crates/ffi/src/naam.rs"
+    },
+    {
+      "name": "ts_naming_syllables",
+      "doc": "The syllables a pada, a star or a sign names a child by, in the\nśatapada cakra's order, each with every initial that reaches it: its\nown letter, a paired letter (C294) and the patro's substitute for a\nnasal no name begins with (C770). A sign's nine padas, and Makara's\nfour more of Abhijit's (C771), whose `pada` is null.\n\n`request_json` is `{\"of\", \"rules\"}`: `of` is `{\"of\": \"PADA\",\n\"nakshatra\", \"pada\"}`, `{\"of\": \"NAKSHATRA\", \"nakshatra\"}` or `{\"of\":\n\"RASHI\", \"rashi\"}`, and `rules` the `NamingRules` with every field\noptional. The answer is a list of `PadaSyllable`. A pada outside 1 to\n4 is `INVALID_ARG`, named `naming.of.pada`; an unknown key is refused\nby its path under `naming`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/naming.rs"
+    },
+    {
+      "name": "ts_naming_read",
+      "doc": "Names read into the śatapada cakra, each on its own: every first\nsyllable its spelling reaches (one, unless `CASUAL` reads it more\nways), each with the Devanagari it was read as, its sign, its\nsyllable count and the clauses of a name in daily use (C291 to C294,\nC772, C774).\n\n`request_json` is `{\"names\", \"rules\"}`: the names, in Devanagari or\nin the Latin scheme `rules.name.latin` declares, and the\n`NamingRules` with every field optional. The answer is a list with one\nentry a name, in the request's order, each `{\"reading\", \"refused\"}`\nwith one of the two null: a name the cakra does not read is refused\nalone, named `naming.names[i]`, and the batch never fails as a whole.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/naming.rs"
+    },
+    {
+      "name": "ts_naming_check",
+      "doc": "Names checked against a birth's pada, each on its own: where each\nbegins, the pada's own syllable with its initials, whether the two\nshare a star or a pada, whether the name took the pada's substitute,\nand its clauses (C334, C770, C774). Facts, not a score.\n\n`request_json` is `{\"names\", \"birth\", \"rules\"}`: the names, the birth\nas `{\"nakshatra\", \"pada\"}`, and the `NamingRules` with every field\noptional. The answer is a list with one entry a name, each `{\"check\",\n\"refused\"}` with one of the two null; a name refused alone is named\n`naming.names[i]`. A pada outside 1 to 4 refuses the call, named\n`naming.birth.pada`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/naming.rs"
+    },
+    {
+      "name": "ts_naming_of",
+      "doc": "The names a birth gives, of *Dharmasindhu*'s four that the SDK\ncomputes (C773): the birth pada's syllable with its initials, and the\nstar's deity, whose name the Śāṅkhāyanas give.\n\n`request_json` is `{\"birth\", \"rules\"}`. The answer is `Names`. A pada\noutside 1 to 4 is `INVALID_ARG`, named `naming.birth.pada`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/naming.rs"
+    },
+    {
+      "name": "ts_naming_load",
+      "doc": "Loads a consumer's name book into the context: every name read once\ninto the cakra and indexed by its cell, kept for the context's life\nunder the book's id, the SHA-256 of its canonical JSON, so the same\nbook loaded twice is one book (`03-design/namakarana.md` §3).\n\n`request_json` is `{\"book\"}`, the book `{\"names\": [{\"devanagari\",\n\"latin\", \"sex\", \"tags\"}]}` with only `devanagari` required. The answer\nis `{\"book\", \"names\", \"refused\"}`: the id a suggestion names it by,\nhow many names it holds, and every name the cakra refused (an ai or\nau initial), listed and not dropped. A name with no Devanagari letter\nis `INVALID_ARG`, named `naming.book.names[i].devanagari`; a `sex`\nthat is not a key, `naming.book.names[i].sex`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/naming.rs"
+    },
+    {
+      "name": "ts_naming_suggest",
+      "doc": "The names a book suggests for a birth: those whose first syllable is\nthe birth pada's, or reaches it by a paired letter or the pada's\nsubstitute, in the cakra's order and then the book's, each with its\nclauses under the rules; and every name the book holds that the cakra\nrefused. A filter keeps some and never ranks.\n\n`request_json` is `{\"bookId\" | \"book\", \"birth\", \"filter\", \"rules\"}`:\na book this context loaded, by the id its load answered, or a book\ncarried for this one call; the birth; the `SuggestFilter` (`sex`,\n`syllables`, `clauses`); and the `NamingRules`. The answer is\n`Suggestions`. Neither or both of `bookId` and `book`, a book not\nloaded in this context, a pada outside 1 to 4 or a filter clause the\nsutra does not report is `INVALID_ARG`, named under `naming`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/naming.rs"
     },
     {
       "name": "ts_numerology_profile",

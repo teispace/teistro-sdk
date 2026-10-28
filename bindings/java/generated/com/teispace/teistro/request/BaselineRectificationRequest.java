@@ -172,7 +172,7 @@ public record BaselineRectificationRequest(BirthTimeAccuracy accuracy, Double co
             json.put("events", events.stream().map(item0 -> item0.toJson()).toList());
         }
         if (sex != null) {
-            json.put("sex", sex.key());
+            json.put("sex", sex.fullKey());
         }
         json.put("uncertaintyMinutes", uncertaintyMinutes);
         return json;

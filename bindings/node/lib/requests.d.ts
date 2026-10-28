@@ -282,6 +282,92 @@ export interface NaamRequest {
 }
 
 /**
+ * Names to check against a birth's pada, each on its own.
+ */
+export interface NamingCheckRequest {
+  /**
+   * The birth: the Moon's nakshatra and pada.
+   */
+  readonly birth: Birth;
+  /**
+   * The names, in Devanagari or in the Latin scheme `rules.name.latin` declares.
+   */
+  readonly names: readonly string[];
+  /**
+   * The rules; the sources' own when left out.
+   */
+  readonly rules?: NamingRules;
+}
+
+/**
+ * A birth, for the names it gives.
+ */
+export interface NamingOfRequest {
+  /**
+   * The birth: the Moon's nakshatra and pada.
+   */
+  readonly birth: Birth;
+  /**
+   * The rules; the sources' own when left out.
+   */
+  readonly rules?: NamingRules;
+}
+
+/**
+ * Names to read into the cakra, each on its own.
+ */
+export interface NamingReadRequest {
+  /**
+   * The names, in Devanagari or in the Latin scheme `rules.name.latin` declares.
+   */
+  readonly names: readonly string[];
+  /**
+   * The rules; the sources' own when left out.
+   */
+  readonly rules?: NamingRules;
+}
+
+/**
+ * A birth and the book to suggest its names from: a book loaded into the context, named by `bookId`, or one carried here as `book` for one use.
+ */
+export interface NamingSuggestRequest {
+  /**
+   * The birth: the Moon's nakshatra and pada.
+   */
+  readonly birth: Birth;
+  /**
+   * A book carried in the request, loaded for this one suggestion; exactly one of `bookId` and `book` is given.
+   */
+  readonly book?: Book | null;
+  /**
+   * A book loaded into this context, by the id its load answered: sixty-four hex digits, held as text so that an id this context never answered is refused like one it did not load; exactly one of `bookId` and `book` is given.
+   */
+  readonly bookId?: string | null;
+  /**
+   * What a suggestion keeps; every name the pada reaches when left out.
+   */
+  readonly filter?: SuggestFilter;
+  /**
+   * The rules; the sources' own when left out.
+   */
+  readonly rules?: NamingRules;
+}
+
+/**
+ * The syllables a pada, a star or a sign names a child by.
+ */
+export interface NamingSyllablesRequest {
+  /**
+   * What is asked: one pada, a star's four, or a sign's nine (and Abhijit's four for Makara).
+   */
+  readonly of: SyllablesOf;
+  /**
+   * The rules; the sources' own when left out.
+   */
+  readonly rules?: NamingRules;
+}
+
+/**
  * A name and a birth date, and the readings they are taken under. Numerology reads no sky, so this is the whole request.
  */
 export interface NumerologyRequest {
@@ -1229,6 +1315,112 @@ export interface NaamRules {
    * The ten considerations'.
    */
   readonly porutham?: PoruthamRules;
+}
+
+/**
+ * A birth, as the names it gives are read from it: the Moon's star and pada.
+ */
+export interface Birth {
+  /**
+   * The Moon's nakshatra.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+  /**
+   * Its pada, 1 to 4.
+   */
+  readonly pada: number;
+}
+
+/**
+ * The rules a name is read and judged under (`03-design/namakarana.md` §4.1); each default is the one no source read contradicts.
+ */
+export interface NamingRules {
+  /**
+   * How syllables are counted (C774).
+   */
+  readonly finalA?: FinalA;
+  /**
+   * How a name is read: its Latin spelling and Abhijit's place.
+   */
+  readonly name?: NameRules;
+  /**
+   * Whether a nasal's pada lists a substitute initial (C770).
+   */
+  readonly nasal?: NasalInitial;
+  /**
+   * Which gṛhyasūtra's clauses are reported (C774).
+   */
+  readonly sutra?: GrhyaSutra;
+}
+
+/**
+ * A name book as the consumer writes it: `{"names": [...]}`.
+ */
+export interface Book {
+  /**
+   * The names, in the book's order, which is the order a suggestion keeps within a cell.
+   */
+  readonly names: readonly BookName[];
+}
+
+/**
+ * What a suggestion keeps. A filter never ranks; an empty one keeps every name that reaches the pada.
+ */
+export interface SuggestFilter {
+  /**
+   * Keeps names meeting every one of these clauses, each one the rules' sutra reports.
+   */
+  readonly clauses?: readonly NameClause[];
+  /**
+   * Keeps names of this sex and names the book gives no sex: a name the book leaves open is anyone's.
+   */
+  readonly sex?: Member<catalogue.Sex> | null;
+  /**
+   * Keeps names of one of these syllable counts, counted as the rules' `finalA` says; empty keeps every count.
+   */
+  readonly syllables?: readonly number[];
+}
+
+/**
+ * What syllables are asked for (C771).
+ */
+export type SyllablesOf = SyllablesOfPada | SyllablesOfNakshatra | SyllablesOfRashi;
+
+/**
+ * One pada's syllable.
+ */
+export interface SyllablesOfPada {
+  readonly of: 'PADA';
+  /**
+   * The star.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+  /**
+   * Its pada, 1 to 4.
+   */
+  readonly pada: number;
+}
+
+/**
+ * A star's four.
+ */
+export interface SyllablesOfNakshatra {
+  readonly of: 'NAKSHATRA';
+  /**
+   * The star.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+}
+
+/**
+ * A sign's nine padas, and for Makara Abhijit's four as well.
+ */
+export interface SyllablesOfRashi {
+  readonly of: 'RASHI';
+  /**
+   * The sign.
+   */
+  readonly rashi: Member<catalogue.Rashi>;
 }
 
 /**
@@ -2387,7 +2579,7 @@ export interface BaselineRectificationRequest {
   /**
    * The child's sex, for the tattva prior; none skips it.
    */
-  readonly sex?: Bare<catalogue.Sex> | null;
+  readonly sex?: Member<catalogue.Sex> | null;
   /**
    * The window's half-width, minutes, 1 to 720.
    */
@@ -2849,6 +3041,66 @@ export interface NameRules {
    */
   readonly latin?: LatinName;
 }
+
+/**
+ * How a name's syllables are counted (C774).
+ *
+ * `SOUNDED`: The text's count: every vowel written or inherent, the final `a` too (*Dharmasindhu* p. 164, *akṣaram aj svaraḥ*), so राम is rā-ma.
+ * `SILENT`: Speech's: a word's final inherent `a` dropped, as Hindi and Nepali say "rām", unless it is the word's only vowel.
+ */
+export type FinalA = 'SOUNDED' | 'SILENT';
+
+/**
+ * Whether a pada whose letter no name begins with lists a substitute (C770).
+ *
+ * `VARGA_THIRD`: ङ, ण and ञ each list their varga's third letter (ग, ड, ज) as a substitute initial, as the Nepali patro glosses them.
+ * `NONE`: No substitute: the cell's own letter only, as *Muhurta Chintamani*'s commentary gives it.
+ */
+export type NasalInitial = 'VARGA_THIRD' | 'NONE';
+
+/**
+ * Which gṛhyasūtra's clauses are reported (C774).
+ *
+ * `PARASKARA`: *Pāraskara* I.17.2–3, which *Muhurta Chintamani*'s commentary quotes (p. 173): a girl's name odd and ending in ā.
+ * `ASHVALAYANA`: *Āśvalāyana* I.15.4–7 (SBE 29 pp. 182–183): a man's even and a woman's odd, "in every case".
+ */
+export type GrhyaSutra = 'PARASKARA' | 'ASHVALAYANA';
+
+/**
+ * One name of a book.
+ */
+export interface BookName {
+  /**
+   * The name in Devanagari, which the cakra reads.
+   */
+  readonly devanagari: string;
+  /**
+   * A display spelling, carried and never read.
+   */
+  readonly latin?: string | null;
+  /**
+   * Whose name it is, when the book says.
+   */
+  readonly sex?: Member<catalogue.Sex> | null;
+  /**
+   * The book's own fields (a meaning, a source), carried and never read.
+   */
+  readonly tags?: Readonly<Record<string, string>>;
+}
+
+/**
+ * One clause of a name in daily use. The kṛt and taddhita clauses are grammar the letters do not show, and the varṇa endings are a rule about the family, so none of them is a row.
+ *
+ * `SONANT_INITIAL`: Begins with a sonant (*ghoṣavat*): the 3rd, 4th or 5th letter of a varga, or h.
+ * `SEMIVOWEL_WITHIN`: A semivowel (y r l v) among the letters after the first.
+ * `VISARGA_FINAL`: Ends in a visarga (*abhiniṣṭhāna*).
+ * `TWO_OR_FOUR_SYLLABLES`: Two syllables (for steadiness) or four (for holy lustre).
+ * `EVEN_FOR_A_BOY`: An even count, for a man.
+ * `ODD_FOR_A_GIRL`: An odd count, for a woman.
+ * `LONG_A_FOR_A_GIRL`: Ends in ā, for a girl (*Pāraskara* I.17.3 alone).
+ * `NO_FINAL_L_OR_R`: Does not end in the sound l or r: a last ल or र under a virama, or with its inherent `a` when speech drops it (`final_a: SILENT`). *Dharmasindhu*'s Hari, ending in i, meets it.
+ */
+export type NameClause = 'SONANT_INITIAL' | 'SEMIVOWEL_WITHIN' | 'VISARGA_FINAL' | 'TWO_OR_FOUR_SYLLABLES' | 'EVEN_FOR_A_BOY' | 'ODD_FOR_A_GIRL' | 'LONG_A_FOR_A_GIRL' | 'NO_FINAL_L_OR_R';
 
 /**
  * The readings numerology is taken under. Each default is what the text that defines the system prints; [`NumerologyRules::baseline`] is the baseline engine's, value for value.
