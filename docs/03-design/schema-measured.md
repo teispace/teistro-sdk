@@ -122,7 +122,7 @@ A null here is a real answer and not a missing one — no war, no
 sankranti that day, no combustion orbs for a body that cannot be combust
 — which is why the field is written rather than skipped.
 
-## 7. The layer reads back, and five types cannot
+## 7. The layer reads back, and 13 types do not derive it
 
 A schema's most valuable consumer is the SDK itself: a stored document
 is worth validating precisely because something will try to read it
@@ -132,24 +132,43 @@ later. Counting the derives over the layer's own source:
 |---|---|---|
 | `serial` | 6 | 5 |
 | `chart` | 19 | 16 |
-| `panchanga` | 128 | 126 |
-| `vargas` | 11 | 8 |
+| `panchanga` | 128 | 125 |
+| `vargas` | 11 | 7 |
 | `state` | 12 | 12 |
-| `aspect` | 8 | 8 |
+| `aspect` | 8 | 6 |
 | `points` | 5 | 5 |
 | `houses` | 5 | 5 |
-| **total** | **194** | **185** |
+| **total** | **194** | **181** |
 
-The five that do not derive it are the five that **cannot**, and they
-are all one shape: a value whose identity is a shipped constant, holding
-a `&'static` reference no document can produce — a divisional scheme's
-group table, its `Map::Listed` of signs, an aspect angle's key, the
-drishti table a chart was read under. Each has a reader written by hand
-instead, and each reads the value back **by its identity**: the key or
-the catalogued name is looked up in this build's own table, and what the
-document says about that table is checked against it rather than
-trusted. A document that names D9 and describes something else is
-refused by name.
+Each type that serialises without a derived reader, found where its
+derive names `Serialize` and not `Deserialize`, with how it is read
+instead:
+
+| crate | type | read back |
+|---|---|---|
+| `serial` | `GocharSidecar` | a checked reader |
+| `chart` | `ChartAngles` | no reader |
+| `chart` | `Input` | private, only hashed |
+| `chart` | `BatchInput` | private, only hashed |
+| `panchanga` | `SankalpaInput` | private, only hashed |
+| `panchanga` | `AshauchInput` | private, only hashed |
+| `panchanga` | `FirstYearInput` | private, only hashed |
+| `vargas` | `Map` | read inside its owner |
+| `vargas` | `Spans` | read inside its owner |
+| `vargas` | `Group` | read inside its owner |
+| `vargas` | `Scheme` | a `Deserialize` by hand |
+| `aspect` | `Aspects` | a `Deserialize` by hand |
+| `aspect` | `Angle` | a `Deserialize` by hand |
+
+The ones with a `Deserialize` by hand are one shape: a value whose
+identity is a shipped constant, holding a `&'static` reference no
+document can produce — a divisional scheme's group table, its
+`Map::Listed` of signs, an aspect angle's key, the drishti table a chart
+was read under. Each has a reader written by hand instead, and each
+reads the value back **by its identity**: the key or the catalogued name
+is looked up in this build's own table, and what the document says about
+that table is checked against it rather than trusted. A document that
+names D9 and describes something else is refused by name.
 
 That is stricter than a derive would have been, and it is the property a
 stored chart wants: reading one under a build whose tables have moved is
@@ -160,6 +179,12 @@ necessity: it is read only through `GocharSidecar::read`, which checks
 the hash of what it read against the one it was cut with
 (`gochar-sidecar.md` §4), so a derive would be a reader that skips the
 check.
+
+A type read inside its owner is a part of one of those values (a
+scheme's map, spans and groups) and comes back when its owner does. A
+private one is what an answer's `input_hash` is cut from: it is written
+only to be hashed and no document holds it. That leaves 1 with no reader
+at all: `ChartAngles`.
 
 `serial-measured.md` found the opposite end of this shape —
 `ChartFoundation` derived no `Serialize`, so the SDK could not publish a
@@ -240,7 +265,7 @@ for, and that is where a fixed count of decimals ran out.
 |---|---|---|
 | the schema can be derived from the documents | falsified | 45 of 169 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
-| the layer's types read back, so a round trip can gate the schema | **holds** | 185 types derive `Deserialize` |
+| the layer's types read back, so a round trip can gate the schema | **holds** | 181 types that serialise also derive `Deserialize` |
 | every word a document writes is spelt as a key | **holds** | 0 of the schema's words are not |
 | every number the form writes reads back as the same double | **holds** | 0 of 5498 move under a correct parser |
 | this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5498 |

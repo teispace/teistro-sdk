@@ -180,32 +180,116 @@ fn merged(docs: &[Sample]) -> BTreeMap<String, (BTreeSet<&'static str>, BTreeSet
 // ── what the source says ───────────────────────────────────────────────────
 
 /// How many types of a crate derive each half of the round trip.
-fn derives(root: &Path, crate_name: &str) -> (usize, usize) {
-    let mut serialise = 0;
-    let mut read_back = 0;
+fn derives(root: &Path, crate_name: &str) -> Derives {
+    let mut found = Derives::default();
     let mut files = Vec::new();
     collect_rust(
         &root.join("crates").join(crate_name).join("src"),
         &mut files,
     );
+    files.sort();
     for file in files {
         let Ok(text) = std::fs::read_to_string(&file) else {
             continue;
         };
-        for line in text.lines() {
-            let line = line.trim();
+        let lines: Vec<&str> = text.lines().map(str::trim).collect();
+        for (at, line) in lines.iter().enumerate() {
             if !line.contains("derive(") {
                 continue;
             }
-            if line.contains("Serialize") {
-                serialise += 1;
+            // `Deserialize` holds no `Serialize`, so a request type that
+            // only reads is counted in neither column.
+            if !line.contains("Serialize") {
+                continue;
             }
+            found.serialise += 1;
             if line.contains("Deserialize") {
-                read_back += 1;
+                found.read_back += 1;
+            } else if let Some((declared, name)) = lines
+                .get(at..)
+                .and_then(|rest| rest.iter().find_map(|l| Some((*l, type_named(l)?))))
+            {
+                found
+                    .write_only
+                    .push((name.to_owned(), reader(&text, declared, name)));
             }
         }
     }
-    (serialise, read_back)
+    found
+}
+
+/// What a crate's derives say: how many types serialise, how many read
+/// back by a derive, and each that serialises without one, with how it is
+/// read instead.
+#[derive(Default)]
+struct Derives {
+    serialise: usize,
+    read_back: usize,
+    write_only: Vec<(String, Reader)>,
+}
+
+/// How a type that derives no `Deserialize` is read back, if at all.
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum Reader {
+    /// A `Deserialize` written by hand.
+    ByHand,
+    /// A `read` function answering `Result<Type, _>` from a document.
+    Checked,
+    /// A field of a type in the same file whose reader is written by hand.
+    Inside,
+    /// Private to its crate: written to be hashed, never stored.
+    Hashed,
+    /// Nothing reads it.
+    None,
+}
+
+impl Reader {
+    fn says(self) -> &'static str {
+        match self {
+            Self::ByHand => "a `Deserialize` by hand",
+            Self::Checked => "a checked reader",
+            Self::Inside => "read inside its owner",
+            Self::Hashed => "private, only hashed",
+            Self::None => "no reader",
+        }
+    }
+}
+
+/// How the type `name`, declared on line `declared` of `text`, is read.
+fn reader(text: &str, declared: &str, name: &str) -> Reader {
+    if text.contains(&format!("Deserialize<'de> for {name}")) {
+        Reader::ByHand
+    } else if text
+        .lines()
+        .any(|line| line.contains("fn read") && line.contains(&format!("-> Result<{name}, ")))
+    {
+        Reader::Checked
+    } else if text.contains("Deserialize<'de> for")
+        && (text.contains(&format!(": {name},")) || text.contains(&format!("[{name}]")))
+    {
+        Reader::Inside
+    } else if !declared.starts_with("pub ") {
+        Reader::Hashed
+    } else {
+        Reader::None
+    }
+}
+
+/// The type a `pub struct`/`pub enum` line declares.
+fn type_named(line: &str) -> Option<&str> {
+    let rest = [
+        "pub struct ",
+        "pub enum ",
+        "pub(crate) struct ",
+        "pub(crate) enum ",
+        "struct ",
+        "enum ",
+    ]
+    .iter()
+    .find_map(|start| line.strip_prefix(start))?;
+    rest.split(|c: char| !(c.is_alphanumeric() || c == '_'))
+        .next()
+        .filter(|name| !name.is_empty())
 }
 
 /// Every `.rs` file under a directory.
@@ -723,14 +807,42 @@ fn round_trip(root: &Path) -> String {
     let mut rows = String::new();
     let mut serialise_total = 0;
     let mut read_back_total = 0;
+    let mut write_only = String::new();
+    let mut unread = Vec::new();
     for crate_name in LAYER {
-        let (serialise, read_back) = derives(root, crate_name);
-        serialise_total += serialise;
-        read_back_total += read_back;
-        let _ = writeln!(rows, "| `{crate_name}` | {serialise} | {read_back} |");
+        let found = derives(root, crate_name);
+        serialise_total += found.serialise;
+        read_back_total += found.read_back;
+        let _ = writeln!(
+            rows,
+            "| `{crate_name}` | {} | {} |",
+            found.serialise, found.read_back
+        );
+        for (name, reader) in &found.write_only {
+            if *reader == Reader::None {
+                unread.push(format!("`{name}`"));
+            }
+            let _ = writeln!(
+                write_only,
+                "| `{crate_name}` | `{name}` | {} |",
+                reader.says()
+            );
+        }
     }
+    let gap = serialise_total - read_back_total;
+    assert_eq!(
+        gap,
+        write_only.lines().count(),
+        "every type the counts leave unread is listed by name"
+    );
+    let none = unread.len();
+    let unread = if unread.is_empty() {
+        "none".to_owned()
+    } else {
+        unread.join(", ")
+    };
     format!(
-        "## 7. The layer reads back, and five types cannot
+        "## 7. The layer reads back, and {gap} types do not derive it
 
          A schema's most valuable consumer is the SDK itself: a stored
          document is worth validating precisely because something will try
@@ -742,8 +854,15 @@ fn round_trip(root: &Path) -> String {
 {rows}\
 | **total** | **{serialise_total}** | **{read_back_total}** |
 
-         The five that do not derive it are the five that **cannot**, and
-         they are all one shape: a value whose identity is a shipped
+         Each type that serialises without a derived reader, found where
+         its derive names `Serialize` and not `Deserialize`, with how it is
+         read instead:
+
+| crate | type | read back |
+|---|---|---|
+{write_only}
+         The ones with a `Deserialize` by hand are one shape: a value whose
+         identity is a shipped
          constant, holding a `&'static` reference no document can produce
          — a divisional scheme's group table, its `Map::Listed` of signs,
          an aspect angle's key, the drishti table a chart was read under.
@@ -764,6 +883,12 @@ fn round_trip(root: &Path) -> String {
          which checks the hash of what it read against the one it was cut
          with (`gochar-sidecar.md` §4), so a derive would be a reader that
          skips the check.
+
+         A type read inside its owner is a part of one of those values
+         (a scheme's map, spans and groups) and comes back when its owner
+         does. A private one is what an answer's `input_hash` is cut from:
+         it is written only to be hashed and no document holds it. That
+         leaves {none} with no reader at all: {unread}.
 
          `serial-measured.md` found the opposite end of this shape —
          `ChartFoundation` derived no `Serialize`, so the SDK could not
@@ -834,10 +959,7 @@ fn decides(
     docs: &[Sample],
     unkeyed: usize,
 ) -> String {
-    let (_, read_back) = LAYER
-        .iter()
-        .map(|name| derives(root, name))
-        .fold((0, 0), |(a, b), (c, d)| (a + c, b + d));
+    let read_back: usize = LAYER.iter().map(|name| derives(root, name).read_back).sum();
     let moved: usize = docs.iter().map(|(_, _, _, parsers)| parsers.by_std).sum();
     let by_serde: usize = docs.iter().map(|(_, _, _, parsers)| parsers.by_serde).sum();
     let counted: usize = docs.iter().map(|(_, _, _, parsers)| parsers.counted).sum();
@@ -863,7 +985,7 @@ fn decides(
         Claim {
             rule: String::from("the layer's types read back, so a round trip can gate the schema"),
             verdict: verdict_of(read_back > 0),
-            measured: format!("{read_back} types derive `Deserialize`"),
+            measured: format!("{read_back} types that serialise also derive `Deserialize`"),
         },
         Claim {
             rule: String::from("every word a document writes is spelt as a key"),
