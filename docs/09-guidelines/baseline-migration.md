@@ -484,10 +484,12 @@ the baseline's beside it
 
 ## 10. What is not available yet
 
-- **The compatibility shim is not built.** The roadmap lists it as a
-  Phase 9 deliverable beside this guide. There is no module that accepts
-  the baseline's calls and settings and forwards them to the SDK. You
-  port each call. Its design is
+- **The compatibility shim is not built beyond its skeleton.** The
+  roadmap lists it as a Phase 9 deliverable beside this guide. The
+  settings translation is built (`recordedSettings` in every binding),
+  and so is the package's entry, its context cache and its birth record
+  reader ([`bindings/node/compat`](../../bindings/node/compat/README.md)),
+  but no function forwards a baseline call yet. You port each call. Its design is
   [`03-design/compat-shim.md`](../03-design/compat-shim.md): a settings
   translation for stored snapshots in every binding, and a Node package,
   `@teistro/compat`, that takes stored birth records and answers the
