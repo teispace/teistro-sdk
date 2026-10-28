@@ -1,9 +1,11 @@
 # Namakarana: the four names, the pada's syllables and a consumer's name book (the `naming` area)
 
-Status: `decided`, 2026-10-28, from the sources before any code. Not
-built. Part of it is already built inside naam milan and the avakahada
-(`matching.md`, C291 to C299 and C334), and this page builds on that
-cakra rather than beside it.
+Status: `decided`, 2026-10-28, from the sources before any code. Work
+items 1 to 4 and 6 are built in Rust (`crates/matching/src/naming`,
+2026-10-28; §10 says where the build reads the page); items 5 and 7 to
+10 are not. Part of it was already built inside naam milan and the
+avakahada (`matching.md`, C291 to C299 and C334), and this page builds
+on that cakra rather than beside it.
 
 Nāmakaraṇa is the naming of a child. The baseline engine offers a
 phonetic matcher, a name validator and an offline corpus of 25,096
@@ -578,3 +580,61 @@ waits on two page images. Items 8 and 9 are the usual mechanical half.
 - **A published CC0 book.** Whether to publish one at all. It needs a
   vetter, and the measured CC0 source covers half the padas.
 
+## 10. Build state
+
+Built 2026-10-28, in Rust only (no boundary, IDL, binding or MCP tool
+yet):
+
+- **Item 1.** `teistro_intl::translit` holds one table with a column for
+  each of IAST, ISO 15919, Harvard-Kyoto and ITRANS, and
+  `to_devanagari(text, Scheme)` reads any of them back, composing the
+  scheme's decomposed marks. `devanagari_to_iast` writes from the same
+  table, and `name.rs`'s IAST table is gone. A spelling two rows share
+  reads as the earlier row (ṛ as the vowel, not ड़), and IAST does not
+  read back ढ़'s `ṛh`, which would take the `ṛh` of *bṛhaspati*. ITRANS's
+  `x`, `GY` and `dny` are listed conjuncts. ISO 15919 writes ए as ē, so
+  a plain `e` is refused under it, naming the letter.
+- **Item 2.** `LatinName::{Iso15919, HarvardKyoto, Itrans, Casual}` and
+  the `CASUAL` table (§2.5's rows, plus each plain letter listed). Only
+  the first akshara is read every way; the rest of the name takes each
+  spelling's first reading, and a word's last consonant keeps its `a`
+  as Nepali and Hindi write it. `read_name` answers a `NameReading`.
+- **Item 3.** `PadaSyllable`, `Initial`, `InitialBy`, `NasalInitial`,
+  `SyllablesOf` and `syllables(of, rules)`; `birth_syllable` is a view of
+  a `PadaSyllable`, and its answer is unchanged.
+- **Item 4.** `name_clauses(spelled, rules)` answers `NameClauses`, with
+  `GrhyaSutra` and `FinalA` on `NamingRules`.
+- **Item 6.** `name_check(name, Birth, NamingRules)` adds `prescribed`
+  as a `PadaSyllable`, `by_substitute` and `clauses`; `names_of(Birth,
+  NamingRules)` answers `Names`.
+
+Where the build reads the page, it says so here:
+
+- **`ambiguous` counts readings, not only cells.** `CASUAL` reads b, v
+  and w as व and as ब, one cell and two vargas, and the varga koota of
+  naam milan reads the varga. So a reading is a distinct `NameSyllable`
+  (cell and varga), `ambiguous` is more than one, and naam milan and
+  `name_check` refuse any name with more than one reading (under
+  `bride.name`, `groom.name` or `name`), the hint listing the spellings.
+- **`ru` also reads as रु**, its plain reading, which the table's row
+  ("ri, ru | रि, ऋ") leaves unsaid; without it "Rupa" could only be ऋपा.
+- **The final l or r is the name's last sound**: a ल or र under a virama,
+  or bare when `final_a` is `SILENT`. Read as the last akshara's
+  consonant, *Dharmasindhu*'s own Hari would fail it.
+- **Āpastamba's and Hiraṇyakeśin's clause is reported under both
+  sutras**, sourced to them, since it is neither sutra's. The sonant is
+  read as the table gives it (a varga's 3rd, 4th or 5th letter, or h),
+  so a vowel or a semivowel first does not meet it.
+- **Not built with item 4: the varṇa endings.** A request names a varṇa
+  only at the boundary (item 8), and matching an ending (śarman, śarmā)
+  is a rule to decide with it.
+- **Not built with item 6.** `Names` has no `nakshatra_name` or
+  `masa_name` and `NamingRules` no `masa_names` or `adhika`, and `Birth`
+  has no month: all wait on item 5's page images. `ChartRequest::with_naming`
+  and the `sdk.naming()` area are the boundary's (item 8).
+- **Names.** The Rust functions are `read_name`, `name_check`,
+  `names_of` and `syllables`, so a crate-root name says what it reads;
+  the area's operations keep §4.2's names.
+- **The bindings' `LatinName`.** Naam milan already crosses the
+  boundary with `NameRules`, so its generated request types gain the
+  four new keys; nothing else crosses yet.

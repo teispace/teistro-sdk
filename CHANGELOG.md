@@ -33,6 +33,39 @@ the previous release, not by nobody having looked.
   document's. No binding carries it: a binding asks for transits on the
   chart request (`03-design/gochar-sidecar.md` §8).
 
+**Namakarana, the first part: a name read in any declared scheme or
+every casual way, a pada's syllables, and a name's clauses.**
+**Numbers:** none. Every answer built before is unchanged: a Devanagari
+or IAST name reads to the same cell, `birth_syllable` and the avakahada
+give the same syllable, and naam milan matches as before. No settings
+knob is added, so no settings hash moves.
+- One transliteration table, `teistro_intl::translit`, with a column
+  for each of IAST, ISO 15919, Harvard-Kyoto and ITRANS: `to_devanagari`
+  reads any of them, composing decomposed marks, and `devanagari_to_iast`
+  writes from the same rows. The name reader's own IAST table is gone;
+  a Latin name is transliterated whole, then read as Devanagari (C772).
+- `LatinName` gains `ISO_15919`, `HARVARD_KYOTO`, `ITRANS` and `CASUAL`
+  (in every binding's naam milan request too). `CASUAL` reads an
+  everyday spelling every way its listed table allows and answers each
+  distinct reading, never one chosen; naam milan and `name_check` refuse
+  a name read more than one way, the hint listing the spellings. The
+  default stays `REFUSE`. An IAST name is now read whole, so a letter
+  IAST does not spell anywhere in it is refused, naming the letter.
+- `syllables(SyllablesOf, NamingRules)` gives a pada's syllable, a
+  star's four or a sign's nine, Makara's with Abhijit's four marked as
+  no pada (C771), each a `PadaSyllable` with every initial that reaches
+  it: the print's own, ब and श paired with व and स, and the Nepali
+  patro's substitute for ङ, ण and ञ (`nasal: VARGA_THIRD` by default,
+  C770). `birth_syllable` is a view of it.
+- `name_clauses` reports the gṛhyasūtras' clauses of a name in daily
+  use, each with its source and no verdict, and its syllable count
+  (`sutra`: `PARASKARA` or `ASHVALAYANA`; `final_a`: `SOUNDED` or
+  `SILENT`; C774). `name_check` now takes a `Birth` and `NamingRules`
+  and adds the prescribed pada's initials, `by_substitute` and the
+  clauses; `names_of` gives the pada's syllable beside the star's deity
+  (C773). The rest of `03-design/namakarana.md` (the month and star
+  names, the name book, the boundary and the bindings) is not built.
+
 **Festival rules are typed in every binding.**
 **Numbers:** none.
 - `FestivalRequest.rules` crossed every binding as raw JSON: Java took

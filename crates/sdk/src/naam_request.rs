@@ -15,8 +15,8 @@ const NAAM: &str = "naam";
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct NaamRequest {
-    /// The bride's name, in Devanagari or, when `rules.name.latin` says
-    /// so, IAST.
+    /// The bride's name, in Devanagari or in the Latin scheme
+    /// `rules.name.latin` declares.
     pub bride: String,
     /// The groom's.
     pub groom: String,
