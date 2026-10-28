@@ -44,7 +44,7 @@ golden vectors exported from the baseline engine before migration.
       windows, Balarishta states.
 - [x] Birth timing: Ishtakaal, bhayat, bhabhoga, ghati-pala both reckonings,
       ghati-pala to clock inverse.
-- [ ] Daily panchanga: every limb with exact transitions (true spans, not
+- [x] Daily panchanga: every limb with exact transitions (true spans, not
       day-clipped), all derived timings and yogas, Moon sign, ayana, lunar
       month, eras.
 - [ ] Muhurta search: identical ranking on the baseline regression set
@@ -100,14 +100,14 @@ by `check-ab`. Code with nothing comparing it to the baseline is "partly".
 | positions, dignities, avasthas, war | met | `crates/ephemeris-builtin/tests/conformance.rs`, `crates/state/tests/baseline.rs` (four avastha families; the corpus records no fifth) |
 | houses, vargas | met | `crates/astro/tests/baseline_houses.rs`, `crates/houses/tests/baseline.rs`, `crates/vargas/tests/baseline.rs` |
 | aspects | partly | built (`crates/aspect`); the corpus records no drishti, so a baseline export of graha, sphuta and rashi drishti is owed |
-| points | partly | upagrahas, yogi points, special lagnas and mrityu bhaga held; Bhrigu bindu, marana karaka sthana and pushkara bhaga are catalogued and not computed, each waiting on a citation |
+| points | partly | upagrahas, yogi points, special lagnas, mrityu bhaga, pushkara navamshas and bhagas (C767) and marana karaka sthana (C768) held; Bhrigu bindu is catalogued and not computed: no text defining it has been read (C769) |
 | yogas, doshas | met | 76 921 and 8 565 comparisons agree; the engine records no yoga strength, so none is compared; its corpus holds 605 yogas and 69 doshas, not the 562 and 62 above |
 | balas, ashtakavarga | met | 11 431, 3 408 and 1 848 comparisons; kakshya by a unit test only |
 | dashas | met | every recorded system, both balances, the chains and the dossier depths |
-| Jaimini | partly | arudhas held; of the karakas only the Atmakaraka is compared (54 of 55); the three pairs have no vector |
+| Jaimini | partly | arudhas held; the whole chara karaka order under seven and eight karakas, 54 of 55 each, the miss a graha within an arc-second of a sign edge (`crates/sdk/tests/baseline_chara_karakas.rs`); the three pairs have no vector |
 | ayurdaya, maraka, balarishta | partly | built (`crates/rules/src/longevity`); no baseline vectors |
 | birth timing | met | `crates/chart/tests/baseline_day.rs` |
-| daily panchanga | partly | periods, classification, month, panchaka, ayana and shool held; the limb transitions are a hand-checked accuracy row, and the corpus's muhurta yogas and moonrise and moonset are read by no test |
+| daily panchanga | met | periods, classification, month, panchaka, ayana and shool held; muhurta yogas 253 of 265 flags (the 12 the recording's own weekday-and-nakshatra table), moonrise and moonset within 30 s over 104 events, and 271 limb changes within 10 s in TT (`crates/sdk/tests/baseline_panchanga_day.rs`) |
 | muhurta ranking | partly | `Ranking::Baseline`, one regression; no exported regression set compared rank for rank |
 | gochar | partly | longitude, house and bindus by the A/B; transit strength, vedha phala and the calendar have no vectors |
 | Tajika | decided otherwise | the SDK follows Charak and the *Tajika Nilakanthi* and matches Charak's worked year in full; the A/B counts where the baseline differs (24.4% agreement, the sahams by other formulas). "As implemented" is not a goal; a baseline-reading mode is v1.x, if a consumer asks. Decided 2026-10-27 |
