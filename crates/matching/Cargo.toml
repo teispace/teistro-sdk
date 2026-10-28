@@ -19,6 +19,9 @@ schema = ["dep:schemars", "teistro-core/schema"]
 
 [dependencies]
 teistro-core = { path = "../core" }
+# The one transliteration table a Latin name is read through
+# (`03-design/namakarana.md` §2.5); the engine without its command line.
+teistro-intl = { path = "../intl", default-features = false }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 

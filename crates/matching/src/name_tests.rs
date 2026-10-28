@@ -9,8 +9,9 @@
 use teistro_core::catalogue::Nakshatra;
 
 use crate::{
-    AbhijitPada, KootaRules, LatinName, NaamRules, NameRules, NameSyllable, NameVarga, Native,
-    VargaRelation, ashta_koota, birth_syllable, naam_milan, name_check, name_syllable, varga_koota,
+    AbhijitPada, Birth, KootaRules, LatinName, NaamRules, NameRules, NameSyllable, NameVarga,
+    NamingRules, Native, VargaRelation, ashta_koota, birth_syllable, naam_milan, name_check,
+    name_syllable, varga_koota,
 };
 
 /// *Muhurta Chintamani*'s śatapada table as printed (1954, p. 173, leaf
@@ -279,58 +280,24 @@ fn the_catalogue_spells_every_pada_as_the_page_prints_it() {
     }
 }
 
-/// A printed syllable in IAST, through the letters the IAST reader reads.
+/// A printed syllable in IAST, by the one transliteration table.
 fn iast_of(printed: &str) -> String {
-    let mut out = String::new();
-    let mut inherent = false;
-    for letter in printed.chars() {
-        if let Some((spelled, _)) = crate::name::IAST_CONSONANTS
-            .iter()
-            .find(|(_, c)| *c == letter)
-        {
-            out.push_str(spelled);
-            inherent = true;
-            continue;
-        }
-        let vowel = match letter {
-            'अ' => "a",
-            'आ' | 'ा' => "ā",
-            'इ' | 'ि' => "i",
-            'ई' | 'ी' => "ī",
-            'उ' | 'ु' => "u",
-            'ऊ' | 'ू' => "ū",
-            'ए' | 'े' => "e",
-            'ओ' | 'ो' => "o",
-            _ => continue,
-        };
-        out.push_str(vowel);
-        inherent = false;
-    }
-    if inherent {
-        out.push('a');
-    }
-    out
+    teistro_intl::translit::devanagari_to_iast(printed)
 }
 
 #[test]
 fn a_name_is_read_against_the_birth_pada_as_facts() {
+    let rules = NamingRules::default();
     // C334: every printed syllable is its own pada's name, and the next
     // pada's syllable is the same star and another pada.
     for nakshatra in Nakshatra::ALL {
         for pada in 1..=4 {
             let prescribed = birth_syllable(nakshatra, pada).unwrap();
-            let own = name_check(
-                &prescribed.devanagari,
-                NameRules::default(),
-                nakshatra,
-                pada,
-            )
-            .unwrap();
+            let own = name_check(&prescribed.devanagari, birth(nakshatra, pada), rules).unwrap();
             assert!(own.same_star && own.same_pada, "{nakshatra:?} {pada}");
             assert_eq!(own.read.cell, own.prescribed.cell);
             let next = birth_syllable(nakshatra, pada % 4 + 1).unwrap();
-            let beside =
-                name_check(&next.devanagari, NameRules::default(), nakshatra, pada).unwrap();
+            let beside = name_check(&next.devanagari, birth(nakshatra, pada), rules).unwrap();
             assert!(
                 beside.same_star && !beside.same_pada,
                 "{nakshatra:?} {pada}"
@@ -338,24 +305,28 @@ fn a_name_is_read_against_the_birth_pada_as_facts() {
         }
     }
     // Another star's syllable is answered, not refused.
-    let other = name_check("राम", NameRules::default(), Nakshatra::Ashwini, 1).unwrap();
+    let other = name_check("राम", birth(Nakshatra::Ashwini, 1), rules).unwrap();
     assert_eq!(other.read.nakshatra, Some(Nakshatra::Chitra));
     assert!(!other.same_star && !other.same_pada);
     // Abhijit's row is no star's, even beside Uttara Ashadha's 4th pada.
-    let abhijit = name_check("जूही", NameRules::default(), Nakshatra::UttaraAshadha, 4).unwrap();
+    let abhijit = name_check("जूही", birth(Nakshatra::UttaraAshadha, 4), rules).unwrap();
     assert_eq!(abhijit.read.nakshatra, None);
     assert!(!abhijit.same_star && !abhijit.same_pada);
     // Refusals name their field.
     assert_eq!(
-        name_check("Ram", NameRules::default(), Nakshatra::Ashwini, 1)
+        name_check("Ram", birth(Nakshatra::Ashwini, 1), rules)
             .unwrap_err()
             .field(),
         Some("name")
     );
     assert_eq!(
-        name_check("राम", NameRules::default(), Nakshatra::Ashwini, 0)
+        name_check("राम", birth(Nakshatra::Ashwini, 0), rules)
             .unwrap_err()
             .field(),
         Some("pada")
     );
+}
+
+fn birth(nakshatra: Nakshatra, pada: u8) -> Birth {
+    Birth { nakshatra, pada }
 }

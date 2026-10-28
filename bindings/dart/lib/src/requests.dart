@@ -671,7 +671,7 @@ final class NaamRequest extends _Request {
     this.rules = const NaamRules(name: NameRules(latin: LatinName.refuse, abhijit: AbhijitPada.refuse), koota: KootaRules(equalVarna: EqualVarna.whole, devaBride: DevaBride.four, bhakootLift: BhakootLift.anyOne, nadiDosha: NadiDosha.any, gana: GanaPoints.daivajnaManohara, vashya: VashyaPoints.verse), porutham: PoruthamRules(twoSignStar: TwoSignStar.groomEarlier, deerghaBeyond: DeerghaBeyond.thirteenth, lordsFriendship: LordsFriendship.mutual)),
   });
 
-  /// The bride's name, in Devanagari or, when `rules.name.latin` says so, IAST.
+  /// The bride's name, in Devanagari or in the Latin scheme `rules.name.latin` declares.
   final String bride;
 
   /// The groom's.
@@ -7463,12 +7463,20 @@ enum AbhijitPada implements _Keyed {
   final String key;
 }
 
-/// How a name written in Latin letters is read (C293).
+/// How a name written in Latin letters is read (C293, C772).
 enum LatinName implements _Keyed {
   /// Refused: an English spelling is not guessed at, since its "ch" is च where IAST's is छ.
   refuse('REFUSE'),
-  /// Read as IAST.
-  iast('IAST');
+  /// Read as IAST, case folded and combining marks composed.
+  iast('IAST'),
+  /// Read as ISO 15919 (IAST with ṁ, r̥, ē and ō), case folded and combining marks composed.
+  iso15919('ISO_15919'),
+  /// Read as Harvard-Kyoto, whose capitals are letters: case as written.
+  harvardKyoto('HARVARD_KYOTO'),
+  /// Read as ITRANS 5.3, whose capitals are letters: case as written.
+  itrans('ITRANS'),
+  /// Read every way [`CASUAL`]'s list allows an everyday spelling to be read, and answered with every cell those readings reach; never one chosen among them (C772).
+  casual('CASUAL');
 
   const LatinName(this.key);
 

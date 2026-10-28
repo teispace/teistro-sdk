@@ -169,7 +169,7 @@ of the `Chart` it fills.
 | remedies | `remedies: {...}`; `chart.remedies` |
 | research: batch, statistics | `ctx.chart.foundMany(...)`; `ctx.research.counts(...)` and the rest of `ctx.research` |
 | research: synastry, composites | `synastry: {...}`; `chart.synastry`, `chart.synastryComposite` |
-| namakarana | the syllables in `chart.avakahada` and `ctx.matching.naam`; the rest designed, not built (§10) |
+| namakarana | the syllables in `chart.avakahada` and `ctx.matching.naam`; in Rust, `teistro::matching::{read_name, name_check, syllables, names_of}`; the rest designed, not built (§10) |
 
 ### 4.6 The rashifal and interpretation packages
 
@@ -481,7 +481,11 @@ the baseline's beside it
   the baseline's calls and settings and forwards them to the SDK. You
   port each call.
 - **Namakarana.** The phonetic matcher, the name validation and the
-  offline name corpus have no SDK equivalent yet. The design is
+  offline name corpus have no equivalent in a binding yet. In Rust,
+  `read_name` reads a Latin name under a declared scheme or every
+  `CASUAL` way, `name_check` checks a name with its clauses and
+  `syllables` gives a pada's, a star's or a sign's syllables
+  (`namakarana.md` §10). The design is
   [`03-design/namakarana.md`](../03-design/namakarana.md): a `naming`
   area that reads a Latin name under a declared scheme or reports every
   casual reading rather than picking one, checks a name as facts and

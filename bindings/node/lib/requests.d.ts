@@ -268,7 +268,7 @@ export interface BatchAsked {
  */
 export interface NaamRequest {
   /**
-   * The bride's name, in Devanagari or, when `rules.name.latin` says so, IAST.
+   * The bride's name, in Devanagari or in the Latin scheme `rules.name.latin` declares.
    */
   readonly bride: string;
   /**
@@ -5343,12 +5343,16 @@ export type TambiraMover = 'KARYESHA' | 'EITHER_LORD';
 export type AbhijitPada = 'REFUSE' | 'UTTARA_ASHADHA' | 'SHRAVANA';
 
 /**
- * How a name written in Latin letters is read (C293).
+ * How a name written in Latin letters is read (C293, C772).
  *
  * `REFUSE`: Refused: an English spelling is not guessed at, since its "ch" is च where IAST's is छ.
- * `IAST`: Read as IAST.
+ * `IAST`: Read as IAST, case folded and combining marks composed.
+ * `ISO_15919`: Read as ISO 15919 (IAST with ṁ, r̥, ē and ō), case folded and combining marks composed.
+ * `HARVARD_KYOTO`: Read as Harvard-Kyoto, whose capitals are letters: case as written.
+ * `ITRANS`: Read as ITRANS 5.3, whose capitals are letters: case as written.
+ * `CASUAL`: Read every way [`CASUAL`]'s list allows an everyday spelling to be read, and answered with every cell those readings reach; never one chosen among them (C772).
  */
-export type LatinName = 'REFUSE' | 'IAST';
+export type LatinName = 'REFUSE' | 'IAST' | 'ISO_15919' | 'HARVARD_KYOTO' | 'ITRANS' | 'CASUAL';
 
 /**
  * How a birth date becomes the Pythagorean birth number (C-new-19).

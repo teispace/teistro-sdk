@@ -325,8 +325,10 @@ or Shravana's 1st (Abhijit spans 276°40′ to 280°53′20″, across both),
 and without the knob the match is refused, naming it.
 
 **A name's first syllable** (C293). The verse reads the name's first
-letter. Its first akshara is read in Devanagari, or in IAST when the
-caller declares it; a Latin spelling is never guessed, since English
+letter. Its first akshara is read in Devanagari, or in a Latin scheme
+the caller declares (IAST, ISO 15919, Harvard-Kyoto or ITRANS), or every
+way `CASUAL`'s list allows (`namakarana.md` §2.5, C772); a Latin
+spelling is never guessed into one reading, since English
 "ch" is च and IAST's ch is छ (Revati against Ardra). A conjunct is read
 by its first consonant with the cluster's vowel, as the Jayalakshmī ṭīkā
 on the mātrā-svara cakra reads *yajñadatta*; vowel length is folded; ṛ
@@ -438,8 +440,10 @@ shipped. A matcher of spellings is the application's.
   `NameSyllable::native(AbhijitPada)` and `Native::of_pada` found the
   native a koota reads; `naam_milan(bride, groom, NaamRules) ->
   NaamMilan { bride, groom, varga, ashta, porutham }` matches two names,
-  `varga_koota` two vargas. `NameRules` holds `latin` (`REFUSE` or
-  `IAST`) and `abhijit` (`REFUSE`, `UTTARA_ASHADHA` or `SHRAVANA`).
+  `varga_koota` two vargas. `NameRules` holds `latin` (`REFUSE`,
+  `IAST`, `ISO_15919`, `HARVARD_KYOTO`, `ITRANS` or `CASUAL`) and
+  `abhijit` (`REFUSE`, `UTTARA_ASHADHA` or `SHRAVANA`). A `CASUAL` name
+  read more than one way is refused, its hint listing the spellings.
 - `sdk.chart().matching(&bride, &groom, KootaRules)`,
   `sdk.chart().porutham(&bride, &groom, PoruthamRules)` and
   `sdk.chart().kuja(&bride, &groom, KujaRules)` on two founded charts.
@@ -466,9 +470,10 @@ shipped. A matcher of spellings is the application's.
   nakshatra_lord, rashi_lord, varna, yoni, gana, nadi, syllable, ghata }` in
   `crates/matching`, with `birth_syllable(nakshatra, pada) ->
   BirthSyllable { cell, devanagari, iast, varga }` reading the pada's
-  own cell, and `name_check(name, rules, nakshatra, pada) -> NameCheck
-  { read, prescribed, same_star, same_pada }` reading a name against it
-  (C334). `ChartRequest::with_avakahada` fills `Document::avakahada`.
+  own cell, and `name_check(name, Birth { nakshatra, pada },
+  NamingRules) -> NameCheck { read, prescribed, same_star, same_pada,
+  by_substitute, clauses }` reading a name against it (C334; extended by
+  `namakarana.md`). `ChartRequest::with_avakahada` fills `Document::avakahada`.
   `with_everything` leaves it out, as it leaves out the Sthira dasa,
   since a tropical chart refuses it under the field `avakahada`. At the
   boundary the bit is `TS_CHART_AVAKAHADA`. The section `avakahada`

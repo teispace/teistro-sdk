@@ -4,7 +4,7 @@
 package com.teispace.teistro.request;
 
 /**
- * How a name written in Latin letters is read (C293).
+ * How a name written in Latin letters is read (C293, C772).
  */
 public enum LatinName implements RequestJson {
     /**
@@ -12,9 +12,25 @@ public enum LatinName implements RequestJson {
      */
     REFUSE("REFUSE"),
     /**
-     * Read as IAST.
+     * Read as IAST, case folded and combining marks composed.
      */
-    IAST("IAST");
+    IAST("IAST"),
+    /**
+     * Read as ISO 15919 (IAST with ṁ, r̥, ē and ō), case folded and combining marks composed.
+     */
+    ISO_15919("ISO_15919"),
+    /**
+     * Read as Harvard-Kyoto, whose capitals are letters: case as written.
+     */
+    HARVARD_KYOTO("HARVARD_KYOTO"),
+    /**
+     * Read as ITRANS 5.3, whose capitals are letters: case as written.
+     */
+    ITRANS("ITRANS"),
+    /**
+     * Read every way `CASUAL`'s list allows an everyday spelling to be read, and answered with every cell those readings reach; never one chosen among them (C772).
+     */
+    CASUAL("CASUAL");
 
     private final String key;
 

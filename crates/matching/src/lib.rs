@@ -1,5 +1,6 @@
 //! Matching two births through the Moon of each, and Mars in each, and
-//! two names through the star of each (`03-design/matching.md`).
+//! two names through the star of each (`03-design/matching.md`); and the
+//! naming of a child by the same cakra (`03-design/namakarana.md`).
 //!
 //! Everything here is a reading of tables, so there is no ephemeris, no
 //! chart and no instant: a [`Native`] is the Moon's nakshatra, pada, sign
@@ -26,6 +27,7 @@ mod doshas;
 mod ghata;
 mod kuja;
 mod name;
+mod naming;
 mod native;
 mod porutham;
 mod role;
@@ -43,10 +45,12 @@ pub use kuja::{
     KUJA_REFERENCES, Kuja, KujaFrom, KujaHouses, KujaLifts, KujaNative, KujaReading, KujaReference,
     KujaRules, KujaSide, KujaSky, kuja, kuja_side,
 };
-pub use name::{
-    AbhijitPada, BirthSyllable, LatinName, NaamMilan, NaamRules, NameCheck, NameRules,
-    NameSyllable, NameVarga, VargaKoota, VargaRelation, birth_syllable, naam_milan, name_check,
-    name_syllable, varga_koota,
+pub use name::{NaamMilan, NaamRules, VargaKoota, VargaRelation, naam_milan, varga_koota};
+pub use naming::{
+    AbhijitPada, Birth, BirthSyllable, CASUAL, Clause, ClauseRow, ClauseSource, FinalA, GrhyaSutra,
+    Initial, InitialBy, LatinName, NameCheck, NameClauses, NameReading, NameRules, NameSyllable,
+    NameVarga, Names, NamingRules, NasalInitial, PadaSyllable, Reading, SyllablesOf,
+    birth_syllable, name_check, name_clauses, name_syllable, names_of, read_name, syllables,
 };
 pub use native::Native;
 pub use porutham::{
@@ -64,6 +68,9 @@ mod kuja_tests;
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod name_tests;
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod naming_tests;
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod porutham_tests;
