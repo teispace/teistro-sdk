@@ -283,6 +283,7 @@ it only when a request asks
 | functional nature for remedies | `remedies: { rules: { functional: { scheme: 'BASELINE' } } }` | [`remedies.md`](../03-design/remedies.md) |
 | rectification | `rectification: { baseline: { uncertaintyMinutes: 60, sex: 'MALE', events } }`; `chart.rectification.baseline` | [`rectification.md`](../03-design/rectification.md) |
 | Kuja dosha houses | `matching: { …, kuja: { houses: 'WITH_SECOND' } }` | [`matching.md`](../03-design/matching.md), "The Kuja dosha, decided" |
+| Stree-deergha | `matching: { …, porutham: { deerghaBeyond: 'TENTH_OR_SAME_STAR' } }`: beyond the 10th, the same star agreeing (C779) | [`matching.md`](../03-design/matching.md) |
 | KP under any ayanamsha | `kp: { anyAyanamsha: true }`; the SDK refuses KP under a non-KP ayanamsha otherwise (C157), where the baseline warns | [`kp.md`](../03-design/kp.md) |
 
 In Rust, `PrashnaRules::baseline()`, `NumerologyRules::baseline()` and
@@ -358,7 +359,6 @@ evidence.
 | limb boundaries | found to 0.001° (up to 7.6 s) | converged in time | [`01-pain-points.md`](../01-research/baseline-engine/01-pain-points.md) |
 | the years an ephemeris covers | an analytic fallback past the files | refused at the data's edge | [`ab-measured.md`](../05-testing/ab-measured.md), "Refused" |
 | Ashta Koota | its own Vashya, Gana, Yoni and Bhakoot tables | the sources' tables, with knobs for the printed variants (`matching.rules`, a `KootaRules`) | [`ab-measured.md`](../05-testing/ab-measured.md), `milan` |
-| Stree-deergha | beyond 9 | beyond 13 (*Kalaprakasika*) or 7 (`DeerghaBeyond`) | [`ab-measured.md`](../05-testing/ab-measured.md), `milan` |
 | Tajika year lord and sahams | its own | Charak's worked year | [`ab-measured.md`](../05-testing/ab-measured.md), `varsha` |
 | era numbers in the application layer | fixed offsets from the year | computed with sankranti-aware rollover | [`01-pain-points.md`](../01-research/baseline-engine/01-pain-points.md) |
 | threads | crashes in worker threads (global ephemeris state) | one context per thread, no shared state | [`ab-measured.md`](../05-testing/ab-measured.md), "Not measured, and why" |

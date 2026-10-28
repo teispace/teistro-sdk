@@ -201,7 +201,9 @@ bride's counting 1.
    (C265).
 3. **Mahendra** (p. 72): `n` is 4, 7, 10 and so on to 25.
 4. **Sthree-Dheergham** (`STREE_DEERGHA`, p. 72): `n` beyond the
-   13th; beyond the 7th is a knob (C272).
+   13th; beyond the 7th is a knob (C272), and so is the recording
+   engine's count, beyond the 10th with the bride's own star agreeing
+   (`TENTH_OR_SAME_STAR`, C779).
 5. **Yoni** (p. 73) on Kalaprakasika's own table and eight enmities
    (C278): an enmity disagrees, the same yoni or any other agrees.
 6. **Rasi** (`BHAKOOT`, pp. 73–74), the groom's sign counted from the

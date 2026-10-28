@@ -452,6 +452,14 @@ fn the_counts_read_the_rules() {
             row(bride, at(star, 2), Koota::StreeDeergha, seventh).agrees,
             count > 7
         );
+        let recorded = PoruthamRules {
+            deergha_beyond: DeerghaBeyond::TenthOrSameStar,
+            ..rules
+        };
+        assert_eq!(
+            row(bride, at(star, 2), Koota::StreeDeergha, recorded).agrees,
+            count > 10 || count == 1
+        );
         let agreeing = ten.considerations.iter().filter(|row| row.agrees).count();
         assert_eq!(usize::from(ten.agreeing), agreeing);
         assert!(ten.chief_agreeing <= ten.agreeing.min(5));
