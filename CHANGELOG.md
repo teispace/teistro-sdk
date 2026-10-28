@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The A/B compares KP's significators and ruling planets.**
+**Numbers:** none; a comparison, not a computation.
+- Two families join `kpLord` (`ab-baseline.md` §10): `kpSignificator`,
+  each house's four levels as a set of the nine grahas, and `kpRuler`,
+  the lagna's and the Moon's sign and star lords and the day's lord.
+  Under `same` they agree on 95.2% and 92.0% (`ab-measured.md`). Every
+  miss is a convention: the SDK's KP day turns at sunrise, as KP Reader
+  VI has it, where the baseline's turns at midnight; and the baseline
+  counts an intercepted sign's lord a significator of its house, which
+  the SDK reports and does not count (crux C154). The KP parity row is
+  met.
+
 **The gochar sidecar.**
 **Numbers:** none.
 - `teistro_serial::sidecar::GocharSidecar` (`teistro::GocharSidecar`):
