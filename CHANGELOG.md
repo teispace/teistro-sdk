@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Dart and Java layers held to what their own tests read.**
+**Numbers:** none. Tests, and the Dart layer's equality.
+- A Dart value equal to another hashes alike, however deep its lists
+  (`VarshphalRows`, a dignity table): `hashCode` hashed a nested list by
+  identity while `==` compared it member by member.
+- A generated Dart request holding one the layer keeps by hand (a
+  festival request, a varsha request) compares that part by the JSON it
+  writes: two built alike were unequal, since the hand-kept one compares
+  by identity.
+- Dart and Java walk every message accessor against the locale engine,
+  every catalogue member against the library's keys, every shipped rule
+  and deep request example through the request types, and port the
+  synastry, matching, saham, muhurta, drawing, engine and zone tests the
+  other bindings held.
+
 **The recording engine's Sthree-Dheergham, asked for by name.**
 **Numbers:** none. A new value; the default stays *Kalaprakasika*'s.
 - `deerghaBeyond` `TENTH_OR_SAME_STAR` (crux C779): the groom's star
