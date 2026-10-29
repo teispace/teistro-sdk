@@ -3377,7 +3377,7 @@ binding (ADR-0023).
 
 ## Now
 
-### What waits on someone else (2026-10-27)
+### What waits on someone else (2026-10-29)
 
 What is left in the engineer's hands, and its estimate, is
 `07-roadmap/00-roadmap.md`, "Estimate". The rest waits on:
@@ -3393,7 +3393,14 @@ What is left in the engineer's hands, and its estimate, is
 - **The maintainer.** The `TEIMERIS_READ_TOKEN` secret; the Central
   namespace's DNS record; the release PGP key and its fingerprint in
   `SECURITY.md`; every publish (Central, npm, PyPI, pub.dev, crates.io);
-  the corpus's next release; the adapter's move into Teimeris and its
+  the corpus's next release (0.13.0: the second baseline export's aspects,
+  Jaimini, KP and milan vectors, on a local corpus branch, scored by the
+  SDK's tests once the pin carries them, `05-testing/01-golden-vectors.md`);
+  which Surya Siddhanta reading the baseline's stored charts keep (the
+  recording engine's is not the text's, `03-design/compat-shim.md` §8);
+  whether a refusal becomes a keyed, localised message in every area
+  (`03-design/namakarana.md` §10); a native reader of the naming messages
+  in `ne-Deva-NP`; the adapter's move into Teimeris and its
   licence; a real Android phone and iPhone for P0-2 and P0-3; then the
   maintainer's review of the finished SDK, and the astrologers'.
 
