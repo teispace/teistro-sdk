@@ -54,6 +54,8 @@ const TESTS: &[(&str, &[&str])] = &[
     ("teistro-kp", &["baseline"]),
     ("teistro-matching", &["baseline"]),
     ("teistro-rules", &["baseline", "doshas", "baseline_jaimini"]),
+    ("teistro-hellenistic", &["flatlib"]),
+    ("teistro", &["immanuel"]),
     ("teistro-calendar", &["official"]),
     ("teistro-siddhanta", &["official"]),
 ];
