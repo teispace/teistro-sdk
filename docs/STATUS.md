@@ -1065,6 +1065,10 @@ provider's DUT1).
 
 ## How to resume
 
+**Open with the maintainer:** Q42 (who reviews the Hindi, Sanskrit and
+Nepali text addendum 3 asks for) and Q43 (whether a hosted API may serve
+Teimeris's output), both from `consumers/addendum-3.md`.
+
 0. **Next, in this order** (the dated plan, `07-roadmap/00-roadmap.md`,
    "The plan to the release candidate"; Track A's release blockers first,
    the modules the reviewers read beside them):
