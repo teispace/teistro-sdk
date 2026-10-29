@@ -358,6 +358,14 @@ fn the_sphuta_drishti_is_the_seven_s_on_every_other_body_by_degree() {
             .iter()
             .all(|gaze| (0.0..90.0).contains(&gaze.virupas))
     );
+    // Each pair is found by its two grahas, and a full gaze is 60 virupas or more.
+    for &(from, to, virupas) in &expected {
+        assert_eq!(aspects.sphuta_between(from, to), Some(virupas));
+    }
+    for gaze in aspects.sphuta() {
+        assert_eq!(gaze.is_full(), gaze.virupas >= 60.0, "{gaze:?}");
+    }
+    assert!(aspects.sphuta().iter().any(|gaze| !gaze.is_full()));
     // A node casts none, and nothing looks at itself.
     assert_eq!(aspects.sphuta_between(Graha::Ketu, Graha::Sun), None);
     assert_eq!(aspects.sphuta_between(Graha::Sun, Graha::Sun), None);

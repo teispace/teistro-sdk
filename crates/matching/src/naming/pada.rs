@@ -41,7 +41,7 @@ const SUBSTITUTES: [(char, char); 3] = [('ङ', 'ग'), ('ण', 'ड'), ('ञ', 
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum NasalInitial {
     /// ङ, ण and ञ each list their varga's third letter (ग, ड, ज) as a
-    /// substitute initial, as the Nepali patro glosses them.
+    /// substitute initial, as a patro printed in Nepal glosses them.
     #[default]
     VargaThird,
     /// No substitute: the cell's own letter only, as *Muhurta
