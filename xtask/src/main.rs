@@ -142,6 +142,9 @@
 //! - `gochar` and `check-gochar`: the transits read from the natal Moon, how
 //!   the verdicts fall over the recorded births and who obstructs whom over
 //!   sixty years of sky.
+//! - `compat` and `check-compat`: the baseline engine mapped to the SDK,
+//!   the shim's call surface and the stored settings' rows, every refusal's
+//!   anchor alive and no entry point the A/B counted left unmapped.
 //! - `hits` and `check-hits`: the transit hit list over the recorded births
 //!   and a year, each ingress and exact aspect read back through a founded
 //!   chart, the stations tied to the crossings and the orbs' windows.
@@ -289,6 +292,7 @@ mod chebyshev;
 mod classical;
 mod classical_chart;
 mod cofiring;
+mod compat;
 mod composites;
 mod conformance;
 mod consumer;
@@ -504,6 +508,7 @@ const PASSES: &[Pass] = &[
     ("ffi-cost", ffi_cost::generate, ffi_cost::check_generated),
     ("micro", micro::generate, micro::check_generated),
     ("ab", ab::generate, ab::check_generated),
+    ("compat", compat::generate, compat::check_generated),
     (
         "mobile-sizes",
         mobile_sizes::generate,

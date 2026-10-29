@@ -8,7 +8,9 @@ they are, opens the SDK under the settings the snapshot means, and answers
 the SDK's own result. The design is
 [`docs/03-design/compat-shim.md`](../../../docs/03-design/compat-shim.md);
 the migration guide is
-[`docs/09-guidelines/baseline-migration.md`](../../../docs/09-guidelines/baseline-migration.md).
+[`docs/09-guidelines/baseline-migration.md`](../../../docs/09-guidelines/baseline-migration.md),
+and every row with its SDK call is in the generated map,
+[`docs/09-guidelines/baseline-map.md`](../../../docs/09-guidelines/baseline-map.md).
 
 **Status:** the whole call surface of the design page's §3, 62 rows
 listed in [`surface.json`](surface.json): 46 forward, each one SDK call
@@ -84,7 +86,8 @@ function located(): string {
 `kp` answers on the KP context the snapshot means, Krishnamurti's
 ayanamsha on the chart's frame with the baseline's ruling planets;
 `{ anyAyanamsha: true }` answers on the chart's own context instead.
-`muhurta` searches on a context of the frame the baseline searches in,
+`muhurta` searches on the snapshot's muhurta context
+(`recordedSettings`'s `muhurta`), the frame the baseline searches in,
 from the Earth's centre with the true node, and `ghatiPala` reads its
 second reckoning on a context with the other one; each is opened beside
 the snapshot's own on first use.

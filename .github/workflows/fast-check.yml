@@ -261,6 +261,8 @@ jobs:
         run: cargo xtask check-properties
       - name: A/B page (the SDK through Node against the baseline engine, interleaved; a request measurably slower through the SDK fails)
         run: cargo xtask check-ab
+      - name: Baseline map page (the shim's call surface and the stored settings' rows, every refusal's anchor alive and no entry point left unmapped)
+        run: cargo xtask check-compat
       - name: Arudha padas page (the twelve padas, their lords and their exception, decided over the corpus)
         run: cargo xtask check-arudhas
       - name: Reception page (Lilly's worked receptions held to the shipped tables, and each kind counted over the corpus)
