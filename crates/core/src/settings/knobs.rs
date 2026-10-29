@@ -82,8 +82,15 @@ knob!(
 );
 knob!(
     /// Where positions are observed from.
-    Centre { /// The Earth's centre.
-        Geocentric = "GEOCENTRIC", /// The place of birth.
+    ///
+    /// Only a topocentric centre reads the place for positions: under the
+    /// geocentric default a place does not move a single position. It
+    /// still serves the houses and the lagna, which are the place's
+    /// under either centre.
+    Centre { /// The Earth's centre; the place serves the houses and the
+        /// lagna, never the positions.
+        Geocentric = "GEOCENTRIC", /// The place of birth, for the positions as
+        /// well as the houses and the lagna.
         Topocentric = "TOPOCENTRIC" }
 );
 knob!(
