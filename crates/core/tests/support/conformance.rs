@@ -163,6 +163,45 @@ impl Tally {
     }
 }
 
+/// Whether the pinned corpus carries a section: whether
+/// `fixtures/corpus.json` lists it as a path. A section a later corpus adds
+/// is scored by a test written before the pin moves, so the test asks this
+/// first and reports a skip with the corpus's version when the answer is no;
+/// when it is yes, every file the section lists must be there, and a missing
+/// one fails the test rather than reading as a skip
+/// (`count-attempts-not-reports`).
+///
+/// # Panics
+///
+/// When the corpus index cannot be read, which is a submodule not checked
+/// out and never a skip.
+pub(crate) fn carried(section: &str) -> Result<(), String> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../fixtures/corpus.json");
+    let index = std::fs::read_to_string(&path).unwrap_or_else(|err| {
+        panic!(
+            "{}: {err}; is the fixtures submodule checked out?",
+            path.display()
+        )
+    });
+    let wanted = quoted(section);
+    let listed = index.match_indices("\"path\"").any(|(at, key)| {
+        index
+            .get(at + key.len()..)
+            .and_then(|rest| rest.trim_start().strip_prefix(':'))
+            .is_some_and(|rest| rest.trim_start().starts_with(&wanted))
+    });
+    if listed {
+        return Ok(());
+    }
+    let version = index
+        .split_once("\"version\"")
+        .and_then(|(_, rest)| rest.split('"').nth(1))
+        .unwrap_or("of unknown version");
+    Err(format!(
+        "skipped: the pinned corpus {version} does not carry {section}, so there is nothing to score"
+    ))
+}
+
 /// A JSON string, for the plain ASCII names a section and an entry are.
 fn quoted(text: &str) -> String {
     assert!(
