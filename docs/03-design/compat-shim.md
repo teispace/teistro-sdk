@@ -341,7 +341,7 @@ In the snapshot's own terms, as the inventory lists the fields:
 
 | stored field | stored values | becomes |
 |---|---|---|
-| the ayanamsha's number | any of the 47 | `frame.ayanamsha`, the member whose `swiss_mode` is the number. A number no member has is refused |
+| the ayanamsha | any of the 47 numbers, as the recording engine and the application's rectification rows store it; any of the 48 keys, as the application's charts and preferences store it | `frame.ayanamsha`: the member whose `swiss_mode` is the number, or the member the key stands for in `AYANAMSHA_KEYS` (the 47, and `suryasiddhanta`, an older spelling of `surya-siddhanta`). A number no member has, or text that is not one of the keys, is refused on `snapshot.ayanamsaId` with this table as its hint |
 | the zodiac | sidereal | `frame.zodiac`, the profile's own |
 | | tropical | a note: the recording engine casts the same sidereal chart under it. Measured: the corpus's four tropical variants equal their default charts field for field (positions, houses, vargas) |
 | the node | mean, true | `frame.node` |
@@ -595,16 +595,23 @@ zero unmapped entry points.
   rather than patched. Open: which reading the application's stored
   surya charts should keep. A consumer migrating them sees the SDK's
   reading, and its own stored positions differ by the figures above.
-- **The stored ayanamsha's spelling (read with item 5: a key, not the
-  number).** The rows read `ayanamsaId` as the number the recording
-  engine's settings hold. The application's own tables store a key
-  instead: a chart's settings and the user's preferences hold it as text
-  (`'lahiri'`, `'raman'`, `'krishnamurti'`, up to 32 characters), and
-  only the rectification table holds a number. So the translation
-  refuses the application's stored charts at their first field until a
-  row reads the key. Open: the key's spelling set, read from the engine's
-  ayanamsha enumeration, and whether it maps one to one onto the
-  catalogue's members; item 8's generated map is where it is counted.
+- **The stored ayanamsha's spelling (settled: both are read).** The
+  recording engine's settings and the application's rectification table
+  hold `ayanamsaId` as the number; the application's chart settings and
+  user preferences hold it as text, a key of up to 32 characters
+  (`'lahiri'`, `'raman'`, `'krishnamurti'`). The row reads either. The
+  keys were read from the application's own ayanamsha list, which maps
+  each to the engine's number: 47 keys, one per number, and
+  `suryasiddhanta`, an older spelling of `surya-siddhanta` its per-chart
+  rows still hold, 48 in all. They map one to one onto the catalogue's
+  47 members, the older spelling aside. Forty-three are the member's key
+  lower-cased with hyphens and four are not (`de-luce`, `surya-siddhanta`,
+  `surya-siddhanta-msun`, `galcent-gil-brand`), so they are listed
+  (`AYANAMSHA_KEYS`), not derived. One snapshot holds one `ayanamsaId`,
+  so a key and a number cannot disagree within it. A key is matched as
+  stored, lower-cased; any other text, a number written as text
+  included, is refused on `snapshot.ayanamsaId`. Item 8's generated map
+  counts them.
 - **Locale pairings.** The baseline lets a language be paired with
   another script, such as Nepali in Latin script. The SDK ships four
   locales. Whether any stored snapshot actually holds another pairing is
