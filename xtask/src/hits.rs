@@ -56,12 +56,14 @@ const ORB_DEG: f64 = 3.0;
 const SECOND: f64 = 1.0 / 86_400.0;
 
 /// The patch the read-back charts are founded under, over the profile:
-/// the profile is **topocentric**, so a chart must be founded at the
-/// birth's own place to see the sky the list was searched in, and a polar
+/// the profile casts its births **topocentric** and its transits from the
+/// Earth's centre (`gochar.transit_centre`, C778), so a read-back chart is
+/// founded geocentric to see the sky the list was searched in, and a polar
 /// place's winter has no sunrise for the profile's day to start from
 /// (Tromsø's January). Civil midnight starts it instead; a day's bounds are
 /// no part of a longitude.
-const READ_BACK: &str = r#"{"day":{"polar_day_policy":"CIVIL_MIDNIGHT"}}"#;
+const READ_BACK: &str =
+    r#"{"frame":{"centre":"GEOCENTRIC"},"day":{"polar_day_policy":"CIVIL_MIDNIGHT"}}"#;
 
 /// How near an exact aspect's founded separation must stand to its angle,
 /// degrees: a tenth of an arcsecond, which the Moon crosses in under a
@@ -557,9 +559,10 @@ fn page(root: &Path) -> Result<String, String> {
          (`sdk.chart().hits_many`), the Moon's excepted: it crosses each\n\
          line twenty-seven times a year, which would be most of the batch's\n\
          price, and the first chart's Moon shows everything the rest would.\n\
-         The profile is topocentric, so every read-back chart is founded at\n\
-         the birth's own place, under the profile with a polar day reckoned\n\
-         from civil midnight (Tromsø has no January sunrise to start one).\n",
+         The profile casts its transits from the Earth's centre (C778), so\n\
+         every read-back chart is founded geocentric at the birth's own\n\
+         place, under the profile with a polar day reckoned from civil\n\
+         midnight (Tromsø has no January sunrise to start one).\n",
         spelled(born.len())
     );
     let mut rows = String::from(
