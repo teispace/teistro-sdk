@@ -1,7 +1,8 @@
 # baseline engine: parity requirements
 
-Status: `research`, 2026-09-04; measured against the code 2026-10-27
-("State", below): 14 lines met, 16 partly, 2 not met. The checklist v1.0 must satisfy for the baseline engine to
+Status: `research`, 2026-09-04; measured against the code 2026-10-27,
+the aspects, prashna and rashifal 2026-10-29 ("State", below): 16 lines
+met, 14 partly, 2 not met. The checklist v1.0 must satisfy for the baseline engine to
 delete its `packages/` folder. Each line will become a conformance test with
 golden vectors exported from the baseline engine before migration.
 
@@ -24,7 +25,7 @@ golden vectors exported from the baseline engine before migration.
 - [x] Houses for all 22 systems; cusps and spans; degeneracy states.
 - [x] Vargas: the baseline engine set with the same mapping; varga placements and
       vargottama.
-- [ ] Aspects: graha drishti values, sphuta drishti, rashi drishti.
+- [x] Aspects: graha drishti values, sphuta drishti, rashi drishti.
 - [ ] Upagrahas, special lagnas, Bhrigu bindu, yogi points, mrityu and
       pushkara bhagas, marana karaka sthana. Pushkara navamshas and
       bhagas (*Vidyamadhaviyam* ch. 1 v. 18, C767) and marana karaka
@@ -65,7 +66,7 @@ golden vectors exported from the baseline engine before migration.
       resolution.
 - [x] Rectification: identical interval-first result on the baseline engine
       regression cases (stages, refinement, hold-out).
-- [ ] Prashna: yes/no score, timing, topic, arudha, void-of-course.
+- [x] Prashna: yes/no score, timing, topic, arudha, void-of-course.
 - [ ] Lal Kitab, numerology, Pancha Pakshi, namakarana (validation and
       offline suggestions), remedies (gemstone safety, priorities),
       research (synastry, composites, statistics).
@@ -104,7 +105,7 @@ by `check-ab`. Code with nothing comparing it to the baseline is "partly".
 | settings, profile | met | 47 ayanamshas and a custom one, 22 house systems and the chalit, every knob; `conformance-baseline` is the baseline's default, and every corpus test founds under it |
 | positions, dignities, avasthas, war | met | `crates/ephemeris-builtin/tests/conformance.rs`, `crates/state/tests/baseline.rs` (four avastha families; the corpus records no fifth) |
 | houses, vargas | met | `crates/astro/tests/baseline_houses.rs`, `crates/houses/tests/baseline.rs`, `crates/vargas/tests/baseline.rs` |
-| aspects | partly | graha drishti by the A/B: each graha's full aspects agree on every chart under `same` (`drishti`, 100%; `ab-measured.md`); the graded aspects, the sphuta drishti and the rashi drishti are in no answer of the SDK's chart, so they are not compared |
+| aspects | met | by the A/B under `same`, every chart's full aspects (`drishti`), every graha's graded aspect on every other in percent (`drishtiGrade`, 99.7% under `timed`, the misses a Moon a few arcminutes from a sign's edge) and every body's rashi drishti (`rashiDrishti`, 99.8% under `timed`, the same Moons) agree at 100% (`ab-measured.md`). The sphuta drishti by degree is in every chart's aspects since 2026-10-29 (`Aspects::sphuta`, every binding's `sphutaDrishti`); the baseline computes none, so it is held by Raman's worked example (`crates/aspect`, Sripati's rule, C45) |
 | points | partly | upagrahas, yogi points, special lagnas, mrityu bhaga, pushkara navamshas and bhagas (C767) and marana karaka sthana (C768) held; Bhrigu bindu is catalogued and not computed: no text defining it has been read (C769) |
 | yogas, doshas | met | 76 921 and 8 565 comparisons agree; the engine records no yoga strength, so none is compared; its corpus holds 605 yogas and 69 doshas, not the 562 and 62 above |
 | balas, ashtakavarga | met | 11 431, 3 408 and 1 848 comparisons; kakshya by a unit test only |
@@ -119,7 +120,9 @@ by `check-ab`. Code with nothing comparing it to the baseline is "partly".
 | KP | met | by the A/B under `same`: the four lord levels 98.4%, the significators' four levels 95.2% and the ruling planets 100%, `same` asking the baseline's ruling count and civil day lord (cruxes C150, C151); every miss an intercepted sign's lord, which the baseline counts a significator and the SDK reports and does not count (crux C154), or the frame. Under `timed` the day lord also differs, KP Reader VI's day turning at sunrise (`ab-measured.md`) |
 | milan | decided otherwise, partly | the SDK follows the *Kalaprakasika* (100% against it; 68.5% koota and 94.1% porutham agreement with the baseline, method differences); the recommendation bands wait on a rank 1 text; by the A/B under `same`, the Kuja dosha 90.9% (`kuja`, the misses the baseline's own cancellations) and the Ashta Koota's marriage doshas 100% (`marriageDosha`). Decided 2026-10-27 |
 | rectification | met | the black-box run, 8 cases, intervals to a second (`crates/sdk/tests/rectify.rs`) |
-| prashna, rashifal, Track B modules | partly | built and hand-worked; no baseline vectors; gemstone safety not built; names: the reading (declared schemes and `CASUAL`), the check with its clauses, a pada's syllables, and the consumer's name book loaded and searched, built 2026-10-28 in Rust and as `naming` in every binding and as MCP tools (`03-design/namakarana.md` §10); no corpus ships |
+| prashna | met | by the A/B (`prashna`, `ab-measured.md`): the answer and its points, the timing's unit and count, the topic's house and graha, the querent's number's sign and the Moon void of course and applying agree on every birth under `same`, 100% of 477 (c047 and c048, the data's edges, unanswered as `strength` is under `same`: its Shadbala asks for the Sun past the data); under `timed` 96.6% of 495, every miss the frame: the baseline casts a question's chart from the Earth's centre on the true node, the birth's from its place on the mean node (C800). The SDK is 3.08× the baseline's time, a founded chart against nine longitudes and a lagna (`SLOWER`, `xtask/src/ab.rs`) |
+| rashifal | decided otherwise, partly | by the A/B (`rashifal`, `ab-measured.md`) for a day, a week, a month and a year: 88.4% under `same` (the readings 95.6%, the scores 74.1% within a point), 84.4% under `timed`, which reads at sunrise and reports every graha's events (C358, C360). Under `same` the transits agree to the arcsecond; the readings' misses are the baseline's vedha tables (C801, the nodes' C136 and C140) and its scan's events (no node's ingress, none in a scan's last partial step, C360), each decided for the text; the score is the baseline's formula (C361) over those readings, and where a sign's readings agree its scores agree within a point on 99.5%, the rest by two (C802, open) |
+| Track B modules | partly | built and hand-worked; no baseline vectors; gemstone safety not built; names: the reading (declared schemes and `CASUAL`), the check with its clauses, a pada's syllables, and the consumer's name book loaded and searched, built 2026-10-28 in Rust and as `naming` in every binding and as MCP tools (`03-design/namakarana.md` §10); no corpus ships |
 | text in ne, en, sa, hi | partly | 639 of 657 rules carry a reading; Hindi and Sanskrit messages wait on vetted translators (`locale-coverage-measured.md`) |
 | composers byte-identical | decided otherwise | the SDK composes through Teistro Intl's own grammar, so the same bytes are not a goal; parity is on what a record says, and the baseline's records are migrated (`teistro-intl migrate baseline`). Decided 2026-10-27 |
 | serialiser | met | the dossier and its presets, the same bytes for the same chart (`check-dossier`); the gochar sidecar in Rust (`GocharSidecar`, `03-design/gochar-sidecar.md`), checked against its chart and its settings, its transits the whole document's (`gochar-sidecar-measured.md`); a binding asks for transits on the chart request instead of storing one, decided 2026-10-28 |

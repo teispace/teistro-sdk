@@ -106,6 +106,8 @@ that any error in the match is against the SDK:
 | `sadeSati` | the foundation and Saturn's Sade Sati and dhaiyya periods over `window` | `sadeSati` over `window`, whose default spells are the 4th and the 8th |
 | `batch` | `computeAll` over `instants`: a whole `compute()` chart at each | `foundMany` over the same instants, each chart asked for what `full` asks |
 | `muhurta` | the application's marriage search over `muhurta`, avoiding Rahu kaala, and again against the native's star and Moon sign: its two windows a day for its 25 best days, thirty rows at most, each with its score | `almanac.of` over the same days with `muhurta: { rules: 'BASELINE_MARRIAGE', ranking: 'BASELINE' }`, every day cut and every window kept, then the same again with the native from the SDK's own chart |
+| `prashna` | its prashna chart at the birth's instant and place, the querent's number the birth's place in the corpus (1 to 55): the yes-or-no answer and its points, the timing, the topic's house and graha, the number's sign and the Moon void of course and applying | the chart found with `prashna` asked under `rules: 'BASELINE'` (C337 to C340), which asks the Shadbala with it |
+| `rashifal` | its context and score for every sign, for the birth's month and day in a year from 2000 to 2049 (the birth's year modulo 50) at Kathmandu, as a day, its Sunday-to-Saturday week, its month and its year | `rashifal` for each of the four periods on the transit context, with the baseline's score of each (C361) |
 
 An SDK answer decodes on read and the baseline's comes back built, so the
 SDK side reads every part it asked for inside the timing. The baseline
@@ -320,7 +322,9 @@ hold is compared. The families, their units and their tolerances:
 | `kpSignificator` | each house's four levels (planets in the occupants' stars, the occupants, planets in the lord's star, the lord), each as a set of the nine grahas; the baseline counts an intercepted sign's lord into the last two levels, the SDK reports the sign and not its lord (crux C154) | exact | — |
 | `kpRuler` | the lagna's and the Moon's sign and star lords and the day's lord, each by its slot; the sub lords are `kpLord`'s | exact | — |
 | `house` | a transit's house from the Moon | exact | — |
-| `drishti` | the grahas each graha aspects in full, counted by sign, as a set of the nine (`full`, `batch`); the baseline's answer holds a graha's fully aspected houses, read here through the grahas in them. The graded aspects, the sphuta drishti and the rashi drishti are in no answer of the SDK's chart | exact | — |
+| `drishti` | the grahas each graha aspects in full, counted by sign, as a set of the nine (`full`, `batch`); the baseline's answer holds a graha's fully aspected houses, read here through the grahas in them | exact | — |
+| `drishtiGrade` | each graha's graded aspect on each other graha, counted by sign, in percent: a quarter, a half, three quarters or full, none where it casts none (`full`, `batch`) | exact | — |
+| `rashiDrishti` | the signs each graha's sign reaches by the rashi drishti, as a set (`full`, `batch`). The sphuta drishti, by degree, is the SDK's alone: the baseline computes none, so Raman's worked example holds it (`crates/aspect`) | exact | — |
 | `jaiminiPair` | the class of life each of the three pairs gives and the class they decide, before Saturn's or Jupiter's shift (BPHS ch. 43 vv. 33 to 40); the SDK's second pair is Saturn and the Moon, the baseline's the lagna and the Moon, so those two are unpaired | exact | — |
 | `ayurdaya` | Pindayu, Amsayu and Nisargayu: each graha's years before and after the reductions, the lagna's, and the total | years | 0.01 |
 | `maraka` | the marakas by lordship, the lords of the second and the seventh, each a set | exact | — |
@@ -329,6 +333,9 @@ hold is compared. The families, their units and their tolerances:
 | `kuja` | whether the bride and the groom each carry the Kuja dosha, after any lift the rules asked count | exact | — |
 | `marriageDosha` | whether a match carries the Ashta Koota's nadi, bhakoot and gana doshas, lifted or not; the considerations' are `porutham`'s | exact | — |
 | `muhurta` | each search's ranking whole (`date#choghadiya=score`, rank for rank), how many rows it holds, each ranked window's score and each ranked day's. The SDK's windows are presented as the baseline presents its own: the open, scored ones joined into the run each choghadiya holds, a run under six minutes dropped, each scored at its start; the days by their score, each day's two best runs by the day's score and the choghadiya's weight, then every row by its score, thirty at most | exact | — |
+| `prashna` | the answer and its points, the timing's unit and count, the topic's house and graha, the querent's number's sign, and whether the Moon is void of course and which graha it applies to | exact | — |
+| `rashifal` | for each period and sign, each transit's good house and a good one's vedha, Saturn's standing (a Sade Sati phase, a smaller spell's house, or none), the period's ingresses and stations by graha and house, the five key influences and the lucky number; the transits at the period's instant are `longitude`'s | exact | — |
+| `rashifalScore` | each sign's score for each period, the overall and each of the eight life areas, 0 to 100 | points | 1 |
 
 A continuous family reports the median and the largest difference and the
 share within its tolerance; a categorical one the share of exact matches.
@@ -349,7 +356,7 @@ measured default (topocentric, the nutated basis, the refracted upper
 limb, the engine's Ashtakavarga reductions), with `kp-default` given the
 same frame, the baseline's mean node and its ruling planets (the sub
 lords counted, the civil weekday's lord: cruxes C150, C151), and the
-transit requests (`gochar`, `sadeSati`) cast on the same context from
+transit requests (`gochar`, `sadeSati`, `rashifal`) cast on the same context from
 the Earth's centre, as the baseline casts a transit
 (`gochar.transit_centre = GEOCENTRIC`, C778), under a birth cast from
 its place. `muhurta` is searched on a context of the frame the baseline
@@ -362,6 +369,11 @@ the six houses with the 2nd (C285, C286) and Stree-deergha beyond the
 C779), and `full`
 and `batch` the three spans with Amsayu multiplied, compound enmity,
 each reduction taken in turn and Nisargayu's listed years (C104, C303).
+`prashna` is cast on the muhurta's context, the frame the baseline
+casts a question's chart in too (C800), and `rashifal` is read at
+06:00 on the clock with the baseline's event grahas: none in a day, the
+four slow grahas in a week, every graha but the Moon in a month or a
+year (C358, C360).
 What still differs under `same` is method, not convention.
 Under `same` a polar day is reckoned by the conformance profile's own
 policy, from the nearest sunrise and sunset, given to `kp-default` too,

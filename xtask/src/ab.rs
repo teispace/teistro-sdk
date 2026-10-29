@@ -57,7 +57,7 @@ const ROUNDS: usize = 15;
 
 /// The requests both sides answer, and what each asks: the runner's
 /// `REQUESTS`, in its order.
-const REQUESTS: [(&str, &str); 15] = [
+const REQUESTS: [(&str, &str); 17] = [
     (
         "chart",
         "a birth chart with every varga, its drishti, upagrahas, houses, dignities, arudhas and \
@@ -99,6 +99,16 @@ const REQUESTS: [(&str, &str); 15] = [
         "muhurta",
         "a marriage muhurta over 25 days at Kathmandu thirty years on, then against the native",
     ),
+    (
+        "prashna",
+        "a prashna at the birth's instant and place: its answer and points, timing, topic, the \
+         querent's number's sign and the Moon's course",
+    ),
+    (
+        "rashifal",
+        "every sign's rashifal for a day, a week, a month and a year in 2000 to 2049, with the \
+         baseline's scores",
+    ),
 ];
 
 /// The requests the SDK is measurably slower at, each with the most it may
@@ -106,13 +116,23 @@ const REQUESTS: [(&str, &str); 15] = [
 /// fails, and so does one listed here that is no longer slower, so the
 /// list cannot outlive what it explains. The yogas left it on 26 October
 /// 2026, when their rule set stopped re-validating on every call.
-const SLOWER: Slower = &[(
-    "muhurta",
-    1.5,
-    "the SDK judges every window of every day, cut wherever a clause changes (a limb, a kaala, \
+const SLOWER: Slower = &[
+    (
+        "muhurta",
+        1.5,
+        "the SDK judges every window of every day, cut wherever a clause changes (a limb, a kaala, \
      a lagna), and keeps them all; the baseline bars a day at sunrise and scores the two windows \
      it keeps (1.38× on 29 October 2026)",
-)];
+    ),
+    (
+        "prashna",
+        3.5,
+        "a prashna is read off a founded chart, which finds the sunrises of its day (the chart's \
+     day, its birth timing and the lagna at sunrise) and asks the Shadbala, where the baseline \
+     casts the nine grahas and the lagna and reads nothing else: a bare founded chart took 430 \
+     µs of the request's 517 on 29 October 2026, the Shadbala 40",
+    ),
+];
 
 /// A list of the requests the SDK is slower at: request, bound, why.
 type Slower = &'static [(&'static str, f64, &'static str)];

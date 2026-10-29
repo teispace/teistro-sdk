@@ -34,7 +34,7 @@ const RUNGS: [(&str, &str, u8); 6] = [
 
 /// The rungs that judge each request; none, and the request is agreement
 /// only (§11).
-const JUDGED: [(&str, &[&str]); 15] = [
+const JUDGED: [(&str, &[&str]); 17] = [
     ("chart", &["swiss-ephemeris", "pyjhora"]),
     ("day", &["committee"]),
     ("full", &["swiss-ephemeris", "pyjhora"]),
@@ -50,6 +50,8 @@ const JUDGED: [(&str, &[&str]); 15] = [
     ("sadeSati", &[]),
     ("batch", &["swiss-ephemeris"]),
     ("muhurta", &[]),
+    ("prashna", &[]),
+    ("rashifal", &[]),
 ];
 
 /// What a cause claims, which the gate checks on the record (§11).
@@ -75,7 +77,7 @@ impl Cause {
 
 /// Each request's dominant cause of disagreement, and what the record
 /// shows of it.
-const CAUSES: [(&str, Cause, &str); 15] = [
+const CAUSES: [(&str, Cause, &str); 17] = [
     (
         "chart",
         Cause::Convention,
@@ -208,6 +210,25 @@ const CAUSES: [(&str, Cause, &str); 15] = [
          (C784). A window's score agrees on every day whose score does, its sky geocentric with \
          the true node (C781)",
     ),
+    (
+        "prashna",
+        Cause::Convention,
+        "the frame: the baseline casts a prashna from the Earth's centre on the true node, where \
+         its birth chart is topocentric on the mean node (crux C800), so under `timed` the \
+         Moon's applying aspect may meet the other node and a factor its score counts moves; \
+         under `same`, asked on that frame, every reading agrees",
+    ),
+    (
+        "rashifal",
+        Cause::Convention,
+        "the instant and the events: `timed` reads a period at sunrise (C358) and reports every \
+         graha's ingresses and stations but the Moon's (C360), the baseline at 06:00 and fewer; \
+         under `same`, asked the baseline's clock and event grahas, the transits agree to the \
+         arcsecond and what differs is the vedha, as `gochar` (C136, C140, C801), the \
+         baseline's events (it finds no node's ingress, nor an event in a scan's last partial \
+         step, C360), and the scores those move: where a sign's readings agree its scores agree \
+         within a point on 99.5% (C802)",
+    ),
 ];
 
 /// The least share of compared facts each request agrees on, under
@@ -217,9 +238,9 @@ const CAUSES: [(&str, Cause, &str); 15] = [
 /// marriage doshas and KP's significators and ruling planets joined the
 /// comparison; `milan`'s and `gochar`'s under `same` of 29 October, when
 /// `same` cast its transits on its one context and asked the baseline's
-/// Stree-deergha, and `muhurta`'s the day it joined; each share truncated
-/// rather than rounded.
-const AGREEMENT_FLOORS: [(&str, f64, f64); 15] = [
+/// Stree-deergha, and `muhurta`'s, `prashna`'s and `rashifal`'s the day
+/// each joined; each share truncated rather than rounded.
+const AGREEMENT_FLOORS: [(&str, f64, f64); 17] = [
     ("chart", 0.545, 0.999),
     ("day", 0.991, 0.965),
     ("full", 0.641, 0.996),
@@ -235,6 +256,8 @@ const AGREEMENT_FLOORS: [(&str, f64, f64); 15] = [
     ("sadeSati", 0.076, 1.0),
     ("batch", 0.651, 0.996),
     ("muhurta", 0.445, 0.466),
+    ("prashna", 0.965, 1.0),
+    ("rashifal", 0.844, 0.884),
 ];
 
 /// The least share each side keeps on a rung for a request, under a
