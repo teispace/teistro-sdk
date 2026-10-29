@@ -49,6 +49,18 @@ test('every golden input is read, with its instant, place, civil date and what i
     utcOffsetSeconds: 345 * 60,
     place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
   });
+  // A prashna's querent number is the birth's place in the corpus, and a
+  // rashifal is read for its month and day in 2040 (2000 and 1990 modulo
+  // 50) at Kathmandu, each period with its middle day.
+  assert.equal(first.querentNumber, 1);
+  const day = (year, month, d) => ({ year, month, day: d });
+  assert.deepEqual(first.rashifal.periods, [
+    { period: 'DAILY', first: day(2040, 4, 14), last: day(2040, 4, 14), reference: day(2040, 4, 14) },
+    { period: 'WEEKLY', first: day(2040, 4, 8), last: day(2040, 4, 14), reference: day(2040, 4, 11) },
+    { period: 'MONTHLY', first: day(2040, 4, 1), last: day(2040, 4, 30), reference: day(2040, 4, 15) },
+    { period: 'YEARLY', first: day(2040, 1, 1), last: day(2040, 12, 31), reference: day(2040, 7, 1) },
+  ]);
+  assert.equal(first.rashifal.utcOffsetSeconds, 345 * 60);
 });
 
 test('the SDK answers every request the runner times, on one birth', () => {
@@ -235,7 +247,7 @@ test('a side agrees with itself on every fact of every request it answers', () =
   withSdk((sdk) => {
     const few = inputs().slice(0, 2);
     const agreement = new Agreement();
-    for (const request of ['chart', 'day', 'strength', 'milan', 'varsha', 'kp', 'gochar']) {
+    for (const request of ['chart', 'day', 'strength', 'milan', 'varsha', 'kp', 'gochar', 'prashna', 'rashifal']) {
       for (const input of few) {
         const facts = sdk.facts(request, sdk[request](input), input);
         assert.ok(facts.length > 0, `${request} holds facts`);

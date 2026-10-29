@@ -440,8 +440,9 @@ const ROWS = {
   },
   prashna: {
     shim: (s, c) => s.prashna(c.birth, c.snapshot),
-    sdk: ({ natal }, b) =>
-      natal.chart.found({ ...b.chart, prashna: { rules: { timing: 'BASELINE', mook: 'BASELINE', score: 'BASELINE' } } }),
+    // Cast as the baseline casts a question's chart, on the muhurta
+    // opening's frame: the Earth's centre and the true node (C800).
+    sdk: ({ muhurta }, b) => muhurta.chart.found({ ...b.chart, prashna: { rules: 'BASELINE' } }),
   },
   lalkitab: { shim: (s, c) => s.lalkitab(c.birth, c.snapshot), sdk: ({ natal }, b) => natal.chart.found({ ...b.chart, lalkitab: {} }) },
   numerology: {

@@ -99,14 +99,26 @@ export const VERDICT = Object.freeze({ shipped: Object.freeze(['DOSHAS']) });
  * the six houses with the 2nd (cruxes C285, C286); Stree-deergha beyond
  * the 10th or on the bride's own star (C779); and the three spans with
  * Amsayu multiplied, compound enmity, each reduction taken in turn and
- * Nisargayu's listed years (C104, C303). The baseline lifts the Kuja
- * dosha by three of its nine cancellations, which no SDK lift set reads,
- * so no lift is asked.
+ * Nisargayu's listed years (C104, C303); a rashifal read at six on the
+ * clock with each period's events as the baseline scans them: none in a
+ * day, the four slow grahas' in a week, every graha's but the Moon's in a
+ * month or a year (C358, C360). The baseline lifts the Kuja dosha by
+ * three of its nine cancellations, which no SDK lift set reads, so no
+ * lift is asked.
  */
 export const READINGS = Object.freeze({
   kuja: Object.freeze({ from: 'LAGNA_MOON_VENUS', houses: 'WITH_SECOND' }),
   porutham: Object.freeze({ deerghaBeyond: 'TENTH_OR_SAME_STAR' }),
   ayurdaya: Object.freeze({ amsayu_multiplied: true, enmity: 'compound', combine: 'each', nisarga: 'listed' }),
+  rashifal: Object.freeze({
+    snapshot: Object.freeze({ at: 'CLOCK', hour: 6, minute: 0 }),
+    events: Object.freeze({
+      DAILY: Object.freeze([]),
+      WEEKLY: Object.freeze(['JUPITER', 'SATURN', 'RAHU', 'KETU']),
+      MONTHLY: Object.freeze(['SUN', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN', 'RAHU', 'KETU']),
+      YEARLY: Object.freeze(['SUN', 'MARS', 'MERCURY', 'JUPITER', 'VENUS', 'SATURN', 'RAHU', 'KETU']),
+    }),
+  }),
 });
 
 /** The native a muhurta's natal tara and chandra bala are read against: a chart's Moon's star and sign. */
@@ -119,12 +131,13 @@ export function nativeOf(chart) {
   };
 }
 
-/** The readings the baseline's prashna, remedies and rectification take where a request names its own. */
-export const PRASHNA = Object.freeze({ rules: Object.freeze({ timing: 'BASELINE', mook: 'BASELINE', score: 'BASELINE' }) });
+/**
+ * The readings the baseline's prashna and remedies take where a request
+ * names its own: every reading of the baseline's prashna (C337 to C340),
+ * and its functional nature.
+ */
+export const PRASHNA = Object.freeze({ rules: 'BASELINE' });
 export const REMEDIES = Object.freeze({ functional: Object.freeze({ scheme: 'BASELINE' }) });
-
-/** The hour a rashifal reads each day's sky at: six in the morning, on the clock (§3.6). */
-export const RASHIFAL_SNAPSHOT = Object.freeze({ at: 'CLOCK', hour: 6, minute: 0 });
 
 /**
  * The requests over a natal context and the KP context `kp`
@@ -135,14 +148,15 @@ export const RASHIFAL_SNAPSHOT = Object.freeze({ at: 'CLOCK', hour: 6, minute: 0
  *
  * @param {import('@teistro/sdk').Context} natal
  * @param {() => import('@teistro/sdk').Context} kp
- * @param {{kuja?: object, porutham?: object, ayurdaya?: object}} [readings]
+ * @param {{kuja?: object, porutham?: object, ayurdaya?: object, rashifal?: {snapshot: object, events: Record<string, readonly string[]>}}} [readings]
  * @param {() => import('@teistro/sdk').Context} [elect] the context a
- *   muhurta is searched on, opened on first use: the natal one unless a
- *   convention casts the search's sky in a frame of its own, as a stored
- *   snapshot's `muhurta` opening does (`recordedSettings`, crux C781)
+ *   muhurta is searched on and a prashna cast on, opened on first use:
+ *   the natal one unless a convention casts their sky in a frame of its
+ *   own, as a stored snapshot's `muhurta` opening does, from the Earth's
+ *   centre with the true node (`recordedSettings`, cruxes C781, C800)
  */
 export function requests(natal, kp, readings = {}, elect = () => natal) {
-  const { kuja, porutham, ayurdaya } = readings;
+  const { kuja, porutham, ayurdaya, rashifal } = readings;
   const full = ayurdaya ? { ...FULL, rules: { ...FULL.rules, ayurdaya } } : FULL;
   const matching = (partner) => ({ partner, partnerRole: 'BRIDE', ...(kuja && { kuja }), ...(porutham && { porutham }) });
   return {
@@ -229,17 +243,29 @@ export function requests(natal, kp, readings = {}, elect = () => natal) {
     progressions: (at, progressions) => natal.chart.found({ ...at, progressions }),
     /** The rectification the baseline runs, over `baseline`'s window and events. */
     rectify: (at, baseline) => natal.chart.found({ ...at, rectification: { baseline } }),
-    /** The prashna under the baseline's timing, mook and score. */
-    prashna: (at, question) => natal.chart.found({ ...at, prashna: { ...PRASHNA, ...(question && { question }) } }),
+    /** The prashna under every reading the baseline takes, on the context `elect` opens. */
+    prashna: (at, question) => elect().chart.found({ ...at, prashna: { ...PRASHNA, ...(question && { question }) } }),
     lalkitab: (at, lalkitab = {}) => natal.chart.found({ ...at, lalkitab }),
     /** The remedies under the baseline's functional nature, read at `when` if given. */
     remedies: (at, when) => natal.chart.found({ ...at, remedies: { rules: REMEDIES, ...(when !== undefined && { at: when }) } }),
     /** The synastry with `partner`'s chart. */
     synastry: (at, synastry) => natal.chart.found({ ...at, synastry }),
-    /** The rashifal of each sign over `first` to `last`, read at six on the clock. */
+    /**
+     * The rashifal of each sign over `first` to `last`, with the
+     * baseline's score for `period` if given; read at `rashifal`'s
+     * clock and reporting its event grahas for `period` where the
+     * readings name them (C358, C360), the sources' own otherwise.
+     */
     rashifal: ({ place, utcOffsetSeconds }, first, last, period) =>
       natal.chart.rashifal(
-        { first, ...(last && { last }), place, utcOffsetSeconds, snapshot: RASHIFAL_SNAPSHOT },
+        {
+          first,
+          ...(last && { last }),
+          place,
+          utcOffsetSeconds,
+          ...(rashifal && { snapshot: rashifal.snapshot }),
+          ...(rashifal && period !== undefined && { events: rashifal.events[period] }),
+        },
         ...(period === undefined ? [] : [period]),
       ),
   };

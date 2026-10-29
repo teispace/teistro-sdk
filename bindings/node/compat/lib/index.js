@@ -507,7 +507,7 @@ class Shim {
     });
   }
 
-  /** The prashna cast at the record's instant and place, under the baseline's timing, mook and score, asking `options.question`. */
+  /** The prashna cast at the record's instant and place as the baseline casts it, from the Earth's centre with the true node (C800), under every reading it takes, asking `options.question`. */
   prashna(birth, snapshot, options = {}) {
     return this.#forward('prashna', birth, snapshot, (r, on) => r.prashna(on, options.question));
   }
@@ -583,7 +583,7 @@ class Shim {
 
   // §3.6, the rashifal and interpretation packages.
 
-  /** The rashifal of every sign from `options.first` to `options.last`, at the birth's place, read at six on the clock. */
+  /** The rashifal of every sign from `options.first` to `options.last`, at the birth's place, read at six on the clock with the baseline's event grahas for `options.period`. */
   rashifal(birth, snapshot, options) {
     const first = required(options, 'first', 'date(Calendar.Gregorian, 2026, 10, 4)');
     return this.#forward('rashifal', birth, snapshot, (r, _, natal, read) =>

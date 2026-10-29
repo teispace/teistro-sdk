@@ -355,7 +355,7 @@
       "section": "3.5",
       "entry": "prashna",
       "kind": "forward",
-      "sdk": "found with prashna under the baseline's timing, mook and score"
+      "sdk": "found with prashna under every baseline reading, on the muhurta opening's frame (C800)"
     },
     {
       "row": "lalkitab",
@@ -429,7 +429,7 @@
       "section": "3.6",
       "entry": "rashifal context and score, one sign or all twelve, per period",
       "kind": "forward",
-      "sdk": "ctx.chart.rashifal(request, period), read at six on the clock"
+      "sdk": "ctx.chart.rashifal(request, period), read at six on the clock with the baseline's event grahas"
     },
     {
       "row": "reading",

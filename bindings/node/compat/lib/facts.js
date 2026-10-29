@@ -51,6 +51,11 @@ export const FAMILIES = Object.freeze({
   kuja: { kind: 'category', what: 'whether the bride and the groom each carry the Kuja dosha' },
   marriageDosha: { kind: 'category', what: 'whether a match carries the Ashta Koota\'s nadi, bhakoot and gana doshas' },
   muhurta: { kind: 'category', what: 'a marriage muhurta search\'s ranking whole, each ranked window\'s score, and the score of each day one falls on' },
+  drishtiGrade: { kind: 'category', what: 'each graha\'s graded aspect on each other graha, in percent: a quarter, a half, three quarters or full, counted by sign' },
+  rashiDrishti: { kind: 'category', what: 'the signs each body reaches by the Jaimini rashi drishti, as a set' },
+  prashna: { kind: 'category', what: 'a prashna\'s answer and points, its timing\'s unit and count, its topic\'s house and graha, the querent\'s number\'s sign, and the Moon void of course and applying' },
+  rashifal: { kind: 'category', what: 'each sign\'s rashifal for a day, a week, a month and a year: each transit\'s good house and vedha, Saturn\'s standing, the period\'s events, the key influences and the lucky number' },
+  rashifalScore: { kind: 'number', unit: 'points', scale: 1, tolerance: 1, what: 'each sign\'s rashifal score, the overall and each of its eight life areas, 0 to 100' },
 });
 
 /** The grahas both sides place, in the SDK's order, and the lagna. */
@@ -212,6 +217,24 @@ function sdkLongevity(chart) {
   return out;
 }
 
+/** A graded aspect's strength, as the baseline's percent. */
+const PERCENT = { NONE: 0, QUARTER: 25, HALF: 50, THREE_QUARTERS: 75, FULL: 100 };
+
+/**
+ * Each graha's graded aspect on each other graha in percent, none where it
+ * casts none, and each graha's rashi drishti as its signs' indices.
+ */
+function sdkGraded(chart) {
+  const out = [];
+  const graded = new Map(chart.aspects.map((d) => [`${bare(d.from)}/${bare(d.to)}`, PERCENT[d.strength]]));
+  for (const g of GRAHAS) for (const t of GRAHAS) if (t !== g) out.push([`drishtiGrade/${g}/${t}`, graded.get(`${g}/${t}`) ?? 0]);
+  for (const r of chart.rashiDrishti) {
+    const g = bare(r.graha);
+    if (GRAHAS.includes(g)) out.push([`rashiDrishti/${g}`, r.signs.map((s) => SIGNS.indexOf(s)).sort((a, b) => a - b).join(',')]);
+  }
+  return out;
+}
+
 /** Everything a full chart holds that the baseline's whole chart holds too. */
 function sdkFull(chart, joined) {
   return [
@@ -221,6 +244,7 @@ function sdkFull(chart, joined) {
     ...sdkStrength(chart),
     ...sdkYogas(chart, joined),
     ...sdkDrishti(chart),
+    ...sdkGraded(chart),
     ...sdkLongevity(chart),
   ];
 }
@@ -242,7 +266,9 @@ const KP_UNIT = 3_600e9;
  * both engines answer, each a `[family/what, value]` pair. `request` names
  * the shim row the answer came from (`chart`, `full`, `vargas`, `yogas`,
  * `strength`, `dashas`, `day`, `month`, `milan`, `varsha`, `kp`,
- * `gochar`, `sadeSati`, `batch` or `muhurta`).
+ * `gochar`, `sadeSati`, `batch`, `muhurta`, `prashna` or `rashifal`). A
+ * `rashifal` answer is a list of `{ period, answer }`, each period's
+ * answer with the baseline's score beside it.
  *
  * `options.figures` lists the yogas and doshas to say present or absent,
  * each as `[the SDK's rule key, ...]`; left out, the yoga facts are the
@@ -353,6 +379,10 @@ export function facts(request, answer, options = {}) {
       return [...answer].flatMap((chart, i) => sdkFull(chart, joined).map(([key, value]) => [`${key}@${i}`, value]));
     case 'muhurta':
       return [...sdkMuhurta('general', answer.general), ...sdkMuhurta('native', answer.native)];
+    case 'prashna':
+      return sdkPrashna(answer.prashna);
+    case 'rashifal':
+      return [...answer].flatMap(({ period, answer: one }) => sdkRashifal(period, one));
     default:
       throw new TypeError(`request: no facts for ${request}`);
   }
@@ -491,5 +521,60 @@ function sdkSadeSati(answer, { from, to }) {
       if (end < to) out.push([`event/sadeSati/${key}/end`, end]);
     }
   }
+  return out;
+}
+
+/** A prashna's facts, as the baseline's readings it was asked under read it (`rules: 'BASELINE'`). */
+function sdkPrashna(p) {
+  const out = [
+    ['prashna/answer', p.score.answer],
+    ['prashna/score', p.score.points],
+    ['prashna/timingUnit', p.timing.unit],
+    ['prashna/timingCount', p.timing.amount ?? p.timing.count],
+    ['prashna/topicHouse', p.mook.house],
+    ['prashna/topicGraha', bare(p.mook.graha)],
+    ['prashna/void', p.score.void],
+    ['prashna/applying', p.score.applyingTo ? bare(p.score.applyingTo) : 'NONE'],
+  ];
+  if (p.numberSign) out.push(['prashna/arudha', SIGNS.indexOf(p.numberSign)]);
+  return out;
+}
+
+/** A period's event kind, as both engines name it. */
+const EVENT_KINDS = { SIGN_INGRESS: 'INGRESS', STATION: 'STATION' };
+
+/** Saturn's Sade Sati phases, as the baseline names them. */
+const SATURN_PHASES = { RISING: 'rising', PEAK: 'peak', SETTING: 'setting' };
+
+/**
+ * One period's facts, keyed by the period and the sign's index: the sky at
+ * the period's instant, each transit's good house and a good one's vedha,
+ * Saturn's standing (a Sade Sati phase, a smaller spell's house, or none),
+ * the events, and the baseline's score.
+ */
+function sdkRashifal(period, answer) {
+  const out = [];
+  const { readings, transits } = answer.period;
+  transits.forEach((t, i) => out.push([`longitude/rashifal/${period}/${GRAHAS[i]}`, SIGNS.indexOf(t.sign) * 30 + t.degrees]));
+  readings.forEach((r, i) => {
+    const at = `${period}/${SIGNS.indexOf(r.rashi)}`;
+    for (const g of r.gochar.grahas) {
+      const name = bare(g.graha);
+      out.push([`rashifal/${at}/${name}/good`, g.goodHouse]);
+      if (g.goodHouse) out.push([`rashifal/${at}/${name}/vedha`, g.obstructedBy.length > 0]);
+    }
+    const { saturn } = r;
+    const standing = saturn.sadeSati ? SATURN_PHASES[saturn.sadeSati] : saturn.spell ? `house-${saturn.house}` : 'none';
+    out.push([`rashifal/${at}/saturn`, standing]);
+    const events = r.events
+      .map((e) => `${bare(e.event.hit.graha)}:${EVENT_KINDS[e.event.hit.event.kind] ?? e.event.hit.event.kind}:${e.house}`)
+      .sort();
+    out.push([`rashifal/${at}/events`, events.join(' ')]);
+    const score = answer.baseline[i];
+    out.push([`rashifalScore/${at}/overall`, score.overall]);
+    for (const { area, score: value } of score.areas) out.push([`rashifalScore/${at}/area/${area.toLowerCase()}`, value]);
+    out.push([`rashifal/${at}/influences`, score.keyInfluences.map((k) => bare(k.graha)).join(',')]);
+    out.push([`rashifal/${at}/luckyNumber`, score.lucky.number]);
+  });
   return out;
 }

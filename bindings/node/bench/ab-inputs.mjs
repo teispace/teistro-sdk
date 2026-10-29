@@ -21,12 +21,19 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
  * @property {number} utcOffsetSeconds the civil clock's offset at the birth
  * @property {{year: number, month: number, day: number}} civilDate the birth's civil date
  *
+ * @typedef {{year: number, month: number, day: number}} Day a Gregorian civil date
+ *
+ * @typedef {{period: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'YEARLY', first: Day, last: Day, reference: Day}} RashifalPeriod
+ *
  * @typedef {Birth & {
  *   partner: Birth,
  *   instants: number[],
  *   transitAt: number,
  *   window: {from: number, to: number},
  *   muhurta: Muhurta,
+ *   querentNumber: number,
+ *   rashifal: {place: {latitude: number, longitude: number, altitude: number}, utcOffsetSeconds: number,
+ *     periods: RashifalPeriod[]},
  * }} Input
  *
  * The window and place a marriage muhurta is searched over: `from` and
@@ -77,6 +84,8 @@ export const REQUESTS = [
   'sadeSati',
   'batch',
   'muhurta',
+  'prashna',
+  'rashifal',
 ];
 
 /** The days `month` asks for, from the birth's civil date. */
@@ -104,6 +113,9 @@ const MUHURTA_ZONE = 'Asia/Kathmandu';
 
 const JULIAN_YEAR = 365.25;
 
+/** A day, in milliseconds. */
+const DAY_MS = 86_400_000;
+
 /** A UTC midnight's civil date, `YYYY-MM-DD`. */
 const isoDate = (ms) => new Date(ms).toISOString().slice(0, 10);
 
@@ -121,11 +133,50 @@ function muhurtaWindow({ civilDate: { year, month, day } }) {
   const from = Date.UTC(year + TRANSIT_YEARS, month - 1, day);
   return {
     from: isoDate(from),
-    to: isoDate(from + (MUHURTA_DAYS - 1) * 86_400_000),
+    to: isoDate(from + (MUHURTA_DAYS - 1) * DAY_MS),
     iana: MUHURTA_ZONE,
     utcOffsetSeconds: offsetSeconds(MUHURTA_ZONE, from),
     place: MUHURTA_PLACE,
   };
+}
+
+/**
+ * Where a rashifal is read: Kathmandu, the baseline application's own
+ * place and `muhurta`'s, whose clock has stood at +05:45 since 1986, so
+ * every period below is read at one offset.
+ */
+export const RASHIFAL_PLACE = MUHURTA_PLACE;
+export const RASHIFAL_OFFSET_SECONDS = 20_700;
+
+/** A UTC instant's civil date. */
+function dayOf(ms) {
+  const at = new Date(ms);
+  return { year: at.getUTCFullYear(), month: at.getUTCMonth() + 1, day: at.getUTCDate() };
+}
+
+/**
+ * The four periods a birth's rashifal is read for: the day of its month
+ * and day in a year from 2000 to 2049 (2000 and the birth's year modulo
+ * 50, a 29 February rolling on to 1 March), its Sunday-to-Saturday week,
+ * its month and its year. Each with its reference day, the middle one,
+ * first plus ⌊(n − 1)/2⌋ (C359), which both sides read the panchanga of.
+ *
+ * @returns {RashifalPeriod[]}
+ */
+export function rashifalPeriods({ year, month, day }) {
+  const at = Date.UTC(2000 + (((year % 50) + 50) % 50), month - 1, day);
+  const date = new Date(at);
+  const [y, m, weekday] = [date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDay()];
+  const spans = {
+    DAILY: [at, at],
+    WEEKLY: [at - weekday * DAY_MS, at + (6 - weekday) * DAY_MS],
+    MONTHLY: [Date.UTC(y, m, 1), Date.UTC(y, m + 1, 0)],
+    YEARLY: [Date.UTC(y, 0, 1), Date.UTC(y, 11, 31)],
+  };
+  return Object.entries(spans).map(([period, [from, to]]) => {
+    const days = Math.round((to - from) / DAY_MS) + 1;
+    return { period, first: dayOf(from), last: dayOf(to), reference: dayOf(from + Math.floor((days - 1) / 2) * DAY_MS) };
+  });
 }
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '../../..');
@@ -159,6 +210,9 @@ export function inputs(dir = join(root, 'fixtures/baseline/charts')) {
     transitAt: birth.jdUt + TRANSIT_YEARS * JULIAN_YEAR,
     window: { from: birth.jdUt, to: birth.jdUt + TRANSIT_YEARS * JULIAN_YEAR },
     muhurta: muhurtaWindow(birth),
+    // The querent's number, 1 to 108: the birth's place in the corpus.
+    querentNumber: (at % 108) + 1,
+    rashifal: { place: RASHIFAL_PLACE, utcOffsetSeconds: RASHIFAL_OFFSET_SECONDS, periods: rashifalPeriods(birth.civilDate) },
   }));
 }
 
