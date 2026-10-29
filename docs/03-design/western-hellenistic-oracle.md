@@ -48,7 +48,7 @@ worse. The weighing follows.
 | flatlib 0.2.3 | MIT | its own code over the Swiss Ephemeris; a different author and school from the SDK | dignities, terms (Egyptian, *Tetrabiblos*, Lilly), faces, Dorothean triplicities, sect, 21 parts, profections, solar returns, primary directions, almutens, accidental dignities | 3 | **recorded**: the traditional breadth oracle |
 | immanuel 1.6.0 | AGPL-3.0 | as above, modelled by its author on astro.com and Astro Gold | aspects with orbs, secondary progressions, solar returns, composites, parts, dignity scores, declinations | 3 | **recorded** as a black box: the modern breadth oracle |
 | kerykeion 5.12.10 | AGPL-3.0 | as above | aspects, composites, returns, lunar phase | 3 | not recorded: nothing immanuel lacks; a third witness when two disagree |
-| Astrolog | GPL | the broadest program (midpoints, harmonics, parts, progressions, directions, composites, Davison) | as listed | 3 | not recorded: it ships as C source that has to be built, and as a black box only. See [The Astrolog citation](#the-astrolog-citation) |
+| Astrolog | GPL | the broadest program (midpoints, harmonics, parts, progressions, directions, composites, Davison) | as listed | 3 | not recorded; a copyleft program, so only ever a black box. See [The composite rules' grounds](#the-composite-rules-grounds) |
 | Brennan, *Hellenistic Astrology* (2017), worked releasing examples | in copyright | complete | releasing, profections, lots | 2 (a modern author's reading) | not used: no copy here, and C423 already marks its use as from memory |
 | published ephemerides and tables of houses (Raphael, the *American Ephemeris*) | facts | complete | positions and cusps only | 1 | not needed: JPL (`fixtures/jpl`) and Teimeris already hold the astronomy, and these hold no doctrine |
 | astro.com's chart service | terms of use bar automated requests | complete | most of the modern layer | 3 | not used |
@@ -178,16 +178,20 @@ call exact now agrees with it or is C792's.
 | considerations, perfection, fortitudes, almutens | Lilly's figures recast | **none recorded**: flatlib's accidental dignities and almutens are the next to record; the horary clauses have no program |
 | midpoints, harmonics, antiscia, declinations, configurations, synastry, houses | Leo, Addey, Lilly, Edward VII | not recorded: arithmetic each test already holds, or astronomy the JPL and Teimeris tiers hold |
 
-## The Astrolog citation
+## The composite rules' grounds
 
-`western-composites.md` cites Astrolog's 5.30 *source* by function
-(`CastRelation`, `Midpoint`) and describes its algorithm from it, and
-C247 and C248 rest partly on that reading. Astrolog is GPL, and
-`CLEAN_ROOM.md` allows a copyleft program's values only, never "code,
-constant tables, comments, algorithms read from the code". This page uses
-none of it, records no Astrolog output and leaves the citation for the
-maintainer to judge; any later Astrolog witness is a black box like
-immanuel.
+`western-composites.md` once rested part of C247 and C248 on reading a
+copyleft program's code, which `CLEAN_ROOM.md` forbids ("code, constant
+tables, comments, algorithms read from the code"). On 2026-10-29 that
+reading was withdrawn, unopened again, and every rule re-grounded:
+the near midpoint, the midpoint cusps and the midpoint ascendant on
+Townley's own article and interview, the Davison mean on his worked
+example and Astrodienst's published documentation, and each convention
+no source read settles (the turned lagna and cusps, the exactly
+opposite pair, the mean speed, the longitude across the antimeridian)
+marked the SDK's own decision with its reasoning. No behaviour changed.
+Any later witness from a copyleft program is a black box like immanuel:
+its numbers, never its code.
 
 ## What waits
 

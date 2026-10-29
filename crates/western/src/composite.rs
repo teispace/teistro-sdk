@@ -1,5 +1,5 @@
 //! Composite charts: one chart of two, each planet and angle at the near
-//! midpoint of the two charts' (Townley; Astrolog; `03-design/
+//! midpoint of the two charts' (Townley; `03-design/
 //! western-composites.md`, C247).
 
 use serde::{Deserialize, Serialize};
@@ -74,8 +74,8 @@ pub struct Composite {
     /// The twelve cusps, first to twelfth, degrees, when both charts carry
     /// theirs: each the near midpoint of the two charts' same cusp, turned
     /// by 180° when it falls more than 90° from where the midheaven puts
-    /// it, the midheaven plus 30° a house from the tenth (Astrolog;
-    /// `western-houses.md`, decision 5).
+    /// it, the midheaven plus 30° a house from the tenth (the SDK's own
+    /// rule, C247; `western-houses.md`, decision 5).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub cusps_deg: Option<[f64; 12]>,
 }
@@ -108,7 +108,7 @@ impl Composite {
     }
 }
 
-/// The **composite** of two charts (Townley; Astrolog, C247): each planet
+/// The **composite** of two charts (Townley, C247): each planet
 /// at the near midpoint of its places in the two, at the mean of its two
 /// speeds; the midheaven at the near midpoint of the two midheavens; and
 /// the lagna at the near midpoint of the two lagnas, turned by 180° when
@@ -200,7 +200,7 @@ pub fn composite(first: &ChartPoints, second: &ChartPoints) -> Result<Composite,
 
 /// Whether a composite point standing for house `house`'s cusp falls more
 /// than 90° from where the midheaven puts that cusp, 30° a house from the
-/// tenth, and so is turned by 180° (C247, Astrolog).
+/// tenth, and so is turned by 180° (the SDK's own rule, C247).
 fn turned(at: f64, midheaven_deg: f64, house: i32) -> bool {
     difference_deg(at, midheaven_deg + 30.0 * f64::from(house - 10)).abs() > 90.0
 }

@@ -4249,7 +4249,7 @@ final class ChartsSynastryComposites {
 /// The `synastry_composite_rows` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`.
+/// Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; C247). Empty when `synastry_json` asked for no `composite`.
 final class ChartsSynastryCompositeRows {
   const ChartsSynastryCompositeRows({
     required this.graha,
@@ -4440,7 +4440,7 @@ final class ChartsWesternHousePlanets {
 /// The `synastry_composite_cusps` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
+/// Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (the SDK's own rule, C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
 final class ChartsSynastryCompositeCusps {
   const ChartsSynastryCompositeCusps({
     required this.cuspDeg,
@@ -6036,7 +6036,7 @@ final class Charts {
   /// Every chart's composite with the synastry's partner, a row a chart in the `cast` section's order: its angles, each the near midpoint of the two charts', and how many rows of `synastry_composite_rows` are its, in the record's zodiac (C247). Empty when `synastry_json` asked for no `composite`.
   final ChartsSynastryComposites synastryComposites;
 
-  /// Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`.
+  /// Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; C247). Empty when `synastry_json` asked for no `composite`.
   final ChartsSynastryCompositeRows synastryCompositeRows;
 
   /// Every chart's Davison birth with the synastry's partner, a row a chart in the `cast` section's order (C248): the mean of the two instants, of the two latitudes and altitudes, and of the two longitudes the shorter way round, and the mean of the two clocks, the chart's read on the request's. Found it with any chart request, as a birth is. Empty when `synastry_json` asked for no `davison`.
@@ -6057,7 +6057,7 @@ final class Charts {
   /// Every chart's planets counted in its houses, concatenated in the `cast` section's order and **ragged** by `western_houses.planet_count`, in the catalogue's order: the seven, and the outer three when `TS_CHART_OUTER` placed them. Empty when `western_houses_json` asked for none.
   final ChartsWesternHousePlanets westernHousePlanets;
 
-  /// Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
+  /// Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (the SDK's own rule, C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
   final ChartsSynastryCompositeCusps synastryCompositeCusps;
 
   /// Every chart's reflections upon a cusp, concatenated in the `cast` section's order and **ragged** by `antiscia.cusp_count`, in the planets' order and then the houses': a planet's antiscion or contrantiscion in the cusp's own sign and whole degree, "the very degree" (Lilly, p. 165; C251). Empty when `antiscia_json` asked for no `cusps`.

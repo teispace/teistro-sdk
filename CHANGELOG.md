@@ -53,6 +53,16 @@ of exact. Nothing else moves.
   and skips, naming the pinned corpus, until the corpus carries them.
   Cruxes C790 to C792.
 
+**The composite and Davison rules re-grounded on published sources.**
+**Numbers:** none. No rule changed, only what each rests on.
+- C247 and C248 and `western-composites.md` rest on Townley's own article
+  and interview and on Astrodienst's published documentation; each
+  convention no source read settles (the turned lagna and cusps, the
+  exactly opposite pair, the mean speed, the Davison longitude across the
+  antimeridian) is marked the SDK's own decision, with its reasoning. The
+  composite's generated docs in every binding cite C247 instead of a
+  program.
+
 **A cancellation's condition reaches every binding.**
 **Numbers:** none. No settings or document hash moves: a rule is written
 as before, and only the types the bindings build it with change.
@@ -5845,7 +5855,7 @@ the astronomical numbers do not move. Nothing else computes yet.
     two: each planet at the near midpoint of its two places with the mean
     speed, the midheaven at the near midpoint of the two, and the lagna at
     theirs, turned by 180° when it stands before the midheaven (Townley;
-    Astrolog; C247). `Partner::davison` gives the mean birth, its
+    C247). `Partner::davison` gives the mean birth, its
     longitude the shorter way round (C248). A synastry's `composite` and
     `davison` flags cross in sections 98 to 100, and Node, Python and
     Dart read `chart.synastryComposite` and `chart.synastryDavison`, the

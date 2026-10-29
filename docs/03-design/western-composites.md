@@ -14,61 +14,86 @@ midpoint of their births. This page decides how each is built.
 
 ## What the sources decide
 
-Both methods are modern, and the books that introduced them are in
-copyright and not to hand: John Townley's introduction to composites
-(1973) and Ronald Davison's *Synastry* (1977; archive.org holds the
-1983 edition, `synastry00rona`, for lending only). So the definitions
-are read at rank 2, from the originator's own account and a documented
-open implementation, and each choice they leave open is a crux.
+Both methods are modern, and the books that introduced or spread them
+are in copyright and not readable here: John Townley's *The Composite
+Chart* (1973), Robert Hand's *Planets in Composite* (1975; archive.org
+holds a 1981 printing, `planetsincomposi00hand`, for lending only) and
+Ronald Davison's *Synastry* (1977; archive.org holds the 1983 edition,
+`synastry00rona`, for lending only). So the definitions are read at
+rank 2, from the composite's originator in his own words, and each
+choice no source read here settles is a crux, decided as the SDK's own
+with its reasoning. No program's code is read for any of it
+(`CLEAN_ROOM.md`).
 
-- **John Townley**, the composite's originator, defines it on his own
-  site ("Composites vs. Davison time charts", astrococktail.com): "Take
-  the midpoints of each of A's and B's mutual planets (Sun with Sun,
-  Moon with Moon, etc.), put them into a house wheel made up of mutual
-  house cusp midpoints". The Davison chart "is simply a natal chart cast
-  for the midpoint in time and place between them".
-- **Astrolog** (Walter Pullen, GPL, read in the 5.30 source,
-  `CastRelation` and `Midpoint`) builds both:
-  - a composite planet is the midpoint of the two "closest to the
-    positions in question", the near midpoint; its latitude and its
-    speed are the means of the two;
-  - a composite cusp is the near midpoint of the two cusps, and then
-    any cusp more than 90° from where the midheaven puts it is turned
-    by 180°, "to make sure we don't have any 180 degree errors in house
-    cusp complement pairs, which may happen if the cusps are far
-    apart". The midheaven itself is never turned;
-  - the time-space midpoint is cast at the mean of the two instants, the
-    mean of the two latitudes and the mean of the two longitudes, the
-    longitude the shorter way round when they are more than 180° apart.
+- **John Townley**, the composite's originator, defines both charts on
+  his own site ("Composites vs. Davison time charts", March 2014,
+  astrococktail.com/compositedavison.html):
+  - the composite: "Take the midpoints of each of A's and B's mutual
+    planets (Sun with Sun, Moon with Moon, etc.), put them into a house
+    wheel made up of mutual house cusp midpoints, and that's your
+    composite chart";
+  - the midpoint is the **near** one: with A's Sun at 15 Gemini and B's
+    at 15 Leo, "the near midpoint (C) at 15 Cancer" is the composite's,
+    and 15 Capricorn the far one;
+  - the Davison chart "is simply a natal chart cast for the midpoint in
+    time and place between them". His worked example, Shawnee, Oklahoma
+    (18 December 1963) with Los Angeles (4 June 1975), stands "about 85
+    miles SW of Albuquerque".
+- **Townley in interview** (*The Astrology Podcast*, episode 128, 2017,
+  the published transcript): of a composite whose ascendant is looked up
+  in a table of houses from the composite midheaven at a chosen
+  latitude, "that means the midheaven is a real midpoint and the
+  Ascendant has nothing to do with anything". The originator keeps the
+  ascendant a midpoint.
+- **Robert Hand**, *Planets in Composite*, is not read: lending only.
+  Secondary pages credit it with a composite ascendant derived from the
+  composite midheaven at the latitude where the couple live; none quotes
+  the book, so no rule here rests on it, and the derived ascendant stays
+  the rival named in C247.
+- **The Davison place.** Astrodienst's documentation of its own
+  relationship charts (astro.com, "Uncorrected Davison Relationship
+  Chart", rank 3) gives the uncorrected chart at "the exact mean in time
+  and geographic place of both charts", latitude and longitude each the
+  half sum of the two, and names a *corrected* variant, the time moved
+  so the chart's midheaven equals the composite's, as "the classical
+  calculation method". Davison's own text is not read, so which of the
+  two he printed is open (C248).
 
-**The measure.** Townley's worked Davison, for two births in Shawnee,
-Oklahoma and Los Angeles, stands "about 85 miles SW of Albuquerque".
-The arithmetic mean of the two places stands 60 miles south-west of
-Albuquerque (bearing 243°); the great-circle midpoint stands 58 miles
-due west of it (275°). The direction is Astrolog's mean. His printed
-time does not follow from the births he gives under either reading, so
-the example is read for its place alone.
+**The measure.** Townley's worked Davison stands "about 85 miles SW of
+Albuquerque". The arithmetic mean of the two places stands 60 miles
+south-west of Albuquerque (bearing 243°); the great-circle midpoint
+stands 58 miles due west of it (275°). The direction is the arithmetic
+mean's. His printed time does not follow from the births he gives under
+either reading, so the example is read for its place alone.
 
 ## Decisions
 
-1. **A composite planet is the near midpoint (Townley, Astrolog).** Each
-   planet of one chart is paired with the same planet of the other, and
-   placed at the midpoint of the shorter arc between them, the same
-   whichever chart is first. Two planets exactly opposite have no
-   shorter arc; they then meet at the mean of their two longitudes, so
-   the answer is fixed either way round. Its speed is the
-   mean of the two, so a composite's aspect table reads applying and
-   separating, as Astrolog's does.
+1. **A composite planet is the near midpoint (Townley).** Each planet
+   of one chart is paired with the same planet of the other, and placed
+   at the midpoint of the shorter arc between them, Townley's "near
+   midpoint", the same whichever chart is first. Two planets exactly
+   opposite have no shorter arc; they then meet at the mean of their two
+   longitudes, so the answer is fixed either way round (the SDK's own
+   rule: no source names the case). Its speed is the mean of the two,
+   which is the rate at which the midpoint of two moving points moves,
+   so a composite's aspect table reads applying and separating (the
+   SDK's own: Townley gives a composite no motion).
 2. **The angles are midpoints, the lagna kept east of the midheaven
-   (C247).** The composite midheaven is the near midpoint of the two.
-   The composite lagna is the near midpoint of the two lagnas, turned by
-   180° when it falls more than 90° from the midheaven's eastern
-   quadrature (the midheaven plus 90°), as Astrolog turns every cusp:
-   a natal lagna always stands in the half of the zodiac after its
-   midheaven, and a midpoint of two far-apart lagnas need not. A row
-   says when it was turned. Deriving the lagna from the composite
-   midheaven at some latitude is a later writer's method, not read
-   here, so it is not offered.
+   (C247).** The composite midheaven is the near midpoint of the two,
+   and the lagna the near midpoint of the two lagnas: Townley's "mutual
+   house cusp midpoints", and in his own words the ascendant is not
+   derived from the midheaven. The lagna is then turned by 180° when it
+   falls more than 90° from the midheaven's eastern quadrature (the
+   midheaven plus 90°). That turn is **the SDK's own decision**: no
+   source read here states it. The reasoning is geometric: a natal
+   lagna always stands in the half of the zodiac after its midheaven,
+   and the near midpoint of two far-apart lagnas need not, so an
+   unturned midpoint can put the composite's rising degree west of its
+   own midheaven, which no chart can have. A row says when it was
+   turned, so a reader who wants the bare midpoint has it. Deriving the
+   lagna from the composite midheaven at some latitude, the method
+   secondary pages credit to Hand, is not read in its source and is
+   not offered.
 3. **The two charts place the same planets.** A composite pairs a planet
    with itself, so two charts that place different sets (one with the
    outer planets, one without) are refused rather than read for what
@@ -82,9 +107,20 @@ the example is read for its place alone.
 5. **A Davison chart is a birth, and the caller founds it (C248).** The
    midpoint of two births is a third birth: the mean of their instants
    on the UTC scale; the mean of their latitudes and their altitudes;
-   the mean of their longitudes the shorter way round (Astrolog, and
-   Townley's example south-west of Albuquerque); and the mean of their
-   clocks, to the second, which only names the civil day. It is returned
+   the mean of their longitudes the shorter way round; and the mean of
+   their clocks, to the second, which only names the civil day. The
+   mean of the instants and of the latitudes is Townley's "midpoint in
+   time and place"; the arithmetic mean rather than the great-circle
+   midpoint is his example's direction, south-west of Albuquerque, and
+   Astrodienst's documented formula. The shorter way round, the
+   altitudes and the clocks are **the SDK's own**: no source read here
+   names them. The half sum of two signed longitudes either side of the
+   antimeridian lands on the far side of the Earth, so it depends on
+   where the ±180° seam is drawn rather than on the two places; the
+   shorter way round does not, and agrees with the half sum whenever
+   the two are within 180°, as in every case a source prints. The
+   corrected Davison (the time moved to the composite midheaven) is not
+   offered while Davison's text is unread. It is returned
    as a `Partner`, so any chart request, under any profile, founds it,
    and every reading a natal chart takes, a Davison takes.
 
@@ -141,12 +177,12 @@ the example is read for its place alone.
 
 - **The composite's cusps** were decided with the Western houses
   ([`western-houses.md`](western-houses.md)): each the near midpoint of
-  the two charts' same cusp, turned as Astrolog turns it by the
-  midheaven, in the module's division; none at a place where either
-  chart's division is refused.
-- **Weighted and multi-person composites.** Astrolog weights a composite
-  or a Davison chart toward one of the two, and composes more than two
-  charts. No source read here uses either.
+  the two charts' same cusp, turned by the midheaven as the lagna is
+  (the SDK's own rule, C247), in the module's division; none at a place
+  where either chart's division is refused.
+- **Weighted and multi-person composites.** Some programs weight a
+  composite or a Davison chart toward one of the two, or compose more
+  than two charts. No source read here uses either.
 - **The derived lagna.** A composite lagna computed from the composite
-  midheaven at a latitude is reported in later writers, whose texts are
-  not read here.
+  midheaven at a latitude is credited to Hand by secondary pages; his
+  text is not read here, and Townley rejects the method.

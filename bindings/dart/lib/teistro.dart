@@ -12183,7 +12183,7 @@ final class Composite extends _Value {
 
   /// The twelve composite cusps, each the near midpoint of the two charts'
   /// same cusp, turned when more than 90° from where the midheaven puts it
-  /// (Astrolog); null when either chart's cusps could not be read, as at a
+  /// (C247); null when either chart's cusps could not be read, as at a
   /// polar place.
   final List<double>? cuspsDeg;
 

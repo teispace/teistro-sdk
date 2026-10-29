@@ -15,7 +15,7 @@ import java.util.List;
  * @param lagnaTurned whether the lagna was turned by 180°
  * @param cuspsDeg the twelve composite cusps, each the near midpoint of the
  *     two charts' same cusp, turned when more than 90° from where the
- *     midheaven puts it (Astrolog); may be null, when either chart's cusps
+ *     midheaven puts it (C247); may be null, when either chart's cusps
  *     could not be read, as at a polar place
  */
 public record Composite(

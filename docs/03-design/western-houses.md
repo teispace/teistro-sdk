@@ -49,12 +49,15 @@ kernel.
   a cusp is counted in that cusp's house, the nearer cusp winning
   (`AccidentalRules::cusp_orb_deg`, crux C214). It belongs to the
   `hellenistic` reading and its Regiomontanus, and it stays there.
-- **A composite's cusps are Astrolog's.** Townley puts the composite
-  planets "into a house wheel made up of mutual house cusp midpoints";
-  Astrolog makes each cusp the near midpoint of the two charts' same
-  cusp and turns any cusp more than 90° from the midheaven's quadrant
-  place (MC + 30° × (n − 10)) by 180°. C247 already ships that turn
-  for the lagna, the first cusp; the other ten follow the same rule.
+- **A composite's cusps are midpoints.** Townley puts the composite
+  planets "into a house wheel made up of mutual house cusp midpoints",
+  each the near midpoint (`western-composites.md`). No source read here
+  says what to do when the near midpoint of two far-apart cusps falls
+  on the wrong side of the composite midheaven. C247 turns the lagna,
+  the first cusp, by 180° when it stands more than 90° from the
+  midheaven's eastern quadrature, the SDK's own decision; the other ten
+  follow the same rule, each against its place by the midheaven
+  (MC + 30° × (n − 10)), so the twelve keep their order.
 
 ## Decisions
 
@@ -80,7 +83,7 @@ kernel.
 4. **A planet's latitude is not read.** Leo reads the zodiac's degree
    against the cusps; a semi-arc placement by latitude is a later
    refinement no source here makes.
-5. **The composite's cusps are the near midpoints, turned (Astrolog).**
+5. **The composite's cusps are the near midpoints, turned (C247).**
    `Composite` gains twelve cusps; the first and tenth are the lagna
    and midheaven it already carries, so the two never disagree. Each
    composite planet's house follows decision 2 on those cusps.
