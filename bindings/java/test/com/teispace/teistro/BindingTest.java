@@ -1560,6 +1560,9 @@ public final class BindingTest {
                 same("naming.book.names[0].devanagari", refusal(() -> sky.naming().load(
                         Book.of(Map.of("names", List.of(Map.of("devanagari", "Ram")))))).field(),
                         "a name with no Devanagari refuses the book");
+            }
+        });
+
         tests.put("a stored baseline settings snapshot translates into the contexts it opens", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
                     .ephemeris(Ephemeris.NONE).build())) {
