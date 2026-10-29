@@ -9282,6 +9282,8 @@ fn a_child_is_named_across_the_boundary() {
         );
         assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
     }
+}
+
 /// A stored baseline snapshot crosses as the translation reads it, the
 /// translation as its own JSON; a refusal names the stored field under
 /// `snapshot`, a decision with its crux as the hint

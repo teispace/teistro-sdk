@@ -5556,6 +5556,7 @@ void _engineTests() {
     expect(() => ctx.naming.suggest(3, ardra), throwsArgumentError);
     ctx.dispose();
   });
+
   test(
     'a stored baseline settings snapshot translates into the contexts it opens',
     () {
