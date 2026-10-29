@@ -14,9 +14,10 @@ then asked for their aspects in **one batch**
 (`sdk.chart().hits_many`), the Moon's excepted: it crosses each
 line twenty-seven times a year, which would be most of the batch's
 price, and the first chart's Moon shows everything the rest would.
-The profile is topocentric, so every read-back chart is founded at
-the birth's own place, under the profile with a polar day reckoned
-from civil midnight (Tromsø has no January sunrise to start one).
+The profile casts its transits from the Earth's centre (C778), so
+every read-back chart is founded geocentric at the birth's own
+place, under the profile with a polar day reckoned from civil
+midnight (Tromsø has no January sunrise to start one).
 
 ## 1. What a year holds
 
@@ -35,7 +36,7 @@ and hands to each:
 | Rahu | 1 | 1 | 0 |
 | Ketu | 1 | 2 | 0 |
 
-Against the births' own points: 4792 exact aspects, 4769 windows entered
+Against the births' own points: 4791 exact aspects, 4769 windows entered
 and 4787 left, of which 79 closed windows held no exact hit at all — a
 graha turning inside the orb and going back the way it came.
 
@@ -44,8 +45,8 @@ graha turning inside the orb and going back the way it came.
 | proposed rule | verdict | measured |
 |---|---|---|
 | every sign and nakshatra ingress stands between the division it left and the one it entered in charts founded a second either side | **holds** | 0 of 683 disagree |
-| every exact aspect stands at its angle, to a tenth of an arcsecond, in a chart founded at its instant | **holds** | 0 of 4792 disagree |
-| successive crossings of one line run opposite ways exactly when the graha stood still an odd number of times between them | **holds** | 0 of 1154 disagree |
+| every exact aspect stands at its angle, to a tenth of an arcsecond, in a chart founded at its instant | **holds** | 0 of 4791 disagree |
+| successive crossings of one line run opposite ways exactly when the graha stood still an odd number of times between them | **holds** | 0 of 1153 disagree |
 | every orb's window opens, holds its exact hits and closes, in that order | **holds** | 0 of 4619 disagree |
 | Ketu's every ingress is Rahu's at the same instant, six signs on | **holds** | 0 of 1 disagree |
 
