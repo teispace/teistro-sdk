@@ -1,7 +1,7 @@
 # The compatibility shim: the baseline engine's inputs, forwarded
 
-Status: `design`, 2026-10-28; items 1 to 4 (§7) built the same day, the
-rest not. The last "not met"
+Status: `design`, 2026-10-28; items 1 to 4 (§7) built the same day,
+items 5 to 7 on 2026-10-29, items 8 to 10 not. The last "not met"
 row of the parity checklist
 ([`02-parity-requirements.md`](../01-research/baseline-engine/02-parity-requirements.md),
 "migration guide") and the Phase 9 deliverable "the baseline migration
@@ -165,7 +165,7 @@ snapshot, translated as §4 says.
 | ghati-pala, both reckonings | `ghatiPala` | `chart.timing`, read from the natal context and from a second context with the other `day.ghati_reckoning` | compose |
 | the Bikram Sambat calendar: conversion, month lengths, leap tests | `bs` | `ctx.calendar.convert`, `dateOf`, `fixedOf`, `monthLength`, `isLeap` | forward |
 | the calendar service's era numbers | `eras` | `ctx.almanac.day(...)` with `calendars.eras` | compose |
-| the entity registry, a name by type and key | `entity` | `ctx.intl.entity(key)`, the key built from the type and the baseline's key by the rule `teistro-intl migrate baseline` already applies (`crates/intl/src/migrate.rs`) | forward |
+| the entity registry, a name by type and key | `entity` | `ctx.intl.entity(key)`. Built taking the catalogue's key (`graha.SUN`): the rule that builds it from the baseline's type and key (`crates/intl/src/migrate.rs`) is Rust only, and a JavaScript copy of it would be a second one (§8) | forward |
 | numeral, date, degree and clock formatting | `format` | none | refuse: the SDK answers numbers and instants, and formatting them belongs to the application (`Intl.NumberFormat` with a `nu` extension does it in Node) (guide §2) |
 
 ### 3.2 The chart package
@@ -186,7 +186,7 @@ Their SDK side already exists (§6.4).
 | vargas and vargottama | `vargas` | `found` with `vargas` | forward |
 | yogas, doshas | `yogas` | `found` with `rules: { shipped: [...], readings: 'RECORDING_ENGINE' }` | forward |
 | Shadbala, Bhava bala, Ashtakavarga, Vimshopaka | `strength` | `found` with `shadbala`, `bhavaBala`, `ashtakavarga`, `vimshopaka` | forward |
-| one dasha system, all 18, the active periods at an instant | `dashas` | `found` with `dashas`, depths from the snapshot (§4.2); the active chain read from the periods | compose |
+| one dasha system, all 18, the active periods at an instant | `dashas` | `found` with the 18 `dashas`, depths from the snapshot (§4.2); the active chain is read from the periods' spans, which every answer carries | forward |
 | houses, Bhava-Chalit | `houses` | `found` with `houses: true` | forward |
 | avasthas, dignities, planetary war | `states` | `found` with `state: true` | forward |
 | drishti | `aspects` | `found` with `aspects: true` | forward |
@@ -245,7 +245,7 @@ baseline does (§4.2; guide §5.4; crux C778).
 | numerology | `numerology` | `ctx.numerology.profile(name, date, rules)` with the baseline readings (guide §5.3) | forward |
 | remedies | `remedies` | `found` with `remedies: { rules: { functional: { scheme: 'BASELINE' } } }` | forward |
 | remedies: gemstone safety | `gemstoneSafety` | none | refuse: not built (parity table, Track B row) |
-| namakarana: validation | `nameCheck` | none in a binding | refuse until `namakarana.md` §10 item 9 lands, then forward |
+| namakarana: validation | `nameCheck` | `found` with `avakahada`, its star and pada given to `ctx.naming.check(names, birth)` (item 9 of `namakarana.md` landed, so the row composes rather than refuses) | compose |
 | namakarana: suggestions, the offline corpus, the language-model path | `nameSuggestions` | none | refuse: no corpus ships, and the consumer loads its own name book (`namakarana.md` §3) |
 | research: batch | `batch` | `ctx.chart.foundMany` | forward |
 | research: synastry, composites | `synastry` | `found` with `synastry` | forward |
@@ -438,10 +438,15 @@ inputs: the stored rows, the settings snapshots and the contexts. That
 is the part an application cannot do one call at a time.
 
 One aid crosses the gap. `@teistro/compat` exports `facts(request,
-answer)`, the A/B's shared vocabulary (`ab-baseline.md` §10, today in
-`bench/ab-agree.mjs`), which reads the fields both engines answer as flat
-named facts. An application running both engines side by side (guide §9,
-step 3) compares the facts of the two answers instead of writing its own
+answer, options)` and `FAMILIES`, the A/B's shared vocabulary
+(`ab-baseline.md` §10), which reads the fields both engines answer as flat
+named facts and says how each family compares. Built with item 6: it
+moved from `bench/ab-agree.mjs` into `lib/facts.js`, and the A/B reads its
+SDK side through it. `options.figures` names the yogas to report present
+or absent (the A/B passes its joined list; left out, the present rules
+alone are reported), and `options.window` is a Sade Sati answer's range.
+An application running both engines side by side (guide §9, step 3)
+compares the facts of the two answers instead of writing its own
 comparison.
 
 ## 6. Errors, versions, the end, tests and budget
@@ -512,13 +517,21 @@ logs it once a day. When every count is zero, it has finished porting.
   forwards (`lib/forward.js`), and the A/B runner imports them from
   there. Every timed A/B request is then a shim call, and `check-ab` (not
   slower than the baseline) holds the shim too. The fifteenth request,
-  `muhurta`, is still the runner's own until the muhurta row lands with
-  item 6.
+  `muhurta`, moved with item 6: the runner asks the shim's `muhurta`
+  request on the context the baseline's search frame opens
+  (`MUHURTA_FRAME`, C781).
   A new `bindings/node/compat/test/agree.test.mjs` asks each forward and
   compose function for every one of the corpus's 55 inputs and the
   documented SDK call directly, and asserts the two answers'
   `provenance.contentHash` are equal. The content hash is taken over the
-  canonical bytes, so equal hashes are agreement to the bit.
+  canonical bytes, so equal hashes are agreement to the bit. Built with
+  item 6 for every answering row: an answer the SDK does not seal (a
+  date, a zone's resolution, a composed record) is compared by its JSON,
+  and the rows the A/B does not time are asked of one chart in five
+  (rectification and research, the costliest, of one in eleven), which
+  keeps the test near a minute. `engine` is held
+  to the same refusal on both sides, since the built-in ephemeris has no
+  operations of its own.
 - **The translation reproduces the corpus.** A Rust test founds each
   recorded variant fixture under `recorded(its canonical snapshot)` and
   holds it to the golden tolerance. The ad hoc per-test variant patches
@@ -542,9 +555,12 @@ logs it once a day. When every count is zero, it has finished porting.
 
 ### 6.5 Size and speed
 
-- **Size:** plain JavaScript with no dependency beyond the peer, at most
-  40 KB unminified with its declarations. It is recorded in `SIZES` like
-  the other packages.
+- **Size:** plain JavaScript with no dependency beyond the peer. The
+  estimate was at most 40 KB unminified with its declarations; built
+  with item 7 it is 110 KB (`lib/` and `surface.json`): 62 rows, their
+  declarations, and the A/B's vocabulary (24 KB). It is recorded in
+  `SIZES` like the other packages with item 10, which sets the bound
+  from that measure.
 - **Speed:** a shim call adds one input mapping and one cache lookup to
   the SDK call. Because the A/B times shim calls (§6.4), `check-ab`
   holds the shim to "not slower than the baseline engine". No separate
@@ -565,8 +581,8 @@ In order. Each is one pull request.
 | 3 | built: the boundary, one JSON entry through the IDL, generated into every binding and wrapped as the context's `recordedSettings` in Node, wasm, Dart and Java and `recorded_settings` in Python; the parity example is not written | ffi, idl, bindings | 1 day |
 | 4 | built: `@teistro/compat` skeleton: `compat()`, the context cache, the birth record (§3.7), `CompatRefused`, `calls()`, README with the end (§6.3), typecheck consumer; its tests and the consumer run under `check-node`, the README is held by `check-guides` | bindings/node/compat, xtask | 1 day |
 | 5 | built: the A/B's SDK side moved into the package (`chart`, `full`, `vargas`, `yogas`, `strength`, `dashas`, `day`, `month`, `milan`, `varsha`, `kp`, `gochar`, `sadeSati`, `batch`); `CONVENTIONS.same` replaced by `recordedSettings`, the KP opening given the natal context's ruling planets; `agree.test.mjs` over the corpus's 55 charts and KP under the chart's own ayanamsha; the birth record founded at its date (§6.1) | node bench, compat | 1 day |
-| 6 | the remaining forward and compose rows of §3, with `facts()` moved from `ab-agree.mjs` | compat | 2 days |
-| 7 | `surface.json`, the refused rows typed `never`, `surface.test.mjs` | compat | 0.5 day |
+| 6 | built: the remaining forward and compose rows of §3 (62 rows in all: 46 forward, 11 compose, 5 refused), with `facts()` and `FAMILIES` moved from `ab-agree.mjs` into `lib/facts.js` and the A/B's `muhurta` onto the shim's request; a `variant` context per snapshot for the muhurta frame and the second ghati reckoning; each row in `agree.test.mjs` against the documented call | compat, node bench | 2 days |
+| 7 | built: `surface.json`, read by the package for its rows and refusals; the refused rows typed `never` (`Refused`); `surface.test.mjs` holding the exports, the refusals' anchors, the declarations, §3 and `agree.test.mjs` to it | compat | 0.5 day |
 | 8 | `cargo xtask compat` and `check-compat`: the generated `baseline-map.md`, the guide's §4 replaced by its link, the parity row updated, the gate added to fast-check | xtask, docs, CI | 1 day |
 | 9 | the adapter's `surface` export (in the baseline's repository) and the unmapped count in `measure-ab` | node bench, ab-measured | 0.5 day |
 | 10 | release wiring: the package in the release pipeline's install checks and `SIZES`, the CHANGELOG entry | release, sizes | 0.5 day |
@@ -617,3 +633,21 @@ zero unmapped entry points.
   locales. Whether any stored snapshot actually holds another pairing is
   unknown until the application's rows are counted. Until then they are
   refused.
+- **The entity key from the baseline's type and key (item 6).** `entity`
+  takes the catalogue's key. The rule that builds it from the baseline's
+  entity type and key, with its 19 aliases, is `teistro_intl::migrate::catalogue_key`
+  in Rust. Open: carry that rule through the boundary (one JSON entry, as
+  `recordedSettings` is) so `entity(snapshot, type, key)` reads the
+  baseline's own spelling, or leave the mapping to the application's
+  one-time migration of its keys.
+- **The milan verdict (item 6).** No composer says a milan: `milanVerdict`
+  answers the milan with the doshas' rules read and their readings said
+  (`interpret: { readings: true }`), beside the kootas. Open: whether a
+  matching composer is wanted, which would replace the readings with
+  the kootas' own plans.
+- **The muhurta frame's home (item 6).** The baseline searches a muhurta
+  from the Earth's centre with the true node (C781). The shim opens that
+  context from `MUHURTA_FRAME` in `lib/forward.js`, a patch over the
+  translated natal opening, as the A/B did. It is a fixed convention of
+  the baseline, like the KP opening, so it may belong in `Recorded` as a
+  third opening; that is a boundary change, left for item 8.

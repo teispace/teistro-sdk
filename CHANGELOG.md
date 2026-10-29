@@ -94,6 +94,30 @@ new reader of what the recording engine stored.
   registered rather than patched. The tests' hand-written variant
   patches are gone.
 
+**`@teistro/compat` answers its whole surface, and reads the application's ayanamsha keys.**
+**Numbers:** none. No settings or document hash moves: a snapshot that
+stored a number translates as before, and the A/B asks the same requests
+through the package.
+- `recordedSettings` reads a stored `ayanamsaId` as the application keeps
+  it in its charts and preferences, a key (`'lahiri'`, `'raman'`,
+  `'galcent-gil-brand'`), as well as the number the recording engine and
+  the application's rectification rows keep. The 48 keys
+  (`teistro_core::settings::recorded::AYANAMSHA_KEYS`) reach the 47
+  catalogued ayanamshas, `suryasiddhanta` being an older spelling of
+  `surya-siddhanta`; any other text is refused on
+  `snapshot.ayanamsaId`. Until now every chart the application stored was
+  refused at that field.
+- The shim answers the 62 rows of `03-design/compat-shim.md` §3, listed in
+  the package's `surface.json`: 46 forward, 11 compose and 5 refuse with
+  `CompatRefused` before any computation, typed `never`.
+  `surface.test.mjs` holds the exports, the refusals' guide anchors, the
+  declarations and the design page to it, and `agree.test.mjs` holds
+  every answering row to its documented SDK call over the corpus.
+- `facts` and `FAMILIES`, the A/B's vocabulary, are exported by the
+  package (`lib/facts.js`); the A/B reads its SDK side through them, and
+  its `muhurta` request is the shim's, on the frame the baseline searches
+  in (crux C781).
+
 **`@teistro/compat` forwards fourteen rows, and the A/B times them.**
 **Numbers:** a KP chart cast on the KP context `recordedSettings` opens
 moves its ruling planets to the baseline's: seven, the sub lords too, by
