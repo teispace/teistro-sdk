@@ -18,7 +18,7 @@ from pathlib import Path
 from unittest import mock
 
 from teistro import _install
-from teistro._prebuilt import PREBUILT_VERSION
+from teistro._prebuilt import PREBUILT_BASE, PREBUILT_VERSION
 from teistro._install import (
     InstallError,
     digest,
@@ -132,6 +132,91 @@ class TheWrite(unittest.TestCase):
         with self.assertRaises(InstallError) as caught:
             _install.install(source=Path("/no/such/archive.gz"))
         self.assertIn("no file at", str(caught.exception))
+
+
+class EachPlatform(unittest.TestCase):
+    """What the installer names on each platform, read on any host: the
+    branches for the two this host is not are otherwise left to another
+    machine's run."""
+
+    def test_each_platform_names_its_own_library_file(self) -> None:
+        for system, name in (
+            ("darwin", "libteistro_ffi.dylib"),
+            ("win32", "teistro_ffi.dll"),
+            ("linux", "libteistro_ffi.so"),
+        ):
+            with mock.patch("teistro._install.sys.platform", system):
+                self.assertEqual(library_file_name(), name, system)
+
+    def test_windows_is_never_musl_and_never_asks_confstr(self) -> None:
+        def asked(_name: str) -> str:
+            raise AssertionError("Windows has no confstr to ask")
+
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(mock.patch("teistro._install.sys.platform", "win32"))
+            stack.enter_context(mock.patch("teistro._install.platform.machine", lambda: "AMD64"))
+            stack.enter_context(mock.patch("teistro._install.os.confstr", asked, create=True))
+            self.assertEqual(host_platform(), "win32-x64")
+
+    def test_a_release_url_names_the_version_the_target_and_the_extension(self) -> None:
+        with contextlib.ExitStack() as stack:
+            stack.enter_context(mock.patch.dict("teistro._install.PREBUILT_DIGESTS", {"win32-x64": "0" * 64}))
+            stack.enter_context(mock.patch("teistro._install.sys.platform", "win32"))
+            self.assertEqual(
+                prebuilt_url("win32-x64"),
+                f"{PREBUILT_BASE}/v{PREBUILT_VERSION}/teistro_ffi-{PREBUILT_VERSION}-win32-x64.dll.gz",
+            )
+            self.assertIsNone(prebuilt_url("plan9-mips"), "a target the release has none for")
+
+
+class TheInstall(unittest.TestCase):
+    """`install` end to end over a release table and a download that are
+    patched in: it fetches, checks and writes, and a second run finds the
+    library it wrote and does not fetch again."""
+
+    def test_a_release_is_fetched_once_and_then_found(self) -> None:
+        fetched: list[str] = []
+
+        class Response(io.BytesIO):
+            def __enter__(self) -> "Response":
+                return self
+
+            def __exit__(self, *_: object) -> None:
+                self.close()
+
+        def download(url: str, timeout: int) -> Response:
+            fetched.append(url)
+            self.assertEqual(timeout, _install.TIMEOUT)
+            return Response(gzip.compress(LIBRARY))
+
+        with tempfile.TemporaryDirectory() as directory, contextlib.ExitStack() as stack:
+            project = Path(directory)
+            stack.enter_context(mock.patch.dict("teistro._install.PREBUILT_DIGESTS", {host_platform(): digest(LIBRARY)}))
+            stack.enter_context(mock.patch("teistro._install.urlopen", download))
+            path, did = _install.install(project=project)
+            self.assertEqual((path, did, path.read_bytes()), (installed_library(project), True, LIBRARY))
+            self.assertEqual(fetched, [prebuilt_url()])
+            again, did = _install.install(project=project)
+            self.assertEqual((again, did), (path, False))
+            self.assertEqual(len(fetched), 1, "an installed library that hashes is left alone")
+
+    def test_a_file_already_here_installs_packed_or_not_and_a_wrong_one_is_refused(self) -> None:
+        with tempfile.TemporaryDirectory() as directory, contextlib.ExitStack() as stack:
+            root = Path(directory)
+            stack.enter_context(mock.patch.dict("teistro._install.PREBUILT_DIGESTS", {host_platform(): digest(LIBRARY)}))
+            packed = root / "library.gz"
+            packed.write_bytes(gzip.compress(LIBRARY))
+            plain = root / "library.bin"
+            plain.write_bytes(LIBRARY)
+            for source, project in ((packed, root / "a"), (plain, root / "b")):
+                path, did = _install.install(source=source, project=project)
+                self.assertEqual((did, path.read_bytes()), (True, LIBRARY), source.name)
+            wrong = root / "wrong.bin"
+            wrong.write_bytes(b"another library")
+            with self.assertRaises(InstallError) as caught:
+                _install.install(source=wrong, project=root / "c")
+            self.assertIn("expected", str(caught.exception))
+            self.assertFalse(installed_library(root / "c").exists(), "a refused library is never written")
 
 
 class TheCommand(unittest.TestCase):
