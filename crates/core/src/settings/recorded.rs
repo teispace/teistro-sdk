@@ -400,6 +400,107 @@ pub fn house_system(name: &str) -> Option<HouseSystem> {
         .find(|system| system.key().to_ascii_lowercase().replace('_', "-") == name)
 }
 
+/// The 47 catalogued ayanamshas by the keys the application stores them
+/// under, in a chart's settings and a user's preferences
+/// (`03-design/compat-shim.md` §8), and one more: `suryasiddhanta`, an
+/// older spelling of `surya-siddhanta` its per-chart rows still hold. Each
+/// is the member whose `swiss_mode` the application maps the key to.
+/// Listed one by one rather than derived by a case rule: 43 keys are the
+/// member's key lower-cased with hyphens, and four are not (`de-luce`,
+/// `surya-siddhanta`, `surya-siddhanta-msun`, `galcent-gil-brand`), so a
+/// rule would map those wrongly in silence or refuse them.
+///
+/// ```
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_core::settings::recorded::AYANAMSHA_KEYS;
+///
+/// assert_eq!(AYANAMSHA_KEYS.len(), 48);
+/// assert!(AYANAMSHA_KEYS.contains(&("galcent-gil-brand", Ayanamsha::GalcentRgilbrand)));
+/// ```
+pub const AYANAMSHA_KEYS: [(&str, Ayanamsha); 48] = [
+    ("lahiri", Ayanamsha::Lahiri),
+    ("raman", Ayanamsha::Raman),
+    ("krishnamurti", Ayanamsha::Krishnamurti),
+    ("yukteshwar", Ayanamsha::Yukteshwar),
+    ("jn-bhasin", Ayanamsha::JnBhasin),
+    ("lahiri-1940", Ayanamsha::Lahiri1940),
+    ("lahiri-vp285", Ayanamsha::LahiriVp285),
+    ("krishnamurti-vp291", Ayanamsha::KrishnamurtiVp291),
+    ("lahiri-icrc", Ayanamsha::LahiriIcrc),
+    ("surya-siddhanta", Ayanamsha::Suryasiddhanta),
+    ("suryasiddhanta", Ayanamsha::Suryasiddhanta),
+    ("surya-siddhanta-msun", Ayanamsha::SuryasiddhantaMsun),
+    ("ss-citra", Ayanamsha::SsCitra),
+    ("ss-revati", Ayanamsha::SsRevati),
+    ("aryabhata", Ayanamsha::Aryabhata),
+    ("aryabhata-msun", Ayanamsha::AryabhataMsun),
+    ("aryabhata-522", Ayanamsha::Aryabhata522),
+    ("true-chitra", Ayanamsha::TrueChitra),
+    ("true-revati", Ayanamsha::TrueRevati),
+    ("true-pushya", Ayanamsha::TruePushya),
+    ("true-mula", Ayanamsha::TrueMula),
+    ("true-sheoran", Ayanamsha::TrueSheoran),
+    ("aldebaran-15tau", Ayanamsha::Aldebaran15tau),
+    ("fagan-bradley", Ayanamsha::FaganBradley),
+    ("de-luce", Ayanamsha::Deluce),
+    ("ushashashi", Ayanamsha::Ushashashi),
+    ("djwhal-khul", Ayanamsha::DjwhalKhul),
+    ("galcent-0sag", Ayanamsha::Galcent0sag),
+    ("galcent-gil-brand", Ayanamsha::GalcentRgilbrand),
+    ("galcent-mula-wilhelm", Ayanamsha::GalcentMulaWilhelm),
+    ("galcent-cochrane", Ayanamsha::GalcentCochrane),
+    ("galequ-iau1958", Ayanamsha::GalequIau1958),
+    ("galequ-true", Ayanamsha::GalequTrue),
+    ("galequ-mula", Ayanamsha::GalequMula),
+    ("galequ-fiorenza", Ayanamsha::GalequFiorenza),
+    ("galalign-mardyks", Ayanamsha::GalalignMardyks),
+    ("babyl-kugler1", Ayanamsha::BabylKugler1),
+    ("babyl-kugler2", Ayanamsha::BabylKugler2),
+    ("babyl-kugler3", Ayanamsha::BabylKugler3),
+    ("babyl-huber", Ayanamsha::BabylHuber),
+    ("babyl-etpsc", Ayanamsha::BabylEtpsc),
+    ("babyl-britton", Ayanamsha::BabylBritton),
+    ("hipparchos", Ayanamsha::Hipparchos),
+    ("sassanian", Ayanamsha::Sassanian),
+    ("valens-moon", Ayanamsha::ValensMoon),
+    ("j2000", Ayanamsha::J2000),
+    ("j1900", Ayanamsha::J1900),
+    ("b1950", Ayanamsha::B1950),
+];
+
+/// The ayanamsha a stored `ayanamsaId` names: the member whose `swiss_mode`
+/// a number is, as the recording engine stores it, or the member a key of
+/// [`AYANAMSHA_KEYS`] stands for, as the application stores it.
+///
+/// ```
+/// use teistro_core::catalogue::Ayanamsha;
+/// use teistro_core::settings::recorded::{Stored, ayanamsha};
+///
+/// assert_eq!(ayanamsha(&Stored::Number(1)), Ok(Ayanamsha::Lahiri));
+/// assert_eq!(ayanamsha(&Stored::Text("lahiri".into())), Ok(Ayanamsha::Lahiri));
+/// // A key is matched as stored: the application writes them lower-cased.
+/// assert!(ayanamsha(&Stored::Text("Lahiri".into())).is_err());
+/// ```
+///
+/// # Errors
+///
+/// Why the value names no ayanamsha: a number no member's `swiss_mode` is,
+/// text that is not one of the keys, or neither.
+pub fn ayanamsha(stored: &Stored) -> Result<Ayanamsha, &'static str> {
+    match stored {
+        Stored::Number(mode) => Ayanamsha::ALL
+            .into_iter()
+            .find(|member| i64::from(member.attributes().swiss_mode) == *mode)
+            .ok_or("no catalogued ayanamsha has this `swiss_mode`"),
+        Stored::Text(key) => AYANAMSHA_KEYS
+            .iter()
+            .find(|(stored, _)| stored == key)
+            .map(|(_, member)| *member)
+            .ok_or("not one of the 48 keys the application stores an ayanamsha under (`AYANAMSHA_KEYS`)"),
+        _ => Err("neither an ayanamsha's number nor its key"),
+    }
+}
+
 /// The number a stored value holds.
 fn number(stored: &Stored) -> Result<i64, &'static str> {
     match stored {
@@ -446,14 +547,12 @@ fn depths(
 pub const ROWS: &[Row] = &[
     Row {
         field: "ayanamsaId",
-        value: Value::Each("the number a catalogued ayanamsha's `swiss_mode` is"),
+        value: Value::Each(
+            "the number a catalogued ayanamsha's `swiss_mode` is, or the application's key for it \
+             (`AYANAMSHA_KEYS`)",
+        ),
         becomes: Becomes::Read(|patch, _, _, stored| {
-            let mode = number(stored)?;
-            let member = Ayanamsha::ALL
-                .into_iter()
-                .find(|member| i64::from(member.attributes().swiss_mode) == mode)
-                .ok_or("no catalogued ayanamsha has this `swiss_mode`")?;
-            patch.frame.ayanamsha = Some(member.into());
+            patch.frame.ayanamsha = Some(ayanamsha(stored)?.into());
             Ok(())
         }),
     },

@@ -9,8 +9,8 @@ use std::collections::BTreeMap;
 use serde_json::{Value as Json, json};
 
 use super::{
-    Becomes, DASHA_SYSTEMS, KP_PROFILE, Opening, PAIRINGS, PROFILE, ROWS, Recorded, Refused,
-    RequiredEphemeris, Row, Snapshot, Stored, TABLE, Value, house_system, recorded,
+    AYANAMSHA_KEYS, Becomes, DASHA_SYSTEMS, KP_PROFILE, Opening, PAIRINGS, PROFILE, ROWS, Recorded,
+    Refused, RequiredEphemeris, Row, Snapshot, Stored, TABLE, Value, house_system, recorded,
 };
 use crate::catalogue::{Ayanamsha, DashaSystem, HouseSystem};
 use crate::error::{Error, Status};
@@ -316,6 +316,92 @@ fn an_ayanamsha_number_is_the_member_whose_swiss_mode_it_is() {
             "{unknown}"
         );
     }
+}
+
+#[test]
+fn an_ayanamsha_key_is_the_member_its_number_names() {
+    let zodiac = |stored| {
+        of("ayanamsaId", stored)
+            .unwrap()
+            .natal
+            .settings
+            .frame
+            .ayanamsha
+    };
+    // Every key translates as the number of the member it lists does, and
+    // the keys reach every member: 47 members, one with a second spelling.
+    for (key, member) in AYANAMSHA_KEYS {
+        let mode = i64::from(member.attributes().swiss_mode);
+        assert_eq!(zodiac(text(key)), Some(member.into()), "{key}");
+        assert_eq!(zodiac(text(key)), zodiac(Stored::Number(mode)), "{key}");
+    }
+    let keys: std::collections::BTreeSet<&str> =
+        AYANAMSHA_KEYS.iter().map(|(key, _)| *key).collect();
+    assert_eq!(keys.len(), AYANAMSHA_KEYS.len());
+    let reached: std::collections::BTreeSet<Ayanamsha> =
+        AYANAMSHA_KEYS.iter().map(|(_, member)| *member).collect();
+    assert_eq!(reached, Ayanamsha::ALL.into_iter().collect());
+    // Four keys are not the member's key lower-cased with hyphens, which is
+    // why the keys are listed rather than derived.
+    let ruled: Vec<&str> = AYANAMSHA_KEYS
+        .iter()
+        .filter(|(key, member)| member.key().to_ascii_lowercase().replace('_', "-") != *key)
+        .map(|(key, _)| *key)
+        .collect();
+    assert_eq!(
+        ruled,
+        [
+            "surya-siddhanta",
+            "surya-siddhanta-msun",
+            "de-luce",
+            "galcent-gil-brand"
+        ]
+    );
+    // The legacy spelling and the hyphenated one are one member.
+    assert_eq!(
+        zodiac(text("suryasiddhanta")),
+        zodiac(text("surya-siddhanta"))
+    );
+    // The application's default, and the three its documentation names first.
+    assert_eq!(zodiac(text("lahiri")), Some(Ayanamsha::Lahiri.into()));
+    assert_eq!(zodiac(text("raman")), Some(Ayanamsha::Raman.into()));
+    assert_eq!(
+        zodiac(text("krishnamurti")),
+        Some(Ayanamsha::Krishnamurti.into())
+    );
+    // An unknown key, another case, a number written as text, a flag: each
+    // refused on the field, with the table as its hint.
+    for unknown in [
+        text("chitrapaksha"),
+        text("Lahiri"),
+        text("LAHIRI"),
+        text("1"),
+        Stored::Flag(true),
+    ] {
+        let refused = of("ayanamsaId", unknown.clone()).unwrap_err();
+        assert_eq!(
+            (refused.field.as_str(), refused.anchor, refused.decided),
+            ("ayanamsaId", TABLE, false),
+            "{unknown}"
+        );
+        let error = Error::from(refused);
+        assert_eq!(
+            (error.status, error.field(), error.hint()),
+            (Status::InvalidArg, Some("snapshot.ayanamsaId"), Some(TABLE)),
+            "{unknown}"
+        );
+    }
+    assert_eq!(
+        of("ayanamsaId", text("chitrapaksha")).unwrap_err().why,
+        "not one of the 48 keys the application stores an ayanamsha under (`AYANAMSHA_KEYS`)"
+    );
+    // A key under the Surya Siddhanta still yields to the text's own zodiac.
+    let mut snapshot = holding("ayanamsaId", text("raman"));
+    snapshot.fields.insert("siddhanta".into(), text("surya"));
+    assert_eq!(
+        recorded(&snapshot).unwrap().natal.settings.frame.ayanamsha,
+        Some(Ayanamsha::Suryasiddhanta.into())
+    );
 }
 
 #[test]
