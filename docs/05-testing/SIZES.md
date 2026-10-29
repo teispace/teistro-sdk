@@ -44,7 +44,7 @@ A package of plain JavaScript is the same bytes on every host and has nothing to
 
 | package | shipped | gzipped | budget, gzipped | left |
 |---|--:|--:|--:|--:|
-| `@teistro/compat` | 110 069 | 29 014 | 30 000 | 3.3% |
+| `@teistro/compat` | 116 123 | 30 802 | 32 000 | 3.7% |
 
 ## Budgets moved
 
@@ -81,3 +81,4 @@ A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fa
 | 2026-10-29 | `40819781488` | `full` | 12 866 981 | 3 007 062 | the naming area at the boundary and its messages in every locale grow the wasm module (0.1% raw) and the panchanga profile (0.5% raw); measured on verify 40819781488 |
 | 2026-10-29 | `40819781488` | `panchanga` | 5 086 570 | 1 502 363 | the naming area at the boundary and its messages in every locale grow the wasm module (0.1% raw) and the panchanga profile (0.5% raw); measured on verify 40819781488 |
 | 2026-10-29 | `by hand` | `@teistro/compat` | 110 069 | 29 014 | the compatibility shim's first budget, 2% over its measure (62 rows, their declarations and the A/B's vocabulary; the design page estimated 40 KB) |
+| 2026-10-29 | `by hand` | `@teistro/compat` | 116 123 | 30 802 | the A/B's vocabulary reads a prashna, a rashifal and the graded and rashi drishti (five families), and the shim carries the baseline's rashifal event grahas; the gzipped budget 2% over this measure, to the next thousand bytes, and the raw one still clears it |
