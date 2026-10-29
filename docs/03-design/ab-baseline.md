@@ -120,16 +120,16 @@ the service that bundle calls and hands it the Shadbala it has, so
 engines a chart does not need (the predictive and the applied) on first
 use, so that its cold start pays for a chart and no more.
 
-**Dropped:** the muhurta search. The baseline's finder samples the Sun
-and the Moon once a day at sunrise and scores four factors (the tithi's
-group, the nakshatra, the weekday, whether noon falls in Rahu kaal); its
-window assembler then cuts one day's choghadiya. The SDK's search finds
-every window in a range where an activity's rules hold, limb by limb and
-lagna by lagna, which is another computation, not more of the same one.
-Neither can be asked for the other's answer, so no timing of the two is
-the same work. The tithi calendar is dropped for the same reason: it
-finds occurrences of one tithi, which the SDK answers only inside a
-festival rule set.
+**Timed since 29 October 2026:** the muhurta search. The two do not
+search alike: the baseline's finder bars or admits a day by its sunrise
+and scores two windows on each day it keeps, and the SDK cuts every day
+wherever one of the activity's clauses changes and judges every window
+(`muhurta.md` §4.5, crux C783). Each is asked for the same answer, a
+marriage's ranked windows over the same 25 days, which is the work an
+application asks of either, so the two are timed against each other; the
+SDK is slower, held to a bound in `SLOWER` (§8). **Dropped:** the tithi
+calendar. It finds occurrences of one tithi, which the SDK answers only
+inside a festival rule set.
 
 A side may refuse a request, and the runner reports it with the side and
 the reason and keeps that input out of that request alone. The gate
@@ -248,8 +248,8 @@ renders the page and fails:
   page gives (`SLOWER` in `xtask/src/ab.rs`, which the page prints) is
   held to a bound on the ratio instead, and the gate fails an entry that
   is no longer slower. The first in-depth record found one: `yogas`, at
-  2.13×, since the shipped Nabhasa set carries about 2 500 of the SDK's
-  3 130 classical rules and is not asked for in part;
+  2.13×, which left the list when its rule set stopped re-validating on
+  every call. `muhurta` is on it at 1.38×, bound 1.5 (§2);
 - the same of a throughput (the SDK answering measurably fewer a second
   at a count and mode both sides were measured in) and of a percentile;
 - an input count below the corpus's less the births that request was

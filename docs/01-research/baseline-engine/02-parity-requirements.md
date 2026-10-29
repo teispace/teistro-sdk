@@ -49,7 +49,12 @@ golden vectors exported from the baseline engine before migration.
       month, eras.
 - [ ] Muhurta search: identical ranking on the baseline regression set
       (activities, blackouts, gates, shuddhi adjustments, event rules,
-      mahadosha caps, windows).
+      mahadosha caps, windows). Not identical: by the A/B's `muhurta`
+      under `same`, 20 of 54 marriage rankings agree rank for rank (19
+      of them empty on both sides) and 46.7% of the facts; every miss is
+      the baseline's day-level gates and sampling (crux C783), its
+      weekday (C782), its special-yoga tables (C784), Chaturmas (C166) or
+      asta (C44, C164), none the SDK's (row "muhurta ranking" below).
 - [ ] Gochar: overlays, transit aspects, Sade Sati phases with dates,
       transit strength, phala with vedha, transit calendar.
 - [ ] Tajika: annual chart, Muntha, aspects and yogas as implemented.
@@ -108,7 +113,7 @@ by `check-ab`. Code with nothing comparing it to the baseline is "partly".
 | ayurdaya, maraka, balarishta | partly | by the A/B under `same`: Pindayu, Amsayu and Nisargayu year by year 73.4% (`ayurdaya`), every miss a reading: v. 11's Moon a benefic in the visible half, vv. 20 to 22's Amsayu multipliers, Nisargayu's listed years unreduced; the marakas by lordship 100% (`maraka`); Balarishta 98.1%, the misses its cancellations (`balarishta`). The longevity windows are not compared |
 | birth timing | met | `crates/chart/tests/baseline_day.rs` |
 | daily panchanga | met | periods, classification, month, panchaka, ayana and shool held; muhurta yogas 253 of 265 flags (the 12 the recording's own weekday-and-nakshatra table), moonrise and moonset within 30 s over 104 events, and 271 limb changes within 10 s in TT (`crates/sdk/tests/baseline_panchanga_day.rs`) |
-| muhurta ranking | partly | `Ranking::Baseline`, one regression; no exported regression set compared rank for rank |
+| muhurta ranking | partly | `Ranking::Baseline`, one regression; by the A/B (`muhurta`, a marriage over 25 days at Kathmandu for each of 54 births, with and without the native) under `same`, 20 of 54 rankings identical rank for rank, 19 of them empty on both sides, and 46.7% of the facts (44.5% under `timed`). A window's score agrees wherever its day's does, its sky geocentric with the true node (C781); the rest is the day: the baseline bars a whole day by the star and solar month at sunrise and samples its seasons at 0h UT where the SDK judges each window (C783), reads the weekday off sunrise's UT date (C782), scores its own special-yoga tables (C784), anchors Chaturmas by the Sun's sign (C166) and sees asta heliacally (C44, C164). No miss is an SDK defect |
 | gochar | partly | longitude, house, bindus (each transit sign's own and sarva) and transit strength by the A/B; the good houses and a good transit's vedha 96.7% under `same` (`gochar`), every miss Phaladeepika ch. 26's pairs and exemptions (vv. 2 to 8, cruxes C136, C140); the calendar has no vectors |
 | Tajika | decided otherwise | the SDK follows Charak and the *Tajika Nilakanthi* and matches Charak's worked year in full; the A/B counts where the baseline differs (24.4% agreement, the sahams by other formulas). "As implemented" is not a goal; a baseline-reading mode is v1.x, if a consumer asks. Decided 2026-10-27 |
 | KP | met | by the A/B under `same`: the four lord levels 98.4%, the significators' four levels 95.2% and the ruling planets 100%, `same` asking the baseline's ruling count and civil day lord (cruxes C150, C151); every miss an intercepted sign's lord, which the baseline counts a significator and the SDK reports and does not count (crux C154), or the frame. Under `timed` the day lord also differs, KP Reader VI's day turning at sunrise (`ab-measured.md`) |

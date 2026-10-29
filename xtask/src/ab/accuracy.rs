@@ -191,7 +191,23 @@ const CAUSES: [(&str, Cause, &str); 15] = [
          every edge agrees within two seconds",
     ),
     ("batch", Cause::Convention, "as `full`, at ten instants"),
-    ("muhurta", Cause::Method, "measured in the next record"),
+    (
+        "muhurta",
+        Cause::Method,
+        "20 of 54 rankings agree rank for rank under `same`, 19 of them with no window on either \
+         side; no miss is the SDK's. The day: the baseline admits or bars a whole day by the \
+         star and the solar month at sunrise and samples its seasons once a day at 0h UT, \
+         barring the day whose local midnight they hold; the SDK judges each window by its own \
+         (crux C783), so over 47 searches 224 days the baseline bars by the star at sunrise \
+         keep the SDK's windows after the star changes, 14 it keeps lose every window to a star \
+         or a kaala, 32 differ at a season's edge (Kharmas 28) and 2 by the solar month. \
+         Chaturmas by the Sun's sign (C166), 20 days; Guru's and Shukra's asta seen heliacally \
+         at Kathmandu (C44, C164), 8. The day's score: the baseline's weekday is sunrise's UT \
+         date, the day before when the Sun rises before 05:45 at Kathmandu (C782), moving the \
+         weekday's 15 or 10 and Rahu kaala's 30; its five special-yoga tables are its own \
+         (C784). A window's score agrees on every day whose score does, its sky geocentric with \
+         the true node (C781)",
+    ),
 ];
 
 /// The least share of compared facts each request agrees on, under
@@ -201,7 +217,8 @@ const CAUSES: [(&str, Cause, &str); 15] = [
 /// marriage doshas and KP's significators and ruling planets joined the
 /// comparison; `milan`'s and `gochar`'s under `same` of 29 October, when
 /// `same` cast its transits on its one context and asked the baseline's
-/// Stree-deergha; each share truncated rather than rounded.
+/// Stree-deergha, and `muhurta`'s the day it joined; each share truncated
+/// rather than rounded.
 const AGREEMENT_FLOORS: [(&str, f64, f64); 15] = [
     ("chart", 0.545, 0.999),
     ("day", 0.991, 0.965),
@@ -217,7 +234,7 @@ const AGREEMENT_FLOORS: [(&str, f64, f64); 15] = [
     ("gochar", 0.816, 0.988),
     ("sadeSati", 0.076, 1.0),
     ("batch", 0.651, 0.996),
-    ("muhurta", 0.0, 0.0),
+    ("muhurta", 0.445, 0.466),
 ];
 
 /// The least share each side keeps on a rung for a request, under a

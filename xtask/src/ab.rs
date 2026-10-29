@@ -104,9 +104,15 @@ const REQUESTS: [(&str, &str); 15] = [
 /// The requests the SDK is measurably slower at, each with the most it may
 /// take of the baseline's time and why (§8): a request past its bound
 /// fails, and so does one listed here that is no longer slower, so the
-/// list cannot outlive what it explains. None is, since the yogas' rule
-/// set stopped re-validating on every call (26 October 2026).
-const SLOWER: Slower = &[];
+/// list cannot outlive what it explains. The yogas left it on 26 October
+/// 2026, when their rule set stopped re-validating on every call.
+const SLOWER: Slower = &[(
+    "muhurta",
+    1.5,
+    "the SDK judges every window of every day, cut wherever a clause changes (a limb, a kaala, \
+     a lagna), and keeps them all; the baseline bars a day at sunrise and scores the two windows \
+     it keeps (1.38× on 29 October 2026)",
+)];
 
 /// A list of the requests the SDK is slower at: request, bound, why.
 type Slower = &'static [(&'static str, f64, &'static str)];
