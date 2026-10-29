@@ -307,6 +307,12 @@
       "artefact": "module",
       "raw": 5190000,
       "gzip": 1540000
+    },
+    {
+      "subject": "@teistro/compat",
+      "artefact": "package",
+      "raw": 120000,
+      "gzip": 30000
     }
   ],
   "history": [
@@ -561,6 +567,15 @@
       "raw": 5086570,
       "gzip": 1502363,
       "why": "the naming area at the boundary and its messages in every locale grow the wasm module (0.1% raw) and the panchanga profile (0.5% raw); measured on verify 40819781488"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-29",
+      "subject": "@teistro/compat",
+      "artefact": "package",
+      "raw": 110069,
+      "gzip": 29014,
+      "why": "the compatibility shim's first budget, 2% over its measure (62 rows, their declarations and the A/B's vocabulary; the design page estimated 40 KB)"
     }
   ]
 }

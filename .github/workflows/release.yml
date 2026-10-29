@@ -425,6 +425,9 @@ jobs:
             npm publish --provenance --access public "${package}"
           done
           npm publish --provenance --access public dist/npm/@teistro/sdk
+          # The compatibility shim, plain JavaScript with `@teistro/sdk` as
+          # its exact peer, so after the package it depends on.
+          npm publish --provenance --access public dist/npm/@teistro/compat
           # The agent server the same way: a package a platform carrying
           # the program, then the launcher that depends on them.
           for package in dist/npm/@teistro/mcp-*; do

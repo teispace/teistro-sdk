@@ -94,6 +94,21 @@ new reader of what the recording engine stored.
   registered rather than patched. The tests' hand-written variant
   patches are gone.
 
+**`@teistro/compat` is wired into the release.**
+**Numbers:** none. Nothing computes differently, and nothing is
+published.
+- `cargo xtask package stage` stages `@teistro/compat` (its `lib/`,
+  `surface.json`, manifest, README and terms), `check-package` installs it
+  beside `@teistro/sdk` in the throwaway project and runs its consumer
+  (`bindings/node/compat/packaging/consumer.mjs`), and the release
+  publishes it after the SDK it takes as a peer.
+- `check-versions` holds its version to the workspace's, its `private`
+  flag to the unreleased version and its peer to exactly this
+  `@teistro/sdk`; `cargo xtask version` sets all three.
+- `SIZES.md` gains a plain-package table: the package is measured from
+  the checkout (110 KB shipped, 29 KB gzipped, against the design's
+  40 KB estimate) and `check-sizes` fails it over its budget.
+
 **The baseline map is generated, and `check-compat` holds it.**
 **Numbers:** none. Nothing computes differently; a page and a gate are
 added.

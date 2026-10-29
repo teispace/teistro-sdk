@@ -23,7 +23,7 @@ use std::path::Path;
 use regex::Regex;
 use serde_json::{Map, Value};
 
-use crate::platform::{PLATFORMS, Platform};
+use crate::platform::{NPM_SCOPE, PLATFORMS, Platform};
 use crate::{read, rel};
 
 /// The version the repository carries until a release is cut. Nothing may
@@ -42,6 +42,10 @@ const NPM_MANIFESTS: [(&str, PlatformPackage); 2] = [
     (NODE_MANIFEST, Platform::npm_package),
     ("crates/mcp/npm/package.json", Platform::npm_mcp_package),
 ];
+/// The compatibility shim's manifest: released in lockstep with the SDK,
+/// which it takes as a peer at exactly the same version, and `private`
+/// while nothing is published (`03-design/compat-shim.md` §6.2).
+const COMPAT_MANIFEST: &str = "bindings/node/compat/package.json";
 const DART_MANIFEST: &str = "bindings/dart/pubspec.yaml";
 /// The Flutter build-hook package, released with the Dart one at the same
 /// version, which its exact dependency on `teistro` is staged as.
@@ -128,6 +132,7 @@ pub(crate) fn check(root: &Path) -> i32 {
             Err(failure) => failures.push(failure),
         }
     }
+    failures.extend(check_compat(root, &wanted, released));
     failures.extend(check_dart(root, &wanted, released));
     failures.extend(check_python(root, &wanted, released));
     failures.extend(check_api(root, &wanted));
@@ -202,6 +207,36 @@ fn check_node(
                 }
             }
         }
+    }
+    failures
+}
+
+/// The shim's manifest: the version, `private` while unreleased, and its
+/// peer dependency on exactly this `@teistro/sdk`.
+fn check_compat(root: &Path, wanted: &str, released: bool) -> Vec<String> {
+    let node = match parse_manifest(root, COMPAT_MANIFEST) {
+        Ok(node) => node,
+        Err(failure) => return vec![failure],
+    };
+    let mut failures = Vec::new();
+    if node["version"].as_str() != Some(wanted) {
+        failures.push(format!(
+            "{COMPAT_MANIFEST} declares version {}, the workspace declares {wanted}",
+            node["version"]
+        ));
+    }
+    let private = node["private"].as_bool().unwrap_or(false);
+    if released == private {
+        failures.push(format!(
+            "{COMPAT_MANIFEST} is {}`private` at version {wanted}; `cargo xtask version` sets it",
+            if private { "" } else { "not " }
+        ));
+    }
+    let peer = &node["peerDependencies"][NPM_SCOPE];
+    if peer.as_str() != Some(wanted) {
+        failures.push(format!(
+            "{COMPAT_MANIFEST} takes {NPM_SCOPE} {peer} as its peer, not exactly {wanted}"
+        ));
     }
     failures
 }
@@ -418,6 +453,7 @@ pub(crate) fn set(root: &Path, wanted: &str) -> i32 {
     for (path, package) in NPM_MANIFESTS {
         set_node(root, path, package, wanted, released, &mut written);
     }
+    set_compat(root, wanted, released, &mut written);
     set_dart(root, wanted, released, &mut written);
     set_registry_entry(root, wanted, &mut written);
     set_python(root, wanted, released, &mut written);
@@ -447,24 +483,7 @@ fn set_node(
         return;
     };
     node.insert("version".to_string(), Value::String(wanted.to_string()));
-    // Dropped wherever it stands and written back **beside the version**,
-    // so that moving to and from the unreleased version is the same edit
-    // in both directions and leaves the manifest as it found it. An
-    // `insert` alone appends, and a round trip would then reorder the
-    // file; the map is rebuilt instead, which is the only way to place a
-    // key in `serde_json`'s ordered map.
-    node.shift_remove("private");
-    if !released {
-        let mut ordered = Map::new();
-        for (key, value) in node {
-            let after_version = key == "version";
-            ordered.insert(key, value);
-            if after_version {
-                ordered.insert("private".to_string(), Value::Bool(true));
-            }
-        }
-        node = ordered;
-    }
+    let mut node = privately(node, released);
     let mut platforms = Map::new();
     for platform in PLATFORMS {
         platforms.insert(package(&platform), Value::String(wanted.to_string()));
@@ -475,6 +494,52 @@ fn set_node(
         serde_json::to_string_pretty(&Value::Object(node)).expect("a manifest serialises")
     );
     write(&path, &text, written, root);
+}
+
+/// A manifest `private` exactly while unreleased. The field is dropped
+/// wherever it stands and written back **beside the version**, so that
+/// moving to and from the unreleased version is the same edit in both
+/// directions and leaves the manifest as it found it. An `insert` alone
+/// appends, and a round trip would then reorder the file; the map is
+/// rebuilt instead, which is the only way to place a key in `serde_json`'s
+/// ordered map.
+fn privately(mut node: Map<String, Value>, released: bool) -> Map<String, Value> {
+    node.shift_remove("private");
+    if released {
+        return node;
+    }
+    let mut ordered = Map::new();
+    for (key, value) in node {
+        let after_version = key == "version";
+        ordered.insert(key, value);
+        if after_version {
+            ordered.insert("private".to_string(), Value::Bool(true));
+        }
+    }
+    ordered
+}
+
+/// The shim's manifest: the version, `private` while unreleased, and the
+/// SDK as its peer at exactly that version.
+fn set_compat(root: &Path, wanted: &str, released: bool, written: &mut Vec<String>) {
+    let Ok(Value::Object(mut node)) = parse_manifest(root, COMPAT_MANIFEST) else {
+        eprintln!("{COMPAT_MANIFEST} is not an object");
+        return;
+    };
+    node.insert("version".to_string(), Value::String(wanted.to_string()));
+    let mut node = privately(node, released);
+    let mut peers = node
+        .get("peerDependencies")
+        .and_then(Value::as_object)
+        .cloned()
+        .unwrap_or_default();
+    peers.insert(NPM_SCOPE.to_string(), Value::String(wanted.to_string()));
+    node.insert("peerDependencies".to_string(), Value::Object(peers));
+    let text = format!(
+        "{}\n",
+        serde_json::to_string_pretty(&Value::Object(node)).expect("a manifest serialises")
+    );
+    write(&root.join(COMPAT_MANIFEST), &text, written, root);
 }
 
 /// The registry entry's version and each package's.
