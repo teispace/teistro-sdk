@@ -12,6 +12,27 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A cancellation's condition reaches every binding.**
+**Numbers:** none. No settings or document hash moves: a rule is written
+as before, and only the types the bindings build it with change.
+- `teistro_rules::Cancellation`'s schema is derived by schemars (the
+  condition flattened beside its `label`), not written by hand naming the
+  label alone, so every binding's `Cancellation` carries its condition:
+  Node `Condition & { label? }`, Python a `TypedDict` per condition with
+  `label`, Dart and Java a `condition` beside the `label`, read from and
+  written into the one object. Java's reader dropped the condition
+  silently and no binding could write one. A `label` of null reads as
+  none.
+- The IDL reads a record laid flat (serde's `flatten`) as the definition
+  whose variants it repeats, and refuses one it cannot place.
+- `sdk.calendar.time.long12` and `numeric12` take `dayPeriod` as well as
+  `meridiem` in every binding and in Rust: an engine pattern's accessor
+  takes each engine parameter any locale's form reads, so the Nepali
+  clock renders without a missing parameter.
+- Dart's hand-kept requests (36 of `DART_FACADES`) compare and hash by
+  the JSON they write rather than by identity, and a value's maps compare
+  and hash by their entries however deep, as its lists already did.
+
 **The Dart and Java layers held to what their own tests read.**
 **Numbers:** none. Tests, and the Dart layer's equality.
 - A Dart value equal to another hashes alike, however deep its lists

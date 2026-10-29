@@ -2519,6 +2519,21 @@ fn targets_declare_their_features(root: &Path, outcome: &mut Outcome) {
 
 /// The name an item line declares (`pub enum Quantity {`), if it declares
 /// a struct or an enum.
+/// Whether the item `name` in `text` carries the schema derive among the
+/// attributes and docs directly above it.
+fn derives_schema(text: &str, name: &str) -> bool {
+    let lines: Vec<&str> = text.lines().map(str::trim_start).collect();
+    lines.iter().enumerate().any(|(index, line)| {
+        item_name(line) == Some(name)
+            && lines
+                .iter()
+                .take(index)
+                .rev()
+                .take_while(|above| above.starts_with("#[") || above.starts_with("//"))
+                .any(|above| above.contains("derive(schemars::JsonSchema)"))
+    })
+}
+
 fn item_name(line: &str) -> Option<&str> {
     let rest = line
         .trim_start_matches("pub(crate) ")
@@ -2600,9 +2615,11 @@ fn readme_examples_run(root: &Path, outcome: &mut Outcome) {
 ///
 /// Two forms, because a type serialises in two ways: a derive, which must
 /// carry the `cfg_attr` derive beside it, and a hand-written
-/// `impl Serialize for T`, which must have a hand-written schema for the
-/// same `T` in the same crate — `impl schemars::JsonSchema for T` or the
-/// core crate's `hand_schema!(T, …)`.
+/// `impl Serialize for T`, which must have a schema for the same `T` in
+/// the same crate — `impl schemars::JsonSchema for T`, the core crate's
+/// `hand_schema!(T, …)`, or the derive on `T` itself, where serde's own
+/// derive cannot write what the schema derives (a cancellation lays its
+/// condition flat by hand, and schemars describes it flattened).
 fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
     const RULE: &str = "serialised-type-describes-itself";
     const DERIVE: &str = "derive(schemars::JsonSchema)";
@@ -2630,6 +2647,7 @@ fn serialised_types_describe_themselves(root: &Path, outcome: &mut Outcome) {
                 text.contains(&format!("impl schemars::JsonSchema for {name} "))
                     || text.contains(&format!("schemars::JsonSchema for {name}<"))
                     || text.contains(&format!("hand_schema!({name},"))
+                    || derives_schema(text, name)
             })
         };
         for (path, text) in &files {
@@ -3997,6 +4015,24 @@ mod serialised_type_describes_itself {
         assert_eq!(found.len(), 2, "{found:?}");
         assert!(found[0].starts_with("1:derives `Serialize`"), "{found:?}");
         assert!(found[1].contains("serialises `Hand` by hand"), "{found:?}");
+    }
+
+    #[test]
+    fn a_hand_serialiser_beside_a_derived_schema_describes_itself() {
+        let found = findings(
+            "/// Laid flat.\n#[derive(Clone)]\n#[cfg_attr(feature = \"schema\", derive(schemars::JsonSchema))]\n\
+             #[cfg_attr(feature = \"schema\", schemars(deny_unknown_fields))]\npub struct Laid { a: u8 }\n\
+             impl serde::Serialize for Laid {}\n\n\
+             #[cfg_attr(feature = \"schema\", derive(schemars::JsonSchema))]\npub struct Other;\n\n\
+             pub struct Apart;\nimpl serde::Serialize for Apart {}\n",
+        );
+        // The derive above another item, or past a blank line, is not this
+        // one's.
+        assert_eq!(
+            found,
+            ["12:serialises `Apart` by hand with no `JsonSchema` for it in this crate"],
+            "{found:?}"
+        );
     }
 
     #[test]

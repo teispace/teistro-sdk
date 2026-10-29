@@ -751,6 +751,42 @@ mod tests {
         );
     }
 
+    /// A record laid flat is a component of its own, read from the whole
+    /// object and written into it, first.
+    #[test]
+    fn a_record_laid_flat_is_read_from_the_whole_object_and_written_into_it() {
+        let mut api = toy();
+        let schema = serde_json::json!({"$defs": {
+            "Cancel": {"type": "object", "description": "A how, named.",
+                "properties": {"label": {"type": ["string", "null"]}}, "oneOf": [
+                {"type": "object", "properties": {"kind": {"const": "AT"}, "deg": {"type": "number"}},
+                    "required": ["kind", "deg"]}], "unevaluatedProperties": false},
+            "How": {"description": "A how.", "oneOf": [
+                {"type": "object", "properties": {"kind": {"const": "AT"}, "deg": {"type": "number"}},
+                    "required": ["kind", "deg"], "additionalProperties": false}]}
+        }});
+        api.requests.records = crate::records::from_schema(&schema, &["Cancel"]).unwrap();
+        let files = render(&api);
+        let cancel = files
+            .iter()
+            .find(|f| f.path.ends_with("/request/Cancel.java"))
+            .unwrap();
+        for wanted in [
+            "public record Cancel(How how, String label) implements RequestJson {",
+            "        Objects.requireNonNull(how, \"`Cancel.how` is required\");",
+            "    public Cancel(How how) {\n        this(how, null);\n    }",
+            "            How.of(json),\n",
+            "        json.putAll(Read.object(how.toJson(), \"Cancel.how\"));\n        if (label != null) {",
+        ] {
+            assert!(cancel.text.contains(wanted), "{wanted} in {}", cancel.text);
+        }
+        assert!(
+            !cancel.text.contains("json.put(\"how\""),
+            "the laid record has no key of its own: {}",
+            cancel.text
+        );
+    }
+
     #[test]
     fn a_shown_struct_is_a_record_that_checks_what_c_cannot_hold() {
         let files = render(&toy());

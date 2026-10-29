@@ -104,6 +104,11 @@ const Map<String, Map<String, String>> _renamed = {
   'FestivalWindow': {'fromMuhurta': 'from', 'toMuhurta': 'to'},
 };
 
+/// The generated classes holding a record laid flat (serde's `flatten`),
+/// each to the parameter that holds it: the record has no key of its own,
+/// its parts being the object's. Listed rather than inferred.
+const Map<String, String> _laid = {'Cancellation': 'condition'};
+
 /// A request record of [type] from its JSON object: each named parameter
 /// from its field (a Dart keyword's `Value` dropped), or one positional
 /// parameter from the whole value.
@@ -136,6 +141,10 @@ Object _build(ClassMirror type, Object? json, String at) {
       continue;
     }
     final field = MirrorSystem.getName(parameter.simpleName);
+    if (_laid[name] == field) {
+      named[parameter.simpleName] = _read(parameter.type, json, at);
+      continue;
+    }
     final wire =
         _renamed[name]?[field] ??
         (field.endsWith('Value')
@@ -228,19 +237,6 @@ String? _difference(Object? a, Object? b, String at) {
 bool _agrees(Object? written, Object? source) =>
     _disagreement(written, source) == null;
 
-/// [rule] with each cancellation cut to its label. The generated
-/// `Cancellation` carries only `label`: the condition serde lays beside it
-/// (`teistro_rules::Cancellation`, a hand-written schema that names only
-/// the label) has no field in any binding, so it is not compared here.
-Object? _cancellationsLabelled(Map<String, Object?> rule) => {
-  ...rule,
-  if (rule['cancellations'] case final List<Object?> cancellations)
-    'cancellations': [
-      for (final one in cancellations.cast<Map<String, Object?>>())
-        {if (one['label'] case final label?) 'label': label},
-    ],
-};
-
 /// [path] in the repository, found by walking up from where the suite
 /// runs.
 String _repo(String path) {
@@ -316,10 +312,7 @@ void main() {
           final rule = _read(reflectType(RuleDefinition), source, '$key')!;
           expect((rule as RuleDefinition).key, key);
           expect(
-            _disagreement(
-              _written(rule),
-              _cancellationsLabelled(source as Map<String, Object?>),
-            ),
+            _disagreement(_written(rule), source),
             isNull,
             reason: '$key is written as ${file.uri.pathSegments.last} has it',
           );
@@ -426,6 +419,33 @@ void main() {
         'planet': 'JUPITER',
       },
     });
+  });
+
+  test('a cancellation writes its condition with its label beside it', () {
+    const burnt = Cancellation(
+      condition: ConditionPlanetCombust(planet: 'MARS'),
+      label: 'Mars burnt',
+    );
+    expect(jsonDecode(jsonEncode(burnt)), {
+      'type': 'planet-combust',
+      'planet': 'MARS',
+      'label': 'Mars burnt',
+    });
+    expect(
+      jsonDecode(
+        jsonEncode(const Cancellation(condition: ConditionBirthByDay())),
+      ),
+      {'type': 'birth-by-day'},
+    );
+    expect(
+      burnt,
+      isNot(
+        const Cancellation(
+          condition: ConditionPlanetCombust(planet: 'VENUS'),
+          label: 'Mars burnt',
+        ),
+      ),
+    );
   });
 
   test('a request the layer keeps by hand is a value: equal when it writes '

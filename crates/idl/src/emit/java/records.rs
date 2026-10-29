@@ -29,7 +29,9 @@ pub(super) fn files(api: &Api) -> Vec<File> {
     ];
     for record in &api.records {
         let text = match &record.shape {
-            RecordShape::External { .. } | RecordShape::OrNamed { .. } => {
+            RecordShape::External { .. }
+            | RecordShape::OrNamed { .. }
+            | RecordShape::Beside { .. } => {
                 unreachable!("the answer records carry none; requests are rendered for Java only")
             }
             RecordShape::Object { fields } => {

@@ -1223,7 +1223,12 @@ void main() {
       members: 0,
       written: RuleDefinition(
         applicableTo: Scope.milan,
-        cancellations: [Cancellation(label: 'x')],
+        cancellations: [
+          Cancellation(
+            condition: ConditionCharaKarakaInHouse(houses: [1], karaka: Karaka.amK, karakaScheme: 1),
+            label: 'x',
+          ),
+        ],
         category: 'x',
         conditions: [
           ConditionCharaKarakaInHouse(houses: [1], karaka: Karaka.amK, karakaScheme: 1),

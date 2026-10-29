@@ -9,18 +9,31 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * A condition, as a rule's `when` is written, and its `label`.
+ * A condition that cancels a present rule, with the label a result names it by when it has one.
  *
- * @param label The {@code label} field. Null leaves the SDK's default.
+ * @param condition A condition: a predicate over the chart, or a combination of conditions.
+ * @param label The name a result gives it. Null leaves the SDK's default.
  */
-public record Cancellation(String label) implements RequestJson {
+public record Cancellation(Condition condition, String label) implements RequestJson {
+    /**
+     * Checks a required field is present and a whole number fits its width, and
+     * copies a list or a map so the record's own cannot change.
+     *
+     * @throws IllegalArgumentException naming the field that is out of range
+     * @throws NullPointerException naming the required field that is missing
+     */
+    public Cancellation {
+        Objects.requireNonNull(condition, "`Cancellation.condition` is required");
+    }
+
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
+     * @param condition A condition: a predicate over the chart, or a combination of conditions.
      */
-    public Cancellation() {
-        this(null);
+    public Cancellation(Condition condition) {
+        this(condition, null);
     }
 
     /**
@@ -35,14 +48,26 @@ public record Cancellation(String label) implements RequestJson {
 
     /** Builds a {@link Cancellation} a field at a time. */
     public static final class Builder {
+        private Condition condition;
         private String label;
 
         private Builder() {}
 
         /**
+         * Sets {@code condition}.
+         *
+         * @param condition A condition: a predicate over the chart, or a combination of conditions.
+         * @return this builder
+         */
+        public Builder condition(Condition condition) {
+            this.condition = condition;
+            return this;
+        }
+
+        /**
          * Sets {@code label}.
          *
-         * @param label The {@code label} field. Null leaves the SDK's default.
+         * @param label The name a result gives it. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder label(String label) {
@@ -57,7 +82,7 @@ public record Cancellation(String label) implements RequestJson {
          * @throws NullPointerException naming a required field left unset
          */
         public Cancellation build() {
-            return new Cancellation(label);
+            return new Cancellation(condition, label);
         }
     }
 
@@ -71,12 +96,14 @@ public record Cancellation(String label) implements RequestJson {
     public static Cancellation of(Object raw) {
         Map<String, Object> json = Read.object(raw, "Cancellation");
         return new Cancellation(
+            Condition.of(json),
             Read.orNull(json.get("label"), present -> Read.text(present, "Cancellation.label")));
     }
 
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        json.putAll(Read.object(condition.toJson(), "Cancellation.condition"));
         if (label != null) {
             json.put("label", label);
         }

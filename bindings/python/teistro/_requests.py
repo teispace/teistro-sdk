@@ -299,6 +299,74 @@ __all__ = [
     "RayPlace",
     "Scope",
     "Cancellation",
+    "CancellationAnd",
+    "CancellationOr",
+    "CancellationNot",
+    "CancellationPlanetInHouse",
+    "CancellationPlanetInSign",
+    "CancellationPlanetDignity",
+    "CancellationPlanetInKendra",
+    "CancellationPlanetInTrikona",
+    "CancellationPlanetInKendraFrom",
+    "CancellationLordOfHouseInKendra",
+    "CancellationLordOfHouseInHouse",
+    "CancellationPlanetConjunct",
+    "CancellationPlanetInHouseFrom",
+    "CancellationNoPlanetInHousesFrom",
+    "CancellationMutualExchange",
+    "CancellationLordConjunctLord",
+    "CancellationAllPlanetsBetweenNodes",
+    "CancellationOccupiedSignCount",
+    "CancellationAllClassicalGrahasInHouses",
+    "CancellationNGrahasConjunctWith",
+    "CancellationCharaKarakaInHouse",
+    "CancellationPlanetCombust",
+    "CancellationPlanetRetrograde",
+    "CancellationPlanetAspectsPlanet",
+    "CancellationPlanetAspectsHouse",
+    "CancellationPlanetAtTableDegree",
+    "CancellationPlanetInTableSign",
+    "CancellationLordOfHouseDebilitated",
+    "CancellationLordOfHouseCombust",
+    "CancellationLordOfHouseStrong",
+    "CancellationLordOfHouseIs",
+    "CancellationLordOfHouseConjunctPlanet",
+    "CancellationLagnaInSign",
+    "CancellationPlanetInHouseAndSign",
+    "CancellationPlanetInDegrees",
+    "CancellationPlanetAtGandanta",
+    "CancellationPanchangaTithi",
+    "CancellationPanchangaPaksha",
+    "CancellationPanchangaVara",
+    "CancellationPanchangaNakshatra",
+    "CancellationPanchangaYoga",
+    "CancellationPanchangaKarana",
+    "CancellationBirthDuringEclipse",
+    "CancellationForAny",
+    "CancellationCountOf",
+    "CancellationNOf",
+    "CancellationInVarga",
+    "CancellationCountAspecting",
+    "CancellationRule",
+    "CancellationCountInHouses",
+    "CancellationSameSign",
+    "CancellationPlanetIs",
+    "CancellationNaturalRelation",
+    "CancellationSameBody",
+    "CancellationAtLimbEdge",
+    "CancellationLimbPart",
+    "CancellationBirthByDay",
+    "CancellationBirthInKshayaTithi",
+    "CancellationPlanetInNakshatra",
+    "CancellationSameNakshatra",
+    "CancellationPlanetStrong",
+    "CancellationPlanetWeak",
+    "CancellationPlanetStrongerThan",
+    "CancellationRashiAspects",
+    "CancellationArgala",
+    "CancellationVipareetaArgala",
+    "CancellationBirthOnSankranti",
+    "CancellationTransitInHouse",
     "Condition",
     "ConditionAnd",
     "ConditionOr",
@@ -4222,10 +4290,1000 @@ Scope: TypeAlias = Literal['natal', 'milan', 'muhurta', 'all']
 """
 
 
-class Cancellation(TypedDict, total=False):
-    """A condition, as a rule's `when` is written, and its `label`."""
+Cancellation: TypeAlias = "Union[CancellationAnd, CancellationOr, CancellationNot, CancellationPlanetInHouse, CancellationPlanetInSign, CancellationPlanetDignity, CancellationPlanetInKendra, CancellationPlanetInTrikona, CancellationPlanetInKendraFrom, CancellationLordOfHouseInKendra, CancellationLordOfHouseInHouse, CancellationPlanetConjunct, CancellationPlanetInHouseFrom, CancellationNoPlanetInHousesFrom, CancellationMutualExchange, CancellationLordConjunctLord, CancellationAllPlanetsBetweenNodes, CancellationOccupiedSignCount, CancellationAllClassicalGrahasInHouses, CancellationNGrahasConjunctWith, CancellationCharaKarakaInHouse, CancellationPlanetCombust, CancellationPlanetRetrograde, CancellationPlanetAspectsPlanet, CancellationPlanetAspectsHouse, CancellationPlanetAtTableDegree, CancellationPlanetInTableSign, CancellationLordOfHouseDebilitated, CancellationLordOfHouseCombust, CancellationLordOfHouseStrong, CancellationLordOfHouseIs, CancellationLordOfHouseConjunctPlanet, CancellationLagnaInSign, CancellationPlanetInHouseAndSign, CancellationPlanetInDegrees, CancellationPlanetAtGandanta, CancellationPanchangaTithi, CancellationPanchangaPaksha, CancellationPanchangaVara, CancellationPanchangaNakshatra, CancellationPanchangaYoga, CancellationPanchangaKarana, CancellationBirthDuringEclipse, CancellationForAny, CancellationCountOf, CancellationNOf, CancellationInVarga, CancellationCountAspecting, CancellationRule, CancellationCountInHouses, CancellationSameSign, CancellationPlanetIs, CancellationNaturalRelation, CancellationSameBody, CancellationAtLimbEdge, CancellationLimbPart, CancellationBirthByDay, CancellationBirthInKshayaTithi, CancellationPlanetInNakshatra, CancellationSameNakshatra, CancellationPlanetStrong, CancellationPlanetWeak, CancellationPlanetStrongerThan, CancellationRashiAspects, CancellationArgala, CancellationVipareetaArgala, CancellationBirthOnSankranti, CancellationTransitInHouse]"
+"""A condition that cancels a present rule, with the label a result names it by when it has one."""
 
-    label: str
+
+class CancellationAnd(TypedDict, total=False):
+    """Every condition holds, tried in order until one does not."""
+
+    type: Required[Literal['and']]
+
+    conditions: Required[Sequence[Condition]]
+    """The conditions."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationOr(TypedDict, total=False):
+    """Some condition holds, tried in order until one does."""
+
+    type: Required[Literal['or']]
+
+    conditions: Required[Sequence[Condition]]
+    """The conditions."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationNot(TypedDict, total=False):
+    """The condition does not hold."""
+
+    type: Required[Literal['not']]
+
+    condition: Required[Condition]
+    """The condition."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationPlanetInHouse(TypedDict, total=False):
+    """The subject stands in one of the houses."""
+
+    type: Required[Literal['planet-in-house']]
+
+    houses: Required[Sequence[int]]
+    """Where."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+
+class CancellationPlanetInSign(TypedDict, total=False):
+    """The body stands in one of the signs."""
+
+    type: Required[Literal['planet-in-sign']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+    signs: Required[Sequence[Union[_catalogue.Rashi, str]]]
+    """Where."""
+
+
+class CancellationPlanetDignity(TypedDict, total=False):
+    """The body has one of the dignities."""
+
+    type: Required[Literal['planet-dignity']]
+
+    dignities: Required[Sequence[Union[_catalogue.Dignity, str]]]
+    """Which."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+
+class CancellationPlanetInKendra(TypedDict, total=False):
+    """The body stands in a kendra."""
+
+    type: Required[Literal['planet-in-kendra']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+
+class CancellationPlanetInTrikona(TypedDict, total=False):
+    """The body stands in a trikona."""
+
+    type: Required[Literal['planet-in-trikona']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+
+class CancellationPlanetInKendraFrom(TypedDict, total=False):
+    """The body stands in a kendra, whole signs, from the reference."""
+
+    type: Required[Literal['planet-in-kendra-from']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+    reference: Required[Any]
+    """From whom."""
+
+
+class CancellationLordOfHouseInKendra(TypedDict, total=False):
+    """The lord of a house stands in a kendra."""
+
+    type: Required[Literal['lord-of-house-in-kendra']]
+
+    houseRuled: Required[int]
+    """Whose lord."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationLordOfHouseInHouse(TypedDict, total=False):
+    """The lord of a house stands in a house."""
+
+    type: Required[Literal['lord-of-house-in-house']]
+
+    houseOccupied: Required[int]
+    """Where."""
+
+    houseRuled: Required[int]
+    """Whose lord."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationPlanetConjunct(TypedDict, total=False):
+    """The bodies are together: in one sign, or within an orb when the rule gives one."""
+
+    type: Required[Literal['planet-conjunct']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    maxOrb: Optional[float]
+    """The orb, degrees, when the rule measures one."""
+
+    planets: Required[Sequence[Any]]
+    """Who."""
+
+
+class CancellationPlanetInHouseFrom(TypedDict, total=False):
+    """The subject stands in one of the houses, whole signs, from the reference."""
+
+    type: Required[Literal['planet-in-house-from']]
+
+    houses: Required[Sequence[int]]
+    """Where."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+    reference: Required[Any]
+    """From whom."""
+
+
+# No graha but the excepted stands in the houses from the reference.
+CancellationNoPlanetInHousesFrom = TypedDict(
+    "CancellationNoPlanetInHousesFrom",
+    {
+        "type": "Required[Literal['no-planet-in-houses-from']]",
+        # Who is not counted.
+        "except": "Sequence[str]",
+        # Where.
+        "houses": "Required[Sequence[int]]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+        # From whom.
+        "reference": "Required[Any]",
+    },
+    total=False,
+)
+
+
+class CancellationMutualExchange(TypedDict, total=False):
+    """The lords of the two houses stand each in the other's house."""
+
+    type: Required[Literal['mutual-exchange']]
+
+    house1: Required[int]
+    """One house."""
+
+    house2: Required[int]
+    """The other."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationLordConjunctLord(TypedDict, total=False):
+    """The lords of the two houses share a sign, or are one graha."""
+
+    type: Required[Literal['lord-conjunct-lord']]
+
+    house1: Required[int]
+    """One house."""
+
+    house2: Required[int]
+    """The other."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationAllPlanetsBetweenNodes(TypedDict, total=False):
+    """The seven classical grahas all stand between the nodes, on the side the rule names, or on whichever side `NodeSides` reads when it names none."""
+
+    type: Required[Literal['all-planets-between-nodes']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    side: Optional[NodeSide]
+    """Whose side they stand on."""
+
+
+class CancellationOccupiedSignCount(TypedDict, total=False):
+    """The bodies occupy exactly so many signs."""
+
+    type: Required[Literal['occupied-sign-count']]
+
+    count: Required[int]
+    """How many signs."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planets: Required[Sequence[Any]]
+    """Who."""
+
+
+class CancellationAllClassicalGrahasInHouses(TypedDict, total=False):
+    """The seven classical grahas stand only in the houses, and by default fill every one of them."""
+
+    type: Required[Literal['all-classical-grahas-in-houses']]
+
+    houses: Required[Sequence[int]]
+    """Where."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    requireAllHousesFilled: bool
+    """Whether every house must hold one."""
+
+
+class CancellationNGrahasConjunctWith(TypedDict, total=False):
+    """At least so many classical grahas share the anchor's sign."""
+
+    type: Required[Literal['n-grahas-conjunct-with']]
+
+    anchor: Required[Any]
+    """Whose sign."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    minCount: Required[int]
+    """How many, the anchor among them."""
+
+
+class CancellationCharaKarakaInHouse(TypedDict, total=False):
+    """The body holding a chara karaka stands in one of the houses."""
+
+    type: Required[Literal['chara-karaka-in-house']]
+
+    houses: Required[Sequence[int]]
+    """Where."""
+
+    karaka: Required[Karaka]
+    """Which karaka."""
+
+    karakaScheme: int
+    """Which scheme."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationPlanetCombust(TypedDict, total=False):
+    """The body is combust."""
+
+    type: Required[Literal['planet-combust']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+
+class CancellationPlanetRetrograde(TypedDict, total=False):
+    """The body is retrograde."""
+
+    type: Required[Literal['planet-retrograde']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+
+# One body aspects another by graha drishti, whole signs.
+CancellationPlanetAspectsPlanet = TypedDict(
+    "CancellationPlanetAspectsPlanet",
+    {
+        "type": "Required[Literal['planet-aspects-planet']]",
+        # Who aspects: a body, or whichever benefic or malefic does.
+        "from": "Required[Any]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+        # Who is aspected.
+        "target": "Required[Any]",
+    },
+    total=False,
+)
+
+
+# A body aspects a house by graha drishti, whole signs.
+CancellationPlanetAspectsHouse = TypedDict(
+    "CancellationPlanetAspectsHouse",
+    {
+        "type": "Required[Literal['planet-aspects-house']]",
+        # Who aspects: a body, or whichever benefic or malefic does.
+        "from": "Required[Any]",
+        # Which house.
+        "houseRuled": "Required[int]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+    },
+    total=False,
+)
+
+
+class CancellationPlanetAtTableDegree(TypedDict, total=False):
+    """A body stands in the degree of its sign that its row of a degrees-by-sign table gives, as `Bhaga` counts a degree; never, when the table has no row for it."""
+
+    type: Required[Literal['planet-at-table-degree']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+    table: Required[str]
+    """Which table."""
+
+
+class CancellationPlanetInTableSign(TypedDict, total=False):
+    """The reference stands in one of the signs a signs-by-tithi table gives the chart's tithi; never, when the chart carries no panchanga."""
+
+    type: Required[Literal['planet-in-table-sign']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+    table: Required[str]
+    """Which table."""
+
+
+class CancellationLordOfHouseDebilitated(TypedDict, total=False):
+    """The lord of a house is debilitated. Like every predicate below that the recording engine's dosha evaluator reads itself, it adds no participant."""
+
+    type: Required[Literal['lord-of-house-debilitated']]
+
+    houseRuled: Required[int]
+    """Whose lord."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationLordOfHouseCombust(TypedDict, total=False):
+    """The lord of a house is combust; the Sun, who cannot burn himself, never."""
+
+    type: Required[Literal['lord-of-house-combust']]
+
+    houseRuled: Required[int]
+    """Whose lord."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationLordOfHouseStrong(TypedDict, total=False):
+    """The lord of a house is in its own sign, exalted or in its moolatrikona."""
+
+    type: Required[Literal['lord-of-house-strong']]
+
+    houseRuled: Required[int]
+    """Whose lord."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationLordOfHouseIs(TypedDict, total=False):
+    """The lord of a house is one of the bodies: who rules it, not where it stands."""
+
+    type: Required[Literal['lord-of-house-is']]
+
+    houseRuled: Required[int]
+    """Whose lord."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planets: Required[Sequence[str]]
+    """Which."""
+
+
+class CancellationLordOfHouseConjunctPlanet(TypedDict, total=False):
+    """The lord of a house shares a sign with a body."""
+
+    type: Required[Literal['lord-of-house-conjunct-planet']]
+
+    houseRuled: Required[int]
+    """Whose lord."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    withPlanet: Required[str]
+    """With whom."""
+
+
+class CancellationLagnaInSign(TypedDict, total=False):
+    """The lagna rises in one of the signs."""
+
+    type: Required[Literal['lagna-in-sign']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    signs: Required[Sequence[Union[_catalogue.Rashi, str]]]
+    """Which."""
+
+
+class CancellationPlanetInHouseAndSign(TypedDict, total=False):
+    """A body stands in one of the houses and in one of the signs at once."""
+
+    type: Required[Literal['planet-in-house-and-sign']]
+
+    houses: Required[Sequence[int]]
+    """Which houses."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[str]
+    """Who."""
+
+    signs: Required[Sequence[Union[_catalogue.Rashi, str]]]
+    """Which signs."""
+
+
+# A body stands between two degrees of its sign, the first counted in and the last counted out: the last navamsa of a sign is 26.6667 to 30.
+CancellationPlanetInDegrees = TypedDict(
+    "CancellationPlanetInDegrees",
+    {
+        "type": "Required[Literal['planet-in-degrees']]",
+        # From, degrees into the sign.
+        "from": "Required[float]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+        # Who.
+        "planet": "Required[Any]",
+        # To, degrees into the sign.
+        "to": "Required[float]",
+    },
+    total=False,
+)
+
+
+class CancellationPlanetAtGandanta(TypedDict, total=False):
+    """A body stands within an orb of a gandanta junction: the end of Cancer, Scorpio or Pisces, or the start of Leo, Sagittarius or Aries."""
+
+    type: Required[Literal['planet-at-gandanta']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    orbDegrees: Optional[float]
+    """The orb, degrees; 3°20′ unless the rule gives one."""
+
+    planet: Required[str]
+    """Who."""
+
+
+class CancellationPanchangaTithi(TypedDict, total=False):
+    """The birth tithi is one of these."""
+
+    type: Required[Literal['panchanga-tithi']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    tithis: Required[Sequence[Union[_catalogue.Tithi, str]]]
+    """Which."""
+
+
+class CancellationPanchangaPaksha(TypedDict, total=False):
+    """The birth tithi is in this paksha."""
+
+    type: Required[Literal['panchanga-paksha']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    paksha: Required[str]
+    """Which, `shukla` or `krishna`."""
+
+
+class CancellationPanchangaVara(TypedDict, total=False):
+    """The birth weekday is one of these."""
+
+    type: Required[Literal['panchanga-vara']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    varas: Required[Sequence[Union[_catalogue.Vara, str]]]
+    """Which."""
+
+
+class CancellationPanchangaNakshatra(TypedDict, total=False):
+    """The Moon's nakshatra at birth is one of these, in one of the padas when the rule names any."""
+
+    type: Required[Literal['panchanga-nakshatra']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    nakshatras: Required[Sequence[Union[_catalogue.Nakshatra, str]]]
+    """Which."""
+
+    padas: Sequence[int]
+    """Which padas, 1 to 4; any when none."""
+
+
+class CancellationPanchangaYoga(TypedDict, total=False):
+    """The panchanga yoga at birth is one of these."""
+
+    type: Required[Literal['panchanga-yoga']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    yogas: Required[Sequence[Union[_catalogue.Yoga, str]]]
+    """Which."""
+
+
+class CancellationPanchangaKarana(TypedDict, total=False):
+    """The karana at birth is one of these."""
+
+    type: Required[Literal['panchanga-karana']]
+
+    karanas: Required[Sequence[Union[_catalogue.Karana, str]]]
+    """Which."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationBirthDuringEclipse(TypedDict, total=False):
+    """The birth falls in an eclipse, of this kind or of any."""
+
+    type: Required[Literal['birth-during-eclipse']]
+
+    kind: Optional[EclipseKind]
+    """Which kind; any when unset."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationForAny(TypedDict, total=False):
+    """Some one of the bodies meets the condition, which names it `SELF`. Every body is tried, and a rule's participants take each that met it, not the bodies the inner conditions consulted."""
+
+    type: Required[Literal['for-any']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planets: Sequence[str]
+    """Which bodies, the nine grahas unless the rule says."""
+
+    then: Required[Condition]
+    """What one of them must meet."""
+
+
+class CancellationCountOf(TypedDict, total=False):
+    """So many of the bodies meet the condition, which names each `SELF` in turn: at least `atLeast`, and at most `atMost` when the rule gives one. "Four or more planets aspect the Moon" and "one or two or three planets in exaltation" (BPHS ch. 39 vv. 42 and 44) are counts over a condition no single predicate carries. `for-any` is this with at least one. Every body that met it takes part when the count holds."""
+
+    type: Required[Literal['count-of']]
+
+    atLeast: Required[int]
+    """How many there must be at least."""
+
+    atMost: Optional[int]
+    """How many there may be at most."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planets: Sequence[str]
+    """Which bodies, the nine grahas unless the rule says."""
+
+    then: Required[Condition]
+    """What each counted must meet."""
+
+
+class CancellationNOf(TypedDict, total=False):
+    """So many of the conditions hold: at least `atLeast`, and at most `atMost` when the rule gives one. A graha "in five of its own vargas" (Jataka Parijata ch. 4 vv. 102 to 104, the Vaiseshikamsha names) is a count over ten divisions no single predicate reads. `or` is this with at least one and `and` with every one. Every condition tried gives its bodies as `or`'s do: the held ones, or all under `EVERY_HELD`."""
+
+    type: Required[Literal['n-of']]
+
+    atLeast: Required[int]
+    """How many must hold at least."""
+
+    atMost: Optional[int]
+    """How many may hold at most."""
+
+    conditions: Required[Sequence[Condition]]
+    """The conditions counted."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationInVarga(TypedDict, total=False):
+    """The condition, read in a divisional chart: every body in its sign there, its houses counted whole-sign from that chart's lagna and its dignity from that sign. A chart the evaluator was not given makes it false, and a condition that reads a longitude is refused inside one."""
+
+    type: Required[Literal['in-varga']]
+
+    condition: Required[Condition]
+    """What must hold in it."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    varga: Required[Union[_catalogue.Varga, str]]
+    """Which division."""
+
+
+class CancellationCountAspecting(TypedDict, total=False):
+    """So many bodies aspect the reference by graha drishti."""
+
+    type: Required[Literal['count-aspecting']]
+
+    atLeast: Required[int]
+    """How many there must be at least."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planets: Required[Any]
+    """Who is counted: a body, or every benefic or every malefic."""
+
+    target: Required[Any]
+    """Whom they aspect."""
+
+
+class CancellationRule(TypedDict, total=False):
+    """Another rule holds. The rule is named by key, and an evaluator reads it from the set it was given; a key the set does not hold never holds."""
+
+    type: Required[Literal['rule']]
+
+    key: Required[str]
+    """Which rule."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+# So many bodies stand in the houses, counted from the reference.
+CancellationCountInHouses = TypedDict(
+    "CancellationCountInHouses",
+    {
+        "type": "Required[Literal['count-in-houses']]",
+        # How many there must be at least.
+        "atLeast": "Required[int]",
+        # Who is not counted even when of that kind and standing there: the graha a verse says the others join, so "the lagna lord joined by a maraka" does not count the lord when it is a maraka itself.
+        "except": "Sequence[Any]",
+        # What they are counted from; the lagna unless the rule says.
+        "from": "Any",
+        # Which houses.
+        "houses": "Required[Sequence[int]]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+        # Who is counted: a body, or every benefic or every malefic.
+        "planets": "Required[Any]",
+    },
+    total=False,
+)
+
+
+# Two references stand in one sign.
+CancellationSameSign = TypedDict(
+    "CancellationSameSign",
+    {
+        "type": "Required[Literal['same-sign']]",
+        # The other.
+        "as": "Required[Any]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+        # One.
+        "of": "Required[Any]",
+    },
+    total=False,
+)
+
+
+# The body belongs to a class of grahas under the readings: a benefic, a malefic or a maraka. What a verse names by nature and then narrows, "a malefic, excepting the lords of the 10th and 9th" (BPHS ch. 42 v. 8), binds a graha with `for-any` and asks this of it.
+CancellationPlanetIs = TypedDict(
+    "CancellationPlanetIs",
+    {
+        "type": "Required[Literal['planet-is']]",
+        # Of which class.
+        "class": "Required[GrahaClass]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+        # Who.
+        "planet": "Required[Any]",
+    },
+    total=False,
+)
+
+
+class CancellationNaturalRelation(TypedDict, total=False):
+    """How one body regards another by natural relationship (BPHS ch. 3's naisargika maitri, as the catalogue lists it): a friend, a neutral or an enemy. The relationship is not symmetric — Mercury counts the Sun a friend and the Sun counts Mercury neutral — so it is `of`'s regard for `to`, as "the ascendant lord friendly to the Sun" (BPHS ch. 43 vv. 71 to 73) is the lord's. A body is none of these to itself, and the lagna to anything."""
+
+    type: Required[Literal['natural-relation']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    of: Required[Any]
+    """Whose regard."""
+
+    relations: Required[Sequence[Relation]]
+    """Which relations meet it."""
+
+    to: Required[Any]
+    """For whom."""
+
+
+# Two references resolve to one body.
+CancellationSameBody = TypedDict(
+    "CancellationSameBody",
+    {
+        "type": "Required[Literal['same-body']]",
+        # The other.
+        "as": "Required[Any]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+        # One.
+        "of": "Required[Any]",
+    },
+    total=False,
+)
+
+
+class CancellationAtLimbEdge(TypedDict, total=False):
+    """The birth stands within so many ghatikas of a limb's edge: the first ghatikas of it, or the last. BPHS ch. 92 measures every gandanta this way, and ch. 9 v. 14 each twilight as the night's edge; a limb the chart does not measure never holds."""
+
+    type: Required[Literal['at-limb-edge']]
+
+    edge: Required[Edge]
+    """Which end of it."""
+
+    ghatikas: Required[float]
+    """How many ghatikas of 24 minutes."""
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    limb: Required[Limb]
+    """Which limb."""
+
+
+class CancellationLimbPart(TypedDict, total=False):
+    """The birth falls in one of a limb's equal parts, counted from its start: BPHS ch. 87 divides Krishna Chaturdashi into six and reads each part apart. The parts are of the limb's own span, so a long tithi has long parts; a limb the chart does not measure never holds."""
+
+    type: Required[Literal['limb-part']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    limb: Required[Limb]
+    """Which limb."""
+
+    of: Required[int]
+    """Into how many equal parts it is divided, at least two."""
+
+    parts: Required[Sequence[int]]
+    """Which of them, the first being 1."""
+
+
+class CancellationBirthByDay(TypedDict, total=False):
+    """The birth fell by day, between sunrise and sunset; a chart that does not say never holds it, and `not` of it is not "by night" there."""
+
+    type: Required[Literal['birth-by-day']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationBirthInKshayaTithi(TypedDict, total=False):
+    """The birth's tithi touched no sunrise: it began after the birth day's sunrise and ended before the next, so no day is named by it. This is the avama, or kshaya, tithi BPHS ch. 85 v. 3 lists among the inauspicious births and ch. 88 gives the remedy of (crux C759). A chart that does not say never holds it."""
+
+    type: Required[Literal['birth-in-kshaya-tithi']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+
+class CancellationPlanetInNakshatra(TypedDict, total=False):
+    """The body stands in one of these nakshatras, in one of the padas when the rule names any. It is read from the body's own sidereal longitude, 13°20′ to a nakshatra and a quarter of that to a pada, where `panchanga-nakshatra` reads the one the chart recorded for the Moon."""
+
+    type: Required[Literal['planet-in-nakshatra']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    nakshatras: Required[Sequence[Union[_catalogue.Nakshatra, str]]]
+    """Which."""
+
+    padas: Sequence[int]
+    """Which padas, 1 to 4; any when none."""
+
+    planet: Required[Any]
+    """Who."""
+
+
+# Two bodies stand in one nakshatra: "the birth star identical with the one in which Ketu rises" (Saravali ch. 10 v. 12).
+CancellationSameNakshatra = TypedDict(
+    "CancellationSameNakshatra",
+    {
+        "type": "Required[Literal['same-nakshatra']]",
+        # The other.
+        "as": "Required[Any]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+        # One.
+        "of": "Required[Any]",
+    },
+    total=False,
+)
+
+
+class CancellationPlanetStrong(TypedDict, total=False):
+    """The body reaches what its measure requires of it: "the ascendant lord is strong" (BPHS ch. 36 vv. 9 to 28). A chart that carries no strength never holds it."""
+
+    type: Required[Literal['planet-strong']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+
+class CancellationPlanetWeak(TypedDict, total=False):
+    """The body falls short of what is required of it. A chart that carries no strength never holds this either, so it is not the `not` of `planet-strong`: on a silent chart both are false, which is the honest answer to both questions."""
+
+    type: Required[Literal['planet-weak']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+
+class CancellationPlanetStrongerThan(TypedDict, total=False):
+    """One body's strength exceeds another's."""
+
+    type: Required[Literal['planet-stronger-than']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    planet: Required[Any]
+    """Who."""
+
+    than: Required[Any]
+    """Than whom."""
+
+
+# One reference aspects another by rashi drishti (BPHS ch. 26 vv. 1 to 3): a movable sign aspects the three fixed signs but the one next to it, a fixed sign the three movable but the one before it, and a dual sign the other three dual signs. A body lends the aspect of the sign it stands in, so naming a body names its sign.
+CancellationRashiAspects = TypedDict(
+    "CancellationRashiAspects",
+    {
+        "type": "Required[Literal['rashi-aspects']]",
+        # Who aspects: a sign, a body's sign, or whichever benefic's or malefic's sign does.
+        "from": "Required[Any]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+        # What is aspected.
+        "target": "Required[Any]",
+    },
+    total=False,
+)
+
+
+class CancellationArgala(TypedDict, total=False):
+    """An intervention stands on a reference (BPHS ch. 31 vv. 2 to 9): the grahas in the intervening house outnumber those in the house that obstructs it, and there is at least one of them. The nine are counted; from a node the houses are counted backwards, the nodes moving so."""
+
+    type: Required[Literal['argala']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    on: Required[Any]
+    """What is intervened on: a sign, or the sign a body stands in."""
+
+    place: Required[ArgalaPlace]
+    """Which intervention, each with the house that obstructs it."""
+
+
+class CancellationVipareetaArgala(TypedDict, total=False):
+    """Three or more malefics stand in the third from a reference, which the same verses call a contrary intervention, harmless and very favourable; nothing obstructs it."""
+
+    type: Required[Literal['vipareeta-argala']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    on: Required[Any]
+    """What is intervened on."""
+
+
+class CancellationBirthOnSankranti(TypedDict, total=False):
+    """The birth falls on a sankranti: on the day, sunrise to sunrise, the Sun enters a sign, or within so many hours of the entry when the rule says. BPHS ch. 90 names each sankranti by its day of the week."""
+
+    type: Required[Literal['birth-on-sankranti']]
+
+    label: Optional[str]
+    """The name a result gives it."""
+
+    windowHours: Optional[float]
+    """How many hours either side of the entry; the whole day when unset."""
+
+
+# A graha in transit stands in one of the houses counted from a natal sign: Saturn in the twelfth, first or second from the natal Moon is sade sati, and gochar is counted from the Moon (Phaladeepika ch. 26 v. 1). It reads the sky at an instant an evaluator was given (`Evaluator::with_transits`) and never holds without one; the transiting graha is not a natal body, so it adds no participant.
+CancellationTransitInHouse = TypedDict(
+    "CancellationTransitInHouse",
+    {
+        "type": "Required[Literal['transit-in-house']]",
+        # The natal sign counted from.
+        "from": "Required[Any]",
+        # Which houses, counted from `from`.
+        "houses": "Required[Sequence[int]]",
+        # The name a result gives it.
+        "label": "Optional[str]",
+        # The graha in transit.
+        "planet": "Required[Union[_catalogue.Graha, str]]",
+    },
+    total=False,
+)
 
 
 Condition: TypeAlias = "Union[ConditionAnd, ConditionOr, ConditionNot, ConditionPlanetInHouse, ConditionPlanetInSign, ConditionPlanetDignity, ConditionPlanetInKendra, ConditionPlanetInTrikona, ConditionPlanetInKendraFrom, ConditionLordOfHouseInKendra, ConditionLordOfHouseInHouse, ConditionPlanetConjunct, ConditionPlanetInHouseFrom, ConditionNoPlanetInHousesFrom, ConditionMutualExchange, ConditionLordConjunctLord, ConditionAllPlanetsBetweenNodes, ConditionOccupiedSignCount, ConditionAllClassicalGrahasInHouses, ConditionNGrahasConjunctWith, ConditionCharaKarakaInHouse, ConditionPlanetCombust, ConditionPlanetRetrograde, ConditionPlanetAspectsPlanet, ConditionPlanetAspectsHouse, ConditionPlanetAtTableDegree, ConditionPlanetInTableSign, ConditionLordOfHouseDebilitated, ConditionLordOfHouseCombust, ConditionLordOfHouseStrong, ConditionLordOfHouseIs, ConditionLordOfHouseConjunctPlanet, ConditionLagnaInSign, ConditionPlanetInHouseAndSign, ConditionPlanetInDegrees, ConditionPlanetAtGandanta, ConditionPanchangaTithi, ConditionPanchangaPaksha, ConditionPanchangaVara, ConditionPanchangaNakshatra, ConditionPanchangaYoga, ConditionPanchangaKarana, ConditionBirthDuringEclipse, ConditionForAny, ConditionCountOf, ConditionNOf, ConditionInVarga, ConditionCountAspecting, ConditionRule, ConditionCountInHouses, ConditionSameSign, ConditionPlanetIs, ConditionNaturalRelation, ConditionSameBody, ConditionAtLimbEdge, ConditionLimbPart, ConditionBirthByDay, ConditionBirthInKshayaTithi, ConditionPlanetInNakshatra, ConditionSameNakshatra, ConditionPlanetStrong, ConditionPlanetWeak, ConditionPlanetStrongerThan, ConditionRashiAspects, ConditionArgala, ConditionVipareetaArgala, ConditionBirthOnSankranti, ConditionTransitInHouse]"

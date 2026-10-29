@@ -67,7 +67,17 @@ pub(super) fn files(api: &Api) -> Vec<File> {
             RecordShape::Object { fields } => {
                 file(
                     &record.name,
-                    types.object(&record.name, &record.doc, fields, None),
+                    types.object(&record.name, &record.doc, fields, None, None),
+                );
+            }
+            // The record laid flat is a field of its own here, read from the
+            // whole object and written into it.
+            RecordShape::Beside { fields, laid } => {
+                let mut all: Vec<RecordField> = fields.iter().chain([laid]).cloned().collect();
+                all.sort_by(|a, b| a.name.cmp(&b.name));
+                file(
+                    &record.name,
+                    types.object(&record.name, &record.doc, &all, None, Some(&laid.name)),
                 );
             }
             RecordShape::Keys { values } => {
@@ -88,7 +98,7 @@ pub(super) fn files(api: &Api) -> Vec<File> {
                     };
                     file(
                         &name,
-                        types.object(&name, &variant.doc, &variant.fields, Some(&parent)),
+                        types.object(&name, &variant.doc, &variant.fields, Some(&parent), None),
                     );
                     permits.push((variant.key.clone(), name));
                 }
@@ -366,6 +376,7 @@ impl<'a> Types<'a> {
         doc: &str,
         fields: &[RecordField],
         parent: Option<&Variant<'_>>,
+        laid: Option<&str>,
     ) -> String {
         let external = self.variants.get(name).copied();
         let mut out = preamble(self.api, REQUEST_PACKAGE);
@@ -424,8 +435,8 @@ impl<'a> Types<'a> {
             self.required_only(&mut out, name, fields);
             self.builder(&mut out, name, fields);
         }
-        self.decoder(&mut out, name, fields, parent, external);
-        self.writer(&mut out, fields, parent, external);
+        self.decoder(&mut out, name, fields, parent, external, laid);
+        self.writer(&mut out, name, fields, parent, external, laid);
         out.push_str("}\n");
         out
     }
@@ -597,13 +608,16 @@ impl<'a> Types<'a> {
         fields: &[RecordField],
         parent: Option<&Variant<'_>>,
         external: Option<(&str, Option<&str>)>,
+        laid: Option<&str>,
     ) {
         let reads: Vec<String> = fields
             .iter()
             .map(|f| {
                 let at = literal(&format!("{name}.{}", f.name));
                 let got = format!("json.get({})", literal(&f.name));
-                if f.nullable {
+                if laid == Some(f.name.as_str()) {
+                    self.read(&f.ty, "json", &at)
+                } else if f.nullable {
                     format!(
                         "Read.orNull({got}, present -> {})",
                         self.read(&f.ty, "present", &at)
@@ -635,11 +649,23 @@ impl<'a> Types<'a> {
     fn writer(
         &self,
         out: &mut String,
+        name: &str,
         fields: &[RecordField],
         parent: Option<&Variant<'_>>,
         external: Option<(&str, Option<&str>)>,
+        laid: Option<&str>,
     ) {
         let mut body = String::from("        Map<String, Object> json = new LinkedHashMap<>();\n");
+        // The record laid flat first, its parts the object's, as serde
+        // writes it.
+        if let Some(laid) = laid {
+            let _ = writeln!(
+                body,
+                "        json.putAll(Read.object({}.toJson(), {}));",
+                identifier(laid),
+                literal(&format!("{name}.{laid}"))
+            );
+        }
         if let Some(Variant { tag, .. }) = parent {
             let _ = writeln!(
                 body,
@@ -648,7 +674,7 @@ impl<'a> Types<'a> {
                 key_constant(tag)
             );
         }
-        for field in fields {
+        for field in fields.iter().filter(|f| laid != Some(f.name.as_str())) {
             let id = identifier(&field.name);
             let put = format!(
                 "json.put({}, {});",
@@ -935,7 +961,9 @@ impl<'a> Types<'a> {
                         record.name == *name
                             && !matches!(
                                 record.shape,
-                                RecordShape::Object { .. } | RecordShape::Tagged { .. }
+                                RecordShape::Object { .. }
+                                    | RecordShape::Tagged { .. }
+                                    | RecordShape::Beside { .. }
                             )
                     })
             }

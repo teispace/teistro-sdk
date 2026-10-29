@@ -349,7 +349,12 @@ impl Types<'_> {
     }
 
     /// A class's fields, constructor, JSON and equality; `tag` is the
-    /// field and key a tagged union's variant writes first.
+    /// field and key a tagged union's variant writes first, and `laid` the
+    /// field whose record's parts the class writes as its own, first.
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "each is one part of the class, and a struct of them would be built at one call each"
+    )]
     fn dart_class(
         &self,
         out: &mut String,
@@ -358,6 +363,7 @@ impl Types<'_> {
         extends: &str,
         tag: Option<(&str, &str)>,
         fields: &[RecordField],
+        laid: Option<&str>,
     ) {
         let _ = writeln!(
             out,
@@ -417,6 +423,12 @@ impl Types<'_> {
                 written.push(format!(
                     "if ({field_name} case final {value}?) {key}: {wire}"
                 ));
+            } else if laid == Some(field.name.as_str()) {
+                let wire = self.wire(&field.ty, &field_name, 0);
+                written.insert(
+                    usize::from(tag.is_some()),
+                    format!("...({wire} as Map<String, Object?>)"),
+                );
             } else {
                 let wire = self.wire(&field.ty, &field_name, 0);
                 written.push(format!("{key}: {wire}"));
@@ -442,6 +454,29 @@ impl Types<'_> {
             out,
             "\n  @override\n  Map<String, Object?> get _wire => {wire};\n\n  @override\n  List<Object?> get _fields => [{}];\n}}",
             equal.join(", ")
+        );
+    }
+
+    /// A record laid flat as a field of its own, beside the others in
+    /// name order, whose parts the class writes as its own.
+    fn dart_beside(
+        &self,
+        out: &mut String,
+        name: &str,
+        doc_text: &str,
+        fields: &[RecordField],
+        laid: &RecordField,
+    ) {
+        let mut all: Vec<RecordField> = fields.iter().chain([laid]).cloned().collect();
+        all.sort_by(|a, b| a.name.cmp(&b.name));
+        self.dart_class(
+            out,
+            name,
+            doc_text,
+            "_Request",
+            None,
+            &all,
+            Some(&laid.name),
         );
     }
 
@@ -545,7 +580,10 @@ pub fn dart_declarations(api: &Api) -> String {
         out.push('\n');
         match &record.shape {
             RecordShape::Object { fields } => {
-                types.dart_class(&mut out, name, &record.doc, "_Request", None, fields);
+                types.dart_class(&mut out, name, &record.doc, "_Request", None, fields, None);
+            }
+            RecordShape::Beside { fields, laid } => {
+                types.dart_beside(&mut out, name, &record.doc, fields, laid);
             }
             RecordShape::Keys { values } => dart_enum(&mut out, name, &record.doc, values),
             RecordShape::Tagged { tag, variants } => {
@@ -559,6 +597,7 @@ pub fn dart_declarations(api: &Api) -> String {
                         name,
                         Some((tag, &variant.key)),
                         &variant.fields,
+                        None,
                     );
                 }
             }

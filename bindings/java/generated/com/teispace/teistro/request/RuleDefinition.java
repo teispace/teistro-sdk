@@ -12,7 +12,7 @@ import java.util.Objects;
  * A rule.
  *
  * @param applicableTo Where a rule applies. Null leaves the SDK's default.
- * @param cancellations A condition, as a rule's `when` is written, and its `label`. Null leaves the SDK's default.
+ * @param cancellations A condition that cancels a present rule, with the label a result names it by when it has one. Null leaves the SDK's default.
  * @param category The {@code category} field.
  * @param conditions A condition: a predicate over the chart, or a combination of conditions. Null leaves the SDK's default.
  * @param customResultKey The {@code customResultKey} field. Null leaves the SDK's default.
@@ -103,7 +103,7 @@ public record RuleDefinition(Scope applicableTo, List<Cancellation> cancellation
         /**
          * Sets {@code cancellations}.
          *
-         * @param cancellations A condition, as a rule's `when` is written, and its `label`. Null leaves the SDK's default.
+         * @param cancellations A condition that cancels a present rule, with the label a result names it by when it has one. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder cancellations(List<Cancellation> cancellations) {

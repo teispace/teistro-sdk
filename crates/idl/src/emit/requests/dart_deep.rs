@@ -309,7 +309,11 @@ impl<'a> Builder<'a> {
         }
         match self.record_def(name)? {
             RecordShape::Object { fields } => {
-                self.object(name, fields, value.as_object()?, path, left, depth)
+                self.object(name, fields, None, value.as_object()?, path, left, depth)
+            }
+            RecordShape::Beside { fields, laid } => {
+                let given = value.as_object()?;
+                self.object(name, fields, Some((laid, value)), given, path, left, depth)
             }
             RecordShape::Keys { values } => {
                 let key = value.as_str()?;
@@ -323,7 +327,7 @@ impl<'a> Builder<'a> {
                 let key = given.get(tag)?.as_str()?;
                 let variant = variants.iter().find(|v| v.key == key)?;
                 let class = variant_name(name, variant);
-                self.object(&class, &variant.fields, given, path, left, depth)
+                self.object(&class, &variant.fields, None, given, path, left, depth)
             }
             RecordShape::External { variants } => match value {
                 Value::String(key) => variants
@@ -356,17 +360,31 @@ impl<'a> Builder<'a> {
         }
     }
 
-    /// A class's constructor call with every field the example gives.
+    /// A class's constructor call with every field the example gives, and
+    /// the record laid flat built from the whole object, its parts being
+    /// the object's.
+    #[expect(
+        clippy::too_many_arguments,
+        reason = "each is one part of the call, and a struct of them would be built at one call each"
+    )]
     fn object<'v>(
         &self,
         class: &str,
         fields: &'a [RecordField],
+        laid: Option<(&'a RecordField, &'v Value)>,
         given: &'v Map<String, Value>,
         path: &mut Vec<Step>,
         left: &mut Left<'a, 'v>,
         depth: usize,
     ) -> Option<String> {
         let mut named = Vec::new();
+        if let Some((laid, whole)) = laid {
+            let RecordType::Record { name } = &laid.ty else {
+                return None;
+            };
+            let whole = self.record(name, whole, path, left, depth + 1)?;
+            named.push(format!("{}: {whole}", identifier(&laid.name)));
+        }
         let mut seen = BTreeSet::new();
         for field in fields {
             if !seen.insert(field.name.as_str()) {
@@ -481,6 +499,16 @@ impl<'a> Builder<'a> {
                             inside(payload, Step::Key(variant.key.clone()), item, out);
                         }
                     }
+                }
+                // The fields beside it, then the record laid flat, whose
+                // parts stand in the same object.
+                Some(RecordShape::Beside { fields, laid }) => {
+                    for field in fields {
+                        if let Some(item) = value.get(&field.name) {
+                            inside(&field.ty, Step::Key(field.name.clone()), item, out);
+                        }
+                    }
+                    self.cases(record, &laid.ty, value, path, whole, out);
                 }
                 Some(RecordShape::OrNamed { values, .. }) if !value.is_string() => {
                     if let Some(one) = picked(values, value) {

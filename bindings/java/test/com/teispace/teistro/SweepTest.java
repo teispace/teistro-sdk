@@ -18,6 +18,7 @@ import java.util.TreeSet;
 
 import com.teispace.teistro.blob.IntlRender;
 import com.teispace.teistro.messages.Messages;
+import com.teispace.teistro.request.Cancellation;
 import com.teispace.teistro.request.Condition;
 import com.teispace.teistro.request.RequestJson;
 import com.teispace.teistro.request.Requests;
@@ -469,6 +470,7 @@ final class SweepTest {
 
         tests.put("every shipped rule reads into the request types and writes back as itself", () -> {
             int rules = 0;
+            int cancellations = 0;
             Map<String, Integer> types = new HashMap<>();
             try (var files = Files.list(Path.of("crates/rules/rules"))) {
                 for (Path file : files.filter(one -> one.toString().endsWith(".json")).sorted().toList()) {
@@ -480,11 +482,17 @@ final class SweepTest {
                         RuleDefinition rule = RuleDefinition.of(raw);
                         same(((Map<?, ?>) raw).get("key"), rule.key(), file.getFileName() + ": its key");
                         same(rule, RuleDefinition.of(Json.read(Json.write(rule))), rule.key() + " written and read");
-                        same(null, disagreement(Json.read(Json.write(rule)), labelled((Map<?, ?>) raw), "$"),
+                        same(null, disagreement(Json.read(Json.write(rule)), raw, "$"),
                                 rule.key() + " is written as " + file.getFileName() + " has it");
                         if (rule.conditions() != null) {
                             for (Condition condition : rule.conditions()) {
                                 count(condition, types);
+                            }
+                        }
+                        if (rule.cancellations() != null) {
+                            for (Cancellation cancellation : rule.cancellations()) {
+                                count(cancellation.condition(), types);
+                                cancellations += 1;
                             }
                         }
                         rules += 1;
@@ -492,6 +500,7 @@ final class SweepTest {
                 }
             }
             check(rules > 1000, "the rules were read: " + rules);
+            check(cancellations > 50, "the cancellations were read, each with its condition: " + cancellations);
             check(types.size() > 40, "the kinds of condition they use: " + types.keySet());
         });
     }
@@ -534,24 +543,6 @@ final class SweepTest {
             return null;
         }
         return java.util.Objects.equals(written, source) ? null : at + " is " + written + ", not " + source;
-    }
-
-    /**
-     * A rule with each cancellation cut to its label. The generated
-     * {@code Cancellation} carries only {@code label}: the condition serde
-     * lays beside it ({@code teistro_rules::Cancellation}, a hand-written
-     * schema that names only the label) has no field in any binding, so it
-     * is not compared here.
-     */
-    private static Map<Object, Object> labelled(Map<?, ?> rule) {
-        Map<Object, Object> out = new LinkedHashMap<>(rule);
-        if (rule.get("cancellations") instanceof List<?> cancellations) {
-            out.put("cancellations", cancellations.stream().map(one -> {
-                Object label = ((Map<?, ?>) one).get("label");
-                return label == null ? Map.of() : Map.of("label", label);
-            }).toList());
-        }
-        return out;
     }
 
     /** Counts each kind of condition in a tree of them, by its record. */
