@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Python's layer, remedies, research and the ephemeris kit tested where
+their refusals and edges are.**
+**Numbers:** none. Tests, and one Python refusal's wording.
+- Python: a `masa_pravesha` residence with no `Observer` is refused as
+  `masa_pravesha['place']['observer']`, not `varsha`'s, an argument the
+  call never had.
+
 **A cancellation's condition reaches every binding.**
 **Numbers:** none. No settings or document hash moves: a rule is written
 as before, and only the types the bindings build it with change.
