@@ -1697,6 +1697,16 @@ void main() {
       put('chart-$i-aspect-$k-from-sign', one.fromEdge.signDeg);
       put('chart-$i-aspect-$k-to-sign', one.toEdge.signDeg);
     }
+    for (final (k, gaze) in chart.sphutaDrishti.indexed) {
+      put('chart-$i-sphuta-$k', '${gaze.from.fullKey}>${gaze.to.fullKey}');
+      put('chart-$i-sphuta-$k-virupas', gaze.virupas);
+    }
+    for (final (j, reach) in chart.rashiDrishti.indexed) {
+      put(
+        'chart-$i-rashi-$j',
+        '${reach.graha.fullKey}:${reach.signs.map((s) => s.fullKey).join(',')}',
+      );
+    }
     final answered = chart.rules!;
     put(
       'chart-$i-rules-present',

@@ -27,10 +27,29 @@
 
 use teistro_core::catalogue::Graha;
 
-/// The special aspects: each graha's two spans of aspect angle, degrees, and
-/// what each adds, virupas (Raman, Art. 115).
-/// A special aspect: the graha, its two spans of aspect angle, and what it
-/// adds.
+/// The seven that cast a sphuta drishti, in the weekday order: Raman's tables
+/// (Art. 115) and BPHS ch. 26 give it to the seven grahas and to no node
+/// (crux C45).
+///
+/// ```
+/// use teistro_aspect::sphuta::CASTING;
+/// use teistro_core::catalogue::Graha;
+///
+/// assert_eq!(CASTING.len(), 7);
+/// assert!(!CASTING.contains(&Graha::Rahu));
+/// ```
+pub const CASTING: [Graha; 7] = [
+    Graha::Sun,
+    Graha::Moon,
+    Graha::Mars,
+    Graha::Mercury,
+    Graha::Jupiter,
+    Graha::Venus,
+    Graha::Saturn,
+];
+
+/// A special aspect: the graha, its two spans of aspect angle, degrees, and
+/// what it adds, virupas (Raman, Art. 115).
 type Visesha = (Graha, [(f64, f64); 2], f64);
 
 const VISESHA: [Visesha; 3] = [

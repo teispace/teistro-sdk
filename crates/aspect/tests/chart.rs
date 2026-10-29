@@ -25,7 +25,7 @@
 )]
 
 use teistro_aspect::drishti::{PARASHARA, Strength, house_count};
-use teistro_aspect::{Aspects, rashi};
+use teistro_aspect::{Aspects, rashi, sphuta};
 use teistro_astro::delta_t::DeltaTModel;
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::Gregorian;
@@ -330,6 +330,78 @@ fn the_rashi_reading_is_the_signs_and_is_always_mutual() {
 }
 
 #[test]
+fn the_sphuta_drishti_is_the_seven_s_on_every_other_body_by_degree() {
+    let (foundation, settings) = founded();
+    let aspects = Aspects::of(&foundation, &settings).expect("a founded chart");
+    let at = |graha| foundation.graha(graha).expect("placed").longitude_deg;
+    let mut expected = Vec::new();
+    for from in sphuta::CASTING {
+        for to in foundation
+            .grahas
+            .iter()
+            .map(|p| p.graha)
+            .filter(|g| *g != from)
+        {
+            expected.push((from, to, sphuta::drishti(from, at(from), at(to))));
+        }
+    }
+    let carried: Vec<_> = aspects
+        .sphuta()
+        .iter()
+        .map(|gaze| (gaze.from, gaze.to, gaze.virupas))
+        .collect();
+    assert_eq!(carried, expected, "every pair, zeros included, in order");
+    assert_eq!(carried.len(), 7 * 8);
+    assert!(
+        aspects
+            .sphuta()
+            .iter()
+            .all(|gaze| (0.0..90.0).contains(&gaze.virupas))
+    );
+    // A node casts none, and nothing looks at itself.
+    assert_eq!(aspects.sphuta_between(Graha::Ketu, Graha::Sun), None);
+    assert_eq!(aspects.sphuta_between(Graha::Sun, Graha::Sun), None);
+}
+
+#[test]
+fn the_rashi_drishti_carried_is_each_body_s_sign_s_three() {
+    let (foundation, settings) = founded();
+    let aspects = Aspects::of(&foundation, &settings).expect("a founded chart");
+    let carried: Vec<_> = aspects.rashi().iter().map(|gaze| gaze.graha).collect();
+    let placed: Vec<_> = foundation.grahas.iter().map(|p| p.graha).collect();
+    assert_eq!(carried, placed, "every body, in the foundation's order");
+    for gaze in aspects.rashi() {
+        for other in &foundation.grahas {
+            let sign = aspects.sign(other.graha).expect("placed");
+            assert_eq!(
+                gaze.signs.contains(&sign),
+                aspects.rashi_aspects(gaze.graha, other.graha),
+                "{:?} on {:?}",
+                gaze.graha,
+                other.graha
+            );
+        }
+    }
+}
+
+#[test]
+fn a_document_written_before_the_degrees_were_carried_reads_back_without_them() {
+    let (foundation, settings) = founded();
+    let aspects = Aspects::of(&foundation, &settings).expect("a founded chart");
+    let mut json: serde_json::Value = serde_json::to_value(&aspects).expect("serialisable");
+    assert_eq!(
+        serde_json::from_value::<Aspects>(json.clone()).unwrap(),
+        aspects
+    );
+    let older = json.as_object_mut().unwrap();
+    older.remove("sphuta");
+    older.remove("rashi");
+    let read: Aspects = serde_json::from_value(json).expect("an older document");
+    assert!(read.sphuta().is_empty() && read.rashi().is_empty());
+    assert_eq!(read.all(), aspects.all());
+}
+
+#[test]
 fn a_drishti_table_the_sdk_does_not_ship_is_refused_by_name() {
     let (foundation, mut settings) = founded();
     settings.aspect.drishti_table = String::from("SOMEONE_ELSES");
@@ -364,6 +436,7 @@ fn a_chart_with_one_body_has_no_relations_and_is_not_an_error() {
     foundation.grahas.clear();
     let empty = Aspects::of(&foundation, &settings).expect("and none is too");
     assert_eq!(empty.all(), []);
+    assert!(empty.sphuta().is_empty() && empty.rashi().is_empty());
     assert_eq!(empty.sign(Graha::Sun), None);
     assert!(!empty.rashi_aspects(Graha::Sun, Graha::Moon));
     assert_eq!(Strength::None.quarters(), 0);

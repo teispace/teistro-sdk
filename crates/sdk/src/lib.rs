@@ -251,7 +251,7 @@ pub use teistro_panchanga::nepal_sambat::NepalSambatDate;
 // What a reading answers with, and the sections it holds: the document
 // is `teistro-serial`'s, and an operation that answers one must let a
 // consumer name it and every section of it.
-pub use teistro_aspect::{Aspects, Drishti};
+pub use teistro_aspect::{Aspects, Drishti, RashiDrishti, SphutaDrishti};
 pub use teistro_houses::Houses;
 pub use teistro_points::Points;
 // The derived points' own functions — the padas and the arudha lagna among

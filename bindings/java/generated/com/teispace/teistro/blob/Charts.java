@@ -169,6 +169,8 @@ public final class Charts {
     private final String dossier;
     private final String masaPravesha;
     private final String westernConfigurations;
+    private final SphutaDrishti sphutaDrishti;
+    private final RashiDrishti rashiDrishti;
 
     private Charts(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -328,6 +330,8 @@ public final class Charts {
         this.dossier = blob.text(137, "dossier");
         this.masaPravesha = blob.text(138, "masa_pravesha");
         this.westernConfigurations = blob.text(139, "western_configurations");
+        this.sphutaDrishti = new SphutaDrishti(blob, 140, "sphuta_drishti");
+        this.rashiDrishti = new RashiDrishti(blob, 141, "rashi_drishti");
     }
 
     /**
@@ -1734,6 +1738,24 @@ public final class Charts {
      */
     public String westernConfigurations() {
         return westernConfigurations;
+    }
+
+    /**
+     * Every chart's sphuta drishti (Sripati's construction by aspect angle, as B.V. Raman gives it and BPHS ch. 26 vv. 6 to 12 state it, crux C45), charts outermost: 56 rows a chart, row `i * 56 + k`, each of the seven grahas in the weekday order looking at each of the eight other placed bodies in the foundation's order, a zero included. Empty when the aspects were not asked for.
+     *
+     * @return the sphutaDrishti
+     */
+    public SphutaDrishti sphutaDrishti() {
+        return sphutaDrishti;
+    }
+
+    /**
+     * Every chart's Jaimini rashi drishti, charts outermost: 27 rows a chart, row `i * 27 + 3 * j + k`, the `k`th of the three signs the sign of the chart's `j`th body (in the foundation's order) aspects, in the zodiac's order from Aries; each aspects it back. Empty when the aspects were not asked for.
+     *
+     * @return the rashiDrishti
+     */
+    public RashiDrishti rashiDrishti() {
+        return rashiDrishti;
     }
 
 
@@ -15822,6 +15844,129 @@ public final class Charts {
          */
         public int graha(int row) {
             return Short.toUnsignedInt(bytes.getShort(grahaAt + Objects.checkIndex(row, length) * 2));
+        }
+    }
+
+    /**
+     * The `sphuta_drishti` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * Every chart's sphuta drishti (Sripati's construction by aspect angle, as B.V. Raman gives it and BPHS ch. 26 vv. 6 to 12 state it, crux C45), charts outermost: 56 rows a chart, row `i * 56 + k`, each of the seven grahas in the weekday order looking at each of the eight other placed bodies in the foundation's order, a zero included. Empty when the aspects were not asked for.
+     */
+    public static final class SphutaDrishti {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int fromAt;
+        private final int toAt;
+        private final int virupasAt;
+
+        SphutaDrishti(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.fromAt = blob.column(at, 0, 2);
+            this.toAt = blob.column(at, 1, 2);
+            this.virupasAt = blob.column(at, 2, 8);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The graha looking: one of the seven.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int from(int row) {
+            return Short.toUnsignedInt(bytes.getShort(fromAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The body looked at, a node included.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int to(int row) {
+            return Short.toUnsignedInt(bytes.getShort(toAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * How strongly, in virupas: 0 to 60, with Mars's, Jupiter's and Saturn's special aspects adding 15, 30 and 45 over their spans.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double virupas(int row) {
+            return bytes.getDouble(virupasAt + Objects.checkIndex(row, length) * 8);
+        }
+    }
+
+    /**
+     * The `rashi_drishti` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * Every chart's Jaimini rashi drishti, charts outermost: 27 rows a chart, row `i * 27 + 3 * j + k`, the `k`th of the three signs the sign of the chart's `j`th body (in the foundation's order) aspects, in the zodiac's order from Aries; each aspects it back. Empty when the aspects were not asked for.
+     */
+    public static final class RashiDrishti {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int grahaAt;
+        private final int signAt;
+
+        RashiDrishti(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.grahaAt = blob.column(at, 0, 2);
+            this.signAt = blob.column(at, 1, 2);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The body whose sign looks.
+         *
+         * The id of a {@code Graha}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int graha(int row) {
+            return Short.toUnsignedInt(bytes.getShort(grahaAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * A sign it reaches.
+         *
+         * The id of a {@code Rashi}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int sign(int row) {
+            return Short.toUnsignedInt(bytes.getShort(signAt + Objects.checkIndex(row, length) * 2));
         }
     }
 }

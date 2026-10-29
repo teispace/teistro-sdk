@@ -1556,6 +1556,23 @@ class AnEngine(WithLibrary):
         )
         self.assertTrue(all(g.yoga_pinda == g.rashi_pinda + g.graha_pinda for g in av.grahas))
 
+    def test_a_chart_carries_the_sphuta_and_rashi_drishti(self) -> None:
+        """The seven's sphuta drishti on the eight others by degree, zeros
+        included, and each body's three signs by rashi drishti; neither
+        unless the aspects were asked."""
+        observer = Observer(
+            latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
+        )
+        chart = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700, aspects=True)
+        gazes = chart.sphuta_drishti
+        self.assertEqual(len(gazes), 7 * 8)
+        self.assertTrue(all(g.from_graha not in (Graha.RAHU, Graha.KETU) and g.from_graha != g.to for g in gazes))
+        self.assertTrue(all(0 <= g.virupas < 90 for g in gazes))
+        self.assertEqual(len(chart.rashi_drishti), 9)
+        self.assertTrue(all(len(r.signs) == 3 for r in chart.rashi_drishti))
+        bare = self.ctx.chart.found(instant=2451545.0, place=observer, utc_offset_seconds=20700)
+        self.assertEqual((bare.sphuta_drishti, bare.rashi_drishti), ([], []))
+
     def test_a_chart_carries_its_bhava_bala_each_bhava_s_strength(self) -> None:
         """A chart's Bhava bala crosses whole: every bhava's components under the
         default reading, the verses', whose totals are their parts'; None unless

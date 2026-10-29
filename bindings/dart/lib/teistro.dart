@@ -2921,6 +2921,37 @@ final class Drishti {
   final EdgeDistance toEdge;
 }
 
+/// One graha's sphuta drishti on another body, by degree (crux C45).
+final class SphutaDrishti {
+  const SphutaDrishti({
+    required this.from,
+    required this.to,
+    required this.virupas,
+  });
+
+  /// The graha looking: one of the seven.
+  final Graha from;
+
+  /// The body looked at, a node included.
+  final Graha to;
+
+  /// How strongly, in virupas: 0 to 60, Mars's, Jupiter's and Saturn's
+  /// special aspects adding 15, 30 and 45 over their spans.
+  final double virupas;
+}
+
+/// One body's Jaimini rashi drishti.
+final class RashiDrishti {
+  const RashiDrishti({required this.graha, required this.signs});
+
+  /// The body whose sign looks.
+  final Graha graha;
+
+  /// The three signs its sign aspects, in the zodiac's order from Aries;
+  /// each aspects it back.
+  final List<Rashi> signs;
+}
+
 /// One graha's Ashtakavarga.
 final class GrahaAshtakavarga {
   const GrahaAshtakavarga({
@@ -27565,6 +27596,42 @@ final class Chart {
           nakshatraDeg: a.toNakshatraDeg[i],
           padaDeg: a.toPadaDeg[i],
         ),
+      );
+    });
+  }
+
+  /// Each of the seven grahas' sphuta drishti on every other body, by
+  /// degree (crux C45): the looking graha in the weekday order, then the
+  /// body looked at in the foundation's order, a zero included, 56 a
+  /// chart; empty unless `aspects: true` asked for them.
+  List<SphutaDrishti> get sphutaDrishti {
+    final s = batch.sphutaDrishti;
+    final charts = batch.cast.aspectCount.length;
+    final per = charts == 0 ? 0 : s.virupas.length ~/ charts;
+    return List<SphutaDrishti>.generate(per, (k) {
+      final i = index * per + k;
+      return SphutaDrishti(
+        from: Graha.byId(s.from[i]),
+        to: Graha.byId(s.to[i]),
+        virupas: s.virupas[i],
+      );
+    });
+  }
+
+  /// Each body's Jaimini rashi drishti, in the foundation's order: the
+  /// three signs its sign aspects; empty unless `aspects: true` asked for
+  /// them.
+  List<RashiDrishti> get rashiDrishti {
+    final r = batch.rashiDrishti;
+    final charts = batch.cast.aspectCount.length;
+    final per = charts == 0 ? 0 : r.sign.length ~/ charts;
+    return List<RashiDrishti>.generate(per ~/ 3, (j) {
+      final i = index * per + j * 3;
+      return RashiDrishti(
+        graha: Graha.byId(r.graha[i]),
+        signs: List<Rashi>.unmodifiable([
+          for (var k = 0; k < 3; k += 1) Rashi.byId(r.sign[i + k]),
+        ]),
       );
     });
   }

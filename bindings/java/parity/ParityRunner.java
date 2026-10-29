@@ -1847,6 +1847,17 @@ public final class ParityRunner {
             put(c + "-aspect-" + k + "-from-sign", one.fromEdge().signDeg());
             put(c + "-aspect-" + k + "-to-sign", one.toEdge().signDeg());
         }
+        List<SphutaDrishti> gazes = chart.sphutaDrishti();
+        for (int k = 0; k < gazes.size(); k += 1) {
+            SphutaDrishti gaze = gazes.get(k);
+            put(c + "-sphuta-" + k, gaze.fromGraha().fullKey() + ">" + gaze.to().fullKey());
+            put(c + "-sphuta-" + k + "-virupas", gaze.virupas());
+        }
+        List<RashiDrishti> reaches = chart.rashiDrishti();
+        for (int j = 0; j < reaches.size(); j += 1) {
+            RashiDrishti reach = reaches.get(j);
+            put(c + "-rashi-" + j, reach.graha().fullKey() + ":" + join(",", reach.signs(), Rashi::fullKey));
+        }
         Map<String, Object> answered = chart.rules().orElseThrow();
         put(c + "-rules-present", join(",", list(answered.get("present")), held -> String.valueOf(dig(held, "rule"))));
         put(c + "-rules-pindayu", dig(answered, "longevity", "ayurdaya", "pindayu", "years"));

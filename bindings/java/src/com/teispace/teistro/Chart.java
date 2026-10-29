@@ -207,12 +207,32 @@ public final class Chart {
     }
 
     /**
-     * Which bodies reach which: the graha drishti and the rashi drishti.
+     * Which bodies reach which: the graha drishti, counted by sign.
      *
      * @return the rows
      */
     public List<Drishti> aspects() {
         return VedicReads.aspects(this);
+    }
+
+    /**
+     * Each of the seven grahas' sphuta drishti on every other body, by degree
+     * (crux C45), a zero included; empty unless the aspects were asked for.
+     *
+     * @return the rows, 56 a chart
+     */
+    public List<SphutaDrishti> sphutaDrishti() {
+        return VedicReads.sphutaDrishti(this);
+    }
+
+    /**
+     * Each body's Jaimini rashi drishti: the three signs its sign aspects;
+     * empty unless the aspects were asked for.
+     *
+     * @return the rows, one a body in the foundation's order
+     */
+    public List<RashiDrishti> rashiDrishti() {
+        return VedicReads.rashiDrishti(this);
     }
 
     /**

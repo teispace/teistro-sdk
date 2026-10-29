@@ -181,6 +181,24 @@ test('a chart handed out alone carries its own hash, and the batch the list\'s',
   );
 });
 
+test('a chart carries the sphuta drishti by degree and the rashi drishti by sign', () => {
+  const ctx = context();
+  const at = { place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 }, utcOffsetSeconds: 20700 };
+  const batch = ctx.chart.foundMany({ instants: [2451545.0, 2451546.0], ...at, aspects: true });
+  for (const chart of [batch.at(0), batch.at(1)]) {
+    // The seven at the eight others, zeros included, and no node looks.
+    assert.equal(chart.sphutaDrishti.length, 7 * 8);
+    assert.ok(chart.sphutaDrishti.every((g) => g.from !== 'graha.RAHU' && g.from !== 'graha.KETU' && g.from !== g.to));
+    assert.ok(chart.sphutaDrishti.every((g) => g.virupas >= 0 && g.virupas < 90));
+    // Each body's sign reaches three, and each of them reaches back.
+    assert.equal(chart.rashiDrishti.length, 9);
+    assert.ok(chart.rashiDrishti.every((r) => r.signs.length === 3));
+  }
+  assert.notDeepEqual(batch.at(0).sphutaDrishti, batch.at(1).sphutaDrishti, 'each chart its own rows');
+  const bare = ctx.chart.found({ instant: 2451545.0, ...at });
+  assert.deepEqual([bare.sphutaDrishti, bare.rashiDrishti], [[], []], 'nothing unless asked');
+});
+
 test('an almanac keeps each day\'s rows of a per-day list by range', () => {
   const ctx = context();
   const week = ctx.almanac.of({

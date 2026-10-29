@@ -945,6 +945,42 @@ export class Chart {
   }
 
   /**
+   * Each of the seven grahas' sphuta drishti on every other body, by degree
+   * (crux C45): `{ from, to, virupas }`, the looking graha in the weekday
+   * order and then the body looked at in the foundation's order, a zero
+   * included, 56 a chart; empty unless `aspects: true` asked for them.
+   */
+  get sphutaDrishti() {
+    const d = this.#batch.decoded;
+    const per = d.sphutaDrishti.length / d.cast.aspectCount.length || 0;
+    return Array.from({ length: per }, (_, k) => {
+      const i = this.#index * per + k;
+      return {
+        from: GrahaById.get(d.sphutaDrishti.from[i]) ?? 'unknown',
+        to: GrahaById.get(d.sphutaDrishti.to[i]) ?? 'unknown',
+        virupas: d.sphutaDrishti.virupas[i],
+      };
+    });
+  }
+
+  /**
+   * Each body's Jaimini rashi drishti, in the foundation's order:
+   * `{ graha, signs }`, the three signs its sign aspects, each of which
+   * aspects it back; empty unless `aspects: true` asked for them.
+   */
+  get rashiDrishti() {
+    const d = this.#batch.decoded;
+    const per = d.rashiDrishti.length / d.cast.aspectCount.length || 0;
+    return Array.from({ length: per / 3 }, (_, j) => {
+      const i = this.#index * per + j * 3;
+      return {
+        graha: GrahaById.get(d.rashiDrishti.graha[i]) ?? 'unknown',
+        signs: [0, 1, 2].map((k) => RashiById.get(d.rashiDrishti.sign[i + k]) ?? 'unknown'),
+      };
+    });
+  }
+
+  /**
    * The dashas asked for (`dashas: [DashaSystem.Vimshottari]`), each with its
    * balance at birth and its periods to the settings' depth, in the order
    * asked; empty unless some were.

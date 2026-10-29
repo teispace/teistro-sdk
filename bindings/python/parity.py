@@ -1696,6 +1696,12 @@ def main() -> None:
                 put(f"chart-{i}-aspect-{k}-strength", one.strength.key)
                 put(f"chart-{i}-aspect-{k}-from-sign", one.from_edge.sign_deg)
                 put(f"chart-{i}-aspect-{k}-to-sign", one.to_edge.sign_deg)
+            for k, gaze in enumerate(chart.sphuta_drishti):
+                put(f"chart-{i}-sphuta-{k}", f"{gaze.from_graha.full_key}>{gaze.to.full_key}")
+                put(f"chart-{i}-sphuta-{k}-virupas", gaze.virupas)
+            for j, reach in enumerate(chart.rashi_drishti):
+                signs = ",".join(sign.full_key for sign in reach.signs)
+                put(f"chart-{i}-rashi-{j}", f"{reach.graha.full_key}:{signs}")
             answered = chart.rules
             assert answered is not None
             put(f"chart-{i}-rules-present", ",".join(held["rule"] for held in answered["present"]))

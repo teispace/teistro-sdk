@@ -5161,6 +5161,52 @@ final class ChartsDispositorEndMembers {
   final int length;
 }
 
+/// The `sphuta_drishti` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's sphuta drishti (Sripati's construction by aspect angle, as B.V. Raman gives it and BPHS ch. 26 vv. 6 to 12 state it, crux C45), charts outermost: 56 rows a chart, row `i * 56 + k`, each of the seven grahas in the weekday order looking at each of the eight other placed bodies in the foundation's order, a zero included. Empty when the aspects were not asked for.
+final class ChartsSphutaDrishti {
+  const ChartsSphutaDrishti({
+    required this.from,
+    required this.to,
+    required this.virupas,
+    required this.length,
+  });
+
+  /// The graha looking: one of the seven.
+  final Uint16List from;
+
+  /// The body looked at, a node included.
+  final Uint16List to;
+
+  /// How strongly, in virupas: 0 to 60, with Mars's, Jupiter's and Saturn's special aspects adding 15, 30 and 45 over their spans.
+  final Float64List virupas;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `rashi_drishti` section of a Charts blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every chart's Jaimini rashi drishti, charts outermost: 27 rows a chart, row `i * 27 + 3 * j + k`, the `k`th of the three signs the sign of the chart's `j`th body (in the foundation's order) aspects, in the zodiac's order from Aries; each aspects it back. Empty when the aspects were not asked for.
+final class ChartsRashiDrishti {
+  const ChartsRashiDrishti({
+    required this.graha,
+    required this.sign,
+    required this.length,
+  });
+
+  /// The body whose sign looks.
+  final Uint16List graha;
+
+  /// A sign it reaches.
+  final Uint16List sign;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// The `day` section, wherever a blob carries it: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
@@ -5696,6 +5742,8 @@ final class Charts {
     required this.dossier,
     required this.masaPravesha,
     required this.westernConfigurations,
+    required this.sphutaDrishti,
+    required this.rashiDrishti,
   });
 
   /// What kind of chart these are.
@@ -6159,6 +6207,12 @@ final class Charts {
   /// UTF-8 JSON, canonical: an array with one entry per chart, each an array of the shapes its planets make, by kind in the order `GRAND_TRINE`, `T_SQUARE`, `GRAND_CROSS`, `YOD`, `KITE`, `MYSTIC_RECTANGLE`, `STELLIUM`, and within a kind by the bodies' order (`03-design/western-configurations.md`). A shape is `{kind, bodies, apex, sign, widestFromExactDeg, inside}`: `kind` one of those keys; `bodies` the grahas, bare catalogue keys (`SUN`); `apex` the graha a T-square, yod or kite points at, null for the others; `sign` the tropical rashi a stellium stands in, bare (`LEO`), null for the others; `widestFromExactDeg` how far from exact its loosest aspect is, degrees, null for a stellium; `inside` the positions in the chart's array of the larger shapes this one is wholly inside, empty when it stands alone. Every shape is made of aspects the chart holds under the record's `aspects` and `orbs`. Empty when `western_configurations_json` asked for none.
   final String westernConfigurations;
 
+  /// Every chart's sphuta drishti (Sripati's construction by aspect angle, as B.V. Raman gives it and BPHS ch. 26 vv. 6 to 12 state it, crux C45), charts outermost: 56 rows a chart, row `i * 56 + k`, each of the seven grahas in the weekday order looking at each of the eight other placed bodies in the foundation's order, a zero included. Empty when the aspects were not asked for.
+  final ChartsSphutaDrishti sphutaDrishti;
+
+  /// Every chart's Jaimini rashi drishti, charts outermost: 27 rows a chart, row `i * 27 + 3 * j + k`, the `k`th of the three signs the sign of the chart's `j`th body (in the foundation's order) aspects, in the zodiac's order from Aries; each aspects it back. Empty when the aspects were not asked for.
+  final ChartsRashiDrishti rashiDrishti;
+
 }
 
 /// Decodes a Charts blob. The columns are views over `bytes`, so the
@@ -6305,6 +6359,8 @@ Charts decodeCharts(Uint8List bytes) {
   final atDossier = blob.section(137, 'dossier');
   final atMasaPravesha = blob.section(138, 'masa_pravesha');
   final atWesternConfigurations = blob.section(139, 'western_configurations');
+  final atSphutaDrishti = blob.section(140, 'sphuta_drishti');
+  final atRashiDrishti = blob.section(141, 'rashi_drishti');
   return Charts(
     kind: blob.data.getUint16(atSummary.offset + 0, Endian.little),
     chartCount: blob.data.getUint32(atSummary.offset + 8, Endian.little),
@@ -7603,6 +7659,17 @@ Charts decodeCharts(Uint8List bytes) {
     dossier: blob.text(atDossier, 'dossier'),
     masaPravesha: blob.text(atMasaPravesha, 'masa_pravesha'),
     westernConfigurations: blob.text(atWesternConfigurations, 'western_configurations'),
+    sphutaDrishti: ChartsSphutaDrishti(
+      from: blob.column(atSphutaDrishti, 0, 2, Uint16List.sublistView),
+      to: blob.column(atSphutaDrishti, 1, 2, Uint16List.sublistView),
+      virupas: blob.column(atSphutaDrishti, 2, 8, Float64List.sublistView),
+      length: atSphutaDrishti.count,
+    ),
+    rashiDrishti: ChartsRashiDrishti(
+      graha: blob.column(atRashiDrishti, 0, 2, Uint16List.sublistView),
+      sign: blob.column(atRashiDrishti, 1, 2, Uint16List.sublistView),
+      length: atRashiDrishti.count,
+    ),
   );
 }
 

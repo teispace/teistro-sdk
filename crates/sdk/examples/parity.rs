@@ -6211,6 +6211,23 @@ fn the_drishti(report: &mut Report, index: usize, document: &teistro::Document) 
         );
         put(report, &key("-to-sign"), number(drishti.to_edge.sign_deg));
     }
+    for (at, gaze) in aspects.sphuta().iter().enumerate() {
+        let key = |what: &str| format!("chart-{index}-sphuta-{at}{what}");
+        put(
+            report,
+            &key(""),
+            format!("{}>{}", gaze.from.full_key(), gaze.to.full_key()),
+        );
+        put(report, &key("-virupas"), number(gaze.virupas));
+    }
+    for (at, gaze) in aspects.rashi().iter().enumerate() {
+        let signs: Vec<&str> = gaze.signs.iter().map(|sign| sign.full_key()).collect();
+        put(
+            report,
+            &format!("chart-{index}-rashi-{at}"),
+            format!("{}:{}", gaze.graha.full_key(), signs.join(",")),
+        );
+    }
 }
 
 /// A local day's every field, under the same keys for a chart's day and

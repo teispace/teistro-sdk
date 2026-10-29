@@ -1336,6 +1336,11 @@ public final class BindingTest {
                     }
                     check(!chart.points().isEmpty(), "the derived points");
                     check(!chart.aspects().isEmpty(), "the drishti");
+                    same(7 * 8, chart.sphutaDrishti().size(), "the seven's sphuta drishti on the eight others");
+                    check(chart.sphutaDrishti().stream().allMatch(g -> g.virupas() >= 0 && g.virupas() < 90),
+                            "a sphuta drishti in virupas");
+                    same(9, chart.rashiDrishti().size(), "each body's rashi drishti");
+                    check(chart.rashiDrishti().stream().allMatch(r -> r.signs().size() == 3), "three signs a body");
                     check(!chart.bhavas().isEmpty(), "the served houses");
                     check(!chart.outer().isEmpty(), "the outer planets");
                     same(1, chart.vargas().size(), "the navamsha asked for");

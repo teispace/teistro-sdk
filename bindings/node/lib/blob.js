@@ -1958,6 +1958,23 @@ export function decodeCharts(bytes) {
     const at = section(blob, 139, 'western_configurations');
     out.westernConfigurations = text(blob, at, 'western_configurations');
   }
+  {
+    const at = section(blob, 140, 'sphuta_drishti');
+    out.sphutaDrishti = {
+      from: column(blob, at, 0, 'u16', at.count),
+      to: column(blob, at, 1, 'u16', at.count),
+      virupas: column(blob, at, 2, 'f64', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 141, 'rashi_drishti');
+    out.rashiDrishti = {
+      graha: column(blob, at, 0, 'u16', at.count),
+      sign: column(blob, at, 1, 'u16', at.count),
+      length: at.count,
+    };
+  }
   return out;
 }
 

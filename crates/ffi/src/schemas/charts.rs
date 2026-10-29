@@ -400,15 +400,23 @@ pub fn charts() -> BlobSchema {
         .chain(chart_avakahada_sections(118))
         .chain(chart_later_sections(120))
         .chain(chart_disposition_sections(130))
-        .chain([
-            chart_sarvatobhadra_section(135),
-            chart_tithi_pravesha_section(136),
-            chart_dossier_section(137),
-            chart_masa_pravesha_section(138),
-            chart_western_configurations_section(139),
-        ])
+        .chain(chart_closing_sections(135))
         .collect(),
     }
+}
+
+/// The sections from `first` on that came after the dispositions, in the
+/// order they crossed.
+fn chart_closing_sections(first: u32) -> [SectionSchema; 7] {
+    [
+        chart_sarvatobhadra_section(first),
+        chart_tithi_pravesha_section(first + 1),
+        chart_dossier_section(first + 2),
+        chart_masa_pravesha_section(first + 3),
+        chart_western_configurations_section(first + 4),
+        chart_sphuta_drishti_section(first + 5),
+        chart_rashi_drishti_section(first + 6),
+    ]
 }
 
 /// The sections from `first` on, one a request field or a reading each,
@@ -4628,6 +4636,41 @@ fn chart_aspects_section(id: u32) -> SectionSchema {
                 Scalar::F64,
                 "How near it stands to a pada edge, degrees.",
             ),
+        ],
+    )
+}
+
+/// Every chart's sphuta drishti, the seven's gaze by degree (crux C45).
+#[must_use]
+fn chart_sphuta_drishti_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "sphuta_drishti",
+        "Every chart's sphuta drishti (Sripati's construction by aspect angle, as B.V. Raman gives it and BPHS ch. 26 vv. 6 to 12 state it, crux C45), charts outermost: 56 rows a chart, row `i * 56 + k`, each of the seven grahas in the weekday order looking at each of the eight other placed bodies in the foundation's order, a zero included. Empty when the aspects were not asked for.",
+        vec![
+            ColumnDef::new("from", Scalar::U16, "The graha looking: one of the seven.")
+                .of_enum("Graha"),
+            ColumnDef::new("to", Scalar::U16, "The body looked at, a node included.")
+                .of_enum("Graha"),
+            ColumnDef::new(
+                "virupas",
+                Scalar::F64,
+                "How strongly, in virupas: 0 to 60, with Mars's, Jupiter's and Saturn's special aspects adding 15, 30 and 45 over their spans.",
+            ),
+        ],
+    )
+}
+
+/// Every chart's rashi drishti: the three signs each body's sign aspects.
+#[must_use]
+fn chart_rashi_drishti_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "rashi_drishti",
+        "Every chart's Jaimini rashi drishti, charts outermost: 27 rows a chart, row `i * 27 + 3 * j + k`, the `k`th of the three signs the sign of the chart's `j`th body (in the foundation's order) aspects, in the zodiac's order from Aries; each aspects it back. Empty when the aspects were not asked for.",
+        vec![
+            ColumnDef::new("graha", Scalar::U16, "The body whose sign looks.").of_enum("Graha"),
+            ColumnDef::new("sign", Scalar::U16, "A sign it reaches.").of_enum("Rashi"),
         ],
     )
 }
