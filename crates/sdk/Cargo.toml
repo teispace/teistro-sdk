@@ -408,6 +408,10 @@ name = "returns"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "immanuel"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "sarvatobhadra"
 required-features = ["builtin-ephemeris"]
 

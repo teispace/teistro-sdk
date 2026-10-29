@@ -30,6 +30,29 @@ condition answering undecided where it answered false.
   only a topocentric frame reads it. The place still serves the houses
   and the lagna.
 
+**An oracle for the Western and Hellenistic modules, and an aspect that
+applies however fast it closes.**
+**Numbers:** a Western aspect's and a synastry contact's `applying` moves
+where a pair stands within a day's relative motion of exact: the orb
+engine read the separation a day later, so a pair closing on an aspect it
+would pass within the day read as separating, and one leaving it as
+applying. It now reads the separation's rate at the instant. Over the 958
+aspects immanuel lists between the corpus's births, the flag moves on 86:
+69 involve the Moon (c001's Moon square Venus, 2.0° short of exact and
+closing at 10.8° a day, is the first), 17 a pair of planets within 0.6°
+of exact. Nothing else moves.
+- `teistro_aspect::orb::hits` reads applying from the rate the shorter
+  separation changes at, signed by which way round the arc runs; exact is
+  neither applying nor separating.
+- Two rank-3 witnesses are scored over the corpus's births, each fed its
+  own recorded places so the doctrine is measured and not the ephemeris
+  (`03-design/western-hellenistic-oracle.md`, C46): flatlib's terms,
+  dignities, scores, sect and 21 parts in `crates/hellenistic/tests/flatlib.rs`,
+  and immanuel's aspects, composites, progressions and solar returns in
+  `crates/sdk/tests/immanuel.rs`. Each asks `conformance::carried` first
+  and skips, naming the pinned corpus, until the corpus carries them.
+  Cruxes C790 to C792.
+
 **A cancellation's condition reaches every binding.**
 **Numbers:** none. No settings or document hash moves: a rule is written
 as before, and only the types the bindings build it with change.
