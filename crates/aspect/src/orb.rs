@@ -290,7 +290,7 @@ pub fn hits(
         .iter()
         .filter_map(|angle| {
             let from_exact = (apart - angle.degrees).abs();
-            (from_exact <= orb_deg).then(|| Hit {
+            (from_exact <= orb_deg).then_some(Hit {
                 angle: *angle,
                 apart_deg: apart,
                 from_exact_deg: from_exact,
