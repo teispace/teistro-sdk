@@ -3404,6 +3404,15 @@ What is left in the engineer's hands, and its estimate, is
   licence; a real Android phone and iPhone for P0-2 and P0-3; then the
   maintainer's review of the finished SDK, and the astrologers'.
 
+### The almanac app's addendum 3 (2026-10-29)
+
+The app's addendum 3 asks for 58 requests, SR-01 to SR-58, and sends addendum 2
+with it, now approved. Each is answered by number in `consumers/addendum-3.md`:
+20 are partly built or done (each with what is left), the rest are planned, and 4 need
+a decision (Q42, the reviewers of Hindi, Sanskrit and Nepali text; Q43, Teimeris
+for hosted serving). They are scheduled after the release candidate in four waves
+(`07-roadmap/00-roadmap.md`, "Addendum 3"); P0 comes first.
+
 ### An almanac app's brief (from 2026-10-20)
 
 A consumer building a Nepali almanac app on Android and iOS asked for

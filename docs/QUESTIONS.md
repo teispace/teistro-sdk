@@ -4,6 +4,37 @@ Every question the research raised, each with options, trade-offs and a
 recommendation. A decided question keeps its number, records the decision
 and links its ADR. Status key: `open`, `decided`, `deferred`.
 
+## Open
+
+## Q42. Who reviews the Hindi, Sanskrit and Nepali text a consumer asks for: `open`
+
+Raised 2026-10-29 by the consumer's addendum 3 (`consumers/addendum-3.md`,
+SR-12, SR-13, SR-29, SR-31, SR-37 and SR-38). The SDK names 504 festivals and
+limbs and says 332 of them in Hindi and Sanskrit, and its composed text has one
+Hindi message and no Sanskrit. A name or a template drafted from the cited texts
+is not a vetted one, and none is machine-stubbed.
+
+- **A. A named native reviewer per language** signs off each pack before it
+  ships. Drafts land behind a `draft` status a strict locale refuses.
+  *Recommended.*
+- **B. The consumer's reviewers** sign off in the consumer's repository, and
+  the SDK takes the reviewed strings as a contribution.
+- **C. Ship the drafts marked unreviewed.** This is rejected: a strict locale
+  binds what it ships.
+
+## Q43. Whether a hosted API may serve Teimeris's output under Apache-2.0 alone: `open`
+
+Raised 2026-10-29 by SR-55. The SDK, its packs and its built-in ephemeris are
+Apache-2.0, and the conformance corpus is CC0. Teimeris is a separate engine
+plugged in through the ephemeris port, and its licence is its owner's. The
+consumer asks which backends a hosted service may serve without another
+licence.
+
+- **A. State it in `LICENSING`:** the built-in ephemeris and every pack may be
+  served under Apache-2.0 alone, and Teimeris's terms are given by its owner.
+  *Recommended*, with the owner's terms filled in.
+- **B. Relicense Teimeris for hosted serving** alongside its release.
+
 ## Decided
 
 | # | question | decision (2026-09-04) | record |

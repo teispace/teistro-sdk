@@ -1112,6 +1112,28 @@ maintainer's review, then the astrologers'. What waits on a source, a
 reviewer or the maintainer is listed in `STATUS.md`, "Now"; the corpus's
 0.13.0 release is the newest of those.
 
+### Addendum 3: the consumer's requests after the release candidate (2026-10-29)
+
+The consumer's addendum 3 asks for 58 general features, SR-01 to SR-58. It also
+sends addendum 2 (A2-1 to A2-10), now approved. Each is answered by number in
+[`consumers/addendum-3.md`](../consumers/addendum-3.md), with its status, where it
+lives and any question. **None of it enters the release candidate**, whose scope
+and date stand. The requests are scheduled by when the consumer needs them, in
+four waves, each built in lanes as the release candidate was. Every request goes
+through the same steps: research and sources first, then the design page, the
+gates, the IDL, every binding, and an MCP tool where it asks for one.
+
+| wave | the requests | estimate after the release candidate |
+|---|---|---|
+| **P0** | Festival coverage, metadata and India's central and state holidays (SR-01–03); lunar dates over a span of years, Bikram Sambat arithmetic, the next occurrence, a range's change points (SR-04–07); the N-day digest and its C reader (SR-08, A2-10); the zone database from a signed pack, and the clock offset on every answer (SR-09, SR-10's dates); the iCalendar feed (SR-11); a day in sentences (SR-13); bhadra vasa, the panchaka's kind and printed conventions (SR-18–20); anniversaries, batched within a budget (SR-23, 24); the remaining saits (SR-25); amounts in words (SR-49); no panic across the wasm boundary, with a host hook (SR-52); lazy wasm modules and start time (SR-53); MCP `input_required`, the trace context and a test of tool order (A2-6) | three and a half to four weeks |
+| **P1** | SR-15, 17, 21, 26–34 (SR-34's house and business rites), 36–40, 51; SR-10's charts; A2-1 to A2-5 and A2-7 | about four weeks |
+| **P2** | SR-14, 16 (A2-8), 22, 41–44, 54, 55; the regional festival packs (SR-03); SR-34's other rites; the Tamil school (A2-9) | about three weeks |
+| **P3 and later** | SR-35, 45–48, 56–58 | v1.x |
+
+Text in Hindi, Sanskrit and Nepali (SR-12, 13, 29, 31, 37, 38) is drafted in its
+wave and ships only when a reviewer signs it off (`QUESTIONS.md` Q42). The licence
+for hosted serving of Teimeris's output (SR-55) is Q43.
+
 ## v1.0 release and baseline migration
 
 The baseline engine replaces `packages/` with the SDK; production golden vectors confirm
