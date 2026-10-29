@@ -21,7 +21,8 @@
     }
   },
   "files": [
-    "lib/"
+    "lib/",
+    "surface.json"
   ],
   "scripts": {
     "test": "node --import ./test/sdk.mjs --test test/*.test.mjs"
