@@ -38,6 +38,14 @@ The installed package bundled by each pinned bundler (`bindings/wasm/bundlers`),
 | vite | 278 | 263 909 | 263 909 |
 | webpack | 288 | 269 592 | 269 588 |
 
+## Plain packages
+
+A package of plain JavaScript is the same bytes on every host and has nothing to build, so it is measured from the checkout whenever the page is rendered: the files its manifest ships, as one stream. `check-sizes` fails it over its budget.
+
+| package | shipped | gzipped | budget, gzipped | left |
+|---|--:|--:|--:|--:|
+| `@teistro/compat` | 110 069 | 29 014 | 30 000 | 3.3% |
+
 ## Budgets moved
 
 A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fails, and so does more than 5% under it. Each budget is 2% over the module measured on CI's Linux runner, to the next ten kilobytes, and moves only through `cargo xtask sizes --from DIR --why SENTENCE`, which adds a row here saying what moved it; the figures before this record began are in the history of `bindings/wasm/size.json`.
@@ -72,3 +80,4 @@ A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fa
 | 2026-10-28 | `40611412717` | `full` | 12 605 223 | 2 949 904 | the Tamil, Bengal, Odia and Malayalam solar calendars, with the request unions, dates and presets |
 | 2026-10-29 | `40819781488` | `full` | 12 866 981 | 3 007 062 | the naming area at the boundary and its messages in every locale grow the wasm module (0.1% raw) and the panchanga profile (0.5% raw); measured on verify 40819781488 |
 | 2026-10-29 | `40819781488` | `panchanga` | 5 086 570 | 1 502 363 | the naming area at the boundary and its messages in every locale grow the wasm module (0.1% raw) and the panchanga profile (0.5% raw); measured on verify 40819781488 |
+| 2026-10-29 | `by hand` | `@teistro/compat` | 110 069 | 29 014 | the compatibility shim's first budget, 2% over its measure (62 rows, their declarations and the A/B's vocabulary; the design page estimated 40 KB) |

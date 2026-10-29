@@ -36,7 +36,7 @@ use sha2::{Digest, Sha256};
 use crate::binding::{LIBRARY_STEM, cargo, step};
 use crate::hashes::hex;
 use crate::node_binding::ADDON_STEM;
-use crate::platform::{NPM_MCP, NPM_SCOPE, NPM_WASM, PLATFORMS, Platform};
+use crate::platform::{COMPAT_DIR, NPM_COMPAT, NPM_MCP, NPM_SCOPE, NPM_WASM, PLATFORMS, Platform};
 use crate::{read, rel};
 use crate::{release, sbom, zip};
 
@@ -721,6 +721,7 @@ fn write_stage(
     written.push(rel(root, &checksums));
 
     written.push(stage_node(root, dist)?);
+    written.push(stage_compat(root, dist)?);
     written.push(stage_mcp_node(root, dist)?);
     written.push(stage_dart(root, dist, version, merged)?);
     written.push(stage_flutter(root, dist, version)?);
@@ -849,6 +850,53 @@ fn stage_node(root: &Path, dist: &Path) -> io::Result<String> {
         fs::copy(root.join(legal), directory.join(legal))?;
     }
     Ok(rel(root, &directory))
+}
+
+/// Stages the compatibility shim's package: what its manifest's `files`
+/// lists (`lib/` and `surface.json`), the manifest, the README and the
+/// terms. It is plain JavaScript, so this is a copy: the bytes are the
+/// same on every host, which is why `SIZES.md` measures them from the
+/// checkout.
+fn stage_compat(root: &Path, dist: &Path) -> io::Result<String> {
+    let directory = dist.join("npm").join(NPM_COMPAT);
+    if directory.exists() {
+        fs::remove_dir_all(&directory)?;
+    }
+    fs::create_dir_all(&directory)?;
+    let source = root.join(COMPAT_DIR);
+    for shipped in compat_files(root)? {
+        let from = source.join(&shipped);
+        if from.is_dir() {
+            copy_tree(&from, &directory.join(&shipped))?;
+        } else {
+            fs::copy(&from, directory.join(&shipped))?;
+        }
+    }
+    for file in ["package.json", "README.md"] {
+        fs::copy(source.join(file), directory.join(file))?;
+    }
+    for legal in LEGAL {
+        fs::copy(root.join(legal), directory.join(legal))?;
+    }
+    Ok(rel(root, &directory))
+}
+
+/// The paths the shim's manifest ships (`files`), as it lists them.
+pub(crate) fn compat_files(root: &Path) -> io::Result<Vec<String>> {
+    let manifest: Value = serde_json::from_str(&fs::read_to_string(
+        root.join(COMPAT_DIR).join("package.json"),
+    )?)
+    .map_err(io::Error::other)?;
+    manifest["files"]
+        .as_array()
+        .map(|files| {
+            files
+                .iter()
+                .filter_map(Value::as_str)
+                .map(|file| file.trim_end_matches('/').to_owned())
+                .collect()
+        })
+        .ok_or_else(|| io::Error::other(format!("{COMPAT_DIR}/package.json lists no `files`")))
 }
 
 /// The platforms Claude Desktop runs on, whose programs the agent

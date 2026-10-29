@@ -312,6 +312,15 @@ pub(crate) const NPM_MCP: &str = "@teistro/mcp";
 /// them (`03-design/wasm-binding.md`).
 pub(crate) const NPM_WASM: &str = "@teistro/sdk-wasm";
 
+/// The scoped name of the compatibility shim (`03-design/compat-shim.md`):
+/// plain JavaScript, one package for every host, whose only dependency is
+/// `@teistro/sdk` as a peer at exactly the same version.
+pub(crate) const NPM_COMPAT: &str = "@teistro/compat";
+
+/// Where the shim's package lives: the package itself, which is staged as
+/// it is, since it has nothing to build.
+pub(crate) const COMPAT_DIR: &str = "bindings/node/compat";
+
 #[cfg(test)]
 mod tests {
     use super::{PLATFORMS, Platform};

@@ -1,8 +1,7 @@
 # The compatibility shim: the baseline engine's inputs, forwarded
 
 Status: `design`, 2026-10-28; items 1 to 4 (§7) built the same day,
-items 5 to 8 on 2026-10-29, items 9 and 10 the same day as far as the
-SDK reaches (§7). The last "not met"
+items 5 to 10 on 2026-10-29, item 9 as far as the SDK reaches (§7). The last "not met"
 row of the parity checklist
 ([`02-parity-requirements.md`](../01-research/baseline-engine/02-parity-requirements.md),
 "migration guide") and the Phase 9 deliverable "the baseline migration
@@ -575,9 +574,11 @@ logs it once a day. When every count is zero, it has finished porting.
 - **Size:** plain JavaScript with no dependency beyond the peer. The
   estimate was at most 40 KB unminified with its declarations; built
   with item 7 it is 110 KB (`lib/` and `surface.json`): 62 rows, their
-  declarations, and the A/B's vocabulary (24 KB). It is recorded in
-  `SIZES` like the other packages with item 10, which sets the bound
-  from that measure.
+  declarations, and the A/B's vocabulary (24 KB). Built with item 10:
+  `SIZES.md` measures it from the checkout whenever the page is rendered
+  (plain JavaScript is the same bytes on every host), and `check-sizes`
+  fails it over its budget, set 2% over that measure to the next ten
+  kilobytes.
 - **Speed:** a shim call adds one input mapping and one cache lookup to
   the SDK call. Because the A/B times shim calls (§6.4), `check-ab`
   holds the shim to "not slower than the baseline engine". No separate
@@ -602,7 +603,7 @@ In order. Each is one pull request.
 | 7 | built: `surface.json`, read by the package for its rows and refusals; the refused rows typed `never` (`Refused`); `surface.test.mjs` holding the exports, the refusals' anchors, the declarations, §3 and `agree.test.mjs` to it | compat | 0.5 day |
 | 8 | built: `cargo xtask compat` and `check-compat`: the generated `baseline-map.md` (the surface by §3's sections, the settings rows each with its patch as JSON or its reading of an example value, the fixed openings, the listed spellings, the counts), the guide's §4 replaced by its link, the parity row updated, the gate in fast-check's pages beside `check-ab`; the muhurta frame moved into `Recorded` as its third opening | xtask, docs, CI, core, bindings | 1 day |
 | 9 | built on the SDK side: the unmapped count in `measure-ab` (the runner's `surfaceCount`, the record's `surface`, `ab-measured.md`'s line, `check-compat` failing on any unmapped); not built: the adapter's `surface` export, in the baseline's repository | node bench, ab-measured | 0.5 day |
-| 10 | release wiring: the package in the release pipeline's install checks and `SIZES`, the CHANGELOG entry | release, sizes | 0.5 day |
+| 10 | built: release wiring: `package stage` stages `@teistro/compat`, `check-package` installs it beside the SDK and runs its consumer (`packaging/consumer.mjs`), the release publishes it after `@teistro/sdk`, `check-versions` and `cargo xtask version` hold its version, `private` flag and exact peer, `SIZES.md` measures it against its budget; the CHANGELOG entry. Nothing published | release, sizes | 0.5 day |
 
 About nine and a half days in all. Items 1 to 3 stand alone and are worth
 having without the rest: they close guide §8.3 step 1 in every language.

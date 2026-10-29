@@ -31,7 +31,7 @@ use std::process::Command;
 use serde::{Deserialize, Serialize};
 
 use crate::generated::{Output, check, write};
-use crate::platform::{PLATFORMS, Platform};
+use crate::platform::{NPM_COMPAT, PLATFORMS, Platform};
 
 /// The record the page is rendered from.
 pub(crate) const RECORD: &str = "docs/05-testing/sizes.json";
@@ -76,6 +76,10 @@ pub(crate) enum Artefact {
     Glue,
     /// One entry of the installed package, bundled.
     Bundle,
+    /// A package of plain JavaScript, the files it ships: the same bytes on
+    /// every host, measured from the checkout rather than recorded from a
+    /// run.
+    Package,
 }
 
 impl Artefact {
@@ -90,6 +94,7 @@ impl Artefact {
                 | Artefact::Addon
                 | Artefact::Module
                 | Artefact::Glue
+                | Artefact::Package
         )
     }
 
@@ -238,6 +243,55 @@ fn bundle_entries() -> Vec<&'static str> {
     ["catalogue", "everything"]
         .into_iter()
         .chain(crate::wasm_binding::PROFILES.iter().map(|p| p.name))
+        .collect()
+}
+
+/// The packages of plain JavaScript, measured from the checkout: each with
+/// the directory it is staged from as it is.
+const PACKAGES: [(&str, &str); 1] = [(NPM_COMPAT, crate::platform::COMPAT_DIR)];
+
+/// A plain package's row: the files its manifest ships, in path order,
+/// raw and gzipped as one stream, which is near what its tarball weighs.
+/// The same on every host, since nothing is built (`.gitattributes` keeps
+/// the line endings), so it is measured where the gate runs.
+fn package_row(root: &Path, subject: &str, dir: &str) -> Result<Row, String> {
+    let shipped = crate::package::compat_files(root).map_err(|e| format!("{dir}: {e}"))?;
+    let mut files = Vec::new();
+    for path in shipped {
+        let path = root.join(dir).join(path);
+        if path.is_dir() {
+            collect_all(&path, &mut files);
+        } else {
+            files.push(path);
+        }
+    }
+    files.sort();
+    let mut bytes = Vec::new();
+    for file in &files {
+        bytes.extend(fs::read(file).map_err(|e| format!("{}: {e}", file.display()))?);
+    }
+    Ok(Row::of(subject, Artefact::Package, &bytes))
+}
+
+/// Every file under a directory, recursively.
+fn collect_all(dir: &Path, out: &mut Vec<PathBuf>) {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return;
+    };
+    for path in entries.flatten().map(|e| e.path()) {
+        if path.is_dir() {
+            collect_all(&path, out);
+        } else {
+            out.push(path);
+        }
+    }
+}
+
+/// Every plain package's row, measured now.
+fn package_rows(root: &Path) -> Result<Vec<Row>, String> {
+    PACKAGES
+        .iter()
+        .map(|(subject, dir)| package_row(root, subject, dir))
         .collect()
 }
 
@@ -589,8 +643,8 @@ fn run(root: &Path, args: &[String]) -> i32 {
         return measure(root);
     }
     if args.iter().any(|arg| arg == "--render") {
-        return match read_record(root) {
-            Ok(record) => write(root, &[Output::new(PAGE, render(&record))]),
+        return match read_record(root).and_then(|record| Ok((package_rows(root)?, record))) {
+            Ok((packages, record)) => write(root, &[Output::new(PAGE, render(&record, &packages))]),
             Err(why) => {
                 println!("FAIL  {why}");
                 1
@@ -615,6 +669,7 @@ fn run(root: &Path, args: &[String]) -> i32 {
 fn record_from(root: &Path, from: &Path, why: Option<&str>) -> Result<Vec<Output>, String> {
     let mut record = read_record(root)?;
     let (commit, run, rustc, rows) = merged(&fragments(from)?)?;
+    let packages = package_rows(root)?;
     let run = run.unwrap_or_else(|| String::from("by hand"));
     let date = output(
         Command::new("git")
@@ -625,6 +680,7 @@ fn record_from(root: &Path, from: &Path, why: Option<&str>) -> Result<Vec<Output
         for budget in &mut record.budgets {
             let Some(row) = rows
                 .iter()
+                .chain(&packages)
                 .find(|r| r.subject == budget.subject && r.artefact == budget.artefact)
             else {
                 continue;
@@ -663,7 +719,7 @@ fn record_from(root: &Path, from: &Path, why: Option<&str>) -> Result<Vec<Output
     let text = serde_json::to_string_pretty(&record).map_err(|e| e.to_string())? + "\n";
     Ok(vec![
         Output::new(RECORD, text),
-        Output::new(PAGE, render(&record)),
+        Output::new(PAGE, render(&record, &packages)),
     ])
 }
 
@@ -686,8 +742,8 @@ pub(crate) fn ratio(measured: u64, allowed: u64) -> f64 {
 
 /// `cargo xtask check-sizes [--from DIR]`.
 fn check_sizes(root: &Path, args: &[String]) -> i32 {
-    let record = match read_record(root) {
-        Ok(record) => record,
+    let (record, packages) = match read_record(root).and_then(|r| Ok((r, package_rows(root)?))) {
+        Ok(read) => read,
         Err(why) => {
             println!("FAIL  {why}");
             return 1;
@@ -695,10 +751,11 @@ fn check_sizes(root: &Path, args: &[String]) -> i32 {
     };
     let mut failures = check(
         root,
-        &[Output::new(PAGE, render(&record))],
+        &[Output::new(PAGE, render(&record, &packages))],
         "cargo xtask sizes",
     );
     failures += complete(&record);
+    failures += within_budget(&record, &packages);
     if let Some(from) = flag(args, "--from") {
         failures += match fragments(Path::new(&from)).and_then(|f| merged(&f)) {
             Ok((_, _, _, rows)) => against(&record, &rows),
@@ -712,6 +769,44 @@ fn check_sizes(root: &Path, args: &[String]) -> i32 {
         println!("ok    {RECORD}: {} sizes, complete", record.rows.len());
     }
     i32::from(failures != 0)
+}
+
+/// Each plain package held to its budget: over it fails. Not held from
+/// below as a module is, since [`suggested`]'s ten-kilobyte step is a
+/// tenth of a package this small, so a fresh budget would already stand
+/// more than [`SLACK`] over it.
+fn within_budget(record: &Record, packages: &[Row]) -> i32 {
+    let mut failures = 0;
+    for row in packages {
+        let Some(budget) = record
+            .budgets
+            .iter()
+            .find(|b| b.subject == row.subject && b.artefact == row.artefact)
+        else {
+            println!(
+                "FAIL  {RECORD} sets {} no budget; it measures {} raw, {} gzipped",
+                row.subject,
+                row.raw.unwrap_or_default(),
+                row.gzip.unwrap_or_default()
+            );
+            failures += 1;
+            continue;
+        };
+        for (what, measured, allowed) in [
+            ("raw", row.raw.unwrap_or_default(), budget.allowed.raw),
+            ("gzipped", row.gzip.unwrap_or_default(), budget.allowed.gzip),
+        ] {
+            if measured > allowed {
+                println!(
+                    "FAIL  {} is {measured} bytes {what}, its budget {allowed}; move the budget to {} with `cargo xtask sizes --from DIR --why SENTENCE`, or shrink it",
+                    row.subject,
+                    suggested(measured)
+                );
+                failures += 1;
+            }
+        }
+    }
+    failures
 }
 
 /// The record against the lists it covers, both ways, and each row against
@@ -745,7 +840,11 @@ fn complete(record: &Record) -> i32 {
         }
     }
     for budget in &record.budgets {
-        if !expected.contains(&(budget.subject.clone(), budget.artefact)) {
+        let packaged = budget.artefact == Artefact::Package
+            && PACKAGES
+                .iter()
+                .any(|(subject, _)| *subject == budget.subject);
+        if !packaged && !expected.contains(&(budget.subject.clone(), budget.artefact)) {
             println!(
                 "FAIL  {RECORD} budgets {:?} for {}, which the SDK does not ship",
                 budget.artefact, budget.subject
@@ -811,7 +910,7 @@ fn cell(bytes: Option<u64>) -> String {
     bytes.map_or_else(|| String::from("—"), grouped)
 }
 
-fn render(record: &Record) -> String {
+fn render(record: &Record, packages: &[Row]) -> String {
     let mut page = String::new();
     let _ = writeln!(page, "# Sizes\n");
     let _ = writeln!(
@@ -841,6 +940,7 @@ fn render(record: &Record) -> String {
     platforms(&mut page, record);
     wasm(&mut page, record);
     bundles(&mut page, record);
+    plain_packages(&mut page, record, packages);
     history(&mut page, record);
     page
 }
@@ -934,6 +1034,37 @@ fn bundles(page: &mut String, record: &Record) {
             })
             .collect();
         let _ = writeln!(page, "| {bundler} | {} |", cells.join(" | "));
+    }
+}
+
+fn plain_packages(page: &mut String, record: &Record, packages: &[Row]) {
+    let _ = writeln!(page, "\n## Plain packages\n");
+    let _ = writeln!(
+        page,
+        "A package of plain JavaScript is the same bytes on every host and has nothing to build, so it is measured from the checkout whenever the page is rendered: the files its manifest ships, as one stream. `check-sizes` fails it over its budget.\n"
+    );
+    let _ = writeln!(
+        page,
+        "| package | shipped | gzipped | budget, gzipped | left |"
+    );
+    let _ = writeln!(page, "|---|--:|--:|--:|--:|");
+    for row in packages {
+        let budget = record
+            .budgets
+            .iter()
+            .find(|b| b.subject == row.subject && b.artefact == row.artefact);
+        let left = budget.zip(row.gzip).map_or_else(
+            || String::from("—"),
+            |(b, gzip)| format!("{:.1}%", (1.0 - ratio(gzip, b.allowed.gzip)) * 100.0),
+        );
+        let _ = writeln!(
+            page,
+            "| `{}` | {} | {} | {} | {left} |",
+            row.subject,
+            cell(row.raw),
+            cell(row.gzip),
+            cell(budget.map(|b| b.allowed.gzip)),
+        );
     }
 }
 

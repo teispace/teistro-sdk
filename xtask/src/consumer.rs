@@ -21,7 +21,7 @@ use std::process::Command;
 
 use crate::binding::{LIBRARY_STEM, StaticLink, present, step, tool};
 use crate::package;
-use crate::platform::{NPM_MCP, NPM_SCOPE, Platform};
+use crate::platform::{COMPAT_DIR, NPM_COMPAT, NPM_MCP, NPM_SCOPE, Platform};
 use crate::release;
 use crate::{read, rel};
 
@@ -402,8 +402,11 @@ fn session(
 
 // ── Node ───────────────────────────────────────────────────────────────────
 
-/// Packs the two staged packages exactly as `npm publish` would, installs
-/// them into an empty project, and runs the consumer there.
+/// Packs the three staged packages (the SDK's, this platform's and the
+/// compatibility shim's) exactly as `npm publish` would, installs them
+/// into an empty project, and runs each consumer there: the SDK's, then
+/// the shim's, which proves its `files` list, its export map and its
+/// exact peer dependency on the SDK installed beside it.
 fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) -> Result<(), ()> {
     let Some(npm) = tool("npm", "--version") else {
         crate::skip::skip("the Node packages: no `npm` on this machine");
@@ -414,24 +417,44 @@ fn node_consumer(root: &Path, dist: &Path, check: &Path, platform: &Platform) ->
         root,
         &npm,
         &dist.join("npm"),
-        &[NPM_SCOPE.to_string(), platform.npm_package()],
+        &[
+            NPM_SCOPE.to_string(),
+            platform.npm_package(),
+            NPM_COMPAT.to_string(),
+        ],
         &into,
     )?;
 
-    // Copied rather than run where it lives: a script inside the
+    // Copied rather than run where they live: a script inside the
     // repository would resolve `@teistro/sdk` to the repository itself,
     // which is the one thing this gate is not testing.
-    let consumer = into.join("consumer.mjs");
-    fs::copy(root.join("bindings/node/packaging/consumer.mjs"), &consumer)
-        .map_err(|err| println!("FAIL  the Node consumer did not copy: {err}"))?;
-    step(
-        Command::new("node")
-            .arg(&consumer)
-            .current_dir(&into)
-            .env_remove("TEISTRO_ADDON"),
-        "the installed Node package answers as the library does",
-        "the installed Node package did not answer",
-    )
+    for (source, copied, answers, fails) in [
+        (
+            "bindings/node/packaging/consumer.mjs".to_owned(),
+            "consumer.mjs",
+            "the installed Node package answers as the library does",
+            "the installed Node package did not answer",
+        ),
+        (
+            format!("{COMPAT_DIR}/packaging/consumer.mjs"),
+            "compat-consumer.mjs",
+            "the installed shim answers through the installed SDK",
+            "the installed shim did not answer",
+        ),
+    ] {
+        let consumer = into.join(copied);
+        fs::copy(root.join(&source), &consumer)
+            .map_err(|err| println!("FAIL  {source} did not copy: {err}"))?;
+        step(
+            Command::new("node")
+                .arg(&consumer)
+                .current_dir(&into)
+                .env_remove("TEISTRO_ADDON"),
+            answers,
+            fails,
+        )?;
+    }
+    Ok(())
 }
 
 /// Packs each of `packages` from `staged` exactly as `npm publish` would
