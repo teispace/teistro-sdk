@@ -225,25 +225,35 @@ export function skyOf(context, module) {
 }
 
 /**
+ * The sky a context casts a transit in: its chart's, seen from where
+ * `gochar.transit_centre` puts it (crux C778).
+ */
+export function transitSkyOf(context) {
+  const centre = context.settings.gochar.transit_centre;
+  const sky = skyOf(context);
+  return centre === 'AS_CHART' ? sky : { ...sky, centre: centre.toLowerCase() };
+}
+
+/**
  * The SDK's side over contexts the caller opened and disposes: `ctx` for
  * every request but `kp`, which answers on the context `kp` gives, opened
- * on its own profile when first asked for, and `gochar` and `sadeSati`,
- * which answer on the context `transit` gives (`ctx` unless a convention
- * casts transits on a centre of their own, §10).
+ * on its own profile when first asked for. `gochar` and `sadeSati` answer
+ * on `ctx` too, their transits seen from where its `gochar.transit_centre`
+ * puts them (§10).
  *
  * `asked` holds the readings a request asks under where a convention
- * names its own: `kuja`, the Kuja dosha's for `milan`, and `ayurdaya`, the
- * three spans' for `full` and `batch`; the sources' own when left out.
+ * names its own: `kuja` and `porutham`, the Kuja dosha's and the ten
+ * considerations' for `milan`, and `ayurdaya`, the three spans' for
+ * `full` and `batch`; the sources' own when left out.
  *
  * @param {Context} ctx
  * @param {() => Context} kp
  * @param {string} version
- * @param {() => Context} [transit]
- * @param {{kuja?: object, ayurdaya?: object}} [asked]
+ * @param {{kuja?: object, porutham?: object, ayurdaya?: object}} [asked]
  * @returns {import('./ab-inputs.mjs').Side}
  */
-export function sdkSide(ctx, kp, version, transit = () => ctx, asked = {}) {
-  const { kuja, ayurdaya } = asked;
+export function sdkSide(ctx, kp, version, asked = {}) {
+  const { kuja, porutham, ayurdaya } = asked;
   const full = ayurdaya ? { ...FULL, rules: { ...FULL.rules, ayurdaya } } : FULL;
   const at = (input) => ({ instant: input.jdUt, place: input.place, utcOffsetSeconds: input.utcOffsetSeconds });
   // Each request asks for what the baseline's answer holds
@@ -308,6 +318,7 @@ export function sdkSide(ctx, kp, version, transit = () => ctx, asked = {}) {
           partner: { instant: partner.jdUt, place: partner.place, utcOffsetSeconds: partner.utcOffsetSeconds },
           partnerRole: 'BRIDE',
           ...(kuja && { kuja }),
+          ...(porutham && { porutham }),
         },
       });
       decoded(chart.grahas, chart.matching, chart.porutham, chart.kuja, chart.marriageDoshas);
@@ -329,7 +340,7 @@ export function sdkSide(ctx, kp, version, transit = () => ctx, asked = {}) {
       return chart;
     },
     gochar: (input) => {
-      const chart = transit().chart.found({
+      const chart = ctx.chart.found({
         ...at(input),
         ashtakavarga: true,
         gochar: { instants: [input.transitAt], ashtakavarga: true },
@@ -338,7 +349,7 @@ export function sdkSide(ctx, kp, version, transit = () => ctx, asked = {}) {
       return chart;
     },
     sadeSati: (input) => {
-      const chart = transit().chart.found({ ...at(input), sadeSati: input.window });
+      const chart = ctx.chart.found({ ...at(input), sadeSati: input.window });
       decoded(chart.grahas, chart.sadeSati);
       return chart;
     },
@@ -355,7 +366,7 @@ export function sdkSide(ctx, kp, version, transit = () => ctx, asked = {}) {
     sun: (answer) => answer.grahas.find((placed) => placed.graha === 'graha.SUN').longitudeDeg,
     facts: (request, answer, input) => sdkFacts(request, answer, input, (joined ??= figures())),
     get conventions() {
-      return { chart: skyOf(ctx), kp: skyOf(kp(), 'kp'), gochar: skyOf(transit()) };
+      return { chart: skyOf(ctx), kp: skyOf(kp(), 'kp'), gochar: transitSkyOf(ctx) };
     },
   };
 }
@@ -379,7 +390,6 @@ export const CONVENTIONS = {
   same: {
     profile: 'conformance-baseline',
     kp: 'kp-default',
-    settings: {},
     // KP on the baseline's frame: its mean node, topocentric and nutated;
     // and its ruling planets as the baseline reads them, as
     // `conformance-baseline` does: seven, the sub lords too, and the civil
@@ -389,20 +399,20 @@ export const CONVENTIONS = {
       day: { polar_day_policy: 'NEAREST_EVENT' },
       kp: { day_lord_day: 'CIVIL', ruling_count: 'WITH_SUBS' },
     },
-    // The baseline casts a transit from the Earth's centre and a birth
-    // from its place, which one context cannot; the transit requests take
-    // the transit's centre, so a natal Moon a few arcminutes from a sign's
-    // edge is the only difference left.
-    transitSettings: { frame: { centre: 'GEOCENTRIC' } },
+    // The baseline casts a birth from its place and a transit from the
+    // Earth's centre, as `conformance-baseline` records (crux C778); said
+    // here too, since the transit requests read it.
+    settings: { gochar: { transit_centre: 'GEOCENTRIC' } },
     // The readings the baseline takes where a request names its own. The
     // Kuja dosha: Mars from the lagna, the Moon and Venus, in the six
     // houses with the 2nd (C285, C286); the baseline lifts it by three of
     // its nine cancellations, which no SDK lift set reads, so none is
-    // asked. The three
-    // spans: Amsayu multiplied, compound enmity, each reduction taken in
-    // turn, and Nisargayu's listed years (C104, C303).
+    // asked. Stree-deergha beyond the 10th or on the bride's own star
+    // (C779). The three spans: Amsayu multiplied, compound enmity, each
+    // reduction taken in turn, and Nisargayu's listed years (C104, C303).
     asked: {
       kuja: { from: 'LAGNA_MOON_VENUS', houses: 'WITH_SECOND' },
+      porutham: { deerghaBeyond: 'TENTH_OR_SAME_STAR' },
       ayurdaya: { amsayu_multiplied: true, enmity: 'compound', combine: 'each', nisarga: 'listed' },
     },
   },
@@ -427,16 +437,11 @@ export function openSdk(ephemeris, version, convention = 'timed', patch = {}) {
   // Opened on first use, as the baseline builds its applied engines, so a
   // cold start pays for what its first chart reads and no more (§6).
   let kp;
-  let transit;
   const kpContext = () => (kp ??= new Context({ profile: c.kp, ephemeris, settings: merged(c.kpSettings, patch) }));
-  const transitContext = c.transitSettings
-    ? () => (transit ??= new Context({ profile: c.profile, ephemeris, settings: merged(merged(c.settings, c.transitSettings), patch) }))
-    : () => ctx;
   return {
-    side: sdkSide(ctx, kpContext, version, transitContext, c.asked),
+    side: sdkSide(ctx, kpContext, version, c.asked),
     dispose: () => {
       kp?.dispose();
-      transit?.dispose();
       ctx.dispose();
     },
   };

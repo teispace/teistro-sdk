@@ -345,10 +345,14 @@ measured default (topocentric, the nutated basis, the refracted upper
 limb, the engine's Ashtakavarga reductions), with `kp-default` given the
 same frame, the baseline's mean node and its ruling planets (the sub
 lords counted, the civil weekday's lord: cruxes C150, C151), and the
-transit requests (`gochar`, `sadeSati`) cast from the Earth's centre as
-the baseline casts a transit. Where a request names readings of its own,
-`same` asks the baseline's: `milan` the Kuja dosha from the lagna, the
-Moon and Venus in the six houses with the 2nd (C285, C286), and `full`
+transit requests (`gochar`, `sadeSati`) cast on the same context from
+the Earth's centre, as the baseline casts a transit
+(`gochar.transit_centre = GEOCENTRIC`, C778), under a birth cast from
+its place. Where a request names readings of its own, `same` asks the
+baseline's: `milan` the Kuja dosha from the lagna, the Moon and Venus in
+the six houses with the 2nd (C285, C286) and Stree-deergha beyond the
+10th or on the bride's own star (`deerghaBeyond = TENTH_OR_SAME_STAR`,
+C779), and `full`
 and `batch` the three spans with Amsayu multiplied, compound enmity,
 each reduction taken in turn and Nisargayu's listed years (C104, C303).
 What still differs under `same` is method, not convention.
