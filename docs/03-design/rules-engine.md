@@ -1469,8 +1469,8 @@ second, fourth, fifth or eleventh from it, and is obstructed from the twelfth,
 tenth, ninth and third — the chapter prints the pairing as `4 2 11 5` over
 `10 12 3 9`, and `ArgalaPlace` is that pairing as a type, so a rule cannot pair
 them wrongly. It stands when the intervening grahas outnumber the obstructing
-ones, which is the half of the verse's test the kernel can make: the other half
-asks which graha is *stronger*, and is not built. `vipareeta-argala` is the
+ones, or when one of them is *stronger* than every obstructing one: verse 4
+gives both tests and either serves. `vipareeta-argala` is the
 same verses' three or more malefics in the third, which nothing obstructs.
 "As the nodes have retrograde motions, the Argala and obstructions be also
 counted accordingly in a reverse manner", so an intervention counted on Rahu or

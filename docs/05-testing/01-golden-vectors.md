@@ -140,10 +140,10 @@ emit the report schema.
 
 ## Open items
 
-- A second baseline export for the seventeen other dasha systems, the
-  aspects, the yogas and doshas, the strengths, Ashtakavarga, the
-  Jaimini slice, KP and milan, once the corresponding design pages exist
-  and say what the fixture must carry (the same script, more sections).
+- The second baseline export is made: the dasha systems, the yogas and
+  doshas, the strengths and Ashtakavarga are in the corpus, and the
+  aspects, the Jaimini slice, KP and milan are recorded on a local corpus
+  branch awaiting its release (below, "The second export").
 - Rank-1 vectors for the cruxes that still block Phase 5 (C2, C6); C1,
   C3, C5 and C8 were closed from BPHS itself on 2026-09-25, and the
   worked answers the text gives are held as tests.
@@ -388,3 +388,137 @@ explained rather than a failure or a silent adoption.
     `crates/houses/tests/baseline.rs` asserts by name — the test fails
     if a fourth appears or one of the three goes away. Found 2026-09-07
     by `cargo xtask houses` (`03-design/houses-measured.md` §3).
+
+## The second export: aspects, the Jaimini slice, KP and milan
+
+Exported 2026-10-29 from the baseline engine at version 1.8.0 (the same
+`engine_version` every first-export fixture records; the engine's package
+release 0.6.173), single-threaded because its native ephemeris is not
+thread-safe. Like every derived corpus since the dasha systems, each family
+is computed from the fixtures' **recorded** values, repeated in each file as
+`inputs`, and never from a fresh cast, so a difference is method and never
+sky. The files carry the engine's outputs only: none of its tables (the
+graded drishti, the 249 KP subs, the koota tables) is in a manifest, since
+those are the engine's and the SDK reads its own from the texts. All four
+are compared **exactly**: none is listed in `tolerances.json`, whose rule is
+that an unlisted field is compared exactly. Every value is a house, a sign,
+a graha, a karaka, a KP number, a count of points that is whole or half, or
+a flag.
+
+The corpus holds them as `baseline/aspects`, `baseline/jaimini`,
+`baseline/kp` and `baseline/milan` with their schemas and `validate.py`
+checks (the corpus's own README says what each file carries). Each scorer
+asks `conformance::carried` first, so against a corpus that does not list
+its section it prints a skip naming the corpus's version and records no
+score; `cargo xtask conformance` runs all four.
+
+### Aspects (`crates/aspect/tests/baseline.rs`)
+
+- **Inputs:** the nine grahas' recorded whole-sign houses (entry 24 makes
+  them the sign relation), 93 files.
+- **Fields:** each graha's full aspects in the engine's order, the grahas
+  aspecting each house, and the graded strength in percent of every house
+  a graha aspects at all.
+- **SDK settings:** `conformance-baseline`, whose `aspect.node_aspects` is
+  `NONE`, as the engine gives the nodes no special aspects.
+- **Score:** 10881 compared, 10881 agree: every graded strength of every
+  graha on every house (a house not recorded is 0) and every full-aspect set.
+
+### The Jaimini slice (`crates/rules/tests/baseline_jaimini.rs`)
+
+- **Inputs:** the nine grahas' recorded longitudes, signs and whole-sign
+  houses, their navamsha signs and the lagna's sign, 93 files; the rule
+  chart is founded from the same fixture's yogas file, which repeats the
+  whole recorded chart, and the test asserts the two read one chart.
+- **Fields:** the chara karakas under seven and eight, each scheme's
+  karakamsha with every graha's house from it in the rasi chart, the argala
+  on every house, the twelve arudha padas with the sign counted before the
+  exception and whether it moved, and each graha's rashi drishti.
+- **SDK settings:** `conformance-baseline`'s
+  `jaimini.eight_karaka_order = PITRIKARAKA_LAST` (C101), applied as
+  `EightKarakas::PitrikarakaLast`; the karakamsha from
+  `dasha::jaimini::karakamsha`, the padas from `points::arudha` and the
+  drishti from `aspect::rashi`, each under its default.
+- **Score:** karakas 1674 of 1674, karakamsha 2046 of 2046, padas 1116 of
+  1116, rashi drishti 837 of 837. The argala, from the four places the SDK
+  reads (the 2nd, 4th, 5th and 11th; the engine's 8th, obstructed from the
+  6th, is a place the SDK does not build and is not compared): 5948
+  compared, 134 explained. Every one of the 134 is an intervention the
+  SDK holds and the engine records obstructed, with the obstructing
+  grahas as many as the intervening ones or more: verse 4 of ch. 31 gives
+  two tests and either serves, and the engine reads only the count
+  (`03-design/rules-engine.md`, argala). Where both hold, the grahas that
+  intervene agree.
+
+### KP (`crates/kp/tests/baseline.rs`)
+
+- **Inputs:** the nine grahas' recorded sidereal longitudes, the recorded
+  Placidus cusps with the degeneracy flag, and the birth's Julian Day and
+  zone offset, 75 files (every fixture recording positions and a Placidus
+  table, under six zodiacs).
+- **Fields:** every cusp's and graha's KP number and four lords, each
+  graha's house and the houses it signifies, the four significator levels
+  of every house, and the ruling planets' seven slots with the distinct
+  rulers ranked.
+- **SDK settings:** `conformance-baseline`'s `kp.ruling_count = WITH_SUBS`
+  and `kp.day_lord_day = CIVIL` (C150, C151), the A/B's
+  `CONVENTIONS.same` for KP; the node aspects as above. The engine names no
+  node as an agent, so the SDK's agents are left out of the rulers
+  compared.
+- **Score:** 8400 compared, 332 explained. 217 are the three files
+  (c027, c043 and c027's tropical variant) whose Placidus the engine
+  replaced with equal houses (`03-design/kp.md`, the high-latitude row):
+  every cusp-borne value there is read from other cusps. 115 are C154: the
+  engine counts the lord of a sign a house holds whole at the fourth level
+  and so the planets in its star at the third, and the houses those
+  planets signify follow; each such miss is explained only when adding
+  exactly those grahas makes the SDK's levels the engine's. Every graha's
+  KP number and lords agree on all 75 files, the fallback's included, since
+  they read no cusp; outside those three files so do the cusps' and every
+  ruling slot.
+
+### Milan (`crates/matching/tests/baseline.rs`)
+
+- **Inputs:** each default-profile fixture's recorded Moon (nakshatra,
+  pada, sign) as the groom against every one as the bride: 55 files, 3025
+  matches.
+- **Fields:** the eight kootas' points, the total, the nadi dosha, the
+  bhakoot dosha's kind, and four of the ten considerations: rajju, vedha,
+  Mahendra and Stree Deergha. The percentage, the recommendation and the
+  marriage doshas are the engine's verdicts and are not compared (the SDK
+  reports clauses, not verdicts); the Mangal match is held by
+  `baseline/doshas`.
+- **SDK settings:** `KootaRules::PRINTED_IN_NEPAL`, which measured nearest
+  of every koota reading the SDK ships (vashya 1119 and gana 2341 of 3025
+  agreeing, against 821 and 1641 under the default; no other knob gained
+  any); `PoruthamRules { deergha_beyond: TENTH_OR_SAME_STAR }` (C779; 3025
+  against 2536 for the text's thirteenth); and each consideration's verdict
+  is `agrees && !lifted`, since the engine does not read the p. 76
+  exception (C277).
+- **Score:** 45375 compared, 4820 kootas and 2461 totals explained; varna,
+  Graha Maitri, both doshas' presence and kinds and all four considerations
+  agree on every match. Each explained koota is held to the reading its
+  entry names, so a miss of another shape fails the test:
+  - **vashya, 1906** (`03-design/matching.md`, C260): the verse finishes
+    its table "by usage", and the engine's usage is not the printed
+    Nepali reading the SDK ships, in every relation;
+  - **yoni, 1150** (C261): every one a pair the SDK reads as neutral (2),
+    which the engine grades a friend (3) or an enemy (1); the verses list
+    only the seven great enmities;
+  - **gana, 684** (C262): 380 a Deva bride with a Manushya groom, 6 to the
+    SDK's 5, and 304 a Deva bride with a Rakshasa groom, 0 to the SDK's 1;
+  - **bhakoot, 452, and nadi, 110** (C284): a dosha the source lifts, whose
+    points the engine gives back (7, 8) and the SDK keeps at 0, reporting
+    the lift beside them;
+  - **bhakoot, 268** (C263): a bad Bhakoot the engine lifts by one
+    exception, where the SDK's printed reading takes Garga's count (three
+    for the 6/8, two for the others);
+  - **tara, 250** (Janma): two stars nine or eighteen apart, each the
+    tenth or nineteenth from the other. The verse takes each count's
+    remainder of nine, which is 1 both ways and not among the bad 3rd,
+    5th and 7th, so the SDK gives 3; the engine gives 0. Its same-star
+    pairs, also 1 both ways, it gives 3, as the SDK does (163 matches). A
+    finding of this export, recorded here as the crux's home until the
+    matching page takes it.
+
+  A total is explained only when a koota of the same match was missed.

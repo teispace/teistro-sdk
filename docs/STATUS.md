@@ -3836,12 +3836,17 @@ kept here: the session log records them.
    are not claimed. A Next.js edge function carries the module twice,
    which a staged glue without its fallback path would end.
    The module profiles are built (`03-design/wasm-profiles.md`).
-8. **The rest of the second baseline export.** The dasha systems, the
-   rashi dashas, Kalachakra, the yogas and doshas, Shadbala, Bhava bala,
-   Ashtakavarga and Vimshopaka are exported (`fixtures/baseline/`) and
-   scored (`05-testing/CONFORMANCE.md`); aspects, the Jaimini slice, KP
-   and milan are not, and wait until their design pages say what each
-   fixture must carry (`05-testing/01-golden-vectors.md`).
+8. **Release the rest of the second baseline export.** Aspects, the
+   Jaimini slice, KP and milan are exported (2026-10-29) and committed in
+   the corpus on its local branch `wip/second-export` at `f482b1f`,
+   unpushed and untagged; the SDK's pin stays at v0.12.0. Their scorers
+   (`crates/{aspect,kp,matching}/tests/baseline.rs`,
+   `crates/rules/tests/baseline_jaimini.rs`) skip, naming the pinned
+   version, until the pin carries them; against `f482b1f` every miss is
+   explained (`05-testing/01-golden-vectors.md`, "The second export").
+   Left: the maintainer's yes to push and tag the corpus as 0.13.0, then
+   the pin bump and `cargo xtask conformance` to put the four on
+   `CONFORMANCE.md`.
 
 ## Session log
 

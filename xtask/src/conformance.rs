@@ -50,7 +50,10 @@ const TESTS: &[(&str, &[&str])] = &[
         &["baseline", "systems", "rashi", "kalachakra", "pyjhora"],
     ),
     ("teistro-strength", &["baseline"]),
-    ("teistro-rules", &["baseline", "doshas"]),
+    ("teistro-aspect", &["baseline"]),
+    ("teistro-kp", &["baseline"]),
+    ("teistro-matching", &["baseline"]),
+    ("teistro-rules", &["baseline", "doshas", "baseline_jaimini"]),
     ("teistro-calendar", &["official"]),
     ("teistro-siddhanta", &["official"]),
 ];
