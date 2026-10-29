@@ -427,4 +427,146 @@ void main() {
       },
     });
   });
+
+  test('a request the layer keeps by hand is a value: equal when it writes '
+      'the same JSON', () {
+    final here = Observer(
+      longitudeDeg: Longitude(85.3),
+      latitudeDeg: Latitude(27.7),
+      altitudeM: Altitude(1400),
+    );
+    final there = Observer(
+      longitudeDeg: Longitude(77.2),
+      latitudeDeg: Latitude(28.6),
+      altitudeM: Altitude(216),
+    );
+    // Each built twice, not as a constant, so the two are not one object;
+    // and another of the class that writes something else.
+    final cases = <(Object Function(), Object)>[
+      (() => AnnualPlace.at(here, utcOffsetSeconds: 20700), AnnualPlace.birth),
+      (() => AntisciaRequest(), const AntisciaRequest(orbs: OrbModel.leo)),
+      (
+        () => AshtakavargaAyusRules(divisor: AyusDivisor.thirty),
+        const AshtakavargaAyusRules(divisor: AyusDivisor.sevenOverTwentySeven),
+      ),
+      (() => AttendantFacts(total: 3), const AttendantFacts(total: 4)),
+      (
+        () => AyurdayaRules(combine: AyurdayaCombine.largest),
+        const AyurdayaRules(combine: AyurdayaCombine.each),
+      ),
+      (
+        () => BaselineDashaRules(seedOverflow: SeedOverflow.reject),
+        const BaselineDashaRules(seedOverflow: SeedOverflow.wrapToStart),
+      ),
+      (
+        () => BaselineRectificationRequest(uncertaintyMinutes: 30),
+        const BaselineRectificationRequest(uncertaintyMinutes: 60),
+      ),
+      (
+        () => BirthFacts(fatherPresent: true),
+        const BirthFacts(fatherPresent: false),
+      ),
+      (
+        () => CircumstanceRequest(facts: BirthFacts(fatherPresent: true)),
+        const CircumstanceRequest(),
+      ),
+      (
+        () => DignityRequest(sectRule: SectRule.horizon),
+        const DignityRequest(sectRule: SectRule.daylight),
+      ),
+      (
+        () => DossierRequest(dashaDepth: 2),
+        const DossierRequest(dashaDepth: 3),
+      ),
+      (
+        () => FestivalRequest(rules: FestivalPack.nepal),
+        const FestivalRequest(rules: FestivalPack.dharmasindhu),
+      ),
+      (() => HarmonicRequest(5), const HarmonicRequest(7)),
+      (
+        () => HitRequest(from: 2460000.5, to: 2460030.5),
+        const HitRequest(from: 2460000.5, to: 2460060.5),
+      ),
+      (() => Interval(from: 1.0, to: 2.0), const Interval(from: 1.0, to: 3.0)),
+      (() => LalKitabRequest(year: 30), const LalKitabRequest(year: 31)),
+      (
+        () => LifeEvent(kind: LifeEventKind.marriage, on: 2460000.5),
+        const LifeEvent(kind: LifeEventKind.engagement, on: 2460000.5),
+      ),
+      (
+        () => MasaPraveshaRequest(year: 2026),
+        const MasaPraveshaRequest(year: 2027),
+      ),
+      (
+        () => MatchingRequest(
+          Partner(instant: 2460000.5, place: here),
+          partnerRole: MatchRole.bride,
+        ),
+        MatchingRequest(
+          Partner(instant: 2460000.5, place: here),
+          partnerRole: MatchRole.groom,
+        ),
+      ),
+      (
+        () => MuhurtaRequest(rules: MuhurtaActivity.ramanMarriage),
+        const MuhurtaRequest(
+          rules: MuhurtaActivity.ramanMarriage,
+          daysWithWindows: 9,
+        ),
+      ),
+      (() => NatalGraha(Graha.mars), const NatalLagna()),
+      (
+        () => Partner(instant: 2460000.5, place: here),
+        Partner(instant: 2460000.5, place: there),
+      ),
+      (() => PrashnaRequest(house: 7), const PrashnaRequest(house: 10)),
+      (
+        () => ProgressionContacts(from: 2460000.5, to: 2460365.5),
+        const ProgressionContacts(from: 2460000.5, to: 2460365.5, mutual: true),
+      ),
+      (() => ProgressionsRequest(at: 2460676.5), const ProgressionsRequest()),
+      (
+        () => PurifierRules(seedMinutes: 5.0),
+        const PurifierRules(seedMinutes: 10.0),
+      ),
+      (() => PurifyRequest(minutes: 30), const PurifyRequest(minutes: 60)),
+      (
+        () => RasmiRules(place: RayPlace.sign),
+        const RasmiRules(place: RayPlace.dwadasamsa),
+      ),
+      (
+        () => RectificationRequest(purify: PurifyRequest(minutes: 30)),
+        const RectificationRequest(),
+      ),
+      (() => RuleRequest(longevity: true), const RuleRequest()),
+      (
+        () => ThreePairsRules(basis: PairsBasis.perPair),
+        const ThreePairsRules(basis: PairsBasis.classYears),
+      ),
+      (() => VarshaRequest(through: 30), const VarshaRequest(through: 31)),
+      (
+        () => VarsheshaRules(subDegree: SubDegree.poorna),
+        const VarsheshaRules(subDegree: SubDegree.none),
+      ),
+      (
+        () => WesternAspectRequest(aspects: [WesternAspect.conjunction]),
+        const WesternAspectRequest(aspects: [WesternAspect.semiSextile]),
+      ),
+      (() => YearClock.days(360), const YearClock.days(365)),
+      (
+        () => YogaRules(subDegree: SubDegree.poorna),
+        const YogaRules(subDegree: SubDegree.none),
+      ),
+    ];
+    for (final (build, other) in cases) {
+      final (a, b) = (build(), build());
+      final name = a.runtimeType;
+      expect(identical(a, b), isFalse, reason: '$name built twice');
+      expect(a, b, reason: '$name');
+      expect(a.hashCode, b.hashCode, reason: '$name');
+      expect({a}.contains(b), isTrue, reason: '$name');
+      expect(a, isNot(other), reason: '$name');
+    }
+    expect(cases, hasLength(36));
+  });
 }

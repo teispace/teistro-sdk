@@ -7588,7 +7588,7 @@ List<Map<String, Object?>> _sectionOf(String json) =>
 /// The rules a request asks a chart to answer
 /// (`03-design/rules-at-the-boundary.md`): shipped sets by name and a
 /// consumer's own rules in the SDK's rule format.
-final class RuleRequest {
+final class RuleRequest extends _Facade {
   /// A request for [shipped] sets and a consumer's own [rules].
   const RuleRequest({
     this.shipped = const <ShippedRules>[],
@@ -7643,6 +7643,7 @@ final class RuleRequest {
   final AshtakavargaAyusRules? ashtakavarga;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     'shipped': [for (final set in shipped) set.key],
     'rules': rules,
@@ -7697,7 +7698,7 @@ enum NisargaYears {
 ///   ayurdaya: AyurdayaRules.parijata,
 /// );
 /// ```
-final class AyurdayaRules {
+final class AyurdayaRules extends _Facade {
   const AyurdayaRules({
     this.combine,
     this.nisarga,
@@ -7731,6 +7732,10 @@ final class AyurdayaRules {
     if (enmity != null) 'enmity': enmity!.key,
     if (rising != null) 'rising': rising!.key,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// Which degrees rectify the class of life (crux C103).
@@ -7777,7 +7782,7 @@ enum SaturnAmongPairs {
 
 /// How the three pairs are read (crux C103); a field left null is the
 /// verses' reading.
-final class ThreePairsRules {
+final class ThreePairsRules extends _Facade {
   const ThreePairsRules({this.rectification, this.basis, this.saturn});
 
   final PairsRectification? rectification;
@@ -7789,6 +7794,10 @@ final class ThreePairsRules {
     if (basis != null) 'basis': basis!.key,
     if (saturn != null) 'saturn': saturn!.key,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// How the seven grahas' rays and Rasmija years are read (*Jataka
@@ -7799,7 +7808,7 @@ final class ThreePairsRules {
 /// // As v. 24 reads them, by the sign.
 /// const rules = RuleRequest(longevity: true, rasmi: RasmiRules.verse);
 /// ```
-final class RasmiRules {
+final class RasmiRules extends _Facade {
   const RasmiRules({this.place});
 
   /// v. 24 as the verse reads: the place by the sign.
@@ -7810,6 +7819,10 @@ final class RasmiRules {
   Map<String, Object?> get _record => <String, Object?>{
     if (place != null) 'place': place!.key,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// Which table measures the signs in the ashtakavarga spans (crux C311).
@@ -7854,7 +7867,7 @@ enum AyusDivisor {
 ///   ),
 /// );
 /// ```
-final class AshtakavargaAyusRules {
+final class AshtakavargaAyusRules extends _Facade {
   const AshtakavargaAyusRules({
     this.measures,
     this.divisor,
@@ -7876,6 +7889,10 @@ final class AshtakavargaAyusRules {
     if (reductions != null) 'reductions': reductions!.key,
     if (occupied != null) 'occupied': occupied!.key,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// One stay of Saturn's in a house, half-open.
@@ -7976,14 +7993,26 @@ final class SadeSatiReport {
 bool _sameList<T>(List<T> a, List<T> b) {
   if (a.length != b.length) return false;
   for (var i = 0; i < a.length; i += 1) {
-    final (x, y) = (a[i], b[i]);
-    if (x is List && y is List ? !_sameList(x, y) : x != y) return false;
+    if (!_same(a[i], b[i])) return false;
   }
   return true;
 }
 
-/// A value compared field by field, lists by their members: two are equal
-/// when they are the same type and every field is.
+/// Whether two values are equal, a list by its members in order and a map
+/// by its entries whatever their order, however deep: a JSON value as the
+/// SDK would read it.
+bool _same(Object? x, Object? y) => switch ((x, y)) {
+  (final List<Object?> a, final List<Object?> b) => _sameList(a, b),
+  (final Map<Object?, Object?> a, final Map<Object?, Object?> b) =>
+    a.length == b.length &&
+        a.entries.every(
+          (e) => b.containsKey(e.key) && _same(e.value, b[e.key]),
+        ),
+  _ => x == y,
+};
+
+/// A value compared field by field, lists and maps by their members: two
+/// are equal when they are the same type and every field is.
 abstract base class _Value {
   const _Value();
 
@@ -8001,10 +8030,31 @@ abstract base class _Value {
   int get hashCode => Object.hashAll(_fields.map(_deepHash));
 }
 
-/// A field's hash, a list's from its members however deep, as `==` compares
-/// it ([_sameList]): two values that are equal hash alike.
-int _deepHash(Object? field) =>
-    field is List ? Object.hashAll(field.map(_deepHash)) : field.hashCode;
+/// A field's hash, a list's from its members and a map's from its entries
+/// however deep, as `==` compares it ([_same]): two values that are equal
+/// hash alike.
+int _deepHash(Object? field) => switch (field) {
+  final List<Object?> list => Object.hashAll(list.map(_deepHash)),
+  final Map<Object?, Object?> map => Object.hashAllUnordered(
+    map.entries.map((e) => Object.hash(e.key, _deepHash(e.value))),
+  ),
+  _ => field.hashCode,
+};
+
+/// A request the layer keeps by hand (`DART_FACADES` in the generator): a
+/// value compared by the JSON it writes, as the SDK reads it, so two that
+/// ask the same are equal and hash alike. Compared by its JSON rather than
+/// by a list of its fields, a field added later is compared with nothing
+/// more to keep in step.
+abstract base class _Facade extends _Value {
+  const _Facade();
+
+  /// Its JSON, as the SDK reads it.
+  Object? get _wire;
+
+  @override
+  List<Object?> get _fields => [_wire];
+}
 
 /// One term of a table of the caller's own: its lord, and the degree within
 /// the sign it ends at, exclusive.
@@ -8084,7 +8134,7 @@ final class DignityScores extends _Value {
 /// );
 /// final sect = chart.dignities?.sect;
 /// ```
-final class DignityRequest {
+final class DignityRequest extends _Facade {
   const DignityRequest({
     this.sectRule = SectRule.horizon,
     this.terms = Terms.ptolemaicLilly,
@@ -8106,6 +8156,7 @@ final class DignityRequest {
   final DignityScores scores;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _record;
 
   String get _json => jsonEncode(_wire);
@@ -9137,7 +9188,7 @@ final class DirectionArc extends _Value {
 
 /// A window of life to find a birth's progressed contacts in, spelled as a
 /// [HitRequest] spells its planets, points and aspects.
-final class ProgressionContacts {
+final class ProgressionContacts extends _Facade {
   const ProgressionContacts({
     required this.from,
     required this.to,
@@ -9182,6 +9233,10 @@ final class ProgressionContacts {
     if (parallels case final parallels?) 'parallels': parallels._wire,
     if (mutual) 'mutual': true,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// What to read every chart's birth through
@@ -9192,7 +9247,7 @@ final class ProgressionContacts {
 /// ```dart
 /// const leo = ProgressionsRequest(at: 2460676.5, year: YearMeasure.noonSiderealTime);
 /// ```
-final class ProgressionsRequest {
+final class ProgressionsRequest extends _Facade {
   const ProgressionsRequest({
     this.at,
     this.rate = ProgressionRate.secondary,
@@ -9211,6 +9266,7 @@ final class ProgressionsRequest {
   final ProgressionContacts? contacts;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     if (at case final at?) 'at': at,
     'rate': rate._record,
@@ -9301,7 +9357,7 @@ final class OrbModel extends _Value {
 /// ```dart
 /// const two = WesternAspectRequest(aspects: [WesternAspect.trine, WesternAspect.square]);
 /// ```
-final class WesternAspectRequest {
+final class WesternAspectRequest extends _Facade {
   const WesternAspectRequest({this.aspects, this.orbs = OrbModel.leo});
 
   /// Lilly's reading: the Ptolemaic five under his moieties.
@@ -9329,6 +9385,7 @@ final class WesternAspectRequest {
   String get _json => jsonEncode(_record);
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _record;
 }
 
@@ -9676,7 +9733,7 @@ final class Kuja extends _Value {
 ///   partnerRole: MatchRole.bride,
 /// );
 /// ```
-final class MatchingRequest {
+final class MatchingRequest extends _Facade {
   const MatchingRequest(
     this.partner, {
     required this.partnerRole,
@@ -9711,6 +9768,7 @@ final class MatchingRequest {
   String get _json => jsonEncode(_record);
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _record;
 }
 
@@ -11402,7 +11460,7 @@ final class NaamMilan extends _Value {
 /// const ninth = HarmonicRequest(9);
 /// const tight = HarmonicRequest(5, orbDeg: 3);
 /// ```
-final class HarmonicRequest {
+final class HarmonicRequest extends _Facade {
   const HarmonicRequest(this.number, {this.orbDeg = 12});
 
   /// Which harmonic.
@@ -11414,6 +11472,7 @@ final class HarmonicRequest {
   Map<String, Object?> get _record => {'number': number, 'orbDeg': orbDeg};
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _record;
 
   String get _json => jsonEncode(_wire);
@@ -11562,7 +11621,7 @@ final class WesternHouseRequest {
 /// const leo = AntisciaRequest(orbs: OrbModel.leo);
 /// const onCusps = AntisciaRequest(cusps: WesternHouseRequest());
 /// ```
-final class AntisciaRequest {
+final class AntisciaRequest extends _Facade {
   const AntisciaRequest({this.orbs = OrbModel.lilly, this.cusps});
 
   final OrbModel orbs;
@@ -11574,6 +11633,7 @@ final class AntisciaRequest {
   };
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _record;
 
   String get _json => jsonEncode(_wire);
@@ -11952,7 +12012,7 @@ final class ParallelRow extends _Value {
 ///   place: Observer(latitudeDeg: Latitude(51.5058), longitudeDeg: Longitude(-0.1878), altitudeM: Altitude(0)),
 /// );
 /// ```
-final class Partner {
+final class Partner extends _Facade {
   const Partner({
     required this.instant,
     required this.place,
@@ -11979,6 +12039,7 @@ final class Partner {
   };
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _record;
 }
 
@@ -13383,7 +13444,7 @@ enum AstaCriterion {
 ///     muhurta: const MuhurtaRequest(rules: MuhurtaActivity.ramanMarriage));
 /// final best = almanac.muhurta?.windows.first;
 /// ```
-final class MuhurtaRequest {
+final class MuhurtaRequest extends _Facade {
   const MuhurtaRequest({
     required this.rules,
     this.native,
@@ -13418,6 +13479,7 @@ final class MuhurtaRequest {
   final Direction? direction;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     'rules': _named(rules, 'rules', (MuhurtaActivity a) => a.key),
     if (native != null) 'native': native!._wire,
@@ -14737,7 +14799,7 @@ enum FestivalPack {
 ///     festivals: const FestivalRequest(rules: FestivalPack.dharmasindhu));
 /// final first = almanac.festivals?.observances.first;
 /// ```
-final class FestivalRequest {
+final class FestivalRequest extends _Facade {
   const FestivalRequest({required this.rules, this.published = const []});
 
   /// A [FestivalPack], or a list of packs and rules spelt out.
@@ -14761,6 +14823,7 @@ final class FestivalRequest {
   final List<Map<String, Object?>> published;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     'rules': switch (rules) {
       List<Object?> items => [
@@ -18506,7 +18569,7 @@ final class TithiPravesha extends _Value {
 ///   final daily = ctx.chart.found(instant: day.at, /* … */);
 /// }
 /// ```
-final class MasaPraveshaRequest {
+final class MasaPraveshaRequest extends _Facade {
   const MasaPraveshaRequest({
     required this.year,
     this.month,
@@ -18549,6 +18612,7 @@ final class MasaPraveshaRequest {
   final MasaDashaRules dasha;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     'year': year,
     if (month != null) 'month': month,
@@ -19499,7 +19563,7 @@ enum DossierSection implements _Keyed {
 /// );
 /// final prompt = '$question\n\n${chart.dossier}';
 /// ```
-final class DossierRequest {
+final class DossierRequest extends _Facade {
   const DossierRequest({
     this.sections,
     this.preset,
@@ -19529,6 +19593,7 @@ final class DossierRequest {
   String get _json => jsonEncode(_wire);
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     if (sections != null) 'sections': [for (final s in sections!) s.key],
     if (preset != null) 'preset': preset!.key,
@@ -20540,7 +20605,7 @@ KpReading _kpReading(Map<String, Object?> raw) {
 /// );
 /// final ingresses = chart.hits.where((h) => h.event is SignIngress);
 /// ```
-final class HitRequest {
+final class HitRequest extends _Facade {
   const HitRequest({
     required this.from,
     required this.to,
@@ -20610,6 +20675,7 @@ final class HitRequest {
   final double? eclipseOrbDeg;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     'from': from,
     'to': to,
@@ -20628,7 +20694,7 @@ final class HitRequest {
 /// A natal point a transit aspects: a natal graha ([NatalGraha]), the
 /// lagna ([NatalLagna]) or the midheaven ([NatalMidheaven]). It goes into
 /// [HitRequest.points] as it comes back in an aspect's [AspectHit.to].
-sealed class NatalPoint {
+sealed class NatalPoint extends _Facade {
   const NatalPoint();
 
   /// `'GRAHA'`, `'LAGNA'` or `'MIDHEAVEN'`, as every binding spells it.
@@ -20637,6 +20703,7 @@ sealed class NatalPoint {
   Map<String, Object?> get _json;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _json;
 }
 
@@ -20652,12 +20719,6 @@ final class NatalGraha extends NatalPoint {
 
   @override
   Map<String, Object?> get _json => {'point': point, 'graha': graha.key};
-
-  @override
-  bool operator ==(Object other) => other is NatalGraha && other.graha == graha;
-
-  @override
-  int get hashCode => graha.hashCode;
 }
 
 /// The natal lagna, as a point a transit aspects.
@@ -20669,12 +20730,6 @@ final class NatalLagna extends NatalPoint {
 
   @override
   Map<String, Object?> get _json => {'point': point};
-
-  @override
-  bool operator ==(Object other) => other is NatalLagna;
-
-  @override
-  int get hashCode => point.hashCode;
 }
 
 /// The natal midheaven, as a point a transit or a progression aspects.
@@ -20686,12 +20741,6 @@ final class NatalMidheaven extends NatalPoint {
 
   @override
   Map<String, Object?> get _json => {'point': point};
-
-  @override
-  bool operator ==(Object other) => other is NatalMidheaven;
-
-  @override
-  int get hashCode => point.hashCode;
 }
 
 /// What a hit was: [SignIngress], [NakshatraIngress], [Station] or
@@ -20864,7 +20913,7 @@ final class Hit {
 /// );
 /// final thirtieth = chart.praveshas.firstWhere((one) => one.year == 30);
 /// ```
-final class VarshaRequest {
+final class VarshaRequest extends _Facade {
   const VarshaRequest({
     required this.through,
     this.reading = ReturnLongitude.sidereal,
@@ -20952,6 +21001,7 @@ final class VarshaRequest {
   final AnnualDashaRules dashaRules;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     'reading': reading.key,
     'through': through,
@@ -21006,7 +21056,7 @@ final class _TheseAnnualDashas extends AnnualDashas {
 }
 
 /// What a unit of the year is (crux C122).
-sealed class YearClock {
+sealed class YearClock extends _Facade {
   const YearClock._();
 
   /// The Sun's motion through one degree from where it stood at the return:
@@ -21023,6 +21073,7 @@ sealed class YearClock {
   Object get _json;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _json;
 }
 
@@ -21108,7 +21159,7 @@ final class _Houses extends Matters {
 /// Where the source leaves the sixteen Tajika yogas a choice
 /// (`03-design/tajika-yogas.md`). A reading left null is the SDK's own
 /// default, which lives in one place and is not repeated here.
-final class YogaRules {
+final class YogaRules extends _Facade {
   const YogaRules({
     this.subDegree,
     this.weakBelow,
@@ -21142,11 +21193,15 @@ final class YogaRules {
     if (tambira case final tambira?) 'tambira': tambira.key,
     if (moonBenefic case final moonBenefic?) 'moonBenefic': moonBenefic.key,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _json;
 }
 
 /// Where a year's own chart is cast: the birthplace, or a residence in the
 /// parts `found` itself takes.
-sealed class AnnualPlace {
+sealed class AnnualPlace extends _Facade {
   const AnnualPlace._();
 
   /// The birth chart's own place and clock.
@@ -21159,6 +21214,10 @@ sealed class AnnualPlace {
   }) = _Residence;
 
   Object get _json;
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _json;
 }
 
 final class _Birthplace extends AnnualPlace {
@@ -21213,7 +21272,7 @@ final class OfficeBearers {
 /// Where the sources differ on the lord of the year, each a named reading
 /// (`03-design/varshesha.md`). A reading left null is the SDK's own
 /// default, which lives in one place and is not repeated here.
-final class VarsheshaRules {
+final class VarsheshaRules extends _Facade {
   const VarsheshaRules({
     this.noneAspects,
     this.tied,
@@ -21248,6 +21307,7 @@ final class VarsheshaRules {
   };
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _json;
 }
 
@@ -21728,7 +21788,7 @@ final class PrashnaRules extends PrashnaRequestRules {
 /// // Every reading the baseline engine takes, by name.
 /// const baseline = PrashnaRequest(house: 7, rules: PrashnaRequestRulesBaseline());
 /// ```
-final class PrashnaRequest {
+final class PrashnaRequest extends _Facade {
   const PrashnaRequest({
     this.house,
     this.number,
@@ -21752,6 +21812,7 @@ final class PrashnaRequest {
   final PrashnaRequestRules rules;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     'question': {
       if (house != null) 'house': house,
@@ -23399,7 +23460,7 @@ final class LalKitabCycle extends _Value {
 ///     lalkitab: const LalKitabRequest(year: 30));
 /// final ruler = chart.lalkitab?.year?.ruler;
 /// ```
-final class LalKitabRequest {
+final class LalKitabRequest extends _Facade {
   const LalKitabRequest({this.cycle, this.year, this.varshphal});
 
   /// Where the cycle starts; the book's general table, Saturn from the
@@ -23416,6 +23477,7 @@ final class LalKitabRequest {
   final List<List<int>>? varshphal;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     if (cycle case final cycle?) 'cycle': cycle._record,
     if (year case final year?) 'year': year,
@@ -24881,7 +24943,7 @@ enum BaselineStage implements _Keyed {
 
 /// The purifier's knobs, one per crux (BPHS ch. 2 vv. 67–78). A reading
 /// left null is the texts' own.
-final class PurifierRules {
+final class PurifierRules extends _Facade {
   const PurifierRules({
     this.native,
     this.pranapada,
@@ -24936,11 +24998,12 @@ final class PurifierRules {
   };
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => _record;
 }
 
 /// The purifier over the [minutes] either side of the chart's instant.
-final class PurifyRequest {
+final class PurifyRequest extends _Facade {
   const PurifyRequest({
     required this.minutes,
     this.rules = const PurifierRules(),
@@ -24958,10 +25021,14 @@ final class PurifyRequest {
     'minutes': minutes,
     'rules': rules._record,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// The women who attended, as many as the family can say.
-final class AttendantFacts {
+final class AttendantFacts extends _Facade {
   const AttendantFacts({this.total, this.inside, this.outside});
 
   /// How many in all.
@@ -24978,11 +25045,15 @@ final class AttendantFacts {
     if (inside case final inside?) 'inside': inside,
     if (outside case final outside?) 'outside': outside,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// What the family remembers of the birth. Every fact is optional, and a
 /// clause whose fact is null is reported and not weighed.
-final class BirthFacts {
+final class BirthFacts extends _Facade {
   const BirthFacts({
     this.fatherPresent,
     this.presentation,
@@ -25013,11 +25084,15 @@ final class BirthFacts {
     if (wick case final wick?) 'wick': wick.key,
     if (attendants case final attendants?) 'attendants': attendants._record,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// What the family remembers of the birth, and the readings it is weighed
 /// under.
-final class CircumstanceRequest {
+final class CircumstanceRequest extends _Facade {
   const CircumstanceRequest({
     this.facts = const BirthFacts(),
     this.rules = const CircumstanceRules(),
@@ -25033,11 +25108,15 @@ final class CircumstanceRequest {
     'facts': facts._record,
     'rules': rules._wire,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// A dated life event, which the baseline's event fit scores the dasha's
 /// periods against.
-final class LifeEvent {
+final class LifeEvent extends _Facade {
   const LifeEvent({
     required this.kind,
     required this.on,
@@ -25078,11 +25157,15 @@ final class LifeEvent {
     if (confidence case final confidence?) 'confidence': confidence.key,
     'heldOut': heldOut,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// The Vimshottari the baseline's event fit reads. A reading left null is
 /// the baseline engine's own.
-final class BaselineDashaRules {
+final class BaselineDashaRules extends _Facade {
   const BaselineDashaRules({
     this.balance,
     this.yearLength,
@@ -25119,11 +25202,15 @@ final class BaselineDashaRules {
     if (ashtottariGrouping case final grouping?)
       'ashtottariGrouping': grouping.key,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// The baseline engine's unsourced cascade around the chart's instant,
 /// the time on record.
-final class BaselineRectificationRequest {
+final class BaselineRectificationRequest extends _Facade {
   const BaselineRectificationRequest({
     required this.uncertaintyMinutes,
     this.accuracy,
@@ -25161,6 +25248,10 @@ final class BaselineRectificationRequest {
     if (coverage case final coverage?) 'coverage': coverage,
     'dasha': dasha._record,
   };
+
+  /// Its JSON, as the SDK reads it.
+  @override
+  Object? get _wire => _record;
 }
 
 /// One of the two nadis that alternate through the day (Shiva
@@ -25226,7 +25317,7 @@ final class SvarodayaRequest {
 ///             facts: BirthFacts(fatherPresent: false))));
 /// final standing = chart.rectification?.purified?.intervals;
 /// ```
-final class RectificationRequest {
+final class RectificationRequest extends _Facade {
   const RectificationRequest({
     this.purify,
     this.conception,
@@ -25254,6 +25345,7 @@ final class RectificationRequest {
   final SvarodayaRequest? svarodaya;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{
     if (purify case final purify?) 'purify': purify._record,
     if (conception case final conception?) 'conception': conception._wire,
@@ -28128,7 +28220,7 @@ extension ChartsByIndex on Charts {
 }
 
 /// A span of time, as every almanac row carries one.
-final class Interval {
+final class Interval extends _Facade {
   const Interval({required this.from, required this.to});
 
   /// When it begins, as a Julian day (UTC).
@@ -28138,6 +28230,7 @@ final class Interval {
   final double to;
 
   /// Its JSON, as the SDK reads it.
+  @override
   Object? get _wire => <String, Object?>{'from': from, 'to': to};
 }
 
