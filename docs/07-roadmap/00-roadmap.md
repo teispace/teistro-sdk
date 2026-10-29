@@ -1083,24 +1083,34 @@ is open is that page's order of work.
 The estimate of 2026-10-07 (Track A about three weeks, Track B four to
 five, the release candidate early to mid November) held for the build:
 Tracks A, B and D are built but for what waits on the maintainer or a
-source. **Re-estimated on 2026-10-27**, what is left in the engineer's
-hands is about two to three weeks of one chain of builds:
+source. Of the 2026-10-27 list, these are **done by 2026-10-29**: the
+request unions and a request date without its resolution; the regional
+solar calendars; the parity knobs the A/B asked for (the eight karakas'
+naming, the transit centre, the baseline's Stree-deergha); the migration
+guide and the shim's items 1 to 5 (`03-design/compat-shim.md`); the
+golden vectors for aspects, Jaimini, KP and milan, scored and waiting on
+the corpus's 0.13.0 release; and the binding layers' coverage, measured
+and held to floors on verify (Node, Python, Dart and Java each over 80%
+of lines).
 
-- the request unions (#405) and a request date without its resolution;
-- the regional solar calendars against the Rashtriya Panchang's tables;
-- the parity checklist (`01-research/baseline-engine/02-parity-requirements.md`);
-- Phase 9's baseline migration guide and compatibility shim, and
-  `serial`'s binary blob (its gochar sidecar built 2026-10-28,
-  `03-design/gochar-sidecar.md`);
-- the baseline's golden vectors for aspects, Jaimini, KP and milan, and an
-  oracle for the Western and Hellenistic fixtures;
-- the quality bar's unenforced rows (the coverage floors, the binding
-  layers' coverage);
+**Re-estimated on 2026-10-29**, what is left in the engineer's hands is
+about one and a half to two weeks:
+
+- the shim's items 6 to 10: the remaining forwards, its typed surface,
+  the generated baseline map and its gate, the A/B's unmapped count and
+  the package's release wiring;
+- an oracle for the Western and Hellenistic fixtures (being researched);
+- the parity checklist's open rows (`02-parity-requirements.md`): the
+  muhurta ranking is measured and its misses are readings (C781 to C784),
+  not ticked;
+- the crates still under the quality bar's 90% (intl, idl and the
+  ephemeris kit the most);
 - the release candidate: version, changelog and a tag on a rehearsal run.
 
-**v1.0 release candidate: mid to late November 2026**, then the
+**v1.0 release candidate: about 9 to 12 November 2026**, then the
 maintainer's review, then the astrologers'. What waits on a source, a
-reviewer or the maintainer is listed in `STATUS.md`, "Now".
+reviewer or the maintainer is listed in `STATUS.md`, "Now"; the corpus's
+0.13.0 release is the newest of those.
 
 ## v1.0 release and baseline migration
 
