@@ -20,6 +20,7 @@ import {
   at,
   calls,
   count,
+  merged,
   readBirth,
 } from '../lib/core.js';
 
@@ -288,4 +289,28 @@ test('disposing frees every context once, and a disposed shim says so', () => {
   assert.throws(() => contexts.natal(DEFAULT), /this shim was disposed; open another one with compat\(\)/);
   // One that never translated has nothing to free.
   new Contexts().dispose();
+});
+
+test('a variant is the natal context with a patch laid over it, kept by name and freed with it', () => {
+  const contexts = new Contexts({ ephemeris: 'TEST' });
+  const natal = contexts.natal(DEFAULT);
+  const muhurta = contexts.variant(DEFAULT, 'muhurta', { frame: { node: 'TRUE', centre: 'GEOCENTRIC' } });
+  assert.notEqual(muhurta, natal);
+  assert.deepEqual([muhurta.settings.frame.node, muhurta.settings.frame.centre], ['TRUE', 'GEOCENTRIC']);
+  // The rest is the snapshot's: its dasha depth stands.
+  assert.equal(muhurta.settings.dasha.depth.VIMSHOTTARI, natal.settings.dasha.depth.VIMSHOTTARI);
+  assert.equal(contexts.variant(DEFAULT, 'muhurta', {}), muhurta, 'kept by name');
+  const ghati = contexts.variant(DEFAULT, 'ghati', { day: { ghati_reckoning: 'PROPORTIONAL' } });
+  assert.equal(ghati.settings.day.ghati_reckoning, 'PROPORTIONAL');
+  assert.equal(contexts.size, 1, 'variants are the snapshot’s, not snapshots of their own');
+  contexts.dispose();
+  assert.ok(disposed(muhurta) && disposed(ghati) && disposed(natal));
+});
+
+test('settings patches merge group by group', () => {
+  assert.deepEqual(merged({ frame: { node: 'MEAN', centre: 'TOPOCENTRIC' }, day: { x: 1 } }, { frame: { node: 'TRUE' } }), {
+    frame: { node: 'TRUE', centre: 'TOPOCENTRIC' },
+    day: { x: 1 },
+  });
+  assert.deepEqual(merged(undefined, { day: { y: 2 } }), { day: { y: 2 } });
 });

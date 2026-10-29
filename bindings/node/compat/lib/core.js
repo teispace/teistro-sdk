@@ -181,6 +181,20 @@ export function calls(rows) {
   return Object.freeze(out);
 }
 
+/** Two settings patches, the second's groups laid over the first's. */
+export function merged(a, b) {
+  const out = { ...a };
+  for (const [group, fields] of Object.entries(b)) out[group] = { ...a?.[group], ...fields };
+  return out;
+}
+
+/** Disposes a snapshot's kept contexts: its variants, its KP and its natal one. */
+function release({ natal, kp, variants }) {
+  for (const context of variants.values()) context.dispose();
+  kp?.dispose();
+  natal.dispose();
+}
+
 /** The options a context takes that a snapshot decides, so `compat` refuses. */
 const DECIDED = ['profile', 'settings'];
 
@@ -284,12 +298,13 @@ export class Contexts {
       natal: this.#context(recorded.natal, natalChain, locale),
       kp: null,
       opening: () => this.#context(recorded.kp, this.#chain, locale),
+      variants: new Map(),
+      variant: (patch) => this.#context({ ...recorded.natal, settings: merged(recorded.natal.settings, patch) }, natalChain, locale),
     };
     if (this.#open.size === CONTEXTS) {
       const [oldest, evicted] = this.#open.entries().next().value;
       this.#open.delete(oldest);
-      evicted.kp?.dispose();
-      evicted.natal.dispose();
+      release(evicted);
     }
     this.#open.set(key, entry);
     return entry;
@@ -317,14 +332,31 @@ export class Contexts {
     return entry.kp;
   }
 
+  /**
+   * The natal context a snapshot means with `patch` laid over its
+   * settings, opened on first use and kept beside it under `name`: a
+   * convention the baseline casts one computation in, such as the frame
+   * its muhurta search reads, or a second reckoning to read beside the
+   * first. The patch is the same whenever `name` is.
+   *
+   * @param {string} name
+   * @param {object} patch a settings patch, its groups laid over the natal ones
+   */
+  variant(snapshot, name, patch) {
+    const entry = this.#entry(snapshot);
+    let context = entry.variants.get(name);
+    if (context === undefined) {
+      context = entry.variant(patch);
+      entry.variants.set(name, context);
+    }
+    return context;
+  }
+
   /** Disposes every context; a second call does nothing. */
   dispose() {
     if (this.#disposed) return;
     this.#disposed = true;
-    for (const { natal, kp } of this.#open.values()) {
-      kp?.dispose();
-      natal.dispose();
-    }
+    for (const entry of this.#open.values()) release(entry);
     this.#open.clear();
     this.#translations.clear();
     this.#translator?.dispose();

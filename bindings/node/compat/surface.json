@@ -1,0 +1,449 @@
+{
+  "$comment": "The shim's call surface (docs/03-design/compat-shim.md §3): one row a function, its baseline entry points in the inventory's words, its kind and the SDK call that answers it. A refused row names the guide anchor that explains it and what to do instead. HAND-WRITTEN; surface.test.mjs holds the package to it.",
+  "rows": [
+    {
+      "row": "positions",
+      "section": "3.1",
+      "entry": "the astronomical backend, a position at an instant",
+      "kind": "forward",
+      "sdk": "ctx.positions({ instants, bodies, frame })"
+    },
+    {
+      "row": "engine",
+      "section": "3.1",
+      "entry": "the engine's own operations",
+      "kind": "forward",
+      "sdk": "ctx.engine.call(name, args) on a Teimeris context"
+    },
+    {
+      "row": "ayanamsha",
+      "section": "3.1",
+      "entry": "the ayanamsha at an instant",
+      "kind": "compose",
+      "sdk": "ctx.chart.found(...): its ayanamsha and offset"
+    },
+    {
+      "row": "sunrise",
+      "section": "3.1",
+      "entry": "the sunrise service",
+      "kind": "compose",
+      "sdk": "ctx.almanac.day(...): its sunrise, sunset and next sunrise"
+    },
+    {
+      "row": "resolve",
+      "section": "3.1",
+      "entry": "the timezone resolver: a civil time in a zone, LMT, DST rules",
+      "kind": "forward",
+      "sdk": "ctx.time.resolve(civil, zone)"
+    },
+    {
+      "row": "zoneAt",
+      "section": "3.1",
+      "entry": "the timezone resolver: a zone from coordinates",
+      "kind": "refuse",
+      "sdk": "none: no geo port",
+      "guide": "docs/09-guidelines/baseline-migration.md#10-what-is-not-available-yet",
+      "instead": "Give the zone as an IANA name or local mean time on the birth record; the SDK has no geo port."
+    },
+    {
+      "row": "ghatiPala",
+      "section": "3.1",
+      "entry": "ghati-pala, both reckonings",
+      "kind": "compose",
+      "sdk": "chart.timing on the natal context and on one with the other day.ghati_reckoning"
+    },
+    {
+      "row": "bs",
+      "section": "3.1",
+      "entry": "the Bikram Sambat calendar: conversion, month lengths, leap tests",
+      "kind": "forward",
+      "sdk": "ctx.calendar: convert, dateOf, fixedOf, monthLength, isLeap"
+    },
+    {
+      "row": "eras",
+      "section": "3.1",
+      "entry": "the calendar service's era numbers",
+      "kind": "compose",
+      "sdk": "ctx.almanac.of(...) with years and nepalSambat"
+    },
+    {
+      "row": "entity",
+      "section": "3.1",
+      "entry": "the entity registry, a name by type and key",
+      "kind": "forward",
+      "sdk": "ctx.intl.entity(key)"
+    },
+    {
+      "row": "format",
+      "section": "3.1",
+      "entry": "numeral, date, degree and clock formatting",
+      "kind": "refuse",
+      "sdk": "none: formatting is the application's",
+      "guide": "docs/09-guidelines/baseline-migration.md#2-what-is-different-in-kind",
+      "instead": "Format the SDK's numbers and instants in the application, with Intl.NumberFormat and Intl.DateTimeFormat (a nu extension gives Devanagari digits)."
+    },
+    {
+      "row": "chart",
+      "section": "3.2",
+      "entry": "the foundation",
+      "kind": "forward",
+      "sdk": "ctx.chart.found with every varga, aspects, points, houses, state, jaimini and the Vimshottari"
+    },
+    {
+      "row": "full",
+      "section": "3.2",
+      "entry": "the whole natal chart",
+      "kind": "forward",
+      "sdk": "ctx.chart.found with every section, the 18 dashas, every shipped rule set, avakahada and the longevity"
+    },
+    {
+      "row": "vargas",
+      "section": "3.2",
+      "entry": "vargas and vargottama",
+      "kind": "forward",
+      "sdk": "found with vargas"
+    },
+    {
+      "row": "yogas",
+      "section": "3.2",
+      "entry": "yogas, doshas",
+      "kind": "forward",
+      "sdk": "found with rules.shipped"
+    },
+    {
+      "row": "strength",
+      "section": "3.2",
+      "entry": "Shadbala, Bhava bala, Ashtakavarga",
+      "kind": "forward",
+      "sdk": "found with shadbala, bhavaBala, ashtakavarga"
+    },
+    {
+      "row": "dashas",
+      "section": "3.2",
+      "entry": "one dasha system, all 18",
+      "kind": "forward",
+      "sdk": "found with the 18 dashas, depths from the snapshot"
+    },
+    {
+      "row": "houses",
+      "section": "3.2",
+      "entry": "houses, Bhava-Chalit",
+      "kind": "forward",
+      "sdk": "found with houses: true"
+    },
+    {
+      "row": "states",
+      "section": "3.2",
+      "entry": "avasthas, dignities, planetary war",
+      "kind": "forward",
+      "sdk": "found with state: true"
+    },
+    {
+      "row": "aspects",
+      "section": "3.2",
+      "entry": "drishti",
+      "kind": "forward",
+      "sdk": "found with aspects: true"
+    },
+    {
+      "row": "points",
+      "section": "3.2",
+      "entry": "upagrahas, special lagnas",
+      "kind": "forward",
+      "sdk": "found with points: true"
+    },
+    {
+      "row": "jaimini",
+      "section": "3.2",
+      "entry": "the Jaimini slice",
+      "kind": "forward",
+      "sdk": "found with jaimini: true"
+    },
+    {
+      "row": "longevity",
+      "section": "3.2",
+      "entry": "Ayurdaya, Maraka, longevity windows",
+      "kind": "forward",
+      "sdk": "found with rules: { longevity: true, ayurdaya }"
+    },
+    {
+      "row": "timing",
+      "section": "3.2",
+      "entry": "birth timing: ishtakaal, bhayat, bhabhoga",
+      "kind": "forward",
+      "sdk": "found with moment: true"
+    },
+    {
+      "row": "avakahada",
+      "section": "3.2",
+      "entry": "avakhada",
+      "kind": "forward",
+      "sdk": "found with avakahada: true"
+    },
+    {
+      "row": "birthCalendar",
+      "section": "3.2",
+      "entry": "the calendar conversion of the birth",
+      "kind": "forward",
+      "sdk": "ctx.calendar.convert on the birth's civil date"
+    },
+    {
+      "row": "dossier",
+      "section": "3.2",
+      "entry": "the serialiser with presets",
+      "kind": "forward",
+      "sdk": "found with dossier"
+    },
+    {
+      "row": "sidecar",
+      "section": "3.2",
+      "entry": "the gochar sidecar",
+      "kind": "refuse",
+      "sdk": "none in Node: the sidecar is Rust only",
+      "guide": "docs/09-guidelines/baseline-migration.md#10-what-is-not-available-yet",
+      "instead": "Ask for the transits on the chart request instead: gochar, sadeSati or transitCalendar on the stored birth record."
+    },
+    {
+      "row": "drawing",
+      "section": "3.2",
+      "entry": "chart layout geometry",
+      "kind": "forward",
+      "sdk": "found with drawings"
+    },
+    {
+      "row": "narrative",
+      "section": "3.2, 3.6",
+      "entry": "the dossier, day, dasha, graha-bhava, tara chakra, yoga timing and namakarana note composers",
+      "kind": "compose",
+      "sdk": "found with interpret, each plan rendered by ctx.intl.render"
+    },
+    {
+      "row": "day",
+      "section": "3.3",
+      "entry": "the daily panchanga; choghadiya, hora, Rahu kaal and the kaalas, muhurta yogas",
+      "kind": "forward",
+      "sdk": "ctx.almanac.day"
+    },
+    {
+      "row": "month",
+      "section": "3.3",
+      "entry": "a run of days; the tithi calendar",
+      "kind": "forward",
+      "sdk": "ctx.almanac.of"
+    },
+    {
+      "row": "changes",
+      "section": "3.3",
+      "entry": "next and previous limb changes",
+      "kind": "compose",
+      "sdk": "ctx.almanac.day: each limb span's whole bounds"
+    },
+    {
+      "row": "muhurta",
+      "section": "3.3",
+      "entry": "the muhurta finder, windows, blackouts, natal tara and chandra bala",
+      "kind": "forward",
+      "sdk": "ctx.almanac.of with muhurta, ranking BASELINE, on the muhurta frame's context"
+    },
+    {
+      "row": "sarvatobhadra",
+      "section": "3.3",
+      "entry": "Sarvatobhadra",
+      "kind": "forward",
+      "sdk": "found with sarvatobhadra"
+    },
+    {
+      "row": "eclipses",
+      "section": "3.3",
+      "entry": "eclipses",
+      "kind": "forward",
+      "sdk": "ctx.almanac.of with eclipses: true"
+    },
+    {
+      "row": "ingresses",
+      "section": "3.3",
+      "entry": "ingresses",
+      "kind": "compose",
+      "sdk": "ctx.almanac.of: each day's sankranti"
+    },
+    {
+      "row": "lunations",
+      "section": "3.3",
+      "entry": "lunations",
+      "kind": "compose",
+      "sdk": "ctx.almanac.of: the ends of its tithi spans at 15 and 30"
+    },
+    {
+      "row": "pakshi",
+      "section": "3.3",
+      "entry": "Pancha Pakshi",
+      "kind": "forward",
+      "sdk": "ctx.almanac.pakshi"
+    },
+    {
+      "row": "gochar",
+      "section": "3.4",
+      "entry": "gochar overlays, transit aspects, phala with vedha, transit strength",
+      "kind": "forward",
+      "sdk": "found with ashtakavarga and gochar"
+    },
+    {
+      "row": "sadeSati",
+      "section": "3.4",
+      "entry": "Sade Sati",
+      "kind": "forward",
+      "sdk": "found with sadeSati"
+    },
+    {
+      "row": "transitCalendar",
+      "section": "3.4",
+      "entry": "the transit calendar",
+      "kind": "forward",
+      "sdk": "found with hits"
+    },
+    {
+      "row": "varsha",
+      "section": "3.4",
+      "entry": "the Tajika annual chart, muntha, sahams, Mudda dasha",
+      "kind": "forward",
+      "sdk": "found with varsha"
+    },
+    {
+      "row": "returns",
+      "section": "3.4",
+      "entry": "solar, lunar and planetary returns",
+      "kind": "compose",
+      "sdk": "found with hits: returnsRequest(from, to, grahas)"
+    },
+    {
+      "row": "progressions",
+      "section": "3.4",
+      "entry": "secondary and tertiary progressions, solar arc directions",
+      "kind": "forward",
+      "sdk": "found with progressions"
+    },
+    {
+      "row": "kp",
+      "section": "3.5",
+      "entry": "KP: sub-lords, significators, ruling planets, Placidus with fallback",
+      "kind": "forward",
+      "sdk": "kp on the KP context, or on the natal one with anyAyanamsha"
+    },
+    {
+      "row": "milan",
+      "section": "3.5",
+      "entry": "milan: Ashta Koota, extended checks, Mangal match, marriage doshas",
+      "kind": "forward",
+      "sdk": "found with matching"
+    },
+    {
+      "row": "naam",
+      "section": "3.5",
+      "entry": "quick milan, akshar resolution",
+      "kind": "forward",
+      "sdk": "ctx.matching.naam(bride, groom)"
+    },
+    {
+      "row": "rectify",
+      "section": "3.5",
+      "entry": "rectification",
+      "kind": "forward",
+      "sdk": "found with rectification.baseline, the record's gender and time accuracy carried in"
+    },
+    {
+      "row": "prashna",
+      "section": "3.5",
+      "entry": "prashna",
+      "kind": "forward",
+      "sdk": "found with prashna under the baseline's timing, mook and score"
+    },
+    {
+      "row": "lalkitab",
+      "section": "3.5",
+      "entry": "Lal Kitab",
+      "kind": "forward",
+      "sdk": "found with lalkitab"
+    },
+    {
+      "row": "numerology",
+      "section": "3.5",
+      "entry": "numerology",
+      "kind": "forward",
+      "sdk": "ctx.numerology.profile(name, date, 'BASELINE')"
+    },
+    {
+      "row": "remedies",
+      "section": "3.5",
+      "entry": "remedies",
+      "kind": "forward",
+      "sdk": "found with remedies under the baseline's functional scheme"
+    },
+    {
+      "row": "gemstoneSafety",
+      "section": "3.5",
+      "entry": "remedies: gemstone safety",
+      "kind": "refuse",
+      "sdk": "none: not built",
+      "guide": "docs/01-research/baseline-engine/02-parity-requirements.md#state-measured-2026-10-27",
+      "instead": "The SDK has no gemstone safety reading; keep the application's own until one is built."
+    },
+    {
+      "row": "nameCheck",
+      "section": "3.5",
+      "entry": "namakarana: validation",
+      "kind": "compose",
+      "sdk": "found with avakahada, its star and pada given to ctx.naming.check"
+    },
+    {
+      "row": "nameSuggestions",
+      "section": "3.5",
+      "entry": "namakarana: suggestions, the offline corpus, the language-model path",
+      "kind": "refuse",
+      "sdk": "none: no corpus ships",
+      "guide": "docs/03-design/namakarana.md#3-the-name-book-what-ships-and-what-the-consumer-brings",
+      "instead": "Load the application's own name book with ctx.naming.load and search it with ctx.naming.suggest."
+    },
+    {
+      "row": "batch",
+      "section": "3.5",
+      "entry": "research: batch",
+      "kind": "forward",
+      "sdk": "ctx.chart.foundMany"
+    },
+    {
+      "row": "synastry",
+      "section": "3.5",
+      "entry": "research: synastry, composites",
+      "kind": "forward",
+      "sdk": "found with synastry"
+    },
+    {
+      "row": "research",
+      "section": "3.5",
+      "entry": "research: statistics",
+      "kind": "forward",
+      "sdk": "ctx.research.counts, compare, expected"
+    },
+    {
+      "row": "rashifal",
+      "section": "3.6",
+      "entry": "rashifal context and score, one sign or all twelve, per period",
+      "kind": "forward",
+      "sdk": "ctx.chart.rashifal(request, period), read at six on the clock"
+    },
+    {
+      "row": "reading",
+      "section": "3.6",
+      "entry": "state tables, yoga and dosha readings",
+      "kind": "forward",
+      "sdk": "ctx.intl.render(key, params)"
+    },
+    {
+      "row": "milanVerdict",
+      "section": "3.6",
+      "entry": "the milan resolver and verdict composer",
+      "kind": "compose",
+      "sdk": "found with matching, the doshas and interpret, rendered"
+    }
+  ]
+}

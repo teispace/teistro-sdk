@@ -16,7 +16,7 @@
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 
-import { Calendar, Context, Nakshatra, Rashi, date } from '../lib/index.js';
+import { Calendar, Context, date } from '../lib/index.js';
 // The package's `@teistro/sdk` is this checkout's binding, as in its own
 // tests; the hook resolves the imports made after it, so the requests
 // are imported once it is in place.
@@ -41,7 +41,7 @@ export { REQUESTS, SIDES, inputs } from './ab-inputs.mjs';
  * The SDK calls each request makes: `@teistro/compat`'s, so that every
  * timed request is a shim call (`03-design/compat-shim.md` §6.4).
  */
-const { READINGS, requests } = await import('../compat/lib/forward.js');
+const { MUHURTA_FRAME, READINGS, nativeOf, requests } = await import('../compat/lib/forward.js');
 
 /** The fewest rounds a figure is taken from. */
 export const ROUNDS = 15;
@@ -160,16 +160,6 @@ function gregorian(iso) {
  */
 const MUHURTA = { rules: 'BASELINE_MARRIAGE', ranking: 'BASELINE', daysWithWindows: MUHURTA_DAYS, most: 100_000 };
 
-/** The native a muhurta is read against: the birth Moon's star and sign. */
-function nativeOf(chart) {
-  const moon = chart.grahas.find((placed) => placed.graha === 'graha.MOON').longitudeDeg;
-  const lon = ((moon % 360) + 360) % 360;
-  return {
-    star: Object.values(Nakshatra)[Math.floor((lon * 27) / 360)],
-    moonSign: Object.values(Rashi)[Math.floor(lon / 30)],
-  };
-}
-
 /** The catalogues' joined yogas, read once (`ab-agree.mjs`). */
 let joined;
 
@@ -220,7 +210,7 @@ export function transitSkyOf(context) {
  * @returns {import('./ab-inputs.mjs').Side}
  */
 export function sdkSide(ctx, kp, version, asked = {}, elect = () => ctx) {
-  const r = requests(ctx, kp, asked);
+  const r = requests(ctx, kp, asked, elect);
   const at = (input) => ({ instant: input.jdUt, place: input.place, utcOffsetSeconds: input.utcOffsetSeconds });
   // Each request asks for what the baseline's answer holds
   // (`03-design/ab-baseline.md` §2). An answer decodes on read, and the
@@ -302,10 +292,11 @@ export function sdkSide(ctx, kp, version, asked = {}, elect = () => ctx) {
     },
     muhurta: (input) => {
       const { from, to, place, utcOffsetSeconds } = input.muhurta;
-      const days = { from: gregorian(from), to: gregorian(to), place, utcOffsetSeconds };
+      const days = [gregorian(from), gregorian(to)];
       const native = nativeOf(ctx.chart.found(at(input)));
-      const general = elect().almanac.of({ ...days, muhurta: MUHURTA });
-      const natal = elect().almanac.of({ ...days, muhurta: { ...MUHURTA, native } });
+      const on = { place, utcOffsetSeconds };
+      const general = r.muhurta(on, ...days, MUHURTA);
+      const natal = r.muhurta(on, ...days, { ...MUHURTA, native });
       decoded(general.muhurta, natal.muhurta);
       return { general, native: natal };
     },
@@ -344,7 +335,7 @@ export const CONVENTIONS = {
     // true node, though its charts are topocentric with the mean one, and
     // no setting moves the muhurta search alone (crux C781): `muhurta` is
     // searched on a context of that frame, opened when first asked for.
-    muhurtaSettings: { frame: { node: 'TRUE', centre: 'GEOCENTRIC' } },
+    muhurtaSettings: MUHURTA_FRAME,
     asked: READINGS,
   },
 };
