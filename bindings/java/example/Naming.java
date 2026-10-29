@@ -81,7 +81,7 @@ public final class Naming {
         try (Context ctx = teistro.context(ContextOptions.builder().locale("en-Latn").build())) {
             // ── The birth's syllable ───────────────────────────────────
             // The Moon in Ardra's third pada. Its syllable is ङ, which no
-            // name begins with, so the Nepali patro glosses it with ग: a
+            // name begins with, so a patro printed in Nepal glosses it with ग: a
             // substitute, listed after the cell's own letter.
             Birth birth = new Birth(Nakshatra.ARDRA, 3);
             Names names = ctx.naming().of(birth, null);

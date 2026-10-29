@@ -111,7 +111,7 @@ only (§9).
 
 So the syllable the SDK already answers is one reading of one of the
 four names. It is the reading *Muhurta Chintamani*'s commentary
-prescribes and the one the Nepali patro prints, so it stays the default.
+prescribes and the one a patro printed in Nepal prints, so it stays the default.
 The taddhita and the deity are reported beside it, never instead of it.
 A name a parent gives for use is checked against the clauses of §2.3.
 Checking it against the star is still possible, and the answer says that

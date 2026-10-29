@@ -3323,7 +3323,7 @@ FinalA: TypeAlias = Literal['SOUNDED', 'SILENT']
 NasalInitial: TypeAlias = Literal['VARGA_THIRD', 'NONE']
 """Whether a pada whose letter no name begins with lists a substitute (C770).
 
-`VARGA_THIRD`: ङ, ण and ञ each list their varga's third letter (ग, ड, ज) as a substitute initial, as the Nepali patro glosses them.
+`VARGA_THIRD`: ङ, ण and ञ each list their varga's third letter (ग, ड, ज) as a substitute initial, as a patro printed in Nepal glosses them.
 `NONE`: No substitute: the cell's own letter only, as *Muhurta Chintamani*'s commentary gives it.
 """
 

@@ -32,7 +32,7 @@ const say = messages({ render: (key, params) => ctx.intl.render(key, params).tex
 
 // ── The birth's syllable ────────────────────────────────────────────────
 // The Moon in Ardra's third pada. Its syllable is ङ, which no name begins
-// with, so the Nepali patro glosses it with ग: a substitute, listed after
+// with, so a patro printed in Nepal glosses it with ग: a substitute, listed after
 // the cell's own letter.
 const birth = { nakshatra: 'ARDRA', pada: 3 };
 const names = ctx.naming.of(birth);

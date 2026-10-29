@@ -8,7 +8,7 @@ package com.teispace.teistro.request;
  */
 public enum NasalInitial implements RequestJson {
     /**
-     * ङ, ण and ञ each list their varga's third letter (ग, ड, ज) as a substitute initial, as the Nepali patro glosses them.
+     * ङ, ण and ञ each list their varga's third letter (ग, ड, ज) as a substitute initial, as a patro printed in Nepal glosses them.
      */
     VARGA_THIRD("VARGA_THIRD"),
     /**

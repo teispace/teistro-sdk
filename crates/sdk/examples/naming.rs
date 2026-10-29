@@ -77,7 +77,7 @@ fn main() -> Result<(), Error> {
 }
 
 /// The birth's syllable. Ardra's third pada is ङ, which no name begins
-/// with, so the Nepali patro glosses it with ग: a substitute, listed after
+/// with, so a patro printed in Nepal glosses it with ग: a substitute, listed after
 /// the cell's own letter.
 fn the_syllable(naming: NamingArea<'_>, birth: Birth, rules: NamingRules) -> Result<String, Error> {
     let names = naming.of(birth, rules)?;
