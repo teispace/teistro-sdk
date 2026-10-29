@@ -3372,7 +3372,7 @@ const READ_THROUGH: [&str; 6] = [
 /// The JSON readers no tool reads, each with why: what the third gate
 /// allows, so that a reader nobody reaches is a decision written down
 /// and not an omission.
-const NOT_A_TOOL: [(&str, &str); 4] = [
+const NOT_A_TOOL: [(&str, &str); 5] = [
     (
         "DisagreementRequest",
         "compares two contexts, and the agent server computes every context over the one engine its command line chose (`mcp-server.md` D6), so a tool cannot name the second setup's ephemeris; an agent compares by calling `almanac.days` under each profile",
