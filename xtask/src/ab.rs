@@ -298,6 +298,23 @@ impl Memory {
     }
 }
 
+/// The baseline engine's entry points counted against the shim's rows
+/// (`03-design/compat-shim.md` §6.4): how many the adapter's `surface`
+/// export lists, how many of them name no row of
+/// `bindings/node/compat/surface.json`, and the row names it gives that
+/// the shim does not have (each of those also unmapped).
+#[derive(Clone, Debug, Default, PartialEq, Eq, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub(crate) struct Surface {
+    /// The entry points the adapter lists.
+    pub(crate) entries: usize,
+    /// Those with no row of the shim.
+    pub(crate) unmapped: usize,
+    /// The rows named that the shim does not have.
+    #[serde(default)]
+    pub(crate) unknown_rows: Vec<String>,
+}
+
 #[derive(Debug, Deserialize, Serialize)]
 struct Record {
     os: String,
@@ -336,6 +353,10 @@ struct Record {
     /// (§10, §11).
     #[serde(default)]
     accuracy: accuracy::Accuracy,
+    /// The baseline's entry points counted, when the adapter exports its
+    /// `surface`; absent from a record taken without one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    surface: Option<Surface>,
 }
 
 impl Record {
@@ -437,6 +458,16 @@ fn faults_under(records: &[(String, Record)], excused: &[Excused], slower: Slowe
         tail_faults(name, record, &mut found);
         start_and_memory_faults(name, record, &mut found);
         accuracy::faults(name, &record.accuracy, excused, &mut found);
+        if let Some(surface) = &record.surface {
+            if surface.unmapped > surface.entries || surface.unknown_rows.len() > surface.unmapped {
+                found.push(format!(
+                    "{name}: the baseline's entry points do not add up: {} unmapped of {}, {} named rows the shim lacks",
+                    surface.unmapped,
+                    surface.entries,
+                    surface.unknown_rows.len()
+                ));
+            }
+        }
     }
     found
 }
@@ -727,12 +758,56 @@ fn section(name: &str, record: &Record) -> String {
         record.parallelism,
         versions.join(", ")
     );
+    surface_line(&mut out, record.surface.as_ref());
     requests_table(&mut out, record);
     throughput_table(&mut out, record);
     tail_table(&mut out, record);
     start_and_memory_tables(&mut out, record);
     accuracy::tables(&mut out, &record.accuracy);
     out
+}
+
+/// How many of the baseline's entry points the shim has no row for, or
+/// that the record could not count.
+fn surface_line(out: &mut String, surface: Option<&Surface>) {
+    let _ = match surface {
+        Some(counted) => writeln!(
+            out,
+            "The baseline's entry points, as the adapter's `surface` lists them: {}, {} with no row \
+             of the shim's `surface.json`{}.\n",
+            counted.entries,
+            counted.unmapped,
+            if counted.unknown_rows.is_empty() {
+                String::new()
+            } else {
+                format!(
+                    " (named rows it lacks: {})",
+                    counted
+                        .unknown_rows
+                        .iter()
+                        .map(|row| format!("`{row}`"))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            }
+        ),
+        None => writeln!(
+            out,
+            "The baseline's entry points: not counted, since the adapter exports no `surface` \
+             (`03-design/compat-shim.md` §6.4).\n"
+        ),
+    };
+}
+
+/// Each record's count of the baseline's entry points, by machine: what
+/// `check-compat` holds to no unmapped entry point.
+pub(crate) fn surfaces(root: &Path) -> Result<Vec<(String, Option<Surface>)>, String> {
+    Ok(
+        crate::measured::records::<Record>(root, RECORDED, "cargo xtask measure-ab")?
+            .into_iter()
+            .map(|(name, record)| (name, record.surface))
+            .collect(),
+    )
 }
 
 /// The interleaved requests (§2, §3), and what was refused.
@@ -1042,6 +1117,7 @@ struct Lines {
     cold: Vec<Cold>,
     memory: Vec<Memory>,
     accuracy: accuracy::Accuracy,
+    surface: Option<Surface>,
 }
 
 /// One line, read as the type its kind names.
@@ -1081,6 +1157,7 @@ fn read_lines(stdout: &str) -> Result<Lines, String> {
             Some("agree") => lines.accuracy.agree.push(parsed(line, value)?),
             Some("reference") => lines.accuracy.reference.push(parsed(line, value)?),
             Some("unanswered") => lines.accuracy.unanswered.push(parsed(line, value)?),
+            Some("surface") => lines.surface = Some(parsed(line, value)?),
             Some(other) => return Err(format!("{line}: no kind `{other}`")),
             None => {
                 if let Some(object) = value.as_object_mut() {
@@ -1164,6 +1241,7 @@ pub(crate) fn measure(root: &Path) -> i32 {
         cold: lines.cold,
         memory: lines.memory,
         accuracy: lines.accuracy,
+        surface: lines.surface,
     };
     match crate::measured::write_record(root, RECORDED, &record) {
         Ok(()) => generate(root),
@@ -1252,6 +1330,7 @@ mod tests {
             cold: Vec::new(),
             memory: Vec::new(),
             accuracy: accuracy::whole(),
+            surface: None,
         };
         for request in LOAD_REQUESTS {
             for mode in MODES {
@@ -1638,6 +1717,35 @@ mod tests {
                 (String::from("c047"), ""),
                 (String::from("c048"), ""),
             ]
+        );
+    }
+
+    #[test]
+    fn the_baseline_entry_points_are_counted_or_said_not_to_be() {
+        let mut out = String::new();
+        surface_line(&mut out, None);
+        assert!(out.contains("not counted"), "{out}");
+        let mut out = String::new();
+        let counted = Surface {
+            entries: 31,
+            unmapped: 1,
+            unknown_rows: vec!["horoscope".into()],
+        };
+        surface_line(&mut out, Some(&counted));
+        assert!(
+            out.contains("31, 1 with no row") && out.contains("`horoscope`"),
+            "{out}"
+        );
+        let mut askew = record(Vec::new());
+        askew.surface = Some(Surface {
+            entries: 2,
+            unmapped: 3,
+            unknown_rows: Vec::new(),
+        });
+        assert!(
+            faults(&[("m".into(), askew)], &[])
+                .iter()
+                .any(|fault| fault.contains("do not add up"))
         );
     }
 }

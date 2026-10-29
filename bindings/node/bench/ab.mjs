@@ -13,6 +13,7 @@
 // the tail, the cold start and the memory (§4 to §7) through
 // `ab-load.mjs`, each side in processes of its own.
 
+import { readFileSync } from 'node:fs';
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 
@@ -549,6 +550,37 @@ export function accuracy({ timed, same, baseline, reopen }, kept, all, requests 
   }
 }
 
+/**
+ * The baseline engine's entry points counted against the shim's rows
+ * (`03-design/compat-shim.md` §6.4), from the adapter's `surface` export:
+ * one `{ entry, row }` an entry point its engine offers, `entry` in the
+ * inventory's words and `row` the shim row that takes it, or `null`. An
+ * entry naming a row the shim does not have is unmapped too, and its row
+ * is reported. `undefined` when the adapter exports no `surface`, so the
+ * record says it did not count rather than counting none.
+ *
+ * @param {{surface?: readonly {entry: string, row: string | null}[]}} adapter
+ */
+export function surfaceCount(adapter, shimRows = shimSurface()) {
+  if (adapter.surface === undefined) return undefined;
+  if (!Array.isArray(adapter.surface)) throw new TypeError('the adapter\'s `surface` is a list of { entry, row }');
+  const rows = new Set(shimRows);
+  const named = adapter.surface.map(({ row }) => row ?? null);
+  const unknownRows = [...new Set(named.filter((row) => row !== null && !rows.has(row)))].sort();
+  return {
+    kind: 'surface',
+    entries: named.length,
+    unmapped: named.filter((row) => row === null || !rows.has(row)).length,
+    unknownRows,
+  };
+}
+
+/** The shim's row names, from its `surface.json`. */
+function shimSurface() {
+  const { rows } = JSON.parse(readFileSync(new URL('../compat/surface.json', import.meta.url), 'utf8'));
+  return rows.map(({ row }) => row);
+}
+
 async function main() {
   const { plugin } = paths();
   // Refused now rather than after the timings, when the rungs need it.
@@ -556,6 +588,8 @@ async function main() {
   const all = inputs();
   const sdk = openSdk({ plugin }, sdkVersion());
   const baseline = await open('baseline');
+  const counted = surfaceCount(baseline.side);
+  if (counted !== undefined) console.log(JSON.stringify(counted));
   let kept;
   try {
     const agreed = agreeing(sdk.side, baseline.side, all);

@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 
-import { Empty, REQUESTS, SAME_SKY_DEG, agreeing, inputs, interleaved, openSdk } from '../bench/ab.mjs';
+import { Empty, REQUESTS, SAME_SKY_DEG, agreeing, inputs, interleaved, openSdk, surfaceCount } from '../bench/ab.mjs';
 import { counts, drive, measured, threadAgent, trials } from '../bench/ab-load.mjs';
 import { Agreement, figures, joinYogas } from '../bench/ab-agree.mjs';
 import { Kept, charakRung, kalaprakasikaRung, ramanRung, whoKey } from '../bench/ab-reference.mjs';
@@ -81,6 +81,25 @@ test('a muhurta search is presented as the baseline ranks it', () => {
       assert.deepEqual(scores, [...scores].sort((a, b) => b - a), 'highest first');
     }
   });
+});
+
+test('the baseline\'s entry points are counted against the shim\'s rows, or not counted at all', () => {
+  assert.equal(surfaceCount({}), undefined, 'an adapter with no surface is not counted as none');
+  const counted = surfaceCount(
+    {
+      surface: [
+        { entry: 'the foundation', row: 'chart' },
+        { entry: 'the daily panchanga', row: 'day' },
+        { entry: 'something the shim lacks', row: null },
+        { entry: 'a row of another name', row: 'horoscope' },
+      ],
+    },
+    ['chart', 'day'],
+  );
+  assert.deepEqual(counted, { kind: 'surface', entries: 4, unmapped: 2, unknownRows: ['horoscope'] });
+  // Against the shim's own surface.json, its rows are all mapped.
+  assert.equal(surfaceCount({ surface: [{ entry: 'the foundation', row: 'chart' }] }).unmapped, 0);
+  assert.throws(() => surfaceCount({ surface: 'chart' }), TypeError);
 });
 
 test('a side that computed another sky is kept out of the timing', () => {
