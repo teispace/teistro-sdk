@@ -1208,3 +1208,187 @@ fn a_walked_self_matched_study_meets_its_poisson_binomial() {
         );
     }
 }
+
+#[test]
+fn a_bound_is_refused_on_either_side_and_at_nan() {
+    let (matrix, design) = study(10, 4, 3, 2);
+    for level in [0.0, -0.5, 1.5, f64::NAN] {
+        let mut test = case_test(1, 999);
+        test.level = level;
+        assert_eq!(refused(&matrix, &design, &test), "level", "{level}");
+    }
+    for alpha in [1.0, -0.1, f64::NAN] {
+        let mut test = case_test(1, 999);
+        test.alpha = Some(alpha);
+        assert_eq!(refused(&matrix, &design, &test), "alpha", "{alpha}");
+    }
+    // The 65th group, one past the most a design may have.
+    let mut groups = vec![0_u16; 10];
+    groups[9] = MAX_GROUPS;
+    let error = compare(&matrix, &Design::new(groups), &case_test(1, 999)).unwrap_err();
+    assert_eq!(error.field(), Some("groups"));
+    assert!(error.to_string().contains("group 64 is above"), "{error}");
+}
+
+#[test]
+fn a_predicate_that_cannot_vary_departs_from_nothing() {
+    // One predicate holds on every chart and one is read on none: no
+    // relabelling can change either's count, so every permutation reaches
+    // the observed statistic, which is no departure at all, whether the
+    // cases are set against the rest, inside strata or not, or every group
+    // is compared.
+    use Cell::{Absent as A, Present as P, Unreadable as U};
+    let mut matrix = Matrix::new(10);
+    matrix.push("always", &[P; 10]).unwrap();
+    matrix.push("never read", &[U; 10]).unwrap();
+    matrix
+        .push("cases unread", &[U, U, U, U, P, A, P, A, P, A])
+        .unwrap();
+    matrix
+        .push("none among cases", &[A, A, A, A, P, A, P, A, P, A])
+        .unwrap();
+    let plain = Design::new((0..10).map(|i| u16::from(i < 4)).collect());
+    let strata = plain
+        .clone()
+        .with_strata((0..10).map(|i| u32::from(i >= 5)).collect());
+    let mut chi = GroupTest::new(5, 199, Contrast::AnyDifference);
+    chi.alternative = Alternative::TwoSided;
+    let mut greater = case_test(5, 199);
+    greater.alternative = Alternative::Greater;
+    for (design, test) in [
+        (&plain, &greater),
+        (&plain, &case_test(5, 199)),
+        (&strata, &greater),
+        (&plain, &chi),
+    ] {
+        let tested = compare(&matrix, design, test).unwrap();
+        for row in &tested.rows[..2] {
+            assert_eq!(row.observed, Some(0.0), "{}", row.predicate);
+            // Every arrangement drawn, or every one walked where the
+            // strata leave fewer than asked.
+            assert_eq!(
+                row.p.exceed,
+                u64::from(tested.permutations),
+                "{}",
+                row.predicate
+            );
+            assert_eq!(row.p.value, 1.0, "{}", row.predicate);
+        }
+        if test.contrast == Contrast::AnyDifference {
+            continue;
+        }
+        assert_eq!(tested.rows.len(), 4);
+        let (always, never, unread, none) = (
+            &tested.rows[0],
+            &tested.rows[1],
+            &tested.rows[2],
+            &tested.rows[3],
+        );
+        // Every chart holds it: the same risk in both groups, and no
+        // odds, since no chart lacks it. Pooled over strata, where a
+        // design has them, the ratio is one exactly and there are still
+        // no odds.
+        let effect = always.effect.as_ref().unwrap();
+        assert_eq!(effect.risk_difference.estimate, 0.0);
+        assert_eq!((effect.odds_ratio, effect.cohen_h), (None, 0.0));
+        match &effect.pooled {
+            Some(pooled) => {
+                assert!(design.strata.is_some());
+                let ratio = pooled.risk_ratio.unwrap();
+                assert_eq!((ratio.estimate, ratio.low, ratio.high), (1.0, 1.0, 1.0));
+                assert_eq!(pooled.odds_ratio, None);
+            }
+            None => assert!(design.strata.is_none()),
+        }
+        // Read on no chart, or on none of the cases, it has no effect to
+        // size.
+        assert_eq!(
+            (never.effect.as_ref(), unread.effect.as_ref()),
+            (None, None)
+        );
+        assert_eq!(never.counts[1].unreadable, 4);
+        // Held by none of the cases: a risk of nought, which has neither a
+        // ratio nor odds.
+        let effect = none.effect.as_ref().unwrap();
+        assert_eq!(effect.risk_case.estimate, 0.0);
+        assert_eq!(
+            (effect.risk_ratio.as_ref(), effect.odds_ratio),
+            (None, None)
+        );
+    }
+}
+
+#[test]
+fn an_event_and_a_self_matched_family_name_each_predicate_once() {
+    let mut events = PairMatrix::new(4).unwrap();
+    events.push("transit", |_, _| Cell::Absent).unwrap();
+    let twice = events.push("transit", |_, _| Cell::Present).unwrap_err();
+    assert_eq!(twice.field(), Some("predicates[1]"));
+    let mut people = MatchedMatrix::new(&[3, 3]).unwrap();
+    people.push("return", |_, _| Cell::Absent).unwrap();
+    let again = people.push("return", |_, _| Cell::Present).unwrap_err();
+    assert_eq!(again.field(), Some("predicates[1]"));
+    // A family of none is refused before anything is drawn.
+    let test = EventTest::new(1, 99);
+    assert_eq!(
+        timed(&PairMatrix::new(4).unwrap(), None, &test)
+            .unwrap_err()
+            .field(),
+        Some("predicates")
+    );
+    assert_eq!(
+        matched(&MatchedMatrix::new(&[3, 3]).unwrap(), &test)
+            .unwrap_err()
+            .field(),
+        Some("predicates")
+    );
+}
+
+#[test]
+fn a_pairing_outside_the_board_is_never_allowed() {
+    let mut board = PairMatrix::new(3).unwrap();
+    assert!(board.allows(2, 2));
+    for (subject, event) in [(3, 0), (0, 3), (7, 7)] {
+        assert!(!board.allows(subject, event), "{subject}, {event}");
+        // Forbidding one there is no change to the board.
+        board.forbid(subject, event);
+    }
+    assert!(!board.restricted());
+    board.forbid(0, 2);
+    assert!(board.restricted() && !board.allows(0, 2) && board.allows(2, 0));
+}
+
+#[test]
+fn the_distributions_are_bounded_where_they_are_certain() {
+    for (a, b) in [(0.5, 0.5), (2.0, 3.0), (10.0, 1.0)] {
+        assert_eq!(special::beta_cdf(0.0, a, b), 0.0);
+        assert_eq!(special::beta_cdf(-1.0, a, b), 0.0);
+        assert_eq!(special::beta_cdf(1.0, a, b), 1.0);
+        assert_eq!(special::beta_cdf(2.0, a, b), 1.0);
+    }
+    // No statistic, or no freedom, is no evidence: the whole tail.
+    for (x, df) in [(0.0, 3), (-2.0, 3), (f64::NAN, 3), (5.0, 0)] {
+        assert_eq!(special::chi_square_upper(x, df), 1.0, "{x}, {df}");
+    }
+}
+
+#[test]
+fn a_predicate_read_nowhere_expects_nothing_in_an_event_or_a_self_matched_study() {
+    let test = EventTest::new(2, 99);
+    let mut events = PairMatrix::new(5).unwrap();
+    events.push("unread", |_, _| Cell::Unreadable).unwrap();
+    let tested = timed(&events, None, &test).unwrap();
+    let row = &tested.rows[0];
+    assert_eq!(row.counts[0].unreadable, 5);
+    let expected = row.expected.unwrap();
+    assert_eq!((expected.observed, expected.expected), (0.0, 0.0));
+    assert_eq!(row.p.value, 1.0);
+
+    let mut people = MatchedMatrix::new(&[3, 3, 3]).unwrap();
+    people.push("unread", |_, _| Cell::Unreadable).unwrap();
+    let tested = matched(&people, &test).unwrap();
+    let row = &tested.rows[0];
+    let expected = row.expected.unwrap();
+    assert_eq!((expected.observed, expected.expected), (0.0, 0.0));
+    assert_eq!(row.effect, None, "no subject was read");
+}
