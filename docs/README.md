@@ -14,6 +14,7 @@ Three files are living documents and are updated in every working session:
 |---|---|
 | [`STATUS.md`](STATUS.md) | where the work stands: done, in progress, next, and a session log |
 | [`QUESTIONS.md`](QUESTIONS.md) | open questions for the maintainer, each with options and a recommendation, and the decisions taken |
+| [`consumers/`](consumers/addendum-3.md) | replies to a consumer's requests, one row per request with its status and where it lives | living |
 | [`08-decisions/`](08-decisions/README.md) | architecture decision records; a question becomes an ADR when it is decided |
 
 ## Directories
