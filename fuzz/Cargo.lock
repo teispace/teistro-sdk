@@ -970,6 +970,7 @@ dependencies = [
  "schemars",
  "serde",
  "teistro-core",
+ "teistro-intl",
 ]
 
 [[package]]

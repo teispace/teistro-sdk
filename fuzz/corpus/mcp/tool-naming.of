@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"naming.of","arguments":{"request":{"birth":{"nakshatra":"KRITTIKA","pada":1}}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":106}

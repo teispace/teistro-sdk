@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"naming.read","arguments":{"request":{"names":["राम","Shiva"],"rules":{"name":{"latin":"CASUAL"}}}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":104}
