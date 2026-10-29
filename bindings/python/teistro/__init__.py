@@ -4446,6 +4446,11 @@ class Context:
 
         The cells run instants outermost: cell `i * len(bodies) + j` is
         instant `i`, body `j`, which is what `at` reads.
+
+        `observer` is read for positions only under a topocentric
+        `frame`: under the default, geocentric frame an observer does not
+        move a single position. A chart's place still serves its houses
+        and lagna, which are read from the place whatever the frame.
         """
         if not instants:
             raise ValueError("a request needs at least one instant")

@@ -36,6 +36,11 @@ pub struct PositionRequest<'a> {
     /// The frame the caller wants.
     pub frame: Frame,
     /// The observer, required when the frame is topocentric.
+    ///
+    /// Only a topocentric frame reads it: under a geocentric frame, the
+    /// canonical one, an observer given here does not move a single
+    /// position. A chart's place still serves its houses and lagna,
+    /// which are read from the place whatever the frame.
     pub observer: Option<Place>,
     /// Whether speeds are wanted.
     pub speeds: bool,
