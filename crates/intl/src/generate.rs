@@ -1201,8 +1201,11 @@ pub fn python(model: &Model) -> String {
     python_entity_forms(&mut out, model);
     let mut classes = Vec::new();
     python_group(&mut classes, "Messages", &model.root);
-    // The nested classes are named before they are defined, so the tree
-    // comes out innermost first and every reference resolves.
+    // A group's class is collected after its children's, so reversed the
+    // tree comes out outermost first, `Messages` at the top. Every
+    // reference still resolves: the annotations are postponed (`from
+    // __future__ import annotations`) and a property's body names its
+    // class only when it runs.
     for class in classes.iter().rev() {
         out.push_str(class);
     }

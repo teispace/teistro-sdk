@@ -355,3 +355,108 @@ fn a_message_is_held_to_its_links_selectors_and_base_parameters() {
         assert!(found(&findings, saying), "{saying}: {findings:#?}");
     }
 }
+
+#[test]
+fn a_context_value_is_one_every_binding_can_name() {
+    let root = tree("contexts", "en-Latn", "en-Latn", &[]);
+    let meta = root.join("en-Latn").join(META_FILE);
+    let text = std::fs::read_to_string(&meta).unwrap();
+    std::fs::write(
+        &meta,
+        text.replace(
+            r#""gender": ["m", "f", "n"]"#,
+            r#""gender": ["m", "f", "n"], "rank": ["first", "1st", "a-b", "top_2"]"#,
+        ),
+    )
+    .unwrap();
+    let findings = findings(&root);
+    for value in ["1st", "a-b"] {
+        let saying =
+            format!("context `rank` value `{value}` must be a letter, then letters, digits or `_`");
+        assert!(found(&findings, &saying), "{saying}: {findings:#?}");
+    }
+    for value in ["first", "top_2", "m"] {
+        assert!(
+            !found(&findings, &format!("value `{value}`")),
+            "{value}: {findings:#?}"
+        );
+    }
+}
+
+#[test]
+fn a_record_of_a_partial_locale_still_says_something() {
+    let root = tree(
+        "partial",
+        "en-Latn",
+        "en-Latn",
+        &[(
+            "sdk.entity.json",
+            r#"{"graha": {"SUN": {"name": "Sun", "gender": "m"}, "MOON": {"name": "Moon"}}}"#,
+        )],
+    );
+    let dir = root.join("hi-Deva-IN");
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::copy(
+        sdk_root().join("hi-Deva-IN").join(META_FILE),
+        dir.join(META_FILE),
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("sdk.entity.json"),
+        r#"{"graha": {"SUN": {"gender": "m"}, "MOON": {"glyph": "☽"}}}"#,
+    )
+    .unwrap();
+    let findings = findings(&root);
+    // A locale that promises only the base owes no name, but a record
+    // with no form and no glyph is still a fault (a gender is no form);
+    // a glyph alone is a record.
+    assert!(
+        found(
+            &findings,
+            "hi-Deva-IN sdk.entity.graha.SUN: a record with no form says nothing"
+        ),
+        "{findings:#?}"
+    );
+    assert!(!found(
+        &findings,
+        "hi-Deva-IN sdk.entity.graha.MOON: a record"
+    ));
+    assert!(!found(
+        &findings,
+        "hi-Deva-IN sdk.entity.graha.SUN: an entity needs"
+    ));
+}
+
+#[test]
+fn a_derived_locale_without_entities_is_its_metadata_alone() {
+    use teistro_intl::derive::{Casing, OVERRIDES_FILE, derive, overrides_of};
+
+    let root = scratch("derive-bare");
+    let dir = root.join("sa-Deva");
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::copy(
+        sdk_root().join("sa-Deva").join(META_FILE),
+        dir.join(META_FILE),
+    )
+    .unwrap();
+    std::fs::write(dir.join("sdk.test.json"), r#"{"hello": "नमः"}"#).unwrap();
+    let tree = Tree::load(&root).unwrap();
+    let derived = derive(
+        &tree,
+        "sa-Deva",
+        "sa-Latn",
+        &std::collections::BTreeMap::new(),
+        Casing::Names,
+    )
+    .unwrap();
+    assert_eq!(derived.files.len(), 1);
+    let (path, text) = derived.files.first().unwrap();
+    assert_eq!(*path, Path::new("sa-Latn").join(META_FILE));
+    assert!(text.contains("\"locale\": \"sa-Latn\""));
+    assert_eq!(derived.entities, 0);
+
+    // An overrides file that does not parse is refused with its path.
+    std::fs::write(dir.join(OVERRIDES_FILE), "not json").unwrap();
+    let error = overrides_of(&root, "sa-Deva").unwrap_err();
+    assert!(error.contains(OVERRIDES_FILE), "{error}");
+}

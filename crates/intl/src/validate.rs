@@ -510,6 +510,22 @@ fn check_meta(findings: &mut Findings, tree: &Tree, locale: &LocaleSource) {
                 format!("context `{context}` must list distinct values"),
             );
         }
+        // Each binding names a value as an identifier (Rust's `Gender::M`,
+        // Dart's `m`, Python's `M`): `1st` or `a-b` would generate code
+        // that does not compile.
+        for value in values {
+            let identifier = value.starts_with(|c: char| c.is_ascii_alphabetic())
+                && value.chars().all(|c| c.is_ascii_alphanumeric() || c == '_');
+            if !identifier {
+                findings.error(
+                    tag,
+                    "",
+                    format!(
+                        "context `{context}` value `{value}` must be a letter, then letters, digits or `_`, as every binding names it"
+                    ),
+                );
+            }
+        }
     }
     for fallback in &meta.fallback {
         if !tree.locales.contains_key(fallback) {
