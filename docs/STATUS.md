@@ -1065,9 +1065,8 @@ provider's DUT1).
 
 ## How to resume
 
-**Open with the maintainer:** Q42 (who reviews the Hindi, Sanskrit and
-Nepali text addendum 3 asks for) and Q43 (whether a hosted API may serve
-Teimeris's output), both from `consumers/addendum-3.md`.
+**Open with the maintainer:** Q43 (whether a hosted API may serve
+Teimeris's output), from `consumers/addendum-3.md`.
 
 0. **Next, in this order** (the dated plan, `07-roadmap/00-roadmap.md`,
    "The plan to the release candidate"; Track A's release blockers first,
@@ -3412,9 +3411,10 @@ What is left in the engineer's hands, and its estimate, is
 
 The app's addendum 3 asks for 58 requests, SR-01 to SR-58, and sends addendum 2
 with it, now approved. Each is answered by number in `consumers/addendum-3.md`:
-20 are partly built or done (each with what is left), the rest are planned, and 4 need
-a decision (Q42, the reviewers of Hindi, Sanskrit and Nepali text; Q43, Teimeris
-for hosted serving). They are scheduled after the release candidate in four waves
+20 are partly built or done (each with what is left), the rest are planned, and the decisions
+are Q42 (decided: the consumer supplies the reviewers of Hindi, Sanskrit and
+Nepali text) and Q43 (Teimeris for hosted serving, open). Addendum 4 added
+SR-59 to SR-62, all P1. They are scheduled after the release candidate in four waves
 (`07-roadmap/00-roadmap.md`, "Addendum 3"); P0 comes first.
 
 ### An almanac app's brief (from 2026-10-20)

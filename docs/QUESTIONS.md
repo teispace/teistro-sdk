@@ -6,22 +6,6 @@ and links its ADR. Status key: `open`, `decided`, `deferred`.
 
 ## Open
 
-## Q42. Who reviews the Hindi, Sanskrit and Nepali text a consumer asks for: `open`
-
-Raised 2026-10-29 by the consumer's addendum 3 (`consumers/addendum-3.md`,
-SR-12, SR-13, SR-29, SR-31, SR-37 and SR-38). The SDK names 504 festivals and
-limbs and says 332 of them in Hindi and Sanskrit, and its composed text has one
-Hindi message and no Sanskrit. A name or a template drafted from the cited texts
-is not a vetted one, and none is machine-stubbed.
-
-- **A. A named native reviewer per language** signs off each pack before it
-  ships. Drafts land behind a `draft` status a strict locale refuses.
-  *Recommended.*
-- **B. The consumer's reviewers** sign off in the consumer's repository, and
-  the SDK takes the reviewed strings as a contribution.
-- **C. Ship the drafts marked unreviewed.** This is rejected: a strict locale
-  binds what it ships.
-
 ## Q43. Whether a hosted API may serve Teimeris's output under Apache-2.0 alone: `open`
 
 Raised 2026-10-29 by SR-55. The SDK, its packs and its built-in ephemeris are
@@ -554,6 +538,15 @@ consumer keeping it gives `NakshatraBar::dharmasindhu()`. The vratas:
 each reading is listed and answered, so the order chooses nothing a
 consumer cannot see. Nothing moves: the shipped defaults were already
 these.
+
+## Q42. Who reviews the Hindi, Sanskrit and Nepali text a consumer asks for: `decided`
+
+Raised 2026-10-29 by the consumer's addendum 3 (`consumers/addendum-3.md`,
+SR-12, SR-13, SR-29, SR-31, SR-37 and SR-38). **Decided 2026-10-29 by the
+consumer's addendum 4: B.** The consumer supplies the native reviewers, and
+each is named here when found. Until a reviewer signs a pack off, its drafts
+stay behind a `draft` status that a strict locale refuses. No name is
+machine-stubbed.
 
 ## Decisions log
 
