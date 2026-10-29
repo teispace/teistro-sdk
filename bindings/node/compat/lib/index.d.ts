@@ -5,18 +5,19 @@
 // (`docs/03-design/compat-shim.md` §3.7), here and nowhere else; every
 // answer is the SDK's own type.
 
-import type { ContextInit } from '@teistro/sdk';
+import type { Almanac, AlmanacDay, CalendarDate, Chart, Charts, ContextInit } from '@teistro/sdk';
 
 /**
  * A stored birth record, as the application keeps it. The instant is the
- * Julian day; the UTC date must agree with it to the millisecond.
+ * UTC date; the Julian day, derived from it, must agree with it to its
+ * stored precision (six decimals, 43.2 ms).
  */
 export interface BirthRecord {
   /** Read only by the calls that read a name (numerology, naam). */
   readonly name?: string;
-  /** The instant as a UTC date, or its ISO-8601 text as a row stores it. */
+  /** The instant as a UTC date, or its ISO-8601 text as a row stores it: what every call founds at. */
   readonly dateTimeUtc: Date | string;
-  /** The instant as a UT Julian day: what every call founds at. */
+  /** The instant as a UT Julian day, derived from the date: checked against it, never founded at. */
   readonly julianDay: number;
   readonly latitude: number;
   readonly longitude: number;
@@ -59,8 +60,44 @@ export declare class CompatRefused extends Error {
   readonly guide: string;
 }
 
-/** The shim over one set of context options, holding the contexts it opens. */
+/**
+ * The shim over one set of context options, holding the contexts it opens.
+ * Every row takes a stored birth record and the stored snapshot it was
+ * computed under, and answers the SDK's own result; the KP row answers on
+ * the snapshot's KP context, every other on its natal one.
+ */
 export interface Shim {
+  /** The foundation (every varga, aspects, points, houses, states, Jaimini) and the Vimshottari. */
+  chart(birth: BirthRecord, snapshot: StoredSnapshot): Chart;
+  /** The whole natal chart: every section, the eighteen dashas, every shipped rule set and the longevity. */
+  full(birth: BirthRecord, snapshot: StoredSnapshot): Chart;
+  /** Every divisional chart, with the foundation. */
+  vargas(birth: BirthRecord, snapshot: StoredSnapshot): Chart;
+  /** The yogas and doshas. */
+  yogas(birth: BirthRecord, snapshot: StoredSnapshot): Chart;
+  /** The Shadbala, the Bhava bala and the Ashtakavarga. */
+  strength(birth: BirthRecord, snapshot: StoredSnapshot): Chart;
+  /** The eighteen dasha systems. */
+  dashas(birth: BirthRecord, snapshot: StoredSnapshot): Chart;
+  /** The almanac day of `date`, the birth's own civil date by default, at the birth's place on its zone's clock at noon. */
+  day(birth: BirthRecord, snapshot: StoredSnapshot, options?: { readonly date?: CalendarDate }): AlmanacDay;
+  /** The almanac days `from` to `to`, both included, at the birth's place on its zone's clock at noon on `from`. */
+  month(birth: BirthRecord, snapshot: StoredSnapshot, options: { readonly from: CalendarDate; readonly to: CalendarDate }): Almanac;
+  /** The birth as the groom, matched with `partner` as the bride. */
+  milan(birth: BirthRecord, snapshot: StoredSnapshot, options: { readonly partner: BirthRecord }): Chart;
+  /** The annual charts through year `through` of life, with their matters, sahams and the Mudda dasha. */
+  varsha(birth: BirthRecord, snapshot: StoredSnapshot, options: { readonly through: number }): Chart;
+  /**
+   * KP's cusps, lords, significators and ruling planets, on the KP context;
+   * with `anyAyanamsha`, on the natal context under the chart's own ayanamsha.
+   */
+  kp(birth: BirthRecord, snapshot: StoredSnapshot, options?: { readonly anyAyanamsha?: boolean }): Chart;
+  /** The transits at `instants`, UT Julian days, over the chart, with the Ashtakavarga's say. */
+  gochar(birth: BirthRecord, snapshot: StoredSnapshot, options: { readonly instants: ArrayLike<number> }): Chart;
+  /** Sade Sati and the dhaiyyas from `from` to `to`, UT Julian days. */
+  sadeSati(birth: BirthRecord, snapshot: StoredSnapshot, options: { readonly from: number; readonly to: number }): Chart;
+  /** Whole charts at `instants`, UT Julian days, at the birth's place and on its clock. */
+  batch(birth: BirthRecord, snapshot: StoredSnapshot, options: { readonly instants: ArrayLike<number> }): Charts;
   /**
    * How many times this thread called each row, zero included. When every
    * count is zero, the application has finished porting.

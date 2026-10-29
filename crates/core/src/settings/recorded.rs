@@ -802,7 +802,9 @@ pub struct Recorded {
     /// The chart's context: [`PROFILE`] and the snapshot's knobs.
     pub natal: Opening,
     /// The KP context: [`KP_PROFILE`] on the natal frame's node, centre
-    /// and ayanamsha basis and its polar day, as the baseline casts KP.
+    /// and ayanamsha basis and its polar day, with the natal context's
+    /// ruling planets (how many, and whose weekday), as the baseline casts
+    /// KP.
     pub kp: Opening,
     /// The ephemeris the natal context needs at the front of its chain,
     /// when it needs one.
@@ -983,6 +985,8 @@ pub fn recorded(snapshot: &Snapshot) -> Result<Recorded, Refused> {
     kp.frame.centre = Some(settings.frame.centre);
     kp.frame.ayanamsha_basis = Some(settings.frame.ayanamsha_basis);
     kp.day.polar_day_policy = Some(settings.day.polar_day_policy);
+    kp.kp.ruling_count = Some(settings.kp.ruling_count);
+    kp.kp.day_lord_day = Some(settings.kp.day_lord_day);
     Ok(Recorded {
         natal: Opening {
             profile: ProfileId::new(PROFILE),

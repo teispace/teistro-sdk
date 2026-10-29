@@ -94,6 +94,28 @@ new reader of what the recording engine stored.
   registered rather than patched. The tests' hand-written variant
   patches are gone.
 
+**`@teistro/compat` forwards fourteen rows, and the A/B times them.**
+**Numbers:** a KP chart cast on the KP context `recordedSettings` opens
+moves its ruling planets to the baseline's: seven, the sub lords too, by
+the civil weekday, where `kp-default` reads five by the weekday from
+sunrise. Nothing else moves; the A/B's `same` already asked for those,
+and reads the same settings as before, now through `recordedSettings`.
+- `chart`, `full`, `vargas`, `yogas`, `strength`, `dashas`, `day`,
+  `month`, `milan`, `varsha`, `kp`, `gochar`, `sadeSati` and `batch`,
+  each taking a stored birth record and snapshot and answering the SDK's
+  own result; `kp` takes `{ anyAyanamsha: true }` for the chart's own
+  ayanamsha. `agree.test.mjs` holds each to its documented SDK call over
+  the corpus's 55 charts, content hash for content hash.
+- The A/B's SDK side calls these, so every timed request but `muhurta`
+  is a shim call, and its `same` convention is what the corpus's
+  `default` snapshot translates to.
+- `recordedSettings`' KP opening carries `kp.ruling_count` and
+  `kp.day_lord_day` from the natal settings (cruxes C150, C151), as the
+  baseline reads its ruling planets.
+- A birth record founds at its stored date, and its Julian day is checked
+  to 43.25 ms, half the step of the six decimals an application's birth
+  table keeps it to (`03-design/compat-shim.md` §6.1).
+
 **`@teistro/compat`, the shim's package, as a skeleton.**
 **Numbers:** none move. A new package of plain JavaScript over the Node
 binding; nothing it does computes.
@@ -102,10 +124,10 @@ binding; nothing it does computes.
   sixteen kept and the one used longest ago disposed; `shim.dispose()`
   frees them all. `profile` and `settings` are refused as options, since
   each stored snapshot decides them.
-- The stored birth record is read as the design's §3.7 maps it: the Julian
-  day is the instant, refused as `CompatRefused` (`birth.instant`) when
-  the stored UTC date stands more than a millisecond from it; the clock is
-  read in the stored IANA zone or local mean time.
+- The stored birth record is read as the design's §3.7 maps it: the UTC
+  date is the instant, and the record is refused as `CompatRefused`
+  (`birth.instant`) when its Julian day stands more than 43.25 ms from
+  it; the clock is read in the stored IANA zone or local mean time.
 - `CompatRefused` carries the row and the guide anchor; a stored settings
   field or value the translation refuses becomes one, the SDK's
   `TeistroError` its cause. Any other SDK error passes through untouched.

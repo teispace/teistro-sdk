@@ -162,6 +162,18 @@ export function inputs(dir = join(root, 'fixtures/baseline/charts')) {
   }));
 }
 
+/**
+ * The corpus's `default` snapshot, the settings every chart of it was
+ * recorded under, as the stored fields its manifest's canonical form
+ * lists (`ayanamsaId=1|…|useTopocentric=true`): a number, a flag or text.
+ */
+export function defaultSnapshot(manifest = join(root, 'fixtures/baseline/manifest.json')) {
+  const { canonical } = JSON.parse(readFileSync(manifest, 'utf8')).profiles.default.settings_hash;
+  const stored = (value) =>
+    /^-?\d+$/.test(value) ? Number(value) : value === 'true' ? true : value === 'false' ? false : value;
+  return Object.fromEntries(canonical.split('|').map((pair) => pair.split('=')).map(([field, value]) => [field, stored(value)]));
+}
+
 /** The paths both sides are opened from, refused with a sentence naming the variables. */
 export function paths() {
   const adapter = process.env.TEISTRO_AB_BASELINE;

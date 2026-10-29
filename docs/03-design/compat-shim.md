@@ -267,7 +267,7 @@ follows:
 
 | the record holds | the shim |
 |---|---|
-| the instant, as a UTC date and as a UT Julian day | takes the Julian day as the `instant`, and refuses the record when the date is more than a millisecond from it |
+| the instant, as a UTC date and as a UT Julian day | takes the date as the `instant`, the UT Julian day `2440587.5 + ms / 86 400 000`, and refuses the record when its Julian day stands more than 43.25 ms from it (§6.1) |
 | latitude, longitude, altitude | the `place` |
 | an IANA zone, or a local mean time flag | the clock's `utcOffsetSeconds`, from `ctx.time.civilOf(instant, zone)` with `ianaZone(name)` or `localMeanZone(longitude)` |
 | the time's accuracy | read only by `rectify`. Every other call founds at the instant given, as the baseline does |
@@ -363,13 +363,16 @@ In the snapshot's own terms, as the inventory lists the fields:
 | the version triple | any | a note, kept for the stored chart's comparison (guide §8.3) |
 
 Three settings the snapshot does not hold are the baseline's fixed
-conventions, so `recorded` sets them on every translation. Today they
-live in `ab.mjs`:
+conventions, so `recorded` sets them on every translation. Until item 5
+they lived in `ab.mjs`'s `CONVENTIONS.same`, which now reads them from
+`recorded`:
 
 - **the KP context:** `kp-default`, with the translated frame's node,
-  centre and ayanamsha basis and the day's polar policy laid over it.
-  This is what the A/B measured as 98.4% agreement on the four lord
-  levels. A caller who wants KP under the chart's own ayanamsha passes
+  centre and ayanamsha basis, the day's polar policy and the natal
+  context's ruling planets (`kp.ruling_count` `WITH_SUBS`,
+  `kp.day_lord_day` `CIVIL`, cruxes C150, C151) laid over it. This is
+  what the A/B measured as 98.4% agreement on the four lord levels and
+  100% on the ruling planets. A caller who wants KP under the chart's own ayanamsha passes
   `kp(birth, snapshot, { anyAyanamsha: true })`, which forwards
   `kp: { anyAyanamsha: true }` on the natal context instead (guide §5.3,
   C157);
@@ -454,7 +457,20 @@ comparison.
   or the generated map. The message says what to do instead, in one
   sentence.
 - A birth record whose Julian day and UTC date disagree throws
-  `CompatRefused` with row `birth.instant`.
+  `CompatRefused` with row `birth.instant`. The date is the instant and
+  the Julian day is checked against it, to 43.25 ms (settled with item
+  5). The baseline derives the Julian day from the date wherever it
+  stores both: the corpus's 115 records (its 55 charts and 60 variants)
+  hold them at most 0.0195 ms apart, a double's rounding of a Julian day
+  of this era, and the application founds every chart from the date,
+  which its birth table keeps to the second, while it keeps the Julian
+  day to six decimals, a step of 86.4 ms. A millisecond, the first
+  tolerance, would have refused all but about one stored row in 43.
+  So the tolerance is half that step, 43.2 ms, with 0.05 ms for the two
+  roundings of a double (where the day was derived and where its decimal
+  was read); founding at the stored Julian day instead would move a
+  chart by up to 43 ms from the one the application computed. The
+  refusal asks for the Julian day to be derived from the date again.
 - A stored field or value the translation refuses reaches the shim as
   the SDK's `TeistroError` on `snapshot.<field>`. The shim throws it as
   `CompatRefused` with that field as its row and the SDK's error as its
@@ -491,10 +507,13 @@ logs it once a day. When every count is zero, it has finished porting.
 
 ### 6.4 Tests and gates
 
-- **Bit agreement.** The A/B's SDK side (`sdkSide` in `bench/ab.mjs`)
-  moves into the package as the first fourteen forwards, and the A/B
-  runner imports them from there. Every timed A/B request is then a shim
-  call, and `check-ab` (not slower than the baseline) holds the shim too.
+- **Bit agreement (built with item 5).** The A/B's SDK side (`sdkSide`
+  in `bench/ab.mjs`) moves into the package as the first fourteen
+  forwards (`lib/forward.js`), and the A/B runner imports them from
+  there. Every timed A/B request is then a shim call, and `check-ab` (not
+  slower than the baseline) holds the shim too. The fifteenth request,
+  `muhurta`, is still the runner's own until the muhurta row lands with
+  item 6.
   A new `bindings/node/compat/test/agree.test.mjs` asks each forward and
   compose function for every one of the corpus's 55 inputs and the
   documented SDK call directly, and asserts the two answers'
@@ -545,7 +564,7 @@ In order. Each is one pull request.
 | 2 | built: the corpus founded through the translation (`ephemeris_kit::variants`, held on every built-in tier with its measured divergences), the ad hoc patches deleted, the `default` snapshot held to `conformance-baseline` knob by knob | sdk tests, ephemeris-kit | 1 day |
 | 3 | built: the boundary, one JSON entry through the IDL, generated into every binding and wrapped as the context's `recordedSettings` in Node, wasm, Dart and Java and `recorded_settings` in Python; the parity example is not written | ffi, idl, bindings | 1 day |
 | 4 | built: `@teistro/compat` skeleton: `compat()`, the context cache, the birth record (§3.7), `CompatRefused`, `calls()`, README with the end (§6.3), typecheck consumer; its tests and the consumer run under `check-node`, the README is held by `check-guides` | bindings/node/compat, xtask | 1 day |
-| 5 | the A/B's SDK side moved into the package (`chart`, `full`, `vargas`, `yogas`, `strength`, `dashas`, `day`, `month`, `milan`, `varsha`, `kp`, `gochar`, `sadeSati`, `batch`); `CONVENTIONS.same` replaced by `recordedSettings`; `agree.test.mjs` | node bench, compat | 1 day |
+| 5 | built: the A/B's SDK side moved into the package (`chart`, `full`, `vargas`, `yogas`, `strength`, `dashas`, `day`, `month`, `milan`, `varsha`, `kp`, `gochar`, `sadeSati`, `batch`); `CONVENTIONS.same` replaced by `recordedSettings`, the KP opening given the natal context's ruling planets; `agree.test.mjs` over the corpus's 55 charts and KP under the chart's own ayanamsha; the birth record founded at its date (§6.1) | node bench, compat | 1 day |
 | 6 | the remaining forward and compose rows of §3, with `facts()` moved from `ab-agree.mjs` | compat | 2 days |
 | 7 | `surface.json`, the refused rows typed `never`, `surface.test.mjs` | compat | 0.5 day |
 | 8 | `cargo xtask compat` and `check-compat`: the generated `baseline-map.md`, the guide's §4 replaced by its link, the parity row updated, the gate added to fast-check | xtask, docs, CI | 1 day |
@@ -559,12 +578,12 @@ zero unmapped entry points.
 
 ## 8. Open questions
 
-- **KP's ayanamsha in the application.** The A/B's adapter casts KP under
-  Krishnamurti's ayanamsha, and the shim follows it (§4.2). The
-  application may call KP under the chart's stored ayanamsha and live
-  with the warning. If so, its default should be the natal context with
-  `anyAyanamsha`. Settle it by reading the application's KP call when
-  item 5 is built.
+- **KP's ayanamsha in the application (read with item 5: no call).**
+  The application registers the baseline's KP services and injects them
+  nowhere, so no stored chart was cast through KP under any ayanamsha.
+  The shim keeps the A/B's reading, Krishnamurti's ayanamsha on the
+  chart's frame (§4.2), with `{ anyAyanamsha: true }` for the chart's
+  own. Open only until an application on the baseline calls KP.
 - **The surya variant (measured: it does not reproduce).** Under the
   §4.2 row the sunrise and sunset reproduce to 1.5e-5 days and the node
   to 0.015 degrees, but the star planets stand 0.04 to 0.95 degrees from
@@ -576,10 +595,16 @@ zero unmapped entry points.
   rather than patched. Open: which reading the application's stored
   surya charts should keep. A consumer migrating them sees the SDK's
   reading, and its own stored positions differ by the figures above.
-- **The stored ayanamsha's spelling.** The rows read `ayanamsaId` as the
-  number the recording engine's settings hold. The application's own
-  rows were not read, so whether it stores that number or a key of its
-  own is open until item 5 reads its stored charts.
+- **The stored ayanamsha's spelling (read with item 5: a key, not the
+  number).** The rows read `ayanamsaId` as the number the recording
+  engine's settings hold. The application's own tables store a key
+  instead: a chart's settings and the user's preferences hold it as text
+  (`'lahiri'`, `'raman'`, `'krishnamurti'`, up to 32 characters), and
+  only the rectification table holds a number. So the translation
+  refuses the application's stored charts at their first field until a
+  row reads the key. Open: the key's spelling set, read from the engine's
+  ayanamsha enumeration, and whether it maps one to one onto the
+  catalogue's members; item 8's generated map is where it is counted.
 - **Locale pairings.** The baseline lets a language be paired with
   another script, such as Nepali in Latin script. The SDK ships four
   locales. Whether any stored snapshot actually holds another pairing is

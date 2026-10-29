@@ -38,10 +38,14 @@ const UNIX_EPOCH_JD = 2440587.5;
 const DAY_MS = 86_400_000;
 
 /**
- * How far the stored date may stand from the stored Julian day: a
- * millisecond, the date's own resolution (§3.7).
+ * How far the stored Julian day may stand from the stored date (§3.7,
+ * §6.1): half the step of a Julian day kept to six decimals, as an
+ * application's birth table keeps it (43.2 ms), and the 0.04 ms a double
+ * rounds a Julian day of this era by, twice: once where the day was
+ * derived and once where its decimal was read. The corpus's records stand
+ * at most 0.02 ms apart.
  */
-const INSTANT_TOLERANCE_MS = 1;
+export const INSTANT_TOLERANCE_MS = 43.25;
 
 /**
  * A shim call refused before any computation: an entry point, a stored
@@ -89,9 +93,10 @@ function milliseconds(stored) {
 }
 
 /**
- * The stored birth record, read as §3.7 maps it: the Julian day is the
- * instant, refused when the stored UTC date stands more than a millisecond
- * from it; the place; the zone the clock is read in, local mean time at
+ * The stored birth record, read as §3.7 maps it: the stored UTC date is
+ * the instant, as a UT Julian day, and the stored Julian day, which was
+ * derived from it, is refused when it stands further from it than its
+ * stored precision allows ({@link INSTANT_TOLERANCE_MS}); the place; the zone the clock is read in, local mean time at
  * the longitude when the record says so. The name, the gender and the
  * time's accuracy are kept for the calls that read them. The birth order
  * and the Bikram Sambat date are the application's, and nothing reads them.
@@ -106,17 +111,18 @@ export function readBirth(record) {
       "birth: expected the stored birth record, e.g. { dateTimeUtc, julianDay, latitude, longitude, altitude, timezone: 'Asia/Kathmandu', isLmt: false }",
     );
   }
-  const instant = number(record, 'julianDay');
+  const julianDay = number(record, 'julianDay');
   const stored = milliseconds(record.dateTimeUtc);
-  const fromDay = (instant - UNIX_EPOCH_JD) * DAY_MS;
-  if (Math.abs(stored - fromDay) > INSTANT_TOLERANCE_MS) {
+  const apart = Math.abs(stored - (julianDay - UNIX_EPOCH_JD) * DAY_MS);
+  if (apart > INSTANT_TOLERANCE_MS) {
     throw new CompatRefused(
       'birth.instant',
       GUIDE.birth,
-      `the stored date ${new Date(stored).toISOString()} and Julian day ${instant} are ${Math.abs(stored - fromDay)} ms apart; ` +
-        'store the instant once and derive the other from it, then pass the record again',
+      `the stored date ${new Date(stored).toISOString()} and Julian day ${julianDay} are ${apart} ms apart; ` +
+        'derive the Julian day from the stored date again, then pass the record again',
     );
   }
+  const instant = UNIX_EPOCH_JD + stored / DAY_MS;
   const latitude = number(record, 'latitude');
   const longitude = number(record, 'longitude');
   const altitude = number(record, 'altitude');

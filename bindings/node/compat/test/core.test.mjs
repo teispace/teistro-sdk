@@ -10,7 +10,18 @@ import { test } from 'node:test';
 
 import { TeistroError, ianaZone, localMeanZone } from '@teistro/sdk';
 
-import { CONTEXTS, CompatRefused, Contexts, GUIDE, TRANSLATIONS, at, calls, count, readBirth } from '../lib/core.js';
+import {
+  CONTEXTS,
+  CompatRefused,
+  Contexts,
+  GUIDE,
+  INSTANT_TOLERANCE_MS,
+  TRANSLATIONS,
+  at,
+  calls,
+  count,
+  readBirth,
+} from '../lib/core.js';
 
 /** Kathmandu, 1990-04-13 23:45 UTC: the corpus's c001, as an application stores it. */
 const RECORD = Object.freeze({
@@ -44,6 +55,9 @@ const DEFAULT = Object.freeze({
   swissephVersion: '2.10.03',
 });
 
+/** The instant a stored date is: its UT Julian day. */
+const INSTANT = 2440587.5 + RECORD.dateTimeUtc.getTime() / 86_400_000;
+
 /** `n` snapshots that each translate to settings of their own. */
 function distinct(n) {
   const out = [];
@@ -69,10 +83,12 @@ function disposed(ctx) {
   }
 }
 
-test('a stored birth record is its Julian day, its place and its zone', () => {
+test('a stored birth record is its date, its place and its zone', () => {
   const birth = readBirth(RECORD);
   assert.ok(Object.isFrozen(birth) && Object.isFrozen(birth.place));
-  assert.equal(birth.instant, RECORD.julianDay);
+  assert.equal(birth.instant, INSTANT);
+  // The corpus's Julian day, derived from the same date, within a double's rounding.
+  assert.ok(Math.abs(birth.instant - RECORD.julianDay) * 86_400_000 < 0.05);
   assert.deepEqual(birth.place, { latitude: 27.7172, longitude: 85.324, altitude: 1400 });
   assert.deepEqual(birth.zone, ianaZone('Asia/Kathmandu'));
   // Kept for the calls that read them; the birth order and BS date are not read.
@@ -85,11 +101,17 @@ test('a stored birth record is its Julian day, its place and its zone', () => {
   assert.deepEqual(lmt.zone, localMeanZone(85.324));
 });
 
-test('a stored date and Julian day a millisecond apart agree, and further apart are refused', () => {
+test('a Julian day kept to six decimals agrees with its date, and one further apart is refused', () => {
+  // As an application's birth table keeps it: the instant is still the date's.
+  const kept = Number(RECORD.julianDay.toFixed(6));
+  assert.equal(readBirth({ ...RECORD, julianDay: kept }).instant, INSTANT);
+  // Half the step of the sixth decimal is the farthest a kept day stands.
+  const halfStep = 0.5e-6 * 86_400_000;
+  assert.ok(halfStep < INSTANT_TOLERANCE_MS && INSTANT_TOLERANCE_MS - halfStep < 0.1);
   const ms = RECORD.dateTimeUtc.getTime();
-  assert.equal(readBirth({ ...RECORD, dateTimeUtc: new Date(ms + 1) }).instant, RECORD.julianDay);
+  assert.equal(readBirth({ ...RECORD, dateTimeUtc: new Date(ms + 43) }).instant, 2440587.5 + (ms + 43) / 86_400_000);
   assert.throws(
-    () => readBirth({ ...RECORD, dateTimeUtc: new Date(ms + 2) }),
+    () => readBirth({ ...RECORD, dateTimeUtc: new Date(ms + 44) }),
     (error) =>
       error instanceof CompatRefused &&
       error.row === 'birth.instant' &&
@@ -121,7 +143,7 @@ test('a birth founds at its instant, its place and the clock its zone kept then'
   const contexts = new Contexts({ ephemeris: 'TEST' });
   const ctx = contexts.natal(DEFAULT);
   assert.deepEqual(at(ctx, readBirth(RECORD)), {
-    instant: RECORD.julianDay,
+    instant: INSTANT,
     place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
     utcOffsetSeconds: 20700,
   });
