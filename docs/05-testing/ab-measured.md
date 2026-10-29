@@ -13,12 +13,13 @@ Then each side, in processes of its own, answers `chart`, `day` and `full` under
 **Measurably slower through the SDK**, each held to a bound of the baseline's time:
 
 - `muhurta`, at most 1.50×: the SDK judges every window of every day, cut wherever a clause changes (a limb, a kaala, a lagna), and keeps them all; the baseline bars a day at sunrise and scores the two windows it keeps (1.38× on 29 October 2026).
+- `prashna`, at most 3.50×: a prashna is read off a founded chart, which finds the sunrises of its day (the chart's day, its birth timing and the lagna at sunrise) and asks the Shadbala, where the baseline casts the nine grahas and the lagna and reads nothing else: a bare founded chart took 430 µs of the request's 517 on 29 October 2026, the Shadbala 40.
 
 No other request, and no throughput or percentile, is measurably slower through the SDK.
 
 ## `macos-aarch64`
 
-macos aarch64, commit `9bcd7dc1a`, Node v26.12.0, 10 threads offered; the sdk `teistro 0.0.0`, the baseline `baseline 0.6.173`.
+macos aarch64, commit `0ea86c909`, Node v26.12.0, 10 threads offered; the sdk `teistro 0.0.0`, the baseline `baseline 0.6.173`.
 
 The baseline's entry points: not counted, since the adapter exports no `surface` (`03-design/compat-shim.md` §6.4).
 
@@ -26,21 +27,23 @@ The baseline's entry points: not counted, since the adapter exports no `surface`
 
 | request | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest |
 |---|---:|---:|---:|---:|---:|
-| chart (a birth chart with every varga, its drishti, upagrahas, houses, dignities, arudhas and Vimshottari to depth 3) | 1460 | 7569 | 0.19× | 1410 to 1631 | 7456 to 8373 |
-| day (the almanac day of the birth's date at its place, its limbs, kaalas, choghadiya and horas) | 1129 | 11814 | 0.10× | 1111 to 1161 | 11737 to 11904 |
-| full (the whole natal chart: every section and varga, 22 dashas to depth 3, every shipped rule and the longevity) | 21958 | 51539 | 0.43× | 21818 to 23241 | 51019 to 51922 |
-| vargas (the chart's foundation, every divisional chart with it) | 860 | 5709 | 0.15× | 834 to 908 | 5675 to 5838 |
-| yogas (the yogas and doshas of a chart) | 3408 | 5792 | 0.59× | 3329 to 3476 | 5733 to 5900 |
-| strength (the Shadbala, Bhava bala and Ashtakavarga) | 569 | 5846 | 0.10× | 555 to 612 | 5774 to 5898 |
-| dashas (eighteen dasha systems to depth 3) | 15379 | 40552 | 0.38× | 15189 to 15612 | 40208 to 42197 |
-| month (thirty almanac days from the birth's date) | 12803 | 351785 | 0.04× | 12727 to 12935 | 350455 to 353485 |
-| milan (the birth matched with the next one of the corpus) | 712 | 11463 | 0.06× | 680 to 737 | 11362 to 12216 |
-| varsha (the first annual chart, its yogas, sahams and Mudda dasha) | 2972 | 6446 | 0.46× | 2909 to 3058 | 6374 to 6513 |
-| kp (the KP cusps, sub lords, significators and ruling planets) | 573 | 5747 | 0.10× | 553 to 600 | 5726 to 5848 |
-| gochar (the grahas thirty years on over the chart, with the Ashtakavarga) | 577 | 5890 | 0.10× | 555 to 611 | 5822 to 5956 |
-| sadeSati (Sade Sati and the dhaiyyas over thirty years) | 4347 | 22841 | 0.19× | 4307 to 4450 | 22647 to 23488 |
-| batch (ten whole charts an hour apart, at one place) | 220757 | 541263 | 0.41× | 215494 to 222931 | 534302 to 547215 |
-| muhurta (a marriage muhurta over 25 days at Kathmandu thirty years on, then against the native) | 462786 | 335355 | 1.38× | 460786 to 465552 | 333735 to 336617 |
+| chart (a birth chart with every varga, its drishti, upagrahas, houses, dignities, arudhas and Vimshottari to depth 3) | 1444 | 7398 | 0.20× | 1389 to 1575 | 7283 to 7681 |
+| day (the almanac day of the birth's date at its place, its limbs, kaalas, choghadiya and horas) | 1109 | 11733 | 0.09× | 1092 to 1151 | 11616 to 11933 |
+| full (the whole natal chart: every section and varga, 22 dashas to depth 3, every shipped rule and the longevity) | 21636 | 50486 | 0.43× | 21372 to 21782 | 50097 to 51866 |
+| vargas (the chart's foundation, every divisional chart with it) | 861 | 5575 | 0.15× | 843 to 910 | 5533 to 5707 |
+| yogas (the yogas and doshas of a chart) | 3323 | 5727 | 0.58× | 3282 to 3462 | 5657 to 7006 |
+| strength (the Shadbala, Bhava bala and Ashtakavarga) | 564 | 5707 | 0.10× | 545 to 612 | 5640 to 6043 |
+| dashas (eighteen dasha systems to depth 3) | 15115 | 39410 | 0.38× | 14930 to 15580 | 39177 to 40903 |
+| month (thirty almanac days from the birth's date) | 12360 | 348096 | 0.04× | 12245 to 12887 | 347116 to 351053 |
+| milan (the birth matched with the next one of the corpus) | 688 | 11120 | 0.06× | 666 to 721 | 11030 to 11340 |
+| varsha (the first annual chart, its yogas, sahams and Mudda dasha) | 2901 | 6298 | 0.46× | 2880 to 3097 | 6164 to 6867 |
+| kp (the KP cusps, sub lords, significators and ruling planets) | 565 | 5630 | 0.10× | 543 to 598 | 5584 to 6079 |
+| gochar (the grahas thirty years on over the chart, with the Ashtakavarga) | 567 | 5763 | 0.10× | 544 to 612 | 5693 to 6006 |
+| sadeSati (Sade Sati and the dhaiyyas over thirty years) | 4282 | 22422 | 0.19× | 4250 to 4419 | 22213 to 23238 |
+| batch (ten whole charts an hour apart, at one place) | 211792 | 522870 | 0.41× | 209905 to 213597 | 517937 to 527157 |
+| muhurta (a marriage muhurta over 25 days at Kathmandu thirty years on, then against the native) | 456863 | 329861 | 1.39× | 453149 to 460642 | 327204 to 333228 |
+| prashna (a prashna at the birth's instant and place: its answer and points, timing, topic, the querent's number's sign and the Moon's course) | 552 | 186 | 2.97× | 540 to 598 | 176 to 270 |
+| rashifal (every sign's rashifal for a day, a week, a month and a year in 2000 to 2049, with the baseline's scores) | 32600 | 67076 | 0.49× | 32440 to 33477 | 66763 to 69057 |
 
 Refused, and kept out of that request's timing:
 
@@ -69,36 +72,36 @@ All threads or processes together, each with its side of its own; the ratio is t
 
 | request | mode | at once | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest | SDK efficiency | baseline efficiency |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| chart | threads | 1 | 743 | 141 | 5.27× | 737 to 749 | 140 to 142 | 1.00 | 1.00 |
-| chart | threads | 2 | 1436 | not measured | — | 1396 to 1441 |  | 0.97 | — |
-| chart | threads | 4 | 2730 | not measured | — | 2681 to 2744 |  | 0.92 | — |
-| chart | threads | 8 | 4536 | not measured | — | 4373 to 4552 |  | 0.76 | — |
-| chart | threads | 10 | 4770 | not measured | — | 4668 to 4824 |  | 0.64 | — |
-| chart | processes | 1 | 748 | 144 | 5.21× | 741 to 751 | 143 to 144 | 1.00 | 1.00 |
-| chart | processes | 2 | 1453 | 285 | 5.10× | 1447 to 1485 | 284 to 285 | 0.97 | 0.99 |
-| chart | processes | 4 | 2917 | 561 | 5.20× | 2874 to 2930 | 556 to 565 | 0.97 | 0.98 |
-| chart | processes | 8 | 4777 | 913 | 5.23× | 4566 to 4846 | 904 to 917 | 0.80 | 0.79 |
-| chart | processes | 10 | 5062 | 970 | 5.22× | 5035 to 5275 | 913 to 975 | 0.68 | 0.67 |
-| day | threads | 1 | 1724 | 83.7 | 20.61× | 1677 to 1740 | 83.3 to 85.0 | 1.00 | 1.00 |
-| day | threads | 2 | 3123 | not measured | — | 3091 to 3130 |  | 0.91 | — |
-| day | threads | 4 | 5902 | not measured | — | 5775 to 6026 |  | 0.86 | — |
-| day | threads | 8 | 9015 | not measured | — | 8997 to 9134 |  | 0.65 | — |
-| day | threads | 10 | 10115 | not measured | — | 9781 to 10503 |  | 0.59 | — |
-| day | processes | 1 | 1739 | 84.7 | 20.54× | 1737 to 1741 | 83.0 to 84.7 | 1.00 | 1.00 |
-| day | processes | 2 | 3403 | 167 | 20.38× | 3397 to 3442 | 166 to 167 | 0.98 | 0.99 |
-| day | processes | 4 | 6816 | 331 | 20.57× | 6764 to 6817 | 325 to 331 | 0.98 | 0.98 |
-| day | processes | 8 | 11232 | 539 | 20.84× | 11167 to 11287 | 537 to 540 | 0.81 | 0.80 |
-| day | processes | 10 | 12169 | 582 | 20.92× | 12160 to 12273 | 577 to 590 | 0.70 | 0.69 |
-| full | threads | 1 | 47.3 | 18.3 | 2.58× | 47.0 to 47.7 | 18.0 to 18.7 | 1.00 | 1.00 |
-| full | threads | 2 | 92.0 | not measured | — | 91.3 to 92.0 |  | 0.97 | — |
-| full | threads | 4 | 176 | not measured | — | 175 to 180 |  | 0.93 | — |
-| full | threads | 8 | 300 | not measured | — | 286 to 303 |  | 0.79 | — |
-| full | threads | 10 | 326 | not measured | — | 321 to 331 |  | 0.69 | — |
-| full | processes | 1 | 47.7 | 19.0 | 2.51× | 47.7 to 47.7 | 19.0 to 19.3 | 1.00 | 1.00 |
-| full | processes | 2 | 92.0 | 37.0 | 2.49× | 91.3 to 93.3 | 36.7 to 37.3 | 0.97 | 0.97 |
-| full | processes | 4 | 187 | 73.3 | 2.55× | 187 to 187 | 73.0 to 74.0 | 0.98 | 0.96 |
-| full | processes | 8 | 304 | 108 | 2.82× | 303 to 305 | 107 to 115 | 0.80 | 0.71 |
-| full | processes | 10 | 332 | 117 | 2.84× | 322 to 335 | 113 to 121 | 0.70 | 0.62 |
+| chart | threads | 1 | 741 | 141 | 5.27× | 710 to 743 | 140 to 141 | 1.00 | 1.00 |
+| chart | threads | 2 | 1429 | not measured | — | 1406 to 1436 |  | 0.96 | — |
+| chart | threads | 4 | 2691 | not measured | — | 2652 to 2714 |  | 0.91 | — |
+| chart | threads | 8 | 4358 | not measured | — | 4309 to 4362 |  | 0.73 | — |
+| chart | threads | 10 | 4758 | not measured | — | 4558 to 4794 |  | 0.64 | — |
+| chart | processes | 1 | 743 | 146 | 5.10× | 735 to 744 | 146 to 146 | 1.00 | 1.00 |
+| chart | processes | 2 | 1445 | 287 | 5.03× | 1445 to 1467 | 287 to 287 | 0.97 | 0.99 |
+| chart | processes | 4 | 2878 | 562 | 5.12× | 2823 to 2889 | 559 to 563 | 0.97 | 0.96 |
+| chart | processes | 8 | 4756 | 916 | 5.19× | 4646 to 4791 | 912 to 916 | 0.80 | 0.79 |
+| chart | processes | 10 | 5100 | 985 | 5.18× | 4937 to 5151 | 964 to 987 | 0.69 | 0.68 |
+| day | threads | 1 | 1756 | 85.7 | 20.50× | 1752 to 1762 | 84.7 to 85.7 | 1.00 | 1.00 |
+| day | threads | 2 | 3162 | not measured | — | 3103 to 3169 |  | 0.90 | — |
+| day | threads | 4 | 5929 | not measured | — | 5919 to 5939 |  | 0.84 | — |
+| day | threads | 8 | 9478 | not measured | — | 8782 to 9516 |  | 0.67 | — |
+| day | threads | 10 | 10173 | not measured | — | 9956 to 10320 |  | 0.58 | — |
+| day | processes | 1 | 1766 | 85.3 | 20.69× | 1755 to 1766 | 85.3 to 85.7 | 1.00 | 1.00 |
+| day | processes | 2 | 3467 | 169 | 20.56× | 3451 to 3475 | 169 to 169 | 0.98 | 0.99 |
+| day | processes | 4 | 6817 | 333 | 20.45× | 6817 to 6827 | 333 to 333 | 0.97 | 0.98 |
+| day | processes | 8 | 11203 | 540 | 20.73× | 10951 to 11322 | 540 to 541 | 0.79 | 0.79 |
+| day | processes | 10 | 12031 | 579 | 20.77× | 11913 to 12156 | 577 to 585 | 0.68 | 0.68 |
+| full | threads | 1 | 48.0 | 18.7 | 2.57× | 47.7 to 48.3 | 18.7 to 19.0 | 1.00 | 1.00 |
+| full | threads | 2 | 94.0 | not measured | — | 94.0 to 94.0 |  | 0.98 | — |
+| full | threads | 4 | 183 | not measured | — | 183 to 183 |  | 0.95 | — |
+| full | threads | 8 | 298 | not measured | — | 296 to 300 |  | 0.78 | — |
+| full | threads | 10 | 324 | not measured | — | 321 to 327 |  | 0.68 | — |
+| full | processes | 1 | 48.3 | 19.7 | 2.46× | 48.0 to 48.3 | 19.7 to 19.7 | 1.00 | 1.00 |
+| full | processes | 2 | 95.3 | 39.0 | 2.44× | 94.0 to 95.3 | 38.7 to 39.0 | 0.99 | 0.99 |
+| full | processes | 4 | 188 | 75.3 | 2.49× | 186 to 188 | 74.7 to 75.3 | 0.97 | 0.96 |
+| full | processes | 8 | 298 | 115 | 2.60× | 297 to 301 | 115 to 116 | 0.77 | 0.73 |
+| full | processes | 10 | 329 | 114 | 2.87× | 324 to 330 | 113 to 115 | 0.68 | 0.58 |
 
 Not measured, and why:
 
@@ -108,44 +111,44 @@ Not measured, and why:
 - the baseline, `chart` on 10 threads: died of SIGSEGV: nothing on stderr
 - the baseline, `day` on 2 threads: died of SIGABRT: nothing on stderr
 - the baseline, `day` on 4 threads: died of SIGSEGV: nothing on stderr
-- the baseline, `day` on 8 threads: died of SIGSEGV: nothing on stderr
-- the baseline, `day` on 10 threads: died of SIGABRT: nothing on stderr
+- the baseline, `day` on 8 threads: died of SIGABRT: nothing on stderr
+- the baseline, `day` on 10 threads: died of SIGSEGV: nothing on stderr
 - the baseline, `full` on 2 threads: Entity not found: RASHI/undefined
-- the baseline, `full` on 4 threads: died of SIGABRT: nothing on stderr
+- the baseline, `full` on 4 threads: died of SIGTRAP: nothing on stderr
 - the baseline, `full` on 8 threads: died of SIGSEGV: nothing on stderr
 - the baseline, `full` on 10 threads: died of SIGSEGV: nothing on stderr
 
 ### The tail of a sustained run, per answer in µs
 
-One thread, each side in a process of its own; a percentile is the median of the windows' with the fastest and slowest. Answers: `chart` 22483 through the SDK and 4295 through the baseline; `day` 52091 through the SDK and 2545 through the baseline; `full` 1433 through the SDK and 586 through the baseline.
+One thread, each side in a process of its own; a percentile is the median of the windows' with the fastest and slowest. Answers: `chart` 22434 through the SDK and 4338 through the baseline; `day` 52947 through the SDK and 2580 through the baseline; `full` 1458 through the SDK and 593 through the baseline.
 
 | percentile | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest |
 |---|---:|---:|---:|---:|---:|
-| chart, p50 | 1315 | 6943 | 0.19× | 1294 to 1336 | 6902 to 6974 |
-| chart, p95 | 1451 | 8356 | 0.17× | 1418 to 1530 | 8315 to 8442 |
-| chart, p99 | 2070 | 8826 | 0.23× | 2045 to 2210 | 8738 to 9067 |
-| day, p50 | 564 | 11777 | 0.05× | 560 to 569 | 11731 to 11889 |
-| day, p95 | 663 | 12689 | 0.05× | 653 to 687 | 12580 to 12763 |
-| day, p99 | 885 | 13174 | 0.07× | 874 to 930 | 13046 to 13233 |
-| full, p50 | 20643 | 50198 | 0.41× | 20494 to 20783 | 49233 to 51259 |
-| full, p95 | 22803 | 65070 | 0.35× | 22355 to 23936 | 62641 to 65502 |
-| full, p99 | 23804 | 71378 | 0.33× | 22771 to 28210 | 69801 to 74698 |
+| chart, p50 | 1321 | 6849 | 0.19× | 1287 to 1356 | 6788 to 6945 |
+| chart, p95 | 1444 | 8266 | 0.17× | 1412 to 1494 | 8196 to 8644 |
+| chart, p99 | 2041 | 8676 | 0.24× | 1914 to 2099 | 8592 to 12479 |
+| day, p50 | 556 | 11654 | 0.05× | 555 to 558 | 11635 to 11717 |
+| day, p95 | 655 | 12565 | 0.05× | 645 to 663 | 12520 to 12617 |
+| day, p99 | 870 | 13002 | 0.07× | 868 to 873 | 12903 to 13187 |
+| full, p50 | 20317 | 49837 | 0.41× | 20200 to 20375 | 47703 to 51000 |
+| full, p95 | 22390 | 63894 | 0.35× | 22224 to 22556 | 61330 to 66380 |
+| full, p99 | 23372 | 70181 | 0.33× | 22717 to 23827 | 68073 to 74479 |
 
 ### Cold start, in ms
 
 | phase | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest |
 |---|---:|---:|---:|---:|---:|
-| open (from the process's start to the side being ready, the import and the engine or context included) | 31.5 | 674 | 0.05× | 30.0 to 32.7 | 667 to 679 |
-| first (the first chart) | 40.7 | 36.4 | 1.12× | 39.6 to 61.4 | 35.7 to 38.6 |
-| process (the whole process, from spawn to exit) | 161 | 802 | 0.20× | 157 to 181 | 795 to 811 |
+| open (from the process's start to the side being ready, the import and the engine or context included) | 30.7 | 659 | 0.05× | 29.9 to 31.7 | 655 to 671 |
+| first (the first chart) | 40.3 | 36.2 | 1.11× | 39.1 to 41.2 | 35.6 to 37.0 |
+| process (the whole process, from spawn to exit) | 157 | 789 | 0.20× | 156 to 159 | 782 to 798 |
 
 ### Memory over 10000 `chart` requests, after 200 to warm
 
 | measure | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest |
 |---|---:|---:|---:|---:|---:|
-| peak-rss (the peak resident set over the process's life), MB | 196 | 301 | 0.65× | 194 to 197 | 299 to 301 |
-| heap (the heap and external bytes, settled, after the workload), MB | 9.00 | 46.2 | 0.19× | 9.00 to 9.00 | 46.2 to 46.2 |
-| heap-growth (their growth over the workload), KB | -1045 | 381 | -2.74× | -1045 to -1045 | 381 to 381 |
+| peak-rss (the peak resident set over the process's life), MB | 203 | 301 | 0.67× | 193 to 206 | 300 to 319 |
+| heap (the heap and external bytes, settled, after the workload), MB | 9.12 | 46.3 | 0.20× | 9.12 to 9.12 | 46.2 to 46.3 |
+| heap-growth (their growth over the workload), KB | -1104 | 330 | -3.35× | -1109 to -1102 | 162 to 330 |
 
 ### Agreement and accuracy
 
@@ -155,7 +158,7 @@ The share of facts on which the two sides agree, exactly or within the field's t
 |---|---:|---:|---|---|---|
 | chart | 54.5% of 12485 | 100.0% of 12485 | Swiss Ephemeris (2); PyJHora (3) | the baseline: SDK 99.6% `timed`, baseline 100.0%; the SDK: SDK 72.8% `timed`, baseline 46.5% | convention: the centre: `timed` casts the Moon from the Earth's centre and the baseline from the birthplace, up to an hour of arc apart, on a mean ayanamsha where the baseline's is nutated (12″), which moves the Vimshottari's starts; under `same` only the lagnas of 2350 and 2399 differ, the SDK's IAU 2006 sidereal time against Swiss Ephemeris's that far from J2000 |
 | day | 99.2% of 860 | 96.5% of 860 | the committee's print (1) | neither: SDK 34.6% `timed`, baseline 34.6% | method: a day with no sunrise: both now take the refracted upper limb, so only the polar births differ, which the SDK reckons by its polar policy (civil midnight under `timed`, the conformance profile's nearest sunrise and sunset under `same`) and the baseline by its civil-day bounds. The committee's tithi ends are Surya Siddhanta's, hours from both |
-| full | 64.1% of 266007 | 99.6% of 266001 | Swiss Ephemeris (2); PyJHora (3) | the baseline: SDK 99.8% `timed`, baseline 100.0%; the SDK: SDK 72.7% `timed`, baseline 46.4% | convention: the centre, and the classical Shadbala readings; under `same` the yogas' readings (as `yogas`), c022's kaala bala, a birth the baseline places in the wrong Hindu day (crux C35), and longevity's: BPHS ch. 43 v. 33 pairs Saturn with the Moon where the baseline pairs the lagna with it, which moves the class the pairs decide; v. 11 takes the Moon for a benefic waxing or waning in the visible half's reduction, the baseline a waning Moon for a malefic; vv. 20 to 22 treble Amsayu's years exalted or in its own sign and double them in its own navamsha or drekkana, where the baseline doubles its own sign, trebles a retrograde graha and halves a debilitated one; Nisargayu's listed years are taken whole, which the baseline reduces; and the cancellations of Balarishta. Under `timed` also the hora lagna, counted in `parashari-classical`'s proportional ghatis, and BPHS's own readings of the three spans (cruxes C104, C303) |
+| full | 64.7% of 270300 | 99.6% of 270294 | Swiss Ephemeris (2); PyJHora (3) | the baseline: SDK 99.8% `timed`, baseline 100.0%; the SDK: SDK 72.7% `timed`, baseline 46.4% | convention: the centre, and the classical Shadbala readings; under `same` the yogas' readings (as `yogas`), c022's kaala bala, a birth the baseline places in the wrong Hindu day (crux C35), and longevity's: BPHS ch. 43 v. 33 pairs Saturn with the Moon where the baseline pairs the lagna with it, which moves the class the pairs decide; v. 11 takes the Moon for a benefic waxing or waning in the visible half's reduction, the baseline a waning Moon for a malefic; vv. 20 to 22 treble Amsayu's years exalted or in its own sign and double them in its own navamsha or drekkana, where the baseline doubles its own sign, trebles a retrograde graha and halves a debilitated one; Nisargayu's listed years are taken whole, which the baseline reduces; and the cancellations of Balarishta. Under `timed` also the hora lagna, counted in `parashari-classical`'s proportional ghatis, and BPHS's own readings of the three spans (cruxes C104, C303) |
 | vargas | 97.1% of 11550 | 100.0% of 11550 | agreement only | — | convention: the centre: a Moon a few arcminutes from a division's edge |
 | yogas | 96.9% of 4611 | 97.1% of 4611 | agreement only | — | method: the rules' readings: the SDK applies Kemadruma's cancellations and reads the Nabhasa shapes, Gaja Kesari and Chamara by its texts' clauses, where the baseline holds them present |
 | strength | 69.1% of 8635 | 98.6% of 8321 | Raman's Example 56 (2) | the SDK: SDK 100.0% `timed`, baseline 0.0% | convention: the readings: `timed` is the root's, Sripati's, which reproduces Raman's totals, and the baseline its own; under `same` the largest gaps are c022's, a birth the baseline places in the wrong Hindu day (crux C35) |
@@ -166,8 +169,10 @@ The share of facts on which the two sides agree, exactly or within the field's t
 | kp | 80.8% of 8690 | 97.1% of 8690 | Swiss Ephemeris (2) | the baseline: SDK 97.9% `timed`, baseline 98.2% | convention: the frame: `kp-default` casts from the Earth's centre on its own node, the baseline from the birthplace on the mean node; under `same` c043's cusps, where the baseline's Placidus falls back at 64.8° N and Swiss Ephemeris and the SDK do not, and the lagnas of 2350 and 2399, as `chart`; and an intercepted sign's lord, which the baseline counts a significator of its house and the SDK reports and does not count (crux C154). Under `timed` also the day lord, which `kp-default` takes from sunrise to sunrise as KP Reader VI does and the baseline from the civil day, so a birth before sunrise rules by the day before (c001); `same` asks the civil day (`kp.day_lord_day = CIVIL`, crux C151) |
 | gochar | 81.7% of 2779 | 98.8% of 2779 | Swiss Ephemeris (2) | neither: SDK 100.0% `timed`, baseline 100.0% | convention: the ayanamsha's basis: `timed` takes the mean and the baseline the nutated, about 12″ apart; under `same`, a birth cast from its place and its transits from the Earth's centre on one context (`gochar.transit_centre = GEOCENTRIC`, crux C778), the transits agree to a hundredth of an arcsecond and every bindu agrees; what differs is the vedha of Phaladeepika ch. 26, all 33 misses: the nodes take the Sun's pairs (v. 2, crux C136) where the baseline gives them Mars's for the 3rd and the 6th, and never obstruct each other (C140), 20 of them; Venus's 11th and 12th pair with the 3rd and the 6th (v. 8), 9; and the Sun and Saturn, the Moon and Mercury do not obstruct each other (vv. 3 to 6), where the baseline exempts the Sun and the Moon, 4 |
 | sadeSati | 7.6% of 328 | 100.0% of 328 | agreement only | — | convention: the ayanamsha's basis, as `gochar`: 12″ of Saturn moves an edge by hours; under `same` every edge agrees within two seconds |
-| batch | 65.2% of 2660070 | 99.6% of 2660010 | Swiss Ephemeris (2) | the baseline: SDK 99.8% `timed`, baseline 100.0% | convention: as `full`, at ten instants |
+| batch | 65.7% of 2703000 | 99.6% of 2702940 | Swiss Ephemeris (2) | the baseline: SDK 99.8% `timed`, baseline 100.0% | convention: as `full`, at ten instants |
 | muhurta | 44.5% of 1155 | 46.7% of 1157 | agreement only | — | method: 20 of 54 rankings agree rank for rank under `same`, 19 of them with no window on either side; no miss is the SDK's. The day: the baseline admits or bars a whole day by the star and the solar month at sunrise and samples its seasons once a day at 0h UT, barring the day whose local midnight they hold; the SDK judges each window by its own (crux C783), so over 47 searches 224 days the baseline bars by the star at sunrise keep the SDK's windows after the star changes, 14 it keeps lose every window to a star or a kaala, 32 differ at a season's edge (Kharmas 28) and 2 by the solar month. Chaturmas by the Sun's sign (C166), 20 days; Guru's and Shukra's asta seen heliacally at Kathmandu (C44, C164), 8. The day's score: the baseline's weekday is sunrise's UT date, the day before when the Sun rises before 05:45 at Kathmandu (C782), moving the weekday's 15 or 10 and Rahu kaala's 30; its five special-yoga tables are its own (C784). A window's score agrees on every day whose score does, its sky geocentric with the true node (C781) |
+| prashna | 96.6% of 495 | 100.0% of 477 | agreement only | — | convention: the frame: the baseline casts a prashna from the Earth's centre on the true node, where its birth chart is topocentric on the mean node (crux C800), so under `timed` the Moon's applying aspect may meet the other node and a factor its score counts moves; under `same`, asked on that frame, every reading agrees |
+| rashifal | 84.4% of 69732 | 88.4% of 69740 | agreement only | — | convention: the instant and the events: `timed` reads a period at sunrise (C358) and reports every graha's ingresses and stations but the Moon's (C360), the baseline at 06:00 and fewer; under `same`, asked the baseline's clock and event grahas, the transits agree to the arcsecond and what differs is the vedha, as `gochar` (C136, C140, C801), the baseline's events (it finds no node's ingress, nor an event in a scan's last partial step, C360), and the scores those move: where a sign's readings agree its scores agree within a point on 99.5% (C802) |
 
 #### Agreement by field
 
@@ -197,6 +202,8 @@ A continuous field's median and largest difference are in its unit; `same`'s fir
 | full | bindus | exact | 97.9% of 5088 | 100.0% of 5088 | 0 |  |
 | full | yoga | exact | 96.9% of 4611 | 97.1% of 4611 | 0 | c001 `yoga/LUNAR_KEMADRUMA` false against true; c002 `yoga/LUNAR_KEMADRUMA` false against true; c003 `yoga/LUNAR_KEMADRUMA` false against true |
 | full | drishti | exact | 99.6% of 477 | 100.0% of 477 | 0 |  |
+| full | drishtiGrade | exact | 99.7% of 3816 | 100.0% of 3816 | 0 |  |
+| full | rashiDrishti | exact | 99.8% of 477 | 100.0% of 477 | 0 |  |
 | full | jaiminiPair | exact | 64.2% of 159 | 81.7% of 153 | 110 | c001 `jaiminiPair/decided` "medium" against "long"; c004 `jaiminiPair/decided` "short" against "long"; c005 `jaiminiPair/decided` "medium" against "short" |
 | full | ayurdaya | y, 0.010 | 34.1% of 2544; median 0.719, largest 69.7 | 73.4% of 2544; median 0.000, largest 56.3 | 0 | worst c043 `ayurdaya/nisargayu/total` |
 | full | maraka | exact | 98.1% of 106 | 100.0% of 106 | 0 |  |
@@ -241,11 +248,17 @@ A continuous field's median and largest difference are in its unit; `same`'s fir
 | batch | bindus | exact | 98.7% of 50880 | 100.0% of 50880 | 0 |  |
 | batch | yoga | exact | 97.1% of 46110 | 97.2% of 46110 | 0 | c001 `yoga/LUNAR_KEMADRUMA@0` false against true; c001 `yoga/LUNAR_KEMADRUMA@1` false against true; c001 `yoga/NABHASA_SARPA@1` true against false |
 | batch | drishti | exact | 99.4% of 4770 | 100.0% of 4770 | 0 |  |
+| batch | drishtiGrade | exact | 99.7% of 38160 | 100.0% of 38160 | 0 |  |
+| batch | rashiDrishti | exact | 99.8% of 4770 | 100.0% of 4770 | 0 |  |
 | batch | jaiminiPair | exact | 70.3% of 1590 | 87.2% of 1530 | 1100 | c001 `jaiminiPair/decided@0` "medium" against "long"; c001 `jaiminiPair/decided@1` "long" against "medium"; c001 `jaiminiPair/decided@2` "medium" against "short" |
 | batch | ayurdaya | y, 0.010 | 33.8% of 25440; median 0.748, largest 81.0 | 72.1% of 25440; median 0.000, largest 74.8 | 0 | worst c034 `ayurdaya/nisargayu/total@9` |
 | batch | maraka | exact | 99.8% of 1060 | 100.0% of 1060 | 0 |  |
 | batch | balarishta | exact | 97.0% of 1060 | 97.4% of 1060 | 0 | c007 `balarishta/standing@2` true against false; c008 `balarishta/present@7` false against true; c008 `balarishta/present@8` false against true |
 | muhurta | muhurta | exact | 44.5% of 1155 | 46.7% of 1157 | 1530 | c001 `muhurta/general/ranking` "2020-04-15#1=63 2020-05-08#13=55 2020-05-08#2b=46 2020-05-01#13=46 2020-05-03#13=34 2020-05-05#4=33 2020-05-04#0=30 2020-05-04#7=30 2020-05-07#0=30 2020-04-26#9=30 2020-04-27#0=30 2020-04-20#14=30 2020-05-05#3=27 2020-04-25#10=24 2020-04-22#1=24 2020-04-27#7=21 2020-05-02#6=17 2020-04-14#11=16 2020-04-15#3=13 2020-04-26#3=11 2020-05-06#10=10 2020-04-21#4=10 2020-05-06#9=6 2020-05-02#11=0 2020-04-25#11=0 2020-04-14#12=0 2020-04-20#7=0 2020-04-21#12=0 2020-04-22#3=0 2020-05-03#15=0" against "2020-05-05#12=98 2020-04-15#1=78 2020-04-15#10=55 2020-05-05#4=48 2020-05-04#0=30 2020-05-04#7=30 2020-04-27#0=30 2020-04-26#9=29 2020-04-22#1=24 2020-04-22#10=18 2020-05-02#6=12 2020-04-21#4=10 2020-04-27#7=7 2020-05-07#8=5 2020-04-26#3=1 2020-05-02#11=0 2020-04-21#12=0 2020-05-07#15=0"; c001 `muhurta/general/count` 30 against 18; c001 `muhurta/general/window/2020-04-15#1` 63 against 78 |
+| prashna | prashna | exact | 96.6% of 495 | 100.0% of 477 | 0 |  |
+| rashifal | longitude | ″, 1.000 | 1.8% of 1980; median 37.0, largest 2031.4 | 100.0% of 1980; median 0.000, largest 0.000 | 0 |  |
+| rashifal | rashifal | exact | 94.3% of 43992 | 95.6% of 44000 | 0 | c001 `rashifal/DAILY/3/RAHU/vedha` false against true; c001 `rashifal/DAILY/4/RAHU/vedha` false against true; c001 `rashifal/DAILY/5/KETU/vedha` false against true |
+| rashifal | rashifalScore | points, 1.000 | 72.9% of 23760; median 0.000, largest 66.0 | 74.1% of 23760; median 0.000, largest 44.0 | 0 | worst c028 `rashifalScore/MONTHLY/2/area/education` |
 
 #### Against the references
 
@@ -309,3 +322,5 @@ The SDK left unanswered under a convention:
 
 - c047, `strength`, under `same`: the Sun at JD 2378132.0006944444: the provider answered OutOfRange
 - c048, `strength`, under `same`: the Sun at JD 2597685.2871633684: the provider answered OutOfRange
+- c047, `prashna`, under `same`: the Sun at JD 2378132.0006944444: the provider answered OutOfRange
+- c048, `prashna`, under `same`: the Sun at JD 2597685.2871633684: the provider answered OutOfRange
