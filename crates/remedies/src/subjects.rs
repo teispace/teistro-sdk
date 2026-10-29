@@ -300,7 +300,9 @@ pub struct Subjects {
 /// `sky`, or `None` when the verse leaves its predicate open.
 ///
 /// A node owns no sign here, so a lordship condition on a node is open
-/// rather than false (C351).
+/// rather than false (C351). The sky holds the nine, so a condition on
+/// the place of a graha outside them, being placed in a house or joined
+/// with a lord, is open too.
 ///
 /// ```
 /// use teistro_core::catalogue::{Graha, Rashi};
@@ -367,6 +369,8 @@ pub fn holds(condition: Condition, sky: &RemedySky, running: Running) -> Option<
             Some(sky.sign_of(lord) == sky.sign_of(ad))
         }
         Condition::WithSecondOrSeventhLords => {
+            // Joined in a sign: a graha outside the nine has none here.
+            sky.sign_of(ad)?;
             let lords = [sky.lord_of(2), sky.lord_of(7)];
             Some(sky.joined(ad, |other| lords.contains(&Some(other))))
         }
