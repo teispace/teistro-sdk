@@ -207,13 +207,14 @@ final class UnitsTest {
             same(null, Teistro.refusal(other, true), "a debug build named outright");
 
             String before = System.getProperty(Teistro.LIBRARY_PROPERTY);
-            System.setProperty(Teistro.LIBRARY_PROPERTY, "/no/such/libteistro");
+            String missing = java.nio.file.Paths.get("no", "such", "libteistro").toAbsolutePath().toString();
+            System.setProperty(Teistro.LIBRARY_PROPERTY, missing);
             try {
                 Teistro.open();
                 throw new AssertionError("a library that is not a file was opened");
             } catch (TeistroException e) {
                 same(Status.UNSUPPORTED, e.status(), "refused as unsupported");
-                check(e.getMessage().contains("/no/such/libteistro"), "naming the path: " + e.getMessage());
+                check(e.getMessage().contains(missing), "naming the path: " + e.getMessage());
             } finally {
                 if (before == null) {
                     System.clearProperty(Teistro.LIBRARY_PROPERTY);

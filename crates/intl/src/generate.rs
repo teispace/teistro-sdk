@@ -1405,7 +1405,7 @@ impl RustPaths<'_> {
     /// # use teistro_intl::source::Tree;
     /// #
     /// # let tree = Tree::load(&sdk_root())?;
-    /// # let model = Model::of(tree.base().ok_or("the base locale")?)?;
+    /// # let model = Model::of_tree(&tree)?;
     ///
     /// use teistro_intl::generate::{RustPaths, rust};
     ///
