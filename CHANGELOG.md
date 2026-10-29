@@ -12,6 +12,24 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A rashifal's sky is a transit's, and the shim casts a prashna and
+reads a rashifal as the baseline does.**
+**Numbers:** a rashifal under a profile whose `gochar.transit_centre` is
+not `AS_CHART` (`conformance-baseline`, and a translated snapshot) moves:
+its transits are seen from that centre, as gochar, Sade Sati and the hit
+list already were (C778); under `AS_CHART`, every shipped profile's
+default but the conformance one, nothing moves. `@teistro/compat`'s
+`prashna` and `rashifal` rows answer otherwise; no SDK default does.
+- `rashifal` and `rashifalMany` found their transits where
+  `gochar.transit_centre` puts them, and stamp the context's settings hash.
+- `@teistro/compat`: `prashna` is cast on the snapshot's muhurta opening,
+  from the Earth's centre with the true node (C800), under every reading
+  of the baseline's prashna (`rules: 'BASELINE'`), not its timing, mook
+  and score alone; `rashifal` with a `period` reports the baseline's event
+  grahas for it (C360), and `READINGS.rashifal` holds both the clock and
+  those grahas. `facts` reads `prashna` and `rashifal` answers, and the
+  whole chart's graded and rashi drishti (`drishtiGrade`, `rashiDrishti`).
+
 **A chart's aspects carry the sphuta drishti by degree and the rashi drishti by sign.**
 **Numbers:** every chart document's hash moves; no computed value does.
 `Aspects` gains `sphuta`, the seven casting grahas' aspect on every other

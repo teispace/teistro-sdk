@@ -132,7 +132,8 @@ The façade, `sdk.chart().rashifal(&RashifalRequest)`, takes:
   `sdk.chart().gochar` reads them.
 
 It founds the nine longitudes once at the snapshot, through
-`Founder::longitudes`. It finds each ingress and station exactly with
+`Founder::longitudes`, seen from where `gochar.transit_centre` puts a
+transit (C778), as `sdk.chart().gochar` sees them. It finds each ingress and station exactly with
 the hits machinery `sdk.chart().hits` already uses, and finds them from local
 midnight of the first day to local midnight after the last, so an
 ingress on the last evening is the period's. A batch form,
