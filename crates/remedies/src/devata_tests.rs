@@ -235,3 +235,33 @@ fn keys_are_what_serde_writes_and_rules_read_strictly() {
     assert_eq!(rules.sun_with_ketu, SunWithKetu::Surya);
     assert!(serde_json::from_str::<DevataRules>(r#"{"sunWithKetus":"SURYA"}"#).is_err());
 }
+
+#[test]
+fn the_baseline_gives_each_sign_two_deities_and_a_luminarys_or_saturns_sign_its_own() {
+    for moon in Rashi::ALL {
+        let [first, second] = baseline_ishta_devata(moon);
+        assert_ne!(first, second, "{moon:?}");
+    }
+    // The signs a graha owns name its own deity: the Sun's Leo Surya, the
+    // Moon's Cancer Chandra, Saturn's two Shani.
+    assert!(baseline_ishta_devata(Rashi::Leo).contains(&Deity::Surya));
+    assert!(baseline_ishta_devata(Rashi::Cancer).contains(&Deity::Chandra));
+    for saturn in [Rashi::Capricorn, Rashi::Aquarius] {
+        assert_eq!(baseline_ishta_devata(saturn)[0], Deity::Shani, "{saturn:?}");
+    }
+    // Venus's two signs share Lakshmi, Jupiter's both lead with Vishnu,
+    // and Mars's Scorpio names the two fierce forms.
+    assert!(baseline_ishta_devata(Rashi::Taurus).contains(&Deity::Lakshmi));
+    assert!(baseline_ishta_devata(Rashi::Libra).contains(&Deity::Lakshmi));
+    for jupiter in [Rashi::Sagittarius, Rashi::Pisces] {
+        assert_eq!(
+            baseline_ishta_devata(jupiter)[0],
+            Deity::Vishnu,
+            "{jupiter:?}"
+        );
+    }
+    assert_eq!(
+        baseline_ishta_devata(Rashi::Scorpio),
+        [Deity::Narasimha, Deity::Hanuman]
+    );
+}

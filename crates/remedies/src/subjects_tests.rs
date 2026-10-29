@@ -252,3 +252,108 @@ fn five_ketu_antardashas_turn_on_a_lordship_no_text_gives_a_node() {
         ]
     );
 }
+
+#[test]
+fn saturn_mars_holds_by_a_lordship_or_the_second_and_a_node_by_the_second_alone() {
+    // Saturn/Mars (42.61–62): the 8th or 7th lord, or in the 2nd.
+    let condition = Condition::LordOfEighthOrSeventhOrInSecond;
+    let saturn_mars = run(Graha::Saturn, Graha::Mars);
+    // Mars owns Scorpio, the 7th from Taurus.
+    let taurus = sky(Rashi::Taurus, Rashi::Taurus, &[]);
+    assert_eq!(holds(condition, &taurus, saturn_mars), Some(true));
+    // From Gemini he owns the 6th and the 11th: no lordship, so only the
+    // 2nd, Cancer, makes it hold.
+    let gemini = sky(Rashi::Gemini, Rashi::Gemini, &[]);
+    assert_eq!(holds(condition, &gemini, saturn_mars), Some(false));
+    let second = sky(Rashi::Gemini, Rashi::Gemini, &[(MARS, Rashi::Cancer)]);
+    assert_eq!(holds(condition, &second, saturn_mars), Some(true));
+    // A node owns no sign here: in the 2nd the "or" holds whatever its
+    // lordship, and elsewhere the lordship it lacks leaves it open.
+    let saturn_rahu = run(Graha::Saturn, Graha::Rahu);
+    let rahu_second = sky(Rashi::Taurus, Rashi::Taurus, &[(RAHU, Rashi::Gemini)]);
+    assert_eq!(holds(condition, &rahu_second, saturn_rahu), Some(true));
+    assert_eq!(holds(condition, &taurus, saturn_rahu), None);
+}
+
+#[test]
+fn outside_the_second_and_seventh_its_lord_is_never_asked() {
+    // Sun/Rahu (37.48) with Rahu in the 1st, beside every other graha,
+    // its lord Venus among them: the house fails first.
+    let first = sky(Rashi::Taurus, Rashi::Taurus, &[]);
+    assert_eq!(
+        holds(
+            Condition::InSecondOrSeventhWithItsLord,
+            &first,
+            run(Graha::Sun, Graha::Rahu)
+        ),
+        Some(false)
+    );
+}
+
+#[test]
+fn a_graha_outside_the_nine_has_no_place_to_judge() {
+    // The sky holds the nine. A period of an outer planet, which no daśā
+    // gives, leaves a condition on its place open rather than false, and
+    // one counted from its place as well.
+    let taurus = sky(Rashi::Taurus, Rashi::Taurus, &[]);
+    for condition in [
+        Condition::SixthOrEighthFromDashaLordOrWeak,
+        Condition::DusthanaFromDashaLordWithMalefic,
+        Condition::InSecondOrSeventhWithItsLord,
+        Condition::InSecondOrSeventh,
+    ] {
+        assert_eq!(
+            holds(condition, &taurus, run(Graha::Saturn, Graha::Uranus)),
+            None,
+            "{condition:?}"
+        );
+    }
+    for condition in [
+        Condition::SixthOrEighthFromDashaLordOrWeak,
+        Condition::DusthanaFromDashaLordWithMalefic,
+    ] {
+        assert_eq!(
+            holds(condition, &taurus, run(Graha::Uranus, Graha::Saturn)),
+            None,
+            "{condition:?} counted from the mahadasha lord"
+        );
+    }
+}
+
+#[test]
+fn an_or_holds_by_any_of_its_clauses_and_an_and_by_both() {
+    const JUPITER: usize = 4;
+    let taurus = Rashi::Taurus;
+    let sun_jupiter = run(Graha::Sun, Graha::Jupiter);
+    let weak = Condition::SixthOrEighthFromDashaLordOrWeak;
+    // Jupiter in Capricorn, the 9th from the Sun: not 6th or 8th, but
+    // debilitated.
+    let fallen = sky(taurus, taurus, &[(JUPITER, Rashi::Capricorn)]);
+    assert_eq!(holds(weak, &fallen, sun_jupiter), Some(true));
+    // In Gemini, the 2nd, with Mars: a malefic beside it.
+    let with_mars = sky(
+        taurus,
+        taurus,
+        &[(JUPITER, Rashi::Gemini), (MARS, Rashi::Gemini)],
+    );
+    assert_eq!(holds(weak, &with_mars, sun_jupiter), Some(true));
+    // In Gemini alone, none of the three.
+    let alone = sky(taurus, taurus, &[(JUPITER, Rashi::Gemini)]);
+    assert_eq!(holds(weak, &alone, sun_jupiter), Some(false));
+
+    // Mars/Saturn's "and": a malefic beside Saturn in Cancer, the 3rd
+    // from Mars, is not enough.
+    let third = sky(
+        taurus,
+        taurus,
+        &[(SATURN, Rashi::Cancer), (SUN, Rashi::Cancer)],
+    );
+    assert_eq!(
+        holds(
+            Condition::DusthanaFromDashaLordWithMalefic,
+            &third,
+            run(Graha::Mars, Graha::Saturn)
+        ),
+        Some(false)
+    );
+}
