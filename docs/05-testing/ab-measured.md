@@ -20,6 +20,8 @@ No other request, and no throughput or percentile, is measurably slower through 
 
 macos aarch64, commit `9bcd7dc1a`, Node v26.12.0, 10 threads offered; the sdk `teistro 0.0.0`, the baseline `baseline 0.6.173`.
 
+The baseline's entry points: not counted, since the adapter exports no `surface` (`03-design/compat-shim.md` §6.4).
+
 ### Requests, per request in µs
 
 | request | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest |
