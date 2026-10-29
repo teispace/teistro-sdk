@@ -331,7 +331,7 @@ export interface Shim {
       readonly dasha?: BaselineDashaRules;
     },
   ): Chart;
-  /** The prashna cast at the record's instant and place, under the baseline's timing, mook and score. */
+  /** The prashna cast at the record's instant and place as the baseline casts it, from the Earth's centre with the true node (C800), under every reading it takes. */
   prashna(birth: BirthRecord, snapshot: StoredSnapshot, options?: { readonly question?: PrashnaQuestion }): Chart;
   /** The Lal Kitab reading, with what `options` asks beyond it. */
   lalkitab(birth: BirthRecord, snapshot: StoredSnapshot, options?: LalKitabRequest): Chart;
@@ -366,7 +366,7 @@ export interface Shim {
 
   // §3.6, the rashifal and interpretation packages.
 
-  /** The rashifal of every sign from `first` to `last`, at the birth's place, read at six on the clock. */
+  /** The rashifal of every sign from `first` to `last`, at the birth's place, read at six on the clock with the baseline's event grahas for `period`. */
   rashifal(
     birth: BirthRecord,
     snapshot: StoredSnapshot,
@@ -413,7 +413,8 @@ export declare const FAMILIES: Readonly<Record<string, Family>>;
  * answer, in the vocabulary the A/B reads both sides in. `request` names
  * the row the answer came from. `figures` lists the yogas to say present
  * or absent, each led by the SDK's rule key; `window` is the range a
- * `sadeSati` answer was asked over.
+ * `sadeSati` answer was asked over. A `rashifal` answer is a list of
+ * `{ period, answer }`, each period's `rashifal` with the baseline's score.
  */
 export declare function facts(
   request:
@@ -431,7 +432,9 @@ export declare function facts(
     | 'gochar'
     | 'sadeSati'
     | 'batch'
-    | 'muhurta',
+    | 'muhurta'
+    | 'prashna'
+    | 'rashifal',
   answer: unknown,
   options?: {
     readonly figures?: readonly (readonly [string, ...unknown[]])[];

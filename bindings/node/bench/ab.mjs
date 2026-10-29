@@ -91,6 +91,8 @@ function readFull(chart) {
     periods(chart.dashas),
     chart.rules,
     chart.aspects,
+    chart.sphutaDrishti,
+    chart.rashiDrishti,
     chart.points,
     chart.bhavas,
     chart.states,
@@ -116,6 +118,8 @@ function readFoundation(chart) {
     chart.day,
     chart.vargas,
     chart.aspects,
+    chart.sphutaDrishti,
+    chart.rashiDrishti,
     chart.points,
     chart.bhavas,
     chart.states,
@@ -147,10 +151,13 @@ function civil(input, offsetDays = 0) {
   return date(Calendar.Gregorian, at.getUTCFullYear(), at.getUTCMonth() + 1, at.getUTCDate());
 }
 
+/** A `{year, month, day}` the runner names, as a Gregorian date. */
+const dated = ({ year, month, day }) => date(Calendar.Gregorian, year, month, day);
+
 /** A `YYYY-MM-DD` civil date, Gregorian. */
 function gregorian(iso) {
   const [year, month, day] = iso.split('-').map(Number);
-  return date(Calendar.Gregorian, year, month, day);
+  return dated({ year, month, day });
 }
 
 /**
@@ -193,21 +200,23 @@ export function transitSkyOf(context) {
 /**
  * The SDK's side over contexts the caller opened and disposes: `ctx` for
  * every request but `kp`, which answers on the context `kp` gives, opened
- * on its own profile when first asked for. `gochar` and `sadeSati` answer
- * on `ctx` too, their transits seen from where its `gochar.transit_centre`
- * puts them (§10).
+ * on its own profile when first asked for. `gochar`, `sadeSati` and
+ * `rashifal` answer on `ctx` too, their transits seen from where its
+ * `gochar.transit_centre` puts them (§10).
  *
  * `asked` holds the readings a request asks under where a convention
  * names its own: `kuja` and `porutham`, the Kuja dosha's and the ten
- * considerations' for `milan`, and `ayurdaya`, the three spans' for
- * `full` and `batch`; the sources' own when left out.
+ * considerations' for `milan`, `ayurdaya`, the three spans' for `full`
+ * and `batch`, and `rashifal`, the clock and each period's event grahas
+ * for `rashifal`; the sources' own when left out.
  *
  * @param {Context} ctx
  * @param {() => Context} kp
  * @param {string} version
- * @param {{kuja?: object, porutham?: object, ayurdaya?: object}} [asked]
- * @param {() => Context} [elect] the context `muhurta` searches on, `ctx`
- *   unless a convention casts a muhurta's sky in a frame of its own
+ * @param {{kuja?: object, porutham?: object, ayurdaya?: object, rashifal?: object}} [asked]
+ * @param {() => Context} [elect] the context `muhurta` searches on and
+ *   `prashna` casts on, `ctx` unless a convention casts their sky in a
+ *   frame of its own
  * @returns {import('./ab-inputs.mjs').Side}
  */
 export function sdkSide(ctx, kp, version, asked = {}, elect = () => ctx) {
@@ -285,6 +294,21 @@ export function sdkSide(ctx, kp, version, asked = {}, elect = () => ctx) {
       const chart = r.sadeSati(at(input), input.window);
       decoded(chart.grahas, chart.sadeSati);
       return chart;
+    },
+    // The querent's number asked under the baseline's readings (C337 to
+    // C340), since its answer holds them and nothing else.
+    prashna: (input) => {
+      const chart = r.prashna(at(input), { number: input.querentNumber });
+      decoded(chart.grahas, chart.prashna);
+      return chart;
+    },
+    // Each period with the baseline's score for it (C361).
+    rashifal: (input) => {
+      const { place, utcOffsetSeconds, periods } = input.rashifal;
+      return periods.map(({ period, first, last }) => ({
+        period,
+        answer: r.rashifal({ place, utcOffsetSeconds }, dated(first), dated(last), period),
+      }));
     },
     batch: (input) => {
       const charts = r.batch(at(input), input.instants);

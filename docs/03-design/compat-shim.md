@@ -240,7 +240,7 @@ baseline does (§4.2; guide §5.4; crux C778).
 | milan: Ashta Koota, extended checks, Mangal match, marriage doshas | `milan` | `found` with `matching: { partner, partnerRole }` | forward |
 | quick milan, akshar resolution | `naam` | `ctx.matching.naam(bride, groom)` | forward |
 | rectification | `rectify` | `found` with `rectification: { baseline: {...} }`, the birth record's gender and time accuracy carried in (§3.7) | forward |
-| prashna | `prashna` | `found` with `prashna: { rules: { timing: 'BASELINE', mook: 'BASELINE', score: 'BASELINE' } }` | forward |
+| prashna | `prashna` | `found` with `prashna: { rules: 'BASELINE' }` on the muhurta opening's context, from the Earth's centre with the true node (C800) | forward |
 | Lal Kitab | `lalkitab` | `found` with `lalkitab` | forward |
 | numerology | `numerology` | `ctx.numerology.profile(name, date, rules)` with the baseline readings (guide §5.3) | forward |
 | remedies | `remedies` | `found` with `remedies: { rules: { functional: { scheme: 'BASELINE' } } }` | forward |
@@ -255,7 +255,7 @@ baseline does (§4.2; guide §5.4; crux C778).
 
 | baseline entry point | shim | SDK | kind |
 |---|---|---|---|
-| rashifal context and score, one sign or all twelve, per period | `rashifal` | `ctx.chart.rashifal(request, period)` and `rashifalMany`, with `snapshot: { at: 'CLOCK', hour: 6, minute: 0 }` | forward |
+| rashifal context and score, one sign or all twelve, per period | `rashifal` | `ctx.chart.rashifal(request, period)` and `rashifalMany`, with `snapshot: { at: 'CLOCK', hour: 6, minute: 0 }` and, for a period, the baseline's event grahas (C360) | forward |
 | state tables, yoga and dosha readings | `reading` | `ctx.intl.render(key, params)` over the packs from `migrate readings` and `migrate states` | forward |
 | the milan resolver and verdict composer | `milanVerdict` | `found` with `matching` and `interpret`, rendered | compose |
 | the graha-bhava, tara chakra, yoga timing and namakarana note composers | `narrative` | as in §3.2 | compose |
