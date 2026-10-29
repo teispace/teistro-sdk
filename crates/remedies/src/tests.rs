@@ -414,3 +414,30 @@ fn every_clause_names_its_verse_and_a_key_is_what_serde_writes() {
         serde_json::json!({"house": 9, "lord": "SATURN"})
     );
 }
+
+#[test]
+fn every_clause_cites_the_verse_it_reads() {
+    let cited = [
+        (
+            ClauseKind::Lagnesha,
+            "Laghu Parashari v. 9; BPHS ch. 13 v. 12",
+        ),
+        (ClauseKind::TrikonaLord, "Laghu Parashari v. 6"),
+        (ClauseKind::TrishadayaLord, "Laghu Parashari v. 6"),
+        (ClauseKind::Randhresha, "Laghu Parashari v. 9"),
+        (
+            ClauseKind::RandhreshaVoidLagnesha,
+            "Laghu Parashari v. 9; BPHS ch. 13 v. 12",
+        ),
+        (ClauseKind::RandhreshaVoidLuminary, "Laghu Parashari v. 11"),
+        (ClauseKind::KendraBeneficLoses, "Laghu Parashari v. 7"),
+        (ClauseKind::KendraMaleficLoses, "Laghu Parashari v. 7"),
+        (ClauseKind::ByAssociation, "Laghu Parashari v. 8"),
+        (ClauseKind::Yogakaraka, "Laghu Parashari v. 20"),
+        (ClauseKind::Maraka, "Laghu Parashari vv. 23-25"),
+        (ClauseKind::Badhakesha, "BPHS (badhaka sthana)"),
+    ];
+    for (kind, source) in cited {
+        assert_eq!(kind.source(), source, "{kind:?}");
+    }
+}
