@@ -109,32 +109,19 @@ final class SweepTest {
     }
 
     /**
-     * The patterns whose Nepali form reads the part of the day, a parameter
-     * the engine supplies when it formats a time itself
-     * ({@code teistro_intl::engine_params}) but which the accessor, typed
-     * from the base locale's pattern, cannot send. Listed rather than
-     * inferred, so the day the accessor sends it this test asks for the list
-     * to go.
-     */
-    private static final Set<String> UNSENT_DAY_PERIOD = Set.of("sdk.calendar.time.long12",
-            "sdk.calendar.time.numeric12");
-
-    /**
-     * Whether the engine's {@code warning}, rendering {@code key} in
-     * {@code locale} with no pack loaded, is one the sweep expects. Text
+     * Whether the engine's {@code warning}, rendering {@code key} in any
+     * locale with no pack loaded, is one the sweep expects. Text
      * parameters get the stand-in {@code x}, which a message reading the
      * parameter as an entity a pack brings (a rule, a house's reading)
      * refuses by name. A phala message reads a form of its entity
      * ({@code phala}, {@code dashaActivation}) that only an interpretation
      * pack brings, and the {@code state} kind has no entry in either shipped
-     * locale at all. See also {@link #UNSENT_DAY_PERIOD}.
+     * locale at all.
      */
-    private static boolean expected(String locale, String key, String warning) {
+    private static boolean expected(String key, String warning) {
         return warning.contains("`x`")
                 || key.startsWith("sdk.phala.") && (warning.startsWith("missing entity `state.")
-                        || warning.matches("entity `[a-z_]+\\.[A-Z0-9_]+` has no `\\w+` form"))
-                || locale.equals("ne-Deva-NP") && UNSENT_DAY_PERIOD.contains(key)
-                        && warning.equals("missing parameter `$dayPeriod`");
+                        || warning.matches("entity `[a-z_]+\\.[A-Z0-9_]+` has no `\\w+` form"));
     }
 
     /** What the sweep of the accessors met. */
@@ -178,7 +165,7 @@ final class SweepTest {
                 IntlRender rendered = intl.render(key, params);
                 String locale = intl.locale();
                 List<String> unexpected = ((List<?>) Json.read(rendered.warnings())).stream().map(String::valueOf)
-                        .filter(warning -> !expected(locale, key, warning)).toList();
+                        .filter(warning -> !expected(key, warning)).toList();
                 if (!unexpected.isEmpty()) {
                     swept.unexpected.put(key, unexpected);
                 }

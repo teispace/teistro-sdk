@@ -118,9 +118,9 @@ export function messages(r) {
         parana: (p) => r.render('sdk.calendar.parana', { fast: p.fast }),
         time: {
           long: (p) => r.render('sdk.calendar.time.long', { hour: p.hour, minute: p.minute, second: p.second }),
-          long12: (p) => r.render('sdk.calendar.time.long12', { hour12: p.hour12, meridiem: p.meridiem, minute: p.minute, second: p.second }),
+          long12: (p) => r.render('sdk.calendar.time.long12', { dayPeriod: p.dayPeriod, hour12: p.hour12, meridiem: p.meridiem, minute: p.minute, second: p.second }),
           numeric: (p) => r.render('sdk.calendar.time.numeric', { hour: p.hour, minute: p.minute }),
-          numeric12: (p) => r.render('sdk.calendar.time.numeric12', { hour12: p.hour12, meridiem: p.meridiem, minute: p.minute }),
+          numeric12: (p) => r.render('sdk.calendar.time.numeric12', { dayPeriod: p.dayPeriod, hour12: p.hour12, meridiem: p.meridiem, minute: p.minute }),
         },
         weekdayName: (p) => r.render('sdk.calendar.weekdayName', { weekday: p.weekday }),
         weekdayShort: (p) => r.render('sdk.calendar.weekdayShort', { weekday: p.weekday }),

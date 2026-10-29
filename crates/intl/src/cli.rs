@@ -792,8 +792,7 @@ pub fn generate_targets(
     targets: &[Target],
     out: &Path,
 ) -> Result<Vec<PathBuf>, Box<dyn std::error::Error>> {
-    let base = tree.base().ok_or("no base locale")?;
-    let model = Model::of(base)?;
+    let model = Model::of_tree(tree)?;
     let mut written = Vec::new();
     for target in targets {
         let (path, text) = match target {
@@ -1106,8 +1105,7 @@ pub fn report(tree: &Tree, out: &Path) -> Result<Results, Box<dyn std::error::Er
     let validation = validate::validate(tree);
     let mut sizes = build_packs(tree, &out.join("packs"), &[], &[], false)?;
     sizes.extend(build_packs(tree, &out.join("bundles"), &[], &[], true)?);
-    let base = tree.base().ok_or("no base locale")?;
-    let model = Model::of(base)?;
+    let model = Model::of_tree(tree)?;
     let generated = [
         ("ts", generate::typescript(&model)),
         ("dart", generate::dart(&model)),

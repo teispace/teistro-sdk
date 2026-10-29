@@ -66,33 +66,20 @@ Object _argument(ParameterMirror parameter) {
   };
 }
 
-/// The patterns whose Nepali form reads the part of the day, a parameter
-/// the engine supplies when it formats a time itself
-/// (`teistro_intl::engine_params`) but which the accessor, typed from the
-/// base locale's pattern, cannot send. Listed rather than inferred, so the
-/// day the accessor sends it this test asks for the list to go.
-const _unsentDayPeriod = {
-  'sdk.calendar.time.long12',
-  'sdk.calendar.time.numeric12',
-};
-
-/// Whether the engine warning [warning], rendering [key] in [locale] with
-/// no pack loaded, is one the walk expects. Text parameters get the
+/// Whether the engine warning [warning], rendering [key] in any locale
+/// with no pack loaded, is one the walk expects. Text parameters get the
 /// stand-in `x`, which a message reading the parameter as an entity a
 /// pack brings (a rule, a house's reading) refuses by name. A phala
 /// message reads a form of its entity (`phala`, `dashaActivation`) that
 /// only an interpretation pack brings, and the `state` kind has no entry
-/// in either shipped locale at all. See also [_unsentDayPeriod].
-bool _expected(String locale, String key, String warning) =>
+/// in either shipped locale at all.
+bool _expected(String key, String warning) =>
     warning.contains('`x`') ||
     (key.startsWith('sdk.phala.') &&
         (RegExp(
               r'^entity `[a-z_]+\.[A-Z0-9_]+` has no `\w+` form$',
             ).hasMatch(warning) ||
-            warning.startsWith('missing entity `state.'))) ||
-    (locale == 'ne-Deva-NP' &&
-        _unsentDayPeriod.contains(key) &&
-        warning == 'missing parameter `\$dayPeriod`');
+            warning.startsWith('missing entity `state.')));
 
 /// What a walk of the accessors met.
 final class _Swept {
@@ -136,10 +123,9 @@ void _walk(Object node, _Checked checked, _Swept swept) {
         for (final p in declaration.parameters)
           MirrorSystem.getName(p.simpleName).replaceAll(r'$', ''),
       }, reason: '$name sends every parameter by its name');
-      final locale = checked.ctx.intl.locale;
       final unexpected = [
         for (final warning in checked.warnings)
-          if (!_expected(locale, key, warning)) warning,
+          if (!_expected(key, warning)) warning,
         if (checked.fallback) 'rendered from a fallback locale',
       ];
       if (unexpected.isNotEmpty) swept.unexpected[key] = unexpected;

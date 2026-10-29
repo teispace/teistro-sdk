@@ -470,6 +470,17 @@ One model from the base locale (namespaces as groups, messages with
 typed parameters in name order, entity kinds with their keys in source
 order, contexts, the forms every entity has), one emitter per target.
 
+**An engine pattern takes what any locale's form of it reads.** A typed
+accessor renders a message with what its caller passes, and the engine
+supplies its own patterns' parameters only when it formats a value
+itself. The accessors of `sdk.calendar.time.long12` and `numeric12` were
+typed from the English pattern, which reads `$meridiem`, so the Nepali
+one, which reads `$dayPeriod`, rendered with a missing parameter. The
+model (`Model::of_tree`) now adds to each engine pattern every parameter
+the engine supplies (`engine_params`) that another locale's form reads:
+the clock's accessors take both `dayPeriod` and `meridiem`, and each
+locale reads the one its readers expect.
+
 **A kind's key union comes from the catalogue, not from the locale.** The
 model reads its kinds from `sdk.entity`, which is the right source for a
 member's **name** and the wrong one for its **key**: a closed catalogue

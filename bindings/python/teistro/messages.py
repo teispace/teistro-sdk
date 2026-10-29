@@ -7277,11 +7277,11 @@ class MessagesSdkCalendarTime:
             {"hour": hour, "minute": minute, "second": second},
         )
 
-    def long12(self, *, hour12: int, meridiem: str, minute: int, second: int) -> str:
+    def long12(self, *, day_period: str, hour12: int, meridiem: str, minute: int, second: int) -> str:
         """`sdk.calendar.time.long12`"""
         return self._r.render(
             "sdk.calendar.time.long12",
-            {"hour12": hour12, "meridiem": meridiem, "minute": minute, "second": second},
+            {"dayPeriod": day_period, "hour12": hour12, "meridiem": meridiem, "minute": minute, "second": second},
         )
 
     def numeric(self, *, hour: int, minute: int) -> str:
@@ -7291,11 +7291,11 @@ class MessagesSdkCalendarTime:
             {"hour": hour, "minute": minute},
         )
 
-    def numeric12(self, *, hour12: int, meridiem: str, minute: int) -> str:
+    def numeric12(self, *, day_period: str, hour12: int, meridiem: str, minute: int) -> str:
         """`sdk.calendar.time.numeric12`"""
         return self._r.render(
             "sdk.calendar.time.numeric12",
-            {"hour12": hour12, "meridiem": meridiem, "minute": minute},
+            {"dayPeriod": day_period, "hour12": hour12, "meridiem": meridiem, "minute": minute},
         )
 
 

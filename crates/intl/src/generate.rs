@@ -12,7 +12,7 @@ use teistro_core::key::KeyId;
 
 use crate::analysis::{ParamType, Signature, signature};
 use crate::mf2::parse;
-use crate::source::{ENTITY_NAMESPACE, Entry, LocaleSource};
+use crate::source::{ENTITY_NAMESPACE, Entry, LocaleSource, Tree};
 
 /// A tree of accessors.
 ///
@@ -232,6 +232,89 @@ impl Model {
         );
         Ok(model)
     }
+    /// The model of a tree's base locale, each of the engine's own
+    /// patterns also taking every parameter the engine supplies that
+    /// another locale's form of it reads. A typed accessor renders the
+    /// pattern with what its caller passes, so one typed from the base
+    /// alone left a Nepali clock's `$dayPeriod` unpassed: the union is
+    /// what renders in every locale.
+    ///
+    /// ```
+    /// use teistro_intl::analysis::ParamType;
+    /// use teistro_intl::generate::{Model, Node};
+    /// use teistro_intl::sdk_root;
+    /// use teistro_intl::source::Tree;
+    ///
+    /// let tree = Tree::load(&sdk_root())?;
+    /// let model = Model::of_tree(&tree)?;
+    /// let Some(Node::Group(sdk)) = model.root.children.get("sdk") else { unreachable!() };
+    /// let Some(Node::Group(calendar)) = sdk.children.get("calendar") else { unreachable!() };
+    /// let Some(Node::Group(time)) = calendar.children.get("time") else { unreachable!() };
+    /// let Some(Node::Message(clock)) = time.children.get("numeric12") else { unreachable!() };
+    /// // English reads am and pm, Nepali the part of the day: both are asked for.
+    /// let names: Vec<&str> = clock.params.iter().map(|(name, _)| name.as_str()).collect();
+    /// assert_eq!(names, ["dayPeriod", "hour12", "meridiem", "minute"]);
+    /// assert_eq!(clock.params[0].1, ParamType::String);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// No base locale, or a message that does not parse, with its locale
+    /// and key.
+    pub fn of_tree(tree: &Tree) -> Result<Model, String> {
+        let base = tree.base().ok_or("no base locale")?;
+        let mut model = Model::of(base)?;
+        for locale in tree
+            .locales
+            .values()
+            .filter(|locale| locale.tag != base.tag)
+        {
+            for (namespace, ns) in &locale.namespaces {
+                for (key, entry) in ns.in_source_order() {
+                    let full = format!("{namespace}.{key}");
+                    let supplied = crate::render::engine_params(&full);
+                    let Entry::Message(source) = entry else {
+                        continue;
+                    };
+                    if supplied.is_empty() {
+                        continue;
+                    }
+                    let message =
+                        parse(source).map_err(|e| format!("{}: {full}: {e}", locale.tag))?;
+                    let read = signature(&message, &locale.meta).params;
+                    model.widen(
+                        &full,
+                        read.into_iter()
+                            .filter(|(name, _)| supplied.contains(&name.as_str())),
+                    );
+                }
+            }
+        }
+        Ok(model)
+    }
+
+    /// Adds to the message at `key` each parameter it does not take yet,
+    /// keeping them in name order; a key that is no message is left alone.
+    fn widen(&mut self, key: &str, params: impl IntoIterator<Item = (String, ParamType)>) {
+        let mut group = &mut self.root;
+        let mut segments = key.split('.').peekable();
+        while let Some(segment) = segments.next() {
+            match group.children.get_mut(segment) {
+                Some(Node::Group(child)) if segments.peek().is_some() => group = child,
+                Some(Node::Message(message)) if segments.peek().is_none() => {
+                    for (name, ty) in params {
+                        if let Err(at) = message.params.binary_search_by(|(n, _)| n.cmp(&name)) {
+                            message.params.insert(at, (name, ty));
+                        }
+                    }
+                    return;
+                }
+                _ => return,
+            }
+        }
+    }
+
     /// Fills in the key union of every **closed catalogue kind a message
     /// names** that the locale does not itself name a member of.
     ///
@@ -2037,6 +2120,43 @@ mod tests {
     fn model() -> Model {
         let tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
         Model::of(tree.base().unwrap_or_else(|| panic!("base"))).unwrap_or_else(|e| panic!("{e}"))
+    }
+
+    #[test]
+    fn a_message_is_widened_in_name_order_and_nothing_else_is() {
+        let mut model = model();
+        let key = "sdk.calendar.time.long12";
+        let before = message(&model.root, key).params.clone();
+        assert!(!before.iter().any(|(name, _)| name == "dayPeriod"));
+        model.widen(
+            key,
+            [
+                (String::from("dayPeriod"), ParamType::String),
+                (String::from("minute"), ParamType::String),
+            ],
+        );
+        let after = message(&model.root, key).params.clone();
+        // Added where its name falls; one it already takes keeps its type.
+        assert_eq!(after.len(), before.len() + 1);
+        assert_eq!(
+            after.first(),
+            Some(&(String::from("dayPeriod"), ParamType::String))
+        );
+        assert!(after.contains(&(String::from("minute"), ParamType::Integer)));
+        let unchanged = model.clone();
+        // A group, a key past a message and a key that is not there.
+        for elsewhere in [
+            "sdk.calendar",
+            "sdk.calendar.time.long12.more",
+            "sdk.nothing.here",
+        ] {
+            model.widen(elsewhere, [(String::from("x"), ParamType::String)]);
+        }
+        assert_eq!(model, unchanged);
+        // The whole tree asks for what the Nepali clock reads.
+        let tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
+        let widened = Model::of_tree(&tree).unwrap_or_else(|e| panic!("{e}"));
+        assert_eq!(message(&widened.root, key).params, after);
     }
 
     fn message<'m>(group: &'m Group, key: &str) -> &'m MessageModel {
