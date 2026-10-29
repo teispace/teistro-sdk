@@ -1,10 +1,12 @@
-# Reply to the consumer's addendum 3 (and addendum 2)
+# Reply to the consumer's addenda 2, 3 and 4
 
 Addendum 3 (2026-10-29) asks for 58 general features, SR-01 to SR-58, and sends
 addendum 2 (A2-1 to A2-10) with it, now approved. This page answers each by number:
 its **status** (`done`, `partly built`, `planned`, `needs a decision`, `declined`), **where** it
 lives or will live, and any **question**. It was checked against `main` at `0b69926d`.
-The schedule is in `07-roadmap/00-roadmap.md`, "Addendum 3".
+The schedule is in `07-roadmap/00-roadmap.md`, "Addendum 3". Addendum 4 (2026-10-29) answered
+this page's questions and added SR-59 to SR-62; its answers are folded into the rows below and its
+requests are in §10.
 
 **Order.** The v1.0 release candidate comes first and keeps its scope. After it come the
 consumer's P0 requests, then P1, P2, and P3 and later. A request is done when it is
@@ -28,7 +30,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 | SR-09 | planned | `time/src/zone` (`EmbeddedTzdb` today) | The zone database becomes loadable from a signed data pack, as the published sets and Bikram Sambat tables are. The embedded database stays as the fallback, and the pack's version is reported on the answer. |
 | SR-10 | partly built | `time/src/zone/mod.rs` (`ZoneSource`, `ZoneEra`, `Policy`) | Resolving a zone already says which rules gave the offset: the zone database, local mean time from the longitude, or a fixed offset the caller stated (`ZoneSpec::Manual` overrides it). For Kathmandu that is +05:45 today, +05:30 in 1985 and local mean time before the first rule. Planned: carry the offset and its source on every date and chart answer, so a caller doesn't have to resolve it again. |
 | SR-11 | partly built | `calendar/src/ical.rs` (`Feed`, `Event`, `write`) | The feed writer exists. Planned: merging events the caller supplies, an optional `VALARM`, category and colour hints, and a filter by kind or tradition, which needs SR-02's fields. |
-| SR-12 | needs a decision | `intl` packs | The missing Hindi and Sanskrit names can be drafted from the cited texts. Shipping them needs a native reviewer (Q42); no name is machine-stubbed. |
+| SR-12 | planned, review by the consumer | `intl` packs | The missing Hindi and Sanskrit names are drafted from the cited texts and ship when the consumer's reviewers sign them off (Q42, decided). No name is machine-stubbed. |
 | SR-13 | planned | `interpret`, in ne, en, hi and sa | The day's facts composed as short declarative sentences from templates, every value taken from the answer. Hindi and Sanskrit wait on Q42's reviewer. |
 | SR-14 | planned | `calendar/src/hijri.rs` | A request-level day offset (±1 or ±2) beside the published sighting sets (P2-4). |
 | SR-15 | partly built | STATUS P2-1; `calendars/regional-solar.md` | Hindi already names a purnimanta month and an adhika month. Planned: the other locales. Kerala's Mesha (C764) and Assam (C765) month starts stay open on their sources. |
@@ -56,7 +58,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 | SR-27 | planned | `panchanga` (ashauch) | A relation resolver: a path in a family graph gives the ashauch relation and the sapinda degree the texts use. |
 | SR-28 | partly built | the ashauch rules (the sapinda degree and the default are decided) | Planned: several events and observers in one request, overlapping periods resolved (samapata), and "may this rite go on?" answered with its clause (apavada), all as presets a caller can change. |
 | SR-29 | partly built | `panchanga/src/sankalpa.rs`; `AlmanacArea::sankalpa` | The sankalpa's place-and-time words exist. Planned: a reviewed template per tradition, *Himavatkhande* first, with slots for the performer, gotra, place, purpose and three generations of pitris. The answer names its tradition. It needs a rank-1 printed form and Q42's reviewer. |
-| SR-30 | done, with one part missing | `ffi/src/naming.rs`, the IDL and every binding (merged in #417) | `names_of`, `name_check` and `syllables` cross the boundary, and a consumer can supply its own name book (`03-design/namakarana.md`). Still to build: the MCP tool. |
+| SR-30 | done, with one part missing | `ffi/src/naming.rs`, the IDL and every binding (merged in #417) | `names_of`, `name_check` and `syllables` cross the boundary, and a consumer can supply its own name book (`03-design/namakarana.md`). The consumer counts it ready (addendum 4). The MCP tool follows at P1. |
 | SR-31 | needs a decision | the `ne` pack | Drafting the ashauch, shraddha and first-year messages is planned. Shipping them waits on the Nepali review already listed in STATUS (Q42). |
 | SR-32 | partly built | `matching/src/avakahada.rs` | Planned: the birth paya by both methods on the chart, from the Moon's house counted from the lagna and from the nakshatra. |
 
@@ -72,13 +74,13 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 
 | SR | Status | Where | Note or question |
 |---|---|---|---|
-| SR-36 | partly built | `render-svg`; `03-design/chart-geometry.md` | The Nepali lotus layout is drawn; it has no second source. **Question:** is the lotus the patrika layout you mean, or another? |
+| SR-36 | partly built, waiting on the consumer's source | `render-svg`; `03-design/chart-geometry.md` | The Nepali lotus stays a style and is not the default. The consumer is checking the layout against printed janma patrikas and will send scans and a source (addendum 4). |
 | SR-37 | partly built | `crates/rashifal` | Planned: composed readings for each sign and period (day, week, month, year) in ne, en and hi. The hi and ne text waits on Q42's review. |
 | SR-38 | needs a decision | `intl` | The Hindi and Sanskrit composed text is drafted from the en templates and ships only after review, with sign-off of ne and hi (Q42). |
 | SR-39 | planned, waiting on a source | `matching` | This is already on the list of waits: the bands need a rank-1 source. |
 | SR-40 | planned | the dossier | A policy that drops named sections (longevity, the marakas), with the dropped list inside the hash. |
 | SR-41 | planned | a chart counterpart of the almanac's `disagreements` | For two settings or two charts: which facts differ (the lagna, the nakshatra, the dasha lords, the yogas). |
-| SR-42 | planned | a new import module | Readers that map the JHora, Parashara's Light and Kala files to `FoundRequest`. They are written from the file formats and sample exports only, never from the programs' code. **Question:** can you share sample files from each program? |
+| SR-42 | planned, at P3 | a new import module | Readers that map the JHora, Parashara's Light and Kala files to `FoundRequest`, written from the file formats and sample exports only, never from the programs' code. The consumer sends JHora exports when it specifies the feature; samples from the other two programs come from the professionals who own them (addendum 4). |
 | SR-43 | planned | the dasha catalogue | The answer lists, per system, the translation that would unblock it, as data on the catalogue page. |
 | SR-44 | planned | `muhurta` or `chart` | The navatara (tara) chakra. |
 | SR-45 | planned | `chart` | Mundane charts as named chart kinds: the Mesha and Makara sankrantis, lunations, eclipses and conjunctions. Event charts are cast from supplied records, each with its source. |
@@ -90,7 +92,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 
 | SR | Status | Where | Note or question |
 |---|---|---|---|
-| SR-49 | planned | `intl` | Amounts in words in ne, hi, en and sa, with the Indian grouping (lakh, crore, arab), a currency's units, and Devanagari or Latin digits. The rules come from CLDR's rule-based number formats under the Unicode licence, which is compatible with Apache-2.0. Number spelling is locale data the SDK already partly needs; it stays in `intl`. |
+| SR-49 | planned, in its P0 order | `intl` | Amounts in words in ne, hi, en and sa, with the Indian grouping (lakh, crore, arab), a currency's units, and Devanagari or Latin digits. The rules come from CLDR's rule-based number formats under the Unicode licence, which is compatible with Apache-2.0. The consumer confirmed the plan and ships without it if it is late (addendum 4). |
 
 ## 7. AI, knowledge and MCP (addendum 2)
 
@@ -116,7 +118,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 | SR-52 | partly built | `ffi/src/support.rs` (the entry wrappers' `catch_unwind`) | No panic crosses the C boundary today; a panic becomes a typed internal error. Planned: the same guard on every wasm entry, a stable code for it, and an optional host hook that receives the error with no personal data. |
 | SR-53 | partly built | `05-testing/sizes.json`, `SIZES.md`, `check-wasm` | The size of each wasm profile is gated both ways. Planned: modules that load lazily, the calendar first and the jyotish later, and the start time measured on the gate. |
 | SR-54 | planned | the benches | A relative cost per entry point, generated from the callgrind bench's instruction counts, so it is measured and not written by hand. |
-| SR-55 | needs a decision | `LICENSING` | The SDK and its packs are Apache-2.0 and the corpus is CC0. Whether a hosted API may serve Teimeris's output is the licence owner's call (Q43). |
+| SR-55 | needs a decision | `LICENSING` | The SDK and its packs are Apache-2.0 and the corpus is CC0. Whether a hosted API may serve Teimeris's output is the licence owner's call (Q43); the consumer has asked its own maintainer too (addendum 4). |
 | SR-56 | planned (v1.x) | roadmap, v1.x | Swift and Kotlin bindings are already on the v1.x list. |
 
 ## 9. Research and far future
@@ -125,3 +127,14 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 |---|---|---|---|
 | SR-57 | planned | `research` | A dataset format with a reliability rating per record and a settings snapshot per study. |
 | SR-58 | partly built | `astro` (topocentric altitude and azimuth, visibility) | Planned: a record for a device pose and an instant, giving the grahas, the Moon's junction stars and the rising lagna point. |
+
+## 10. Addendum 4's requests
+
+All four are P1, and each is planned in the P1 wave.
+
+| SR | Status | Where | Note or question |
+|---|---|---|---|
+| SR-59 | planned | `calendar` (the Vira Nirvana Samvat era) and a Jain festival pack in `panchanga` | The era, then the festivals and observances: Paryushana and Das Lakshana, Mahavir Janma Kalyanak, Mahavir Nirvana at Diwali, Ayambil Oli and the monthly fasting tithis. Each rule is cited, and the Shvetambara and Digambara differences are named as a setting. Research comes first: the era's epoch and year boundary, which the sources give differently. |
+| SR-60 | partly built | `03-design/festival-rule-language.md` §3.1 (`MOONRISE`); the `DHARMASINDHU` pack | The moonrise window is built from *Dharmasindhu* p. 9: the first moonrise after the day's sunrise and before the next, so a moonrise after midnight belongs to the day it follows, and a day without a moonrise is left unjudged and says so. Sankashta chaturthi and the Karaka chaturthi (Karva Chauth, p. 76) are rules, 12 of 12 against a published 2025 list for Delhi. Planned: the moonrise time and place on the answer, and the other vratas broken at moonrise. |
+| SR-61 | planned | `intl`, on A2-3's lexicon | Bikram Sambat and Gregorian dates found in free text in ne, en and hi, with Devanagari or Latin digits and month names in any script or romanised, returned as spans with the parsed date and its calendar. An ambiguous span is returned with every reading, not guessed. |
+| SR-62 | partly built | `ParanaRule` on every `EkadashiRule` (Q41) | The Ekadashi parana is built. Planned: the fast's kind (nirjala, phalahar, ekabhukta), its start and its parana window as catalogue fields on every vrata, alongside SR-02's fields. |
