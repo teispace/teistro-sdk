@@ -285,13 +285,7 @@ pub fn hits(
     check_body(first, "aspect.first")?;
     check_body(second, "aspect.second")?;
     let apart = separation(first.longitude_deg, second.longitude_deg);
-    // A day is short enough that no pair crosses an angle within it, and
-    // long enough that the change is well above the last bit of a
-    // double.
-    let later = separation(
-        first.longitude_deg + first.speed_deg_per_day,
-        second.longitude_deg + second.speed_deg_per_day,
-    );
+    let opening = opening_deg_per_day(first, second);
     Ok(angles
         .iter()
         .filter_map(|angle| {
@@ -300,10 +294,35 @@ pub fn hits(
                 angle: *angle,
                 apart_deg: apart,
                 from_exact_deg: from_exact,
-                applying: (later - angle.degrees).abs() < from_exact,
+                // Closing on the angle now: the separation short of it and
+                // growing, or past it and shrinking. Exact is neither.
+                applying: (apart - angle.degrees) * opening < 0.0,
             })
         })
         .collect())
+}
+
+/// How fast the shorter-way separation of two bodies grows, degrees a
+/// day, at the instant: their relative speed, signed by which way round
+/// the shorter arc runs. At a conjunction the separation can only grow,
+/// and at an opposition only shrink.
+///
+/// The rate, not the separation a day later: the Moon gains up to 15° a
+/// day on a slow planet, so a day's step carries her past an aspect she
+/// is still closing on, and read her as separating (immanuel's aspects
+/// over the corpus found it, `western-hellenistic-oracle.md`).
+fn opening_deg_per_day(first: Moving, second: Moving) -> f64 {
+    let relative = second.speed_deg_per_day - first.speed_deg_per_day;
+    let ahead = (second.longitude_deg - first.longitude_deg).rem_euclid(360.0);
+    if ahead == 0.0 {
+        relative.abs()
+    } else if ahead < 180.0 {
+        relative
+    } else if ahead > 180.0 {
+        -relative
+    } else {
+        -relative.abs()
+    }
 }
 
 /// The one angle of a set the bodies stand nearest, within the orb.
@@ -473,6 +492,38 @@ mod tests {
         )
         .unwrap();
         assert!(!past[0].applying, "{past:?}");
+    }
+
+    #[test]
+    fn a_pair_closing_on_an_angle_applies_however_fast_it_closes() {
+        // The Moon 2° short of a square to Venus, gaining 10.8° a day: a
+        // day later she is 8.8° past it, and she applies all the same
+        // (immanuel's c001 square, `western-hellenistic-oracle.md`).
+        let moon = Moving::new(245.909, 11.864);
+        let venus = Moving::new(337.942, 1.061);
+        let found = hits(moon, venus, &[Angle::SQUARE], 10.0).unwrap();
+        assert!(found[0].applying, "{found:?}");
+        let past = hits(Moving::new(248.0, 11.864), venus, &[Angle::SQUARE], 10.0).unwrap();
+        assert!(!past[0].applying, "{past:?}");
+        // Exact is neither applying nor separating, at a conjunction, at an
+        // opposition and between them.
+        for (a, b, angle) in [
+            (10.0, 10.0, Angle::CONJUNCTION),
+            (10.0, 190.0, Angle::OPPOSITION),
+            (10.0, 100.0, Angle::SQUARE),
+        ] {
+            let exact = hits(Moving::new(a, 13.0), Moving::new(b, 1.0), &[angle], 1.0).unwrap();
+            assert!(!exact[0].applying, "{exact:?}");
+        }
+        // Over the end of the circle the arc runs the other way round.
+        let wrapped = hits(
+            Moving::new(358.0, 13.0),
+            Moving::new(2.0, 1.0),
+            &[Angle::CONJUNCTION],
+            5.0,
+        )
+        .unwrap();
+        assert!(wrapped[0].applying, "{wrapped:?}");
     }
 
     #[test]
