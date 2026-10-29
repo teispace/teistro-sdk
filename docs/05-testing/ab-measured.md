@@ -10,30 +10,35 @@ Then each side, in processes of its own, answers `chart`, `day` and `full` under
 
 **Agreement and accuracy:** over the same inputs each answer is read into facts and the two sides' compared field by field, under the SDK's timed profiles and under the ones that cast as the baseline casts, and each side is held to a reference neither side computed where one exists (§10, §11). The gate holds every agreement and reference share to the floor the record measured, and each request's named cause to what the record shows.
 
+**Measurably slower through the SDK**, each held to a bound of the baseline's time:
+
+- `muhurta`, at most 1.50×: the SDK judges every window of every day, cut wherever a clause changes (a limb, a kaala, a lagna), and keeps them all; the baseline bars a day at sunrise and scores the two windows it keeps (1.38× on 29 October 2026).
+
 No other request, and no throughput or percentile, is measurably slower through the SDK.
 
 ## `macos-aarch64`
 
-macos aarch64, commit `023fec799`, Node v26.12.0, 10 threads offered; the sdk `teistro 0.0.0`, the baseline `baseline 0.6.173`.
+macos aarch64, commit `9bcd7dc1a`, Node v26.12.0, 10 threads offered; the sdk `teistro 0.0.0`, the baseline `baseline 0.6.173`.
 
 ### Requests, per request in µs
 
 | request | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest |
 |---|---:|---:|---:|---:|---:|
-| chart (a birth chart with every varga, its drishti, upagrahas, houses, dignities, arudhas and Vimshottari to depth 3) | 1403 | 7493 | 0.19× | 1366 to 1447 | 7389 to 7602 |
-| day (the almanac day of the birth's date at its place, its limbs, kaalas, choghadiya and horas) | 1015 | 11751 | 0.09× | 990 to 1051 | 11679 to 11908 |
-| full (the whole natal chart: every section and varga, 22 dashas to depth 3, every shipped rule and the longevity) | 21643 | 51999 | 0.42× | 21419 to 21809 | 51734 to 52195 |
-| vargas (the chart's foundation, every divisional chart with it) | 847 | 5706 | 0.15× | 832 to 873 | 5679 to 5751 |
-| yogas (the yogas and doshas of a chart) | 3255 | 5884 | 0.55× | 3211 to 3286 | 5801 to 5974 |
-| strength (the Shadbala, Bhava bala and Ashtakavarga) | 563 | 5815 | 0.10× | 539 to 577 | 5750 to 5923 |
-| dashas (eighteen dasha systems to depth 3) | 15241 | 40883 | 0.37× | 15108 to 15407 | 40569 to 41245 |
-| month (thirty almanac days from the birth's date) | 12072 | 355280 | 0.03× | 11665 to 12759 | 350793 to 364885 |
-| milan (the birth matched with the next one of the corpus) | 687 | 11399 | 0.06× | 657 to 708 | 11292 to 12019 |
-| varsha (the first annual chart, its yogas, sahams and Mudda dasha) | 2588 | 6432 | 0.40× | 2544 to 2664 | 6353 to 6559 |
-| kp (the KP cusps, sub lords, significators and ruling planets) | 575 | 5731 | 0.10× | 553 to 703 | 5649 to 5787 |
-| gochar (the grahas thirty years on over the chart, with the Ashtakavarga) | 561 | 5939 | 0.09× | 541 to 612 | 5807 to 6387 |
-| sadeSati (Sade Sati and the dhaiyyas over thirty years) | 2471 | 22815 | 0.11× | 2429 to 2620 | 22500 to 23750 |
-| batch (ten whole charts an hour apart, at one place) | 219955 | 546074 | 0.40× | 215804 to 221478 | 540733 to 551777 |
+| chart (a birth chart with every varga, its drishti, upagrahas, houses, dignities, arudhas and Vimshottari to depth 3) | 1460 | 7569 | 0.19× | 1410 to 1631 | 7456 to 8373 |
+| day (the almanac day of the birth's date at its place, its limbs, kaalas, choghadiya and horas) | 1129 | 11814 | 0.10× | 1111 to 1161 | 11737 to 11904 |
+| full (the whole natal chart: every section and varga, 22 dashas to depth 3, every shipped rule and the longevity) | 21958 | 51539 | 0.43× | 21818 to 23241 | 51019 to 51922 |
+| vargas (the chart's foundation, every divisional chart with it) | 860 | 5709 | 0.15× | 834 to 908 | 5675 to 5838 |
+| yogas (the yogas and doshas of a chart) | 3408 | 5792 | 0.59× | 3329 to 3476 | 5733 to 5900 |
+| strength (the Shadbala, Bhava bala and Ashtakavarga) | 569 | 5846 | 0.10× | 555 to 612 | 5774 to 5898 |
+| dashas (eighteen dasha systems to depth 3) | 15379 | 40552 | 0.38× | 15189 to 15612 | 40208 to 42197 |
+| month (thirty almanac days from the birth's date) | 12803 | 351785 | 0.04× | 12727 to 12935 | 350455 to 353485 |
+| milan (the birth matched with the next one of the corpus) | 712 | 11463 | 0.06× | 680 to 737 | 11362 to 12216 |
+| varsha (the first annual chart, its yogas, sahams and Mudda dasha) | 2972 | 6446 | 0.46× | 2909 to 3058 | 6374 to 6513 |
+| kp (the KP cusps, sub lords, significators and ruling planets) | 573 | 5747 | 0.10× | 553 to 600 | 5726 to 5848 |
+| gochar (the grahas thirty years on over the chart, with the Ashtakavarga) | 577 | 5890 | 0.10× | 555 to 611 | 5822 to 5956 |
+| sadeSati (Sade Sati and the dhaiyyas over thirty years) | 4347 | 22841 | 0.19× | 4307 to 4450 | 22647 to 23488 |
+| batch (ten whole charts an hour apart, at one place) | 220757 | 541263 | 0.41× | 215494 to 222931 | 534302 to 547215 |
+| muhurta (a marriage muhurta over 25 days at Kathmandu thirty years on, then against the native) | 462786 | 335355 | 1.38× | 460786 to 465552 | 333735 to 336617 |
 
 Refused, and kept out of that request's timing:
 
@@ -50,6 +55,7 @@ Refused, and kept out of that request's timing:
 - c048, `month`, by the sdk: SUN at JD 2597642.2629888887 UT1: the provider answered OutOfRange
 - c048, `gochar`, by the sdk: the provider could not place SUN: OutOfRange
 - c048, `batch`, by the sdk: MOON at JD 2597641.5517241377: OutOfRange
+- c048, `muhurta`, by the sdk: SUN at JD 2608597.2629888887 UT1: the provider answered OutOfRange
 
 Answered with nothing, and kept out of that request's timing:
 
@@ -61,83 +67,83 @@ All threads or processes together, each with its side of its own; the ratio is t
 
 | request | mode | at once | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest | SDK efficiency | baseline efficiency |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|
-| chart | threads | 1 | 735 | 140 | 5.25× | 723 to 738 | 140 to 140 | 1.00 | 1.00 |
-| chart | threads | 2 | 1426 | not measured | — | 1403 to 1428 |  | 0.97 | — |
-| chart | threads | 4 | 2712 | not measured | — | 2676 to 2741 |  | 0.92 | — |
-| chart | threads | 8 | 4232 | not measured | — | 4179 to 4382 |  | 0.72 | — |
-| chart | threads | 10 | 4687 | not measured | — | 4604 to 4886 |  | 0.64 | — |
-| chart | processes | 1 | 744 | 143 | 5.22× | 730 to 747 | 142 to 143 | 1.00 | 1.00 |
-| chart | processes | 2 | 1480 | 276 | 5.37× | 1460 to 1484 | 274 to 280 | 0.99 | 0.97 |
-| chart | processes | 4 | 2901 | 562 | 5.16× | 2851 to 2914 | 552 to 566 | 0.97 | 0.98 |
-| chart | processes | 8 | 4853 | 917 | 5.29× | 4670 to 4853 | 914 to 922 | 0.82 | 0.80 |
-| chart | processes | 10 | 5209 | 979 | 5.32× | 5020 to 5215 | 976 to 990 | 0.70 | 0.69 |
-| day | threads | 1 | 1738 | 84.3 | 20.61× | 1728 to 1742 | 83.7 to 84.7 | 1.00 | 1.00 |
-| day | threads | 2 | 3124 | not measured | — | 3102 to 3134 |  | 0.90 | — |
-| day | threads | 4 | 5853 | not measured | — | 5821 to 5866 |  | 0.84 | — |
-| day | threads | 8 | 9260 | not measured | — | 8946 to 9318 |  | 0.67 | — |
-| day | threads | 10 | 10118 | not measured | — | 9673 to 10329 |  | 0.58 | — |
-| day | processes | 1 | 1723 | 84.0 | 20.52× | 1720 to 1744 | 81.0 to 84.3 | 1.00 | 1.00 |
-| day | processes | 2 | 3416 | 168 | 20.33× | 3349 to 3420 | 165 to 168 | 0.99 | 1.00 |
-| day | processes | 4 | 6809 | 332 | 20.53× | 6791 to 6825 | 331 to 332 | 0.99 | 0.99 |
-| day | processes | 8 | 11228 | 541 | 20.77× | 10979 to 11244 | 528 to 541 | 0.81 | 0.80 |
-| day | processes | 10 | 12191 | 586 | 20.79× | 11310 to 12197 | 576 to 586 | 0.71 | 0.70 |
-| full | threads | 1 | 47.3 | 18.7 | 2.54× | 47.3 to 47.3 | 18.7 to 18.7 | 1.00 | 1.00 |
-| full | threads | 2 | 92.7 | not measured | — | 90.0 to 92.7 |  | 0.98 | — |
-| full | threads | 4 | 184 | not measured | — | 182 to 184 |  | 0.97 | — |
-| full | threads | 8 | 301 | not measured | — | 301 to 301 |  | 0.79 | — |
-| full | threads | 10 | 326 | not measured | — | 319 to 329 |  | 0.69 | — |
-| full | processes | 1 | 47.7 | 19.0 | 2.51× | 47.3 to 47.7 | 19.0 to 19.0 | 1.00 | 1.00 |
-| full | processes | 2 | 94.3 | 38.0 | 2.48× | 94.3 to 94.7 | 38.0 to 38.0 | 0.99 | 1.00 |
-| full | processes | 4 | 187 | 73.0 | 2.56× | 187 to 187 | 73.0 to 73.7 | 0.98 | 0.96 |
-| full | processes | 8 | 304 | 103 | 2.94× | 299 to 309 | 101 to 109 | 0.80 | 0.68 |
-| full | processes | 10 | 332 | 119 | 2.79× | 330 to 334 | 111 to 123 | 0.70 | 0.63 |
+| chart | threads | 1 | 743 | 141 | 5.27× | 737 to 749 | 140 to 142 | 1.00 | 1.00 |
+| chart | threads | 2 | 1436 | not measured | — | 1396 to 1441 |  | 0.97 | — |
+| chart | threads | 4 | 2730 | not measured | — | 2681 to 2744 |  | 0.92 | — |
+| chart | threads | 8 | 4536 | not measured | — | 4373 to 4552 |  | 0.76 | — |
+| chart | threads | 10 | 4770 | not measured | — | 4668 to 4824 |  | 0.64 | — |
+| chart | processes | 1 | 748 | 144 | 5.21× | 741 to 751 | 143 to 144 | 1.00 | 1.00 |
+| chart | processes | 2 | 1453 | 285 | 5.10× | 1447 to 1485 | 284 to 285 | 0.97 | 0.99 |
+| chart | processes | 4 | 2917 | 561 | 5.20× | 2874 to 2930 | 556 to 565 | 0.97 | 0.98 |
+| chart | processes | 8 | 4777 | 913 | 5.23× | 4566 to 4846 | 904 to 917 | 0.80 | 0.79 |
+| chart | processes | 10 | 5062 | 970 | 5.22× | 5035 to 5275 | 913 to 975 | 0.68 | 0.67 |
+| day | threads | 1 | 1724 | 83.7 | 20.61× | 1677 to 1740 | 83.3 to 85.0 | 1.00 | 1.00 |
+| day | threads | 2 | 3123 | not measured | — | 3091 to 3130 |  | 0.91 | — |
+| day | threads | 4 | 5902 | not measured | — | 5775 to 6026 |  | 0.86 | — |
+| day | threads | 8 | 9015 | not measured | — | 8997 to 9134 |  | 0.65 | — |
+| day | threads | 10 | 10115 | not measured | — | 9781 to 10503 |  | 0.59 | — |
+| day | processes | 1 | 1739 | 84.7 | 20.54× | 1737 to 1741 | 83.0 to 84.7 | 1.00 | 1.00 |
+| day | processes | 2 | 3403 | 167 | 20.38× | 3397 to 3442 | 166 to 167 | 0.98 | 0.99 |
+| day | processes | 4 | 6816 | 331 | 20.57× | 6764 to 6817 | 325 to 331 | 0.98 | 0.98 |
+| day | processes | 8 | 11232 | 539 | 20.84× | 11167 to 11287 | 537 to 540 | 0.81 | 0.80 |
+| day | processes | 10 | 12169 | 582 | 20.92× | 12160 to 12273 | 577 to 590 | 0.70 | 0.69 |
+| full | threads | 1 | 47.3 | 18.3 | 2.58× | 47.0 to 47.7 | 18.0 to 18.7 | 1.00 | 1.00 |
+| full | threads | 2 | 92.0 | not measured | — | 91.3 to 92.0 |  | 0.97 | — |
+| full | threads | 4 | 176 | not measured | — | 175 to 180 |  | 0.93 | — |
+| full | threads | 8 | 300 | not measured | — | 286 to 303 |  | 0.79 | — |
+| full | threads | 10 | 326 | not measured | — | 321 to 331 |  | 0.69 | — |
+| full | processes | 1 | 47.7 | 19.0 | 2.51× | 47.7 to 47.7 | 19.0 to 19.3 | 1.00 | 1.00 |
+| full | processes | 2 | 92.0 | 37.0 | 2.49× | 91.3 to 93.3 | 36.7 to 37.3 | 0.97 | 0.97 |
+| full | processes | 4 | 187 | 73.3 | 2.55× | 187 to 187 | 73.0 to 74.0 | 0.98 | 0.96 |
+| full | processes | 8 | 304 | 108 | 2.82× | 303 to 305 | 107 to 115 | 0.80 | 0.71 |
+| full | processes | 10 | 332 | 117 | 2.84× | 322 to 335 | 113 to 121 | 0.70 | 0.62 |
 
 Not measured, and why:
 
-- the baseline, `chart` on 2 threads: Entity not found: RASHI/undefined
-- the baseline, `chart` on 4 threads: died of SIGABRT: nothing on stderr
+- the baseline, `chart` on 2 threads: died of SIGSEGV: nothing on stderr
+- the baseline, `chart` on 4 threads: died of SIGSEGV: nothing on stderr
 - the baseline, `chart` on 8 threads: died of SIGSEGV: nothing on stderr
-- the baseline, `chart` on 10 threads: died of SIGTRAP: nothing on stderr
-- the baseline, `day` on 2 threads: died of SIGTRAP: nothing on stderr
+- the baseline, `chart` on 10 threads: died of SIGSEGV: nothing on stderr
+- the baseline, `day` on 2 threads: died of SIGABRT: nothing on stderr
 - the baseline, `day` on 4 threads: died of SIGSEGV: nothing on stderr
 - the baseline, `day` on 8 threads: died of SIGSEGV: nothing on stderr
-- the baseline, `day` on 10 threads: died of SIGABRT: 10: day (file:///Users/iamkrishnaa/Projects/Softup/joishi/joishi-backend/scripts/ab-adapter.mjs:129:10)
-- the baseline, `full` on 2 threads: died of SIGSEGV: nothing on stderr
-- the baseline, `full` on 4 threads: Entity not found: RASHI/undefined
-- the baseline, `full` on 8 threads: died of SIGABRT: nothing on stderr
+- the baseline, `day` on 10 threads: died of SIGABRT: nothing on stderr
+- the baseline, `full` on 2 threads: Entity not found: RASHI/undefined
+- the baseline, `full` on 4 threads: died of SIGABRT: nothing on stderr
+- the baseline, `full` on 8 threads: died of SIGSEGV: nothing on stderr
 - the baseline, `full` on 10 threads: died of SIGSEGV: nothing on stderr
 
 ### The tail of a sustained run, per answer in µs
 
-One thread, each side in a process of its own; a percentile is the median of the windows' with the fastest and slowest. Answers: `chart` 22393 through the SDK and 4265 through the baseline; `day` 51975 through the SDK and 2551 through the baseline; `full` 1430 through the SDK and 583 through the baseline.
+One thread, each side in a process of its own; a percentile is the median of the windows' with the fastest and slowest. Answers: `chart` 22483 through the SDK and 4295 through the baseline; `day` 52091 through the SDK and 2545 through the baseline; `full` 1433 through the SDK and 586 through the baseline.
 
 | percentile | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest |
 |---|---:|---:|---:|---:|---:|
-| chart, p50 | 1315 | 6981 | 0.19× | 1299 to 1335 | 6931 to 7008 |
-| chart, p95 | 1461 | 8403 | 0.17× | 1446 to 1505 | 8366 to 8536 |
-| chart, p99 | 2088 | 8883 | 0.24× | 1943 to 2822 | 8798 to 9228 |
-| day, p50 | 565 | 11767 | 0.05× | 562 to 568 | 11704 to 11835 |
-| day, p95 | 668 | 12663 | 0.05× | 667 to 691 | 12531 to 12706 |
-| day, p99 | 887 | 13189 | 0.07× | 880 to 1050 | 13066 to 16406 |
-| full, p50 | 20670 | 50461 | 0.41× | 20577 to 20781 | 49300 to 51604 |
-| full, p95 | 22797 | 65890 | 0.35× | 22523 to 23699 | 63453 to 69426 |
-| full, p99 | 23996 | 72511 | 0.33× | 22833 to 32219 | 71036 to 91174 |
+| chart, p50 | 1315 | 6943 | 0.19× | 1294 to 1336 | 6902 to 6974 |
+| chart, p95 | 1451 | 8356 | 0.17× | 1418 to 1530 | 8315 to 8442 |
+| chart, p99 | 2070 | 8826 | 0.23× | 2045 to 2210 | 8738 to 9067 |
+| day, p50 | 564 | 11777 | 0.05× | 560 to 569 | 11731 to 11889 |
+| day, p95 | 663 | 12689 | 0.05× | 653 to 687 | 12580 to 12763 |
+| day, p99 | 885 | 13174 | 0.07× | 874 to 930 | 13046 to 13233 |
+| full, p50 | 20643 | 50198 | 0.41× | 20494 to 20783 | 49233 to 51259 |
+| full, p95 | 22803 | 65070 | 0.35× | 22355 to 23936 | 62641 to 65502 |
+| full, p99 | 23804 | 71378 | 0.33× | 22771 to 28210 | 69801 to 74698 |
 
 ### Cold start, in ms
 
 | phase | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest |
 |---|---:|---:|---:|---:|---:|
-| open (from the process's start to the side being ready, the import and the engine or context included) | 30.5 | 678 | 0.05× | 29.2 to 31.0 | 671 to 685 |
-| first (the first chart) | 25.9 | 33.8 | 0.77× | 25.3 to 27.1 | 33.0 to 34.5 |
-| process (the whole process, from spawn to exit) | 144 | 803 | 0.18× | 140 to 145 | 795 to 812 |
+| open (from the process's start to the side being ready, the import and the engine or context included) | 31.5 | 674 | 0.05× | 30.0 to 32.7 | 667 to 679 |
+| first (the first chart) | 40.7 | 36.4 | 1.12× | 39.6 to 61.4 | 35.7 to 38.6 |
+| process (the whole process, from spawn to exit) | 161 | 802 | 0.20× | 157 to 181 | 795 to 811 |
 
 ### Memory over 10000 `chart` requests, after 200 to warm
 
 | measure | SDK | baseline | SDK ÷ baseline | SDK fastest to slowest | baseline fastest to slowest |
 |---|---:|---:|---:|---:|---:|
-| peak-rss (the peak resident set over the process's life), MB | 187 | 297 | 0.63× | 186 to 193 | 297 to 299 |
-| heap (the heap and external bytes, settled, after the workload), MB | 8.97 | 46.0 | 0.19× | 8.97 to 8.97 | 46.0 to 46.2 |
-| heap-growth (their growth over the workload), KB | -1037 | 221 | -4.69× | -1037 to -1036 | 221 to 388 |
+| peak-rss (the peak resident set over the process's life), MB | 196 | 301 | 0.65× | 194 to 197 | 299 to 301 |
+| heap (the heap and external bytes, settled, after the workload), MB | 9.00 | 46.2 | 0.19× | 9.00 to 9.00 | 46.2 to 46.2 |
+| heap-growth (their growth over the workload), KB | -1045 | 381 | -2.74× | -1045 to -1045 | 381 to 381 |
 
 ### Agreement and accuracy
 
@@ -159,6 +165,7 @@ The share of facts on which the two sides agree, exactly or within the field's t
 | gochar | 81.7% of 2779 | 98.8% of 2779 | Swiss Ephemeris (2) | neither: SDK 100.0% `timed`, baseline 100.0% | convention: the ayanamsha's basis: `timed` takes the mean and the baseline the nutated, about 12″ apart; under `same`, a birth cast from its place and its transits from the Earth's centre on one context (`gochar.transit_centre = GEOCENTRIC`, crux C778), the transits agree to a hundredth of an arcsecond and every bindu agrees; what differs is the vedha of Phaladeepika ch. 26, all 33 misses: the nodes take the Sun's pairs (v. 2, crux C136) where the baseline gives them Mars's for the 3rd and the 6th, and never obstruct each other (C140), 20 of them; Venus's 11th and 12th pair with the 3rd and the 6th (v. 8), 9; and the Sun and Saturn, the Moon and Mercury do not obstruct each other (vv. 3 to 6), where the baseline exempts the Sun and the Moon, 4 |
 | sadeSati | 7.6% of 328 | 100.0% of 328 | agreement only | — | convention: the ayanamsha's basis, as `gochar`: 12″ of Saturn moves an edge by hours; under `same` every edge agrees within two seconds |
 | batch | 65.2% of 2660070 | 99.6% of 2660010 | Swiss Ephemeris (2) | the baseline: SDK 99.8% `timed`, baseline 100.0% | convention: as `full`, at ten instants |
+| muhurta | 44.5% of 1155 | 46.7% of 1157 | agreement only | — | method: 20 of 54 rankings agree rank for rank under `same`, 19 of them with no window on either side; no miss is the SDK's. The day: the baseline admits or bars a whole day by the star and the solar month at sunrise and samples its seasons once a day at 0h UT, barring the day whose local midnight they hold; the SDK judges each window by its own (crux C783), so over 47 searches 224 days the baseline bars by the star at sunrise keep the SDK's windows after the star changes, 14 it keeps lose every window to a star or a kaala, 32 differ at a season's edge (Kharmas 28) and 2 by the solar month. Chaturmas by the Sun's sign (C166), 20 days; Guru's and Shukra's asta seen heliacally at Kathmandu (C44, C164), 8. The day's score: the baseline's weekday is sunrise's UT date, the day before when the Sun rises before 05:45 at Kathmandu (C782), moving the weekday's 15 or 10 and Rahu kaala's 30; its five special-yoga tables are its own (C784). A window's score agrees on every day whose score does, its sky geocentric with the true node (C781) |
 
 #### Agreement by field
 
@@ -236,6 +243,7 @@ A continuous field's median and largest difference are in its unit; `same`'s fir
 | batch | ayurdaya | y, 0.010 | 33.8% of 25440; median 0.748, largest 81.0 | 72.1% of 25440; median 0.000, largest 74.8 | 0 | worst c034 `ayurdaya/nisargayu/total@9` |
 | batch | maraka | exact | 99.8% of 1060 | 100.0% of 1060 | 0 |  |
 | batch | balarishta | exact | 97.0% of 1060 | 97.4% of 1060 | 0 | c007 `balarishta/standing@2` true against false; c008 `balarishta/present@7` false against true; c008 `balarishta/present@8` false against true |
+| muhurta | muhurta | exact | 44.5% of 1155 | 46.7% of 1157 | 1530 | c001 `muhurta/general/ranking` "2020-04-15#1=63 2020-05-08#13=55 2020-05-08#2b=46 2020-05-01#13=46 2020-05-03#13=34 2020-05-05#4=33 2020-05-04#0=30 2020-05-04#7=30 2020-05-07#0=30 2020-04-26#9=30 2020-04-27#0=30 2020-04-20#14=30 2020-05-05#3=27 2020-04-25#10=24 2020-04-22#1=24 2020-04-27#7=21 2020-05-02#6=17 2020-04-14#11=16 2020-04-15#3=13 2020-04-26#3=11 2020-05-06#10=10 2020-04-21#4=10 2020-05-06#9=6 2020-05-02#11=0 2020-04-25#11=0 2020-04-14#12=0 2020-04-20#7=0 2020-04-21#12=0 2020-04-22#3=0 2020-05-03#15=0" against "2020-05-05#12=98 2020-04-15#1=78 2020-04-15#10=55 2020-05-05#4=48 2020-05-04#0=30 2020-05-04#7=30 2020-04-27#0=30 2020-04-26#9=29 2020-04-22#1=24 2020-04-22#10=18 2020-05-02#6=12 2020-04-21#4=10 2020-04-27#7=7 2020-05-07#8=5 2020-04-26#3=1 2020-05-02#11=0 2020-04-21#12=0 2020-05-07#15=0"; c001 `muhurta/general/count` 30 against 18; c001 `muhurta/general/window/2020-04-15#1` 63 against 78 |
 
 #### Against the references
 
