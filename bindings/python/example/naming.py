@@ -36,7 +36,7 @@ def main() -> None:
     with teistro.context(locale="en-Latn") as ctx:
         # ── The birth's syllable ───────────────────────────────────────
         # The Moon in Ardra's third pada. Its syllable is ङ, which no name
-        # begins with, so the Nepali patro glosses it with ग: a
+        # begins with, so a patro printed in Nepal glosses it with ग: a
         # substitute, listed after the cell's own letter.
         birth: Birth = {"nakshatra": "ARDRA", "pada": 3}
         names = ctx.naming.of(birth)

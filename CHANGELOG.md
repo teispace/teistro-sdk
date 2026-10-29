@@ -443,7 +443,7 @@ settings hash moves), and `name_check` answers as before.
   read is listed in `refused`, never dropped.
 - `NameBook::suggest(Birth, &SuggestFilter, NamingRules)` answers the
   names that reach the birth pada: by its own letter, a paired letter
-  (ब for व, श for स), or the substitute the Nepali patro lists for ङ, ण
+  (ब for व, श for स), or the substitute a patro printed in Nepal lists for ङ, ण
   and ञ (C770). They come in cakra order, then the book's, each with its
   clauses under the request's rules. `SuggestFilter` keeps by `sex` (a
   name the book gives no sex is anyone's), by syllable count and by

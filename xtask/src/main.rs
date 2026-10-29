@@ -895,8 +895,11 @@ fn check_docs() -> i32 {
     let mut failures = Vec::new();
     failures.extend(check_links(&root, &files));
     failures.extend(check_status_lines(&root, &files));
-    failures.extend(check_forbidden(&root, &files));
-    failures.extend(check_forbidden(&root, &published));
+    let mut scanned = tracked_text_files(&root);
+    if scanned.is_empty() {
+        scanned = files.iter().chain(&published).cloned().collect();
+    }
+    failures.extend(check_forbidden(&root, &scanned));
     failures.extend(check_status_tracker(&root));
     for failure in &failures {
         println!("FAIL  {failure}");
@@ -1049,22 +1052,65 @@ fn check_status_lines(root: &Path, files: &[PathBuf]) -> Vec<String> {
     failures
 }
 
-/// Internal product and company names, and the name of the retired
-/// planning corpus that preceded this repository, stay out of this public
-/// repository; the predecessor engine is referred to as "the baseline
-/// engine" and the corpus is not referred to at all.
+/// Internal product and company names, the name of the retired planning
+/// corpus that preceded this repository, and a consumer's festival source
+/// stay out of this public repository: the predecessor engine is "the
+/// baseline engine", the corpus is not referred to at all, and the source
+/// is "a patro printed in Nepal". Every tracked text file is read, not only
+/// the Markdown, since a doc comment reaches every binding's generated code.
+const FORBIDDEN: &[&str] = &[
+    r"(?i)joishi",
+    r"(?i)softup",
+    r"@jyotisha",
+    r"(?i)pramana",
+    r"(?i)nepali[ _-]?patro",
+];
+
+/// The one file allowed to spell the forbidden terms: this one, which lists them.
+const FORBIDDEN_LIST: &str = "xtask/src/main.rs";
+
+/// The forbidden terms as one expression, for a single file's check.
+fn forbidden_regex() -> Regex {
+    Regex::new(
+        &FORBIDDEN
+            .iter()
+            .map(|p| format!("(?:{p})"))
+            .collect::<Vec<_>>()
+            .join("|"),
+    )
+    .expect("valid regex")
+}
+
+/// Every text file git tracks, but the forbidden list's own file; the
+/// corpus submodule is its own repository and is checked by its own gate.
+/// Empty where git cannot list them.
+fn tracked_text_files(root: &Path) -> Vec<PathBuf> {
+    let Ok(out) = Command::new("git")
+        .args(["ls-files", "-z"])
+        .current_dir(root)
+        .output()
+    else {
+        return Vec::new();
+    };
+    String::from_utf8_lossy(&out.stdout)
+        .split('\0')
+        .filter(|path| !path.is_empty() && *path != FORBIDDEN_LIST)
+        .map(|path| root.join(path))
+        .filter(|path| path.is_file() && fs::read_to_string(path).is_ok())
+        .collect()
+}
+
 fn check_forbidden(root: &Path, files: &[PathBuf]) -> Vec<String> {
-    let patterns = [r"(?i)joishi", r"(?i)softup", r"@jyotisha", r"(?i)pramana"];
-    let compiled: Vec<Regex> = patterns
+    let compiled: Vec<Regex> = FORBIDDEN
         .iter()
         .map(|pattern| Regex::new(pattern).expect("valid regex"))
         .collect();
     let mut failures = Vec::new();
-    for md in files {
-        let text = read(md);
-        for (pattern, regex) in patterns.iter().zip(&compiled) {
+    for file in files {
+        let text = read(file);
+        for (pattern, regex) in FORBIDDEN.iter().zip(&compiled) {
             if regex.is_match(&text) {
-                failures.push(format!("forbidden term {pattern} in {}", rel(root, md)));
+                failures.push(format!("forbidden term {pattern} in {}", rel(root, file)));
             }
         }
     }
@@ -1169,7 +1215,7 @@ fn check_fixtures() -> i32 {
             }
         }
     }
-    let forbidden = Regex::new(r"(?i)joishi|softup|@jyotisha|pramana").expect("valid regex");
+    let forbidden = forbidden_regex();
     if forbidden.is_match(&read(&base.join("manifest.json"))) {
         failures.push("forbidden term in fixtures/baseline/manifest.json".to_string());
     }
@@ -1199,7 +1245,7 @@ fn check_fixture_file(
 ) -> Vec<String> {
     let mut failures = Vec::new();
     let text = read(path);
-    let forbidden = Regex::new(r"(?i)joishi|softup|@jyotisha|pramana").expect("valid regex");
+    let forbidden = forbidden_regex();
     if forbidden.is_match(&text) {
         failures.push(format!("forbidden term in {file}"));
     }

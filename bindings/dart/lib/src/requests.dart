@@ -4125,7 +4125,7 @@ enum FinalA implements _Keyed {
 
 /// Whether a pada whose letter no name begins with lists a substitute (C770).
 enum NasalInitial implements _Keyed {
-  /// ङ, ण and ञ each list their varga's third letter (ग, ड, ज) as a substitute initial, as the Nepali patro glosses them.
+  /// ङ, ण and ञ each list their varga's third letter (ग, ड, ज) as a substitute initial, as a patro printed in Nepal glosses them.
   vargaThird('VARGA_THIRD'),
   /// No substitute: the cell's own letter only, as *Muhurta Chintamani*'s commentary gives it.
   none('NONE');
