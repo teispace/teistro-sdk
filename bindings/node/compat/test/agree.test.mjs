@@ -32,7 +32,7 @@ import {
 } from '@teistro/sdk';
 
 import { compat } from '@teistro/compat';
-import { BASELINE_DASHAS, FOUNDATION, FULL, MUHURTA_FRAME, READINGS, nativeOf } from '../lib/forward.js';
+import { BASELINE_DASHAS, FOUNDATION, FULL, READINGS, nativeOf } from '../lib/forward.js';
 
 const CHARTS = new URL('../../../../fixtures/baseline/charts/', import.meta.url);
 
@@ -94,12 +94,13 @@ class Direct {
     const key = JSON.stringify(snapshot);
     let kept = this.#open.get(key);
     if (kept === undefined) {
-      const { natal, kp } = this.#translator.recordedSettings(snapshot);
+      const { natal, kp, muhurta } = this.#translator.recordedSettings(snapshot);
       const open = (opening) => new Context({ profile: opening.profile, settings: opening.settings, ephemeris: 'BUILTIN' });
       const variants = new Map();
       kept = {
         natal: open(natal),
         kp: open(kp),
+        muhurta: open(muhurta),
         variants,
         /** The natal opening with `patch`'s groups laid over its own. */
         variant: (name, patch) => {
@@ -117,10 +118,11 @@ class Direct {
   }
 
   dispose() {
-    for (const { natal, kp, variants } of this.#open.values()) {
+    for (const { natal, kp, muhurta, variants } of this.#open.values()) {
       for (const context of variants.values()) context.dispose();
       natal.dispose();
       kp.dispose();
+      muhurta.dispose();
     }
     this.#translator.dispose();
   }
@@ -328,8 +330,8 @@ const ROWS = {
   },
   muhurta: {
     shim: (s, c, b) => s.muhurta(c.birth, c.snapshot, { from: b.civil.date, to: later(b.civil.date, 6), search: SEARCH }),
-    sdk: ({ natal, variant }, b) =>
-      variant('muhurta', MUHURTA_FRAME).almanac.of({
+    sdk: ({ natal, muhurta }, b) =>
+      muhurta.almanac.of({
         from: b.civil.date,
         to: later(b.civil.date, 6),
         ...dayAt(natal, b, b.civil.date),

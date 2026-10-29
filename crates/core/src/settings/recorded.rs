@@ -879,8 +879,8 @@ pub struct Note {
 }
 
 /// What a stored snapshot means to the SDK: a natal context, a KP context,
-/// the ephemeris the natal one needs at the front of its chain, the
-/// locale, and the fields read and set aside.
+/// a muhurta context, the ephemeris the natal one needs at the front of
+/// its chain, the locale, and the fields read and set aside.
 ///
 /// Transits need no context of their own: `conformance-baseline` casts
 /// them from the Earth's centre, as the baseline does (crux C778).
@@ -893,6 +893,8 @@ pub struct Note {
 /// assert_eq!(translated.ephemeris, Some(RequiredEphemeris::SuryaSiddhanta));
 /// assert_eq!(translated.locale, Some("ne-Deva-NP"));
 /// assert_eq!(translated.kp.profile.as_str(), "kp-default");
+/// // A muhurta is searched on the natal frame from the Earth's centre with the true node.
+/// assert_eq!(translated.muhurta.settings.frame.node, Some(teistro_core::settings::Node::True));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize)]
@@ -905,6 +907,11 @@ pub struct Recorded {
     /// ruling planets (how many, and whose weekday), as the baseline casts
     /// KP.
     pub kp: Opening,
+    /// The context a muhurta is searched on: the natal opening cast from
+    /// the Earth's centre with the true node, the frame the baseline
+    /// searches in whatever its charts are cast in (crux C781). Opened on
+    /// the natal context's ephemeris chain.
+    pub muhurta: Opening,
     /// The ephemeris the natal context needs at the front of its chain,
     /// when it needs one.
     pub ephemeris: Option<RequiredEphemeris>,
@@ -1086,6 +1093,9 @@ pub fn recorded(snapshot: &Snapshot) -> Result<Recorded, Refused> {
     kp.day.polar_day_policy = Some(settings.day.polar_day_policy);
     kp.kp.ruling_count = Some(settings.kp.ruling_count);
     kp.kp.day_lord_day = Some(settings.kp.day_lord_day);
+    let mut muhurta = natal.clone();
+    muhurta.frame.node = Some(Node::True);
+    muhurta.frame.centre = Some(Centre::Geocentric);
     Ok(Recorded {
         natal: Opening {
             profile: ProfileId::new(PROFILE),
@@ -1094,6 +1104,10 @@ pub fn recorded(snapshot: &Snapshot) -> Result<Recorded, Refused> {
         kp: Opening {
             profile: ProfileId::new(KP_PROFILE),
             settings: kp,
+        },
+        muhurta: Opening {
+            profile: ProfileId::new(PROFILE),
+            settings: muhurta,
         },
         ephemeris,
         locale,

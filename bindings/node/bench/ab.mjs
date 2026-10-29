@@ -41,7 +41,7 @@ export { REQUESTS, SIDES, inputs } from './ab-inputs.mjs';
  * The SDK calls each request makes: `@teistro/compat`'s, so that every
  * timed request is a shim call (`03-design/compat-shim.md` §6.4).
  */
-const { MUHURTA_FRAME, READINGS, nativeOf, requests } = await import('../compat/lib/forward.js');
+const { READINGS, nativeOf, requests } = await import('../compat/lib/forward.js');
 
 /** The fewest rounds a figure is taken from. */
 export const ROUNDS = 15;
@@ -319,9 +319,11 @@ export function sdkSide(ctx, kp, version, asked = {}, elect = () => ctx) {
  *
  * `same` is what the corpus's `default` snapshot means, read as the shim
  * reads a stored one (`recordedSettings`, `03-design/compat-shim.md` §4):
- * its natal and KP openings, KP on the natal frame with the baseline's
- * ruling planets (cruxes C150, C151), a transit cast from the Earth's
- * centre (C778); and the readings the shim asks for where a request names
+ * its natal, KP and muhurta openings, KP on the natal frame with the
+ * baseline's ruling planets (cruxes C150, C151), a transit cast from the
+ * Earth's centre (C778), a muhurta searched from the Earth's centre with
+ * the true node, though the charts are topocentric with the mean one
+ * (C781); and the readings the shim asks for where a request names
  * its own (`forward.js`'s `READINGS`: C104, C285, C286, C303, C779).
  */
 export const CONVENTIONS = {
@@ -331,25 +333,21 @@ export const CONVENTIONS = {
   },
   same: {
     recorded: defaultSnapshot,
-    // The baseline casts a muhurta's sky from the Earth's centre with the
-    // true node, though its charts are topocentric with the mean one, and
-    // no setting moves the muhurta search alone (crux C781): `muhurta` is
-    // searched on a context of that frame, opened when first asked for.
-    muhurtaSettings: MUHURTA_FRAME,
     asked: READINGS,
   },
 };
 
 /**
- * A convention's natal and KP openings, `{ profile, settings }` each: its
- * own, or what its stored snapshot translates to.
+ * A convention's natal and KP openings, `{ profile, settings }` each, and
+ * where a stored snapshot says so its muhurta one: its own, or what its
+ * stored snapshot translates to.
  */
 function openings(c) {
   if (c.recorded === undefined) return c;
   const translator = new Context({ ephemeris: 'NONE' });
   try {
-    const { natal, kp } = translator.recordedSettings(c.recorded());
-    return { natal, kp };
+    const { natal, kp, muhurta } = translator.recordedSettings(c.recorded());
+    return { natal, kp, muhurta };
   } finally {
     translator.dispose();
   }
@@ -370,7 +368,7 @@ function merged(a, b) {
  */
 export function openSdk(ephemeris, version, convention = 'timed', patch = {}) {
   const c = CONVENTIONS[convention];
-  const { natal, kp: kpOpening } = openings(c);
+  const { natal, kp: kpOpening, muhurta } = openings(c);
   const ctx = new Context({ profile: natal.profile, ephemeris, settings: merged(natal.settings, patch) });
   // Opened on first use, as the baseline builds its applied engines, so a
   // cold start pays for what its first chart reads and no more (§6).
@@ -378,13 +376,8 @@ export function openSdk(ephemeris, version, convention = 'timed', patch = {}) {
   const kpContext = () =>
     (kp ??= new Context({ profile: kpOpening.profile, ephemeris, settings: merged(kpOpening.settings, patch) }));
   let elected;
-  const electContext = c.muhurtaSettings
-    ? () =>
-        (elected ??= new Context({
-          profile: natal.profile,
-          ephemeris,
-          settings: merged(merged(natal.settings, c.muhurtaSettings), patch),
-        }))
+  const electContext = muhurta
+    ? () => (elected ??= new Context({ profile: muhurta.profile, ephemeris, settings: merged(muhurta.settings, patch) }))
     : () => ctx;
   return {
     side: sdkSide(ctx, kpContext, version, c.asked, electContext),

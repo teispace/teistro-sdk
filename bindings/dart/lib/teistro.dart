@@ -2148,8 +2148,10 @@ final class Context {
   String get settingsHash => _hex(_inner.settingsHash().bytes);
 
   /// A stored baseline settings snapshot translated into what a context
-  /// opens with (`03-design/compat-shim.md` §4): `natal` and `kp`, each a
-  /// `{profile, settings}` to open a context with, the `ephemeris` the
+  /// opens with (`03-design/compat-shim.md` §4): `natal`, `kp` and
+  /// `muhurta` (the natal one from the Earth's centre with the true node,
+  /// which a muhurta is searched on), each a `{profile, settings}` to open
+  /// a context with, the `ephemeris` the
   /// natal chain needs at its front (`SURYA_SIDDHANTA` or `null`), the
   /// `locale`, and the `notes` on every field read and set aside. It reads
   /// none of this context's settings.

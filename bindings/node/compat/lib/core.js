@@ -188,9 +188,10 @@ export function merged(a, b) {
   return out;
 }
 
-/** Disposes a snapshot's kept contexts: its variants, its KP and its natal one. */
-function release({ natal, kp, variants }) {
+/** Disposes a snapshot's kept contexts: its variants, its muhurta, its KP and its natal one. */
+function release({ natal, kp, muhurta, variants }) {
   for (const context of variants.values()) context.dispose();
+  muhurta?.dispose();
   kp?.dispose();
   natal.dispose();
 }
@@ -273,7 +274,7 @@ export class Contexts {
     }
     const locale = recorded.locale ?? this.#locale;
     const translation = Object.freeze({
-      key: JSON.stringify([recorded.natal, recorded.kp, recorded.ephemeris, locale ?? null]),
+      key: JSON.stringify([recorded.natal, recorded.kp, recorded.muhurta, recorded.ephemeris, locale ?? null]),
       recorded,
       locale,
     });
@@ -298,6 +299,8 @@ export class Contexts {
       natal: this.#context(recorded.natal, natalChain, locale),
       kp: null,
       opening: () => this.#context(recorded.kp, this.#chain, locale),
+      muhurta: null,
+      searching: () => this.#context(recorded.muhurta, natalChain, locale),
       variants: new Map(),
       variant: (patch) => this.#context({ ...recorded.natal, settings: merged(recorded.natal.settings, patch) }, natalChain, locale),
     };
@@ -333,11 +336,22 @@ export class Contexts {
   }
 
   /**
+   * The context a snapshot's muhurta is searched on, opened on first use:
+   * its natal opening cast from the Earth's centre with the true node, as
+   * the baseline searches (`recordedSettings`'s `muhurta`, crux C781), on
+   * the natal context's ephemeris chain.
+   */
+  muhurta(snapshot) {
+    const entry = this.#entry(snapshot);
+    entry.muhurta ??= entry.searching();
+    return entry.muhurta;
+  }
+
+  /**
    * The natal context a snapshot means with `patch` laid over its
    * settings, opened on first use and kept beside it under `name`: a
-   * convention the baseline casts one computation in, such as the frame
-   * its muhurta search reads, or a second reckoning to read beside the
-   * first. The patch is the same whenever `name` is.
+   * second reckoning to read beside the first. The patch is the same
+   * whenever `name` is.
    *
    * @param {string} name
    * @param {object} patch a settings patch, its groups laid over the natal ones

@@ -5220,7 +5220,8 @@ impl Context {
 
     /// Translates a stored baseline settings snapshot and answers with the
     /// translation as canonical JSON: the natal context's profile and patch,
-    /// the KP context's, the ephemeris the natal chain needs at its front
+    /// the KP context's, the muhurta context's (the natal one from the Earth's
+    /// centre with the true node), the ephemeris the natal chain needs at its front
     /// (`SURYA_SIDDHANTA` or `null`), the locale and every field read and set
     /// aside as a note (`03-design/compat-shim.md` §4.1). The context records
     /// a refusal; the translation reads none of its settings.

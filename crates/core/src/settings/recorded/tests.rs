@@ -142,8 +142,31 @@ fn each_translation_of_one_row_opens_both_contexts() {
         if let Ok(translated) = of(&path, value) {
             translated.natal.resolve().unwrap();
             translated.kp.resolve().unwrap();
+            translated.muhurta.resolve().unwrap();
         }
     }
+}
+
+#[test]
+fn the_muhurta_context_is_the_natal_one_from_the_centre_with_the_true_node() {
+    // A topocentric mean-node chart and a Placidus one: the muhurta
+    // opening moves the observer and the node and nothing else (C781).
+    let snapshot = Snapshot::from_json(
+        r#"{"useTopocentric": true, "nodeType": "mean", "houseSystem": "placidus", "ayanamsaId": 3}"#,
+    )
+    .unwrap();
+    let translated = recorded(&snapshot).unwrap();
+    assert_eq!(translated.muhurta.profile, translated.natal.profile);
+    let natal = translated.natal.resolve().unwrap().settings;
+    let muhurta = translated.muhurta.resolve().unwrap().settings;
+    assert_eq!(
+        (muhurta.frame.node, muhurta.frame.centre),
+        (Node::True, Centre::Geocentric)
+    );
+    let mut moved = natal.clone();
+    moved.frame.node = Node::True;
+    moved.frame.centre = Centre::Geocentric;
+    assert_eq!(differences(&muhurta, &moved), Vec::<String>::new());
 }
 
 #[test]

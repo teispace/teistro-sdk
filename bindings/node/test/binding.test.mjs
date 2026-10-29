@@ -3338,7 +3338,11 @@ test('a stored baseline settings snapshot translates into the contexts it opens'
   const ctx = context({ testProvider: false, ephemeris: 'NONE' });
   const translated = ctx.recordedSettings({ ayanamsaId: 3, houseSystem: 'placidus', engineVersion: '1.8.0' });
   assert.ok(Object.isFrozen(translated.natal.settings), 'frozen');
-  assert.deepEqual([translated.natal.profile, translated.kp.profile], ['conformance-baseline', 'kp-default']);
+  assert.deepEqual(
+    [translated.natal.profile, translated.kp.profile, translated.muhurta.profile],
+    ['conformance-baseline', 'kp-default', 'conformance-baseline'],
+  );
+  assert.deepEqual(translated.muhurta.settings.frame, { ...translated.natal.settings.frame, node: 'TRUE', centre: 'GEOCENTRIC' });
   assert.equal(translated.natal.settings.houses.placement_system, 'PLACIDUS');
   assert.deepEqual([translated.ephemeris, translated.locale], [null, null]);
   assert.deepEqual(translated.notes.map((note) => note.field), ['engineVersion']);
