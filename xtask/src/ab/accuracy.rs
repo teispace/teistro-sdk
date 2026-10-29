@@ -140,12 +140,16 @@ const CAUSES: [(&str, Cause, &str); 14] = [
     (
         "milan",
         Cause::Method,
-        "the koota tables: Vashya, Gana, Yoni and Bhakoot score apart under `same`, and the \
-         baseline's Stree-deergha agrees beyond the 10th or on the bride's own star (crux \
-         C779), where *Kalaprakasika* prints beyond the 13th; the Kuja dosha, under `timed` the verse's (Mars from the lagna in five \
-         houses, *Manasagari*, cruxes C285, C286) where the baseline reads three references \
-         and six houses, and under `same` the baseline's own cancellations, three of nine, \
-         which lift a dosha the SDK keeps",
+        "the koota tables: under `same` Vashya (C260), Gana (C262), Yoni (C261) and Bhakoot \
+         (C263) score apart; the baseline gives a lifted nadi its 8 points where the SDK reports \
+         the lift beside the points, which it never moves (C283, C284: c009, c019, c048); and \
+         it scores the Tara 0 for two stars nine apart, each the other's 10th and 19th, where \
+         the verse rejects only the 3rd, 5th and 7th of each nine (C780: c003, c014, c043). \
+         `same` asks the baseline's Stree-deergha (C779), so every porutham agrees. The Kuja \
+         dosha, under `timed` the verse's (Mars from the lagna in five houses, *Manasagari*, \
+         cruxes C285, C286) where the baseline reads three references and six houses, and \
+         under `same` the baseline's own cancellations, three of nine, which lift a dosha the \
+         SDK keeps (ten charts)",
     ),
     (
         "varsha",
@@ -170,13 +174,14 @@ const CAUSES: [(&str, Cause, &str); 14] = [
         "gochar",
         Cause::Convention,
         "the ayanamsha's basis: `timed` takes the mean and the baseline the nutated, about 12″ \
-         apart; under `same`, cast from the Earth's centre as the baseline casts a transit, the \
-         transits agree to a hundredth of an arcsecond and only c051's transit bindus differ; \
-         and the vedha of Phaladeepika ch. 26: the nodes take the Sun's pairs (v. 2, crux C136) \
-         where the baseline gives them Mars's for the 3rd and the 6th, never obstruct each other \
-         (C140), Venus's 11th and 12th pair with the 3rd and the 6th (v. 8), and the Sun and \
-         Saturn, the Moon and Mercury do not obstruct each other (vv. 3 to 6), where the \
-         baseline exempts the Sun and the Moon",
+         apart; under `same`, a birth cast from its place and its transits from the Earth's \
+         centre on one context (`gochar.transit_centre = GEOCENTRIC`, crux C778), the transits \
+         agree to a hundredth of an arcsecond and every bindu agrees; what differs is the vedha \
+         of Phaladeepika ch. 26, all 33 misses: the nodes take the Sun's pairs (v. 2, crux C136) \
+         where the baseline gives them Mars's for the 3rd and the 6th, and never obstruct each \
+         other (C140), 20 of them; Venus's 11th and 12th pair with the 3rd and the 6th (v. 8), \
+         9; and the Sun and Saturn, the Moon and Mercury do not obstruct each other (vv. 3 to \
+         6), where the baseline exempts the Sun and the Moon, 4",
     ),
     (
         "sadeSati",
@@ -189,10 +194,12 @@ const CAUSES: [(&str, Cause, &str); 14] = [
 
 /// The least share of compared facts each request agrees on, under
 /// `timed` and under `same`: the record's of 26 October 2026, to the
-/// tenth of a percent below; `full`'s, `milan`'s, `kp`'s, `gochar`'s and
-/// `batch`'s of 28 October, when drishti, longevity, the transits' vedha,
-/// the Kuja and marriage doshas and KP's significators and ruling planets
-/// joined the comparison, each share truncated rather than rounded.
+/// tenth of a percent below; `full`'s, `kp`'s and `batch`'s of 28
+/// October, when drishti, longevity, the transits' vedha, the Kuja and
+/// marriage doshas and KP's significators and ruling planets joined the
+/// comparison; `milan`'s and `gochar`'s under `same` of 29 October, when
+/// `same` cast its transits on its one context and asked the baseline's
+/// Stree-deergha; each share truncated rather than rounded.
 const AGREEMENT_FLOORS: [(&str, f64, f64); 14] = [
     ("chart", 0.545, 0.999),
     ("day", 0.991, 0.965),
@@ -202,10 +209,10 @@ const AGREEMENT_FLOORS: [(&str, f64, f64); 14] = [
     ("strength", 0.691, 0.986),
     ("dashas", 0.619, 1.0),
     ("month", 0.991, 1.0),
-    ("milan", 0.739, 0.819),
+    ("milan", 0.739, 0.832),
     ("varsha", 0.26, 0.243),
     ("kp", 0.808, 0.971),
-    ("gochar", 0.816, 0.984),
+    ("gochar", 0.816, 0.988),
     ("sadeSati", 0.076, 1.0),
     ("batch", 0.651, 0.996),
 ];
@@ -250,7 +257,9 @@ const REFERENCE_FLOORS: [(&str, &str, &str, &str, f64); 38] = [
     ("charak", "varsha", "sdk", "same", 0.875),
     ("charak", "varsha", "baseline", "timed", 0.375),
     ("kalaprakasika", "milan", "sdk", "timed", 1.0),
-    ("kalaprakasika", "milan", "sdk", "same", 1.0),
+    // `same` asks the baseline's Stree-deergha (C779), and so holds the
+    // baseline's share of the printed lists.
+    ("kalaprakasika", "milan", "sdk", "same", 0.921),
     ("kalaprakasika", "milan", "baseline", "timed", 0.921),
 ];
 
