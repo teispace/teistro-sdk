@@ -11,6 +11,7 @@
 
 use std::sync::atomic::{AtomicU32, Ordering};
 
+use teistro_core::catalogue::Ayanamsha;
 use teistro_ephemeris_kit::kit::{Bounds, run};
 use teistro_port_ephemeris::{
     Body, Capabilities, CellStatus, EphemerisProvider, Overrides, PositionColumns, PositionRequest,
@@ -41,6 +42,17 @@ enum Fault {
     WrongDeltaT,
     /// The identity has no name and the coverage is empty.
     BadCapabilities,
+    /// The identity has no version, and ayanamshas are listed with no
+    /// ayanamsha override to answer them.
+    UnversionedAyanamshas,
+    /// DUT1 is declared, and answers a number that is not one.
+    NotANumberDut1,
+    /// One cell's latitude is past the pole.
+    PastThePole,
+    /// Every distance is nought, for bodies that have one.
+    NoDistance,
+    /// Each call moves every longitude, and the provider says it may.
+    DeclaredDrifting,
 }
 
 struct Sabotaged {
@@ -70,7 +82,7 @@ impl EphemerisProvider for Sabotaged {
                     .collect(),
                 ..honest
             },
-            Fault::FailingDut1 => Capabilities {
+            Fault::FailingDut1 | Fault::NotANumberDut1 => Capabilities {
                 overrides: Overrides::DUT1,
                 ..honest
             },
@@ -84,6 +96,16 @@ impl EphemerisProvider for Sabotaged {
                 broken.jd_range = (broken.jd_range.1, broken.jd_range.0);
                 broken
             }
+            Fault::UnversionedAyanamshas => {
+                let mut broken = honest;
+                broken.identity.version.clear();
+                broken.ayanamshas = vec![Ayanamsha::Lahiri];
+                broken
+            }
+            Fault::DeclaredDrifting => Capabilities {
+                deterministic: false,
+                ..honest
+            },
             _ => honest,
         }
     }
@@ -109,11 +131,20 @@ impl EphemerisProvider for Sabotaged {
                 .unwrap_or(0.0);
             match self.fault {
                 Fault::NotANumber if index == 0 => *lon = f64::NAN,
-                Fault::Drifting => *lon += 1e-6 * f64::from(call),
+                Fault::Drifting | Fault::DeclaredDrifting => *lon += 1e-6 * f64::from(call),
                 Fault::BatchSized => *lon += 1e-6 * size,
                 Fault::Stepped => *lon += 0.01 * (jd * 1e4).floor().rem_euclid(2.0),
                 _ => {}
             }
+        }
+        match self.fault {
+            Fault::PastThePole => {
+                if let Some(lat) = columns.lat.first_mut() {
+                    *lat = 90.5;
+                }
+            }
+            Fault::NoDistance => columns.dist.fill(0.0),
+            _ => {}
         }
         if matches!(self.fault, Fault::DoubledSpeed) {
             for speed in &mut columns.lon_speed {
@@ -124,7 +155,10 @@ impl EphemerisProvider for Sabotaged {
     }
 
     fn dut1_seconds(&self, _jd_utc: f64) -> Result<f64, ProviderError> {
-        Err(ProviderError::invalid("no DUT1 here"))
+        match self.fault {
+            Fault::NotANumberDut1 => Ok(f64::NAN),
+            _ => Err(ProviderError::invalid("no DUT1 here")),
+        }
     }
 
     fn delta_t_seconds(&self, _jd_ut1: f64) -> Result<f64, ProviderError> {
@@ -146,6 +180,10 @@ fn every_fault_fails_the_check_named_for_it() {
         (Fault::FailingDut1, "override_dut1"),
         (Fault::WrongDeltaT, "override_delta_t"),
         (Fault::BadCapabilities, "capabilities"),
+        (Fault::UnversionedAyanamshas, "capabilities"),
+        (Fault::NotANumberDut1, "override_dut1"),
+        (Fault::PastThePole, "positions_finite_in_range"),
+        (Fault::NoDistance, "positions_finite_in_range"),
     ] {
         let report = run(&Sabotaged::new(fault), &Bounds::DEFAULT);
         let found = report
@@ -187,4 +225,37 @@ fn an_unoffered_body_reported_per_cell_passes() {
     let report = run(&Honest, &Bounds::DEFAULT);
     let check = report.check("unsupported_body_reported").unwrap();
     assert!(check.ran() && check.passed, "{}", check.detail);
+}
+
+/// A failure says what was wrong, each problem named: a check that
+/// failed without saying why would leave the adapter's author guessing.
+#[test]
+fn a_failure_names_each_problem_it_found() {
+    let report = run(
+        &Sabotaged::new(Fault::UnversionedAyanamshas),
+        &Bounds::DEFAULT,
+    );
+    let detail = &report.check("capabilities").unwrap().detail;
+    assert!(detail.contains("identity incomplete"), "{detail}");
+    assert!(
+        detail.contains("an ayanamsha list without the ayanamsha override"),
+        "{detail}"
+    );
+    let report = run(&Sabotaged::new(Fault::NotANumberDut1), &Bounds::DEFAULT);
+    let detail = &report.check("override_dut1").unwrap().detail;
+    assert!(detail.contains("answered NaN"), "{detail}");
+}
+
+/// A provider that declares itself non-deterministic is not failed for
+/// differing on a repeated request: the check passes and says why.
+#[test]
+fn a_declared_drift_passes_determinism_and_says_so() {
+    let report = run(&Sabotaged::new(Fault::DeclaredDrifting), &Bounds::DEFAULT);
+    let check = report.check("determinism").unwrap();
+    assert!(check.passed, "{}", check.detail);
+    assert!(
+        check.detail.contains("non-deterministic"),
+        "{}",
+        check.detail
+    );
 }
