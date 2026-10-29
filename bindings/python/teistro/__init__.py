@@ -15621,7 +15621,7 @@ def _varsha_json(varsha: Optional[VarshaRequest]) -> Optional[str]:
     written: Dict[str, Any] = dict(varsha)
     place = written.get("place")
     if isinstance(place, Mapping):
-        written["place"] = _annual_place(place)
+        written["place"] = _annual_place(place, "varsha")
     # The rule records are written in Python's own keys and read in the
     # boundary's, as the place is.
     for snake, camel in (
@@ -15670,7 +15670,7 @@ def _masa_pravesha_json(asked: Optional[MasaPraveshaRequest]) -> Optional[str]:
         return _record_json(asked, "masaPravesha", example)
     written: Dict[str, Any] = dict(asked)
     if isinstance(written.get("place"), Mapping):
-        written["place"] = _annual_place(written["place"])
+        written["place"] = _annual_place(written["place"], "masa_pravesha")
     masesha = written.get("masesha")
     if isinstance(masesha, Mapping) and isinstance(masesha.get("chain"), Mapping):
         written["masesha"] = {**masesha, "chain": _camel_keys(masesha["chain"])}
@@ -15679,14 +15679,16 @@ def _masa_pravesha_json(asked: Optional[MasaPraveshaRequest]) -> Optional[str]:
     return _record_json(written, "masaPravesha", example)
 
 
-def _annual_place(place: Mapping[str, Any]) -> Dict[str, Any]:
+def _annual_place(place: Mapping[str, Any], root: str) -> Dict[str, Any]:
     """A residence in the boundary's words. A key this does not know is
-    passed through rather than dropped, so the SDK refuses it by name."""
+    passed through rather than dropped, so the SDK refuses it by name; a
+    place with no `Observer` is refused under `root`, the argument it was
+    given in."""
     rest = {key: value for key, value in place.items()
             if key not in ("observer", "utc_offset_seconds")}
     observer = place.get("observer")
     if not isinstance(observer, Observer):
-        raise TypeError("varsha['place']['observer']: expected an Observer")
+        raise TypeError(f"{root}['place']['observer']: expected an Observer")
     return {
         **rest,
         "latitudeDeg": float(observer.latitude_deg),
