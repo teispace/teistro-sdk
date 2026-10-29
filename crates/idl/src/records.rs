@@ -156,6 +156,18 @@ pub enum RecordShape {
         #[serde(default, skip_serializing_if = "Option::is_none")]
         member: Option<String>,
     },
+    /// Named fields beside another record's own, all in one object, as
+    /// serde writes a record it flattens (`#[serde(flatten)]`): a
+    /// cancellation is a condition with its `label` beside the condition's
+    /// parts. The record laid flat is held as a field named after it
+    /// (`condition`), which the wire does not write: its parts are the
+    /// object's.
+    Beside {
+        /// The fields beside the record, in name order.
+        fields: Vec<RecordField>,
+        /// The record laid flat, as a field named after it.
+        laid: RecordField,
+    },
 }
 
 /// The value of `values` a JSON object is read as: the first whose keys
@@ -697,6 +709,9 @@ impl<'s> Reader<'s> {
         if def.get("type").and_then(Value::as_str) == Some("object")
             && def.get("properties").is_some()
         {
+            if let Some(options) = def.get("oneOf").and_then(Value::as_array) {
+                return self.beside_of(at, def, options);
+            }
             return Ok(RecordShape::Object {
                 fields: self.fields_of(at, def, None)?,
             });
@@ -779,6 +794,68 @@ impl<'s> Reader<'s> {
             })
             .collect::<Result<_, String>>()?;
         Ok(RecordShape::Tagged { tag, variants })
+    }
+
+    /// Fields beside a flattened record's variants. schemars writes the
+    /// flattened record's variants inline, each opened to the fields beside
+    /// it, so the record is found by content: the one definition whose own
+    /// `oneOf` they are, once neither bars a key the other adds.
+    fn beside_of(
+        &mut self,
+        at: &str,
+        def: &Value,
+        options: &[Value],
+    ) -> Result<RecordShape, String> {
+        let variants = opened(&Value::Array(options.to_vec()));
+        let mut found = self.defs.iter().filter(|(name, other)| {
+            name.as_str() != at && other.get("oneOf").map(opened).as_ref() == Some(&variants)
+        });
+        let (Some((name, laid_def)), None) = (found.next(), found.next()) else {
+            return Err(format!(
+                "{at}: fields with a `oneOf` beside them (a flattened enum) that is not one definition's own, which the reader does not model"
+            ));
+        };
+        let name = name.clone();
+        let doc = doc_of(laid_def);
+        // Each binding writes the laid record's variants with the fields
+        // beside them, so it is a union tagged by a field.
+        tag_of(&name, options)?;
+        let mut own = def.clone();
+        if let Some(object) = own.as_object_mut() {
+            object.remove("oneOf");
+            if object.get("unevaluatedProperties") == Some(&Value::Bool(false)) {
+                object.remove("unevaluatedProperties");
+            }
+        }
+        let fields = self.fields_of(at, &own, None)?;
+        let parts: BTreeSet<&str> = options
+            .iter()
+            .filter_map(|option| option.get("properties")?.as_object())
+            .flat_map(|properties| properties.keys().map(String::as_str))
+            .collect();
+        if let Some(clash) = fields.iter().find(|f| parts.contains(f.name.as_str())) {
+            return Err(format!(
+                "{at}.{}: a field the flattened {name} writes too",
+                clash.name
+            ));
+        }
+        let ty = self.referred(at, &format!("#/$defs/{name}"))?;
+        let mut chars = name.chars();
+        let field = chars
+            .next()
+            .map(|first| first.to_lowercase().chain(chars).collect())
+            .unwrap_or_default();
+        Ok(RecordShape::Beside {
+            fields,
+            laid: RecordField {
+                name: field,
+                doc,
+                ty,
+                nullable: false,
+                null: false,
+                default: None,
+            },
+        })
     }
 
     /// A union of fixed strings and one other type, and at most one
@@ -1267,6 +1344,28 @@ const UNREAD: [&str; 8] = [
     "contains",
 ];
 
+/// A schema with every bar on keys it does not name taken off, however
+/// deep: what schemars leaves of a record it flattens, so the record can be
+/// matched to its own definition.
+fn opened(schema: &Value) -> Value {
+    match schema {
+        Value::Object(object) => Value::Object(
+            object
+                .iter()
+                .filter(|(key, value)| {
+                    !(matches!(
+                        key.as_str(),
+                        "additionalProperties" | "unevaluatedProperties"
+                    ) && **value == Value::Bool(false))
+                })
+                .map(|(key, value)| (key.clone(), opened(value)))
+                .collect(),
+        ),
+        Value::Array(items) => Value::Array(items.iter().map(opened).collect()),
+        other => other.clone(),
+    }
+}
+
 /// Refuses a schema with a keyword [`UNREAD`] names.
 fn read_whole(at: &str, schema: &Value) -> Result<(), String> {
     match UNREAD
@@ -1717,6 +1816,93 @@ mod tests {
         assert_eq!(
             serde_json::to_string(&open).unwrap(),
             r#"{"kind":"LIST","of":{"kind":"NUMBER"}}"#
+        );
+    }
+
+    /// A cancellation as schemars writes it: a label, and a condition's
+    /// variants inline, opened to the label, beside it.
+    fn cancellation_schema(label: &str, variants: &serde_json::Value) -> serde_json::Value {
+        json!({"$defs": {
+            "Cancellation": {"type": "object", "description": "A cancellation.",
+                "properties": {label: {"type": ["string", "null"]}},
+                "oneOf": variants, "unevaluatedProperties": false},
+            "Condition": {"description": "A condition.", "oneOf": [
+                {"type": "object", "properties": {"type": {"const": "combust"},
+                    "planet": {"type": "string"}}, "required": ["type", "planet"],
+                    "additionalProperties": false},
+                {"type": "object", "properties": {"type": {"const": "day"}},
+                    "required": ["type"], "additionalProperties": false}
+            ]}
+        }})
+    }
+
+    fn opened_conditions() -> serde_json::Value {
+        json!([
+            {"type": "object", "properties": {"type": {"const": "combust"},
+                "planet": {"type": "string"}}, "required": ["type", "planet"]},
+            {"type": "object", "properties": {"type": {"const": "day"}}, "required": ["type"]}
+        ])
+    }
+
+    #[test]
+    fn a_record_laid_flat_is_the_definition_whose_variants_it_repeats() {
+        let records = from_schema(
+            &cancellation_schema("label", &opened_conditions()),
+            &["Cancellation"],
+        )
+        .unwrap();
+        let names: Vec<&str> = records.iter().map(|r| r.name.as_str()).collect();
+        assert_eq!(names, ["Cancellation", "Condition"]);
+        let RecordShape::Beside { fields, laid } = &records[0].shape else {
+            panic!("fields beside a record: {:?}", records[0].shape)
+        };
+        assert_eq!(fields.len(), 1);
+        assert!(fields[0].name == "label" && fields[0].nullable && fields[0].null);
+        assert_eq!(laid.name, "condition");
+        assert_eq!(laid.doc, "A condition.");
+        assert!(!laid.nullable);
+        assert_eq!(
+            laid.ty,
+            RecordType::Record {
+                name: "Condition".into()
+            }
+        );
+        // Variants no definition has are not guessed at.
+        let unmatched = json!([{"type": "object", "properties": {"type": {"const": "night"}}}]);
+        let refused =
+            from_schema(&cancellation_schema("label", &unmatched), &["Cancellation"]).unwrap_err();
+        assert!(refused.contains("not one definition's own"), "{refused}");
+        // A field the laid record writes too would be written twice.
+        let refused = from_schema(
+            &cancellation_schema("planet", &opened_conditions()),
+            &["Cancellation"],
+        )
+        .unwrap_err();
+        assert!(
+            refused.contains("Cancellation.planet: a field the flattened Condition writes too"),
+            "{refused}"
+        );
+        // A laid record no field tags could not have its variants written.
+        let mut untagged = cancellation_schema(
+            "label",
+            &json!([{"type": "object", "properties": {"AT": {"type": "number"}}}]),
+        );
+        untagged["$defs"]["Condition"]["oneOf"] = json!([{"type": "object", "properties": {"AT": {"type": "number"}},
+            "additionalProperties": false}]);
+        let refused = from_schema(&untagged, &["Cancellation"]).unwrap_err();
+        assert!(
+            refused.contains("Condition: a union with no field that tags every option"),
+            "{refused}"
+        );
+    }
+
+    #[test]
+    fn a_schema_is_opened_however_deep_and_keeps_what_is_not_a_bar() {
+        let barred = json!({"additionalProperties": false, "items": [{"unevaluatedProperties": false,
+            "additionalProperties": {"type": "integer"}}], "x": 1});
+        assert_eq!(
+            opened(&barred),
+            json!({"items": [{"additionalProperties": {"type": "integer"}}], "x": 1})
         );
     }
 }

@@ -126,6 +126,18 @@ impl<'a> Writer<'a> {
             RecordShape::OrNamed { values, .. } => values
                 .first()
                 .and_then(|value| self.value(&value.ty, path, hand)),
+            // The record laid flat, with the fields beside it in the same
+            // object.
+            RecordShape::Beside { fields, laid } => match (
+                self.value(&laid.ty, path, hand),
+                self.fields(fields, path, None, hand),
+            ) {
+                (Some(Value::Object(mut object)), Some(Value::Object(beside))) => {
+                    object.extend(beside);
+                    Some(Value::Object(object))
+                }
+                _ => None,
+            },
         };
         path.pop();
         value

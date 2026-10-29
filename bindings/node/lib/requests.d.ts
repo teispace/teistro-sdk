@@ -4198,11 +4198,14 @@ export type RayPlace = 'dwadasamsa' | 'sign';
 export type Scope = 'natal' | 'milan' | 'muhurta' | 'all';
 
 /**
- * A condition, as a rule's `when` is written, and its `label`.
+ * A condition that cancels a present rule, with the label a result names it by when it has one.
  */
-export interface Cancellation {
-  readonly label?: string;
-}
+export type Cancellation = Condition & {
+  /**
+   * The name a result gives it.
+   */
+  readonly label?: string | null;
+};
 
 /**
  * A condition: a predicate over the chart, or a combination of conditions.

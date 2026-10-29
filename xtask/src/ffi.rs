@@ -339,6 +339,10 @@ fn check_request_catalogues(api: &teistro_idl::model::Api) {
     for record in &api.requests.records {
         match &record.shape {
             RecordShape::Object { fields } => fields.iter().for_each(|f| named(&f.ty, &mut found)),
+            RecordShape::Beside { fields, laid } => fields
+                .iter()
+                .chain([laid])
+                .for_each(|f| named(&f.ty, &mut found)),
             RecordShape::Tagged { variants, .. } => variants
                 .iter()
                 .flat_map(|v| &v.fields)
@@ -497,7 +501,9 @@ fn record_is_request_only(record: &teistro_idl::records::RecordDef) -> bool {
         }
     }
     match &record.shape {
-        RecordShape::External { .. } | RecordShape::OrNamed { .. } => true,
+        RecordShape::External { .. } | RecordShape::OrNamed { .. } | RecordShape::Beside { .. } => {
+            true
+        }
         RecordShape::Keys { .. } => false,
         RecordShape::Object { fields } => fields.iter().any(|field| request_only(&field.ty)),
         RecordShape::Tagged { variants, .. } => variants

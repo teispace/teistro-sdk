@@ -2238,6 +2238,12 @@
             "applicableTo": "milan",
             "cancellations": [
               {
+                "type": "chara-karaka-in-house",
+                "houses": [
+                  1
+                ],
+                "karaka": "AmK",
+                "karakaScheme": 1,
                 "label": "x"
               }
             ],

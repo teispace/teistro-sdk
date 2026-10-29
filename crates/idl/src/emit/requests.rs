@@ -37,7 +37,9 @@ use std::fmt::Write;
 use crate::emit::{block_comment, python, reserved, ts};
 use crate::model::Api;
 use crate::names::{binding_type_name, pascal};
-use crate::records::{ExternalVariant, RecordField, RecordShape, RecordType, RecordVariant};
+use crate::records::{
+    ExternalVariant, RecordDef, RecordField, RecordShape, RecordType, RecordVariant,
+};
 
 mod dart;
 mod dart_deep;
@@ -66,6 +68,27 @@ pub const PY_TAKEN_BACK: [&str; 7] = [
     "NatalPoint",
     "PerfectionRules",
 ];
+
+/// The tag and the variants of the record a [`RecordShape::Beside`] lays
+/// flat, which the reader holds to be a union tagged by a field.
+pub(super) fn laid_variants<'a>(
+    api: &'a Api,
+    laid: &RecordField,
+) -> (&'a str, &'a [RecordVariant]) {
+    let RecordType::Record { name } = &laid.ty else {
+        unreachable!("the reader lays only a record flat")
+    };
+    match api
+        .requests
+        .records
+        .iter()
+        .find(|record| record.name == *name)
+        .map(|record| &record.shape)
+    {
+        Some(RecordShape::Tagged { tag, variants }) => (tag, variants),
+        _ => unreachable!("the reader lays only a union tagged by a field flat ({name})"),
+    }
+}
 
 /// The name a variant of a union tagged by a field is given: the union's,
 /// then the variant's key in the language's case, as an answer record's
@@ -307,20 +330,7 @@ pub fn typescript_declarations(api: &Api) -> String {
                 let _ = writeln!(out, "export type {} = {};", record.name, keys.join(" | "));
             }
             RecordShape::Tagged { tag, variants } => {
-                let names: Vec<String> = variants
-                    .iter()
-                    .map(|variant| variant_name(&record.name, variant))
-                    .collect();
-                out.push_str(&block_comment(&record.doc, ""));
-                let _ = writeln!(out, "export type {} = {};", record.name, names.join(" | "));
-                for (variant, name) in variants.iter().zip(&names) {
-                    out.push('\n');
-                    out.push_str(&block_comment(&variant.doc, ""));
-                    let _ = writeln!(out, "export interface {name} {{");
-                    let _ = writeln!(out, "  readonly {}: '{}';", ts_property(tag), variant.key);
-                    types.fields(&mut out, &variant.fields);
-                    out.push_str("}\n");
-                }
+                types.ts_tagged(&mut out, record, tag, variants);
             }
             RecordShape::External { variants } => {
                 let listed: Vec<String> = variants
@@ -349,6 +359,7 @@ pub fn typescript_declarations(api: &Api) -> String {
                     arms.join("\n  | ")
                 );
             }
+            RecordShape::Beside { fields, laid } => types.ts_beside(&mut out, record, fields, laid),
             RecordShape::OrNamed {
                 names,
                 values,
@@ -379,6 +390,89 @@ fn py_quoted(text: &str) -> String {
 }
 
 impl Types<'_> {
+    /// TypeScript: a union tagged by a field, a type per variant.
+    fn ts_tagged(
+        &self,
+        out: &mut String,
+        record: &RecordDef,
+        tag: &str,
+        variants: &[RecordVariant],
+    ) {
+        let names: Vec<String> = variants
+            .iter()
+            .map(|variant| variant_name(&record.name, variant))
+            .collect();
+        out.push_str(&block_comment(&record.doc, ""));
+        let _ = writeln!(out, "export type {} = {};", record.name, names.join(" | "));
+        for (variant, name) in variants.iter().zip(&names) {
+            out.push('\n');
+            out.push_str(&block_comment(&variant.doc, ""));
+            let _ = writeln!(out, "export interface {name} {{");
+            let _ = writeln!(out, "  readonly {}: '{}';", ts_property(tag), variant.key);
+            self.fields(out, &variant.fields);
+            out.push_str("}\n");
+        }
+    }
+
+    /// TypeScript: a record laid flat, and the fields beside it.
+    fn ts_beside(
+        &self,
+        out: &mut String,
+        record: &RecordDef,
+        fields: &[RecordField],
+        laid: &RecordField,
+    ) {
+        out.push_str(&block_comment(&record.doc, ""));
+        let _ = writeln!(
+            out,
+            "export type {} = {} & {{",
+            record.name,
+            self.ty(&laid.ty)
+        );
+        self.fields(out, fields);
+        out.push_str("};\n");
+    }
+
+    /// Python: a record laid flat, as each of its variants with the
+    /// fields beside it, since a `TypedDict` adds to one record and not to
+    /// a union.
+    fn py_beside(
+        &self,
+        body: &mut String,
+        exported: &mut Vec<String>,
+        record: &RecordDef,
+        fields: &[RecordField],
+        laid: &RecordField,
+    ) {
+        let name = &record.name;
+        exported.push(name.clone());
+        let (tag, variants) = laid_variants(self.api, laid);
+        let names: Vec<String> = variants
+            .iter()
+            .map(|variant| variant_name(name, variant))
+            .collect();
+        let _ = writeln!(
+            body,
+            "{name}: TypeAlias = {}",
+            py_quoted(&format!("Union[{}]", names.join(", ")))
+        );
+        body.push_str(&python::docstring(&record.doc, ""));
+        for (variant, variant_class) in variants.iter().zip(&names) {
+            exported.push(variant_class.clone());
+            let mut merged: Vec<RecordField> =
+                variant.fields.iter().chain(fields).cloned().collect();
+            merged.sort_by(|a, b| a.name.cmp(&b.name));
+            body.push_str("\n\n");
+            self.py_typed_dict(
+                body,
+                variant_class,
+                &variant.doc,
+                Some((tag, &variant.key)),
+                &merged,
+            );
+        }
+    }
+
     /// A key of a closed set, as a `Literal`.
     fn py_literal(keys: &[String]) -> String {
         let quoted: Vec<String> = keys.iter().map(|key| format!("'{key}'")).collect();
@@ -654,6 +748,9 @@ pub fn python_declarations(api: &Api) -> String {
                 exported.push(name.clone());
                 types.py_external(&mut body, name, &record.doc, variants);
             }
+            RecordShape::Beside { fields, laid } => {
+                types.py_beside(&mut body, &mut exported, record, fields, laid);
+            }
             RecordShape::OrNamed {
                 names,
                 values,
@@ -726,8 +823,14 @@ mod tests {
                 "after": {"$ref": "#/$defs/Tag", "default": "SAME"},
                 "rule": {"$ref": "#/$defs/Rule"},
                 "rules": {"type": "array", "items": {"$ref": "#/$defs/Rule"}},
-                "gate": {"$ref": "#/$defs/Gate"}
+                "gate": {"$ref": "#/$defs/Gate"},
+                "cancel": {"$ref": "#/$defs/Cancel"}
             }, "required": ["orbs", "how", "with-dash"]},
+            "Cancel": {"type": "object", "description": "A how, named.",
+                "properties": {"label": {"type": ["string", "null"]}}, "oneOf": [
+                {"type": "object", "properties": {"kind": {"const": "planet-in-house"}}, "required": ["kind"]},
+                {"type": "object", "properties": {"kind": {"const": "AT"}, "deg": {"type": "number"}},
+                    "required": ["kind", "deg"]}], "unevaluatedProperties": false},
             "Rule": {"anyOf": [{"type": "string", "enum": ["PACK"]},
                 {"$ref": "#/$defs/Spelt", "x-teistro-when": ["windows"]}, {"$ref": "#/$defs/Entry"}]},
             "Spelt": {"type": "object", "properties": {"windows": {"type": "integer"}}, "required": ["windows"]},
@@ -738,9 +841,10 @@ mod tests {
             "Graha": {"type": "string", "x-teistro-kind": "graha"},
             "Sex": {"type": "string", "enum": ["MALE"]},
             "How": {"oneOf": [
-                {"type": "object", "properties": {"kind": {"const": "planet-in-house"}}, "required": ["kind"]},
+                {"type": "object", "properties": {"kind": {"const": "planet-in-house"}}, "required": ["kind"],
+                    "additionalProperties": false},
                 {"type": "object", "properties": {"kind": {"const": "AT"}, "deg": {"type": "number"}},
-                    "required": ["kind", "deg"]}]},
+                    "required": ["kind", "deg"], "additionalProperties": false}]},
             "Tag": {"oneOf": [{"const": "SAME"},
                 {"type": "object", "properties": {"WITHIN": {"type": "number"}}, "required": ["WITHIN"],
                     "additionalProperties": false}]},
@@ -1007,6 +1111,56 @@ mod tests {
         assert!(
             !out.contains("    \"_TagWithin\",\n"),
             "a wrapper is private"
+        );
+    }
+
+    #[test]
+    fn a_record_laid_flat_is_written_with_the_fields_beside_it() {
+        let mut api = fixture();
+        api.requests.roots.push(crate::records::RequestRoot {
+            record: "ask".into(),
+            name: "Ask".into(),
+        });
+        let ts = typescript_declarations(&api);
+        assert!(
+            ts.contains("export type Cancel = How & {\n")
+                && ts.contains("  readonly label?: string | null;\n};\n"),
+            "{ts}"
+        );
+        let py = python_declarations(&api);
+        assert!(
+            py.contains(r#"Cancel: TypeAlias = "Union[CancelPlanetInHouse, CancelAt]""#),
+            "{py}"
+        );
+        assert!(
+            py.contains("class CancelAt(TypedDict, total=False):\n")
+                && py.contains("    kind: Required[Literal['AT']]\n")
+                && py.contains("    deg: Required[float]\n")
+                && py.contains("    label: Optional[str]\n"),
+            "{py}"
+        );
+        assert!(
+            py.contains("    \"CancelAt\",\n"),
+            "each variant is exported"
+        );
+        let dart = dart_declarations(&api);
+        assert!(
+            dart.contains("final class Cancel extends _Request {")
+                && dart.contains("    required this.how,\n")
+                && dart.contains("...(how._wire as Map<String, Object?>)")
+                && dart.contains("if (label case final labelValue?) 'label': labelValue"),
+            "{dart}"
+        );
+        // The example is a how's parts and the label, in one object.
+        let deep = deep_examples(&api, &json!([]));
+        assert_eq!(
+            deep.pointer("/0/request/cancel"),
+            Some(&json!({"kind": "AT", "deg": 1.5, "label": "x"}))
+        );
+        let test = dart_deep_test(&api, &deep);
+        assert!(
+            test.contains("Cancel(how: HowAt(deg: 1.5), label: 'x')"),
+            "{test}"
         );
     }
 

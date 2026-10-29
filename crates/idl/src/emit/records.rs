@@ -136,7 +136,9 @@ pub fn typescript_declarations(api: &Api) -> String {
     for record in &api.records {
         out.push('\n');
         match &record.shape {
-            RecordShape::External { .. } | RecordShape::OrNamed { .. } => {
+            RecordShape::External { .. }
+            | RecordShape::OrNamed { .. }
+            | RecordShape::Beside { .. } => {
                 unreachable!("the answer records carry none; requests are rendered for Java only")
             }
             RecordShape::Object { fields } => {
@@ -242,7 +244,9 @@ pub fn javascript_decoders(api: &Api) -> String {
     for record in &api.records {
         let name = &record.name;
         match &record.shape {
-            RecordShape::External { .. } | RecordShape::OrNamed { .. } => {
+            RecordShape::External { .. }
+            | RecordShape::OrNamed { .. }
+            | RecordShape::Beside { .. } => {
                 unreachable!("the answer records carry none; requests are rendered for Java only")
             }
             RecordShape::Object { fields } => {
@@ -435,7 +439,9 @@ pub fn python_records(api: &Api) -> String {
         let name = &record.name;
         let decoder = format!("decode_{}", snake(name));
         match &record.shape {
-            RecordShape::External { .. } | RecordShape::OrNamed { .. } => {
+            RecordShape::External { .. }
+            | RecordShape::OrNamed { .. }
+            | RecordShape::Beside { .. } => {
                 unreachable!("the answer records carry none; requests are rendered for Java only")
             }
             RecordShape::Object { fields } => {
@@ -655,7 +661,9 @@ pub fn dart_records(api: &Api) -> String {
     for record in &api.records {
         let name = &record.name;
         match &record.shape {
-            RecordShape::External { .. } | RecordShape::OrNamed { .. } => {
+            RecordShape::External { .. }
+            | RecordShape::OrNamed { .. }
+            | RecordShape::Beside { .. } => {
                 unreachable!("the answer records carry none; requests are rendered for Java only")
             }
             RecordShape::Object { fields } => {

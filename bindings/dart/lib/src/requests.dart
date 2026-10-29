@@ -5607,21 +5607,27 @@ enum Scope implements _Keyed {
   final String key;
 }
 
-/// A condition, as a rule's `when` is written, and its `label`.
+/// A condition that cancels a present rule, with the label a result names it by when it has one.
 final class Cancellation extends _Request {
   const Cancellation({
+    required this.condition,
     this.label,
   });
 
+  /// A condition: a predicate over the chart, or a combination of conditions.
+  final Condition condition;
+
+  /// The name a result gives it.
   final String? label;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
+    ...(condition._wire as Map<String, Object?>),
     if (label case final labelValue?) 'label': labelValue,
   };
 
   @override
-  List<Object?> get _fields => [label];
+  List<Object?> get _fields => [condition, label];
 }
 
 /// A condition: a predicate over the chart, or a combination of conditions.

@@ -12,7 +12,9 @@
 use schemars::SchemaGenerator;
 use serde_json::{Value, json};
 use teistro_rules::longevity::Reasons;
-use teistro_rules::{Body, BodyRef, BodySubject, Cancellation, Karaka, SignRef, Subject};
+use teistro_rules::{
+    Body, BodyRef, BodySubject, Cancellation, Condition, Karaka, SignRef, Subject,
+};
 
 #[test]
 fn every_hand_written_schema_is_named_and_states_its_shapes() {
@@ -24,7 +26,6 @@ fn every_hand_written_schema_is_named_and_states_its_shapes() {
         ("BodyRef", generator.subschema_for::<BodyRef>()),
         ("SignRef", generator.subschema_for::<SignRef>()),
         ("Subject", generator.subschema_for::<Subject>()),
-        ("Cancellation", generator.subschema_for::<Cancellation>()),
     ];
     let reasons = generator.subschema_for::<Reasons>();
     let definitions = generator.definitions().clone();
@@ -39,11 +40,6 @@ fn every_hand_written_schema_is_named_and_states_its_shapes() {
         assert!(!description.is_empty(), "{name}");
     }
     assert_eq!(definitions["RuleBody"]["type"], "string");
-    assert_eq!(definitions["Cancellation"]["type"], "object");
-    assert_eq!(
-        definitions["Cancellation"]["properties"]["label"]["type"],
-        "string"
-    );
     // A maraka's reasons are a set: each once, each a reason.
     assert_eq!(reasons.get("$ref"), Some(&json!("#/$defs/MarakaReasons")));
     let set = &definitions["MarakaReasons"];
@@ -74,4 +70,34 @@ fn every_hand_written_schema_is_named_and_states_its_shapes() {
             "{name}: {types:?}"
         );
     }
+}
+
+/// A cancellation is derived, not written by hand: its label beside every
+/// condition's own parts, so a binding typed from it carries the condition.
+#[test]
+fn a_cancellation_is_a_condition_with_its_label_beside_it() {
+    let mut generator = schemars::generate::SchemaSettings::draft2020_12().into_generator();
+    let reference = generator.subschema_for::<Cancellation>();
+    generator.subschema_for::<Condition>();
+    assert_eq!(reference.get("$ref"), Some(&json!("#/$defs/Cancellation")));
+    let definitions = generator.definitions().clone();
+    let cancellation = &definitions["Cancellation"];
+    assert_eq!(cancellation["type"], "object");
+    assert_eq!(
+        cancellation["properties"]["label"]["type"],
+        json!(["string", "null"])
+    );
+    // Every condition, each without a bar on the label beside it; the
+    // object as a whole takes nothing else.
+    let laid = cancellation["oneOf"].as_array().unwrap();
+    let conditions = definitions["Condition"]["oneOf"].as_array().unwrap();
+    assert_eq!(laid.len(), conditions.len());
+    for (beside, condition) in laid.iter().zip(conditions) {
+        assert_eq!(
+            beside["properties"]["type"],
+            condition["properties"]["type"]
+        );
+        assert!(beside.get("additionalProperties").is_none(), "{beside}");
+    }
+    assert_eq!(cancellation["unevaluatedProperties"], false);
 }

@@ -138,10 +138,13 @@ pub struct Group {
 /// # Ok::<(), serde_json::Error>(())
 /// ```
 #[derive(Clone, Debug, PartialEq)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(deny_unknown_fields))]
 pub struct Cancellation {
-    /// Its label.
+    /// The name a result gives it.
     pub label: Option<String>,
-    /// The condition.
+    /// The condition, its parts written beside the label.
+    #[cfg_attr(feature = "schema", schemars(flatten))]
     pub condition: Condition,
 }
 
@@ -151,23 +154,6 @@ impl From<Condition> for Cancellation {
             label: None,
             condition,
         }
-    }
-}
-
-/// A condition as the rule language writes it, with an optional `label`
-/// laid beside its parts; the condition's own reader checks the rest.
-#[cfg(feature = "schema")]
-impl schemars::JsonSchema for Cancellation {
-    fn schema_name() -> std::borrow::Cow<'static, str> {
-        std::borrow::Cow::Borrowed("Cancellation")
-    }
-
-    fn json_schema(_: &mut schemars::SchemaGenerator) -> schemars::Schema {
-        schemars::json_schema!({
-            "type": "object",
-            "properties": { "label": { "type": "string" } },
-            "description": "A condition, as a rule's `when` is written, and its `label`.",
-        })
     }
 }
 
@@ -188,7 +174,7 @@ impl<'de> Deserialize<'de> for Cancellation {
     fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Cancellation, D::Error> {
         let mut value = serde_json::Value::deserialize(deserializer)?;
         let label = match value.as_object_mut().and_then(|o| o.remove("label")) {
-            None => None,
+            None | Some(serde_json::Value::Null) => None,
             Some(serde_json::Value::String(label)) => Some(label),
             Some(_) => return Err(de::Error::custom("a cancellation's `label` is text")),
         };
@@ -1477,6 +1463,15 @@ mod tests {
         assert_eq!(parsed.groups[0].reference, Body::Graha(Graha::Moon));
         assert_eq!(parsed.cancellations[0].label.as_deref(), Some("Mars burnt"));
         assert_eq!(parsed.cancellations[1].label, None);
+        // A null label is no label, as its schema's `Option` states, and is
+        // written back left out.
+        let null = format!(
+            r#"{{{HEAD}, "cancellations": [{{"type": "planet-combust", "planet": "MARS", "label": null}}]}}"#
+        );
+        let unlabelled = rule(&null).unwrap();
+        assert_eq!(unlabelled.cancellations[0].label, None);
+        let written = serde_json::to_value(&unlabelled.cancellations[0]).unwrap();
+        assert_eq!(written.get("label"), None);
         let Some(Severity::HouseWeighted {
             planet,
             weights,
