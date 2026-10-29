@@ -94,6 +94,18 @@ new reader of what the recording engine stored.
   registered rather than patched. The tests' hand-written variant
   patches are gone.
 
+**`recordedSettings` answers the muhurta context too.**
+**Numbers:** none. No settings or document hash moves: the A/B's and the
+shim's muhurta search opens the same settings as before, now read from the
+translation.
+- A translated snapshot carries a third opening, `muhurta`, beside `natal`
+  and `kp` in every binding (`Recorded::muhurta` in Rust): the natal
+  opening cast from the Earth's centre with the true node, the frame the
+  baseline searches a muhurta in whatever its charts are cast in (crux
+  C781). `@teistro/compat` searches its `muhurta` row on it, on the natal
+  context's ephemeris chain, and the shim's `MUHURTA_FRAME` patch and the
+  A/B's copy of it are gone.
+
 **`@teistro/compat` answers its whole surface, and reads the application's ayanamsha keys.**
 **Numbers:** none. No settings or document hash moves: a snapshot that
 stored a number translates as before, and the A/B asks the same requests

@@ -2216,6 +2216,8 @@ export interface RecordedSettings {
   readonly natal: RecordedOpening;
   /** The KP context, on the natal frame. */
   readonly kp: RecordedOpening;
+  /** The context a muhurta is searched on: the natal one from the Earth's centre with the true node (crux C781). */
+  readonly muhurta: RecordedOpening;
   /** The ephemeris the natal chain needs at its front, when it needs one. */
   readonly ephemeris: 'SURYA_SIDDHANTA' | null;
   /** The locale the stored language is, when one is stored. */

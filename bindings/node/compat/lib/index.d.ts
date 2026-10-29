@@ -138,8 +138,8 @@ type Study<K extends 'counts' | 'compare' | 'expected'> = Omit<Parameters<Contex
  * The shim over one set of context options, holding the contexts it opens.
  * Every chart row takes a stored birth record and the stored snapshot it
  * was computed under, and answers the SDK's own result; the KP row answers
- * on the snapshot's KP context, the muhurta row on a context of the frame
- * the baseline searches in, every other on its natal one. A refused row is
+ * on the snapshot's KP context, the muhurta row on its muhurta context
+ * (the frame the baseline searches in), every other on its natal one. A refused row is
  * typed `never`, so a compiler marks the code after its call unreachable.
  */
 export interface Shim {

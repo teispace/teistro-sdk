@@ -379,9 +379,10 @@ public final class Context implements AutoCloseable {
 
     /**
      * A stored baseline settings snapshot translated into what a context
-     * opens with ({@code 03-design/compat-shim.md} §4): {@code natal} and
-     * {@code kp}, each a {@code {profile, settings}} to open a context
-     * with, the {@code ephemeris} the natal chain needs at its front
+     * opens with ({@code 03-design/compat-shim.md} §4): {@code natal},
+     * {@code kp} and {@code muhurta} (the natal one from the Earth's centre
+     * with the true node, which a muhurta is searched on), each a
+     * {@code {profile, settings}} to open a context with, the {@code ephemeris} the natal chain needs at its front
      * ({@code SURYA_SIDDHANTA} or {@code null}), the {@code locale}, and
      * the {@code notes} on every field read and set aside, as
      * {@link Json#read} reads them. It reads none of this context's

@@ -2188,6 +2188,7 @@ function theRecordedSettings(ctx: Context): string {
   return [
     translated.natal.profile,
     translated.kp.profile,
+    translated.muhurta.profile,
     fromText.ephemeris ?? 'NONE',
     translated.locale ?? 'NONE',
     translated.notes.map((note) => note.field).join(','),

@@ -109,14 +109,6 @@ export const READINGS = Object.freeze({
   ayurdaya: Object.freeze({ amsayu_multiplied: true, enmity: 'compound', combine: 'each', nisarga: 'listed' }),
 });
 
-/**
- * The frame the baseline casts a muhurta search's sky in: from the Earth's
- * centre with the true node, though its charts are topocentric with the
- * mean one (crux C781). No setting moves the muhurta search alone, so it
- * is searched on a context of that frame.
- */
-export const MUHURTA_FRAME = Object.freeze({ frame: Object.freeze({ node: 'TRUE', centre: 'GEOCENTRIC' }) });
-
 /** The native a muhurta's natal tara and chandra bala are read against: a chart's Moon's star and sign. */
 export function nativeOf(chart) {
   const moon = chart.grahas.find((placed) => placed.graha === 'graha.MOON').longitudeDeg;
@@ -146,7 +138,8 @@ export const RASHIFAL_SNAPSHOT = Object.freeze({ at: 'CLOCK', hour: 6, minute: 0
  * @param {{kuja?: object, porutham?: object, ayurdaya?: object}} [readings]
  * @param {() => import('@teistro/sdk').Context} [elect] the context a
  *   muhurta is searched on, opened on first use: the natal one unless a
- *   convention casts the search's sky in a frame of its own ({@link MUHURTA_FRAME})
+ *   convention casts the search's sky in a frame of its own, as a stored
+ *   snapshot's `muhurta` opening does (`recordedSettings`, crux C781)
  */
 export function requests(natal, kp, readings = {}, elect = () => natal) {
   const { kuja, porutham, ayurdaya } = readings;
@@ -193,7 +186,7 @@ export function requests(natal, kp, readings = {}, elect = () => natal) {
     /**
      * A muhurta search over the almanac days `from` to `to` at `on`'s
      * place and clock, under the baseline's ranking unless `search` names
-     * another, on the {@link MUHURTA_FRAME} context.
+     * another, on the context `elect` opens.
      */
     muhurta: ({ place, utcOffsetSeconds }, from, to, search) =>
       elect().almanac.of({ from, to, place, utcOffsetSeconds, muhurta: { ranking: 'BASELINE', ...search } }),

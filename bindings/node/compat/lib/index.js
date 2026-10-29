@@ -13,7 +13,7 @@ import { createRequire } from 'node:module';
 import { Calendar, Tithi, at as civilAt } from '@teistro/sdk';
 
 import { CompatRefused, Contexts, at, calls, count, readBirth } from './core.js';
-import { MUHURTA_FRAME, READINGS, nativeOf, requests } from './forward.js';
+import { READINGS, nativeOf, requests } from './forward.js';
 
 export { CompatRefused } from './core.js';
 export { FAMILIES, facts } from './facts.js';
@@ -106,7 +106,7 @@ class Shim {
       natal,
       () => this.#contexts.kp(snapshot),
       READINGS,
-      () => this.#contexts.variant(snapshot, 'muhurta', MUHURTA_FRAME),
+      () => this.#contexts.muhurta(snapshot),
     );
     return ask(asked, at(natal, read), natal, read);
   }
