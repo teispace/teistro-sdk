@@ -301,6 +301,8 @@ fn a_graha_outside_the_nine_has_no_place_to_judge() {
         Condition::DusthanaFromDashaLordWithMalefic,
         Condition::InSecondOrSeventhWithItsLord,
         Condition::InSecondOrSeventh,
+        Condition::WithSecondOrSeventhLords,
+        Condition::LordOfEighthOrSeventhOrInSecond,
     ] {
         assert_eq!(
             holds(condition, &taurus, run(Graha::Saturn, Graha::Uranus)),
