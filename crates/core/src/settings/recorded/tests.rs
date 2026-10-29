@@ -16,8 +16,8 @@ use crate::catalogue::{Ayanamsha, DashaSystem, HouseSystem};
 use crate::error::{Error, Status};
 use crate::quantity::Depth;
 use crate::settings::knobs::{
-    AyanamshaBasis, Balance, Centre, CharaKarakas, Ekadhipatya, Node, PolarDayPolicy, PolarPolicy,
-    Shodhana, Sunrise, Zodiac,
+    AyanamshaBasis, Balance, Centre, CharaKarakas, DayLordDay, Ekadhipatya, Node, PolarDayPolicy,
+    PolarPolicy, RulingCount, Shodhana, Sunrise, Zodiac,
 };
 use crate::settings::{
     AyanamshaChoice, Profile, ProfileId, Settings, SettingsPatch, Siddhanta, SunriseConvention,
@@ -184,6 +184,12 @@ fn the_kp_context_is_kp_default_on_the_natal_frame() {
             AyanamshaBasis::True,
             PolarDayPolicy::NearestEvent
         )
+    );
+    // The ruling planets are the baseline's, as the natal context reads
+    // them: seven, the sub lords too, by the civil weekday (C150, C151).
+    assert_eq!(
+        (kp.kp.ruling_count, kp.kp.day_lord_day),
+        (RulingCount::WithSubs, DayLordDay::Civil)
     );
     // What KP Reader VI reads otherwise stays the profile's own.
     assert_eq!(

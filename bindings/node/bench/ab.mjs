@@ -16,9 +16,13 @@
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 
-import { Calendar, Context, DashaSystem, Nakshatra, Rashi, Varga, date } from '../lib/index.js';
+import { Calendar, Context, Nakshatra, Rashi, date } from '../lib/index.js';
+// The package's `@teistro/sdk` is this checkout's binding, as in its own
+// tests; the hook resolves the imports made after it, so the requests
+// are imported once it is in place.
+import '../compat/test/sdk.mjs';
 import { Agreement, figures, joinYogas, sdkFacts } from './ab-agree.mjs';
-import { MUHURTA_DAYS, REQUESTS, SIDES, inputs, open, paths, sdkVersion } from './ab-inputs.mjs';
+import { MUHURTA_DAYS, REQUESTS, SIDES, defaultSnapshot, inputs, open, paths, sdkVersion } from './ab-inputs.mjs';
 import {
   Kept,
   charakRung,
@@ -32,6 +36,12 @@ import {
 } from './ab-reference.mjs';
 
 export { REQUESTS, SIDES, inputs } from './ab-inputs.mjs';
+
+/**
+ * The SDK calls each request makes: `@teistro/compat`'s, so that every
+ * timed request is a shim call (`03-design/compat-shim.md` §6.4).
+ */
+const { READINGS, requests } = await import('../compat/lib/forward.js');
 
 /** The fewest rounds a figure is taken from. */
 export const ROUNDS = 15;
@@ -69,73 +79,7 @@ function periods(dashas) {
   return count;
 }
 
-/** The eighteen dasha systems the baseline's whole chart answers, each to depth 3 (§2). */
-const BASELINE_DASHAS = [
-  DashaSystem.Vimshottari,
-  DashaSystem.Yogini,
-  DashaSystem.Tribhagi,
-  DashaSystem.Ashtottari,
-  DashaSystem.Kalachakra,
-  DashaSystem.DwisaptatiSama,
-  DashaSystem.Shatabdika,
-  DashaSystem.ChaturashitiSama,
-  DashaSystem.Dwadashottari,
-  DashaSystem.Panchottari,
-  DashaSystem.Chara,
-  DashaSystem.Narayana,
-  DashaSystem.Shoola,
-  DashaSystem.NiryanaShoola,
-  DashaSystem.Padanadhamsa,
-  DashaSystem.Mandooka,
-  DashaSystem.Drig,
-  DashaSystem.Trikona,
-];
-
-/**
- * The performance page's parity chart (`app-speed`'s `parity-chart`) with
- * the baseline's eighteen dashas added to its sixteen, the avakahada and
- * the rules' longevity: at least what the baseline's whole chart holds.
- */
-const FULL = {
-  vargas: Object.values(Varga),
-  dashas: [
-    ...new Set([
-      DashaSystem.Vimshottari,
-      DashaSystem.Ashtottari,
-      DashaSystem.Yogini,
-      DashaSystem.Kalachakra,
-      DashaSystem.Shodashottari,
-      DashaSystem.Dwadashottari,
-      DashaSystem.Panchottari,
-      DashaSystem.Shatabdika,
-      DashaSystem.ChaturashitiSama,
-      DashaSystem.DwisaptatiSama,
-      DashaSystem.Shashtihayani,
-      DashaSystem.ShattrimshaSama,
-      DashaSystem.Chara,
-      DashaSystem.Narayana,
-      DashaSystem.Shoola,
-      DashaSystem.SudarshanaChakra,
-      ...BASELINE_DASHAS,
-    ]),
-  ],
-  rules: { shipped: ['NABHASAS', 'READINGS', 'ARISHTAS', 'GANDANTAS', 'DOSHAS', 'YOGAS'], longevity: true },
-  aspects: true,
-  points: true,
-  houses: true,
-  state: true,
-  ashtakavarga: true,
-  vimshopaka: true,
-  vaiseshikamsa: true,
-  dashaPhala: true,
-  jaimini: true,
-  avakahada: true,
-  moment: true,
-  shadbala: true,
-  bhavaBala: true,
-};
-
-/** Reads every section `FULL` asks a chart for. */
+/** Reads every section the whole chart asks for (`forward.js`'s `FULL`). */
 function readFull(chart) {
   return decoded(
     chart.grahas,
@@ -163,10 +107,7 @@ function readFull(chart) {
   );
 }
 
-/** What the baseline's foundation holds beside its positions (§2, `vargas`). */
-const FOUNDATION = { vargas: Object.values(Varga), aspects: true, points: true, houses: true, state: true, jaimini: true };
-
-/** Reads every section `FOUNDATION` asks a chart for. */
+/** Reads every section the foundation asks for (`forward.js`'s `FOUNDATION`). */
 function readFoundation(chart) {
   return decoded(
     chart.grahas,
@@ -279,8 +220,7 @@ export function transitSkyOf(context) {
  * @returns {import('./ab-inputs.mjs').Side}
  */
 export function sdkSide(ctx, kp, version, asked = {}, elect = () => ctx) {
-  const { kuja, porutham, ayurdaya } = asked;
-  const full = ayurdaya ? { ...FULL, rules: { ...FULL.rules, ayurdaya } } : FULL;
+  const r = requests(ctx, kp, asked);
   const at = (input) => ({ instant: input.jdUt, place: input.place, utcOffsetSeconds: input.utcOffsetSeconds });
   // Each request asks for what the baseline's answer holds
   // (`03-design/ab-baseline.md` §2). An answer decodes on read, and the
@@ -289,103 +229,74 @@ export function sdkSide(ctx, kp, version, asked = {}, elect = () => ctx) {
   return {
     version,
     chart: (input) => {
-      const chart = ctx.chart.found({ ...at(input), ...FOUNDATION, dashas: [DashaSystem.Vimshottari] });
+      const chart = r.chart(at(input));
       decoded(readFoundation(chart), periods(chart.dashas));
       return chart;
     },
     day: (input) => {
-      const day = ctx.almanac.day({ date: civil(input), place: input.place, utcOffsetSeconds: input.utcOffsetSeconds });
+      const day = r.day(at(input), civil(input));
       readDay(day);
       return day;
     },
     full: (input) => {
-      const chart = ctx.chart.found({ ...at(input), ...full });
+      const chart = r.full(at(input));
       readFull(chart);
       return chart;
     },
     vargas: (input) => {
-      const chart = ctx.chart.found({ ...at(input), ...FOUNDATION });
+      const chart = r.vargas(at(input));
       readFoundation(chart);
       return chart;
     },
     yogas: (input) => {
-      const chart = ctx.chart.found({
-        ...at(input),
-        rules: { shipped: ['NABHASAS', 'ARISHTAS', 'GANDANTAS', 'DOSHAS', 'YOGAS'] },
-      });
+      const chart = r.yogas(at(input));
       decoded(chart.grahas, chart.rules);
       return chart;
     },
     strength: (input) => {
-      const chart = ctx.chart.found({ ...at(input), shadbala: true, bhavaBala: true, ashtakavarga: true });
+      const chart = r.strength(at(input));
       decoded(chart.grahas, chart.shadbala, chart.bhavaBala, chart.ashtakavarga);
       return chart;
     },
     dashas: (input) => {
-      const chart = ctx.chart.found({ ...at(input), dashas: BASELINE_DASHAS });
+      const chart = r.dashas(at(input));
       decoded(chart.grahas, periods(chart.dashas));
       return chart;
     },
     month: (input) => {
-      const days = ctx.almanac.of({
-        from: civil(input),
-        to: civil(input, 29),
-        place: input.place,
-        utcOffsetSeconds: input.utcOffsetSeconds,
-      });
+      const days = r.month(at(input), civil(input), civil(input, 29));
       for (const day of days) readDay(day);
       return days;
     },
     milan: (input) => {
-      const { partner } = input;
-      const chart = ctx.chart.found({
-        ...at(input),
-        matching: {
-          partner: { instant: partner.jdUt, place: partner.place, utcOffsetSeconds: partner.utcOffsetSeconds },
-          partnerRole: 'BRIDE',
-          ...(kuja && { kuja }),
-          ...(porutham && { porutham }),
-        },
-      });
+      const chart = r.milan(at(input), at(input.partner));
       decoded(chart.grahas, chart.matching, chart.porutham, chart.kuja, chart.marriageDoshas);
       return chart;
     },
     varsha: (input) => {
-      const chart = ctx.chart.found({
-        ...at(input),
-        varsha: { through: input.year ?? 1, place: 'birth', matters: 'all', sahams: 'all', dashas: [DashaSystem.Mudda] },
-      });
+      const chart = r.varsha(at(input), input.year ?? 1);
       const year = chart.praveshas.at(-1);
       if (year === undefined) return new Empty('answered no pravesha (an empty `praveshas`)');
       decoded(chart.grahas, year.annual);
       return chart;
     },
     kp: (input) => {
-      const chart = kp().chart.found({ ...at(input), kp: {} });
+      const chart = r.kp(at(input));
       decoded(chart.grahas, chart.kp);
       return chart;
     },
     gochar: (input) => {
-      const chart = ctx.chart.found({
-        ...at(input),
-        ashtakavarga: true,
-        gochar: { instants: [input.transitAt], ashtakavarga: true },
-      });
+      const chart = r.gochar(at(input), [input.transitAt]);
       decoded(chart.grahas, chart.ashtakavarga, chart.gochar);
       return chart;
     },
     sadeSati: (input) => {
-      const chart = ctx.chart.found({ ...at(input), sadeSati: input.window });
+      const chart = r.sadeSati(at(input), input.window);
       decoded(chart.grahas, chart.sadeSati);
       return chart;
     },
     batch: (input) => {
-      const charts = ctx.chart.foundMany({
-        instants: input.instants,
-        place: input.place,
-        utcOffsetSeconds: input.utcOffsetSeconds,
-        ...full,
-      });
+      const charts = r.batch(at(input), input.instants);
       for (const chart of charts) readFull(chart);
       return charts;
     },
@@ -408,55 +319,50 @@ export function sdkSide(ctx, kp, version, asked = {}, elect = () => ctx) {
 
 /**
  * The two conventions the SDK answers under (§10): `timed`, the profiles
- * every figure is timed on, and `same`, the profiles that cast as the
+ * every figure is timed on, and `same`, the settings that cast as the
  * baseline casts, so that what still differs is method. The SDK refuses a
  * polar day unless told how to reckon one, and the baseline answers
  * every day: the timed profiles reckon it from civil midnight, and the
  * same ones by the conformance profile's own policy, from the nearest
  * sunrise and sunset, given to KP too (§10).
+ *
+ * `same` is what the corpus's `default` snapshot means, read as the shim
+ * reads a stored one (`recordedSettings`, `03-design/compat-shim.md` §4):
+ * its natal and KP openings, KP on the natal frame with the baseline's
+ * ruling planets (cruxes C150, C151), a transit cast from the Earth's
+ * centre (C778); and the readings the shim asks for where a request names
+ * its own (`forward.js`'s `READINGS`: C104, C285, C286, C303, C779).
  */
 export const CONVENTIONS = {
   timed: {
-    profile: 'parashari-classical',
-    kp: 'kp-default',
-    settings: { day: { polar_day_policy: 'CIVIL_MIDNIGHT' } },
-    kpSettings: { day: { polar_day_policy: 'CIVIL_MIDNIGHT' } },
+    natal: { profile: 'parashari-classical', settings: { day: { polar_day_policy: 'CIVIL_MIDNIGHT' } } },
+    kp: { profile: 'kp-default', settings: { day: { polar_day_policy: 'CIVIL_MIDNIGHT' } } },
   },
   same: {
-    profile: 'conformance-baseline',
-    kp: 'kp-default',
-    // KP on the baseline's frame: its mean node, topocentric and nutated;
-    // and its ruling planets as the baseline reads them, as
-    // `conformance-baseline` does: seven, the sub lords too, and the civil
-    // weekday's lord (cruxes C150, C151).
-    kpSettings: {
-      frame: { node: 'MEAN', centre: 'TOPOCENTRIC', ayanamsha_basis: 'TRUE' },
-      day: { polar_day_policy: 'NEAREST_EVENT' },
-      kp: { day_lord_day: 'CIVIL', ruling_count: 'WITH_SUBS' },
-    },
-    // The baseline casts a birth from its place and a transit from the
-    // Earth's centre, as `conformance-baseline` records (crux C778); said
-    // here too, since the transit requests read it.
-    settings: { gochar: { transit_centre: 'GEOCENTRIC' } },
+    recorded: defaultSnapshot,
     // The baseline casts a muhurta's sky from the Earth's centre with the
     // true node, though its charts are topocentric with the mean one, and
     // no setting moves the muhurta search alone (crux C781): `muhurta` is
     // searched on a context of that frame, opened when first asked for.
     muhurtaSettings: { frame: { node: 'TRUE', centre: 'GEOCENTRIC' } },
-    // The readings the baseline takes where a request names its own. The
-    // Kuja dosha: Mars from the lagna, the Moon and Venus, in the six
-    // houses with the 2nd (C285, C286); the baseline lifts it by three of
-    // its nine cancellations, which no SDK lift set reads, so none is
-    // asked. Stree-deergha beyond the 10th or on the bride's own star
-    // (C779). The three spans: Amsayu multiplied, compound enmity, each
-    // reduction taken in turn, and Nisargayu's listed years (C104, C303).
-    asked: {
-      kuja: { from: 'LAGNA_MOON_VENUS', houses: 'WITH_SECOND' },
-      porutham: { deerghaBeyond: 'TENTH_OR_SAME_STAR' },
-      ayurdaya: { amsayu_multiplied: true, enmity: 'compound', combine: 'each', nisarga: 'listed' },
-    },
+    asked: READINGS,
   },
 };
+
+/**
+ * A convention's natal and KP openings, `{ profile, settings }` each: its
+ * own, or what its stored snapshot translates to.
+ */
+function openings(c) {
+  if (c.recorded === undefined) return c;
+  const translator = new Context({ ephemeris: 'NONE' });
+  try {
+    const { natal, kp } = translator.recordedSettings(c.recorded());
+    return { natal, kp };
+  } finally {
+    translator.dispose();
+  }
+}
 
 /** Two settings patches, the second's groups laid over the first's. */
 function merged(a, b) {
@@ -473,18 +379,20 @@ function merged(a, b) {
  */
 export function openSdk(ephemeris, version, convention = 'timed', patch = {}) {
   const c = CONVENTIONS[convention];
-  const ctx = new Context({ profile: c.profile, ephemeris, settings: merged(c.settings, patch) });
+  const { natal, kp: kpOpening } = openings(c);
+  const ctx = new Context({ profile: natal.profile, ephemeris, settings: merged(natal.settings, patch) });
   // Opened on first use, as the baseline builds its applied engines, so a
   // cold start pays for what its first chart reads and no more (§6).
   let kp;
-  const kpContext = () => (kp ??= new Context({ profile: c.kp, ephemeris, settings: merged(c.kpSettings, patch) }));
+  const kpContext = () =>
+    (kp ??= new Context({ profile: kpOpening.profile, ephemeris, settings: merged(kpOpening.settings, patch) }));
   let elected;
   const electContext = c.muhurtaSettings
     ? () =>
         (elected ??= new Context({
-          profile: c.profile,
+          profile: natal.profile,
           ephemeris,
-          settings: merged(merged(c.settings, c.muhurtaSettings), patch),
+          settings: merged(merged(natal.settings, c.muhurtaSettings), patch),
         }))
     : () => ctx;
   return {

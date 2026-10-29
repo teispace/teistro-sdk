@@ -18,11 +18,30 @@ test('the package exports the entry and the refusal, and nothing of its insides'
   assert.deepEqual([refused.name, refused.row, refused.cause], ['CompatRefused', 'birth.instant', 'why']);
 });
 
+/** The rows the shim forwards (§7 item 5), each counted from zero. */
+const ROWS = ['chart', 'full', 'vargas', 'yogas', 'strength', 'dashas', 'day', 'month', 'milan', 'varsha', 'kp', 'gochar', 'sadeSati', 'batch'];
+
 test('a shim counts the calls of its rows, and none are made yet', () => {
   const shim = compat({ ephemeris: 'TEST', locale: 'ne-Deva-NP' });
   const counts = shim.calls();
   assert.ok(Object.isFrozen(counts));
-  assert.deepEqual(counts, {});
+  assert.deepEqual(counts, Object.fromEntries(ROWS.map((row) => [row, 0])));
+  shim.dispose();
+});
+
+test('a row missing what it needs is a TypeError naming the option, before any call is counted', () => {
+  const shim = compat({ ephemeris: 'TEST' });
+  for (const [row, field] of [
+    ['month', 'from'],
+    ['milan', 'partner'],
+    ['varsha', 'through'],
+    ['gochar', 'instants'],
+    ['sadeSati', 'from'],
+    ['batch', 'instants'],
+  ]) {
+    assert.throws(() => shim[row]({}, {}), (error) => error instanceof TypeError && error.message.startsWith(`options.${field}: required`));
+  }
+  assert.equal(Object.values(shim.calls()).reduce((a, b) => a + b), 0);
   shim.dispose();
 });
 

@@ -10,11 +10,13 @@ the SDK's own result. The design is
 the migration guide is
 [`docs/09-guidelines/baseline-migration.md`](../../../docs/09-guidelines/baseline-migration.md).
 
-**Status:** a skeleton. The entry, the context cache, the birth record
-reader, the refusal and the call counts are built; the forwarding
-functions are not yet (the design page's §7, items 5 to 7). Nothing is
-published: the package is `private` until releases are cut, like every
-Teistro package.
+**Status:** fourteen rows forward, each one SDK call: `chart`, `full`,
+`vargas`, `yogas`, `strength`, `dashas`, `day`, `month`, `milan`,
+`varsha`, `kp`, `gochar`, `sadeSati` and `batch`. They are the calls the
+A/B against the baseline engine times, so each is held to "not slower
+than the baseline". The rest of the surface is the design page's §7,
+items 6 and 7. Nothing is published: the package is `private` until
+releases are cut, like every Teistro package.
 
 ## Using it
 
@@ -33,6 +35,26 @@ const left: string[] = Object.entries(shim.calls())
 
 shim.dispose();
 ```
+
+Each row takes the stored birth record and the stored snapshot the chart
+was computed under, and answers the SDK's own result. A row that needs
+more takes it as an option: the partner's stored record for `milan`, the
+instants for `gochar` and `batch`, the range for `month` and `sadeSati`:
+
+```ts title="bindings/node/compat/typecheck/consumer.ts"
+const rows = compat({ ephemeris: 'BUILTIN' });
+const charts: Chart[] = [
+  rows.chart(birth, snapshot),
+// …
+  rows.milan(birth, snapshot, { partner: birth }),
+// …
+];
+const today: AlmanacDay = rows.day(birth, snapshot);
+```
+
+`kp` answers on the KP context the snapshot means, Krishnamurti's
+ayanamsha on the chart's frame with the baseline's ruling planets;
+`{ anyAyanamsha: true }` answers on the chart's own context instead.
 
 In an application the chain is a real engine, such as
 `[teimeris({ dataDir: './ephe' })]` from `@teistro/ephemeris-teimeris`.
@@ -54,7 +76,7 @@ A birth record is read as follows:
 
 | the record holds | the shim |
 |---|---|
-| `julianDay` and `dateTimeUtc` | founds at the Julian day, and refuses the record when the date is more than a millisecond from it |
+| `dateTimeUtc` and `julianDay` | founds at the date, the instant the application computed from, and refuses the record when the Julian day derived from it stands more than 43.25 ms away: half the step of a Julian day kept to six decimals, and a double's rounding |
 | `latitude`, `longitude`, `altitude` | the place |
 | `timezone`, or `isLmt` | the clock's offset, read from the IANA zone, or local mean time at the longitude |
 | `birthTimeUncertainty`, `gender` | read only by rectification |
