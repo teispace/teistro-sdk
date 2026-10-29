@@ -34,7 +34,7 @@ const RUNGS: [(&str, &str, u8); 6] = [
 
 /// The rungs that judge each request; none, and the request is agreement
 /// only (§11).
-const JUDGED: [(&str, &[&str]); 14] = [
+const JUDGED: [(&str, &[&str]); 15] = [
     ("chart", &["swiss-ephemeris", "pyjhora"]),
     ("day", &["committee"]),
     ("full", &["swiss-ephemeris", "pyjhora"]),
@@ -49,6 +49,7 @@ const JUDGED: [(&str, &[&str]); 14] = [
     ("gochar", &["swiss-ephemeris"]),
     ("sadeSati", &[]),
     ("batch", &["swiss-ephemeris"]),
+    ("muhurta", &[]),
 ];
 
 /// What a cause claims, which the gate checks on the record (§11).
@@ -74,7 +75,7 @@ impl Cause {
 
 /// Each request's dominant cause of disagreement, and what the record
 /// shows of it.
-const CAUSES: [(&str, Cause, &str); 14] = [
+const CAUSES: [(&str, Cause, &str); 15] = [
     (
         "chart",
         Cause::Convention,
@@ -190,6 +191,7 @@ const CAUSES: [(&str, Cause, &str); 14] = [
          every edge agrees within two seconds",
     ),
     ("batch", Cause::Convention, "as `full`, at ten instants"),
+    ("muhurta", Cause::Method, "measured in the next record"),
 ];
 
 /// The least share of compared facts each request agrees on, under
@@ -200,7 +202,7 @@ const CAUSES: [(&str, Cause, &str); 14] = [
 /// comparison; `milan`'s and `gochar`'s under `same` of 29 October, when
 /// `same` cast its transits on its one context and asked the baseline's
 /// Stree-deergha; each share truncated rather than rounded.
-const AGREEMENT_FLOORS: [(&str, f64, f64); 14] = [
+const AGREEMENT_FLOORS: [(&str, f64, f64); 15] = [
     ("chart", 0.545, 0.999),
     ("day", 0.991, 0.965),
     ("full", 0.641, 0.996),
@@ -215,6 +217,7 @@ const AGREEMENT_FLOORS: [(&str, f64, f64); 14] = [
     ("gochar", 0.816, 0.988),
     ("sadeSati", 0.076, 1.0),
     ("batch", 0.651, 0.996),
+    ("muhurta", 0.0, 0.0),
 ];
 
 /// The least share each side keeps on a rung for a request, under a

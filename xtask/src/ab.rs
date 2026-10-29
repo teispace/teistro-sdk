@@ -57,7 +57,7 @@ const ROUNDS: usize = 15;
 
 /// The requests both sides answer, and what each asks: the runner's
 /// `REQUESTS`, in its order.
-const REQUESTS: [(&str, &str); 14] = [
+const REQUESTS: [(&str, &str); 15] = [
     (
         "chart",
         "a birth chart with every varga, its drishti, upagrahas, houses, dignities, arudhas and \
@@ -95,6 +95,10 @@ const REQUESTS: [(&str, &str); 14] = [
     ),
     ("sadeSati", "Sade Sati and the dhaiyyas over thirty years"),
     ("batch", "ten whole charts an hour apart, at one place"),
+    (
+        "muhurta",
+        "a marriage muhurta over 25 days at Kathmandu thirty years on, then against the native",
+    ),
 ];
 
 /// The requests the SDK is measurably slower at, each with the most it may

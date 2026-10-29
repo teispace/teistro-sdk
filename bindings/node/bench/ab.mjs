@@ -16,9 +16,9 @@
 import { performance } from 'node:perf_hooks';
 import { fileURLToPath } from 'node:url';
 
-import { Calendar, Context, DashaSystem, Varga, date } from '../lib/index.js';
+import { Calendar, Context, DashaSystem, Nakshatra, Rashi, Varga, date } from '../lib/index.js';
 import { Agreement, figures, joinYogas, sdkFacts } from './ab-agree.mjs';
-import { REQUESTS, SIDES, inputs, open, paths, sdkVersion } from './ab-inputs.mjs';
+import { MUHURTA_DAYS, REQUESTS, SIDES, inputs, open, paths, sdkVersion } from './ab-inputs.mjs';
 import {
   Kept,
   charakRung,
@@ -205,6 +205,30 @@ function civil(input, offsetDays = 0) {
   return date(Calendar.Gregorian, at.getUTCFullYear(), at.getUTCMonth() + 1, at.getUTCDate());
 }
 
+/** A `YYYY-MM-DD` civil date, Gregorian. */
+function gregorian(iso) {
+  const [year, month, day] = iso.split('-').map(Number);
+  return date(Calendar.Gregorian, year, month, day);
+}
+
+/**
+ * The marriage muhurta as the baseline searches it: its rules, its
+ * ranking, every day with windows (`MUHURTA_DAYS`, so no cap decides
+ * which day is cut) and every window kept, the facts presenting them as
+ * the baseline does (`ab-agree.mjs`).
+ */
+const MUHURTA = { rules: 'BASELINE_MARRIAGE', ranking: 'BASELINE', daysWithWindows: MUHURTA_DAYS, most: 100_000 };
+
+/** The native a muhurta is read against: the birth Moon's star and sign. */
+function nativeOf(chart) {
+  const moon = chart.grahas.find((placed) => placed.graha === 'graha.MOON').longitudeDeg;
+  const lon = ((moon % 360) + 360) % 360;
+  return {
+    star: Object.values(Nakshatra)[Math.floor((lon * 27) / 360)],
+    moonSign: Object.values(Rashi)[Math.floor(lon / 30)],
+  };
+}
+
 /** The catalogues' joined yogas, read once (`ab-agree.mjs`). */
 let joined;
 
@@ -250,9 +274,11 @@ export function transitSkyOf(context) {
  * @param {() => Context} kp
  * @param {string} version
  * @param {{kuja?: object, porutham?: object, ayurdaya?: object}} [asked]
+ * @param {() => Context} [elect] the context `muhurta` searches on, `ctx`
+ *   unless a convention casts a muhurta's sky in a frame of its own
  * @returns {import('./ab-inputs.mjs').Side}
  */
-export function sdkSide(ctx, kp, version, asked = {}) {
+export function sdkSide(ctx, kp, version, asked = {}, elect = () => ctx) {
   const { kuja, porutham, ayurdaya } = asked;
   const full = ayurdaya ? { ...FULL, rules: { ...FULL.rules, ayurdaya } } : FULL;
   const at = (input) => ({ instant: input.jdUt, place: input.place, utcOffsetSeconds: input.utcOffsetSeconds });
@@ -363,6 +389,15 @@ export function sdkSide(ctx, kp, version, asked = {}) {
       for (const chart of charts) readFull(chart);
       return charts;
     },
+    muhurta: (input) => {
+      const { from, to, place, utcOffsetSeconds } = input.muhurta;
+      const days = { from: gregorian(from), to: gregorian(to), place, utcOffsetSeconds };
+      const native = nativeOf(ctx.chart.found(at(input)));
+      const general = elect().almanac.of({ ...days, muhurta: MUHURTA });
+      const natal = elect().almanac.of({ ...days, muhurta: { ...MUHURTA, native } });
+      decoded(general.muhurta, natal.muhurta);
+      return { general, native: natal };
+    },
     sun: (answer) => answer.grahas.find((placed) => placed.graha === 'graha.SUN').longitudeDeg,
     facts: (request, answer, input) => sdkFacts(request, answer, input, (joined ??= figures())),
     get conventions() {
@@ -403,6 +438,11 @@ export const CONVENTIONS = {
     // Earth's centre, as `conformance-baseline` records (crux C778); said
     // here too, since the transit requests read it.
     settings: { gochar: { transit_centre: 'GEOCENTRIC' } },
+    // The baseline casts a muhurta's sky from the Earth's centre with the
+    // true node, though its charts are topocentric with the mean one, and
+    // no setting moves the muhurta search alone (crux C781): `muhurta` is
+    // searched on a context of that frame, opened when first asked for.
+    muhurtaSettings: { frame: { node: 'TRUE', centre: 'GEOCENTRIC' } },
     // The readings the baseline takes where a request names its own. The
     // Kuja dosha: Mars from the lagna, the Moon and Venus, in the six
     // houses with the 2nd (C285, C286); the baseline lifts it by three of
@@ -438,9 +478,19 @@ export function openSdk(ephemeris, version, convention = 'timed', patch = {}) {
   // cold start pays for what its first chart reads and no more (§6).
   let kp;
   const kpContext = () => (kp ??= new Context({ profile: c.kp, ephemeris, settings: merged(c.kpSettings, patch) }));
+  let elected;
+  const electContext = c.muhurtaSettings
+    ? () =>
+        (elected ??= new Context({
+          profile: c.profile,
+          ephemeris,
+          settings: merged(merged(c.settings, c.muhurtaSettings), patch),
+        }))
+    : () => ctx;
   return {
-    side: sdkSide(ctx, kpContext, version, c.asked),
+    side: sdkSide(ctx, kpContext, version, c.asked, electContext),
     dispose: () => {
+      elected?.dispose();
       kp?.dispose();
       ctx.dispose();
     },

@@ -41,12 +41,45 @@ test('every golden input is read, with its instant, place, civil date and what i
   assert.equal(first.window.from, first.jdUt);
   assert.ok(Math.abs(first.window.to - first.jdUt - 30 * 365.25) < 1e-6);
   assert.equal(first.transitAt, first.window.to);
+  // The muhurta's 25 days, thirty years on from the civil date, at Kathmandu.
+  assert.deepEqual(first.muhurta, {
+    from: '2020-04-14',
+    to: '2020-05-08',
+    iana: 'Asia/Kathmandu',
+    utcOffsetSeconds: 345 * 60,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+  });
 });
 
 test('the SDK answers every request the runner times, on one birth', () => {
   withSdk((sdk) => {
     const [first] = inputs();
     for (const request of REQUESTS) assert.ok(sdk[request](first), request);
+  });
+});
+
+test('a muhurta search is presented as the baseline ranks it', () => {
+  withSdk((sdk) => {
+    const [first] = inputs();
+    const facts = new Map(sdk.facts('muhurta', sdk.muhurta(first), first));
+    for (const kind of ['general', 'native']) {
+      const ranking = facts.get(`muhurta/${kind}/ranking`);
+      const rows = ranking === '' ? [] : ranking.split(' ').map((row) => row.split('='));
+      assert.ok(rows.length > 0, `${kind}: the window has open days`);
+      assert.ok(rows.length <= 30, 'thirty rows at most');
+      assert.equal(facts.get(`muhurta/${kind}/count`), rows.length);
+      const days = new Map();
+      for (const [key, score] of rows) {
+        assert.match(key, /^\d{4}-\d{2}-\d{2}#\d{1,2}b?$/);
+        assert.equal(facts.get(`muhurta/${kind}/window/${key}`), Number(score));
+        const date = key.slice(0, 10);
+        days.set(date, (days.get(date) ?? 0) + 1);
+        assert.ok(facts.has(`muhurta/${kind}/day/${date}`), date);
+      }
+      assert.ok([...days.values()].every((n) => n <= 2), 'two windows a day at most');
+      const scores = rows.map(([, score]) => Number(score));
+      assert.deepEqual(scores, [...scores].sort((a, b) => b - a), 'highest first');
+    }
   });
 });
 

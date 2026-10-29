@@ -61,6 +61,7 @@ are given the same:
 | `instants` | ten instants an hour apart from the birth, at its place | `batch` |
 | `transitAt` | the birth's instant thirty Julian years on | `gochar` |
 | `window` | from the birth to thirty Julian years on | `sadeSati` |
+| `muhurta` | 25 civil days from the birth's civil date thirty years on, at Kathmandu on its own clock: within the baseline's 25 days with windows, so that cap never decides a day, and where the baseline reads asta (crux C164) | `muhurta` |
 
 ## 2. The same work on both sides
 
@@ -104,6 +105,7 @@ that any error in the match is against the SDK:
 | `gochar` | the foundation and its Ashtakavarga, the grahas at `transitAt`, their houses from the Moon and lagna, their bindus and the gochar phala with vedha | `ashtakavarga` and `gochar` at `transitAt` with the Ashtakavarga's verdict |
 | `sadeSati` | the foundation and Saturn's Sade Sati and dhaiyya periods over `window` | `sadeSati` over `window`, whose default spells are the 4th and the 8th |
 | `batch` | `computeAll` over `instants`: a whole `compute()` chart at each | `foundMany` over the same instants, each chart asked for what `full` asks |
+| `muhurta` | the application's marriage search over `muhurta`, avoiding Rahu kaala, and again against the native's star and Moon sign: its two windows a day for its 25 best days, thirty rows at most, each with its score | `almanac.of` over the same days with `muhurta: { rules: 'BASELINE_MARRIAGE', ranking: 'BASELINE' }`, every day cut and every window kept, then the same again with the native from the SDK's own chart |
 
 An SDK answer decodes on read and the baseline's comes back built, so the
 SDK side reads every part it asked for inside the timing. The baseline
@@ -325,6 +327,7 @@ compared. The families, their units and their tolerances:
 | `gochar` | whether a transit stands in a good house from the Moon, whether a good one is obstructed (Phaladeepika ch. 26 vv. 2 to 8; the SDK obstructs a good transit only, so a bad one's vedha is not compared), and whether its own Ashtakavarga makes it strong | exact | — |
 | `kuja` | whether the bride and the groom each carry the Kuja dosha, after any lift the rules asked count | exact | — |
 | `marriageDosha` | whether a match carries the Ashta Koota's nadi, bhakoot and gana doshas, lifted or not; the considerations' are `porutham`'s | exact | — |
+| `muhurta` | each search's ranking whole (`date#choghadiya=score`, rank for rank), how many rows it holds, each ranked window's score and each ranked day's. The SDK's windows are presented as the baseline presents its own: the open, scored ones joined into the run each choghadiya holds, a run under six minutes dropped, each scored at its start; the days by their score, each day's two best runs by the day's score and the choghadiya's weight, then every row by its score, thirty at most | exact | — |
 
 A continuous family reports the median and the largest difference and the
 share within its tolerance; a categorical one the share of exact matches.
@@ -348,7 +351,10 @@ lords counted, the civil weekday's lord: cruxes C150, C151), and the
 transit requests (`gochar`, `sadeSati`) cast on the same context from
 the Earth's centre, as the baseline casts a transit
 (`gochar.transit_centre = GEOCENTRIC`, C778), under a birth cast from
-its place. Where a request names readings of its own, `same` asks the
+its place. `muhurta` is searched on a context of the frame the baseline
+casts a muhurta's sky in, the Earth's centre and the true node, since
+no setting moves the search alone (C781); the native's star and Moon
+sign are read from the birth's own chart. Where a request names readings of its own, `same` asks the
 baseline's: `milan` the Kuja dosha from the lagna, the Moon and Venus in
 the six houses with the 2nd (C285, C286) and Stree-deergha beyond the
 10th or on the bride's own star (`deerghaBeyond = TENTH_OR_SAME_STAR`,
