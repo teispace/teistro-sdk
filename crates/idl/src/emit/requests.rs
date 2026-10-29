@@ -923,9 +923,10 @@ mod tests {
     }
 
     #[test]
-    fn dart_compares_a_part_the_layer_keeps_by_hand_by_what_it_writes() {
-        // `Interval` is a façade: the layer's class compares by identity, so
-        // a generated request holding one compares it by its JSON.
+    fn dart_compares_a_part_the_layer_keeps_by_hand_as_the_value_it_is() {
+        // `Interval` is a façade: the layer's class compares by the JSON it
+        // writes (`_Facade`), so a generated request holding one compares
+        // it as any other field.
         let mut api = fixture();
         let schema = json!({"$defs": {
             "Hold": {"type": "object", "properties": {
@@ -955,8 +956,8 @@ mod tests {
             "the layer declares it"
         );
         assert!(
-            out.contains("List<Object?> get _fields => [end, jsonEncode(window._wire), if (windows case final windowsValue?) jsonEncode([for (final e0 in windowsValue) e0._wire]) else null];"),
-            "a generated part compares as itself, a hand-kept one by its JSON: {out}"
+            out.contains("List<Object?> get _fields => [end, window, windows];"),
+            "a hand-kept part compares as itself: {out}"
         );
     }
 
