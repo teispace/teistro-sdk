@@ -312,7 +312,7 @@
       "subject": "@teistro/compat",
       "artefact": "package",
       "raw": 120000,
-      "gzip": 30000
+      "gzip": 32000
     }
   ],
   "history": [
@@ -576,6 +576,15 @@
       "raw": 110069,
       "gzip": 29014,
       "why": "the compatibility shim's first budget, 2% over its measure (62 rows, their declarations and the A/B's vocabulary; the design page estimated 40 KB)"
+    },
+    {
+      "run": "by hand",
+      "date": "2026-10-29",
+      "subject": "@teistro/compat",
+      "artefact": "package",
+      "raw": 116123,
+      "gzip": 30802,
+      "why": "the A/B's vocabulary reads a prashna, a rashifal and the graded and rashi drishti (five families), and the shim carries the baseline's rashifal event grahas; the gzipped budget 2% over this measure, to the next thousand bytes, and the raw one still clears it"
     }
   ]
 }
