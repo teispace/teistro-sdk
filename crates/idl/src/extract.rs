@@ -1407,4 +1407,163 @@ pub enum Direction { Rising = 0, Falling = 1 }
         };
         assert!(extract(&[fine], &inputs()).is_ok());
     }
+
+    /// The source the ABI constant opens, and `text` after it.
+    fn with_abi(text: &str) -> Source {
+        Source {
+            relative: "a.rs".into(),
+            text: format!("/// `api: constant`\npub const TS_ABI_VERSION: u32 = 1;\n{text}"),
+        }
+    }
+
+    /// Each broken link or unreadable item is refused, naming what is
+    /// wrong.
+    #[test]
+    fn each_shape_the_boundary_cannot_describe_is_refused() {
+        for (text, saying) in [
+            (
+                "#[unsafe(no_mangle)] pub extern \"C\" fn ts_x() {}\n#[unsafe(no_mangle)] pub extern \"C\" fn ts_x() {}",
+                "exported twice",
+            ),
+            (
+                "/// `api: blob=Chart`\n#[unsafe(no_mangle)] pub extern \"C\" fn ts_x() {}",
+                "no blob schema `Chart`",
+            ),
+            (
+                "/// `api: calendar: enum=Calendar`\n#[unsafe(no_mangle)] pub extern \"C\" fn ts_x(calendar: u32) {}",
+                "`api: calendar: enum=Calendar` names no enum",
+            ),
+            (
+                "#[repr(C)] pub struct TsX {\n/// `api: enum=Calendar`\npub calendar: u32 }",
+                "`api: enum=Calendar` names no enum",
+            ),
+            (
+                "#[repr(C)] pub struct TsX {\n/// `api: bitset=Flags`\npub flags: u32 }",
+                "`api: bitset=Flags` names no enum",
+            ),
+            (
+                "#[repr(C)] pub struct TsX {\n/// `api: len=count`\npub items: *const u32 }",
+                "`api: len=count` names no field of `TsX`",
+            ),
+            (
+                "#[repr(C)] pub struct TsX {\n/// `api: present_if=has`\npub value: f64 }",
+                "`api: present_if=has` names no field of `TsX`",
+            ),
+            (
+                "/// `api: constant`\npub const TS_NAME: &str = \"x\";",
+                "constant `TS_NAME` must be an integer scalar",
+            ),
+            (
+                "/// `api: constant`\npub const TS_SIZE: u32 = SIZE;",
+                "constant `TS_SIZE` must be an integer scalar",
+            ),
+            (
+                "/// `api: role=table`\n#[repr(C)] pub struct TsX { pub a: u32 }",
+                "unknown role `table`",
+            ),
+            (
+                "#[repr(C)] pub struct TsVtable { pub size: u32, pub positions: Option<PositionsFn> }",
+                "`PositionsFn` is not a callback alias",
+            ),
+            (
+                "#[repr(C)] pub struct TsX { pub items: [u32; N] }",
+                "an array length must be a literal",
+            ),
+            (
+                "#[repr(C)] pub struct TsX { pub name: Option<&'static str> }",
+                "wraps a callback alias only",
+            ),
+            (
+                "#[repr(C)] pub struct TsX { pub name: &'static u8 }",
+                "a type the boundary cannot carry",
+            ),
+        ] {
+            let refused = extract(&[with_abi(text)], &inputs()).unwrap_err();
+            assert!(refused.detail.contains(saying), "{saying}: {refused:?}");
+        }
+    }
+
+    /// What is not part of the boundary is passed over, and every key of
+    /// an `api:` line is read.
+    #[test]
+    fn what_the_boundary_does_not_carry_is_passed_over_and_every_key_is_read() {
+        let source = with_abi(
+            r#"
+/// No repr: not at the boundary.
+pub enum Loose { A, B }
+
+/// A plain alias, not a callback.
+pub type Count = u32;
+
+/// Public fields and no repr: neither a struct nor an opaque.
+pub struct Open { pub a: u32 }
+
+/// The colour.
+#[repr(u8)]
+pub enum Colour {
+    /// Red.
+    Red = 1,
+    /// Was green.
+    #[deprecated]
+    Green,
+}
+
+/// A place.
+#[repr(C)]
+pub struct TsPlace {
+    /// The latitude.
+    /// `api: unit=deg brand=latitude range=[-90,90] since=2 flag nullable unknown=1 stray`
+    pub latitude: f64,
+    /// The hour, at a time like this.
+    /// `api: example=12:30`
+    pub hour: u32,
+}
+
+/// Paints.
+///
+/// `api: colour: enum=Colour`
+/// `api: two words: enum=Colour`
+#[unsafe(no_mangle)]
+pub extern "C" fn ts_paint(colour: u32) -> u32 { colour }
+"#,
+        );
+        let api = extract(&[source], &inputs()).unwrap();
+        assert_eq!(
+            api.enums
+                .iter()
+                .map(|e| e.name.as_str())
+                .collect::<Vec<_>>(),
+            ["Colour"]
+        );
+        let colour = api.enum_named("Colour").unwrap();
+        assert_eq!(
+            colour
+                .values
+                .iter()
+                .map(|v| (v.value, v.deprecated))
+                .collect::<Vec<_>>(),
+            [(1, false), (2, true)],
+            "a value after a given one counts on from it"
+        );
+        assert!(api.opaques.is_empty() && api.callbacks.is_empty());
+        let place = api.struct_named("TsPlace").unwrap();
+        let latitude = &place.fields[0].meta;
+        assert_eq!(
+            (
+                latitude.unit.as_deref(),
+                latitude.brand.as_deref(),
+                latitude.range.as_deref(),
+                latitude.since
+            ),
+            (Some("deg"), Some("latitude"), Some("[-90,90]"), Some(2))
+        );
+        assert!(latitude.flag && latitude.nullable);
+        assert_eq!(
+            place.fields[1].meta.example.as_deref(),
+            Some("12:30"),
+            "a colon after a key is no parameter's"
+        );
+        let paint = api.function_named("ts_paint").unwrap();
+        assert_eq!(paint.params[0].meta.enum_name.as_deref(), Some("Colour"));
+    }
 }

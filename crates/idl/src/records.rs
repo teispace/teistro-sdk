@@ -1905,4 +1905,141 @@ mod tests {
             json!({"items": [{"additionalProperties": {"type": "integer"}}], "x": 1})
         );
     }
+
+    /// `Root` with its `count` field made `count`, refused or read.
+    fn with_count(count: &Value) -> Result<Vec<RecordDef>, String> {
+        let mut odd = schema();
+        odd["$defs"]["Root"]["properties"]["count"] = count.clone();
+        odd["$defs"]["Graha"] = json!({"type": "string", "x-teistro-kind": "graha"});
+        odd["$defs"]["Rashi"] = json!({"type": "string", "x-teistro-kind": "rashi"});
+        odd["$defs"]["Alias"] = json!({"$ref": "#/$defs/Version"});
+        from_schema(&odd, &["Root"])
+    }
+
+    /// The type `count` is read as, and whether the schema lets it be
+    /// null.
+    fn count_type(count: &Value) -> (RecordType, bool) {
+        let records = with_count(count).unwrap();
+        let fields = match &records[0].shape {
+            RecordShape::Object { fields } => fields.clone(),
+            _ => Vec::new(),
+        };
+        let field = fields.iter().find(|f| f.name == "count").unwrap();
+        (field.ty.clone(), field.null)
+    }
+
+    #[test]
+    fn each_field_shape_outside_the_subset_is_refused_by_its_path() {
+        for (count, saying) in [
+            (
+                json!({"anyOf": [{"type": "null"}, {"type": "null"}, {"type": "string"}]}),
+                "Root.count: an anyOf with two nulls",
+            ),
+            (
+                json!({"type": ["string", "integer"]}),
+                "Root.count: a type list that is not one type or null",
+            ),
+            (
+                json!({"description": "anything"}),
+                "Root.count: no type; list it as raw if it is any JSON value",
+            ),
+            (
+                json!({"type": "date"}),
+                "Root.count: type `date`, which no record field is",
+            ),
+            (
+                json!({"type": "array", "prefixItems": [{"type": "string"}, {"type": "string"}, {"type": "string"}]}),
+                "Root.count: a tuple that is not a pair",
+            ),
+            (
+                json!({"type": "array"}),
+                "Root.count: an array with no items",
+            ),
+            (
+                json!({"type": "array", "items": {"type": "string"}, "minItems": 8_589_934_592_u64, "maxItems": 8_589_934_592_u64}),
+                "Root.count: an array of 8589934592 items",
+            ),
+            (
+                json!({"$ref": "https://example.com/schema"}),
+                "Root.count: a reference outside $defs",
+            ),
+            (
+                json!({"$ref": "#/$defs/Missing"}),
+                "Root.count: a reference to Missing, which is not defined",
+            ),
+            (
+                json!({"anyOf": [{"$ref": "#/$defs/Graha"}, {"$ref": "#/$defs/Rashi"}, {"enum": ["LAGNA"]}]}),
+                "an anyOf of two catalogue kinds",
+            ),
+            (
+                json!({"anyOf": [{"type": "string"}, {"type": "number"}]}),
+                "an anyOf that is neither one type or null nor fixed strings or one type",
+            ),
+            (
+                json!({"anyOf": [{"$ref": "#/$defs/Graha"}, {"enum": ["LAGNA"]}, {"type": "number"}]}),
+                "a catalogue member beside a value that is not a record",
+            ),
+            (json!({"enum": ["ONE", 2]}), "a key that is not text"),
+        ] {
+            let refused = with_count(&count).unwrap_err();
+            assert!(refused.contains(saying), "{saying}: {refused}");
+        }
+    }
+
+    #[test]
+    fn each_field_shape_inside_the_subset_is_read_as_serde_reads_it() {
+        assert_eq!(
+            count_type(&json!({"type": ["string", "null"]})),
+            (RecordType::Text, true),
+            "a type or null"
+        );
+        assert_eq!(
+            count_type(&json!({"$ref": "#/$defs/Alias"})),
+            (
+                RecordType::Record {
+                    name: "Version".into()
+                },
+                false
+            ),
+            "an alias is the record it names"
+        );
+        assert_eq!(
+            count_type(
+                &json!({"anyOf": [{"$ref": "#/$defs/Graha"}, {"type": "string", "pattern": "^.+$"}]})
+            ),
+            (
+                RecordType::Keyed {
+                    catalogue: "graha".into()
+                },
+                false
+            ),
+            "a member or a registered key"
+        );
+        assert_eq!(
+            count_type(
+                &json!({"type": "object", "additionalProperties": {"$ref": "#/$defs/Version"}})
+            ),
+            (
+                RecordType::Map {
+                    of: Box::new(RecordType::Record {
+                        name: "Version".into()
+                    })
+                },
+                false
+            )
+        );
+        assert_eq!(
+            count_type(
+                &json!({"type": "array", "items": {"type": "boolean"}, "minItems": 1, "maxItems": 3})
+            ),
+            (
+                RecordType::List {
+                    of: Box::new(RecordType::Bool),
+                    len: None
+                },
+                false
+            ),
+            "bounds that differ are no length"
+        );
+    }
 }
