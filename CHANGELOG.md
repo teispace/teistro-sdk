@@ -26,6 +26,11 @@ condition answering undecided where it answered false.
   locale trees, migrations and patterns; every shape the boundary cannot
   describe; a scripted provider through each vtable slot, status and
   malformed call.
+- Intl: a context value must be a letter, then letters, digits or `_`;
+  `1st` or `a-b` generated enum members no binding could compile, and
+  validation now refuses them. The generators, bundle reader, the IDL's
+  C-API emitter variants and the ephemeris kit's corpus runs are tested
+  over synthetic inputs.
 - Documented: under the geocentric default an observer moves no position;
   only a topocentric frame reads it. The place still serves the houses
   and the lagna.
