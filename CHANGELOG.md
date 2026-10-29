@@ -12,12 +12,23 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
-**Python's layer, remedies, research and the ephemeris kit tested where
-their refusals and edges are.**
-**Numbers:** none. Tests, and one Python refusal's wording.
+**Python's layer, remedies, research, the ephemeris kit, intl, the IDL
+and the ephemeris port tested where their refusals and edges are.**
+**Numbers:** none. Tests, one Python refusal's wording, and one remedy
+condition answering undecided where it answered false.
 - Python: a `masa_pravesha` residence with no `Observer` is refused as
   `masa_pravesha['place']['observer']`, not `varsha`'s, an argument the
   call never had.
+- Remedies: a condition joining a graha with the lords of the second or
+  seventh answers undecided (`None`) for a graha outside the nine, as the
+  placement conditions do, rather than `false`.
+- Intl, IDL and the ephemeris port tested at their refusals: malformed
+  locale trees, migrations and patterns; every shape the boundary cannot
+  describe; a scripted provider through each vtable slot, status and
+  malformed call.
+- Documented: under the geocentric default an observer moves no position;
+  only a topocentric frame reads it. The place still serves the houses
+  and the lagna.
 
 **A cancellation's condition reaches every binding.**
 **Numbers:** none. No settings or document hash moves: a rule is written
