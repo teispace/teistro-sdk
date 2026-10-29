@@ -796,6 +796,30 @@ mod tests {
         .unwrap()
     }
 
+    /// Each integer width, a map of records, a default in exponent form,
+    /// links in a description and a record the Dart layer declares
+    /// elsewhere.
+    fn wide() -> serde_json::Value {
+        json!({
+            "Wide": {"type": "object", "description": "Every width. See [`Entry`] and [`Nowhere`].",
+                "properties": {
+                "small": {"type": "integer", "format": "uint8", "minimum": 0},
+                "signed": {"type": "integer", "format": "int16"},
+                "whole": {"type": "integer", "format": "int32"},
+                "big": {"type": "integer", "format": "int64"},
+                "huge": {"type": "integer", "format": "uint64", "minimum": 0},
+                "maybe": {"type": ["integer", "null"], "format": "uint16", "minimum": 0},
+                "tiny": {"type": "number", "default": 1e-3},
+                "count": {"type": "integer", "default": 3},
+                "entries": {"type": "object", "additionalProperties": {"$ref": "#/$defs/Entry"}},
+                "civil": {"$ref": "#/$defs/CivilTime"},
+                "civils": {"type": "array", "items": {"$ref": "#/$defs/CivilTime"}}
+            }, "required": ["small", "whole", "civil"]},
+            "CivilTime": {"type": "object", "properties": {"hour": {"type": "integer", "format": "uint8"}},
+                "required": ["hour"]}
+        })
+    }
+
     /// Every shape a request takes, read from a schema as the façade's are.
     fn fixture() -> Api {
         let schema = json!({"$defs": {
@@ -850,9 +874,15 @@ mod tests {
                     "additionalProperties": false}]},
             "Point": {"anyOf": [{"enum": ["LAGNA"]}, {"$ref": "#/$defs/Graha"}, {"$ref": "#/$defs/Entry"}]}
         }});
+        let mut schema = schema;
+        schema
+            .get_mut("$defs")
+            .and_then(serde_json::Value::as_object_mut)
+            .unwrap()
+            .extend(wide().as_object().cloned().unwrap());
         let mut requests = Requests {
             roots: vec![],
-            records: from_schema(&schema, &["Ask"]).unwrap(),
+            records: from_schema(&schema, &["Ask", "Wide"]).unwrap(),
             enums: BTreeMap::default(),
         };
         requests.enums.insert("Sex".into(), "Sex".into());
@@ -889,6 +919,89 @@ mod tests {
             records: vec![],
             requests,
         }
+    }
+
+    fn widened() -> Api {
+        let mut api = fixture();
+        api.requests.roots.push(crate::records::RequestRoot {
+            record: "wide".into(),
+            name: "Wide".into(),
+        });
+        api
+    }
+
+    #[test]
+    fn every_integer_width_is_written_as_each_binding_holds_it() {
+        let api = widened();
+        let ts = typescript_declarations(&api);
+        assert!(
+            ts.contains("export interface Wide {\n  readonly big?: number;\n"),
+            "{ts}"
+        );
+        assert!(ts.contains("  readonly maybe?: number | null;\n"), "{ts}");
+        assert!(ts.contains("  readonly entries?: Readonly<Record<string, Entry>>;\n"));
+        let py = python_declarations(&api);
+        assert!(
+            py.contains("    maybe: Optional[int]\n") && py.contains("    small: Required[int]\n"),
+            "{py}"
+        );
+        assert!(py.contains("    entries: Mapping[str, Entry]\n"), "{py}");
+        assert!(py.contains("\"\"\"Every width. See `Entry` and `Nowhere`.\"\"\""));
+        let java = crate::emit::java::render(&api);
+        let wide = java
+            .iter()
+            .find(|f| f.path.ends_with("/request/Wide.java"))
+            .map(|f| f.text.clone())
+            .unwrap_or_default();
+        assert!(
+            wide.contains("public record Wide(Long big, CivilTime civil, List<CivilTime> civils, Long count, Map<String, Entry> entries, Long huge, Integer maybe, Integer signed, int small, Double tiny, int whole)"),
+            "{wide}"
+        );
+        assert!(
+            wide.contains("        if (maybe != null) {\n            Read.range(maybe, \"Wide.maybe\", 0L, 65535L);\n        }\n")
+                && wide.contains("Read.range(signed, \"Wide.signed\", -32768L, 32767L);")
+                && wide.contains("        Read.range(small, \"Wide.small\", 0L, 255L);\n"),
+            "a narrow width is checked, nullable or not: {wide}"
+        );
+        assert!(
+            !wide.contains("Read.range(whole"),
+            "an int holds an int32 whole"
+        );
+        assert!(wide.contains("Objects.requireNonNull(civil, \"`Wide.civil` is required\");"));
+        assert!(wide.contains("entries = entries == null ? null : Map.copyOf(entries);"));
+        assert!(wide.contains("public Wide(CivilTime civil, int small, int whole) {"));
+    }
+
+    #[test]
+    fn dart_writes_a_default_a_map_and_a_part_it_declares_elsewhere() {
+        let api = widened();
+        let dart = dart_declarations(&api);
+        assert!(
+            dart.contains("    this.count = 3,\n") && dart.contains("    this.tiny = 0.001,\n"),
+            "a default the schema states, an exponent as Dart writes it: {dart}"
+        );
+        assert!(
+            dart.contains("  final Object? civil;\n")
+                && dart.contains("  final List<Object?>? civils;\n"),
+            "a record another file declares is the JSON it is: {dart}"
+        );
+        assert!(
+            dart.contains("'entries': entriesValue.map((k0, v0) => MapEntry(k0, v0._wire))"),
+            "{dart}"
+        );
+        assert!(!dart.contains("final class CivilTime"), "{dart}");
+        let deep = deep_examples(&api, &json!([]));
+        assert_eq!(
+            deep.pointer("/0/request/entries"),
+            Some(&json!({"x": {"end": 1.5}}))
+        );
+        let test = dart_deep_test(&api, &deep);
+        assert!(
+            test.contains("        civil: <String, Object?>{'hour': 1},\n")
+                && test.contains("        civils: [<String, Object?>{'hour': 1}],\n")
+                && test.contains("        entries: {'x': Entry(end: 1.5)},\n"),
+            "{test}"
+        );
     }
 
     fn rendered() -> String {
