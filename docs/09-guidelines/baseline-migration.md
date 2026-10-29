@@ -87,97 +87,21 @@ source ([`site/content/docs/install.mdx`](../../site/content/docs/install.mdx),
 
 ## 4. The concept map
 
-The left column is the baseline's package and service, as the inventory
-names them. The right column is the Node call or the chart request field
-that replaces it, and the result member it fills. `ctx` is a `Context`.
+The map is generated: [`baseline-map.md`](baseline-map.md) lists every
+baseline entry point an application calls, with the `@teistro/compat`
+function that takes it and the SDK call that answers it, and every stored
+settings field with what it becomes. It is rendered by `cargo xtask compat`
+from the shim's own sources (`bindings/node/compat/surface.json` and the
+Rust table `teistro_core::settings::recorded::ROWS`) and held to them by
+`check-compat`, so this guide and the shim cannot disagree about a row.
 
-### 4.1 The core package
-
-| baseline | SDK |
-|---|---|
-| astronomical backend over the native ephemeris | the `ephemeris` option of `new Context(...)`; `ctx.positions({ instants, bodies, frame })` for a grid of positions; `ctx.engine` for the engine's own operations (`ctx.engine.call(name, args)`) |
-| siddhanta router, `drik` or `surya` with bija | the `frame.siddhanta` knob; the `surya-siddhanta` and `nepali-committee` profiles; the `'SURYA_SIDDHANTA'` ephemeris; `nepalOfficial(modern)` opens the committee's reckoning in one call |
-| 47 ayanamshas | the `frame.ayanamsha` knob: a catalogued key (`ayanamsha.LAHIRI`, `ayanamsha.RAMAN`, `ayanamsha.KRISHNAMURTI`, …) or a custom definition |
-| timezone resolver | `ctx.time.resolve(civil, zone)` with `ianaZone(name)`, `fixedZone(seconds)` or `localMeanZone(longitude)`; `whenUnknown(day)` for a birth with no recorded time |
-| sunrise service and its modes | the `day.sunrise` knob; every almanac day and every chart reckons its day from it |
-| ghati-pala, civil and proportional | the `day.ghati_reckoning` knob; a result's `GhatiPala` fields; `chart.timing` for a chart's ishtakaal and hora |
-| BS calendar | `ctx.calendar.convert(date(Calendar.BikramSambat, y, m, d), Calendar.Gregorian)`, and `dateOf`, `fixedOf`, `monthLength`, `isLeap` |
-| entity registry with four-language names | `ctx.intl.entity(key)` in the context's locale; the names came from the baseline's tables (`teistro-intl migrate baseline`, [`crates/intl/src/migrate.rs`](../../crates/intl/src/migrate.rs)) |
-| locale and numeral services | `ctx.intl.render(key, params)`, `ctx.intl.transliterate(text)`; locales `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN`, `sa-Deva` |
-| calendar service with era numbers | the `calendars.eras` knob; `nepalSambat: true` on an almanac request |
-
-### 4.2 The chart package
-
-Every row is a field of the request to `ctx.chart.found(...)` (or
-`ctx.chart.foundMany(...)` for many instants at one place) and the member
-of the `Chart` it fills.
-
-| baseline | request field | result |
-|---|---|---|
-| foundation | `instant`, `place`, `utcOffsetSeconds`, `kind` | `chart.grahas`, `chart.lagnaDeg`, `chart.ayanamsha`, `chart.day` |
-| house systems, Bhava-Chalit | `houses: true` for the houses service's reading | `chart.bhavas`; `chart.houses` and `chart.chalit` are always there |
-| vargas | `vargas: [Varga.D9, …]` | `chart.vargas` |
-| dignities and avasthas | `state: true` | `chart.states` |
-| aspects | `aspects: true` | `chart.aspects` |
-| upagrahas, special lagnas | `points: true` | `chart.points` |
-| yogas and doshas | `rules: { shipped: ['YOGAS', 'DOSHAS'] }` | `chart.rules` |
-| Shadbala | `shadbala: true` | `chart.shadbala` |
-| Ashtakavarga | `ashtakavarga: true` | `chart.ashtakavarga` |
-| Bhava Bala | `bhavaBala: true` | `chart.bhavaBala` |
-| Vimshopaka | `vimshopaka: true` | `chart.vimshopaka` |
-| the 18 dasha systems and their trees | `dashas: [DashaSystem.…]` | `chart.dashas` |
-| Jaimini slice | `jaimini: true` | `chart.jaimini` |
-| Ayurdaya, Maraka, longevity | `rules: { longevity: true }` | `chart.rules` |
-| birth timing: ishtakaal, bhayat, bhabhoga | `moment: true` | `chart.timing`, `chart.moment` |
-| avakhada | `avakahada: true` | `chart.avakahada` |
-| serialiser with presets | `dossier: { preset: 'FULL' }` | `chart.dossier` |
-| chart layout geometry | `drawings: [{ layout, varga }]` | `chart.drawings` |
-| transit service | `gochar: { instants }` | `chart.gochar` |
-
-### 4.3 The panchanga package
-
-| baseline | SDK |
-|---|---|
-| daily panchanga | `ctx.almanac.day({ date, place, utcOffsetSeconds })` |
-| a run of days | `ctx.almanac.of({ from, to, place, utcOffsetSeconds })` |
-| next and previous change finders | each limb is a list of spans; a span carries its `whole` bounds, inside the day or not, and the part `inside` it |
-| muhurta finder, window assembler, blackouts | `muhurta: {...}` on an almanac request, answered as `Almanac.muhurta`, with the closed days and the reasons |
-| event rules | `muhurta.rules`: a shipped set by name (`'RAMAN_MARRIAGE'`, `'BASELINE_MARRIAGE'`, …) or `ActivityRules` spelt out |
-| Pancha Pakshi | `ctx.almanac.pakshi(request)` |
-
-### 4.4 The predictive package
-
-| baseline | request field | result |
-|---|---|---|
-| gochar overlays, transit aspects, phala with vedha | `gochar: { instants }` | `chart.gochar` |
-| Sade Sati | `sadeSati: { from, to }` | `chart.sadeSati` |
-| transit strength by Ashtakavarga | `gochar: { instants, ashtakavarga: true }` | `chart.gochar` |
-| transit calendar | `hits: {...}` | `chart.hits` |
-| Tajika annual chart | `varsha: {...}` | `chart.praveshas`, `chart.sahams` |
-
-### 4.5 The applied package
-
-| baseline | SDK |
-|---|---|
-| KP | `kp: {...}` on a chart request, on the `kp-default` profile; `chart.kp` |
-| milan, Ashta Koot, extended checks, Mangal match | `matching: { partner, partnerRole }`; `chart.matching`, `chart.porutham`, `chart.kuja`, `chart.marriageDoshas` |
-| quick milan, akshar resolution | `ctx.matching.naam(bride, groom)` |
-| rectification | `rectification: {...}`; `chart.rectification` |
-| prashna | `prashna: {...}`; `chart.prashna` |
-| Lal Kitab | `lalkitab: {...}`; `chart.lalkitab` |
-| numerology | `ctx.numerology.profile(name, date, rules)` |
-| remedies | `remedies: {...}`; `chart.remedies` |
-| research: batch, statistics | `ctx.chart.foundMany(...)`; `ctx.research.counts(...)` and the rest of `ctx.research` |
-| research: synastry, composites | `synastry: {...}`; `chart.synastry`, `chart.synastryComposite` |
-| namakarana | `ctx.naming` (`syllables`, `read`, `check`, `of`, `load`, `suggest`); in Rust, `sdk.naming()`; no corpus ships: load your own book (§10) |
-
-### 4.6 The rashifal and interpretation packages
-
-| baseline | SDK |
-|---|---|
-| rashifal context and scoring | `ctx.chart.rashifal(request, period)` and `ctx.chart.rashifalMany(requests, period)`; the second argument asks for the baseline's score (§5.3) |
-| state tables, yoga and dosha readings | the reading packs in [`packs/`](../../packs/README.md), built from the baseline's records (`teistro-intl migrate readings`, `migrate states`) and loaded with `ctx.intl.loadPack(bytes)` |
-| graha-bhava, dasha, day and muhurta composers | `interpret: {...}` on a chart request; `chart.plans`, rendered by `ctx.intl.render` ([`site/content/docs/interpretation.mdx`](../../site/content/docs/interpretation.mdx)) |
+Read it with `ctx` as a `Context` and `found` as `ctx.chart.found(...)`.
+A chart row's request field is answered in the `Chart` member of the same
+name (`vargas` in `chart.vargas`, `kp` in `chart.kp`); the panchanga rows
+answer on `ctx.almanac`. The rest of this guide is the prose the map
+cannot carry: what differs in kind (§2), how to reproduce the baseline's
+numbers (§5), where the SDK differs on purpose (§6 and §7), the stored
+charts (§8) and the plan (§9).
 
 ## 5. Reproducing the baseline's numbers
 
@@ -432,11 +356,23 @@ result blob (§10).
 
 For each stored chart:
 
-1. Map its stored settings snapshot to a profile and a patch (§5).
+1. Map its stored settings snapshot to a profile and a patch (§5):
+   `recordedSettings(snapshot)` in every binding (`recorded` in Rust)
+   does it, row by row as [`baseline-map.md`](baseline-map.md) §3 lists
+   them.
 2. Recompute it on the SDK from its stored input.
 3. Store the SDK's settings hash and content hash beside the baseline's.
 4. Compare the fields your application shows. A difference is either a
    setting you have not mapped or a row of §7.
+
+Stored entity keys move once, in the same migration. The SDK names an
+entity by its catalogue key (`nakshatra.PURVA_PHALGUNI`), where the
+baseline's rows hold its entity type and its own key. Map each stored
+pair with `teistro_intl::migrate::catalogue_key(type, key)`, a Rust
+function that knows the baseline's aliases and answers `None` for a type
+the catalogue has no kind for, and store the result. The shim does not
+carry that rule: its `entity` row takes the catalogue key, since the
+mapping is made once and not on every call.
 
 The conformance harness does the same for the corpus: it maps each
 recorded profile to an SDK profile, asserts the SDK's own hash and keeps
@@ -484,8 +420,7 @@ the baseline's beside it
 
 ## 10. What is not available yet
 
-- **The compatibility shim is not released, and its map is not
-  generated.** The roadmap lists it as a Phase 9 deliverable beside this
+- **The compatibility shim is not released.** The roadmap lists it as a Phase 9 deliverable beside this
   guide. The settings translation is built (`recordedSettings` in every
   binding, reading a stored ayanamsha as its number or the application's
   key), and so is the package,
@@ -494,8 +429,8 @@ the baseline's beside it
   [`03-design/compat-shim.md`](../03-design/compat-shim.md) §3 is a
   function that takes the stored birth record and snapshot and answers
   the SDK's own result, or refuses at once, so the calls can be moved
-  one at a time. Not yet: the generated map that replaces §4 here, and
-  the package's release.
+  one at a time. Its map is generated (§4,
+  [`baseline-map.md`](baseline-map.md)). Not yet: the package's release.
 - **Namakarana.** The phonetic matcher and the name validation map to
   `ctx.naming` in every binding (`sdk.naming()` in Rust): `syllables`
   gives a pada's, a star's or a sign's syllables, `read` reads names in

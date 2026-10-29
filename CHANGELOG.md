@@ -94,6 +94,26 @@ new reader of what the recording engine stored.
   registered rather than patched. The tests' hand-written variant
   patches are gone.
 
+**The baseline map is generated, and `check-compat` holds it.**
+**Numbers:** none. Nothing computes differently; a page and a gate are
+added.
+- `cargo xtask compat` writes `docs/09-guidelines/baseline-map.md` from
+  the shim's `surface.json` and `teistro_core::settings::recorded::ROWS`:
+  every baseline entry point with its shim function and SDK call, every
+  stored settings row with the knobs it sets (a read row shown on an
+  example value, as the knobs it moves off the profile), the openings an
+  empty snapshot translates to, the stored ayanamsha keys and dasha
+  spellings, and the counts. The migration guide's §4 concept map is
+  replaced by a link to it.
+- `check-compat`, in fast-check beside `check-ab`, fails on any difference
+  from the sources, a refused row whose guide anchor is dead, a settings
+  refusal naming a crux the register lacks, and any baseline entry point
+  the A/B record counts with no row. The A/B counts them from its
+  adapter's `surface` export; no record has one yet, which the page says.
+- The migration guide's §8.3 says how stored entity keys move: once, with
+  `teistro_intl::migrate::catalogue_key`, in the application's own
+  migration. The shim's `entity` keeps taking the catalogue key.
+
 **`recordedSettings` answers the muhurta context too.**
 **Numbers:** none. No settings or document hash moves: the A/B's and the
 shim's muhurta search opens the same settings as before, now read from the

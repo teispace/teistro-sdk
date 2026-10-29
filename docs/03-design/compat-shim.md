@@ -1,7 +1,8 @@
 # The compatibility shim: the baseline engine's inputs, forwarded
 
 Status: `design`, 2026-10-28; items 1 to 4 (§7) built the same day,
-items 5 to 7 on 2026-10-29, items 8 to 10 not. The last "not met"
+items 5 to 8 on 2026-10-29, items 9 and 10 the same day as far as the
+SDK reaches (§7). The last "not met"
 row of the parity checklist
 ([`02-parity-requirements.md`](../01-research/baseline-engine/02-parity-requirements.md),
 "migration guide") and the Phase 9 deliverable "the baseline migration
@@ -207,7 +208,7 @@ Their SDK side already exists (§6.4).
 |---|---|---|---|
 | the daily panchanga | `day` | `ctx.almanac.day` | forward |
 | a run of days | `month` | `ctx.almanac.of` | forward |
-| next and previous limb changes | `changes` | the day's spans: a span carries its `whole` bounds (guide §4.3) | compose |
+| next and previous limb changes | `changes` | the day's spans: a span carries its `whole` bounds (guide §2) | compose |
 | the muhurta finder, windows, blackouts, natal tara and chandra bala | `muhurta` | `muhurta` on an almanac request, `ranking: 'BASELINE'` with the event rules named by the caller | forward |
 | choghadiya, hora, Rahu kaal and the kaalas, muhurta yogas | `day` | the same almanac day (each is a member of it) | forward |
 | the tithi calendar | `month` | `ctx.almanac.of`, its tithi spans | compose |
@@ -329,8 +330,11 @@ shim would be a fifth. Instead there is one:
   `CONVENTIONS.same` is deleted and the runner calls `recorded` on the
   default snapshot instead, so the A/B and the shim cannot drift apart.
 
-`Recorded` holds `natal` and `kp`, each an `Opening`: a profile and a
-settings patch over it, which `Opening::resolve` resolves. It also holds
+`Recorded` holds `natal`, `kp` and `muhurta`, each an `Opening`: a
+profile and a settings patch over it, which `Opening::resolve` resolves.
+`muhurta` is the natal opening cast from the Earth's centre with the true
+node, the frame the baseline searches a muhurta in (C781; moved here from
+the shim's `MUHURTA_FRAME` with item 8). It also holds
 `ephemeris`, a required entry such as `'SURYA_SIDDHANTA'` or none,
 `locale` (a locale tag or none) and `notes`, the stored fields read and
 deliberately ignored.
@@ -380,7 +384,11 @@ they lived in `ab.mjs`'s `CONVENTIONS.same`, which now reads them from
   `conformance-baseline`'s, since the baseline casts transits from the
   Earth's centre whatever the snapshot says (guide §5.4, crux C778): one
   context, where the A/B opened a second;
-- **the polar day:** the profile's `NEAREST_EVENT`.
+- **the polar day:** the profile's `NEAREST_EVENT`;
+- **the muhurta context:** the natal opening with `frame.node` `TRUE` and
+  `frame.centre` `GEOCENTRIC`, since the baseline searches a muhurta from
+  the Earth's centre with the true node whatever its charts are cast in
+  (crux C781). It opens on the natal context's ephemeris chain.
 
 ### 4.3 Cruxes recorded
 
@@ -481,9 +489,9 @@ comparison.
   `CompatRefused` with that field as its row and the SDK's error as its
   `cause`, record whole (built, item 4): the refusal is of the stored
   row, not of a computation, and the crux stays on `cause.hint`. Any other
-  error the translation raises passes through untouched. Until the
-  generated map exists (item 8), the guide anchor of a settings refusal
-  is the guide's §8.3 and of a birth refusal its §8.2.
+  error the translation raises passes through untouched. The guide
+  anchor of a settings refusal is the guide's §8.3 and of a birth refusal
+  its §8.2; the generated map (item 8) lists the settings rows.
 
 ### 6.2 Versions
 
@@ -518,8 +526,8 @@ logs it once a day. When every count is zero, it has finished porting.
   there. Every timed A/B request is then a shim call, and `check-ab` (not
   slower than the baseline) holds the shim too. The fifteenth request,
   `muhurta`, moved with item 6: the runner asks the shim's `muhurta`
-  request on the context the baseline's search frame opens
-  (`MUHURTA_FRAME`, C781).
+  request on the context the baseline's search frame opens (the
+  translation's `muhurta` opening since item 8, C781).
   A new `bindings/node/compat/test/agree.test.mjs` asks each forward and
   compose function for every one of the corpus's 55 inputs and the
   documented SDK call directly, and asserts the two answers'
@@ -545,7 +553,16 @@ logs it once a day. When every count is zero, it has finished porting.
   baseline's own list is counted from outside: the A/B adapter (in the
   baseline's repository) gains a `surface` export listing the entry
   points its engine offers by these row ids, and `measure-ab` records how
-  many have no row. `check-compat` renders the generated map with the
+  many have no row. Built with item 9 on the SDK side: the runner reads
+  `surface` when the adapter exports it, as one `{ entry, row }` an
+  entry point (`row` a shim row's name or `null`), and prints how many
+  entries there are, how many name no row of `surface.json` and which
+  named rows the shim lacks; the record keeps it and `ab-measured.md`
+  says it. An adapter without the export is said "not counted", never
+  counted as none. The export itself is not written: it lives in the
+  baseline's repository, and the entry point list cannot be read from
+  the adapter black-box, since the adapter exports its request functions
+  and not the engines they call (§8). `check-compat` renders the generated map with the
   counts (forwarded, composed, refused, unmapped) and fails on any
   unmapped entry point, any row whose guide anchor is dead, and any
   difference between the generated page and the sources.
@@ -583,8 +600,8 @@ In order. Each is one pull request.
 | 5 | built: the A/B's SDK side moved into the package (`chart`, `full`, `vargas`, `yogas`, `strength`, `dashas`, `day`, `month`, `milan`, `varsha`, `kp`, `gochar`, `sadeSati`, `batch`); `CONVENTIONS.same` replaced by `recordedSettings`, the KP opening given the natal context's ruling planets; `agree.test.mjs` over the corpus's 55 charts and KP under the chart's own ayanamsha; the birth record founded at its date (§6.1) | node bench, compat | 1 day |
 | 6 | built: the remaining forward and compose rows of §3 (62 rows in all: 46 forward, 11 compose, 5 refused), with `facts()` and `FAMILIES` moved from `ab-agree.mjs` into `lib/facts.js` and the A/B's `muhurta` onto the shim's request; a `variant` context per snapshot for the muhurta frame and the second ghati reckoning; each row in `agree.test.mjs` against the documented call | compat, node bench | 2 days |
 | 7 | built: `surface.json`, read by the package for its rows and refusals; the refused rows typed `never` (`Refused`); `surface.test.mjs` holding the exports, the refusals' anchors, the declarations, §3 and `agree.test.mjs` to it | compat | 0.5 day |
-| 8 | `cargo xtask compat` and `check-compat`: the generated `baseline-map.md`, the guide's §4 replaced by its link, the parity row updated, the gate added to fast-check | xtask, docs, CI | 1 day |
-| 9 | the adapter's `surface` export (in the baseline's repository) and the unmapped count in `measure-ab` | node bench, ab-measured | 0.5 day |
+| 8 | built: `cargo xtask compat` and `check-compat`: the generated `baseline-map.md` (the surface by §3's sections, the settings rows each with its patch as JSON or its reading of an example value, the fixed openings, the listed spellings, the counts), the guide's §4 replaced by its link, the parity row updated, the gate in fast-check's pages beside `check-ab`; the muhurta frame moved into `Recorded` as its third opening | xtask, docs, CI, core, bindings | 1 day |
+| 9 | built on the SDK side: the unmapped count in `measure-ab` (the runner's `surfaceCount`, the record's `surface`, `ab-measured.md`'s line, `check-compat` failing on any unmapped); not built: the adapter's `surface` export, in the baseline's repository | node bench, ab-measured | 0.5 day |
 | 10 | release wiring: the package in the release pipeline's install checks and `SIZES`, the CHANGELOG entry | release, sizes | 0.5 day |
 
 About nine and a half days in all. Items 1 to 3 stand alone and are worth
@@ -633,21 +650,27 @@ zero unmapped entry points.
   locales. Whether any stored snapshot actually holds another pairing is
   unknown until the application's rows are counted. Until then they are
   refused.
-- **The entity key from the baseline's type and key (item 6).** `entity`
+- **The entity key from the baseline's type and key (decided).** `entity`
   takes the catalogue's key. The rule that builds it from the baseline's
   entity type and key, with its 19 aliases, is `teistro_intl::migrate::catalogue_key`
-  in Rust. Open: carry that rule through the boundary (one JSON entry, as
-  `recordedSettings` is) so `entity(snapshot, type, key)` reads the
-  baseline's own spelling, or leave the mapping to the application's
-  one-time migration of its keys.
-- **The milan verdict (item 6).** No composer says a milan: `milanVerdict`
+  in Rust. Decided with item 8: the mapping is left to the application's
+  one-time migration of its stored keys, run once in Rust, and not
+  carried through the boundary; `entity` keeps taking the catalogue's key.
+  A second copy of the rule in the shim would be one more to keep in step
+  for a mapping an application makes once.
+- **The milan verdict (decided).** No composer says a milan: `milanVerdict`
   answers the milan with the doshas' rules read and their readings said
-  (`interpret: { readings: true }`), beside the kootas. Open: whether a
-  matching composer is wanted, which would replace the readings with
-  the kootas' own plans.
-- **The muhurta frame's home (item 6).** The baseline searches a muhurta
-  from the Earth's centre with the true node (C781). The shim opens that
-  context from `MUHURTA_FRAME` in `lib/forward.js`, a patch over the
-  translated natal opening, as the A/B did. It is a fixed convention of
-  the baseline, like the KP opening, so it may belong in `Recorded` as a
-  third opening; that is a boundary change, left for item 8.
+  (`interpret: { readings: true }`), beside the kootas. Decided with item
+  8: it stays the milan rendered so; no matching composer is added.
+- **The muhurta frame's home (settled with item 8).** The baseline
+  searches a muhurta from the Earth's centre with the true node (C781).
+  It is a fixed convention of the baseline, like the KP opening, so it is
+  `Recorded`'s third opening, `muhurta`, in every binding; the shim's
+  `MUHURTA_FRAME` patch and the A/B's copy of it are gone.
+- **The baseline's entry points (item 9).** `check-compat` fails on an
+  unmapped entry point only once a record counts them, and none does: the
+  adapter exports its request functions, not the engines behind them, so
+  their entry points cannot be listed from it at run time. Open: the
+  `surface` export the adapter needs, in the baseline's repository; once
+  a record carries it, the parity row "migration guide" is met or names
+  the rows missing.
