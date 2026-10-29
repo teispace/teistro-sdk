@@ -29,7 +29,7 @@ same version. Open one shim per process or worker thread, over the
 ephemeris chain and the locale every context it opens shares:
 
 ```ts title="bindings/node/compat/typecheck/consumer.ts"
-import { compat, CompatRefused } from '@teistro/compat';
+import { compat, CompatRefused, FAMILIES, facts } from '@teistro/compat';
 // …
 const shim = compat({ ephemeris: 'BUILTIN', locale: 'ne-Deva-NP' });
 
