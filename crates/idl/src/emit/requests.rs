@@ -930,6 +930,156 @@ mod tests {
         api
     }
 
+    /// The fixture with two more roots that hold a record the Dart layer
+    /// builds by hand (`AnnualPlace`): `Outer` requires one, `Loose` has
+    /// them optional, alone, in a list and inside a generated record, with
+    /// a raw part, a member, a default and every container beside them.
+    fn facaded() -> Api {
+        let mut api = widened();
+        let reach = json!({
+            "place": {"$ref": "#/$defs/AnnualPlace"},
+            "places": {"type": "array", "items": {"$ref": "#/$defs/AnnualPlace"}},
+            "holders": {"type": "array", "items": {"$ref": "#/$defs/Holder"}},
+            "other": {"$ref": "#/$defs/Entry"},
+            "raw": true,
+            "lord": {"anyOf": [{"$ref": "#/$defs/Graha"}, {"type": "null"}]},
+            "speed": {"$ref": "#/$defs/Move", "default": "FAST"},
+            "huge": {"type": "integer", "format": "uint64", "minimum": 0},
+            "tiny": {"type": "number"},
+            "pairs": {"type": "array", "items": {"type": "array", "prefixItems":
+                [{"type": "string"}, {"type": "integer"}], "minItems": 2, "maxItems": 2}},
+            "by": {"type": "object", "additionalProperties": {"type": "boolean"}},
+            "how": {"$ref": "#/$defs/How"},
+            "tag": {"$ref": "#/$defs/Tag"},
+            "after": {"$ref": "#/$defs/Tag"},
+            "point": {"$ref": "#/$defs/Point"},
+            "spot": {"$ref": "#/$defs/Point"},
+            "maybe": {"type": ["number", "null"]}
+        });
+        let schema = json!({"$defs": {
+            "Outer": {"type": "object", "properties": reach.clone(), "required": ["place", "other"]},
+            "Loose": {"type": "object", "properties": reach, "required": ["other"]},
+            "AnnualPlace": {"type": "object", "properties": {"entry": {"$ref": "#/$defs/Entry"}},
+                "required": ["entry"]},
+            "Holder": {"type": "object", "properties": {"place": {"$ref": "#/$defs/AnnualPlace"},
+                "end": {"type": "number"}}, "required": ["end"]},
+            "Entry": {"type": "object", "properties": {"end": {"type": "number"}}, "required": ["end"]},
+            "Move": {"type": "string", "enum": ["MEAN", "FAST"]},
+            "Graha": {"type": "string", "x-teistro-kind": "graha"},
+            "How": {"oneOf": [
+                {"type": "object", "properties": {"kind": {"const": "planet-in-house"}}, "required": ["kind"],
+                    "additionalProperties": false},
+                {"type": "object", "properties": {"kind": {"const": "AT"}, "deg": {"type": "number"}},
+                    "required": ["kind", "deg"], "additionalProperties": false}]},
+            "Tag": {"oneOf": [{"const": "SAME"},
+                {"type": "object", "properties": {"WITHIN": {"type": "number"}}, "required": ["WITHIN"],
+                    "additionalProperties": false}]},
+            "Point": {"anyOf": [{"enum": ["LAGNA"]}, {"$ref": "#/$defs/Graha"}, {"$ref": "#/$defs/Entry"}]}
+        }});
+        let records = crate::records::read(
+            &schema,
+            &["Outer", "Loose"],
+            crate::records::Reading {
+                raw: &["Outer.raw", "Loose.raw"],
+            },
+        )
+        .unwrap();
+        for record in records {
+            if !api.requests.records.iter().any(|r| r.name == record.name) {
+                api.requests.records.push(record);
+            }
+        }
+        for (record, name) in [("outer", "Outer"), ("loose", "Loose")] {
+            api.requests.roots.push(crate::records::RequestRoot {
+                record: record.into(),
+                name: name.into(),
+            });
+        }
+        api
+    }
+
+    #[test]
+    fn a_hand_built_part_is_dropped_or_looked_inside_for_what_dart_builds() {
+        let api = facaded();
+        let place = json!({"entry": {"end": 1}});
+        let deep = json!([
+            {"record": "outer", "request": {"place": place, "other": {"end": 2},
+                "raw": [1, "x"],
+                "holders": [{"place": {"entry": {"end": 7}}, "end": 8}],
+                "how": {"kind": "AT", "deg": 3},
+                "tag": {"WITHIN": 2.5},
+                "pairs": [["a", 1]],
+                "point": {"end": 9}}},
+            {"record": "loose", "request": {
+                "place": place,
+                "places": [{"entry": {"end": 3}}],
+                "holders": [{"place": {"entry": {"end": 4}}, "end": 5}],
+                "other": {"end": 2},
+                "raw": {"a": [null, true, 1, "s", {"b": 2.5}]},
+                "lord": "graha.NOPE",
+                "huge": 18_446_744_073_709_551_615_u64,
+                "tiny": 2,
+                "pairs": [["a", 1]],
+                "by": {"k": true},
+                "how": {"kind": "AT", "deg": 3},
+                "tag": {"WITHIN": 2.5},
+                "after": "SAME",
+                "point": "LAGNA",
+                "spot": "graha.SUN",
+                "maybe": null
+            }},
+            {"record": "elsewhere", "request": {}}
+        ]);
+        let test = dart_deep_test(&api, &deep);
+        // A required part built by hand: the record holding it is not
+        // built, and each generated record below it is, at its place.
+        for case in [
+            "test('outer at place.entry: Entry', () {",
+            "test('outer at other: Entry', () {",
+            "      path: ['place', 'entry'],",
+            "      path: ['other'],",
+        ] {
+            assert!(test.contains(case), "{case}: {test}");
+        }
+        assert!(!test.contains("test('outer: Outer'"), "{test}");
+        // Inside a record not built, each container is looked into.
+        for case in [
+            "test('outer at holders[0]: Holder', () {",
+            "test('outer at holders[0].place.entry: Entry', () {",
+            "test('outer at point: Point', () {",
+            "test('outer at how: How', () {",
+            "test('outer at tag: Tag', () {",
+        ] {
+            assert!(test.contains(case), "{case}: {test}");
+        }
+        // Optional parts built by hand are dropped from both sides, and
+        // looked inside, wherever they stand.
+        for case in [
+            "test('loose: Loose', () {",
+            "test('loose at place.entry: Entry', () {",
+            "test('loose at places[0].entry: Entry', () {",
+            "test('loose at holders[0].place.entry: Entry', () {",
+            "      path: ['places', 0, 'entry'],",
+            "['holders', 0, 'place']",
+            "['lord']",
+        ] {
+            assert!(test.contains(case), "{case}: {test}");
+        }
+        // The rest of the example, each as Dart writes it.
+        for part in [
+            "huge: 18446744073709551615",
+            "tiny: 2.0",
+            "pairs: [('a', 1)]",
+            "by: {'k': true}",
+            "raw: <String, Object?>{'a': <Object?>[null, true, 1, 's', <String, Object?>{'b': 2.5}]}",
+        ] {
+            assert!(test.contains(part), "{part}: {test}");
+        }
+        // A default the schema states, which the example leaves to serde,
+        // is dropped too.
+        assert!(test.contains("['speed']"), "{test}");
+    }
+
     #[test]
     fn every_integer_width_is_written_as_each_binding_holds_it() {
         let api = widened();
