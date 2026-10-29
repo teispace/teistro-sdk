@@ -114,7 +114,7 @@ Design §3.5.
 | milan: Ashta Koota, extended checks, Mangal match, marriage doshas | `milan` | found with matching | forward |
 | quick milan, akshar resolution | `naam` | ctx.matching.naam(bride, groom) | forward |
 | rectification | `rectify` | found with rectification.baseline, the record's gender and time accuracy carried in | forward |
-| prashna | `prashna` | found with prashna under the baseline's timing, mook and score | forward |
+| prashna | `prashna` | found with prashna under every baseline reading, on the muhurta opening's frame (C800) | forward |
 | Lal Kitab | `lalkitab` | found with lalkitab | forward |
 | numerology | `numerology` | ctx.numerology.profile(name, date, 'BASELINE') | forward |
 | remedies | `remedies` | found with remedies under the baseline's functional scheme | forward |
@@ -132,7 +132,7 @@ Design §3.6.
 | baseline entry point | shim | SDK | kind |
 |---|---|---|---|
 | the dossier, day, dasha, graha-bhava, tara chakra, yoga timing and namakarana note composers | `narrative` | found with interpret, each plan rendered by ctx.intl.render | compose |
-| rashifal context and score, one sign or all twelve, per period | `rashifal` | ctx.chart.rashifal(request, period), read at six on the clock | forward |
+| rashifal context and score, one sign or all twelve, per period | `rashifal` | ctx.chart.rashifal(request, period), read at six on the clock with the baseline's event grahas | forward |
 | state tables, yoga and dosha readings | `reading` | ctx.intl.render(key, params) | forward |
 | the milan resolver and verdict composer | `milanVerdict` | found with matching, the doshas and interpret, rendered | compose |
 
