@@ -52,6 +52,7 @@ export const FAMILIES = {
   gochar: { kind: 'category', what: 'whether a transit is in a good house from the Moon, whether a good one is obstructed (vedha), and whether its own Ashtakavarga makes it strong' },
   kuja: { kind: 'category', what: 'whether the bride and the groom each carry the Kuja dosha' },
   marriageDosha: { kind: 'category', what: 'whether a match carries the Ashta Koota\'s nadi, bhakoot and gana doshas' },
+  muhurta: { kind: 'category', what: 'a marriage muhurta search\'s ranking whole, each ranked window\'s score, and the score of each day one falls on' },
 };
 
 /** The grahas both sides place, in the SDK's order, and the lagna. */
@@ -348,9 +349,122 @@ export function sdkFacts(request, answer, input, joined) {
       return sdkSadeSati(answer, input.window);
     case 'batch':
       return [...answer].flatMap((chart, i) => sdkFull(chart, joined).map(([key, value]) => [`${key}@${i}`, value]));
+    case 'muhurta':
+      return [...sdkMuhurta('general', answer.general), ...sdkMuhurta('native', answer.native)];
     default:
       throw new Error(`no facts for ${request}`);
   }
+}
+
+/**
+ * The baseline's day score, from a window's factors: the day's four
+ * clamped on their own, then the shuddhi's, the event's and the native's
+ * added and clamped (`muhurta.md` §4.5, steps 1 and 2).
+ */
+const DAY_PART = new Set(['TITHI_QUALITY', 'NAKSHATRA_SUITABILITY', 'WEEKDAY_SUITABILITY', 'RAHU_KAAL']);
+const DAY_REST = new Set([
+  'YOGA_SHUDDHI',
+  'KARANA_SHUDDHI',
+  'PANCHAKA',
+  'MUHURTA_YOGA',
+  'PAKSHA_BALA',
+  'VARA_EVENT',
+  'TITHI_EVENT',
+  'TARA_BALA',
+  'CHANDRA_BALA',
+]);
+const clamped = (value) => Math.max(0, Math.min(100, value));
+const summed = (factors, dimensions) =>
+  factors.filter((f) => dimensions.has(f.dimension)).reduce((total, f) => total + f.weight, 0);
+const dayScore = (factors) => clamped(clamped(summed(factors, DAY_PART)) + summed(factors, DAY_REST));
+
+/** The baseline's caps on what it ranks: windows a day, and rows. */
+const WINDOWS_A_DAY = 2;
+const MOST_ROWS = 30;
+
+/** The shortest window the baseline offers: six minutes, in days. */
+const SHORTEST = 6 / 1440;
+
+/** A second, in days: a window starting later than its choghadiya by more starts after an avoided kaala. */
+const SECOND = 1 / 86_400;
+
+/** A civil date as `YYYY-MM-DD`. */
+const iso = ({ year, month, day }) =>
+  `${String(year).padStart(4, '0')}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+/**
+ * One search's facts in the baseline's vocabulary (the adapter's
+ * `muhurtaFacts`), its windows presented as the baseline presents them.
+ * The SDK cuts a day wherever a clause changes and scores each piece; the
+ * baseline offers each good choghadiya less the kaala it avoids, scored
+ * at its start. So the open, scored windows are joined into the runs a
+ * choghadiya holds, by the almanac day and choghadiya each starts in, a
+ * run under six minutes dropped, and each run takes its first window's
+ * score. Then the baseline's order: the days by their score, highest
+ * first and the earlier first among equals; each day's two best runs by
+ * the day's score and the choghadiya's weight, the earlier first among
+ * equals; and every row by its score, highest first, its place kept
+ * among equals, thirty at most.
+ */
+function sdkMuhurta(kind, almanac) {
+  const days = [...almanac].map((d) => ({
+    date: iso(d.day.date),
+    sunrise: d.day.sunrise,
+    next: d.day.nextSunrise,
+    choghadiya: d.choghadiya,
+  }));
+  const runs = [];
+  let last = null;
+  const open = almanac.muhurta.windows
+    .filter((w) => w.barredBy.length === 0 && w.score !== null)
+    .sort((a, b) => a.at.from - b.at.from);
+  for (const w of open) {
+    const at = days.findIndex((d) => d.sunrise <= w.at.from && w.at.from < d.next);
+    if (at < 0) continue;
+    const ordinal = days[at].choghadiya.findIndex((c) => c.from <= w.at.from && w.at.from < c.to);
+    if (
+      last !== null &&
+      last.day === at &&
+      last.ordinal === ordinal &&
+      Math.abs(last.to - w.at.from) <= SECOND
+    ) {
+      last.to = w.at.to;
+      continue;
+    }
+    last = { day: at, ordinal, from: w.at.from, to: w.at.to, window: w };
+    runs.push(last);
+  }
+  const byDay = new Map();
+  for (const run of runs) {
+    if (run.to - run.from < SHORTEST) continue;
+    const factors = run.window.score.factors;
+    const day = dayScore(factors);
+    const choghadiya = factors.find((f) => f.dimension === 'CHOGHADIYA')?.weight ?? 0;
+    const start = days[run.day].choghadiya[run.ordinal]?.from ?? run.from;
+    const row = {
+      key: `${days[run.day].date}#${run.ordinal}${run.from > start + SECOND ? 'b' : ''}`,
+      date: days[run.day].date,
+      day,
+      first: clamped(Math.round(day + choghadiya)),
+      score: run.window.score.value,
+    };
+    if (!byDay.has(run.day)) byDay.set(run.day, []);
+    byDay.get(run.day).push(row);
+  }
+  const order = [...byDay.keys()].sort((a, b) => byDay.get(b)[0].day - byDay.get(a)[0].day || a - b);
+  const rows = order
+    .flatMap((at) => [...byDay.get(at)].sort((a, b) => b.first - a.first).slice(0, WINDOWS_A_DAY))
+    .sort((a, b) => b.score - a.score)
+    .slice(0, MOST_ROWS);
+  const out = [
+    [`muhurta/${kind}/ranking`, rows.map((r) => `${r.key}=${r.score}`).join(' ')],
+    [`muhurta/${kind}/count`, rows.length],
+  ];
+  for (const r of rows) out.push([`muhurta/${kind}/window/${r.key}`, r.score]);
+  for (const date of new Set(rows.map((r) => r.date))) {
+    out.push([`muhurta/${kind}/day/${date}`, rows.find((r) => r.date === date).day]);
+  }
+  return out;
 }
 
 /** The house from the Moon each Sade Sati phase is Saturn's transit of. */

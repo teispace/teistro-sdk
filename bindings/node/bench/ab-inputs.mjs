@@ -26,7 +26,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
  *   instants: number[],
  *   transitAt: number,
  *   window: {from: number, to: number},
+ *   muhurta: Muhurta,
  * }} Input
+ *
+ * The window and place a marriage muhurta is searched over: `from` and
+ * `to`, civil dates (`YYYY-MM-DD`, both included) on `iana`'s clock, whose
+ * offset at `from` is `utcOffsetSeconds`.
+ *
+ * @typedef {{from: string, to: string, iana: string, utcOffsetSeconds: number,
+ *   place: {latitude: number, longitude: number, altitude: number}}} Muhurta
  */
 
 /**
@@ -68,6 +76,7 @@ export const REQUESTS = [
   'gochar',
   'sadeSati',
   'batch',
+  'muhurta',
 ];
 
 /** The days `month` asks for, from the birth's civil date. */
@@ -79,7 +88,45 @@ export const BATCH_CHARTS = 10;
 /** How far on `gochar`'s instant and the end of `sadeSati`'s window are, in Julian years. */
 export const TRANSIT_YEARS = 30;
 
+/**
+ * The days `muhurta` searches, from the birth's civil date
+ * {@link TRANSIT_YEARS} years on: within the baseline's 25 days with
+ * windows, so that cap never decides which day is ranked.
+ */
+export const MUHURTA_DAYS = 25;
+
+/**
+ * Where `muhurta` searches: Kathmandu, where the baseline reads a planet's
+ * setting (C164), so both sides' asta is read at the place searched.
+ */
+export const MUHURTA_PLACE = Object.freeze({ latitude: 27.7172, longitude: 85.324, altitude: 1400 });
+const MUHURTA_ZONE = 'Asia/Kathmandu';
+
 const JULIAN_YEAR = 365.25;
+
+/** A UTC midnight's civil date, `YYYY-MM-DD`. */
+const isoDate = (ms) => new Date(ms).toISOString().slice(0, 10);
+
+/** `zone`'s offset from UTC at `ms`, in seconds, as the zone database holds it. */
+function offsetSeconds(zone, ms) {
+  const name = new Intl.DateTimeFormat('en-US', { timeZone: zone, timeZoneName: 'longOffset' })
+    .formatToParts(new Date(ms))
+    .find((part) => part.type === 'timeZoneName').value;
+  const [, sign, hours, minutes = '0'] = /^GMT(?:([+-])(\d{2}):?(\d{2})?)?$/.exec(name) ?? [];
+  return sign ? (sign === '-' ? -1 : 1) * (Number(hours) * 3600 + Number(minutes) * 60) : 0;
+}
+
+/** The marriage muhurta's window for a birth: {@link MUHURTA_DAYS} days, {@link TRANSIT_YEARS} years on. */
+function muhurtaWindow({ civilDate: { year, month, day } }) {
+  const from = Date.UTC(year + TRANSIT_YEARS, month - 1, day);
+  return {
+    from: isoDate(from),
+    to: isoDate(from + (MUHURTA_DAYS - 1) * 86_400_000),
+    iana: MUHURTA_ZONE,
+    utcOffsetSeconds: offsetSeconds(MUHURTA_ZONE, from),
+    place: MUHURTA_PLACE,
+  };
+}
 
 const root = join(fileURLToPath(new URL('.', import.meta.url)), '../../..');
 
@@ -111,6 +158,7 @@ export function inputs(dir = join(root, 'fixtures/baseline/charts')) {
     instants: Array.from({ length: BATCH_CHARTS }, (_, hour) => birth.jdUt + hour / 24),
     transitAt: birth.jdUt + TRANSIT_YEARS * JULIAN_YEAR,
     window: { from: birth.jdUt, to: birth.jdUt + TRANSIT_YEARS * JULIAN_YEAR },
+    muhurta: muhurtaWindow(birth),
   }));
 }
 
