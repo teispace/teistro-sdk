@@ -4978,6 +4978,52 @@ export interface ChartsDispositorEndMembers {
 }
 
 /**
+ * The `sphuta_drishti` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's sphuta drishti (Sripati's construction by aspect angle, as B.V. Raman gives it and BPHS ch. 26 vv. 6 to 12 state it, crux C45), charts outermost: 56 rows a chart, row `i * 56 + k`, each of the seven grahas in the weekday order looking at each of the eight other placed bodies in the foundation's order, a zero included. Empty when the aspects were not asked for.
+ */
+export interface ChartsSphutaDrishti {
+  /**
+   * The graha looking: one of the seven.
+   * The values are `Graha` ids.
+   */
+  readonly from: Uint16Array;
+  /**
+   * The body looked at, a node included.
+   * The values are `Graha` ids.
+   */
+  readonly to: Uint16Array;
+  /**
+   * How strongly, in virupas: 0 to 60, with Mars's, Jupiter's and Saturn's special aspects adding 15, 30 and 45 over their spans.
+   */
+  readonly virupas: Float64Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `rashi_drishti` section of a Charts blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every chart's Jaimini rashi drishti, charts outermost: 27 rows a chart, row `i * 27 + 3 * j + k`, the `k`th of the three signs the sign of the chart's `j`th body (in the foundation's order) aspects, in the zodiac's order from Aries; each aspects it back. Empty when the aspects were not asked for.
+ */
+export interface ChartsRashiDrishti {
+  /**
+   * The body whose sign looks.
+   * The values are `Graha` ids.
+   */
+  readonly graha: Uint16Array;
+  /**
+   * A sign it reaches.
+   * The values are `Rashi` ids.
+   */
+  readonly sign: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * The day each instant belongs to: its arc, its date and how it was reckoned. One row per row of the blob's own grid.
  */
 export interface Day {
@@ -5990,6 +6036,14 @@ export interface Charts {
    * UTF-8 JSON, canonical: an array with one entry per chart, each an array of the shapes its planets make, by kind in the order `GRAND_TRINE`, `T_SQUARE`, `GRAND_CROSS`, `YOD`, `KITE`, `MYSTIC_RECTANGLE`, `STELLIUM`, and within a kind by the bodies' order (`03-design/western-configurations.md`). A shape is `{kind, bodies, apex, sign, widestFromExactDeg, inside}`: `kind` one of those keys; `bodies` the grahas, bare catalogue keys (`SUN`); `apex` the graha a T-square, yod or kite points at, null for the others; `sign` the tropical rashi a stellium stands in, bare (`LEO`), null for the others; `widestFromExactDeg` how far from exact its loosest aspect is, degrees, null for a stellium; `inside` the positions in the chart's array of the larger shapes this one is wholly inside, empty when it stands alone. Every shape is made of aspects the chart holds under the record's `aspects` and `orbs`. Empty when `western_configurations_json` asked for none.
    */
   readonly westernConfigurations: string;
+  /**
+   * Every chart's sphuta drishti (Sripati's construction by aspect angle, as B.V. Raman gives it and BPHS ch. 26 vv. 6 to 12 state it, crux C45), charts outermost: 56 rows a chart, row `i * 56 + k`, each of the seven grahas in the weekday order looking at each of the eight other placed bodies in the foundation's order, a zero included. Empty when the aspects were not asked for.
+   */
+  readonly sphutaDrishti: ChartsSphutaDrishti;
+  /**
+   * Every chart's Jaimini rashi drishti, charts outermost: 27 rows a chart, row `i * 27 + 3 * j + k`, the `k`th of the three signs the sign of the chart's `j`th body (in the foundation's order) aspects, in the zodiac's order from Aries; each aspects it back. Empty when the aspects were not asked for.
+   */
+  readonly rashiDrishti: ChartsRashiDrishti;
 }
 
 /**

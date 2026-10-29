@@ -1679,6 +1679,41 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a chart carries the sphuta drishti by degree and the rashi drishti '
+      'by sign', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final chart = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+      aspects: true,
+    );
+    final gazes = chart.sphutaDrishti;
+    expect(gazes, hasLength(7 * 8), reason: 'the seven at the eight others');
+    expect(
+      gazes.every(
+        (g) => g.from != Graha.rahu && g.from != Graha.ketu && g.from != g.to,
+      ),
+      isTrue,
+    );
+    expect(gazes.every((g) => g.virupas >= 0 && g.virupas < 90), isTrue);
+    expect(chart.rashiDrishti, hasLength(9));
+    expect(chart.rashiDrishti.every((r) => r.signs.length == 3), isTrue);
+    final bare = ctx.chart.found(
+      instant: 2451545.0,
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    expect(bare.sphutaDrishti, isEmpty, reason: 'nothing unless asked');
+    expect(bare.rashiDrishti, isEmpty);
+    ctx.dispose();
+  });
+
   test('a layout of your own is registered, drawn by its key, and refused by '
       'its field', () {
     final base = context();

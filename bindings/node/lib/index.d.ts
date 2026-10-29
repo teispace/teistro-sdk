@@ -4846,6 +4846,24 @@ export interface Drishti {
   readonly toEdge: Boundaries;
 }
 
+/** One graha's sphuta drishti on another body, by degree (crux C45). */
+export interface SphutaDrishti {
+  /** The graha looking: one of the seven. */
+  readonly from: Graha | 'unknown';
+  /** The body looked at, a node included. */
+  readonly to: Graha | 'unknown';
+  /** How strongly, in virupas: 0 to 60, Mars's, Jupiter's and Saturn's special aspects adding 15, 30 and 45 over their spans. */
+  readonly virupas: number;
+}
+
+/** One body's Jaimini rashi drishti. */
+export interface RashiDrishti {
+  /** The body whose sign looks. */
+  readonly graha: Graha | 'unknown';
+  /** The three signs its sign aspects, in the zodiac's order from Aries. */
+  readonly signs: readonly (Rashi | 'unknown')[];
+}
+
 /** One derived point: an upagraha or a special lagna. */
 export interface DerivedPoint {
   /** Which point. */
@@ -5088,6 +5106,16 @@ export declare class Chart {
    * the grahas stand.
    */
   readonly aspects: readonly Drishti[];
+  /**
+   * Each of the seven grahas' sphuta drishti on every other body, by degree
+   * (crux C45), a zero included, 56 a chart; empty unless `aspects` asked.
+   */
+  readonly sphutaDrishti: readonly SphutaDrishti[];
+  /**
+   * Each body's Jaimini rashi drishti: the three signs its sign aspects;
+   * empty unless `aspects` asked.
+   */
+  readonly rashiDrishti: readonly RashiDrishti[];
   /**
    * The annual charts' instants, in year order; empty unless `varsha`
    * asked. Fewer than asked for is the answer when the ephemeris ends

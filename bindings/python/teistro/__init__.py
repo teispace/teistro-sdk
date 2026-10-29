@@ -1059,6 +1059,8 @@ __all__ = [
     "ArcSegment",
     "DerivedPoint",
     "Drishti",
+    "SphutaDrishti",
+    "RashiDrishti",
     # The dashas: the system a caller names and what a chart answers with.
     "Balance",
     "Dasha",
@@ -4734,6 +4736,34 @@ class Drishti:
 
     to_edge: EdgeDistance
     """How near the body looked at stands to one."""
+
+
+@dataclass(frozen=True)
+class SphutaDrishti:
+    """One graha's sphuta drishti on another body, by degree (crux C45)."""
+
+    from_graha: Graha
+    """The graha looking: one of the seven. Named `from_graha` because
+    `from` is a keyword."""
+
+    to: Graha
+    """The body looked at, a node included."""
+
+    virupas: float
+    """How strongly, in virupas: 0 to 60, Mars's, Jupiter's and Saturn's
+    special aspects adding 15, 30 and 45 over their spans."""
+
+
+@dataclass(frozen=True)
+class RashiDrishti:
+    """One body's Jaimini rashi drishti."""
+
+    graha: Graha
+    """The body whose sign looks."""
+
+    signs: Tuple[Rashi, ...]
+    """The three signs its sign aspects, in the zodiac's order from Aries;
+    each aspects it back."""
 
 
 @dataclass(frozen=True)
@@ -16659,6 +16689,42 @@ class Chart:
                 ),
             )
             for i in range(start, start + counts[self.index])
+        ]
+
+    @property
+    def sphuta_drishti(self) -> list[SphutaDrishti]:
+        """Each of the seven grahas' sphuta drishti on every other body, by
+        degree (crux C45): the looking graha in the weekday order, then the
+        body looked at in the foundation's order, a zero included, 56 a
+        chart; empty unless `aspects=True` asked for them."""
+        decoded = self.batch.decoded
+        columns = decoded.sphuta_drishti
+        charts = len(decoded.cast.aspect_count)
+        per = len(columns.virupas) // charts if charts else 0
+        return [
+            SphutaDrishti(
+                from_graha=Graha(columns.from_[i]),
+                to=Graha(columns.to[i]),
+                virupas=columns.virupas[i],
+            )
+            for i in range(self.index * per, (self.index + 1) * per)
+        ]
+
+    @property
+    def rashi_drishti(self) -> list[RashiDrishti]:
+        """Each body's Jaimini rashi drishti, in the foundation's order: the
+        three signs its sign aspects; empty unless `aspects=True` asked for
+        them."""
+        decoded = self.batch.decoded
+        columns = decoded.rashi_drishti
+        charts = len(decoded.cast.aspect_count)
+        per = len(columns.sign) // charts if charts else 0
+        return [
+            RashiDrishti(
+                graha=Graha(columns.graha[i]),
+                signs=tuple(Rashi(columns.sign[i + k]) for k in range(3)),
+            )
+            for i in range(self.index * per, (self.index + 1) * per, 3)
         ]
 
     @property

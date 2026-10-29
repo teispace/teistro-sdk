@@ -260,6 +260,42 @@ final class VedicReads {
         return List.copyOf(aspects);
     }
 
+    /**
+     * Each of the seven's sphuta drishti on every other body, by degree, a zero
+     * included, 56 a chart: {@code sphuta_drishti}'s rows for this chart, which
+     * hold as many for every chart. Ports {@code Chart.sphutaDrishti}.
+     */
+    static List<SphutaDrishti> sphutaDrishti(Chart chart) {
+        Charts decoded = decoded(chart);
+        Charts.SphutaDrishti c = decoded.sphutaDrishti();
+        int charts = decoded.cast().length();
+        int per = charts == 0 ? 0 : c.length() / charts;
+        List<SphutaDrishti> gazes = new ArrayList<>(per);
+        for (int i = chart.index() * per; i < (chart.index() + 1) * per; i += 1) {
+            gazes.add(new SphutaDrishti(Graha.of(c.from(i)), Graha.of(c.to(i)), c.virupas(i)));
+        }
+        return List.copyOf(gazes);
+    }
+
+    /**
+     * Each body's rashi drishti, the three signs its sign aspects:
+     * {@code rashi_drishti}'s rows for this chart, three a body. Ports
+     * {@code Chart.rashiDrishti}.
+     */
+    static List<RashiDrishti> rashiDrishti(Chart chart) {
+        Charts decoded = decoded(chart);
+        Charts.RashiDrishti c = decoded.rashiDrishti();
+        int charts = decoded.cast().length();
+        int per = charts == 0 ? 0 : c.length() / charts;
+        List<RashiDrishti> reaches = new ArrayList<>(per / 3);
+        for (int i = chart.index() * per; i < (chart.index() + 1) * per; i += 3) {
+            reaches.add(new RashiDrishti(
+                    Graha.of(c.graha(i)),
+                    List.of(Rashi.of(c.sign(i)), Rashi.of(c.sign(i + 1)), Rashi.of(c.sign(i + 2)))));
+        }
+        return List.copyOf(reaches);
+    }
+
     // ---- ashtakavarga and the balas ----
 
     /** The Ashtakavarga, when {@code ashtakavarga} asked for it. Ports {@code Chart.ashtakavarga}. */

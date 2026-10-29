@@ -19,6 +19,7 @@ use teistro_core::settings::Settings;
 
 use crate::drishti::{self, Strength};
 use crate::rashi;
+use crate::sphuta;
 
 /// One body's gaze at another.
 ///
@@ -178,6 +179,66 @@ impl Mutual {
     }
 }
 
+/// One graha's sphuta drishti on another body, measured by degree
+/// ([`crate::sphuta`], crux C45).
+///
+/// ```
+/// use teistro_aspect::SphutaDrishti;
+/// use teistro_core::catalogue::Graha;
+///
+/// // The Sun looks fully at a body opposite it to the degree.
+/// let gaze = SphutaDrishti { from: Graha::Sun, to: Graha::Saturn, virupas: 60.0 };
+/// assert!(gaze.is_full());
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct SphutaDrishti {
+    /// The graha looking: one of the seven ([`sphuta::CASTING`]).
+    pub from: Graha,
+    /// The body looked at: any other placed body, a node included.
+    pub to: Graha,
+    /// How strongly, in virupas: 0 to 60, a special aspect adding its own
+    /// over its spans (Mars 15, Jupiter 30, Saturn 45), which takes
+    /// Saturn's third towards 90.
+    pub virupas: f64,
+}
+
+impl SphutaDrishti {
+    /// Whether the gaze is at least a full one, 60 virupas.
+    ///
+    /// ```
+    /// use teistro_aspect::SphutaDrishti;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let trine = SphutaDrishti { from: Graha::Moon, to: Graha::Sun, virupas: 30.0 };
+    /// assert!(!trine.is_full());
+    /// ```
+    #[must_use]
+    pub fn is_full(&self) -> bool {
+        self.virupas >= 60.0
+    }
+}
+
+/// The signs a body reaches by the Jaimini rashi drishti: the three its
+/// sign aspects ([`rashi::aspected`]), each of which aspects it back.
+///
+/// ```
+/// use teistro_aspect::RashiDrishti;
+/// use teistro_core::catalogue::{Graha, Rashi};
+///
+/// // A body in Aries reaches the fixed signs but Taurus.
+/// let gaze = RashiDrishti { graha: Graha::Mars, signs: [Rashi::Leo, Rashi::Scorpio, Rashi::Aquarius] };
+/// assert!(gaze.signs.contains(&Rashi::Leo));
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct RashiDrishti {
+    /// The body whose sign looks.
+    pub graha: Graha,
+    /// The three signs its sign aspects, in the zodiac's order from Aries.
+    pub signs: [Rashi; rashi::ASPECTED],
+}
+
 /// Where a body stands, as this module needs it.
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -211,6 +272,17 @@ pub struct Aspects {
     placed: Vec<Placed>,
     /// The drishti table the settings named.
     table: &'static str,
+    /// Each of the seven's sphuta drishti on every other placed body, by
+    /// degree, the looking graha in the weekday order and then the body
+    /// looked at in the foundation's order, zeros included. Left out of a
+    /// document written before it was carried, and read back empty.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    sphuta: Vec<SphutaDrishti>,
+    /// Each placed body's rashi drishti, in the foundation's order. Left
+    /// out of a document written before it was carried, and read back
+    /// empty.
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    rashi: Vec<RashiDrishti>,
 }
 
 impl<'de> Deserialize<'de> for Aspects {
@@ -232,12 +304,18 @@ impl<'de> Deserialize<'de> for Aspects {
             relations: Vec<Drishti>,
             placed: Vec<Placed>,
             table: String,
+            #[serde(default)]
+            sphuta: Vec<SphutaDrishti>,
+            #[serde(default)]
+            rashi: Vec<RashiDrishti>,
         }
         let written = Written::deserialize(deserializer)?;
         Ok(Aspects {
             relations: written.relations,
             placed: written.placed,
             table: crate::drishti::table(&written.table).map_err(serde::de::Error::custom)?,
+            sphuta: written.sphuta,
+            rashi: written.rashi,
         })
     }
 }
@@ -272,6 +350,7 @@ impl Aspects {
         let table = drishti::table(&settings.aspect.drishti_table)?;
         let nodes = settings.aspect.node_aspects;
         let mut placed = Vec::with_capacity(foundation.grahas.len());
+        let mut longitudes = Vec::with_capacity(foundation.grahas.len());
         for position in &foundation.grahas {
             let longitude = canonical(position.longitude_deg)?;
             placed.push(Placed {
@@ -279,6 +358,7 @@ impl Aspects {
                 sign: longitude.sign(),
                 edge: Boundaries::of(longitude),
             });
+            longitudes.push((position.graha, position.longitude_deg.rem_euclid(360.0)));
         }
         let mut relations = Vec::with_capacity(placed.len() * placed.len());
         for from in &placed {
@@ -301,11 +381,106 @@ impl Aspects {
                 });
             }
         }
+        let mut gazes = Vec::with_capacity(sphuta::CASTING.len() * longitudes.len());
+        for from in sphuta::CASTING {
+            let Some(&(_, at)) = longitudes.iter().find(|(graha, _)| *graha == from) else {
+                continue;
+            };
+            for &(to, on) in &longitudes {
+                if to != from {
+                    gazes.push(SphutaDrishti {
+                        from,
+                        to,
+                        virupas: sphuta::drishti(from, at, on),
+                    });
+                }
+            }
+        }
+        let signs = placed
+            .iter()
+            .map(|at| RashiDrishti {
+                graha: at.graha,
+                signs: rashi::aspected(at.sign),
+            })
+            .collect();
         Ok(Aspects {
             relations,
             placed,
             table,
+            sphuta: gazes,
+            rashi: signs,
         })
+    }
+
+    /// Each of the seven's sphuta drishti on every other placed body
+    /// (crux C45): the looking graha in the weekday order, then the body
+    /// looked at in the foundation's order, a zero included, so a reader
+    /// finds every pair; empty for a document written before it was
+    /// carried.
+    ///
+    /// ```
+    /// use teistro_aspect::{Aspects, sphuta};
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let foundation = sample::foundation()?;
+    /// let aspects = Aspects::of(&foundation, &sample::resolved().settings)?;
+    /// // Seven look, each at the eight others.
+    /// assert_eq!(aspects.sphuta().len(), 7 * 8);
+    /// let at = |g| foundation.graha(g).map(|p| p.longitude_deg);
+    /// if let (Some(jupiter), Some(moon)) = (at(Graha::Jupiter), at(Graha::Moon)) {
+    ///     assert_eq!(aspects.sphuta_between(Graha::Jupiter, Graha::Moon), Some(sphuta::drishti(Graha::Jupiter, jupiter, moon)));
+    /// }
+    /// // No node casts one.
+    /// assert_eq!(aspects.sphuta_between(Graha::Rahu, Graha::Moon), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub fn sphuta(&self) -> &[SphutaDrishti] {
+        &self.sphuta
+    }
+
+    /// One graha's sphuta drishti on another body, virupas: `None` for a
+    /// node looking, a body looking at itself, or one not placed.
+    ///
+    /// ```
+    /// use teistro_aspect::Aspects;
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// assert!(aspects.sphuta_between(Graha::Saturn, Graha::Sun).is_some());
+    /// assert_eq!(aspects.sphuta_between(Graha::Sun, Graha::Sun), None);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub fn sphuta_between(&self, from: Graha, to: Graha) -> Option<f64> {
+        self.sphuta
+            .iter()
+            .find(|gaze| gaze.from == from && gaze.to == to)
+            .map(|gaze| gaze.virupas)
+    }
+
+    /// Each placed body's rashi drishti, in the foundation's order: the
+    /// three signs its sign aspects; empty for a document written before it
+    /// was carried.
+    ///
+    /// ```
+    /// use teistro_aspect::{Aspects, rashi};
+    /// use teistro_chart::sample;
+    /// use teistro_core::catalogue::Graha;
+    ///
+    /// let aspects = Aspects::of(&sample::foundation()?, &sample::resolved().settings)?;
+    /// assert_eq!(aspects.rashi().len(), 9);
+    /// for gaze in aspects.rashi() {
+    ///     let sign = aspects.sign(gaze.graha).expect("placed");
+    ///     assert_eq!(gaze.signs, rashi::aspected(sign));
+    /// }
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub fn rashi(&self) -> &[RashiDrishti] {
+        &self.rashi
     }
 
     /// The drishti table these were computed under, which a value

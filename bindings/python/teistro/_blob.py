@@ -4174,6 +4174,45 @@ class ChartsDispositorEndMembers:
 
 
 @dataclass(frozen=True)
+class ChartsSphutaDrishti:
+    """The `sphuta_drishti` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's sphuta drishti (Sripati's construction by aspect angle, as B.V. Raman gives it and BPHS ch. 26 vv. 6 to 12 state it, crux C45), charts outermost: 56 rows a chart, row `i * 56 + k`, each of the seven grahas in the weekday order looking at each of the eight other placed bodies in the foundation's order, a zero included. Empty when the aspects were not asked for.
+    """
+
+    from_: memoryview[int]
+    """The graha looking: one of the seven."""
+
+    to: memoryview[int]
+    """The body looked at, a node included."""
+
+    virupas: memoryview[float]
+    """How strongly, in virupas: 0 to 60, with Mars's, Jupiter's and Saturn's special aspects adding 15, 30 and 45 over their spans."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class ChartsRashiDrishti:
+    """The `rashi_drishti` section of a Charts blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every chart's Jaimini rashi drishti, charts outermost: 27 rows a chart, row `i * 27 + 3 * j + k`, the `k`th of the three signs the sign of the chart's `j`th body (in the foundation's order) aspects, in the zodiac's order from Aries; each aspects it back. Empty when the aspects were not asked for.
+    """
+
+    graha: memoryview[int]
+    """The body whose sign looks."""
+
+    sign: memoryview[int]
+    """A sign it reaches."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Day:
     """The `day` section, wherever a blob carries it: one column per field, each a view
     over the blob's bytes rather than a copy.
@@ -4936,6 +4975,12 @@ class Charts:
     western_configurations: str
     """UTF-8 JSON, canonical: an array with one entry per chart, each an array of the shapes its planets make, by kind in the order `GRAND_TRINE`, `T_SQUARE`, `GRAND_CROSS`, `YOD`, `KITE`, `MYSTIC_RECTANGLE`, `STELLIUM`, and within a kind by the bodies' order (`03-design/western-configurations.md`). A shape is `{kind, bodies, apex, sign, widestFromExactDeg, inside}`: `kind` one of those keys; `bodies` the grahas, bare catalogue keys (`SUN`); `apex` the graha a T-square, yod or kite points at, null for the others; `sign` the tropical rashi a stellium stands in, bare (`LEO`), null for the others; `widestFromExactDeg` how far from exact its loosest aspect is, degrees, null for a stellium; `inside` the positions in the chart's array of the larger shapes this one is wholly inside, empty when it stands alone. Every shape is made of aspects the chart holds under the record's `aspects` and `orbs`. Empty when `western_configurations_json` asked for none."""
 
+    sphuta_drishti: ChartsSphutaDrishti
+    """Every chart's sphuta drishti (Sripati's construction by aspect angle, as B.V. Raman gives it and BPHS ch. 26 vv. 6 to 12 state it, crux C45), charts outermost: 56 rows a chart, row `i * 56 + k`, each of the seven grahas in the weekday order looking at each of the eight other placed bodies in the foundation's order, a zero included. Empty when the aspects were not asked for."""
+
+    rashi_drishti: ChartsRashiDrishti
+    """Every chart's Jaimini rashi drishti, charts outermost: 27 rows a chart, row `i * 27 + 3 * j + k`, the `k`th of the three signs the sign of the chart's `j`th body (in the foundation's order) aspects, in the zodiac's order from Aries; each aspects it back. Empty when the aspects were not asked for."""
+
 
 def decode_charts(raw: bytes) -> Charts:
     """Decodes a Charts blob.
@@ -5084,6 +5129,8 @@ def decode_charts(raw: bytes) -> Charts:
     at_dossier = blob.section(137, "dossier")
     at_masa_pravesha = blob.section(138, "masa_pravesha")
     at_western_configurations = blob.section(139, "western_configurations")
+    at_sphuta_drishti = blob.section(140, "sphuta_drishti")
+    at_rashi_drishti = blob.section(141, "rashi_drishti")
     return Charts(
         kind=int(blob.fixed(at_summary, 0, "H")),
         chart_count=int(blob.fixed(at_summary, 1, "I")),
@@ -7928,6 +7975,27 @@ def decode_charts(raw: bytes) -> Charts:
         dossier=blob.text(at_dossier, "dossier"),
         masa_pravesha=blob.text(at_masa_pravesha, "masa_pravesha"),
         western_configurations=blob.text(at_western_configurations, "western_configurations"),
+        sphuta_drishti=ChartsSphutaDrishti(
+            from_=blob.column(
+                at_sphuta_drishti, 0, 2, at_sphuta_drishti.count
+            ).cast("H"),
+            to=blob.column(
+                at_sphuta_drishti, 1, 2, at_sphuta_drishti.count
+            ).cast("H"),
+            virupas=blob.column(
+                at_sphuta_drishti, 2, 8, at_sphuta_drishti.count
+            ).cast("d"),
+            length=at_sphuta_drishti.count,
+        ),
+        rashi_drishti=ChartsRashiDrishti(
+            graha=blob.column(
+                at_rashi_drishti, 0, 2, at_rashi_drishti.count
+            ).cast("H"),
+            sign=blob.column(
+                at_rashi_drishti, 1, 2, at_rashi_drishti.count
+            ).cast("H"),
+            length=at_rashi_drishti.count,
+        ),
     )
 
 

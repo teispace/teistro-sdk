@@ -832,6 +832,11 @@ for (const chart of charts) {
     put(`chart-${i}-aspect-${k}-from-sign`, drishti.fromEdge.signDeg);
     put(`chart-${i}-aspect-${k}-to-sign`, drishti.toEdge.signDeg);
   });
+  chart.sphutaDrishti.forEach((gaze, k) => {
+    put(`chart-${i}-sphuta-${k}`, `${gaze.from}>${gaze.to}`);
+    put(`chart-${i}-sphuta-${k}-virupas`, gaze.virupas);
+  });
+  chart.rashiDrishti.forEach((gaze, j) => put(`chart-${i}-rashi-${j}`, `${gaze.graha}:${gaze.signs.join(',')}`));
   put(`chart-${i}-rules-present`, chart.rules.present.map((held) => held.rule).join(','));
   put(`chart-${i}-rules-pindayu`, chart.rules.longevity.ayurdaya.pindayu.years);
   put(`chart-${i}-rules-jeevasarman`, chart.rules.longevity.ayurdaya.jeevasarman.years);

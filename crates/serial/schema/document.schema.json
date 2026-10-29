@@ -185,10 +185,24 @@
           },
           "type": "array"
         },
+        "rashi": {
+          "description": "Each placed body's rashi drishti, in the foundation's order. Left out of a document written before it was carried, and read back empty.",
+          "items": {
+            "$ref": "#/$defs/RashiDrishti"
+          },
+          "type": "array"
+        },
         "relations": {
           "description": "Every drishti of any strength, ordered by the looking body and then by the body looked at, in the foundation's own order.",
           "items": {
             "$ref": "#/$defs/Drishti"
+          },
+          "type": "array"
+        },
+        "sphuta": {
+          "description": "Each of the seven's sphuta drishti on every other placed body, by degree, the looking graha in the weekday order and then the body looked at in the foundation's order, zeros included. Left out of a document written before it was carried, and read back empty.",
+          "items": {
+            "$ref": "#/$defs/SphutaDrishti"
           },
           "type": "array"
         },
@@ -200,7 +214,9 @@
       "required": [
         "relations",
         "placed",
-        "table"
+        "table",
+        "sphuta",
+        "rashi"
       ],
       "type": "object"
     },
@@ -6418,6 +6434,29 @@
       ],
       "type": "object"
     },
+    "RashiDrishti": {
+      "description": "The signs a body reaches by the Jaimini rashi drishti: the three its sign aspects (`rashi::aspected`), each of which aspects it back.",
+      "properties": {
+        "graha": {
+          "$ref": "#/$defs/Graha",
+          "description": "The body whose sign looks."
+        },
+        "signs": {
+          "description": "The three signs its sign aspects, in the zodiac's order from Aries.",
+          "items": {
+            "$ref": "#/$defs/Rashi"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array"
+        }
+      },
+      "required": [
+        "graha",
+        "signs"
+      ],
+      "type": "object"
+    },
     "RashiRules": {
       "description": "The rashi dashas' two readings BPHS and the recording engine part on.",
       "properties": {
@@ -7048,6 +7087,30 @@
           "type": "object"
         }
       ]
+    },
+    "SphutaDrishti": {
+      "description": "One graha's sphuta drishti on another body, measured by degree (`crate::sphuta`, crux C45).",
+      "properties": {
+        "from": {
+          "$ref": "#/$defs/Graha",
+          "description": "The graha looking: one of the seven (`sphuta::CASTING`)."
+        },
+        "to": {
+          "$ref": "#/$defs/Graha",
+          "description": "The body looked at: any other placed body, a node included."
+        },
+        "virupas": {
+          "description": "How strongly, in virupas: 0 to 60, a special aspect adding its own over its spans (Mars 15, Jupiter 30, Saturn 45), which takes Saturn's third towards 90.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "from",
+        "to",
+        "virupas"
+      ],
+      "type": "object"
     },
     "Standing": {
       "description": "A graha's standing in one scheme.",

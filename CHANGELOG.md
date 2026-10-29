@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A chart's aspects carry the sphuta drishti by degree and the rashi drishti by sign.**
+**Numbers:** every chart document's hash moves; no computed value does.
+`Aspects` gains `sphuta`, the seven casting grahas' aspect on every other
+placed body in virupas (Sripati's rule after Raman, C45; BPHS ch. 26), and
+`rashi`, the three signs each body's sign reaches by the rashi drishti. Both
+were computed before and are now written, so a stored document gains two
+arrays and hashes differently. A document written before them reads back
+without them.
+- Every binding reads them: Node `chart.sphutaDrishti` and
+  `chart.rashiDrishti`, Python `chart.sphuta_drishti` and
+  `chart.rashi_drishti`, Dart and Java alike; the blob carries them as
+  sections 140 and 141, 56 and 27 rows a chart.
+- The A/B bench compares the graded graha drishti and the rashi drishti
+  with the baseline's, and adds a prashna and a rashifal family.
+
 **Python's layer, remedies, research, the ephemeris kit, intl, the IDL
 and the ephemeris port tested where their refusals and edges are.**
 **Numbers:** none. Tests, one Python refusal's wording, and one remedy

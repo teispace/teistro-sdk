@@ -61,6 +61,6 @@ pub mod orb;
 pub mod rashi;
 pub mod sphuta;
 
-pub use chart::{Aspects, Drishti, Mutual, mutual_pairs};
+pub use chart::{Aspects, Drishti, Mutual, RashiDrishti, SphutaDrishti, mutual_pairs};
 pub use drishti::Strength;
 pub use orb::{Angle, Hit, Moving};

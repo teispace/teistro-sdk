@@ -502,6 +502,8 @@ function reading(): string {
   const part: number = navamsha?.grahas[0]?.at.part ?? -1;
   const drishti = read.aspects.map((one) => `${one.from}>${one.to}:${one.houses}:${one.strength}`);
   const edge: number = read.aspects[0]?.toEdge.nakshatraDeg ?? 0;
+  const virupas: number = read.sphutaDrishti[0]?.virupas ?? 0;
+  const reached: readonly (Rashi | 'unknown')[] = read.rashiDrishti[0]?.signs ?? [];
   const gulika = read.points.find((one) => one.point === Point.Gulika);
   const lord: Graha | 'unknown' = read.bhavas[9]?.lord ?? 'unknown';
   const sun = read.states[0];
@@ -518,7 +520,7 @@ function reading(): string {
   return [
     vargottama, part, drishti.length, edge, gulika?.longitudeDeg ?? 'none', lord,
     dispositor, orb, holding.length, war, apart, read.bhavas.length,
-    drawn?.layout ?? 'none', curved, markLon,
+    drawn?.layout ?? 'none', curved, markLon, virupas, reached.length,
   ].join(' ');
 }
 

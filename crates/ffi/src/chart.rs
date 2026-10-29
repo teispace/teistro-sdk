@@ -2287,6 +2287,13 @@ struct AspectColumns {
     to_sign: Vec<f64>,
     to_nakshatra: Vec<f64>,
     to_pada: Vec<f64>,
+    /// The sphuta drishti, 56 rows a chart that carries the aspects.
+    sphuta_from: Vec<u16>,
+    sphuta_to: Vec<u16>,
+    sphuta_virupas: Vec<f64>,
+    /// The rashi drishti, three rows a body.
+    rashi_graha: Vec<u16>,
+    rashi_sign: Vec<u16>,
 }
 
 impl AspectColumns {
@@ -2311,6 +2318,11 @@ impl AspectColumns {
             to_sign: Vec::with_capacity(rows),
             to_nakshatra: Vec::with_capacity(rows),
             to_pada: Vec::with_capacity(rows),
+            sphuta_from: Vec::new(),
+            sphuta_to: Vec::new(),
+            sphuta_virupas: Vec::new(),
+            rashi_graha: Vec::new(),
+            rashi_sign: Vec::new(),
         };
         for document in documents {
             let Some(aspects) = document.aspects.as_ref() else {
@@ -2334,6 +2346,17 @@ impl AspectColumns {
                 columns.to_nakshatra.push(drishti.to_edge.nakshatra_deg);
                 columns.to_pada.push(drishti.to_edge.pada_deg);
             }
+            for gaze in aspects.sphuta() {
+                columns.sphuta_from.push(gaze.from.id());
+                columns.sphuta_to.push(gaze.to.id());
+                columns.sphuta_virupas.push(gaze.virupas);
+            }
+            for gaze in aspects.rashi() {
+                for sign in gaze.signs {
+                    columns.rashi_graha.push(gaze.graha.id());
+                    columns.rashi_sign.push(sign.id());
+                }
+            }
         }
         columns
     }
@@ -2356,7 +2379,24 @@ impl AspectColumns {
                 ColumnData::F64(&self.to_pada),
             ],
         )?;
-        writer.bytes("drishti_table", self.table.as_bytes())
+        writer.bytes("drishti_table", self.table.as_bytes())?;
+        writer.columns(
+            "sphuta_drishti",
+            self.sphuta_from.len(),
+            &[
+                ColumnData::U16(&self.sphuta_from),
+                ColumnData::U16(&self.sphuta_to),
+                ColumnData::F64(&self.sphuta_virupas),
+            ],
+        )?;
+        writer.columns(
+            "rashi_drishti",
+            self.rashi_graha.len(),
+            &[
+                ColumnData::U16(&self.rashi_graha),
+                ColumnData::U16(&self.rashi_sign),
+            ],
+        )
     }
 }
 
@@ -7965,6 +8005,37 @@ mod tests {
             !reader.bytes("drishti_table").expect("the table").is_empty(),
             "the table every relation was read under"
         );
+
+        // **The sphuta and rashi drishti**, a fixed number of rows a chart:
+        // the seven at the eight others, and three signs a body.
+        let virupas = reader
+            .column("sphuta_drishti", "virupas")
+            .expect("the sphuta drishti");
+        let signs = reader
+            .column("rashi_drishti", "sign")
+            .expect("the rashi drishti");
+        assert_eq!(virupas.len(), 56 * charts.len());
+        assert_eq!(signs.len(), 27 * charts.len());
+        for (index, document) in documents.iter().enumerate() {
+            let aspects = document.aspects.as_ref().expect("asked for");
+            for (k, gaze) in aspects.sphuta().iter().enumerate() {
+                assert_eq!(
+                    virupas[index * 56 + k].as_f64().to_bits(),
+                    gaze.virupas.to_bits(),
+                    "chart {index}, gaze {k}"
+                );
+            }
+            let theirs: Vec<i64> = aspects
+                .rashi()
+                .iter()
+                .flat_map(|gaze| gaze.signs.map(|sign| i64::from(sign.id())))
+                .collect();
+            let ours: Vec<i64> = signs[index * 27..(index + 1) * 27]
+                .iter()
+                .map(|sign| sign.as_i64())
+                .collect();
+            assert_eq!(ours, theirs, "chart {index}");
+        }
     }
 
     /// A batch of none is a blob, not an error.
