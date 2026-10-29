@@ -7902,7 +7902,7 @@ class Composite:
     cusps_deg: Optional[Tuple[float, ...]]
     """The twelve composite cusps, each the near midpoint of the two
     charts' same cusp, turned when more than 90° from where the midheaven
-    puts it (Astrolog); `None` when either chart's cusps could not be
+    puts it (C247); `None` when either chart's cusps could not be
     read, as at a polar place."""
 
 

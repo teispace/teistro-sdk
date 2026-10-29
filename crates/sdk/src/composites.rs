@@ -14,7 +14,7 @@ use crate::partner::Partner;
 use crate::western_aspects::{angle_in, planets_in};
 
 impl ChartArea<'_> {
-    /// The **composite** of two charts (Townley; Astrolog, C247): each
+    /// The **composite** of two charts (Townley, C247): each
     /// planet at the near midpoint of its two places and the mean of its
     /// two speeds, the midheaven at the near midpoint of the two, and the
     /// lagna at the near midpoint of the two, turned by 180° when that

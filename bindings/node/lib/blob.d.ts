@@ -4075,7 +4075,7 @@ export interface ChartsSynastryComposites {
  * The `synastry_composite_rows` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`.
+ * Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; C247). Empty when `synastry_json` asked for no `composite`.
  */
 export interface ChartsSynastryCompositeRows {
   /**
@@ -4258,7 +4258,7 @@ export interface ChartsWesternHousePlanets {
  * The `synastry_composite_cusps` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
+ * Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (the SDK's own rule, C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
  */
 export interface ChartsSynastryCompositeCusps {
   /**
@@ -5827,7 +5827,7 @@ export interface Charts {
    */
   readonly synastryComposites: ChartsSynastryComposites;
   /**
-   * Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; Astrolog). Empty when `synastry_json` asked for no `composite`.
+   * Every chart's composite planets, concatenated in the `cast` section's order and **ragged** by `synastry_composites.count`, in the chart's order: each planet (the seven, and the outer three when `TS_CHART_OUTER` placed them) at the near midpoint of its places in the chart and the partner's, moving at the mean of its two speeds (Townley; C247). Empty when `synastry_json` asked for no `composite`.
    */
   readonly synastryCompositeRows: ChartsSynastryCompositeRows;
   /**
@@ -5855,7 +5855,7 @@ export interface Charts {
    */
   readonly westernHousePlanets: ChartsWesternHousePlanets;
   /**
-   * Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (Astrolog; C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
+   * Every chart's composite cusps, concatenated in the `cast` section's order and **ragged** by `synastry_composites.cusp_count`, first to twelfth: each the near midpoint of the two charts' same cusp, turned by 180° when more than 90° from the midheaven plus 30° a house from the tenth (the SDK's own rule, C247), in the record's zodiac. Empty when `synastry_json` asked for no `composite`.
    */
   readonly synastryCompositeCusps: ChartsSynastryCompositeCusps;
   /**

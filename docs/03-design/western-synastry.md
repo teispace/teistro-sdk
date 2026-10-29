@@ -191,7 +191,7 @@ answers nothing.
 
 - **The composite charts.** They are read on their own page
   ([`western-composites.md`](western-composites.md), decision 6), from
-  Townley's own account and Astrolog's source: a synastry's `composite`
+  Townley's own account (C247, C248): a synastry's `composite`
   and `davison` ask for them beside the aspects.
 - **The equal distances across.** They are read on their own page
   ([`western-midpoints.md`](western-midpoints.md), decision 9): a
