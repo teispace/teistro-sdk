@@ -320,7 +320,7 @@ impl<'a> ChartArea<'a> {
     /// # Errors
     ///
     /// As [`ChartArea::founding`].
-    fn transiting<T>(
+    pub(crate) fn transiting<T>(
         self,
         work: impl for<'f> FnOnce(&Founder<'f, dyn EphemerisProvider + 'f>) -> Result<T, Error>,
     ) -> Result<T, Error> {
@@ -347,7 +347,7 @@ impl<'a> ChartArea<'a> {
 
     /// A transit's provenance with the context's settings hash, which a
     /// founder moved to another centre stamped with its own.
-    fn transit_stamped(self, mut provenance: Provenance) -> Provenance {
+    pub(crate) fn transit_stamped(self, mut provenance: Provenance) -> Provenance {
         if self.transit_centre() != self.context.settings().frame.centre {
             provenance.settings_hash = self.context.settings_hash();
         }

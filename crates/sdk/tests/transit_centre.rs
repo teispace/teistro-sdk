@@ -5,10 +5,11 @@
 
 #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
 
+use teistro::catalogue::Calendar;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
-    ChartRequest, Context, Document, Ephemeris, GocharRequest, HitRequest, SadeSatiRequest,
-    UtcOffset,
+    CalendarDate, ChartRequest, Context, Document, Ephemeris, GocharRequest, HitRequest,
+    RashifalRequest, SadeSatiRequest, Snapshot, UtcOffset,
 };
 
 /// A Kathmandu birth, 14 April 1990, the corpus's first.
@@ -23,12 +24,16 @@ fn context(profile: &str, patch: &str) -> Context {
         .unwrap()
 }
 
-fn natal(sdk: &Context) -> Document {
-    let place = Place::new(
+fn kathmandu() -> Place {
+    Place::new(
         Latitude::literal(27.7172),
         Longitude::literal(85.324),
         Altitude::literal(1400.0),
-    );
+    )
+}
+
+fn natal(sdk: &Context) -> Document {
+    let place = kathmandu();
     sdk.chart()
         .reading(
             JulianDay::<Utc>::literal(BIRTH),
@@ -74,6 +79,32 @@ fn transits_agree(one: &Context, other: &Context, natal: &Document) {
         other.chart().sade_sati(natal, &spells).unwrap(),
     );
     assert_eq!(json(&a.value), json(&b.value), "sade sati");
+    assert_eq!(a.provenance.settings_hash, one.settings_hash());
+
+    // A rashifal's sky is a transit's: its places, motion and readings,
+    // read at one clock minute so no sunrise of either frame decides it.
+    let month = RashifalRequest::between(
+        CalendarDate::defined(Calendar::Gregorian, 2026, 10, 1),
+        CalendarDate::defined(Calendar::Gregorian, 2026, 10, 31),
+        kathmandu(),
+        UtcOffset::literal(5, 45, 0),
+    )
+    .at(Snapshot::Clock { hour: 6, minute: 0 });
+    let (a, b) = (
+        one.chart().rashifal(&month).unwrap(),
+        other.chart().rashifal(&month).unwrap(),
+    );
+    assert_eq!(
+        json(&a.value.transits),
+        json(&b.value.transits),
+        "rashifal transits"
+    );
+    assert_eq!(a.value.retrograde, b.value.retrograde, "rashifal motion");
+    assert_eq!(
+        json(&a.value.readings),
+        json(&b.value.readings),
+        "rashifal readings"
+    );
     assert_eq!(a.provenance.settings_hash, one.settings_hash());
 }
 

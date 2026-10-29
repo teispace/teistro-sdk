@@ -96,7 +96,9 @@ impl ChartArea<'_> {
             .iter()
             .map(|request| self.prepared(request))
             .collect::<Result<Vec<_>, Error>>()?;
-        let searched = self.founding(UtcOffset::UTC, |founder| {
+        // A rashifal's sky is a transit's, seen from where
+        // `gochar.transit_centre` puts it (crux C778).
+        let searched = self.transiting(|founder| {
             prepared
                 .iter()
                 .map(|one| {
@@ -158,7 +160,7 @@ impl ChartArea<'_> {
         }
         let provenance =
             provenance.ok_or_else(|| Error::internal("a batch of periods was read in no group"))?;
-        Ok(Envelope::sealing(periods, provenance))
+        Ok(Envelope::sealing(periods, self.transit_stamped(provenance)))
     }
 
     /// A batch as a binding asks it ([`RashifalBatch`]): each period read
