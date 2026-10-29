@@ -194,9 +194,9 @@ export interface Messages {
       readonly parana: (p: { fast: string }) => string;
       readonly time: {
         readonly long: (p: { hour: number; minute: number; second: number }) => string;
-        readonly long12: (p: { hour12: number; meridiem: string; minute: number; second: number }) => string;
+        readonly long12: (p: { dayPeriod: string; hour12: number; meridiem: string; minute: number; second: number }) => string;
         readonly numeric: (p: { hour: number; minute: number }) => string;
-        readonly numeric12: (p: { hour12: number; meridiem: string; minute: number }) => string;
+        readonly numeric12: (p: { dayPeriod: string; hour12: number; meridiem: string; minute: number }) => string;
       };
       readonly weekdayName: (p: { weekday: number }) => string;
       readonly weekdayShort: (p: { weekday: number }) => string;

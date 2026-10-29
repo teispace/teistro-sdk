@@ -43,8 +43,7 @@ fn outputs(root: &Path) -> Vec<Output> {
         eprintln!("{}", report.markdown());
         panic!("the i18n/ sources do not validate");
     }
-    let base = tree.base().expect("the base locale");
-    let model = Model::of(base).expect("every base message parses");
+    let model = Model::of_tree(&tree).expect("every message parses");
     let overrides = overrides_of(&root.join("i18n"), DERIVED.1)
         .unwrap_or_else(|e| panic!("the derived locale's overrides load: {e}"));
     let derived = derive(&tree, DERIVED.0, DERIVED.1, &overrides, Casing::Names)

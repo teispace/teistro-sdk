@@ -2374,7 +2374,13 @@ pub mod sdk {
             /// use teistro_intl::source::Tree;
             /// use teistro_intl::{Intl, TypedMessage, sdk_root};
             ///
-            /// let message = Long12 { hour12: 2, meridiem: String::from("meridiem"), minute: 2, second: 2 };
+            /// let message = Long12 {
+            ///     day_period: String::from("dayPeriod"),
+            ///     hour12: 2,
+            ///     meridiem: String::from("meridiem"),
+            ///     minute: 2,
+            ///     second: 2,
+            /// };
             /// assert_eq!(Long12::KEY, "sdk.calendar.time.long12");
             /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
@@ -2384,6 +2390,8 @@ pub mod sdk {
             /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Long12 {
+                /// The `dayPeriod` parameter.
+                pub day_period: String,
                 /// The `hour12` parameter.
                 pub hour12: i64,
                 /// The `meridiem` parameter.
@@ -2398,6 +2406,7 @@ pub mod sdk {
                 const KEY: &'static str = "sdk.calendar.time.long12";
                 fn params(&self) -> crate::Params {
                     crate::params([
+                        ("dayPeriod", crate::Value::Str(self.day_period.clone())),
                         ("hour12", crate::Value::Int(self.hour12)),
                         ("meridiem", crate::Value::Str(self.meridiem.clone())),
                         ("minute", crate::Value::Int(self.minute)),
@@ -2446,7 +2455,12 @@ pub mod sdk {
             /// use teistro_intl::source::Tree;
             /// use teistro_intl::{Intl, TypedMessage, sdk_root};
             ///
-            /// let message = Numeric12 { hour12: 2, meridiem: String::from("meridiem"), minute: 2 };
+            /// let message = Numeric12 {
+            ///     day_period: String::from("dayPeriod"),
+            ///     hour12: 2,
+            ///     meridiem: String::from("meridiem"),
+            ///     minute: 2,
+            /// };
             /// assert_eq!(Numeric12::KEY, "sdk.calendar.time.numeric12");
             /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
             ///     .expect("plural rules for every locale");
@@ -2456,6 +2470,8 @@ pub mod sdk {
             /// ```
             #[derive(Clone, Debug, PartialEq)]
             pub struct Numeric12 {
+                /// The `dayPeriod` parameter.
+                pub day_period: String,
                 /// The `hour12` parameter.
                 pub hour12: i64,
                 /// The `meridiem` parameter.
@@ -2468,6 +2484,7 @@ pub mod sdk {
                 const KEY: &'static str = "sdk.calendar.time.numeric12";
                 fn params(&self) -> crate::Params {
                     crate::params([
+                        ("dayPeriod", crate::Value::Str(self.day_period.clone())),
                         ("hour12", crate::Value::Int(self.hour12)),
                         ("meridiem", crate::Value::Str(self.meridiem.clone())),
                         ("minute", crate::Value::Int(self.minute)),

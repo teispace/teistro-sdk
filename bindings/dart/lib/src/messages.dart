@@ -1641,12 +1641,12 @@ final class MessagesSdkCalendarTime {
 
   String long({required int hour, required int minute, required int second}) =>
       _r.render('sdk.calendar.time.long', {'hour': hour, 'minute': minute, 'second': second});
-  String long12({required int hour12, required String meridiem, required int minute, required int second}) =>
-      _r.render('sdk.calendar.time.long12', {'hour12': hour12, 'meridiem': meridiem, 'minute': minute, 'second': second});
+  String long12({required String dayPeriod, required int hour12, required String meridiem, required int minute, required int second}) =>
+      _r.render('sdk.calendar.time.long12', {'dayPeriod': dayPeriod, 'hour12': hour12, 'meridiem': meridiem, 'minute': minute, 'second': second});
   String numeric({required int hour, required int minute}) =>
       _r.render('sdk.calendar.time.numeric', {'hour': hour, 'minute': minute});
-  String numeric12({required int hour12, required String meridiem, required int minute}) =>
-      _r.render('sdk.calendar.time.numeric12', {'hour12': hour12, 'meridiem': meridiem, 'minute': minute});
+  String numeric12({required String dayPeriod, required int hour12, required String meridiem, required int minute}) =>
+      _r.render('sdk.calendar.time.numeric12', {'dayPeriod': dayPeriod, 'hour12': hour12, 'meridiem': meridiem, 'minute': minute});
 }
 
 final class MessagesSdkCalendar {

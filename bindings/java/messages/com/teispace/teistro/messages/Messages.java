@@ -3378,14 +3378,15 @@ public final class Messages {
                 /**
                  * `sdk.calendar.time.long12`
                  *
+                 * @param dayPeriod `dayPeriod`
                  * @param hour12 `hour12`
                  * @param meridiem `meridiem`
                  * @param minute `minute`
                  * @param second `second`
                  * @return the text
                  */
-                public String long12(long hour12, String meridiem, long minute, long second) {
-                    return r.render("sdk.calendar.time.long12", Map.ofEntries(Map.entry("hour12", hour12), Map.entry("meridiem", meridiem), Map.entry("minute", minute), Map.entry("second", second)));
+                public String long12(String dayPeriod, long hour12, String meridiem, long minute, long second) {
+                    return r.render("sdk.calendar.time.long12", Map.ofEntries(Map.entry("dayPeriod", dayPeriod), Map.entry("hour12", hour12), Map.entry("meridiem", meridiem), Map.entry("minute", minute), Map.entry("second", second)));
                 }
 
                 /**
@@ -3402,13 +3403,14 @@ public final class Messages {
                 /**
                  * `sdk.calendar.time.numeric12`
                  *
+                 * @param dayPeriod `dayPeriod`
                  * @param hour12 `hour12`
                  * @param meridiem `meridiem`
                  * @param minute `minute`
                  * @return the text
                  */
-                public String numeric12(long hour12, String meridiem, long minute) {
-                    return r.render("sdk.calendar.time.numeric12", Map.ofEntries(Map.entry("hour12", hour12), Map.entry("meridiem", meridiem), Map.entry("minute", minute)));
+                public String numeric12(String dayPeriod, long hour12, String meridiem, long minute) {
+                    return r.render("sdk.calendar.time.numeric12", Map.ofEntries(Map.entry("dayPeriod", dayPeriod), Map.entry("hour12", hour12), Map.entry("meridiem", meridiem), Map.entry("minute", minute)));
                 }
             }
 
