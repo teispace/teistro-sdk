@@ -299,9 +299,10 @@ running: the record is taken under the machine's heavy-job lock.
 ## 10. Agreement: the two answers, field by field
 
 Over the inputs a request was timed on, each side's answer is read into
-*facts*, `[family/what, value]` pairs, by `bench/ab-agree.mjs` for the SDK
-and the adapter's `facts` for the baseline, and a fact both hold is
-compared. The families, their units and their tolerances:
+*facts*, `[family/what, value]` pairs, by `@teistro/compat`'s `facts`
+(`bindings/node/compat/lib/facts.js`, which `bench/ab-agree.mjs` calls)
+for the SDK and the adapter's `facts` for the baseline, and a fact both
+hold is compared. The families, their units and their tolerances:
 
 | family | what | compared as | tolerance |
 |---|---|---|---|

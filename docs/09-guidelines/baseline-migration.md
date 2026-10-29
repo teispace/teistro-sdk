@@ -484,16 +484,18 @@ the baseline's beside it
 
 ## 10. What is not available yet
 
-- **The compatibility shim is not built beyond its skeleton.** The
-  roadmap lists it as a Phase 9 deliverable beside this guide. The
-  settings translation is built (`recordedSettings` in every binding),
-  and so is the package's entry, its context cache and its birth record
-  reader ([`bindings/node/compat`](../../bindings/node/compat/README.md)),
-  but no function forwards a baseline call yet. You port each call. Its design is
-  [`03-design/compat-shim.md`](../03-design/compat-shim.md): a settings
-  translation for stored snapshots in every binding, and a Node package,
-  `@teistro/compat`, that takes stored birth records and answers the
-  SDK's own results, so the calls can be moved one at a time.
+- **The compatibility shim is not released, and its map is not
+  generated.** The roadmap lists it as a Phase 9 deliverable beside this
+  guide. The settings translation is built (`recordedSettings` in every
+  binding, reading a stored ayanamsha as its number or the application's
+  key), and so is the package,
+  [`bindings/node/compat`](../../bindings/node/compat/README.md): every
+  baseline entry point of
+  [`03-design/compat-shim.md`](../03-design/compat-shim.md) §3 is a
+  function that takes the stored birth record and snapshot and answers
+  the SDK's own result, or refuses at once, so the calls can be moved
+  one at a time. Not yet: the generated map that replaces §4 here, and
+  the package's release.
 - **Namakarana.** The phonetic matcher and the name validation map to
   `ctx.naming` in every binding (`sdk.naming()` in Rust): `syllables`
   gives a pada's, a star's or a sign's syllables, `read` reads names in
