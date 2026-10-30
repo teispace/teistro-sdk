@@ -10,17 +10,7 @@ someone may still be looking at. So each entry begins with **Numbers**, and
 "none" is an answer that has to be earned by the conformance run against
 the previous release, not by nobody having looked.
 
-## 1.0.0-rc.1
-
-The first release candidate of 1.0.0, for the maintainer's review and the
-astrologers'.
-**Numbers:** none, against nothing: no earlier release exists, so no chart
-computed with one can move. Each entry below says what moved between the
-commits it was built across, measured as it was merged, and is kept as the
-record of why a value is what it is. The conformance run against the pinned
-corpus (`05-testing/CONFORMANCE.md`), the accuracy page (`ACCURACY.md`) and
-the A/B against the baseline engine (`05-testing/ab-measured.md`) are this
-release's measure.
+## Unreleased
 
 **A wasm module that traps refuses as `INTERNAL`, and a host hears of it.**
 **Numbers:** none.
@@ -45,6 +35,18 @@ release's measure.
   registered in, is held by a test, and so is a request's trace context
   (`traceparent`, `tracestate`, `baggage` in `_meta`) changing nothing: the
   SDK has no spans to join.
+
+## 1.0.0-rc.1
+
+The first release candidate of 1.0.0, for the maintainer's review and the
+astrologers'.
+**Numbers:** none, against nothing: no earlier release exists, so no chart
+computed with one can move. Each entry below says what moved between the
+commits it was built across, measured as it was merged, and is kept as the
+record of why a value is what it is. The conformance run against the pinned
+corpus (`05-testing/CONFORMANCE.md`), the accuracy page (`ACCURACY.md`) and
+the A/B against the baseline engine (`05-testing/ab-measured.md`) are this
+release's measure.
 
 **A rashifal's sky is a transit's, and the shim casts a prashna and
 reads a rashifal as the baseline does.**
