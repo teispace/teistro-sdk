@@ -15,7 +15,7 @@ import com.teispace.teistro.ffi.Native;
  * Years, months and days, each signed: the difference of two dates.
  *
  * @param years Whole years. Example: 30.
- * @param months Whole months, -11 to 11. Range: [-11,11]. Example: 0.
+ * @param months Whole months, -11 to 11. Example: 0.
  * @param days Days. Example: 1.
  */
 @SuppressWarnings("unused")

@@ -1873,7 +1873,7 @@ public final class Native {
 
         /**
          * The offset of `months`. Whole months, -11 to 11.
-         * Range: [-11,11]. Example: 0.
+         * Example: 0.
          */
         public static final long MONTHS_OFFSET = 8;
 
@@ -4243,7 +4243,7 @@ public final class Native {
      * same `overflow` gives `to`. An anniversary on a day its month lacks is
      * resolved by `overflow`: one born on the 32nd of Jestha completes a year
      * on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
-     * under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+     * under `CARRY`, and `REJECT` refuses a count from such a day (C806).
      * Before `from`, each part is negative or zero. Dates in two calendars
      * are `INVALID_ARG`, naming `calendar`.
      */

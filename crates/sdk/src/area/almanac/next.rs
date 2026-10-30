@@ -25,7 +25,8 @@ const NEXT: &str = "next";
 /// What a search looks for: a rule of a festival request by its key, or a
 /// kind of day the SDK reads by rules of its own.
 #[derive(Clone, Debug, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "camelCase")]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum NextTarget {
     /// The rule of this key in the request's festivals: a karmakala rule,
     /// an Ekadashi rule, a rule counted from another's day, a dated rule,
@@ -228,20 +229,6 @@ impl NextOccurrence {
     }
 }
 
-/// What a search's provenance hashes: the request, not the window that
-/// held the day.
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-struct NextInput<'a> {
-    after: f64,
-    place: Place,
-    utc_offset_seconds: i32,
-    calendar: Calendar,
-    target: &'a NextTarget,
-    festivals: &'a FestivalRequest,
-    limit_days: u32,
-}
-
 /// Whether a published set withdrew the day.
 fn withdrawn(published: Option<&teistro_panchanga::festival::Published>) -> bool {
     published.is_some_and(|p| p.status == PublishedStatus::Withdrawn)
@@ -410,15 +397,17 @@ impl AlmanacArea<'_> {
                 continue;
             };
             let (found, held) = on_the_day(value, &keys, &day);
-            provenance.input_hash = content_hash(&NextInput {
-                after: request.after.get(),
-                place: request.place,
-                utc_offset_seconds: request.offset.seconds(),
-                calendar: request.calendar,
-                target: &request.target,
-                festivals: &festivals,
-                limit_days: request.limit_days,
-            });
+            // What the provenance hashes: the request, not the window that
+            // held the day.
+            provenance.input_hash = content_hash(&serde_json::json!({
+                "after": request.after.get(),
+                "place": request.place,
+                "utcOffsetSeconds": request.offset.seconds(),
+                "calendar": request.calendar,
+                "target": request.target,
+                "festivals": festivals,
+                "limitDays": request.limit_days,
+            }));
             provenance.applied_conventions.push(Convention {
                 knob: String::from("festival.next"),
                 value: format!("{first}+{searched}d"),

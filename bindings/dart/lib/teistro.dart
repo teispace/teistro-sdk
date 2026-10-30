@@ -717,7 +717,7 @@ final class CalendarArea extends _Area {
   /// counted as an age is: the most whole months whose anniversary of
   /// [from] is not past [to], then the days from it, so [add] of the span
   /// gives [to]. One born on the 32nd of Jestha completes a year on the
-  /// 31st of a 31-day Jestha under [Overflow.constrain] (C803). Earlier
+  /// 31st of a 31-day Jestha under [Overflow.constrain] (C806). Earlier
   /// than [from], each part is negative or zero.
   ///
   /// ```dart

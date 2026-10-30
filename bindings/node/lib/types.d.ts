@@ -621,7 +621,6 @@ export interface DateSpan {
   readonly years: number;
   /**
    * Whole months, -11 to 11.
-   * @range [-11,11]
    * @example 0
    */
   readonly months: number;

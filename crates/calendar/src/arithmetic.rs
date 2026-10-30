@@ -307,7 +307,7 @@ pub fn add(
 /// Jestha 2082, a 31-day month's last day, under
 /// [`Overflow::Constrain`]; under [`Overflow::Carry`] on the 1st of
 /// Ashadh; and [`Overflow::Reject`] refuses an answer that counts from
-/// such a day (C803).
+/// such a day (C806).
 ///
 /// ```
 /// use teistro_calendar::arithmetic::{DateSpan, Overflow, between};

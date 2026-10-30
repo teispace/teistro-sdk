@@ -190,6 +190,36 @@
     }
   },
   {
+    "record": "calendar.add",
+    "request": {
+      "calendar": "calendar.BIKRAM_SAMBAT",
+      "date": {
+        "year": 2081,
+        "month": 2,
+        "day": 32
+      },
+      "months": 1,
+      "overflow": "CARRY"
+    }
+  },
+  {
+    "record": "calendar.between",
+    "request": {
+      "calendar": "calendar.BIKRAM_SAMBAT",
+      "from": {
+        "year": 2050,
+        "month": 2,
+        "day": 32
+      },
+      "to": {
+        "year": 2082,
+        "month": 2,
+        "day": 31
+      },
+      "overflow": "CONSTRAIN"
+    }
+  },
+  {
     "record": "engine.call",
     "request": {
       "name": "tp_sum",
@@ -256,6 +286,21 @@
       "stampUnixSeconds": 1767225600,
       "name": "Nepal",
       "refreshMinutes": 0
+    }
+  },
+  {
+    "record": "almanac.next",
+    "request": {
+      "after": 2461042.0,
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "rule": "VIJAYA_DASHAMI",
+      "festivals": {
+        "rules": "NEPAL_PANCHANGA"
+      },
+      "limitDays": 400
     }
   },
   {
@@ -353,7 +398,10 @@
       "request": {
         "key": "grandfather",
         "relation": "SAPINDA",
-        "event": { "event": "DEATH", "at": 2461051.677083 }
+        "event": {
+          "event": "DEATH",
+          "at": 2461051.677083
+        }
       }
     }
   },

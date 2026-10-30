@@ -392,6 +392,10 @@ from ._requests import (
     EventConfidence as EventConfidence,
     BirthFacts as BirthFacts,
     FestivalCalendarRequest as FestivalCalendarRequest,
+    AddAsked as AddAsked,
+    BetweenAsked as BetweenAsked,
+    NextKind as NextKind,
+    NextRequest as NextRequest,
     FirstAbdika as FirstAbdika,
     FirstYearAdhika as FirstYearAdhika,
     FirstYearQuery as FirstYearQuery,
@@ -2695,7 +2699,7 @@ class CalendarArea(_Area):
         anniversary of `from_date` is not past `to_date`, then the days from
         it, so `add` of the span gives `to_date`. One born on the 32nd of
         Jestha completes a year on the 31st of a 31-day Jestha under
-        `CONSTRAIN` (C803). Earlier than `from_date`, each part is negative
+        `CONSTRAIN` (C806). Earlier than `from_date`, each part is negative
         or zero.
 
         >>> # ctx.calendar.between(bs(2050, 2, 32), bs(2082, 2, 31)).years  # 32
