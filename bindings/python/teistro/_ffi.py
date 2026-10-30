@@ -19,6 +19,7 @@ from dataclasses import dataclass
 from types import TracebackType
 from typing import Any, Final, NamedTuple, Optional, Sequence
 
+from ._internal import report_internal
 from .catalogue import (
     Accident,
     Affliction,
@@ -4535,7 +4536,7 @@ class TeistroContext:
         if self._handle is not None:
             if self._lib.ts_context_last_error(self._handle, ctypes.byref(raw)) == 0:
                 raise _refusal(status, Error._of(raw))
-        raise TeistroError(status, status.key)
+        raise _told(TeistroError(status, status.key))
 
     def last_error(self) -> Error:
         """The outcome of the last call on the context: its status, the provider's
@@ -6077,7 +6078,7 @@ class TeistroProvider:
         if self._handle is not None:
             if self._lib.ts_context_last_error(self._handle, ctypes.byref(raw)) == 0:
                 raise _refusal(status, Error._of(raw))
-        raise TeistroError(status, status.key)
+        raise _told(TeistroError(status, status.key))
 
 
 def _free_provider(lib: TeistroLibrary, handle: Any) -> None:
@@ -6208,16 +6209,26 @@ def calendar_fixed_of_jd(lib: TeistroLibrary, jd: float) -> CalendarFixedOfJdRes
     return CalendarFixedOfJdResult(value=value, fraction=fraction)
 
 
+def _told(refusal: TeistroError) -> TeistroError:
+    """A refusal the boundary answered, handed back; a host's crash reporter
+    hears of an `INTERNAL` one, never with its message (`_internal.py`)."""
+    if refusal.status == Status.INTERNAL:
+        report_internal(GENERATED_SDK_VERSION)
+    return refusal
+
+
 def _refusal(status: Status, found: Error) -> TeistroError:
     """The exception for a refusal the library described, from either kind
     of record: one a context lent or one a failed way in wrote."""
-    return TeistroError(
-        status,
-        found.message or status.key,
-        detail=found.detail or "",
-        field=found.field or "",
-        hint=found.hint or "",
-        key=found.key or "",
+    return _told(
+        TeistroError(
+            status,
+            found.message or status.key,
+            detail=found.detail or "",
+            field=found.field or "",
+            hint=found.hint or "",
+            key=found.key or "",
+        )
     )
 
 
@@ -6233,7 +6244,7 @@ def _refuse(lib: TeistroLibrary, status: Status, record: Any) -> None:
         lib.ts_error_free(ctypes.byref(record))
         if found.message:
             raise _refusal(status, found)
-    raise TeistroError(status, _text(lib.ts_status_message(int(status))))
+    raise _told(TeistroError(status, _text(lib.ts_status_message(int(status)))))
 
 
 def _take_string(lib: TeistroLibrary, raw: Any) -> str:

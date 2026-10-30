@@ -116,6 +116,7 @@ from ._ffi import (
     frame_unpack,
     sdk_version,
 )
+from ._internal import INTERNAL_CODE, InternalReport, on_internal_error
 from ._host import (
     EphemerisProvider,
     HostProvider,
@@ -957,7 +958,10 @@ from .catalogue import (
 )
 
 __all__ = [
+    "INTERNAL_CODE",
+    "InternalReport",
     "NEPAL_OFFICIAL_PROFILE",
+    "on_internal_error",
     "NepalOfficial",
     "Plugin",
     "nepal_official",

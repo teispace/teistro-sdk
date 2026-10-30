@@ -17,6 +17,7 @@ import 'dart:typed_data';
 import 'package:ffi/ffi.dart' as pkg_ffi;
 
 import 'catalogue.dart';
+import 'internal.dart';
 
 /// An opaque context: settings, a provider, the locale engine, the last
 /// error. Used by one thread at a time.
@@ -5596,7 +5597,7 @@ final class TeistroContext implements ffi.Finalizable {
       error.ref.structSize = ffi.sizeOf<ErrorStruct>();
       final status = lib.ts_context_new(rawoptions, provider ?? ffi.nullptr, providerUserData ?? ffi.nullptr, out, error);
       if (status != 0) {
-        final refusal = _refusal(status, error);
+        final refusal = refusalOf(status, error);
         lib.ts_error_free(error);
         throw refusal;
       }
@@ -5625,7 +5626,7 @@ final class TeistroContext implements ffi.Finalizable {
       error.ref.structSize = ffi.sizeOf<ErrorStruct>();
       final status = lib.ts_context_new_with_provider(rawoptions, provider._handle, out, error);
       if (status != 0) {
-        final refusal = _refusal(status, error);
+        final refusal = refusalOf(status, error);
         lib.ts_error_free(error);
         throw refusal;
       }
@@ -5640,7 +5641,7 @@ final class TeistroContext implements ffi.Finalizable {
       final raw = arena<ErrorStruct>();
       raw.ref.structSize = ffi.sizeOf<ErrorStruct>();
       _lib.ts_context_last_error(_handle, raw);
-      throw _refusal(status, raw);
+      throw refusalOf(status, raw);
     });
   }
 
@@ -6807,7 +6808,7 @@ final class TeistroProvider implements ffi.Finalizable {
       error.ref.structSize = ffi.sizeOf<ErrorStruct>();
       final status = lib.ts_provider_load(rawpath, rawconfigJson, out, error);
       if (status != 0) {
-        final refusal = _refusal(status, error);
+        final refusal = refusalOf(status, error);
         lib.ts_error_free(error);
         throw refusal;
       }
@@ -6829,18 +6830,33 @@ final class TeistroProvider implements ffi.Finalizable {
 
 /// The exception for a refusal the library described, read from either
 /// kind of record: one a context lent, or one a failed way in wrote.
-TeistroException _refusal(int status, ffi.Pointer<ErrorStruct> raw) {
+TeistroException refusalOf(int status, ffi.Pointer<ErrorStruct> raw) {
   String? text(ffi.Pointer<ffi.Char> p) =>
       p == ffi.nullptr ? null : p.cast<pkg_ffi.Utf8>().toDartString();
-  return TeistroException(
-    Status.byId(status),
-    text(raw.ref.message) ?? 'the call failed',
-    detail: text(raw.ref.detail),
-    field: text(raw.ref.field),
-    hint: text(raw.ref.hint),
-    messageKey: text(raw.ref.key),
-    providerCode: raw.ref.providerCode,
+  return _told(
+    TeistroException(
+      Status.byId(status),
+      text(raw.ref.message) ?? 'the call failed',
+      detail: text(raw.ref.detail),
+      field: text(raw.ref.field),
+      hint: text(raw.ref.hint),
+      messageKey: text(raw.ref.key),
+      providerCode: raw.ref.providerCode,
+    ),
   );
+}
+
+/// The exception for a status a call with no record answered: the status's
+/// own sentence.
+TeistroException plainRefusal(TeistroLibrary lib, int status) => _told(
+  TeistroException(Status.byId(status), statusMessage(lib, Status.byId(status))),
+);
+
+/// A refusal the boundary answered, handed back; a host's crash reporter
+/// hears of an `INTERNAL` one, never with its message (`internal.dart`).
+TeistroException _told(TeistroException refusal) {
+  if (refusal.status == Status.internal) reportInternal(generatedSdkVersion);
+  return refusal;
 }
 
 /// The bytes of a blob the library filled, copied out and the blob
@@ -6923,12 +6939,7 @@ Frame frameCanonical(TeistroLibrary lib) {
       final outFrame = arena<FrameStruct>();
       outFrame.ref.structSize = ffi.sizeOf<FrameStruct>();
       final status = lib.ts_frame_canonical(outFrame);
-      if (status != 0) {
-        throw TeistroException(
-          Status.byId(status),
-          statusMessage(lib, Status.byId(status)),
-        );
-      }
+      if (status != 0) throw plainRefusal(lib, status);
       return Frame.read(outFrame);
   });
 }
@@ -6940,12 +6951,7 @@ int framePack(TeistroLibrary lib, Frame frame) {
       frame.write(rawframe, arena);
       final outBits = arena<ffi.Uint32>();
       final status = lib.ts_frame_pack(rawframe, outBits);
-      if (status != 0) {
-        throw TeistroException(
-          Status.byId(status),
-          statusMessage(lib, Status.byId(status)),
-        );
-      }
+      if (status != 0) throw plainRefusal(lib, status);
       return outBits.value;
   });
 }
@@ -6957,12 +6963,7 @@ Frame frameUnpack(TeistroLibrary lib, int bits) {
       final outFrame = arena<FrameStruct>();
       outFrame.ref.structSize = ffi.sizeOf<FrameStruct>();
       final status = lib.ts_frame_unpack(bits, outFrame);
-      if (status != 0) {
-        throw TeistroException(
-          Status.byId(status),
-          statusMessage(lib, Status.byId(status)),
-        );
-      }
+      if (status != 0) throw plainRefusal(lib, status);
       return Frame.read(outFrame);
   });
 }

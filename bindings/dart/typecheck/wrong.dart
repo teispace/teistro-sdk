@@ -30,4 +30,7 @@ void main() {
     (Graha.registered('ACME'), Varga.d1),
   ];
   print('$drawings $registered');
+  // A host's crash reporter hears a report without the message (SR-52).
+  // expect: The getter 'message' isn't defined for the type 'InternalReport'
+  onInternalError((report) => report.message);
 }

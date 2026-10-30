@@ -426,6 +426,7 @@ fn render_catalogue_import(out: &mut String, api: &Api) {
     names.push(String::from("Member"));
     names.sort_unstable();
     names.dedup();
+    out.push_str("from ._internal import report_internal\n");
     out.push_str("from .catalogue import (\n");
     for name in names {
         let _ = writeln!(out, "    {name},");
@@ -1491,7 +1492,7 @@ fn render_error_reader(out: &mut String, api: &Api) {
     };
     let _ = writeln!(
         out,
-        "\n    def _raise(self, status: Status) -> None:\n        \"\"\"Raises what the library said about its last refusal.\"\"\"\n        raw = {0}()\n        raw.struct_size = ctypes.sizeof({0})\n        if self._handle is not None:\n            if self._lib.{1}(self._handle, ctypes.byref(raw)) == 0:\n                raise _refusal(status, {2}._of(raw))\n        raise TeistroError(status, status.key)",
+        "\n    def _raise(self, status: Status) -> None:\n        \"\"\"Raises what the library said about its last refusal.\"\"\"\n        raw = {0}()\n        raw.struct_size = ctypes.sizeof({0})\n        if self._handle is not None:\n            if self._lib.{1}(self._handle, ctypes.byref(raw)) == 0:\n                raise _refusal(status, {2}._of(raw))\n        raise _told(TeistroError(status, status.key))",
         struct_name(&error.name),
         reader.name,
         binding_type_name(&error.name),
@@ -1577,16 +1578,26 @@ fn free_helpers(api: &Api) -> String {
         .map_or_else(|| String::from("ts_error_free"), |f| f.name.clone());
     let mut reads = String::new();
     for field in error_fields(api) {
-        let _ = writeln!(reads, "        {field}=found.{field} or \"\",");
+        let _ = writeln!(reads, "            {field}=found.{field} or \"\",");
     }
     format!(
-        r#"def _refusal(status: Status, found: {error_type}) -> TeistroError:
+        r#"def _told(refusal: TeistroError) -> TeistroError:
+    """A refusal the boundary answered, handed back; a host's crash reporter
+    hears of an `INTERNAL` one, never with its message (`_internal.py`)."""
+    if refusal.status == Status.INTERNAL:
+        report_internal(GENERATED_SDK_VERSION)
+    return refusal
+
+
+def _refusal(status: Status, found: {error_type}) -> TeistroError:
     """The exception for a refusal the library described, from either kind
     of record: one a context lent or one a failed way in wrote."""
-    return TeistroError(
-        status,
-        found.message or status.key,
-{reads}    )
+    return _told(
+        TeistroError(
+            status,
+            found.message or status.key,
+{reads}        )
+    )
 
 
 def _refuse(lib: TeistroLibrary, status: Status, record: Any) -> None:
@@ -1601,7 +1612,7 @@ def _refuse(lib: TeistroLibrary, status: Status, record: Any) -> None:
         lib.{error_free}(ctypes.byref(record))
         if found.message:
             raise _refusal(status, found)
-    raise TeistroError(status, _text(lib.{message}(int(status))))
+    raise _told(TeistroError(status, _text(lib.{message}(int(status)))))
 
 
 def _take_string(lib: TeistroLibrary, raw: Any) -> str:

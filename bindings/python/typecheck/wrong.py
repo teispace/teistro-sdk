@@ -17,6 +17,7 @@ from teistro import (
     Teistro,
     date,
     local_mean_zone,
+    on_internal_error,
 )
 from teistro._ffi import Altitude, Latitude, Longitude
 
@@ -60,3 +61,7 @@ with teistro.context() as misspelt:
 # rather than a refusal from the boundary at run time.
 # expect: Incompatible types (expression has type "Literal['MARIAGE']", TypedDict item "kind" has type
 marriage: LifeEvent = {"kind": "MARIAGE", "on": 2469000.5}
+
+# A host's crash reporter hears a report without the message (SR-52).
+# expect: "InternalReport" has no attribute "message"
+on_internal_error(lambda report: report.message)
