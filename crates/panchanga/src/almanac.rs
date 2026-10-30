@@ -2773,7 +2773,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let moon_sky = (&longitudes, zodiac, known.as_ref());
         let omens = self.omens(&limbs, day.vara, moon_sky)?;
         let held = (window, &mut memo.panchaka);
-        let named_panchaka = self.named_panchaka(place, &omens.panchaka, held, moon_sky)?;
+        let named_panchaka = self.named_panchaka((place, &day), &omens.panchaka, held, moon_sky)?;
         memo.known = known.map(|known| (frame, known));
         Ok((
             Panchanga {
@@ -3165,7 +3165,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// the day, sunrise to sunrise, the first instant falls in.
     fn named_panchaka<S: teistro_astro::events::Longitudes + ?Sized>(
         &self,
-        place: &Place,
+        (place, day): (&Place, &LocalDay),
         spans: &[Span<Panchaka>],
         (window, held): (Interval, &mut Option<(Interval, Option<Panchaka>)>),
         (longitudes, zodiac, known): (&S, Zodiac, Option<&RangeCrossings>),
@@ -3214,11 +3214,25 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 .map(|span| span.whole.to)
                 .ok_or_else(|| Error::internal("a panchaka with no last star after it"))?
         };
-        // The vara of the date whose day holds the first instant: its
-        // civil date's, or the date before's when it falls before that
-        // sunrise. A polar day whose policy puts its bounds elsewhere holds
-        // it in neither, and keeps its civil date's.
-        let policy = settings.day.polar_day_policy;
+        // The vara of the day that holds the first instant: the day being
+        // answered's when it opens there, and otherwise its civil date's or
+        // the date before's when it falls before that sunrise. A polar day
+        // whose policy puts its bounds elsewhere holds it in neither, and
+        // keeps its civil date's.
+        let vara = if day.contains(from) {
+            day.vara
+        } else {
+            self.vara_holding(place, from)?
+        };
+        let whole = Interval::new(from, to)?;
+        let name = omen::panchaka_by_vara(vara);
+        *held = Some((whole, name));
+        Ok(name.and_then(|name| Span::new(name, whole, window)))
+    }
+
+    /// The vara of the day, sunrise to sunrise, an instant falls in.
+    fn vara_holding(&self, place: &Place, from: JulianDay<Utc>) -> Result<Vara, Error> {
+        let policy = self.settings().day.polar_day_policy;
         let civil = teistro_calendar::solar::rule::local_day(self.clock, from).0;
         let today = local_day(
             self.model,
@@ -3228,7 +3242,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             &self.calendar.date_of(civil)?,
             policy,
         )?;
-        let vara = if from.get() < today.sunrise.get() {
+        Ok(if from.get() < today.sunrise.get() {
             let before = local_day(
                 self.model,
                 self.calendar,
@@ -3244,11 +3258,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             }
         } else {
             today.vara
-        };
-        let whole = Interval::new(from, to)?;
-        let name = omen::panchaka_by_vara(vara);
-        *held = Some((whole, name));
-        Ok(name.and_then(|name| Span::new(name, whole, window)))
+        })
     }
 
     /// The day's season under `panchanga.ritu`.
