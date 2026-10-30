@@ -41,9 +41,9 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 
 | SR | Status | Where | Note or question |
 |---|---|---|---|
-| SR-18 | planned | `panchanga/src/omen.rs`, beside `agni_vasas` and `chandra_vasas` | Bhadra's loka (heaven, the underworld or the earth) by the Moon's sign, from a rank-1 text (*Muhurta Chintamani* and *Muhurta Martanda* to be read). |
-| SR-19 | planned | the day's answer | The `Panchaka` catalogue exists (`core/src/catalogue/generated/panchaka.rs`). Planned: the day's named panchaka as a value, the kind read from the weekday it begins on, with its source. |
-| SR-20 | planned | a convention model for printed readings | A reading the almanacs print without a textual rule ships as a named convention, flagged as having no text behind it and chosen by a setting. Shiva vasa is the first. The same shape will carry the other printed readings. |
+| SR-18 | done | `omen::bhadra_vasa`, `Panchanga::bhadra_vasa`, the day's `bhadra_vasa` section | Bhadra's loka by the Moon's sign during Vishti, from *Muhurta Chintamani* Shubhashubha-prakarana v. 45; a sign change inside a Vishti splits it; only the earth's is `harmful` (C820). |
+| SR-19 | done | the day's `named_panchaka` | One span from the panchaka's first instant to the Moon leaving Revati, named by the vara it begins on. No text names it so; it ships as a printed convention, `panchanga.panchaka_name` (C821). |
+| SR-20 | done | `docs/03-design/printed-conventions.md` | A printed reading with no text is a knob (the print's rule, `NONE`), an entry in the answer's `applied_conventions`, and catalogue members marked `T`. Shiva vasa is the first (`panchanga.shiva_vasa`, C750). |
 | SR-21 | partly built | `chart` (gandanta) | Planned: ganda mula, vinchudo, Ravi and Guru Pushya and the special yogas as day spans, each with its source. |
 | SR-22 | planned | `panchanga` | Gauri panchangam (Gowri nalla neram) day divisions, from a cited table. |
 
@@ -53,7 +53,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 |---|---|---|---|
 | SR-23 | partly built | `FestivalRequest::with_anniversary`; `AnniversaryKind` | Planned: a general anniversary kind for any event kept by tithi, with a stated window (sunrise by default). The festival rules a caller writes are a supported input now. Their limits will be documented and checked on the way in. |
 | SR-24 | planned | the same | Batch anniversaries, about 50 people over 10 years in one call. The budget is gated on the desktop bench and scaled to a low-end Android phone by the ratio `app-speed-measured.md` records; the phone itself is not run in CI. |
-| SR-25 | planned | the saits | Vijaya Dashami's tika and Laxmi Puja beside Ghatasthapana, Phulpati and Bhai Tika, held against the committee's printed saits. |
+| SR-25 | partly built | the saits | Laxmi Puja ships the text's pradosha window; no printed lagna for it was found (C824). The Vijaya Dashami tika is not shipped: no rule fits all four printed years (C823). |
 | SR-26 | planned | `panchanga` | The death-time check: dhanishtha panchaka, and tripada and dwipada nakshatras at an instant, from a cited text. |
 | SR-27 | planned | `panchanga` (ashauch) | A relation resolver: a path in a family graph gives the ashauch relation and the sapinda degree the texts use. |
 | SR-28 | partly built | the ashauch rules (the sapinda degree and the default are decided) | Planned: several events and observers in one request, overlapping periods resolved (samapata), and "may this rite go on?" answered with its clause (apavada), all as presets a caller can change. |

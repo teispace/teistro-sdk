@@ -28885,6 +28885,9 @@ final class Almanac {
       'punyaKala': counts.punyaKala,
       'homaAhuti': counts.homaAhuti,
       'ashubhaYogas': counts.ashubhaYogas,
+      'bhadraVasa': counts.bhadraVasa,
+      'shivaVasa': counts.shivaVasa,
+      'namedPanchaka': counts.namedPanchaka,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -29190,6 +29193,60 @@ final class AlmanacDay {
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       AshubhaYoga.byId,
+    );
+  }
+
+  /// Where Bhadra dwells while the vishti karana holds, by the sign the Moon
+  /// stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820);
+  /// only `MARTYA`, the earth, is harmful, and a sign change in Bhadra splits
+  /// it.
+  List<Span<BhadraVasa>> get bhadraVasa {
+    final c = batch.decoded.bhadraVasa;
+    return _spans(
+      'bhadraVasa',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      BhadraVasa.byId,
+    );
+  }
+
+  /// Where Shiva dwells, one span for each tithi the day held: a printed
+  /// convention with no text behind it, chosen by `panchanga.shiva_vasa` and
+  /// named in the provenance's `applied_conventions` (crux C750).
+  List<Span<ShivaVasa>> get shivaVasa {
+    final c = batch.decoded.shivaVasa;
+    return _spans(
+      'shivaVasa',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      ShivaVasa.byId,
+    );
+  }
+
+  /// The panchaka the day holds, named by the vara it began on (Sunday Roga,
+  /// Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu): a printed
+  /// convention, chosen by `panchanga.panchaka_name` and named in the
+  /// provenance's `applied_conventions` (crux C821). At most one; `whole` runs
+  /// from the panchaka's first instant to the Moon's leaving Revati.
+  List<Span<Panchaka>> get namedPanchaka {
+    final c = batch.decoded.namedPanchaka;
+    return _spans(
+      'namedPanchaka',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      Panchaka.byId,
     );
   }
 

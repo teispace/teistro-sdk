@@ -6401,6 +6401,9 @@ fn one_day_shape(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         ("amrit-kalam", day.omens.amrit_kalam.len()),
         ("agni-vasa", day.agni_vasa().len()),
         ("ashubha-yoga", day.ashubha_yogas().len()),
+        ("bhadra-vasa", day.bhadra_vasa().len()),
+        ("shiva-vasa", day.shiva_vasa.len()),
+        ("named-panchaka", usize::from(day.named_panchaka.is_some())),
         ("rahu-vasa", day.rahu_vasa().len()),
         ("punya-kala", usize::from(day.punya_kala.is_some())),
     ] {
@@ -6569,7 +6572,8 @@ fn limb_spans<T: teistro::catalogue::Catalogued>(
 fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::almanac::Panchanga) {
     // And every span of every moving limb, member and bounds.
     let punya_kala: Vec<_> = day.punya_kala.iter().map(|kala| kala.span).collect();
-    let limbs: [(&str, Vec<LimbSpan>); 13] = [
+    let named_panchaka: Vec<_> = day.named_panchaka.into_iter().collect();
+    let limbs: [(&str, Vec<LimbSpan>); 16] = [
         ("tithi", limb_spans(day, &day.limbs.tithi)),
         ("nakshatra", limb_spans(day, &day.limbs.nakshatra)),
         ("yoga", limb_spans(day, &day.limbs.yoga)),
@@ -6581,6 +6585,9 @@ fn one_day_limbs(report: &mut Report, index: usize, day: &teistro_panchanga::alm
         ("amrit-kalam", limb_spans(day, &day.omens.amrit_kalam)),
         ("agni-vasa", limb_spans(day, &day.agni_vasa())),
         ("ashubha-yoga", limb_spans(day, &day.ashubha_yogas())),
+        ("bhadra-vasa", limb_spans(day, &day.bhadra_vasa())),
+        ("shiva-vasa", limb_spans(day, &day.shiva_vasa)),
+        ("named-panchaka", limb_spans(day, &named_panchaka)),
         ("rahu-vasa", limb_spans(day, &day.rahu_vasa())),
         ("punya-kala", limb_spans(day, &punya_kala)),
     ];

@@ -4364,6 +4364,60 @@
       "iast": "Pātāla"
     }
   },
+  "bhadra_vasa": {
+    "SVARGA": {
+      "name": "स्वर्ग",
+      "prose": "स्वर्ग",
+      "iast": "Svarga"
+    },
+    "MARTYA": {
+      "name": "मर्त्यलोक",
+      "prose": "मर्त्यलोक",
+      "iast": "Martya"
+    },
+    "PATALA": {
+      "name": "पाताल",
+      "prose": "पाताल",
+      "iast": "Pātāla"
+    }
+  },
+  "shiva_vasa": {
+    "KAILASA": {
+      "name": "कैलाश",
+      "prose": "कैलाश",
+      "iast": "Kailāsa"
+    },
+    "GAURI": {
+      "name": "गौरीसन्निधि",
+      "prose": "गौरीसन्निधि",
+      "iast": "Gaurī-sannidhi"
+    },
+    "VRISHABHA": {
+      "name": "वृषारूढ",
+      "prose": "वृषारूढ",
+      "iast": "Vṛṣabha"
+    },
+    "SABHA": {
+      "name": "सभा",
+      "prose": "सभा",
+      "iast": "Sabhā"
+    },
+    "BHOJANA": {
+      "name": "भोजन",
+      "prose": "भोजन",
+      "iast": "Bhojana"
+    },
+    "KRIDA": {
+      "name": "क्रीडा",
+      "prose": "क्रीडा",
+      "iast": "Krīḍā"
+    },
+    "SHMASHANA": {
+      "name": "श्मशान",
+      "prose": "श्मशान",
+      "iast": "Śmaśāna"
+    }
+  },
   "ashubha_yoga": {
     "DAGDHA": {
       "name": "दग्ध",

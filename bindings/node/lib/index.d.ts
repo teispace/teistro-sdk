@@ -14,6 +14,8 @@ import type {
   AvasthaBaladi,
   AgniVasa,
   AshubhaYoga,
+  BhadraVasa,
+  ShivaVasa,
   AvasthaDeeptadi,
   AvasthaSayanadi,
   AvasthaCheshta,
@@ -5718,6 +5720,24 @@ export declare class AlmanacDay {
    * nakshatra, each span the limb's own.
    */
   readonly ashubhaYogas: readonly Span<AshubhaYoga>[];
+  /**
+   * Where Bhadra dwells while the vishti karana holds, by the sign the Moon stands in (Muhurta Chintamani,
+   * Shubhashubha-prakarana v. 45, crux C820); only `MARTYA`, the earth, is harmful, and a sign change in Bhadra
+   * splits it.
+   */
+  readonly bhadraVasa: readonly Span<BhadraVasa>[];
+  /**
+   * Where Shiva dwells, one span for each tithi the day held: a printed convention with no text behind it, chosen by
+   * `panchanga.shiva_vasa` and named in the provenance's `applied_conventions` (crux C750).
+   */
+  readonly shivaVasa: readonly Span<ShivaVasa>[];
+  /**
+   * The panchaka the day holds, named by the vara it began on (Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora,
+   * Saturday Mrityu): a printed convention, chosen by `panchanga.panchaka_name` and named in the provenance's
+   * `applied_conventions` (crux C821). At most one; `whole` runs from the panchaka's first instant to the Moon's
+   * leaving Revati.
+   */
+  readonly namedPanchaka: readonly Span<Panchaka>[];
   /**
    * Rahu's direction over the daylight, an eighth of sunrise to sunset each from the east (Jyotirnibandha p. 337,
    * crux C749); none after sunset, and none on a day with no daylight.

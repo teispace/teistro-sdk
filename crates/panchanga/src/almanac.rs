@@ -22,14 +22,15 @@ use teistro_calendar::solar::{SolarModel, civil_day_lights};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
 use teistro_core::catalogue::{
-    AgniVasa, AshubhaYoga, Direction, Graha, Nakshatra, Rashi, Ritu, Tithi, Vara,
+    AgniVasa, AshubhaYoga, BhadraVasa, Direction, Graha, Nakshatra, Panchaka, Rashi, Ritu,
+    ShivaVasa, Tithi, Vara,
 };
 use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::{
-    Centre, GhatiReckoning, MoonEvents, Resolved, RituReckoning, Settings,
+    Centre, GhatiReckoning, MoonEvents, PanchakaName, Resolved, RituReckoning, Settings,
 };
 use teistro_core::time::LocalClock;
 use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, Horizon, HorizonEventKind};
@@ -158,6 +159,22 @@ pub struct Panchanga {
     /// the day's document when empty.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub homa_ahuti: Vec<Span<Graha>>,
+    /// Where Shiva dwells, one span for each tithi the day held, under
+    /// `panchanga.shiva_vasa`: **a printed convention** with no text
+    /// behind it, which the answer's provenance names
+    /// (`03-design/printed-conventions.md`, crux C750). Empty under
+    /// `NONE`, and then left out of the day's document.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub shiva_vasa: Vec<Span<ShivaVasa>>,
+    /// The panchaka the day holds, named by the vara it began on, under
+    /// `panchanga.panchaka_name`: **a printed convention**, which the
+    /// answer's provenance names (crux C821). `whole` runs from the
+    /// panchaka's first instant to the Moon's leaving Revati, `inside` is
+    /// its part in the day. None on a day without panchaka, for one begun
+    /// on a Wednesday or a Thursday, which the almanacs leave unnamed, and
+    /// under `NONE`; left out of the day's document then.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub named_panchaka: Option<Span<Panchaka>>,
 }
 
 impl Panchanga {
@@ -608,6 +625,52 @@ impl Panchanga {
     #[must_use]
     pub fn agni_vasa(&self) -> Vec<Span<AgniVasa>> {
         omen::agni_vasas(&self.limbs.tithi, self.day.vara)
+    }
+
+    /// Where Bhadra dwells while the vishti karana holds, by the sign the
+    /// Moon stands in ([`omen::bhadra_vasa`], Muhurta Chintamani,
+    /// Shubhashubha-prakarana v. 45): one span a stretch of vishti and a
+    /// sign, so a sign change in Bhadra splits it; only `MARTYA`, the
+    /// earth, is harmful. Empty on a day with no vishti.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// use teistro_core::catalogue::Karana;
+    ///
+    /// // Each loka lies inside a vishti of the day.
+    /// for loka in day.bhadra_vasa() {
+    ///     assert!(day.limbs.karana.iter().any(|k| k.member == Karana::Vishti && k.whole.clipped_to(loka.whole) == Some(loka.whole)));
+    /// }
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn bhadra_vasa(&self) -> Vec<Span<BhadraVasa>> {
+        omen::bhadra_vasas(&self.limbs.karana, &self.moon.signs, self.window)
     }
 
     /// The directions Rahu walks over the daylight, an eighth of sunrise
@@ -1283,7 +1346,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// muhurta yoga or durmuhurta table the SDK does not ship.
     pub fn day(&self, date: &CalendarDate, place: &Place) -> Result<Envelope<Panchanga>, Error> {
         let (value, frame) = self.value(date, place, &mut Memo::default())?;
-        let provenance = self.provenance(
+        let mut provenance = self.provenance(
             content_hash(&Input {
                 date: date.to_string(),
                 latitude_deg: place.latitude.get(),
@@ -1292,6 +1355,9 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             }),
             frame,
         );
+        provenance
+            .applied_conventions
+            .extend(omen::applied_conventions(&self.settings().panchanga));
         Ok(Envelope::new(value, provenance))
     }
 
@@ -1395,7 +1461,11 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         to: &CalendarDate,
         place: &Place,
     ) -> Result<Envelope<Vec<Panchanga>>, Error> {
-        self.run(from, to, place, Moon::Searched, Self::value)
+        let mut days = self.run(from, to, place, Moon::Searched, Self::value)?;
+        days.provenance
+            .applied_conventions
+            .extend(omen::applied_conventions(&self.settings().panchanga));
+        Ok(days)
     }
 
     /// What festival rules read of every day in a range, inclusive of
@@ -2656,7 +2726,6 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let window = self.window(&day)?;
         let daylight = Interval::new(day.sunrise, day.sunset)?;
         let night = Interval::new(day.sunset, day.next_sunrise)?;
-
         let completion = Completion::new(self.provider, settings.provider.overrides, self.delta_t);
         // One ayanamsha evaluation for the day; everything below reads
         // it rather than asking again at the same instant.
@@ -2701,35 +2770,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         )?;
         let punya_kala = punya_kala_of(&sun_signs, (daylight, night), previous_night, settings)?;
         let sun = sky::sun_day(sun_signs, ritu);
-        let omens = Omens {
-            panchaka: omen::panchaka(
-                &limbs.nakshatra,
-                settings.panchanga.panchaka_start,
-                |within| {
-                    limb::signs_known(
-                        &longitudes,
-                        Body::Moon,
-                        within,
-                        zodiac,
-                        None,
-                        known.as_ref(),
-                    )
-                },
-            )?,
-            yogas: omen::yogas(
-                &settings.panchanga.muhurta_tables,
-                day.vara,
-                &limbs.nakshatra,
-                &limbs.tithi,
-            )?,
-            varjyam: omen::varjyam(&limbs.nakshatra, settings.panchanga.varjyam)?,
-            amrit_kalam: omen::amrit_kalam(
-                &limbs.nakshatra,
-                settings.panchanga.amrit_kalam,
-                settings.panchanga.varjyam,
-            )?,
-            disha_shool: omen::disha_shool(day.vara),
-        };
+        let moon_sky = (&longitudes, zodiac, known.as_ref());
+        let omens = self.omens(&limbs, day.vara, moon_sky)?;
+        let held = (window, &mut memo.panchaka);
+        let named_panchaka = self.named_panchaka(place, &omens.panchaka, held, moon_sky)?;
         memo.known = known.map(|known| (frame, known));
         Ok((
             Panchanga {
@@ -2742,6 +2786,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 moon,
                 sun,
                 omens,
+                shiva_vasa: omen::shiva_vasas(&limbs.tithi, settings.panchanga.shiva_vasa),
                 limbs,
                 window,
                 day,
@@ -2749,6 +2794,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 lagnas: Vec::new(),
                 punya_kala,
                 homa_ahuti: Vec::new(),
+                named_panchaka,
             },
             frame,
         ))
@@ -3072,6 +3118,138 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         };
     }
 
+    /// The day's omens: the panchaka from its nakshatras and the Moon's
+    /// signs, the muhurta yogas, varjyam, amrit kalam and the disha shool.
+    fn omens<S: teistro_astro::events::Longitudes + ?Sized>(
+        &self,
+        limbs: &limb::Limbs,
+        vara: Vara,
+        (longitudes, zodiac, known): (&S, Zodiac, Option<&RangeCrossings>),
+    ) -> Result<Omens, Error> {
+        let settings = self.settings();
+        let moon_signs =
+            |within| limb::signs_known(longitudes, Body::Moon, within, zodiac, None, known);
+        Ok(Omens {
+            panchaka: omen::panchaka(
+                &limbs.nakshatra,
+                settings.panchanga.panchaka_start,
+                moon_signs,
+            )?,
+            yogas: omen::yogas(
+                &settings.panchanga.muhurta_tables,
+                vara,
+                &limbs.nakshatra,
+                &limbs.tithi,
+            )?,
+            varjyam: omen::varjyam(&limbs.nakshatra, settings.panchanga.varjyam)?,
+            amrit_kalam: omen::amrit_kalam(
+                &limbs.nakshatra,
+                settings.panchanga.amrit_kalam,
+                settings.panchanga.varjyam,
+            )?,
+            disha_shool: omen::disha_shool(vara),
+        })
+    }
+
+    /// The panchaka a day holds, named by the vara it began on
+    /// ([`omen::panchaka_by_vara`], crux C821), under
+    /// `panchanga.panchaka_name`.
+    ///
+    /// The day's own panchaka spans are extended, not recomputed: their
+    /// first gives the panchaka's first instant when it is Mrityu's, the
+    /// one a panchaka opens with, and their last its end when it is
+    /// Roga's. Otherwise the Moon's nakshatras before (or after) the day
+    /// are read through [`omen::panchaka`] itself, as the day's were,
+    /// [`PANCHAKA_REACH_DAYS`] each way, which holds the five stars. The
+    /// vara is the one of the day, sunrise to sunrise, the first instant
+    /// falls in.
+    fn named_panchaka<S: teistro_astro::events::Longitudes + ?Sized>(
+        &self,
+        place: &Place,
+        spans: &[Span<Panchaka>],
+        (window, held): (Interval, &mut Option<(Interval, Option<Panchaka>)>),
+        (longitudes, zodiac, known): (&S, Zodiac, Option<&RangeCrossings>),
+    ) -> Result<Option<Span<Panchaka>>, Error> {
+        let settings = self.settings();
+        let (Some(first), Some(last)) = (spans.first(), spans.last()) else {
+            return Ok(None);
+        };
+        if settings.panchanga.panchaka_name == PanchakaName::None {
+            return Ok(None);
+        }
+        // A range's later day of the same panchaka reads the one found.
+        if let Some((whole, name)) = *held {
+            if whole.contains(first.whole.from) {
+                return Ok(name.and_then(|name| Span::new(name, whole, window)));
+            }
+        }
+        let around = |within: Interval| {
+            let stars = limb::nakshatras_of(longitudes, Body::Moon, within, zodiac)?;
+            omen::panchaka(&stars, settings.panchanga.panchaka_start, |inside| {
+                limb::signs_known(longitudes, Body::Moon, inside, zodiac, None, known)
+            })
+        };
+        let from = if first.member == Panchaka::Mrityu {
+            first.whole.from
+        } else {
+            let before = Interval::new(
+                next_by(first.whole.from, -PANCHAKA_REACH_DAYS),
+                first.whole.from,
+            )?;
+            around(before)?
+                .iter()
+                .rev()
+                .find(|span| span.member == Panchaka::Mrityu)
+                .map(|span| span.whole.from)
+                .ok_or_else(|| Error::internal("a panchaka with no first star before it"))?
+        };
+        let to = if last.member == Panchaka::Roga {
+            last.whole.to
+        } else {
+            let after = Interval::new(last.whole.to, next_by(last.whole.to, PANCHAKA_REACH_DAYS))?;
+            around(after)?
+                .iter()
+                .find(|span| span.member == Panchaka::Roga)
+                .map(|span| span.whole.to)
+                .ok_or_else(|| Error::internal("a panchaka with no last star after it"))?
+        };
+        // The vara of the date whose day holds the first instant: its
+        // civil date's, or the date before's when it falls before that
+        // sunrise. A polar day whose policy puts its bounds elsewhere holds
+        // it in neither, and keeps its civil date's.
+        let policy = settings.day.polar_day_policy;
+        let civil = teistro_calendar::solar::rule::local_day(self.clock, from).0;
+        let today = local_day(
+            self.model,
+            self.calendar,
+            self.clock,
+            place,
+            &self.calendar.date_of(civil)?,
+            policy,
+        )?;
+        let vara = if from.get() < today.sunrise.get() {
+            let before = local_day(
+                self.model,
+                self.calendar,
+                self.clock,
+                place,
+                &self.calendar.date_of(civil.plus_days(-1))?,
+                policy,
+            )?;
+            if before.contains(from) {
+                before.vara
+            } else {
+                today.vara
+            }
+        } else {
+            today.vara
+        };
+        let whole = Interval::new(from, to)?;
+        let name = omen::panchaka_by_vara(vara);
+        *held = Some((whole, name));
+        Ok(name.and_then(|name| Span::new(name, whole, window)))
+    }
+
     /// The day's season under `panchanga.ritu`.
     ///
     /// The solar season is the solar month's, and a month begins on the
@@ -3192,6 +3370,9 @@ struct Memo {
     /// ([`RangeCrossings`]), by the frame their source was read in, read
     /// by every day whose window they cover.
     known: Option<(Frame, RangeCrossings)>,
+    /// The last panchaka named, its whole and its name: the next day of
+    /// the same panchaka reads it rather than searching its ends again.
+    panchaka: Option<(Interval, Option<Panchaka>)>,
 }
 
 /// A range's days as found ahead of computing them ([`Almanac::ahead`]).
@@ -3339,6 +3520,11 @@ fn first_only(mut events: Vec<JulianDay<Utc>>) -> Vec<JulianDay<Utc>> {
 }
 
 /// An instant so many days on.
+/// How far a panchaka's first or last star is looked for beyond the
+/// stars a day holds, days: the five stars at the Moon's slowest are
+/// under five and a half.
+const PANCHAKA_REACH_DAYS: f64 = 6.0;
+
 fn next_by(instant: JulianDay<Utc>, days: f64) -> JulianDay<Utc> {
     JulianDay::literal(instant.get() + days)
 }

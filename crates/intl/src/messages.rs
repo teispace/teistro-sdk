@@ -3206,6 +3206,10 @@ pub mod sdk {
         pub mod ayanamsha {
         }
 
+        /// The `bhadra_vasa` group.
+        pub mod bhadra_vasa {
+        }
+
         /// The `blackout_kind` group.
         pub mod blackout_kind {
         }
@@ -3312,6 +3316,10 @@ pub mod sdk {
 
         /// The `samvatsara` group.
         pub mod samvatsara {
+        }
+
+        /// The `shiva_vasa` group.
+        pub mod shiva_vasa {
         }
 
         /// The `solar_eclipse_kind` group.

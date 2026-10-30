@@ -8154,6 +8154,15 @@ class PanchangaCounts:
     ashubha_yogas: memoryview[int]
     """How many rows of `ashubha_yogas` belong to this day."""
 
+    bhadra_vasa: memoryview[int]
+    """How many rows of `bhadra_vasa` belong to this day."""
+
+    shiva_vasa: memoryview[int]
+    """How many rows of `shiva_vasa` belong to this day."""
+
+    named_panchaka: memoryview[int]
+    """How many rows of `named_panchaka` belong to this day."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9008,6 +9017,123 @@ class PanchangaAshubhaYogas:
 
 
 @dataclass(frozen=True)
+class PanchangaBhadraVasa:
+    """The `bhadra_vasa` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Where Bhadra dwells while the vishti karana holds, by the sign the Moon stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820): `MARTYA` with the Moon in Cancer, Leo, Aquarius or Pisces, `SVARGA` in Aries, Taurus, Gemini or Scorpio, `PATALA` in the rest; only `MARTYA`, the earth, is harmful. One span for each stretch a vishti and a sign both held, so a sign change in Bhadra splits it; empty on a day with no vishti.
+    """
+
+    member: memoryview[int]
+    """Where Bhadra dwells."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaShivaVasa:
+    """The `shiva_vasa` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Where Shiva dwells, one span for each tithi the day held, under `panchanga.shiva_vasa`: a printed convention with no text behind it, named in the provenance's `applied_conventions` (crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7: 1 Kailasa, 2 beside Gauri, 3 on the bull, 4 the assembly, 5 the meal, 6 at play, 0 the cremation ground. Empty under `NONE`.
+    """
+
+    member: memoryview[int]
+    """Where Shiva dwells."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaNamedPanchaka:
+    """The `named_panchaka` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`.
+    """
+
+    member: memoryview[int]
+    """The panchaka's name."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Panchanga:
     """A decoded Panchanga blob.
 
@@ -9137,6 +9263,15 @@ class Panchanga:
     ashubha_yogas: PanchangaAshubhaYogas
     """The day's inauspicious yogas (Muhurta Chintamani, Shubhashubha-prakarana vv. 8–9, crux C760): a span for each tithi the day held that is dagdha (`DAGDHA`), visha (`VISHA`) or hutashana (`HUTASHANA`) with the day's vara, by its number in either paksha, and for the nakshatra that is the vara's Yamaghanta (`YAMAGHANTA`), each over that limb's own span and in the order they begin. Vasishtha lifts them at night; the spans run as the limbs do and the reader judges."""
 
+    bhadra_vasa: PanchangaBhadraVasa
+    """Where Bhadra dwells while the vishti karana holds, by the sign the Moon stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820): `MARTYA` with the Moon in Cancer, Leo, Aquarius or Pisces, `SVARGA` in Aries, Taurus, Gemini or Scorpio, `PATALA` in the rest; only `MARTYA`, the earth, is harmful. One span for each stretch a vishti and a sign both held, so a sign change in Bhadra splits it; empty on a day with no vishti."""
+
+    shiva_vasa: PanchangaShivaVasa
+    """Where Shiva dwells, one span for each tithi the day held, under `panchanga.shiva_vasa`: a printed convention with no text behind it, named in the provenance's `applied_conventions` (crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7: 1 Kailasa, 2 beside Gauri, 3 on the bull, 4 the assembly, 5 the meal, 6 at play, 0 the cremation ground. Empty under `NONE`."""
+
+    named_panchaka: PanchangaNamedPanchaka
+    """The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -9182,6 +9317,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_punya_kala = blob.section(34, "punya_kala")
     at_homa_ahuti = blob.section(35, "homa_ahuti")
     at_ashubha_yogas = blob.section(36, "ashubha_yogas")
+    at_bhadra_vasa = blob.section(37, "bhadra_vasa")
+    at_shiva_vasa = blob.section(38, "shiva_vasa")
+    at_named_panchaka = blob.section(39, "named_panchaka")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -9261,6 +9399,15 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ).cast("I"),
             ashubha_yogas=blob.column(
                 at_counts, 23, 4, at_counts.count
+            ).cast("I"),
+            bhadra_vasa=blob.column(
+                at_counts, 24, 4, at_counts.count
+            ).cast("I"),
+            shiva_vasa=blob.column(
+                at_counts, 25, 4, at_counts.count
+            ).cast("I"),
+            named_panchaka=blob.column(
+                at_counts, 26, 4, at_counts.count
             ).cast("I"),
             length=at_counts.count,
         ),
@@ -9845,6 +9992,96 @@ def decode_panchanga(raw: bytes) -> Panchanga:
                 at_ashubha_yogas, 8, 1, at_ashubha_yogas.count
             ).cast("B"),
             length=at_ashubha_yogas.count,
+        ),
+        bhadra_vasa=PanchangaBhadraVasa(
+            member=blob.column(
+                at_bhadra_vasa, 0, 2, at_bhadra_vasa.count
+            ).cast("H"),
+            whole_from=blob.column(
+                at_bhadra_vasa, 1, 8, at_bhadra_vasa.count
+            ).cast("d"),
+            whole_to=blob.column(
+                at_bhadra_vasa, 2, 8, at_bhadra_vasa.count
+            ).cast("d"),
+            inside_from=blob.column(
+                at_bhadra_vasa, 3, 8, at_bhadra_vasa.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_bhadra_vasa, 4, 8, at_bhadra_vasa.count
+            ).cast("d"),
+            sunrises=blob.column(
+                at_bhadra_vasa, 5, 1, at_bhadra_vasa.count
+            ).cast("B"),
+            ends_ghati=blob.column(
+                at_bhadra_vasa, 6, 1, at_bhadra_vasa.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_bhadra_vasa, 7, 1, at_bhadra_vasa.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_bhadra_vasa, 8, 1, at_bhadra_vasa.count
+            ).cast("B"),
+            length=at_bhadra_vasa.count,
+        ),
+        shiva_vasa=PanchangaShivaVasa(
+            member=blob.column(
+                at_shiva_vasa, 0, 2, at_shiva_vasa.count
+            ).cast("H"),
+            whole_from=blob.column(
+                at_shiva_vasa, 1, 8, at_shiva_vasa.count
+            ).cast("d"),
+            whole_to=blob.column(
+                at_shiva_vasa, 2, 8, at_shiva_vasa.count
+            ).cast("d"),
+            inside_from=blob.column(
+                at_shiva_vasa, 3, 8, at_shiva_vasa.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_shiva_vasa, 4, 8, at_shiva_vasa.count
+            ).cast("d"),
+            sunrises=blob.column(
+                at_shiva_vasa, 5, 1, at_shiva_vasa.count
+            ).cast("B"),
+            ends_ghati=blob.column(
+                at_shiva_vasa, 6, 1, at_shiva_vasa.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_shiva_vasa, 7, 1, at_shiva_vasa.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_shiva_vasa, 8, 1, at_shiva_vasa.count
+            ).cast("B"),
+            length=at_shiva_vasa.count,
+        ),
+        named_panchaka=PanchangaNamedPanchaka(
+            member=blob.column(
+                at_named_panchaka, 0, 2, at_named_panchaka.count
+            ).cast("H"),
+            whole_from=blob.column(
+                at_named_panchaka, 1, 8, at_named_panchaka.count
+            ).cast("d"),
+            whole_to=blob.column(
+                at_named_panchaka, 2, 8, at_named_panchaka.count
+            ).cast("d"),
+            inside_from=blob.column(
+                at_named_panchaka, 3, 8, at_named_panchaka.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_named_panchaka, 4, 8, at_named_panchaka.count
+            ).cast("d"),
+            sunrises=blob.column(
+                at_named_panchaka, 5, 1, at_named_panchaka.count
+            ).cast("B"),
+            ends_ghati=blob.column(
+                at_named_panchaka, 6, 1, at_named_panchaka.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_named_panchaka, 7, 1, at_named_panchaka.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_named_panchaka, 8, 1, at_named_panchaka.count
+            ).cast("B"),
+            length=at_named_panchaka.count,
         ),
     )
 

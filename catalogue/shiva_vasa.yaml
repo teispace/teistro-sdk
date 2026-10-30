@@ -1,0 +1,62 @@
+kind: shiva_vasa
+number: 76
+version: 1
+doc: "Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`."
+attributes: { remainder: u8, favourable: bool }
+members:
+  - key: KAILASA
+    id: 0
+    doc: "On Kailasa, the remainder one: ease"
+    attributes: { remainder: 1, favourable: true }
+    sources:
+      - text: "Surya Panchanga VS 2082"
+        ref: "p. 60, शिववासफलसारिणी (मेरुतन्त्रोक्तम्): कैलाशे, सुखम्"
+    mark: T
+  - key: GAURI
+    id: 1
+    doc: "Beside Gauri, the remainder two: good"
+    attributes: { remainder: 2, favourable: true }
+    sources:
+      - text: "Surya Panchanga VS 2082"
+        ref: "p. 60, शिववासफलसारिणी (मेरुतन्त्रोक्तम्): गौरीसन्निधौ, शुभम्"
+    mark: T
+  - key: VRISHABHA
+    id: 2
+    doc: "On the bull, the remainder three: wealth gained"
+    attributes: { remainder: 3, favourable: true }
+    sources:
+      - text: "Surya Panchanga VS 2082"
+        ref: "p. 60, शिववासफलसारिणी (मेरुतन्त्रोक्तम्): वृषे, श्रीप्राप्तिः"
+    mark: T
+  - key: SABHA
+    id: 3
+    doc: "In the assembly, the remainder four: distress"
+    attributes: { remainder: 4, favourable: false }
+    sources:
+      - text: "Surya Panchanga VS 2082"
+        ref: "p. 60, शिववासफलसारिणी (मेरुतन्त्रोक्तम्): सभायां, तापम्"
+    mark: T
+  - key: BHOJANA
+    id: 4
+    doc: "At the meal, the remainder five: food gained, by the print read; other almanacs call it pain (crux C822)"
+    attributes: { remainder: 5, favourable: true }
+    sources:
+      - text: "Surya Panchanga VS 2082"
+        ref: "p. 60, शिववासफलसारिणी (मेरुतन्त्रोक्तम्): भोजने, भोजनप्राप्तिः"
+    mark: T
+  - key: KRIDA
+    id: 5
+    doc: "At play, the remainder six: harm to children"
+    attributes: { remainder: 6, favourable: false }
+    sources:
+      - text: "Surya Panchanga VS 2082"
+        ref: "p. 60, शिववासफलसारिणी (मेरुतन्त्रोक्तम्): क्रीडायां, सन्तानहानिः"
+    mark: T
+  - key: SHMASHANA
+    id: 6
+    doc: "In the cremation ground, the remainder nothing: death"
+    attributes: { remainder: 0, favourable: false }
+    sources:
+      - text: "Surya Panchanga VS 2082"
+        ref: "p. 60, शिववासफलसारिणी (मेरुतन्त्रोक्तम्): श्मशाने, मृत्युः"
+    mark: T

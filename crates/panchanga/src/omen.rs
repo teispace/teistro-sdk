@@ -27,12 +27,15 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
-    AgniVasa, AshubhaYoga, Direction, Graha, MuhurtaYoga as Kind, Nakshatra, Panchaka, Rashi,
-    Tithi, TithiClass, Vara,
+    AgniVasa, AshubhaYoga, BhadraVasa, Direction, Graha, Karana, MuhurtaYoga as Kind, Nakshatra,
+    Panchaka, Rashi, ShivaVasa, Tithi, TithiClass, Vara,
 };
+use teistro_core::envelope::Convention;
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
-use teistro_core::settings::{AmritKalam, PanchakaStart, Varjyam};
+use teistro_core::settings::{
+    AmritKalam, PanchakaStart, Panchanga as PanchangaSettings, ShivaVasaReading, Varjyam,
+};
 
 use crate::span::Span;
 
@@ -605,6 +608,226 @@ pub fn agni_vasas(tithis: &[Span<Tithi>], vara: Vara) -> Vec<Span<AgniVasa>> {
     tithis
         .iter()
         .map(|span| span.map(|tithi| agni_vasa(tithi, vara)))
+        .collect()
+}
+
+/// Where Bhadra dwells while the Moon stands in `sign`: Muhurta
+/// Chintamani, Shubhashubha-prakarana v. 45, "कुम्भकर्कद्वये मर्त्ये
+/// स्वर्गेऽब्जेऽजात्त्रयेऽलिगे । स्त्रीधनुर्जूकनक्रेऽधो भद्रा तत्रैव
+/// तत्फलम्" (crux C820).
+///
+/// The Moon (*abja*) in Aquarius and Pisces, Cancer and Leo puts her among
+/// men; in the three from Aries and in Scorpio, in heaven; in Virgo,
+/// Sagittarius, Libra and Capricorn, below. "Her result is there": the
+/// *Piyushadhara* reads the verse as the exception to Bhadra's censure,
+/// so she harms the earth's rites only while she dwells on it, and
+/// quotes two more verses with the same signs.
+///
+/// ```
+/// use teistro_core::catalogue::{BhadraVasa, Rashi};
+/// use teistro_panchanga::omen::bhadra_vasa;
+///
+/// assert_eq!(bhadra_vasa(Rashi::Cancer), BhadraVasa::Martya);
+/// assert_eq!(bhadra_vasa(Rashi::Scorpio), BhadraVasa::Svarga);
+/// assert_eq!(bhadra_vasa(Rashi::Capricorn), BhadraVasa::Patala);
+/// // Only the earth's is harmful.
+/// assert!(BhadraVasa::Martya.attributes().harmful);
+/// assert!(!BhadraVasa::Svarga.attributes().harmful);
+/// ```
+#[must_use]
+pub const fn bhadra_vasa(sign: Rashi) -> BhadraVasa {
+    match sign {
+        Rashi::Cancer | Rashi::Leo | Rashi::Aquarius | Rashi::Pisces => BhadraVasa::Martya,
+        Rashi::Aries | Rashi::Taurus | Rashi::Gemini | Rashi::Scorpio => BhadraVasa::Svarga,
+        _ => BhadraVasa::Patala,
+    }
+}
+
+/// Where Bhadra dwells over a day: one span for each stretch the vishti
+/// karana and a sign of the Moon's both held, its `whole` where the two
+/// overlap and its `inside` the part in the day ([`bhadra_vasa`]). A
+/// Bhadra the Moon changes sign in is two spans, one a loka; a day with
+/// no vishti has none.
+///
+/// ```
+/// use teistro_core::catalogue::{BhadraVasa, Karana, Rashi};
+/// use teistro_core::interval::Interval;
+/// use teistro_panchanga::omen::bhadra_vasas;
+/// use teistro_panchanga::span::Span;
+///
+/// // Vishti from 100.4 to 100.9; the Moon leaves Gemini for Cancer at 100.6.
+/// let day = Interval::literal(100.25, 101.25);
+/// let at = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// let karanas: Vec<_> = [at(Karana::Vanija, 99.9, 100.4), at(Karana::Vishti, 100.4, 100.9)].into_iter().flatten().collect();
+/// let signs: Vec<_> = [at(Rashi::Gemini, 98.4, 100.6), at(Rashi::Cancer, 100.6, 102.9)].into_iter().flatten().collect();
+///
+/// let lokas = bhadra_vasas(&karanas, &signs, day);
+/// assert_eq!(lokas.iter().map(|s| s.member).collect::<Vec<_>>(), [BhadraVasa::Svarga, BhadraVasa::Martya]);
+/// assert_eq!(lokas[1].whole, Interval::literal(100.6, 100.9));
+/// ```
+#[must_use]
+pub fn bhadra_vasas(
+    karanas: &[Span<Karana>],
+    moon_signs: &[Span<Rashi>],
+    window: Interval,
+) -> Vec<Span<BhadraVasa>> {
+    karanas
+        .iter()
+        .filter(|karana| karana.member == Karana::Vishti)
+        .flat_map(|vishti| {
+            moon_signs.iter().filter_map(move |sign| {
+                let whole = vishti.whole.clipped_to(sign.whole)?;
+                Span::new(bhadra_vasa(sign.member), whole, window)
+            })
+        })
+        .collect()
+}
+
+/// Where Shiva dwells on a tithi, as the almanacs print it: the tithi
+/// *t*, 1 from Shukla Pratipada to 30 at Amavasya, as (2*t* + 5) mod 7,
+/// the member whose `remainder` that is. **A printed convention**: no
+/// text read gives it (crux C750); the Surya Panchanga's table (VS 2082,
+/// p. 60) follows it in all thirty tithis.
+///
+/// ```
+/// use teistro_core::catalogue::{ShivaVasa, Tithi};
+/// use teistro_panchanga::omen::shiva_vasa;
+///
+/// // Shukla Pratipada: 2 + 5 = 7, nothing over, the cremation ground.
+/// assert_eq!(shiva_vasa(Tithi::ShuklaPratipada), ShivaVasa::Shmashana);
+/// // Shukla Panchami: 15, one over, Kailasa; Amavasya: 65, two, beside Gauri.
+/// assert_eq!(shiva_vasa(Tithi::ShuklaPanchami), ShivaVasa::Kailasa);
+/// assert_eq!(shiva_vasa(Tithi::Amavasya), ShivaVasa::Gauri);
+/// ```
+#[must_use]
+pub fn shiva_vasa(tithi: Tithi) -> ShivaVasa {
+    // The id counts from nought, so the tithi's number is one on and
+    // 2t + 5 is twice the id and seven, which leaves what twice the id
+    // leaves.
+    let remainder = (2 * tithi.id()) % 7;
+    ShivaVasa::ALL
+        .iter()
+        .copied()
+        .find(|member| u16::from(member.attributes().remainder) == remainder)
+        .unwrap_or(ShivaVasa::Shmashana)
+}
+
+/// The Shiva vasa over a day under `reading`, one span for each tithi it
+/// held; none under `NONE`.
+///
+/// ```
+/// use teistro_core::catalogue::{ShivaVasa, Tithi};
+/// use teistro_core::interval::Interval;
+/// use teistro_core::settings::ShivaVasaReading;
+/// use teistro_panchanga::omen::shiva_vasas;
+/// use teistro_panchanga::span::Span;
+///
+/// let day = Interval::literal(100.25, 101.25);
+/// let tithis: Vec<_> = Span::new(Tithi::ShuklaDvitiya, Interval::literal(100.0, 101.1), day).into_iter().collect();
+/// assert_eq!(shiva_vasas(&tithis, ShivaVasaReading::Printed)[0].member, ShivaVasa::Gauri);
+/// assert!(shiva_vasas(&tithis, ShivaVasaReading::None).is_empty());
+/// ```
+#[must_use]
+pub fn shiva_vasas(tithis: &[Span<Tithi>], reading: ShivaVasaReading) -> Vec<Span<ShivaVasa>> {
+    match reading {
+        ShivaVasaReading::None => Vec::new(),
+        _ => tithis.iter().map(|span| span.map(shiva_vasa)).collect(),
+    }
+}
+
+/// The name a panchaka beginning on `vara` is printed with, or `None` for
+/// Wednesday and Thursday, which the almanacs leave unnamed. **A printed
+/// convention** (crux C821): Sunday Roga, Monday Raja, Tuesday Agni,
+/// Friday Chora, Saturday Mrityu. Muhurta Chintamani's weekday list
+/// (Vivaha-prakarana v. 72) is the bana's and differs.
+///
+/// ```
+/// use teistro_core::catalogue::{Panchaka, Vara};
+/// use teistro_panchanga::omen::panchaka_by_vara;
+///
+/// assert_eq!(panchaka_by_vara(Vara::Ravivara), Some(Panchaka::Roga));
+/// assert_eq!(panchaka_by_vara(Vara::Shanivara), Some(Panchaka::Mrityu));
+/// assert_eq!(panchaka_by_vara(Vara::Budhavara), None);
+/// ```
+#[must_use]
+pub const fn panchaka_by_vara(vara: Vara) -> Option<Panchaka> {
+    match vara {
+        Vara::Ravivara => Some(Panchaka::Roga),
+        Vara::Somavara => Some(Panchaka::Raja),
+        Vara::Mangalavara => Some(Panchaka::Agni),
+        Vara::Shukravara => Some(Panchaka::Chora),
+        Vara::Shanivara => Some(Panchaka::Mrityu),
+        _ => None,
+    }
+}
+
+/// A printed convention: a reading the almanacs print and no text read
+/// gives, chosen by its knob, and named in the provenance of every
+/// answer whose settings apply it (`03-design/printed-conventions.md`).
+///
+/// ```
+/// use teistro_panchanga::omen::PRINTED_CONVENTIONS;
+///
+/// assert!(PRINTED_CONVENTIONS.iter().any(|c| c.knob == "panchanga.shiva_vasa"));
+/// ```
+#[derive(Clone, Copy, Debug)]
+pub struct PrintedConvention {
+    /// The knob that chooses it, by its full key.
+    pub knob: &'static str,
+    /// The knob's value in a day's settings, by its key.
+    pub value: fn(&PanchangaSettings) -> &'static str,
+    /// The crux that records the prints and the texts searched.
+    pub crux: &'static str,
+    /// Where it is printed.
+    pub printed: &'static str,
+}
+
+/// Every printed convention the SDK ships, in the order an answer's
+/// provenance names them.
+pub const PRINTED_CONVENTIONS: [PrintedConvention; 2] = [
+    PrintedConvention {
+        knob: "panchanga.panchaka_name",
+        value: |settings| settings.panchaka_name.key(),
+        crux: "C821",
+        printed: "the panchaka named by the vara it begins on, as Indian almanacs print it",
+    },
+    PrintedConvention {
+        knob: "panchanga.shiva_vasa",
+        value: |settings| settings.shiva_vasa.key(),
+        crux: "C750",
+        printed: "Shiva's abode by the tithi, as the Surya Panchanga (VS 2082, p. 60) prints it",
+    },
+];
+
+/// The printed conventions a day's settings apply, as provenance entries:
+/// each knob not set to `NONE`, with its value and why it is flagged.
+///
+/// ```
+/// use teistro_core::settings::{DEFAULT_PROFILE, PanchakaName, Profile, SettingsPatch};
+/// use teistro_panchanga::omen::applied_conventions;
+///
+/// let resolved = Profile::shipped(DEFAULT_PROFILE).ok_or("shipped")?.resolve(&SettingsPatch::default()).map_err(|d| format!("{d:?}"))?;
+/// let mut panchanga = resolved.settings.panchanga.clone();
+/// assert_eq!(applied_conventions(&panchanga).len(), 2);
+/// panchanga.panchaka_name = PanchakaName::None;
+/// assert_eq!(applied_conventions(&panchanga)[0].knob, "panchanga.shiva_vasa");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+#[must_use]
+pub fn applied_conventions(settings: &PanchangaSettings) -> Vec<Convention> {
+    PRINTED_CONVENTIONS
+        .iter()
+        .filter_map(|convention| {
+            let value = (convention.value)(settings);
+            (value != "NONE").then(|| Convention {
+                knob: convention.knob.to_owned(),
+                value: value.to_owned(),
+                reason: format!(
+                    "a printed convention with no text behind it: {} ({})",
+                    convention.printed, convention.crux
+                ),
+            })
+        })
         .collect()
 }
 
@@ -1806,5 +2029,118 @@ mod tests {
             super::tithi_yogas(Tithi::ShuklaPanchami, Mangalavara),
             super::tithi_yogas(Tithi::KrishnaPanchami, Mangalavara)
         );
+    }
+    #[test]
+    fn shiva_vasa_reproduces_the_surya_panchanga_table() {
+        use teistro_core::catalogue::ShivaVasa::{
+            Bhojana, Gauri, Kailasa, Krida, Sabha, Shmashana, Vrishabha,
+        };
+        // Surya Panchanga VS 2082, p. 60: the Shukla tithis 1 to 15 down
+        // the rows.
+        let rows = [
+            Shmashana, Gauri, Sabha, Krida, Kailasa, Vrishabha, Bhojana, Shmashana, Gauri, Sabha,
+            Krida, Kailasa, Vrishabha, Bhojana, Shmashana,
+        ];
+        for (row, printed) in (1u16..).zip(rows) {
+            let tithi = Tithi::from_id(row - 1).unwrap();
+            assert_eq!(super::shiva_vasa(tithi), printed, "Shukla {row}");
+        }
+        // Its Krishna column: the 7th in the first row, the 1st to 6th in
+        // the second to seventh, the 8th and Amavasya in the ninth, the
+        // 9th to 14th in the tenth to fifteenth.
+        let krishna = |k: u16| Tithi::from_id(14 + k).unwrap();
+        assert_eq!(super::shiva_vasa(krishna(7)), rows[0]);
+        for k in 1..=6 {
+            assert_eq!(
+                super::shiva_vasa(krishna(k)),
+                rows[usize::from(k)],
+                "Krishna {k}"
+            );
+        }
+        assert_eq!(super::shiva_vasa(krishna(8)), rows[8]);
+        assert_eq!(super::shiva_vasa(Tithi::Amavasya), rows[8]);
+        for k in 9..=14 {
+            assert_eq!(
+                super::shiva_vasa(krishna(k)),
+                rows[usize::from(k)],
+                "Krishna {k}"
+            );
+        }
+    }
+
+    #[test]
+    fn bhadra_dwells_by_the_verses_signs() {
+        use teistro_core::catalogue::BhadraVasa::{Martya, Patala, Svarga};
+        // v. 45: Aquarius and Pisces, Cancer and Leo among men; the three
+        // from Aries and Scorpio in heaven; Virgo, Sagittarius, Libra and
+        // Capricorn below.
+        let by_sign = [
+            Svarga, Svarga, Svarga, Martya, Martya, Patala, Patala, Svarga, Patala, Patala, Martya,
+            Martya,
+        ];
+        for (id, loka) in (0u16..).zip(by_sign) {
+            assert_eq!(
+                super::bhadra_vasa(Rashi::from_id(id).unwrap()),
+                loka,
+                "{id}"
+            );
+        }
+        // No vishti, no Bhadra.
+        let calm = [span(teistro_core::catalogue::Karana::Bava)];
+        assert_eq!(
+            super::bhadra_vasas(&calm, &[span(Rashi::Leo)], window()),
+            Vec::new()
+        );
+    }
+
+    #[test]
+    fn a_panchaka_is_named_by_the_vara_it_begins_on() {
+        use Vara::{Budhavara, Guruvara, Mangalavara, Ravivara, Shanivara, Shukravara, Somavara};
+        let named = [
+            (Ravivara, Some(Panchaka::Roga)),
+            (Somavara, Some(Panchaka::Raja)),
+            (Mangalavara, Some(Panchaka::Agni)),
+            (Budhavara, None),
+            (Guruvara, None),
+            (Shukravara, Some(Panchaka::Chora)),
+            (Shanivara, Some(Panchaka::Mrityu)),
+        ];
+        for (vara, name) in named {
+            assert_eq!(super::panchaka_by_vara(vara), name, "{vara:?}");
+        }
+    }
+
+    #[test]
+    fn a_convention_set_to_none_is_not_named() {
+        use teistro_core::settings::{
+            DEFAULT_PROFILE, PanchakaName, Profile, SettingsPatch, ShivaVasaReading,
+        };
+        let mut panchanga = Profile::shipped(DEFAULT_PROFILE)
+            .unwrap()
+            .resolve(&SettingsPatch::default())
+            .unwrap()
+            .settings
+            .panchanga;
+        let applied = super::applied_conventions(&panchanga);
+        assert_eq!(
+            applied.iter().map(|c| c.value.as_str()).collect::<Vec<_>>(),
+            ["WEEKDAY", "PRINTED"]
+        );
+        assert!(applied.iter().all(|c| c.reason.contains("no text")));
+        panchanga.panchaka_name = PanchakaName::None;
+        panchanga.shiva_vasa = ShivaVasaReading::None;
+        assert_eq!(super::applied_conventions(&panchanga), Vec::new());
+        // Every knob the table names is a key the settings answer to.
+        for convention in super::PRINTED_CONVENTIONS {
+            let (group, knob) = convention.knob.split_once('.').unwrap();
+            assert_eq!(group, "panchanga");
+            assert!(
+                serde_json::to_value(&panchanga)
+                    .unwrap()
+                    .get(knob)
+                    .is_some(),
+                "{knob}"
+            );
+        }
     }
 }

@@ -291,7 +291,11 @@ enum Kind {
   /// Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748).
   agniVasa(73, 'agni_vasa'),
   /// The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).
-  ashubhaYoga(74, 'ashubha_yoga');
+  ashubhaYoga(74, 'ashubha_yoga'),
+  /// Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820).
+  bhadraVasa(75, 'bhadra_vasa'),
+  /// Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.
+  shivaVasa(76, 'shiva_vasa');
 
   const Kind(this.id, this.key);
 
@@ -4631,6 +4635,100 @@ enum AshubhaYoga implements KeyOf<AshubhaYoga> {
 
   /// The member with a key, or `null` for one this build does not know.
   static AshubhaYoga? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820). Members are the catalogue's ids; the full key id is `(TS_KIND_BHADRA_VASA << 16) | member`.
+enum BhadraVasa implements KeyOf<BhadraVasa> {
+  /// In heaven, the Moon in Aries, Taurus, Gemini or Scorpio: her result falls there, not on the earth
+  svarga(0, 'SVARGA'),
+  /// On the earth, the Moon in Cancer, Leo, Aquarius or Pisces: her result falls among men
+  martya(1, 'MARTYA'),
+  /// Below the earth, the Moon in Virgo, Libra, Sagittarius or Capricorn: her result falls there, not on the earth
+  patala(2, 'PATALA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const BhadraVasa(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'bhadra_vasa.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<BhadraVasa> registered(String key) => Registered._('bhadra_vasa.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static BhadraVasa byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => BhadraVasa.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static BhadraVasa? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`. Members are the catalogue's ids; the full key id is `(TS_KIND_SHIVA_VASA << 16) | member`.
+enum ShivaVasa implements KeyOf<ShivaVasa> {
+  /// On Kailasa, the remainder one: ease
+  kailasa(0, 'KAILASA'),
+  /// Beside Gauri, the remainder two: good
+  gauri(1, 'GAURI'),
+  /// On the bull, the remainder three: wealth gained
+  vrishabha(2, 'VRISHABHA'),
+  /// In the assembly, the remainder four: distress
+  sabha(3, 'SABHA'),
+  /// At the meal, the remainder five: food gained, by the print read; other almanacs call it pain (crux C822)
+  bhojana(4, 'BHOJANA'),
+  /// At play, the remainder six: harm to children
+  krida(5, 'KRIDA'),
+  /// In the cremation ground, the remainder nothing: death
+  shmashana(6, 'SHMASHANA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const ShivaVasa(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'shiva_vasa.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<ShivaVasa> registered(String key) => Registered._('shiva_vasa.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static ShivaVasa byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => ShivaVasa.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static ShivaVasa? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

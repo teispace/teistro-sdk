@@ -35,6 +35,7 @@ use teistro_panchanga::festival::{
 };
 use teistro_panchanga::first_year::{FirstYear, FirstYearSchedule};
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
+use teistro_panchanga::omen::PRINTED_CONVENTIONS;
 use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
 use teistro_panchanga::span::Span;
 use teistro_panchanga::year::LunarYear;
@@ -397,6 +398,13 @@ impl<'a> AlmanacArea<'a> {
             value: range,
             mut provenance,
         } = days;
+        // The observances read none of a day's printed conventions, so
+        // their answer names none, whichever path founded the days.
+        provenance.applied_conventions.retain(|applied| {
+            !PRINTED_CONVENTIONS
+                .iter()
+                .any(|printed| printed.knob == applied.knob)
+        });
         let mut viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
         self.searched(from.calendar, offset, place, request, &mut viewed)?;
         let karmakala = observances(request.rules(), &viewed)?;

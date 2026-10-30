@@ -541,6 +541,9 @@ fn panchanga_counts_section(id: u32) -> SectionSchema {
             count("punya_kala", "punya_kala"),
             count("homa_ahuti", "homa_ahuti"),
             count("ashubha_yogas", "ashubha_yogas"),
+            count("bhadra_vasa", "bhadra_vasa"),
+            count("shiva_vasa", "shiva_vasa"),
+            count("named_panchaka", "named_panchaka"),
         ],
     )
 }
@@ -832,6 +835,9 @@ pub fn panchanga() -> BlobSchema {
             span_section(34, "punya_kala", "The punya kala of a sankranti, when the day's daylight holds one, under `panchanga.punya_kala` (Dharmasindhu pp. 2-3, Nirnayasindhu pp. 3-5, crux C752): the sign the Sun entered, `whole` the ghatis the table gives before or after the entry, or the half day an entry at night makes meritorious, and `inside` their part in the daylight, the window. The sankranti itself may lie in the night either side, so a window on the morning after a night's entry is the following day's. Empty on all but some twelve days a year.", "The sign the Sun entered.", "Rashi"),
             span_section(35, "homa_ahuti", "The homa ahuti, when `sections` asked for `TS_PANCHANGA_HOMA_AHUTI` (Muhurta Chintamani, Nakshatra-prakarana v. 35, crux C751): the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, the Sun's own star and the two after it the Sun's, then Mercury, Venus, Saturn, the Moon, Mars, Jupiter, Rahu and Ketu; the verse bars a malefic's share, which the reader judges. One span for each stretch the Moon's star and the Sun's both held, `whole` where the two stays overlap. Empty when not asked for.", "The graha the oblation falls to.", "Graha"),
             span_section(36, "ashubha_yogas", "The day's inauspicious yogas (Muhurta Chintamani, Shubhashubha-prakarana vv. 8–9, crux C760): a span for each tithi the day held that is dagdha (`DAGDHA`), visha (`VISHA`) or hutashana (`HUTASHANA`) with the day's vara, by its number in either paksha, and for the nakshatra that is the vara's Yamaghanta (`YAMAGHANTA`), each over that limb's own span and in the order they begin. Vasishtha lifts them at night; the spans run as the limbs do and the reader judges.", "The inauspicious yoga.", "AshubhaYoga"),
+            span_section(37, "bhadra_vasa", "Where Bhadra dwells while the vishti karana holds, by the sign the Moon stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820): `MARTYA` with the Moon in Cancer, Leo, Aquarius or Pisces, `SVARGA` in Aries, Taurus, Gemini or Scorpio, `PATALA` in the rest; only `MARTYA`, the earth, is harmful. One span for each stretch a vishti and a sign both held, so a sign change in Bhadra splits it; empty on a day with no vishti.", "Where Bhadra dwells.", "BhadraVasa"),
+            span_section(38, "shiva_vasa", "Where Shiva dwells, one span for each tithi the day held, under `panchanga.shiva_vasa`: a printed convention with no text behind it, named in the provenance's `applied_conventions` (crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7: 1 Kailasa, 2 beside Gauri, 3 on the bull, 4 the assembly, 5 the meal, 6 at play, 0 the cremation ground. Empty under `NONE`.", "Where Shiva dwells.", "ShivaVasa"),
+            span_section(39, "named_panchaka", "The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`.", "The panchaka's name.", "Panchaka"),
         ],
     }
 }

@@ -42,12 +42,13 @@ pub use knobs::{
     IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
     LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents,
     MoonPaksha, Naisargika, NaisargikaDivision, NakshatraScheme, Nathonnatha, Node, NodeAspects,
-    NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaStart,
-    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable, PushkaraBhaga,
-    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
-    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
-    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
-    TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaName,
+    PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable,
+    PushkaraBhaga, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
+    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, ShivaVasaReading, Shodhana, SolarMonthStart, StrongestGraha,
+    SunAyana, Sunrise, SuryaSunrise, Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam,
+    Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
 
@@ -768,6 +769,12 @@ group!(
         /// Where panchaka begins: Dhanishtha's third quarter or the
         /// whole of it (crux C158).
         panchaka_start: PanchakaStart,
+        /// What the panchaka is named: by the vara it begins on, a
+        /// printed convention, or not at all (crux C821).
+        panchaka_name: PanchakaName,
+        /// Where Shiva dwells on each tithi: the almanacs' printed
+        /// convention or none (crux C750).
+        shiva_vasa: ShivaVasaReading,
         /// Which table places each nakshatra's varjyam (crux C165).
         varjyam: Varjyam,
         /// Which reading places each nakshatra's amrita kalam (crux C677).

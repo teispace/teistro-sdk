@@ -260,6 +260,9 @@ import type {
   AgniVasa,
   AshubhaYoga,
   Ayanamsha,
+  BhadraVasa,
+  Panchaka,
+  ShivaVasa,
   ChainEnd,
   Direction,
   Gender,
@@ -706,6 +709,9 @@ function almanac(): string {
   const natal: string = day.chandrashtama[0]!.member;
   const fire: AgniVasa = day.agniVasa[0]!.member;
   const shunned: AshubhaYoga | undefined = day.ashubhaYogas[0]?.member;
+  const bhadra: BhadraVasa | undefined = day.bhadraVasa[0]?.member;
+  const shiva: ShivaVasa = day.shivaVasa[0]!.member;
+  const named: Panchaka | undefined = day.namedPanchaka[0]?.member;
   const rahu: Direction = day.rahuVasa[0]!.member;
   // An absent value is null, never a sentinel, and the checker knows it.
   const sankranti: number | null = day.sankranti;

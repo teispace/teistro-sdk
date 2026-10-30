@@ -6,13 +6,13 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 422 of 508 | 83.1% | 163 of 163 | 100.0% |
-| `hi-Deva-IN` | base | 332 of 508 | 65.4% | 7 of 163 | 4.3% |
-| `ne-Deva-NP` | strict | 422 of 508 | 83.1% | 163 of 163 | 100.0% |
-| `sa-Deva` | base | 332 of 508 | 65.4% | 0 of 163 | 0.0% |
-| `sa-Latn` | base | 332 of 508 | 65.4% | 0 of 163 | 0.0% |
+| `en-Latn` | strict | 429 of 515 | 83.3% | 157 of 157 | 100.0% |
+| `hi-Deva-IN` | base | 332 of 515 | 64.5% | 1 of 157 | 0.6% |
+| `ne-Deva-NP` | strict | 429 of 515 | 83.3% | 157 of 157 | 100.0% |
+| `sa-Deva` | base | 332 of 515 | 64.5% | 0 of 157 | 0.0% |
+| `sa-Latn` | base | 332 of 515 | 64.5% | 0 of 157 | 0.0% |
 
-508 members of 39 kinds, 163 messages.
+515 members of 40 kinds, 157 messages.
 
 ## By kind
 
@@ -49,6 +49,7 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `rashi` | 12 | 12 | 12 | 12 | 12 | 12 |
 | `relationship` | 5 | 5 | 5 | 5 | 5 | 5 |
 | `ritu` | 6 | 6 | 6 | 6 | 6 | 6 |
+| `shiva_vasa` | 7 | 7 | 0 | 7 | 0 | 0 |
 | `tithi` | 30 | 30 | 30 | 30 | 30 | 30 |
 | `tithi_class` | 5 | 0 | 0 | 0 | 0 | 0 |
 | `vaiseshikamsa` | 30 | 27 | 0 | 27 | 0 | 0 |

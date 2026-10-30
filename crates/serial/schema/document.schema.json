@@ -5583,6 +5583,17 @@
           "$ref": "#/$defs/Muhurtas",
           "description": "The thirty muhurtas, with Abhijit and Brahma muhurta named."
         },
+        "named_panchaka": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PanchakaSpan"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: **a printed convention**, which the answer's provenance names (crux C821). `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. None on a day without panchaka, for one begun on a Wednesday or a Thursday, which the almanacs leave unnamed, and under `NONE`; left out of the day's document then."
+        },
         "omens": {
           "$ref": "#/$defs/Omens",
           "description": "What the day is said to be."
@@ -5597,6 +5608,13 @@
             }
           ],
           "description": "The punya kala that falls in the day's daylight, of a sankranti in the day or in the night either side of it, under `panchanga.punya_kala` (`03-design/panchanga-day.md` §21.5, crux C752). Left out of the day's document when the day holds none, which is all but some twelve days a year."
+        },
+        "shiva_vasa": {
+          "description": "Where Shiva dwells, one span for each tithi the day held, under `panchanga.shiva_vasa`: **a printed convention** with no text behind it, which the answer's provenance names (`03-design/printed-conventions.md`, crux C750). Empty under `NONE`, and then left out of the day's document.",
+          "items": {
+            "$ref": "#/$defs/ShivaVasaSpan"
+          },
+          "type": "array"
         },
         "sun": {
           "$ref": "#/$defs/SunDay",
@@ -6938,6 +6956,62 @@
         "drik",
         "required_rupas",
         "ishta_kashta"
+      ],
+      "type": "object"
+    },
+    "ShivaVasa": {
+      "anyOf": [
+        {
+          "description": "A key of the `shiva_vasa` catalogue, as a document writes it.",
+          "enum": [
+            "KAILASA",
+            "GAURI",
+            "VRISHABHA",
+            "SABHA",
+            "BHOJANA",
+            "KRIDA",
+            "SHMASHANA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `shiva_vasa` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "shiva_vasa.KAILASA",
+            "shiva_vasa.GAURI",
+            "shiva_vasa.VRISHABHA",
+            "shiva_vasa.SABHA",
+            "shiva_vasa.BHOJANA",
+            "shiva_vasa.KRIDA",
+            "shiva_vasa.SHMASHANA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `shiva_vasa` catalogue, bare or full.",
+      "x-teistro-kind": "shiva_vasa"
+    },
+    "ShivaVasaSpan": {
+      "description": "One member of a limb, and when it ran.",
+      "properties": {
+        "inside": {
+          "$ref": "#/$defs/Interval",
+          "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "member": {
+          "$ref": "#/$defs/ShivaVasa",
+          "description": "Which member ran."
+        },
+        "whole": {
+          "$ref": "#/$defs/Interval",
+          "description": "When the member itself began and ended, whether or not either instant lies inside the day."
+        }
+      },
+      "required": [
+        "member",
+        "whole",
+        "inside"
       ],
       "type": "object"
     },

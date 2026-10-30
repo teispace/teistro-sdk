@@ -474,3 +474,122 @@ fn the_stamp_carries_the_profile_and_the_settings_hash() {
         assert_ne!(other.provenance.input_hash, stamp.input_hash);
     });
 }
+
+/// The day's panchaka is named by the vara it began on (C821), one name
+/// over the whole panchaka whichever of its days is asked; the knob's
+/// `NONE` names none, and a convention in force is stamped on the answer.
+///
+/// June 2024 at Kathmandu holds a whole panchaka, so the day it began on
+/// is among the days asked and gives the vara.
+#[test]
+fn a_panchaka_is_named_by_the_vara_it_began_on() {
+    use teistro_core::catalogue::Panchaka as Kind;
+    use teistro_core::settings::{PanchakaName, ShivaVasaReading};
+    use teistro_panchanga::omen::panchaka_by_vara;
+
+    let month: Vec<_> = (1..=30)
+        .map(|d| {
+            with_almanac(&SettingsPatch::default(), |a| {
+                a.day(&date(2024, 6, d), &place()).unwrap()
+            })
+        })
+        .collect();
+    let spans: Vec<_> = month
+        .iter()
+        .flat_map(|a| a.value.omens.panchaka.iter().copied())
+        .collect();
+    let mut named = 0;
+    for answer in &month {
+        let day = &answer.value;
+        let knobs: Vec<_> = answer
+            .provenance
+            .applied_conventions
+            .iter()
+            .map(|c| c.knob.as_str())
+            .collect();
+        assert!(knobs.contains(&"panchanga.panchaka_name"), "{knobs:?}");
+        assert!(knobs.contains(&"panchanga.shiva_vasa"), "{knobs:?}");
+        assert_eq!(day.shiva_vasa.len(), day.limbs.tithi.len());
+        let Some(first) = day.omens.panchaka.first() else {
+            assert_eq!(day.named_panchaka, None, "no panchaka, no name");
+            continue;
+        };
+        // The panchaka's first instant: the last Mrityu to begin by the
+        // day's first span, and the day that holds it; a panchaka begun
+        // before the month is not judged.
+        let Some(start) = spans
+            .iter()
+            .filter(|p| p.member == Kind::Mrityu && p.whole.from.get() <= first.whole.from.get())
+            .map(|p| p.whole.from)
+            .next_back()
+        else {
+            continue;
+        };
+        let Some(began) = month.iter().find(|a| a.value.window.contains(start)) else {
+            continue;
+        };
+        let name = panchaka_by_vara(began.value.day.vara);
+        assert_eq!(day.named_panchaka.map(|p| p.member), name);
+        if let Some(span) = day.named_panchaka {
+            assert_eq!(span.whole.from, start, "from the panchaka's first instant");
+            let roga = spans
+                .iter()
+                .find(|p| p.member == Kind::Roga && p.whole.from.get() > start.get())
+                .unwrap();
+            assert_eq!(span.whole.to, roga.whole.to, "to the Moon's leaving Revati");
+            named += 1;
+        }
+    }
+    assert!(named > 0, "June 2024's panchaka is named");
+
+    let mut none = SettingsPatch::default();
+    none.panchanga.panchaka_name = Some(PanchakaName::None);
+    none.panchanga.shiva_vasa = Some(ShivaVasaReading::None);
+    let quiet = with_almanac(&none, |a| {
+        a.between(&date(2024, 6, 1), &date(2024, 6, 30), &place())
+            .unwrap()
+    });
+    assert!(
+        quiet
+            .provenance
+            .applied_conventions
+            .iter()
+            .all(|c| c.knob != "panchanga.shiva_vasa" && c.knob != "panchanga.panchaka_name")
+    );
+    assert!(
+        quiet
+            .value
+            .iter()
+            .all(|d| d.named_panchaka.is_none() && d.shiva_vasa.is_empty())
+    );
+}
+
+/// A panchaka begun in a polar day is named all the same: under
+/// `NEAREST_EVENT` the day's bounds lie where its first instant is not,
+/// so the name takes the civil date's vara rather than refusing the day.
+#[test]
+fn a_polar_day_names_its_panchaka() {
+    use teistro_core::settings::{PolarDayPolicy, SolarMonthStart};
+
+    let mut polar = SettingsPatch::default();
+    polar.day.polar_day_policy = Some(PolarDayPolicy::NearestEvent);
+    // The default month start needs the sankranti day's sunrise, which a
+    // polar July lacks; the civil day of the sankranti does not.
+    polar.panchanga.solar_month_start = Some(SolarMonthStart::SankrantiDay);
+    let tromso = Place::new(
+        Latitude::literal(69.6492),
+        Longitude::literal(18.9553),
+        Altitude::literal(0.0),
+    );
+    let days = with_almanac(&polar, |a| {
+        a.between(&date(2024, 7, 1), &date(2024, 7, 31), &tromso)
+            .unwrap()
+    });
+    let held: Vec<_> = days
+        .value
+        .iter()
+        .filter(|d| !d.omens.panchaka.is_empty())
+        .collect();
+    assert!(!held.is_empty(), "July holds a panchaka");
+    assert!(held.iter().any(|d| d.named_panchaka.is_some()));
+}

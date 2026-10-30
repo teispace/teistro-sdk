@@ -3026,6 +3026,9 @@ void main() {
     put('day-$i-amrit-kalam-count', day.amritKalam.length);
     put('day-$i-agni-vasa-count', day.agniVasa.length);
     put('day-$i-ashubha-yoga-count', day.ashubhaYogas.length);
+    put('day-$i-bhadra-vasa-count', day.bhadraVasa.length);
+    put('day-$i-shiva-vasa-count', day.shivaVasa.length);
+    put('day-$i-named-panchaka-count', day.namedPanchaka.length);
     put('day-$i-rahu-vasa-count', day.rahuVasa.length);
     put('day-$i-punya-kala-count', day.punyaKala.length);
     void limb(String name, List<Span<dynamic>> spans) {
@@ -3053,6 +3056,9 @@ void main() {
     limb('amrit-kalam', day.amritKalam);
     limb('agni-vasa', day.agniVasa);
     limb('ashubha-yoga', day.ashubhaYogas);
+    limb('bhadra-vasa', day.bhadraVasa);
+    limb('shiva-vasa', day.shivaVasa);
+    limb('named-panchaka', day.namedPanchaka);
     limb('rahu-vasa', day.rahuVasa);
     limb('punya-kala', day.punyaKala);
     final kaalas = day.kaalas;

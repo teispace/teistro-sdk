@@ -162,9 +162,13 @@ pub enum Kind {
     AgniVasa = 73,
     /// The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).
     AshubhaYoga = 74,
+    /// Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820).
+    BhadraVasa = 75,
+    /// Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.
+    ShivaVasa = 76,
 }
 
-const BY_NAME: [(&str, Kind); 73] = [
+const BY_NAME: [(&str, Kind); 75] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -178,6 +182,7 @@ const BY_NAME: [(&str, Kind); 73] = [
     ("ayanamsha", Kind::Ayanamsha),
     ("ayanamsha_category", Kind::AyanamshaCategory),
     ("bala_scheme", Kind::BalaScheme),
+    ("bhadra_vasa", Kind::BhadraVasa),
     ("blackout_kind", Kind::BlackoutKind),
     ("body_class", Kind::BodyClass),
     ("calendar", Kind::Calendar),
@@ -223,6 +228,7 @@ const BY_NAME: [(&str, Kind); 73] = [
     ("rule", Kind::Rule),
     ("samvatsara", Kind::Samvatsara),
     ("sex", Kind::Sex),
+    ("shiva_vasa", Kind::ShivaVasa),
     ("solar_eclipse_kind", Kind::SolarEclipseKind),
     ("star", Kind::Star),
     ("star_class", Kind::StarClass),
@@ -242,7 +248,7 @@ const BY_NAME: [(&str, Kind); 73] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 73] = [
+    pub const ALL: [Kind; 75] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -316,6 +322,8 @@ impl Kind {
         Kind::TibetanAnimal,
         Kind::AgniVasa,
         Kind::AshubhaYoga,
+        Kind::BhadraVasa,
+        Kind::ShivaVasa,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -401,6 +409,8 @@ impl Kind {
             Kind::TibetanAnimal => "tibetan_animal",
             Kind::AgniVasa => "agni_vasa",
             Kind::AshubhaYoga => "ashubha_yoga",
+            Kind::BhadraVasa => "bhadra_vasa",
+            Kind::ShivaVasa => "shiva_vasa",
         }
     }
 
@@ -500,6 +510,8 @@ impl Kind {
             Kind::TibetanAnimal => 12,
             Kind::AgniVasa => 3,
             Kind::AshubhaYoga => 4,
+            Kind::BhadraVasa => 3,
+            Kind::ShivaVasa => 7,
         }
     }
 
@@ -600,6 +612,8 @@ impl Kind {
             72 => Some(Kind::TibetanAnimal),
             73 => Some(Kind::AgniVasa),
             74 => Some(Kind::AshubhaYoga),
+            75 => Some(Kind::BhadraVasa),
+            76 => Some(Kind::ShivaVasa),
             _ => None,
         }
     }

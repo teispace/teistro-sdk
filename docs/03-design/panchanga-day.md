@@ -812,7 +812,9 @@ page:
 |---|---|---|---|
 | agni vasa | each tithi and the day's vara | Muhurta Chintamani, Nakshatra-prakarana v. 36 (Kapileshvar Shastri's edition, Chowkhamba 1948, p. 73; the 1892 Piyushadhara edition, p. 46) | `Panchanga::agni_vasa`, `omen::agni_vasa`, catalogue kind `agni_vasa` (C748) |
 | Rahu's direction | the daylight's eighths | *Jyotirnibandha* (Anandashrama 85), Rahu-bhumi v. 1, p. 337 | `Panchanga::rahu_vasa`, `omen::rahu_vasas`, `omen::RAHU_WALK` (C749) |
-| Shiva vasa | the tithi | none in hand | not built (C750) |
+| Shiva vasa | the tithi | Surya Panchanga VS 2082 p. 60, a print; no text in hand | `Panchanga::shiva_vasa`, `omen::shiva_vasa`, catalogue kind `shiva_vasa`, a printed convention (`printed-conventions.md`, C750) |
+| Bhadra's loka | each Vishti karana and the Moon's sign | Muhurta Chintamani, Shubhashubha-prakarana v. 45 (1954, p. 38) | `Panchanga::bhadra_vasa`, `omen::bhadra_vasa`, catalogue kind `bhadra_vasa` (C820) |
+| the panchaka's name | the vara the panchaka begins on | Indian almanacs; no text in hand | the day's `named_panchaka`, `omen::panchaka_by_vara`, a printed convention (C821) |
 | homa ahuti | the Moon's nakshatra from the Sun's | Muhurta Chintamani, Nakshatra-prakarana v. 35 | `Panchanga::homa_ahuti` on asking (`AlmanacRequest::with_homa_ahuti`), `Almanac::homa_ahuti`, `omen::ahuti`, `omen::HOMA_AHUTI` (C751) |
 
 **The agni vasa.** "सैका तिथिर्वारयुता कृताप्ता शेषे गुणेऽभ्रे भुवि
@@ -842,10 +844,26 @@ no answer rather than a guess (C749), and a day with no daylight has
 none. Almanacs that print a "Rahu vasa" by weekday, one direction for
 the whole day, follow a table no text in hand gives, so it is not built.
 
-**What is not built.** Shiva vasa, (2t + 5) mod 7 over the thirty
-tithis read as kailasha, gauri, sabha, krida, vrishabha, bhojana and
-shmashana, is what almanacs print, and no text read gives it (C750): a
-consumer that wants it computes it from the tithi spans the day carries.
+**Bhadra's loka.** "कुम्भकर्कद्वये मर्त्येऽब्जे स्वर्गेऽजात्त्रयेऽलिगे ।
+स्त्रीधनुर्जूकनक्रेऽधो भद्रा तत्रैव तत्फलम्": with the Moon in Aquarius,
+Pisces, Cancer or Leo, Vishti dwells on the earth; in Aries, Taurus,
+Gemini or Scorpio in heaven; in Virgo, Sagittarius, Libra or Capricorn
+below; and her harm falls only where she dwells, so only the earth's
+Vishti is `harmful`. `Panchanga::bhadra_vasa` lays each Vishti span
+against the Moon's signs the day carries: a sign change inside a Vishti
+splits it in two, each part's `whole` the overlap (C820).
+
+**The Shiva vasa and the panchaka's name** are printed readings with no
+text in hand, so they ship as conventions (`printed-conventions.md`).
+The Shiva vasa is (2t + 5) mod 7 over the tithi t, 1 to 30: 1 Kailasa,
+2 beside Gauri, 3 on the bull, 4 the assembly, 5 the meal, 6 at play,
+0 the cremation ground, the order of the Surya Panchanga's table, which
+a test holds in all thirty cells (C750). The panchaka is named by the
+vara it begins on (C821): the day's `named_panchaka` is one span whose
+`whole` runs from the panchaka's first instant, which may lie days
+before, to the Moon leaving Revati. Each is chosen by its knob,
+`panchanga.shiva_vasa` and `panchanga.panchaka_name`, and named in the
+answer's `applied_conventions` unless set to `NONE`.
 
 **The homa ahuti.** Verse 35 shares the oblation by the Moon's nakshatra
 counted in threes from the Sun's, the Sun's own star the first: Sun,

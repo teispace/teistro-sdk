@@ -352,7 +352,17 @@ public enum Kind implements Member {
     /**
      * The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).
      */
-    ASHUBHA_YOGA(74, "ashubha_yoga");
+    ASHUBHA_YOGA(74, "ashubha_yoga"),
+
+    /**
+     * Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820).
+     */
+    BHADRA_VASA(75, "bhadra_vasa"),
+
+    /**
+     * Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.
+     */
+    SHIVA_VASA(76, "shiva_vasa");
 
     private static final Kind[] MEMBERS = values();
 

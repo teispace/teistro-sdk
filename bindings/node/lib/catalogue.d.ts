@@ -260,7 +260,9 @@ export type Kind =
   | 'tibetan_element'
   | 'tibetan_animal'
   | 'agni_vasa'
-  | 'ashubha_yoga';
+  | 'ashubha_yoga'
+  | 'bhadra_vasa'
+  | 'shiva_vasa';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -540,6 +542,14 @@ export declare const Kind: {
    * The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).
    */
   readonly AshubhaYoga: 'ashubha_yoga';
+  /**
+   * Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820).
+   */
+  readonly BhadraVasa: 'bhadra_vasa';
+  /**
+   * Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.
+   */
+  readonly ShivaVasa: 'shiva_vasa';
 };
 
 /**
@@ -5928,6 +5938,84 @@ export declare const AshubhaYoga: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const AshubhaYogaById: ReadonlyMap<number, AshubhaYoga>;
+
+/**
+ * Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820). Members are the catalogue's ids; the full key id is `(TS_KIND_BHADRA_VASA << 16) | member`.
+ */
+export type BhadraVasa = 'bhadra_vasa.SVARGA' | 'bhadra_vasa.MARTYA' | 'bhadra_vasa.PATALA' | 'unknown';
+
+/** Every BhadraVasa by name; the values are the strings the union accepts. */
+export declare const BhadraVasa: {
+  /**
+   * In heaven, the Moon in Aries, Taurus, Gemini or Scorpio: her result falls there, not on the earth
+   */
+  readonly Svarga: 'bhadra_vasa.SVARGA';
+  /**
+   * On the earth, the Moon in Cancer, Leo, Aquarius or Pisces: her result falls among men
+   */
+  readonly Martya: 'bhadra_vasa.MARTYA';
+  /**
+   * Below the earth, the Moon in Virgo, Libra, Sagittarius or Capricorn: her result falls there, not on the earth
+   */
+  readonly Patala: 'bhadra_vasa.PATALA';
+};
+
+/**
+ * Every BhadraVasa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const BhadraVasaById: ReadonlyMap<number, BhadraVasa>;
+
+/**
+ * Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`. Members are the catalogue's ids; the full key id is `(TS_KIND_SHIVA_VASA << 16) | member`.
+ */
+export type ShivaVasa =
+  | 'shiva_vasa.KAILASA'
+  | 'shiva_vasa.GAURI'
+  | 'shiva_vasa.VRISHABHA'
+  | 'shiva_vasa.SABHA'
+  | 'shiva_vasa.BHOJANA'
+  | 'shiva_vasa.KRIDA'
+  | 'shiva_vasa.SHMASHANA'
+  | 'unknown';
+
+/** Every ShivaVasa by name; the values are the strings the union accepts. */
+export declare const ShivaVasa: {
+  /**
+   * On Kailasa, the remainder one: ease
+   */
+  readonly Kailasa: 'shiva_vasa.KAILASA';
+  /**
+   * Beside Gauri, the remainder two: good
+   */
+  readonly Gauri: 'shiva_vasa.GAURI';
+  /**
+   * On the bull, the remainder three: wealth gained
+   */
+  readonly Vrishabha: 'shiva_vasa.VRISHABHA';
+  /**
+   * In the assembly, the remainder four: distress
+   */
+  readonly Sabha: 'shiva_vasa.SABHA';
+  /**
+   * At the meal, the remainder five: food gained, by the print read; other almanacs call it pain (crux C822)
+   */
+  readonly Bhojana: 'shiva_vasa.BHOJANA';
+  /**
+   * At play, the remainder six: harm to children
+   */
+  readonly Krida: 'shiva_vasa.KRIDA';
+  /**
+   * In the cremation ground, the remainder nothing: death
+   */
+  readonly Shmashana: 'shiva_vasa.SHMASHANA';
+};
+
+/**
+ * Every ShivaVasa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ShivaVasaById: ReadonlyMap<number, ShivaVasa>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

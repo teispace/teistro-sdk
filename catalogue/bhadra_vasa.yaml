@@ -1,0 +1,30 @@
+kind: bhadra_vasa
+number: 75
+version: 1
+doc: "Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820)."
+attributes: { harmful: bool }
+members:
+  - key: SVARGA
+    id: 0
+    doc: "In heaven, the Moon in Aries, Taurus, Gemini or Scorpio: her result falls there, not on the earth"
+    attributes: { harmful: false }
+    sources:
+      - text: "Muhurta Chintamani with the Piyushadhara (1954)"
+        ref: "Shubhashubha-prakarana v. 45, p. 38: स्वर्गेऽब्जेऽजात्त्रयेऽलिगे … भद्रा तत्रैव तत्फलम्"
+    mark: V
+  - key: MARTYA
+    id: 1
+    doc: "On the earth, the Moon in Cancer, Leo, Aquarius or Pisces: her result falls among men"
+    attributes: { harmful: true }
+    sources:
+      - text: "Muhurta Chintamani with the Piyushadhara (1954)"
+        ref: "Shubhashubha-prakarana v. 45, p. 38: कुम्भकर्कद्वये मर्त्ये … भद्रा तत्रैव तत्फलम्"
+    mark: V
+  - key: PATALA
+    id: 2
+    doc: "Below the earth, the Moon in Virgo, Libra, Sagittarius or Capricorn: her result falls there, not on the earth"
+    attributes: { harmful: false }
+    sources:
+      - text: "Muhurta Chintamani with the Piyushadhara (1954)"
+        ref: "Shubhashubha-prakarana v. 45, p. 38: स्त्रीधनुर्जूकनक्रेऽधो भद्रा तत्रैव तत्फलम्"
+    mark: V

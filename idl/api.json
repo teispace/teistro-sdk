@@ -630,6 +630,18 @@
           "value": 74,
           "doc": "The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).",
           "key": "ashubha_yoga"
+        },
+        {
+          "name": "BhadraVasa",
+          "value": 75,
+          "doc": "Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820).",
+          "key": "bhadra_vasa"
+        },
+        {
+          "name": "ShivaVasa",
+          "value": 76,
+          "doc": "Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.",
+          "key": "shiva_vasa"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -6549,6 +6561,84 @@
           "value": 3,
           "doc": "Yamaghanta, Yama's bell: Magha, Vishakha, Ardra, Mula, Krittika, Rohini and Hasta on Sunday to Saturday",
           "key": "YAMAGHANTA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "BhadraVasa",
+      "doc": "Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820). Members are the catalogue's ids; the full key id is `(TS_KIND_BHADRA_VASA << 16) | member`.",
+      "repr": "u16",
+      "kind": "bhadra_vasa",
+      "values": [
+        {
+          "name": "Svarga",
+          "value": 0,
+          "doc": "In heaven, the Moon in Aries, Taurus, Gemini or Scorpio: her result falls there, not on the earth",
+          "key": "SVARGA"
+        },
+        {
+          "name": "Martya",
+          "value": 1,
+          "doc": "On the earth, the Moon in Cancer, Leo, Aquarius or Pisces: her result falls among men",
+          "key": "MARTYA"
+        },
+        {
+          "name": "Patala",
+          "value": 2,
+          "doc": "Below the earth, the Moon in Virgo, Libra, Sagittarius or Capricorn: her result falls there, not on the earth",
+          "key": "PATALA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "ShivaVasa",
+      "doc": "Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`. Members are the catalogue's ids; the full key id is `(TS_KIND_SHIVA_VASA << 16) | member`.",
+      "repr": "u16",
+      "kind": "shiva_vasa",
+      "values": [
+        {
+          "name": "Kailasa",
+          "value": 0,
+          "doc": "On Kailasa, the remainder one: ease",
+          "key": "KAILASA"
+        },
+        {
+          "name": "Gauri",
+          "value": 1,
+          "doc": "Beside Gauri, the remainder two: good",
+          "key": "GAURI"
+        },
+        {
+          "name": "Vrishabha",
+          "value": 2,
+          "doc": "On the bull, the remainder three: wealth gained",
+          "key": "VRISHABHA"
+        },
+        {
+          "name": "Sabha",
+          "value": 3,
+          "doc": "In the assembly, the remainder four: distress",
+          "key": "SABHA"
+        },
+        {
+          "name": "Bhojana",
+          "value": 4,
+          "doc": "At the meal, the remainder five: food gained, by the print read; other almanacs call it pain (crux C822)",
+          "key": "BHOJANA"
+        },
+        {
+          "name": "Krida",
+          "value": 5,
+          "doc": "At play, the remainder six: harm to children",
+          "key": "KRIDA"
+        },
+        {
+          "name": "Shmashana",
+          "value": 6,
+          "doc": "In the cremation ground, the remainder nothing: death",
+          "key": "SHMASHANA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -24240,6 +24330,21 @@
               "name": "ashubha_yogas",
               "scalar": "u32",
               "doc": "How many rows of `ashubha_yogas` belong to this day."
+            },
+            {
+              "name": "bhadra_vasa",
+              "scalar": "u32",
+              "doc": "How many rows of `bhadra_vasa` belong to this day."
+            },
+            {
+              "name": "shiva_vasa",
+              "scalar": "u32",
+              "doc": "How many rows of `shiva_vasa` belong to this day."
+            },
+            {
+              "name": "named_panchaka",
+              "scalar": "u32",
+              "doc": "How many rows of `named_panchaka` belong to this day."
             }
           ]
         },
@@ -25545,6 +25650,171 @@
               "scalar": "u16",
               "doc": "The inauspicious yoga.",
               "enum": "AshubhaYoga"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 37,
+          "name": "bhadra_vasa",
+          "doc": "Where Bhadra dwells while the vishti karana holds, by the sign the Moon stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820): `MARTYA` with the Moon in Cancer, Leo, Aquarius or Pisces, `SVARGA` in Aries, Taurus, Gemini or Scorpio, `PATALA` in the rest; only `MARTYA`, the earth, is harmful. One span for each stretch a vishti and a sign both held, so a sign change in Bhadra splits it; empty on a day with no vishti.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Where Bhadra dwells.",
+              "enum": "BhadraVasa"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 38,
+          "name": "shiva_vasa",
+          "doc": "Where Shiva dwells, one span for each tithi the day held, under `panchanga.shiva_vasa`: a printed convention with no text behind it, named in the provenance's `applied_conventions` (crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7: 1 Kailasa, 2 beside Gauri, 3 on the bull, 4 the assembly, 5 the meal, 6 at play, 0 the cremation ground. Empty under `NONE`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "Where Shiva dwells.",
+              "enum": "ShivaVasa"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 39,
+          "name": "named_panchaka",
+          "doc": "The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "The panchaka's name.",
+              "enum": "Panchaka"
             },
             {
               "name": "whole_from",
