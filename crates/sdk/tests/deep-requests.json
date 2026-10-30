@@ -849,6 +849,233 @@
     }
   },
   {
+    "record": "almanac.next",
+    "request": {
+      "after": 1.5,
+      "altitudeM": 1.5,
+      "calendar": "calendar.JULIAN",
+      "festivals": {
+        "published": [
+          {
+            "entries": [
+              {
+                "action": "SET",
+                "adhika": true,
+                "day": {
+                  "calendar": "calendar.JULIAN",
+                  "day": 1,
+                  "era": {
+                    "era": "era.SHAKA",
+                    "year": 1
+                  },
+                  "leap": "DAY",
+                  "month": 1,
+                  "year": 1
+                },
+                "month": "masa.VAISHAKHA",
+                "rule": "x",
+                "source": "x",
+                "window": {
+                  "from": 1.5,
+                  "to": 1.5
+                }
+              }
+            ],
+            "format": "x",
+            "id": "x",
+            "publisher": "x",
+            "version": 1
+          }
+        ],
+        "rules": [
+          {
+            "choose": "LATEST",
+            "rising": {
+              "freeOf": [
+                "graha.MOON"
+              ],
+              "modalities": [
+                "modality.STHIRA"
+              ],
+              "of": "LAGNA"
+            },
+            "rule": "x",
+            "source": "x",
+            "windows": [
+              {
+                "avoid": [
+                  {
+                    "avoid": "NAKSHATRA",
+                    "nakshatra": "nakshatra.BHARANI",
+                    "quarters": 1
+                  }
+                ],
+                "within": {
+                  "window": "DAY_MUHURTA",
+                  "from": 1,
+                  "to": 1
+                }
+              }
+            ]
+          },
+          {
+            "key": "x",
+            "mahadvadashi": {
+              "joining": "OUTLASTS_TWELFTH",
+              "kinds": [
+                "VYANJULI"
+              ],
+              "sampurna": true,
+              "trisprisha": "ARUNODAYA",
+              "vyanjuli": "HALF_MUHURTA"
+            },
+            "parana": {
+              "at": [
+                {
+                  "window": "DAY_MUHURTA",
+                  "from": 1,
+                  "to": 1
+                }
+              ],
+              "bars": [
+                {
+                  "month": "masa.VAISHAKHA",
+                  "nakshatra": "nakshatra.BHARANI",
+                  "portion": {
+                    "parts": 1,
+                    "which": 1
+                  },
+                  "tithi": "tithi.SHUKLA_DVITIYA"
+                }
+              ],
+              "hariVasara": true
+            },
+            "source": "x",
+            "table": {
+              "pierced": {
+                "both": "LATER",
+                "eleventh": "LATER",
+                "neither": "LATER",
+                "twelfth": "LATER"
+              },
+              "pure": {
+                "both": "LATER",
+                "eleventh": "LATER",
+                "neither": "LATER",
+                "twelfth": "LATER"
+              }
+            },
+            "vedha": "SUNRISE"
+          },
+          {
+            "firstYearAdhika": "NIJA",
+            "inSamsarpa": "NIJA",
+            "janma": {
+              "nakshatraTie": true,
+              "twoMuhurtaFloor": true
+            },
+            "key": "x",
+            "kind": "EKODDISHTA",
+            "origin": {
+              "by": "LUNAR",
+              "adhika": true,
+              "at": 1.5,
+              "half": "SECOND",
+              "month": "masa.VAISHAKHA",
+              "tithi": "tithi.SHUKLA_DVITIYA"
+            },
+            "window": {
+              "window": "DAY_MUHURTA",
+              "from": 1,
+              "to": 1
+            }
+          },
+          {
+            "after": "x",
+            "days": 1,
+            "key": "x",
+            "source": "x"
+          },
+          {
+            "civilDate": {
+              "calendar": "calendar.JULIAN",
+              "day": 1,
+              "month": 1,
+              "skipped": "AFTER"
+            },
+            "civilWeekday": {
+              "calendar": "calendar.JULIAN",
+              "month": 1,
+              "nth": 1,
+              "weekday": "vara.SOMAVARA"
+            },
+            "easter": {
+              "computus": "JULIAN",
+              "days": 1
+            },
+            "key": "x",
+            "source": "x",
+            "sunEnters": {
+              "days": 1,
+              "nakshatra": "nakshatra.BHARANI"
+            }
+          },
+          {
+            "at": {
+              "window": "DAY_MUHURTA",
+              "from": 1,
+              "to": 1
+            },
+            "convention": "PURNIMANTA",
+            "dayOfPaksha": 1,
+            "decide": [
+              {
+                "choose": "LATER",
+                "when": [
+                  {
+                    "is": "JOINED",
+                    "at": {
+                      "window": "DAY_MUHURTA",
+                      "from": 1,
+                      "to": 1
+                    },
+                    "day": "LATER",
+                    "nakshatra": "nakshatra.BHARANI",
+                    "portion": {
+                      "parts": 1,
+                      "which": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "inAdhika": true,
+            "key": "x",
+            "month": "masa.VAISHAKHA",
+            "nakshatra": "nakshatra.BHARANI",
+            "otherwise": "LATER",
+            "paksha": "paksha.KRISHNA",
+            "parana": [
+              {
+                "kind": "TITHI_END",
+                "nakshatra": "nakshatra.BHARANI",
+                "yamas": 1
+              }
+            ],
+            "source": "x",
+            "tithi": "tithi.SHUKLA_DVITIYA"
+          }
+        ]
+      },
+      "kind": "PURNIMA",
+      "latitudeDeg": 1.5,
+      "limitDays": 1,
+      "longitudeDeg": 1.5,
+      "rule": "x",
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
     "record": "almanac.pakshi",
     "request": {
       "altitudeM": 1.5,
@@ -1130,6 +1357,38 @@
       "latitudeDeg": 1.5,
       "longitudeDeg": 1.5,
       "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "calendar.add",
+    "request": {
+      "calendar": "calendar.JULIAN",
+      "date": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "days": 1,
+      "months": 1,
+      "overflow": "CARRY",
+      "years": 1
+    }
+  },
+  {
+    "record": "calendar.between",
+    "request": {
+      "calendar": "calendar.JULIAN",
+      "from": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "overflow": "CARRY",
+      "to": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      }
     }
   },
   {

@@ -754,6 +754,29 @@ final class FrameStruct extends ffi.Struct {
 
 }
 
+/// Years, months and days, each signed: the difference of two dates.
+final class DateSpanStruct extends ffi.Struct {
+  /// `sizeof(ts_date_span)` as the caller compiled it.
+  @ffi.Uint32()
+  external int structSize;
+
+  /// Whole years.
+  /// Example: 30.
+  @ffi.Int32()
+  external int years;
+
+  /// Whole months, -11 to 11.
+  /// Range: [-11,11]. Example: 0.
+  @ffi.Int32()
+  external int months;
+
+  /// Days.
+  /// Example: 1.
+  @ffi.Int32()
+  external int days;
+
+}
+
 /// A date in a calendar. Years are astronomical (1 BCE is 0); the era view
 /// is presentation only and is filled by the library, ignored on input.
 final class CalendarDateStruct extends ffi.Struct {
@@ -1915,6 +1938,10 @@ typedef TsCalendarIsLeapNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Ui
 typedef TsCalendarIsLeapDart = int Function(ffi.Pointer<Context>, int, int, ffi.Pointer<ffi.Uint8>);
 typedef TsCalendarWeekdayNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, ffi.Pointer<ffi.Uint8>);
 typedef TsCalendarWeekdayDart = int Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, ffi.Pointer<ffi.Uint8>);
+typedef TsCalendarAddNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, ffi.Int32, ffi.Int32, ffi.Int32, ffi.Uint8, ffi.Pointer<CalendarDateStruct>);
+typedef TsCalendarAddDart = int Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, int, int, int, int, ffi.Pointer<CalendarDateStruct>);
+typedef TsCalendarBetweenNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, ffi.Pointer<CalendarDateStruct>, ffi.Uint8, ffi.Pointer<DateSpanStruct>);
+typedef TsCalendarBetweenDart = int Function(ffi.Pointer<Context>, ffi.Pointer<CalendarDateStruct>, ffi.Pointer<CalendarDateStruct>, int, ffi.Pointer<DateSpanStruct>);
 typedef TsCalendarTibetanYearNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Int32, ffi.Pointer<StringStruct>);
 typedef TsCalendarTibetanYearDart = int Function(ffi.Pointer<Context>, int, ffi.Pointer<StringStruct>);
 typedef TsCalendarJdOfFixedNative = ffi.Double Function(ffi.Int64);
@@ -1965,6 +1992,8 @@ typedef TsAlmanacFirstYearNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.
 typedef TsAlmanacFirstYearDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalCalendarNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalCalendarDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacNextNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacNextDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNamingSyllablesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2033,6 +2062,8 @@ final class TeistroLibrary {
         ts_calendar_month_length = library.lookupFunction<TsCalendarMonthLengthNative, TsCalendarMonthLengthDart>('ts_calendar_month_length'),
         ts_calendar_is_leap = library.lookupFunction<TsCalendarIsLeapNative, TsCalendarIsLeapDart>('ts_calendar_is_leap'),
         ts_calendar_weekday = library.lookupFunction<TsCalendarWeekdayNative, TsCalendarWeekdayDart>('ts_calendar_weekday'),
+        ts_calendar_add = library.lookupFunction<TsCalendarAddNative, TsCalendarAddDart>('ts_calendar_add'),
+        ts_calendar_between = library.lookupFunction<TsCalendarBetweenNative, TsCalendarBetweenDart>('ts_calendar_between'),
         ts_calendar_tibetan_year = library.lookupFunction<TsCalendarTibetanYearNative, TsCalendarTibetanYearDart>('ts_calendar_tibetan_year'),
         ts_calendar_jd_of_fixed = library.lookupFunction<TsCalendarJdOfFixedNative, TsCalendarJdOfFixedDart>('ts_calendar_jd_of_fixed'),
         ts_calendar_fixed_of_jd = library.lookupFunction<TsCalendarFixedOfJdNative, TsCalendarFixedOfJdDart>('ts_calendar_fixed_of_jd'),
@@ -2058,6 +2089,7 @@ final class TeistroLibrary {
         ts_almanac_ashauch = library.lookupFunction<TsAlmanacAshauchNative, TsAlmanacAshauchDart>('ts_almanac_ashauch'),
         ts_almanac_first_year = library.lookupFunction<TsAlmanacFirstYearNative, TsAlmanacFirstYearDart>('ts_almanac_first_year'),
         ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
+        ts_almanac_next = library.lookupFunction<TsAlmanacNextNative, TsAlmanacNextDart>('ts_almanac_next'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_naming_syllables = library.lookupFunction<TsNamingSyllablesNative, TsNamingSyllablesDart>('ts_naming_syllables'),
         ts_naming_read = library.lookupFunction<TsNamingReadNative, TsNamingReadDart>('ts_naming_read'),
@@ -2196,6 +2228,29 @@ final class TeistroLibrary {
 
   /// The weekday of a date as its ISO number: Monday is `1`, Sunday `7`.
   final TsCalendarWeekdayDart ts_calendar_weekday;
+
+  /// The date `years`, `months` and `days` after `date`, in its own
+  /// calendar (`03-design/calendar-bikram-sambat.md` §11): the years and
+  /// months first, a day number the month lacks resolved by `overflow`,
+  /// then the days, each count signed. A Bikram Sambat month runs 29 to 32
+  /// days, so the 32nd of Jestha plus a month is the 31st of a 31-day
+  /// Ashadh under `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and
+  /// `INVALID_ARG` with `NONEXISTENT_DATE` naming `day` under `REJECT`. The
+  /// ISO week date and the Tibetan calendar, which number no twelve months,
+  /// are `UNSUPPORTED`; a date past the calendar's span `OUT_OF_RANGE`.
+  final TsCalendarAddDart ts_calendar_add;
+
+  /// The years, months and days from `from` to `to`, both in one calendar,
+  /// counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the
+  /// most whole months whose anniversary of `from` is not past `to`, then
+  /// the days from it, so `ts_calendar_add` of the span to `from` under the
+  /// same `overflow` gives `to`. An anniversary on a day its month lacks is
+  /// resolved by `overflow`: one born on the 32nd of Jestha completes a year
+  /// on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
+  /// under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+  /// Before `from`, each part is negative or zero. Dates in two calendars
+  /// are `INVALID_ARG`, naming `calendar`.
+  final TsCalendarBetweenDart ts_calendar_between;
 
   /// A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
   /// `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
@@ -2503,6 +2558,29 @@ final class TeistroLibrary {
   /// outside the years 1 to 9999, is `OUT_OF_RANGE`, and a context without
   /// an ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.
   final TsAlmanacFestivalCalendarDart ts_almanac_festival_calendar;
+
+  /// The next day a festival rule or a kind of day falls on after an
+  /// instant at a place, with no year asked (`03-design/next-occurrence.md`),
+  /// as canonical JSON `{value, provenance}`: `value` is `{day, keys,
+  /// festivals, from, limitDays, searchedDays}`, the day in the request's
+  /// calendar, the keys of the rules that fall on it, the festival
+  /// reckoning's entries for them on that day, the first day searched (the
+  /// civil day holding the instant, which counts), the limit and the days
+  /// reckoned, every catalogue member a full key.
+  ///
+  /// `request_json` is `{"after", "latitudeDeg", "longitudeDeg",
+  /// "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule",
+  /// "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind`
+  /// (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules
+  /// the SDK states) or `rule`, a key of `festivals`, a festival request;
+  /// `calendar` the answer's days' (Gregorian when left out), `altitudeM`
+  /// optional and `limitDays` 1 to 3660, 400 when left out. A key it does
+  /// not read, neither or both of `kind` and `rule`, a rule the festivals
+  /// lack, a place or offset out of range or a festival request its reader
+  /// refuses is `INVALID_ARG`, named under `next`; a limit out of range
+  /// `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
+  /// a context without an ephemeris `CAPABILITY`.
+  final TsAlmanacNextDart ts_almanac_next;
 
   /// Matches two names star to star (naam milan) and answers with the
   /// `naam` blob: each name's first syllable in the śatapada cakra, the
@@ -3781,6 +3859,48 @@ final class Frame {
         aberration: raw.aberration != 0,
         deflection: raw.deflection != 0,
         nutation: raw.nutation != 0,
+      );
+}
+
+/// Years, months and days, each signed: the difference of two dates.
+final class DateSpan {
+  /// A DateSpan with every field named.
+  const DateSpan({required this.years, required this.months, required this.days});
+
+  /// Whole years.
+  /// Example: 30.
+  final int years;
+
+  /// Whole months, -11 to 11.
+  /// Range: [-11,11]. Example: 0.
+  final int months;
+
+  /// Days.
+  /// Example: 1.
+  final int days;
+
+  /// Writes this value into a C struct the call takes by pointer.
+  /// Whatever the struct points at is allocated in `arena`, which frees it
+  /// when the call returns.
+  void write(ffi.Pointer<DateSpanStruct> raw, ffi.Allocator arena) => writeInto(raw.ref, arena);
+
+  /// Writes this value into a struct, which may be one held inside
+  /// another rather than one of its own.
+  void writeInto(DateSpanStruct raw, ffi.Allocator arena) {
+    raw.structSize = ffi.sizeOf<DateSpanStruct>();
+    raw.years = years;
+    raw.months = months;
+    raw.days = days;
+  }
+
+  /// Reads the value a call filled in.
+  static DateSpan read(ffi.Pointer<DateSpanStruct> raw) => readFrom(raw.ref);
+
+  /// Reads a value out of a struct, which may be one held inside another.
+  static DateSpan readFrom(DateSpanStruct raw) => DateSpan(
+        years: raw.years,
+        months: raw.months,
+        days: raw.days,
       );
 }
 
@@ -5663,6 +5783,53 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
+  /// The date `years`, `months` and `days` after `date`, in its own
+  /// calendar (`03-design/calendar-bikram-sambat.md` §11): the years and
+  /// months first, a day number the month lacks resolved by `overflow`,
+  /// then the days, each count signed. A Bikram Sambat month runs 29 to 32
+  /// days, so the 32nd of Jestha plus a month is the 31st of a 31-day
+  /// Ashadh under `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and
+  /// `INVALID_ARG` with `NONEXISTENT_DATE` naming `day` under `REJECT`. The
+  /// ISO week date and the Tibetan calendar, which number no twelve months,
+  /// are `UNSUPPORTED`; a date past the calendar's span `OUT_OF_RANGE`.
+  CalendarDate calendarAdd(CalendarDate date, int years, int months, int days, Overflow overflow) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawdate = arena<CalendarDateStruct>();
+        date.write(rawdate, arena);
+        final outDate = arena<CalendarDateStruct>();
+        outDate.ref.structSize = ffi.sizeOf<CalendarDateStruct>();
+        final status = _lib.ts_calendar_add(_handle, rawdate, years, months, days, overflow.id, outDate);
+        if (status != 0) _fail(status);
+        return CalendarDate.read(outDate);
+    });
+  }
+
+  /// The years, months and days from `from` to `to`, both in one calendar,
+  /// counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the
+  /// most whole months whose anniversary of `from` is not past `to`, then
+  /// the days from it, so `ts_calendar_add` of the span to `from` under the
+  /// same `overflow` gives `to`. An anniversary on a day its month lacks is
+  /// resolved by `overflow`: one born on the 32nd of Jestha completes a year
+  /// on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
+  /// under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+  /// Before `from`, each part is negative or zero. Dates in two calendars
+  /// are `INVALID_ARG`, naming `calendar`.
+  DateSpan calendarBetween(CalendarDate from, CalendarDate to, Overflow overflow) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawfrom = arena<CalendarDateStruct>();
+        from.write(rawfrom, arena);
+        final rawto = arena<CalendarDateStruct>();
+        to.write(rawto, arena);
+        final outSpan = arena<DateSpanStruct>();
+        outSpan.ref.structSize = ffi.sizeOf<DateSpanStruct>();
+        final status = _lib.ts_calendar_between(_handle, rawfrom, rawto, overflow.id, outSpan);
+        if (status != 0) _fail(status);
+        return DateSpan.read(outSpan);
+    });
+  }
+
   /// A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
   /// `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
   /// the rabjung cycle (the first began in 1027) and the year's place in
@@ -6180,6 +6347,38 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_almanac_festival_calendar(_handle, rawrequestJson, outText);
         if (status != 0) _fail(status);
         return _takeString(_lib, outText);
+    });
+  }
+
+  /// The next day a festival rule or a kind of day falls on after an
+  /// instant at a place, with no year asked (`03-design/next-occurrence.md`),
+  /// as canonical JSON `{value, provenance}`: `value` is `{day, keys,
+  /// festivals, from, limitDays, searchedDays}`, the day in the request's
+  /// calendar, the keys of the rules that fall on it, the festival
+  /// reckoning's entries for them on that day, the first day searched (the
+  /// civil day holding the instant, which counts), the limit and the days
+  /// reckoned, every catalogue member a full key.
+  ///
+  /// `request_json` is `{"after", "latitudeDeg", "longitudeDeg",
+  /// "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule",
+  /// "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind`
+  /// (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules
+  /// the SDK states) or `rule`, a key of `festivals`, a festival request;
+  /// `calendar` the answer's days' (Gregorian when left out), `altitudeM`
+  /// optional and `limitDays` 1 to 3660, 400 when left out. A key it does
+  /// not read, neither or both of `kind` and `rule`, a rule the festivals
+  /// lack, a place or offset out of range or a festival request its reader
+  /// refuses is `INVALID_ARG`, named under `next`; a limit out of range
+  /// `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
+  /// a context without an ephemeris `CAPABILITY`.
+  String almanacNext(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_next(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 

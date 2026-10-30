@@ -245,6 +245,16 @@ A frame by name: what a position is seen from, in which equinox and coordinates,
 | `deflection` | `uint8_t` | Whether relativistic deflection is applied. Example `0`. |
 | `nutation` | `uint8_t` | Whether nutation is applied. Example `1`. |
 
+## ts_date_span
+
+Years, months and days, each signed: the difference of two dates.
+
+| field | type | what it carries |
+|---|---|---|
+| `years` | `int32_t` | Whole years. Example `30`. |
+| `months` | `int32_t` | Whole months, -11 to 11. Range `[-11,11]`. Example `0`. |
+| `days` | `int32_t` | Days. Example `1`. |
+
 ## ts_calendar_date
 
 A date in a calendar. Years are astronomical (1 BCE is 0); the era view is presentation only and is filled by the library, ignored on input.

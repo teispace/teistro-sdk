@@ -259,6 +259,58 @@ final class Calls {
     }
 
     /**
+     * `ts_calendar_add`: The date `years`, `months` and `days` after `date`, in its own
+     * calendar (`03-design/calendar-bikram-sambat.md` §11): the years and
+     * months first, a day number the month lacks resolved by `overflow`,
+     * then the days, each count signed. A Bikram Sambat month runs 29 to 32
+     * days, so the 32nd of Jestha plus a month is the 31st of a 31-day
+     * Ashadh under `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and
+     * `INVALID_ARG` with `NONEXISTENT_DATE` naming `day` under `REJECT`. The
+     * ISO week date and the Tibetan calendar, which number no twelve months,
+     * are `UNSUPPORTED`; a date past the calendar's span `OUT_OF_RANGE`.
+     */
+    static CalendarDate calendarAdd(Native lib, MemorySegment context, CalendarDate date, int years, int months, int days, Overflow overflow) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment dateRaw = Objects.requireNonNull(date, "date").toC(arena);
+            byte overflowRaw = Values.u8("overflow", Values.id("overflow", overflow));
+            MemorySegment outDate = arena.allocate(Native.TsCalendarDate.LAYOUT);
+            Native.TsCalendarDate.STRUCT_SIZE.set(outDate, 0L, (int) Native.TsCalendarDate.SIZE);
+            int status = Boundary.call(() -> (int) lib.ts_calendar_add.invokeExact(context, dateRaw, years, months, days, overflowRaw, outDate));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return CalendarDate.of(outDate);
+        }
+    }
+
+    /**
+     * `ts_calendar_between`: The years, months and days from `from` to `to`, both in one calendar,
+     * counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the
+     * most whole months whose anniversary of `from` is not past `to`, then
+     * the days from it, so `ts_calendar_add` of the span to `from` under the
+     * same `overflow` gives `to`. An anniversary on a day its month lacks is
+     * resolved by `overflow`: one born on the 32nd of Jestha completes a year
+     * on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
+     * under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+     * Before `from`, each part is negative or zero. Dates in two calendars
+     * are `INVALID_ARG`, naming `calendar`.
+     */
+    static DateSpan calendarBetween(Native lib, MemorySegment context, CalendarDate from, CalendarDate to, Overflow overflow) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment fromRaw = Objects.requireNonNull(from, "from").toC(arena);
+            MemorySegment toRaw = Objects.requireNonNull(to, "to").toC(arena);
+            byte overflowRaw = Values.u8("overflow", Values.id("overflow", overflow));
+            MemorySegment outSpan = arena.allocate(Native.TsDateSpan.LAYOUT);
+            Native.TsDateSpan.STRUCT_SIZE.set(outSpan, 0L, (int) Native.TsDateSpan.SIZE);
+            int status = Boundary.call(() -> (int) lib.ts_calendar_between.invokeExact(context, fromRaw, toRaw, overflowRaw, outSpan));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return DateSpan.of(outSpan);
+        }
+    }
+
+    /**
      * `ts_calendar_tibetan_year`: A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
      * `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
      * the rabjung cycle (the first began in 1027) and the year's place in
@@ -840,6 +892,41 @@ final class Calls {
                 throw refused(lib, context, status);
             }
             return owned(lib, outText);
+        }
+    }
+
+    /**
+     * `ts_almanac_next`: The next day a festival rule or a kind of day falls on after an
+     * instant at a place, with no year asked (`03-design/next-occurrence.md`),
+     * as canonical JSON `{value, provenance}`: `value` is `{day, keys,
+     * festivals, from, limitDays, searchedDays}`, the day in the request's
+     * calendar, the keys of the rules that fall on it, the festival
+     * reckoning's entries for them on that day, the first day searched (the
+     * civil day holding the instant, which counts), the limit and the days
+     * reckoned, every catalogue member a full key.
+     *
+     * `request_json` is `{"after", "latitudeDeg", "longitudeDeg",
+     * "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule",
+     * "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind`
+     * (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules
+     * the SDK states) or `rule`, a key of `festivals`, a festival request;
+     * `calendar` the answer's days' (Gregorian when left out), `altitudeM`
+     * optional and `limitDays` 1 to 3660, 400 when left out. A key it does
+     * not read, neither or both of `kind` and `rule`, a rule the festivals
+     * lack, a place or offset out of range or a festival request its reader
+     * refuses is `INVALID_ARG`, named under `next`; a limit out of range
+     * `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
+     * a context without an ephemeris `CAPABILITY`.
+     */
+    static String almanacNext(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_next.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
         }
     }
 

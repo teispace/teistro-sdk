@@ -3122,6 +3122,23 @@ export const LeapById = /* @__PURE__ */ new Map([
   [3, 'MONTH_AND_DAY'],
 ]);
 
+/** Every Overflow by name. */
+export const Overflow = /* @__PURE__ */ Object.freeze({
+  Constrain: 'CONSTRAIN',
+  Carry: 'CARRY',
+  Reject: 'REJECT',
+});
+
+/**
+ * Every Overflow by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const OverflowById = /* @__PURE__ */ new Map([
+  [0, 'CONSTRAIN'],
+  [1, 'CARRY'],
+  [2, 'REJECT'],
+]);
+
 /** Every DayPart by name. */
 export const DayPart = /* @__PURE__ */ Object.freeze({
   Daylight: 'DAYLIGHT',

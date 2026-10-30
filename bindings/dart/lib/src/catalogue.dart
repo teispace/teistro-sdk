@@ -5180,6 +5180,47 @@ enum Leap {
   }
 }
 
+/// What a day number the target month lacks resolves to, when a date is
+/// moved by months or a difference counts from such a day
+/// (`03-design/calendar-bikram-sambat.md` §11): Temporal's `constrain`
+/// and `reject`, and java.time's lenient carry.
+enum Overflow {
+  /// The month's last day: the 32nd of Jestha plus a month is the 31st
+  /// of a 31-day Ashadh.
+  constrain(0, 'CONSTRAIN'),
+  /// The days past the month's end carried into the next month: the
+  /// 1st of Shrawan.
+  carry(1, 'CARRY'),
+  /// Refused, `INVALID_ARG` with `NONEXISTENT_DATE` naming `day`.
+  reject(2, 'REJECT');
+
+  const Overflow(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Overflow byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Overflow'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Overflow? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Which arc of its day an instant falls in.
 enum DayPart {
   /// Between sunrise and sunset.

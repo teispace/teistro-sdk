@@ -22,9 +22,12 @@ __all__ = [
     "AlmanacDaysRequest",
     "FestivalCalendarRequest",
     "FirstYearQuery",
+    "NextRequest",
     "PakshiRequest",
     "PublishedReasonsRequest",
     "SankalpaRequest",
+    "AddAsked",
+    "BetweenAsked",
     "CalendarAsked",
     "ChartFoundRequest",
     "BatchAsked",
@@ -47,6 +50,7 @@ __all__ = [
     "DayAsked",
     "MuhurtaRequest",
     "FirstYearRequest",
+    "NextKind",
     "NativeAsked",
     "PakshiRules",
     "ReckonedPlace",
@@ -793,6 +797,35 @@ class FirstYearQuery(TypedDict, total=False):
     """The offset from UTC the place's civil days run at, in seconds, east positive."""
 
 
+class NextRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    after: Required[float]
+    """The instant, a UTC Julian day."""
+
+    altitudeM: float
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+
+    festivals: Optional[FestivalRequest]
+    """The festivals, as a festival request, with `rule`."""
+
+    kind: Optional[NextKind]
+    """A kind of day; or `rule`, not both."""
+
+    latitudeDeg: Required[float]
+
+    limitDays: Optional[int]
+    """1 to 3660; 400 when left out."""
+
+    longitudeDeg: Required[float]
+
+    rule: Optional[str]
+    """A rule's key in `festivals`; or `kind`, not both."""
+
+    utcOffsetSeconds: Required[int]
+
+
 class PakshiRequest(TypedDict, total=False):
     """The request as a binding writes it."""
 
@@ -858,6 +891,35 @@ class SankalpaRequest(TypedDict, total=False):
 
     utcOffsetSeconds: Required[int]
     """The offset from UTC the place's civil days run at, in seconds, east positive."""
+
+
+class AddAsked(TypedDict, total=False):
+    """An add request as a binding writes it."""
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+
+    date: Required[DayAsked]
+
+    days: int
+
+    months: int
+
+    overflow: Union[_catalogue.Overflow, Literal['CONSTRAIN', 'CARRY', 'REJECT']]
+
+    years: int
+
+
+# A difference request as a binding writes it.
+BetweenAsked = TypedDict(
+    "BetweenAsked",
+    {
+        "calendar": "Optional[Union[_catalogue.Calendar, str]]",
+        "from": "Required[DayAsked]",
+        "overflow": "Union[_catalogue.Overflow, Literal['CONSTRAIN', 'CARRY', 'REJECT']]",
+        "to": "Required[DayAsked]",
+    },
+    total=False,
+)
 
 
 class CalendarAsked(TypedDict, total=False):
@@ -1307,6 +1369,16 @@ class FirstYearRequest(TypedDict, total=False):
 
     window: Optional[Window]
     """The rite's time in place of both forms' (kutapa to rauhina for the ekoddishta, aparahna for the parvana)."""
+
+
+NextKind: TypeAlias = Literal['EKADASHI', 'PURNIMA', 'AMAVASYA', 'SANKRANTI']
+"""A kind of day a search may ask for without naming a pack, each read by rules the SDK states (`03-design/next-occurrence.md` §2).
+
+`EKADASHI`: An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules (`EkadashiRule::dharmasindhu`); the earlier when they part.
+`PURNIMA`: The day whose sunrise holds the full moon, or the day an unrisen one falls in, every month (C197).
+`AMAVASYA`: The same, for the new moon.
+`SANKRANTI`: The first day of a Bikram Sambat month, the day the Sun enters its sign under the punya convention (C619), as Nepal's national panchanga prints the twelve sankrantis.
+"""
 
 
 class NativeAsked(TypedDict, total=False):
