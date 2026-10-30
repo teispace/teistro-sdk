@@ -78,6 +78,7 @@ pub use area::{
     ReckonedPlace,
 };
 pub use area::{NextOccurrence, NextRequest, NextTarget};
+pub use area::{PackForm, PackListing, PackRequest, PackRow};
 pub use teistro_panchanga::festival::NextKind;
 #[cfg(feature = "western")]
 mod antiscia;

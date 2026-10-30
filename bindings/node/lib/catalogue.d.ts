@@ -262,7 +262,9 @@ export type Kind =
   | 'agni_vasa'
   | 'ashubha_yoga'
   | 'bhadra_vasa'
-  | 'shiva_vasa';
+  | 'shiva_vasa'
+  | 'festival_kind'
+  | 'tradition';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -550,6 +552,14 @@ export declare const Kind: {
    * Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.
    */
   readonly ShivaVasa: 'shiva_vasa';
+  /**
+   * What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850).
+   */
+  readonly FestivalKind: 'festival_kind';
+  /**
+   * The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).
+   */
+  readonly Tradition: 'tradition';
 };
 
 /**
@@ -6016,6 +6026,83 @@ export declare const ShivaVasa: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const ShivaVasaById: ReadonlyMap<number, ShivaVasa>;
+
+/**
+ * What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_FESTIVAL_KIND << 16) | member`.
+ */
+export type FestivalKind = 'festival_kind.GAZETTED' | 'festival_kind.RELIGIOUS_CULTURAL' | 'festival_kind.REGIONAL_ETHNIC' | 'festival_kind.OBSERVANCE' | 'unknown';
+
+/** Every FestivalKind by name; the values are the strings the union accepts. */
+export declare const FestivalKind: {
+  /**
+   * A government's notice lists it as a public holiday
+   */
+  readonly Gazetted: 'festival_kind.GAZETTED';
+  /**
+   * Not gazetted; kept by a religion, as a text or the classification's community column says
+   */
+  readonly ReligiousCultural: 'festival_kind.RELIGIOUS_CULTURAL';
+  /**
+   * Not gazetted; kept by one community or people the classification names
+   */
+  readonly RegionalEthnic: 'festival_kind.REGIONAL_ETHNIC';
+  /**
+   * Not gazetted; a civil date fixed by law, an institution or an organisation
+   */
+  readonly Observance: 'festival_kind.OBSERVANCE';
+};
+
+/**
+ * Every FestivalKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const FestivalKindById: ReadonlyMap<number, FestivalKind>;
+
+/**
+ * The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_TRADITION << 16) | member`.
+ */
+export type Tradition =
+  | 'tradition.HINDU'
+  | 'tradition.BUDDHIST'
+  | 'tradition.JAIN'
+  | 'tradition.SIKH'
+  | 'tradition.ISLAMIC'
+  | 'tradition.CHRISTIAN'
+  | 'unknown';
+
+/** Every Tradition by name; the values are the strings the union accepts. */
+export declare const Tradition: {
+  /**
+   * Hindu: the rule's source is a Hindu text
+   */
+  readonly Hindu: 'tradition.HINDU';
+  /**
+   * Buddhist
+   */
+  readonly Buddhist: 'tradition.BUDDHIST';
+  /**
+   * Jain
+   */
+  readonly Jain: 'tradition.JAIN';
+  /**
+   * Sikh
+   */
+  readonly Sikh: 'tradition.SIKH';
+  /**
+   * Islamic
+   */
+  readonly Islamic: 'tradition.ISLAMIC';
+  /**
+   * Christian
+   */
+  readonly Christian: 'tradition.CHRISTIAN';
+};
+
+/**
+ * Every Tradition by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TraditionById: ReadonlyMap<number, Tradition>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

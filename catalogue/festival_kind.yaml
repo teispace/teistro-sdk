@@ -1,0 +1,33 @@
+kind: festival_kind
+number: 77
+version: 1
+doc: "What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850)."
+members:
+  - key: GAZETTED
+    id: 0
+    doc: "A government's notice lists it as a public holiday"
+    sources:
+      - text: "Government of India, DoPT office memoranda; Government of Nepal, Ministry of Home Affairs notices"
+        ref: "`03-design/festival-metadata.md` §2"
+    mark: V
+  - key: RELIGIOUS_CULTURAL
+    id: 1
+    doc: "Not gazetted; kept by a religion, as a text or the classification's community column says"
+    sources:
+      - text: "`03-design/festival-classification.md` §3; Dharmasindhu"
+        ref: "`03-design/festival-metadata.md` §2"
+    mark: V
+  - key: REGIONAL_ETHNIC
+    id: 2
+    doc: "Not gazetted; kept by one community or people the classification names"
+    sources:
+      - text: "`03-design/festival-classification.md` §3, §4"
+        ref: "`03-design/festival-metadata.md` §2"
+    mark: V
+  - key: OBSERVANCE
+    id: 3
+    doc: "Not gazetted; a civil date fixed by law, an institution or an organisation"
+    sources:
+      - text: "`03-design/festival-classification.md` §3, fixed civil"
+        ref: "`03-design/festival-metadata.md` §2"
+    mark: V

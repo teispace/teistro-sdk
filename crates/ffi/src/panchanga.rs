@@ -1701,6 +1701,62 @@ pub unsafe extern "C" fn ts_almanac_next(
     })
 }
 
+/// Every rule of a festival pack with what it is
+/// (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
+/// each row `{key, form, source, meta, unsourced}`, `form` how its day is
+/// found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`
+/// its kind, tradition, communities and regions, `unsourced` the fields no
+/// source gives, and a published row's `subjectTo` and `lastYear`.
+///
+/// `request_json` is `{"pack"}`, a pack the SDK ships. Nothing is
+/// reckoned, so a context without an ephemeris answers. A key it does not
+/// read or a pack it does not ship is `INVALID_ARG`, named under `pack`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_festival_pack;
+/// use teistro_ffi::string::TsString;
+///
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_almanac_festival_pack(&raw const ctx, c"{\"pack\": \"INDIA_CENTRAL\"}".as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// assert_eq!(answer["pack"], "INDIA_CENTRAL");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_almanac_festival_pack(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::PackRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().festival_pack(&asked);
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {

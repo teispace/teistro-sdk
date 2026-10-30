@@ -73,6 +73,8 @@ mod agni_vasa;
 mod ashubha_yoga;
 mod bhadra_vasa;
 mod shiva_vasa;
+mod festival_kind;
+mod tradition;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -146,6 +148,8 @@ pub use agni_vasa::*;
 pub use ashubha_yoga::*;
 pub use bhadra_vasa::*;
 pub use shiva_vasa::*;
+pub use festival_kind::*;
+pub use tradition::*;
 
 use crate::key::KeyId;
 
@@ -233,6 +237,8 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::AshubhaYoga => AshubhaYoga::from_key(key).map(AshubhaYoga::key_id),
         Kind::BhadraVasa => BhadraVasa::from_key(key).map(BhadraVasa::key_id),
         Kind::ShivaVasa => ShivaVasa::from_key(key).map(ShivaVasa::key_id),
+        Kind::FestivalKind => FestivalKind::from_key(key).map(FestivalKind::key_id),
+        Kind::Tradition => Tradition::from_key(key).map(Tradition::key_id),
         _ => None,
     }
 }
@@ -318,6 +324,8 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::AshubhaYoga => AshubhaYoga::from_id(id.id()).map(AshubhaYoga::key),
         Kind::BhadraVasa => BhadraVasa::from_id(id.id()).map(BhadraVasa::key),
         Kind::ShivaVasa => ShivaVasa::from_id(id.id()).map(ShivaVasa::key),
+        Kind::FestivalKind => FestivalKind::from_id(id.id()).map(FestivalKind::key),
+        Kind::Tradition => Tradition::from_id(id.id()).map(Tradition::key),
         _ => None,
     }
 }

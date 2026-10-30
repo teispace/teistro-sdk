@@ -12,6 +12,26 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Festival rules say what they are; India's central holidays ship; Fagu purnima joins.**
+**Numbers:** no day moves. Every shipped pack's `input_hash` moves once, since each
+rule now carries its values.
+- Every rule of a shipped pack carries `meta`: kind, tradition, communities and regions,
+  each from a named source (`03-design/festival-metadata.md`), with the new catalogue
+  kinds `festival_kind` and `tradition`. A field no source gives stays unset.
+- `INDIA_CENTRAL` meets 58 of the 63 reckoned rows of the memoranda. Five part and are
+  named in `festival-measured.md` §9: Holi in 2023, 2026 and 2027, Dussehra in 2022 and
+  Diwali in 2024 (C854 to C856). No rule was moved to meet them.
+- `almanac.festivalPack` lists a pack's rules with their values and `unsourced`, the
+  fields no source gives. A festival request's `only` keeps the days a filter admits.
+- The pack `INDIA_CENTRAL`: the Government of India's central holidays, held to seven
+  years of its memoranda (`03-design/india-central-holidays.md`). Its four days set by
+  the moon are carried as printed, marked `subjectTo: MOON_SIGHTING`, and are not
+  reckoned.
+- A published `ADD` takes `subjectTo` and `meta`, and replaces an added day of its key
+  within a week, as a `SET` replaces a day.
+- `FAGU_PURNIMA` ships in `NEPAL_PANCHANGA` on the Holika day, from the Ministry of Home
+  Affairs' lists of 2082 and 2083.
+
 **A wasm module that traps refuses as `INTERNAL`, and a host hears of it.**
 **Numbers:** none.
 - JavaScript: a panic inside the wasm module (which aborts on that target,

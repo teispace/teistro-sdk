@@ -1753,6 +1753,24 @@ final class AlmanacArea extends _Area {
   /// );
   /// print('${next.keys.first} on ${next.day}');
   /// ```
+  /// **Every rule of a festival pack with what it is**: `{pack, rules}`, each
+  /// row `{key, form, source, meta, unsourced}`, `meta` its kind, tradition,
+  /// communities and regions and `unsourced` the fields no source gives
+  /// (`03-design/festival-metadata.md`).
+  ///
+  /// ```dart
+  /// final rows = sdk.almanac.festivalPack('INDIA_CENTRAL')['rules'];
+  /// ```
+  Map<String, Object?> festivalPack(String pack) =>
+      jsonDecode(
+            _context._guarded(
+              () => _context._inner.almanacFestivalPack(
+                jsonEncode({'pack': pack}),
+              ),
+            ),
+          )
+          as Map<String, Object?>;
+
   NextOccurrence next({
     required double after,
     required Observer place,
@@ -15057,7 +15075,12 @@ enum FestivalPack {
   /// The Gaudiya Vaishnavas' Ekadashi after *Hari Bhakti Vilasa*: the
   /// Vaishnava's table and the eight mahadvadashis that name the fast or
   /// move it onto the 12th's day (`03-design/festival-rules.md` §8.9).
-  gaudiya('GAUDIYA');
+  gaudiya('GAUDIYA'),
+
+  /// The Government of India's central holidays: the rules of the days its
+  /// memoranda list, and the four days the moon sets, each as the notice
+  /// printed it and marked so (`03-design/india-central-holidays.md`).
+  indiaCentral('INDIA_CENTRAL');
 
   const FestivalPack(this.key);
 
@@ -15079,7 +15102,11 @@ enum FestivalPack {
 /// final first = almanac.festivals?.observances.first;
 /// ```
 final class FestivalRequest extends _Facade {
-  const FestivalRequest({required this.rules, this.published = const []});
+  const FestivalRequest({
+    required this.rules,
+    this.published = const [],
+    this.only,
+  });
 
   /// A [FestivalPack], or a list of packs and rules spelt out.
   final Object rules;
@@ -15101,6 +15128,17 @@ final class FestivalRequest extends _Facade {
   /// ```
   final List<Map<String, Object?>> published;
 
+  /// What the answer keeps, by the rules' `meta`; every rule when null
+  /// (`03-design/festival-metadata.md`).
+  ///
+  /// ```dart
+  /// const FestivalRequest(
+  ///   rules: FestivalPack.indiaCentral,
+  ///   only: MetaFilter(kinds: [FestivalKind.gazetted]),
+  /// );
+  /// ```
+  final MetaFilter? only;
+
   /// Its JSON, as the SDK reads it.
   @override
   Object? get _wire => <String, Object?>{
@@ -15113,6 +15151,7 @@ final class FestivalRequest extends _Facade {
     },
     if (published.isNotEmpty)
       'published': [for (final set in published) _written(set)],
+    if (only case final kept?) 'only': _written(kept),
   };
 
   String get _json => jsonEncode(_wire);

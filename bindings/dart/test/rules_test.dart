@@ -289,6 +289,7 @@ const Map<String, Type> _records = {
   'almanac.ashauch': AshauchQuery,
   'almanac.days': AlmanacDaysRequest,
   'almanac.festival_calendar': FestivalCalendarRequest,
+  'almanac.festivalPack': PackRequest,
   'almanac.firstYear': FirstYearQuery,
   'almanac.next': NextRequest,
   'almanac.pakshi': PakshiRequest,

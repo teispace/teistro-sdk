@@ -5827,6 +5827,11 @@ export interface FestivalRequest {
    * (`03-design/published-overrides.md`).
    */
   readonly published?: readonly PublishedSet[];
+  /**
+   * What the answer keeps, by the rules' `meta`; every rule when left out
+   * (`03-design/festival-metadata.md`).
+   */
+  readonly only?: import('./requests.js').MetaFilter | null;
 }
 
 /** One change a published day was tried under, or the reason it differs. */
@@ -5902,7 +5907,7 @@ export interface AnniversaryDay {
  * the panchanga prints, each rule fitted to the committee's editions and
  * citing its page (§10).
  */
-export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA';
+export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL';
 
 /**
  * An observance kept on a date of a calendar
@@ -7582,6 +7587,46 @@ export declare class AlmanacArea {
    * });
    */
   next(request: NextRequest): NextOccurrence;
+  /**
+   * Every rule of a festival pack with what it is, and the fields no source
+   * gives.
+   *
+   * @example
+   * const { rules } = sdk.almanac.festivalPack('INDIA_CENTRAL');
+   */
+  festivalPack(pack: string): FestivalPackListing;
+}
+
+/** A festival pack's rows (`almanac.festivalPack`). */
+export interface FestivalPackListing {
+  /** The pack's name. */
+  readonly pack: string;
+  /** Its rows, by key. */
+  readonly rules: readonly FestivalPackRow[];
+}
+
+/** One rule of a pack. */
+export interface FestivalPackRow {
+  /** Its key, as its days are named. */
+  readonly key: string;
+  /** How its day is found: `LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED` or `PUBLISHED`. */
+  readonly form: string;
+  /** Where its day comes from. */
+  readonly source: string;
+  /** What it is: `kind`, `tradition`, `communities`, `regions`, `optional`, each left out when unset. */
+  readonly meta?: {
+    readonly kind?: string;
+    readonly tradition?: string;
+    readonly communities?: readonly string[];
+    readonly regions?: readonly string[];
+    readonly optional?: boolean;
+  };
+  /** The fields of `meta` no source gives. */
+  readonly unsourced: readonly string[];
+  /** For a published row, what may move its days. */
+  readonly subjectTo?: string;
+  /** For a published row, the last year with a day. */
+  readonly lastYear?: number;
 }
 
 /** What `almanac.next` looks for, and where and how far. */

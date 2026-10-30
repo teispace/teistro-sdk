@@ -5033,6 +5033,35 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// Every rule of a festival pack with what it is
+    /// (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
+    /// each row `{key, form, source, meta, unsourced}`, `form` how its day is
+    /// found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`
+    /// its kind, tradition, communities and regions, `unsourced` the fields no
+    /// source gives, and a published row's `subjectTo` and `lastYear`.
+    ///
+    /// `request_json` is `{"pack"}`, a pack the SDK ships. Nothing is
+    /// reckoned, so a context without an ephemeris answers. A key it does not
+    /// read or a pack it does not ship is `INVALID_ARG`, named under `pack`.
+    #[napi]
+    pub fn almanac_festival_pack(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_festival_pack(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Matches two names star to star (naam milan) and answers with the
     /// `naam` blob: each name's first syllable in the śatapada cakra, the
     /// varga koota, and the Ashta Koota and the ten considerations of the two

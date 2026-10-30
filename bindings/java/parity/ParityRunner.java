@@ -1298,6 +1298,8 @@ public final class ParityRunner {
             put("bs-add", added.year() + "-" + added.month() + "-" + added.day());
             DateSpan age = ctx.calendar().between(jestha, added, Overflow.CONSTRAIN);
             put("bs-between", age.years() + " " + age.months() + " " + age.days());
+            java.util.List<?> packRows = (java.util.List<?>) ctx.almanac().festivalPack("INDIA_CENTRAL").get("rules");
+            put("india-pack", packRows.size() + " " + ((java.util.Map<?, ?>) packRows.get(0)).get("key"));
             put("jd-of-fixed", teistro.julianDayOfFixed(fixed));
             CalendarFixedOfJdResult back = teistro.fixedOfJulianDay(2457126.75);
             put("fixed-of-jd", back.value());
@@ -1581,6 +1583,7 @@ public final class ParityRunner {
             surface("almanac.festivals", () -> ctx.almanac().festivals(day, day, place, 0, null));
             surface("almanac.disagreements", () -> ctx.almanac().disagreements(ctx, day, day, place, 0, true, null));
             surface("almanac.festival_calendar", () -> ctx.almanac().festivalCalendar(day, day, place, 0, null));
+            surface("almanac.festivalPack", () -> ctx.almanac().festivalPack("NEPAL"));
             surface("almanac.next", () -> ctx.almanac().next(0, place, 0, "PURNIMA", null, null, null, null));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));

@@ -7,8 +7,8 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 ## 1. What a binding must marshal
 
-The description carries 23 exported constants, 171 enums of 1433 members
-in all, 2 opaque handle types, 10 callback types, 28 structs, 72 entry
+The description carries 23 exported constants, 173 enums of 1445 members
+in all, 2 opaque handle types, 10 callback types, 28 structs, 73 entry
 points and 5 result-blob schemas, extracted from 29 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
 point, which is why a third binding costs what it costs.
@@ -16,7 +16,7 @@ point, which is why a third binding costs what it costs.
 | parameter role | how often |
 |---|---|
 | `value` | 26 |
-| `handle` | 58 |
+| `handle` | 59 |
 | `handle_out` | 3 |
 | `struct_in` | 15 |
 | `struct_out` | 17 |
@@ -24,8 +24,8 @@ point, which is why a third binding costs what it costs.
 | `user_data` | 1 |
 | `blob_out` | 5 |
 | `blob_free` | 1 |
-| `string_in` | 34 |
-| `string_out` | 25 |
+| `string_in` | 35 |
+| `string_out` | 26 |
 | `string_free` | 1 |
 | `str_out` | 5 |
 | `error_free` | 1 |
@@ -69,21 +69,21 @@ a call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 1948 | 2 | 0 | 0 | 0 |
-| TypeScript | 515 | 0 | 0 | 1 | 0 |
-| Python | 1948 | 0 | 1 | 3 | 0 |
-| Java | 1948 | 0 | 1 | 0 | 0 |
+| Dart | 1964 | 2 | 0 | 0 | 0 |
+| TypeScript | 519 | 0 | 0 | 1 | 0 |
+| Python | 1964 | 0 | 1 | 3 | 0 |
+| Java | 1964 | 0 | 1 | 0 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 2 caught and renamed, 0 left; 1948 looked at |
-| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 515 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 4 caught and renamed, 0 left; 1948 looked at |
-| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1948 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1948 disagree |
-| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 515 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1948 disagree |
-| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1948 disagree |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 2 caught and renamed, 0 left; 1964 looked at |
+| no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 519 looked at |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 4 caught and renamed, 0 left; 1964 looked at |
+| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 1964 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 1964 disagree |
+| renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 519 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 1964 disagree |
+| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 1964 disagree |
 
 What Dart renames:
 

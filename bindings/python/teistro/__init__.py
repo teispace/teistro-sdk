@@ -653,7 +653,11 @@ from ._requests import (
     ZoneSpecFixed as ZoneSpecFixed,
     ZoneSpecIana as ZoneSpecIana,
     ZoneSpecLocalMean as ZoneSpecLocalMean,
+    FestivalMeta as FestivalMeta,
     FestivalRequest as FestivalRequest,
+    MetaFilter as MetaFilter,
+    PackRequest as PackRequest,
+    SubjectTo as SubjectTo,
     FestivalRules as FestivalRules,
     FestivalRuleItem as FestivalRuleItem,
     SaitRule as SaitRule,
@@ -783,6 +787,8 @@ from ._requests import (
     Tara as Tara,
 )
 from .catalogue import (
+    FestivalKind,
+    Tradition,
     Catalogued,
     AgniVasa,
     AshubhaYoga,
@@ -1374,7 +1380,13 @@ __all__ = [
     "MuhurtaUnjudged",
     "MuhurtaPada",
     "FestivalPack",
+    "FestivalKind",
+    "FestivalMeta",
     "FestivalRequest",
+    "MetaFilter",
+    "PackRequest",
+    "SubjectTo",
+    "Tradition",
     "DatedObservance",
     "AnniversaryDay",
     "AnniversaryOrigin",
@@ -3663,6 +3675,20 @@ class AlmanacArea(_Area):
             limit_days=int(value["limitDays"]),
             searched_days=int(value["searchedDays"]),
         )
+
+    def festival_pack(self, pack: str) -> Mapping[str, Any]:
+        """Every rule of a festival pack with what it is: ``{pack, rules}``,
+        each row ``{key, form, source, meta, unsourced}``, ``meta`` its kind,
+        tradition, communities and regions and ``unsourced`` the fields no
+        source gives (``03-design/festival-metadata.md``).
+
+        >>> rows = sdk.almanac.festival_pack("INDIA_CENTRAL")["rules"]  # doctest: +SKIP
+        """
+        answered = self._context._through_provider(
+            lambda: self._context.inner.almanac_festival_pack(json.dumps({"pack": pack}))
+        )
+        listing: Mapping[str, Any] = json.loads(answered)
+        return listing
 
     def published_reasons(
         self,
@@ -8631,7 +8657,7 @@ class MuhurtaAnswer:
     instant among the applied conventions, and the hash of the value."""
 
 
-FestivalPack = Literal["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA", "GAUDIYA"]
+FestivalPack = Literal["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA", "GAUDIYA", "INDIA_CENTRAL"]
 """A pack of festival rules the SDK ships: *Dharmasindhu*'s; those as
 Nepal's national panchanga keeps them (a rite of the daylight on the day
 whose sunrise holds its tithi) with the days it counts from them

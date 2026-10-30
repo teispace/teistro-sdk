@@ -17,6 +17,7 @@ import java.util.Objects;
  * @param decide The guards, in order; the first that holds decides.
  * @param inAdhika Which of a doubled month's two holds it (C171): the nija month by default. Null leaves the SDK's default.
  * @param key The rule's key in its pack, `"JANMASHTAMI"`.
+ * @param meta What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out. Null leaves the SDK's default.
  * @param month The month, under `convention`; every month when `None`, for a rite kept on the same tithi of each, as the monthly full-moon fast is. Null leaves the SDK's default.
  * @param nakshatra The nakshatra. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given. Null leaves the SDK's default.
  * @param otherwise What decides when no guard holds.
@@ -25,7 +26,7 @@ import java.util.Objects;
  * @param source Where the rule is stated.
  * @param tithi The tithi. Exactly one of `tithi`, `nakshatra` with `paksha` or `dayOfPaksha` is given. Null leaves the SDK's default.
  */
-public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention, Integer dayOfPaksha, List<Guard> decide, InAdhika inAdhika, String key, com.teispace.teistro.Masa month, com.teispace.teistro.Nakshatra nakshatra, FestivalChoice otherwise, com.teispace.teistro.Paksha paksha, List<VrataParana> parana, String source, com.teispace.teistro.Tithi tithi) implements RequestJson {
+public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention, Integer dayOfPaksha, List<Guard> decide, InAdhika inAdhika, String key, FestivalMeta meta, com.teispace.teistro.Masa month, com.teispace.teistro.Nakshatra nakshatra, FestivalChoice otherwise, com.teispace.teistro.Paksha paksha, List<VrataParana> parana, String source, com.teispace.teistro.Tithi tithi) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -57,7 +58,7 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
      * @param source Where the rule is stated.
      */
     public FestivalRule(Window at, List<Guard> decide, String key, FestivalChoice otherwise, String source) {
-        this(at, null, null, decide, null, key, null, null, otherwise, null, null, source, null);
+        this(at, null, null, decide, null, key, null, null, null, otherwise, null, null, source, null);
     }
 
     /**
@@ -78,6 +79,7 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
         private List<Guard> decide;
         private InAdhika inAdhika;
         private String key;
+        private FestivalMeta meta;
         private com.teispace.teistro.Masa month;
         private com.teispace.teistro.Nakshatra nakshatra;
         private FestivalChoice otherwise;
@@ -151,6 +153,17 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
          */
         public Builder key(String key) {
             this.key = key;
+            return this;
+        }
+
+        /**
+         * Sets {@code meta}.
+         *
+         * @param meta What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder meta(FestivalMeta meta) {
+            this.meta = meta;
             return this;
         }
 
@@ -238,7 +251,7 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalRule build() {
-            return new FestivalRule(at, convention, dayOfPaksha, decide, inAdhika, key, month, nakshatra, otherwise, paksha, parana, source, tithi);
+            return new FestivalRule(at, convention, dayOfPaksha, decide, inAdhika, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi);
         }
     }
 
@@ -258,6 +271,7 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
             Read.list(Read.required(json.get("decide"), "FestivalRule.decide"), "FestivalRule.decide", item0 -> Guard.of(item0)),
             Read.orNull(json.get("inAdhika"), present -> InAdhika.of(present)),
             Read.text(Read.required(json.get("key"), "FestivalRule.key"), "FestivalRule.key"),
+            Read.orNull(json.get("meta"), present -> FestivalMeta.of(present)),
             Read.orNull(json.get("month"), present -> Read.member(present, "FestivalRule.month", com.teispace.teistro.Masa::byKey)),
             Read.orNull(json.get("nakshatra"), present -> Read.member(present, "FestivalRule.nakshatra", com.teispace.teistro.Nakshatra::byKey)),
             Read.member(Read.required(json.get("otherwise"), "FestivalRule.otherwise"), "FestivalRule.otherwise", FestivalChoice::byKey),
@@ -282,6 +296,9 @@ public record FestivalRule(Window at, com.teispace.teistro.LunarMonth convention
             json.put("inAdhika", inAdhika.toJson());
         }
         json.put("key", key);
+        if (meta != null) {
+            json.put("meta", meta.toJson());
+        }
         if (month != null) {
             json.put("month", month.fullKey());
         }

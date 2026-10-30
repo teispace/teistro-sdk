@@ -291,6 +291,12 @@ class Kind(Member):
     shiva_vasa = 76
     """Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`."""
 
+    festival_kind = 77
+    """What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850)."""
+
+    tradition = 78
+    """The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850)."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3610,6 +3616,54 @@ class ShivaVasa(Catalogued):
     """
 
 
+class FestivalKind(Catalogued):
+    """What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_FESTIVAL_KIND << 16) | member`."""
+
+    GAZETTED = 0
+    """A government's notice lists it as a public holiday"""
+
+    RELIGIOUS_CULTURAL = 1
+    """Not gazetted; kept by a religion, as a text or the classification's community column says"""
+
+    REGIONAL_ETHNIC = 2
+    """Not gazetted; kept by one community or people the classification names"""
+
+    OBSERVANCE = 3
+    """Not gazetted; a civil date fixed by law, an institution or an organisation"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class Tradition(Catalogued):
+    """The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_TRADITION << 16) | member`."""
+
+    HINDU = 0
+    """Hindu: the rule's source is a Hindu text"""
+
+    BUDDHIST = 1
+    """Buddhist"""
+
+    JAIN = 2
+    """Jain"""
+
+    SIKH = 3
+    """Sikh"""
+
+    ISLAMIC = 4
+    """Islamic"""
+
+    CHRISTIAN = 5
+    """Christian"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -5810,6 +5864,8 @@ _KEYS: dict[str, dict[int, str]] = {
         74: "ashubha_yoga",
         75: "bhadra_vasa",
         76: "shiva_vasa",
+        77: "festival_kind",
+        78: "tradition",
     },
     "Graha": {
         0: "SUN",
@@ -6917,6 +6973,22 @@ _KEYS: dict[str, dict[int, str]] = {
         6: "SHMASHANA",
         -1: "UNKNOWN",
     },
+    "FestivalKind": {
+        0: "GAZETTED",
+        1: "RELIGIOUS_CULTURAL",
+        2: "REGIONAL_ETHNIC",
+        3: "OBSERVANCE",
+        -1: "UNKNOWN",
+    },
+    "Tradition": {
+        0: "HINDU",
+        1: "BUDDHIST",
+        2: "JAIN",
+        3: "SIKH",
+        4: "ISLAMIC",
+        5: "CHRISTIAN",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -7658,4 +7730,6 @@ _KINDS: dict[str, str] = {
     "AshubhaYoga": "ashubha_yoga",
     "BhadraVasa": "bhadra_vasa",
     "ShivaVasa": "shiva_vasa",
+    "FestivalKind": "festival_kind",
+    "Tradition": "tradition",
 }

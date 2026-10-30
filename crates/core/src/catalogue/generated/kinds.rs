@@ -166,9 +166,13 @@ pub enum Kind {
     BhadraVasa = 75,
     /// Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.
     ShivaVasa = 76,
+    /// What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850).
+    FestivalKind = 77,
+    /// The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).
+    Tradition = 78,
 }
 
-const BY_NAME: [(&str, Kind); 75] = [
+const BY_NAME: [(&str, Kind); 77] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -198,6 +202,7 @@ const BY_NAME: [(&str, Kind); 75] = [
     ("direction", Kind::Direction),
     ("era", Kind::Era),
     ("festival", Kind::Festival),
+    ("festival_kind", Kind::FestivalKind),
     ("gana", Kind::Gana),
     ("gender", Kind::Gender),
     ("gochar_bhava", Kind::GocharBhava),
@@ -238,6 +243,7 @@ const BY_NAME: [(&str, Kind); 75] = [
     ("tibetan_element", Kind::TibetanElement),
     ("tithi", Kind::Tithi),
     ("tithi_class", Kind::TithiClass),
+    ("tradition", Kind::Tradition),
     ("vaiseshikamsa", Kind::Vaiseshikamsa),
     ("vara", Kind::Vara),
     ("varga", Kind::Varga),
@@ -248,7 +254,7 @@ const BY_NAME: [(&str, Kind); 75] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 75] = [
+    pub const ALL: [Kind; 77] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -324,6 +330,8 @@ impl Kind {
         Kind::AshubhaYoga,
         Kind::BhadraVasa,
         Kind::ShivaVasa,
+        Kind::FestivalKind,
+        Kind::Tradition,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -411,6 +419,8 @@ impl Kind {
             Kind::AshubhaYoga => "ashubha_yoga",
             Kind::BhadraVasa => "bhadra_vasa",
             Kind::ShivaVasa => "shiva_vasa",
+            Kind::FestivalKind => "festival_kind",
+            Kind::Tradition => "tradition",
         }
     }
 
@@ -512,6 +522,8 @@ impl Kind {
             Kind::AshubhaYoga => 4,
             Kind::BhadraVasa => 3,
             Kind::ShivaVasa => 7,
+            Kind::FestivalKind => 4,
+            Kind::Tradition => 6,
         }
     }
 
@@ -614,6 +626,8 @@ impl Kind {
             74 => Some(Kind::AshubhaYoga),
             75 => Some(Kind::BhadraVasa),
             76 => Some(Kind::ShivaVasa),
+            77 => Some(Kind::FestivalKind),
+            78 => Some(Kind::Tradition),
             _ => None,
         }
     }

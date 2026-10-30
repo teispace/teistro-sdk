@@ -141,6 +141,24 @@ final class AlmanacDaysRequest extends _Request {
   List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, muhurta, nepalSambat, utcOffsetSeconds, years];
 }
 
+/// [`PackRequest`] as the bindings write it.
+final class PackRequest extends _Request {
+  const PackRequest({
+    required this.pack,
+  });
+
+  /// A pack the SDK ships, by name.
+  final String pack;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'pack': pack,
+  };
+
+  @override
+  List<Object?> get _fields => [pack];
+}
+
 /// The request as a binding writes it.
 final class FestivalCalendarRequest extends _Request {
   const FestivalCalendarRequest({
@@ -2706,6 +2724,39 @@ final class AshauchRelationRow extends _Request {
   List<Object?> get _fields => [clause, heardLate, kind, length, marriedDaughter, nearness, relation];
 }
 
+/// What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
+final class MetaFilter extends _Request {
+  const MetaFilter({
+    this.communities,
+    this.kinds,
+    this.regions,
+    this.traditions,
+  });
+
+  /// The communities kept.
+  final List<String>? communities;
+
+  /// The kinds kept.
+  final List<FestivalKind>? kinds;
+
+  /// The regions kept.
+  final List<String>? regions;
+
+  /// The traditions kept.
+  final List<Tradition>? traditions;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (communities case final communitiesValue?) 'communities': communitiesValue,
+    if (kinds case final kindsValue?) 'kinds': [for (final e0 in kindsValue) e0.key],
+    if (regions case final regionsValue?) 'regions': regionsValue,
+    if (traditions case final traditionsValue?) 'traditions': [for (final e0 in traditionsValue) e0.key],
+  };
+
+  @override
+  List<Object?> get _fields => [communities, kinds, regions, traditions];
+}
+
 /// A publisher's days for a span, read from JSON or built in code.
 final class PublishedSet extends _Request {
   const PublishedSet({
@@ -2799,6 +2850,17 @@ final class FestivalRulesGaudiya extends FestivalRules {
 
   @override
   Object? get _wire => 'GAUDIYA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_CENTRAL`.
+final class FestivalRulesIndiaCentral extends FestivalRules {
+  const FestivalRulesIndiaCentral();
+
+  @override
+  Object? get _wire => 'INDIA_CENTRAL';
 
   @override
   List<Object?> get _fields => const [];
@@ -4768,8 +4830,10 @@ final class PublishedEntryAdd extends PublishedEntry {
   const PublishedEntryAdd({
     required this.day,
     required this.key,
+    this.meta,
     this.names,
     required this.source,
+    this.subjectTo,
     this.window,
   });
 
@@ -4779,11 +4843,17 @@ final class PublishedEntryAdd extends PublishedEntry {
   /// Its key, which no rule of the request uses.
   final String key;
 
+  /// What the festival is; a set's day has no rule to carry it.
+  final FestivalMeta? meta;
+
   /// Its name in each locale given (`en-Latn`, `ne-Deva-NP`).
   final Map<String, String>? names;
 
   /// Where the publisher says it.
   final String source;
+
+  /// What may still move the day; absent on a day that stands.
+  final SubjectTo? subjectTo;
 
   /// A published time.
   final Interval? window;
@@ -4793,13 +4863,15 @@ final class PublishedEntryAdd extends PublishedEntry {
     'action': 'ADD',
     'day': day._wire,
     'key': key,
+    if (meta case final metaValue?) 'meta': metaValue._wire,
     if (names case final namesValue?) 'names': namesValue,
     'source': source,
+    if (subjectTo case final subjectToValue?) 'subject_to': subjectToValue.key,
     if (window case final windowValue?) 'window': windowValue._wire,
   };
 
   @override
-  List<Object?> get _fields => [day, key, names, source, window];
+  List<Object?> get _fields => [day, key, meta, names, source, subjectTo, window];
 }
 
 /// A rule's occurrence the publisher does not keep, found as `SET` finds one.
@@ -4896,6 +4968,17 @@ final class FestivalRuleItemGaudiya extends FestivalRuleItem {
 
   @override
   Object? get _wire => 'GAUDIYA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_CENTRAL`.
+final class FestivalRuleItemIndiaCentral extends FestivalRuleItem {
+  const FestivalRuleItemIndiaCentral();
+
+  @override
+  Object? get _wire => 'INDIA_CENTRAL';
 
   @override
   List<Object?> get _fields => const [];
@@ -8343,6 +8426,56 @@ final class CalendarDay extends _Request {
   List<Object?> get _fields => [calendar, day, era, leap, month, year];
 }
 
+/// What a rule's festival is, as far as a source says.
+final class FestivalMeta extends _Request {
+  const FestivalMeta({
+    this.communities,
+    this.kind,
+    this.optional,
+    this.regions,
+    this.tradition,
+  });
+
+  /// The communities that keep it, as open keys (`NEWAR`); empty when no source names one, which does not say it is kept by all.
+  final List<String>? communities;
+
+  /// Its kind; unset when no source classes it.
+  final FestivalKind? kind;
+
+  /// Whether the notice leaves it to each office's list: one of the occasions three of which are chosen a year (the Government of India's para 3.1), so a year's list may not hold it.
+  final bool? optional;
+
+  /// Where it is kept, as open keys: an ISO 3166 country first (`NP`, `IN`), then a part of it a notice names (`KATHMANDU_VALLEY`); empty when no source says.
+  final List<String>? regions;
+
+  /// Its religion; unset when no source places it.
+  final Tradition? tradition;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (communities case final communitiesValue?) 'communities': communitiesValue,
+    if (kind case final kindValue?) 'kind': kindValue.key,
+    if (optional case final optionalValue?) 'optional': optionalValue,
+    if (regions case final regionsValue?) 'regions': regionsValue,
+    if (tradition case final traditionValue?) 'tradition': traditionValue.key,
+  };
+
+  @override
+  List<Object?> get _fields => [communities, kind, optional, regions, tradition];
+}
+
+/// What may still move a published day.
+enum SubjectTo implements _Keyed {
+  /// The publisher set the day ahead, and the sighting of the moon may change it: not a day to treat as certain.
+  moonSighting('MOON_SIGHTING');
+
+  const SubjectTo(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// How a rule elects its sait (§3).
 final class SaitRule extends _Request {
   const SaitRule({
@@ -8386,6 +8519,7 @@ final class EkadashiRule extends _Request {
   const EkadashiRule({
     required this.key,
     this.mahadvadashi,
+    this.meta,
     this.parana,
     required this.source,
     required this.table,
@@ -8397,6 +8531,9 @@ final class EkadashiRule extends _Request {
 
   /// The mahadvadashis that name its fast or move it onto the 12th's day (§8.9); a rule without one keeps its table's day.
   final MahadvadashiRule? mahadvadashi;
+
+  /// What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out.
+  final FestivalMeta? meta;
 
   /// When the fast is broken (§8.5); a rule without one answers no parana.
   final ParanaRule? parana;
@@ -8414,6 +8551,7 @@ final class EkadashiRule extends _Request {
   Map<String, Object?> get _wire => <String, Object?>{
     'key': key,
     if (mahadvadashi case final mahadvadashiValue?) 'mahadvadashi': mahadvadashiValue._wire,
+    if (meta case final metaValue?) 'meta': metaValue._wire,
     if (parana case final paranaValue?) 'parana': paranaValue._wire,
     'source': source,
     'table': table._wire,
@@ -8421,7 +8559,7 @@ final class EkadashiRule extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [key, mahadvadashi, parana, source, table, vedha];
+  List<Object?> get _fields => [key, mahadvadashi, meta, parana, source, table, vedha];
 }
 
 /// An anniversary a request asks the days of.
@@ -8478,6 +8616,7 @@ final class FollowingRule extends _Request {
     required this.after,
     required this.days,
     required this.key,
+    this.meta,
     required this.source,
   });
 
@@ -8490,6 +8629,9 @@ final class FollowingRule extends _Request {
   /// The rule's key in its pack, `"HOLI_TERAI"`.
   final String key;
 
+  /// What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out.
+  final FestivalMeta? meta;
+
   /// Where the rule is stated.
   final String source;
 
@@ -8498,11 +8640,12 @@ final class FollowingRule extends _Request {
     'after': after,
     'days': days,
     'key': key,
+    if (meta case final metaValue?) 'meta': metaValue._wire,
     'source': source,
   };
 
   @override
-  List<Object?> get _fields => [after, days, key, source];
+  List<Object?> get _fields => [after, days, key, meta, source];
 }
 
 /// An observance on a date of a calendar.
@@ -8512,6 +8655,7 @@ final class DatedRule extends _Request {
     this.civilWeekday,
     this.easter,
     required this.key,
+    this.meta,
     required this.source,
     this.sunEnters,
   });
@@ -8528,6 +8672,9 @@ final class DatedRule extends _Request {
   /// The rule's key in its pack, `"MAKARA_SANKRANTI"`.
   final String key;
 
+  /// What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out.
+  final FestivalMeta? meta;
+
   /// Where the rule is stated.
   final String source;
 
@@ -8540,12 +8687,13 @@ final class DatedRule extends _Request {
     if (civilWeekday case final civilWeekdayValue?) 'civilWeekday': civilWeekdayValue._wire,
     if (easter case final easterValue?) 'easter': easterValue._wire,
     'key': key,
+    if (meta case final metaValue?) 'meta': metaValue._wire,
     'source': source,
     if (sunEnters case final sunEntersValue?) 'sunEnters': sunEntersValue._wire,
   };
 
   @override
-  List<Object?> get _fields => [civilDate, civilWeekday, easter, key, source, sunEnters];
+  List<Object?> get _fields => [civilDate, civilWeekday, easter, key, meta, source, sunEnters];
 }
 
 /// A rule: when an observance falls, and how its day is decided.
@@ -8557,6 +8705,7 @@ final class FestivalRule extends _Request {
     required this.decide,
     this.inAdhika,
     required this.key,
+    this.meta,
     this.month,
     this.nakshatra,
     required this.otherwise,
@@ -8583,6 +8732,9 @@ final class FestivalRule extends _Request {
 
   /// The rule's key in its pack, `"JANMASHTAMI"`.
   final String key;
+
+  /// What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out.
+  final FestivalMeta? meta;
 
   /// The month, under `convention`; every month when `None`, for a rite kept on the same tithi of each, as the monthly full-moon fast is.
   final Masa? month;
@@ -8613,6 +8765,7 @@ final class FestivalRule extends _Request {
     'decide': [for (final e0 in decide) e0._wire],
     if (inAdhika case final inAdhikaValue?) 'inAdhika': inAdhikaValue._wire,
     'key': key,
+    if (meta case final metaValue?) 'meta': metaValue._wire,
     if (month case final monthValue?) 'month': monthValue.key,
     if (nakshatra case final nakshatraValue?) 'nakshatra': nakshatraValue.key,
     'otherwise': otherwise.key,
@@ -8623,7 +8776,7 @@ final class FestivalRule extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [at, convention, dayOfPaksha, decide, inAdhika, key, month, nakshatra, otherwise, paksha, parana, source, tithi];
+  List<Object?> get _fields => [at, convention, dayOfPaksha, decide, inAdhika, key, meta, month, nakshatra, otherwise, paksha, parana, source, tithi];
 }
 
 /// The threshold table a criterion compares its measure against.

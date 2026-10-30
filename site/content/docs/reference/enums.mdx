@@ -82,6 +82,8 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_ASHUBHA_YOGA` | 74 | The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760). |
 | `TS_KIND_BHADRA_VASA` | 75 | Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820). |
 | `TS_KIND_SHIVA_VASA` | 76 | Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`. |
+| `TS_KIND_FESTIVAL_KIND` | 77 | What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850). |
+| `TS_KIND_TRADITION` | 78 | The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850). |
 
 ## ts_graha
 
@@ -1472,6 +1474,30 @@ Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: 
 | `TS_SHIVA_VASA_BHOJANA` | 4 | At the meal, the remainder five: food gained, by the print read; other almanacs call it pain (crux C822) |
 | `TS_SHIVA_VASA_KRIDA` | 5 | At play, the remainder six: harm to children |
 | `TS_SHIVA_VASA_SHMASHANA` | 6 | In the cremation ground, the remainder nothing: death |
+
+## ts_festival_kind
+
+What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_FESTIVAL_KIND << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_FESTIVAL_KIND_GAZETTED` | 0 | A government's notice lists it as a public holiday |
+| `TS_FESTIVAL_KIND_RELIGIOUS_CULTURAL` | 1 | Not gazetted; kept by a religion, as a text or the classification's community column says |
+| `TS_FESTIVAL_KIND_REGIONAL_ETHNIC` | 2 | Not gazetted; kept by one community or people the classification names |
+| `TS_FESTIVAL_KIND_OBSERVANCE` | 3 | Not gazetted; a civil date fixed by law, an institution or an organisation |
+
+## ts_tradition
+
+The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_TRADITION << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TRADITION_HINDU` | 0 | Hindu: the rule's source is a Hindu text |
+| `TS_TRADITION_BUDDHIST` | 1 | Buddhist |
+| `TS_TRADITION_JAIN` | 2 | Jain |
+| `TS_TRADITION_SIKH` | 3 | Sikh |
+| `TS_TRADITION_ISLAMIC` | 4 | Islamic |
+| `TS_TRADITION_CHRISTIAN` | 5 | Christian |
 
 ## ts_status
 

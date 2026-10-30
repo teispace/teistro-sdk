@@ -4353,6 +4353,30 @@
     "CHRISTMAS": {
       "name": "Christmas",
       "prose": "Christmas, 25 December"
+    },
+    "INDIA_REPUBLIC_DAY": {
+      "name": "Republic Day of India",
+      "prose": "Republic Day of India"
+    },
+    "INDIA_INDEPENDENCE_DAY": {
+      "name": "Independence Day of India",
+      "prose": "Independence Day of India"
+    },
+    "GANDHI_JAYANTI": {
+      "name": "Mahatma Gandhi's Birthday",
+      "prose": "Mahatma Gandhi's Birthday"
+    },
+    "GOOD_FRIDAY": {
+      "name": "Good Friday",
+      "prose": "Good Friday"
+    },
+    "HOLI": {
+      "name": "Holi",
+      "prose": "Holi"
+    },
+    "FAGU_PURNIMA": {
+      "name": "Fagu Purnima",
+      "prose": "Fagu Purnima"
     }
   },
   "agni_vasa": {
@@ -4446,6 +4470,50 @@
       "name": "Yamaghanta",
       "prose": "Yamaghanta",
       "iast": "Yamaghaṇṭa"
+    }
+  },
+  "festival_kind": {
+    "GAZETTED": {
+      "name": "Gazetted holiday",
+      "prose": "Gazetted holiday"
+    },
+    "RELIGIOUS_CULTURAL": {
+      "name": "Religious and cultural",
+      "prose": "Religious and cultural"
+    },
+    "REGIONAL_ETHNIC": {
+      "name": "Regional or ethnic",
+      "prose": "Regional or ethnic"
+    },
+    "OBSERVANCE": {
+      "name": "Observance",
+      "prose": "Observance"
+    }
+  },
+  "tradition": {
+    "HINDU": {
+      "name": "Hindu",
+      "prose": "Hindu"
+    },
+    "BUDDHIST": {
+      "name": "Buddhist",
+      "prose": "Buddhist"
+    },
+    "JAIN": {
+      "name": "Jain",
+      "prose": "Jain"
+    },
+    "SIKH": {
+      "name": "Sikh",
+      "prose": "Sikh"
+    },
+    "ISLAMIC": {
+      "name": "Islamic",
+      "prose": "Islamic"
+    },
+    "CHRISTIAN": {
+      "name": "Christian",
+      "prose": "Christian"
     }
   }
 }

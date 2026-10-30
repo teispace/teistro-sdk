@@ -8050,6 +8050,25 @@ export class AlmanacArea extends Area {
       provenance: found.provenance,
     });
   }
+
+  /**
+   * Every rule of a festival pack with what it is: `{ pack, rules }`, each
+   * row `{ key, form, source, meta, unsourced }`, `meta` its kind, tradition,
+   * communities and regions and `unsourced` the fields no source gives
+   * (`03-design/festival-metadata.md`).
+   *
+   * @example
+   * const { rules } = sdk.almanac.festivalPack('INDIA_CENTRAL');
+   *
+   * @param {string} pack A pack the SDK ships.
+   * @returns {object} `{ pack, rules }`
+   */
+  festivalPack(pack) {
+    if (typeof pack !== 'string') {
+      throw new TypeError("festivalPack: expected a pack's name, e.g. 'INDIA_CENTRAL'");
+    }
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.almanacFestivalPack(JSON.stringify({ pack })))));
+  }
 }
 
 /**

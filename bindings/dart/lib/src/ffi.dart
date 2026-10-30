@@ -1995,6 +1995,8 @@ typedef TsAlmanacFestivalCalendarNative = ffi.Int32 Function(ffi.Pointer<Context
 typedef TsAlmanacFestivalCalendarDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacNextNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacNextDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacFestivalPackNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacFestivalPackDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNamingSyllablesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2091,6 +2093,7 @@ final class TeistroLibrary {
         ts_almanac_first_year = library.lookupFunction<TsAlmanacFirstYearNative, TsAlmanacFirstYearDart>('ts_almanac_first_year'),
         ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
         ts_almanac_next = library.lookupFunction<TsAlmanacNextNative, TsAlmanacNextDart>('ts_almanac_next'),
+        ts_almanac_festival_pack = library.lookupFunction<TsAlmanacFestivalPackNative, TsAlmanacFestivalPackDart>('ts_almanac_festival_pack'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_naming_syllables = library.lookupFunction<TsNamingSyllablesNative, TsNamingSyllablesDart>('ts_naming_syllables'),
         ts_naming_read = library.lookupFunction<TsNamingReadNative, TsNamingReadDart>('ts_naming_read'),
@@ -2582,6 +2585,18 @@ final class TeistroLibrary {
   /// `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
   /// a context without an ephemeris `CAPABILITY`.
   final TsAlmanacNextDart ts_almanac_next;
+
+  /// Every rule of a festival pack with what it is
+  /// (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
+  /// each row `{key, form, source, meta, unsourced}`, `form` how its day is
+  /// found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`
+  /// its kind, tradition, communities and regions, `unsourced` the fields no
+  /// source gives, and a published row's `subjectTo` and `lastYear`.
+  ///
+  /// `request_json` is `{"pack"}`, a pack the SDK ships. Nothing is
+  /// reckoned, so a context without an ephemeris answers. A key it does not
+  /// read or a pack it does not ship is `INVALID_ARG`, named under `pack`.
+  final TsAlmanacFestivalPackDart ts_almanac_festival_pack;
 
   /// Matches two names star to star (naam milan) and answers with the
   /// `naam` blob: each name's first syllable in the śatapada cakra, the
@@ -6378,6 +6393,27 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_almanac_next(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Every rule of a festival pack with what it is
+  /// (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
+  /// each row `{key, form, source, meta, unsourced}`, `form` how its day is
+  /// found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`
+  /// its kind, tradition, communities and regions, `unsourced` the fields no
+  /// source gives, and a published row's `subjectTo` and `lastYear`.
+  ///
+  /// `request_json` is `{"pack"}`, a pack the SDK ships. Nothing is
+  /// reckoned, so a context without an ephemeris answers. A key it does not
+  /// read or a pack it does not ship is `INVALID_ARG`, named under `pack`.
+  String almanacFestivalPack(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_festival_pack(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

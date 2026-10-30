@@ -149,6 +149,7 @@ import type {
   DatedRule,
   FestivalAnswer,
   FestivalPack,
+  FestivalPackListing,
   FestivalRequest,
   FestivalRule,
   FollowingRule,
@@ -1476,6 +1477,8 @@ function theArithmetic(ctx: Context): string {
   const age: DateSpan = ctx.calendar.between(someDate, on);
   // @ts-expect-error a rule is a catalogue member
   ctx.calendar.add(someDate, { months: 1 }, 'CLAMP');
+  const listing: FestivalPackListing = ctx.almanac.festivalPack('NEPAL');
+  void listing.rules[0]?.unsourced;
   const next: NextOccurrence = ctx.almanac.next({
     after: 2461042.0,
     place: { latitude: 27.7172, longitude: 85.324 },

@@ -639,6 +639,28 @@ public final class AlmanacArea {
     }
 
     /**
+     * Every rule of a festival pack with what it is: {@code {pack, rules}}, each
+     * row {@code {key, form, source, meta, unsourced}}, {@code meta} its kind,
+     * tradition, communities and regions and {@code unsourced} the fields no
+     * source gives ({@code 03-design/festival-metadata.md}).
+     *
+     * <pre>{@code
+     * Map<?, ?> listed = sdk.almanac().festivalPack("INDIA_CENTRAL");
+     * }</pre>
+     *
+     * @param pack a pack the SDK ships
+     * @return the pack's rows
+     * @throws TeistroException {@code INVALID_ARG} for a pack it does not ship
+     */
+    public Map<?, ?> festivalPack(String pack) {
+        if (pack == null) {
+            throw Reads.invalid("pack is a pack's name", "pack");
+        }
+        String json = Json.write(Map.of("pack", pack));
+        return Reads.object(Json.read(context.locked((lib, raw) -> Calls.almanacFestivalPack(lib, raw, json))));
+    }
+
+    /**
      * <b>The next day a rule or a kind of day falls on</b> after an instant at a place, with no year
      * asked ({@code 03-design/next-occurrence.md}). The civil day holding the instant counts. Give a
      * {@code kind}, {@code EKADASHI}, {@code PURNIMA}, {@code AMAVASYA} or {@code SANKRANTI}, read by

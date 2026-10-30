@@ -14,9 +14,10 @@ import java.util.Objects;
  * @param after The key of the karmakala rule whose day it counts from.
  * @param days How many civil days after that day, 0 for the same day, at most `FollowingRule::MOST_DAYS`.
  * @param key The rule's key in its pack, `"HOLI_TERAI"`.
+ * @param meta What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out. Null leaves the SDK's default.
  * @param source Where the rule is stated.
  */
-public record FollowingRule(String after, int days, String key, String source) implements RequestJson {
+public record FollowingRule(String after, int days, String key, FestivalMeta meta, String source) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -32,6 +33,105 @@ public record FollowingRule(String after, int days, String key, String source) i
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param after The key of the karmakala rule whose day it counts from.
+     * @param days How many civil days after that day, 0 for the same day, at most `FollowingRule::MOST_DAYS`.
+     * @param key The rule's key in its pack, `"HOLI_TERAI"`.
+     * @param source Where the rule is stated.
+     */
+    public FollowingRule(String after, int days, String key, String source) {
+        this(after, days, key, null, source);
+    }
+
+    /**
+     * A builder, every field unset: an unset optional field is left out, and the
+     * SDK's default stands.
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /** Builds a {@link FollowingRule} a field at a time. */
+    public static final class Builder {
+        private String after;
+        private Integer days;
+        private String key;
+        private FestivalMeta meta;
+        private String source;
+
+        private Builder() {}
+
+        /**
+         * Sets {@code after}.
+         *
+         * @param after The key of the karmakala rule whose day it counts from.
+         * @return this builder
+         */
+        public Builder after(String after) {
+            this.after = after;
+            return this;
+        }
+
+        /**
+         * Sets {@code days}.
+         *
+         * @param days How many civil days after that day, 0 for the same day, at most `FollowingRule::MOST_DAYS`.
+         * @return this builder
+         */
+        public Builder days(int days) {
+            this.days = days;
+            return this;
+        }
+
+        /**
+         * Sets {@code key}.
+         *
+         * @param key The rule's key in its pack, `"HOLI_TERAI"`.
+         * @return this builder
+         */
+        public Builder key(String key) {
+            this.key = key;
+            return this;
+        }
+
+        /**
+         * Sets {@code meta}.
+         *
+         * @param meta What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder meta(FestivalMeta meta) {
+            this.meta = meta;
+            return this;
+        }
+
+        /**
+         * Sets {@code source}.
+         *
+         * @param source Where the rule is stated.
+         * @return this builder
+         */
+        public Builder source(String source) {
+            this.source = source;
+            return this;
+        }
+
+        /**
+         * The record.
+         *
+         * @return the record
+         * @throws NullPointerException naming a required field left unset
+         */
+        public FollowingRule build() {
+            return new FollowingRule(after, Objects.requireNonNull(days, "`FollowingRule.days` is required"), key, meta, source);
+        }
+    }
+
+    /**
      * A {@code FollowingRule} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
@@ -44,6 +144,7 @@ public record FollowingRule(String after, int days, String key, String source) i
             Read.text(Read.required(json.get("after"), "FollowingRule.after"), "FollowingRule.after"),
             Read.int32(Read.required(json.get("days"), "FollowingRule.days"), "FollowingRule.days"),
             Read.text(Read.required(json.get("key"), "FollowingRule.key"), "FollowingRule.key"),
+            Read.orNull(json.get("meta"), present -> FestivalMeta.of(present)),
             Read.text(Read.required(json.get("source"), "FollowingRule.source"), "FollowingRule.source"));
     }
 
@@ -53,6 +154,9 @@ public record FollowingRule(String after, int days, String key, String source) i
         json.put("after", after);
         json.put("days", days);
         json.put("key", key);
+        if (meta != null) {
+            json.put("meta", meta.toJson());
+        }
         json.put("source", source);
         return json;
     }

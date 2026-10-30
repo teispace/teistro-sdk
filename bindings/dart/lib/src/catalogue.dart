@@ -295,7 +295,11 @@ enum Kind {
   /// Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820).
   bhadraVasa(75, 'bhadra_vasa'),
   /// Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.
-  shivaVasa(76, 'shiva_vasa');
+  shivaVasa(76, 'shiva_vasa'),
+  /// What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850).
+  festivalKind(77, 'festival_kind'),
+  /// The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).
+  tradition(78, 'tradition');
 
   const Kind(this.id, this.key);
 
@@ -4729,6 +4733,100 @@ enum ShivaVasa implements KeyOf<ShivaVasa> {
 
   /// The member with a key, or `null` for one this build does not know.
   static ShivaVasa? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_FESTIVAL_KIND << 16) | member`.
+enum FestivalKind implements KeyOf<FestivalKind> {
+  /// A government's notice lists it as a public holiday
+  gazetted(0, 'GAZETTED'),
+  /// Not gazetted; kept by a religion, as a text or the classification's community column says
+  religiousCultural(1, 'RELIGIOUS_CULTURAL'),
+  /// Not gazetted; kept by one community or people the classification names
+  regionalEthnic(2, 'REGIONAL_ETHNIC'),
+  /// Not gazetted; a civil date fixed by law, an institution or an organisation
+  observance(3, 'OBSERVANCE'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const FestivalKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'festival_kind.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<FestivalKind> registered(String key) => Registered._('festival_kind.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static FestivalKind byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => FestivalKind.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static FestivalKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_TRADITION << 16) | member`.
+enum Tradition implements KeyOf<Tradition> {
+  /// Hindu: the rule's source is a Hindu text
+  hindu(0, 'HINDU'),
+  /// Buddhist
+  buddhist(1, 'BUDDHIST'),
+  /// Jain
+  jain(2, 'JAIN'),
+  /// Sikh
+  sikh(3, 'SIKH'),
+  /// Islamic
+  islamic(4, 'ISLAMIC'),
+  /// Christian
+  christian(5, 'CHRISTIAN'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const Tradition(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'tradition.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Tradition> registered(String key) => Registered._('tradition.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static Tradition byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => Tradition.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Tradition? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

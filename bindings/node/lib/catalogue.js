@@ -262,6 +262,8 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   AshubhaYoga: 'ashubha_yoga',
   BhadraVasa: 'bhadra_vasa',
   ShivaVasa: 'shiva_vasa',
+  FestivalKind: 'festival_kind',
+  Tradition: 'tradition',
 });
 
 /**
@@ -340,6 +342,8 @@ export const KindById = /* @__PURE__ */ new Map([
   [74, 'ashubha_yoga'],
   [75, 'bhadra_vasa'],
   [76, 'shiva_vasa'],
+  [77, 'festival_kind'],
+  [78, 'tradition'],
 ]);
 
 /** Every Graha by name. */
@@ -2907,6 +2911,48 @@ export const ShivaVasaById = /* @__PURE__ */ new Map([
   [4, 'shiva_vasa.BHOJANA'],
   [5, 'shiva_vasa.KRIDA'],
   [6, 'shiva_vasa.SHMASHANA'],
+]);
+
+/** Every FestivalKind by name. */
+export const FestivalKind = /* @__PURE__ */ Object.freeze({
+  Gazetted: 'festival_kind.GAZETTED',
+  ReligiousCultural: 'festival_kind.RELIGIOUS_CULTURAL',
+  RegionalEthnic: 'festival_kind.REGIONAL_ETHNIC',
+  Observance: 'festival_kind.OBSERVANCE',
+});
+
+/**
+ * Every FestivalKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const FestivalKindById = /* @__PURE__ */ new Map([
+  [0, 'festival_kind.GAZETTED'],
+  [1, 'festival_kind.RELIGIOUS_CULTURAL'],
+  [2, 'festival_kind.REGIONAL_ETHNIC'],
+  [3, 'festival_kind.OBSERVANCE'],
+]);
+
+/** Every Tradition by name. */
+export const Tradition = /* @__PURE__ */ Object.freeze({
+  Hindu: 'tradition.HINDU',
+  Buddhist: 'tradition.BUDDHIST',
+  Jain: 'tradition.JAIN',
+  Sikh: 'tradition.SIKH',
+  Islamic: 'tradition.ISLAMIC',
+  Christian: 'tradition.CHRISTIAN',
+});
+
+/**
+ * Every Tradition by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TraditionById = /* @__PURE__ */ new Map([
+  [0, 'tradition.HINDU'],
+  [1, 'tradition.BUDDHIST'],
+  [2, 'tradition.JAIN'],
+  [3, 'tradition.SIKH'],
+  [4, 'tradition.ISLAMIC'],
+  [5, 'tradition.CHRISTIAN'],
 ]);
 
 /** Every Status by name. */

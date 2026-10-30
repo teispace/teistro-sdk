@@ -25,6 +25,9 @@ public sealed interface FestivalRuleItem extends RequestJson permits FestivalRul
     /** {@code GAUDIYA}. */
     FestivalRuleItem GAUDIYA = Key.GAUDIYA;
 
+    /** {@code INDIA_CENTRAL}. */
+    FestivalRuleItem INDIA_CENTRAL = Key.INDIA_CENTRAL;
+
     /**
      * The value, as a {@code FestivalRuleItem}.
      *
@@ -145,7 +148,11 @@ public sealed interface FestivalRuleItem extends RequestJson permits FestivalRul
         /**
          * {@code GAUDIYA}.
          */
-        GAUDIYA("GAUDIYA");
+        GAUDIYA("GAUDIYA"),
+        /**
+         * {@code INDIA_CENTRAL}.
+         */
+        INDIA_CENTRAL("INDIA_CENTRAL");
 
         private final String key;
 

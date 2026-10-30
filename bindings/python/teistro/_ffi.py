@@ -78,6 +78,7 @@ from .catalogue import (
     Ephemeris,
     Equinox,
     Era,
+    FestivalKind,
     FortuneRule,
     Fruition,
     Gana,
@@ -173,6 +174,7 @@ from .catalogue import (
     TimeScale,
     Tithi,
     TithiClass,
+    Tradition,
     Triplicities,
     Vaiseshikamsa,
     Vara,
@@ -4288,6 +4290,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_next.restype = ctypes.c_int32
+        self.ts_almanac_festival_pack: Any = library.ts_almanac_festival_pack
+        self.ts_almanac_festival_pack.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_festival_pack.restype = ctypes.c_int32
         self.ts_naam_milan: Any = library.ts_naam_milan
         self.ts_naam_milan.argtypes = [
             ctypes.POINTER(_Context),
@@ -5498,6 +5507,34 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_almanac_next(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_festival_pack(self, request_json: str) -> str:
+        """Every rule of a festival pack with what it is
+        (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
+        each row `{key, form, source, meta, unsourced}`, `form` how its day is
+        found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`
+        its kind, tradition, communities and regions, `unsourced` the fields no
+        source gives, and a published row's `subjectTo` and `lastYear`.
+
+        `request_json` is `{"pack"}`, a pack the SDK ships. Nothing is
+        reckoned, so a context without an ephemeris answers. A key it does not
+        read or a pack it does not ship is `INVALID_ARG`, named under `pack`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_festival_pack(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

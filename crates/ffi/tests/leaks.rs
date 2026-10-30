@@ -278,7 +278,7 @@ fn paired(ctx: &Ctx, other: &Ctx, entry: PairedEntry, request: &str) -> Status {
 fn the_rites_and_the_comparisons_give_back_their_answers() {
     let ctx = builtin();
     let place = r#""latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337, "utcOffsetSeconds": 20700"#;
-    let rites: [(&str, JsonEntry, String); 4] = [
+    let rites: [(&str, JsonEntry, String); 5] = [
         (
             "a sankalpa",
             teistro_ffi::panchanga::ts_almanac_sankalpa,
@@ -290,6 +290,11 @@ fn the_rites_and_the_comparisons_give_back_their_answers() {
             format!(
                 r#"{{{place}, "request": {{"key": "grandfather", "relation": "SAPINDA", "event": {{"event": "DEATH", "at": 2461051.677083}}}}}}"#
             ),
+        ),
+        (
+            "a festival pack",
+            teistro_ffi::panchanga::ts_almanac_festival_pack,
+            String::from(r#"{"pack": "INDIA_CENTRAL"}"#),
         ),
         (
             "a first year",

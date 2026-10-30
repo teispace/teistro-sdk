@@ -129,6 +129,8 @@ put('is-leap', ctx.calendar.isLeap(Calendar.Gregorian, 2024));
   put('bs-add', `${added.year}-${added.month}-${added.day}`);
   const age = ctx.calendar.between(jestha, added);
   put('bs-between', `${age.years} ${age.months} ${age.days}`);
+  const pack = ctx.almanac.festivalPack('INDIA_CENTRAL');
+  put('india-pack', `${pack.rules.length} ${pack.rules[0].key}`);
 }
 put('jd-of-fixed', julianDayOfFixed(fixed));
 const back = fixedOfJulianDay(2457126.75);
@@ -2432,6 +2434,7 @@ for (const [path, member] of [
   ['almanac.disagreements', shape.almanac.disagreements],
   ['almanac.festival_calendar', shape.almanac.festivalCalendar],
   ['almanac.next', shape.almanac.next],
+  ['almanac.festivalPack', shape.almanac.festivalPack],
   ['almanac.day', shape.almanac.day],
   ['almanac.pakshi', shape.almanac.pakshi],
   ['almanac.sankalpa', shape.almanac.sankalpa],

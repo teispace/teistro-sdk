@@ -140,6 +140,7 @@ fn every_month(key: &str, tithi: Tithi, name: &str) -> FestivalRule {
         decide: Vec::new(),
         otherwise: Choice::Earlier,
         parana: Vec::new(),
+        meta: super::FestivalMeta::default(),
     }
     .udaya()
 }

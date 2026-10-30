@@ -34,7 +34,9 @@ mod anniversary;
 mod dated;
 mod ekadashi;
 mod following;
+mod india_central;
 mod mahalaya;
+mod meta;
 mod nepal_panchanga;
 mod next;
 mod published;
@@ -53,12 +55,13 @@ pub use ekadashi::{
     ekadashis,
 };
 pub use following::{FollowingRule, following};
+pub use meta::{FestivalMeta, MetaFilter};
 pub use next::{
     FIRST_WINDOW_DAYS, KindRules, LIMIT_DAYS, MOST_LIMIT_DAYS, NextKind, limit_days, windows,
 };
 pub use published::{
     AddedDay, AppliedSet, NEAREST_DAYS, PUBLISHED_FORMAT, Published, PublishedEntry, PublishedSet,
-    PublishedStatus, Unplaced, apply as apply_published,
+    PublishedStatus, SubjectTo, Unplaced, apply as apply_published,
 };
 pub use sait::{
     Navamsas, RisingOf, Sait, SaitAvoid, SaitCandidate, SaitChoice, SaitRising, SaitRule,
@@ -135,6 +138,7 @@ pub use vrata::{VrataEdge, VrataParana, VrataParanaTime};
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -245,6 +249,7 @@ impl DayPart {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -430,6 +435,7 @@ pub enum Which {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -525,6 +531,7 @@ pub enum Case {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -691,6 +698,7 @@ pub enum Predicate {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -787,6 +795,7 @@ pub enum Edge {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -911,6 +920,10 @@ pub struct FestivalRule {
     /// order (§8.7); none when left out.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub parana: Vec<VrataParana>,
+    /// What the rule's festival is, as sourced (`03-design/festival-metadata.md`);
+    /// a field no source gives stays unset, and a rule with none leaves it out.
+    #[serde(default, skip_serializing_if = "FestivalMeta::is_empty")]
+    pub meta: FestivalMeta,
 }
 
 const fn amanta() -> Convention {
@@ -1381,6 +1394,7 @@ impl FestivalRule {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
+    /// #     meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -1509,6 +1523,7 @@ impl FestivalRule {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
+    /// #     meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -1680,6 +1695,7 @@ fn check_window(key: &str, window: Window, at: &str) -> Result<(), Error> {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -1788,6 +1804,7 @@ pub struct FestivalDay {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -1935,6 +1952,7 @@ pub enum SunEntry {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2073,6 +2091,7 @@ impl FestivalDay {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
+    /// #     meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2195,6 +2214,7 @@ impl FestivalDay {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2283,6 +2303,7 @@ pub struct Extent {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2382,6 +2403,7 @@ pub enum Decided {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2510,6 +2532,7 @@ pub struct Observance {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2604,6 +2627,7 @@ pub struct Unjudged {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2645,6 +2669,25 @@ pub struct Observances {
 }
 
 impl Observances {
+    /// Keeps only the days whose rule's key `kept` says, of every list
+    /// that names one: what a request's meta filter does to its answer.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::Observances;
+    ///
+    /// let mut none = Observances::default();
+    /// none.keep(|_| false);
+    /// assert_eq!(none, Observances::default());
+    /// ```
+    pub fn keep(&mut self, kept: impl Fn(&str) -> bool) {
+        self.observances.retain(|found| kept(&found.rule));
+        self.ekadashis.retain(|found| kept(&found.rule));
+        self.unjudged.retain(|found| kept(&found.rule));
+        self.dated.retain(|found| kept(&found.rule));
+        self.anniversaries.retain(|found| kept(&found.key));
+        self.added.retain(|found| kept(&found.key));
+    }
+
     /// Where an answer names catalogue members, and of which kind: a list
     /// of [`Observances`], then a dotted path through each item. What a
     /// boundary section writes in full; the crate's tests hold it to
@@ -2776,6 +2819,7 @@ impl Observances {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
+    /// #     meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2876,6 +2920,7 @@ impl Observances {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
+    /// #     meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -2974,6 +3019,7 @@ impl Observances {
 /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
 /// #     otherwise: Choice::Earlier,
 /// #     parana: Vec::new(),
+/// #     meta: Default::default(),
 /// # };
 /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
 /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -3603,6 +3649,32 @@ const APARAHNA: Window = Window::Part {
     part: DayPart::Aparahna,
 };
 
+/// Lakshmi puja (*Dharmasindhu* p. 77): the new moon at pradosha.
+fn lakshmi_puja() -> FestivalRule {
+    use Choice::{Earlier, Later};
+    use Which::Later as L;
+    FestivalRule {
+        key: "LAKSHMI_PUJA".to_owned(),
+        source: "Dharmasindhu p. 77: the new moon at pradosha; the later day when it lasts more than a ghati into that night, which puts the matter beyond doubt, else the earlier, and so when neither day holds it".to_owned(),
+        month: Some(Masa::Ashwina),
+        convention: Convention::Amanta,
+        occurs: Tithi::Amavasya.into(),
+        in_adhika: InAdhika::Nija,
+        at: Window::Pradosha,
+        decide: vec![Guard::new(
+            [Predicate::Lasts {
+                day: L,
+                from: Edge::Sunset,
+                ghatis: 1,
+            }],
+            Later,
+        )],
+        otherwise: Earlier,
+        parana: Vec::new(),
+        meta: FestivalMeta::default(),
+    }
+}
+
 impl FestivalRule {
     /// The rules *Dharmasindhu* states with a table this evaluator reads,
     /// each citing its page in the 1888 Nirnaya-sagara edition: the four
@@ -3655,6 +3727,7 @@ impl FestivalRule {
                     },
                     VrataParana::NextTithi,
                 ],
+                meta: FestivalMeta::default(),
             },
             FestivalRule {
                 key: "DEVI_VISARJAN".to_owned(),
@@ -3678,6 +3751,7 @@ impl FestivalRule {
                 ],
                 otherwise: Later,
                 parana: Vec::new(),
+                meta: FestivalMeta::default(),
             },
         ]
     }
@@ -3711,6 +3785,7 @@ impl FestivalRule {
             ],
             otherwise: Choice::Later,
             parana: Vec::new(),
+            meta: FestivalMeta::default(),
         };
         vec![
             rule(
@@ -3783,6 +3858,7 @@ impl FestivalRule {
             decide: vec![Guard::new([case(Case::EarlierOnly)], Choice::Earlier)],
             otherwise: Choice::Later,
             parana: Vec::new(),
+            meta: FestivalMeta::default(),
         }
     }
 
@@ -3856,6 +3932,7 @@ impl FestivalRule {
     /// #     decide: vec![Guard::new([Predicate::Case { case: Case::LaterOnly }], Choice::Later)],
     /// #     otherwise: Choice::Earlier,
     /// #     parana: Vec::new(),
+    /// #     meta: Default::default(),
     /// # };
     /// # let first = |at: Window| -> Result<_, Box<dyn std::error::Error>> {
     /// #     Ok(observances(&[rule(at)], &days)?.observances.into_iter().next().ok_or("an observance")?)
@@ -3904,6 +3981,7 @@ impl FestivalRule {
                     nakshatra: None,
                     yamas: None,
                 }],
+                meta: FestivalMeta::default(),
             },
             FestivalRule {
                 key: "JANMASHTAMI".to_owned(),
@@ -3926,6 +4004,7 @@ impl FestivalRule {
                     },
                     VrataParana::Sunrise,
                 ],
+                meta: FestivalMeta::default(),
             },
             FestivalRule {
                 key: "VIJAYA_DASHAMI".to_owned(),
@@ -3962,26 +4041,9 @@ impl FestivalRule {
                 ],
                 otherwise: Earlier,
                 parana: Vec::new(),
+                meta: FestivalMeta::default(),
             },
-            FestivalRule {
-                key: "LAKSHMI_PUJA".to_owned(),
-                source: "Dharmasindhu p. 77: the new moon at pradosha; the later day when it lasts more than a ghati into that night, which puts the matter beyond doubt, else the earlier, and so when neither day holds it".to_owned(),
-                month: Some(Masa::Ashwina),
-                convention: Convention::Amanta,
-                occurs: Tithi::Amavasya.into(),
-                in_adhika: InAdhika::Nija,
-                at: Window::Pradosha,
-                decide: vec![Guard::new(
-                    [Predicate::Lasts {
-                        day: L,
-                        from: Edge::Sunset,
-                        ghatis: 1,
-                    }],
-                    Later,
-                )],
-                otherwise: Earlier,
-                parana: Vec::new(),
-            },
+            lakshmi_puja(),
         ]
     }
 
@@ -4001,6 +4063,7 @@ impl FestivalRule {
                 decide: vec![Guard::new([case(Case::Neither)], Earlier)],
                 otherwise: Later,
                 parana: Vec::new(),
+                meta: FestivalMeta::default(),
             },
             FestivalRule {
                 key: "NAVARATRA_ARAMBHA".to_owned(),
@@ -4023,6 +4086,7 @@ impl FestivalRule {
                 ],
                 otherwise: Earlier,
                 parana: Vec::new(),
+                meta: FestivalMeta::default(),
             },
             FestivalRule {
                 key: "YAMA_DWITIYA".to_owned(),
@@ -4035,6 +4099,7 @@ impl FestivalRule {
                 decide: vec![Guard::new([case(Case::EarlierOnly)], Earlier)],
                 otherwise: Later,
                 parana: Vec::new(),
+                meta: FestivalMeta::default(),
             },
             FestivalRule {
                 key: "SHIVARATRI".to_owned(),
@@ -4059,6 +4124,7 @@ impl FestivalRule {
                         yamas: None,
                     },
                 ],
+                meta: FestivalMeta::default(),
             },
         ]
     }
@@ -4085,6 +4151,7 @@ impl FestivalRule {
                 decide: vec![Guard::new([lasts(6)], Later)],
                 otherwise: Earlier,
                 parana: Vec::new(),
+                meta: FestivalMeta::default(),
             },
             FestivalRule {
                 key: "BALI_PRATIPADA".to_owned(),
@@ -4097,6 +4164,7 @@ impl FestivalRule {
                 decide: vec![Guard::new([lasts(18)], Later)],
                 otherwise: Earlier,
                 parana: Vec::new(),
+                meta: FestivalMeta::default(),
             },
             FestivalRule {
                 key: "HOLIKA".to_owned(),
@@ -4112,6 +4180,7 @@ impl FestivalRule {
                 ],
                 otherwise: Later,
                 parana: Vec::new(),
+                meta: FestivalMeta::default(),
             },
         ]
     }
@@ -4144,6 +4213,7 @@ impl FestivalRule {
             ],
             otherwise: Earlier,
             parana: Vec::new(),
+            meta: FestivalMeta::default(),
         };
         vec![
             rule(
@@ -4186,6 +4256,7 @@ impl FestivalRule {
             )],
             otherwise: Choice::Later,
             parana: Vec::new(),
+            meta: FestivalMeta::default(),
         }
     }
 }

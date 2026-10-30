@@ -13,11 +13,13 @@ import java.util.Objects;
  *
  * @param day The day.
  * @param key Its key, which no rule of the request uses.
+ * @param meta What the festival is; a set's day has no rule to carry it. Null leaves the SDK's default.
  * @param names Its name in each locale given (`en-Latn`, `ne-Deva-NP`). Null leaves the SDK's default.
  * @param source Where the publisher says it.
+ * @param subjectTo What may still move the day; absent on a day that stands. Null leaves the SDK's default.
  * @param window A published time. Null leaves the SDK's default.
  */
-public record PublishedEntryAdd(CalendarDay day, String key, Map<String, String> names, String source, Interval window) implements RequestJson, PublishedEntry {
+public record PublishedEntryAdd(CalendarDay day, String key, FestivalMeta meta, Map<String, String> names, String source, SubjectTo subjectTo, Interval window) implements RequestJson, PublishedEntry {
     /** The `action` this variant is written under. */
     public static final String ACTION = "ADD";
 
@@ -44,7 +46,7 @@ public record PublishedEntryAdd(CalendarDay day, String key, Map<String, String>
      * @param source Where the publisher says it.
      */
     public PublishedEntryAdd(CalendarDay day, String key, String source) {
-        this(day, key, null, source, null);
+        this(day, key, null, null, source, null, null);
     }
 
     /**
@@ -61,8 +63,10 @@ public record PublishedEntryAdd(CalendarDay day, String key, Map<String, String>
     public static final class Builder {
         private CalendarDay day;
         private String key;
+        private FestivalMeta meta;
         private Map<String, String> names;
         private String source;
+        private SubjectTo subjectTo;
         private Interval window;
 
         private Builder() {}
@@ -90,6 +94,17 @@ public record PublishedEntryAdd(CalendarDay day, String key, Map<String, String>
         }
 
         /**
+         * Sets {@code meta}.
+         *
+         * @param meta What the festival is; a set's day has no rule to carry it. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder meta(FestivalMeta meta) {
+            this.meta = meta;
+            return this;
+        }
+
+        /**
          * Sets {@code names}.
          *
          * @param names Its name in each locale given (`en-Latn`, `ne-Deva-NP`). Null leaves the SDK's default.
@@ -112,6 +127,17 @@ public record PublishedEntryAdd(CalendarDay day, String key, Map<String, String>
         }
 
         /**
+         * Sets {@code subject_to}.
+         *
+         * @param subjectTo What may still move the day; absent on a day that stands. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder subjectTo(SubjectTo subjectTo) {
+            this.subjectTo = subjectTo;
+            return this;
+        }
+
+        /**
          * Sets {@code window}.
          *
          * @param window A published time. Null leaves the SDK's default.
@@ -129,7 +155,7 @@ public record PublishedEntryAdd(CalendarDay day, String key, Map<String, String>
          * @throws NullPointerException naming a required field left unset
          */
         public PublishedEntryAdd build() {
-            return new PublishedEntryAdd(day, key, names, source, window);
+            return new PublishedEntryAdd(day, key, meta, names, source, subjectTo, window);
         }
     }
 
@@ -145,8 +171,10 @@ public record PublishedEntryAdd(CalendarDay day, String key, Map<String, String>
         return new PublishedEntryAdd(
             CalendarDay.of(Read.required(json.get("day"), "PublishedEntryAdd.day")),
             Read.text(Read.required(json.get("key"), "PublishedEntryAdd.key"), "PublishedEntryAdd.key"),
+            Read.orNull(json.get("meta"), present -> FestivalMeta.of(present)),
             Read.orNull(json.get("names"), present -> Read.map(present, "PublishedEntryAdd.names", value0 -> Read.text(value0, "PublishedEntryAdd.names"))),
             Read.text(Read.required(json.get("source"), "PublishedEntryAdd.source"), "PublishedEntryAdd.source"),
+            Read.orNull(json.get("subject_to"), present -> Read.member(present, "PublishedEntryAdd.subject_to", SubjectTo::byKey)),
             Read.orNull(json.get("window"), present -> Interval.of(present)));
     }
 
@@ -156,10 +184,16 @@ public record PublishedEntryAdd(CalendarDay day, String key, Map<String, String>
         json.put("action", ACTION);
         json.put("day", day.toJson());
         json.put("key", key);
+        if (meta != null) {
+            json.put("meta", meta.toJson());
+        }
         if (names != null) {
             json.put("names", names);
         }
         json.put("source", source);
+        if (subjectTo != null) {
+            json.put("subject_to", subjectTo.toJson());
+        }
         if (window != null) {
             json.put("window", window.toJson());
         }

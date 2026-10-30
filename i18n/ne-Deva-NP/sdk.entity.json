@@ -4345,6 +4345,30 @@
     "CHRISTMAS": {
       "name": "क्रिसमस",
       "prose": "क्रिसमस"
+    },
+    "INDIA_REPUBLIC_DAY": {
+      "name": "भारतको गणतन्त्र दिवस",
+      "prose": "भारतको गणतन्त्र दिवस"
+    },
+    "INDIA_INDEPENDENCE_DAY": {
+      "name": "भारतको स्वतन्त्रता दिवस",
+      "prose": "भारतको स्वतन्त्रता दिवस"
+    },
+    "GANDHI_JAYANTI": {
+      "name": "महात्मा गान्धी जयन्ती",
+      "prose": "महात्मा गान्धी जयन्ती"
+    },
+    "GOOD_FRIDAY": {
+      "name": "गुड फ्राइडे",
+      "prose": "गुड फ्राइडे"
+    },
+    "HOLI": {
+      "name": "होली",
+      "prose": "होली"
+    },
+    "FAGU_PURNIMA": {
+      "name": "फागु पूर्णिमा",
+      "prose": "फागु पूर्णिमा"
     }
   },
   "agni_vasa": {
@@ -4438,6 +4462,50 @@
       "name": "यमघण्ट",
       "prose": "यमघण्ट",
       "iast": "Yamaghaṇṭa"
+    }
+  },
+  "festival_kind": {
+    "GAZETTED": {
+      "name": "राजपत्रित बिदा",
+      "prose": "राजपत्रित बिदा"
+    },
+    "RELIGIOUS_CULTURAL": {
+      "name": "धार्मिक तथा सांस्कृतिक",
+      "prose": "धार्मिक तथा सांस्कृतिक"
+    },
+    "REGIONAL_ETHNIC": {
+      "name": "क्षेत्रीय वा जातीय",
+      "prose": "क्षेत्रीय वा जातीय"
+    },
+    "OBSERVANCE": {
+      "name": "दिवस",
+      "prose": "दिवस"
+    }
+  },
+  "tradition": {
+    "HINDU": {
+      "name": "हिन्दू",
+      "prose": "हिन्दू"
+    },
+    "BUDDHIST": {
+      "name": "बौद्ध",
+      "prose": "बौद्ध"
+    },
+    "JAIN": {
+      "name": "जैन",
+      "prose": "जैन"
+    },
+    "SIKH": {
+      "name": "सिख",
+      "prose": "सिख"
+    },
+    "ISLAMIC": {
+      "name": "इस्लाम",
+      "prose": "इस्लाम"
+    },
+    "CHRISTIAN": {
+      "name": "क्रिस्चियन",
+      "prose": "क्रिस्चियन"
     }
   }
 }

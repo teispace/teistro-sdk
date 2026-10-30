@@ -4033,6 +4033,7 @@ public final class Native {
         "ts_almanac_first_year",
         "ts_almanac_festival_calendar",
         "ts_almanac_next",
+        "ts_almanac_festival_pack",
         "ts_naam_milan",
         "ts_naming_syllables",
         "ts_naming_read",
@@ -4632,6 +4633,20 @@ public final class Native {
     public final MethodHandle ts_almanac_next;
 
     /**
+     * Every rule of a festival pack with what it is
+     * (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
+     * each row `{key, form, source, meta, unsourced}`, `form` how its day is
+     * found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`
+     * its kind, tradition, communities and regions, `unsourced` the fields no
+     * source gives, and a published row's `subjectTo` and `lastYear`.
+     *
+     * `request_json` is `{"pack"}`, a pack the SDK ships. Nothing is
+     * reckoned, so a context without an ephemeris answers. A key it does not
+     * read or a pack it does not ship is `INVALID_ARG`, named under `pack`.
+     */
+    public final MethodHandle ts_almanac_festival_pack;
+
+    /**
      * Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two
@@ -4991,6 +5006,7 @@ public final class Native {
         ts_almanac_first_year = linker.downcallHandle(symbols.find("ts_almanac_first_year").orElseThrow(() -> missing("ts_almanac_first_year")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_festival_calendar = linker.downcallHandle(symbols.find("ts_almanac_festival_calendar").orElseThrow(() -> missing("ts_almanac_festival_calendar")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_next = linker.downcallHandle(symbols.find("ts_almanac_next").orElseThrow(() -> missing("ts_almanac_next")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_festival_pack = linker.downcallHandle(symbols.find("ts_almanac_festival_pack").orElseThrow(() -> missing("ts_almanac_festival_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_syllables = linker.downcallHandle(symbols.find("ts_naming_syllables").orElseThrow(() -> missing("ts_naming_syllables")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_read = linker.downcallHandle(symbols.find("ts_naming_read").orElseThrow(() -> missing("ts_naming_read")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

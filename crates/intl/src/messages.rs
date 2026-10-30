@@ -3246,6 +3246,10 @@ pub mod sdk {
         pub mod festival {
         }
 
+        /// The `festival_kind` group.
+        pub mod festival_kind {
+        }
+
         /// The `gana` group.
         pub mod gana {
         }
@@ -3332,6 +3336,10 @@ pub mod sdk {
 
         /// The `tithi` group.
         pub mod tithi {
+        }
+
+        /// The `tradition` group.
+        pub mod tradition {
         }
 
         /// The `vaiseshikamsa` group.

@@ -680,6 +680,21 @@ class FestivalKey(enum.StrEnum):
     INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES = "festival.INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES"
     HUMAN_RIGHTS_DAY = "festival.HUMAN_RIGHTS_DAY"
     CHRISTMAS = "festival.CHRISTMAS"
+    INDIA_REPUBLIC_DAY = "festival.INDIA_REPUBLIC_DAY"
+    INDIA_INDEPENDENCE_DAY = "festival.INDIA_INDEPENDENCE_DAY"
+    GANDHI_JAYANTI = "festival.GANDHI_JAYANTI"
+    GOOD_FRIDAY = "festival.GOOD_FRIDAY"
+    HOLI = "festival.HOLI"
+    FAGU_PURNIMA = "festival.FAGU_PURNIMA"
+
+
+class FestivalKindKey(enum.StrEnum):
+    """A `festival_kind` as a message names it: the full catalogue key."""
+
+    GAZETTED = "festival_kind.GAZETTED"
+    RELIGIOUS_CULTURAL = "festival_kind.RELIGIOUS_CULTURAL"
+    REGIONAL_ETHNIC = "festival_kind.REGIONAL_ETHNIC"
+    OBSERVANCE = "festival_kind.OBSERVANCE"
 
 
 class GanaKey(enum.StrEnum):
@@ -1059,6 +1074,17 @@ class TithiKey(enum.StrEnum):
     KRISHNA_TRAYODASHI = "tithi.KRISHNA_TRAYODASHI"
     KRISHNA_CHATURDASHI = "tithi.KRISHNA_CHATURDASHI"
     AMAVASYA = "tithi.AMAVASYA"
+
+
+class TraditionKey(enum.StrEnum):
+    """A `tradition` as a message names it: the full catalogue key."""
+
+    HINDU = "tradition.HINDU"
+    BUDDHIST = "tradition.BUDDHIST"
+    JAIN = "tradition.JAIN"
+    SIKH = "tradition.SIKH"
+    ISLAMIC = "tradition.ISLAMIC"
+    CHRISTIAN = "tradition.CHRISTIAN"
 
 
 class VaiseshikamsaKey(enum.StrEnum):
@@ -2078,6 +2104,11 @@ class MessagesSdkEntity:
         return MessagesSdkEntityFestival(self._r)
 
     @property
+    def festival_kind(self) -> MessagesSdkEntityFestivalKind:
+        """The messages under `festival_kind`."""
+        return MessagesSdkEntityFestivalKind(self._r)
+
+    @property
     def gana(self) -> MessagesSdkEntityGana:
         """The messages under `gana`."""
         return MessagesSdkEntityGana(self._r)
@@ -2186,6 +2217,11 @@ class MessagesSdkEntity:
     def tithi(self) -> MessagesSdkEntityTithi:
         """The messages under `tithi`."""
         return MessagesSdkEntityTithi(self._r)
+
+    @property
+    def tradition(self) -> MessagesSdkEntityTradition:
+        """The messages under `tradition`."""
+        return MessagesSdkEntityTradition(self._r)
 
     @property
     def vaiseshikamsa(self) -> MessagesSdkEntityVaiseshikamsa:
@@ -2739,6 +2775,44 @@ class MessagesSdkEntityVaiseshikamsa:
     def vyanjana(self) -> EntityForms:
         """The forms of `vaiseshikamsa.VYANJANA` in the current locale."""
         return self._r.entity("vaiseshikamsa.VYANJANA")
+
+
+class MessagesSdkEntityTradition:
+    """The messages under `MessagesSdkEntityTradition`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def buddhist(self) -> EntityForms:
+        """The forms of `tradition.BUDDHIST` in the current locale."""
+        return self._r.entity("tradition.BUDDHIST")
+
+    @property
+    def christian(self) -> EntityForms:
+        """The forms of `tradition.CHRISTIAN` in the current locale."""
+        return self._r.entity("tradition.CHRISTIAN")
+
+    @property
+    def hindu(self) -> EntityForms:
+        """The forms of `tradition.HINDU` in the current locale."""
+        return self._r.entity("tradition.HINDU")
+
+    @property
+    def islamic(self) -> EntityForms:
+        """The forms of `tradition.ISLAMIC` in the current locale."""
+        return self._r.entity("tradition.ISLAMIC")
+
+    @property
+    def jain(self) -> EntityForms:
+        """The forms of `tradition.JAIN` in the current locale."""
+        return self._r.entity("tradition.JAIN")
+
+    @property
+    def sikh(self) -> EntityForms:
+        """The forms of `tradition.SIKH` in the current locale."""
+        return self._r.entity("tradition.SIKH")
 
 
 class MessagesSdkEntityTithi:
@@ -4177,6 +4251,34 @@ class MessagesSdkEntityGana:
         return self._r.entity("gana.RAKSHASA")
 
 
+class MessagesSdkEntityFestivalKind:
+    """The messages under `MessagesSdkEntityFestivalKind`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def gazetted(self) -> EntityForms:
+        """The forms of `festival_kind.GAZETTED` in the current locale."""
+        return self._r.entity("festival_kind.GAZETTED")
+
+    @property
+    def observance(self) -> EntityForms:
+        """The forms of `festival_kind.OBSERVANCE` in the current locale."""
+        return self._r.entity("festival_kind.OBSERVANCE")
+
+    @property
+    def regional_ethnic(self) -> EntityForms:
+        """The forms of `festival_kind.REGIONAL_ETHNIC` in the current locale."""
+        return self._r.entity("festival_kind.REGIONAL_ETHNIC")
+
+    @property
+    def religious_cultural(self) -> EntityForms:
+        """The forms of `festival_kind.RELIGIOUS_CULTURAL` in the current locale."""
+        return self._r.entity("festival_kind.RELIGIOUS_CULTURAL")
+
+
 class MessagesSdkEntityFestival:
     """The messages under `MessagesSdkEntityFestival`, each rendered by its own key."""
 
@@ -4690,6 +4792,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.ELECTION_DAY")
 
     @property
+    def fagu_purnima(self) -> EntityForms:
+        """The forms of `festival.FAGU_PURNIMA` in the current locale."""
+        return self._r.entity("festival.FAGU_PURNIMA")
+
+    @property
     def falgunanda_jayanti(self) -> EntityForms:
         """The forms of `festival.FALGUNANDA_JAYANTI` in the current locale."""
         return self._r.entity("festival.FALGUNANDA_JAYANTI")
@@ -4708,6 +4815,11 @@ class MessagesSdkEntityFestival:
     def gai_jatra(self) -> EntityForms:
         """The forms of `festival.GAI_JATRA` in the current locale."""
         return self._r.entity("festival.GAI_JATRA")
+
+    @property
+    def gandhi_jayanti(self) -> EntityForms:
+        """The forms of `festival.GANDHI_JAYANTI` in the current locale."""
+        return self._r.entity("festival.GANDHI_JAYANTI")
 
     @property
     def ganesha_chaturthi(self) -> EntityForms:
@@ -4758,6 +4870,11 @@ class MessagesSdkEntityFestival:
     def gita_jayanti(self) -> EntityForms:
         """The forms of `festival.GITA_JAYANTI` in the current locale."""
         return self._r.entity("festival.GITA_JAYANTI")
+
+    @property
+    def good_friday(self) -> EntityForms:
+        """The forms of `festival.GOOD_FRIDAY` in the current locale."""
+        return self._r.entity("festival.GOOD_FRIDAY")
 
     @property
     def gopashtami(self) -> EntityForms:
@@ -4885,6 +5002,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.HILE_JATRA")
 
     @property
+    def holi(self) -> EntityForms:
+        """The forms of `festival.HOLI` in the current locale."""
+        return self._r.entity("festival.HOLI")
+
+    @property
     def holika(self) -> EntityForms:
         """The forms of `festival.HOLIKA` in the current locale."""
         return self._r.entity("festival.HOLIKA")
@@ -4903,6 +5025,16 @@ class MessagesSdkEntityFestival:
     def human_rights_day(self) -> EntityForms:
         """The forms of `festival.HUMAN_RIGHTS_DAY` in the current locale."""
         return self._r.entity("festival.HUMAN_RIGHTS_DAY")
+
+    @property
+    def india_independence_day(self) -> EntityForms:
+        """The forms of `festival.INDIA_INDEPENDENCE_DAY` in the current locale."""
+        return self._r.entity("festival.INDIA_INDEPENDENCE_DAY")
+
+    @property
+    def india_republic_day(self) -> EntityForms:
+        """The forms of `festival.INDIA_REPUBLIC_DAY` in the current locale."""
+        return self._r.entity("festival.INDIA_REPUBLIC_DAY")
 
     @property
     def indira_ekadashi(self) -> EntityForms:
