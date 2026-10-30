@@ -657,9 +657,10 @@ pub const fn bhadra_vasa(sign: Rashi) -> BhadraVasa {
 ///
 /// // Vishti from 100.4 to 100.9; the Moon leaves Gemini for Cancer at 100.6.
 /// let day = Interval::literal(100.25, 101.25);
-/// let at = |member, from, to| Span::new(member, Interval::literal(from, to), day);
-/// let karanas: Vec<_> = [at(Karana::Vanija, 99.9, 100.4), at(Karana::Vishti, 100.4, 100.9)].into_iter().flatten().collect();
-/// let signs: Vec<_> = [at(Rashi::Gemini, 98.4, 100.6), at(Rashi::Cancer, 100.6, 102.9)].into_iter().flatten().collect();
+/// let karana = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// let sign = |member, from, to| Span::new(member, Interval::literal(from, to), day);
+/// let karanas: Vec<_> = [karana(Karana::Vanija, 99.9, 100.4), karana(Karana::Vishti, 100.4, 100.9)].into_iter().flatten().collect();
+/// let signs: Vec<_> = [sign(Rashi::Gemini, 98.4, 100.6), sign(Rashi::Cancer, 100.6, 102.9)].into_iter().flatten().collect();
 ///
 /// let lokas = bhadra_vasas(&karanas, &signs, day);
 /// assert_eq!(lokas.iter().map(|s| s.member).collect::<Vec<_>>(), [BhadraVasa::Svarga, BhadraVasa::Martya]);

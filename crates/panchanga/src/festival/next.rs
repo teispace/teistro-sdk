@@ -99,7 +99,7 @@ impl NextKind {
     /// assert_eq!(purnima.rules[0].key, "PURNIMA");
     /// assert!(purnima.rules[0].source.contains("C197"));
     /// assert_eq!(NextKind::Sankranti.rules().dated.len(), 12);
-    /// assert_eq!(NextKind::Ekadashi.rules().ekadashis.len(), 2);
+    /// assert_eq!(NextKind::Ekadashi.rules().ekadashis.len(), 3);
     /// ```
     #[must_use]
     pub fn rules(self) -> KindRules {
