@@ -1345,8 +1345,11 @@ mod tests {
         let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("..");
         let dist = std::env::temp_dir().join(format!("teistro-pub-stage-{}", std::process::id()));
         let merged = json!({ "platforms": {} });
-        super::stage_dart(&root, &dist, crate::release::UNRELEASED, &merged).unwrap();
-        super::stage_flutter(&root, &dist, crate::release::UNRELEASED).unwrap();
+        // The workspace's own version, whose entry the changelog holds
+        // whether that is `Unreleased` (0.0.0) or a release's heading.
+        let version = crate::release::version(&root);
+        super::stage_dart(&root, &dist, &version, &merged).unwrap();
+        super::stage_flutter(&root, &dist, &version).unwrap();
         for package in ["teistro", "teistro_flutter"] {
             let staged = dist.join("pub").join(package);
             for file in ["LICENSE", "NOTICE", "README.md", "pubspec.yaml"] {
@@ -1354,7 +1357,10 @@ mod tests {
             }
             let changelog = std::fs::read_to_string(staged.join("CHANGELOG.md")).unwrap();
             // pub reads the version's entry by its heading.
-            assert!(changelog.contains("\n## 0.0.0\n"), "{changelog:.200}");
+            assert!(
+                changelog.contains(&format!("\n## {version}\n")),
+                "{changelog:.200}"
+            );
             assert!(!changelog.contains("## Unreleased"));
         }
         std::fs::remove_dir_all(&dist).unwrap();

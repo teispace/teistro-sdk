@@ -84,7 +84,7 @@ test('the addon and the types were generated for the same ABI', () => {
   assert.equal(abiVersion(), 1);
   assert.equal(catalogueVersion(), 1);
   assert.equal(defaultProfile(), 'parashari-classical');
-  assert.match(sdkVersion(), /^\d+\.\d+\.\d+$/u);
+  assert.match(sdkVersion(), /^\d+\.\d+\.\d+(?:-(?:alpha|beta|rc)(?:\.\d+)?)?$/u);
 });
 
 test('a context resolves its settings and reports them', () => {
