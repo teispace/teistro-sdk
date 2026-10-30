@@ -2680,7 +2680,7 @@ export class CalendarArea extends Area {
    * most whole months whose anniversary of `from` is not past `to`, then
    * the days from it, so `add(from, between(from, to))` is `to`. One born
    * on the 32nd of Jestha completes a year on the 31st of a 31-day Jestha
-   * under `CONSTRAIN` (C803). Earlier than `from`, every part is negative
+   * under `CONSTRAIN` (C806). Earlier than `from`, every part is negative
    * or zero.
    *
    * @example

@@ -8109,7 +8109,7 @@ struct ts_date_span {
     int32_t years;
     /**
      * Whole months, -11 to 11.
-     * Range: [-11,11]. Example: 0.
+     * Example: 0.
      */
     int32_t months;
     /**
@@ -9530,7 +9530,7 @@ ts_status ts_calendar_add(const ts_context * context, const ts_calendar_date * d
  * same `overflow` gives `to`. An anniversary on a day its month lacks is
  * resolved by `overflow`: one born on the 32nd of Jestha completes a year
  * on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
- * under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+ * under `CARRY`, and `REJECT` refuses a count from such a day (C806).
  * Before `from`, each part is negative or zero. Dates in two calendars
  * are `INVALID_ARG`, naming `calendar`.
  * Safety: `context` must be a live handle; `from` and `to` valid for a read;

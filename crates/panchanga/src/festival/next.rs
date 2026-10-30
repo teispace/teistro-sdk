@@ -238,7 +238,7 @@ mod tests {
             }
             assert_eq!(next, limit);
         }
-        assert!(windows(0).is_empty());
+        assert_eq!(windows(0), []);
         assert!(limit_days(Some(MOST_LIMIT_DAYS)).is_ok());
         assert!(limit_days(Some(MOST_LIMIT_DAYS + 1)).is_err());
     }

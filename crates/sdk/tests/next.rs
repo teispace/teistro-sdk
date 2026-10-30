@@ -170,7 +170,7 @@ fn each_kind_is_the_reckonings_first_day_over_the_range() {
             &keys,
         );
         assert_eq!(next.day, whole, "{kind:?}");
-        assert!(!next.keys.is_empty());
+        assert_ne!(next.keys.len(), 0);
         assert_eq!(fixed_of(&next.from), fixed_of(&from));
     }
 }
@@ -307,7 +307,7 @@ fn nothing_in_the_limit_and_every_bad_request_is_refused_by_its_field() {
         sdk.almanac().next(&bare).unwrap_err().field(),
         Some("festivals")
     );
-    let base = r#""after": 2461042.0, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700"#;
+    let common = r#""after": 2461042.0, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700"#;
     for (body, field, status) in [
         (
             r#""kind": "PURNIMA", "rule": "HOLI""#,
@@ -337,7 +337,7 @@ fn nothing_in_the_limit_and_every_bad_request_is_refused_by_its_field() {
             Status::InvalidArg,
         ),
     ] {
-        let refused = NextRequest::from_json(&format!("{{{base}, {body}}}")).unwrap_err();
+        let refused = NextRequest::from_json(&format!("{{{common}, {body}}}")).unwrap_err();
         assert_eq!(
             (refused.field(), refused.status),
             (Some(field), status),

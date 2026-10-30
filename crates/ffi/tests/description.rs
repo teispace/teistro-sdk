@@ -32,7 +32,7 @@ macro_rules! rust_layouts {
 
 #[test]
 fn every_struct_has_the_layout_the_description_computes() {
-    use teistro_ffi::calendar::TsCalendarDate;
+    use teistro_ffi::calendar::{TsCalendarDate, TsDateSpan};
     use teistro_ffi::chart::TsChartRequest;
     use teistro_ffi::context::{TsContextOptions, TsError};
     use teistro_ffi::frame::TsFrame;
@@ -67,6 +67,7 @@ fn every_struct_has_the_layout_the_description_computes() {
         TsError => TsError,
         TsFrame => TsFrame,
         TsCalendarDate => TsCalendarDate,
+        TsDateSpan => TsDateSpan,
         TsChartRequest => TsChartRequest,
         TsCivilTime => TsCivilTime,
         TsCivilDateTime => TsCivilDateTime,

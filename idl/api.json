@@ -12430,7 +12430,6 @@
           },
           "doc": "Whole months, -11 to 11.",
           "meta": {
-            "range": "[-11,11]",
             "example": "0"
           }
         },
@@ -15218,7 +15217,7 @@
     },
     {
       "name": "ts_calendar_between",
-      "doc": "The years, months and days from `from` to `to`, both in one calendar,\ncounted as an age is (`03-design/calendar-bikram-sambat.md` §11): the\nmost whole months whose anniversary of `from` is not past `to`, then\nthe days from it, so `ts_calendar_add` of the span to `from` under the\nsame `overflow` gives `to`. An anniversary on a day its month lacks is\nresolved by `overflow`: one born on the 32nd of Jestha completes a year\non the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh\nunder `CARRY`, and `REJECT` refuses a count from such a day (C803).\nBefore `from`, each part is negative or zero. Dates in two calendars\nare `INVALID_ARG`, naming `calendar`.",
+      "doc": "The years, months and days from `from` to `to`, both in one calendar,\ncounted as an age is (`03-design/calendar-bikram-sambat.md` §11): the\nmost whole months whose anniversary of `from` is not past `to`, then\nthe days from it, so `ts_calendar_add` of the span to `from` under the\nsame `overflow` gives `to`. An anniversary on a day its month lacks is\nresolved by `overflow`: one born on the 32nd of Jestha completes a year\non the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh\nunder `CARRY`, and `REJECT` refuses a count from such a day (C806).\nBefore `from`, each part is negative or zero. Dates in two calendars\nare `INVALID_ARG`, naming `calendar`.",
       "safety": "`context` must be a live handle; `from` and `to` valid for a read;\n`out_span` valid for a read of its `struct_size` and a write.",
       "params": [
         {

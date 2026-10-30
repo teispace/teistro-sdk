@@ -109,7 +109,7 @@ public final class CalendarArea {
      * The years, months and days from {@code from} to {@code to}, both in one calendar, counted as an
      * age is: the most whole months whose anniversary of {@code from} is not past {@code to}, then the
      * days from it, so {@link #add} of the span gives {@code to}. One born on the 32nd of Jestha
-     * completes a year on the 31st of a 31-day Jestha under {@link Overflow#CONSTRAIN} (C803). Earlier
+     * completes a year on the 31st of a 31-day Jestha under {@link Overflow#CONSTRAIN} (C806). Earlier
      * than {@code from}, each part is negative or zero.
      *
      * <pre>{@code

@@ -126,7 +126,7 @@ impl<'a> CalendarArea<'a> {
     /// to `from` under the same `overflow` is `to`. An anniversary on a
     /// day its month lacks is resolved by `overflow`: one born on the 32nd
     /// of Jestha completes a year on the 31st of a 31-day Jestha under
-    /// [`Overflow::Constrain`] (C803). Before `from`, each part is negative
+    /// [`Overflow::Constrain`] (C806). Before `from`, each part is negative
     /// or zero.
     ///
     /// ```

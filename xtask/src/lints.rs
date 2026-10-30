@@ -1011,6 +1011,10 @@ const NODE_FACADES: &[(&str, &str)] = &[
         "a union of what the rite is kept on (a tithi, a nakshatra with its paksha, or a day of either paksha), where the generated record has each optional and says so only in its documentation",
     ),
     (
+        "NextRequest",
+        "the layer takes a `place` and writes the wire's `latitudeDeg` and `longitudeDeg`",
+    ),
+    (
         "FirstYearQuery",
         "the layer takes a `place` and writes the wire's `latitudeDeg` and `longitudeDeg`",
     ),

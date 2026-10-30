@@ -782,8 +782,9 @@ test('every catalogue enum has a complete id table', () => {
   // since `TsCalendar` gained the Bangladeshi calendar; 1409 since the
   // agni vasa's `TsAgniVasa`, three, with its member of `TsKind`; 1414
   // since the inauspicious yogas' `TsAshubhaYoga`, four, with its member;
-  // 1418 since `TsCalendar` gained the four regional solar calendars.
-  assert.equal(entries, 1418, 'every member of every enum is in a table');
+  // 1418 since `TsCalendar` gained the four regional solar calendars;
+  // 1421 since date arithmetic's `TsOverflow`, three.
+  assert.equal(entries, 1421, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {

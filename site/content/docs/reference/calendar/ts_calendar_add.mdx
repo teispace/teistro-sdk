@@ -5,11 +5,52 @@ description: "The date `years`, `months` and `days` after `date`, in its own cal
 
 The date `years`, `months` and `days` after `date`, in its own calendar (`03-design/calendar-bikram-sambat.md` §11): the years and months first, a day number the month lacks resolved by `overflow`, then the days, each count signed. A Bikram Sambat month runs 29 to 32 days, so the 32nd of Jestha plus a month is the 31st of a 31-day Ashadh under `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and `INVALID_ARG` with `NONEXISTENT_DATE` naming `day` under `REJECT`. The ISO week date and the Tibetan calendar, which number no twelve months, are `UNSUPPORTED`; a date past the calendar's span `OUT_OF_RANGE`.
 
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.calendar.add
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.calendar.add
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.calendar.add
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.calendar().add
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.calendar().add
+```
+
+</Tab>
+<Tab value="C">
+
 ```c
 ts_status ts_calendar_add(const ts_context * context, const ts_calendar_date * date, int32_t years, int32_t months, int32_t days, uint8_t overflow, ts_calendar_date * out_date);
 ```
 
-No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+</Tab>
+</Tabs>
+
+Reached from `calendar.add` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

@@ -7,11 +7,52 @@ The next day a festival rule or a kind of day falls on after an instant at a pla
 
 `request_json` is `{"after", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule", "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind` (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules the SDK states) or `rule`, a key of `festivals`, a festival request; `calendar` the answer's days' (Gregorian when left out), `altitudeM` optional and `limitDays` 1 to 3660, 400 when left out. A key it does not read, neither or both of `kind` and `rule`, a rule the festivals lack, a place or offset out of range or a festival request its reader refuses is `INVALID_ARG`, named under `next`; a limit out of range `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`; a context without an ephemeris `CAPABILITY`.
 
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.next
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.next
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.next
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().next
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().next
+```
+
+</Tab>
+<Tab value="C">
+
 ```c
 ts_status ts_almanac_next(const ts_context * context, const char * request_json, ts_string * out_json);
 ```
 
-No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+</Tab>
+</Tabs>
+
+Reached from `almanac.next` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 

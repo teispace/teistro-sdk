@@ -196,7 +196,7 @@ pub struct TsDateSpan {
     /// `api: example=30`
     pub years: i32,
     /// Whole months, -11 to 11.
-    /// `api: range=[-11,11] example=0`
+    /// `api: example=0`
     pub months: i32,
     /// Days.
     /// `api: example=1`
@@ -731,7 +731,7 @@ pub unsafe extern "C" fn ts_calendar_add(
 /// same `overflow` gives `to`. An anniversary on a day its month lacks is
 /// resolved by `overflow`: one born on the 32nd of Jestha completes a year
 /// on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
-/// under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+/// under `CARRY`, and `REJECT` refuses a count from such a day (C806).
 /// Before `from`, each part is negative or zero. Dates in two calendars
 /// are `INVALID_ARG`, naming `calendar`.
 ///

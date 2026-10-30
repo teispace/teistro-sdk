@@ -581,6 +581,16 @@ fn time_and_calendar(api: &Api) -> Vec<&'static str> {
         unit(api, "TsLeap", |l: &teistro_calendar::Leap| {
             id(teistro_ffi::calendar::TsLeap::of(Some(*l)))
         }),
+        // The byte the boundary reads a rule from, found by reading each.
+        unit(
+            api,
+            "TsOverflow",
+            |o: &teistro_calendar::arithmetic::Overflow| {
+                (0..=u8::MAX)
+                    .find(|byte| teistro_ffi::calendar::TsOverflow::read(*byte).ok() == Some(*o))
+                    .and_then(id)
+            },
+        ),
     ]
 }
 
