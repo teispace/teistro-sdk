@@ -472,6 +472,9 @@ Rejected:
    resolve `edge-light` too, are stood in for by Next.js's own sandbox
    made strict.
 
+10. **Lazy modules**, built (2026-10-30, SR-53):
+    [`wasm-lazy-loading.md`](wasm-lazy-loading.md).
+
 ## 7. What is left
 
 - **ADR-0005's module profiles**: built since, on

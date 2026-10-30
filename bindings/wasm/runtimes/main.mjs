@@ -6,12 +6,13 @@
  */
 
 import * as sdk from '@teistro/sdk-wasm';
+import * as lazy from '@teistro/sdk-wasm/lazy';
 
-import { probe } from './probe.mjs';
+import { lazyProbe, probe } from './probe.mjs';
 
 let report;
 try {
-  report = { answer: probe(sdk) };
+  report = { answer: { ...probe(sdk), lazy: await lazyProbe(lazy) } };
 } catch (error) {
   report = { error: `${error.name}: ${error.message}` };
 }

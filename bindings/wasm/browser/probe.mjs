@@ -39,3 +39,41 @@ export function probe(sdk) {
     ctx.dispose();
   }
 }
+
+/**
+ * The same again through the lazy entry: the calendar module first, which
+ * refuses a chart as a capability, then the jyotish module, which draws
+ * one, and the calendar answer each gives. Loading twice is one load.
+ *
+ * @param {typeof import('../lib/lazy.js')} lazy the lazy entry
+ * @returns {Promise<object>} what the gate compares
+ */
+export async function lazyProbe(lazy) {
+  const calendar = await lazy.loadCalendar();
+  if (calendar !== (await lazy.loadCalendar())) throw new Error('the calendar loaded twice');
+  const answers = (sdk) => {
+    const ctx = new sdk.Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+    try {
+      const day = {
+        calendar: sdk.Calendar.Gregorian,
+        year: 2015,
+        eraYear: 0,
+        month: 4,
+        day: 14,
+        resolution: sdk.Resolution.Defined,
+        computedMonth: 0,
+        computedDay: 0,
+      };
+      let chart = 'answered';
+      try {
+        ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0 });
+      } catch (error) {
+        chart = error.status ?? String(error);
+      }
+      return { bikramSambat: ctx.calendar.convert(day, sdk.Calendar.BikramSambat), chart };
+    } finally {
+      ctx.dispose();
+    }
+  };
+  return { calendar: answers(calendar), jyotish: answers(await lazy.loadJyotish()) };
+}

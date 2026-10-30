@@ -11,7 +11,9 @@
   {
     "imports": {
       "@teistro/sdk-wasm": "/lib/index.js",
-      "#native": "/lib/native.web.js"
+      "@teistro/sdk-wasm/lazy": "/lib/lazy.js",
+      "#native": "/lib/native.web.js",
+      "#native-panchanga": "/lib/native-panchanga.web.js"
     }
   }
 </script>
@@ -20,8 +22,9 @@
     fetch('/result', { method: 'POST', body: JSON.stringify(body) });
   try {
     const sdk = await import('@teistro/sdk-wasm');
-    const { probe } = await import('/check/probe.mjs');
-    await report({ answer: probe(sdk) });
+    const lazy = await import('@teistro/sdk-wasm/lazy');
+    const { lazyProbe, probe } = await import('/check/probe.mjs');
+    await report({ answer: { ...probe(sdk), lazy: await lazyProbe(lazy) } });
   } catch (error) {
     await report({ error: String(error?.stack ?? error) });
   }

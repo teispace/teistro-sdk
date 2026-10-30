@@ -55,6 +55,11 @@
 //!    [`SHAKEN_MOST`] bytes; each also bundles the entry and each
 //!    profile's subpath, which must ship their own module and no other,
 //!    so the first measurement is known to be able to see one.
+//!    The lazy entry bundled must load neither the layer nor a module
+//!    first, and carry both modules; each host's program above runs it
+//!    too, its answers held to Node's. The **start check** times each
+//!    entry's first answer under Node and in Chrome, cold and warm, and
+//!    holds which modules a page fetched (`03-design/wasm-lazy-loading.md`).
 //! 7. **Each module held to its size budget** (`docs/05-testing/sizes.json`), both ways:
 //!    over it fails, and so does more than 5% under it, since a budget
 //!    that loose would let the saving go unnoticed. What it measured,
@@ -108,6 +113,16 @@ const BUNDLERS: &str = "bindings/wasm/bundlers";
 /// before the generated tables were marked pure: the budget sits between
 /// the two, near enough to the first to catch a table that stops shaking.
 const SHAKEN_MOST: u64 = 1024;
+/// The most a page may load before it asks the lazy entry for a module:
+/// the entry and the crash-reporter hook, no layer.
+const LAZY_MOST: u64 = 4096;
+/// The entries the start check times.
+const START_ENTRIES: [&str; 3] = ["everything", "panchanga", "lazy"];
+/// The most a first answer may take under Node, a fresh process.
+const START_NODE_MOST_MS: f64 = 3_000.0;
+/// The most a first answer may take in a page. Measured under Chrome at
+/// 6 s cold on a machine at a load of 200, with nothing throttled.
+const START_CHROME_MOST_MS: f64 = 30_000.0;
 /// The Node package, whose layer and manifest the wasm package is made of.
 const NODE: &str = "bindings/node";
 /// The Node package's loader, the one file of its layer the wasm package
@@ -284,6 +299,10 @@ fn manifest(node: &Value) -> Value {
                     }),
                 );
             }
+            exports.insert(
+                String::from("./lazy"),
+                json!({ "types": "./lib/lazy.d.ts", "default": "./lib/lazy.js" }),
+            );
         }
         fields.insert(
             "files".into(),
@@ -688,44 +707,24 @@ fn shaken(root: &Path, staged: &Path, measured: &mut Vec<Row>) -> Result<(), ()>
             .as_array()
             .map(|paths| paths.iter().filter_map(Value::as_str).collect())
             .unwrap_or_default();
-        measured.push(Row {
-            subject: sizes::bundle_subject(bundler, entry),
-            artefact: Artefact::Bundle,
-            raw: Some(bytes),
-            gzip: None,
-        });
-        let wanted = modules
-            .iter()
-            .find(|(name, _, _)| name == entry)
-            .map(|(_, weight, path)| (*weight, path.as_str()));
-        let complaint = match (entry, wanted) {
-            ("catalogue", _) if wasm => Some(String::from("ships the module")),
-            ("catalogue", _) if bytes > SHAKEN_MOST => {
-                Some(format!("weighs {bytes} bytes, over {SHAKEN_MOST}"))
-            }
-            ("catalogue", _) => None,
-            (_, None) => Some(String::from("is an entry the check does not know")),
-            _ if !wasm => Some(String::from(
-                "does not ship the module, so the check cannot see one",
-            )),
-            (_, Some((weight, _))) if shipped > 0 && shipped != weight => Some(format!(
-                "ships {shipped} bytes of module where its own weighs {weight}"
-            )),
-            (_, Some((_, path)))
-                if shipped == 0
-                    && (references.is_empty() || !references.iter().all(|r| r.ends_with(path))) =>
-            {
-                Some(format!(
-                    "emits no module and names {references:?} where its own is `…{path}`"
-                ))
-            }
-            _ => None,
-        };
+        if entry != "lazy" {
+            measured.push(Row {
+                subject: sizes::bundle_subject(bundler, entry),
+                artefact: Artefact::Bundle,
+                raw: Some(bytes),
+                gzip: None,
+            });
+        }
+        let complaint = bundle_complaint(row, &modules);
         match complaint {
             Some(why) => {
                 failed = true;
                 println!("FAIL  {bundler} bundling `{entry}` {why}");
             }
+            None if entry == "lazy" => println!(
+                "ok    {bundler} splits `lazy`: {} bytes load first, of {bytes}",
+                row["initial"]
+            ),
             None => println!(
                 "ok    {bundler} bundles `{entry}` in {bytes} bytes{}",
                 if shipped > 0 {
@@ -739,6 +738,182 @@ fn shaken(root: &Path, staged: &Path, measured: &mut Vec<Row>) -> Result<(), ()>
         }
     }
     if failed { Err(()) } else { Ok(()) }
+}
+
+/// Why a bundle fails its entry's rule, if it does. `modules` holds each
+/// entry's module: its name, its weight and the end of the path a bundle
+/// that leaves it to be served names it by.
+fn bundle_complaint(row: &Value, modules: &[(String, u64, String)]) -> Option<String> {
+    let entry = row["entry"].as_str().unwrap_or("?");
+    let bytes = row["bytes"].as_u64().unwrap_or(u64::MAX);
+    let wasm = row["wasm"].as_bool().unwrap_or(false);
+    let shipped = row["wasmBytes"].as_u64().unwrap_or(0);
+    let references: Vec<&str> = row["references"]
+        .as_array()
+        .map(|paths| paths.iter().filter_map(Value::as_str).collect())
+        .unwrap_or_default();
+    if entry == "lazy" {
+        return lazy_complaint(row, modules);
+    }
+    let wanted = modules
+        .iter()
+        .find(|(name, _, _)| name == entry)
+        .map(|(_, weight, path)| (*weight, path.as_str()));
+    match (entry, wanted) {
+        ("catalogue", _) if wasm => Some(String::from("ships the module")),
+        ("catalogue", _) if bytes > SHAKEN_MOST => {
+            Some(format!("weighs {bytes} bytes, over {SHAKEN_MOST}"))
+        }
+        ("catalogue", _) => None,
+        (_, None) => Some(String::from("is an entry the check does not know")),
+        _ if !wasm => Some(String::from(
+            "does not ship the module, so the check cannot see one",
+        )),
+        (_, Some((weight, _))) if shipped > 0 && shipped != weight => Some(format!(
+            "ships {shipped} bytes of module where its own weighs {weight}"
+        )),
+        (_, Some((_, path)))
+            if shipped == 0
+                && (references.is_empty() || !references.iter().all(|r| r.ends_with(path))) =>
+        {
+            Some(format!(
+                "emits no module and names {references:?} where its own is `…{path}`"
+            ))
+        }
+        _ => None,
+    }
+}
+
+/// Why a bundle of the lazy entry fails, if it does: what loads first must
+/// be the entry alone, with the layer and every module in chunks of their
+/// own, each module shipped or named.
+fn lazy_complaint(row: &Value, modules: &[(String, u64, String)]) -> Option<String> {
+    let initial = row["initial"].as_u64().unwrap_or(u64::MAX);
+    if initial > LAZY_MOST {
+        return Some(format!(
+            "loads {initial} bytes first, over {LAZY_MOST}, so the page pays before it asks"
+        ));
+    }
+    let shipped = row["wasmBytes"].as_u64().unwrap_or(0);
+    let references = row["references"].to_string();
+    let weight: u64 = modules.iter().map(|(_, weight, _)| weight).sum();
+    let carried = shipped == weight || modules.iter().all(|(_, _, path)| references.contains(path));
+    (!carried).then(|| format!("ships {shipped} bytes and names {references}, not both modules"))
+}
+
+/// The start check (`03-design/wasm-lazy-loading.md`): each entry's first
+/// calendar answer timed, printed, and held under a ceiling that catches a
+/// start gone wrong rather than a percent, since a runner's clock is its
+/// own; and, exactly, which modules a page fetched and what it is told when
+/// one cannot be fetched.
+fn start(root: &Path, staged: &Path) -> Result<(), ()> {
+    let mut args = vec![staged.as_os_str().to_owned()];
+    let chrome = chrome();
+    match &chrome {
+        Some(chrome) => args.push(chrome.as_os_str().to_owned()),
+        None => crate::skip::skip(
+            "the start check in a browser needs Chrome (set CHROME to its binary)",
+        ),
+    }
+    let args: Vec<&std::ffi::OsStr> = args.iter().map(std::ffi::OsString::as_os_str).collect();
+    let answer = probe_by(root, "browser/start.mjs", &args)
+        .map_err(|error| println!("FAIL  the start check did not run: {error}"))?;
+    let mut failed = false;
+    let mut held = |host: &str, entry: &str, ms: f64, most: f64| {
+        if ms > most {
+            failed = true;
+            println!("FAIL  `{entry}`'s first answer took {ms:.0} ms in {host}, over {most:.0}");
+        } else {
+            println!("ok    `{entry}` gives its first answer in {ms:.0} ms in {host}");
+        }
+    };
+    for entry in START_ENTRIES {
+        held(
+            "Node",
+            entry,
+            answer["node"][entry].as_f64().unwrap_or(f64::MAX),
+            START_NODE_MOST_MS,
+        );
+        if chrome.is_some() {
+            let page = &answer["chrome"][entry];
+            for (how, ms) in [("cold", &page["cold"]), ("warm", &page["warm"])] {
+                held(
+                    &format!("Chrome, {how}"),
+                    entry,
+                    ms.as_f64().unwrap_or(f64::MAX),
+                    START_CHROME_MOST_MS,
+                );
+            }
+        }
+    }
+    if chrome.is_none() {
+        return if failed { Err(()) } else { Ok(()) };
+    }
+    let fetched = |entry: &str| answer["chrome"][entry]["modules"].clone();
+    let calendar = json!(["/wasm/panchanga/teistro_wasm_bg.wasm"]);
+    if fetched("lazy") == calendar && fetched("panchanga") == calendar {
+        println!(
+            "ok    a page asking the lazy entry for the calendar fetches the calendar module and no other"
+        );
+    } else {
+        println!(
+            "FAIL  the lazy entry fetched {} for a calendar answer",
+            fetched("lazy")
+        );
+        failed = true;
+    }
+    let told = answer["unreachable"]
+        .as_array()
+        .cloned()
+        .unwrap_or_default();
+    if told.len() == 2
+        && told.iter().all(|m| {
+            m.as_str()
+                .is_some_and(|m| m.contains("load the page again"))
+        })
+    {
+        println!(
+            "ok    a module that cannot be fetched is refused saying what to do, each time it is asked for"
+        );
+    } else {
+        println!("FAIL  a module that could not be fetched was told as {told:?}");
+        failed = true;
+    }
+    if failed { Err(()) } else { Ok(()) }
+}
+
+/// The lazy entry's declarations read by the compiler, from the staged
+/// package: a declaration file nothing reads is checked by nothing.
+fn lazy_types(root: &Path, staged: &Path) -> Result<(), ()> {
+    let Some((tsc, args)) = crate::node_binding::typescript(root) else {
+        crate::skip::skip("the lazy entry's declarations: no TypeScript compiler on this machine");
+        return Ok(());
+    };
+    let directory = staged.join("typecheck");
+    fs::create_dir_all(&directory)
+        .and_then(|()| {
+            fs::copy(
+                root.join(WASM).join("typecheck/lazy.ts"),
+                directory.join("lazy.ts"),
+            )
+        })
+        .and_then(|_| {
+            fs::copy(
+                root.join(WASM).join("typecheck/tsconfig.json"),
+                directory.join("tsconfig.json"),
+            )
+        })
+        .map_err(|e| println!("FAIL  the lazy entry's type check could not be copied in: {e}"))?;
+    let checked = step(
+        Command::new(tsc)
+            .args(args)
+            .args(["--project", "typecheck/tsconfig.json"])
+            .current_dir(staged),
+        "the lazy entry's declarations type-check, and a wrong use does not",
+        "the lazy entry's declarations do not type-check",
+    );
+    let _ = fs::remove_dir_all(&directory);
+    checked
 }
 
 /// Each profile's entry under Node, from the staged package: what it
@@ -874,6 +1049,8 @@ pub(crate) fn check(root: &Path) -> i32 {
             )
         })
         .and_then(|()| profiles(root, &staged))
+        .and_then(|()| lazy_types(root, &staged))
+        .and_then(|()| start(root, &staged))
         .and_then(|()| teimeris_web(root, &staged))
         .and_then(|()| node_answer(root, &staged))
         .and_then(|node| {
@@ -1108,6 +1285,8 @@ mod tests {
             "./lib/panchanga.js"
         );
         assert_eq!(wasm["exports"]["./panchanga"]["types"], "./lib/index.d.ts");
+        assert_eq!(wasm["exports"]["./lazy"]["default"], "./lib/lazy.js");
+        assert_eq!(wasm["exports"]["./lazy"]["types"], "./lib/lazy.d.ts");
         assert_eq!(wasm["exports"]["."], node["exports"]["."]);
         assert!(wasm.get("optionalDependencies").is_none() && wasm.get("scripts").is_none());
     }
