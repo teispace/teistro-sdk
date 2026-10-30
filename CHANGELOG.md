@@ -49,6 +49,20 @@ the previous release, not by nobody having looked.
   currency one pack entry away. Sanskrit is refused as not yet reviewed
   (C803). `03-design/amounts-in-words.md`.
 
+**Dates add and subtract, and the next day of a rule is found.**
+**Numbers:** none. Two calls are new, and no existing answer changes.
+- `calendar.add` and `calendar.between` add years, months and days to a
+  date in its own calendar, and give the span between two dates counted
+  as an age is counted. A day the target month lacks, such as a Bikram
+  Sambat 32nd, is resolved by `Overflow`: `CONSTRAIN` (the default),
+  `CARRY` or `REJECT` (`03-design/calendar-bikram-sambat.md` §11, C806).
+- `almanac.next` finds the next day of an Ekadashi, Purnima, Amavasya,
+  Sankranti or a festival request's rule after an instant at a place.
+  It looks 400 days ahead by default, at most 3660, and gives `LIMIT` on
+  `limitDays` when nothing falls in that span (`03-design/next-occurrence.md`,
+  C807). The twelve sankrantis are `DatedRule::sankrantis()`, the same
+  rules `NEPAL_PANCHANGA` has always carried.
+
 ## 1.0.0-rc.1
 
 The first release candidate of 1.0.0, for the maintainer's review and the

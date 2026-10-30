@@ -39,7 +39,7 @@ Each kind is read by rules the SDK states, so no pack has to be named:
 | kind | rules | source |
 |---|---|---|
 | `EKADASHI` | *Dharmasindhu*'s Smarta and Vaishnava fasts (`EkadashiRule::dharmasindhu`). The earlier of the two when they part. | *Dharmasindhu* pp. 11–12 (`festival-rules.md` §8) |
-| `PURNIMA` | the day whose sunrise holds the full moon, or the day an unrisen full moon falls in, every month, the adhika month too | the day a patro printed in Nepal names by its sunrise tithi (C197), C804 |
+| `PURNIMA` | the day whose sunrise holds the full moon, or the day an unrisen full moon falls in, every month, the adhika month too | the day a patro printed in Nepal names by its sunrise tithi (C197), C807 |
 | `AMAVASYA` | the same, for the new moon | as `PURNIMA` |
 | `SANKRANTI` | the first day of each Bikram Sambat month (`DatedRule::sankrantis`, the twelve that `NEPAL_PANCHANGA` prints) | Nepal's national panchanga, VS 2082, the punya convention (C619) |
 
@@ -86,21 +86,28 @@ holding the target answers, and its earliest day is the one returned.
 
 ## 5. Cost
 
-Measured on this Mac (Apple M-series, release build) through the
-façade on the committee's setup, the Surya Siddhanta at Kathmandu:
+Measured on this Mac (Apple silicon, release build, 2026-10-30) by the
+`app-speed` binary's harness (`adapters/ephemeris-teimeris/rust`), each
+run on a fresh context, 21 runs, median in milliseconds. Each search starts
+at noon UTC on 1 January 2026, at Kathmandu:
 
-| request | median |
-|---|---:|
-| the next Ekadashi (one window, 32 days) | see the report |
-| Vijaya Dashami from 1 January (four windows, 400 days) | see the report |
+| request | committee, Surya Siddhanta + Teimeris | drik, Teimeris |
+|---|---:|---:|
+| the next Ekadashi (one window, 32 days) | 2.61 | 6.52 |
+| Vijaya Dashami, `NEPAL_PANCHANGA` (four windows, 400 days) | 25.4 | 61.8 |
+| for scale: a year of the Nepal pack's festivals (`festivals` row) | 24.9 | 57.4 |
+
+A day found in the first window costs about a tenth of a year's
+reckoning. A festival a season away costs about what a year of the whole
+pack does. The 400 days are reckoned for one rule, but each window founds
+its own days, and that is most of the cost.
 
 `app-speed-measured.md` gates a row only when every device record
 carries it: Android, the iOS simulator and the desktop. A budget row
 added here would fail the gate until the two devices are recorded again,
 which this change cannot do. So the row waits for the next device
-recording. The bound it would hold is the `festivals` row's: a year of
-the whole Nepal pack, 160 ms. A next occurrence reckons at most 400
-days of one rule, which is less work.
+recording, with the `festivals` row's budget, 160 ms, as the bound it
+would hold.
 
 ## 6. At the boundary and in the bindings
 
