@@ -448,6 +448,12 @@ fn enums_at_the_boundary(api: &Api) -> BTreeSet<String> {
     };
     for f in &api.functions {
         for p in &f.params {
+            // A scalar parameter linked to an enum (`api: enum=…`) crosses
+            // as that enum's key, so it needs the conversion even when no
+            // struct carries the enum.
+            if let Some(name) = p.meta.enum_name.as_deref() {
+                used.insert(name.to_string());
+            }
             note(&p.ty, &mut used);
         }
         if let Some(r) = &f.returns {
