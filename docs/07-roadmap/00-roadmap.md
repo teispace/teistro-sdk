@@ -1107,7 +1107,16 @@ about one and a half to two weeks:
   ephemeris kit the most);
 - the release candidate: version, changelog and a tag on a rehearsal run.
 
-**v1.0 release candidate: about 9 to 12 November 2026**, then the
+**On 2026-10-30 that list is done** (#418, #419, #420): the shim's
+items 6 to 10, the oracle, the muhurta ranking decided otherwise in part
+(the SDK keeps the texts' per-window reading; a baseline-sampling mode is
+v1.x), intl at 92% and idl and the ephemeris kit over 90% of branches, and
+the version at 1.0.0-rc.1 with its changelog, rehearsed through
+`release.yml` dispatched on the branch, which builds and stages every
+package and publishes none. **The tag `v1.0.0-rc.1` and every publication
+wait on the maintainer**, so the candidate is cut but not released.
+
+**v1.0 release candidate: cut 2026-10-30, tagged on the maintainer's word**, then the
 maintainer's review, then the astrologers'. What waits on a source, a
 reviewer or the maintainer is listed in `STATUS.md`, "Now"; the corpus's
 0.13.0 release is the newest of those.
