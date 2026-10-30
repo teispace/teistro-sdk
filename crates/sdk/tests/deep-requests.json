@@ -2541,6 +2541,25 @@
     }
   },
   {
+    "record": "intl.inWords",
+    "request": {
+      "amount": {
+        "currency": "x",
+        "minorDigits": 1,
+        "only": true,
+        "rounding": "HALF_EVEN",
+        "value": {
+          "minor": 1
+        }
+      },
+      "digits": "DEVA",
+      "grouping": "INTERNATIONAL",
+      "locale": "x",
+      "number": 1,
+      "style": "VERBOSE"
+    }
+  },
+  {
     "record": "matching.naam",
     "request": {
       "bride": "x",

@@ -28,6 +28,7 @@ __all__ = [
     "CalendarAsked",
     "ChartFoundRequest",
     "BatchAsked",
+    "InWordsRequest",
     "NaamRequest",
     "NamingCheckRequest",
     "NamingOfRequest",
@@ -84,6 +85,10 @@ __all__ = [
     "HouseRequest",
     "BaselinePeriod",
     "PeriodAsked",
+    "WordsAmount",
+    "WordsDigits",
+    "WordsGrouping",
+    "WordsStyle",
     "NaamRules",
     "Birth",
     "NamingRules",
@@ -208,6 +213,8 @@ __all__ = [
     "Snapshot",
     "SnapshotSunrise",
     "SnapshotClock",
+    "WordsRounding",
+    "WordsAmountValue",
     "NameRules",
     "FinalA",
     "NasalInitial",
@@ -983,6 +990,28 @@ class BatchAsked(TypedDict, total=False):
     baseline: Optional[BaselinePeriod]
 
     periods: Required[Sequence[PeriodAsked]]
+
+
+class InWordsRequest(TypedDict, total=False):
+    """What a caller asks to be written in words: a number or an amount, and how."""
+
+    amount: Optional[WordsAmount]
+    """An amount to spell with its units; this or `number`."""
+
+    digits: Optional[WordsDigits]
+    """The figures' digits; the locale's numbering system when left out."""
+
+    grouping: Optional[WordsGrouping]
+    """The grouping; the locale's own (`_meta.json`) when left out."""
+
+    locale: Optional[str]
+    """The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out."""
+
+    number: Optional[int]
+    """A number to spell, negatives by the rule set's own word for minus; this or `amount`."""
+
+    style: WordsStyle
+    """The rule set."""
 
 
 class NaamRequest(TypedDict, total=False):
@@ -1864,6 +1893,49 @@ class PeriodAsked(TypedDict, total=False):
     spells: Optional[Sequence[int]]
 
     utcOffsetSeconds: Required[int]
+
+
+class WordsAmount(TypedDict, total=False):
+    """An amount of a currency."""
+
+    currency: Required[str]
+    """The ISO 4217 code, three capital letters; its unit words are the locale's messages `sdk.amount.<CODE>.major` and `.minor`."""
+
+    minorDigits: int
+    """The minor unit's decimal places, 0 to 4: 2 for NPR and INR, 0 for a currency with no minor unit."""
+
+    only: bool
+    """Whether the closing word ("only", "मात्र") follows, as a cheque's legal amount has it."""
+
+    rounding: WordsRounding
+    """How a decimal is brought to the minor unit."""
+
+    value: Required[WordsAmountValue]
+    """The value."""
+
+
+WordsDigits: TypeAlias = Literal['LATN', 'DEVA']
+"""The digits a figure is written in.
+
+`LATN`: `0123456789`.
+`DEVA`: `०१२३४५६७८९`.
+"""
+
+
+WordsGrouping: TypeAlias = Literal['INDIAN', 'INTERNATIONAL']
+"""How digits are grouped, and so which scale words a number is counted in.
+
+`INDIAN`: Every two digits past the thousands: lakh, crore, arab, kharab; `12,34,567`.
+`INTERNATIONAL`: Every three: million, billion; `1,234,567`. English only.
+"""
+
+
+WordsStyle: TypeAlias = Literal['PLAIN', 'VERBOSE']
+"""Which of CLDR's cardinal rule sets spells the words.
+
+`PLAIN`: `spellout-cardinal`: "one hundred five".
+`VERBOSE`: `spellout-cardinal-verbose`: "one hundred and five". English only.
+"""
 
 
 class NaamRules(TypedDict, total=False):
@@ -3300,6 +3372,33 @@ class SnapshotClock(TypedDict, total=False):
 
     minute: Required[int]
     """The minute, 0 to 59."""
+
+
+WordsRounding: TypeAlias = Literal['HALF_UP', 'HALF_EVEN', 'EXACT']
+"""How a decimal with more digits than the currency's minor unit is brought to it.
+
+`HALF_UP`: Half a minor unit or more goes up, less is dropped: India's banking rule (RBI DBOD.Dir.BC.70/13.01.01/2006-07), and the convention for NPR (C805).
+`HALF_EVEN`: Half a minor unit goes to the even neighbour (banker's rounding).
+`EXACT`: Refuses a decimal whose digits past the minor unit are not zero.
+"""
+
+
+WordsAmountValue: TypeAlias = "Union[_WordsAmountValueMinor, _WordsAmountValueDecimal]"
+"""An amount's value: a count of minor units, or a decimal string. Never a float.
+
+`minor`: The minor units: 123456 paisa is NPR 1,234.56.
+`decimal`: ASCII digits with at most one `.`, no sign and no exponent, rounded to the minor unit by the amount's `rounding`.
+"""
+
+
+class _WordsAmountValueMinor(TypedDict, total=False):
+    minor: Required[int]
+    """The minor units: 123456 paisa is NPR 1,234.56."""
+
+
+class _WordsAmountValueDecimal(TypedDict, total=False):
+    decimal: Required[str]
+    """ASCII digits with at most one `.`, no sign and no exponent, rounded to the minor unit by the amount's `rounding`."""
 
 
 class NameRules(TypedDict, total=False):

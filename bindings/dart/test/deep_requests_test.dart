@@ -1460,6 +1460,29 @@ void main() {
     );
   });
 
+  test('intl.inWords: InWordsRequest', () {
+    _holds(
+      'intl.inWords',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: InWordsRequest(
+        amount: WordsAmount(
+          currency: 'x',
+          minorDigits: 1,
+          only: true,
+          rounding: WordsRounding.halfEven,
+          value: WordsAmountValueMinor(1),
+        ),
+        digits: WordsDigits.deva,
+        grouping: WordsGrouping.international,
+        locale: 'x',
+        number: 1,
+        style: WordsStyle.verbose,
+      ).toJson(),
+    );
+  });
+
   test('matching.naam: NaamRequest', () {
     _holds(
       'matching.naam',

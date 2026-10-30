@@ -4397,6 +4397,37 @@ impl Context {
         Ok(out_has as _)
     }
 
+    /// A number or an amount of money in words and in figures, by CLDR's
+    /// rule-based number formats (`03-design/amounts-in-words.md`), answered
+    /// as canonical JSON: `{text, figure, rules, locale, amount}`, `amount`
+    /// for an amount the major and minor counts, each in words with its unit
+    /// word, and whether a decimal was rounded.
+    ///
+    /// `request_json` is `{"number"}` (an integer, a negative spelt with the
+    /// language's minus) or `{"amount": {"currency", "value", "minorDigits",
+    /// "rounding", "only"}}`, never both, with `"locale"` (the context's when
+    /// left out), `"grouping"` (`INDIAN`, `INTERNATIONAL`), `"digits"`
+    /// (`LATN`, `DEVA`) and `"style"` (`PLAIN`, `VERBOSE`). An amount's
+    /// value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
+    /// A key it does not read, both or neither of `number` and `amount`, or
+    /// a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
+    /// Sanskrit (not yet reviewed), a grouping or style the language's rules
+    /// lack, or a currency the locale names no units for is `UNSUPPORTED`.
+    #[wasm_bindgen(js_name = intlInWords)]
+    pub fn intl_in_words(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::intl::ts_intl_in_words(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Text from one script into another (`deva`, `iast`), as a string lent
     /// until the next call on the context. A pair the build has no table for
     /// is `UNSUPPORTED` naming both scripts; anything the table does not know

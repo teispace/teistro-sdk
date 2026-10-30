@@ -326,6 +326,20 @@ fn written<T: serde::Serialize>(value: &T) -> Result<serde_json::Value, Error> {
 #[must_use]
 pub fn records() -> Vec<Record> {
     let mut all: Vec<Record> = vec![
+        Record {
+            name: "intl.inWords",
+            boundary: "ts_intl_in_words",
+            title: "A number or an amount of money in words and figures",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .intl()
+                        .in_words(&crate::InWordsRequest::from_json(json)?)?,
+                )
+            },
+            schemas: schemas!(crate::InWordsRequest => crate::InWords),
+        },
         #[cfg(feature = "chart")]
         Record {
             name: "matching.naam",

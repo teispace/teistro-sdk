@@ -220,6 +220,20 @@
     }
   },
   {
+    "record": "intl.inWords",
+    "request": {
+      "amount": {
+        "currency": "NPR",
+        "value": {
+          "minor": 123456
+        },
+        "only": true
+      },
+      "locale": "ne-Deva-NP",
+      "grouping": "INDIAN"
+    }
+  },
+  {
     "record": "almanac.festival_calendar",
     "request": {
       "first": {

@@ -15724,6 +15724,57 @@
       "source": "crates/ffi/src/intl.rs"
     },
     {
+      "name": "ts_intl_in_words",
+      "doc": "A number or an amount of money in words and in figures, by CLDR's\nrule-based number formats (`03-design/amounts-in-words.md`), answered\nas canonical JSON: `{text, figure, rules, locale, amount}`, `amount`\nfor an amount the major and minor counts, each in words with its unit\nword, and whether a decimal was rounded.\n\n`request_json` is `{\"number\"}` (an integer, a negative spelt with the\nlanguage's minus) or `{\"amount\": {\"currency\", \"value\", \"minorDigits\",\n\"rounding\", \"only\"}}`, never both, with `\"locale\"` (the context's when\nleft out), `\"grouping\"` (`INDIAN`, `INTERNATIONAL`), `\"digits\"`\n(`LATN`, `DEVA`) and `\"style\"` (`PLAIN`, `VERBOSE`). An amount's\nvalue is `{\"minor\": units}` or `{\"decimal\": \"1234.56\"}`, never a float.\nA key it does not read, both or neither of `number` and `amount`, or\na malformed decimal or code is `INVALID_ARG`, named under `inWords`;\nSanskrit (not yet reviewed), a grouping or style the language's rules\nlack, or a currency the locale names no units for is `UNSUPPORTED`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/intl.rs"
+    },
+    {
       "name": "ts_intl_transliterate",
       "doc": "Text from one script into another (`deva`, `iast`), as a string lent\nuntil the next call on the context. A pair the build has no table for\nis `UNSUPPORTED` naming both scripts; anything the table does not know\npasses through, so a name written in two scripts is transliterated in\nthe half that needs it.",
       "safety": "`context` must be a live handle; `text`, `from` and `to`\nNUL-terminated strings; `out_text` valid for a write.",

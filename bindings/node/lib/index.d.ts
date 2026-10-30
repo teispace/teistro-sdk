@@ -200,6 +200,7 @@ import type {
   HarmonicRequest,
   HarshaRules,
   HitRequest,
+  InWordsRequest,
   Interval,
   KootaRules,
   KpRequest,
@@ -2245,6 +2246,40 @@ export interface RecordedSettings {
   readonly locale: string | null;
   /** Every field read and set aside, in table order. */
   readonly notes: readonly RecordedNote[];
+}
+
+/** A number or an amount in words and in figures, as `intl.inWords` gives it. */
+export interface InWords {
+  /** The whole, in words. */
+  readonly text: string;
+  /** The figures, grouped, in the digits asked for. */
+  readonly figure: string;
+  /** Where the words came from: `cldr-<release>/<file>/<rule set>`. */
+  readonly rules: string;
+  /** The locale the words and units are in. */
+  readonly locale: string;
+  /** An amount's parts; `null` for a number. */
+  readonly amount: AmountInWords | null;
+}
+
+/** An amount's parts, for an application that composes them its own way. */
+export interface AmountInWords {
+  /** The ISO 4217 code. */
+  readonly currency: string;
+  /** The major units. */
+  readonly major: number;
+  /** The minor units after them. */
+  readonly minor: number;
+  /** The major units in words. */
+  readonly majorWords: string;
+  /** The major unit's word for that count. */
+  readonly majorUnit: string;
+  /** The minor units in words; `null` for a currency with no minor unit. */
+  readonly minorWords: string | null;
+  /** The minor unit's word for that count; `null` with `minorWords`. */
+  readonly minorUnit: string | null;
+  /** Whether a decimal lost digits to the rounding. */
+  readonly rounded: boolean;
 }
 
 /** Everything numerology says of a name and a birth date. */
@@ -7267,6 +7302,8 @@ export declare class IntlArea {
   transliterate(text: string, from?: string, to?: string): string;
   /** An entity's forms in the current locale or its fallbacks. */
   entity(key: string): EntityForms;
+  /** A number or an amount of money in words and in figures, by CLDR's rules. */
+  inWords(request: InWordsRequest): InWords;
   /** The typed accessors: every message and every catalogued entity. */
   readonly messages: Messages;
   /** Loads a `.tpack` or `.tbundle` file into the locale engine. */

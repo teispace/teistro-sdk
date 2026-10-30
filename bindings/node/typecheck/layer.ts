@@ -89,6 +89,8 @@ import type {
   RisingSign,
   NaamRules,
   NumerologyProfile,
+  InWords,
+  InWordsRequest,
   NumerologyRules,
   RecordedSettings,
   RashifalAnswer,
@@ -2180,6 +2182,22 @@ function theNumerology(ctx: Context): string {
 }
 
 void theNumerology;
+
+// A number and an amount in words: the value never a float.
+function theWords(ctx: Context): string {
+  const asked: InWordsRequest = {
+    amount: { currency: 'NPR', value: { minor: 123456 }, only: true, rounding: 'HALF_EVEN' },
+    locale: 'ne-Deva-NP',
+    grouping: 'INDIAN',
+    digits: 'DEVA',
+  };
+  const words: InWords = ctx.intl.inWords(asked);
+  // @ts-expect-error a grouping takes only its own members
+  const misgrouped: InWordsRequest = { number: 5, grouping: 'WESTERN' };
+  return [words.text, words.figure, words.amount?.majorWords ?? '', String(misgrouped)].join();
+}
+
+void theWords;
 
 // A stored baseline snapshot translated into the contexts to open.
 function theRecordedSettings(ctx: Context): string {

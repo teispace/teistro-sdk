@@ -131,6 +131,31 @@ public final class IntlArea {
     }
 
     /**
+     * A number or an amount of money in words and in figures, by CLDR's
+     * rule-based number formats ({@code 03-design/amounts-in-words.md}):
+     * Nepali, Hindi and English with the Indian grouping, English with the
+     * international one too. An amount's value is a count of minor units
+     * or a decimal string, never a double.
+     *
+     * <pre>{@code
+     * InWords words = sdk.intl().inWords(InWordsRequest.builder()
+     *         .amount(WordsAmount.builder().currency("NPR").value(new WordsAmountValueMinor(123_456)).only(true).build())
+     *         .locale("ne-Deva-NP").build());
+     * String text = words.text(); // एक हजार दुई सय चौँतिस रुपैयाँ र छपन्न पैसा मात्र
+     * }</pre>
+     *
+     * @param request the number or the amount, and how to write it
+     * @return the words and the figures
+     */
+    public InWords inWords(com.teispace.teistro.request.InWordsRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is an InWordsRequest", "request");
+        }
+        String json = Json.write(request);
+        return InWords.read(Json.read(context.locked((lib, raw) -> Calls.intlInWords(lib, raw, json))));
+    }
+
+    /**
      * Loads a locale pack's bytes into the engine.
      *
      * @param data the pack

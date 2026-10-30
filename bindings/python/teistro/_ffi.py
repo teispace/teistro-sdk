@@ -4100,6 +4100,13 @@ class TeistroLibrary:
             ctypes.POINTER(ctypes.c_uint8),
         ]
         self.ts_intl_has.restype = ctypes.c_int32
+        self.ts_intl_in_words: Any = library.ts_intl_in_words
+        self.ts_intl_in_words.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_intl_in_words.restype = ctypes.c_int32
         self.ts_intl_transliterate: Any = library.ts_intl_transliterate
         self.ts_intl_transliterate.argtypes = [
             ctypes.POINTER(_Context),
@@ -4869,6 +4876,40 @@ class TeistroContext:
             owned.clear()
             has = _out_has.value
             return has
+
+    def intl_in_words(self, request_json: str) -> str:
+        """A number or an amount of money in words and in figures, by CLDR's
+        rule-based number formats (`03-design/amounts-in-words.md`), answered
+        as canonical JSON: `{text, figure, rules, locale, amount}`, `amount`
+        for an amount the major and minor counts, each in words with its unit
+        word, and whether a decimal was rounded.
+
+        `request_json` is `{"number"}` (an integer, a negative spelt with the
+        language's minus) or `{"amount": {"currency", "value", "minorDigits",
+        "rounding", "only"}}`, never both, with `"locale"` (the context's when
+        left out), `"grouping"` (`INDIAN`, `INTERNATIONAL`), `"digits"`
+        (`LATN`, `DEVA`) and `"style"` (`PLAIN`, `VERBOSE`). An amount's
+        value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
+        A key it does not read, both or neither of `number` and `amount`, or
+        a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
+        Sanskrit (not yet reviewed), a grouping or style the language's rules
+        lack, or a currency the locale names no units for is `UNSUPPORTED`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_intl_in_words(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def intl_transliterate(self, text: str, from_: str, to: str) -> str:
         """Text from one script into another (`deva`, `iast`), as a string lent

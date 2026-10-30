@@ -1941,6 +1941,8 @@ typedef TsIntlLocaleNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointe
 typedef TsIntlLocaleDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StrStruct>);
 typedef TsIntlHasNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>);
 typedef TsIntlHasDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>);
+typedef TsIntlInWordsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlInWordsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlTransliterateNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlTransliterateDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlEntityNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
@@ -2044,6 +2046,7 @@ final class TeistroLibrary {
         ts_intl_set_locale = library.lookupFunction<TsIntlSetLocaleNative, TsIntlSetLocaleDart>('ts_intl_set_locale'),
         ts_intl_locale = library.lookupFunction<TsIntlLocaleNative, TsIntlLocaleDart>('ts_intl_locale'),
         ts_intl_has = library.lookupFunction<TsIntlHasNative, TsIntlHasDart>('ts_intl_has'),
+        ts_intl_in_words = library.lookupFunction<TsIntlInWordsNative, TsIntlInWordsDart>('ts_intl_in_words'),
         ts_intl_transliterate = library.lookupFunction<TsIntlTransliterateNative, TsIntlTransliterateDart>('ts_intl_transliterate'),
         ts_intl_entity = library.lookupFunction<TsIntlEntityNative, TsIntlEntityDart>('ts_intl_entity'),
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
@@ -2270,6 +2273,24 @@ final class TeistroLibrary {
 
   /// Whether the current locale or its fallbacks have a message: `1` or `0`.
   final TsIntlHasDart ts_intl_has;
+
+  /// A number or an amount of money in words and in figures, by CLDR's
+  /// rule-based number formats (`03-design/amounts-in-words.md`), answered
+  /// as canonical JSON: `{text, figure, rules, locale, amount}`, `amount`
+  /// for an amount the major and minor counts, each in words with its unit
+  /// word, and whether a decimal was rounded.
+  ///
+  /// `request_json` is `{"number"}` (an integer, a negative spelt with the
+  /// language's minus) or `{"amount": {"currency", "value", "minorDigits",
+  /// "rounding", "only"}}`, never both, with `"locale"` (the context's when
+  /// left out), `"grouping"` (`INDIAN`, `INTERNATIONAL`), `"digits"`
+  /// (`LATN`, `DEVA`) and `"style"` (`PLAIN`, `VERBOSE`). An amount's
+  /// value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
+  /// A key it does not read, both or neither of `number` and `amount`, or
+  /// a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
+  /// Sanskrit (not yet reviewed), a grouping or style the language's rules
+  /// lack, or a currency the locale names no units for is `UNSUPPORTED`.
+  final TsIntlInWordsDart ts_intl_in_words;
 
   /// Text from one script into another (`deva`, `iast`), as a string lent
   /// until the next call on the context. A pair the build has no table for
@@ -5814,6 +5835,33 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_intl_has(_handle, rawkey, outHas);
         if (status != 0) _fail(status);
         return outHas.value;
+    });
+  }
+
+  /// A number or an amount of money in words and in figures, by CLDR's
+  /// rule-based number formats (`03-design/amounts-in-words.md`), answered
+  /// as canonical JSON: `{text, figure, rules, locale, amount}`, `amount`
+  /// for an amount the major and minor counts, each in words with its unit
+  /// word, and whether a decimal was rounded.
+  ///
+  /// `request_json` is `{"number"}` (an integer, a negative spelt with the
+  /// language's minus) or `{"amount": {"currency", "value", "minorDigits",
+  /// "rounding", "only"}}`, never both, with `"locale"` (the context's when
+  /// left out), `"grouping"` (`INDIAN`, `INTERNATIONAL`), `"digits"`
+  /// (`LATN`, `DEVA`) and `"style"` (`PLAIN`, `VERBOSE`). An amount's
+  /// value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
+  /// A key it does not read, both or neither of `number` and `amount`, or
+  /// a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
+  /// Sanskrit (not yet reviewed), a grouping or style the language's rules
+  /// lack, or a currency the locale names no units for is `UNSUPPORTED`.
+  String intlInWords(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_intl_in_words(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 
