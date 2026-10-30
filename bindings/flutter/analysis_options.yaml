@@ -12,3 +12,7 @@ analyzer:
     strict-raw-types: true
   errors:
     todo: ignore
+    # The checkout depends on `teistro` by `path: ../dart`, which a
+    # publishable package may not; `cargo xtask package stage` writes the
+    # exact version in its place, and refuses a pubspec without that path.
+    invalid_dependency: ignore

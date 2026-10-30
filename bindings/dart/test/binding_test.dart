@@ -53,7 +53,10 @@ void main() {
     expect(teistro.abi, generatedAbiVersion);
     expect(teistro.catalogue, 1);
     expect(teistro.defaultProfileId, 'parashari-classical');
-    expect(teistro.version, matches(r'^\d+\.\d+\.\d+$'));
+    expect(
+      teistro.version,
+      matches(r'^\d+\.\d+\.\d+(-(alpha|beta|rc)(\.\d+)?)?$'),
+    );
   });
 
   test('a context resolves its settings and reports them', () {
