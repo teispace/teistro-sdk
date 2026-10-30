@@ -145,6 +145,56 @@ mod tests {
         }
         assert_eq!(written(f64::NAN), "NaN");
         assert_eq!(written(f64::NEG_INFINITY), "-Infinity");
+        assert_eq!(written(f64::INFINITY), "Infinity");
         assert!("Infinity".parse::<f64>().unwrap().is_infinite());
+    }
+
+    fn api() -> Api {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+        serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap()
+    }
+
+    fn brand<'c>(corpus: &'c serde_json::Value, name: &str) -> &'c serde_json::Value {
+        corpus["brands"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|b| b["brand"] == name)
+            .unwrap()
+    }
+
+    #[test]
+    fn a_brand_is_held_to_its_range_or_to_nought_and_the_refusals() {
+        let mut api = api();
+        let checked = corpus(&api).unwrap();
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/validators.json");
+        assert_eq!(checked, std::fs::read_to_string(path).unwrap());
+        let before: serde_json::Value = serde_json::from_str(&checked).unwrap();
+        assert_eq!(
+            brand(&before, "latitude").pointer("/valid/0"),
+            Some(&json!("-90")),
+            "a range's low end is valid"
+        );
+        for field in api.structs.iter_mut().flat_map(|s| &mut s.fields) {
+            if field.meta.brand.as_deref() == Some("latitude") {
+                field.meta.range = None;
+            }
+        }
+        let after: serde_json::Value = serde_json::from_str(&corpus(&api).unwrap()).unwrap();
+        let latitude = brand(&after, "latitude");
+        assert_eq!(latitude["valid"], json!(["0"]), "no range: nought alone");
+        assert_eq!(
+            latitude["invalid"],
+            json!(["NaN", "Infinity", "-Infinity", "1e308", "-1e308"])
+        );
+        for field in api.structs.iter_mut().flat_map(|s| &mut s.fields) {
+            if field.meta.brand.as_deref() == Some("latitude") {
+                field.meta.range = Some(String::from("[south,90]"));
+            }
+        }
+        assert_eq!(
+            corpus(&api).unwrap_err(),
+            "latitude: the range end `south` is not a number"
+        );
     }
 }

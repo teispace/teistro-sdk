@@ -1080,6 +1080,113 @@ mod tests {
         assert!(test.contains("['speed']"), "{test}");
     }
 
+    /// The facaded fixture with a root that holds a hand-built part
+    /// inside every shape a record takes: a tagged variant, an external
+    /// one, a record laid flat, a union of names and a record, a list,
+    /// and a pair under a generated record; and a record the Dart layer
+    /// declares elsewhere.
+    fn shaped() -> Api {
+        let mut api = facaded();
+        let place = json!({"$ref": "#/$defs/AnnualPlace"});
+        let schema = json!({"$defs": {
+            "Shaped": {"type": "object", "properties": {
+                "moved": {"$ref": "#/$defs/Moved"},
+                "moves": {"type": "array", "items": {"$ref": "#/$defs/Moved"}},
+                "away": {"$ref": "#/$defs/Away"},
+                "kept": {"$ref": "#/$defs/Kept"},
+                "spot": {"$ref": "#/$defs/Spot"},
+                "hold": {"$ref": "#/$defs/PairHold"},
+                "civil": {"$ref": "#/$defs/CivilTime"},
+                "place": place
+            }, "required": ["place"]},
+            "Moved": {"oneOf": [
+                {"type": "object", "properties": {"kind": {"const": "STAY"}}, "required": ["kind"],
+                    "additionalProperties": false},
+                {"type": "object", "properties": {"kind": {"const": "TO"}, "place": place,
+                    "note": {"type": "string"}}, "required": ["kind", "place"],
+                    "additionalProperties": false}]},
+            "Away": {"oneOf": [{"const": "NONE"},
+                {"type": "object", "properties": {"AT": place}, "required": ["AT"],
+                    "additionalProperties": false}]},
+            "Kept": {"type": "object", "properties": {"place": place, "note": {"type": "string"}},
+                "required": ["place"], "oneOf": [
+                {"type": "object", "properties": {"kind": {"const": "planet-in-house"}}, "required": ["kind"]},
+                {"type": "object", "properties": {"kind": {"const": "AT"}, "deg": {"type": "number"}},
+                    "required": ["kind", "deg"]}], "unevaluatedProperties": false},
+            "Spot": {"anyOf": [{"enum": ["HOME"]}, {"$ref": "#/$defs/Lodging"}]},
+            "Lodging": {"type": "object", "properties": {"place": place}, "required": ["place"]},
+            "PairHold": {"type": "object", "properties": {"pair": {"type": "array", "prefixItems":
+                [{"$ref": "#/$defs/Entry"}, {"type": "number"}], "minItems": 2, "maxItems": 2}}},
+            "CivilTime": {"type": "object", "properties": {"hour": {"type": "integer", "format": "uint8"}},
+                "required": ["hour"]},
+            "AnnualPlace": {"type": "object", "properties": {"entry": {"$ref": "#/$defs/Entry"}},
+                "required": ["entry"]},
+            "Entry": {"type": "object", "properties": {"end": {"type": "number"}}, "required": ["end"]},
+            "How": {"oneOf": [
+                {"type": "object", "properties": {"kind": {"const": "planet-in-house"}}, "required": ["kind"],
+                    "additionalProperties": false},
+                {"type": "object", "properties": {"kind": {"const": "AT"}, "deg": {"type": "number"}},
+                    "required": ["kind", "deg"], "additionalProperties": false}]}
+        }});
+        let records =
+            crate::records::read(&schema, &["Shaped"], crate::records::Reading { raw: &[] })
+                .unwrap();
+        for record in records {
+            if !api.requests.records.iter().any(|r| r.name == record.name) {
+                api.requests.records.push(record);
+            }
+        }
+        api.requests.roots.push(crate::records::RequestRoot {
+            record: "shaped".into(),
+            name: "Shaped".into(),
+        });
+        api
+    }
+
+    #[test]
+    fn a_hand_built_part_is_looked_for_inside_every_shape_a_record_takes() {
+        let api = shaped();
+        let place = |end: u32| json!({"entry": {"end": end}});
+        let deep = json!([{"record": "shaped", "request": {
+            "place": place(1),
+            "moved": {"kind": "TO", "place": place(2)},
+            "moves": [{"kind": "TO", "place": place(3)}, {"kind": "GONE"}],
+            "away": {"AT": place(4)},
+            "kept": {"place": place(5), "kind": "AT", "deg": 3},
+            "spot": {"place": place(6)},
+            "hold": {"pair": [{"end": 7}]},
+            "civil": {"hour": 8}
+        }}]);
+        let test = dart_deep_test(&api, &deep);
+        // The root holds a hand-built part, so it is not built; each
+        // generated record within it is, wherever it stands.
+        assert!(!test.contains("test('shaped: Shaped'"), "{test}");
+        for case in [
+            "test('shaped at place.entry: Entry', () {",
+            // Inside a tagged variant, by the variant its tag names.
+            "test('shaped at moved.place.entry: Entry', () {",
+            "test('shaped at moves[0].place.entry: Entry', () {",
+            // Inside an external variant's payload.
+            "test('shaped at away.AT.entry: Entry', () {",
+            // Inside the fields beside a record laid flat, and the record
+            // laid flat itself, built from the whole object.
+            "test('shaped at kept.place.entry: Entry', () {",
+            "test('shaped at kept: How', () {",
+            // Inside the record a union of names and a record picks.
+            "test('shaped at spot.place.entry: Entry', () {",
+            // A pair of the wrong length is dropped from its record, and
+            // the part it does hold is built.
+            "test('shaped at hold: PairHold', () {",
+            "test('shaped at hold.pair[0]: Entry', () {",
+        ] {
+            assert!(test.contains(case), "{case}: {test}");
+        }
+        // A variant no tag names, and a record the layer declares, give
+        // nothing to build.
+        assert!(!test.contains("moves[1]"), "{test}");
+        assert!(!test.contains("CivilTime"), "{test}");
+    }
+
     #[test]
     fn every_integer_width_is_written_as_each_binding_holds_it() {
         let api = widened();
