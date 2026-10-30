@@ -1180,6 +1180,54 @@ pub fn nakshatras_of<S: Longitudes + ?Sized>(
     window: Interval,
     zodiac: Zodiac,
 ) -> Result<Vec<Span<Nakshatra>>, Error> {
+    nakshatras_known(tropical, body, window, zodiac, None)
+}
+
+/// [`nakshatras_of`], reading the Moon's stars from a range's crossings
+/// when they answer for the window, as [`signs_known`] reads its signs,
+/// and searching otherwise. The two give the same spans, so a day of a
+/// range and the same day alone agree.
+///
+/// ```
+/// # use teistro_astro::ayanamsha::Basis;
+/// # use teistro_astro::completion::Completion;
+/// # use teistro_astro::delta_t::DeltaTModel;
+/// # use teistro_astro::precession::PrecessionModel;
+/// # use teistro_core::catalogue::Ayanamsha;
+/// # use teistro_core::interval::Interval;
+/// # use teistro_core::settings::{AyanamshaChoice, OverridePolicy};
+/// # use teistro_panchanga::limb::Zodiac;
+/// # use teistro_port_ephemeris::{Body, Frame, TestProvider, Zodiac as FrameZodiac};
+/// #
+/// # let provider = TestProvider::new();
+/// # let completion = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+/// # let longitudes = completion.longitudes(Frame { zodiac: FrameZodiac::Tropical, ..Frame::CANONICAL });
+/// # let zodiac = Zodiac {
+/// #     ayanamsha: Some(AyanamshaChoice::Catalogued { id: Ayanamsha::Lahiri }),
+/// #     basis: Basis::Mean,
+/// #     precession: PrecessionModel::Iau2006,
+/// #     delta_t: DeltaTModel::TableThenModel,
+/// # };
+/// use teistro_panchanga::limb::{RangeCrossings, nakshatras_known, nakshatras_of};
+///
+/// let week = Interval::literal(2_460_000.5, 2_460_007.5);
+/// let day = Interval::literal(2_460_002.5, 2_460_003.5);
+/// let known = RangeCrossings::over(&longitudes, zodiac, week)?;
+/// let read = nakshatras_known(&longitudes, Body::Moon, day, zodiac, Some(&known))?;
+/// assert_eq!(read, nakshatras_of(&longitudes, Body::Moon, day, zodiac)?);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// The source's own refusal.
+pub fn nakshatras_known<S: Longitudes + ?Sized>(
+    tropical: &S,
+    body: Body,
+    window: Interval,
+    zodiac: Zodiac,
+    known: Option<&RangeCrossings>,
+) -> Result<Vec<Span<Nakshatra>>, Error> {
     let source = Sidereal::over(tropical, zodiac);
     let quantity = Quantity::Longitude(body);
     let reach = teistro_astro::events::longest_dwell_days(quantity, &Lattice::NAKSHATRAS)
@@ -1188,11 +1236,21 @@ pub fn nakshatras_of<S: Longitudes + ?Sized>(
         });
     let from = JulianDay::<Ut1>::literal(window.from.get() - reach);
     let to = JulianDay::<Ut1>::literal(window.to.get() + reach);
-    let found: Vec<f64> = Search::new(&source, quantity, Lattice::NAKSHATRAS)
-        .between(from, to)?
-        .iter()
-        .map(|event| event.instant.get())
-        .collect();
+    let known = known.filter(|known| body == Body::Moon && known.answers(zodiac, window));
+    let found: Vec<f64> = if let Some(known) = known {
+        known
+            .nakshatra
+            .iter()
+            .map(|(at, _)| *at)
+            .filter(|at| *at >= from.get() && *at <= to.get())
+            .collect()
+    } else {
+        Search::new(&source, quantity, Lattice::NAKSHATRAS)
+            .between(from, to)?
+            .iter()
+            .map(|event| event.instant.get())
+            .collect()
+    };
     let mut out = Vec::new();
     for pair in sign_edges(&found, window, reach).windows(2) {
         let (Some(start), Some(end)) = (pair.first(), pair.get(1)) else {
@@ -1202,11 +1260,14 @@ pub fn nakshatras_of<S: Longitudes + ?Sized>(
         if !whole.overlaps(window) {
             continue;
         }
-        let degrees = teistro_astro::events::value_of(
-            quantity,
-            &source,
-            JulianDay::<Ut1>::literal(middle_of(*start, *end)),
-        )?;
+        let degrees = match known.and_then(|known| known.middle(quantity, *start, *end)) {
+            Some(degrees) => degrees,
+            None => teistro_astro::events::value_of(
+                quantity,
+                &source,
+                JulianDay::<Ut1>::literal(middle_of(*start, *end)),
+            )?,
+        };
         let star = Nakshatra::of(
             Nas::try_from_degrees(degrees)?.division_index(Limb::Nakshatra.divisions()),
         );

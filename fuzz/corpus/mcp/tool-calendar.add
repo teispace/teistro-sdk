@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"calendar.add","arguments":{"request":{"calendar":"calendar.BIKRAM_SAMBAT","date":{"year":2081,"month":2,"day":32},"months":1,"overflow":"CARRY"}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":112}

@@ -3159,10 +3159,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// first gives the panchaka's first instant when it is Mrityu's, the
     /// one a panchaka opens with, and their last its end when it is
     /// Roga's. Otherwise the Moon's nakshatras before (or after) the day
-    /// are read through [`omen::panchaka`] itself, as the day's were,
-    /// [`PANCHAKA_REACH_DAYS`] each way, which holds the five stars. The
-    /// vara is the one of the day, sunrise to sunrise, the first instant
-    /// falls in.
+    /// are read through [`omen::panchaka`] itself, as the day's were, over
+    /// just the stars left to it, [`PANCHAKA_STAR_DAYS`] each, from a
+    /// range's crossings when they reach that far. The vara is the one of
+    /// the day, sunrise to sunrise, the first instant falls in.
     fn named_panchaka<S: teistro_astro::events::Longitudes + ?Sized>(
         &self,
         place: &Place,
@@ -3184,7 +3184,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             }
         }
         let around = |within: Interval| {
-            let stars = limb::nakshatras_of(longitudes, Body::Moon, within, zodiac)?;
+            let stars = limb::nakshatras_known(longitudes, Body::Moon, within, zodiac, known)?;
             omen::panchaka(&stars, settings.panchanga.panchaka_start, |inside| {
                 limb::signs_known(longitudes, Body::Moon, inside, zodiac, None, known)
             })
@@ -3193,7 +3193,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             first.whole.from
         } else {
             let before = Interval::new(
-                next_by(first.whole.from, -PANCHAKA_REACH_DAYS),
+                next_by(first.whole.from, -stars_days(first.member as u8)),
                 first.whole.from,
             )?;
             around(before)?
@@ -3206,7 +3206,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let to = if last.member == Panchaka::Roga {
             last.whole.to
         } else {
-            let after = Interval::new(last.whole.to, next_by(last.whole.to, PANCHAKA_REACH_DAYS))?;
+            let left = Panchaka::Roga as u8 - last.member as u8;
+            let after = Interval::new(last.whole.to, next_by(last.whole.to, stars_days(left)))?;
             around(after)?
                 .iter()
                 .find(|span| span.member == Panchaka::Roga)
@@ -3519,12 +3520,16 @@ fn first_only(mut events: Vec<JulianDay<Utc>>) -> Vec<JulianDay<Utc>> {
     events
 }
 
-/// An instant so many days on.
-/// How far a panchaka's first or last star is looked for beyond the
-/// stars a day holds, days: the five stars at the Moon's slowest are
-/// under five and a half.
-const PANCHAKA_REACH_DAYS: f64 = 6.0;
+/// How long the Moon takes over one star at its slowest, days, rounded
+/// up: 13°20' at twelve degrees a day is a little over 1.1.
+const PANCHAKA_STAR_DAYS: f64 = 1.2;
 
+/// How far `stars` of a panchaka's stars reach, days.
+fn stars_days(stars: u8) -> f64 {
+    f64::from(stars) * PANCHAKA_STAR_DAYS
+}
+
+/// An instant so many days on.
 fn next_by(instant: JulianDay<Utc>, days: f64) -> JulianDay<Utc> {
     JulianDay::literal(instant.get() + days)
 }
