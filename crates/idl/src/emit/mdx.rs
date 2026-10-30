@@ -720,7 +720,7 @@ fn plural(count: usize) -> &'static str {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use super::{group_slug, group_title, list, one_line, summary, text};
+    use super::{group_slug, group_title, list, one_line, plural, summary, text};
 
     #[test]
     fn a_paragraph_is_joined_onto_one_line() {
@@ -731,6 +731,8 @@ mod tests {
             "an entity is `{\"$entity\": \"graha.SUN\"}` today"
         );
         assert_eq!(text("one\n\n- a\n- b"), "one\n\n- a\n- b");
+        // A dot with no number before it opens no numbered step.
+        assert_eq!(text(". not a step\nbut prose"), ". not a step but prose");
     }
 
     #[test]
@@ -762,6 +764,7 @@ mod tests {
         assert_eq!(group_slug("crates/ffi/src/calendar.rs"), "calendar");
         assert_eq!(group_title("calendar"), "Calendar");
         assert_eq!(group_title("library"), "The library");
+        assert_eq!(group_title(""), "");
     }
 
     #[test]
@@ -776,5 +779,6 @@ mod tests {
         assert_eq!(list(&items(1)), "a");
         assert_eq!(list(&items(2)), "a and b");
         assert_eq!(list(&items(3)), "a, b and c");
+        assert_eq!((plural(1), plural(0), plural(2)), ("", "s", "s"));
     }
 }

@@ -1481,6 +1481,142 @@ pub enum Direction { Rising = 0, Falling = 1 }
             let refused = extract(&[with_abi(text)], &inputs()).unwrap_err();
             assert!(refused.detail.contains(saying), "{saying}: {refused:?}");
         }
+        // A blob column naming an enum the description lacks.
+        let mut inputs = inputs();
+        let mut column = crate::model::ColumnDef::new("calendar", Scalar::U8, "The calendar.");
+        column.enum_name = Some("Calendar".into());
+        inputs.blobs.push(crate::model::BlobSchema {
+            name: "days".into(),
+            id: 1,
+            doc: "Days.".into(),
+            sections: vec![crate::model::SectionSchema::columns(
+                1,
+                "rows",
+                "One a day.",
+                vec![column],
+            )],
+        });
+        let refused = extract(&[with_abi("")], &inputs).unwrap_err();
+        assert_eq!(
+            refused.to_string(),
+            "days.rows.calendar: names no enum `Calendar`"
+        );
+    }
+
+    /// Every link that names what the description holds is kept, and what
+    /// no link rule reads is passed over: a function that is not
+    /// exported, an attribute that is not a literal doc line, a `repr`
+    /// that lays out nothing, a struct field typed by a callback alias.
+    #[test]
+    fn every_link_that_names_what_the_description_holds_is_kept() {
+        let source = with_abi(
+            r#"
+/// The calendar.
+#[repr(u8)]
+pub enum Calendar {
+    /// Solar.
+    Solar = 0,
+}
+
+/// A blob the library owns.
+///
+/// `api: role=blob`
+#[repr(C)]
+pub struct TsBlob {
+    /// Bytes.
+    pub data: *mut u8,
+}
+
+/// Wraps a byte, as Rust lays it out.
+#[repr(transparent)]
+pub struct Wrapped(u8);
+
+/// Called back.
+pub type DayFn = unsafe extern "C" fn(user_data: *mut c_void) -> i32;
+
+/// A day.
+#[doc = concat!("Built ", "here.")]
+#[doc = 1]
+#[repr(C)]
+pub struct TsDay {
+    /// The calendar.
+    /// `api: enum=Calendar`
+    pub calendar: u8,
+    /// The calendars kept.
+    /// `api: bitset=Calendar`
+    pub calendars: u32,
+    /// How many.
+    pub count: usize,
+    /// The items.
+    /// `api: len=count present_if=has`
+    pub items: *const u32,
+    /// Whether there are items.
+    pub has: bool,
+    /// Called each day.
+    pub each: DayFn,
+}
+
+/// A helper the boundary never sees.
+pub fn helper() -> u32 { 1 }
+
+/// The days, as a blob.
+///
+/// `api: blob=days`
+/// `api: : enum=Calendar`
+/// `api: day_2: enum=Calendar`
+/// `api: Day: enum=Calendar`
+#[must_use = "the blob is the answer"]
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_days(day_2: u8, day: *const TsDay, out_blob: *mut TsBlob) {}
+"#,
+        );
+        let mut inputs = inputs();
+        let mut calendar = crate::model::ColumnDef::new("calendar", Scalar::U8, "The calendar.");
+        calendar.enum_name = Some("Calendar".into());
+        let plain = crate::model::ColumnDef::new("jd", Scalar::F64, "The instant.");
+        inputs.blobs.push(crate::model::BlobSchema {
+            name: "days".into(),
+            id: 1,
+            doc: "Days.".into(),
+            sections: vec![crate::model::SectionSchema::columns(
+                1,
+                "rows",
+                "One a day.",
+                vec![plain, calendar],
+            )],
+        });
+        let api = extract(&[source], &inputs).unwrap();
+        let days = api.function_named("ts_days").unwrap();
+        assert_eq!(days.meta.blob.as_deref(), Some("days"));
+        assert_eq!(
+            days.params.iter().map(|p| p.role).collect::<Vec<_>>(),
+            [Role::Value, Role::StructIn, Role::BlobOut]
+        );
+        assert_eq!(
+            days.params[0].meta.enum_name.as_deref(),
+            Some("Calendar"),
+            "a parameter's name may hold a digit"
+        );
+        assert!(api.function_named("helper").is_none());
+        let day = api.struct_named("TsDay").unwrap();
+        assert_eq!(day.doc, "A day.", "only a literal doc line is read");
+        let field = |name: &str| &day.fields.iter().find(|f| f.name == name).unwrap().meta;
+        assert_eq!(field("calendar").enum_name.as_deref(), Some("Calendar"));
+        assert_eq!(field("calendars").bitset.as_deref(), Some("Calendar"));
+        assert_eq!(
+            (
+                field("items").len.as_deref(),
+                field("items").present_if.as_deref()
+            ),
+            (Some("count"), Some("has"))
+        );
+        assert_eq!(
+            day.fields.iter().find(|f| f.name == "each").unwrap().ty,
+            TypeRef::Callback {
+                name: "DayFn".into()
+            }
+        );
+        assert!(api.struct_named("Wrapped").is_none());
     }
 
     /// What is not part of the boundary is passed over, and every key of

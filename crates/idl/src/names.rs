@@ -283,6 +283,8 @@ mod tests {
         assert_eq!(binding_type_name("Status"), "Status");
         assert_eq!(binding_type_name("TsStr"), "Str");
         assert_eq!(binding_type_name("ProviderVtable"), "ProviderVtable");
+        // A `C` after a capital is part of an initialism, not the suffix.
+        assert_eq!(binding_type_name("TsABC"), "ABC");
         assert_eq!(
             c_type_name("ts_", "PositionRequestC"),
             "ts_position_request"
@@ -339,6 +341,8 @@ mod tests {
         assert_eq!(clean_doc("A [link](https://x.y) here"), "A link here");
         assert_eq!(clean_doc("[`X`](crate::x::X) and [`Y`]"), "`X` and `Y`");
         assert_eq!(clean_doc("no links [unclosed"), "no links [unclosed");
+        // A target that never closes is kept as text.
+        assert_eq!(clean_doc("A [link](unclosed"), "A link(unclosed");
     }
 
     #[test]

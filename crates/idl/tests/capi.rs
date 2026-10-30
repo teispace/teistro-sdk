@@ -293,3 +293,50 @@ fn a_reference_page_keeps_the_lines_of_a_structured_doc_and_notes_each_parameter
         assert!(page.text.contains(note), "{note}: {}", page.text);
     }
 }
+
+#[test]
+fn a_page_the_bindings_reach_has_a_tab_per_binding_with_every_member() {
+    let api = api(|_| {});
+    let spelling = |binding: &str, language: &str, member: &str| mdx::Spelling {
+        binding: binding.into(),
+        language: language.into(),
+        member: member.into(),
+    };
+    let reach = mdx::Reach::from([(
+        String::from("ts_positions"),
+        vec![
+            mdx::Reached {
+                path: "positions.at".into(),
+                spellings: vec![
+                    spelling("Node", "js", "ctx.positions.at"),
+                    spelling("Python", "python", "ctx.positions.at"),
+                ],
+            },
+            mdx::Reached {
+                path: "positions.grid".into(),
+                spellings: vec![spelling("Node", "js", "ctx.positions.grid")],
+            },
+        ],
+    )]);
+    let page = mdx::render(&api, &reach)
+        .into_iter()
+        .find(|page| page.path.ends_with("ts_positions.mdx"))
+        .unwrap();
+    assert!(
+        page.text
+            .contains("<Tabs items={['Node', 'Python', 'C']}>\n"),
+        "{}",
+        page.text
+    );
+    assert!(
+        page.text
+            .contains("```js\nctx.positions.at\nctx.positions.grid\n```"),
+        "one tab holds every member of its binding: {}",
+        page.text
+    );
+    assert!(
+        !page
+            .text
+            .contains("No operation of a context calls this by name.")
+    );
+}
