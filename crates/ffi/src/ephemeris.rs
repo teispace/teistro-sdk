@@ -78,7 +78,7 @@ fn native_of(context: &TsContext) -> Result<Native<'_>, Error> {
 /// # Safety
 ///
 /// `context` must be a live handle; `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_ephemeris_manifest(
     context: *const TsContext,
     out_json: *mut TsString,
@@ -134,7 +134,7 @@ pub unsafe extern "C" fn ts_ephemeris_manifest(
 ///
 /// `context` must be a live handle; `function` and `arguments_json` must
 /// be NUL-terminated; `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_ephemeris_call(
     context: *const TsContext,
     function: *const c_char,

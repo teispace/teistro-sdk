@@ -78,7 +78,7 @@ use crate::support::with_context;
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_research(
     context: *const TsContext,
     request_json: *const c_char,

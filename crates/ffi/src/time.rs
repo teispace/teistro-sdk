@@ -753,7 +753,7 @@ impl TsZoneResolution {
 ///
 /// `context` must be a live handle; `civil` and `zone` valid for reads;
 /// `out_resolution` valid for a read of its `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_time_resolve(
     context: *const TsContext,
     civil: *const TsCivilDateTime,
@@ -817,7 +817,7 @@ pub unsafe extern "C" fn ts_time_resolve(
 ///
 /// `context` must be a live handle; `zone` valid for a read; `out_civil`
 /// and `out_resolution` valid for reads of their `struct_size` and writes.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_time_civil(
     context: *const TsContext,
     jd_utc: f64,
@@ -964,7 +964,7 @@ fn convert(jd: f64, from: TsScale, to: TsScale, ctx: &TsContext) -> Result<(f64,
 ///
 /// `context` must be a live handle; `out_conversion` valid for a read of
 /// its `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_time_convert(
     context: *const TsContext,
     jd: f64,
@@ -1034,7 +1034,7 @@ pub unsafe extern "C" fn ts_time_convert(
 ///
 /// `context` must be a live handle; `out_delta_t` valid for a read of its
 /// `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_time_delta_t(
     context: *const TsContext,
     jd_ut1: f64,

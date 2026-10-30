@@ -72,7 +72,7 @@ use crate::support::{with_context, write_plain};
 /// `context` must be a live handle; `request` valid for a read, with its
 /// instants and body ids valid for the counts it states; `out_blob` valid
 /// for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_positions(
     context: *const TsContext,
     request: *const PositionRequestC,

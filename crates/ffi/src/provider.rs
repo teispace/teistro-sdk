@@ -115,7 +115,7 @@ pub struct TsProvider {
 /// Every pointer must be null or valid for the access its documentation
 /// describes, for the duration of the call. Loading a library runs its
 /// initialisers, so `path` must be a file the caller trusts.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_provider_load(
     path: *const c_char,
     config_json: *const c_char,
@@ -185,7 +185,7 @@ unsafe fn load(path: *const c_char, config_json: *const c_char) -> Result<TsProv
 /// `provider` must be a live handle from [`ts_provider_load`]; every
 /// other pointer must be null or valid for the access its documentation
 /// describes, for the duration of the call.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_context_new_with_provider(
     options: *const crate::context::TsContextOptions,
     provider: *const TsProvider,
@@ -238,7 +238,7 @@ unsafe fn with_provider(
 ///
 /// `provider` must be null or a handle from [`ts_provider_load`] that is
 /// not used again.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_provider_free(provider: *mut TsProvider) {
     if provider.is_null() {
         return;

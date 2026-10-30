@@ -213,3 +213,35 @@ fn the_documented_profiles_are_the_shipped_ones() {
         "TsContextOptions.profile's documentation"
     );
 }
+
+/// **No entry point is exported in the unit-test build**, or its record
+/// shadows the real build's and coverage turns on a directory hash
+/// (`src/lib.rs`).
+#[test]
+fn every_entry_point_is_mangled_in_the_unit_test_build() {
+    fn sources(dir: &Path, found: &mut Vec<std::path::PathBuf>) {
+        for entry in std::fs::read_dir(dir).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                sources(&path, found);
+            } else if path.extension().is_some_and(|e| e == "rs") {
+                found.push(path);
+            }
+        }
+    }
+    let mut found = Vec::new();
+    sources(
+        &Path::new(env!("CARGO_MANIFEST_DIR")).join("src"),
+        &mut found,
+    );
+    for path in found {
+        let text = std::fs::read_to_string(&path).unwrap();
+        assert!(
+            !text
+                .lines()
+                .any(|line| line.trim() == "#[unsafe(no_mangle)]"),
+            "{} exports an entry point in the unit-test build",
+            path.display()
+        );
+    }
+}

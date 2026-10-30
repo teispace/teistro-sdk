@@ -1040,7 +1040,7 @@ pub fn encode(
 ///
 /// `context` must be a live handle; `request` valid for a read; `out_blob`
 /// valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_panchanga_days(
     context: *const TsContext,
     request: *const TsPanchangaRequest,
@@ -1218,7 +1218,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
 ///
 /// `context` and `other` must be live handles; `request_json`
 /// NUL-terminated; `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_almanac_disagreements(
     context: *const TsContext,
     other: *const TsContext,
@@ -1305,7 +1305,7 @@ pub unsafe extern "C" fn ts_almanac_disagreements(
 /// `context` must be a live handle; `other` null or a live handle, which
 /// may be `context`; `request_json` NUL-terminated; `out_json` valid for
 /// a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_almanac_published_reasons(
     context: *const TsContext,
     other: *const TsContext,
@@ -1390,7 +1390,7 @@ pub unsafe extern "C" fn ts_almanac_published_reasons(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_almanac_sankalpa(
     context: *const TsContext,
     request_json: *const c_char,
@@ -1469,7 +1469,7 @@ pub unsafe extern "C" fn ts_almanac_sankalpa(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_almanac_ashauch(
     context: *const TsContext,
     request_json: *const c_char,
@@ -1542,7 +1542,7 @@ pub unsafe extern "C" fn ts_almanac_ashauch(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_almanac_first_year(
     context: *const TsContext,
     request_json: *const c_char,
@@ -1611,7 +1611,7 @@ pub unsafe extern "C" fn ts_almanac_first_year(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_text` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_almanac_festival_calendar(
     context: *const TsContext,
     request_json: *const c_char,
@@ -1683,7 +1683,7 @@ pub unsafe extern "C" fn ts_almanac_festival_calendar(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_almanac_next(
     context: *const TsContext,
     request_json: *const c_char,

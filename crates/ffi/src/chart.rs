@@ -6425,7 +6425,7 @@ fn drawings_json(documents: &[Document]) -> String {
 ///
 /// `context` must be a live handle; `key` a NUL-terminated string;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_chart_layout_row(
     context: *const TsContext,
     key: *const c_char,
@@ -7491,7 +7491,7 @@ macro_rules! section {
 ///
 /// `context` must be a live handle; `request` valid for a read; `out_blob`
 /// valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_chart_found(
     context: *const TsContext,
     request: *const TsChartRequest,

@@ -84,7 +84,7 @@ impl TsBlob {
 ///
 /// `blob` must be null or a descriptor written by this library that is not
 /// used again.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_blob_free(blob: *mut TsBlob) {
     if blob.is_null() {
         return;

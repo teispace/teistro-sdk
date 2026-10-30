@@ -757,8 +757,10 @@ fn repr_of(attrs: &[Attribute]) -> Option<String> {
 
 fn is_exported(attrs: &[Attribute]) -> bool {
     attrs.iter().any(|attr| match &attr.meta {
+        // `cfg_attr(not(test), unsafe(no_mangle))` is how the boundary writes it.
         SynMeta::List(list) => {
-            list.path.is_ident("unsafe") && list.tokens.to_string().contains("no_mangle")
+            (list.path.is_ident("unsafe") || list.path.is_ident("cfg_attr"))
+                && list.tokens.to_string().contains("no_mangle")
         }
         SynMeta::Path(path) => path.is_ident("no_mangle"),
         SynMeta::NameValue(_) => false,
@@ -1122,7 +1124,7 @@ pub unsafe extern "C" fn ts_context_free(context: *mut TsContext) {}
 pub unsafe extern "C" fn ts_render(context: *const TsContext, key: *const c_char, bytes: *const u8, bytes_len: usize, out_text: *mut TsString) -> Status { todo!() }
 
 /// Frees a string.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_string_free(string: *mut TsString) {}
 
 /// The version.

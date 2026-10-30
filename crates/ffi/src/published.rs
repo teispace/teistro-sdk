@@ -61,7 +61,7 @@ use crate::support::with_context;
 ///
 /// `context` must be a live handle; `pack`, `signature` and `key` valid
 /// for their lengths' reads; `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 #[allow(
     clippy::too_many_arguments,
     reason = "three byte ranges cross the C boundary as pointer and length each"

@@ -425,7 +425,7 @@ pub(crate) unsafe fn refuse_into(out_error: *mut TsError, error: &Error) {
 /// `error` must be null or a `TsError` valid for reads and writes, whose
 /// strings, when `flags` carries `TS_ERROR_OWNED`, are the ones this
 /// library wrote there and are not used again.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_error_free(error: *mut TsError) {
     // SAFETY: the entry point's contract.
     let Some(slot) = (unsafe { error.as_mut() }) else {
@@ -800,7 +800,7 @@ fn resolve(ephemeris: u8, flags: u32) -> Result<TsEphemeris, Error> {
 /// Every pointer must be null or valid for the access its documentation
 /// describes, for the duration of the call; a vtable's functions must be
 /// callable with `provider_user_data` until the context is freed.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_context_new(
     options: *const TsContextOptions,
     provider: *const ProviderVtable,
@@ -999,7 +999,7 @@ unsafe fn texts_of<'a>(options: Option<&TsContextOptions>) -> Result<OptionTexts
 ///
 /// `context` must be null or a handle from `ts_context_new` that is not
 /// used again.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_context_free(context: *mut TsContext) {
     if context.is_null() {
         return;
@@ -1048,7 +1048,7 @@ pub unsafe extern "C" fn ts_context_free(context: *mut TsContext) {
 ///
 /// `context` must be a live handle; `out_error` valid for a read of its
 /// `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_context_last_error(
     context: *const TsContext,
     out_error: *mut TsError,
@@ -1094,7 +1094,7 @@ pub unsafe extern "C" fn ts_context_last_error(
 /// # Safety
 ///
 /// `context` must be a live handle; `out_profile` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_context_profile(
     context: *const TsContext,
     out_profile: *mut TsStr,
@@ -1137,7 +1137,7 @@ pub unsafe extern "C" fn ts_context_profile(
 /// # Safety
 ///
 /// `context` must be a live handle; `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_context_settings_json(
     context: *const TsContext,
     out_json: *mut TsString,
@@ -1171,7 +1171,7 @@ pub unsafe extern "C" fn ts_context_settings_json(
 /// # Safety
 ///
 /// `context` must be a live handle; `out_hash` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_context_settings_hash(
     context: *const TsContext,
     out_hash: *mut TsHash,

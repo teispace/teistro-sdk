@@ -89,7 +89,7 @@ c_struct!(TsIntlLoaded);
 ///
 /// `context` must be a live handle; `bytes` valid for `bytes_len` reads;
 /// `out_loaded` valid for a read of its `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_intl_load_pack(
     context: *const TsContext,
     bytes: *const u8,
@@ -138,7 +138,7 @@ pub unsafe extern "C" fn ts_intl_load_pack(
 /// # Safety
 ///
 /// `context` must be a live handle; `locale` a NUL-terminated string.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_intl_set_locale(
     context: *const TsContext,
     locale: *const c_char,
@@ -176,7 +176,7 @@ pub unsafe extern "C" fn ts_intl_set_locale(
 /// # Safety
 ///
 /// `context` must be a live handle; `out_locale` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_intl_locale(
     context: *const TsContext,
     out_locale: *mut TsStr,
@@ -214,7 +214,7 @@ pub unsafe extern "C" fn ts_intl_locale(
 ///
 /// `context` must be a live handle; `key` a NUL-terminated string;
 /// `out_has` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_intl_has(
     context: *const TsContext,
     key: *const c_char,
@@ -276,7 +276,7 @@ pub unsafe extern "C" fn ts_intl_has(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_intl_in_words(
     context: *const TsContext,
     request_json: *const c_char,
@@ -323,7 +323,7 @@ pub unsafe extern "C" fn ts_intl_in_words(
 ///
 /// `context` must be a live handle; `text`, `from` and `to`
 /// NUL-terminated strings; `out_text` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_intl_transliterate(
     context: *const TsContext,
     text: *const c_char,
@@ -390,7 +390,7 @@ pub unsafe extern "C" fn ts_intl_transliterate(
 ///
 /// `context` must be a live handle; `key` a NUL-terminated string;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_intl_entity(
     context: *const TsContext,
     key: *const c_char,
@@ -506,7 +506,7 @@ fn json_string(text: &str) -> String {
 ///
 /// `context` must be a live handle; `key` a NUL-terminated string;
 /// `params_json` null or one; `out_blob` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_intl_render(
     context: *const TsContext,
     key: *const c_char,
