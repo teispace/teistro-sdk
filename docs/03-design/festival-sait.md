@@ -183,7 +183,13 @@ reading below against the one it was chosen over.
   its forenoon; each turned round loses its printed time. Where the
   window cuts every candidate short (Abhijit in 2023, Chitra holding the
   forenoon), the longest stretch is taken, not a stub at the edge.
-- **Not shipped.** The Vijaya Dashami tika (no choice among its candidates
-  fits all four years), Laxmi Puja's lagna, Rakshabandhan and Holika:
-  their windows are the text's, but the elections the committee prints
-  are not yet measured.
+- **Laxmi Puja ships its window.** `LAKSHMI_PUJA` is the text's pradosha,
+  the three night muhurtas from sunset (DS p. 77, NS pp. 148–149), with
+  no rising: no printed lagna for it was found in the committee's prints
+  in hand (C824), so none is chosen.
+- **Not shipped.** The Vijaya Dashami tika: the tiered rule (Dhanu lagna
+  with a dual navamsa, else Dhanu lagna, else a dual navamsa, the
+  earliest from sunrise to Abhijit's end) gives three of the four printed
+  times and not 2026's 10:26, printed in Scorpio lagna (C823).
+  Rakshabandhan and Holika: their windows are the text's, but the
+  elections the committee prints are not yet measured.

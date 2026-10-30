@@ -70,3 +70,53 @@ fn ghatasthapana_2025_is_elected_where_the_committee_printed_it() {
         );
     }
 }
+
+/// Laxmi Puja 2025 at Kathmandu: its sait is the text's window, the
+/// pradosha from its day's sunset (Dharmasindhu p. 77), with no lagna
+/// read (C824).
+#[test]
+fn lakshmi_puja_takes_the_pradosha_from_sunset() {
+    let kathmandu = Place::new(
+        Latitude::literal(27.7172),
+        Longitude::literal(85.324),
+        Altitude::literal(1400.0),
+    );
+    let offset = UtcOffset::literal(5, 45, 0);
+    let (from, to) = (
+        CalendarDate::defined(Calendar::Gregorian, 2025, 10, 19),
+        CalendarDate::defined(Calendar::Gregorian, 2025, 10, 22),
+    );
+    let sdk = Context::builder()
+        .profile("nepali-committee")
+        .ephemeris([Ephemeris::SuryaSiddhanta])
+        .build()
+        .unwrap();
+    let found = sdk
+        .almanac()
+        .festivals(
+            &from,
+            &to,
+            &kathmandu,
+            offset,
+            &FestivalRequest::from(FestivalPack::Nepal),
+        )
+        .unwrap()
+        .value;
+    let observance = found
+        .observances
+        .iter()
+        .find(|o| o.rule == "LAKSHMI_PUJA")
+        .unwrap();
+    let day = sdk
+        .almanac()
+        .day(&observance.day, &kathmandu, offset)
+        .unwrap()
+        .value;
+    let sait = observance.sait.as_ref().unwrap();
+    // Three of the night's fifteen muhurtas from sunset, the one candidate.
+    let night = day.day.next_sunrise.get() - day.day.sunset.get();
+    assert_eq!(sait.within.from, day.day.sunset);
+    assert!((sait.within.to.get() - day.day.sunset.get() - night / 5.0).abs() < 1e-9);
+    assert_eq!(sait.candidates.len(), 1);
+    assert!(sait.candidates[0].lagna.is_none() && sait.candidates[0].whole);
+}
