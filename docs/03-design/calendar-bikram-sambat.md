@@ -252,7 +252,7 @@ in their own month every year. Under `CARRY` they complete it on 1
 Ashadh. `REJECT` refuses a difference that counts from a missing day.
 java.time's `Period.between` does neither: it reads the constrained day
 as not yet complete and the day after as the anniversary plus a day, so
-no day is a whole year. That is C803.
+no day is a whole year. That is C806.
 
 **Calendars.** The arithmetic takes any shipped calendar of twelve
 numbered months: Bikram Sambat, Gregorian, Julian, the 1582 mixed
