@@ -53,6 +53,14 @@ git push origin v0.1.0
 `cargo xtask version` writes only the files that change and prints them.
 It is the one command that has to know the list; nobody else does.
 
+A pre-release is `alpha`, `beta` or `rc`, with an optional number
+(`1.0.0-rc.1`), the three every registry orders alike. Python's packaging
+spells it without the hyphen (PEP 440: `1.0.0rc1`), since a wheel's file
+name splits its fields on `-` and would read `rc.1` as a build tag, which
+pip refuses: `pyproject.toml`, every wheel's name and metadata and the
+read-back from PyPI take that spelling, and everything else, the GitHub
+release the installers fetch from included, keeps the version's own.
+
 ## What the tag starts
 
 | job | what it does |
