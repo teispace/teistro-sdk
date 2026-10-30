@@ -1342,10 +1342,9 @@ fn check_completion<P: EphemerisProvider + ?Sized>(
         match completion.positions(&request(jds, &bodies, native, true)) {
             Ok(done) => {
                 let mut worst = 0.0f64;
-                for (index, cell) in done.columns.cells().enumerate() {
-                    let Some(expected) = reference.cell(index) else {
-                        continue;
-                    };
+                // The same request both times, so the cells pair up one
+                // to one.
+                for (cell, expected) in done.columns.cells().zip(reference.cells()) {
                     let dlon = difference_deg(cell.lon, expected.lon).abs() * 3600.0;
                     let dlat = (cell.lat - expected.lat).abs() * 3600.0;
                     worst = worst.max(dlon).max(dlat);
@@ -1456,7 +1455,7 @@ impl<P: EphemerisProvider + ?Sized> EphemerisProvider for Refusing<'_, P> {
 mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 
-    use teistro_port_ephemeris::TestProvider;
+    use teistro_port_ephemeris::{Direction, TestProvider};
 
     use super::*;
 
@@ -1486,12 +1485,38 @@ mod tests {
         );
     }
 
+    /// How [`Honest`] departs from the SDK's own routines, if at all.
+    #[derive(Clone, Copy, PartialEq)]
+    enum Twist {
+        /// Not at all.
+        None,
+        /// A classical text: its ayanamsha is the text's own.
+        Classical,
+        /// Every native rise and set half a minute late.
+        LateSunrise,
+        /// No native rise or set ever found.
+        NoSunrise,
+        /// An ayanamsha that is infinite.
+        Infinite,
+        /// No crossing ever found natively.
+        NoCrossings,
+        /// The first native crossing passed the other way.
+        Reversed,
+        /// The first native crossing a degree off its boundary.
+        Moved,
+        /// Every body standing where it stood at J2000.
+        Still,
+    }
+
     /// A provider that declares every override and answers each one with
-    /// the SDK's own routine, so every check runs and every bound is met.
-    struct Honest;
+    /// the SDK's own routine, so every check runs and every bound is met,
+    /// unless its twist says otherwise. It answers every frame, the
+    /// native one itself and the rest through the SDK's completion.
+    struct Honest(Twist);
 
     impl EphemerisProvider for Honest {
         fn capabilities(&self) -> Capabilities {
+            let classical = self.0 == Twist::Classical;
             Capabilities {
                 overrides: Overrides::OBLIQUITY
                     .with(Overrides::DELTA_T)
@@ -1499,7 +1524,16 @@ mod tests {
                     .with(Overrides::RISE_SET)
                     .with(Overrides::CROSSINGS)
                     .with(Overrides::DUT1),
-                ayanamshas: vec![Ayanamsha::Lahiri],
+                ayanamshas: vec![if classical {
+                    Ayanamsha::Suryasiddhanta
+                } else {
+                    Ayanamsha::Lahiri
+                }],
+                astronomy: if classical {
+                    Astronomy::Classical
+                } else {
+                    Astronomy::Modern
+                },
                 ..TestProvider::new().capabilities()
             }
         }
@@ -1508,7 +1542,28 @@ mod tests {
             &self,
             request: &PositionRequest<'_>,
         ) -> Result<PositionColumns, ProviderError> {
-            TestProvider::new().positions(request)
+            if request.frame != Frame::CANONICAL {
+                let native = TestProvider::new();
+                let completion = Completion::new(
+                    &native,
+                    OverridePolicy::SdkOnly,
+                    DeltaTModel::TableThenModel,
+                );
+                return completion
+                    .positions(request)
+                    .map(|done| done.columns)
+                    .map_err(|e| ProviderError::invalid(e.to_string()));
+            }
+            let mut columns = TestProvider::new().positions(request)?;
+            if self.0 == Twist::Still {
+                let j2000 = vec![2_451_545.0; request.jds.len()];
+                let still = PositionRequest {
+                    jds: &j2000,
+                    ..*request
+                };
+                columns = TestProvider::new().positions(&still)?;
+            }
+            Ok(columns)
         }
 
         fn obliquity(&self, jd: f64, scale: TimeScale) -> Result<Obliquity, ProviderError> {
@@ -1535,7 +1590,12 @@ mod tests {
             _scale: TimeScale,
             _a: Ayanamsha,
         ) -> Result<f64, ProviderError> {
-            Ok(23.85)
+            Ok(match self.0 {
+                Twist::Infinite => f64::INFINITY,
+                // Burgess's worked example, III.9 to 12.
+                Twist::Classical => 20.0 + 24.0 / 60.0 + 39.0 / 3600.0,
+                _ => 23.85,
+            })
         }
 
         fn horizon_event(
@@ -1551,10 +1611,18 @@ mod tests {
                 request.horizon,
                 DeltaTModel::TableThenModel,
             );
-            solver
+            let found = solver
                 .event(request.kind, request.from, request.window_days)
                 .map(|found| found.map(|e| e.instant))
-                .map_err(|e| ProviderError::invalid(e.to_string()))
+                .map_err(|e| ProviderError::invalid(e.to_string()))?;
+            match self.0 {
+                Twist::NoSunrise => Ok(None),
+                Twist::LateSunrise => found
+                    .map(|instant| instant.plus_days(30.0 / 86_400.0))
+                    .transpose()
+                    .map_err(|e| ProviderError::invalid(e.to_string())),
+                _ => Ok(found),
+            }
         }
 
         fn crossings(
@@ -1564,16 +1632,28 @@ mod tests {
             let completion =
                 Completion::new(self, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
             let longitudes = completion.longitudes(request.frame);
-            Search::new(&longitudes, request.quantity, request.lattice)
+            let mut events = Search::new(&longitudes, request.quantity, request.lattice)
                 .with_tolerance_days(request.tolerance_days)
                 .between(request.from, request.to)
-                .map_err(|e| ProviderError::invalid(e.to_string()))
+                .map_err(|e| ProviderError::invalid(e.to_string()))?;
+            match (self.0, events.first_mut()) {
+                (Twist::NoCrossings, _) => events.clear(),
+                (Twist::Reversed, Some(first)) => {
+                    first.direction = match first.direction {
+                        Direction::Rising => Direction::Falling,
+                        Direction::Falling => Direction::Rising,
+                    };
+                }
+                (Twist::Moved, Some(first)) => first.boundary_deg += 1.0,
+                _ => {}
+            }
+            Ok(events)
         }
     }
 
     #[test]
     fn an_honest_provider_runs_every_override_check() {
-        let report = run(&Honest, &Bounds::DEFAULT);
+        let report = run(&Honest(Twist::None), &Bounds::DEFAULT);
         assert!(report.passed, "{}", report.markdown());
         for name in [
             "override_obliquity",
@@ -1588,6 +1668,119 @@ mod tests {
             let check = report.check(name).unwrap();
             assert!(check.ran(), "{name}");
             assert_eq!(check.measured, Some(0.0), "{name}: {}", check.detail);
+        }
+        // It answers the equatorial frame itself, so completion back to
+        // its ecliptic one is measured both ways.
+        for name in ["completion_native", "completion_sdk"] {
+            let check = report.check(name).unwrap();
+            assert!(check.ran() && check.passed, "{name}: {}", check.detail);
+            assert_eq!(check.unit, Some("arcsec"), "{name}");
+        }
+    }
+
+    #[test]
+    fn a_classical_texts_definitions_are_measured_and_not_gated() {
+        let report = run(&Honest(Twist::Classical), &Bounds::DEFAULT);
+        assert!(report.passed, "{}", report.markdown());
+        let detail = |name: &str| report.check(name).unwrap().detail.clone();
+        assert_eq!(
+            detail("override_obliquity"),
+            "measured, not gated: the text's obliquity against IAU 2006 and IAU 2000B"
+        );
+        for name in ["override_rise_set_geometric", "override_rise_set_refracted"] {
+            assert!(
+                detail(name).starts_with("measured, not gated: ")
+                    && detail(name).contains("the text's sunrise against hour-angle geometry"),
+                "{name}: {}",
+                detail(name)
+            );
+            assert_eq!(report.check(name).unwrap().bound, None, "{name}");
+        }
+        // The text's own ayanamsha at Burgess's instant, not the epoch
+        // definition's 18.94°.
+        let ayanamsha = report.check("override_ayanamsha").unwrap();
+        assert_eq!(ayanamsha.measured, Some(0.0), "{}", ayanamsha.detail);
+        assert!(
+            ayanamsha
+                .detail
+                .ends_with(" at Burgess's 1860 instant: 20.4108"),
+            "{}",
+            ayanamsha.detail
+        );
+    }
+
+    #[test]
+    fn a_native_rise_or_set_apart_from_the_sdks_fails_by_where() {
+        let report = run(&Honest(Twist::LateSunrise), &Bounds::DEFAULT);
+        let geometric = report.check("override_rise_set_geometric").unwrap();
+        assert!(!geometric.passed);
+        assert!(
+            (geometric.measured.unwrap() - 30.0).abs() < 1e-3,
+            "{}",
+            geometric.detail
+        );
+        assert!(
+            geometric.detail.contains("; worst "),
+            "{}",
+            geometric.detail
+        );
+        let report = run(&Honest(Twist::NoSunrise), &Bounds::DEFAULT);
+        let missed = report.check("override_rise_set_geometric").unwrap();
+        assert!(!missed.passed);
+        assert!(
+            missed.detail.contains(" at Kathmandu from JD ")
+                && missed.detail.ends_with(" and the other nothing"),
+            "{}",
+            missed.detail
+        );
+    }
+
+    #[test]
+    fn an_infinite_measurement_fails_whatever_its_bound() {
+        let report = run(&Honest(Twist::Infinite), &Bounds::DEFAULT);
+        let check = report.check("override_ayanamsha").unwrap();
+        assert_eq!(check.measured, Some(f64::INFINITY));
+        assert!(!check.passed && !report.passed);
+    }
+
+    #[test]
+    fn native_crossings_must_be_the_kernels_events() {
+        let failed = |twist: Twist| {
+            let report = run(&Honest(twist), &Bounds::DEFAULT);
+            let check = report
+                .check("override_crossings_composite")
+                .unwrap()
+                .clone();
+            assert!(!check.passed, "{}", check.detail);
+            check.detail
+        };
+        let none = failed(Twist::NoCrossings);
+        assert!(
+            none.starts_with("the provider found 0 events of ")
+                && none.contains(" over 30 days where the SDK's kernel found "),
+            "{none}"
+        );
+        for twist in [Twist::Reversed, Twist::Moved] {
+            let detail = failed(twist);
+            assert!(
+                detail.starts_with("at JD ") && detail.contains(" where the SDK's kernel crossed "),
+                "{detail}"
+            );
+        }
+        // A sky that never moves crosses nothing, on either side.
+        let report = run(&Honest(Twist::Still), &Bounds::DEFAULT);
+        for name in [
+            "override_crossings_longitude",
+            "override_crossings_composite",
+        ] {
+            let check = report.check(name).unwrap();
+            assert!(check.passed, "{name}: {}", check.detail);
+            assert!(
+                check.detail.starts_with("no crossing of "),
+                "{name}: {}",
+                check.detail
+            );
+            assert!(check.detail.ends_with(" days, on either side"), "{name}");
         }
     }
 

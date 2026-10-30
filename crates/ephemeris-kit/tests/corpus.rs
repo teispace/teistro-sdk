@@ -14,7 +14,10 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
 use serde_json::{Value, json};
-use teistro_ephemeris_kit::corpus::{self, Corpus, Divergence, Outcome};
+use teistro_ephemeris_kit::corpus::{
+    self, Corpus, CorpusId, CorpusReport, Counts, Divergence, FixtureResult, Implementation,
+    Outcome,
+};
 use teistro_ephemeris_kit::jpl;
 use teistro_ephemeris_kit::runner;
 use teistro_port_ephemeris::{
@@ -313,7 +316,7 @@ fn a_states_file_is_refused_for_each_way_it_is_malformed() {
             let root = corpus(name, &files);
             jpl::geometric(&Corpus::open(&root).unwrap(), provider, class).unwrap_err()
         };
-    let cases: [(&str, Option<String>, &str); 7] = [
+    let cases: [(&str, Option<String>, &str); 9] = [
         ("absent", None, "the corpus is older than 0.12.0"),
         (
             "not-json",
@@ -330,6 +333,16 @@ fn a_states_file_is_refused_for_each_way_it_is_malformed() {
         (
             "kernel",
             Some(states(|v| v["series"][0]["kernel"] = json!("de430"))),
+            "has no geometric ECLIPJ2000 series for 10",
+        ),
+        (
+            "epoch",
+            Some(states(|v| v["series"][0]["epoch"] = json!("utc"))),
+            "has no geometric ECLIPJ2000 series for 10",
+        ),
+        (
+            "frame",
+            Some(states(|v| v["series"][0]["frame"] = json!("J2000"))),
             "has no geometric ECLIPJ2000 series for 10",
         ),
         (
@@ -479,9 +492,11 @@ fn each_recorded_chart_is_founded_compared_or_skipped_for_its_reason() {
     ]
     .map(String::from)
     .to_vec();
-    // The skips are unexplained, so the provider's own run is not held.
+    // The skips are unexplained, so the provider's own run is not held,
+    // whether or not the report is written.
     assert!(!runner::charts("test-provider", &open, &args));
     assert!(out.join("test-provider-corpus.json").is_file());
+    assert!(!runner::charts("test-provider", &open, &args[..4]));
     let mut reduced = args.clone();
     reduced.push(String::from("--native-frame-only"));
     // Reduced to its native frame, the run is reported and not judged.
@@ -568,4 +583,52 @@ fn a_kit_run_that_cannot_write_its_results_fails() {
     let provider = TestProvider::new();
     let code = runner::run("test-provider", &provider, Some(&blocked), Vec::new);
     assert_eq!(code, ExitCode::FAILURE);
+}
+
+#[test]
+fn a_run_that_misses_nothing_passes_and_holds_against_no_divergence() {
+    let results = vec![FixtureResult {
+        fixture: String::from("c001-kathmandu-2000-01-01"),
+        outcome: Outcome::Pass,
+        reason: None,
+        fields: Vec::new(),
+    }];
+    let report = CorpusReport {
+        schema: "teistro-conformance/report/1",
+        corpus: CorpusId {
+            version: String::from("9.9.9"),
+            commit: None,
+        },
+        implementation: Implementation {
+            name: String::from("teistro over test-provider"),
+            version: String::from("1"),
+            binding: "rust",
+            provider_class: String::from("wide"),
+            platform: String::from("test"),
+            settings_hash: None,
+        },
+        counts: Counts::of(&results),
+        results,
+    };
+    assert!(report.passed());
+    let judged = report.against(&[]);
+    assert!(judged.holds(), "{judged:?}");
+    assert_eq!(judged.explained, 0);
+}
+
+#[test]
+fn a_divergence_explains_its_fields_in_the_fixtures_it_names_or_in_any() {
+    // Naming no fixture, it explains its field in every one.
+    assert!(
+        corpus::MOON_TOPOCENTRIC_SPEED
+            .explains("any-fixture", "positions.bodies.MOON.speed_deg_per_day")
+    );
+    // Naming some, only in those.
+    let beyond = corpus::KNOWN
+        .iter()
+        .find(|d| d.name == "delta-t-beyond-the-table")
+        .unwrap();
+    let field = "positions.bodies.SUN.tropical_longitude_deg";
+    assert!(beyond.explains("c046-kathmandu-2350-01-01", field));
+    assert!(!beyond.explains("c001-kathmandu-2000-01-01", field));
 }
