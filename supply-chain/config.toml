@@ -26,70 +26,70 @@ url = "https://raw.githubusercontent.com/mozilla/supply-chain/main/audits.toml"
 url = "https://raw.githubusercontent.com/zcash/rust-ecosystem/main/supply-chain/audits.toml"
 
 [policy.teistro]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-aspect]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-astro]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-calendar]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-chart]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-core]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-ephemeris-kit]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-ffi]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-houses]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-idl]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-intl]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-panchanga]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-points]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-port-ephemeris]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-port-timezone]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-scenario]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-serial]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-siddhanta]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-state]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-test-allocator]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-time]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [policy.teistro-vargas]
-audit-as-crates-io = true
+audit-as-crates-io = false
 
 [[exemptions.ahash]]
 version = "0.8.12"
@@ -618,94 +618,6 @@ criteria = "safe-to-deploy"
 [[exemptions.target-triple]]
 version = "1.0.1"
 criteria = "safe-to-run"
-
-[[exemptions.teistro]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-aspect]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-astro]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-calendar]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-chart]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-core]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-ephemeris-kit]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-ffi]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-houses]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-idl]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-intl]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-panchanga]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-points]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-port-ephemeris]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-port-timezone]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-scenario]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-serial]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-siddhanta]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-state]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-test-allocator]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-time]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
-
-[[exemptions.teistro-vargas]]
-version = "0.0.0"
-criteria = "safe-to-deploy"
 
 [[exemptions.thiserror]]
 version = "2.0.20"
