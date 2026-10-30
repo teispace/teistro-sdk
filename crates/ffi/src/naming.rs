@@ -88,7 +88,7 @@ unsafe fn answered<T: serde::Serialize>(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_naming_syllables(
     context: *const TsContext,
     request_json: *const c_char,
@@ -149,7 +149,7 @@ pub unsafe extern "C" fn ts_naming_syllables(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_naming_read(
     context: *const TsContext,
     request_json: *const c_char,
@@ -209,7 +209,7 @@ pub unsafe extern "C" fn ts_naming_read(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_naming_check(
     context: *const TsContext,
     request_json: *const c_char,
@@ -264,7 +264,7 @@ pub unsafe extern "C" fn ts_naming_check(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_naming_of(
     context: *const TsContext,
     request_json: *const c_char,
@@ -324,7 +324,7 @@ pub unsafe extern "C" fn ts_naming_of(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_naming_load(
     context: *const TsContext,
     request_json: *const c_char,
@@ -386,7 +386,7 @@ pub unsafe extern "C" fn ts_naming_load(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_naming_suggest(
     context: *const TsContext,
     request_json: *const c_char,

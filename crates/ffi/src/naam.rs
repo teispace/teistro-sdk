@@ -195,7 +195,7 @@ fn encode(read: &teistro::NaamMilan) -> Result<Vec<u8>, Error> {
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_blob` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_naam_milan(
     context: *const TsContext,
     request_json: *const c_char,

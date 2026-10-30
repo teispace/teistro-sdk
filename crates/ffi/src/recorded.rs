@@ -74,7 +74,7 @@ use crate::support::with_context;
 ///
 /// `context` must be a live handle; `snapshot_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_recorded_settings(
     context: *const TsContext,
     snapshot_json: *const c_char,

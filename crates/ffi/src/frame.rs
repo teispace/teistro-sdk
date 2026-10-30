@@ -204,7 +204,7 @@ fn coordinates(value: u8) -> Result<Coordinates, Error> {
 /// # Safety
 ///
 /// `out_frame` must be valid for a read of its `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_frame_canonical(out_frame: *mut TsFrame) -> Status {
     // SAFETY: the entry point's contract.
     match unsafe { write_out(out_frame, "out_frame", TsFrame::of(Frame::CANONICAL)) } {
@@ -233,7 +233,7 @@ pub unsafe extern "C" fn ts_frame_canonical(out_frame: *mut TsFrame) -> Status {
 ///
 /// `frame` must be valid for a read of its `struct_size`; `out_bits` for a
 /// write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_frame_pack(frame: *const TsFrame, out_bits: *mut u32) -> Status {
     // SAFETY: the entry point's contract.
     let packed = unsafe { read_in(frame, "frame") }.and_then(TsFrame::to_frame);
@@ -270,7 +270,7 @@ pub unsafe extern "C" fn ts_frame_pack(frame: *const TsFrame, out_bits: *mut u32
 /// # Safety
 ///
 /// `out_frame` must be valid for a read of its `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_frame_unpack(bits: u32, out_frame: *mut TsFrame) -> Status {
     match Frame::try_from_bits(bits) {
         // SAFETY: the entry point's contract.

@@ -272,7 +272,7 @@ had missed two crates.
 - **Extraction.** Every source file is parsed with `syn`; public
   `#[repr(int)]` enums, `#[repr(C)]` structs, function-pointer type
   aliases, `pub const` integers marked `api: constant` and
-  `#[unsafe(no_mangle)] extern "C"` functions are collected; a public
+  exported `extern "C"` functions are collected; a public
   struct with private fields is an opaque candidate and is kept only when
   some pointer names it. Names are resolved in a second pass (a bare path
   is an enum, an opaque, a callback or a struct, else an error), roles in

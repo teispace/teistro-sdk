@@ -422,7 +422,7 @@ pub(crate) fn system_of(id: u16) -> Result<&'static dyn CalendarSystem, Error> {
 ///
 /// `context` must be a live handle; `out_date` valid for a read of its
 /// `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_calendar_from_fixed(
     context: *const TsContext,
     calendar: u16,
@@ -470,7 +470,7 @@ pub unsafe extern "C" fn ts_calendar_from_fixed(
 ///
 /// `context` must be a live handle; `date` valid for a read; `out_fixed`
 /// valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_calendar_to_fixed(
     context: *const TsContext,
     date: *const TsCalendarDate,
@@ -517,7 +517,7 @@ pub unsafe extern "C" fn ts_calendar_to_fixed(
 ///
 /// `context` must be a live handle; `date` valid for a read; `out_date`
 /// valid for a read of its `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_calendar_convert(
     context: *const TsContext,
     date: *const TsCalendarDate,
@@ -561,7 +561,7 @@ pub unsafe extern "C" fn ts_calendar_convert(
 /// # Safety
 ///
 /// `context` must be a live handle; `out_length` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_calendar_month_length(
     context: *const TsContext,
     calendar: u16,
@@ -604,7 +604,7 @@ pub unsafe extern "C" fn ts_calendar_month_length(
 /// # Safety
 ///
 /// `context` must be a live handle; `out_leap` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_calendar_is_leap(
     context: *const TsContext,
     calendar: u16,
@@ -647,7 +647,7 @@ pub unsafe extern "C" fn ts_calendar_is_leap(
 ///
 /// `context` must be a live handle; `date` valid for a read; `out_weekday`
 /// valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_calendar_weekday(
     context: *const TsContext,
     date: *const TsCalendarDate,
@@ -703,7 +703,7 @@ pub unsafe extern "C" fn ts_calendar_weekday(
 ///
 /// `context` must be a live handle; `date` valid for a read; `out_date`
 /// valid for a read of its `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_calendar_add(
     context: *const TsContext,
     date: *const TsCalendarDate,
@@ -766,7 +766,7 @@ pub unsafe extern "C" fn ts_calendar_add(
 ///
 /// `context` must be a live handle; `from` and `to` valid for a read;
 /// `out_span` valid for a read of its `struct_size` and a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_calendar_between(
     context: *const TsContext,
     from: *const TsCalendarDate,
@@ -824,7 +824,7 @@ pub unsafe extern "C" fn ts_calendar_between(
 /// # Safety
 ///
 /// `context` must be a live handle; `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_calendar_tibetan_year(
     context: *const TsContext,
     year: i32,
@@ -850,7 +850,7 @@ pub unsafe extern "C" fn ts_calendar_tibetan_year(
 /// // Fixed day 1, Monday 1 January 1 CE, begins at this Julian day.
 /// assert_eq!(ts_calendar_jd_of_fixed(1), 1_721_425.5);
 /// ```
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 #[allow(clippy::cast_precision_loss, reason = "days are far below 2^53")]
 pub extern "C" fn ts_calendar_jd_of_fixed(fixed: i64) -> f64 {
     fixed as f64 + FixedDay::JD_EPOCH
@@ -875,7 +875,7 @@ pub extern "C" fn ts_calendar_jd_of_fixed(fixed: i64) -> f64 {
 /// # Safety
 ///
 /// `out_fraction` must be null or valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_calendar_fixed_of_jd(jd: f64, out_fraction: *mut f64) -> i64 {
     let (day, fraction) = FixedDay::from_local_jd(jd);
     if !out_fraction.is_null() {

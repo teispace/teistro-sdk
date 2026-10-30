@@ -28,7 +28,7 @@ use crate::support::with_context;
 /// # Safety
 ///
 /// `context` must be a live handle; nothing else is read.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_chart_found(
     context: *const TsContext,
     _request: *const TsChartRequest,
@@ -44,7 +44,7 @@ pub unsafe extern "C" fn ts_chart_found(
 /// # Safety
 ///
 /// `context` must be a live handle; nothing else is read.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_chart_layout_row(
     context: *const TsContext,
     _key: *const c_char,
@@ -61,7 +61,7 @@ pub unsafe extern "C" fn ts_chart_layout_row(
 /// # Safety
 ///
 /// `context` must be a live handle; nothing else is read.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_naam_milan(
     context: *const TsContext,
     _request_json: *const c_char,

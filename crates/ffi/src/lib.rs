@@ -13,6 +13,12 @@
 //! the library allocates are freed by `ts_string_free`, strings it lends
 //! are valid until the next call on the same context.
 //!
+//! An entry point is exported by `#[cfg_attr(not(test), unsafe(no_mangle))]`:
+//! llvm-cov keeps one record of a symbol name across every binary it reads,
+//! so an unmangled `ts_*` in this crate's unit-test build, which calls few of
+//! them, read the whole boundary as unrun whenever its directory hash sorted
+//! first. `tests/description.rs` holds every entry point to the spelling.
+//!
 //! - [`context`]: the handle, its options, the last error;
 //! - [`key`]: catalogue keys and ids;
 //! - [`calendar`]: dates in every shipped calendar, the fixed day;
@@ -41,6 +47,13 @@
 //! ```
 
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
+#![cfg_attr(
+    test,
+    allow(
+        clippy::must_use_candidate,
+        reason = "an entry point is unexported only in the unit-test build"
+    )
+)]
 
 pub mod blob;
 pub mod calendar;
@@ -134,7 +147,7 @@ pub const TS_ERROR_OWNED: u32 = 1 << 0;
 /// // What a binding checks before anything else.
 /// assert_eq!(teistro_ffi::ts_abi_version(), teistro_ffi::TS_ABI_VERSION);
 /// ```
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 #[allow(
     unsafe_code,
     reason = "the exported-symbol attribute is unsafe in edition 2024"
@@ -151,7 +164,7 @@ pub extern "C" fn ts_abi_version() -> u32 {
 /// assert_eq!(version.to_str()?, teistro_ffi::SDK_VERSION);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 #[allow(
     unsafe_code,
     reason = "the exported-symbol attribute is unsafe in edition 2024"
@@ -165,7 +178,7 @@ pub extern "C" fn ts_sdk_version() -> *const c_char {
 /// ```
 /// assert_eq!(teistro_ffi::ts_catalogue_version(), teistro_core::catalogue::SCHEMA_VERSION);
 /// ```
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 #[allow(
     unsafe_code,
     reason = "the exported-symbol attribute is unsafe in edition 2024"
@@ -183,7 +196,7 @@ pub extern "C" fn ts_catalogue_version() -> u32 {
 /// assert_eq!(profile.to_str()?, teistro_core::settings::DEFAULT_PROFILE);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 #[allow(
     unsafe_code,
     reason = "the exported-symbol attribute is unsafe in edition 2024"
@@ -211,7 +224,7 @@ pub extern "C" fn ts_default_profile() -> *const c_char {
 /// assert!(info.is_object());
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 #[allow(
     unsafe_code,
     reason = "the exported-symbol attribute is unsafe in edition 2024"
@@ -239,7 +252,7 @@ pub extern "C" fn ts_build_info() -> *const c_char {
 /// assert_eq!(said(-999).to_str()?, "unknown status");
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 #[allow(
     unsafe_code,
     reason = "the exported-symbol attribute is unsafe in edition 2024"

@@ -40,7 +40,7 @@ use crate::support::{text, with_context, write_plain};
 ///
 /// `context` must be a live handle; `key` a NUL-terminated string; `out_id`
 /// valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_key_parse(
     context: *const TsContext,
     key: *const c_char,
@@ -81,7 +81,7 @@ pub unsafe extern "C" fn ts_key_parse(
 /// # Safety
 ///
 /// `context` must be a live handle; `out_key` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_key_name(
     context: *const TsContext,
     id: u32,

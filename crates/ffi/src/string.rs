@@ -139,7 +139,7 @@ impl From<Hash> for TsHash {
 ///
 /// `string` must be null or a descriptor written by this library that is
 /// not used again.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_string_free(string: *mut TsString) {
     if string.is_null() {
         return;
