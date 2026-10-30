@@ -2631,3 +2631,14 @@ const notAWindow: SaitRule = { rule: 'X', source: '', windows: [{ within: { wind
 void withSait;
 void notAWindow;
 
+
+// A host's crash reporter hears a report without the message (SR-52).
+import { INTERNAL_CODE, onInternalError } from '../lib/index.js';
+import type { InternalReport } from '../lib/index.js';
+const stop: () => void = onInternalError((report: InternalReport) => {
+  const kind: 'boundary' | 'trap' = report.kind;
+  void [kind, report.sdkVersion, report.code === INTERNAL_CODE];
+});
+// @ts-expect-error a report carries no message
+onInternalError((report) => report.message);
+stop();

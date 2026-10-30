@@ -375,6 +375,27 @@ export declare function localMeanZone(longitudeDeg: Longitude): ZoneSpec;
 export { BlobFormatError, decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
 
+/** The stable code of the `INTERNAL` status, the same in every binding. */
+export declare const INTERNAL_CODE: -10;
+
+/** What a host's crash reporter hears of the SDK failing inside itself. */
+export interface InternalReport {
+  readonly status: 'INTERNAL';
+  /** `INTERNAL_CODE`. */
+  readonly code: number;
+  /** A panic the C ABI caught, or a wasm module that trapped. */
+  readonly kind: 'boundary' | 'trap';
+  /** The SDK that failed. */
+  readonly sdkVersion: string;
+}
+
+/**
+ * Calls `hook` with every `InternalReport` from now on: the status, its
+ * code, its kind and the version, never the message, which may quote what
+ * the call was given. The function returned stops that.
+ */
+export declare function onInternalError(hook: (report: InternalReport) => void): () => void;
+
 /** A failed call, with everything the library said about it. */
 export declare class TeistroError extends Error {
   /** The status's name, the same in every binding. */

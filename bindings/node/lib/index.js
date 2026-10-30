@@ -18,6 +18,7 @@
 // (`package.json` `imports`), so the layer below is one file for both and
 // names no Node built-in itself (03-design/wasm-binding.md §3).
 import { native, named as wasNamed, platformPackage, sanitizer as acknowledged } from '#native';
+import { isTrap, reportInternal, trapRecord } from './internal.js';
 
 import {
   ABI_VERSION,
@@ -227,6 +228,9 @@ export { platformPackage };
 export const buildInfo = Object.freeze(readBuildInfo(native));
 
 const refusal = refuseBuild(buildInfo, wasNamed, acknowledged);
+
+/** The version, read once: a module that trapped is not asked again. */
+const loadedVersion = buildInfo.sdk;
 if (refusal) throw new Error(refusal);
 
 /**
@@ -255,6 +259,9 @@ export class TeistroError extends Error {
   }
 }
 
+/** Whether a call trapped the wasm module, which then refuses every call. */
+let trapped = false;
+
 /**
  * Runs a call on the addon and reports its failure the way this binding
  * promises to: what your own code threw comes back as itself, and what
@@ -272,10 +279,18 @@ export class TeistroError extends Error {
  *   what it threw
  */
 function guarded(context, call, thrown) {
+  if (trapped) throw new TeistroError(trapRecord(false));
   if (thrown) thrown.error = undefined;
   try {
     return call();
   } catch (cause) {
+    // A wasm module that trapped is `INTERNAL`, as a panic the C ABI
+    // caught is, and refuses every later call (`internal.js`).
+    if (isTrap(cause)) {
+      trapped = true;
+      reportInternal('trap', loadedVersion);
+      throw new TeistroError(trapRecord(true));
+    }
     // A context keeps its last refusal; a call that makes a handle has no
     // context to keep it on, so the addon throws it with the whole record
     // attached instead (`ffi-abi-and-api-description.md` §6.1).
@@ -301,6 +316,7 @@ function guarded(context, call, thrown) {
     // a column of the wrong length read by the native adapter — leaves
     // its sentence in the caught message rather than in `thrown`.
     const fromProvider = record.status === 'PROVIDER' && cause?.message;
+    if (record.status === 'INTERNAL') reportInternal('boundary', loadedVersion);
     throw new TeistroError(fromProvider ? { ...record, message: cause.message } : record);
   }
 }
@@ -8555,5 +8571,6 @@ export const ashauchRunning = (answer) => ({
 
 export { BlobFormatError, decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
+export { INTERNAL_CODE, onInternalError } from './internal.js';
 export * from './catalogue.js';
 export * from './records.js';
