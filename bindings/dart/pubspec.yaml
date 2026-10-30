@@ -3,8 +3,7 @@ description: >-
   The Teistro SDK for Dart and Flutter: an ephemeris-agnostic astrology
   engine over the C ABI, with the catalogue, the calendars, the time
   layer, the locale engine and the astronomy.
-version: 0.0.0
-publish_to: none
+version: 1.0.0-rc.1
 repository: https://github.com/teispace/teistro-sdk
 
 environment:

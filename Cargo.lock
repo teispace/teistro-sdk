@@ -1678,7 +1678,7 @@ checksum = "c3a6bfce3d99adfa72d24750a61f782f3036a81e7f86d8841ee1326deaebd171"
 
 [[package]]
 name = "teistro"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "ed25519-dalek",
  "schemars",
@@ -1726,7 +1726,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-aspect"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -1740,7 +1740,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-astro"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "criterion",
  "proptest",
@@ -1754,7 +1754,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-calendar"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "calendrical_calculations",
  "proptest",
@@ -1771,7 +1771,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-chart"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -1786,7 +1786,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-core"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "criterion",
  "libm",
@@ -1801,7 +1801,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-dasha"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "criterion",
  "schemars",
@@ -1813,7 +1813,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-ephemeris-builtin"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "serde_json",
  "teistro-astro",
@@ -1826,7 +1826,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-ephemeris-kit"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -1838,7 +1838,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-ffi"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -1864,7 +1864,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-geometry"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -1876,7 +1876,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-gochar"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -1886,7 +1886,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-hellenistic"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -1896,7 +1896,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-houses"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -1910,7 +1910,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-idl"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "proc-macro2",
  "serde",
@@ -1920,7 +1920,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-interpret"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -1938,7 +1938,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-intl"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "clap",
  "crc32fast",
@@ -1960,7 +1960,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-kp"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -1972,7 +1972,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-lalkitab"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -1981,7 +1981,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-matching"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -1992,7 +1992,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-mcp"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "boon",
  "getrandom 0.3.4",
@@ -2008,7 +2008,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-muhurta"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2026,7 +2026,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-node"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "napi",
  "napi-build",
@@ -2038,7 +2038,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-numerology"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2049,7 +2049,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-pakshi"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2059,7 +2059,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-panchanga"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "ed25519-dalek",
  "schemars",
@@ -2076,7 +2076,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-points"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2090,7 +2090,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-port-ephemeris"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "libloading",
  "schemars",
@@ -2103,7 +2103,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-port-timezone"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2113,7 +2113,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-prashna"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2125,7 +2125,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-rashifal"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2136,7 +2136,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-rectification"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2150,7 +2150,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-remedies"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2160,7 +2160,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-render-svg"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "roxmltree",
  "schemars",
@@ -2173,7 +2173,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-research"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2183,7 +2183,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-rules"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "criterion",
  "schemars",
@@ -2201,7 +2201,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-scenario"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "serde_json",
  "teistro",
@@ -2221,7 +2221,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-serial"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "boon",
  "schemars",
@@ -2246,7 +2246,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-siddhanta"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "criterion",
  "proptest",
@@ -2317,7 +2317,7 @@ version = "0.0.0"
 
 [[package]]
 name = "teistro-state"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2332,7 +2332,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-strength"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2346,7 +2346,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-tajika"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2361,18 +2361,18 @@ dependencies = [
 
 [[package]]
 name = "teistro-test-adapter"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "teistro-port-ephemeris",
 ]
 
 [[package]]
 name = "teistro-test-allocator"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 
 [[package]]
 name = "teistro-time"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "criterion",
  "jiff",
@@ -2391,7 +2391,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-vargas"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "criterion",
  "schemars",
@@ -2407,7 +2407,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-wasm"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "js-sys",
  "serde",
@@ -2421,7 +2421,7 @@ dependencies = [
 
 [[package]]
 name = "teistro-western"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "schemars",
  "serde",
@@ -2736,7 +2736,7 @@ dependencies = [
 
 [[package]]
 name = "xtask"
-version = "0.0.0"
+version = "1.0.0-rc.1"
 dependencies = [
  "base64",
  "crc32fast",

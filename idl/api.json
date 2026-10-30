@@ -1,7 +1,7 @@
 {
   "schema": "teistro-api/1",
   "abi_version": 1,
-  "sdk_version": "0.0.0",
+  "sdk_version": "1.0.0-rc.1",
   "prefix": "ts_",
   "sources": [
     "crates/core/src/error.rs",

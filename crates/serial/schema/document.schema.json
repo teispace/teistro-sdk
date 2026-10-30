@@ -8573,7 +8573,7 @@
       ]
     }
   },
-  "$id": "urn:teistro:schema:sealed-document:0.0.0",
+  "$id": "urn:teistro:schema:sealed-document:1.0.0-rc.1",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "A value with a provenance whose content hash is the value's own.",
   "properties": {
