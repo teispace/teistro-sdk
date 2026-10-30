@@ -140,7 +140,8 @@ edition, frame, divergences, year_start, table}`; the engine
 SHIPPED_SPAN, fit, FitReport, Divergence}`; the solar module
 `solar::{SolarModel, DayArc, MonthStartRule, find_sankranti, Sankranti}`.
 C ABI: the generic calendar entry points; the resolution crosses as a
-typed enum with its fields. Bindings: `bs(2081, 1, 1)` constructors
+typed enum with its fields. Adding to a date and the difference of two
+dates are `teistro_calendar::arithmetic` (§11). Bindings: `bs(2081, 1, 1)` constructors
 validating month and day against the table, and the resolution as a
 discriminated union on every converted date.
 
@@ -206,3 +207,71 @@ the locale's numbering system, and the era names.
    `bs-fit` binary).
 3. The Buddha era's new-year rule in Nepali usage.
 4. Nepal Sambat's tabular stopgap until the lunisolar calendar exists.
+
+## 11. Arithmetic: adding, and the difference of two dates (SR-05)
+
+Status: `built`, 2026-10-30, `teistro_calendar::arithmetic`. The almanac
+app asks to add years, months and days to a Bikram Sambat date, and for
+the difference of two dates in years, months and days, counted as an age
+is counted in Nepal.
+
+**What a month is.** Nepal's Interpretation of Laws Act, 2010 (1954),
+defines a month as "a month reckoned from Sankranti (First day) according
+to the Nepalese Panchanga (Calendar)" (§2(n)), and a year as one reckoned
+by the same panchanga from Baisakh's sankranti (§2(ac)). Its §8 reads
+"from" as excluding the first day of a period. So a month of an age is a
+Bikram Sambat month, 29 to 32 days long, and not a count of 30 days. The
+days of a span are counted on the fixed day, the first day excluded.
+Rank 1, the statute; read from Nepal Archives' text of the Act, which the
+Law Commission lists without its text.
+
+**The counting rule.** Years and months are added first, as one count of
+months, and the days after them. This is the order java.time's
+`LocalDate.plus(Period)` and Temporal's `PlainDate.add` use. The
+difference from `from` to `to` is the most whole months whose anniversary
+of `from` is not past `to`, then the days from that anniversary. So
+adding the difference to `from` gives `to` under the same rule, in both
+directions. Before `from`, every part is negative or zero.
+
+**A day the month lacks.** No statute and no rule found for a citizenship
+or service age says what happens when the anniversary's day number is
+missing from the month. For example, one born on 32 Jestha meets a later
+31-day Jestha. Three rules are selectable (`Overflow`), each named after
+an existing library:
+
+| rule | the 32nd of Jestha plus a month, Ashadh of 31 days | named after |
+|---|---|---|
+| `CONSTRAIN` (default) | 31 Ashadh | Temporal's `overflow: "constrain"`, java.time's smart resolution of a day of the month |
+| `CARRY` | 1 Shrawan | java.time's `ResolverStyle.LENIENT` |
+| `REJECT` | refused, `INVALID_ARG` with `NONEXISTENT_DATE` on `day` | Temporal's `overflow: "reject"`, java.time's `STRICT` |
+
+The difference reads the anniversary under the same rule. Under
+`CONSTRAIN`, one born on 32 Jestha completes a year on 31 Jestha in a
+year whose Jestha has 31 days, the month's last day. They keep a birthday
+in their own month every year. Under `CARRY` they complete it on 1
+Ashadh. `REJECT` refuses a difference that counts from a missing day.
+java.time's `Period.between` does neither: it reads the constrained day
+as not yet complete and the day after as the anniversary plus a day, so
+no day is a whole year. That is C803.
+
+**Calendars.** The arithmetic takes any shipped calendar of twelve
+numbered months: Bikram Sambat, Gregorian, Julian, the 1582 mixed
+calendar, the Indian national, the Bangladeshi, the regional solar and
+the tabular Hijri calendars. It refuses the ISO week date, whose months
+are weeks, and the Tibetan calendar, which repeats months, each with
+`UNSUPPORTED`.
+
+**Where it is.** `CalendarArea::add` and `CalendarArea::between` in the
+façade. At the boundary they are `ts_calendar_add` and
+`ts_calendar_between`, with the rule as `ts_overflow` and the span as
+`ts_date_span`. Every binding has `calendar.add` and `calendar.between`,
+and MCP has the `calendar.add` and `calendar.between` tools.
+
+**Tests** (`arithmetic.rs`): every pair of adjacent months in the shipped
+table where the first is longer, 32-day months before 29-, 30- and 31-day
+ones among them, under each rule. An age across a 32-day and a later
+31-day Jestha. A 366-day year and a 365-day year. The table's first and
+last years, and the days either side of them. Add-the-difference over a
+spread of starts and ends, every month's last day among them, both ways
+and under both lenient rules. Gregorian 31 January plus a month, for
+comparison with the libraries above.

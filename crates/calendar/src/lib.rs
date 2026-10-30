@@ -16,6 +16,7 @@
 
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
+pub mod arithmetic;
 pub mod bangladeshi;
 pub mod bikram_sambat;
 pub mod date;
