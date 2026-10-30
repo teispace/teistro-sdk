@@ -489,7 +489,7 @@ fn naming_records() -> [Record; 5] {
 /// asked beside them, its festivals as a feed, why a published day differs
 /// from the rule's, a sankalpa's time, an ashauch, and a death's first
 /// year.
-fn almanac_records() -> [Record; 7] {
+fn almanac_records() -> [Record; 8] {
     [
         Record {
             name: "almanac.ashauch",
@@ -528,6 +528,17 @@ fn almanac_records() -> [Record; 7] {
             reads: None,
             run: festival_calendar,
             schemas: schemas!(crate::area::FestivalCalendarAsked => String),
+        },
+        Record {
+            name: "almanac.festivalPack",
+            boundary: "ts_almanac_festival_pack",
+            title: "Every rule of a festival pack with what it is: kind, tradition, communities and regions, and the fields no source gives",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::PackRequest::from_json(json)?;
+                Answered::plain(&context.almanac().festival_pack(&asked))
+            },
+            schemas: schemas!(crate::area::PackAsked => crate::PackListing),
         },
         Record {
             name: "almanac.next",

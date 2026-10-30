@@ -41,7 +41,7 @@ no rule. This page's classes split each of those counts:
 
 | track 04 | count | this page |
 |---|---|---|
-| lunar | 295 | rule, shipped 259; rule, not yet shipped 9; rule, needs a form 27 |
+| lunar | 295 | rule, shipped 260; rule, not yet shipped 9; rule, needs a form 26 |
 | Bikram Sambat | 68 | solar 24; fixed civil 44 |
 | Gregorian | 113 | fixed civil 113 |
 | both | 2 | solar 1 (Guriya parva, printed on Shrawan 1 in both editions, C621); rule, shipped 1 (Walke parva, printed on Bhadra 1 in both editions) |
@@ -62,12 +62,12 @@ Where the two counts differ, and why:
   of Vaishakha's bathing, on Chaitra's full moon. Five are Gregorian weekday or date
   rules, and three are Bikram Sambat dates.
 
-Total: 502 festivals: rule, shipped 266; rule, not yet shipped 9; rule, needs a form 25; solar 26; fixed civil 165; community 6; published only 5.
+Total: 502 festivals: rule, shipped 267; rule, not yet shipped 9; rule, needs a form 24; solar 26; fixed civil 165; community 6; published only 5.
 
 ## 3. The festivals, by class
 
 
-### Rule, shipped (266)
+### Rule, shipped (267)
 
 The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key below is in it.
 
@@ -146,6 +146,7 @@ The key is the shipped rule's. `NEPAL_PANCHANGA` holds `NEPAL`, so every key bel
 | `DWADASHI_SHRADDHA` | Dwadashi Shraddha | द्वादशी श्राद्ध |  | NEPAL_PANCHANGA |
 | `DWITIYA_SHRADDHA` | Dwitiya Shraddha | द्वितीया श्राद्ध |  | NEPAL_PANCHANGA |
 | `EKADASHI_SHRADDHA` | Ekadashi Shraddha | एकादशी श्राद्ध |  | NEPAL_PANCHANGA |
+| `FAGU_PURNIMA` | Fagu Purnima | फागु पूर्णिमा |  | NEPAL_PANCHANGA, on the Holika day, from the gazette notices (C693) |
 | `FULKHARKA_GANGAJAMUNA_MELA` | Fulkharka Gangajamuna Mela | फूलखर्क गङ्गाजमुना मेला |  | NEPAL_PANCHANGA |
 | `GAIDU_PUJA` | Gaidu Puja | गैडु पूजा |  | NEPAL_PANCHANGA |
 | `GAI_JATRA` | Gai Jatra | गाईजात्रा | Newar | NEPAL_PANCHANGA |
@@ -356,14 +357,13 @@ Each is a tithi in a month that the consumer's source gives, and each note says 
 | `SANKHU_JATRA` | Sankhu Jatra | साँखु जात्रा | Newar | one verified day; VS 2082 prints it on the sunrise rule's day, 16 April 2025, and on 4 April 2026, a day before it (C689) |
 | `THAKALI_PHALO_PARVA` | Thakali Phalo Parva | थकाली फालो पर्व | Thakali | its source gives two rules, and VS 2083 prints थकालीफालोपर्व on 21 August 2026, which neither gives (C687) |
 
-### Rule, needs a form (25)
+### Rule, needs a form (24)
 
 `festival-rule-language.md` §4 maps each to the form it needs, or says why none fits.
 
 | key | name | नाम | community | note |
 |---|---|---|---|---|
 | `DEOPATAN_DESHODDHAR_PUJA` | Deopatan Deshoddhar Puja | देवपाटन देशोद्धार पूजा |  |  |
-| `FAGU_PURNIMA` | Fagu Purnima | फागु पूर्णिमा |  |  |
 | `GAI_TIHAR` | Gai Tihar | गाई तिहार |  |  |
 | `GATHAMUGA_CHARHE` | Gathamuga Charhe | गथाँमुग चह्रे | Newar |  |
 | `GAURA_PARVA` | Gaura Parva | गौरा पर्व |  |  |

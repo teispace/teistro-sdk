@@ -10977,6 +10977,41 @@ fn a_festival_feed_crosses_as_the_facade_writes_it() {
     );
 }
 
+fn festival_pack_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_festival_pack(
+            ctx.handle,
+            request.as_ptr(),
+            &raw mut json,
+        )
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+#[test]
+fn a_festival_pack_lists_its_rules_and_refuses_an_unknown_name() {
+    let ctx = Ctx::defaults();
+    let listing = festival_pack_json(&ctx, r#"{"pack": "INDIA_CENTRAL"}"#).unwrap();
+    let listing: serde_json::Value = serde_json::from_str(&listing).unwrap();
+    assert_eq!(listing["pack"], "INDIA_CENTRAL");
+    let rows = listing["rules"].as_array().unwrap();
+    let eid = rows.iter().find(|row| row["key"] == "EID_AL_FITR").unwrap();
+    assert_eq!(eid["subjectTo"], "MOON_SIGHTING");
+    assert_eq!(
+        festival_pack_json(&ctx, r#"{"pack": "NO_SUCH_PACK"}"#).unwrap_err(),
+        Status::InvalidArg
+    );
+}
+
 fn ashauch_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
     let request = CString::new(request).unwrap();
     let mut json = TsString::empty();

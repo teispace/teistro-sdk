@@ -362,7 +362,17 @@ public enum Kind implements Member {
     /**
      * Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.
      */
-    SHIVA_VASA(76, "shiva_vasa");
+    SHIVA_VASA(76, "shiva_vasa"),
+
+    /**
+     * What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850).
+     */
+    FESTIVAL_KIND(77, "festival_kind"),
+
+    /**
+     * The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).
+     */
+    TRADITION(78, "tradition");
 
     private static final Kind[] MEMBERS = values();
 

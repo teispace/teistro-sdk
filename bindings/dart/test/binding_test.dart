@@ -1020,6 +1020,34 @@ void _engineTests() {
     );
   });
 
+  // The central holidays' pack says what each rule is, and marks a day the
+  // moon decides (`03-design/india-central-holidays.md`).
+  test('a festival pack lists its rules with their values', () {
+    final sky = teistro.context(
+      profile: 'nepali-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final listing = sky.almanac.festivalPack('INDIA_CENTRAL');
+    expect(listing['pack'], 'INDIA_CENTRAL');
+    final rows =
+        (listing['rules']! as List<Object?>).cast<Map<String, Object?>>();
+    Map<String, Object?> row(String key) =>
+        rows.firstWhere((rule) => rule['key'] == key);
+    expect(row('EID_AL_FITR')['subjectTo'], 'MOON_SIGHTING');
+    expect((row('HOLI')['meta']! as Map<String, Object?>)['kind'], 'GAZETTED');
+    expect(() => sky.almanac.festivalPack('NO_SUCH_PACK'), throwsA(anything));
+    expect(FestivalPack.indiaCentral.key, listing['pack']);
+    expect(
+      const FestivalRequest(
+        rules: FestivalPack.indiaCentral,
+        only: MetaFilter(kinds: [FestivalKind.gazetted]),
+      ),
+      isNot(const FestivalRequest(rules: FestivalPack.indiaCentral)),
+      reason: 'a filter is part of the request',
+    );
+  });
+
   // A sapinda's death at 10:00 on 11 January 2026 in Kathmandu: ten days
   // by the relation's row, from the 11th; heard fifty days on, three days
   // by the late table's row within ninety; a second death three days later,

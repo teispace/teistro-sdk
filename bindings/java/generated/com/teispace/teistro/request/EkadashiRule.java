@@ -13,12 +13,13 @@ import java.util.Objects;
  *
  * @param key The rule's key in its pack, `"EKADASHI_SMARTA"`.
  * @param mahadvadashi The mahadvadashis that name its fast or move it onto the 12th's day (§8.9); a rule without one keeps its table's day. Null leaves the SDK's default.
+ * @param meta What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out. Null leaves the SDK's default.
  * @param parana When the fast is broken (§8.5); a rule without one answers no parana. Null leaves the SDK's default.
  * @param source Where the rule is stated.
  * @param table The day each kind takes.
  * @param vedha Where the 10th pierces.
  */
-public record EkadashiRule(String key, MahadvadashiRule mahadvadashi, ParanaRule parana, String source, EkadashiTable table, EkadashiVedha vedha) implements RequestJson {
+public record EkadashiRule(String key, MahadvadashiRule mahadvadashi, FestivalMeta meta, ParanaRule parana, String source, EkadashiTable table, EkadashiVedha vedha) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -43,7 +44,7 @@ public record EkadashiRule(String key, MahadvadashiRule mahadvadashi, ParanaRule
      * @param vedha Where the 10th pierces.
      */
     public EkadashiRule(String key, String source, EkadashiTable table, EkadashiVedha vedha) {
-        this(key, null, null, source, table, vedha);
+        this(key, null, null, null, source, table, vedha);
     }
 
     /**
@@ -60,6 +61,7 @@ public record EkadashiRule(String key, MahadvadashiRule mahadvadashi, ParanaRule
     public static final class Builder {
         private String key;
         private MahadvadashiRule mahadvadashi;
+        private FestivalMeta meta;
         private ParanaRule parana;
         private String source;
         private EkadashiTable table;
@@ -86,6 +88,17 @@ public record EkadashiRule(String key, MahadvadashiRule mahadvadashi, ParanaRule
          */
         public Builder mahadvadashi(MahadvadashiRule mahadvadashi) {
             this.mahadvadashi = mahadvadashi;
+            return this;
+        }
+
+        /**
+         * Sets {@code meta}.
+         *
+         * @param meta What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder meta(FestivalMeta meta) {
+            this.meta = meta;
             return this;
         }
 
@@ -140,7 +153,7 @@ public record EkadashiRule(String key, MahadvadashiRule mahadvadashi, ParanaRule
          * @throws NullPointerException naming a required field left unset
          */
         public EkadashiRule build() {
-            return new EkadashiRule(key, mahadvadashi, parana, source, table, vedha);
+            return new EkadashiRule(key, mahadvadashi, meta, parana, source, table, vedha);
         }
     }
 
@@ -156,6 +169,7 @@ public record EkadashiRule(String key, MahadvadashiRule mahadvadashi, ParanaRule
         return new EkadashiRule(
             Read.text(Read.required(json.get("key"), "EkadashiRule.key"), "EkadashiRule.key"),
             Read.orNull(json.get("mahadvadashi"), present -> MahadvadashiRule.of(present)),
+            Read.orNull(json.get("meta"), present -> FestivalMeta.of(present)),
             Read.orNull(json.get("parana"), present -> ParanaRule.of(present)),
             Read.text(Read.required(json.get("source"), "EkadashiRule.source"), "EkadashiRule.source"),
             EkadashiTable.of(Read.required(json.get("table"), "EkadashiRule.table")),
@@ -168,6 +182,9 @@ public record EkadashiRule(String key, MahadvadashiRule mahadvadashi, ParanaRule
         json.put("key", key);
         if (mahadvadashi != null) {
             json.put("mahadvadashi", mahadvadashi.toJson());
+        }
+        if (meta != null) {
+            json.put("meta", meta.toJson());
         }
         if (parana != null) {
             json.put("parana", parana.toJson());

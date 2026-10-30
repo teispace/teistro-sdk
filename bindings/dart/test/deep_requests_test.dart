@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 273 of the examples' 285 members.
+/// The cases compare 317 of the examples' 329 members.
 library;
 
 import 'dart:convert';
@@ -97,16 +97,30 @@ void main() {
     );
   });
 
+  test('almanac.days at festivals.only: MetaFilter', () {
+    _holds(
+      'almanac.days',
+      path: ['festivals', 'only'],
+      dropping: [],
+      members: 2,
+      written: MetaFilter(
+        communities: ['x'],
+        kinds: [FestivalKind.religiousCultural],
+        regions: ['x'],
+        traditions: [Tradition.buddhist],
+      ).toJson(),
+    );
+  });
+
   test('almanac.days at festivals.published[0]: PublishedSet', () {
     _holds(
       'almanac.days',
       path: ['festivals', 'published', 0],
       dropping: [['entries', 0, 'window']],
-      members: 3,
+      members: 4,
       written: PublishedSet(
         entries: [
-          PublishedEntrySet(
-            adhika: true,
+          PublishedEntryAdd(
             day: CalendarDay(
               calendar: Calendar.julian,
               day: 1,
@@ -115,9 +129,17 @@ void main() {
               month: 1,
               year: 1,
             ),
-            month: Masa.vaishakha,
-            rule: 'x',
+            key: 'x',
+            meta: FestivalMeta(
+              communities: ['x'],
+              kind: FestivalKind.religiousCultural,
+              optional: true,
+              regions: ['x'],
+              tradition: Tradition.buddhist,
+            ),
+            names: {'x': 'x'},
             source: 'x',
+            subjectTo: SubjectTo.moonSighting,
           ),
         ],
         format: 'x',
@@ -133,7 +155,7 @@ void main() {
       'almanac.days',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 18,
+      members: 26,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -159,6 +181,13 @@ void main() {
             sampurna: true,
             trisprisha: TrisprishaAt.arunodaya,
             vyanjuli: VyanjuliPast.halfMuhurta,
+          ),
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -199,7 +228,19 @@ void main() {
           ),
           window: WindowDayMuhurta(from: 1, to: 1),
         )),
-        FestivalRuleItemFollowingRule(FollowingRule(after: 'x', days: 1, key: 'x', source: 'x')),
+        FestivalRuleItemFollowingRule(FollowingRule(
+          after: 'x',
+          days: 1,
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          source: 'x',
+        )),
         FestivalRuleItemDatedRule(DatedRule(
           civilDate: DatedRuleCivilDate(
             calendar: Calendar.julian,
@@ -215,6 +256,13 @@ void main() {
           ),
           easter: DatedRuleEaster(computus: Computus.julian, days: 1),
           key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
           source: 'x',
           sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
         )),
@@ -237,6 +285,13 @@ void main() {
           ],
           inAdhika: InAdhikaValue(true),
           key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,
           otherwise: FestivalChoice.later,
@@ -362,16 +417,40 @@ void main() {
     );
   });
 
+  test('almanac.festivalPack: PackRequest', () {
+    _holds(
+      'almanac.festivalPack',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: PackRequest(pack: 'x').toJson(),
+    );
+  });
+
+  test('almanac.festival_calendar at festivals.only: MetaFilter', () {
+    _holds(
+      'almanac.festival_calendar',
+      path: ['festivals', 'only'],
+      dropping: [],
+      members: 2,
+      written: MetaFilter(
+        communities: ['x'],
+        kinds: [FestivalKind.religiousCultural],
+        regions: ['x'],
+        traditions: [Tradition.buddhist],
+      ).toJson(),
+    );
+  });
+
   test('almanac.festival_calendar at festivals.published[0]: PublishedSet', () {
     _holds(
       'almanac.festival_calendar',
       path: ['festivals', 'published', 0],
       dropping: [['entries', 0, 'window']],
-      members: 3,
+      members: 4,
       written: PublishedSet(
         entries: [
-          PublishedEntrySet(
-            adhika: true,
+          PublishedEntryAdd(
             day: CalendarDay(
               calendar: Calendar.julian,
               day: 1,
@@ -380,9 +459,17 @@ void main() {
               month: 1,
               year: 1,
             ),
-            month: Masa.vaishakha,
-            rule: 'x',
+            key: 'x',
+            meta: FestivalMeta(
+              communities: ['x'],
+              kind: FestivalKind.religiousCultural,
+              optional: true,
+              regions: ['x'],
+              tradition: Tradition.buddhist,
+            ),
+            names: {'x': 'x'},
             source: 'x',
+            subjectTo: SubjectTo.moonSighting,
           ),
         ],
         format: 'x',
@@ -398,7 +485,7 @@ void main() {
       'almanac.festival_calendar',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 18,
+      members: 26,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -424,6 +511,13 @@ void main() {
             sampurna: true,
             trisprisha: TrisprishaAt.arunodaya,
             vyanjuli: VyanjuliPast.halfMuhurta,
+          ),
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -464,7 +558,19 @@ void main() {
           ),
           window: WindowDayMuhurta(from: 1, to: 1),
         )),
-        FestivalRuleItemFollowingRule(FollowingRule(after: 'x', days: 1, key: 'x', source: 'x')),
+        FestivalRuleItemFollowingRule(FollowingRule(
+          after: 'x',
+          days: 1,
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          source: 'x',
+        )),
         FestivalRuleItemDatedRule(DatedRule(
           civilDate: DatedRuleCivilDate(
             calendar: Calendar.julian,
@@ -480,6 +586,13 @@ void main() {
           ),
           easter: DatedRuleEaster(computus: Computus.julian, days: 1),
           key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
           source: 'x',
           sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
         )),
@@ -502,6 +615,13 @@ void main() {
           ],
           inAdhika: InAdhikaValue(true),
           key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,
           otherwise: FestivalChoice.later,
@@ -564,16 +684,30 @@ void main() {
     );
   });
 
+  test('almanac.next at festivals.only: MetaFilter', () {
+    _holds(
+      'almanac.next',
+      path: ['festivals', 'only'],
+      dropping: [],
+      members: 2,
+      written: MetaFilter(
+        communities: ['x'],
+        kinds: [FestivalKind.religiousCultural],
+        regions: ['x'],
+        traditions: [Tradition.buddhist],
+      ).toJson(),
+    );
+  });
+
   test('almanac.next at festivals.published[0]: PublishedSet', () {
     _holds(
       'almanac.next',
       path: ['festivals', 'published', 0],
       dropping: [['entries', 0, 'window']],
-      members: 3,
+      members: 4,
       written: PublishedSet(
         entries: [
-          PublishedEntrySet(
-            adhika: true,
+          PublishedEntryAdd(
             day: CalendarDay(
               calendar: Calendar.julian,
               day: 1,
@@ -582,9 +716,17 @@ void main() {
               month: 1,
               year: 1,
             ),
-            month: Masa.vaishakha,
-            rule: 'x',
+            key: 'x',
+            meta: FestivalMeta(
+              communities: ['x'],
+              kind: FestivalKind.religiousCultural,
+              optional: true,
+              regions: ['x'],
+              tradition: Tradition.buddhist,
+            ),
+            names: {'x': 'x'},
             source: 'x',
+            subjectTo: SubjectTo.moonSighting,
           ),
         ],
         format: 'x',
@@ -600,7 +742,7 @@ void main() {
       'almanac.next',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 18,
+      members: 26,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -626,6 +768,13 @@ void main() {
             sampurna: true,
             trisprisha: TrisprishaAt.arunodaya,
             vyanjuli: VyanjuliPast.halfMuhurta,
+          ),
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -666,7 +815,19 @@ void main() {
           ),
           window: WindowDayMuhurta(from: 1, to: 1),
         )),
-        FestivalRuleItemFollowingRule(FollowingRule(after: 'x', days: 1, key: 'x', source: 'x')),
+        FestivalRuleItemFollowingRule(FollowingRule(
+          after: 'x',
+          days: 1,
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          source: 'x',
+        )),
         FestivalRuleItemDatedRule(DatedRule(
           civilDate: DatedRuleCivilDate(
             calendar: Calendar.julian,
@@ -682,6 +843,13 @@ void main() {
           ),
           easter: DatedRuleEaster(computus: Computus.julian, days: 1),
           key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
           source: 'x',
           sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
         )),
@@ -704,6 +872,13 @@ void main() {
           ],
           inAdhika: InAdhikaValue(true),
           key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,
           otherwise: FestivalChoice.later,
@@ -745,16 +920,30 @@ void main() {
     );
   });
 
+  test('almanac.publishedReasons at festivals.only: MetaFilter', () {
+    _holds(
+      'almanac.publishedReasons',
+      path: ['festivals', 'only'],
+      dropping: [],
+      members: 2,
+      written: MetaFilter(
+        communities: ['x'],
+        kinds: [FestivalKind.religiousCultural],
+        regions: ['x'],
+        traditions: [Tradition.buddhist],
+      ).toJson(),
+    );
+  });
+
   test('almanac.publishedReasons at festivals.published[0]: PublishedSet', () {
     _holds(
       'almanac.publishedReasons',
       path: ['festivals', 'published', 0],
       dropping: [['entries', 0, 'window']],
-      members: 3,
+      members: 4,
       written: PublishedSet(
         entries: [
-          PublishedEntrySet(
-            adhika: true,
+          PublishedEntryAdd(
             day: CalendarDay(
               calendar: Calendar.julian,
               day: 1,
@@ -763,9 +952,17 @@ void main() {
               month: 1,
               year: 1,
             ),
-            month: Masa.vaishakha,
-            rule: 'x',
+            key: 'x',
+            meta: FestivalMeta(
+              communities: ['x'],
+              kind: FestivalKind.religiousCultural,
+              optional: true,
+              regions: ['x'],
+              tradition: Tradition.buddhist,
+            ),
+            names: {'x': 'x'},
             source: 'x',
+            subjectTo: SubjectTo.moonSighting,
           ),
         ],
         format: 'x',
@@ -781,7 +978,7 @@ void main() {
       'almanac.publishedReasons',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 18,
+      members: 26,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -807,6 +1004,13 @@ void main() {
             sampurna: true,
             trisprisha: TrisprishaAt.arunodaya,
             vyanjuli: VyanjuliPast.halfMuhurta,
+          ),
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
           ),
           parana: ParanaRule(
             at: [WindowDayMuhurta(from: 1, to: 1)],
@@ -847,7 +1051,19 @@ void main() {
           ),
           window: WindowDayMuhurta(from: 1, to: 1),
         )),
-        FestivalRuleItemFollowingRule(FollowingRule(after: 'x', days: 1, key: 'x', source: 'x')),
+        FestivalRuleItemFollowingRule(FollowingRule(
+          after: 'x',
+          days: 1,
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          source: 'x',
+        )),
         FestivalRuleItemDatedRule(DatedRule(
           civilDate: DatedRuleCivilDate(
             calendar: Calendar.julian,
@@ -863,6 +1079,13 @@ void main() {
           ),
           easter: DatedRuleEaster(computus: Computus.julian, days: 1),
           key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
           source: 'x',
           sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
         )),
@@ -885,6 +1108,13 @@ void main() {
           ],
           inAdhika: InAdhikaValue(true),
           key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
           month: Masa.vaishakha,
           nakshatra: Nakshatra.bharani,
           otherwise: FestivalChoice.later,

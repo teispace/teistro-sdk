@@ -770,6 +770,7 @@ fn every(
         decide,
         otherwise,
         parana: Vec::new(),
+        meta: crate::festival::FestivalMeta::default(),
     };
     let found = observances(core::slice::from_ref(&rule), days)?;
     if let Some(unjudged) = found

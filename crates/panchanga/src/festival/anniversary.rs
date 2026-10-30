@@ -416,6 +416,7 @@ impl Anniversary {
             decide,
             otherwise,
             parana: Vec::new(),
+            meta: super::FestivalMeta::default(),
         }
     }
 

@@ -13,6 +13,7 @@
 //! The fast is broken the day after, inside the 12th and past its first
 //! quarter, in the windows a [`ParanaRule`] names (§8.5).
 
+use super::FestivalMeta;
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
@@ -158,6 +159,10 @@ pub struct EkadashiRule {
     /// day (§8.9); a rule without one keeps its table's day.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub mahadvadashi: Option<MahadvadashiRule>,
+    /// What the rule's festival is, as sourced (`03-design/festival-metadata.md`);
+    /// a field no source gives stays unset, and a rule with none leaves it out.
+    #[serde(default, skip_serializing_if = "FestivalMeta::is_empty")]
+    pub meta: FestivalMeta,
 }
 
 impl EkadashiRule {
@@ -214,6 +219,7 @@ impl EkadashiRule {
             table: VAISHNAVA,
             parana: Some(ParanaRule::dharmasindhu()),
             mahadvadashi: Some(MahadvadashiRule::hari_bhakti_vilasa()),
+            meta: super::FestivalMeta::default(),
         }
     }
 
@@ -240,6 +246,7 @@ impl EkadashiRule {
                 table: VAISHNAVA,
                 parana: Some(ParanaRule::dharmasindhu()),
                 mahadvadashi: None,
+                meta: super::FestivalMeta::default(),
             },
             EkadashiRule {
                 key: "EKADASHI_SMARTA".to_owned(),
@@ -261,6 +268,7 @@ impl EkadashiRule {
                 },
                 parana: Some(ParanaRule::dharmasindhu()),
                 mahadvadashi: None,
+                meta: super::FestivalMeta::default(),
             },
             EkadashiRule {
                 key: "EKADASHI_SMARTA_RENUNCIANT".to_owned(),
@@ -277,6 +285,7 @@ impl EkadashiRule {
                 },
                 parana: Some(ParanaRule::dharmasindhu()),
                 mahadvadashi: None,
+                meta: super::FestivalMeta::default(),
             },
         ]
     }

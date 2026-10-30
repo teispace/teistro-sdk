@@ -821,6 +821,33 @@ public final class Messages {
         }
     }
 
+    /** A `festival_kind` as a message names it: the full catalogue key. */
+    public enum FestivalKindKey {
+        /** `festival_kind.GAZETTED`. */
+        GAZETTED("festival_kind.GAZETTED"),
+        /** `festival_kind.RELIGIOUS_CULTURAL`. */
+        RELIGIOUS_CULTURAL("festival_kind.RELIGIOUS_CULTURAL"),
+        /** `festival_kind.REGIONAL_ETHNIC`. */
+        REGIONAL_ETHNIC("festival_kind.REGIONAL_ETHNIC"),
+        /** `festival_kind.OBSERVANCE`. */
+        OBSERVANCE("festival_kind.OBSERVANCE");
+
+        private final String value;
+
+        FestivalKindKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `gana` as a message names it: the full catalogue key. */
     public enum GanaKey {
         /** `gana.DEVA`. */
@@ -1773,6 +1800,37 @@ public final class Messages {
         private final String value;
 
         TithiKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `tradition` as a message names it: the full catalogue key. */
+    public enum TraditionKey {
+        /** `tradition.HINDU`. */
+        HINDU("tradition.HINDU"),
+        /** `tradition.BUDDHIST`. */
+        BUDDHIST("tradition.BUDDHIST"),
+        /** `tradition.JAIN`. */
+        JAIN("tradition.JAIN"),
+        /** `tradition.SIKH`. */
+        SIKH("tradition.SIKH"),
+        /** `tradition.ISLAMIC`. */
+        ISLAMIC("tradition.ISLAMIC"),
+        /** `tradition.CHRISTIAN`. */
+        CHRISTIAN("tradition.CHRISTIAN");
+
+        private final String value;
+
+        TraditionKey(String value) {
             this.value = value;
         }
 
@@ -6907,6 +6965,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.FAGU_PURNIMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms faguPurnima() {
+                    return r.entity("festival.FAGU_PURNIMA");
+                }
+
+                /**
                  * The forms of `festival.FALGUNANDA_JAYANTI` in the current locale.
                  *
                  * @return the forms
@@ -6940,6 +7007,15 @@ public final class Messages {
                  */
                 public EntityForms gaiJatra() {
                     return r.entity("festival.GAI_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.GANDHI_JAYANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gandhiJayanti() {
+                    return r.entity("festival.GANDHI_JAYANTI");
                 }
 
                 /**
@@ -7030,6 +7106,15 @@ public final class Messages {
                  */
                 public EntityForms gitaJayanti() {
                     return r.entity("festival.GITA_JAYANTI");
+                }
+
+                /**
+                 * The forms of `festival.GOOD_FRIDAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms goodFriday() {
+                    return r.entity("festival.GOOD_FRIDAY");
                 }
 
                 /**
@@ -7258,6 +7343,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.HOLI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms holi() {
+                    return r.entity("festival.HOLI");
+                }
+
+                /**
                  * The forms of `festival.HOLIKA` in the current locale.
                  *
                  * @return the forms
@@ -7291,6 +7385,24 @@ public final class Messages {
                  */
                 public EntityForms humanRightsDay() {
                     return r.entity("festival.HUMAN_RIGHTS_DAY");
+                }
+
+                /**
+                 * The forms of `festival.INDIA_INDEPENDENCE_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms indiaIndependenceDay() {
+                    return r.entity("festival.INDIA_INDEPENDENCE_DAY");
+                }
+
+                /**
+                 * The forms of `festival.INDIA_REPUBLIC_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms indiaRepublicDay() {
+                    return r.entity("festival.INDIA_REPUBLIC_DAY");
                 }
 
                 /**
@@ -9217,6 +9329,61 @@ public final class Messages {
                  */
                 public EntityForms yosinPatan() {
                     return r.entity("festival.YOSIN_PATAN");
+                }
+            }
+
+
+            /**
+             * The messages under `festival_kind`.
+             *
+             * @return the group
+             */
+            public SdkEntityFestivalKind festivalKind() {
+                return new SdkEntityFestivalKind(r);
+            }
+
+            /** The messages under `SdkEntityFestivalKind`, each rendered by its own key. */
+            public static final class SdkEntityFestivalKind {
+                private final Renderer r;
+
+                SdkEntityFestivalKind(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `festival_kind.GAZETTED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gazetted() {
+                    return r.entity("festival_kind.GAZETTED");
+                }
+
+                /**
+                 * The forms of `festival_kind.OBSERVANCE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms observance() {
+                    return r.entity("festival_kind.OBSERVANCE");
+                }
+
+                /**
+                 * The forms of `festival_kind.REGIONAL_ETHNIC` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms regionalEthnic() {
+                    return r.entity("festival_kind.REGIONAL_ETHNIC");
+                }
+
+                /**
+                 * The forms of `festival_kind.RELIGIOUS_CULTURAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms religiousCultural() {
+                    return r.entity("festival_kind.RELIGIOUS_CULTURAL");
                 }
             }
 
@@ -11903,6 +12070,79 @@ public final class Messages {
                  */
                 public EntityForms shuklaTritiya() {
                     return r.entity("tithi.SHUKLA_TRITIYA");
+                }
+            }
+
+
+            /**
+             * The messages under `tradition`.
+             *
+             * @return the group
+             */
+            public SdkEntityTradition tradition() {
+                return new SdkEntityTradition(r);
+            }
+
+            /** The messages under `SdkEntityTradition`, each rendered by its own key. */
+            public static final class SdkEntityTradition {
+                private final Renderer r;
+
+                SdkEntityTradition(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `tradition.BUDDHIST` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms buddhist() {
+                    return r.entity("tradition.BUDDHIST");
+                }
+
+                /**
+                 * The forms of `tradition.CHRISTIAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms christian() {
+                    return r.entity("tradition.CHRISTIAN");
+                }
+
+                /**
+                 * The forms of `tradition.HINDU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms hindu() {
+                    return r.entity("tradition.HINDU");
+                }
+
+                /**
+                 * The forms of `tradition.ISLAMIC` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms islamic() {
+                    return r.entity("tradition.ISLAMIC");
+                }
+
+                /**
+                 * The forms of `tradition.JAIN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms jain() {
+                    return r.entity("tradition.JAIN");
+                }
+
+                /**
+                 * The forms of `tradition.SIKH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sikh() {
+                    return r.entity("tradition.SIKH");
                 }
             }
 

@@ -21711,6 +21711,196 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "festival_kind",
+      "number": 77,
+      "version": 1,
+      "doc": "What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "GAZETTED",
+          "id": 0,
+          "doc": "A government's notice lists it as a public holiday",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Government of India, DoPT office memoranda; Government of Nepal, Ministry of Home Affairs notices",
+              "ref": "`03-design/festival-metadata.md` §2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RELIGIOUS_CULTURAL",
+          "id": 1,
+          "doc": "Not gazetted; kept by a religion, as a text or the classification's community column says",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "`03-design/festival-classification.md` §3; Dharmasindhu",
+              "ref": "`03-design/festival-metadata.md` §2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "REGIONAL_ETHNIC",
+          "id": 2,
+          "doc": "Not gazetted; kept by one community or people the classification names",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "`03-design/festival-classification.md` §3, §4",
+              "ref": "`03-design/festival-metadata.md` §2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "OBSERVANCE",
+          "id": 3,
+          "doc": "Not gazetted; a civil date fixed by law, an institution or an organisation",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "`03-design/festival-classification.md` §3, fixed civil",
+              "ref": "`03-design/festival-metadata.md` §2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "tradition",
+      "number": 78,
+      "version": 1,
+      "doc": "The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "HINDU",
+          "id": 0,
+          "doc": "Hindu: the rule's source is a Hindu text",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Dharmasindhu; Hari Bhakti Vilasa",
+              "ref": "`03-design/festival-metadata.md` §2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "BUDDHIST",
+          "id": 1,
+          "doc": "Buddhist",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "`03-design/festival-classification.md` §4",
+              "ref": "the community Buddhist"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "JAIN",
+          "id": 2,
+          "doc": "Jain",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "`03-design/festival-classification.md` §4",
+              "ref": "the community Jain"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SIKH",
+          "id": 3,
+          "doc": "Sikh",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "`03-design/festival-classification.md` §4",
+              "ref": "the community Sikh"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ISLAMIC",
+          "id": 4,
+          "doc": "Islamic",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "`03-design/festival-classification.md` §4",
+              "ref": "the community Muslim"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "CHRISTIAN",
+          "id": 5,
+          "doc": "Christian",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "`03-design/festival-classification.md` §4",
+              "ref": "the community Christian"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

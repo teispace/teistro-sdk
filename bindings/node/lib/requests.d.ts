@@ -73,6 +73,16 @@ export interface AlmanacDaysRequest {
 }
 
 /**
+ * [`PackRequest`] as the bindings write it.
+ */
+export interface PackRequest {
+  /**
+   * A pack the SDK ships, by name.
+   */
+  readonly pack: string;
+}
+
+/**
  * The request as a binding writes it.
  */
 export interface FestivalCalendarRequest {
@@ -621,6 +631,10 @@ export type AshauchTradition = 'DHARMASINDHU' | 'MITAKSHARA';
  * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
  */
 export interface FestivalRequest {
+  /**
+   * What the answer keeps, by the rules' `meta`; every rule when left out.
+   */
+  readonly only?: MetaFilter | null;
   /**
    * The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence.
    */
@@ -1994,6 +2008,28 @@ export interface AshauchRelationRow {
 }
 
 /**
+ * What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
+ */
+export interface MetaFilter {
+  /**
+   * The communities kept.
+   */
+  readonly communities?: readonly string[];
+  /**
+   * The kinds kept.
+   */
+  readonly kinds?: readonly Member<catalogue.FestivalKind>[];
+  /**
+   * The regions kept.
+   */
+  readonly regions?: readonly string[];
+  /**
+   * The traditions kept.
+   */
+  readonly traditions?: readonly Member<catalogue.Tradition>[];
+}
+
+/**
  * A publisher's days for a span, read from JSON or built in code.
  */
 export interface PublishedSet {
@@ -2022,7 +2058,7 @@ export interface PublishedSet {
 /**
  * The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.
  */
-export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | readonly FestivalRuleItem[];
+export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | readonly FestivalRuleItem[];
 
 /**
  * How asta is seen: a criterion the SDK names, or one spelt out.
@@ -3500,6 +3536,10 @@ export interface PublishedEntryAdd {
    */
   readonly key: string;
   /**
+   * What the festival is; a set's day has no rule to carry it.
+   */
+  readonly meta?: FestivalMeta;
+  /**
    * Its name in each locale given (`en-Latn`, `ne-Deva-NP`).
    */
   readonly names?: Readonly<Record<string, string>>;
@@ -3507,6 +3547,10 @@ export interface PublishedEntryAdd {
    * Where the publisher says it.
    */
   readonly source: string;
+  /**
+   * What may still move the day; absent on a day that stands.
+   */
+  readonly subject_to?: SubjectTo | null;
   /**
    * A published time.
    */
@@ -3543,7 +3587,7 @@ export interface PublishedEntryWithdraw {
 /**
  * A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.
  */
-export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
+export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
 
 /**
  * How visibility is decided.
@@ -5867,6 +5911,39 @@ export interface Interval {
 }
 
 /**
+ * What a rule's festival is, as far as a source says.
+ */
+export interface FestivalMeta {
+  /**
+   * The communities that keep it, as open keys (`NEWAR`); empty when no source names one, which does not say it is kept by all.
+   */
+  readonly communities?: readonly string[];
+  /**
+   * Its kind; unset when no source classes it.
+   */
+  readonly kind?: Member<catalogue.FestivalKind> | null;
+  /**
+   * Whether the notice leaves it to each office's list: one of the occasions three of which are chosen a year (the Government of India's para 3.1), so a year's list may not hold it.
+   */
+  readonly optional?: boolean;
+  /**
+   * Where it is kept, as open keys: an ISO 3166 country first (`NP`, `IN`), then a part of it a notice names (`KATHMANDU_VALLEY`); empty when no source says.
+   */
+  readonly regions?: readonly string[];
+  /**
+   * Its religion; unset when no source places it.
+   */
+  readonly tradition?: Member<catalogue.Tradition> | null;
+}
+
+/**
+ * What may still move a published day.
+ *
+ * `MOON_SIGHTING`: The publisher set the day ahead, and the sighting of the moon may change it: not a day to treat as certain.
+ */
+export type SubjectTo = 'MOON_SIGHTING';
+
+/**
  * How a rule elects its sait (§3).
  */
 export interface SaitRule {
@@ -5904,6 +5981,10 @@ export interface EkadashiRule {
    * The mahadvadashis that name its fast or move it onto the 12th's day (§8.9); a rule without one keeps its table's day.
    */
   readonly mahadvadashi?: MahadvadashiRule | null;
+  /**
+   * What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out.
+   */
+  readonly meta?: FestivalMeta;
   /**
    * When the fast is broken (§8.5); a rule without one answers no parana.
    */
@@ -5973,6 +6054,10 @@ export interface FollowingRule {
    */
   readonly key: string;
   /**
+   * What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out.
+   */
+  readonly meta?: FestivalMeta;
+  /**
    * Where the rule is stated.
    */
   readonly source: string;
@@ -5998,6 +6083,10 @@ export interface DatedRule {
    * The rule's key in its pack, `"MAKARA_SANKRANTI"`.
    */
   readonly key: string;
+  /**
+   * What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out.
+   */
+  readonly meta?: FestivalMeta;
   /**
    * Where the rule is stated.
    */
@@ -6036,6 +6125,10 @@ export interface FestivalRule {
    * The rule's key in its pack, `"JANMASHTAMI"`.
    */
   readonly key: string;
+  /**
+   * What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out.
+   */
+  readonly meta?: FestivalMeta;
   /**
    * The month, under `convention`; every month when `None`, for a rite kept on the same tithi of each, as the monthly full-moon fast is.
    */

@@ -193,6 +193,10 @@ name = "published"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "festival_meta"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "sait"
 required-features = ["builtin-ephemeris"]
 

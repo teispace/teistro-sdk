@@ -786,7 +786,7 @@ test('every catalogue enum has a complete id table', () => {
   // 1433 since Bhadra's `TsBhadraVasa`, three, and the Shiva vasa's
   // `TsShivaVasa`, seven, each with its member of `TsKind`, after date
   // arithmetic's `TsOverflow`, three.
-  assert.equal(entries, 1433, 'every member of every enum is in a table');
+  assert.equal(entries, 1445, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -6192,5 +6192,22 @@ test('a provenance carries its answer key, the hash its documented fields give',
   };
   assert.equal(createHash('sha256').update(canonical(fields)).digest('hex'), key);
   assert.equal(raw.answer_key, key);
+  ctx.dispose();
+});
+
+/**
+ * The central holidays' pack says what each rule is, and marks a day the
+ * moon decides (`03-design/india-central-holidays.md`).
+ */
+test('a festival pack lists its rules with their values', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+  const { pack, rules } = ctx.almanac.festivalPack('INDIA_CENTRAL');
+  assert.equal(pack, 'INDIA_CENTRAL');
+  const row = (key) => rules.find((rule) => rule.key === key);
+  assert.equal(row('EID_AL_FITR').subjectTo, 'MOON_SIGHTING');
+  assert.equal(row('HOLI').meta.kind, 'GAZETTED');
+  assert.ok(row('JANMASHTAMI').source.includes('C851'));
+  assert.throws(() => ctx.almanac.festivalPack(null), TypeError);
+  assert.throws(() => ctx.almanac.festivalPack('NO_SUCH_PACK'), (error) => error.field === 'pack.pack');
   ctx.dispose();
 });

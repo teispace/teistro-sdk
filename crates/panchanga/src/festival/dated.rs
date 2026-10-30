@@ -22,7 +22,7 @@ use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay, shipped};
 use teistro_core::catalogue::{Calendar, Nakshatra, Vara};
 use teistro_core::error::Error;
 
-use super::{FestivalDay, Observances, SunEntry};
+use super::{FestivalDay, FestivalMeta, Observances, SunEntry};
 
 /// The festivals Nepal's national panchanga prints on a day of a Bikram
 /// Sambat month, each read off both editions with its continuation
@@ -367,6 +367,10 @@ pub struct DatedRule {
     /// The date, written as one of [`Dated::KEYS`] beside the key.
     #[serde(flatten)]
     pub on: Dated,
+    /// What the rule's festival is, as sourced (`03-design/festival-metadata.md`);
+    /// a field no source gives stays unset, and a rule with none leaves it out.
+    #[serde(default, skip_serializing_if = "FestivalMeta::is_empty")]
+    pub meta: FestivalMeta,
 }
 
 /// The date a [`DatedRule`] keeps.
@@ -656,6 +660,7 @@ impl DatedRule {
                     day: 1,
                     skipped: None,
                 },
+                meta: super::FestivalMeta::default(),
             })
             .collect()
     }
@@ -676,6 +681,7 @@ impl DatedRule {
                 day,
                 skipped: None,
             },
+            meta: super::FestivalMeta::default(),
         };
         let mut rules = DatedRule::sankrantis();
         rules.extend([
@@ -747,6 +753,7 @@ impl DatedRule {
                     day,
                     skipped: None,
                 },
+                meta: super::FestivalMeta::default(),
             }
         };
         SOLAR_DAYS
@@ -768,6 +775,7 @@ impl DatedRule {
                 nakshatra: Nakshatra::Ardra,
                 days,
             },
+            meta: super::FestivalMeta::default(),
         };
         vec![
             ardra("BHUMIRAJ", 0, "\"भूमिरज\" on Asar 8"),
@@ -972,7 +980,7 @@ mod tests {
         let properties = schema.get("properties").unwrap().as_object().unwrap();
         let mut keys: Vec<&str> = properties.keys().map(String::as_str).collect();
         keys.sort_unstable();
-        let mut expected = vec!["key", "source"];
+        let mut expected = vec!["key", "meta", "source"];
         expected.extend(Dated::KEYS);
         expected.sort_unstable();
         assert_eq!(keys, expected);
@@ -1047,6 +1055,7 @@ mod tests {
                 computus: Computus::Julian,
                 days,
             },
+            meta: super::FestivalMeta::default(),
         };
         rule(-Dated::EASTER_DAYS).check().unwrap();
         rule(Dated::EASTER_DAYS).check().unwrap();
@@ -1097,6 +1106,7 @@ mod tests {
                 key: "X".to_owned(),
                 source: String::new(),
                 on,
+                meta: super::FestivalMeta::default(),
             }
             .check()
             .unwrap_err()
@@ -1127,6 +1137,7 @@ mod tests {
             key: String::from("LOSAR"),
             source: String::from("a test"),
             on: tibetan(1, 1, Some(SkippedDay::After)),
+            meta: super::FestivalMeta::default(),
         };
         losar.check().unwrap();
         assert_eq!(

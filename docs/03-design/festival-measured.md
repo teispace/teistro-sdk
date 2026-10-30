@@ -901,3 +901,122 @@ middle's distance from the print is measured, not held.
 | NAVARATRA_ARAMBHA | 2026-10-11 | 11:47 | 11:41–11:55 | Sagittarius / Gemini | +1.1 min | +1.1 min |
 | PHULPATI | 2024-10-10 | 07:11 | 07:07–07:23 | Libra / Sagittarius | +3.9 min | +3.9 min |
 | YAMA_DWITIYA | 2025-10-23 | 11:39 | 11:35–11:49 | Sagittarius / Virgo | +2.7 min | +2.7 min |
+## 9. India's central holidays against the notices
+
+`INDIA_CENTRAL` at Delhi on India's clock, against each year's Annexure I of the Department of Personnel and Training's office memorandum. 86 of 91 rows agree.
+
+- 2021: F.No.12/9/2020-JCA-2, 10 June 2020
+- 2022: F.No.12/5/2021-JCA-2, 8 June 2021
+- 2023: F.No.12/5/2022-JCA, 16 June 2022
+- 2024: F.No.12/2/2023-JCA, 3 July 2023
+- 2025: F.No.12/2/2023-JCA, 9 July 2024
+- 2026: F.No.12/2/2023-JCA, 3 July 2025
+- 2027: F.No.12/2/2023-JCA, 16 July 2026
+
+| year | rule | listed | found |
+| --- | --- | --- | --- |
+| 2021 | HOLI | 3/29 | 3/29 |
+| 2021 | GOOD_FRIDAY | 4/2 | 4/2 |
+| 2021 | RAMA_NAVAMI | 4/21 | 4/21 |
+| 2021 | MAHAVIR_JAYANTI | 4/25 | 4/25 |
+| 2021 | BUDDHA_JAYANTI | 5/26 | 5/26 |
+| 2021 | JANMASHTAMI | 8/30 | 8/30 |
+| 2021 | VIJAYA_DASHAMI | 10/15 | 10/15 |
+| 2021 | LAKSHMI_PUJA | 11/4 | 11/4 |
+| 2021 | GURU_NANAK_JAYANTI | 11/19 | 11/19 |
+| 2022 | SHIVARATRI | 3/1 | 3/1 |
+| 2022 | HOLI | 3/18 | 3/18 |
+| 2022 | MAHAVIR_JAYANTI | 4/14 | 4/14 |
+| 2022 | GOOD_FRIDAY | 4/15 | 4/15 |
+| 2022 | BUDDHA_JAYANTI | 5/16 | 5/16 |
+| 2022 | JANMASHTAMI | 8/19 | 8/19 |
+| 2022 | VIJAYA_DASHAMI | 10/5 | 10/4 ✗ |
+| 2022 | LAKSHMI_PUJA | 10/24 | 10/24 |
+| 2022 | GURU_NANAK_JAYANTI | 11/8 | 11/8 |
+| 2023 | HOLI | 3/8 | 3/7 ✗ |
+| 2023 | RAMA_NAVAMI | 3/30 | 3/30 |
+| 2023 | MAHAVIR_JAYANTI | 4/4 | 4/4 |
+| 2023 | GOOD_FRIDAY | 4/7 | 4/7 |
+| 2023 | BUDDHA_JAYANTI | 5/5 | 5/5 |
+| 2023 | JANMASHTAMI | 9/7 | 9/7 |
+| 2023 | VIJAYA_DASHAMI | 10/24 | 10/24 |
+| 2023 | LAKSHMI_PUJA | 11/12 | 11/12 |
+| 2023 | GURU_NANAK_JAYANTI | 11/27 | 11/27 |
+| 2024 | HOLI | 3/25 | 3/25 |
+| 2024 | GOOD_FRIDAY | 3/29 | 3/29 |
+| 2024 | RAMA_NAVAMI | 4/17 | 4/17 |
+| 2024 | MAHAVIR_JAYANTI | 4/21 | 4/21 |
+| 2024 | BUDDHA_JAYANTI | 5/23 | 5/23 |
+| 2024 | JANMASHTAMI | 8/26 | 8/26 |
+| 2024 | VIJAYA_DASHAMI | 10/12 | 10/12 |
+| 2024 | LAKSHMI_PUJA | 10/31 | 11/1 ✗ |
+| 2024 | GURU_NANAK_JAYANTI | 11/15 | 11/15 |
+| 2025 | SHIVARATRI | 2/26 | 2/26 |
+| 2025 | HOLI | 3/14 | 3/14 |
+| 2025 | MAHAVIR_JAYANTI | 4/10 | 4/10 |
+| 2025 | GOOD_FRIDAY | 4/18 | 4/18 |
+| 2025 | BUDDHA_JAYANTI | 5/12 | 5/12 |
+| 2025 | JANMASHTAMI | 8/16 | 8/16 |
+| 2025 | VIJAYA_DASHAMI | 10/2 | 10/2 |
+| 2025 | LAKSHMI_PUJA | 10/20 | 10/20 |
+| 2025 | GURU_NANAK_JAYANTI | 11/5 | 11/5 |
+| 2026 | HOLI | 3/4 | 3/3 ✗ |
+| 2026 | RAMA_NAVAMI | 3/26 | 3/26 |
+| 2026 | MAHAVIR_JAYANTI | 3/31 | 3/31 |
+| 2026 | GOOD_FRIDAY | 4/3 | 4/3 |
+| 2026 | BUDDHA_JAYANTI | 5/1 | 5/1 |
+| 2026 | JANMASHTAMI | 9/4 | 9/4 |
+| 2026 | VIJAYA_DASHAMI | 10/20 | 10/20 |
+| 2026 | LAKSHMI_PUJA | 11/8 | 11/8 |
+| 2026 | GURU_NANAK_JAYANTI | 11/24 | 11/24 |
+| 2027 | HOLI | 3/23 | 3/22 ✗ |
+| 2027 | GOOD_FRIDAY | 3/26 | 3/26 |
+| 2027 | RAMA_NAVAMI | 4/15 | 4/15 |
+| 2027 | MAHAVIR_JAYANTI | 4/19 | 4/19 |
+| 2027 | BUDDHA_JAYANTI | 5/20 | 5/20 |
+| 2027 | JANMASHTAMI | 8/25 | 8/25 |
+| 2027 | VIJAYA_DASHAMI | 10/9 | 10/9 |
+| 2027 | LAKSHMI_PUJA | 10/29 | 10/29 |
+| 2027 | GURU_NANAK_JAYANTI | 11/14 | 11/14 |
+
+The four civil days stand on their date in all 7 years.
+
+- 2022 VIJAYA_DASHAMI: the 10th holds only the earlier aparahna, and Shravana begins that night inside the 10th, so it joins both days and the rule stays on the earlier; the Department prints the later, where Shravana stands in the aparahna (C855)
+- 2023 HOLI: bhadra covers the earlier pradosha and the later has no full moon; the rule takes the earlier, the Department a Holi a day later (C854)
+- 2024 LAKSHMI_PUJA: the new moon lasts past a ghati after the later sunset, so the text takes the later; the Department, printing 16 months ahead, the earlier (C856)
+- 2026 HOLI: bhadra covers the earlier pradosha and the later has no full moon; the rule takes the earlier, the Department a Holi a day later (C854)
+- 2027 HOLI: bhadra covers the earlier pradosha and the later has no full moon; the rule takes the earlier, and Annexure II prints Holika Dahan on the later (C854)
+
+The days set by the moon are not reckoned. Para 5.1 leaves each to the sighting, so the pack carries the notice's day, marked; two the Department moved stand on the day it declared; 2031, with no notice, holds none.
+
+| year | key | day | stands as |
+| --- | --- | --- | --- |
+| 2021 | EID_AL_FITR | 5/14 | subject to sighting |
+| 2021 | EID_AL_ADHA | 7/21 | subject to sighting |
+| 2021 | MUHARRAM | 8/20 | declared |
+| 2021 | MAWLID | 10/19 | subject to sighting |
+| 2022 | EID_AL_FITR | 5/3 | subject to sighting |
+| 2022 | EID_AL_ADHA | 7/10 | subject to sighting |
+| 2022 | MUHARRAM | 8/9 | subject to sighting |
+| 2022 | MAWLID | 10/9 | subject to sighting |
+| 2023 | EID_AL_FITR | 4/22 | subject to sighting |
+| 2023 | EID_AL_ADHA | 6/29 | subject to sighting |
+| 2023 | MUHARRAM | 7/29 | subject to sighting |
+| 2023 | MAWLID | 9/28 | subject to sighting |
+| 2024 | EID_AL_FITR | 4/11 | subject to sighting |
+| 2024 | EID_AL_ADHA | 6/17 | subject to sighting |
+| 2024 | MUHARRAM | 7/17 | subject to sighting |
+| 2024 | MAWLID | 9/16 | subject to sighting |
+| 2025 | EID_AL_FITR | 3/31 | subject to sighting |
+| 2025 | EID_AL_ADHA | 6/7 | subject to sighting |
+| 2025 | MUHARRAM | 7/6 | subject to sighting |
+| 2025 | MAWLID | 9/5 | subject to sighting |
+| 2026 | EID_AL_FITR | 3/21 | subject to sighting |
+| 2026 | EID_AL_ADHA | 5/28 | declared |
+| 2026 | MUHARRAM | 6/26 | subject to sighting |
+| 2026 | MAWLID | 8/26 | subject to sighting |
+| 2027 | EID_AL_FITR | 3/10 | subject to sighting |
+| 2027 | EID_AL_ADHA | 5/17 | subject to sighting |
+| 2027 | MUHARRAM | 6/16 | subject to sighting |
+| 2027 | MAWLID | 8/15 | subject to sighting |
+

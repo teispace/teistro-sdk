@@ -1127,6 +1127,12 @@ void main() {
   put('bs-add', '${added.year}-${added.month}-${added.day}');
   final age = ctx.calendar.between(jestha, added);
   put('bs-between', '${age.years} ${age.months} ${age.days}');
+  final pack = ctx.almanac.festivalPack('INDIA_CENTRAL');
+  final packRows = pack['rules']! as List<Object?>;
+  put(
+    'india-pack',
+    '${packRows.length} ${(packRows.first! as Map<String, Object?>)['key']}',
+  );
   put('jd-of-fixed', teistro.julianDayOfFixed(fixed));
   final back = teistro.fixedOfJulianDay(2457126.75);
   put('fixed-of-jd', back.value);
@@ -3795,6 +3801,7 @@ void main() {
     ('almanac.disagreements', ctx.almanac.disagreements),
     ('almanac.festival_calendar', ctx.almanac.festivalCalendar),
     ('almanac.next', ctx.almanac.next),
+    ('almanac.festivalPack', ctx.almanac.festivalPack),
     ('almanac.day', ctx.almanac.day),
     ('almanac.pakshi', ctx.almanac.pakshi),
     ('almanac.sankalpa', ctx.almanac.sankalpa),

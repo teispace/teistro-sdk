@@ -20,6 +20,7 @@ if TYPE_CHECKING:
 __all__ = [
     "AshauchQuery",
     "AlmanacDaysRequest",
+    "PackRequest",
     "FestivalCalendarRequest",
     "FirstYearQuery",
     "NextRequest",
@@ -131,6 +132,7 @@ __all__ = [
     "AshauchOverlap",
     "PakshiniNight",
     "AshauchRelationRow",
+    "MetaFilter",
     "PublishedSet",
     "FestivalRules",
     "MuhurtaRequestAsta",
@@ -494,6 +496,8 @@ __all__ = [
     "Upanayana",
     "CalendarDay",
     "Interval",
+    "FestivalMeta",
+    "SubjectTo",
     "SaitRule",
     "EkadashiRule",
     "Anniversary",
@@ -746,6 +750,13 @@ class AlmanacDaysRequest(TypedDict, total=False):
     utcOffsetSeconds: Required[int]
 
     years: bool
+
+
+class PackRequest(TypedDict, total=False):
+    """`PackRequest` as the bindings write it."""
+
+    pack: Required[str]
+    """A pack the SDK ships, by name."""
 
 
 class FestivalCalendarRequest(TypedDict, total=False):
@@ -1305,6 +1316,9 @@ AshauchTradition: TypeAlias = Literal['DHARMASINDHU', 'MITAKSHARA']
 
 class FestivalRequest(TypedDict, total=False):
     """Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer."""
+
+    only: Optional[MetaFilter]
+    """What the answer keeps, by the rules' `meta`; every rule when left out."""
 
     published: Sequence[PublishedSet]
     """The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence."""
@@ -2460,6 +2474,22 @@ class AshauchRelationRow(TypedDict, total=False):
     """Whose."""
 
 
+class MetaFilter(TypedDict, total=False):
+    """What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not."""
+
+    communities: Sequence[str]
+    """The communities kept."""
+
+    kinds: Sequence[Union[_catalogue.FestivalKind, str]]
+    """The kinds kept."""
+
+    regions: Sequence[str]
+    """The regions kept."""
+
+    traditions: Sequence[Union[_catalogue.Tradition, str]]
+    """The traditions kept."""
+
+
 class PublishedSet(TypedDict, total=False):
     """A publisher's days for a span, read from JSON or built in code."""
 
@@ -2479,7 +2509,7 @@ class PublishedSet(TypedDict, total=False):
     """Its version; a correction is a higher one."""
 
 
-FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA'], Sequence[FestivalRuleItem]]"
+FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL'], Sequence[FestivalRuleItem]]"
 """The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key."""
 
 
@@ -3728,11 +3758,17 @@ class PublishedEntryAdd(TypedDict, total=False):
     key: Required[str]
     """Its key, which no rule of the request uses."""
 
+    meta: FestivalMeta
+    """What the festival is; a set's day has no rule to carry it."""
+
     names: Mapping[str, str]
     """Its name in each locale given (`en-Latn`, `ne-Deva-NP`)."""
 
     source: Required[str]
     """Where the publisher says it."""
+
+    subject_to: Optional[SubjectTo]
+    """What may still move the day; absent on a day that stands."""
 
     window: Optional[Interval]
     """A published time."""
@@ -3759,7 +3795,7 @@ class PublishedEntryWithdraw(TypedDict, total=False):
     """Where the publisher says it."""
 
 
-FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
+FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
 """A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule."""
 
 
@@ -6731,6 +6767,32 @@ Interval = TypedDict(
 )
 
 
+class FestivalMeta(TypedDict, total=False):
+    """What a rule's festival is, as far as a source says."""
+
+    communities: Sequence[str]
+    """The communities that keep it, as open keys (`NEWAR`); empty when no source names one, which does not say it is kept by all."""
+
+    kind: Optional[Union[_catalogue.FestivalKind, str]]
+    """Its kind; unset when no source classes it."""
+
+    optional: bool
+    """Whether the notice leaves it to each office's list: one of the occasions three of which are chosen a year (the Government of India's para 3.1), so a year's list may not hold it."""
+
+    regions: Sequence[str]
+    """Where it is kept, as open keys: an ISO 3166 country first (`NP`, `IN`), then a part of it a notice names (`KATHMANDU_VALLEY`); empty when no source says."""
+
+    tradition: Optional[Union[_catalogue.Tradition, str]]
+    """Its religion; unset when no source places it."""
+
+
+SubjectTo: TypeAlias = Literal['MOON_SIGHTING']
+"""What may still move a published day.
+
+`MOON_SIGHTING`: The publisher set the day ahead, and the sighting of the moon may change it: not a day to treat as certain.
+"""
+
+
 class SaitRule(TypedDict, total=False):
     """How a rule elects its sait (§3)."""
 
@@ -6758,6 +6820,9 @@ class EkadashiRule(TypedDict, total=False):
 
     mahadvadashi: Optional[MahadvadashiRule]
     """The mahadvadashis that name its fast or move it onto the 12th's day (§8.9); a rule without one keeps its table's day."""
+
+    meta: FestivalMeta
+    """What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out."""
 
     parana: Optional[ParanaRule]
     """When the fast is broken (§8.5); a rule without one answers no parana."""
@@ -6809,6 +6874,9 @@ class FollowingRule(TypedDict, total=False):
     key: Required[str]
     """The rule's key in its pack, `"HOLI_TERAI"`."""
 
+    meta: FestivalMeta
+    """What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out."""
+
     source: Required[str]
     """Where the rule is stated."""
 
@@ -6827,6 +6895,9 @@ class DatedRule(TypedDict, total=False):
 
     key: Required[str]
     """The rule's key in its pack, `"MAKARA_SANKRANTI"`."""
+
+    meta: FestivalMeta
+    """What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out."""
 
     source: Required[str]
     """Where the rule is stated."""
@@ -6855,6 +6926,9 @@ class FestivalRule(TypedDict, total=False):
 
     key: Required[str]
     """The rule's key in its pack, `"JANMASHTAMI"`."""
+
+    meta: FestivalMeta
+    """What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out."""
 
     month: Optional[Union[_catalogue.Masa, str]]
     """The month, under `convention`; every month when `None`, for a rite kept on the same tithi of each, as the monthly full-moon fast is."""

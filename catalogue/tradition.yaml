@@ -1,0 +1,47 @@
+kind: tradition
+number: 78
+version: 1
+doc: "The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850)."
+members:
+  - key: HINDU
+    id: 0
+    doc: "Hindu: the rule's source is a Hindu text"
+    sources:
+      - text: "Dharmasindhu; Hari Bhakti Vilasa"
+        ref: "`03-design/festival-metadata.md` §2"
+    mark: V
+  - key: BUDDHIST
+    id: 1
+    doc: "Buddhist"
+    sources:
+      - text: "`03-design/festival-classification.md` §4"
+        ref: "the community Buddhist"
+    mark: V
+  - key: JAIN
+    id: 2
+    doc: "Jain"
+    sources:
+      - text: "`03-design/festival-classification.md` §4"
+        ref: "the community Jain"
+    mark: V
+  - key: SIKH
+    id: 3
+    doc: "Sikh"
+    sources:
+      - text: "`03-design/festival-classification.md` §4"
+        ref: "the community Sikh"
+    mark: V
+  - key: ISLAMIC
+    id: 4
+    doc: "Islamic"
+    sources:
+      - text: "`03-design/festival-classification.md` §4"
+        ref: "the community Muslim"
+    mark: V
+  - key: CHRISTIAN
+    id: 5
+    doc: "Christian"
+    sources:
+      - text: "`03-design/festival-classification.md` §4"
+        ref: "the community Christian"
+    mark: V

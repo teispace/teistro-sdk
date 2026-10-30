@@ -160,6 +160,7 @@ fn a_rule(tithi: Tithi, decide: Vec<Guard>, otherwise: Choice) -> FestivalRule {
         decide,
         otherwise,
         parana: Vec::new(),
+        meta: teistro_panchanga::festival::FestivalMeta::default(),
     }
 }
 
@@ -1256,6 +1257,7 @@ fn a_rule_on_the_suns_entry_keeps_that_day_or_counts_from_it() {
             nakshatra: Nakshatra::Ardra,
             days: Dated::MOST_DAYS + 1,
         },
+        meta: teistro_panchanga::festival::FestivalMeta::default(),
     };
     assert_eq!(far.check().unwrap_err().field(), Some("sunEnters.days"));
     assert_eq!((shipped[0].reach(), shipped[1].reach()), (0, 3));
@@ -1875,6 +1877,7 @@ fn mark_published(answer: &mut Observances) {
         source: "a page".to_owned(),
         computed: Some(answer.dated[0].day.clone()),
         window: None,
+        subject_to: None,
     };
     answer.observances[0].published = Some(published.clone());
     answer.ekadashis[0].published = Some(published.clone());

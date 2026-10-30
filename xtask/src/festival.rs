@@ -13,7 +13,9 @@
 //! - the shipped rules at Kathmandu against the days Nepal's national
 //!   panchanga printed for VS 2082 and 2083 ([`nepal`], [`purnima`]), and
 //!   the fitted rules of the `NEPAL_PANCHANGA` pack against the further
-//!   days it printed ([`panchanga`]).
+//!   days it printed ([`panchanga`]);
+//! - the `INDIA_CENTRAL` pack against the Government of India's notices
+//!   ([`india`]).
 //!
 //! Only the seasons the karmakala rules live in are founded, February to
 //! May and August to November, since a year of almanac is what the pass
@@ -35,6 +37,7 @@ use crate::generated::{Output, check, write};
 use crate::measure::{Claim, table};
 
 mod ekadashi;
+mod india;
 mod nepal;
 mod panchanga;
 mod purnima;
@@ -421,6 +424,7 @@ fn page() -> Result<String, String> {
     let fitted = panchanga::compare(&mut problems)?;
     let laid = panchanga::laid(&mut problems)?;
     let saits = sait::compare(&mut problems)?;
+    let india = india::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -431,6 +435,7 @@ fn page() -> Result<String, String> {
     panchanga::render(&mut out, &fitted);
     panchanga::render_laid(&mut out, &laid);
     sait::render(&mut out, &saits);
+    india::render(&mut out, &india);
     Ok(out)
 }
 

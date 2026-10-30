@@ -642,6 +642,18 @@
           "value": 76,
           "doc": "Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.",
           "key": "shiva_vasa"
+        },
+        {
+          "name": "FestivalKind",
+          "value": 77,
+          "doc": "What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850).",
+          "key": "festival_kind"
+        },
+        {
+          "name": "Tradition",
+          "value": 78,
+          "doc": "The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).",
+          "key": "tradition"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -6639,6 +6651,84 @@
           "value": 6,
           "doc": "In the cremation ground, the remainder nothing: death",
           "key": "SHMASHANA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "FestivalKind",
+      "doc": "What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_FESTIVAL_KIND << 16) | member`.",
+      "repr": "u16",
+      "kind": "festival_kind",
+      "values": [
+        {
+          "name": "Gazetted",
+          "value": 0,
+          "doc": "A government's notice lists it as a public holiday",
+          "key": "GAZETTED"
+        },
+        {
+          "name": "ReligiousCultural",
+          "value": 1,
+          "doc": "Not gazetted; kept by a religion, as a text or the classification's community column says",
+          "key": "RELIGIOUS_CULTURAL"
+        },
+        {
+          "name": "RegionalEthnic",
+          "value": 2,
+          "doc": "Not gazetted; kept by one community or people the classification names",
+          "key": "REGIONAL_ETHNIC"
+        },
+        {
+          "name": "Observance",
+          "value": 3,
+          "doc": "Not gazetted; a civil date fixed by law, an institution or an organisation",
+          "key": "OBSERVANCE"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "Tradition",
+      "doc": "The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_TRADITION << 16) | member`.",
+      "repr": "u16",
+      "kind": "tradition",
+      "values": [
+        {
+          "name": "Hindu",
+          "value": 0,
+          "doc": "Hindu: the rule's source is a Hindu text",
+          "key": "HINDU"
+        },
+        {
+          "name": "Buddhist",
+          "value": 1,
+          "doc": "Buddhist",
+          "key": "BUDDHIST"
+        },
+        {
+          "name": "Jain",
+          "value": 2,
+          "doc": "Jain",
+          "key": "JAIN"
+        },
+        {
+          "name": "Sikh",
+          "value": 3,
+          "doc": "Sikh",
+          "key": "SIKH"
+        },
+        {
+          "name": "Islamic",
+          "value": 4,
+          "doc": "Islamic",
+          "key": "ISLAMIC"
+        },
+        {
+          "name": "Christian",
+          "value": 5,
+          "doc": "Christian",
+          "key": "CHRISTIAN"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -16744,6 +16834,57 @@
     {
       "name": "ts_almanac_next",
       "doc": "The next day a festival rule or a kind of day falls on after an\ninstant at a place, with no year asked (`03-design/next-occurrence.md`),\nas canonical JSON `{value, provenance}`: `value` is `{day, keys,\nfestivals, from, limitDays, searchedDays}`, the day in the request's\ncalendar, the keys of the rules that fall on it, the festival\nreckoning's entries for them on that day, the first day searched (the\ncivil day holding the instant, which counts), the limit and the days\nreckoned, every catalogue member a full key.\n\n`request_json` is `{\"after\", \"latitudeDeg\", \"longitudeDeg\",\n\"altitudeM\", \"utcOffsetSeconds\", \"calendar\", \"kind\", \"rule\",\n\"festivals\", \"limitDays\"}`: `after` a UTC Julian day; either `kind`\n(`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules\nthe SDK states) or `rule`, a key of `festivals`, a festival request;\n`calendar` the answer's days' (Gregorian when left out), `altitudeM`\noptional and `limitDays` 1 to 3660, 400 when left out. A key it does\nnot read, neither or both of `kind` and `rule`, a rule the festivals\nlack, a place or offset out of range or a festival request its reader\nrefuses is `INVALID_ARG`, named under `next`; a limit out of range\n`OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;\na context without an ephemeris `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "ts_almanac_festival_pack",
+      "doc": "Every rule of a festival pack with what it is\n(`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:\neach row `{key, form, source, meta, unsourced}`, `form` how its day is\nfound (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`\nits kind, tradition, communities and regions, `unsourced` the fields no\nsource gives, and a published row's `subjectTo` and `lastYear`.\n\n`request_json` is `{\"pack\"}`, a pack the SDK ships. Nothing is\nreckoned, so a context without an ephemeris answers. A key it does not\nread or a pack it does not ship is `INVALID_ARG`, named under `pack`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {

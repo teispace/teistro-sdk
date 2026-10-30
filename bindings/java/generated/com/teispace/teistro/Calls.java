@@ -931,6 +931,30 @@ final class Calls {
     }
 
     /**
+     * `ts_almanac_festival_pack`: Every rule of a festival pack with what it is
+     * (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
+     * each row `{key, form, source, meta, unsourced}`, `form` how its day is
+     * found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`
+     * its kind, tradition, communities and regions, `unsourced` the fields no
+     * source gives, and a published row's `subjectTo` and `lastYear`.
+     *
+     * `request_json` is `{"pack"}`, a pack the SDK ships. Nothing is
+     * reckoned, so a context without an ephemeris answers. A key it does not
+     * read or a pack it does not ship is `INVALID_ARG`, named under `pack`.
+     */
+    static String almanacFestivalPack(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_festival_pack.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_naam_milan`: Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two

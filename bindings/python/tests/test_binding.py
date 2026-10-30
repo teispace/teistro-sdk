@@ -910,6 +910,19 @@ class AnEngine(WithLibrary):
                 ctx.almanac.sankalpa(at=between, place=kathmandu, utc_offset_seconds=999_999)
             self.assertEqual(clock.exception.field, "sankalpa.utcOffsetSeconds")
 
+    def test_a_festival_pack_lists_its_rules_with_their_values(self) -> None:
+        """The central holidays' pack says what each rule is, and marks a
+        day the moon decides (`03-design/india-central-holidays.md`)."""
+        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+            listing = ctx.almanac.festival_pack("INDIA_CENTRAL")
+            self.assertEqual(listing["pack"], "INDIA_CENTRAL")
+            rows = {row["key"]: row for row in listing["rules"]}
+            self.assertEqual(rows["EID_AL_FITR"]["subjectTo"], "MOON_SIGHTING")
+            self.assertEqual(rows["HOLI"]["meta"]["kind"], "GAZETTED")
+            with self.assertRaises(TeistroError) as unread:
+                ctx.almanac.festival_pack("NO_SUCH_PACK")
+            self.assertEqual(unread.exception.field, "pack.pack")
+
     def test_an_almanac_says_the_period_of_impurity_after_a_death(self) -> None:
         """A sapinda's death at 10:00 on 11 January 2026 in Kathmandu: the
         *Dharmasindhu*'s ten days by the relation's row, the 11th the

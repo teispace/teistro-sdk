@@ -1788,7 +1788,7 @@ public final class BindingTest {
                     var set = new com.teispace.teistro.request.PublishedSet(entries, "teistro.published/1", "np-2082",
                             "a patro printed in Nepal", 2);
                     FestivalAnswer answer = sky.almanac().festivals(navamiFrom, navamiTo, kathmandu, 20_700,
-                            new com.teispace.teistro.request.FestivalRequest(List.of(set), com.teispace.teistro.request.FestivalRules.DHARMASINDHU));
+                            new com.teispace.teistro.request.FestivalRequest(null, List.of(set), com.teispace.teistro.request.FestivalRules.DHARMASINDHU));
                     FestivalObservance moved = answer.observances().stream()
                             .filter(o -> o.rule().equals("MAHA_NAVAMI")).findFirst().orElseThrow();
                     same(new Published("PUBLISHED", "a patro printed in Nepal", "np-2082", 2, "p. 1", navami.day(), null),
@@ -1813,7 +1813,7 @@ public final class BindingTest {
                                     "NO_SUCH_RULE", "p. 1")),
                             "teistro.published/1", "np-2082", "a patro printed in Nepal", 2);
                     TeistroException strayed = refusal(() -> sky.almanac().festivals(navamiFrom, navamiTo, kathmandu,
-                            20_700, new com.teispace.teistro.request.FestivalRequest(List.of(stray), com.teispace.teistro.request.FestivalRules.DHARMASINDHU)));
+                            20_700, new com.teispace.teistro.request.FestivalRequest(null, List.of(stray), com.teispace.teistro.request.FestivalRules.DHARMASINDHU)));
                     same("festivals.published[0].entries[0].rule", strayed.field(), "a SET naming no carried rule");
                 }
                 // Why a published day differs (published-overrides.md §4): the
@@ -1835,7 +1835,7 @@ public final class BindingTest {
                                     && Math.abs(fixed.applyAsLong(p[0].day()) - fixed.applyAsLong(p[1].day())) <= 3)
                             .findFirst().orElseThrow();
                     java.util.function.Function<CalendarDate, com.teispace.teistro.request.FestivalRequest> published =
-                            d -> new com.teispace.teistro.request.FestivalRequest(List.of(
+                            d -> new com.teispace.teistro.request.FestivalRequest(null, List.of(
                                     new com.teispace.teistro.request.PublishedSet(List.of(
                                             new com.teispace.teistro.request.PublishedEntrySet(
                                                     new com.teispace.teistro.request.CalendarDay(Calendar.GREGORIAN,
@@ -2410,6 +2410,24 @@ public final class BindingTest {
                 same("sankalpa.utcOffsetSeconds",
                         refusal(() -> sky.almanac().sankalpa(between, kathmandu, 999_999, null)).field(),
                         "a clock out of range is refused by name");
+            }
+        });
+
+        tests.put("a festival pack lists its rules with their values", () -> {
+            // The central holidays' pack says what each rule is, and marks a
+            // day the moon decides (03-design/india-central-holidays.md).
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                Map<?, ?> listing = sky.almanac().festivalPack("INDIA_CENTRAL");
+                check("INDIA_CENTRAL".equals(listing.get("pack")), "the pack is named");
+                boolean marked = false;
+                for (Object row : (List<?>) listing.get("rules")) {
+                    Map<?, ?> rule = (Map<?, ?>) row;
+                    marked |= "EID_AL_FITR".equals(rule.get("key")) && "MOON_SIGHTING".equals(rule.get("subjectTo"));
+                }
+                check(marked, "a day the moon decides is marked");
+                TeistroException unknown = refusal(() -> sky.almanac().festivalPack("NO_SUCH_PACK"));
+                check("pack.pack".equals(unknown.field()), "the refusal names the field");
             }
         });
 

@@ -11,7 +11,7 @@ use teistro_core::envelope::{Hash, content_hash};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 
-use super::{Observances, Parana, VrataParanaTime};
+use super::{FestivalMeta, Observances, Parana, VrataParanaTime};
 
 /// The format a set names, and the one this SDK reads.
 pub const PUBLISHED_FORMAT: &str = "teistro.published/1";
@@ -95,6 +95,12 @@ pub enum PublishedEntry {
         window: Option<Interval>,
         /// Where the publisher says it.
         source: String,
+        /// What may still move the day; absent on a day that stands.
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        subject_to: Option<SubjectTo>,
+        /// What the festival is; a set's day has no rule to carry it.
+        #[serde(default, skip_serializing_if = "FestivalMeta::is_empty")]
+        meta: FestivalMeta,
     },
     /// A rule's occurrence the publisher does not keep, found as `SET`
     /// finds one.
@@ -143,6 +149,16 @@ impl PublishedEntry {
     }
 }
 
+/// What may still move a published day.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SubjectTo {
+    /// The publisher set the day ahead, and the sighting of the moon may
+    /// change it: not a day to treat as certain.
+    MoonSighting,
+}
+
 /// Whether a published entry kept a day or withdrew it.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -176,6 +192,9 @@ pub struct Published {
     /// A published time.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub window: Option<Interval>,
+    /// What may still move the day; absent on a day that stands.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub subject_to: Option<SubjectTo>,
 }
 
 /// A day an `ADD` entry gave.
@@ -363,6 +382,7 @@ impl PublishedSet {
             source: source.to_owned(),
             computed: None,
             window: None,
+            subject_to: None,
         }
     }
 }
@@ -408,7 +428,8 @@ struct Occurrence<'a> {
 /// occurrence. A `SET` or `WITHDRAW` within [`NEAREST_DAYS`] of the range
 /// is placed on its rule's occurrence nearest its day, within those days
 /// and in the month it names; one inside the range that no occurrence
-/// takes is listed in `unplaced`. An `ADD` is taken inside the range. A
+/// takes is listed in `unplaced`. An `ADD` is taken inside the range, and
+/// replaces an added day of its key within those days. A
 /// moved observance keeps no parana but the published window: the
 /// computed one was the computed day's.
 ///
@@ -461,6 +482,7 @@ fn apply_one(answer: &mut Observances, set: &PublishedSet, range: &Range) -> Res
             names,
             window,
             source,
+            subject_to,
             ..
         } = entry
         else {
@@ -475,9 +497,16 @@ fn apply_one(answer: &mut Observances, set: &PublishedSet, range: &Range) -> Res
         }
         let mut published = set.published(PublishedStatus::Published, source);
         published.window = *window;
-        answer
-            .added
-            .retain(|added| added.key != *key || added.day != date);
+        published.subject_to = *subject_to;
+        // A later set's day for an occurrence replaces an earlier one's,
+        // as a `SET` does: a day set by the moon is corrected this way.
+        answer.added.retain(|added| {
+            added.key != *key
+                || range
+                    .system
+                    .fixed_of(&added.day)
+                    .is_ok_and(|held| (held.get() - day.get()).abs() > NEAREST_DAYS)
+        });
         answer.added.push(AddedDay {
             key: key.clone(),
             day: date,

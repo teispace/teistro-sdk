@@ -464,6 +464,14 @@ typedef enum ts_kind {
      * Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.
      */
     TS_KIND_SHIVA_VASA = 76,
+    /**
+     * What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850).
+     */
+    TS_KIND_FESTIVAL_KIND = 77,
+    /**
+     * The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).
+     */
+    TS_KIND_TRADITION = 78,
 } ts_kind;
 
 /**
@@ -4605,6 +4613,62 @@ typedef enum ts_shiva_vasa {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_SHIVA_VASA_UNKNOWN = -1,
 } ts_shiva_vasa;
+
+/**
+ * What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_FESTIVAL_KIND << 16) | member`.
+ */
+typedef enum ts_festival_kind {
+    /**
+     * A government's notice lists it as a public holiday
+     */
+    TS_FESTIVAL_KIND_GAZETTED = 0,
+    /**
+     * Not gazetted; kept by a religion, as a text or the classification's community column says
+     */
+    TS_FESTIVAL_KIND_RELIGIOUS_CULTURAL = 1,
+    /**
+     * Not gazetted; kept by one community or people the classification names
+     */
+    TS_FESTIVAL_KIND_REGIONAL_ETHNIC = 2,
+    /**
+     * Not gazetted; a civil date fixed by law, an institution or an organisation
+     */
+    TS_FESTIVAL_KIND_OBSERVANCE = 3,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_FESTIVAL_KIND_UNKNOWN = -1,
+} ts_festival_kind;
+
+/**
+ * The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850). Members are the catalogue's ids; the full key id is `(TS_KIND_TRADITION << 16) | member`.
+ */
+typedef enum ts_tradition {
+    /**
+     * Hindu: the rule's source is a Hindu text
+     */
+    TS_TRADITION_HINDU = 0,
+    /**
+     * Buddhist
+     */
+    TS_TRADITION_BUDDHIST = 1,
+    /**
+     * Jain
+     */
+    TS_TRADITION_JAIN = 2,
+    /**
+     * Sikh
+     */
+    TS_TRADITION_SIKH = 3,
+    /**
+     * Islamic
+     */
+    TS_TRADITION_ISLAMIC = 4,
+    /**
+     * Christian
+     */
+    TS_TRADITION_CHRISTIAN = 5,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_TRADITION_UNKNOWN = -1,
+} ts_tradition;
 
 /**
  * The status of a call, with the code it has at the C boundary.
@@ -10035,6 +10099,22 @@ ts_status ts_almanac_festival_calendar(const ts_context * context, const char * 
  * `out_json` valid for a write.
  */
 ts_status ts_almanac_next(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * Every rule of a festival pack with what it is
+ * (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
+ * each row `{key, form, source, meta, unsourced}`, `form` how its day is
+ * found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`
+ * its kind, tradition, communities and regions, `unsourced` the fields no
+ * source gives, and a published row's `subjectTo` and `lastYear`.
+ *
+ * `request_json` is `{"pack"}`, a pack the SDK ships. Nothing is
+ * reckoned, so a context without an ephemeris answers. A key it does not
+ * read or a pack it does not ship is `INVALID_ARG`, named under `pack`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_almanac_festival_pack(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
  * Matches two names star to star (naam milan) and answers with the

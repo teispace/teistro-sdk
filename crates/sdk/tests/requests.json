@@ -406,6 +406,12 @@
     }
   },
   {
+    "record": "almanac.festivalPack",
+    "request": {
+      "pack": "INDIA_CENTRAL"
+    }
+  },
+  {
     "record": "almanac.firstYear",
     "request": {
       "latitudeDeg": 27.7172,

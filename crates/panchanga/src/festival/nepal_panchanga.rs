@@ -1743,7 +1743,12 @@ const EVERY_MONTH: [(&str, Occurs, Fit, &str); 7] = [
 
 /// The days printed on another rule's day: key, the rule it keeps the
 /// day of, and where.
-const SAME_DAY: [(&str, &str, &str); 14] = [
+const SAME_DAY: [(&str, &str, &str); 15] = [
+    (
+        "FAGU_PURNIMA",
+        "HOLIKA",
+        "Government of Nepal, Ministry of Home Affairs, public holidays of 2082 and 2083: Fagu Purnima, for the 56 hill and mountain districts, on 2082/11/18 and 2083/12/07, the days VS 2082 p. 23 and VS 2083 p. 25 print पहाडी जिल्लामा होली (C693)",
+    ),
     (
         "SETO_MACHHINDRANATH_JATRA",
         "CHAITE_DASHAIN",
@@ -1897,6 +1902,7 @@ impl FestivalRule {
                     decide,
                     otherwise,
                     parana: Vec::new(),
+                    meta: super::FestivalMeta::default(),
                 }
             })
             .collect()
@@ -1931,6 +1937,7 @@ impl FollowingRule {
                 source: source.to_owned(),
                 after: after.to_owned(),
                 days,
+                meta: super::FestivalMeta::default(),
             })
             .collect()
     }

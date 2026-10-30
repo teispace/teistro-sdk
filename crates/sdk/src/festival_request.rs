@@ -10,8 +10,8 @@ use serde::Serialize;
 use serde_json::Value;
 use teistro_core::error::Error;
 use teistro_panchanga::festival::{
-    Anniversary, Dated, DatedRule, EkadashiRule, FestivalRule, FollowingRule, KindRules,
-    PublishedEntry, PublishedSet, SaitRule,
+    Anniversary, Dated, DatedRule, EkadashiRule, FestivalMeta, FestivalRule, FollowingRule,
+    KindRules, MetaFilter, PublishedEntry, PublishedSet, SaitRule,
 };
 
 /// A pack of rules the SDK ships, which a request may name rather than
@@ -43,16 +43,38 @@ pub enum FestivalPack {
     /// the Vaishnava's table and the eight mahadvadashis that name the
     /// fast or move it onto the 12th's day.
     Gaudiya,
+    /// The Government of India's central holidays for its offices in Delhi
+    /// (`03-design/india-central-holidays.md`): the list's days by rule,
+    /// Holi counted from the Holika fire, and the four days the notices
+    /// set by the moon as printed, each marked subject to the sighting.
+    IndiaCentral,
+}
+
+/// Puts each rule's sourced values on it, from `of` its key.
+fn stamped<T: Stamped>(rules: Vec<T>, of: impl Fn(&str) -> FestivalMeta) -> Vec<T> {
+    rules
+        .into_iter()
+        .map(|mut rule| {
+            *rule.meta_mut() = of(rule.key());
+            rule
+        })
+        .collect()
+}
+
+/// A *Dharmasindhu* pack's values, whatever the key.
+fn by_text(_: &str) -> FestivalMeta {
+    FestivalMeta::hindu_text()
 }
 
 impl FestivalPack {
     /// Every pack the SDK ships.
-    pub const ALL: [FestivalPack; 5] = [
+    pub const ALL: [FestivalPack; 6] = [
         FestivalPack::Dharmasindhu,
         FestivalPack::Nepal,
         FestivalPack::NepalPanchanga,
         FestivalPack::PitriPaksha,
         FestivalPack::Gaudiya,
+        FestivalPack::IndiaCentral,
     ];
 
     /// Its key, as a request names it.
@@ -64,6 +86,7 @@ impl FestivalPack {
             FestivalPack::NepalPanchanga => "NEPAL_PANCHANGA",
             FestivalPack::PitriPaksha => "PITRI_PAKSHA",
             FestivalPack::Gaudiya => "GAUDIYA",
+            FestivalPack::IndiaCentral => "INDIA_CENTRAL",
         }
     }
 
@@ -71,15 +94,16 @@ impl FestivalPack {
     #[must_use]
     pub fn rules(self) -> Vec<FestivalRule> {
         match self {
-            FestivalPack::Dharmasindhu => FestivalRule::dharmasindhu(),
-            FestivalPack::Nepal => FestivalRule::nepal(),
+            FestivalPack::Dharmasindhu => stamped(FestivalRule::dharmasindhu(), by_text),
+            FestivalPack::Nepal => stamped(FestivalRule::nepal(), FestivalMeta::nepal),
             FestivalPack::NepalPanchanga => {
                 let mut rules = FestivalRule::nepal();
                 rules.extend(FestivalRule::nepal_panchanga());
-                rules
+                stamped(rules, FestivalMeta::nepal)
             }
-            FestivalPack::PitriPaksha => FestivalRule::pitri_paksha(),
+            FestivalPack::PitriPaksha => stamped(FestivalRule::pitri_paksha(), by_text),
             FestivalPack::Gaudiya => Vec::new(),
+            FestivalPack::IndiaCentral => FestivalRule::india_central(),
         }
     }
 
@@ -87,11 +111,12 @@ impl FestivalPack {
     #[must_use]
     pub fn ekadashis(self) -> Vec<EkadashiRule> {
         match self {
-            FestivalPack::Dharmasindhu | FestivalPack::Nepal | FestivalPack::NepalPanchanga => {
-                EkadashiRule::dharmasindhu()
+            FestivalPack::Dharmasindhu => stamped(EkadashiRule::dharmasindhu(), by_text),
+            FestivalPack::Nepal | FestivalPack::NepalPanchanga => {
+                stamped(EkadashiRule::dharmasindhu(), FestivalMeta::nepal)
             }
-            FestivalPack::PitriPaksha => Vec::new(),
-            FestivalPack::Gaudiya => vec![EkadashiRule::hari_bhakti_vilasa()],
+            FestivalPack::PitriPaksha | FestivalPack::IndiaCentral => Vec::new(),
+            FestivalPack::Gaudiya => stamped(vec![EkadashiRule::hari_bhakti_vilasa()], by_text),
         }
     }
 
@@ -103,7 +128,10 @@ impl FestivalPack {
             | FestivalPack::Nepal
             | FestivalPack::PitriPaksha
             | FestivalPack::Gaudiya => Vec::new(),
-            FestivalPack::NepalPanchanga => DatedRule::nepal_panchanga(),
+            FestivalPack::NepalPanchanga => {
+                stamped(DatedRule::nepal_panchanga(), FestivalMeta::nepal)
+            }
+            FestivalPack::IndiaCentral => DatedRule::india_central(),
         }
     }
 
@@ -112,9 +140,10 @@ impl FestivalPack {
     #[must_use]
     pub fn saits(self) -> Vec<SaitRule> {
         match self {
-            FestivalPack::Dharmasindhu | FestivalPack::PitriPaksha | FestivalPack::Gaudiya => {
-                Vec::new()
-            }
+            FestivalPack::Dharmasindhu
+            | FestivalPack::PitriPaksha
+            | FestivalPack::Gaudiya
+            | FestivalPack::IndiaCentral => Vec::new(),
             FestivalPack::Nepal => SaitRule::nepal(),
             FestivalPack::NepalPanchanga => {
                 let mut saits = SaitRule::nepal();
@@ -131,12 +160,22 @@ impl FestivalPack {
             FestivalPack::Dharmasindhu | FestivalPack::PitriPaksha | FestivalPack::Gaudiya => {
                 Vec::new()
             }
-            FestivalPack::Nepal => FollowingRule::nepal(),
+            FestivalPack::Nepal => stamped(FollowingRule::nepal(), FestivalMeta::nepal),
             FestivalPack::NepalPanchanga => {
                 let mut rules = FollowingRule::nepal();
                 rules.extend(FollowingRule::nepal_panchanga());
-                rules
+                stamped(rules, FestivalMeta::nepal)
             }
+            FestivalPack::IndiaCentral => FollowingRule::india_central(),
+        }
+    }
+
+    /// The published sets it lays over its rules' answer.
+    #[must_use]
+    pub fn published(self) -> Vec<PublishedSet> {
+        match self {
+            FestivalPack::IndiaCentral => vec![PublishedSet::india_central()],
+            _ => Vec::new(),
         }
     }
 }
@@ -192,6 +231,10 @@ pub struct FestivalRequest {
     /// left out when none, as `dated` is (`03-design/festival-sait.md`).
     #[serde(skip_serializing_if = "Vec::is_empty")]
     saits: Vec<SaitRule>,
+    /// What the answer keeps, by the rules' meta; left out when it keeps
+    /// all, as `dated` is (`03-design/festival-metadata.md` §4).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    only: Option<MetaFilter>,
 }
 
 impl From<FestivalPack> for FestivalRequest {
@@ -205,28 +248,10 @@ trait Keyed {
     fn key(&self) -> &str;
 }
 
-impl Keyed for FestivalRule {
-    fn key(&self) -> &str {
-        &self.key
-    }
-}
-
-impl Keyed for EkadashiRule {
-    fn key(&self) -> &str {
-        &self.key
-    }
-}
-
-impl Keyed for FollowingRule {
-    fn key(&self) -> &str {
-        &self.key
-    }
-}
-
-impl Keyed for DatedRule {
-    fn key(&self) -> &str {
-        &self.key
-    }
+/// A rule of a kind a pack holds, which carries its values; an
+/// anniversary, a family's own, does not.
+trait Stamped: Keyed {
+    fn meta_mut(&mut self) -> &mut FestivalMeta;
 }
 
 impl Keyed for Anniversary {
@@ -234,6 +259,24 @@ impl Keyed for Anniversary {
         &self.key
     }
 }
+
+macro_rules! keyed {
+    ($($rule:ty),+) => {$(
+        impl Keyed for $rule {
+            fn key(&self) -> &str {
+                &self.key
+            }
+        }
+
+        impl Stamped for $rule {
+            fn meta_mut(&mut self) -> &mut FestivalMeta {
+                &mut self.meta
+            }
+        }
+    )+};
+}
+
+keyed!(FestivalRule, EkadashiRule, FollowingRule, DatedRule);
 
 /// Puts `rule` in place of the one in `list` with its key, or hands it
 /// back when none has it.
@@ -260,7 +303,75 @@ impl FestivalRequest {
             anniversaries: Vec::new(),
             published: Vec::new(),
             saits: Vec::new(),
+            only: None,
         }
+    }
+
+    /// The same request keeping, of its answer, only the rules `only`
+    /// admits (`03-design/festival-metadata.md` §4). Every rule is still
+    /// reckoned, so a day counted from a rule filtered out stands. A
+    /// family's anniversaries, which carry no values, stand only when no
+    /// filter is set.
+    ///
+    /// ```
+    /// use teistro::{FestivalPack, FestivalRequest};
+    /// use teistro::catalogue::FestivalKind;
+    /// use teistro::festival::MetaFilter;
+    ///
+    /// let asked = FestivalRequest::from(FestivalPack::NepalPanchanga)
+    ///     .keeping(MetaFilter { kinds: vec![FestivalKind::Gazetted], ..MetaFilter::default() });
+    /// assert!(asked.keeps("GAI_JATRA") && !asked.keeps("KAG_NO_SUCH"));
+    /// let text = r#"{"rules": "NEPAL_PANCHANGA", "only": {"kinds": ["GAZETTED"]}}"#;
+    /// assert_eq!(FestivalRequest::from_json(text)?, asked);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn keeping(mut self, only: MetaFilter) -> FestivalRequest {
+        self.only = Some(only);
+        self
+    }
+
+    /// Whether the answer keeps the day of this key.
+    #[must_use]
+    pub fn keeps(&self, key: &str) -> bool {
+        let Some(only) = &self.only else {
+            return true;
+        };
+        let meta = self
+            .rules
+            .iter()
+            .find(|rule| rule.key == key)
+            .map(|rule| &rule.meta)
+            .or_else(|| {
+                self.ekadashis
+                    .iter()
+                    .find(|rule| rule.key == key)
+                    .map(|rule| &rule.meta)
+            })
+            .or_else(|| {
+                self.following
+                    .iter()
+                    .find(|rule| rule.key == key)
+                    .map(|rule| &rule.meta)
+            })
+            .or_else(|| {
+                self.dated
+                    .iter()
+                    .find(|rule| rule.key == key)
+                    .map(|rule| &rule.meta)
+            })
+            .or_else(|| {
+                self.published
+                    .iter()
+                    .flat_map(|set| &set.entries)
+                    .find_map(|entry| match entry {
+                        PublishedEntry::Add {
+                            key: added, meta, ..
+                        } if added == key => Some(meta),
+                        _ => None,
+                    })
+            });
+        meta.is_some_and(|meta| only.admits(meta))
     }
 
     /// Drops the rule with this key, of whichever kind.
@@ -421,9 +532,13 @@ impl FestivalRequest {
             .dated()
             .into_iter()
             .fold(request, FestivalRequest::with_dated);
-        pack.saits()
+        let request = pack
+            .saits()
             .into_iter()
-            .fold(request, FestivalRequest::with_sait)
+            .fold(request, FestivalRequest::with_sait);
+        pack.published()
+            .into_iter()
+            .fold(request, FestivalRequest::with_published)
     }
 
     /// The same request with each of these Ekadashi rules, as
@@ -513,6 +628,7 @@ impl FestivalRequest {
             })
             .collect();
         Some(FestivalRequest {
+            only: self.only.clone(),
             rules: self
                 .rules
                 .iter()
@@ -784,6 +900,9 @@ impl FestivalRequest {
             let set: PublishedSet = teistro_core::strict::read_value(set, &field)?;
             request = request.with_published(set);
         }
+        if let Some(only) = asked.only {
+            request = request.keeping(only);
+        }
         request.check().map_err(|why| why.under(FESTIVALS))?;
         Ok(request)
     }
@@ -844,7 +963,7 @@ fn told(item: &serde_json::Map<String, Value>, field: &str) -> Result<Option<Spe
 }
 
 /// The pack a name names, or the refusal listing them.
-fn pack(name: &str, field: &str) -> Result<FestivalPack, Error> {
+pub(crate) fn pack(name: &str, field: &str) -> Result<FestivalPack, Error> {
     FestivalPack::ALL
         .into_iter()
         .find(|pack| pack.key() == name)
@@ -876,6 +995,10 @@ pub(crate) struct Asked {
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     #[cfg_attr(feature = "schema", schemars(with = "Vec<PublishedSet>"))]
     published: Vec<Value>,
+    /// What the answer keeps, by the rules' `meta`; every rule when left
+    /// out.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    only: Option<MetaFilter>,
 }
 
 /// The schema of [`Asked::rules`]: a pack's name, or a list of
@@ -1133,13 +1256,28 @@ mod tests {
         assert_eq!(twice.check().unwrap_err().field(), Some("ekadashis[0].key"));
     }
 
+    /// The rules as they stand before a pack stamps its values on them.
+    fn unstamped(rules: &[FestivalRule]) -> Vec<FestivalRule> {
+        rules
+            .iter()
+            .cloned()
+            .map(|mut rule| {
+                rule.meta = FestivalMeta::default();
+                rule
+            })
+            .collect()
+    }
+
     #[test]
     fn the_nepal_pack_is_dharmasindhu_s_with_its_counted_days() {
         let nepal = FestivalRequest::from_json(r#"{"rules": "NEPAL"}"#).unwrap();
         assert_eq!(nepal, FestivalRequest::from(FestivalPack::Nepal));
-        assert_eq!(nepal.rules(), FestivalRule::nepal().as_slice());
-        assert_ne!(nepal.rules(), FestivalRule::dharmasindhu().as_slice());
-        assert_eq!(nepal.following(), FollowingRule::nepal().as_slice());
+        assert_eq!(unstamped(nepal.rules()), FestivalRule::nepal());
+        assert_ne!(unstamped(nepal.rules()), FestivalRule::dharmasindhu());
+        let following: Vec<&str> = nepal.following().iter().map(|r| r.key.as_str()).collect();
+        let shipped_keys = FollowingRule::nepal();
+        let keys: Vec<&str> = shipped_keys.iter().map(|r| r.key.as_str()).collect();
+        assert_eq!(following, keys);
         assert_eq!(nepal.reach(), 1);
         let shipped = FestivalRequest::from(FestivalPack::Dharmasindhu);
         assert_eq!(shipped.following(), []);
@@ -1151,7 +1289,7 @@ mod tests {
         let asked = FestivalRequest::from_json(r#"{"rules": "NEPAL_PANCHANGA"}"#).unwrap();
         assert_eq!(asked, FestivalRequest::from(FestivalPack::NepalPanchanga));
         let nepal = FestivalRule::nepal();
-        assert_eq!(&asked.rules()[..nepal.len()], nepal.as_slice());
+        assert_eq!(unstamped(&asked.rules()[..nepal.len()]), nepal);
         assert_eq!(
             asked.rules().len(),
             nepal.len() + FestivalRule::nepal_panchanga().len()

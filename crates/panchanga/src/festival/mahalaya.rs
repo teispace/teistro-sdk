@@ -85,6 +85,7 @@ impl FestivalRule {
                 decide,
                 otherwise,
                 parana: Vec::new(),
+                meta: super::FestivalMeta::default(),
             }
         };
         let share = "the day holding more of it in the aparahna, the earlier on a tie and when neither does (C663, C664)";

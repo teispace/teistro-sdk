@@ -243,7 +243,8 @@ fn a_prompts_argument_completes_from_its_table() {
             "NEPAL",
             "NEPAL_PANCHANGA",
             "PITRI_PAKSHA",
-            "GAUDIYA"
+            "GAUDIYA",
+            "INDIA_CENTRAL"
         ])
     );
     let date = complete("birth-chart", "date", "1990");

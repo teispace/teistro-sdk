@@ -1220,6 +1220,8 @@ def main() -> None:
     put("bs-add", f"{added.year}-{added.month}-{added.day}")
     age = ctx.calendar.between(jestha, added)
     put("bs-between", f"{age.years} {age.months} {age.days}")
+    pack = ctx.almanac.festival_pack("INDIA_CENTRAL")
+    put("india-pack", f"{len(pack['rules'])} {pack['rules'][0]['key']}")
     put("jd-of-fixed", teistro.julian_day_of_fixed(fixed))
     back, fraction = teistro.fixed_of_julian_day(2457126.75)
     put("fixed-of-jd", back)
@@ -3191,6 +3193,7 @@ def main() -> None:
         ("almanac.disagreements", ctx.almanac.disagreements),
         ("almanac.festival_calendar", ctx.almanac.festival_calendar),
         ("almanac.next", ctx.almanac.next),
+        ("almanac.festivalPack", ctx.almanac.festival_pack),
         ("almanac.day", ctx.almanac.day),
         ("almanac.pakshi", ctx.almanac.pakshi),
         ("almanac.sankalpa", ctx.almanac.sankalpa),

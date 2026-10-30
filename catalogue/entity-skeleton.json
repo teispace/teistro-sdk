@@ -1102,5 +1102,19 @@
     "BHOJANA": {},
     "KRIDA": {},
     "SHMASHANA": {}
+  },
+  "festival_kind": {
+    "GAZETTED": {},
+    "RELIGIOUS_CULTURAL": {},
+    "REGIONAL_ETHNIC": {},
+    "OBSERVANCE": {}
+  },
+  "tradition": {
+    "HINDU": {},
+    "BUDDHIST": {},
+    "JAIN": {},
+    "SIKH": {},
+    "ISLAMIC": {},
+    "CHRISTIAN": {}
   }
 }

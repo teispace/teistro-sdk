@@ -323,6 +323,15 @@ fn the_calendars(report: &mut Report, sdk: &Context) {
         "bs-between",
         format!("{} {} {}", age.years, age.months, age.days),
     );
+    let listed = sdk.almanac().festival_pack(&teistro::PackRequest {
+        pack: teistro::FestivalPack::IndiaCentral,
+    });
+    let first = listed.rules.first().map_or("", |row| row.key.as_str());
+    put(
+        report,
+        "india-pack",
+        format!("{} {first}", listed.rules.len()),
+    );
 }
 
 /// Time, as the report prints it.
@@ -804,6 +813,7 @@ fn the_surface(report: &mut Report) {
         ("almanac.festival_calendar", "present"),
         ("almanac.festivals", "present"),
         ("almanac.next", "present"),
+        ("almanac.festivalPack", "present"),
         ("almanac.of", "present"),
         ("almanac.pakshi", "present"),
         ("almanac.sankalpa", "present"),

@@ -11,7 +11,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 
-use super::{Decided, FestivalDay, Observance, Observances, Unjudged};
+use super::{Decided, FestivalDay, FestivalMeta, Observance, Observances, Unjudged};
 
 /// An observance on the day a number of civil days after another rule's.
 ///
@@ -35,6 +35,10 @@ pub struct FollowingRule {
     /// How many civil days after that day, 0 for the same day, at most
     /// [`FollowingRule::MOST_DAYS`].
     pub days: u8,
+    /// What the rule's festival is, as sourced (`03-design/festival-metadata.md`);
+    /// a field no source gives stays unset, and a rule with none leaves it out.
+    #[serde(default, skip_serializing_if = "FestivalMeta::is_empty")]
+    pub meta: FestivalMeta,
 }
 
 impl FollowingRule {
@@ -82,12 +86,14 @@ impl FollowingRule {
                 source: "Nepal's national panchanga, VS 2082 p. 23 and VS 2083 p. 25: \"पहाडी जिल्लामा होली\" on the day of the Holika fire".to_owned(),
                 after: "HOLIKA".to_owned(),
                 days: 0,
+                meta: super::FestivalMeta::default(),
             },
             FollowingRule {
                 key: "HOLI_TERAI".to_owned(),
                 source: "Nepal's national panchanga, VS 2082 p. 23 and VS 2083 p. 25: \"तराईमा होली\" the day after the fire; Dharmasindhu p. 95: the ash is honoured the morning after".to_owned(),
                 after: "HOLIKA".to_owned(),
                 days: 1,
+                meta: super::FestivalMeta::default(),
             },
         ]
     }

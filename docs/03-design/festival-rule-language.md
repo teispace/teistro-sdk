@@ -563,7 +563,7 @@ is missing is evidence. "None" means no form would decide the row.
 | 28 | `KASHI_BADA_GANESH_UTSAV` | 8 of 14 | moonrise, sayahna or pradosha, 12 of 14 | none new | **shipped** by the text: Magha's dark 4th (purnimanta; the amanta Pausha's) is a Sankashta chaturthi, kept at moonrise and on the earlier day when both hold it (*Dharmasindhu* p. 9); both editions print it on the day whose sunrise holds the 3rd and whose moonrise the 4th (2026-01-06, 2027-01-25) |
 | 29 | `SI_PUNHI` | the source's rule names Magha's full moon; 12 verified days are Magha's bright 5th | Magha's bright 5th at sunrise, 12 of 14 | none new | **shipped** on Magha's full moon, the source's rule: both editions print it on the full-moon fast's day, so it takes that rule (C200); the source's bright 5th days are not printed (C693) |
 | 30 | `PASHUPATINATH_CHHAYA_DARSHAN` | 11 of 14 | sunrise, 11 of 14 | none | evidence |
-| 31 | `FAGU_PURNIMA` | 11 of 14 | day muhurtas 2–6, 13 of 14 | §3.2 day muhurtas | a candidate only |
+| 31 | `FAGU_PURNIMA` | 11 of 14 | day muhurtas 2–6, 13 of 14 | none new | **shipped** on the Holika day: the gazette notices of 2082 and 2083 set it there, the days both editions print the hill districts' Holi (C693) |
 | 32 | `DEOPATAN_DESHODDHAR_PUJA` | 11 of 13 | day muhurtas 1–4, 12 of 13 | §3.2 day muhurtas | a candidate only |
 | 33 | `RATO_MACHHINDRANATH_SNAN` | 11 of 13 | sunrise, 11 of 13 | none | evidence |
 | 34 | `EID_AL_FITR` | the Hijri month begins on a sighting | none | none | published only: a sighting and an announcement; a crescent-visibility estimate is a different feature |

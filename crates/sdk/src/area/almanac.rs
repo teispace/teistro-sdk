@@ -69,6 +69,7 @@ mod feed;
 #[cfg(feature = "muhurta")]
 mod muhurta;
 mod next;
+mod pack;
 mod reasons;
 mod sait;
 
@@ -82,6 +83,8 @@ pub use feed::{FeedOptions, FestivalCalendarRequest};
 #[cfg(feature = "schema")]
 pub(crate) use next::NextAsked;
 pub use next::{NextOccurrence, NextRequest, NextTarget};
+pub(crate) use pack::PackAsked;
+pub use pack::{PackForm, PackListing, PackRequest, PackRow};
 #[cfg(feature = "schema")]
 pub(crate) use reasons::ReasonsAsked;
 pub use reasons::{
@@ -439,6 +442,7 @@ impl<'a> AlmanacArea<'a> {
             start.is_some_and(|start| unjudged.tithi.to.get() > start)
                 && end.is_some_and(|end| unjudged.tithi.from.get() < end)
         });
+        found.keep(|key| request.keeps(key));
         // On the days as published, after the trim, so only the range's
         // observances pay for a founded day.
         self.with_saits(&mut found, request, from.calendar, (place, offset))?;

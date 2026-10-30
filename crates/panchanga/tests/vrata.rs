@@ -273,6 +273,7 @@ fn a_rule_counted_from_a_vrata_does_not_break_its_fast_again() {
         source: "a test".to_owned(),
         after: "SHIVARATRI".to_owned(),
         days,
+        meta: teistro_panchanga::festival::FestivalMeta::default(),
     });
     let counted = following(&rules, &found.observances, &days).unwrap();
     assert_eq!(counted.observances.len(), 2);

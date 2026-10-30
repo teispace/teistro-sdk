@@ -215,6 +215,8 @@ fn withdraw_keeps_the_day_and_add_gives_one() {
             names: [(String::from("en-Latn"), String::from("A national day"))].into(),
             window: None,
             source: String::from("notice 1"),
+            subject_to: None,
+            meta: teistro::festival::FestivalMeta::default(),
         },
         // Outside the range: passed over.
         PublishedEntry::Add {
@@ -223,6 +225,8 @@ fn withdraw_keeps_the_day_and_add_gives_one() {
             names: BTreeMap::default(),
             window: None,
             source: String::from("notice 2"),
+            subject_to: None,
+            meta: teistro::festival::FestivalMeta::default(),
         },
     ];
     let answer = asked(&request.with_published(set("np", 1, entries)), &from, &to).value;
@@ -400,6 +404,8 @@ fn a_set_is_refused_by_name() {
             names: BTreeMap::default(),
             window: None,
             source: String::from("p. 1"),
+            subject_to: None,
+            meta: teistro::festival::FestivalMeta::default(),
         }],
     ));
     assert_eq!(reused.field(), Some("published[0].entries[0].key"));
@@ -449,6 +455,8 @@ fn a_set_is_refused_by_name() {
                 names: BTreeMap::default(),
                 window: None,
                 source: String::from("p. 1"),
+                subject_to: None,
+                meta: teistro::festival::FestivalMeta::default(),
             }],
         ));
         assert_eq!(
@@ -778,6 +786,8 @@ fn a_feed_says_who_published_a_day_and_drops_a_withdrawn_one() {
             names: [(String::from("en-Latn"), String::from("A national day"))].into(),
             window: None,
             source: String::from("p. 3"),
+            subject_to: None,
+            meta: teistro::festival::FestivalMeta::default(),
         },
     ];
     let feed = |request: &FestivalRequest| {
