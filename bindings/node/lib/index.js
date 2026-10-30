@@ -2645,6 +2645,59 @@ export class CalendarArea extends Area {
   }
 
   /**
+   * The date `span` after `date`, in its own calendar
+   * (`03-design/calendar-bikram-sambat.md` §11): the years and months
+   * first, a day number the month lacks resolved by `overflow`, then the
+   * days. A Bikram Sambat month runs 29 to 32 days, so the 32nd of Jestha
+   * plus a month is the 31st of a 31-day Ashadh under `CONSTRAIN`, the 1st
+   * of Shrawan under `CARRY`, and refused under `REJECT`.
+   *
+   * @example
+   * const on = sdk.calendar.add(date(Calendar.BikramSambat, 2081, 2, 32), { months: 1 });
+   * // { year: 2081, month: 3, day: 31, ... }
+   *
+   * @param {object} date the date
+   * @param {object} span `{ years, months, days }`, each signed, zero when left out
+   * @param {string} [overflow] `'CONSTRAIN'` (when left out), `'CARRY'` or `'REJECT'`
+   * @returns {object} the date
+   */
+  add(date, span, overflow = 'CONSTRAIN') {
+    const { years = 0, months = 0, days = 0 } = span ?? {};
+    return run(this, (inner) =>
+      inner.calendarAdd(
+        clean(date),
+        finite(years, 'span.years'),
+        finite(months, 'span.months'),
+        finite(days, 'span.days'),
+        overflow,
+      ),
+    );
+  }
+
+  /**
+   * The years, months and days from `from` to `to`, both in one calendar,
+   * counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the
+   * most whole months whose anniversary of `from` is not past `to`, then
+   * the days from it, so `add(from, between(from, to))` is `to`. One born
+   * on the 32nd of Jestha completes a year on the 31st of a 31-day Jestha
+   * under `CONSTRAIN` (C803). Earlier than `from`, every part is negative
+   * or zero.
+   *
+   * @example
+   * const age = sdk.calendar.between(date(Calendar.BikramSambat, 2050, 2, 32), date(Calendar.BikramSambat, 2082, 2, 31));
+   * // { years: 32, months: 0, days: 0 }
+   *
+   * @param {object} from the first date
+   * @param {object} to the second, in the same calendar
+   * @param {string} [overflow] `'CONSTRAIN'` (when left out), `'CARRY'` or `'REJECT'`
+   * @returns {object} `{ years, months, days }`
+   */
+  between(from, to, overflow = 'CONSTRAIN') {
+    const { years, months, days } = run(this, (inner) => inner.calendarBetween(clean(from), clean(to), overflow));
+    return Object.freeze({ years, months, days });
+  }
+
+  /**
    * A Tibetan year's names (`calendars/tibetan.md`): its rabjung cycle and
    * place in it, 1 to 60, with the Indian cycle's name for that place, and
    * the element, gender and animal it is called by. The year is the one a
@@ -7903,6 +7956,67 @@ export class AlmanacArea extends Area {
     const record = recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }");
     if (record !== undefined) asked.festivals = JSON.parse(record);
     return run(this, (inner) => inner.almanacFestivalCalendar(JSON.stringify(asked)));
+  }
+
+  /**
+   * **The next day a rule or a kind of day falls on** after an instant at
+   * a place, with no year asked (`03-design/next-occurrence.md`). The
+   * civil day holding the instant counts. A `kind` is `'EKADASHI'`,
+   * `'PURNIMA'`, `'AMAVASYA'` or `'SANKRANTI'`, each read by rules the SDK
+   * states; a `rule` is a key of `festivals`, a festival request. The
+   * search looks `limitDays` ahead, 400 when left out (every yearly
+   * festival) and at most 3660; nothing within it throws `LIMIT`, naming
+   * `limitDays`.
+   *
+   * @example
+   * const next = sdk.almanac.next({
+   *   after: 2461345.5,
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   *   rule: 'VIJAYA_DASHAMI',
+   *   festivals: { rules: 'NEPAL_PANCHANGA' },
+   * });
+   * // next.day, next.keys, next.festivals.observances[0]
+   *
+   * @param {object} request
+   * @param {number} request.after the instant, a UTC Julian day
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {string} [request.calendar] the answer's days' calendar; Gregorian when left out
+   * @param {string} [request.kind] a kind of day, or else `rule`
+   * @param {string} [request.rule] a key of `festivals`, or else `kind`
+   * @param {object} [request.festivals] a festivals request record, with `rule`
+   * @param {number} [request.limitDays] how many days ahead to look, 1 to 3660
+   * @returns {object} `{ day, keys, festivals, from, limitDays, searchedDays, provenance }`
+   */
+  next(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError("next: expected a request, e.g. { after, place, utcOffsetSeconds, kind: 'EKADASHI' }");
+    }
+    const { after, place: where, utcOffsetSeconds, festivals, limitDays, ...rest } = request;
+    const place = where ?? {};
+    const asked = {
+      ...rest,
+      after: finite(after, 'after'),
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    };
+    if (limitDays !== undefined) asked.limitDays = finite(limitDays, 'limitDays');
+    const record = recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }");
+    if (record !== undefined) asked.festivals = JSON.parse(record);
+    const { value, provenance } = JSON.parse(run(this, (inner) => inner.almanacNext(JSON.stringify(asked))));
+    const found = festivalsFrom(JSON.stringify({ value: value.festivals, provenance }));
+    return deepFreeze({
+      day: dateFrom(value.day),
+      keys: value.keys,
+      festivals: found,
+      from: dateFrom(value.from),
+      limitDays: value.limitDays,
+      searchedDays: value.searchedDays,
+      provenance: found.provenance,
+    });
   }
 }
 

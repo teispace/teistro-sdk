@@ -354,6 +354,45 @@ public final class BindingTest {
                 check(calendar.isLeap(Calendar.GREGORIAN, 2024), "2024 is a leap year");
                 check(!calendar.isLeap(Calendar.GREGORIAN, 2100), "2100 is not");
                 same(28, calendar.monthLength(Calendar.GREGORIAN, 2026, 2), "February 2026");
+                // Bikram Sambat arithmetic (calendar-bikram-sambat.md §11): a 32nd a
+                // month on under each rule, and an age counted from a 32nd.
+                CalendarDate jestha = Civil.date(Calendar.BIKRAM_SAMBAT, 2081, 2, 32);
+                same(31, calendar.monthLength(Calendar.BIKRAM_SAMBAT, 2081, 3), "a 31-day Ashadh");
+                CalendarDate constrained = calendar.add(jestha, 0, 1, 0, Overflow.CONSTRAIN);
+                same(List.of(3, 31), List.of(constrained.month(), constrained.day()), "its last day");
+                CalendarDate carried = calendar.add(jestha, 0, 1, 0, Overflow.CARRY);
+                same(List.of(4, 1), List.of(carried.month(), carried.day()), "the next month's first");
+                same("day", refusal(() -> calendar.add(jestha, 0, 1, 0, Overflow.REJECT)).field(), "refused");
+                DateSpan age = calendar.between(Civil.date(Calendar.BIKRAM_SAMBAT, 2050, 2, 32),
+                        Civil.date(Calendar.BIKRAM_SAMBAT, 2082, 2, 31), Overflow.CONSTRAIN);
+                same(List.of(32, 0, 0), List.of(age.years(), age.months(), age.days()), "32 years old");
+                DateSpan back = calendar.between(Civil.date(Calendar.BIKRAM_SAMBAT, 2081, 7, 10),
+                        Civil.date(Calendar.BIKRAM_SAMBAT, 2050, 1, 15), Overflow.CONSTRAIN);
+                same(List.of(-31, -5, -26), List.of(back.years(), back.months(), back.days()), "backwards");
+            }
+        });
+
+        // The next occurrence (next-occurrence.md): Maghe sankranti from
+        // 1 January 2026 in the first window, Vijaya Dashami within the
+        // default limit, and a search too short refused on limitDays.
+        tests.put("the next sankranti and a pack's festival are found", () -> {
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context committee = teistro.context(ContextOptions.builder().profile("nepali-committee")
+                    .ephemeris(Ephemeris.SURYA_SIDDHANTA).build())) {
+                NextOccurrence sankranti = committee.almanac().next(2_461_042.0, kathmandu, 20_700, "SANKRANTI",
+                        null, null, null, null);
+                same(List.of("MAKARA_SANKRANTI"), sankranti.keys(), "Maghe sankranti");
+                same(List.of(1, 15), List.of(sankranti.day().month(), sankranti.day().day()), "on 15 January");
+                same(List.of(32, 400), List.of(sankranti.searchedDays(), sankranti.limitDays()), "the first window");
+                same(1, sankranti.festivals().dated().size(), "one dated day");
+                var panchanga = new com.teispace.teistro.request.FestivalRequest(
+                        com.teispace.teistro.request.FestivalRules.NEPAL_PANCHANGA);
+                NextOccurrence dashami = committee.almanac().next(2_461_042.0, kathmandu, 20_700, null,
+                        "VIJAYA_DASHAMI", panchanga, null, null);
+                same(List.of("VIJAYA_DASHAMI"), dashami.keys(), "Vijaya Dashami");
+                same("VIJAYA_DASHAMI", dashami.festivals().observances().get(0).rule(), "its observance");
+                same("limitDays", refusal(() -> committee.almanac().next(2_461_042.0, kathmandu, 20_700, null,
+                        "VIJAYA_DASHAMI", panchanga, null, 20)).field(), "a search too short");
             }
         });
 

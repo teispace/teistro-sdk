@@ -71,6 +71,7 @@ from teistro import (
     Teistro,
     PolarDay,
     TeistroError,
+    Overflow,
     TimeScale,
     PlanRequest,
     Plans,
@@ -304,6 +305,28 @@ class TheCalendars(WithLibrary):
         self.assertFalse(self.ctx.calendar.is_leap(Calendar.GREGORIAN, 2023))
         self.assertEqual(self.ctx.calendar.month_length(Calendar.GREGORIAN, 2024, 2), 29)
         self.assertEqual(self.ctx.calendar.month_length(Calendar.GREGORIAN, 2023, 2), 28)
+
+    def test_a_bikram_sambat_date_adds_and_an_age_is_counted(self) -> None:
+        """A 32nd of Jestha a month on: a 31-day Ashadh's last day by
+        default, the next month's first when carried, refused when rejected
+        (`03-design/calendar-bikram-sambat.md` §11)."""
+        jestha = date(Calendar.BIKRAM_SAMBAT, 2081, 2, 32)
+        constrained = self.ctx.calendar.add(jestha, months=1)
+        ashadh = self.ctx.calendar.month_length(Calendar.BIKRAM_SAMBAT, 2081, 3)
+        self.assertEqual((constrained.month, constrained.day), (3, min(32, ashadh)))
+        carried = self.ctx.calendar.add(jestha, months=1, overflow=Overflow.CARRY)
+        self.assertEqual((carried.month, carried.day), (4, 32 - ashadh))
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.calendar.add(jestha, months=1, overflow=Overflow.REJECT)
+        self.assertEqual(refused.exception.field, "day")
+        born = date(Calendar.BIKRAM_SAMBAT, 2050, 2, 32)
+        birthday = date(Calendar.BIKRAM_SAMBAT, 2082, 2, 31)
+        age = self.ctx.calendar.between(born, birthday)
+        self.assertEqual((age.years, age.months, age.days), (32, 0, 0))
+        back = self.ctx.calendar.between(
+            date(Calendar.BIKRAM_SAMBAT, 2081, 7, 10), date(Calendar.BIKRAM_SAMBAT, 2050, 1, 15)
+        )
+        self.assertEqual((back.years, back.months, back.days), (-31, -5, -26))
 
     def test_a_month_the_calendar_does_not_have_is_refused_by_field(self) -> None:
         with self.assertRaises(TeistroError) as caught:
@@ -966,6 +989,38 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as empty:
                 ctx.almanac.first_year(place=kathmandu, utc_offset_seconds=20700, request=unkeyed)
             self.assertEqual(empty.exception.field, "firstYear.request.key")
+
+    def test_the_next_sankranti_and_a_packs_festival_are_found(self) -> None:
+        """From noon on 1 January 2026 at Kathmandu, Maghe sankranti on the
+        15th, found in the first window, and Vijaya Dashami found within
+        the default 400 days; a search too short is refused on `limitDays`
+        (`03-design/next-occurrence.md`)."""
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(**nepal_official()) as sky:
+            sankranti = sky.almanac.next(after=2461042.0, place=kathmandu, utc_offset_seconds=20700, kind="SANKRANTI")
+            self.assertEqual(sankranti.keys, ("MAKARA_SANKRANTI",))
+            self.assertEqual((sankranti.day.month, sankranti.day.day), (1, 15))
+            self.assertEqual((sankranti.searched_days, sankranti.limit_days), (32, 400))
+            self.assertEqual(len(sankranti.festivals.dated), 1)
+            dashami = sky.almanac.next(
+                after=2461042.0,
+                place=kathmandu,
+                utc_offset_seconds=20700,
+                rule="VIJAYA_DASHAMI",
+                festivals={"rules": "NEPAL_PANCHANGA"},
+            )
+            self.assertEqual(dashami.keys, ("VIJAYA_DASHAMI",))
+            self.assertEqual(dashami.festivals.observances[0].rule, "VIJAYA_DASHAMI")
+            with self.assertRaises(TeistroError) as short:
+                sky.almanac.next(
+                    after=2461042.0,
+                    place=kathmandu,
+                    utc_offset_seconds=20700,
+                    rule="VIJAYA_DASHAMI",
+                    festivals={"rules": "NEPAL_PANCHANGA"},
+                    limit_days=20,
+                )
+            self.assertEqual(short.exception.field, "limitDays")
 
     def test_an_almanac_writes_its_festivals_as_an_icalendar_feed(self) -> None:
         """Dashain 2025 at Kathmandu: one event for each observance and fast

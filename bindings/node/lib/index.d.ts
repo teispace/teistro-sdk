@@ -134,12 +134,14 @@ import type {
   YoniRelation,
   MaitriRelation,
   NameVarga,
+  Overflow,
   VargaRelation,
 } from './catalogue.js';
 import type {
   CalendarDate,
   CivilDateTime,
   ContextOptions,
+  DateSpan,
   DeltaT,
   Frame,
   IntlLoaded,
@@ -7247,6 +7249,24 @@ export declare class CalendarArea {
   /** Whether a year is a leap year. */
   isLeap(calendar: Calendar, year: number): boolean;
   /**
+   * The date `span` after `date`, in its own calendar: the years and months
+   * first, a day number the month lacks resolved by `overflow`
+   * (`CONSTRAIN` when left out), then the days.
+   *
+   * @example
+   * const on = sdk.calendar.add(date(Calendar.BikramSambat, 2081, 2, 32), { months: 1 }); // Ashadh 31
+   */
+  add(date: CalendarDate, span: DateSpanAsked, overflow?: Overflow): CalendarDate;
+  /**
+   * The years, months and days from `from` to `to`, counted as an age is:
+   * the most whole months whose anniversary of `from` is not past `to`,
+   * then the days from it.
+   *
+   * @example
+   * const age = sdk.calendar.between(date(Calendar.BikramSambat, 2050, 2, 32), date(Calendar.BikramSambat, 2082, 2, 31)); // 32 years
+   */
+  between(from: CalendarDate, to: CalendarDate, overflow?: Overflow): DateSpan;
+  /**
    * A Tibetan year's names (`calendars/tibetan.md`): its rabjung cycle and
    * place, the Indian cycle's name, and its element, gender and animal.
    *
@@ -7254,6 +7274,13 @@ export declare class CalendarArea {
    * const { animal } = sdk.calendar.tibetanYear(2026); // 'tibetan_animal.HORSE'
    */
   tibetanYear(year: number): TibetanYear;
+}
+
+/** What `calendar.add` adds: each part signed, zero when left out. */
+export interface DateSpanAsked {
+  readonly years?: number;
+  readonly months?: number;
+  readonly days?: number;
 }
 
 /** A Tibetan year's names, as `calendar.tibetanYear` gives them, frozen. */
@@ -7520,6 +7547,59 @@ export declare class AlmanacArea {
    * });
    */
   festivalCalendar(request: FestivalCalendarRequest): string;
+
+  /**
+   * The next day a rule or a kind of day falls on after an instant at a
+   * place, with no year asked; the instant's own civil day counts. Looks
+   * `limitDays` ahead, 400 when left out.
+   *
+   * @example
+   * const next = sdk.almanac.next({
+   *   after: 2461345.5,
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   *   kind: 'EKADASHI',
+   * });
+   */
+  next(request: NextRequest): NextOccurrence;
+}
+
+/** What `almanac.next` looks for, and where and how far. */
+export interface NextRequest {
+  /** The instant, a UTC Julian day. */
+  readonly after: number;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The calendar the answer's days are written in; Gregorian when left out. */
+  readonly calendar?: Calendar;
+  /** A kind of day; or `rule`, not both. */
+  readonly kind?: 'EKADASHI' | 'PURNIMA' | 'AMAVASYA' | 'SANKRANTI';
+  /** A key of `festivals`; or `kind`, not both. */
+  readonly rule?: string;
+  /** The festivals a `rule` is looked for in. */
+  readonly festivals?: FestivalRequest;
+  /** How many days ahead to look, 1 to 3660; 400 when left out. */
+  readonly limitDays?: number;
+}
+
+/** The next day `almanac.next` found, frozen. */
+export interface NextOccurrence {
+  /** The day. */
+  readonly day: CalendarDate;
+  /** The keys of the rules that fall on it. */
+  readonly keys: readonly string[];
+  /** The festival reckoning's entries for those keys on that day. */
+  readonly festivals: FestivalAnswer;
+  /** The first day searched: the civil day holding the instant. */
+  readonly from: CalendarDate;
+  /** The look-ahead limit, in days. */
+  readonly limitDays: number;
+  /** The days reckoned until it was found. */
+  readonly searchedDays: number;
+  /** What computed it. */
+  readonly provenance: Provenance;
 }
 
 /** A feed of a range's observances, as `almanac.festivalCalendar` writes it. */

@@ -276,6 +276,30 @@ test('a date converts into Bikram Sambat with its era and its resolution', () =>
   assert.deepEqual(fixedOfJulianDay(2457126.75), { value: fixed, fraction: 0.25 });
 });
 
+/**
+ * Bikram Sambat arithmetic (`03-design/calendar-bikram-sambat.md` §11): a
+ * 32nd a month on under each rule, and an age counted from a 32nd.
+ */
+test('a Bikram Sambat date adds and an age is counted', () => {
+  const ctx = context();
+  const bs = (y, m, d) => ({ ...gregorian(y, m, d), calendar: Calendar.BikramSambat });
+  const jestha = bs(2081, 2, 32);
+  const ashadh = ctx.calendar.monthLength(Calendar.BikramSambat, 2081, 3);
+  assert.equal(ashadh, 31);
+  const constrained = ctx.calendar.add(jestha, { months: 1 });
+  assert.deepEqual([constrained.month, constrained.day], [3, 31]);
+  const carried = ctx.calendar.add(jestha, { months: 1 }, catalogue.Overflow.Carry);
+  assert.deepEqual([carried.month, carried.day], [4, 1]);
+  assert.throws(
+    () => ctx.calendar.add(jestha, { months: 1 }, catalogue.Overflow.Reject),
+    (e) => e instanceof TeistroError && e.field === 'day',
+  );
+  assert.deepEqual(ctx.calendar.between(bs(2050, 2, 32), bs(2082, 2, 31)), { years: 32, months: 0, days: 0 });
+  assert.deepEqual(ctx.calendar.between(bs(2081, 7, 10), bs(2050, 1, 15)), { years: -31, months: -5, days: -26 });
+  assert.ok(Object.isFrozen(ctx.calendar.between(jestha, jestha)));
+  ctx.dispose();
+});
+
 test('a Nepali birth time resolves with the metadata a stored chart keeps', () => {
   const ctx = context();
   const civil = {
@@ -4413,6 +4437,34 @@ test('a span says which sunrises it held and when it ended in ghatis', () => {
   assert.ok(ends.ghati >= 40 && ends.ghati <= 41, `${ends.ghati}`);
   assert.ok(ends.pala < 60 && ends.vipala < 60);
   assert.ok(Object.isFrozen(ends));
+  ctx.dispose();
+});
+
+/**
+ * The next occurrence (`03-design/next-occurrence.md`): Maghe sankranti
+ * from 1 January 2026 in the first window, Vijaya Dashami within the
+ * default limit, and a search too short refused on `limitDays`.
+ */
+test('the next sankranti and a pack\'s festival are found', () => {
+  const ctx = new Context({ profile: 'nepali-committee', ephemeris: catalogue.Ephemeris.SuryaSiddhanta });
+  const asked = {
+    after: 2461042.0,
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const sankranti = ctx.almanac.next({ ...asked, kind: 'SANKRANTI' });
+  assert.deepEqual(sankranti.keys, ['MAKARA_SANKRANTI']);
+  assert.deepEqual([sankranti.day.month, sankranti.day.day], [1, 15]);
+  assert.deepEqual([sankranti.searchedDays, sankranti.limitDays], [32, 400]);
+  assert.equal(sankranti.festivals.dated.length, 1);
+  assert.ok(Object.isFrozen(sankranti));
+  const dashami = ctx.almanac.next({ ...asked, rule: 'VIJAYA_DASHAMI', festivals: { rules: 'NEPAL_PANCHANGA' } });
+  assert.deepEqual(dashami.keys, ['VIJAYA_DASHAMI']);
+  assert.equal(dashami.festivals.observances[0].rule, 'VIJAYA_DASHAMI');
+  assert.throws(
+    () => ctx.almanac.next({ ...asked, rule: 'VIJAYA_DASHAMI', festivals: { rules: 'NEPAL_PANCHANGA' }, limitDays: 20 }),
+    (e) => e instanceof TeistroError && e.field === 'limitDays',
+  );
   ctx.dispose();
 });
 

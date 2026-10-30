@@ -316,6 +316,86 @@ void main() {
     ));
   });
 
+  // Bikram Sambat arithmetic (`03-design/calendar-bikram-sambat.md` §11):
+  // a 32nd a month on under each rule, and an age counted from a 32nd.
+  test('a Bikram Sambat date adds and an age is counted', () {
+    final ctx = context();
+    final jestha = Calendar.bikramSambat.date(2081, 2, 32);
+    expect(ctx.calendar.monthLength(Calendar.bikramSambat, 2081, 3), 31);
+    final constrained = ctx.calendar.add(jestha, months: 1);
+    expect([constrained.month, constrained.day], [3, 31]);
+    final carried = ctx.calendar.add(
+      jestha,
+      months: 1,
+      overflow: Overflow.carry,
+    );
+    expect([carried.month, carried.day], [4, 1]);
+    expect(
+      () => ctx.calendar.add(jestha, months: 1, overflow: Overflow.reject),
+      throwsA(isA<TeistroException>().having((e) => e.field, 'field', 'day')),
+    );
+    final age = ctx.calendar.between(
+      Calendar.bikramSambat.date(2050, 2, 32),
+      Calendar.bikramSambat.date(2082, 2, 31),
+    );
+    expect([age.years, age.months, age.days], [32, 0, 0]);
+    final back = ctx.calendar.between(
+      Calendar.bikramSambat.date(2081, 7, 10),
+      Calendar.bikramSambat.date(2050, 1, 15),
+    );
+    expect([back.years, back.months, back.days], [-31, -5, -26]);
+    ctx.dispose();
+  });
+
+  // The next occurrence (`03-design/next-occurrence.md`): Maghe sankranti
+  // from 1 January 2026 in the first window, Vijaya Dashami within the
+  // default limit, and a search too short refused on `limitDays`.
+  test('the next sankranti and a pack\'s festival are found', () {
+    final ctx = teistro.context(
+      profile: 'nepali-committee',
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final sankranti = ctx.almanac.next(
+      after: 2461042.0,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      kind: 'SANKRANTI',
+    );
+    expect(sankranti.keys, ['MAKARA_SANKRANTI']);
+    expect([sankranti.day.month, sankranti.day.day], [1, 15]);
+    expect([sankranti.searchedDays, sankranti.limitDays], [32, 400]);
+    expect(sankranti.festivals.dated, hasLength(1));
+    const panchanga = FestivalRequest(rules: FestivalPack.nepalPanchanga);
+    final dashami = ctx.almanac.next(
+      after: 2461042.0,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      rule: 'VIJAYA_DASHAMI',
+      festivals: panchanga,
+    );
+    expect(dashami.keys, ['VIJAYA_DASHAMI']);
+    expect(dashami.festivals.observances.first.rule, 'VIJAYA_DASHAMI');
+    expect(
+      () => ctx.almanac.next(
+        after: 2461042.0,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+        rule: 'VIJAYA_DASHAMI',
+        festivals: panchanga,
+        limitDays: 20,
+      ),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'limitDays'),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a Nepali birth time resolves with the metadata a stored chart '
       'keeps', () {
     final ctx = context();

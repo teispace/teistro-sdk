@@ -1122,6 +1122,11 @@ void main() {
   put('weekday', ctx.calendar.weekdayOf(date));
   put('month-length', ctx.calendar.monthLength(Calendar.gregorian, 2024, 2));
   put('is-leap', ctx.calendar.isLeap(Calendar.gregorian, 2024));
+  final jestha = Calendar.bikramSambat.date(2050, 2, 32);
+  final added = ctx.calendar.add(jestha, years: 32);
+  put('bs-add', '${added.year}-${added.month}-${added.day}');
+  final age = ctx.calendar.between(jestha, added);
+  put('bs-between', '${age.years} ${age.months} ${age.days}');
   put('jd-of-fixed', teistro.julianDayOfFixed(fixed));
   final back = teistro.fixedOfJulianDay(2457126.75);
   put('fixed-of-jd', back.value);
@@ -3747,6 +3752,8 @@ void main() {
     ('calendar.weekday_of', ctx.calendar.weekdayOf),
     ('calendar.month_length', ctx.calendar.monthLength),
     ('calendar.is_leap', ctx.calendar.isLeap),
+    ('calendar.add', ctx.calendar.add),
+    ('calendar.between', ctx.calendar.between),
     ('calendar.tibetan_year', ctx.calendar.tibetanYear),
     ('time.resolve', ctx.time.resolve),
     ('time.civil_of', ctx.time.civilOf),
@@ -3781,6 +3788,7 @@ void main() {
     ('almanac.festivals', ctx.almanac.festivals),
     ('almanac.disagreements', ctx.almanac.disagreements),
     ('almanac.festival_calendar', ctx.almanac.festivalCalendar),
+    ('almanac.next', ctx.almanac.next),
     ('almanac.day', ctx.almanac.day),
     ('almanac.pakshi', ctx.almanac.pakshi),
     ('almanac.sankalpa', ctx.almanac.sankalpa),

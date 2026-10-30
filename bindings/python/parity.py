@@ -1215,6 +1215,11 @@ def main() -> None:
     put("weekday", ctx.calendar.weekday_of(day))
     put("month-length", ctx.calendar.month_length(Calendar.GREGORIAN, 2024, 2))
     put("is-leap", ctx.calendar.is_leap(Calendar.GREGORIAN, 2024))
+    jestha = date(Calendar.BIKRAM_SAMBAT, 2050, 2, 32)
+    added = ctx.calendar.add(jestha, years=32)
+    put("bs-add", f"{added.year}-{added.month}-{added.day}")
+    age = ctx.calendar.between(jestha, added)
+    put("bs-between", f"{age.years} {age.months} {age.days}")
     put("jd-of-fixed", teistro.julian_day_of_fixed(fixed))
     back, fraction = teistro.fixed_of_julian_day(2457126.75)
     put("fixed-of-jd", back)
@@ -3143,6 +3148,8 @@ def main() -> None:
         ("calendar.weekday_of", ctx.calendar.weekday_of),
         ("calendar.month_length", ctx.calendar.month_length),
         ("calendar.is_leap", ctx.calendar.is_leap),
+        ("calendar.add", ctx.calendar.add),
+        ("calendar.between", ctx.calendar.between),
         ("calendar.tibetan_year", ctx.calendar.tibetan_year),
         ("time.resolve", ctx.time.resolve),
         ("time.civil_of", ctx.time.civil_of),
@@ -3177,6 +3184,7 @@ def main() -> None:
         ("almanac.festivals", ctx.almanac.festivals),
         ("almanac.disagreements", ctx.almanac.disagreements),
         ("almanac.festival_calendar", ctx.almanac.festival_calendar),
+        ("almanac.next", ctx.almanac.next),
         ("almanac.day", ctx.almanac.day),
         ("almanac.pakshi", ctx.almanac.pakshi),
         ("almanac.sankalpa", ctx.almanac.sankalpa),

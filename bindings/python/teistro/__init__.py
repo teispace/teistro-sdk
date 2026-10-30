@@ -87,6 +87,7 @@ from ._ffi import (
     CivilDateTime,
     CivilTime,
     ContextOptions,
+    DateSpan,
     DeltaT,
     Error,
     Frame,
@@ -890,6 +891,7 @@ from .catalogue import (
     Yoga,
     Coordinates,
     Era,
+    Overflow,
     Resolution,
     Scale,
     Status,
@@ -1010,6 +1012,9 @@ __all__ = [
     "Sunrises",
     "Resolution",
     "Scale",
+    "Overflow",
+    "DateSpan",
+    "NextOccurrence",
     "Status",
     "Teistro",
     "TeistroError",
@@ -2661,6 +2666,42 @@ class CalendarArea(_Area):
         """Whether a year is a leap year in a calendar."""
         return self._context.inner.calendar_is_leap(calendar, year) != 0
 
+    def add(
+        self,
+        date: CalendarDate,
+        *,
+        years: int = 0,
+        months: int = 0,
+        days: int = 0,
+        overflow: Overflow = Overflow.CONSTRAIN,
+    ) -> CalendarDate:
+        """The date `years`, `months` and `days` after `date`, in its own
+        calendar (`03-design/calendar-bikram-sambat.md` §11): the years and
+        months first, a day number the month lacks resolved by `overflow`,
+        then the days. A Bikram Sambat month runs 29 to 32 days, so the
+        32nd of Jestha plus a month is the 31st of a 31-day Ashadh under
+        `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and refused under
+        `REJECT`.
+
+        >>> # ctx.calendar.add(bs(2081, 2, 32), months=1)  # Ashadh 31, 2081
+        """
+        return self._context.inner.calendar_add(date, years, months, days, overflow)
+
+    def between(
+        self, from_date: CalendarDate, to_date: CalendarDate, overflow: Overflow = Overflow.CONSTRAIN
+    ) -> DateSpan:
+        """The years, months and days from `from_date` to `to_date`, both in
+        one calendar, counted as an age is: the most whole months whose
+        anniversary of `from_date` is not past `to_date`, then the days from
+        it, so `add` of the span gives `to_date`. One born on the 32nd of
+        Jestha completes a year on the 31st of a 31-day Jestha under
+        `CONSTRAIN` (C803). Earlier than `from_date`, each part is negative
+        or zero.
+
+        >>> # ctx.calendar.between(bs(2050, 2, 32), bs(2082, 2, 31)).years  # 32
+        """
+        return self._context.inner.calendar_between(from_date, to_date, overflow)
+
     def tibetan_year(self, year: int) -> "TibetanYear":
         """A Tibetan year's names (`calendars/tibetan.md`): its rabjung
         cycle and place in it, 1 to 60, with the Indian cycle's name for
@@ -3556,6 +3597,60 @@ class AlmanacArea(_Area):
             lambda: other._through_provider(lambda: self._context.inner.almanac_disagreements(theirs, json.dumps(asked)))
         )
         return _disagreements_answer(answered)
+
+    def next(
+        self,
+        *,
+        after: float,
+        place: Observer,
+        utc_offset_seconds: int,
+        kind: Optional[str] = None,
+        rule: Optional[str] = None,
+        festivals: Optional[FestivalRequest] = None,
+        calendar: Optional[Calendar] = None,
+        limit_days: Optional[int] = None,
+    ) -> "NextOccurrence":
+        """**The next day a rule or a kind of day falls on** after an
+        instant at a place, with no year asked
+        (`03-design/next-occurrence.md`). The civil day holding `after`, a
+        UTC Julian day, counts. `kind` is `EKADASHI`, `PURNIMA`, `AMAVASYA`
+        or `SANKRANTI`, read by rules the SDK states; `rule` is a key of
+        `festivals`. The search looks `limit_days` ahead, 400 when left out
+        and at most 3660; nothing within it raises `LIMIT` on `limitDays`.
+
+        >>> # next = ctx.almanac.next(after=2461345.5, place=kathmandu,
+        >>> #     utc_offset_seconds=20700, kind="EKADASHI")
+        >>> # next.day, next.keys
+        """
+        asked: Dict[str, Any] = {
+            "after": after,
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+        }
+        if calendar is not None:
+            asked["calendar"] = calendar.key
+        if kind is not None:
+            asked["kind"] = kind
+        if rule is not None:
+            asked["rule"] = rule
+        record = _festivals_json(festivals)
+        if record is not None:
+            asked["festivals"] = json.loads(record)
+        if limit_days is not None:
+            asked["limitDays"] = limit_days
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_next(json.dumps(asked)))
+        envelope = json.loads(answered)
+        value = envelope["value"]
+        return NextOccurrence(
+            day=_serde_date(value["day"]),
+            keys=tuple(value["keys"]),
+            festivals=_festivals_answer(json.dumps({"value": value["festivals"], "provenance": envelope["provenance"]})),
+            from_date=_serde_date(value["from"]),
+            limit_days=int(value["limitDays"]),
+            searched_days=int(value["searchedDays"]),
+        )
 
     def published_reasons(
         self,
@@ -9032,6 +9127,30 @@ class FestivalAnswer:
 
     applied: Tuple[PublishedApplied, ...] = ()
     """The published sets laid over the answer, in order."""
+
+
+@dataclass(frozen=True)
+class NextOccurrence:
+    """The next day `almanac.next` found (`03-design/next-occurrence.md`)."""
+
+    day: CalendarDate
+    """The day, in the request's calendar."""
+
+    keys: Tuple[str, ...]
+    """The keys of the rules that fall on it."""
+
+    festivals: FestivalAnswer
+    """The festival reckoning's entries for those keys on that day, with
+    the provenance."""
+
+    from_date: CalendarDate
+    """The first day searched: the civil day holding the instant."""
+
+    limit_days: int
+    """The look-ahead limit, in days."""
+
+    searched_days: int
+    """The days reckoned until it was found."""
 
 
 @dataclass(frozen=True)

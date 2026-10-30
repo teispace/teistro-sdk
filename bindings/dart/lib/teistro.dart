@@ -694,6 +694,44 @@ final class CalendarArea extends _Area {
   bool isLeap(Calendar calendar, int year) =>
       _context._inner.calendarIsLeap(calendar, year) == 1;
 
+  /// The date [years], [months] and [days] after [date], in its own
+  /// calendar (`03-design/calendar-bikram-sambat.md` §11): the years and
+  /// months first, a day number the month lacks resolved by [overflow],
+  /// then the days. A Bikram Sambat month runs 29 to 32 days, so the 32nd
+  /// of Jestha plus a month is the 31st of a 31-day Ashadh under
+  /// [Overflow.constrain], the 1st of Shrawan under [Overflow.carry], and
+  /// refused under [Overflow.reject].
+  ///
+  /// ```dart
+  /// final on = sdk.calendar.add(Calendar.bikramSambat.date(2081, 2, 32), months: 1); // Ashadh 31
+  /// ```
+  CalendarDate add(
+    CalendarDate date, {
+    int years = 0,
+    int months = 0,
+    int days = 0,
+    Overflow overflow = Overflow.constrain,
+  }) => _context._inner.calendarAdd(date, years, months, days, overflow);
+
+  /// The years, months and days from [from] to [to], both in one calendar,
+  /// counted as an age is: the most whole months whose anniversary of
+  /// [from] is not past [to], then the days from it, so [add] of the span
+  /// gives [to]. One born on the 32nd of Jestha completes a year on the
+  /// 31st of a 31-day Jestha under [Overflow.constrain] (C803). Earlier
+  /// than [from], each part is negative or zero.
+  ///
+  /// ```dart
+  /// final age = sdk.calendar.between(
+  ///   Calendar.bikramSambat.date(2050, 2, 32),
+  ///   Calendar.bikramSambat.date(2082, 2, 31),
+  /// ); // 32 years
+  /// ```
+  DateSpan between(
+    CalendarDate from,
+    CalendarDate to, {
+    Overflow overflow = Overflow.constrain,
+  }) => _context._inner.calendarBetween(from, to, overflow);
+
   /// A Tibetan year's names (`calendars/tibetan.md`): its rabjung cycle
   /// and place in it, 1 to 60, with the Indian cycle's name for that place,
   /// and the element, gender and animal it is called by. [year] is the one
@@ -1698,6 +1736,93 @@ final class AlmanacArea extends _Area {
       () => _context._inner.almanacFestivalCalendar(asked),
     );
   }
+
+  /// **The next day a rule or a kind of day falls on** after an instant
+  /// at a place, with no year asked (`03-design/next-occurrence.md`). The
+  /// civil day holding [after], a UTC Julian day, counts. [kind] is
+  /// `EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, read by rules the
+  /// SDK states; [rule] is a key of [festivals]. The search looks
+  /// [limitDays] ahead, 400 when left out and at most 3660; nothing within
+  /// it throws `LIMIT` on `limitDays`.
+  ///
+  /// ```dart
+  /// final next = sdk.almanac.next(
+  ///   after: 2461345.5, place: kathmandu, utcOffsetSeconds: 20700,
+  ///   kind: 'EKADASHI',
+  /// );
+  /// print('${next.keys.first} on ${next.day}');
+  /// ```
+  NextOccurrence next({
+    required double after,
+    required Observer place,
+    required int utcOffsetSeconds,
+    String? kind,
+    String? rule,
+    FestivalRequest? festivals,
+    Calendar? calendar,
+    int? limitDays,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'after': after,
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      if (calendar != null) 'calendar': calendar.key,
+      if (kind != null) 'kind': kind,
+      if (rule != null) 'rule': rule,
+      if (festivals != null) 'festivals': jsonDecode(festivals._json),
+      if (limitDays != null) 'limitDays': limitDays,
+    });
+    final envelope =
+        jsonDecode(_context._guarded(() => _context._inner.almanacNext(asked)))
+            as Map<String, Object?>;
+    final value = envelope['value']! as Map<String, Object?>;
+    return NextOccurrence(
+      day: _serdeDate(value['day']! as Map<String, Object?>),
+      keys: List.unmodifiable((value['keys']! as List<Object?>).cast<String>()),
+      festivals: _festivalAnswer(
+        jsonEncode({
+          'value': value['festivals'],
+          'provenance': envelope['provenance'],
+        }),
+      ),
+      from: _serdeDate(value['from']! as Map<String, Object?>),
+      limitDays: value['limitDays']! as int,
+      searchedDays: value['searchedDays']! as int,
+    );
+  }
+}
+
+/// The next day [AlmanacArea.next] found (`03-design/next-occurrence.md`).
+final class NextOccurrence {
+  const NextOccurrence({
+    required this.day,
+    required this.keys,
+    required this.festivals,
+    required this.from,
+    required this.limitDays,
+    required this.searchedDays,
+  });
+
+  /// The day, in the request's calendar.
+  final CalendarDate day;
+
+  /// The keys of the rules that fall on it.
+  final List<String> keys;
+
+  /// The festival reckoning's entries for those keys on that day, with
+  /// the provenance.
+  final FestivalAnswer festivals;
+
+  /// The first day searched: the civil day holding the instant.
+  final CalendarDate from;
+
+  /// The look-ahead limit, in days.
+  final int limitDays;
+
+  /// The days reckoned until it was found.
+  final int searchedDays;
 }
 
 /// `sdk.matching` — what matches without a chart: two names, star to star

@@ -123,6 +123,13 @@ put('fixed', fixed);
 put('weekday', ctx.calendar.weekdayOf(date));
 put('month-length', ctx.calendar.monthLength(Calendar.Gregorian, 2024, 2));
 put('is-leap', ctx.calendar.isLeap(Calendar.Gregorian, 2024));
+{
+  const jestha = { ...gregorian(2050, 2, 32), calendar: Calendar.BikramSambat };
+  const added = ctx.calendar.add(jestha, { years: 32 });
+  put('bs-add', `${added.year}-${added.month}-${added.day}`);
+  const age = ctx.calendar.between(jestha, added);
+  put('bs-between', `${age.years} ${age.months} ${age.days}`);
+}
 put('jd-of-fixed', julianDayOfFixed(fixed));
 const back = fixedOfJulianDay(2457126.75);
 put('fixed-of-jd', back.value);
@@ -2382,6 +2389,8 @@ for (const [path, member] of [
   ['calendar.weekday_of', shape.calendar.weekdayOf],
   ['calendar.month_length', shape.calendar.monthLength],
   ['calendar.is_leap', shape.calendar.isLeap],
+  ['calendar.add', shape.calendar.add],
+  ['calendar.between', shape.calendar.between],
   ['calendar.tibetan_year', shape.calendar.tibetanYear],
   ['time.resolve', shape.time.resolve],
   ['time.civil_of', shape.time.civilOf],
@@ -2416,6 +2425,7 @@ for (const [path, member] of [
   ['almanac.festivals', shape.almanac.festivals],
   ['almanac.disagreements', shape.almanac.disagreements],
   ['almanac.festival_calendar', shape.almanac.festivalCalendar],
+  ['almanac.next', shape.almanac.next],
   ['almanac.day', shape.almanac.day],
   ['almanac.pakshi', shape.almanac.pakshi],
   ['almanac.sankalpa', shape.almanac.sankalpa],

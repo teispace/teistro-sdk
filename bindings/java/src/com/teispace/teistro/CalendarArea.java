@@ -83,6 +83,50 @@ public final class CalendarArea {
     }
 
     /**
+     * The date {@code years}, {@code months} and {@code days} after {@code date}, in its own calendar
+     * ({@code 03-design/calendar-bikram-sambat.md} §11): the years and months first, a day number the
+     * month lacks resolved by {@code overflow}, then the days. A Bikram Sambat month runs 29 to 32 days,
+     * so the 32nd of Jestha plus a month is the 31st of a 31-day Ashadh under {@link Overflow#CONSTRAIN},
+     * the 1st of Shrawan under {@link Overflow#CARRY}, and refused under {@link Overflow#REJECT}.
+     *
+     * <pre>{@code
+     * CalendarDate on = sdk.calendar().add(Civil.date(Calendar.BIKRAM_SAMBAT, 2081, 2, 32), 0, 1, 0,
+     *         Overflow.CONSTRAIN); // Ashadh 31
+     * }</pre>
+     *
+     * @param date the date
+     * @param years the years to add, signed
+     * @param months the months to add, signed
+     * @param days the days to add, signed
+     * @param overflow how a day the month lacks is resolved
+     * @return the date reached
+     */
+    public CalendarDate add(CalendarDate date, int years, int months, int days, Overflow overflow) {
+        return context.locked((lib, raw) -> Calls.calendarAdd(lib, raw, date, years, months, days, overflow));
+    }
+
+    /**
+     * The years, months and days from {@code from} to {@code to}, both in one calendar, counted as an
+     * age is: the most whole months whose anniversary of {@code from} is not past {@code to}, then the
+     * days from it, so {@link #add} of the span gives {@code to}. One born on the 32nd of Jestha
+     * completes a year on the 31st of a 31-day Jestha under {@link Overflow#CONSTRAIN} (C803). Earlier
+     * than {@code from}, each part is negative or zero.
+     *
+     * <pre>{@code
+     * DateSpan age = sdk.calendar().between(Civil.date(Calendar.BIKRAM_SAMBAT, 2050, 2, 32),
+     *         Civil.date(Calendar.BIKRAM_SAMBAT, 2082, 2, 31), Overflow.CONSTRAIN); // 32 years
+     * }</pre>
+     *
+     * @param from the first date
+     * @param to the last date
+     * @param overflow how an anniversary on a day its month lacks is resolved
+     * @return the span
+     */
+    public DateSpan between(CalendarDate from, CalendarDate to, Overflow overflow) {
+        return context.locked((lib, raw) -> Calls.calendarBetween(lib, raw, from, to, overflow));
+    }
+
+    /**
      * A Tibetan year's names ({@code calendars/tibetan.md}): its rabjung cycle and place in it, 1 to 60,
      * with the Indian cycle's name for that place, and the element, gender and animal it is called by.
      *
