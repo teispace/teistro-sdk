@@ -132,6 +132,11 @@ required-features = ["full"]
 name = "ranges"
 required-features = ["full"]
 
+# The first wave's calls and each of their refusals.
+[[test]]
+name = "dates_words_next"
+required-features = ["full"]
+
 [[test]]
 name = "description"
 required-features = ["full"]
