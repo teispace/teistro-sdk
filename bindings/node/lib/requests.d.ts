@@ -125,6 +125,37 @@ export interface FirstYearQuery {
 /**
  * The request as a binding writes it.
  */
+export interface NextRequest {
+  /**
+   * The instant, a UTC Julian day.
+   */
+  readonly after: number;
+  readonly altitudeM?: number;
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  /**
+   * The festivals, as a festival request, with `rule`.
+   */
+  readonly festivals?: FestivalRequest | null;
+  /**
+   * A kind of day; or `rule`, not both.
+   */
+  readonly kind?: NextKind | null;
+  readonly latitudeDeg: number;
+  /**
+   * 1 to 3660; 400 when left out.
+   */
+  readonly limitDays?: number | null;
+  readonly longitudeDeg: number;
+  /**
+   * A rule's key in `festivals`; or `kind`, not both.
+   */
+  readonly rule?: string | null;
+  readonly utcOffsetSeconds: number;
+}
+
+/**
+ * The request as a binding writes it.
+ */
 export interface PakshiRequest {
   readonly altitudeM?: number;
   readonly calendar?: Member<catalogue.Calendar> | null;
@@ -183,6 +214,28 @@ export interface SankalpaRequest {
    * The offset from UTC the place's civil days run at, in seconds, east positive.
    */
   readonly utcOffsetSeconds: number;
+}
+
+/**
+ * An add request as a binding writes it.
+ */
+export interface AddAsked {
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  readonly date: DayAsked;
+  readonly days?: number;
+  readonly months?: number;
+  readonly overflow?: catalogue.Overflow;
+  readonly years?: number;
+}
+
+/**
+ * A difference request as a binding writes it.
+ */
+export interface BetweenAsked {
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  readonly from: DayAsked;
+  readonly overflow?: catalogue.Overflow;
+  readonly to: DayAsked;
 }
 
 /**
@@ -643,6 +696,16 @@ export interface FirstYearRequest {
    */
   readonly window?: Window | null;
 }
+
+/**
+ * A kind of day a search may ask for without naming a pack, each read by rules the SDK states (`03-design/next-occurrence.md` §2).
+ *
+ * `EKADASHI`: An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules ([`EkadashiRule::dharmasindhu`]); the earlier when they part.
+ * `PURNIMA`: The day whose sunrise holds the full moon, or the day an unrisen one falls in, every month (C197).
+ * `AMAVASYA`: The same, for the new moon.
+ * `SANKRANTI`: The first day of a Bikram Sambat month, the day the Sun enters its sign under the punya convention (C619), as Nepal's national panchanga prints the twelve sankrantis.
+ */
+export type NextKind = 'EKADASHI' | 'PURNIMA' | 'AMAVASYA' | 'SANKRANTI';
 
 /**
  * Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha` with an optional `rule`.

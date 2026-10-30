@@ -7006,6 +7006,32 @@
       "source": "crates/ffi/src/calendar.rs"
     },
     {
+      "name": "TsOverflow",
+      "doc": "What a day number the target month lacks resolves to, when a date is\nmoved by months or a difference counts from such a day\n(`03-design/calendar-bikram-sambat.md` §11): Temporal's `constrain`\nand `reject`, and java.time's lenient carry.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Constrain",
+          "value": 0,
+          "doc": "The month's last day: the 32nd of Jestha plus a month is the 31st\nof a 31-day Ashadh.",
+          "key": "CONSTRAIN"
+        },
+        {
+          "name": "Carry",
+          "value": 1,
+          "doc": "The days past the month's end carried into the next month: the\n1st of Shrawan.",
+          "key": "CARRY"
+        },
+        {
+          "name": "Reject",
+          "value": 2,
+          "doc": "Refused, `INVALID_ARG` with `NONEXISTENT_DATE` naming `day`.",
+          "key": "REJECT"
+        }
+      ],
+      "source": "crates/ffi/src/calendar.rs"
+    },
+    {
       "name": "TsDayPart",
       "doc": "Which arc of its day an instant falls in.",
       "repr": "u8",
@@ -12372,6 +12398,57 @@
       "source": "crates/ffi/src/frame.rs"
     },
     {
+      "name": "TsDateSpan",
+      "doc": "Years, months and days, each signed: the difference of two dates.",
+      "role": "object",
+      "fields": [
+        {
+          "name": "struct_size",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
+          },
+          "doc": "`sizeof(ts_date_span)` as the caller compiled it.",
+          "meta": {}
+        },
+        {
+          "name": "years",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "doc": "Whole years.",
+          "meta": {
+            "example": "30"
+          }
+        },
+        {
+          "name": "months",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "doc": "Whole months, -11 to 11.",
+          "meta": {
+            "range": "[-11,11]",
+            "example": "0"
+          }
+        },
+        {
+          "name": "days",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "doc": "Days.",
+          "meta": {
+            "example": "1"
+          }
+        }
+      ],
+      "source": "crates/ffi/src/calendar.rs"
+    },
+    {
       "name": "TsCalendarDate",
       "doc": "A date in a calendar. Years are astronomical (1 BCE is 0); the era view\nis presentation only and is filled by the library, ignored on input.",
       "role": "object",
@@ -15048,6 +15125,174 @@
       "source": "crates/ffi/src/calendar.rs"
     },
     {
+      "name": "ts_calendar_add",
+      "doc": "The date `years`, `months` and `days` after `date`, in its own\ncalendar (`03-design/calendar-bikram-sambat.md` §11): the years and\nmonths first, a day number the month lacks resolved by `overflow`,\nthen the days, each count signed. A Bikram Sambat month runs 29 to 32\ndays, so the 32nd of Jestha plus a month is the 31st of a 31-day\nAshadh under `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and\n`INVALID_ARG` with `NONEXISTENT_DATE` naming `day` under `REJECT`. The\nISO week date and the Tibetan calendar, which number no twelve months,\nare `UNSUPPORTED`; a date past the calendar's span `OUT_OF_RANGE`.",
+      "safety": "`context` must be a live handle; `date` valid for a read; `out_date`\nvalid for a read of its `struct_size` and a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "date",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsCalendarDate"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
+          "meta": {}
+        },
+        {
+          "name": "years",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "role": "value",
+          "meta": {}
+        },
+        {
+          "name": "months",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "role": "value",
+          "meta": {
+            "example": "1"
+          }
+        },
+        {
+          "name": "days",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "i32"
+          },
+          "role": "value",
+          "meta": {}
+        },
+        {
+          "name": "overflow",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "role": "value",
+          "meta": {
+            "enum": "TsOverflow"
+          }
+        },
+        {
+          "name": "out_date",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsCalendarDate"
+            },
+            "mutable": true
+          },
+          "role": "struct_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/calendar.rs"
+    },
+    {
+      "name": "ts_calendar_between",
+      "doc": "The years, months and days from `from` to `to`, both in one calendar,\ncounted as an age is (`03-design/calendar-bikram-sambat.md` §11): the\nmost whole months whose anniversary of `from` is not past `to`, then\nthe days from it, so `ts_calendar_add` of the span to `from` under the\nsame `overflow` gives `to`. An anniversary on a day its month lacks is\nresolved by `overflow`: one born on the 32nd of Jestha completes a year\non the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh\nunder `CARRY`, and `REJECT` refuses a count from such a day (C803).\nBefore `from`, each part is negative or zero. Dates in two calendars\nare `INVALID_ARG`, naming `calendar`.",
+      "safety": "`context` must be a live handle; `from` and `to` valid for a read;\n`out_span` valid for a read of its `struct_size` and a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "from",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsCalendarDate"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
+          "meta": {}
+        },
+        {
+          "name": "to",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsCalendarDate"
+            },
+            "mutable": false
+          },
+          "role": "struct_in",
+          "meta": {}
+        },
+        {
+          "name": "overflow",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u8"
+          },
+          "role": "value",
+          "meta": {
+            "enum": "TsOverflow"
+          }
+        },
+        {
+          "name": "out_span",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsDateSpan"
+            },
+            "mutable": true
+          },
+          "role": "struct_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/calendar.rs"
+    },
+    {
       "name": "ts_calendar_tibetan_year",
       "doc": "A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:\n`{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,\nthe rabjung cycle (the first began in 1027) and the year's place in\nit, 1 to 60, with the Indian cycle's name for that place, and the\nelement, gender and animal it is called by, every member a full key:\n2026 is the 40th of the 17th, `samvatsara.PARABHAVA`, Fire–male–Horse.\n`year` is the one a `TIBETAN_PHUGPA` date carries. A year outside 1027\nto 9998 is `OUT_OF_RANGE`, naming `year`.",
       "safety": "`context` must be a live handle; `out_json` valid for a write.",
@@ -16388,6 +16633,57 @@
         },
         {
           "name": "out_text",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "ts_almanac_next",
+      "doc": "The next day a festival rule or a kind of day falls on after an\ninstant at a place, with no year asked (`03-design/next-occurrence.md`),\nas canonical JSON `{value, provenance}`: `value` is `{day, keys,\nfestivals, from, limitDays, searchedDays}`, the day in the request's\ncalendar, the keys of the rules that fall on it, the festival\nreckoning's entries for them on that day, the first day searched (the\ncivil day holding the instant, which counts), the limit and the days\nreckoned, every catalogue member a full key.\n\n`request_json` is `{\"after\", \"latitudeDeg\", \"longitudeDeg\",\n\"altitudeM\", \"utcOffsetSeconds\", \"calendar\", \"kind\", \"rule\",\n\"festivals\", \"limitDays\"}`: `after` a UTC Julian day; either `kind`\n(`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules\nthe SDK states) or `rule`, a key of `festivals`, a festival request;\n`calendar` the answer's days' (Gregorian when left out), `altitudeM`\noptional and `limitDays` 1 to 3660, 400 when left out. A key it does\nnot read, neither or both of `kind` and `rule`, a rule the festivals\nlack, a place or offset out of range or a festival request its reader\nrefuses is `INVALID_ARG`, named under `next`; a limit out of range\n`OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;\na context without an ephemeris `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
           "ty": {
             "kind": "pointer",
             "to": {

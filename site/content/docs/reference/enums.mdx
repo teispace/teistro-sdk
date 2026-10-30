@@ -1598,6 +1598,16 @@ Which part of a date is the first of a repeated pair, in a calendar that repeats
 | `TS_LEAP_DAY` | 2 | The leap day, before the day whose number it repeats. |
 | `TS_LEAP_MONTH_AND_DAY` | 3 | The leap day of the leap month. |
 
+## ts_overflow
+
+What a day number the target month lacks resolves to, when a date is moved by months or a difference counts from such a day (`03-design/calendar-bikram-sambat.md` §11): Temporal's `constrain` and `reject`, and java.time's lenient carry.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_OVERFLOW_CONSTRAIN` | 0 | The month's last day: the 32nd of Jestha plus a month is the 31st of a 31-day Ashadh. |
+| `TS_OVERFLOW_CARRY` | 1 | The days past the month's end carried into the next month: the 1st of Shrawan. |
+| `TS_OVERFLOW_REJECT` | 2 | Refused, `INVALID_ARG` with `NONEXISTENT_DATE` naming `day`. |
+
 ## ts_day_part
 
 Which arc of its day an instant falls in.

@@ -117,6 +117,7 @@ from .catalogue import (
     Nature,
     NodeObstruction,
     NodeVedha,
+    Overflow,
     Paksha,
     Panchaka,
     Parity,
@@ -322,6 +323,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_context_options": 56,
     "ts_error": 56,
     "ts_frame": 16,
+    "ts_date_span": 16,
     "ts_calendar_date": 24,
     "ts_chart_request": 360,
     "ts_civil_time": 12,
@@ -352,6 +354,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_context_options": 32,
     "ts_error": 36,
     "ts_frame": 16,
+    "ts_date_span": 16,
     "ts_calendar_date": 24,
     "ts_chart_request": 208,
     "ts_civil_time": 12,
@@ -691,6 +694,20 @@ class _FrameStruct(ctypes.Structure):
         ("aberration", ctypes.c_uint8),
         ("deflection", ctypes.c_uint8),
         ("nutation", ctypes.c_uint8),
+    ]
+
+
+class _DateSpanStruct(ctypes.Structure):
+    """Years, months and days, each signed: the difference of two dates.
+
+    The C layout, field for field. `DateSpan` is the value class over it.
+    """
+
+    _fields_ = [
+        ("struct_size", ctypes.c_uint32),
+        ("years", ctypes.c_int32),
+        ("months", ctypes.c_int32),
+        ("days", ctypes.c_int32),
     ]
 
 
@@ -2166,6 +2183,58 @@ class Frame:
             aberration=raw.aberration != 0,
             deflection=raw.deflection != 0,
             nutation=raw.nutation != 0,
+        )
+
+
+@dataclass(frozen=True)
+class DateSpan:
+    """Years, months and days, each signed: the difference of two dates."""
+
+    years: int
+    """Whole years.
+    Example: 30.
+    """
+
+    months: int
+    """Whole months, -11 to 11.
+    Range: [-11,11]. Example: 0.
+    """
+
+    days: int
+    """Days.
+    Example: 1.
+    """
+
+    def _into(self, raw: _DateSpanStruct, owned: list[Any]) -> None:
+        """Writes this value into a C struct, which may be one held inside
+        another rather than one of its own.
+
+        Anything the struct points at is appended to `owned`, which the
+        caller keeps alive until the call has returned.
+        """
+        raw.struct_size = ctypes.sizeof(_DateSpanStruct)
+        raw.years = _c_value(self.years)
+        raw.months = _c_value(self.months)
+        raw.days = _c_value(self.days)
+
+    def _to_c(self, owned: list[Any]) -> _DateSpanStruct:
+        """This value as a fresh C struct, ready to be passed by pointer."""
+        raw = _DateSpanStruct()
+        self._into(raw, owned)
+        return raw
+
+    @classmethod
+    def _empty(cls) -> DateSpan:
+        """The zero value, for a nested struct a caller left out."""
+        return cls._of(_DateSpanStruct())
+
+    @classmethod
+    def _of(cls, raw: _DateSpanStruct) -> DateSpan:
+        """The value the library wrote into a C struct."""
+        return cls(
+            years=raw.years,
+            months=raw.months,
+            days=raw.days,
         )
 
 
@@ -4007,6 +4076,26 @@ class TeistroLibrary:
             ctypes.POINTER(ctypes.c_uint8),
         ]
         self.ts_calendar_weekday.restype = ctypes.c_int32
+        self.ts_calendar_add: Any = library.ts_calendar_add
+        self.ts_calendar_add.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_CalendarDateStruct),
+            ctypes.c_int32,
+            ctypes.c_int32,
+            ctypes.c_int32,
+            ctypes.c_uint8,
+            ctypes.POINTER(_CalendarDateStruct),
+        ]
+        self.ts_calendar_add.restype = ctypes.c_int32
+        self.ts_calendar_between: Any = library.ts_calendar_between
+        self.ts_calendar_between.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_CalendarDateStruct),
+            ctypes.POINTER(_CalendarDateStruct),
+            ctypes.c_uint8,
+            ctypes.POINTER(_DateSpanStruct),
+        ]
+        self.ts_calendar_between.restype = ctypes.c_int32
         self.ts_calendar_tibetan_year: Any = library.ts_calendar_tibetan_year
         self.ts_calendar_tibetan_year.argtypes = [
             ctypes.POINTER(_Context),
@@ -4189,6 +4278,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_festival_calendar.restype = ctypes.c_int32
+        self.ts_almanac_next: Any = library.ts_almanac_next
+        self.ts_almanac_next.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_next.restype = ctypes.c_int32
         self.ts_naam_milan: Any = library.ts_naam_milan
         self.ts_naam_milan.argtypes = [
             ctypes.POINTER(_Context),
@@ -4642,6 +4738,68 @@ class TeistroContext:
             owned.clear()
             weekday = _out_weekday.value
             return weekday
+
+    def calendar_add(self, date: CalendarDate, years: int, months: int, days: int, overflow: Overflow) -> CalendarDate:
+        """The date `years`, `months` and `days` after `date`, in its own
+        calendar (`03-design/calendar-bikram-sambat.md` §11): the years and
+        months first, a day number the month lacks resolved by `overflow`,
+        then the days, each count signed. A Bikram Sambat month runs 29 to 32
+        days, so the 32nd of Jestha plus a month is the 31st of a 31-day
+        Ashadh under `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and
+        `INVALID_ARG` with `NONEXISTENT_DATE` naming `day` under `REJECT`. The
+        ISO week date and the Tibetan calendar, which number no twelve months,
+        are `UNSUPPORTED`; a date past the calendar's span `OUT_OF_RANGE`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _date = date._to_c(owned)
+            _out_date = _CalendarDateStruct()
+            _out_date.struct_size = ctypes.sizeof(_CalendarDateStruct)
+            status = Status(self._lib.ts_calendar_add(
+                self._raw,
+                ctypes.byref(_date),
+                _c_value(years),
+                _c_value(months),
+                _c_value(days),
+                _c_value(overflow),
+                ctypes.byref(_out_date),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            date = CalendarDate._of(_out_date)
+            return date
+
+    def calendar_between(self, from_: CalendarDate, to: CalendarDate, overflow: Overflow) -> DateSpan:
+        """The years, months and days from `from` to `to`, both in one calendar,
+        counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the
+        most whole months whose anniversary of `from` is not past `to`, then
+        the days from it, so `ts_calendar_add` of the span to `from` under the
+        same `overflow` gives `to`. An anniversary on a day its month lacks is
+        resolved by `overflow`: one born on the 32nd of Jestha completes a year
+        on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
+        under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+        Before `from`, each part is negative or zero. Dates in two calendars
+        are `INVALID_ARG`, naming `calendar`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _from_ = from_._to_c(owned)
+            _to = to._to_c(owned)
+            _out_span = _DateSpanStruct()
+            _out_span.struct_size = ctypes.sizeof(_DateSpanStruct)
+            status = Status(self._lib.ts_calendar_between(
+                self._raw,
+                ctypes.byref(_from_),
+                ctypes.byref(_to),
+                _c_value(overflow),
+                ctypes.byref(_out_span),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            span = DateSpan._of(_out_span)
+            return span
 
     def calendar_tibetan_year(self, year: int) -> str:
         """A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
@@ -5307,6 +5465,45 @@ class TeistroContext:
             owned.clear()
             text = _take_string(self._lib, _out_text)
             return text
+
+    def almanac_next(self, request_json: str) -> str:
+        """The next day a festival rule or a kind of day falls on after an
+        instant at a place, with no year asked (`03-design/next-occurrence.md`),
+        as canonical JSON `{value, provenance}`: `value` is `{day, keys,
+        festivals, from, limitDays, searchedDays}`, the day in the request's
+        calendar, the keys of the rules that fall on it, the festival
+        reckoning's entries for them on that day, the first day searched (the
+        civil day holding the instant, which counts), the limit and the days
+        reckoned, every catalogue member a full key.
+
+        `request_json` is `{"after", "latitudeDeg", "longitudeDeg",
+        "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule",
+        "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind`
+        (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules
+        the SDK states) or `rule`, a key of `festivals`, a festival request;
+        `calendar` the answer's days' (Gregorian when left out), `altitudeM`
+        optional and `limitDays` 1 to 3660, 400 when left out. A key it does
+        not read, neither or both of `kind` and `rule`, a rule the festivals
+        lack, a place or offset out of range or a festival request its reader
+        refuses is `INVALID_ARG`, named under `next`; a limit out of range
+        `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
+        a context without an ephemeris `CAPABILITY`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_next(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def naam_milan(self, request_json: str) -> bytes:
         """Matches two names star to star (naam milan) and answers with the

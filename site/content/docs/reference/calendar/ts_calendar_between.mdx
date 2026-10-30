@@ -1,0 +1,32 @@
+---
+title: ts_calendar_between
+description: "The years, months and days from `from` to `to`, both in one calendar, counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the most whole months whose anniversary of `from` is not past `to`, then the days from it, so `ts_calendar_add` of the span to `from` under the same `overflow` gives `to`."
+---
+
+The years, months and days from `from` to `to`, both in one calendar, counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the most whole months whose anniversary of `from` is not past `to`, then the days from it, so `ts_calendar_add` of the span to `from` under the same `overflow` gives `to`. An anniversary on a day its month lacks is resolved by `overflow`: one born on the 32nd of Jestha completes a year on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh under `CARRY`, and `REJECT` refuses a count from such a day (C803). Before `from`, each part is negative or zero. Dates in two calendars are `INVALID_ARG`, naming `calendar`.
+
+```c
+ts_status ts_calendar_between(const ts_context * context, const ts_calendar_date * from, const ts_calendar_date * to, uint8_t overflow, ts_date_span * out_span);
+```
+
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `from` | `const ts_calendar_date *` | a struct read | — |
+| `to` | `const ts_calendar_date *` | a struct read | — |
+| `overflow` | `uint8_t` | a value | One of `ts_overflow`. |
+| `out_span` | `ts_date_span *` | a struct written | — |
+
+## What it hands back
+
+`span`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `from` and `to` valid for a read; `out_span` valid for a read of its `struct_size` and a write.
+
+Declared in `crates/ffi/src/calendar.rs`.

@@ -1833,6 +1833,65 @@ public final class Native {
     }
 
     /**
+     * Years, months and days, each signed: the difference of two dates.
+     *
+     * The C layout of `ts_date_span`, field for field.
+     */
+    public static final class TsDateSpan {
+        private TsDateSpan() {}
+
+        /** The layout, padding included. */
+        public static final StructLayout LAYOUT = MemoryLayout.structLayout(
+            JAVA_INT.withName("struct_size"),
+            JAVA_INT.withName("years"),
+            JAVA_INT.withName("months"),
+            JAVA_INT.withName("days")
+        ).withName("ts_date_span");
+
+        /** The size the C compiler gives the struct. */
+        public static final long SIZE = 16;
+
+        /** The struct's alignment. */
+        public static final long ALIGN = 4;
+
+        /**
+         * The offset of `struct_size`. `sizeof(ts_date_span)` as the caller compiled it.
+         */
+        public static final long STRUCT_SIZE_OFFSET = 0;
+
+        /** The handle that reads and writes `struct_size`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle STRUCT_SIZE = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("struct_size"));
+
+        /**
+         * The offset of `years`. Whole years.
+         * Example: 30.
+         */
+        public static final long YEARS_OFFSET = 4;
+
+        /** The handle that reads and writes `years`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle YEARS = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("years"));
+
+        /**
+         * The offset of `months`. Whole months, -11 to 11.
+         * Range: [-11,11]. Example: 0.
+         */
+        public static final long MONTHS_OFFSET = 8;
+
+        /** The handle that reads and writes `months`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle MONTHS = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("months"));
+
+        /**
+         * The offset of `days`. Days.
+         * Example: 1.
+         */
+        public static final long DAYS_OFFSET = 12;
+
+        /** The handle that reads and writes `days`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle DAYS = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("days"));
+
+    }
+
+    /**
      * A date in a calendar. Years are astronomical (1 BCE is 0); the era view
      * is presentation only and is filled by the library, ignored on input.
      *
@@ -3809,6 +3868,7 @@ public final class Native {
         Map.entry("ts_context_options", TsContextOptions.LAYOUT),
         Map.entry("ts_error", TsError.LAYOUT),
         Map.entry("ts_frame", TsFrame.LAYOUT),
+        Map.entry("ts_date_span", TsDateSpan.LAYOUT),
         Map.entry("ts_calendar_date", TsCalendarDate.LAYOUT),
         Map.entry("ts_chart_request", TsChartRequest.LAYOUT),
         Map.entry("ts_civil_time", TsCivilTime.LAYOUT),
@@ -3840,6 +3900,7 @@ public final class Native {
         Map.entry("ts_context_options", TsContextOptions.SIZE),
         Map.entry("ts_error", TsError.SIZE),
         Map.entry("ts_frame", TsFrame.SIZE),
+        Map.entry("ts_date_span", TsDateSpan.SIZE),
         Map.entry("ts_calendar_date", TsCalendarDate.SIZE),
         Map.entry("ts_chart_request", TsChartRequest.SIZE),
         Map.entry("ts_civil_time", TsCivilTime.SIZE),
@@ -3944,6 +4005,8 @@ public final class Native {
         "ts_calendar_month_length",
         "ts_calendar_is_leap",
         "ts_calendar_weekday",
+        "ts_calendar_add",
+        "ts_calendar_between",
         "ts_calendar_tibetan_year",
         "ts_calendar_jd_of_fixed",
         "ts_calendar_fixed_of_jd",
@@ -3969,6 +4032,7 @@ public final class Native {
         "ts_almanac_ashauch",
         "ts_almanac_first_year",
         "ts_almanac_festival_calendar",
+        "ts_almanac_next",
         "ts_naam_milan",
         "ts_naming_syllables",
         "ts_naming_read",
@@ -4157,6 +4221,33 @@ public final class Native {
      * The weekday of a date as its ISO number: Monday is `1`, Sunday `7`.
      */
     public final MethodHandle ts_calendar_weekday;
+
+    /**
+     * The date `years`, `months` and `days` after `date`, in its own
+     * calendar (`03-design/calendar-bikram-sambat.md` §11): the years and
+     * months first, a day number the month lacks resolved by `overflow`,
+     * then the days, each count signed. A Bikram Sambat month runs 29 to 32
+     * days, so the 32nd of Jestha plus a month is the 31st of a 31-day
+     * Ashadh under `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and
+     * `INVALID_ARG` with `NONEXISTENT_DATE` naming `day` under `REJECT`. The
+     * ISO week date and the Tibetan calendar, which number no twelve months,
+     * are `UNSUPPORTED`; a date past the calendar's span `OUT_OF_RANGE`.
+     */
+    public final MethodHandle ts_calendar_add;
+
+    /**
+     * The years, months and days from `from` to `to`, both in one calendar,
+     * counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the
+     * most whole months whose anniversary of `from` is not past `to`, then
+     * the days from it, so `ts_calendar_add` of the span to `from` under the
+     * same `overflow` gives `to`. An anniversary on a day its month lacks is
+     * resolved by `overflow`: one born on the 32nd of Jestha completes a year
+     * on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
+     * under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+     * Before `from`, each part is negative or zero. Dates in two calendars
+     * are `INVALID_ARG`, naming `calendar`.
+     */
+    public final MethodHandle ts_calendar_between;
 
     /**
      * A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
@@ -4516,6 +4607,31 @@ public final class Native {
     public final MethodHandle ts_almanac_festival_calendar;
 
     /**
+     * The next day a festival rule or a kind of day falls on after an
+     * instant at a place, with no year asked (`03-design/next-occurrence.md`),
+     * as canonical JSON `{value, provenance}`: `value` is `{day, keys,
+     * festivals, from, limitDays, searchedDays}`, the day in the request's
+     * calendar, the keys of the rules that fall on it, the festival
+     * reckoning's entries for them on that day, the first day searched (the
+     * civil day holding the instant, which counts), the limit and the days
+     * reckoned, every catalogue member a full key.
+     *
+     * `request_json` is `{"after", "latitudeDeg", "longitudeDeg",
+     * "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule",
+     * "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind`
+     * (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules
+     * the SDK states) or `rule`, a key of `festivals`, a festival request;
+     * `calendar` the answer's days' (Gregorian when left out), `altitudeM`
+     * optional and `limitDays` 1 to 3660, 400 when left out. A key it does
+     * not read, neither or both of `kind` and `rule`, a rule the festivals
+     * lack, a place or offset out of range or a festival request its reader
+     * refuses is `INVALID_ARG`, named under `next`; a limit out of range
+     * `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
+     * a context without an ephemeris `CAPABILITY`.
+     */
+    public final MethodHandle ts_almanac_next;
+
+    /**
      * Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two
@@ -4847,6 +4963,8 @@ public final class Native {
         ts_calendar_month_length = linker.downcallHandle(symbols.find("ts_calendar_month_length").orElseThrow(() -> missing("ts_calendar_month_length")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_SHORT, JAVA_INT, JAVA_BYTE, ADDRESS));
         ts_calendar_is_leap = linker.downcallHandle(symbols.find("ts_calendar_is_leap").orElseThrow(() -> missing("ts_calendar_is_leap")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_SHORT, JAVA_INT, ADDRESS));
         ts_calendar_weekday = linker.downcallHandle(symbols.find("ts_calendar_weekday").orElseThrow(() -> missing("ts_calendar_weekday")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_calendar_add = linker.downcallHandle(symbols.find("ts_calendar_add").orElseThrow(() -> missing("ts_calendar_add")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_INT, JAVA_INT, JAVA_INT, JAVA_BYTE, ADDRESS));
+        ts_calendar_between = linker.downcallHandle(symbols.find("ts_calendar_between").orElseThrow(() -> missing("ts_calendar_between")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_BYTE, ADDRESS));
         ts_calendar_tibetan_year = linker.downcallHandle(symbols.find("ts_calendar_tibetan_year").orElseThrow(() -> missing("ts_calendar_tibetan_year")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_INT, ADDRESS));
         ts_calendar_jd_of_fixed = linker.downcallHandle(symbols.find("ts_calendar_jd_of_fixed").orElseThrow(() -> missing("ts_calendar_jd_of_fixed")), FunctionDescriptor.of(JAVA_DOUBLE, JAVA_LONG));
         ts_calendar_fixed_of_jd = linker.downcallHandle(symbols.find("ts_calendar_fixed_of_jd").orElseThrow(() -> missing("ts_calendar_fixed_of_jd")), FunctionDescriptor.of(JAVA_LONG, JAVA_DOUBLE, ADDRESS));
@@ -4872,6 +4990,7 @@ public final class Native {
         ts_almanac_ashauch = linker.downcallHandle(symbols.find("ts_almanac_ashauch").orElseThrow(() -> missing("ts_almanac_ashauch")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_first_year = linker.downcallHandle(symbols.find("ts_almanac_first_year").orElseThrow(() -> missing("ts_almanac_first_year")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_festival_calendar = linker.downcallHandle(symbols.find("ts_almanac_festival_calendar").orElseThrow(() -> missing("ts_almanac_festival_calendar")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_next = linker.downcallHandle(symbols.find("ts_almanac_next").orElseThrow(() -> missing("ts_almanac_next")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_syllables = linker.downcallHandle(symbols.find("ts_naming_syllables").orElseThrow(() -> missing("ts_naming_syllables")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_read = linker.downcallHandle(symbols.find("ts_naming_read").orElseThrow(() -> missing("ts_naming_read")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

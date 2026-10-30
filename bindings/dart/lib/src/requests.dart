@@ -243,6 +243,64 @@ final class FirstYearQuery extends _Request {
 }
 
 /// The request as a binding writes it.
+final class NextRequest extends _Request {
+  const NextRequest({
+    required this.after,
+    this.altitudeM = 0.0,
+    this.calendar,
+    this.festivals,
+    this.kind,
+    required this.latitudeDeg,
+    this.limitDays,
+    required this.longitudeDeg,
+    this.rule,
+    required this.utcOffsetSeconds,
+  });
+
+  /// The instant, a UTC Julian day.
+  final double after;
+
+  final double altitudeM;
+
+  final Calendar? calendar;
+
+  /// The festivals, as a festival request, with `rule`.
+  final FestivalRequest? festivals;
+
+  /// A kind of day; or `rule`, not both.
+  final NextKind? kind;
+
+  final double latitudeDeg;
+
+  /// 1 to 3660; 400 when left out.
+  final int? limitDays;
+
+  final double longitudeDeg;
+
+  /// A rule's key in `festivals`; or `kind`, not both.
+  final String? rule;
+
+  final int utcOffsetSeconds;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'after': after,
+    'altitudeM': altitudeM,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    if (festivals case final festivalsValue?) 'festivals': festivalsValue._wire,
+    if (kind case final kindValue?) 'kind': kindValue.key,
+    'latitudeDeg': latitudeDeg,
+    if (limitDays case final limitDaysValue?) 'limitDays': limitDaysValue,
+    'longitudeDeg': longitudeDeg,
+    if (rule case final ruleValue?) 'rule': ruleValue,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+
+  @override
+  List<Object?> get _fields => [after, altitudeM, calendar, festivals, kind, latitudeDeg, limitDays, longitudeDeg, rule, utcOffsetSeconds];
+}
+
+/// The request as a binding writes it.
 final class PakshiRequest extends _Request {
   const PakshiRequest({
     this.altitudeM = 0.0,
@@ -382,6 +440,72 @@ final class SankalpaRequest extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, longitudeDeg, utcOffsetSeconds];
+}
+
+/// An add request as a binding writes it.
+final class AddAsked extends _Request {
+  const AddAsked({
+    this.calendar,
+    required this.date,
+    this.days = 0,
+    this.months = 0,
+    this.overflow = Overflow.constrain,
+    this.years = 0,
+  });
+
+  final Calendar? calendar;
+
+  final DayAsked date;
+
+  final int days;
+
+  final int months;
+
+  final Overflow overflow;
+
+  final int years;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'date': date._wire,
+    'days': days,
+    'months': months,
+    'overflow': overflow.key,
+    'years': years,
+  };
+
+  @override
+  List<Object?> get _fields => [calendar, date, days, months, overflow, years];
+}
+
+/// A difference request as a binding writes it.
+final class BetweenAsked extends _Request {
+  const BetweenAsked({
+    this.calendar,
+    required this.from,
+    this.overflow = Overflow.constrain,
+    required this.to,
+  });
+
+  final Calendar? calendar;
+
+  final DayAsked from;
+
+  final Overflow overflow;
+
+  final DayAsked to;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'from': from._wire,
+    'overflow': overflow.key,
+    'to': to._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [calendar, from, overflow, to];
 }
 
 /// A calendar request as a binding writes it.
@@ -1201,6 +1325,24 @@ final class DayAsked extends _Request {
 
   @override
   List<Object?> get _fields => [day, month, year];
+}
+
+/// A kind of day a search may ask for without naming a pack, each read by rules the SDK states (`03-design/next-occurrence.md` §2).
+enum NextKind implements _Keyed {
+  /// An Ekadashi fast, by *Dharmasindhu*'s Smarta and Vaishnava rules ([`EkadashiRule::dharmasindhu`]); the earlier when they part.
+  ekadashi('EKADASHI'),
+  /// The day whose sunrise holds the full moon, or the day an unrisen one falls in, every month (C197).
+  purnima('PURNIMA'),
+  /// The same, for the new moon.
+  amavasya('AMAVASYA'),
+  /// The first day of a Bikram Sambat month, the day the Sun enters its sign under the punya convention (C619), as Nepal's national panchanga prints the twelve sankrantis.
+  sankranti('SANKRANTI');
+
+  const NextKind(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }
 
 /// Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha` with an optional `rule`.

@@ -3832,6 +3832,27 @@ class Leap(Member):
     """The leap day of the leap month."""
 
 
+class Overflow(Member):
+    """What a day number the target month lacks resolves to, when a date is
+    moved by months or a difference counts from such a day
+    (`03-design/calendar-bikram-sambat.md` §11): Temporal's `constrain`
+    and `reject`, and java.time's lenient carry.
+    """
+
+    CONSTRAIN = 0
+    """The month's last day: the 32nd of Jestha plus a month is the 31st
+    of a 31-day Ashadh.
+    """
+
+    CARRY = 1
+    """The days past the month's end carried into the next month: the
+    1st of Shrawan.
+    """
+
+    REJECT = 2
+    """Refused, `INVALID_ARG` with `NONEXISTENT_DATE` naming `day`."""
+
+
 class DayPart(Member):
     """Which arc of its day an instant falls in."""
 
@@ -6907,6 +6928,11 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "MONTH",
         2: "DAY",
         3: "MONTH_AND_DAY",
+    },
+    "Overflow": {
+        0: "CONSTRAIN",
+        1: "CARRY",
+        2: "REJECT",
     },
     "DayPart": {
         0: "DAYLIGHT",

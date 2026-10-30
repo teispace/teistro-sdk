@@ -185,7 +185,7 @@ fn requests() -> teistro_idl::records::Requests {
 /// name. Each is checked to have the enum's keys, and a request key set
 /// named like a boundary enum and not listed is refused, so the two never
 /// drift apart unseen.
-const REUSED_ENUMS: [&str; 14] = [
+const REUSED_ENUMS: [&str; 15] = [
     "Balance",
     "FortuneRule",
     "GocharFrom",
@@ -193,6 +193,7 @@ const REUSED_ENUMS: [&str; 14] = [
     "Leap",
     "LunarMonth",
     "MatchRole",
+    "Overflow",
     "PlaceReading",
     "Reckoning",
     "Saham",

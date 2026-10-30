@@ -1612,6 +1612,79 @@ pub unsafe extern "C" fn ts_almanac_festival_calendar(
     })
 }
 
+/// The next day a festival rule or a kind of day falls on after an
+/// instant at a place, with no year asked (`03-design/next-occurrence.md`),
+/// as canonical JSON `{value, provenance}`: `value` is `{day, keys,
+/// festivals, from, limitDays, searchedDays}`, the day in the request's
+/// calendar, the keys of the rules that fall on it, the festival
+/// reckoning's entries for them on that day, the first day searched (the
+/// civil day holding the instant, which counts), the limit and the days
+/// reckoned, every catalogue member a full key.
+///
+/// `request_json` is `{"after", "latitudeDeg", "longitudeDeg",
+/// "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule",
+/// "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind`
+/// (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules
+/// the SDK states) or `rule`, a key of `festivals`, a festival request;
+/// `calendar` the answer's days' (Gregorian when left out), `altitudeM`
+/// optional and `limitDays` 1 to 3660, 400 when left out. A key it does
+/// not read, neither or both of `kind` and `rule`, a rule the festivals
+/// lack, a place or offset out of range or a festival request its reader
+/// refuses is `INVALID_ARG`, named under `next`; a limit out of range
+/// `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
+/// a context without an ephemeris `CAPABILITY`.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, teistro::Ephemeris::SuryaSiddhanta)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_next;
+/// use teistro_ffi::string::TsString;
+///
+/// // From noon of 1 January 2026 at Kathmandu, the next Sankranti: Maghe
+/// // sankranti on 1 Magh 2082, 15 January 2026.
+/// let asked = c"{\"after\": 2461042.0, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"utcOffsetSeconds\": 20700, \"kind\": \"SANKRANTI\"}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// assert_eq!(unsafe { ts_almanac_next(&raw const ctx, asked.as_ptr(), &raw mut out) }, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// assert_eq!(answer["value"]["keys"][0], "MAKARA_SANKRANTI");
+/// assert_eq!((answer["value"]["day"]["month"].as_u64(), answer["value"]["day"]["day"].as_u64()), (Some(1), Some(15)));
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_almanac_next(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::NextRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().next_in_full(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {

@@ -4888,6 +4888,29 @@ typedef enum ts_leap {
 } ts_leap;
 
 /**
+ * What a day number the target month lacks resolves to, when a date is
+ * moved by months or a difference counts from such a day
+ * (`03-design/calendar-bikram-sambat.md` §11): Temporal's `constrain`
+ * and `reject`, and java.time's lenient carry.
+ */
+typedef enum ts_overflow {
+    /**
+     * The month's last day: the 32nd of Jestha plus a month is the 31st
+     * of a 31-day Ashadh.
+     */
+    TS_OVERFLOW_CONSTRAIN = 0,
+    /**
+     * The days past the month's end carried into the next month: the
+     * 1st of Shrawan.
+     */
+    TS_OVERFLOW_CARRY = 1,
+    /**
+     * Refused, `INVALID_ARG` with `NONEXISTENT_DATE` naming `day`.
+     */
+    TS_OVERFLOW_REJECT = 2,
+} ts_overflow;
+
+/**
  * Which arc of its day an instant falls in.
  */
 typedef enum ts_day_part {
@@ -7234,6 +7257,7 @@ typedef struct ts_blob ts_blob;
 typedef struct ts_context_options ts_context_options;
 typedef struct ts_error ts_error;
 typedef struct ts_frame ts_frame;
+typedef struct ts_date_span ts_date_span;
 typedef struct ts_calendar_date ts_calendar_date;
 typedef struct ts_chart_request ts_chart_request;
 typedef struct ts_civil_time ts_civil_time;
@@ -8067,6 +8091,32 @@ struct ts_frame {
      * Example: 1. Non-zero for true, zero for false.
      */
     uint8_t nutation;
+};
+
+/**
+ * Years, months and days, each signed: the difference of two dates.
+ * Set `struct_size` to `sizeof` before passing it; the library refuses a size it does not know.
+ */
+struct ts_date_span {
+    /**
+     * `sizeof(ts_date_span)` as the caller compiled it.
+     */
+    uint32_t struct_size;
+    /**
+     * Whole years.
+     * Example: 30.
+     */
+    int32_t years;
+    /**
+     * Whole months, -11 to 11.
+     * Range: [-11,11]. Example: 0.
+     */
+    int32_t months;
+    /**
+     * Days.
+     * Example: 1.
+     */
+    int32_t days;
 };
 
 /**
@@ -9458,6 +9508,37 @@ ts_status ts_calendar_is_leap(const ts_context * context, uint16_t calendar, int
 ts_status ts_calendar_weekday(const ts_context * context, const ts_calendar_date * date, uint8_t * out_weekday);
 
 /**
+ * The date `years`, `months` and `days` after `date`, in its own
+ * calendar (`03-design/calendar-bikram-sambat.md` §11): the years and
+ * months first, a day number the month lacks resolved by `overflow`,
+ * then the days, each count signed. A Bikram Sambat month runs 29 to 32
+ * days, so the 32nd of Jestha plus a month is the 31st of a 31-day
+ * Ashadh under `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and
+ * `INVALID_ARG` with `NONEXISTENT_DATE` naming `day` under `REJECT`. The
+ * ISO week date and the Tibetan calendar, which number no twelve months,
+ * are `UNSUPPORTED`; a date past the calendar's span `OUT_OF_RANGE`.
+ * Safety: `context` must be a live handle; `date` valid for a read; `out_date`
+ * valid for a read of its `struct_size` and a write.
+ */
+ts_status ts_calendar_add(const ts_context * context, const ts_calendar_date * date, int32_t years, int32_t months, int32_t days, uint8_t overflow, ts_calendar_date * out_date);
+
+/**
+ * The years, months and days from `from` to `to`, both in one calendar,
+ * counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the
+ * most whole months whose anniversary of `from` is not past `to`, then
+ * the days from it, so `ts_calendar_add` of the span to `from` under the
+ * same `overflow` gives `to`. An anniversary on a day its month lacks is
+ * resolved by `overflow`: one born on the 32nd of Jestha completes a year
+ * on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
+ * under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+ * Before `from`, each part is negative or zero. Dates in two calendars
+ * are `INVALID_ARG`, naming `calendar`.
+ * Safety: `context` must be a live handle; `from` and `to` valid for a read;
+ * `out_span` valid for a read of its `struct_size` and a write.
+ */
+ts_status ts_calendar_between(const ts_context * context, const ts_calendar_date * from, const ts_calendar_date * to, uint8_t overflow, ts_date_span * out_span);
+
+/**
  * A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
  * `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
  * the rabjung cycle (the first began in 1027) and the year's place in
@@ -9865,6 +9946,33 @@ ts_status ts_almanac_first_year(const ts_context * context, const char * request
 ts_status ts_almanac_festival_calendar(const ts_context * context, const char * request_json, ts_string * out_text);
 
 /**
+ * The next day a festival rule or a kind of day falls on after an
+ * instant at a place, with no year asked (`03-design/next-occurrence.md`),
+ * as canonical JSON `{value, provenance}`: `value` is `{day, keys,
+ * festivals, from, limitDays, searchedDays}`, the day in the request's
+ * calendar, the keys of the rules that fall on it, the festival
+ * reckoning's entries for them on that day, the first day searched (the
+ * civil day holding the instant, which counts), the limit and the days
+ * reckoned, every catalogue member a full key.
+ *
+ * `request_json` is `{"after", "latitudeDeg", "longitudeDeg",
+ * "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule",
+ * "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind`
+ * (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules
+ * the SDK states) or `rule`, a key of `festivals`, a festival request;
+ * `calendar` the answer's days' (Gregorian when left out), `altitudeM`
+ * optional and `limitDays` 1 to 3660, 400 when left out. A key it does
+ * not read, neither or both of `kind` and `rule`, a rule the festivals
+ * lack, a place or offset out of range or a festival request its reader
+ * refuses is `INVALID_ARG`, named under `next`; a limit out of range
+ * `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
+ * a context without an ephemeris `CAPABILITY`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_almanac_next(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
  * Matches two names star to star (naam milan) and answers with the
  * `naam` blob: each name's first syllable in the śatapada cakra, the
  * varga koota, and the Ashta Koota and the ten considerations of the two
@@ -10223,6 +10331,7 @@ _Static_assert(sizeof(ts_blob) == 24, "ts_blob is 24 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_context_options) == 56, "ts_context_options is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_date_span) == 16, "ts_date_span is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_chart_request) == 360, "ts_chart_request is 360 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");

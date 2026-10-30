@@ -6417,6 +6417,38 @@ export declare const Leap: {
 export declare const LeapById: ReadonlyMap<number, Leap>;
 
 /**
+ * What a day number the target month lacks resolves to, when a date is
+ * moved by months or a difference counts from such a day
+ * (`03-design/calendar-bikram-sambat.md` §11): Temporal's `constrain`
+ * and `reject`, and java.time's lenient carry.
+ */
+export type Overflow = 'CONSTRAIN' | 'CARRY' | 'REJECT';
+
+/** Every Overflow by name; the values are the strings the union accepts. */
+export declare const Overflow: {
+  /**
+   * The month's last day: the 32nd of Jestha plus a month is the 31st
+   * of a 31-day Ashadh.
+   */
+  readonly Constrain: 'CONSTRAIN';
+  /**
+   * The days past the month's end carried into the next month: the
+   * 1st of Shrawan.
+   */
+  readonly Carry: 'CARRY';
+  /**
+   * Refused, `INVALID_ARG` with `NONEXISTENT_DATE` naming `day`.
+   */
+  readonly Reject: 'REJECT';
+};
+
+/**
+ * Every Overflow by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const OverflowById: ReadonlyMap<number, Overflow>;
+
+/**
  * Which arc of its day an instant falls in.
  */
 export type DayPart = 'DAYLIGHT' | 'NIGHT';

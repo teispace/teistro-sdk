@@ -611,6 +611,28 @@ export interface Frame {
 }
 
 /**
+ * Years, months and days, each signed: the difference of two dates.
+ */
+export interface DateSpan {
+  /**
+   * Whole years.
+   * @example 30
+   */
+  readonly years: number;
+  /**
+   * Whole months, -11 to 11.
+   * @range [-11,11]
+   * @example 0
+   */
+  readonly months: number;
+  /**
+   * Days.
+   * @example 1
+   */
+  readonly days: number;
+}
+
+/**
  * A date in a calendar. Years are astronomical (1 BCE is 0); the era view
  * is presentation only and is filled by the library, ignored on input.
  */

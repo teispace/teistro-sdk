@@ -1798,6 +1798,66 @@ impl Frame {
     }
 }
 
+/// Years, months and days, each signed: the difference of two dates.
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct DateSpan {
+    /// Whole years.
+    /// Example: `30`.
+    pub years: i32,
+    /// Whole months, -11 to 11.
+    /// Range: `[-11,11]`. Example: `0`.
+    pub months: i32,
+    /// Days.
+    /// Example: `1`.
+    pub days: i32,
+}
+
+/// What a `DateSpan` lends the C struct built from it: the buffers its
+/// pointers point into, alive for as long as this value is.
+pub struct HeldDateSpan {
+    years: i32,
+    months: i32,
+    days: i32,
+}
+
+impl HeldDateSpan {
+    /// The C struct, borrowing this value's buffers.
+    pub fn as_c(&self) -> ffi::calendar::TsDateSpan {
+        ffi::calendar::TsDateSpan {
+            struct_size: core::mem::size_of::<ffi::calendar::TsDateSpan>() as u32,
+            years: self.years,
+            months: self.months,
+            days: self.days,
+        }
+    }
+}
+
+impl DateSpan {
+    /// The buffers and values the C struct is built from.
+    pub fn read(&self) -> Result<HeldDateSpan> {
+        Ok(HeldDateSpan {
+            years: self.years as i32,
+            months: self.months as i32,
+            days: self.days as i32,
+        })
+    }
+
+    /// The object a call filled.
+    ///
+    /// # Safety
+    ///
+    /// Every pointer in `raw` must be valid as the struct documents, for
+    /// the length of this call.
+    pub unsafe fn write(raw: &ffi::calendar::TsDateSpan) -> Self {
+        DateSpan {
+            years: raw.years as _,
+            months: raw.months as _,
+            days: raw.days as _,
+        }
+    }
+}
+
 /// A date in a calendar. Years are astronomical (1 BCE is 0); the era view
 /// is presentation only and is filled by the library, ignored on input.
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
@@ -4150,6 +4210,93 @@ impl Context {
         Ok(out_weekday as _)
     }
 
+    /// The date `years`, `months` and `days` after `date`, in its own
+    /// calendar (`03-design/calendar-bikram-sambat.md` §11): the years and
+    /// months first, a day number the month lacks resolved by `overflow`,
+    /// then the days, each count signed. A Bikram Sambat month runs 29 to 32
+    /// days, so the 32nd of Jestha plus a month is the 31st of a 31-day
+    /// Ashadh under `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and
+    /// `INVALID_ARG` with `NONEXISTENT_DATE` naming `day` under `REJECT`. The
+    /// ISO week date and the Tibetan calendar, which number no twelve months,
+    /// are `UNSUPPORTED`; a date past the calendar's span `OUT_OF_RANGE`.
+    #[wasm_bindgen(js_name = calendarAdd)]
+    pub fn calendar_add(
+        &self,
+        date: JsValue,
+        years: i32,
+        months: i32,
+        days: i32,
+        overflow: String,
+    ) -> Result<JsValue> {
+        let date: CalendarDate = from_js(date)?;
+        let held_date = date.read()?;
+        let raw_date = held_date.as_c();
+        let date = &raw const raw_date;
+        let overflow = overflow_from_str(&overflow)? as u8;
+        // SAFETY: every field is a plain integer, float or pointer, so
+        // all-zero is a valid value; a size, where the struct has one, is set
+        // before the call reads it.
+        let mut out_date: ffi::calendar::TsCalendarDate = unsafe { core::mem::zeroed() };
+        out_date.struct_size = core::mem::size_of::<ffi::calendar::TsCalendarDate>() as u32;
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::calendar::ts_calendar_add(
+                self.handle,
+                date,
+                years as i32,
+                months as i32,
+                days as i32,
+                overflow,
+                &raw mut out_date,
+            )
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(to_js(&unsafe { CalendarDate::write(&out_date) })?)
+    }
+
+    /// The years, months and days from `from` to `to`, both in one calendar,
+    /// counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the
+    /// most whole months whose anniversary of `from` is not past `to`, then
+    /// the days from it, so `ts_calendar_add` of the span to `from` under the
+    /// same `overflow` gives `to`. An anniversary on a day its month lacks is
+    /// resolved by `overflow`: one born on the 32nd of Jestha completes a year
+    /// on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
+    /// under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+    /// Before `from`, each part is negative or zero. Dates in two calendars
+    /// are `INVALID_ARG`, naming `calendar`.
+    #[wasm_bindgen(js_name = calendarBetween)]
+    pub fn calendar_between(
+        &self,
+        from: JsValue,
+        to: JsValue,
+        overflow: String,
+    ) -> Result<JsValue> {
+        let from: CalendarDate = from_js(from)?;
+        let held_from = from.read()?;
+        let raw_from = held_from.as_c();
+        let from = &raw const raw_from;
+        let to: CalendarDate = from_js(to)?;
+        let held_to = to.read()?;
+        let raw_to = held_to.as_c();
+        let to = &raw const raw_to;
+        let overflow = overflow_from_str(&overflow)? as u8;
+        // SAFETY: every field is a plain integer, float or pointer, so
+        // all-zero is a valid value; a size, where the struct has one, is set
+        // before the call reads it.
+        let mut out_span: ffi::calendar::TsDateSpan = unsafe { core::mem::zeroed() };
+        out_span.struct_size = core::mem::size_of::<ffi::calendar::TsDateSpan>() as u32;
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::calendar::ts_calendar_between(self.handle, from, to, overflow, &raw mut out_span)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(to_js(&unsafe { DateSpan::write(&out_span) })?)
+    }
+
     /// A Tibetan year's names (`calendars/tibetan.md`), as canonical JSON:
     /// `{year, rabjung, yearInRabjung, samvatsara, element, gender, animal}`,
     /// the rabjung cycle (the first began in 1027) and the year's place in
@@ -4835,6 +4982,42 @@ impl Context {
         self.leave()?;
         self.check(status)?;
         Ok(take_string(&mut out_text))
+    }
+
+    /// The next day a festival rule or a kind of day falls on after an
+    /// instant at a place, with no year asked (`03-design/next-occurrence.md`),
+    /// as canonical JSON `{value, provenance}`: `value` is `{day, keys,
+    /// festivals, from, limitDays, searchedDays}`, the day in the request's
+    /// calendar, the keys of the rules that fall on it, the festival
+    /// reckoning's entries for them on that day, the first day searched (the
+    /// civil day holding the instant, which counts), the limit and the days
+    /// reckoned, every catalogue member a full key.
+    ///
+    /// `request_json` is `{"after", "latitudeDeg", "longitudeDeg",
+    /// "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule",
+    /// "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind`
+    /// (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules
+    /// the SDK states) or `rule`, a key of `festivals`, a festival request;
+    /// `calendar` the answer's days' (Gregorian when left out), `altitudeM`
+    /// optional and `limitDays` 1 to 3660, 400 when left out. A key it does
+    /// not read, neither or both of `kind` and `rule`, a rule the festivals
+    /// lack, a place or offset out of range or a festival request its reader
+    /// refuses is `INVALID_ARG`, named under `next`; a limit out of range
+    /// `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
+    /// a context without an ephemeris `CAPABILITY`.
+    #[wasm_bindgen(js_name = almanacNext)]
+    pub fn almanac_next(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_next(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
     }
 
     /// Matches two names star to star (naam milan) and answers with the

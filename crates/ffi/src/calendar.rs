@@ -8,6 +8,7 @@
     reason = "the C boundary: every block carries a SAFETY comment"
 )]
 
+use teistro_calendar::arithmetic::{DateSpan, Overflow};
 use teistro_calendar::{CalendarDate, CalendarSystem, EraNumber, FixedDay, Leap, shipped};
 use teistro_core::Status;
 use teistro_core::catalogue::{Calendar, Catalogued, Era};
@@ -120,6 +121,106 @@ impl TsLeap {
                 "a date's leap is 1 (the month), 2 (the day), 3 (both) or 0xFF (neither), not {other}"
             ))
             .with_field("leap")),
+        }
+    }
+}
+
+/// What a day number the target month lacks resolves to, when a date is
+/// moved by months or a difference counts from such a day
+/// (`03-design/calendar-bikram-sambat.md` §11): Temporal's `constrain`
+/// and `reject`, and java.time's lenient carry.
+///
+/// ```
+/// use teistro_ffi::calendar::TsOverflow;
+///
+/// // A member crosses the boundary as its number: `Constrain` is 0, `Reject` 2.
+/// assert_eq!((TsOverflow::Constrain as u8, TsOverflow::Reject as u8), (0, 2));
+/// ```
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsOverflow {
+    /// The month's last day: the 32nd of Jestha plus a month is the 31st
+    /// of a 31-day Ashadh.
+    Constrain = 0,
+    /// The days past the month's end carried into the next month: the
+    /// 1st of Shrawan.
+    Carry = 1,
+    /// Refused, `INVALID_ARG` with `NONEXISTENT_DATE` naming `day`.
+    Reject = 2,
+}
+
+impl TsOverflow {
+    /// The rule a byte names.
+    ///
+    /// ```
+    /// use teistro_calendar::arithmetic::Overflow;
+    /// use teistro_core::Status;
+    /// use teistro_ffi::calendar::TsOverflow;
+    ///
+    /// assert_eq!(TsOverflow::read(1)?, Overflow::Carry);
+    /// assert_eq!(TsOverflow::read(3).map_err(|error| error.status), Err(Status::InvalidArg));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` naming `overflow` for a byte that is no rule.
+    pub fn read(byte: u8) -> Result<Overflow, Error> {
+        Overflow::ALL
+            .get(usize::from(byte))
+            .copied()
+            .ok_or_else(|| {
+                Error::invalid_arg(format!(
+                    "`overflow` is {byte}; the rules are CONSTRAIN=0, CARRY=1, REJECT=2"
+                ))
+                .with_field("overflow")
+            })
+    }
+}
+
+/// Years, months and days, each signed: the difference of two dates.
+///
+/// ```
+/// use teistro_calendar::arithmetic::DateSpan;
+/// use teistro_ffi::calendar::TsDateSpan;
+///
+/// let span = TsDateSpan::of(DateSpan::new(30, 1, -2));
+/// assert_eq!((span.years, span.months, span.days), (30, 1, -2));
+/// ```
+#[repr(C)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct TsDateSpan {
+    /// `sizeof(ts_date_span)` as the caller compiled it.
+    pub struct_size: u32,
+    /// Whole years.
+    /// `api: example=30`
+    pub years: i32,
+    /// Whole months, -11 to 11.
+    /// `api: range=[-11,11] example=0`
+    pub months: i32,
+    /// Days.
+    /// `api: example=1`
+    pub days: i32,
+}
+
+c_struct!(TsDateSpan);
+
+impl TsDateSpan {
+    /// The boundary form of a span.
+    ///
+    /// ```
+    /// use teistro_calendar::arithmetic::DateSpan;
+    /// use teistro_ffi::calendar::TsDateSpan;
+    ///
+    /// assert_eq!(TsDateSpan::of(DateSpan::days(3)).struct_size, 0);
+    /// ```
+    #[must_use]
+    pub const fn of(span: DateSpan) -> TsDateSpan {
+        TsDateSpan {
+            struct_size: 0,
+            years: span.years,
+            months: span.months,
+            days: span.days,
         }
     }
 }
@@ -558,6 +659,130 @@ pub unsafe extern "C" fn ts_calendar_weekday(
         let weekday = system_of(date.calendar.id())?.weekday(&date)?;
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_weekday, "out_weekday", weekday.iso_number()) }
+    })
+}
+
+/// The date `years`, `months` and `days` after `date`, in its own
+/// calendar (`03-design/calendar-bikram-sambat.md` §11): the years and
+/// months first, a day number the month lacks resolved by `overflow`,
+/// then the days, each count signed. A Bikram Sambat month runs 29 to 32
+/// days, so the 32nd of Jestha plus a month is the 31st of a 31-day
+/// Ashadh under `CONSTRAIN`, the 1st of Shrawan under `CARRY`, and
+/// `INVALID_ARG` with `NONEXISTENT_DATE` naming `day` under `REJECT`. The
+/// ISO week date and the Tibetan calendar, which number no twelve months,
+/// are `UNSUPPORTED`; a date past the calendar's span `OUT_OF_RANGE`.
+///
+/// `api: overflow: enum=TsOverflow`
+/// `api: months: example=1`
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::{Calendar, Catalogued};
+/// # use teistro_ffi::calendar::TsCalendarDate;
+/// #
+/// # let sized = |date: CalendarDate| -> Result<TsCalendarDate, core::num::TryFromIntError> {
+/// #     Ok(TsCalendarDate { struct_size: u32::try_from(size_of::<TsCalendarDate>())?, ..TsCalendarDate::of(&date) })
+/// # };
+/// use teistro_core::Status;
+/// use teistro_ffi::calendar::{TsOverflow, ts_calendar_add};
+///
+/// // Jestha 2081 has 32 days and Ashadh 31.
+/// let jestha_32 = sized(CalendarDate::defined(Calendar::BikramSambat, 2081, 2, 32))?;
+/// let mut on = sized(CalendarDate::defined(Calendar::Gregorian, 1, 1, 1))?;
+/// // SAFETY: a live context and two sized dates.
+/// let status = unsafe { ts_calendar_add(&raw const ctx, &raw const jestha_32, 0, 1, 0, TsOverflow::Constrain as u8, &raw mut on) };
+/// assert_eq!(status, Status::Ok);
+/// assert_eq!((on.year, on.month, on.day), (2081, 3, 31));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `date` valid for a read; `out_date`
+/// valid for a read of its `struct_size` and a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_calendar_add(
+    context: *const TsContext,
+    date: *const TsCalendarDate,
+    years: i32,
+    months: i32,
+    days: i32,
+    overflow: u8,
+    out_date: *mut TsCalendarDate,
+) -> Status {
+    with_context(context, |ctx| {
+        let overflow = TsOverflow::read(overflow)?;
+        // SAFETY: the entry point's contract.
+        let date = unsafe { read_in(date, "date") }?.to_date()?;
+        let span = DateSpan::new(years, months, days);
+        let moved = ctx.sdk().calendar().add(&date, span, overflow)?;
+        // SAFETY: the entry point's contract.
+        unsafe { write_out(out_date, "out_date", TsCalendarDate::of(&moved)) }
+    })
+}
+
+/// The years, months and days from `from` to `to`, both in one calendar,
+/// counted as an age is (`03-design/calendar-bikram-sambat.md` §11): the
+/// most whole months whose anniversary of `from` is not past `to`, then
+/// the days from it, so `ts_calendar_add` of the span to `from` under the
+/// same `overflow` gives `to`. An anniversary on a day its month lacks is
+/// resolved by `overflow`: one born on the 32nd of Jestha completes a year
+/// on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
+/// under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+/// Before `from`, each part is negative or zero. Dates in two calendars
+/// are `INVALID_ARG`, naming `calendar`.
+///
+/// `api: overflow: enum=TsOverflow`
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # use teistro_calendar::CalendarDate;
+/// # use teistro_core::catalogue::{Calendar, Catalogued};
+/// # use teistro_ffi::calendar::TsCalendarDate;
+/// #
+/// # let sized = |date: CalendarDate| -> Result<TsCalendarDate, core::num::TryFromIntError> {
+/// #     Ok(TsCalendarDate { struct_size: u32::try_from(size_of::<TsCalendarDate>())?, ..TsCalendarDate::of(&date) })
+/// # };
+/// use teistro_core::Status;
+/// use teistro_ffi::calendar::{TsDateSpan, TsOverflow, ts_calendar_between};
+///
+/// let born = sized(CalendarDate::defined(Calendar::BikramSambat, 2050, 2, 32))?;
+/// let birthday = sized(CalendarDate::defined(Calendar::BikramSambat, 2082, 2, 31))?;
+/// let mut age = TsDateSpan { struct_size: u32::try_from(size_of::<TsDateSpan>())?, years: 0, months: 0, days: 0 };
+/// // SAFETY: a live context, two sized dates and a sized span.
+/// let status = unsafe { ts_calendar_between(&raw const ctx, &raw const born, &raw const birthday, TsOverflow::Constrain as u8, &raw mut age) };
+/// assert_eq!(status, Status::Ok);
+/// // Jestha 2082 has 31 days, so its last is the birthday.
+/// assert_eq!((age.years, age.months, age.days), (32, 0, 0));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `from` and `to` valid for a read;
+/// `out_span` valid for a read of its `struct_size` and a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_calendar_between(
+    context: *const TsContext,
+    from: *const TsCalendarDate,
+    to: *const TsCalendarDate,
+    overflow: u8,
+    out_span: *mut TsDateSpan,
+) -> Status {
+    with_context(context, |ctx| {
+        let overflow = TsOverflow::read(overflow)?;
+        // SAFETY: the entry point's contract.
+        let from = unsafe { read_in(from, "from") }?.to_date()?;
+        // SAFETY: the entry point's contract.
+        let to = unsafe { read_in(to, "to") }?.to_date()?;
+        let span = ctx.sdk().calendar().between(&from, &to, overflow)?;
+        // SAFETY: the entry point's contract.
+        unsafe { write_out(out_span, "out_span", TsDateSpan::of(span)) }
     })
 }
 

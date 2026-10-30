@@ -1,0 +1,32 @@
+---
+title: ts_almanac_next
+description: "The next day a festival rule or a kind of day falls on after an instant at a place, with no year asked (`03-design/next-occurrence.md`), as canonical JSON `{value, provenance}`: `value` is `{day, keys, festivals, from, limitDays, searchedDays}`, the day in the request's calendar, the keys of the rules that fall on it, the festival reckoning's entries for them on that day, the first day searched (the civil day holding the instant, which counts), the limit and the days reckoned, every catalogue member a full key."
+---
+
+The next day a festival rule or a kind of day falls on after an instant at a place, with no year asked (`03-design/next-occurrence.md`), as canonical JSON `{value, provenance}`: `value` is `{day, keys, festivals, from, limitDays, searchedDays}`, the day in the request's calendar, the keys of the rules that fall on it, the festival reckoning's entries for them on that day, the first day searched (the civil day holding the instant, which counts), the limit and the days reckoned, every catalogue member a full key.
+
+`request_json` is `{"after", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule", "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind` (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules the SDK states) or `rule`, a key of `festivals`, a festival request; `calendar` the answer's days' (Gregorian when left out), `altitudeM` optional and `limitDays` 1 to 3660, 400 when left out. A key it does not read, neither or both of `kind` and `rule`, a rule the festivals lack, a place or offset out of range or a festival request its reader refuses is `INVALID_ARG`, named under `next`; a limit out of range `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`; a context without an ephemeris `CAPABILITY`.
+
+```c
+ts_status ts_almanac_next(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.
