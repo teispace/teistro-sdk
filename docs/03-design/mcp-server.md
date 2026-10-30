@@ -622,9 +622,32 @@ thousands of round trips.
 
 **Declined.** Sampling, roots and logging are deprecated in this
 revision; the server needs none (D6: it reads no file the model
-names). `input_required` (multi round-trip) has no use while every
-request is complete in one record: a missing field is a refusal the
-model corrects (D7), which costs one round trip either way.
+names).
+
+**A missing input is asked for** (multi round-trip requests, from
+2026-10-30, the application's addendum 2 item 6). A refusal the model
+corrects (D7) costs one round trip either way, but a person, not the
+model, holds a birth's time or place, so for a client declaring form
+elicitation (`elicitation: {}` or `{ "form": {} }`) a record tool refused
+for a top-level field its request lacks answers `resultType:
+"input_required"` with one form, `inputRequests["teistro.missing"]`. The
+form asks for the field the refusal names and every field the record's
+schema requires that the call also lacks, each as a form's primitive (a
+string with its enum, length and a form's format, a number or integer with
+its bounds, a boolean); an object, a list, a value the call wrote wrongly
+and a field under one stay refusals. Serde reads the schema's required
+fields before the SDK's own checks, so a chart lacking its place and its
+instant is asked twice: the place, then the instant. The retry repeats the
+call with `inputResponses`, whose accepted content is laid into the
+request at those keys, so the server keeps nothing and sends no
+`requestState`; an answer is trusted no more than the same value written
+in the call. A declined or cancelled form gets the refusal and is not
+asked again (`crates/mcp/src/elicit.rs`, `tests/rounds.rs`).
+
+**Trace context** (`traceparent`, `tracestate`, `baggage` in `_meta`,
+SEP-414) is accepted and changes no answer: the SDK has no spans and the
+server writes no log, so there is nothing to join; a host that wraps the
+server in its own span already holds the context.
 
 ## Sources
 

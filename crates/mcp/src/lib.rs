@@ -45,6 +45,7 @@ pub use teistro_port_ephemeris::load::Adapter;
 use teistro_port_ephemeris::native::NativeFunction;
 
 mod completion;
+mod elicit;
 #[cfg(not(target_family = "wasm"))]
 pub mod http;
 mod limits;
@@ -1600,12 +1601,22 @@ impl Server {
     /// otherwise.
     fn tools_call(&mut self, params: &Value) -> Result<Value, Fault> {
         let era = self.era(params)?;
-        if era == Era::Modern && declares_tasks(params) {
-            if let Some(patience) = self.patience {
-                return self.call_as_task(params, patience);
-            }
+        if era == Era::Legacy {
+            return Ok(complete(era, self.call(params)?));
         }
-        Ok(complete(era, self.call(params)?))
+        // A retry's answers are read into the call before it is, and a
+        // refusal for what it still lacks is asked for again unless the
+        // form was turned down (`elicit`).
+        let (params, answer) = elicit::answered(params);
+        let answered = match self.patience {
+            Some(patience) if declares_tasks(&params) => self.call_as_task(&params, patience)?,
+            _ => complete(era, self.call(&params)?),
+        };
+        let asking = answer != elicit::Answer::TurnedDown && elicit::takes_forms(&params);
+        Ok(asking
+            .then(|| elicit::ask(&params, &answered))
+            .flatten()
+            .unwrap_or(answered))
     }
 
     /// `tools/call` from a client declaring the tasks extension: computed
