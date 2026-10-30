@@ -95,13 +95,13 @@
   "bindings": {
     "dart": {
       "counted_by": "dart 3.13.7",
-      "lines": 65,
-      "branches": 48
+      "lines": 82,
+      "branches": 81
     },
     "java": {
       "counted_by": "jacoco 0.8.15",
-      "lines": 59,
-      "branches": 50
+      "lines": 89,
+      "branches": 81
     },
     "node": {
       "counted_by": "node 22.23.4",
@@ -110,8 +110,8 @@
     },
     "python": {
       "counted_by": "coverage.py 7.16.2",
-      "lines": 92,
-      "branches": 77
+      "lines": 93,
+      "branches": 85
     }
   }
 }
