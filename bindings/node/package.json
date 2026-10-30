@@ -1,7 +1,6 @@
 {
   "name": "@teistro/sdk",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0-rc.1",
   "description": "Teistro SDK for Node: the addon over the C ABI with its generated types, the catalogue's tables, the result-blob decoders and the ergonomic layer.",
   "license": "Apache-2.0",
   "repository": {
@@ -47,13 +46,13 @@
     "test": "node --test test/*.test.mjs"
   },
   "optionalDependencies": {
-    "@teistro/sdk-linux-x64": "0.0.0",
-    "@teistro/sdk-linux-arm64": "0.0.0",
-    "@teistro/sdk-darwin-arm64": "0.0.0",
-    "@teistro/sdk-darwin-x64": "0.0.0",
-    "@teistro/sdk-win32-x64": "0.0.0",
-    "@teistro/sdk-win32-arm64": "0.0.0",
-    "@teistro/sdk-linux-x64-musl": "0.0.0",
-    "@teistro/sdk-linux-arm64-musl": "0.0.0"
+    "@teistro/sdk-linux-x64": "1.0.0-rc.1",
+    "@teistro/sdk-linux-arm64": "1.0.0-rc.1",
+    "@teistro/sdk-darwin-arm64": "1.0.0-rc.1",
+    "@teistro/sdk-darwin-x64": "1.0.0-rc.1",
+    "@teistro/sdk-win32-x64": "1.0.0-rc.1",
+    "@teistro/sdk-win32-arm64": "1.0.0-rc.1",
+    "@teistro/sdk-linux-x64-musl": "1.0.0-rc.1",
+    "@teistro/sdk-linux-arm64-musl": "1.0.0-rc.1"
   }
 }

@@ -72,7 +72,7 @@ exclude = [
 # One version for the whole SDK: every crate takes it from here, and
 # `cargo xtask check-versions` holds the bindings' manifests to it.
 [workspace.package]
-version = "0.0.0"
+version = "1.0.0-rc.1"
 edition = "2024"
 license = "Apache-2.0"
 repository = "https://github.com/teispace/teistro-sdk"

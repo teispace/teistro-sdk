@@ -1,7 +1,6 @@
 {
   "name": "@teistro/compat",
-  "version": "0.0.0",
-  "private": true,
+  "version": "1.0.0-rc.1",
   "description": "The baseline engine's stored birth records and settings snapshots, forwarded to the Teistro SDK one call at a time: a migration aid with a stated end.",
   "license": "Apache-2.0",
   "repository": {
@@ -28,6 +27,6 @@
     "test": "node --import ./test/sdk.mjs --test test/*.test.mjs"
   },
   "peerDependencies": {
-    "@teistro/sdk": "0.0.0"
+    "@teistro/sdk": "1.0.0-rc.1"
   }
 }

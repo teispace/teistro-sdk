@@ -3,7 +3,7 @@
   "name": "io.github.teispace/teistro",
   "title": "Teistro",
   "description": "Astrology as tools: charts, almanacs, dashas and matching, each answer with its settings and inputs",
-  "version": "0.0.0",
+  "version": "1.0.0-rc.1",
   "websiteUrl": "https://github.com/teispace/teistro-sdk",
   "repository": {
     "url": "https://github.com/teispace/teistro-sdk",
@@ -14,7 +14,7 @@
     {
       "registryType": "npm",
       "identifier": "@teistro/mcp",
-      "version": "0.0.0",
+      "version": "1.0.0-rc.1",
       "runtimeHint": "npx",
       "transport": {
         "type": "stdio"

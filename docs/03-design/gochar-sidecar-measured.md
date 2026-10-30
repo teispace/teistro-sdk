@@ -19,7 +19,7 @@ refused on both sides is the same answer.
 
 ## Its size
 
-Over 53 births the sidecars come to 959 012 bytes and the documents they
-were cut from to 7 112 987: 0.13 of it, one sidecar between 15 137 and
-90 844 bytes. The sidecar is the document's foundation and panchanga
+Over 53 births the sidecars come to 959 542 bytes and the documents they
+were cut from to 7 113 517: 0.13 of it, one sidecar between 15 147 and
+90 854 bytes. The sidecar is the document's foundation and panchanga
 whole; the rest of the document is what no transit reads.

@@ -14,7 +14,7 @@ from typing import Final
 
 #: The release these digests were taken from, which is the version of this
 #: package: an installer never mixes a library with another build's types.
-PREBUILT_VERSION: Final = "0.0.0"
+PREBUILT_VERSION: Final = "1.0.0-rc.1"
 
 #: The release the archives are attached to.
 PREBUILT_BASE: Final = "https://github.com/teispace/teistro-sdk/releases/download"

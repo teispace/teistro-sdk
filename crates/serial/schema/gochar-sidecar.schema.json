@@ -2914,7 +2914,7 @@
       ]
     }
   },
-  "$id": "urn:teistro:schema:gochar-sidecar:0.0.0",
+  "$id": "urn:teistro:schema:gochar-sidecar:1.0.0-rc.1",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "description": "A chart's natal facts for its transits: its foundation and, when the chart carries one, its panchanga, with the hashes that tie them to the chart they were cut from.",
   "properties": {
