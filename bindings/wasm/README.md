@@ -21,6 +21,31 @@ Everything in the Node package's README applies here unchanged: its
 documentation, types and examples are the same files. The package is the
 Node package's JavaScript layer with a different loader underneath.
 
+## Loading only what a page needs
+
+The full module is about 3.1 MB gzipped and the calendar module about half
+of that. `@teistro/sdk-wasm/lazy` loads neither until it is asked:
+
+```js fragment
+import { loadCalendar, loadJyotish } from '@teistro/sdk-wasm/lazy';
+
+// The calendars, the almanac and the muhurta search; a chart is refused.
+const { Context } = await loadCalendar();
+
+// Later, on the page that draws a chart: the whole SDK.
+const jyotish = await loadJyotish();
+```
+
+Each is one load however often it is asked. Each is a dynamic `import()`,
+so a bundler gives each its own chunk; with esbuild, set `splitting: true`.
+The full module holds the calendar too, so a page that wants a chart at once
+should ask for that alone. The two are separate modules: a context of one is
+nothing to the other, and each has its own `TeistroError`, so read a
+refusal's `status`, not its class. `onInternalError` here hears both. A
+module that cannot be fetched rejects saying so, and only loading the page
+again can fetch it, since the host keeps a failed module failed. A Worker or
+an edge route's bundle carries both modules, whichever it asks for.
+
 ## Loading
 
 Importing the package is the whole setup. The module is instantiated

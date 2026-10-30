@@ -22,8 +22,12 @@
  *   leaves `new URL(…)` for the consumer to serve (esbuild) by
  *   `references`, the module paths its scripts name.
  *
+ * - `lazy` imports the lazy entry and asks for the calendar. Its first
+ *   chunk, `initial`, must carry neither module nor the layer: a page pays
+ *   for nothing until it asks.
+ *
  * Prints one JSON object:
- * `{ answer: [{ bundler, entry, bytes, wasm, wasmBytes, references }] }`,
+ * `{ answer: [{ bundler, entry, bytes, initial, wasm, wasmBytes, references }] }`,
  * or `{ error }` when a bundler failed.
  */
 
@@ -45,6 +49,7 @@ const ENTRIES = {
   catalogue: "import { Graha } from '@teistro/sdk-wasm/catalogue';\nconsole.log(Graha.Sun);\n",
   everything: "import { Context } from '@teistro/sdk-wasm';\nconsole.log(typeof Context);\n",
   panchanga: "import { Context } from '@teistro/sdk-wasm/panchanga';\nconsole.log(typeof Context);\n",
+  lazy: "import { loadCalendar } from '@teistro/sdk-wasm/lazy';\nloadCalendar().then(({ Context }) => console.log(typeof Context));\n",
 };
 
 /** Every file under `directory`, as paths. */
@@ -74,7 +79,11 @@ function measured(out) {
   // loader's path has a directory in it.
   const named = scripts.flatMap((path) => readFileSync(path, 'utf8').match(/[\w./-]+\.wasm/g) ?? []);
   const references = [...new Set(named.filter((path) => path.includes('/')))].sort();
-  return { bytes, wasm, wasmBytes, references };
+  // The script a page loads first, named after the entry by esbuild and
+  // Vite (with a hash) and `bundle.js` by webpack; the chunks have other names.
+  const first = scripts.find((path) => /(^|\/)(bundle|lazy)[^/]*\.m?js$/.test(path));
+  const initial = first ? statSync(first).size : 0;
+  return { bytes, initial, wasm, wasmBytes, references };
 }
 
 const bundlers = {
@@ -85,6 +94,7 @@ const bundlers = {
       bundle: true,
       minify: true,
       format: 'esm',
+      splitting: true,
       platform: 'browser',
       target: 'es2022',
       outdir: out,

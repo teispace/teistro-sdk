@@ -1,0 +1,42 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Teistro start check</title>
+<!-- One entry timed from the page's start to its first calendar answer. -->
+<script type="importmap">
+  {
+    "imports": {
+      "#native": "/lib/native.web.js",
+      "#native-panchanga": "/lib/native-panchanga.web.js"
+    }
+  }
+</script>
+<script type="module">
+  const report = (body) =>
+    fetch('/result', { method: 'POST', body: JSON.stringify(body) });
+  const entry = location.hash.slice(1);
+  try {
+    const { firstAnswer } = await import('/check/first-answer.mjs');
+    const lazy = entry === 'lazy' || entry === 'unreachable' ? await import('/lib/lazy.js') : null;
+    if (entry === 'unreachable') {
+      const messages = [];
+      for (let attempt = 0; attempt < 2; attempt += 1) {
+        await lazy.loadCalendar().catch((error) => messages.push(error.message));
+      }
+      await report({ answer: { messages } });
+    } else {
+      const sdk = await (lazy ? lazy.loadCalendar() : import(`/lib/${entry}.js`));
+      firstAnswer(sdk);
+      await report({
+        answer: {
+          ms: performance.now(),
+          modules: performance
+            .getEntriesByType('resource')
+            .filter(({ name }) => name.endsWith('.wasm'))
+            .map(({ name }) => new URL(name).pathname),
+        },
+      });
+    }
+  } catch (error) {
+    await report({ error: String(error?.stack ?? error) });
+  }
+</script>

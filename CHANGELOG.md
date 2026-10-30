@@ -25,6 +25,14 @@ the previous release, not by nobody having looked.
   Java (`Teistro.onInternalError`), with the same report and an unsubscribe;
   a panic the C ABI caught is their only kind.
 
+**The wasm package loads its modules when they are asked for.**
+**Numbers:** none.
+- `@teistro/sdk-wasm/lazy`: `loadCalendar()` loads the calendar module and
+  `loadJyotish()` the full one, so a page can answer a calendar question
+  without fetching the jyotish module. A module that cannot be fetched
+  rejects saying why, and needs the page loaded again.
+- `check-wasm` times each entry's first answer under Node and in Chrome.
+
 **The agent server asks for a missing input rather than refusing it.**
 **Numbers:** none; a client that takes no form is answered as before.
 - `teistro-mcp`: a record tool refused for a field its request lacks (a

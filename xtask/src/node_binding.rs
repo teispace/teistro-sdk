@@ -100,7 +100,7 @@ pub(crate) fn install_addon(root: &Path) -> Result<(), ()> {
 ///
 /// `npx` stays as the last resort and still goes through [`tool`],
 /// because there it is the only thing on offer.
-fn typescript(root: &Path) -> Option<(String, Vec<String>)> {
+pub(crate) fn typescript(root: &Path) -> Option<(String, Vec<String>)> {
     if let Ok(tsc) = std::env::var("TSC") {
         return Some((tsc, Vec::new()));
     }

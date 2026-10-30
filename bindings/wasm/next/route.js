@@ -6,15 +6,16 @@
  */
 
 import * as sdk from '@teistro/sdk-wasm';
+import * as lazy from '@teistro/sdk-wasm/lazy';
 
-import { probe } from './probe.mjs';
+import { lazyProbe, probe } from './probe.mjs';
 
 export const runtime = 'edge';
 export const dynamic = 'force-dynamic';
 
-export function GET() {
+export async function GET() {
   try {
-    return Response.json({ answer: probe(sdk) });
+    return Response.json({ answer: { ...probe(sdk), lazy: await lazyProbe(lazy) } });
   } catch (error) {
     return Response.json({ error: `${error.name}: ${error.message}` });
   }

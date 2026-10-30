@@ -8,7 +8,8 @@
 import { resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
-import { probe } from './probe.mjs';
+import { lazyProbe, probe } from './probe.mjs';
 
-const sdk = await import(pathToFileURL(resolve(process.argv[2], 'lib/index.js')).href);
-process.stdout.write(`${JSON.stringify({ answer: probe(sdk) })}\n`);
+const entry = (file) => import(pathToFileURL(resolve(process.argv[2], 'lib', file)).href);
+const answer = { ...probe(await entry('index.js')), lazy: await lazyProbe(await entry('lazy.js')) };
+process.stdout.write(`${JSON.stringify({ answer })}\n`);
