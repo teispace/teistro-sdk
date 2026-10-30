@@ -94,8 +94,9 @@ pub const TS_ABI_VERSION: u32 = 1;
 /// returns and the description records.
 ///
 /// ```
-/// // Three numbers, as Cargo wrote them.
-/// assert_eq!(teistro_ffi::SDK_VERSION.split('.').count(), 3);
+/// // Three numbers, as Cargo wrote them, before any pre-release label.
+/// let release = teistro_ffi::SDK_VERSION.split('-').next().unwrap();
+/// assert_eq!(release.split('.').count(), 3);
 /// ```
 pub const SDK_VERSION: &str = env!("CARGO_PKG_VERSION");
 
