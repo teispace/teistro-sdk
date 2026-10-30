@@ -382,10 +382,8 @@ pub(crate) fn platform_rows(root: &Path, platform: &Platform, version: &str) -> 
     let files = [
         (
             Artefact::Wheel,
-            dist.join("pypi/wheels").join(format!(
-                "teistro-{version}-py3-none-{}.whl",
-                platform.wheel_tag
-            )),
+            dist.join("pypi/wheels")
+                .join(crate::wheel::file_name(version, platform.wheel_tag)),
         ),
         (
             Artefact::Jar,

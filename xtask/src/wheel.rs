@@ -37,6 +37,18 @@ const NAME: &str = "teistro";
 /// `teistro._search` looks.
 const LIBRARY_DIRECTORY: &str = "teistro/_lib";
 
+/// The file name of `platform`'s wheel at the release `version`, which a
+/// wheel spells as Python's packaging does ([`crate::release::python_version`]).
+pub(crate) fn file_name(version: &str, wheel_tag: &str) -> String {
+    format!("{NAME}-{}-py3-none-{wheel_tag}.whl", spelled(version))
+}
+
+/// The release's version as a wheel writes it, or the version itself where
+/// it is not one this project releases (the gate on the version says so).
+fn spelled(version: &str) -> String {
+    crate::release::python_version(version).unwrap_or_else(|| version.to_owned())
+}
+
 /// Writes `platform`'s wheel into `into` from the package staged at
 /// `staged` and the library's bytes, and returns its file name.
 pub(crate) fn write(
@@ -58,6 +70,8 @@ pub(crate) fn write(
         ),
         library.to_vec(),
     );
+    let release = version;
+    let version = &spelled(release);
     let dist_info = format!("{NAME}-{version}.dist-info");
     let project = pyproject(staged)?;
     let readme = fs::read_to_string(staged.join("README.md"))?;
@@ -87,7 +101,7 @@ pub(crate) fn write(
     files.insert(record.clone(), self::record(&files, &record).into_bytes());
 
     fs::create_dir_all(into)?;
-    let name = format!("{NAME}-{version}-py3-none-{}.whl", platform.wheel_tag);
+    let name = file_name(release, platform.wheel_tag);
     let entries: Vec<(&String, Entry)> = files
         .iter()
         .map(|(path, data)| (path, Entry::Plain(data.clone())))

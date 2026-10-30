@@ -83,10 +83,28 @@ fn workspace_version(text: &str) -> Option<String> {
     Some(line.trim().trim_matches('"').to_string())
 }
 
+/// The pre-releases this project names, each with the letter Python's
+/// packaging spells it with (PEP 440): every registry orders these three
+/// the same way, which no other label is sure to be.
+const PRE_RELEASES: [(&str, &str); 3] = [("alpha", "a"), ("beta", "b"), ("rc", "rc")];
+
+/// A pre-release's Python letter and number: `rc.1` is `("rc", "1")`, and
+/// a label without a number is its 0th. `None` for any other label, a
+/// number with a leading zero or a third part.
+fn pre_release(pre: &str) -> Option<(&'static str, &str)> {
+    let (label, number) = pre.split_once('.').unwrap_or((pre, "0"));
+    let (_, letter) = PRE_RELEASES.iter().find(|(name, _)| *name == label)?;
+    let numeric = !number.is_empty()
+        && number.chars().all(|c| c.is_ascii_digit())
+        && (number == "0" || !number.starts_with('0'));
+    numeric.then_some((*letter, number))
+}
+
 /// Whether a string is a version this project will release: three numbers
-/// without leading zeros, and an optional pre-release of dot-separated
-/// alphanumeric parts. Build metadata is not accepted, because npm and pub
-/// treat it differently and the SDK would not be one version any more.
+/// without leading zeros, and an optional pre-release, `alpha`, `beta` or
+/// `rc` with an optional number (`1.2.0-rc.1`). Build metadata is not
+/// accepted, because npm and pub treat it differently and the SDK would not
+/// be one version any more.
 pub(crate) fn is_semver(text: &str) -> bool {
     let (core, pre) = text
         .split_once('-')
@@ -102,13 +120,27 @@ pub(crate) fn is_semver(text: &str) -> bool {
     }
     match pre {
         None => true,
-        Some(pre) => {
-            !pre.is_empty()
-                && pre.split('.').all(|part| {
-                    !part.is_empty() && part.chars().all(|c| c.is_ascii_alphanumeric() || c == '-')
-                })
-        }
+        Some(pre) => pre_release(pre).is_some(),
     }
+}
+
+/// The version as Python's packaging writes it (PEP 440): `1.2.0-rc.1` is
+/// `1.2.0rc1`, and `2.0.0-alpha` is `2.0.0a0`. A wheel's file name splits
+/// its fields on `-`, so the release's own spelling would read as a build
+/// tag, which must begin with a digit, and pip and `PyPI` would refuse the
+/// wheel. The GitHub release keeps the version's own spelling. `None` for a
+/// string [`is_semver`] refuses.
+pub(crate) fn python_version(version: &str) -> Option<String> {
+    if !is_semver(version) {
+        return None;
+    }
+    Some(match version.split_once('-') {
+        None => version.to_owned(),
+        Some((core, pre)) => {
+            let (letter, number) = pre_release(pre)?;
+            format!("{core}{letter}{number}")
+        }
+    })
 }
 
 // ── check-versions ─────────────────────────────────────────────────────────
@@ -121,7 +153,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     let mut failures = Vec::new();
     if !is_semver(&wanted) {
         failures.push(format!(
-            "{WORKSPACE} declares `{wanted}`, which is not a version this project releases (three numbers, optionally a pre-release)"
+            "{WORKSPACE} declares `{wanted}`, which is not a version this project releases (three numbers, optionally an alpha, beta or rc pre-release)"
         ));
     }
     let released = wanted != UNRELEASED;
@@ -430,7 +462,7 @@ pub(crate) fn check_tag(root: &Path, tag: &str) -> i32 {
 pub(crate) fn set(root: &Path, wanted: &str) -> i32 {
     if !is_semver(wanted) {
         eprintln!(
-            "`{wanted}` is not a version this project releases: three numbers without leading zeros, optionally a pre-release (`1.2.0`, `1.2.0-rc.1`)"
+            "`{wanted}` is not a version this project releases: three numbers without leading zeros, optionally an alpha, beta or rc pre-release (`1.2.0`, `1.2.0-rc.1`)"
         );
         return 2;
     }
@@ -616,9 +648,10 @@ fn check_python(root: &Path, wanted: &str, released: bool) -> Vec<String> {
         .lines()
         .find_map(|line| line.strip_prefix("version = "))
         .map(|value| value.trim().trim_matches('"'));
-    if declared != Some(wanted) {
+    let spelled = python_version(wanted).unwrap_or_else(|| wanted.to_owned());
+    if declared != Some(spelled.as_str()) {
         failures.push(format!(
-            "{PYTHON_MANIFEST} declares version {}, the workspace declares {wanted}",
+            "{PYTHON_MANIFEST} declares version {}, the workspace declares {wanted}, which Python spells {spelled}",
             declared.unwrap_or("nothing")
         ));
     }
@@ -658,7 +691,8 @@ fn set_python(root: &Path, wanted: &str, released: bool, written: &mut Vec<Strin
     let path = root.join(PYTHON_MANIFEST);
     let text = read(&path);
     let line = Regex::new(r#"(?m)^version = "[^"]*"$"#).expect("valid regex");
-    let updated = line.replace(&text, format!("version = \"{wanted}\"").as_str());
+    let spelled = python_version(wanted).unwrap_or_else(|| wanted.to_owned());
+    let updated = line.replace(&text, format!("version = \"{spelled}\"").as_str());
     let mut updated = updated.replace(CLASSIFIER, "");
     if !released {
         updated = updated.replacen(
@@ -695,7 +729,7 @@ fn read_or_empty(path: &Path) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{is_semver, workspace_version};
+    use super::{is_semver, python_version, workspace_version};
 
     #[test]
     fn the_workspace_version_is_read_from_its_own_table() {
@@ -716,6 +750,8 @@ mod tests {
             "0.1.0",
             "1.0.0-rc.1",
             "2.0.0-alpha",
+            "1.0.0-beta.2",
+            "1.0.0-rc.0",
             "10.20.30",
         ] {
             assert!(is_semver(good), "{good} is a version");
@@ -729,8 +765,31 @@ mod tests {
             "1.2.3-",
             "",
             "1.2.x",
+            "1.2.3-dev.1",
+            "1.2.3-rc.01",
+            "1.2.3-rc.1.2",
+            "1.2.3-rc.",
         ] {
             assert!(!is_semver(bad), "{bad} is not a version");
         }
+    }
+
+    #[test]
+    fn python_spells_a_pre_release_without_the_hyphen_a_wheel_splits_on() {
+        for (version, spelled) in [
+            ("1.2.3", "1.2.3"),
+            ("0.0.0", "0.0.0"),
+            ("1.0.0-rc.1", "1.0.0rc1"),
+            ("1.0.0-beta.2", "1.0.0b2"),
+            ("2.0.0-alpha", "2.0.0a0"),
+        ] {
+            assert_eq!(
+                python_version(version).as_deref(),
+                Some(spelled),
+                "{version}"
+            );
+        }
+        assert_eq!(python_version("1.2.3-dev.1"), None);
+        assert_eq!(python_version("v1.2.3"), None);
     }
 }

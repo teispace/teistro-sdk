@@ -172,7 +172,9 @@ fn python(root: &Path, into: &Path, platform: &Platform, version: &str) -> Resul
         "the Python environment could not be created",
     )?;
     let venv = dir.join(".venv").join(platform.venv_bin());
-    let wanted = format!("teistro=={version}");
+    // PyPI holds the release under Python's spelling of its version.
+    let spelled = crate::release::python_version(version).unwrap_or_else(|| version.to_owned());
+    let wanted = format!("teistro=={spelled}");
     retried(&format!("{wanted} from PyPI"), || {
         ran(crate::binding::python_command(venv.join("pip"))
             .args([

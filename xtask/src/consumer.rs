@@ -786,10 +786,9 @@ fn python_wheel_consumer(
 ) -> Result<(), ()> {
     let into = check.join("python-wheel");
     fs::create_dir_all(&into).map_err(|err| println!("FAIL  {CHECK}/python-wheel: {err}"))?;
-    let wheel = dist.join(format!(
-        "pypi/wheels/teistro-{version}-py3-none-{}.whl",
-        platform.wheel_tag
-    ));
+    let wheel = dist
+        .join("pypi/wheels")
+        .join(crate::wheel::file_name(version, platform.wheel_tag));
     if !wheel.is_file() {
         println!(
             "FAIL  no wheel was staged for {} at {}",
