@@ -525,14 +525,19 @@ impl SaitRule {
     /// The saits Nepal's national panchanga prints for the `NEPAL` pack's
     /// rules (§2): Ghatasthapana (`NAVARATRA_ARAMBHA`) and Bhai Tika
     /// (`YAMA_DWITIYA`), each a navamsa of a dual sign (crux C745) inside
-    /// the text's window.
+    /// the text's window; and Laxmi Puja's window, the pradosha, with no
+    /// lagna (C824). Vijaya Dashami's tika is not among them: no rule
+    /// found elects all four printed years (C823).
     ///
     /// ```
-    /// use teistro_panchanga::festival::SaitRule;
+    /// use teistro_panchanga::festival::{SaitRule, SaitWindow};
     ///
     /// let saits = SaitRule::nepal();
     /// assert!(saits.iter().all(|sait| sait.check().is_ok()));
     /// assert!(saits.iter().any(|sait| sait.rule == "NAVARATRA_ARAMBHA"));
+    /// let lakshmi = saits.iter().find(|sait| sait.rule == "LAKSHMI_PUJA").ok_or("shipped")?;
+    /// assert_eq!((lakshmi.windows[0].within, lakshmi.rising.is_none()), (SaitWindow::Pradosha, true));
+    /// # Ok::<(), &str>(())
     /// ```
     #[must_use]
     pub fn nepal() -> Vec<SaitRule> {
@@ -567,6 +572,16 @@ impl SaitRule {
                 ],
                 rising: dual(),
                 choose: SaitChoice::Latest,
+            },
+            SaitRule {
+                rule: "LAKSHMI_PUJA".to_owned(),
+                source: "Dharmasindhu p. 77 and Nirnayasindhu pp. 148-149: the puja in pradosha, the three muhurtas of the night from sunset; the text's window only, as the committee's printed lagna for it was not recovered (C824)".to_owned(),
+                windows: vec![SaitWindowRule {
+                    within: SaitWindow::Pradosha,
+                    avoid: Vec::new(),
+                }],
+                rising: None,
+                choose: SaitChoice::Earliest,
             },
             SaitRule {
                 rule: "YAMA_DWITIYA".to_owned(),
