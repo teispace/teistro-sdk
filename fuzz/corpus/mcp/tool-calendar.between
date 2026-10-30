@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"calendar.between","arguments":{"request":{"calendar":"calendar.BIKRAM_SAMBAT","from":{"year":2050,"month":2,"day":32},"to":{"year":2082,"month":2,"day":31},"overflow":"CONSTRAIN"}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":113}
