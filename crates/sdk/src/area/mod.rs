@@ -89,6 +89,8 @@ pub(crate) use almanac::FestivalCalendarAsked;
 #[cfg(feature = "muhurta")]
 pub use almanac::MuhurtaDays;
 #[cfg(feature = "schema")]
+pub(crate) use almanac::NextAsked;
+#[cfg(feature = "schema")]
 pub(crate) use almanac::ReasonsAsked;
 pub use almanac::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, DayDisagreement, DayDisagreements,
@@ -100,6 +102,7 @@ pub use almanac::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
 };
+pub use almanac::{NextOccurrence, NextRequest, NextTarget};
 pub use calendar::CalendarArea;
 #[cfg(feature = "chart")]
 pub use chart::{ChartArea, Interpreted};

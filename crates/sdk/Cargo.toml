@@ -185,6 +185,10 @@ name = "sealing"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "next"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "published"
 required-features = ["builtin-ephemeris"]
 

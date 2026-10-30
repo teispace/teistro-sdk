@@ -201,6 +201,7 @@ the rise and set solver when the port was promoted.
 | [`festival-rule-language.md`](festival-rule-language.md) | the forms the festival rule language lacks (moonrise, day muhurtas, `GREATER`, either paksha, the weekday, solar and civil dates, the adhika month, the Sun's sign, counts back and two days), each sourced and tested against the 57 excluded festivals; design, not built |
 | [`setup-disagreements.md`](setup-disagreements.md) | where the official (committee) and the modern reckoning name another day, and the instants that say why (draft, P1-10) |
 | [`icalendar.md`](icalendar.md) | the iCalendar feed of a range's observances: the writer, the stable UID, the almanac call (built, P2-2) |
+| [`next-occurrence.md`](next-occurrence.md) | the next day a festival rule or a kind of day (Ekadashi, Purnima, Amavasya, Sankranti) falls on after an instant, with no year asked: the kinds' rules, the 400-day limit, the growing windows (built, SR-06) |
 | [`sankalpa.md`](sankalpa.md) | the time a sankalpa recites: which instant reads each part, the conventions named in the answer, the words still to come (built, P2-3) |
 | [`ashauch.md`](ashauch.md) | the period of impurity after a birth or a death: the night rule, the lengths, the Dharmasindhu's table as data, late news and overlap (built, P2-3) |
 | [`festival-sait.md`](festival-sait.md) | designed 2026-10-25: a festival rite's time (Ghatasthapana, the tikas, Rakshabandhan, Holika, Shivaratri) as the text's window and the committee's lagna election inside it (C745, C746) |

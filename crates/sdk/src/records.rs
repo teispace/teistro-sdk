@@ -489,7 +489,7 @@ fn naming_records() -> [Record; 5] {
 /// asked beside them, its festivals as a feed, why a published day differs
 /// from the rule's, a sankalpa's time, an ashauch, and a death's first
 /// year.
-fn almanac_records() -> [Record; 6] {
+fn almanac_records() -> [Record; 7] {
     [
         Record {
             name: "almanac.ashauch",
@@ -528,6 +528,17 @@ fn almanac_records() -> [Record; 6] {
             reads: None,
             run: festival_calendar,
             schemas: schemas!(crate::area::FestivalCalendarAsked => String),
+        },
+        Record {
+            name: "almanac.next",
+            boundary: "ts_almanac_next",
+            title: "The next day a festival rule or a kind of day (Ekadashi, Purnima, Amavasya, Sankranti) falls on after an instant at a place",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::NextRequest::from_json(json)?;
+                Answered::sealed(context.almanac().next_in_full(&asked)?)
+            },
+            schemas: schemas!(crate::area::NextAsked => crate::NextOccurrence),
         },
         Record {
             name: "almanac.publishedReasons",
@@ -609,7 +620,7 @@ fn engine_answer<T: serde::Serialize>(
 
 /// The clock and calendar records: what `TimeArea` and `CalendarArea`
 /// answer, each read from its own request record.
-fn time_records() -> [Record; 4] {
+fn time_records() -> [Record; 6] {
     [
         Record {
             name: "time.resolve",
@@ -661,6 +672,35 @@ fn time_records() -> [Record; 4] {
                 Answered::plain(&crate::CalendarReading { date, weekday })
             },
             schemas: schemas!(crate::time_request::CalendarAsked => crate::CalendarReading),
+        },
+        Record {
+            name: "calendar.add",
+            boundary: "ts_calendar_add",
+            title: "A date moved by years, months and days, with its weekday",
+            reads: Some(crate::AddRequest::DESCRIPTION),
+            run: |context, json| {
+                let asked = crate::AddRequest::from_json(json)?;
+                let calendars = context.calendar();
+                let date = calendars.add(&asked.date, asked.span, asked.overflow)?;
+                let weekday = calendars.weekday_of(&date)?;
+                Answered::plain(&crate::CalendarReading { date, weekday })
+            },
+            schemas: schemas!(crate::time_request::AddAsked => crate::CalendarReading),
+        },
+        Record {
+            name: "calendar.between",
+            boundary: "ts_calendar_between",
+            title: "The years, months and days between two dates, counted as an age",
+            reads: Some(crate::BetweenRequest::DESCRIPTION),
+            run: |context, json| {
+                let asked = crate::BetweenRequest::from_json(json)?;
+                Answered::plain(&context.calendar().between(
+                    &asked.from,
+                    &asked.to,
+                    asked.overflow,
+                )?)
+            },
+            schemas: schemas!(crate::time_request::BetweenAsked => crate::DateSpan),
         },
     ]
 }

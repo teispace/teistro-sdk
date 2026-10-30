@@ -77,6 +77,8 @@ pub use area::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
 };
+pub use area::{NextOccurrence, NextRequest, NextTarget};
+pub use teistro_panchanga::festival::NextKind;
 #[cfg(feature = "western")]
 mod antiscia;
 mod ashauch_request;
@@ -185,6 +187,7 @@ pub use scale::{Conversion, Scale};
 // exactly those four.
 pub use teistro_astro::DeltaTModel;
 pub use teistro_astro::delta_t::DeltaT;
+pub use teistro_calendar::arithmetic::{DateSpan, Overflow};
 pub use teistro_calendar::{CalendarDate, CalendarDay, FixedDay, Weekday};
 pub use teistro_chart::day::ChartDay;
 pub use teistro_chart::foundation::{
@@ -340,7 +343,8 @@ pub use crate::engine_request::{EngineCall, ManifestRequest};
 #[cfg(feature = "muhurta")]
 pub use crate::muhurta_request::{Activity, MuhurtaRequest};
 pub use crate::time_request::{
-    CalendarReading, CalendarRequest, CivilReading, CivilRequest, ResolveRequest, ScaleRequest,
+    AddRequest, BetweenRequest, CalendarReading, CalendarRequest, CivilReading, CivilRequest,
+    ResolveRequest, ScaleRequest,
 };
 pub use teistro_astro::visibility::Criterion;
 // Eclipses: found over the sky, each with how a place sees it
