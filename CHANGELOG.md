@@ -36,18 +36,6 @@ the previous release, not by nobody having looked.
   (`traceparent`, `tracestate`, `baggage` in `_meta`) changing nothing: the
   SDK has no spans to join.
 
-## 1.0.0-rc.1
-
-The first release candidate of 1.0.0, for the maintainer's review and the
-astrologers'.
-**Numbers:** none, against nothing: no earlier release exists, so no chart
-computed with one can move. Each entry below says what moved between the
-commits it was built across, measured as it was merged, and is kept as the
-record of why a value is what it is. The conformance run against the pinned
-corpus (`05-testing/CONFORMANCE.md`), the accuracy page (`ACCURACY.md`) and
-the A/B against the baseline engine (`05-testing/ab-measured.md`) are this
-release's measure.
-
 **Amounts in words (SR-49).**
 **Numbers:** none move; this adds a call.
 - `sdk.intl.inWords` (`ts_intl_in_words`, the `intl.inWords` agent tool, and
@@ -60,6 +48,18 @@ release's measure.
   locale's `sdk.amount.<CODE>` messages, NPR and INR shipped, any other
   currency one pack entry away. Sanskrit is refused as not yet reviewed
   (C803). `03-design/amounts-in-words.md`.
+
+## 1.0.0-rc.1
+
+The first release candidate of 1.0.0, for the maintainer's review and the
+astrologers'.
+**Numbers:** none, against nothing: no earlier release exists, so no chart
+computed with one can move. Each entry below says what moved between the
+commits it was built across, measured as it was merged, and is kept as the
+record of why a value is what it is. The conformance run against the pinned
+corpus (`05-testing/CONFORMANCE.md`), the accuracy page (`ACCURACY.md`) and
+the A/B against the baseline engine (`05-testing/ab-measured.md`) are this
+release's measure.
 
 **A rashifal's sky is a transit's, and the shim casts a prashna and
 reads a rashifal as the baseline does.**
