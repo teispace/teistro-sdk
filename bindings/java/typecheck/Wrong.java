@@ -18,6 +18,7 @@ import com.teispace.teistro.Longitude;
 import com.teispace.teistro.NaamMilan;
 import com.teispace.teistro.Observer;
 import com.teispace.teistro.RashifalRequest;
+import com.teispace.teistro.Teistro;
 
 final class Wrong {
     private Wrong() {
@@ -53,5 +54,9 @@ final class Wrong {
         // expect: PakshiSubLengths cannot be converted to PakshiClock
         com.teispace.teistro.request.PakshiRules.builder().clock(com.teispace.teistro.request.PakshiSubLengths.AGASTYA);
         System.out.println(List.of(milan, week));
+
+        // A host's crash reporter hears a report without the message (SR-52).
+        // expect: cannot find symbol
+        Teistro.onInternalError(report -> report.message());
     }
 }

@@ -21,6 +21,9 @@ the previous release, not by nobody having looked.
 - `onInternalError(hook)` and `INTERNAL_CODE`, in the Node and wasm
   packages: a host's crash reporter hears of an `INTERNAL` refusal or a
   trap with the status, code, kind and SDK version, never the message.
+- The same hook in Python (`on_internal_error`), Dart (`onInternalError`) and
+  Java (`Teistro.onInternalError`), with the same report and an unsubscribe;
+  a panic the C ABI caught is their only kind.
 
 **The agent server asks for a missing input rather than refusing it.**
 **Numbers:** none; a client that takes no form is answered as before.

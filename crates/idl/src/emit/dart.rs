@@ -261,7 +261,7 @@ fn dart_type(api: &Api, ty: &TypeRef) -> String {
 pub fn declarations(api: &Api) -> String {
     let mut out = preamble(
         api,
-        "\n// ignore_for_file: camel_case_types, non_constant_identifier_names\n// ignore_for_file: constant_identifier_names, unused_field\n\nimport 'dart:ffi' as ffi;\nimport 'dart:typed_data';\n\nimport 'package:ffi/ffi.dart' as pkg_ffi;\n\nimport 'catalogue.dart';\n",
+        "\n// ignore_for_file: camel_case_types, non_constant_identifier_names\n// ignore_for_file: constant_identifier_names, unused_field\n\nimport 'dart:ffi' as ffi;\nimport 'dart:typed_data';\n\nimport 'package:ffi/ffi.dart' as pkg_ffi;\n\nimport 'catalogue.dart';\nimport 'internal.dart';\n",
     );
     for o in &api.opaques {
         let _ = writeln!(
@@ -917,7 +917,7 @@ fn render_dart_way_in(
     }
     let _ = writeln!(
         out,
-        "{doc}  factory Teistro{name}{suffix}(TeistroLibrary lib, {{{params}}}) {{\n    rememberLibrary(lib);\n    return pkg_ffi.using((arena) {{\n{body}      final status = lib.{call}({args});\n      if (status != 0) {{\n        final refusal = _refusal(status, error);\n        lib.{free}(error);\n        throw refusal;\n      }}\n      return Teistro{name}._(lib, out.value);\n    }});\n  }}\n",
+        "{doc}  factory Teistro{name}{suffix}(TeistroLibrary lib, {{{params}}}) {{\n    rememberLibrary(lib);\n    return pkg_ffi.using((arena) {{\n{body}      final status = lib.{call}({args});\n      if (status != 0) {{\n        final refusal = refusalOf(status, error);\n        lib.{free}(error);\n        throw refusal;\n      }}\n      return Teistro{name}._(lib, out.value);\n    }});\n  }}\n",
         doc = doc(&ctor.doc, "  "),
         suffix = named.map_or_else(String::new, |n| format!(".{n}")),
         params = params.join(", "),
@@ -945,7 +945,7 @@ fn render_dart_error_reader(out: &mut String, api: &Api, opaque: &OpaqueDef) {
     };
     let _ = writeln!(
         out,
-        "  /// Turns a failed call into the exception the library described,\n  /// with its detail, its field and its hint.\n  Never _fail(int status) {{\n    return pkg_ffi.using((arena) {{\n      final raw = arena<{}>();\n      raw.ref.structSize = ffi.sizeOf<{}>();\n      _lib.{}(_handle, raw);\n      throw _refusal(status, raw);\n    }});\n  }}\n",
+        "  /// Turns a failed call into the exception the library described,\n  /// with its detail, its field and its hint.\n  Never _fail(int status) {{\n    return pkg_ffi.using((arena) {{\n      final raw = arena<{}>();\n      raw.ref.structSize = ffi.sizeOf<{}>();\n      _lib.{}(_handle, raw);\n      throw refusalOf(status, raw);\n    }});\n  }}\n",
         struct_name(&s.name),
         struct_name(&s.name),
         reader.name
@@ -1233,9 +1233,10 @@ fn render_free_functions(out: &mut String, api: &Api) {
     let free_blob = free_name(api, Role::BlobFree);
     let free_string = free_name(api, Role::StringFree);
     let error = named(StructRole::Error);
+    let message = message_function_name(api);
     let _ = writeln!(
         out,
-        "/// The exception for a refusal the library described, read from either\n/// kind of record: one a context lent, or one a failed way in wrote.\nTeistroException _refusal(int status, ffi.Pointer<{error}> raw) {{\n  String? text(ffi.Pointer<ffi.Char> p) =>\n      p == ffi.nullptr ? null : p.cast<pkg_ffi.Utf8>().toDartString();\n  return TeistroException(\n    Status.byId(status),\n    text(raw.ref.message) ?? 'the call failed',\n    detail: text(raw.ref.detail),\n    field: text(raw.ref.field),\n    hint: text(raw.ref.hint),\n    messageKey: text(raw.ref.key),\n    providerCode: raw.ref.providerCode,\n  );\n}}\n"
+        "/// The exception for a refusal the library described, read from either\n/// kind of record: one a context lent, or one a failed way in wrote.\nTeistroException refusalOf(int status, ffi.Pointer<{error}> raw) {{\n  String? text(ffi.Pointer<ffi.Char> p) =>\n      p == ffi.nullptr ? null : p.cast<pkg_ffi.Utf8>().toDartString();\n  return _told(\n    TeistroException(\n      Status.byId(status),\n      text(raw.ref.message) ?? 'the call failed',\n      detail: text(raw.ref.detail),\n      field: text(raw.ref.field),\n      hint: text(raw.ref.hint),\n      messageKey: text(raw.ref.key),\n      providerCode: raw.ref.providerCode,\n    ),\n  );\n}}\n\n/// The exception for a status a call with no record answered: the status's\n/// own sentence.\nTeistroException plainRefusal(TeistroLibrary lib, int status) => _told(\n  TeistroException(Status.byId(status), {message}(lib, Status.byId(status))),\n);\n\n/// A refusal the boundary answered, handed back; a host's crash reporter\n/// hears of an `INTERNAL` one, never with its message (`internal.dart`).\nTeistroException _told(TeistroException refusal) {{\n  if (refusal.status == Status.internal) reportInternal(generatedSdkVersion);\n  return refusal;\n}}\n"
     );
     let _ = writeln!(
         out,
@@ -1283,11 +1284,8 @@ fn render_dart_free_function(out: &mut String, api: &Api, f: &FunctionDef) {
     }
     let returns = dart_return(api, f);
     let value = dart_value(api, f, "lib");
-    let fail = format!(
-        "      if (status != 0) {{\n        throw TeistroException(\n          Status.byId(status),\n          {}(lib, Status.byId(status)),\n        );\n      }}",
-        message_function_name(api)
-    );
-    let statement = dart_call(api, f, "lib", &call.args, &fail);
+    let fail = "      if (status != 0) throw plainRefusal(lib, status);";
+    let statement = dart_call(api, f, "lib", &call.args, fail);
     let _ = writeln!(
         out,
         "{}{returns} {name}({}) {{\n{}\n}}\n",

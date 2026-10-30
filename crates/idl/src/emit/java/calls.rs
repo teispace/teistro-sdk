@@ -511,7 +511,7 @@ fn helpers(api: &Api) -> String {
         Status code = Status.of(status);
         MemorySegment message = Boundary.call(() -> (MemorySegment) lib.{message}.invokeExact(status));
         String text = Boundary.text(message);
-        return new TeistroException(code, text.isEmpty() ? code.key() : text, "", "", "", "");
+        return InternalHooks.told(new TeistroException(code, text.isEmpty() ? code.key() : text, "", "", "", ""));
     }}
 
     /** A string the library allocated, copied out and freed. */

@@ -91,6 +91,34 @@ final class UnitsTest {
      * @param teistro the library
      */
     static void add(Map<String, BindingTest.Test> tests, Teistro teistro) {
+        // No build of the library can be made to panic on request, so the
+        // real library's own records are classified at the layer that
+        // classifies them, given the INTERNAL status a panic answers with.
+        tests.put("an INTERNAL refusal tells a host's hook, and no other does", () -> {
+            List<InternalReport> heard = new ArrayList<>();
+            Runnable broken = Teistro.onInternalError(report -> {
+                throw new IllegalStateException("a broken reporter");
+            });
+            Runnable stop = Teistro.onInternalError(heard::add);
+            try (Arena arena = Arena.ofConfined()) {
+                MemorySegment error = Boundary.errorRecord(arena);
+                same(Status.INVALID_ARG, Boundary.refusal(Status.INVALID_ARG.id(), error).status(), "a refusal");
+                same(Status.INVALID_ARG, Calls.refused(teistro.lib, Status.INVALID_ARG.id()).status(), "no record");
+                same(List.of(), heard, "no other status is told");
+                same(Status.INTERNAL, Boundary.refusal(Teistro.INTERNAL_CODE, error).status(), "the record's");
+                same(Status.INTERNAL, Calls.refused(teistro.lib, -10).status(), "a status alone");
+            }
+            InternalReport told = new InternalReport("INTERNAL", -10, "boundary", teistro.sdkVersion());
+            same(List.of(told, told), heard, "both heard, a thrower dropped");
+            stop.run();
+            stop.run();
+            broken.run();
+            Calls.refused(teistro.lib, -10);
+            same(2, heard.size(), "stopped");
+            check(Arrays.stream(InternalReport.class.getRecordComponents())
+                    .noneMatch(part -> part.getName().contains("message")), "a report has no message");
+        });
+
         tests.put("a whole number is held to the width it crosses as, naming its field", () -> {
             same((byte) -1, Values.u8("f", 255), "255 is a u8's top");
             same("`f` is 0 to 255, and 256 is not", refused(() -> Values.u8("f", 256)), "past a u8");

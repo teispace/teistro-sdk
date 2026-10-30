@@ -33,13 +33,16 @@ import com.teispace.teistro.ffi.Native;
  * usable until it is closed itself.
  */
 public final class Teistro implements AutoCloseable {
+    /** The stable code of the {@code INTERNAL} status, the same in every binding. */
+    public static final int INTERNAL_CODE = -10;
+
     /** The system property naming the library to load, which is then the only one tried. */
     public static final String LIBRARY_PROPERTY = "teistro.library";
 
     /** The environment variable naming the library, as every binding's loader reads it. */
     public static final String LIBRARY_VARIABLE = "TEISTRO_LIBRARY";
 
-    private final Native lib;
+    final Native lib;
     private final Path path;
     private final Map<String, Object> buildInfo;
 
@@ -220,6 +223,20 @@ public final class Teistro implements AutoCloseable {
      */
     public Path path() {
         return path;
+    }
+
+    /**
+     * Calls {@code hook} with every {@link InternalReport} from now on, on
+     * whichever thread was refused: the SDK failing inside itself, which the
+     * C ABI refuses as {@code INTERNAL}. A hook hears the status, its code,
+     * the kind and the SDK's version, never the message, which may quote what
+     * the call was given; what a hook throws is dropped.
+     *
+     * @param hook what to tell
+     * @return what stops that when run
+     */
+    public static Runnable onInternalError(java.util.function.Consumer<InternalReport> hook) {
+        return InternalHooks.add(hook);
     }
 
     /**

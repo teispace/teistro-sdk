@@ -39,7 +39,8 @@ import 'src/records.dart';
 
 export 'src/blob.dart';
 export 'src/catalogue.dart';
-export 'src/ffi.dart';
+export 'src/ffi.dart' hide plainRefusal, refusalOf;
+export 'src/internal.dart' show InternalReport, internalCode, onInternalError;
 export 'src/records.dart';
 export 'src/host.dart';
 export 'src/install.dart'

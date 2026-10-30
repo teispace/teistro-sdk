@@ -83,12 +83,12 @@ final class Boundary {
     static TeistroException refusal(int status, MemorySegment error) {
         Status code = Status.of(status);
         String message = text((MemorySegment) Native.TsError.MESSAGE.get(error, 0L));
-        return new TeistroException(
+        return InternalHooks.told(new TeistroException(
                 code,
                 message.isEmpty() ? code.key() : message,
                 text((MemorySegment) Native.TsError.DETAIL.get(error, 0L)),
                 text((MemorySegment) Native.TsError.FIELD.get(error, 0L)),
                 text((MemorySegment) Native.TsError.HINT.get(error, 0L)),
-                text((MemorySegment) Native.TsError.KEY.get(error, 0L)));
+                text((MemorySegment) Native.TsError.KEY.get(error, 0L))));
     }
 }

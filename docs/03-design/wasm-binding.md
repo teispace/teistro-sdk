@@ -179,6 +179,18 @@ Rejected:
   `onInternalError(hook)`, which receives the status, its code, the kind
   (`boundary` for a panic the C ABI caught, `trap` for this) and the SDK's
   version, and never the message, which may quote what the call was given.
+  **The Python, Dart and Java layers have the same hook** in each language's
+  idiom, `on_internal_error`, `onInternalError` and
+  `Teistro.onInternalError`, each with `INTERNAL_CODE` or its spelling, the
+  same report and an unsubscribe; a hook that throws is dropped. Their only
+  kind is `boundary`, since none of them runs a wasm module. Each tells its
+  hooks at the one place a status from the C ABI becomes an exception (a
+  context's last error, a failed way in's record, or a status alone), so an
+  `INTERNAL` this layer raises itself over a blob it cannot read is not
+  reported, as it is not in Node. No build of the library can be made to
+  panic on request and no call reaches an `INTERNAL` from outside, so their
+  tests classify the real library's records at that place, given the status
+  a panic answers with, and a real refusal of another status tells no one.
 
 ## 5. Gates
 
