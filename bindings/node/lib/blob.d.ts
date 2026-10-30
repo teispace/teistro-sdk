@@ -6259,6 +6259,18 @@ export interface PanchangaCounts {
    * How many rows of `ashubha_yogas` belong to this day.
    */
   readonly ashubhaYogas: Uint32Array;
+  /**
+   * How many rows of `bhadra_vasa` belong to this day.
+   */
+  readonly bhadraVasa: Uint32Array;
+  /**
+   * How many rows of `shiva_vasa` belong to this day.
+   */
+  readonly shivaVasa: Uint32Array;
+  /**
+   * How many rows of `named_panchaka` belong to this day.
+   */
+  readonly namedPanchaka: Uint32Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7322,6 +7334,153 @@ export interface PanchangaAshubhaYogas {
 }
 
 /**
+ * The `bhadra_vasa` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Where Bhadra dwells while the vishti karana holds, by the sign the Moon stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820): `MARTYA` with the Moon in Cancer, Leo, Aquarius or Pisces, `SVARGA` in Aries, Taurus, Gemini or Scorpio, `PATALA` in the rest; only `MARTYA`, the earth, is harmful. One span for each stretch a vishti and a sign both held, so a sign change in Bhadra splits it; empty on a day with no vishti.
+ */
+export interface PanchangaBhadraVasa {
+  /**
+   * Where Bhadra dwells.
+   * The values are `BhadraVasa` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `shiva_vasa` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Where Shiva dwells, one span for each tithi the day held, under `panchanga.shiva_vasa`: a printed convention with no text behind it, named in the provenance's `applied_conventions` (crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7: 1 Kailasa, 2 beside Gauri, 3 on the bull, 4 the assembly, 5 the meal, 6 at play, 0 the cremation ground. Empty under `NONE`.
+ */
+export interface PanchangaShivaVasa {
+  /**
+   * Where Shiva dwells.
+   * The values are `ShivaVasa` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `named_panchaka` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`.
+ */
+export interface PanchangaNamedPanchaka {
+  /**
+   * The panchaka's name.
+   * The values are `Panchaka` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * A decoded Panchanga blob.
  *
  * A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -7493,6 +7652,18 @@ export interface Panchanga {
    * The day's inauspicious yogas (Muhurta Chintamani, Shubhashubha-prakarana vv. 8–9, crux C760): a span for each tithi the day held that is dagdha (`DAGDHA`), visha (`VISHA`) or hutashana (`HUTASHANA`) with the day's vara, by its number in either paksha, and for the nakshatra that is the vara's Yamaghanta (`YAMAGHANTA`), each over that limb's own span and in the order they begin. Vasishtha lifts them at night; the spans run as the limbs do and the reader judges.
    */
   readonly ashubhaYogas: PanchangaAshubhaYogas;
+  /**
+   * Where Bhadra dwells while the vishti karana holds, by the sign the Moon stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820): `MARTYA` with the Moon in Cancer, Leo, Aquarius or Pisces, `SVARGA` in Aries, Taurus, Gemini or Scorpio, `PATALA` in the rest; only `MARTYA`, the earth, is harmful. One span for each stretch a vishti and a sign both held, so a sign change in Bhadra splits it; empty on a day with no vishti.
+   */
+  readonly bhadraVasa: PanchangaBhadraVasa;
+  /**
+   * Where Shiva dwells, one span for each tithi the day held, under `panchanga.shiva_vasa`: a printed convention with no text behind it, named in the provenance's `applied_conventions` (crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7: 1 Kailasa, 2 beside Gauri, 3 on the bull, 4 the assembly, 5 the meal, 6 at play, 0 the cremation ground. Empty under `NONE`.
+   */
+  readonly shivaVasa: PanchangaShivaVasa;
+  /**
+   * The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`.
+   */
+  readonly namedPanchaka: PanchangaNamedPanchaka;
 }
 
 /**

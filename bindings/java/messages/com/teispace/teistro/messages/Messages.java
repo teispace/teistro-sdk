@@ -428,6 +428,31 @@ public final class Messages {
         }
     }
 
+    /** A `bhadra_vasa` as a message names it: the full catalogue key. */
+    public enum BhadraVasaKey {
+        /** `bhadra_vasa.SVARGA`. */
+        SVARGA("bhadra_vasa.SVARGA"),
+        /** `bhadra_vasa.MARTYA`. */
+        MARTYA("bhadra_vasa.MARTYA"),
+        /** `bhadra_vasa.PATALA`. */
+        PATALA("bhadra_vasa.PATALA");
+
+        private final String value;
+
+        BhadraVasaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `blackout_kind` as a message names it: the full catalogue key. */
     public enum BlackoutKindKey {
         /** `blackout_kind.CHATURMAS`. */
@@ -1541,6 +1566,39 @@ public final class Messages {
         private final String value;
 
         SamvatsaraKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `shiva_vasa` as a message names it: the full catalogue key. */
+    public enum ShivaVasaKey {
+        /** `shiva_vasa.KAILASA`. */
+        KAILASA("shiva_vasa.KAILASA"),
+        /** `shiva_vasa.GAURI`. */
+        GAURI("shiva_vasa.GAURI"),
+        /** `shiva_vasa.VRISHABHA`. */
+        VRISHABHA("shiva_vasa.VRISHABHA"),
+        /** `shiva_vasa.SABHA`. */
+        SABHA("shiva_vasa.SABHA"),
+        /** `shiva_vasa.BHOJANA`. */
+        BHOJANA("shiva_vasa.BHOJANA"),
+        /** `shiva_vasa.KRIDA`. */
+        KRIDA("shiva_vasa.KRIDA"),
+        /** `shiva_vasa.SHMASHANA`. */
+        SHMASHANA("shiva_vasa.SHMASHANA");
+
+        private final String value;
+
+        ShivaVasaKey(String value) {
             this.value = value;
         }
 
@@ -4748,6 +4806,52 @@ public final class Messages {
                  */
                 public EntityForms yukteshwar() {
                     return r.entity("ayanamsha.YUKTESHWAR");
+                }
+            }
+
+
+            /**
+             * The messages under `bhadra_vasa`.
+             *
+             * @return the group
+             */
+            public SdkEntityBhadraVasa bhadraVasa() {
+                return new SdkEntityBhadraVasa(r);
+            }
+
+            /** The messages under `SdkEntityBhadraVasa`, each rendered by its own key. */
+            public static final class SdkEntityBhadraVasa {
+                private final Renderer r;
+
+                SdkEntityBhadraVasa(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `bhadra_vasa.MARTYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms martya() {
+                    return r.entity("bhadra_vasa.MARTYA");
+                }
+
+                /**
+                 * The forms of `bhadra_vasa.PATALA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms patala() {
+                    return r.entity("bhadra_vasa.PATALA");
+                }
+
+                /**
+                 * The forms of `bhadra_vasa.SVARGA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms svarga() {
+                    return r.entity("bhadra_vasa.SVARGA");
                 }
             }
 
@@ -11327,6 +11431,88 @@ public final class Messages {
                  */
                 public EntityForms yuva() {
                     return r.entity("samvatsara.YUVA");
+                }
+            }
+
+
+            /**
+             * The messages under `shiva_vasa`.
+             *
+             * @return the group
+             */
+            public SdkEntityShivaVasa shivaVasa() {
+                return new SdkEntityShivaVasa(r);
+            }
+
+            /** The messages under `SdkEntityShivaVasa`, each rendered by its own key. */
+            public static final class SdkEntityShivaVasa {
+                private final Renderer r;
+
+                SdkEntityShivaVasa(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `shiva_vasa.BHOJANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhojana() {
+                    return r.entity("shiva_vasa.BHOJANA");
+                }
+
+                /**
+                 * The forms of `shiva_vasa.GAURI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gauri() {
+                    return r.entity("shiva_vasa.GAURI");
+                }
+
+                /**
+                 * The forms of `shiva_vasa.KAILASA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kailasa() {
+                    return r.entity("shiva_vasa.KAILASA");
+                }
+
+                /**
+                 * The forms of `shiva_vasa.KRIDA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms krida() {
+                    return r.entity("shiva_vasa.KRIDA");
+                }
+
+                /**
+                 * The forms of `shiva_vasa.SABHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sabha() {
+                    return r.entity("shiva_vasa.SABHA");
+                }
+
+                /**
+                 * The forms of `shiva_vasa.SHMASHANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shmashana() {
+                    return r.entity("shiva_vasa.SHMASHANA");
+                }
+
+                /**
+                 * The forms of `shiva_vasa.VRISHABHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vrishabha() {
+                    return r.entity("shiva_vasa.VRISHABHA");
                 }
             }
 

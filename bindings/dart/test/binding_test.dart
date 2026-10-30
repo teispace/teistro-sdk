@@ -2850,6 +2850,56 @@ void _engineTests() {
       shunned += expected.length;
     }
     expect(shunned, greaterThan(0));
+    // Muhurta Chintamani, Shubhashubha-prakarana v. 45 (C820): Bhadra dwells
+    // by the Moon's sign, Aries first, inside a Vishti; and the Surya
+    // Panchanga's Shiva vasa, (2t + 5) mod 7 over the tithi t from 1 (C750).
+    const loka = [
+      BhadraVasa.svarga, BhadraVasa.svarga, BhadraVasa.svarga, //
+      BhadraVasa.martya, BhadraVasa.martya, BhadraVasa.patala, //
+      BhadraVasa.patala, BhadraVasa.svarga, BhadraVasa.patala, //
+      BhadraVasa.patala, BhadraVasa.martya, BhadraVasa.martya,
+    ];
+    const shiva = [
+      ShivaVasa.shmashana,
+      ShivaVasa.kailasa,
+      ShivaVasa.gauri,
+      ShivaVasa.vrishabha,
+      ShivaVasa.sabha,
+      ShivaVasa.bhojana,
+      ShivaVasa.krida,
+    ];
+    var dwelt = 0;
+    for (final day in week) {
+      for (final span in day.bhadraVasa) {
+        expect(
+          day.karana.where(
+            (k) =>
+                k.member == Karana.vishti &&
+                k.whole.from <= span.whole.from &&
+                span.whole.to <= k.whole.to,
+          ),
+          hasLength(1),
+        );
+        final sign = day.moonSigns.singleWhere(
+          (s) =>
+              s.whole.from <= span.whole.from && span.whole.from < s.whole.to,
+        );
+        expect(span.member, loka[sign.member.id]);
+        dwelt += 1;
+      }
+      expect(
+        [for (final span in day.shivaVasa) (span.member, span.whole.from)],
+        [
+          for (final tithi in day.tithi)
+            (shiva[(2 * (tithi.member.id + 1) + 5) % 7], tithi.whole.from),
+        ],
+      );
+      expect(
+        day.namedPanchaka.length,
+        lessThanOrEqualTo(day.panchaka.isEmpty ? 0 : 1),
+      );
+    }
+    expect(dwelt, greaterThan(0));
     // The Sun entered Mithuna on 15 June 2024: one day of the week holds its
     // punya kala, inside that day's daylight (Dharmasindhu p. 2, C752).
     final held = [

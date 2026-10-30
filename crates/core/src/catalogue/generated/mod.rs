@@ -71,6 +71,8 @@ mod tibetan_element;
 mod tibetan_animal;
 mod agni_vasa;
 mod ashubha_yoga;
+mod bhadra_vasa;
+mod shiva_vasa;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -142,6 +144,8 @@ pub use tibetan_element::*;
 pub use tibetan_animal::*;
 pub use agni_vasa::*;
 pub use ashubha_yoga::*;
+pub use bhadra_vasa::*;
+pub use shiva_vasa::*;
 
 use crate::key::KeyId;
 
@@ -227,6 +231,8 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::TibetanAnimal => TibetanAnimal::from_key(key).map(TibetanAnimal::key_id),
         Kind::AgniVasa => AgniVasa::from_key(key).map(AgniVasa::key_id),
         Kind::AshubhaYoga => AshubhaYoga::from_key(key).map(AshubhaYoga::key_id),
+        Kind::BhadraVasa => BhadraVasa::from_key(key).map(BhadraVasa::key_id),
+        Kind::ShivaVasa => ShivaVasa::from_key(key).map(ShivaVasa::key_id),
         _ => None,
     }
 }
@@ -310,6 +316,8 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::TibetanAnimal => TibetanAnimal::from_id(id.id()).map(TibetanAnimal::key),
         Kind::AgniVasa => AgniVasa::from_id(id.id()).map(AgniVasa::key),
         Kind::AshubhaYoga => AshubhaYoga::from_id(id.id()).map(AshubhaYoga::key),
+        Kind::BhadraVasa => BhadraVasa::from_id(id.id()).map(BhadraVasa::key),
+        Kind::ShivaVasa => ShivaVasa::from_id(id.id()).map(ShivaVasa::key),
         _ => None,
     }
 }

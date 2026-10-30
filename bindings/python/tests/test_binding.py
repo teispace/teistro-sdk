@@ -6327,6 +6327,33 @@ class ADaysOmens(AJuneWeek):
             shunned += len(expected)
         self.assertGreater(shunned, 0)
 
+    def test_bhadra_and_shiva_dwell_where_their_sources_put_them(self) -> None:
+        # Muhurta Chintamani, Shubhashubha-prakarana v. 45 (C820): Bhadra
+        # dwells by the Moon's sign, Aries first, inside a Vishti; and the
+        # Surya Panchanga's Shiva vasa, (2t + 5) mod 7 over the tithi t
+        # from 1 (C750).
+        loka = "SSSMMPPSPPMM"
+        lokas = {"S": "SVARGA", "M": "MARTYA", "P": "PATALA"}
+        shiva = ("SHMASHANA", "KAILASA", "GAURI", "VRISHABHA", "SABHA", "BHOJANA", "KRIDA")
+        dwelt = 0
+        for day in self.days():
+            for span in day.bhadra_vasa:
+                vishti = [
+                    k
+                    for k in day.karana
+                    if k.member.name == "VISHTI" and k.whole.from_jd <= span.whole.from_jd and span.whole.to_jd <= k.whole.to_jd
+                ]
+                self.assertEqual(len(vishti), 1)
+                (sign,) = [s for s in day.moon_signs if s.whole.from_jd <= span.whole.from_jd < s.whole.to_jd]
+                self.assertEqual(span.member.name, lokas[loka[int(sign.member)]])
+                dwelt += 1
+            self.assertEqual(
+                [(span.member.name, span.whole) for span in day.shiva_vasa],
+                [(shiva[(2 * (int(tithi.member) + 1) + 5) % 7], tithi.whole) for tithi in day.tithi],
+            )
+            self.assertLessEqual(len(day.named_panchaka), 1 if day.panchaka else 0)
+        self.assertGreater(dwelt, 0)
+
     def test_mithuna_s_punya_kala_falls_in_one_daylight(self) -> None:
         # The Sun entered Mithuna on 15 June 2024: one day of the week holds
         # its punya kala, inside that day's daylight (Dharmasindhu p. 2, C752).

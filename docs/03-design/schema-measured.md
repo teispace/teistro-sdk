@@ -16,7 +16,7 @@ and reads the source for what the values cannot say about themselves.
 
 The sample is built rather than recorded, by `cargo run -p
 teistro-serial --example documents`: 3 documents over the analytic test
-provider, 316 distinct paths between them. A recorded sample would go
+provider, 321 distinct paths between them. A recorded sample would go
 stale the first time a section gained a field and the pass would not
 notice.
 
@@ -28,12 +28,12 @@ Sections 3 and 4 decide it.
 
 | sample | what it holds | sections | paths |
 |---|---|---|---|
-| `whole` | every section the layer can produce | 9 | 316 |
-| `day` | a foundation and the almanac of its day | 2 | 167 |
+| `whole` | every section the layer can produce | 9 | 321 |
+| `day` | a foundation and the almanac of its day | 2 | 172 |
 | `bare` | a foundation alone, the smallest document there is | 1 | 72 |
 
 Across all three, by the type a schema would give the value:
-15 boolean, 57 integer, 6 null, 125 number, 127 string.
+15 boolean, 57 integer, 6 null, 129 number, 128 string.
 
 ## 3. A whole double is written as an integer
 
@@ -46,7 +46,7 @@ that really is a count.
 
 | numeric paths | integer in every sample | decimal somewhere | both, across samples |
 |---|---|---|---|
-| 170 | 45 | 113 | 12 |
+| 174 | 45 | 117 | 12 |
 
 The ambiguity is not theoretical. 12 paths are written both ways within
 the same sample set:
@@ -77,9 +77,9 @@ the schema comes from.
 
 | string paths | drawn from the catalogue | free text |
 |---|---|---|
-| 127 | 121 | 6 |
+| 128 | 122 | 6 |
 
-A schema would constrain each of those 121 with an `enum`, and it cannot
+A schema would constrain each of those 122 with an `enum`, and it cannot
 get the members from the documents: the widest of them shows 13 values,
 where the catalogue's own list is longer for every one. A sample proves
 a member exists; it never proves a member does not.
@@ -99,7 +99,7 @@ samples:
 
 | paths in every sample | paths in some | top-level sections |
 |---|---|---|
-| 72 | 244 | 9 |
+| 72 | 249 | 9 |
 
 The top-level sections of the widest document are `aspects`, `dashas`,
 `drawings`, `foundation`, `houses`, `panchanga`, `points`, `state`,
@@ -196,18 +196,18 @@ chart at all. It can now publish one and read it back.
 A schema's `enum` has to spell a member the way the document really
 writes it. Reading every `enum` and `const` in the document's own schema
 — a closed enum's members and a tagged union's tags, from whichever
-crate holds the value — 674 words are written:
+crate holds the value — 679 words are written:
 
 | spelt | words |
 |---|---|
-| as a key, `[A-Z][A-Z0-9_]*` | 674 |
+| as a key, `[A-Z][A-Z0-9_]*` | 679 |
 | otherwise | 0 |
 
 **Every one is a key**, so a consumer reading a document meets one
 spelling of a member everywhere, the spelling a request takes and every
 binding reads back.
 
-The schema says the reader takes 509 more, which no document writes and
+The schema says the reader takes 516 more, which no document writes and
 which it marks `writeOnly`: **every one is a catalogue member's full
 key** (`graha.SUN`), the spelling every binding reads a member back as,
 so a request may hand back what it was given.
@@ -230,8 +230,8 @@ exponent.
 
 | sample | largest number | decimals resolved there | numbers | a correct parser moves | this build's parser moves |
 |---|---|---|---|---|---|
-| `whole` | 2502450 | 10 | 4964 | 0 | 0 |
-| `day` | 2460506 | 10 | 419 | 0 | 0 |
+| `whole` | 2502450 | 10 | 4972 | 0 | 0 |
+| `day` | 2460506 | 10 | 427 | 0 | 0 |
 | `bare` | 2460483 | 10 | 171 | 0 | 0 |
 
 Both of the last two columns are nought, and the second only because the
@@ -264,12 +264,12 @@ for, and that is where a fixed count of decimals ran out.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the schema can be derived from the documents | falsified | 45 of 170 numeric paths are ambiguous |
+| the schema can be derived from the documents | falsified | 45 of 174 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
 | the layer's types read back, so a round trip can gate the schema | **holds** | 184 types that serialise also derive `Deserialize` |
 | every word a document writes is spelt as a key | **holds** | 0 of the schema's words are not |
-| every number the form writes reads back as the same double | **holds** | 0 of 5554 move under a correct parser |
-| this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5554 |
+| every number the form writes reads back as the same double | **holds** | 0 of 5570 move under a correct parser |
+| this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5570 |
 
 The measurement falsifies 2 of the 6 proposed rules. Those three say the
 same thing about **where** a schema comes from: the description, beside

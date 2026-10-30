@@ -376,6 +376,33 @@ knob!(
         Raman = "RAMAN" }
 );
 knob!(
+    /// What the panchaka a day holds is named, a printed convention
+    /// with no text behind it (`03-design/printed-conventions.md`, crux
+    /// C821).
+    ///
+    /// Almanacs name a panchaka by the vara its first instant falls in:
+    /// Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday
+    /// Mrityu, and Wednesday and Thursday none. No text read gives the
+    /// list; Muhurta Chintamani's weekday table (Vivaha-prakarana v. 72)
+    /// is the bana's, a different reading.
+    PanchakaName { /// By the vara the panchaka begins on, as the almanacs print it.
+        Weekday = "WEEKDAY", /// No name: the day's panchaka spans alone.
+        None = "NONE" }
+);
+knob!(
+    /// Where Shiva dwells on each tithi, the Shiva vasa an almanac prints
+    /// before a rudri: a printed convention with no text behind it
+    /// (`03-design/printed-conventions.md`, crux C750).
+    ///
+    /// The Surya Panchanga (VS 2082, p. 60) prints it for every tithi and
+    /// names the *Meru Tantra*; the 1908 edition of that tantra does not
+    /// show it, so the SDK flags it as a convention in every answer that
+    /// carries it.
+    ShivaVasaReading { /// The tithi t, 1 to 30 from Shukla Pratipada, as (2t + 5) mod 7, as the almanacs print it.
+        Printed = "PRINTED", /// No Shiva vasa.
+        None = "NONE" }
+);
+knob!(
     /// How many ghatis around each sankranti are its punya kala, the
     /// window for the bath and the gifts (`03-design/panchanga-day.md`
     /// §21.5, crux C752).

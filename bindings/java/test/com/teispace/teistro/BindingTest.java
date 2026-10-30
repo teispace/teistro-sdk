@@ -2075,6 +2075,34 @@ public final class BindingTest {
                     shunned += expected.size();
                 }
                 check(shunned > 0, "a week holds an inauspicious yoga");
+                // Muhurta Chintamani, Shubhashubha-prakarana v. 45 (C820): Bhadra dwells by the Moon's sign, Aries
+                // first, inside a Vishti; and the Surya Panchanga's Shiva vasa, (2t + 5) mod 7 over the tithi t
+                // from 1 (C750).
+                List<BhadraVasa> loka = List.of(BhadraVasa.SVARGA, BhadraVasa.SVARGA, BhadraVasa.SVARGA,
+                        BhadraVasa.MARTYA, BhadraVasa.MARTYA, BhadraVasa.PATALA, BhadraVasa.PATALA, BhadraVasa.SVARGA,
+                        BhadraVasa.PATALA, BhadraVasa.PATALA, BhadraVasa.MARTYA, BhadraVasa.MARTYA);
+                List<ShivaVasa> shiva = List.of(ShivaVasa.SHMASHANA, ShivaVasa.KAILASA, ShivaVasa.GAURI,
+                        ShivaVasa.VRISHABHA, ShivaVasa.SABHA, ShivaVasa.BHOJANA, ShivaVasa.KRIDA);
+                int dwelt = 0;
+                for (AlmanacDay day : week) {
+                    for (Span<BhadraVasa> span : day.bhadraVasa()) {
+                        check(day.karana().stream().filter(k -> k.member() == Karana.VISHTI
+                                && k.whole().fromJd() <= span.whole().fromJd()
+                                && span.whole().toJd() <= k.whole().toJd()).count() == 1, "Bhadra dwells in a Vishti");
+                        Span<Rashi> sign = day.moonSigns().stream().filter(s -> s.whole().fromJd() <= span.whole().fromJd()
+                                && span.whole().fromJd() < s.whole().toJd()).findFirst().orElseThrow();
+                        same(loka.get(sign.member().id()), span.member(), "v. 45's loka");
+                        dwelt += 1;
+                    }
+                    List<Map.Entry<ShivaVasa, Double>> held = new ArrayList<>();
+                    for (Span<Tithi> tithi : day.tithi()) {
+                        held.add(Map.entry(shiva.get((2 * (tithi.member().id() + 1) + 5) % 7), tithi.whole().fromJd()));
+                    }
+                    same(held, day.shivaVasa().stream()
+                            .map(span -> Map.entry(span.member(), span.whole().fromJd())).toList(), "the printed Shiva vasa");
+                    check(day.namedPanchaka().size() <= (day.panchaka().isEmpty() ? 0 : 1), "a name only for a panchaka");
+                }
+                check(dwelt > 0, "a week holds a Vishti");
                 // A sankranti's punya kala falls in one daylight (Dharmasindhu
                 // p. 2, C752): no more than one in a week, inside its day.
                 int kalas = 0;

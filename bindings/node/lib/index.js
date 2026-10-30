@@ -63,6 +63,8 @@ import {
   DirectionById,
   AgniVasaById,
   AshubhaYogaById,
+  BhadraVasaById,
+  ShivaVasaById,
   GhatiReckoningById,
   GrahaById,
   HouseSystemById,
@@ -2218,6 +2220,36 @@ export class AlmanacDay {
    */
   get ashubhaYogas() {
     return this.#spans('ashubhaYogas', AshubhaYogaById);
+  }
+
+  /**
+   * Where Bhadra dwells while the vishti karana holds, by the sign the Moon
+   * stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820);
+   * only `MARTYA`, the earth, is harmful, and a sign change in Bhadra splits
+   * it.
+   */
+  get bhadraVasa() {
+    return this.#spans('bhadraVasa', BhadraVasaById);
+  }
+
+  /**
+   * Where Shiva dwells, one span for each tithi the day held: a printed
+   * convention with no text behind it, chosen by `panchanga.shiva_vasa` and
+   * named in the provenance's `applied_conventions` (crux C750).
+   */
+  get shivaVasa() {
+    return this.#spans('shivaVasa', ShivaVasaById);
+  }
+
+  /**
+   * The panchaka the day holds, named by the vara it began on (Sunday Roga,
+   * Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu): a printed
+   * convention, chosen by `panchanga.panchaka_name` and named in the
+   * provenance's `applied_conventions` (crux C821). At most one; `whole` runs
+   * from the panchaka's first instant to the Moon's leaving Revati.
+   */
+  get namedPanchaka() {
+    return this.#spans('namedPanchaka', PanchakaById);
   }
 
   /**

@@ -783,8 +783,10 @@ test('every catalogue enum has a complete id table', () => {
   // agni vasa's `TsAgniVasa`, three, with its member of `TsKind`; 1414
   // since the inauspicious yogas' `TsAshubhaYoga`, four, with its member;
   // 1418 since `TsCalendar` gained the four regional solar calendars;
-  // 1421 since date arithmetic's `TsOverflow`, three.
-  assert.equal(entries, 1421, 'every member of every enum is in a table');
+  // 1433 since Bhadra's `TsBhadraVasa`, three, and the Shiva vasa's
+  // `TsShivaVasa`, seven, each with its member of `TsKind`, after date
+  // arithmetic's `TsOverflow`, three.
+  assert.equal(entries, 1433, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4227,6 +4229,28 @@ test('fire follows each tithi with the vara, and Rahu walks the daylight from th
     shunned += expected.length;
   }
   assert.ok(shunned > 0, 'a week holds an inauspicious yoga');
+  // Muhurta Chintamani, Shubhashubha-prakarana v. 45 (C820): Bhadra dwells
+  // by the Moon's sign, Aries first, inside a Vishti; and the Surya
+  // Panchanga's Shiva vasa, (2t + 5) mod 7 over the tithi t from 1 (C750).
+  const loka = ['SVARGA', 'SVARGA', 'SVARGA', 'MARTYA', 'MARTYA', 'PATALA', 'PATALA', 'SVARGA', 'PATALA', 'PATALA', 'MARTYA', 'MARTYA'];
+  const shiva = ['SHMASHANA', 'KAILASA', 'GAURI', 'VRISHABHA', 'SABHA', 'BHOJANA', 'KRIDA'];
+  let dwelt = 0;
+  for (let i = 0; i < week.length; i += 1) {
+    const day = week.at(i);
+    for (const span of day.bhadraVasa) {
+      const vishti = day.karana.find((k) => k.member === 'karana.VISHTI' && k.whole.from <= span.whole.from && span.whole.to <= k.whole.to);
+      assert.ok(vishti, 'Bhadra dwells only in a Vishti');
+      const sign = day.moonSigns.find((s) => s.whole.from <= span.whole.from && span.whole.from < s.whole.to);
+      assert.equal(span.member, `bhadra_vasa.${loka[idOf(catalogue.RashiById, sign.member)]}`);
+      dwelt += 1;
+    }
+    assert.deepEqual(
+      day.shivaVasa.map((span) => [span.member, span.whole.from]),
+      day.tithi.map((tithi) => [`shiva_vasa.${shiva[(2 * (idOf(catalogue.TithiById, tithi.member) + 1) + 5) % 7]}`, tithi.whole.from]),
+    );
+    assert.ok(day.namedPanchaka.length <= (day.panchaka.length > 0 ? 1 : 0), 'a name only for a panchaka');
+  }
+  assert.ok(dwelt > 0, 'a week holds a Vishti');
   // The Sun entered Mithuna on 15 June 2024: one day of the week holds its
   // punya kala, inside that day's daylight (Dharmasindhu p. 2, C752).
   const held = [];

@@ -7800,6 +7800,9 @@ final class PanchangaCounts {
     required this.punyaKala,
     required this.homaAhuti,
     required this.ashubhaYogas,
+    required this.bhadraVasa,
+    required this.shivaVasa,
+    required this.namedPanchaka,
     required this.length,
   });
 
@@ -7874,6 +7877,15 @@ final class PanchangaCounts {
 
   /// How many rows of `ashubha_yogas` belong to this day.
   final Uint32List ashubhaYogas;
+
+  /// How many rows of `bhadra_vasa` belong to this day.
+  final Uint32List bhadraVasa;
+
+  /// How many rows of `shiva_vasa` belong to this day.
+  final Uint32List shivaVasa;
+
+  /// How many rows of `named_panchaka` belong to this day.
+  final Uint32List namedPanchaka;
 
   /// The number of rows every column holds.
   final int length;
@@ -8939,6 +8951,153 @@ final class PanchangaAshubhaYogas {
   final int length;
 }
 
+/// The `bhadra_vasa` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Where Bhadra dwells while the vishti karana holds, by the sign the Moon stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820): `MARTYA` with the Moon in Cancer, Leo, Aquarius or Pisces, `SVARGA` in Aries, Taurus, Gemini or Scorpio, `PATALA` in the rest; only `MARTYA`, the earth, is harmful. One span for each stretch a vishti and a sign both held, so a sign change in Bhadra splits it; empty on a day with no vishti.
+final class PanchangaBhadraVasa {
+  const PanchangaBhadraVasa({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// Where Bhadra dwells.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `shiva_vasa` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Where Shiva dwells, one span for each tithi the day held, under `panchanga.shiva_vasa`: a printed convention with no text behind it, named in the provenance's `applied_conventions` (crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7: 1 Kailasa, 2 beside Gauri, 3 on the bull, 4 the assembly, 5 the meal, 6 at play, 0 the cremation ground. Empty under `NONE`.
+final class PanchangaShivaVasa {
+  const PanchangaShivaVasa({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// Where Shiva dwells.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `named_panchaka` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`.
+final class PanchangaNamedPanchaka {
+  const PanchangaNamedPanchaka({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// The panchaka's name.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Panchanga blob.
 ///
 /// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -8985,6 +9144,9 @@ final class Panchanga {
     required this.punyaKala,
     required this.homaAhuti,
     required this.ashubhaYogas,
+    required this.bhadraVasa,
+    required this.shivaVasa,
+    required this.namedPanchaka,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -9110,6 +9272,15 @@ final class Panchanga {
   /// The day's inauspicious yogas (Muhurta Chintamani, Shubhashubha-prakarana vv. 8–9, crux C760): a span for each tithi the day held that is dagdha (`DAGDHA`), visha (`VISHA`) or hutashana (`HUTASHANA`) with the day's vara, by its number in either paksha, and for the nakshatra that is the vara's Yamaghanta (`YAMAGHANTA`), each over that limb's own span and in the order they begin. Vasishtha lifts them at night; the spans run as the limbs do and the reader judges.
   final PanchangaAshubhaYogas ashubhaYogas;
 
+  /// Where Bhadra dwells while the vishti karana holds, by the sign the Moon stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820): `MARTYA` with the Moon in Cancer, Leo, Aquarius or Pisces, `SVARGA` in Aries, Taurus, Gemini or Scorpio, `PATALA` in the rest; only `MARTYA`, the earth, is harmful. One span for each stretch a vishti and a sign both held, so a sign change in Bhadra splits it; empty on a day with no vishti.
+  final PanchangaBhadraVasa bhadraVasa;
+
+  /// Where Shiva dwells, one span for each tithi the day held, under `panchanga.shiva_vasa`: a printed convention with no text behind it, named in the provenance's `applied_conventions` (crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7: 1 Kailasa, 2 beside Gauri, 3 on the bull, 4 the assembly, 5 the meal, 6 at play, 0 the cremation ground. Empty under `NONE`.
+  final PanchangaShivaVasa shivaVasa;
+
+  /// The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`.
+  final PanchangaNamedPanchaka namedPanchaka;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -9153,6 +9324,9 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atPunyaKala = blob.section(34, 'punya_kala');
   final atHomaAhuti = blob.section(35, 'homa_ahuti');
   final atAshubhaYogas = blob.section(36, 'ashubha_yogas');
+  final atBhadraVasa = blob.section(37, 'bhadra_vasa');
+  final atShivaVasa = blob.section(38, 'shiva_vasa');
+  final atNamedPanchaka = blob.section(39, 'named_panchaka');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -9209,6 +9383,9 @@ Panchanga decodePanchanga(Uint8List bytes) {
       punyaKala: blob.column(atCounts, 21, 4, Uint32List.sublistView),
       homaAhuti: blob.column(atCounts, 22, 4, Uint32List.sublistView),
       ashubhaYogas: blob.column(atCounts, 23, 4, Uint32List.sublistView),
+      bhadraVasa: blob.column(atCounts, 24, 4, Uint32List.sublistView),
+      shivaVasa: blob.column(atCounts, 25, 4, Uint32List.sublistView),
+      namedPanchaka: blob.column(atCounts, 26, 4, Uint32List.sublistView),
       length: atCounts.count,
     ),
     day: Day(
@@ -9500,6 +9677,42 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsPala: blob.column(atAshubhaYogas, 7, 1, Uint8List.sublistView),
       endsVipala: blob.column(atAshubhaYogas, 8, 1, Uint8List.sublistView),
       length: atAshubhaYogas.count,
+    ),
+    bhadraVasa: PanchangaBhadraVasa(
+      member: blob.column(atBhadraVasa, 0, 2, Uint16List.sublistView),
+      wholeFrom: blob.column(atBhadraVasa, 1, 8, Float64List.sublistView),
+      wholeTo: blob.column(atBhadraVasa, 2, 8, Float64List.sublistView),
+      insideFrom: blob.column(atBhadraVasa, 3, 8, Float64List.sublistView),
+      insideTo: blob.column(atBhadraVasa, 4, 8, Float64List.sublistView),
+      sunrises: blob.column(atBhadraVasa, 5, 1, Uint8List.sublistView),
+      endsGhati: blob.column(atBhadraVasa, 6, 1, Uint8List.sublistView),
+      endsPala: blob.column(atBhadraVasa, 7, 1, Uint8List.sublistView),
+      endsVipala: blob.column(atBhadraVasa, 8, 1, Uint8List.sublistView),
+      length: atBhadraVasa.count,
+    ),
+    shivaVasa: PanchangaShivaVasa(
+      member: blob.column(atShivaVasa, 0, 2, Uint16List.sublistView),
+      wholeFrom: blob.column(atShivaVasa, 1, 8, Float64List.sublistView),
+      wholeTo: blob.column(atShivaVasa, 2, 8, Float64List.sublistView),
+      insideFrom: blob.column(atShivaVasa, 3, 8, Float64List.sublistView),
+      insideTo: blob.column(atShivaVasa, 4, 8, Float64List.sublistView),
+      sunrises: blob.column(atShivaVasa, 5, 1, Uint8List.sublistView),
+      endsGhati: blob.column(atShivaVasa, 6, 1, Uint8List.sublistView),
+      endsPala: blob.column(atShivaVasa, 7, 1, Uint8List.sublistView),
+      endsVipala: blob.column(atShivaVasa, 8, 1, Uint8List.sublistView),
+      length: atShivaVasa.count,
+    ),
+    namedPanchaka: PanchangaNamedPanchaka(
+      member: blob.column(atNamedPanchaka, 0, 2, Uint16List.sublistView),
+      wholeFrom: blob.column(atNamedPanchaka, 1, 8, Float64List.sublistView),
+      wholeTo: blob.column(atNamedPanchaka, 2, 8, Float64List.sublistView),
+      insideFrom: blob.column(atNamedPanchaka, 3, 8, Float64List.sublistView),
+      insideTo: blob.column(atNamedPanchaka, 4, 8, Float64List.sublistView),
+      sunrises: blob.column(atNamedPanchaka, 5, 1, Uint8List.sublistView),
+      endsGhati: blob.column(atNamedPanchaka, 6, 1, Uint8List.sublistView),
+      endsPala: blob.column(atNamedPanchaka, 7, 1, Uint8List.sublistView),
+      endsVipala: blob.column(atNamedPanchaka, 8, 1, Uint8List.sublistView),
+      length: atNamedPanchaka.count,
     ),
   );
 }

@@ -63,6 +63,27 @@ the previous release, not by nobody having looked.
   C807). The twelve sankrantis are `DatedRule::sankrantis()`, the same
   rules `NEPAL_PANCHANGA` has always carried.
 
+**A day says where Bhadra dwells, names its panchaka, and gives the
+Shiva vasa as a printed convention; Laxmi Puja has its sait window.**
+**Numbers:** every settings hash moves, `panchanga` gaining the knobs
+`panchaka_name` and `shiva_vasa`; every almanac answer's provenance
+gains two `applied_conventions` entries under the root defaults. No
+existing value moves.
+- `Panchanga::bhadra_vasa`: Bhadra's loka by the Moon's sign while
+  Vishti holds (*Muhurta Chintamani*, Shubhashubha-prakarana v. 45,
+  C820), the new catalogue kind `bhadra_vasa`; a sign change splits it.
+- The day's `named_panchaka`: the panchaka from its first instant to the
+  Moon leaving Revati, named by the vara it began on, a printed
+  convention chosen by `panchanga.panchaka_name` (C821).
+- The day's `shiva_vasa`: (2t + 5) mod 7 over each tithi, the Surya
+  Panchanga's table, a printed convention chosen by
+  `panchanga.shiva_vasa` (C750, `03-design/printed-conventions.md`), the
+  new catalogue kind `shiva_vasa`.
+- Span sections 37 to 39 at the C boundary; every binding reads them.
+- The Nepal festival pack's `LAKSHMI_PUJA` sait: the pradosha window
+  from sunset, with no lagna (C824). The Vijaya Dashami tika is not
+  shipped (C823).
+
 ## 1.0.0-rc.1
 
 The first release candidate of 1.0.0, for the maintainer's review and the

@@ -521,6 +521,9 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         usize::from(day.punya_kala.is_some()),
         day.homa_ahuti.len(),
         day.ashubha_yogas().len(),
+        day.bhadra_vasa().len(),
+        day.shiva_vasa.len(),
+        usize::from(day.named_panchaka.is_some()),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -784,6 +787,9 @@ struct RaggedRows {
     punya_kala: Vec<Vec<FixedValue>>,
     homa_ahuti: Vec<Vec<FixedValue>>,
     ashubha_yogas: Vec<Vec<FixedValue>>,
+    bhadra_vasa: Vec<Vec<FixedValue>>,
+    shiva_vasa: Vec<Vec<FixedValue>>,
+    named_panchaka: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -819,6 +825,13 @@ impl RaggedRows {
             )?,
             homa_ahuti: span_rows(days, |day| &day.homa_ahuti, |m| m.id())?,
             ashubha_yogas: owned_span_rows(days, Panchanga::ashubha_yogas, |m| m.id())?,
+            bhadra_vasa: owned_span_rows(days, Panchanga::bhadra_vasa, |m| m.id())?,
+            shiva_vasa: span_rows(days, |day| &day.shiva_vasa, |m| m.id())?,
+            named_panchaka: owned_span_rows(
+                days,
+                |day| day.named_panchaka.into_iter().collect(),
+                |m| m.id(),
+            )?,
         })
     }
 }
@@ -952,6 +965,9 @@ pub fn encode(
         writer.rows("punya_kala", &ragged.punya_kala)?;
         writer.rows("homa_ahuti", &ragged.homa_ahuti)?;
         writer.rows("ashubha_yogas", &ragged.ashubha_yogas)?;
+        writer.rows("bhadra_vasa", &ragged.bhadra_vasa)?;
+        writer.rows("shiva_vasa", &ragged.shiva_vasa)?;
+        writer.rows("named_panchaka", &ragged.named_panchaka)?;
         writer.finish()
     };
     write().map_err(|error| {

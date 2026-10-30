@@ -456,6 +456,14 @@ typedef enum ts_kind {
      * The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760).
      */
     TS_KIND_ASHUBHA_YOGA = 74,
+    /**
+     * Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820).
+     */
+    TS_KIND_BHADRA_VASA = 75,
+    /**
+     * Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`.
+     */
+    TS_KIND_SHIVA_VASA = 76,
 } ts_kind;
 
 /**
@@ -4541,6 +4549,62 @@ typedef enum ts_ashubha_yoga {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_ASHUBHA_YOGA_UNKNOWN = -1,
 } ts_ashubha_yoga;
+
+/**
+ * Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820). Members are the catalogue's ids; the full key id is `(TS_KIND_BHADRA_VASA << 16) | member`.
+ */
+typedef enum ts_bhadra_vasa {
+    /**
+     * In heaven, the Moon in Aries, Taurus, Gemini or Scorpio: her result falls there, not on the earth
+     */
+    TS_BHADRA_VASA_SVARGA = 0,
+    /**
+     * On the earth, the Moon in Cancer, Leo, Aquarius or Pisces: her result falls among men
+     */
+    TS_BHADRA_VASA_MARTYA = 1,
+    /**
+     * Below the earth, the Moon in Virgo, Libra, Sagittarius or Capricorn: her result falls there, not on the earth
+     */
+    TS_BHADRA_VASA_PATALA = 2,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_BHADRA_VASA_UNKNOWN = -1,
+} ts_bhadra_vasa;
+
+/**
+ * Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`. Members are the catalogue's ids; the full key id is `(TS_KIND_SHIVA_VASA << 16) | member`.
+ */
+typedef enum ts_shiva_vasa {
+    /**
+     * On Kailasa, the remainder one: ease
+     */
+    TS_SHIVA_VASA_KAILASA = 0,
+    /**
+     * Beside Gauri, the remainder two: good
+     */
+    TS_SHIVA_VASA_GAURI = 1,
+    /**
+     * On the bull, the remainder three: wealth gained
+     */
+    TS_SHIVA_VASA_VRISHABHA = 2,
+    /**
+     * In the assembly, the remainder four: distress
+     */
+    TS_SHIVA_VASA_SABHA = 3,
+    /**
+     * At the meal, the remainder five: food gained, by the print read; other almanacs call it pain (crux C822)
+     */
+    TS_SHIVA_VASA_BHOJANA = 4,
+    /**
+     * At play, the remainder six: harm to children
+     */
+    TS_SHIVA_VASA_KRIDA = 5,
+    /**
+     * In the cremation ground, the remainder nothing: death
+     */
+    TS_SHIVA_VASA_SHMASHANA = 6,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_SHIVA_VASA_UNKNOWN = -1,
+} ts_shiva_vasa;
 
 /**
  * The status of a call, with the code it has at the C boundary.

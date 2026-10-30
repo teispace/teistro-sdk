@@ -260,6 +260,8 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   TibetanAnimal: 'tibetan_animal',
   AgniVasa: 'agni_vasa',
   AshubhaYoga: 'ashubha_yoga',
+  BhadraVasa: 'bhadra_vasa',
+  ShivaVasa: 'shiva_vasa',
 });
 
 /**
@@ -336,6 +338,8 @@ export const KindById = /* @__PURE__ */ new Map([
   [72, 'tibetan_animal'],
   [73, 'agni_vasa'],
   [74, 'ashubha_yoga'],
+  [75, 'bhadra_vasa'],
+  [76, 'shiva_vasa'],
 ]);
 
 /** Every Graha by name. */
@@ -2861,6 +2865,48 @@ export const AshubhaYogaById = /* @__PURE__ */ new Map([
   [1, 'ashubha_yoga.VISHA'],
   [2, 'ashubha_yoga.HUTASHANA'],
   [3, 'ashubha_yoga.YAMAGHANTA'],
+]);
+
+/** Every BhadraVasa by name. */
+export const BhadraVasa = /* @__PURE__ */ Object.freeze({
+  Svarga: 'bhadra_vasa.SVARGA',
+  Martya: 'bhadra_vasa.MARTYA',
+  Patala: 'bhadra_vasa.PATALA',
+});
+
+/**
+ * Every BhadraVasa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const BhadraVasaById = /* @__PURE__ */ new Map([
+  [0, 'bhadra_vasa.SVARGA'],
+  [1, 'bhadra_vasa.MARTYA'],
+  [2, 'bhadra_vasa.PATALA'],
+]);
+
+/** Every ShivaVasa by name. */
+export const ShivaVasa = /* @__PURE__ */ Object.freeze({
+  Kailasa: 'shiva_vasa.KAILASA',
+  Gauri: 'shiva_vasa.GAURI',
+  Vrishabha: 'shiva_vasa.VRISHABHA',
+  Sabha: 'shiva_vasa.SABHA',
+  Bhojana: 'shiva_vasa.BHOJANA',
+  Krida: 'shiva_vasa.KRIDA',
+  Shmashana: 'shiva_vasa.SHMASHANA',
+});
+
+/**
+ * Every ShivaVasa by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ShivaVasaById = /* @__PURE__ */ new Map([
+  [0, 'shiva_vasa.KAILASA'],
+  [1, 'shiva_vasa.GAURI'],
+  [2, 'shiva_vasa.VRISHABHA'],
+  [3, 'shiva_vasa.SABHA'],
+  [4, 'shiva_vasa.BHOJANA'],
+  [5, 'shiva_vasa.KRIDA'],
+  [6, 'shiva_vasa.SHMASHANA'],
 ]);
 
 /** Every Status by name. */

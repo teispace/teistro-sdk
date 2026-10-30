@@ -285,6 +285,12 @@ class Kind(Member):
     ashubha_yoga = 74
     """The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760)."""
 
+    bhadra_vasa = 75
+    """Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820)."""
+
+    shiva_vasa = 76
+    """Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3556,6 +3562,54 @@ class AshubhaYoga(Catalogued):
     """
 
 
+class BhadraVasa(Catalogued):
+    """Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820). Members are the catalogue's ids; the full key id is `(TS_KIND_BHADRA_VASA << 16) | member`."""
+
+    SVARGA = 0
+    """In heaven, the Moon in Aries, Taurus, Gemini or Scorpio: her result falls there, not on the earth"""
+
+    MARTYA = 1
+    """On the earth, the Moon in Cancer, Leo, Aquarius or Pisces: her result falls among men"""
+
+    PATALA = 2
+    """Below the earth, the Moon in Virgo, Libra, Sagittarius or Capricorn: her result falls there, not on the earth"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class ShivaVasa(Catalogued):
+    """Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`. Members are the catalogue's ids; the full key id is `(TS_KIND_SHIVA_VASA << 16) | member`."""
+
+    KAILASA = 0
+    """On Kailasa, the remainder one: ease"""
+
+    GAURI = 1
+    """Beside Gauri, the remainder two: good"""
+
+    VRISHABHA = 2
+    """On the bull, the remainder three: wealth gained"""
+
+    SABHA = 3
+    """In the assembly, the remainder four: distress"""
+
+    BHOJANA = 4
+    """At the meal, the remainder five: food gained, by the print read; other almanacs call it pain (crux C822)"""
+
+    KRIDA = 5
+    """At play, the remainder six: harm to children"""
+
+    SHMASHANA = 6
+    """In the cremation ground, the remainder nothing: death"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -5754,6 +5808,8 @@ _KEYS: dict[str, dict[int, str]] = {
         72: "tibetan_animal",
         73: "agni_vasa",
         74: "ashubha_yoga",
+        75: "bhadra_vasa",
+        76: "shiva_vasa",
     },
     "Graha": {
         0: "SUN",
@@ -6845,6 +6901,22 @@ _KEYS: dict[str, dict[int, str]] = {
         3: "YAMAGHANTA",
         -1: "UNKNOWN",
     },
+    "BhadraVasa": {
+        0: "SVARGA",
+        1: "MARTYA",
+        2: "PATALA",
+        -1: "UNKNOWN",
+    },
+    "ShivaVasa": {
+        0: "KAILASA",
+        1: "GAURI",
+        2: "VRISHABHA",
+        3: "SABHA",
+        4: "BHOJANA",
+        5: "KRIDA",
+        6: "SHMASHANA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -7584,4 +7656,6 @@ _KINDS: dict[str, str] = {
     "TibetanAnimal": "tibetan_animal",
     "AgniVasa": "agni_vasa",
     "AshubhaYoga": "ashubha_yoga",
+    "BhadraVasa": "bhadra_vasa",
+    "ShivaVasa": "shiva_vasa",
 }

@@ -265,6 +265,11 @@ export function messages(r) {
           valensMoon: () => r.entity('ayanamsha.VALENS_MOON'),
           yukteshwar: () => r.entity('ayanamsha.YUKTESHWAR'),
         },
+        bhadraVasa: {
+          martya: () => r.entity('bhadra_vasa.MARTYA'),
+          patala: () => r.entity('bhadra_vasa.PATALA'),
+          svarga: () => r.entity('bhadra_vasa.SVARGA'),
+        },
         blackoutKind: {
           adhikaMasa: () => r.entity('blackout_kind.ADHIKA_MASA'),
           chaturmas: () => r.entity('blackout_kind.CHATURMAS'),
@@ -992,6 +997,15 @@ export function messages(r) {
           vrisha: () => r.entity('samvatsara.VRISHA'),
           vyaya: () => r.entity('samvatsara.VYAYA'),
           yuva: () => r.entity('samvatsara.YUVA'),
+        },
+        shivaVasa: {
+          bhojana: () => r.entity('shiva_vasa.BHOJANA'),
+          gauri: () => r.entity('shiva_vasa.GAURI'),
+          kailasa: () => r.entity('shiva_vasa.KAILASA'),
+          krida: () => r.entity('shiva_vasa.KRIDA'),
+          sabha: () => r.entity('shiva_vasa.SABHA'),
+          shmashana: () => r.entity('shiva_vasa.SHMASHANA'),
+          vrishabha: () => r.entity('shiva_vasa.VRISHABHA'),
         },
         solarEclipseKind: {
           partial: () => r.entity('solar_eclipse_kind.PARTIAL'),

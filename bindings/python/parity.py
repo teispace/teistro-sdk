@@ -2797,6 +2797,9 @@ def main() -> None:
             put(f"day-{i}-amrit-kalam-count", len(almanac_day.amrit_kalam))
             put(f"day-{i}-agni-vasa-count", len(almanac_day.agni_vasa))
             put(f"day-{i}-ashubha-yoga-count", len(almanac_day.ashubha_yogas))
+            put(f"day-{i}-bhadra-vasa-count", len(almanac_day.bhadra_vasa))
+            put(f"day-{i}-shiva-vasa-count", len(almanac_day.shiva_vasa))
+            put(f"day-{i}-named-panchaka-count", len(almanac_day.named_panchaka))
             put(f"day-{i}-rahu-vasa-count", len(almanac_day.rahu_vasa))
             put(f"day-{i}-punya-kala-count", len(almanac_day.punya_kala))
             limbs: list[tuple[str, list[Any]]] = [
@@ -2811,6 +2814,9 @@ def main() -> None:
                 ("amrit-kalam", list(almanac_day.amrit_kalam)),
                 ("agni-vasa", list(almanac_day.agni_vasa)),
                 ("ashubha-yoga", list(almanac_day.ashubha_yogas)),
+                ("bhadra-vasa", list(almanac_day.bhadra_vasa)),
+                ("shiva-vasa", list(almanac_day.shiva_vasa)),
+                ("named-panchaka", list(almanac_day.named_panchaka)),
                 ("rahu-vasa", list(almanac_day.rahu_vasa)),
                 ("punya-kala", list(almanac_day.punya_kala)),
             ]

@@ -18,12 +18,13 @@ use super::knobs::{
     IshtaKashta, KaalaLords, KalachakraAfterNinth, KalachakraBalance, KalachakraMembership, Kranti,
     LuminaryCheshta, LunarMonth, MaranaSaturn, MaranaVenus, MoonBinduFromJupiter, MoonEvents,
     MoonPaksha, Naisargika, NaisargikaDivision, NakshatraScheme, Nathonnatha, Node, NodeAspects,
-    NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaStart,
-    PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable, PushkaraBhaga,
-    RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection, RituReckoning,
-    RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes, SeedOverflow,
-    ShantaSign, Shodhana, SolarMonthStart, StrongestGraha, SunAyana, Sunrise, SuryaSunrise, Tier,
-    TransitCentre, UnattestedDn, UnknownTime, Varjyam, Vimshopaka, YearLength, Yuddha, Zodiac,
+    NodeCoLordship, NodeObstruction, NodeRulers, NodeVedha, OverridePolicy, PanchakaName,
+    PanchakaStart, PolarDayPolicy, PolarPolicy, Positions, PreDawnNight, PunyaKalaTable,
+    PushkaraBhaga, RashiStart, ReleasingSharedSign, RequiredRupas, RetrogradeRejection,
+    RituReckoning, RulingCount, SamvatsaraCount, Saptavargaja, SayanadiGhatis, SayanadiNodes,
+    SeedOverflow, ShantaSign, ShivaVasaReading, Shodhana, SolarMonthStart, StrongestGraha,
+    SunAyana, Sunrise, SuryaSunrise, Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam,
+    Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 use super::{
     Aspect, Calendars, Citation, Dasha, Day, Diagnostics, Frame, Gochar, Houses, Jaimini, Kp,
@@ -206,6 +207,11 @@ fn root_panchanga() -> Panchanga {
         moon_events: MoonEvents::Window,
         muhurta_tables: String::from("CLASSICAL"),
         panchaka_start: PanchakaStart::Aquarius,
+        // Printed conventions, each flagged in every answer's
+        // `applied_conventions`; the default answers and refuses nothing
+        // (`03-design/printed-conventions.md`, C821, C750).
+        panchaka_name: PanchakaName::Weekday,
+        shiva_vasa: ShivaVasaReading::Printed,
         // Muhurta Chintamani's table, the rank-1 text (crux C165).
         varjyam: Varjyam::MuhurtaChintamani,
         // The table the published panchangas print, which gives Drik

@@ -80,6 +80,8 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_TIBETAN_ANIMAL` | 72 | The twelve animals of the Tibetan year's twelve-year cycle, from the Mouse. |
 | `TS_KIND_AGNI_VASA` | 73 | Where fire dwells, the agni vasa: read from the tithi and the vara by Muhurta Chintamani's Nakshatra-prakarana v. 36, and asked of a kamya homa (crux C748). |
 | `TS_KIND_ASHUBHA_YOGA` | 74 | The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chintamani's Shubhashubha-prakarana vv. 8–9 gives, to be avoided in auspicious work and always on a journey (crux C760). |
+| `TS_KIND_BHADRA_VASA` | 75 | Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820). |
+| `TS_KIND_SHIVA_VASA` | 76 | Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`. |
 
 ## ts_graha
 
@@ -1446,6 +1448,30 @@ The inauspicious yogas of a weekday with a tithi or a nakshatra that Muhurta Chi
 | `TS_ASHUBHA_YOGA_VISHA` | 1 | Visha, poison: the 4th, 6th, 7th, 2nd, 8th, 9th and 7th tithi of either paksha on Sunday to Saturday |
 | `TS_ASHUBHA_YOGA_HUTASHANA` | 2 | Hutashana, fire: the 12th, 6th, 7th, 8th, 9th, 10th and 11th tithi of either paksha on Sunday to Saturday |
 | `TS_ASHUBHA_YOGA_YAMAGHANTA` | 3 | Yamaghanta, Yama's bell: Magha, Vishakha, Ardra, Mula, Krittika, Rohini and Hasta on Sunday to Saturday |
+
+## ts_bhadra_vasa
+
+Where Bhadra, the vishti karana, dwells: read from the sign the Moon stands in by Muhurta Chintamani's Shubhashubha-prakarana v. 45, and harmful only on the earth, where she dwells among men (crux C820). Members are the catalogue's ids; the full key id is `(TS_KIND_BHADRA_VASA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_BHADRA_VASA_SVARGA` | 0 | In heaven, the Moon in Aries, Taurus, Gemini or Scorpio: her result falls there, not on the earth |
+| `TS_BHADRA_VASA_MARTYA` | 1 | On the earth, the Moon in Cancer, Leo, Aquarius or Pisces: her result falls among men |
+| `TS_BHADRA_VASA_PATALA` | 2 | Below the earth, the Moon in Virgo, Libra, Sagittarius or Capricorn: her result falls there, not on the earth |
+
+## ts_shiva_vasa
+
+Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`. Members are the catalogue's ids; the full key id is `(TS_KIND_SHIVA_VASA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_SHIVA_VASA_KAILASA` | 0 | On Kailasa, the remainder one: ease |
+| `TS_SHIVA_VASA_GAURI` | 1 | Beside Gauri, the remainder two: good |
+| `TS_SHIVA_VASA_VRISHABHA` | 2 | On the bull, the remainder three: wealth gained |
+| `TS_SHIVA_VASA_SABHA` | 3 | In the assembly, the remainder four: distress |
+| `TS_SHIVA_VASA_BHOJANA` | 4 | At the meal, the remainder five: food gained, by the print read; other almanacs call it pain (crux C822) |
+| `TS_SHIVA_VASA_KRIDA` | 5 | At play, the remainder six: harm to children |
+| `TS_SHIVA_VASA_SHMASHANA` | 6 | In the cremation ground, the remainder nothing: death |
 
 ## ts_status
 

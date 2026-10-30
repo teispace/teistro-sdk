@@ -181,6 +181,16 @@ enum AyanamshaKey {
   final String key;
 }
 
+enum BhadraVasaKey {
+  svarga('bhadra_vasa.SVARGA'),
+  martya('bhadra_vasa.MARTYA'),
+  patala('bhadra_vasa.PATALA');
+
+  const BhadraVasaKey(this.key);
+
+  final String key;
+}
+
 enum BlackoutKindKey {
   chaturmas('blackout_kind.CHATURMAS'),
   adhikaMasa('blackout_kind.ADHIKA_MASA'),
@@ -1040,6 +1050,20 @@ enum SamvatsaraKey {
   akshaya('samvatsara.AKSHAYA');
 
   const SamvatsaraKey(this.key);
+
+  final String key;
+}
+
+enum ShivaVasaKey {
+  kailasa('shiva_vasa.KAILASA'),
+  gauri('shiva_vasa.GAURI'),
+  vrishabha('shiva_vasa.VRISHABHA'),
+  sabha('shiva_vasa.SABHA'),
+  bhojana('shiva_vasa.BHOJANA'),
+  krida('shiva_vasa.KRIDA'),
+  shmashana('shiva_vasa.SHMASHANA');
+
+  const ShivaVasaKey(this.key);
 
   final String key;
 }
@@ -1912,6 +1936,16 @@ final class MessagesSdkEntityAyanamsha {
   EntityForms get yukteshwar => _r.entity('ayanamsha.YUKTESHWAR');
 }
 
+final class MessagesSdkEntityBhadraVasa {
+  const MessagesSdkEntityBhadraVasa(this._r);
+
+  final Renderer _r;
+
+  EntityForms get martya => _r.entity('bhadra_vasa.MARTYA');
+  EntityForms get patala => _r.entity('bhadra_vasa.PATALA');
+  EntityForms get svarga => _r.entity('bhadra_vasa.SVARGA');
+}
+
 final class MessagesSdkEntityBlackoutKind {
   const MessagesSdkEntityBlackoutKind(this._r);
 
@@ -2775,6 +2809,20 @@ final class MessagesSdkEntitySamvatsara {
   EntityForms get yuva => _r.entity('samvatsara.YUVA');
 }
 
+final class MessagesSdkEntityShivaVasa {
+  const MessagesSdkEntityShivaVasa(this._r);
+
+  final Renderer _r;
+
+  EntityForms get bhojana => _r.entity('shiva_vasa.BHOJANA');
+  EntityForms get gauri => _r.entity('shiva_vasa.GAURI');
+  EntityForms get kailasa => _r.entity('shiva_vasa.KAILASA');
+  EntityForms get krida => _r.entity('shiva_vasa.KRIDA');
+  EntityForms get sabha => _r.entity('shiva_vasa.SABHA');
+  EntityForms get shmashana => _r.entity('shiva_vasa.SHMASHANA');
+  EntityForms get vrishabha => _r.entity('shiva_vasa.VRISHABHA');
+}
+
 final class MessagesSdkEntitySolarEclipseKind {
   const MessagesSdkEntitySolarEclipseKind(this._r);
 
@@ -2985,6 +3033,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityAvasthaSayanadi get avasthaSayanadi => MessagesSdkEntityAvasthaSayanadi(_r);
   MessagesSdkEntityAyana get ayana => MessagesSdkEntityAyana(_r);
   MessagesSdkEntityAyanamsha get ayanamsha => MessagesSdkEntityAyanamsha(_r);
+  MessagesSdkEntityBhadraVasa get bhadraVasa => MessagesSdkEntityBhadraVasa(_r);
   MessagesSdkEntityBlackoutKind get blackoutKind => MessagesSdkEntityBlackoutKind(_r);
   MessagesSdkEntityCharaKaraka get charaKaraka => MessagesSdkEntityCharaKaraka(_r);
   MessagesSdkEntityChoghadiya get choghadiya => MessagesSdkEntityChoghadiya(_r);
@@ -3012,6 +3061,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityRelationship get relationship => MessagesSdkEntityRelationship(_r);
   MessagesSdkEntityRitu get ritu => MessagesSdkEntityRitu(_r);
   MessagesSdkEntitySamvatsara get samvatsara => MessagesSdkEntitySamvatsara(_r);
+  MessagesSdkEntityShivaVasa get shivaVasa => MessagesSdkEntityShivaVasa(_r);
   MessagesSdkEntitySolarEclipseKind get solarEclipseKind => MessagesSdkEntitySolarEclipseKind(_r);
   MessagesSdkEntityTatwa get tatwa => MessagesSdkEntityTatwa(_r);
   MessagesSdkEntityTithi get tithi => MessagesSdkEntityTithi(_r);

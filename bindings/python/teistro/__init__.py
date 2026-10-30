@@ -786,6 +786,8 @@ from .catalogue import (
     AgniVasa,
     AshubhaYoga,
     AvasthaCheshta,
+    BhadraVasa,
+    ShivaVasa,
     Member,
     AvasthaSayanadi,
     Ayana,
@@ -1906,6 +1908,8 @@ __all__ = [
     "Deity",
     "AgniVasa",
     "AshubhaYoga",
+    "BhadraVasa",
+    "ShivaVasa",
     "Direction",
     "Gana",
     "Gender",
@@ -19460,6 +19464,36 @@ class AlmanacDay:
         )
 
     @property
+    def bhadra_vasa(self) -> list[Span[BhadraVasa]]:
+        """Where Bhadra dwells while the vishti karana holds, by the sign the
+        Moon stands in (Muhurta Chintamani, Shubhashubha-prakarana v.
+        45, crux C820); only `MARTYA`, the earth, is harmful, and a
+        sign change in Bhadra splits it.
+        """
+        return self._spans("bhadra_vasa", self.batch.decoded.bhadra_vasa, BhadraVasa)
+
+    @property
+    def shiva_vasa(self) -> list[Span[ShivaVasa]]:
+        """Where Shiva dwells, one span for each tithi the day held: a printed
+        convention with no text behind it, chosen by
+        `panchanga.shiva_vasa` and named in the provenance's
+        `applied_conventions` (crux C750).
+        """
+        return self._spans("shiva_vasa", self.batch.decoded.shiva_vasa, ShivaVasa)
+
+    @property
+    def named_panchaka(self) -> list[Span[Panchaka]]:
+        """The panchaka the day holds, named by the vara it began on (Sunday
+        Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday
+        Mrityu): a printed convention, chosen by
+        `panchanga.panchaka_name` and named in the provenance's
+        `applied_conventions` (crux C821). At most one; `whole` runs
+        from the panchaka's first instant to the Moon's leaving
+        Revati.
+        """
+        return self._spans("named_panchaka", self.batch.decoded.named_panchaka, Panchaka)
+
+    @property
     def rahu_vasa(self) -> list[Span[Direction]]:
         """Rahu's direction over the daylight, an eighth of sunrise to
         sunset each from the east (Jyotirnibandha p. 337, crux C749).
@@ -19644,6 +19678,9 @@ class Almanac:
             "punya_kala",
             "homa_ahuti",
             "ashubha_yogas",
+            "bhadra_vasa",
+            "shiva_vasa",
+            "named_panchaka",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)
