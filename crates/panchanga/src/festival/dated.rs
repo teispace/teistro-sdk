@@ -614,6 +614,52 @@ impl DatedRule {
         }
     }
 
+    /// The twelve sankrantis Nepal's national panchanga prints, each on the
+    /// first of its Bikram Sambat month, the day the Sun enters its sign
+    /// under the punya convention the calendar applies (C619): Mesha's on
+    /// Baisakh 1 to Mina's on Chaitra 1.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::DatedRule;
+    ///
+    /// let sankrantis = DatedRule::sankrantis();
+    /// assert_eq!(sankrantis.len(), 12);
+    /// assert_eq!(sankrantis[9].key, "MAKARA_SANKRANTI");
+    /// assert!(DatedRule::nepal_panchanga().starts_with(&sankrantis));
+    /// ```
+    #[must_use]
+    pub fn sankrantis() -> Vec<DatedRule> {
+        const PRINTED: [(&str, &str); 12] = [
+            ("MESHA_SANKRANTI", "वैशाखसंक्रान्ति, नववर्षारम्भ"),
+            ("VRISHABHA_SANKRANTI", "ज्येष्ठसंक्रान्ति"),
+            ("MITHUNA_SANKRANTI", "आषाढसंक्रान्ति"),
+            ("KARKATA_SANKRANTI", "श्रावणसङ्क्रान्ति, दक्षिणायनारम्भ"),
+            ("SIMHA_SANKRANTI", "भाद्रसङ्क्रान्ति"),
+            ("KANYA_SANKRANTI", "आश्विनसङ्क्रान्ति"),
+            ("TULA_SANKRANTI", "कार्तिकसङ्क्रान्ति"),
+            ("VRISHCHIKA_SANKRANTI", "मार्गसङ्क्रान्ति"),
+            ("DHANU_SANKRANTI", "पौषसङ्क्रान्ति"),
+            ("MAKARA_SANKRANTI", "माघसङ्क्रान्ति, उत्तरायण सुरु"),
+            ("KUMBHA_SANKRANTI", "फाल्गुनसङ्क्रान्ति"),
+            ("MINA_SANKRANTI", "चैत्रसङ्क्रान्ति"),
+        ];
+        (1..=12u8)
+            .zip(PRINTED)
+            .map(|(month, (key, printed))| DatedRule {
+                key: key.to_owned(),
+                source: format!(
+                    "Nepal's national panchanga, VS 2082: \"{printed}\" on the first of the Bikram Sambat month, the day the Sun enters its sign under the punya convention (C619)"
+                ),
+                on: Dated::CivilDate {
+                    calendar: Calendar::BikramSambat,
+                    month,
+                    day: 1,
+                    skipped: None,
+                },
+            })
+            .collect()
+    }
+
     /// The days Nepal's national panchanga prints on a Bikram Sambat date:
     /// the twelve sankrantis on the first of each month, the national days
     /// it names, and the festivals it keeps on a date;
@@ -631,29 +677,8 @@ impl DatedRule {
                 skipped: None,
             },
         };
-        let sankranti = |key: &str, month: u8, printed: &str| {
-            bs(
-                key,
-                month,
-                1,
-                &format!(
-                    "Nepal's national panchanga, VS 2082: \"{printed}\" on the first of the Bikram Sambat month, the day the Sun enters its sign under the punya convention (C619)"
-                ),
-            )
-        };
-        let mut rules = vec![
-            sankranti("MESHA_SANKRANTI", 1, "वैशाखसंक्रान्ति, नववर्षारम्भ"),
-            sankranti("VRISHABHA_SANKRANTI", 2, "ज्येष्ठसंक्रान्ति"),
-            sankranti("MITHUNA_SANKRANTI", 3, "आषाढसंक्रान्ति"),
-            sankranti("KARKATA_SANKRANTI", 4, "श्रावणसङ्क्रान्ति, दक्षिणायनारम्भ"),
-            sankranti("SIMHA_SANKRANTI", 5, "भाद्रसङ्क्रान्ति"),
-            sankranti("KANYA_SANKRANTI", 6, "आश्विनसङ्क्रान्ति"),
-            sankranti("TULA_SANKRANTI", 7, "कार्तिकसङ्क्रान्ति"),
-            sankranti("VRISHCHIKA_SANKRANTI", 8, "मार्गसङ्क्रान्ति"),
-            sankranti("DHANU_SANKRANTI", 9, "पौषसङ्क्रान्ति"),
-            sankranti("MAKARA_SANKRANTI", 10, "माघसङ्क्रान्ति, उत्तरायण सुरु"),
-            sankranti("KUMBHA_SANKRANTI", 11, "फाल्गुनसङ्क्रान्ति"),
-            sankranti("MINA_SANKRANTI", 12, "चैत्रसङ्क्रान्ति"),
+        let mut rules = DatedRule::sankrantis();
+        rules.extend([
             bs(
                 "LOKTANTRA_DIWAS",
                 1,
@@ -702,7 +727,7 @@ impl DatedRule {
                 1,
                 "Nepal's national panchanga, VS 2082 p. 10 and VS 2083 p. 11: \"वल्केपर्व\" on Bhadra 1, the day of भाद्रसङ्क्रान्ति",
             ),
-        ];
+        ]);
         rules.extend(Self::on_printed_dates());
         rules.extend(Self::on_the_suns_entry());
         rules
