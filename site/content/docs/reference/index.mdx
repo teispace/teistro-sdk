@@ -3,9 +3,9 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 71 entry points over 28 structs and 169 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 72 entry points over 28 structs and 169 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
-ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
+ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 
 ## Where each entry point lives
 
@@ -99,6 +99,7 @@ ABI version **1**, SDK **0.0.0**, symbol prefix `ts_`.
 | [`ts_intl_set_locale`](intl/ts_intl_set_locale) | Selects the locale every render resolves from; an unknown one is `UNSUPPORTED` naming the loaded locales. |
 | [`ts_intl_locale`](intl/ts_intl_locale) | The locale every render resolves from, lent until the next call on the context. |
 | [`ts_intl_has`](intl/ts_intl_has) | Whether the current locale or its fallbacks have a message: `1` or `0`. |
+| [`ts_intl_in_words`](intl/ts_intl_in_words) | A number or an amount of money in words and in figures, by CLDR's rule-based number formats (`03-design/amounts-in-words.md`), answered as canonical JSON: `{text, figure, rules, locale, amount}`, `amount` for an amount the major and minor counts, each in words with its unit word, and whether a decimal was rounded. |
 | [`ts_intl_transliterate`](intl/ts_intl_transliterate) | Text from one script into another (`deva`, `iast`), as a string lent until the next call on the context. |
 | [`ts_intl_entity`](intl/ts_intl_entity) | An entity's forms in the current locale or its fallbacks, as a JSON object lent until the next call on the context: every form the locale gives (`name`, `prose`, `iast`, `short`, and any it adds), the `glyph` when it has one, and the `gender` when the locale marks one. |
 | [`ts_intl_render`](intl/ts_intl_render) | Renders a message with parameters given as a JSON object: a string, an integer, a number or an array is itself; an entity is `{"$entity": "graha.SUN"}`; a date `{"$date": {"calendar": "GREGORIAN", "year": 2026, "month": 9, "day": 6}}`; a time `{"$time": {"hour": 6, "minute": 15, "second": 0}}`; a date and time `{"$datetime": {"date": {...}, "time": {...}}}`; a ghati count `{"$ghati": {"ghati": 12, "pala": 30, "vipala": 0}}`. |
