@@ -2725,6 +2725,21 @@ export class IntlArea extends Area {
   }
 
   /**
+   * A number or an amount of money in words and in figures, by CLDR's
+   * rule-based number formats (`03-design/amounts-in-words.md`): Nepali,
+   * Hindi and English with the Indian grouping, English with the
+   * international one too. An amount's value is `{ minor }`, a count of
+   * minor units, or `{ decimal }`, a string; never a float.
+   *
+   * ```js
+   * sdk.intl.inWords({ amount: { currency: 'NPR', value: { minor: 123456 }, only: true }, locale: 'ne-Deva-NP' }).text;
+   * ```
+   */
+  inWords(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.intlInWords(JSON.stringify(request)))));
+  }
+
+  /**
    * An entity's forms in the current locale or its fallbacks: its name,
    * its prose form, its transliteration, and the glyph and gender the
    * locale gives it.

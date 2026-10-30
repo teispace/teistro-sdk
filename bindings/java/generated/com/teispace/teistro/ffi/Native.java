@@ -3957,6 +3957,7 @@ public final class Native {
         "ts_intl_set_locale",
         "ts_intl_locale",
         "ts_intl_has",
+        "ts_intl_in_words",
         "ts_intl_transliterate",
         "ts_intl_entity",
         "ts_intl_render",
@@ -4259,6 +4260,26 @@ public final class Native {
      * Whether the current locale or its fallbacks have a message: `1` or `0`.
      */
     public final MethodHandle ts_intl_has;
+
+    /**
+     * A number or an amount of money in words and in figures, by CLDR's
+     * rule-based number formats (`03-design/amounts-in-words.md`), answered
+     * as canonical JSON: `{text, figure, rules, locale, amount}`, `amount`
+     * for an amount the major and minor counts, each in words with its unit
+     * word, and whether a decimal was rounded.
+     *
+     * `request_json` is `{"number"}` (an integer, a negative spelt with the
+     * language's minus) or `{"amount": {"currency", "value", "minorDigits",
+     * "rounding", "only"}}`, never both, with `"locale"` (the context's when
+     * left out), `"grouping"` (`INDIAN`, `INTERNATIONAL`), `"digits"`
+     * (`LATN`, `DEVA`) and `"style"` (`PLAIN`, `VERBOSE`). An amount's
+     * value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
+     * A key it does not read, both or neither of `number` and `amount`, or
+     * a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
+     * Sanskrit (not yet reviewed), a grouping or style the language's rules
+     * lack, or a currency the locale names no units for is `UNSUPPORTED`.
+     */
+    public final MethodHandle ts_intl_in_words;
 
     /**
      * Text from one script into another (`deva`, `iast`), as a string lent
@@ -4839,6 +4860,7 @@ public final class Native {
         ts_intl_set_locale = linker.downcallHandle(symbols.find("ts_intl_set_locale").orElseThrow(() -> missing("ts_intl_set_locale")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_intl_locale = linker.downcallHandle(symbols.find("ts_intl_locale").orElseThrow(() -> missing("ts_intl_locale")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_intl_has = linker.downcallHandle(symbols.find("ts_intl_has").orElseThrow(() -> missing("ts_intl_has")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_intl_in_words = linker.downcallHandle(symbols.find("ts_intl_in_words").orElseThrow(() -> missing("ts_intl_in_words")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_transliterate = linker.downcallHandle(symbols.find("ts_intl_transliterate").orElseThrow(() -> missing("ts_intl_transliterate")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_entity = linker.downcallHandle(symbols.find("ts_intl_entity").orElseThrow(() -> missing("ts_intl_entity")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_render = linker.downcallHandle(symbols.find("ts_intl_render").orElseThrow(() -> missing("ts_intl_render")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));

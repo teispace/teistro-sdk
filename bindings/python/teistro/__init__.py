@@ -408,6 +408,13 @@ from ._requests import (
     HarmonicRequest as HarmonicRequest,
     HarshaRules as HarshaRules,
     HitRequest as HitRequest,
+    InWordsRequest as InWordsRequest,
+    WordsAmount as WordsAmount,
+    WordsAmountValue as WordsAmountValue,
+    WordsDigits as WordsDigits,
+    WordsGrouping as WordsGrouping,
+    WordsRounding as WordsRounding,
+    WordsStyle as WordsStyle,
     ResearchHolds as ResearchHolds,
     HouseCount as HouseCount,
     HousePoints as HousePoints,
@@ -1096,6 +1103,16 @@ __all__ = [
     "KarakaBhava",
     "ChosenBy",
     "Signification",
+    # A number or an amount in words.
+    "InWordsRequest",
+    "WordsAmount",
+    "WordsAmountValue",
+    "WordsDigits",
+    "WordsGrouping",
+    "WordsRounding",
+    "WordsStyle",
+    "InWords",
+    "AmountInWords",
     # The transit hit list, and its names.
     "HitRequest",
     "returns_request",
@@ -2797,6 +2814,18 @@ class IntlArea(_Area):
     def entity(self, key: str) -> intl.EntityForms:
         """A catalogued entity's forms in the current locale."""
         return intl.EntityForms.of(self._context.inner.intl_entity(key))
+
+    def in_words(self, request: InWordsRequest) -> "InWords":
+        """A number or an amount of money in words and in figures, by
+        CLDR's rule-based number formats (`03-design/amounts-in-words.md`):
+        Nepali, Hindi and English with the Indian grouping, English with
+        the international one too. An amount's value is `{"minor": units}`
+        or `{"decimal": "1234.56"}`, never a float.
+
+        >>> sdk.intl.in_words({"amount": {"currency": "NPR", "value": {"minor": 123456}, "only": True}, "locale": "ne-Deva-NP"}).text  # doctest: +SKIP
+        'एक हजार दुई सय चौँतिस रुपैयाँ र छपन्न पैसा मात्र'
+        """
+        return InWords._of(json.loads(self._context.inner.intl_in_words(json.dumps(request))))
 
     def transliterate(self, text: str, source: str = "Deva", into: str = "Latn") -> str:
         """Text from one script into another."""
@@ -7718,6 +7747,78 @@ class BaselineNumerology:
 
     chaldean_destiny: Reduction
     """The date's digit sum under Cheiro, which he forbids (p. 93)."""
+
+
+@dataclass(frozen=True)
+class AmountInWords:
+    """An amount's parts, for an application that composes them its own way."""
+
+    currency: str
+    """The ISO 4217 code."""
+
+    major: int
+    """The major units."""
+
+    minor: int
+    """The minor units after them."""
+
+    major_words: str
+    """The major units in words."""
+
+    major_unit: str
+    """The major unit's word for that count."""
+
+    minor_words: Optional[str]
+    """The minor units in words; None for a currency with no minor unit."""
+
+    minor_unit: Optional[str]
+    """The minor unit's word for that count; None with `minor_words`."""
+
+    rounded: bool
+    """Whether a decimal lost digits to the rounding."""
+
+
+@dataclass(frozen=True)
+class InWords:
+    """A number or an amount in words and in figures, as `intl.in_words`
+    gives it."""
+
+    text: str
+    """The whole, in words."""
+
+    figure: str
+    """The figures, grouped, in the digits asked for."""
+
+    rules: str
+    """Where the words came from: `cldr-<release>/<file>/<rule set>`."""
+
+    locale: str
+    """The locale the words and units are in."""
+
+    amount: Optional[AmountInWords]
+    """An amount's parts; None for a number."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "InWords":
+        amount = raw["amount"]
+        return InWords(
+            text=raw["text"],
+            figure=raw["figure"],
+            rules=raw["rules"],
+            locale=raw["locale"],
+            amount=None
+            if amount is None
+            else AmountInWords(
+                currency=amount["currency"],
+                major=amount["major"],
+                minor=amount["minor"],
+                major_words=amount["majorWords"],
+                major_unit=amount["majorUnit"],
+                minor_words=amount["minorWords"],
+                minor_unit=amount["minorUnit"],
+                rounded=amount["rounded"],
+            ),
+        )
 
 
 @dataclass(frozen=True)

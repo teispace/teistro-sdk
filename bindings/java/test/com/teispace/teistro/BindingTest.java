@@ -245,6 +245,26 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a number and an amount are written in words by CLDR's rules", () -> {
+            try (Context sky = context(teistro)) {
+                InWords words = sky.intl().inWords(com.teispace.teistro.request.InWordsRequest.builder()
+                        .amount(com.teispace.teistro.request.WordsAmount.builder().currency("NPR")
+                                .value(new com.teispace.teistro.request.WordsAmountValueMinor(123_456)).only(true).build())
+                        .locale("ne-Deva-NP").build());
+                same("एक हजार दुई सय चौँतिस रुपैयाँ र छपन्न पैसा मात्र", words.text(), "the legal amount");
+                same("१,२३४.५६", words.figure(), "the figures");
+                check(words.amount() != null && words.amount().major() == 1234 && words.amount().minor() == 56,
+                        "the parts: " + words.amount());
+                InWords lakh = sky.intl().inWords(com.teispace.teistro.request.InWordsRequest.builder()
+                        .number(150_000L).locale("en-Latn")
+                        .grouping(com.teispace.teistro.request.WordsGrouping.INDIAN).build());
+                same("one lakh fifty thousand", lakh.text(), "a lakh");
+                TeistroException sanskrit = refusal(() -> sky.intl().inWords(
+                        com.teispace.teistro.request.InWordsRequest.builder().number(1L).locale("sa-Deva").build()));
+                same("inWords.locale", sanskrit.field(), "Sanskrit is unreviewed");
+            }
+        });
+
         tests.put("a pack lays its record over the one standing, and a damaged one is refused whole", () -> {
             String dir = System.getenv("TEISTRO_FIXTURES");
             check(dir != null, "TEISTRO_FIXTURES names the files `cargo xtask check-java` writes");

@@ -20,6 +20,7 @@ public final class Requests {
             Map.entry("calendar.convert", CalendarAsked::of),
             Map.entry("chart.found", ChartFoundRequest::of),
             Map.entry("chart.rashifal", BatchAsked::of),
+            Map.entry("intl.inWords", InWordsRequest::of),
             Map.entry("matching.naam", NaamRequest::of),
             Map.entry("naming.check", NamingCheckRequest::of),
             Map.entry("naming.of", NamingOfRequest::of),

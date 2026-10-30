@@ -123,6 +123,7 @@ schema = [
     "teistro-core/schema",
     "teistro-geometry/schema",
     "teistro-houses/schema",
+    "teistro-intl/words-schema",
     "teistro-panchanga/schema",
     "teistro-points/schema",
     "teistro-port-ephemeris/schema",

@@ -467,6 +467,36 @@ final class Calls {
     }
 
     /**
+     * `ts_intl_in_words`: A number or an amount of money in words and in figures, by CLDR's
+     * rule-based number formats (`03-design/amounts-in-words.md`), answered
+     * as canonical JSON: `{text, figure, rules, locale, amount}`, `amount`
+     * for an amount the major and minor counts, each in words with its unit
+     * word, and whether a decimal was rounded.
+     *
+     * `request_json` is `{"number"}` (an integer, a negative spelt with the
+     * language's minus) or `{"amount": {"currency", "value", "minorDigits",
+     * "rounding", "only"}}`, never both, with `"locale"` (the context's when
+     * left out), `"grouping"` (`INDIAN`, `INTERNATIONAL`), `"digits"`
+     * (`LATN`, `DEVA`) and `"style"` (`PLAIN`, `VERBOSE`). An amount's
+     * value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
+     * A key it does not read, both or neither of `number` and `amount`, or
+     * a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
+     * Sanskrit (not yet reviewed), a grouping or style the language's rules
+     * lack, or a currency the locale names no units for is `UNSUPPORTED`.
+     */
+    static String intlInWords(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_intl_in_words.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_intl_transliterate`: Text from one script into another (`deva`, `iast`), as a string lent
      * until the next call on the context. A pair the build has no table for
      * is `UNSUPPORTED` naming both scripts; anything the table does not know

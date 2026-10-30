@@ -616,6 +616,12 @@ pub use teistro_intl::messages;
 pub use teistro_intl::source::{Entity, Tree};
 pub use teistro_intl::translit::Script;
 pub use teistro_intl::{Intl, Loaded, Params, Rendered, TypedMessage, Value, params};
+// Numbers and amounts in words (`03-design/amounts-in-words.md`): what
+// `intl().in_words` takes and answers with.
+pub use teistro_intl::words::{
+    AmountInWords, InWords, InWordsRequest, WordsAmount, WordsAmountValue, WordsDigits,
+    WordsGrouping, WordsRounding, WordsStyle,
+};
 // Making a pack, which is the other half of loading one. `Loaded` is what
 // `load_pack` answers with and was published already; this is what a
 // consumer with locale sources of its own — or with the SDK's readings

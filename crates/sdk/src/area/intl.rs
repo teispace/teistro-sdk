@@ -5,6 +5,7 @@ use teistro_core::Status;
 use teistro_core::error::Error;
 use teistro_intl::source::Entity;
 use teistro_intl::translit::{Script, transliterate};
+use teistro_intl::words::{InWords, InWordsRequest};
 use teistro_intl::{Loaded, Params, Rendered, TypedMessage};
 
 use crate::context::Context;
@@ -116,6 +117,31 @@ impl<'a> IntlArea<'a> {
         // caller can change.
         transliterate(text, from, to)
             .map_err(|e| Error::unsupported(e.to_string()).with_field("to"))
+    }
+
+    /// A number or an amount in words, by CLDR's rule-based number
+    /// formats, with its figures (`03-design/amounts-in-words.md`): in
+    /// the request's locale, or this area's when it names none.
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let asked = teistro::InWordsRequest::from_json(
+    ///     r#"{"amount": {"currency": "NPR", "value": {"decimal": "10000.50"}, "only": true}, "grouping": "INDIAN"}"#,
+    /// )?;
+    /// let words = sdk.intl().in_words(&asked)?;
+    /// assert_eq!(words.text, "ten thousand rupees and fifty paisa only");
+    /// assert_eq!(words.figure, "10,000.50");
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`teistro_intl::Intl::in_words`], named under `inWords`.
+    pub fn in_words(self, request: &InWordsRequest) -> Result<InWords, Error> {
+        self.context.locale_engine().in_words(request)
     }
 
     /// A locale pack loaded at run time, whose locales join the embedded

@@ -12,7 +12,7 @@ import dataclasses
 import json
 import os
 import unittest
-from typing import Any, Callable, Dict, Optional, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from teistro import (
     ActivityRules,
@@ -498,6 +498,32 @@ class TheLocaleEngine(WithLibrary):
         sun = self.ctx.intl.entity("graha.SUN")
         self.assertTrue(sun.name)
         self.assertTrue(sun.iast)
+
+    def test_a_number_and_an_amount_in_words_by_cldr(self) -> None:
+        """1,234.56 rupees as a cheque in Nepal writes it, and the
+        refusals by field (`03-design/amounts-in-words.md`)."""
+        from teistro import InWords, InWordsRequest
+
+        asked: InWordsRequest = {
+            "amount": {"currency": "NPR", "value": {"minor": 123456}, "only": True},
+            "locale": "ne-Deva-NP",
+        }
+        words: InWords = self.ctx.intl.in_words(asked)
+        self.assertEqual(words.text, "एक हजार दुई सय चौँतिस रुपैयाँ र छपन्न पैसा मात्र")
+        self.assertEqual(words.figure, "१,२३४.५६")
+        assert words.amount is not None
+        self.assertEqual((words.amount.major, words.amount.minor, words.amount.rounded), (1234, 56, False))
+        lakh = self.ctx.intl.in_words({"number": 150000, "locale": "en-Latn", "grouping": "INDIAN"})
+        self.assertEqual((lakh.text, lakh.amount), ("one lakh fifty thousand", None))
+        cases: List[Tuple[InWordsRequest, str]] = [
+            ({"number": 1, "locale": "sa-Deva"}, "inWords.locale"),
+            ({"number": 1, "locale": "ne-Deva-NP", "grouping": "INTERNATIONAL"}, "inWords.grouping"),
+            ({"amount": {"currency": "USD", "value": {"minor": 1}}, "locale": "en-Latn"}, "inWords.amount.currency"),
+        ]
+        for request, field in cases:
+            with self.assertRaises(TeistroError) as refused:
+                self.ctx.intl.in_words(request)
+            self.assertEqual(refused.exception.field, field)
 
     def test_transliteration_changes_the_script(self) -> None:
         latin = self.ctx.intl.transliterate("सूर्य")

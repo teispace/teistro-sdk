@@ -83,6 +83,23 @@ Object? _read(TypeMirror type, Object? json, String at) {
       );
       return _build(variant, json, at);
     }
+    // An externally tagged variant carrying one value (`{"minor": 1}`):
+    // the variant its key names, built from the value.
+    if (json case Map<String, Object?>(length: 1)) {
+      final MapEntry(:key, :value) = json.entries.single;
+      final variant =
+          variants
+              .where(
+                (one) =>
+                    MirrorSystem.getName(one.simpleName) ==
+                    '$name${_pascal(key.toLowerCase().replaceAll('_', '-'))}',
+              )
+              .firstOrNull;
+      if (variant != null) {
+        final built = _build(variant, value, '$at.$key');
+        if (_agrees(_written(built), json)) return built;
+      }
+    }
     // An untagged union: the variant that reads the value and writes it
     // back as it was.
     for (final variant in variants) {
@@ -279,6 +296,7 @@ const Map<String, Type> _records = {
   'calendar.convert': CalendarAsked,
   'chart.found': ChartFoundRequest,
   'chart.rashifal': BatchAsked,
+  'intl.inWords': InWordsRequest,
   'matching.naam': NaamRequest,
   'naming.check': NamingCheckRequest,
   'naming.of': NamingOfRequest,

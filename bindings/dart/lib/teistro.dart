@@ -822,6 +822,23 @@ final class IntlArea extends _Area {
     String to = 'iast',
   }) => _context._inner.intlTransliterate(text, from, to);
 
+  /// A number or an amount of money in words and in figures, by CLDR's
+  /// rule-based number formats (`03-design/amounts-in-words.md`): Nepali,
+  /// Hindi and English with the Indian grouping, English with the
+  /// international one too. An amount's value is a count of minor units
+  /// or a decimal string, never a double.
+  ///
+  /// ```dart
+  /// final words = sdk.intl.inWords(const InWordsRequest(
+  ///   amount: WordsAmount(currency: 'NPR', value: WordsAmountValueMinor(123456), only: true),
+  ///   locale: 'ne-Deva-NP',
+  /// ));
+  /// ```
+  InWords inWords(InWordsRequest request) => InWords._of(
+    jsonDecode(_context._inner.intlInWords(jsonEncode(request._wire)))
+        as Map<String, Object?>,
+  );
+
   /// An entity's forms in the current locale or its fallbacks: its name,
   /// its prose form, its transliteration, and the glyph and gender the
   /// locale gives it.
@@ -10634,6 +10651,109 @@ final class NumerologyProfile extends _Value {
     chaldeanName,
     chaldeanBirth,
     baseline,
+  ];
+}
+
+/// A number or an amount in words and in figures, as `intl.inWords`
+/// gives it.
+final class InWords extends _Value {
+  const InWords({
+    required this.text,
+    required this.figure,
+    required this.rules,
+    required this.locale,
+    required this.amount,
+  });
+
+  /// The whole, in words.
+  final String text;
+
+  /// The figures, grouped, in the digits asked for.
+  final String figure;
+
+  /// Where the words came from: `cldr-<release>/<file>/<rule set>`.
+  final String rules;
+
+  /// The locale the words and units are in.
+  final String locale;
+
+  /// An amount's parts; null for a number.
+  final AmountInWords? amount;
+
+  static InWords _of(Map<String, Object?> raw) {
+    final amount = raw['amount'] as Map<String, Object?>?;
+    return InWords(
+      text: raw['text']! as String,
+      figure: raw['figure']! as String,
+      rules: raw['rules']! as String,
+      locale: raw['locale']! as String,
+      amount:
+          amount == null
+              ? null
+              : AmountInWords(
+                currency: amount['currency']! as String,
+                major: amount['major']! as int,
+                minor: amount['minor']! as int,
+                majorWords: amount['majorWords']! as String,
+                majorUnit: amount['majorUnit']! as String,
+                minorWords: amount['minorWords'] as String?,
+                minorUnit: amount['minorUnit'] as String?,
+                rounded: amount['rounded']! as bool,
+              ),
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [text, figure, rules, locale, amount];
+}
+
+/// An amount's parts, for an application that composes them its own way.
+final class AmountInWords extends _Value {
+  const AmountInWords({
+    required this.currency,
+    required this.major,
+    required this.minor,
+    required this.majorWords,
+    required this.majorUnit,
+    required this.minorWords,
+    required this.minorUnit,
+    required this.rounded,
+  });
+
+  /// The ISO 4217 code.
+  final String currency;
+
+  /// The major units.
+  final int major;
+
+  /// The minor units after them.
+  final int minor;
+
+  /// The major units in words.
+  final String majorWords;
+
+  /// The major unit's word for that count.
+  final String majorUnit;
+
+  /// The minor units in words; null for a currency with no minor unit.
+  final String? minorWords;
+
+  /// The minor unit's word for that count; null with [minorWords].
+  final String? minorUnit;
+
+  /// Whether a decimal lost digits to the rounding.
+  final bool rounded;
+
+  @override
+  List<Object?> get _fields => [
+    currency,
+    major,
+    minor,
+    majorWords,
+    majorUnit,
+    minorWords,
+    minorUnit,
+    rounded,
   ];
 }
 

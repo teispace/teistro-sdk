@@ -48,6 +48,19 @@ corpus (`05-testing/CONFORMANCE.md`), the accuracy page (`ACCURACY.md`) and
 the A/B against the baseline engine (`05-testing/ab-measured.md`) are this
 release's measure.
 
+**Amounts in words (SR-49).**
+**Numbers:** none move; this adds a call.
+- `sdk.intl.inWords` (`ts_intl_in_words`, the `intl.inWords` agent tool, and
+  Node, Python, Dart and Java) writes a number or an amount of money in words
+  and in figures, by CLDR 48's rule-based number formats: Nepali, Hindi and
+  English with the Indian grouping (hazar, lakh, crore, arab, kharab, and
+  Nepali shankh), English with the international grouping too, Latin or
+  Devanagari digits. An amount is a count of minor units or a decimal string,
+  rounded half-up unless asked (`HALF_EVEN`, `EXACT`); its unit words are the
+  locale's `sdk.amount.<CODE>` messages, NPR and INR shipped, any other
+  currency one pack entry away. Sanskrit is refused as not yet reviewed
+  (C803). `03-design/amounts-in-words.md`.
+
 **A rashifal's sky is a transit's, and the shim casts a prashna and
 reads a rashifal as the baseline does.**
 **Numbers:** a rashifal under a profile whose `gochar.transit_centre` is

@@ -663,6 +663,49 @@ final class BatchAsked extends _Request {
   List<Object?> get _fields => [baseline, periods];
 }
 
+/// What a caller asks to be written in words: a number or an amount, and how.
+final class InWordsRequest extends _Request {
+  const InWordsRequest({
+    this.amount,
+    this.digits,
+    this.grouping,
+    this.locale,
+    this.number,
+    this.style = WordsStyle.plain,
+  });
+
+  /// An amount to spell with its units; this or `number`.
+  final WordsAmount? amount;
+
+  /// The figures' digits; the locale's numbering system when left out.
+  final WordsDigits? digits;
+
+  /// The grouping; the locale's own (`_meta.json`) when left out.
+  final WordsGrouping? grouping;
+
+  /// The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out.
+  final String? locale;
+
+  /// A number to spell, negatives by the rule set's own word for minus; this or `amount`.
+  final int? number;
+
+  /// The rule set.
+  final WordsStyle style;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (amount case final amountValue?) 'amount': amountValue._wire,
+    if (digits case final digitsValue?) 'digits': digitsValue.key,
+    if (grouping case final groupingValue?) 'grouping': groupingValue.key,
+    if (locale case final localeValue?) 'locale': localeValue,
+    if (number case final numberValue?) 'number': numberValue,
+    'style': style.key,
+  };
+
+  @override
+  List<Object?> get _fields => [amount, digits, grouping, locale, number, style];
+}
+
 /// Two names to match star to star, and the readings they are matched under. Naam milan needs no chart, so this is the whole request.
 final class NaamRequest extends _Request {
   const NaamRequest({
@@ -1773,6 +1816,86 @@ final class PeriodAsked extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, calendar, events, first, last, latitudeDeg, longitudeDeg, snapshot, spells, utcOffsetSeconds];
+}
+
+/// An amount of a currency.
+final class WordsAmount extends _Request {
+  const WordsAmount({
+    required this.currency,
+    this.minorDigits = 2,
+    this.only = false,
+    this.rounding = WordsRounding.halfUp,
+    required this.value,
+  });
+
+  /// The ISO 4217 code, three capital letters; its unit words are the locale's messages `sdk.amount.<CODE>.major` and `.minor`.
+  final String currency;
+
+  /// The minor unit's decimal places, 0 to 4: 2 for NPR and INR, 0 for a currency with no minor unit.
+  final int minorDigits;
+
+  /// Whether the closing word ("only", "मात्र") follows, as a cheque's legal amount has it.
+  final bool only;
+
+  /// How a decimal is brought to the minor unit.
+  final WordsRounding rounding;
+
+  /// The value.
+  final WordsAmountValue value;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'currency': currency,
+    'minorDigits': minorDigits,
+    'only': only,
+    'rounding': rounding.key,
+    'value': value._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [currency, minorDigits, only, rounding, value];
+}
+
+/// The digits a figure is written in.
+enum WordsDigits implements _Keyed {
+  /// `0123456789`.
+  latn('LATN'),
+  /// `०१२३४५६७८९`.
+  deva('DEVA');
+
+  const WordsDigits(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// How digits are grouped, and so which scale words a number is counted in.
+enum WordsGrouping implements _Keyed {
+  /// Every two digits past the thousands: lakh, crore, arab, kharab; `12,34,567`.
+  indian('INDIAN'),
+  /// Every three: million, billion; `1,234,567`. English only.
+  international('INTERNATIONAL');
+
+  const WordsGrouping(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Which of CLDR's cardinal rule sets spells the words.
+enum WordsStyle implements _Keyed {
+  /// `spellout-cardinal`: "one hundred five".
+  plain('PLAIN'),
+  /// `spellout-cardinal-verbose`: "one hundred and five". English only.
+  verbose('VERBOSE');
+
+  const WordsStyle(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }
 
 /// The readings two names are matched under.
@@ -4084,6 +4207,55 @@ final class SnapshotClock extends Snapshot {
 
   @override
   List<Object?> get _fields => [hour, minute];
+}
+
+/// How a decimal with more digits than the currency's minor unit is brought to it.
+enum WordsRounding implements _Keyed {
+  /// Half a minor unit or more goes up, less is dropped: India's banking rule (RBI DBOD.Dir.BC.70/13.01.01/2006-07), and the convention for NPR (C805).
+  halfUp('HALF_UP'),
+  /// Half a minor unit goes to the even neighbour (banker's rounding).
+  halfEven('HALF_EVEN'),
+  /// Refuses a decimal whose digits past the minor unit are not zero.
+  exact('EXACT');
+
+  const WordsRounding(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// An amount's value: a count of minor units, or a decimal string. Never a float.
+sealed class WordsAmountValue extends _Request {
+  const WordsAmountValue();
+}
+
+/// The minor units: 123456 paisa is NPR 1,234.56.
+final class WordsAmountValueMinor extends WordsAmountValue {
+  const WordsAmountValueMinor(this.value);
+
+  /// The value.
+  final int value;
+
+  @override
+  Object? get _wire => {'minor': value};
+
+  @override
+  List<Object?> get _fields => [value];
+}
+
+/// ASCII digits with at most one `.`, no sign and no exponent, rounded to the minor unit by the amount's `rounding`.
+final class WordsAmountValueDecimal extends WordsAmountValue {
+  const WordsAmountValueDecimal(this.value);
+
+  /// The value.
+  final String value;
+
+  @override
+  Object? get _wire => {'decimal': value};
+
+  @override
+  List<Object?> get _fields => [value];
 }
 
 /// The readings a name is taken under; each default is the one no source read contradicts.

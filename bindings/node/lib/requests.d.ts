@@ -264,6 +264,36 @@ export interface BatchAsked {
 }
 
 /**
+ * What a caller asks to be written in words: a number or an amount, and how.
+ */
+export interface InWordsRequest {
+  /**
+   * An amount to spell with its units; this or `number`.
+   */
+  readonly amount?: WordsAmount | null;
+  /**
+   * The figures' digits; the locale's numbering system when left out.
+   */
+  readonly digits?: WordsDigits | null;
+  /**
+   * The grouping; the locale's own (`_meta.json`) when left out.
+   */
+  readonly grouping?: WordsGrouping | null;
+  /**
+   * The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out.
+   */
+  readonly locale?: string | null;
+  /**
+   * A number to spell, negatives by the rule set's own word for minus; this or `amount`.
+   */
+  readonly number?: number | null;
+  /**
+   * The rule set.
+   */
+  readonly style?: WordsStyle;
+}
+
+/**
  * Two names to match star to star, and the readings they are matched under. Naam milan needs no chart, so this is the whole request.
  */
 export interface NaamRequest {
@@ -1298,6 +1328,56 @@ export interface PeriodAsked {
   readonly spells?: readonly number[] | null;
   readonly utcOffsetSeconds: number;
 }
+
+/**
+ * An amount of a currency.
+ */
+export interface WordsAmount {
+  /**
+   * The ISO 4217 code, three capital letters; its unit words are the locale's messages `sdk.amount.<CODE>.major` and `.minor`.
+   */
+  readonly currency: string;
+  /**
+   * The minor unit's decimal places, 0 to 4: 2 for NPR and INR, 0 for a currency with no minor unit.
+   */
+  readonly minorDigits?: number;
+  /**
+   * Whether the closing word ("only", "मात्र") follows, as a cheque's legal amount has it.
+   */
+  readonly only?: boolean;
+  /**
+   * How a decimal is brought to the minor unit.
+   */
+  readonly rounding?: WordsRounding;
+  /**
+   * The value.
+   */
+  readonly value: WordsAmountValue;
+}
+
+/**
+ * The digits a figure is written in.
+ *
+ * `LATN`: `0123456789`.
+ * `DEVA`: `०१२३४५६७८९`.
+ */
+export type WordsDigits = 'LATN' | 'DEVA';
+
+/**
+ * How digits are grouped, and so which scale words a number is counted in.
+ *
+ * `INDIAN`: Every two digits past the thousands: lakh, crore, arab, kharab; `12,34,567`.
+ * `INTERNATIONAL`: Every three: million, billion; `1,234,567`. English only.
+ */
+export type WordsGrouping = 'INDIAN' | 'INTERNATIONAL';
+
+/**
+ * Which of CLDR's cardinal rule sets spells the words.
+ *
+ * `PLAIN`: `spellout-cardinal`: "one hundred five".
+ * `VERBOSE`: `spellout-cardinal-verbose`: "one hundred and five". English only.
+ */
+export type WordsStyle = 'PLAIN' | 'VERBOSE';
 
 /**
  * The readings two names are matched under.
@@ -3027,6 +3107,25 @@ export interface SnapshotClock {
    */
   readonly minute: number;
 }
+
+/**
+ * How a decimal with more digits than the currency's minor unit is brought to it.
+ *
+ * `HALF_UP`: Half a minor unit or more goes up, less is dropped: India's banking rule (RBI DBOD.Dir.BC.70/13.01.01/2006-07), and the convention for NPR (C805).
+ * `HALF_EVEN`: Half a minor unit goes to the even neighbour (banker's rounding).
+ * `EXACT`: Refuses a decimal whose digits past the minor unit are not zero.
+ */
+export type WordsRounding = 'HALF_UP' | 'HALF_EVEN' | 'EXACT';
+
+/**
+ * An amount's value: a count of minor units, or a decimal string. Never a float.
+ *
+ * `minor`: The minor units: 123456 paisa is NPR 1,234.56.
+ * `decimal`: ASCII digits with at most one `.`, no sign and no exponent, rounded to the minor unit by the amount's `rounding`.
+ */
+export type WordsAmountValue =
+  | { readonly minor: number }
+  | { readonly decimal: string };
 
 /**
  * The readings a name is taken under; each default is the one no source read contradicts.

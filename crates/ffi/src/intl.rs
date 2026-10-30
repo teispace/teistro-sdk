@@ -20,7 +20,7 @@ use teistro_intl::translit::{Script, transliterate};
 use crate::blob::TsBlob;
 use crate::context::{TsContext, unknown_locale};
 use crate::schemas;
-use crate::string::TsStr;
+use crate::string::{TsStr, TsString};
 use crate::support::{bytes, c_struct, optional_text, text, with_context, write_out, write_plain};
 
 /// What a loaded pack or bundle carried.
@@ -226,6 +226,70 @@ pub unsafe extern "C" fn ts_intl_has(
         let has = ctx.intl().has(key);
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_has, "out_has", u8::from(has)) }
+    })
+}
+
+/// A number or an amount of money in words and in figures, by CLDR's
+/// rule-based number formats (`03-design/amounts-in-words.md`), answered
+/// as canonical JSON: `{text, figure, rules, locale, amount}`, `amount`
+/// for an amount the major and minor counts, each in words with its unit
+/// word, and whether a decimal was rounded.
+///
+/// `request_json` is `{"number"}` (an integer, a negative spelt with the
+/// language's minus) or `{"amount": {"currency", "value", "minorDigits",
+/// "rounding", "only"}}`, never both, with `"locale"` (the context's when
+/// left out), `"grouping"` (`INDIAN`, `INTERNATIONAL`), `"digits"`
+/// (`LATN`, `DEVA`) and `"style"` (`PLAIN`, `VERBOSE`). An amount's
+/// value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
+/// A key it does not read, both or neither of `number` and `amount`, or
+/// a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
+/// Sanskrit (not yet reviewed), a grouping or style the language's rules
+/// lack, or a currency the locale names no units for is `UNSUPPORTED`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_in_words;
+/// use teistro_ffi::string::TsString;
+///
+/// let request = c"{\"number\": 1500000, \"locale\": \"ne-Deva-NP\"}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_intl_in_words(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// assert_eq!(answer["text"], "पन्ध्र लाख");
+/// assert_eq!(answer["figure"], "१५,००,०००");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_intl_in_words(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked =
+            teistro::InWordsRequest::from_json(unsafe { text(request_json, "request_json") }?)?;
+        let answer = ctx.intl().in_words(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
     })
 }
 

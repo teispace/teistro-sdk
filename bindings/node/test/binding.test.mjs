@@ -3308,6 +3308,29 @@ test('a child named by the cakra, and a name book suggested from', () => {
   ctx.dispose();
 });
 
+test('a number and an amount in words, by CLDR, in every language it has', () => {
+  const ctx = context({ locale: 'en-Latn' });
+  // 1,234.56 rupees on a cheque in Nepal, with the legal amount's "only".
+  const nepali = ctx.intl.inWords({ amount: { currency: 'NPR', value: { minor: 123456 }, only: true }, locale: 'ne-Deva-NP' });
+  assert.ok(Object.isFrozen(nepali) && Object.isFrozen(nepali.amount), 'frozen');
+  assert.equal(nepali.text, 'एक हजार दुई सय चौँतिस रुपैयाँ र छपन्न पैसा मात्र');
+  assert.equal(nepali.figure, '१,२३४.५६');
+  assert.deepEqual([nepali.amount.major, nepali.amount.minor, nepali.amount.rounded], [1234, 56, false]);
+  assert.equal(ctx.intl.inWords({ number: 150000, grouping: 'INDIAN' }).text, 'one lakh fifty thousand');
+  assert.equal(ctx.intl.inWords({ number: 1500000 }).text, 'one million five hundred thousand');
+  const hindi = ctx.intl.inWords({ number: 10000000, locale: 'hi-Deva-IN' });
+  assert.deepEqual([hindi.text, hindi.rules, hindi.amount], ['एक करोड़', 'cldr-48/hi/spellout-cardinal', null]);
+  for (const [request, field] of [
+    [{ number: 1, locale: 'sa-Deva' }, 'inWords.locale'],
+    [{ number: 1, locale: 'ne-Deva-NP', grouping: 'INTERNATIONAL' }, 'inWords.grouping'],
+    [{ amount: { currency: 'USD', value: { minor: 1 } } }, 'inWords.amount.currency'],
+    [{ amount: { currency: 'NPR', value: { decimal: '1.005' }, rounding: 'EXACT' } }, 'inWords.amount.value.decimal'],
+  ]) {
+    assert.throws(() => ctx.intl.inWords(request), (error) => error instanceof TeistroError && error.field === field, field);
+  }
+  ctx.dispose();
+});
+
 test('a name and a birth date read under numerology without a chart', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   // Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6; born
