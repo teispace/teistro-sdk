@@ -638,6 +638,28 @@ pub fn leap_to_str(value: u8) -> String {
     .to_string()
 }
 
+/// A `Overflow` from the string `catalogue.js` names it by.
+pub fn overflow_from_str(value: &str) -> Result<u8> {
+    match value {
+        "CONSTRAIN" => Ok(0),
+        "CARRY" => Ok(1),
+        "REJECT" => Ok(2),
+        other => Err(Error::from_reason(format!("`{other}` is not a Overflow"))),
+    }
+}
+
+/// The string for a `Overflow`; a value from a newer library is
+/// `unknown`.
+pub fn overflow_to_str(value: u8) -> String {
+    match value {
+        0 => "CONSTRAIN",
+        1 => "CARRY",
+        2 => "REJECT",
+        _ => "unknown",
+    }
+    .to_string()
+}
+
 /// A `Lilith` from the string `catalogue.js` names it by.
 pub fn lilith_from_str(value: &str) -> Result<u16> {
     match value {
@@ -1806,7 +1828,7 @@ pub struct DateSpan {
     /// Example: `30`.
     pub years: i32,
     /// Whole months, -11 to 11.
-    /// Range: `[-11,11]`. Example: `0`.
+    /// Example: `0`.
     pub months: i32,
     /// Days.
     /// Example: `1`.
@@ -4263,7 +4285,7 @@ impl Context {
     /// same `overflow` gives `to`. An anniversary on a day its month lacks is
     /// resolved by `overflow`: one born on the 32nd of Jestha completes a year
     /// on the 31st of a 31-day Jestha under `CONSTRAIN`, on the 1st of Ashadh
-    /// under `CARRY`, and `REJECT` refuses a count from such a day (C803).
+    /// under `CARRY`, and `REJECT` refuses a count from such a day (C806).
     /// Before `from`, each part is negative or zero. Dates in two calendars
     /// are `INVALID_ARG`, naming `calendar`.
     #[wasm_bindgen(js_name = calendarBetween)]
