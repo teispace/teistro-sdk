@@ -5,6 +5,18 @@
 export function messages(r) {
   return {
     sdk: {
+      amount: {
+        inr: {
+          major: (p) => r.render('sdk.amount.INR.major', { count: p.count }),
+          minor: (p) => r.render('sdk.amount.INR.minor', { count: p.count }),
+        },
+        npr: {
+          major: (p) => r.render('sdk.amount.NPR.major', { count: p.count }),
+          minor: (p) => r.render('sdk.amount.NPR.minor', { count: p.count }),
+        },
+        only: (p) => r.render('sdk.amount.only', { amount: p.amount }),
+        words: (p) => r.render('sdk.amount.words', { majorUnit: p.majorUnit, majorWords: p.majorWords, minorUnit: p.minorUnit, minorWords: p.minorWords, shape: p.shape }),
+      },
       aspect: {
         cast: (p) => r.render('sdk.aspect.cast', { from: { '$entity': p.from }, strength: p.strength, to: { '$entity': p.to } }),
         mutual: (p) => r.render('sdk.aspect.mutual', { first: { '$entity': p.first }, second: { '$entity': p.second } }),

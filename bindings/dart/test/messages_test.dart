@@ -155,6 +155,45 @@ void main() {
     );
   });
 
+  test('a number and an amount in words, by CLDR', () {
+    final ctx = context();
+    addTearDown(ctx.dispose);
+    final words = ctx.intl.inWords(
+      const InWordsRequest(
+        amount: WordsAmount(
+          currency: 'NPR',
+          value: WordsAmountValueMinor(123456),
+          only: true,
+        ),
+        locale: 'ne-Deva-NP',
+      ),
+    );
+    expect(words.text, 'एक हजार दुई सय चौँतिस रुपैयाँ र छपन्न पैसा मात्र');
+    expect(words.figure, '१,२३४.५६');
+    expect(words.amount?.major, 1234);
+    expect(words.amount?.minor, 56);
+    final lakh = ctx.intl.inWords(
+      const InWordsRequest(
+        number: 150000,
+        locale: 'en-Latn',
+        grouping: WordsGrouping.indian,
+      ),
+    );
+    expect(lakh.text, 'one lakh fifty thousand');
+    expect(lakh.amount, isNull);
+    expect(
+      () =>
+          ctx.intl.inWords(const InWordsRequest(number: 1, locale: 'sa-Deva')),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'inWords.locale',
+        ),
+      ),
+    );
+  });
+
   test('the accessors are a tree over any renderer', () {
     final asked = <(String, Map<String, Object?>)>[];
     final tree = intl.Messages(_Recording(asked));
