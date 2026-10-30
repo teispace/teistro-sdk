@@ -277,6 +277,57 @@ fn the_instants_own_day_counts_and_the_next_one_is_after_it() {
     );
 }
 
+/// A rule's request laid over with one published entry of `body`.
+fn published(rule: &str, body: &str) -> NextRequest {
+    asked(
+        noon(2026, 1, 1),
+        &format!(
+            r#""rule": "{rule}", "limitDays": 800, "festivals": {{"rules": "NEPAL_PANCHANGA",
+                "published": [{{"format": "teistro.published/1", "publisher": "p", "id": "np",
+                "version": 1, "entries": [{{{body}, "source": "p. 1"}}]}}]}}"#
+        ),
+    )
+}
+
+/// A day a published set adds is found under its own key, and an
+/// occurrence it withdraws is passed over for the next: a dated day and a
+/// tithi's alike.
+#[test]
+fn an_added_day_is_found_and_a_withdrawn_one_is_passed_over() {
+    let sdk = committee();
+    let added = sdk
+        .almanac()
+        .next(&published(
+            "A_PRINTED_DAY",
+            r#""action": "ADD", "key": "A_PRINTED_DAY",
+               "day": {"calendar": "GREGORIAN", "year": 2026, "month": 2, "day": 10}"#,
+        ))
+        .unwrap()
+        .value;
+    assert_eq!(fixed_of(&added.day), fixed_of(&gregorian(2026, 2, 10)));
+    assert_eq!(added.keys, ["A_PRINTED_DAY"]);
+    assert_eq!(added.festivals.added.len(), 1);
+
+    for rule in ["MAKARA_SANKRANTI", "VIJAYA_DASHAMI"] {
+        let plain = asked(
+            noon(2026, 1, 1),
+            &format!(r#""rule": "{rule}", "festivals": {{"rules": "NEPAL_PANCHANGA"}}"#),
+        );
+        let first = sdk.almanac().next(&plain).unwrap().value.day;
+        let day = serde_json::to_string(&teistro_calendar::CalendarDay::from(&first)).unwrap();
+        let later = sdk
+            .almanac()
+            .next(&published(
+                rule,
+                &format!(r#""action": "WITHDRAW", "rule": "{rule}", "day": {day}"#),
+            ))
+            .unwrap()
+            .value;
+        assert!(fixed_of(&later.day) > fixed_of(&first), "{rule}");
+        assert_eq!(later.keys, [rule]);
+    }
+}
+
 #[test]
 fn nothing_in_the_limit_and_every_bad_request_is_refused_by_its_field() {
     let sdk = committee();

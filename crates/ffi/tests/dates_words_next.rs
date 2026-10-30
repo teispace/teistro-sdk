@@ -114,7 +114,7 @@ fn json_call(
 }
 
 /// Refused with `status`, on a field that holds `field`.
-fn refused(ctx: &Ctx, got: (Status, Option<Value>), status: Status, field: &str) {
+fn refused(ctx: &Ctx, got: &(Status, Option<Value>), status: Status, field: &str) {
     assert_eq!(got.0, status, "{:?}", ctx.last_error());
     let named = ctx.last_error().2.unwrap_or_default();
     assert!(named.contains(field), "{named} does not name {field}");
@@ -255,7 +255,7 @@ fn an_amount_is_spelt_and_a_bad_request_is_refused() {
     ] {
         refused(
             &ctx,
-            json_call(&ctx, ts_intl_in_words, &request),
+            &json_call(&ctx, ts_intl_in_words, &request),
             status,
             "",
         );
@@ -332,7 +332,7 @@ fn a_next_request_is_refused_as_its_contract_says() {
         ),
     ] {
         let got = json_call(&ctx, ts_almanac_next, &asking(&extra));
-        refused(&ctx, got, status, field);
+        refused(&ctx, &got, status, field);
     }
     // A context with no ephemeris has no sky to search.
     let bare = Ctx::defaults();
