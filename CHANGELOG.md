@@ -22,6 +22,30 @@ corpus (`05-testing/CONFORMANCE.md`), the accuracy page (`ACCURACY.md`) and
 the A/B against the baseline engine (`05-testing/ab-measured.md`) are this
 release's measure.
 
+**A wasm module that traps refuses as `INTERNAL`, and a host hears of it.**
+**Numbers:** none.
+- JavaScript: a panic inside the wasm module (which aborts on that target,
+  so the C ABI cannot catch it) is refused as a `TeistroError` with status
+  `INTERNAL`, code -10, as a caught panic is in every binding, and every
+  later call is refused with it until the module is loaded again.
+- `onInternalError(hook)` and `INTERNAL_CODE`, in the Node and wasm
+  packages: a host's crash reporter hears of an `INTERNAL` refusal or a
+  trap with the status, code, kind and SDK version, never the message.
+
+**The agent server asks for a missing input rather than refusing it.**
+**Numbers:** none; a client that takes no form is answered as before.
+- `teistro-mcp`: a record tool refused for a field its request lacks (a
+  birth's `instant`, a place's `latitudeDeg`) is answered, for a 2026-07-28
+  client declaring form elicitation, as an `InputRequiredResult`: one form
+  (`inputRequests["teistro.missing"]`) asking for every top-level field the
+  refusal and the record's schema say is missing and a form can carry. The
+  retry's `inputResponses` are laid into the request; a declined or
+  cancelled form gets the refusal. Nothing is kept between the two requests.
+- The tool list's one order, whatever order a program's tools were
+  registered in, is held by a test, and so is a request's trace context
+  (`traceparent`, `tracestate`, `baggage` in `_meta`) changing nothing: the
+  SDK has no spans to join.
+
 **A rashifal's sky is a transit's, and the shim casts a prashna and
 reads a rashifal as the baseline does.**
 **Numbers:** a rashifal under a profile whose `gochar.transit_centre` is

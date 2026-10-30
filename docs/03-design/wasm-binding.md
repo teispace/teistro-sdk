@@ -166,6 +166,19 @@ Rejected:
   walks the scenario runs past that count.
 - **Single-threaded**, as the architecture says; a worker pool is the
   consumer's, one context per worker.
+- **A panic traps** (SR-52, 2026-10-30). `wasm32-unknown-unknown`
+  aborts on a panic, so the C ABI's `catch_unwind`, which turns a panic
+  into the `INTERNAL` status everywhere else, cannot run; the abort reaches
+  JavaScript as a `WebAssembly.RuntimeError` with the module's memory left
+  mid-call. The layer (`lib/internal.js`, shared with the Node package)
+  refuses that call with a `TeistroError` of status `INTERNAL`, code -10,
+  the status a caught panic has in every binding, and refuses every later
+  call with it until the module is loaded again. Unwinding instead would
+  need the exception-handling proposal and a nightly `-Zbuild-std`, which
+  no shipped build uses. A host's crash reporter hears of either through
+  `onInternalError(hook)`, which receives the status, its code, the kind
+  (`boundary` for a panic the C ABI caught, `trap` for this) and the SDK's
+  version, and never the message, which may quote what the call was given.
 
 ## 5. Gates
 
