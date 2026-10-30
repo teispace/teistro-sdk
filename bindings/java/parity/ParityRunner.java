@@ -1293,6 +1293,11 @@ public final class ParityRunner {
             put("weekday", ctx.calendar().weekdayOf(day));
             put("month-length", ctx.calendar().monthLength(Calendar.GREGORIAN, 2024, 2));
             put("is-leap", ctx.calendar().isLeap(Calendar.GREGORIAN, 2024));
+            CalendarDate jestha = Civil.date(Calendar.BIKRAM_SAMBAT, 2050, 2, 32);
+            CalendarDate added = ctx.calendar().add(jestha, 32, 0, 0, Overflow.CONSTRAIN);
+            put("bs-add", added.year() + "-" + added.month() + "-" + added.day());
+            DateSpan age = ctx.calendar().between(jestha, added, Overflow.CONSTRAIN);
+            put("bs-between", age.years() + " " + age.months() + " " + age.days());
             put("jd-of-fixed", teistro.julianDayOfFixed(fixed));
             CalendarFixedOfJdResult back = teistro.fixedOfJulianDay(2457126.75);
             put("fixed-of-jd", back.value());
@@ -1541,6 +1546,8 @@ public final class ParityRunner {
             surface("calendar.weekday_of", () -> ctx.calendar().weekdayOf(day));
             surface("calendar.month_length", () -> ctx.calendar().monthLength(Calendar.GREGORIAN, 2024, 2));
             surface("calendar.is_leap", () -> ctx.calendar().isLeap(Calendar.GREGORIAN, 2024));
+            surface("calendar.add", () -> ctx.calendar().add(day, 0, 1, 0, Overflow.CONSTRAIN));
+            surface("calendar.between", () -> ctx.calendar().between(day, day, Overflow.CONSTRAIN));
             surface("time.resolve", () -> ctx.time().resolve(civil, zone));
             surface("time.civil_of", () -> ctx.time().civilOf(0, zone, Calendar.GREGORIAN));
             surface("time.convert", () -> ctx.time().convert(0, Scale.UTC, Scale.TT));
@@ -1574,6 +1581,7 @@ public final class ParityRunner {
             surface("almanac.festivals", () -> ctx.almanac().festivals(day, day, place, 0, null));
             surface("almanac.disagreements", () -> ctx.almanac().disagreements(ctx, day, day, place, 0, true, null));
             surface("almanac.festival_calendar", () -> ctx.almanac().festivalCalendar(day, day, place, 0, null));
+            surface("almanac.next", () -> ctx.almanac().next(0, place, 0, "PURNIMA", null, null, null, null));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
             surface("almanac.sankalpa", () -> ctx.almanac().sankalpa(0, place, 0, null));

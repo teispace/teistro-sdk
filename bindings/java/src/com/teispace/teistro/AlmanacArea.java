@@ -637,4 +637,68 @@ public final class AlmanacArea {
             com.teispace.teistro.request.FestivalRequest festivals) {
         return festivalCalendar(from, to, place, utcOffsetSeconds, festivals, FeedOptions.defaults());
     }
+
+    /**
+     * <b>The next day a rule or a kind of day falls on</b> after an instant at a place, with no year
+     * asked ({@code 03-design/next-occurrence.md}). The civil day holding the instant counts. Give a
+     * {@code kind}, {@code EKADASHI}, {@code PURNIMA}, {@code AMAVASYA} or {@code SANKRANTI}, read by
+     * rules the SDK states, or a {@code rule} with the {@code festivals} that carry it; the search looks
+     * {@code limitDays} ahead, 400 when null and at most 3660.
+     *
+     * <pre>{@code
+     * NextOccurrence next = sdk.almanac().next(2461345.5, kathmandu, 20_700, "EKADASHI", null, null, null, null);
+     * System.out.println(next.keys().get(0) + " on " + next.day());
+     * }</pre>
+     *
+     * @param after the instant, a UTC Julian day
+     * @param place where the days are reckoned
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param kind a kind of day, or null with a rule
+     * @param rule a rule's key in {@code festivals}, or null with a kind
+     * @param festivals the festival rules carrying {@code rule}, null with a kind
+     * @param calendar the calendar the days are written in, null for Gregorian
+     * @param limitDays how many days to look ahead, null for 400
+     * @return the day found
+     * @throws TeistroException {@code LIMIT} naming {@code limitDays} when nothing falls within it
+     */
+    public NextOccurrence next(double after, Observer place, int utcOffsetSeconds, String kind, String rule,
+            com.teispace.teistro.request.FestivalRequest festivals, Calendar calendar, Integer limitDays) {
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("after", after);
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (calendar != null) {
+            asked.put("calendar", calendar.key());
+        }
+        if (kind != null) {
+            asked.put("kind", kind);
+        }
+        if (rule != null) {
+            asked.put("rule", rule);
+        }
+        if (festivals != null) {
+            asked.put("festivals", festivals);
+        }
+        if (limitDays != null) {
+            asked.put("limitDays", limitDays);
+        }
+        String json = Json.write(asked);
+        Map<?, ?> envelope = Reads.object(Json.read(context.locked((lib, raw) -> Calls.almanacNext(lib, raw, json))));
+        Map<?, ?> value = Reads.object(envelope, "value");
+        Map<String, Object> section = new java.util.LinkedHashMap<>();
+        section.put("value", value.get("festivals"));
+        section.put("provenance", envelope.get("provenance"));
+        return new NextOccurrence(
+                Reads.serdeDate(Reads.field(value, "day")),
+                Reads.each(value, "keys", Reads::string),
+                AlmanacReads.festivalsAnswer(Json.write(section)),
+                Reads.serdeDate(Reads.field(value, "from")),
+                Reads.integer(value, "limitDays"),
+                Reads.integer(value, "searchedDays"));
+    }
 }

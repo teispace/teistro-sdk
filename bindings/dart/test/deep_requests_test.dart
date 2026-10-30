@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 249 of the examples' 261 members.
+/// The cases compare 273 of the examples' 285 members.
 library;
 
 import 'dart:convert';
@@ -544,6 +544,178 @@ void main() {
     );
   });
 
+  test('almanac.next: NextRequest', () {
+    _holds(
+      'almanac.next',
+      path: [],
+      dropping: [['festivals']],
+      members: 1,
+      written: NextRequest(
+        after: 1.5,
+        altitudeM: 1.5,
+        calendar: Calendar.julian,
+        kind: NextKind.purnima,
+        latitudeDeg: 1.5,
+        limitDays: 1,
+        longitudeDeg: 1.5,
+        rule: 'x',
+        utcOffsetSeconds: 1,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.next at festivals.published[0]: PublishedSet', () {
+    _holds(
+      'almanac.next',
+      path: ['festivals', 'published', 0],
+      dropping: [['entries', 0, 'window']],
+      members: 3,
+      written: PublishedSet(
+        entries: [
+          PublishedEntrySet(
+            adhika: true,
+            day: CalendarDay(
+              calendar: Calendar.julian,
+              day: 1,
+              era: EraNumber(era: Era.shaka, year: 1),
+              leap: Leap.day,
+              month: 1,
+              year: 1,
+            ),
+            month: Masa.vaishakha,
+            rule: 'x',
+            source: 'x',
+          ),
+        ],
+        format: 'x',
+        id: 'x',
+        publisher: 'x',
+        version: 1,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.next at festivals.rules: FestivalRules', () {
+    _holds(
+      'almanac.next',
+      path: ['festivals', 'rules'],
+      dropping: [],
+      members: 18,
+      written: FestivalRulesValue([
+        FestivalRuleItemSaitRule(SaitRule(
+          choose: SaitChoice.latest,
+          rising: SaitRising(
+            freeOf: [Graha.moon],
+            modalities: [Modality.sthira],
+            of: RisingOf.lagna,
+          ),
+          rule: 'x',
+          source: 'x',
+          windows: [
+            SaitWindowRule(
+              avoid: [SaitAvoidNakshatra(nakshatra: Nakshatra.bharani, quarters: 1)],
+              within: SaitWindowDayMuhurta(from: 1, to: 1),
+            ),
+          ],
+        )),
+        FestivalRuleItemEkadashiRule(EkadashiRule(
+          key: 'x',
+          mahadvadashi: MahadvadashiRule(
+            joining: NakshatraJoining.outlastsTwelfth,
+            kinds: [MahadvadashiKind.vyanjuli],
+            sampurna: true,
+            trisprisha: TrisprishaAt.arunodaya,
+            vyanjuli: VyanjuliPast.halfMuhurta,
+          ),
+          parana: ParanaRule(
+            at: [WindowDayMuhurta(from: 1, to: 1)],
+            bars: [
+              <String, Object?>{'month': 'masa.VAISHAKHA', 'nakshatra': 'nakshatra.BHARANI', 'portion': <String, Object?>{'parts': 1, 'which': 1}, 'tithi': 'tithi.SHUKLA_DVITIYA'},
+            ],
+            hariVasara: true,
+          ),
+          source: 'x',
+          table: EkadashiTable(
+            pierced: EkadashiKinds(
+              both: FestivalWhich.later,
+              eleventh: FestivalWhich.later,
+              neither: FestivalWhich.later,
+              twelfth: FestivalWhich.later,
+            ),
+            pure: EkadashiKinds(
+              both: FestivalWhich.later,
+              eleventh: FestivalWhich.later,
+              neither: FestivalWhich.later,
+              twelfth: FestivalWhich.later,
+            ),
+          ),
+          vedha: EkadashiVedha.sunrise,
+        )),
+        FestivalRuleItemAnniversary(Anniversary(
+          firstYearAdhika: FirstYearAdhika.nija,
+          inSamsarpa: InSamsarpa.nija,
+          janma: JanmaOptions(nakshatraTie: true, twoMuhurtaFloor: true),
+          key: 'x',
+          kind: AnniversaryKind.ekoddishta,
+          origin: OriginLunar(
+            adhika: true,
+            at: 1.5,
+            half: TithiHalf.second,
+            month: Masa.vaishakha,
+            tithi: Tithi.shuklaDvitiya,
+          ),
+          window: WindowDayMuhurta(from: 1, to: 1),
+        )),
+        FestivalRuleItemFollowingRule(FollowingRule(after: 'x', days: 1, key: 'x', source: 'x')),
+        FestivalRuleItemDatedRule(DatedRule(
+          civilDate: DatedRuleCivilDate(
+            calendar: Calendar.julian,
+            day: 1,
+            month: 1,
+            skipped: SkippedDay.after,
+          ),
+          civilWeekday: DatedRuleCivilWeekday(
+            calendar: Calendar.julian,
+            month: 1,
+            nth: 1,
+            weekday: Vara.somavara,
+          ),
+          easter: DatedRuleEaster(computus: Computus.julian, days: 1),
+          key: 'x',
+          source: 'x',
+          sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
+        )),
+        FestivalRuleItemFestivalRule(FestivalRule(
+          at: WindowDayMuhurta(from: 1, to: 1),
+          convention: LunarMonth.purnimanta,
+          dayOfPaksha: 1,
+          decide: [
+            Guard(
+              choose: FestivalChoice.later,
+              when: [
+                PredicateJoined(
+                  at: WindowDayMuhurta(from: 1, to: 1),
+                  day: FestivalWhich.later,
+                  nakshatra: Nakshatra.bharani,
+                  portion: Portion(parts: 1, which: 1),
+                ),
+              ],
+            ),
+          ],
+          inAdhika: InAdhikaValue(true),
+          key: 'x',
+          month: Masa.vaishakha,
+          nakshatra: Nakshatra.bharani,
+          otherwise: FestivalChoice.later,
+          paksha: Paksha.krishna,
+          parana: [VrataParanaTithiEnd(nakshatra: Nakshatra.bharani, yamas: 1)],
+          source: 'x',
+          tithi: Tithi.shuklaDvitiya,
+        )),
+      ]).toJson(),
+    );
+  });
+
   test('almanac.pakshi: PakshiRequest', () {
     _holds(
       'almanac.pakshi',
@@ -758,6 +930,38 @@ void main() {
         latitudeDeg: 1.5,
         longitudeDeg: 1.5,
         utcOffsetSeconds: 1,
+      ).toJson(),
+    );
+  });
+
+  test('calendar.add: AddAsked', () {
+    _holds(
+      'calendar.add',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: AddAsked(
+        calendar: Calendar.julian,
+        date: DayAsked(day: 1, month: 1, year: 1),
+        days: 1,
+        months: 1,
+        overflow: Overflow.carry,
+        years: 1,
+      ).toJson(),
+    );
+  });
+
+  test('calendar.between: BetweenAsked', () {
+    _holds(
+      'calendar.between',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: BetweenAsked(
+        calendar: Calendar.julian,
+        from: DayAsked(day: 1, month: 1, year: 1),
+        overflow: Overflow.carry,
+        to: DayAsked(day: 1, month: 1, year: 1),
       ).toJson(),
     );
   });

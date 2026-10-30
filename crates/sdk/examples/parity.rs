@@ -300,6 +300,29 @@ fn the_calendars(report: &mut Report, sdk: &Context) {
             .expect("a shipped calendar")
             .to_string(),
     );
+    let jestha = CalendarDate::defined(Calendar::BikramSambat, 2050, 2, 32);
+    let added = sdk
+        .calendar()
+        .add(
+            &jestha,
+            teistro::DateSpan::new(32, 0, 0),
+            teistro::Overflow::Constrain,
+        )
+        .expect("a Bikram Sambat date");
+    put(
+        report,
+        "bs-add",
+        format!("{}-{}-{}", added.year, added.month, added.day),
+    );
+    let age = sdk
+        .calendar()
+        .between(&jestha, &added, teistro::Overflow::Constrain)
+        .expect("two Bikram Sambat dates");
+    put(
+        report,
+        "bs-between",
+        format!("{} {} {}", age.years, age.months, age.days),
+    );
 }
 
 /// Time, as the report prints it.
@@ -780,6 +803,7 @@ fn the_surface(report: &mut Report) {
         ("almanac.disagreements", "present"),
         ("almanac.festival_calendar", "present"),
         ("almanac.festivals", "present"),
+        ("almanac.next", "present"),
         ("almanac.of", "present"),
         ("almanac.pakshi", "present"),
         ("almanac.sankalpa", "present"),
@@ -788,6 +812,8 @@ fn the_surface(report: &mut Report) {
         ("almanac.published_reasons", "present"),
         ("almanac.published_from_signed", "present"),
         ("calendar.tibetan_year", "present"),
+        ("calendar.add", "present"),
+        ("calendar.between", "present"),
         ("calendar.convert", "present"),
         ("calendar.date_of", "present"),
         ("calendar.fixed_of", "present"),
