@@ -442,6 +442,45 @@ pub fn pointee_struct<'a>(api: &'a Api, p: &ParamDef) -> Option<&'a StructDef> {
     }
 }
 
+/// The struct behind a parameter whose role says it points at one: a
+/// struct in or out, a blob, an owned or a borrowed string.
+///
+/// [`infer_role`] gives those roles only to a pointer at a struct, and
+/// extraction refuses a struct name the sources do not define, so a
+/// description [`crate::extract::extract`] wrote always has it.
+///
+/// ```
+/// # use teistro_idl::Api;
+/// #
+/// # let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../idl/api.json");
+/// # let api: Api = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+///
+/// use teistro_idl::rules;
+///
+/// let positions = api.function_named("ts_positions").ok_or("declared")?;
+/// assert_eq!(rules::role_struct(&api, &positions.params[1]).name, "PositionRequestC");
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Panics
+///
+/// When a description edited by hand gives a struct role to a parameter
+/// that points at no struct it defines: a generator stops there rather
+/// than leave the parameter out of the call it writes.
+#[must_use]
+#[expect(
+    clippy::panic,
+    reason = "a struct role on a pointer at no defined struct is a description extraction never writes; generating past it would drop a parameter from a call"
+)]
+pub fn role_struct<'a>(api: &'a Api, p: &ParamDef) -> &'a StructDef {
+    pointee_struct(api, p).unwrap_or_else(|| {
+        panic!(
+            "`{}` has the role {:?} and points at no struct the description defines",
+            p.name, p.role
+        )
+    })
+}
+
 /// The opaque type behind a handle parameter, through one or two pointers.
 ///
 /// ```

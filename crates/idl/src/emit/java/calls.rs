@@ -18,7 +18,7 @@ use crate::model::{Api, FunctionDef, ParamDef, Role, Scalar, StructRole, TypeRef
 use crate::names::{binding_type_name, camel, method_name, pascal};
 use crate::rules::{
     Handed, constructor, destructor, factories, has_handshake, is_free_function, last_error,
-    methods, pointee_struct, results, returned_scalar, returns_status,
+    methods, pointee_struct, results, returned_scalar, returns_status, role_struct,
 };
 
 /// The `Calls` file, and a record per call that hands back more than one thing.
@@ -291,9 +291,7 @@ fn written(api: &Api, f: &FunctionDef, p: &ParamDef, local: &str, m: &mut Marsha
     let local = local.to_string();
     match p.role {
         Role::StructOut => {
-            let Some(s) = pointee_struct(api, p) else {
-                unplaced("struct_out", &p.name, &f.name)
-            };
+            let s = role_struct(api, p);
             m.setup.push(format!(
                 "MemorySegment {local} = arena.allocate(Native.{}.LAYOUT);",
                 s.name
@@ -309,9 +307,7 @@ fn written(api: &Api, f: &FunctionDef, p: &ParamDef, local: &str, m: &mut Marsha
             m.args.push(local);
         }
         Role::BlobOut | Role::StringOut | Role::StrOut => {
-            let Some(s) = pointee_struct(api, p) else {
-                unplaced("an out string", &p.name, &f.name)
-            };
+            let s = role_struct(api, p);
             m.setup.push(format!(
                 "MemorySegment {local} = arena.allocate(Native.{}.LAYOUT);",
                 s.name

@@ -26,7 +26,7 @@ use crate::names::{binding_type_name, camel, method_name, pascal, snake};
 use crate::rules::{
     FieldRole, Handed, constant_key, constants, constructor, destructor, field_roles,
     has_handshake, is_written_by_host, methods, pointee_opaque, pointee_struct, results,
-    returned_scalar, returns_status, status_enum,
+    returned_scalar, returns_status, role_struct, status_enum,
 };
 
 /// A Dart identifier for a member or a field. A name that is one of
@@ -821,9 +821,7 @@ fn render_dart_way_in(
         let field = identifier(&p.name);
         match p.role {
             Role::StructIn => {
-                let Some(s) = pointee_struct(api, p) else {
-                    continue;
-                };
+                let s = role_struct(api, p);
                 let value = binding_type_name(&s.name);
                 params.push(format!("{value}? {field}"));
                 let _ = writeln!(
@@ -869,9 +867,7 @@ fn render_dart_way_in(
             Role::StructOut
                 if crate::rules::refusal_out(api, ctor).is_some_and(|r| r.name == p.name) =>
             {
-                let Some(s) = pointee_struct(api, p) else {
-                    continue;
-                };
+                let s = role_struct(api, p);
                 let raw = struct_name(&s.name);
                 let _ = writeln!(
                     body,
@@ -1019,9 +1015,7 @@ fn marshal(api: &Api, f: &FunctionDef) -> Marshalled {
                 }
             }
             Role::StructIn => {
-                let Some(s) = pointee_struct(api, p) else {
-                    continue;
-                };
+                let s = role_struct(api, p);
                 m.params
                     .push(format!("{} {field}", binding_type_name(&s.name)));
                 let _ = writeln!(
@@ -1032,9 +1026,7 @@ fn marshal(api: &Api, f: &FunctionDef) -> Marshalled {
                 m.args.push(format!("raw{field}"));
             }
             Role::StructOut => {
-                let Some(s) = pointee_struct(api, p) else {
-                    continue;
-                };
+                let s = role_struct(api, p);
                 let c = struct_name(&s.name);
                 let size = if has_handshake(s) {
                     format!("\n      {field}.ref.structSize = ffi.sizeOf<{c}>();")
@@ -1045,9 +1037,7 @@ fn marshal(api: &Api, f: &FunctionDef) -> Marshalled {
                 m.args.push(field);
             }
             Role::BlobOut | Role::StrOut | Role::StringOut => {
-                let Some(s) = pointee_struct(api, p) else {
-                    continue;
-                };
+                let s = role_struct(api, p);
                 let _ = writeln!(
                     m.body,
                     "      final {field} = arena<{}>();",

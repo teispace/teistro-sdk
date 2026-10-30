@@ -30,7 +30,7 @@ use crate::model::{
 use crate::names::{binding_type_name, camel, pascal, snake};
 use crate::rules::{
     FieldRole, Handed, constructor, destructor, field_roles, has_handshake, method_name, methods,
-    pointee_opaque, pointee_struct, results, returns_status, status_enum,
+    pointee_opaque, pointee_struct, results, returns_status, role_struct, status_enum,
 };
 
 use super::ts::{UNKNOWN_MEMBER, member_value};
@@ -482,9 +482,7 @@ fn objects_at_the_boundary(api: &Api) -> BTreeSet<String> {
         .chain(api.callbacks.iter().flat_map(|c| c.params.iter()));
     for p in params {
         if matches!(p.role, Role::StructIn | Role::StructOut) {
-            if let Some(s) = pointee_struct(api, p) {
-                reachable.insert(s.name.clone());
-            }
+            reachable.insert(role_struct(api, p).name.clone());
         }
     }
     loop {
@@ -1239,9 +1237,7 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>, b: Backend) ->
                 }
             }
             Role::StructIn => {
-                let Some(s) = pointee_struct(api, p) else {
-                    continue;
-                };
+                let s = role_struct(api, p);
                 let ty = binding_type_name(&s.name);
                 if optional_struct {
                     let (param, read) = b.object_param(&name, &format!("Option<{ty}>"));
@@ -1263,9 +1259,7 @@ fn build_call(api: &Api, f: &FunctionDef, receiver: Option<&str>, b: Backend) ->
                 args.push(name);
             }
             Role::StructOut => {
-                let Some(s) = pointee_struct(api, p) else {
-                    continue;
-                };
+                let s = role_struct(api, p);
                 let _ = writeln!(
                     setup,
                     "{}",
