@@ -2180,6 +2180,127 @@ public final class Messages {
         }
 
         /**
+         * The messages under `amount`.
+         *
+         * @return the group
+         */
+        public SdkAmount amount() {
+            return new SdkAmount(r);
+        }
+
+        /** The messages under `SdkAmount`, each rendered by its own key. */
+        public static final class SdkAmount {
+            private final Renderer r;
+
+            SdkAmount(Renderer r) {
+                this.r = r;
+            }
+
+            /**
+             * The messages under `INR`.
+             *
+             * @return the group
+             */
+            public SdkAmountInr inr() {
+                return new SdkAmountInr(r);
+            }
+
+            /** The messages under `SdkAmountInr`, each rendered by its own key. */
+            public static final class SdkAmountInr {
+                private final Renderer r;
+
+                SdkAmountInr(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * `sdk.amount.INR.major`
+                 *
+                 * @param count `count`
+                 * @return the text
+                 */
+                public String major(long count) {
+                    return r.render("sdk.amount.INR.major", Map.ofEntries(Map.entry("count", count)));
+                }
+
+                /**
+                 * `sdk.amount.INR.minor`
+                 *
+                 * @param count `count`
+                 * @return the text
+                 */
+                public String minor(long count) {
+                    return r.render("sdk.amount.INR.minor", Map.ofEntries(Map.entry("count", count)));
+                }
+            }
+
+
+            /**
+             * The messages under `NPR`.
+             *
+             * @return the group
+             */
+            public SdkAmountNpr npr() {
+                return new SdkAmountNpr(r);
+            }
+
+            /** The messages under `SdkAmountNpr`, each rendered by its own key. */
+            public static final class SdkAmountNpr {
+                private final Renderer r;
+
+                SdkAmountNpr(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * `sdk.amount.NPR.major`
+                 *
+                 * @param count `count`
+                 * @return the text
+                 */
+                public String major(long count) {
+                    return r.render("sdk.amount.NPR.major", Map.ofEntries(Map.entry("count", count)));
+                }
+
+                /**
+                 * `sdk.amount.NPR.minor`
+                 *
+                 * @param count `count`
+                 * @return the text
+                 */
+                public String minor(long count) {
+                    return r.render("sdk.amount.NPR.minor", Map.ofEntries(Map.entry("count", count)));
+                }
+            }
+
+
+            /**
+             * `sdk.amount.only`
+             *
+             * @param amount `amount`
+             * @return the text
+             */
+            public String only(String amount) {
+                return r.render("sdk.amount.only", Map.ofEntries(Map.entry("amount", amount)));
+            }
+
+            /**
+             * `sdk.amount.words`
+             *
+             * @param majorUnit `majorUnit`
+             * @param majorWords `majorWords`
+             * @param minorUnit `minorUnit`
+             * @param minorWords `minorWords`
+             * @param shape `shape`
+             * @return the text
+             */
+            public String words(String majorUnit, String majorWords, String minorUnit, String minorWords, String shape) {
+                return r.render("sdk.amount.words", Map.ofEntries(Map.entry("majorUnit", majorUnit), Map.entry("majorWords", majorWords), Map.entry("minorUnit", minorUnit), Map.entry("minorWords", minorWords), Map.entry("shape", shape)));
+            }
+        }
+
+
+        /**
          * The messages under `aspect`.
          *
          * @return the group

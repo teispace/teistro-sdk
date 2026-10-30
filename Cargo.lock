@@ -1948,6 +1948,7 @@ dependencies = [
  "icu_plurals",
  "proptest",
  "quick-xml",
+ "schemars",
  "serde",
  "serde_json",
  "sha2",

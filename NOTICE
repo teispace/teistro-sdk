@@ -29,6 +29,11 @@ each generated table names its source in its header:
 - JPL Development Ephemerides (NASA/JPL), United States government work in
   the public domain; used to fit Pluto coefficients.
 - Unicode CLDR data, via ICU4X, under the Unicode License.
+- Unicode CLDR 48's rule-based number formats (`common/rbnf/ne.xml`,
+  `hi.xml`, `en.xml`, `en_IN.xml`), copied unedited into
+  `crates/intl/cldr/rbnf/` with the licence in `crates/intl/cldr/LICENSE`
+  (Unicode License v3, Copyright © 2004-2025 Unicode, Inc.); the number
+  words of `crates/intl/src/words/cldr.rs` are generated from them.
 - IANA Time Zone Database, public domain.
 - Hipparcos and Gaia star catalogue extracts, ESA, used for anchor stars
   and nakshatra yogataras.

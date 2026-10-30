@@ -44,6 +44,216 @@ impl From<Gender> for crate::Value {
 
 /// The `sdk` group.
 pub mod sdk {
+    /// The `amount` group.
+    pub mod amount {
+        /// The `INR` group.
+        pub mod inr {
+            /// The message `sdk.amount.INR.major`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::amount::inr::Major;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Major { count: 2 };
+            /// assert_eq!(Major::KEY, "sdk.amount.INR.major");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Major {
+                /// The `count` parameter.
+                pub count: i64,
+            }
+
+            impl crate::TypedMessage for Major {
+                const KEY: &'static str = "sdk.amount.INR.major";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("count", crate::Value::Int(self.count)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.amount.INR.minor`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::amount::inr::Minor;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Minor { count: 2 };
+            /// assert_eq!(Minor::KEY, "sdk.amount.INR.minor");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Minor {
+                /// The `count` parameter.
+                pub count: i64,
+            }
+
+            impl crate::TypedMessage for Minor {
+                const KEY: &'static str = "sdk.amount.INR.minor";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("count", crate::Value::Int(self.count)),
+                    ])
+                }
+            }
+
+        }
+
+        /// The `NPR` group.
+        pub mod npr {
+            /// The message `sdk.amount.NPR.major`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::amount::npr::Major;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Major { count: 2 };
+            /// assert_eq!(Major::KEY, "sdk.amount.NPR.major");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Major {
+                /// The `count` parameter.
+                pub count: i64,
+            }
+
+            impl crate::TypedMessage for Major {
+                const KEY: &'static str = "sdk.amount.NPR.major";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("count", crate::Value::Int(self.count)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.amount.NPR.minor`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::amount::npr::Minor;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = Minor { count: 2 };
+            /// assert_eq!(Minor::KEY, "sdk.amount.NPR.minor");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct Minor {
+                /// The `count` parameter.
+                pub count: i64,
+            }
+
+            impl crate::TypedMessage for Minor {
+                const KEY: &'static str = "sdk.amount.NPR.minor";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("count", crate::Value::Int(self.count)),
+                    ])
+                }
+            }
+
+        }
+
+        /// The message `sdk.amount.only`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::amount::Only;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Only { amount: String::from("amount") };
+        /// assert_eq!(Only::KEY, "sdk.amount.only");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Only {
+            /// The `amount` parameter.
+            pub amount: String,
+        }
+
+        impl crate::TypedMessage for Only {
+            const KEY: &'static str = "sdk.amount.only";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("amount", crate::Value::Str(self.amount.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.amount.words`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::amount::Words;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Words {
+        ///     major_unit: String::from("majorUnit"),
+        ///     major_words: String::from("majorWords"),
+        ///     minor_unit: String::from("minorUnit"),
+        ///     minor_words: String::from("minorWords"),
+        ///     shape: String::from("shape"),
+        /// };
+        /// assert_eq!(Words::KEY, "sdk.amount.words");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Words {
+            /// The `majorUnit` parameter.
+            pub major_unit: String,
+            /// The `majorWords` parameter.
+            pub major_words: String,
+            /// The `minorUnit` parameter.
+            pub minor_unit: String,
+            /// The `minorWords` parameter.
+            pub minor_words: String,
+            /// The `shape` parameter.
+            pub shape: String,
+        }
+
+        impl crate::TypedMessage for Words {
+            const KEY: &'static str = "sdk.amount.words";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("majorUnit", crate::Value::Str(self.major_unit.clone())),
+                    ("majorWords", crate::Value::Str(self.major_words.clone())),
+                    ("minorUnit", crate::Value::Str(self.minor_unit.clone())),
+                    ("minorWords", crate::Value::Str(self.minor_words.clone())),
+                    ("shape", crate::Value::Str(self.shape.clone())),
+                ])
+            }
+        }
+
+    }
+
     /// The `aspect` group.
     pub mod aspect {
         /// The message `sdk.aspect.cast`.

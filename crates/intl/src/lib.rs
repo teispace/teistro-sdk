@@ -19,6 +19,8 @@
 //! - [`runtime`]: the engine's runtime API, packs and bundles loaded
 //!   after construction, in-memory overrides and the report of what is
 //!   loaded and covered;
+//! - [`words`]: numbers and currency amounts in words, by CLDR's
+//!   rule-based number formats, with the Indian grouping;
 //! - [`messages`]: the SDK's own namespaces as typed Rust accessors,
 //!   generated from `i18n/en-Latn` by `cargo xtask gen intl`;
 //! - [`migrate`]: the one-time import of the baseline engine's name tables
@@ -58,6 +60,7 @@ pub mod source;
 pub mod translit;
 pub mod validate;
 pub mod wire;
+pub mod words;
 #[cfg(feature = "xliff")]
 pub mod xliff;
 

@@ -23,6 +23,13 @@ cli = ["dep:clap", "xliff"]
 # reports how much of a locale is left to translate needs the exporter
 # and not `clap`.
 xliff = ["dep:quick-xml"]
+# Derives `schemars::JsonSchema` on the records a binding sends to and
+# reads from `words` (its request and answer), so the façade's tools and
+# every binding's generated request types state them. It is not named
+# `schema`: the crate carries no type of the chart document, which is what
+# that feature promises (`docs/03-design/document-schema.md` §7) and the
+# `serialised-type-describes-itself` lint holds every `Serialize` type to.
+words-schema = ["dep:schemars", "teistro-core/schema"]
 
 [[bin]]
 name = "teistro-intl"
@@ -42,6 +49,7 @@ fixed_decimal = "0.7"
 icu_locale_core = "2"
 icu_plurals = "2"
 quick-xml = { version = "0.41", optional = true }
+schemars = { version = "1.2", optional = true }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
 sha2 = "0.11"

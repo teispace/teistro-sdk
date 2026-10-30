@@ -1282,6 +1282,11 @@ class MessagesSdk:
 
 
     @property
+    def amount(self) -> MessagesSdkAmount:
+        """The messages under `amount`."""
+        return MessagesSdkAmount(self._r)
+
+    @property
     def aspect(self) -> MessagesSdkAspect:
         """The messages under `aspect`."""
         return MessagesSdkAspect(self._r)
@@ -7920,6 +7925,82 @@ class MessagesSdkAspect:
         return self._r.render(
             "sdk.aspect.mutual",
             {"first": {"$entity": first.value}, "second": {"$entity": second.value}},
+        )
+
+
+class MessagesSdkAmount:
+    """The messages under `MessagesSdkAmount`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def inr(self) -> MessagesSdkAmountInr:
+        """The messages under `INR`."""
+        return MessagesSdkAmountInr(self._r)
+
+    @property
+    def npr(self) -> MessagesSdkAmountNpr:
+        """The messages under `NPR`."""
+        return MessagesSdkAmountNpr(self._r)
+
+    def only(self, *, amount: str) -> str:
+        """`sdk.amount.only`"""
+        return self._r.render(
+            "sdk.amount.only",
+            {"amount": amount},
+        )
+
+    def words(self, *, major_unit: str, major_words: str, minor_unit: str, minor_words: str, shape: str) -> str:
+        """`sdk.amount.words`"""
+        return self._r.render(
+            "sdk.amount.words",
+            {"majorUnit": major_unit, "majorWords": major_words, "minorUnit": minor_unit, "minorWords": minor_words, "shape": shape},
+        )
+
+
+class MessagesSdkAmountNpr:
+    """The messages under `MessagesSdkAmountNpr`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def major(self, *, count: int) -> str:
+        """`sdk.amount.NPR.major`"""
+        return self._r.render(
+            "sdk.amount.NPR.major",
+            {"count": count},
+        )
+
+    def minor(self, *, count: int) -> str:
+        """`sdk.amount.NPR.minor`"""
+        return self._r.render(
+            "sdk.amount.NPR.minor",
+            {"count": count},
+        )
+
+
+class MessagesSdkAmountInr:
+    """The messages under `MessagesSdkAmountInr`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def major(self, *, count: int) -> str:
+        """`sdk.amount.INR.major`"""
+        return self._r.render(
+            "sdk.amount.INR.major",
+            {"count": count},
+        )
+
+    def minor(self, *, count: int) -> str:
+        """`sdk.amount.INR.minor`"""
+        return self._r.render(
+            "sdk.amount.INR.minor",
+            {"count": count},
         )
 
 

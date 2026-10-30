@@ -1352,6 +1352,41 @@ final class EntityForms {
   final Map<String, String> forms;
 }
 
+final class MessagesSdkAmountInr {
+  const MessagesSdkAmountInr(this._r);
+
+  final Renderer _r;
+
+  String major({required int count}) =>
+      _r.render('sdk.amount.INR.major', {'count': count});
+  String minor({required int count}) =>
+      _r.render('sdk.amount.INR.minor', {'count': count});
+}
+
+final class MessagesSdkAmountNpr {
+  const MessagesSdkAmountNpr(this._r);
+
+  final Renderer _r;
+
+  String major({required int count}) =>
+      _r.render('sdk.amount.NPR.major', {'count': count});
+  String minor({required int count}) =>
+      _r.render('sdk.amount.NPR.minor', {'count': count});
+}
+
+final class MessagesSdkAmount {
+  const MessagesSdkAmount(this._r);
+
+  final Renderer _r;
+
+  MessagesSdkAmountInr get inr => MessagesSdkAmountInr(_r);
+  MessagesSdkAmountNpr get npr => MessagesSdkAmountNpr(_r);
+  String only({required String amount}) =>
+      _r.render('sdk.amount.only', {'amount': amount});
+  String words({required String majorUnit, required String majorWords, required String minorUnit, required String minorWords, required String shape}) =>
+      _r.render('sdk.amount.words', {'majorUnit': majorUnit, 'majorWords': majorWords, 'minorUnit': minorUnit, 'minorWords': minorWords, 'shape': shape});
+}
+
 final class MessagesSdkAspect {
   const MessagesSdkAspect(this._r);
 
@@ -3210,6 +3245,7 @@ final class MessagesSdk {
 
   final Renderer _r;
 
+  MessagesSdkAmount get amount => MessagesSdkAmount(_r);
   MessagesSdkAspect get aspect => MessagesSdkAspect(_r);
   MessagesSdkCalendar get calendar => MessagesSdkCalendar(_r);
   MessagesSdkCondition get condition => MessagesSdkCondition(_r);

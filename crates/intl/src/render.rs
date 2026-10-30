@@ -1523,6 +1523,27 @@ impl Intl {
         self.render_from(&self.current, key, params, 0)
     }
 
+    /// Renders a key with parameters in a locale other than the current
+    /// one, along that locale's own fallback chain.
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let intl = Intl::from_tree(&tree)?;
+    ///
+    /// use teistro_intl::params;
+    /// let only = intl.render_in("ne-Deva-NP", "sdk.amount.only", &params([("amount", "सय".into())]));
+    /// assert_eq!(only.text, "सय मात्र");
+    /// assert_eq!(intl.locale(), "en-Latn", "the current locale is left as it was");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn render_in(&self, tag: &str, key: &str, params: &Params) -> Rendered {
+        self.render_from(tag, key, params, 0)
+    }
+
     /// Renders a message given as source, in the current locale, for
     /// tools and tests.
     ///
