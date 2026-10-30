@@ -67,6 +67,7 @@ mod disagreement;
 mod feed;
 #[cfg(feature = "muhurta")]
 mod muhurta;
+mod next;
 mod reasons;
 mod sait;
 
@@ -77,6 +78,9 @@ pub use disagreement::{
 #[cfg(feature = "schema")]
 pub(crate) use feed::FestivalCalendarAsked;
 pub use feed::{FeedOptions, FestivalCalendarRequest};
+#[cfg(feature = "schema")]
+pub(crate) use next::NextAsked;
+pub use next::{NextOccurrence, NextRequest, NextTarget};
 #[cfg(feature = "schema")]
 pub(crate) use reasons::ReasonsAsked;
 pub use reasons::{

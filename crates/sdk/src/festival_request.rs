@@ -10,8 +10,8 @@ use serde::Serialize;
 use serde_json::Value;
 use teistro_core::error::Error;
 use teistro_panchanga::festival::{
-    Anniversary, Dated, DatedRule, EkadashiRule, FestivalRule, FollowingRule, PublishedEntry,
-    PublishedSet, SaitRule,
+    Anniversary, Dated, DatedRule, EkadashiRule, FestivalRule, FollowingRule, KindRules,
+    PublishedEntry, PublishedSet, SaitRule,
 };
 
 /// A pack of rules the SDK ships, which a request may name rather than
@@ -431,6 +431,126 @@ impl FestivalRequest {
     #[must_use]
     pub fn with_ekadashis(self, rules: impl IntoIterator<Item = EkadashiRule>) -> FestivalRequest {
         rules.into_iter().fold(self, FestivalRequest::with_ekadashi)
+    }
+
+    /// A request for a kind of day's own rules
+    /// ([`NextKind::rules`](teistro_panchanga::festival::NextKind::rules)).
+    ///
+    /// ```
+    /// use teistro::{FestivalRequest, NextKind};
+    ///
+    /// let asked = FestivalRequest::of_kind(NextKind::Sankranti.rules());
+    /// assert_eq!((asked.rules().len(), asked.dated().len()), (0, 12));
+    /// asked.check()?;
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn of_kind(read: KindRules) -> FestivalRequest {
+        let request = FestivalRequest::new(read.rules).with_ekadashis(read.ekadashis);
+        read.dated
+            .into_iter()
+            .fold(request, FestivalRequest::with_dated)
+    }
+
+    /// The request cut to what finding `key`'s days needs: the rule of
+    /// that key, of whichever kind, and the karmakala rule it counts from;
+    /// the saits elected on them; and each published set's entries for
+    /// them, a set left with none dropped. `None` when no rule has the key
+    /// and no set adds a day under it.
+    ///
+    /// ```
+    /// use teistro::{FestivalPack, FestivalRequest};
+    ///
+    /// let nepal = FestivalRequest::from(FestivalPack::Nepal);
+    /// // The Terai's Holi is counted from the Holika fire.
+    /// let holi = nepal.narrowed_to("HOLI_TERAI").expect("in the pack");
+    /// assert_eq!((holi.rules().len(), holi.following().len()), (1, 1));
+    /// assert_eq!(holi.rules()[0].key, holi.following()[0].after);
+    /// holi.check()?;
+    /// assert!(nepal.narrowed_to("NO_SUCH_DAY").is_none());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn narrowed_to(&self, key: &str) -> Option<FestivalRequest> {
+        let after = self
+            .following
+            .iter()
+            .find(|rule| rule.key == key)
+            .map(|rule| rule.after.as_str());
+        let kept = |held: &str| held == key || after == Some(held);
+        let added = |set: &PublishedSet| {
+            set.entries.iter().any(
+                |entry| matches!(entry, PublishedEntry::Add { key: added, .. } if added == key),
+            )
+        };
+        let carried = self.rules.iter().any(|r| r.key == key)
+            || self.ekadashis.iter().any(|r| r.key == key)
+            || self.following.iter().any(|r| r.key == key)
+            || self.dated.iter().any(|r| r.key == key)
+            || self.anniversaries.iter().any(|r| r.key == key)
+            || self.published.iter().any(added);
+        if !carried {
+            return None;
+        }
+        let published = self
+            .published
+            .iter()
+            .filter_map(|set| {
+                let entries: Vec<PublishedEntry> = set
+                    .entries
+                    .iter()
+                    .filter(|entry| match entry {
+                        PublishedEntry::Set { rule, .. }
+                        | PublishedEntry::Withdraw { rule, .. } => kept(rule),
+                        PublishedEntry::Add { key: added, .. } => kept(added),
+                    })
+                    .cloned()
+                    .collect();
+                (!entries.is_empty()).then(|| PublishedSet {
+                    entries,
+                    ..set.clone()
+                })
+            })
+            .collect();
+        Some(FestivalRequest {
+            rules: self
+                .rules
+                .iter()
+                .filter(|r| kept(&r.key))
+                .cloned()
+                .collect(),
+            ekadashis: self
+                .ekadashis
+                .iter()
+                .filter(|r| kept(&r.key))
+                .cloned()
+                .collect(),
+            following: self
+                .following
+                .iter()
+                .filter(|r| kept(&r.key))
+                .cloned()
+                .collect(),
+            dated: self
+                .dated
+                .iter()
+                .filter(|r| kept(&r.key))
+                .cloned()
+                .collect(),
+            anniversaries: self
+                .anniversaries
+                .iter()
+                .filter(|r| kept(&r.key))
+                .cloned()
+                .collect(),
+            published,
+            saits: self
+                .saits
+                .iter()
+                .filter(|s| kept(&s.rule))
+                .cloned()
+                .collect(),
+        })
     }
 
     /// The karmakala rules, in order.

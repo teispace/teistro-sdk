@@ -1,6 +1,7 @@
 //! `sdk.calendar`: dates in the calendars the SDK carries, and the
 //! arithmetic over them.
 
+use teistro_calendar::arithmetic::{self, DateSpan, Overflow};
 use teistro_calendar::tibetan::{TibetanYear, year_name};
 use teistro_calendar::{CalendarDate, FixedDay, Weekday};
 use teistro_core::catalogue::{Calendar, write_in_full};
@@ -81,6 +82,78 @@ impl<'a> CalendarArea<'a> {
     /// A calendar the SDK does not ship.
     pub fn is_leap(self, calendar: Calendar, year: i32) -> Result<bool, Error> {
         Ok(system_of(calendar)?.is_leap(year))
+    }
+
+    /// The date `span` after `date`, in its own calendar
+    /// (`03-design/calendar-bikram-sambat.md` §11): the years and months
+    /// first, a day number the month lacks resolved by `overflow`, then
+    /// the days. A Bikram Sambat month runs 29 to 32 days, so the 32nd of
+    /// Jestha plus a month is the 31st of a 31-day Ashadh under
+    /// [`Overflow::Constrain`], the 1st of Shrawan under
+    /// [`Overflow::Carry`], and refused under [`Overflow::Reject`].
+    ///
+    /// ```
+    /// use teistro::{CalendarDate, Context, DateSpan, Overflow};
+    /// use teistro::catalogue::Calendar;
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let jestha_32 = CalendarDate::defined(Calendar::BikramSambat, 2081, 2, 32);
+    /// let on = sdk.calendar().add(&jestha_32, DateSpan::months(1), Overflow::Constrain)?;
+    /// assert_eq!((on.month, on.day), (3, 31));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A calendar the SDK does not ship; `UNSUPPORTED` for the ISO week
+    /// date and the Tibetan calendar, which number no twelve months;
+    /// `INVALID_ARG` for a date its calendar refuses, and with
+    /// `NONEXISTENT_DATE` on `day` under [`Overflow::Reject`]; and
+    /// `OUT_OF_RANGE` past the calendar's span.
+    pub fn add(
+        self,
+        date: &CalendarDate,
+        span: DateSpan,
+        overflow: Overflow,
+    ) -> Result<CalendarDate, Error> {
+        arithmetic::add(system_of(date.calendar)?, date, span, overflow)
+    }
+
+    /// The years, months and days from `from` to `to`, both in one
+    /// calendar, counted as an age is (`03-design/calendar-bikram-sambat.md`
+    /// §11): the most whole months whose anniversary of `from` is not past
+    /// `to`, then the days from it, so [`CalendarArea::add`] of the answer
+    /// to `from` under the same `overflow` is `to`. An anniversary on a
+    /// day its month lacks is resolved by `overflow`: one born on the 32nd
+    /// of Jestha completes a year on the 31st of a 31-day Jestha under
+    /// [`Overflow::Constrain`] (C803). Before `from`, each part is negative
+    /// or zero.
+    ///
+    /// ```
+    /// use teistro::{CalendarDate, Context, DateSpan, Overflow};
+    /// use teistro::catalogue::Calendar;
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let born = CalendarDate::defined(Calendar::BikramSambat, 2050, 2, 32);
+    /// let birthday = CalendarDate::defined(Calendar::BikramSambat, 2082, 2, 31);
+    /// let age = sdk.calendar().between(&born, &birthday, Overflow::Constrain)?;
+    /// // Jestha 2082 has 31 days: the birthday is its last.
+    /// assert_eq!(age, DateSpan::years(32));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`CalendarArea::add`]; `INVALID_ARG` for dates in two calendars,
+    /// and under [`Overflow::Reject`] for a count from a day the month
+    /// lacks.
+    pub fn between(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        overflow: Overflow,
+    ) -> Result<DateSpan, Error> {
+        arithmetic::between(system_of(from.calendar)?, from, to, overflow)
     }
 
     /// A Tibetan year's names (`calendars/tibetan.md`): its rabjung cycle
