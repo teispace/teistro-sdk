@@ -109,20 +109,22 @@ void main() {
   });
 
   test('the repository itself carries no prebuilt libraries', () {
-    // The table is written when a release is staged; a checkout has the
-    // unreleased version and an empty table, and the installer says so
-    // rather than fetching a release that does not exist.
-    if (prebuiltVersion == '0.0.0') {
-      expect(prebuiltDigests, isEmpty);
-      expect(prebuiltUri(), isNull);
-    } else {
-      expect(prebuiltDigests, isNotEmpty);
-      expect(
-        prebuiltUri('linux-x64').toString(),
-        'https://github.com/teispace/teistro-sdk/releases/download/'
-        'v$prebuiltVersion/libteistro_ffi-$prebuiltVersion-linux-x64.so.gz',
-      );
-    }
+    // The table is written only when a release is staged
+    // (`cargo xtask package stage`), so a checkout has an empty one at
+    // any version, and the installer says so rather than fetching a
+    // release that may not exist.
+    expect(prebuiltDigests, isEmpty);
+    expect(prebuiltUri(), isNull);
+    expect(
+      archiveUri(
+        base: prebuiltBase,
+        version: prebuiltVersion,
+        file: libraryFileNameOf('linux-x64'),
+        platform: 'linux-x64',
+      ).toString(),
+      'https://github.com/teispace/teistro-sdk/releases/download/'
+      'v$prebuiltVersion/libteistro_ffi-$prebuiltVersion-linux-x64.so.gz',
+    );
   });
 
   test('a platform\'s library is named by the platform, not the host', () {
