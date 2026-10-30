@@ -130,8 +130,9 @@ Future<Future<void> Function()?> _collector() async {
 }
 
 /// At least one of [runs] runs of [cycle] grows the bytes in use within
-/// [budget]. A failure names every run's growth and one run's over four
-/// times the cycles: a leak grows with the cycles, and what the allocator
+/// [budget], or a run of four times the cycles grows under twice the least
+/// of them. A failure names every run's growth and that longer run's: a
+/// leak grows with the cycles, and what the allocator
 /// keeps for itself does not. With [collect], each run is read after a
 /// full collection once the bytes in use stop moving, so what finalisers
 /// free is counted as freed.
@@ -174,7 +175,13 @@ Future<void> givesBack(
   if (least <= budget) {
     return;
   }
+  // A leak grows four times over four times the cycles; what the allocator
+  // reserves for itself does not, so a longer run under twice the least is
+  // the allocator's (CI read 4 MiB a run and 262 KB over four runs).
   final longer = await run(4 * cycles);
+  if (longer < 2 * least) {
+    return;
+  }
   fail(
     'the bytes in use grew $grown over $runs runs of $cycles cycles '
     '(${least ~/ cycles} a cycle at least), and $longer over ${4 * cycles}; '
