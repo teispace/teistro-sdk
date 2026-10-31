@@ -73,7 +73,16 @@ fn digest_reader(root: &Path, cc: &str) -> Result<(), ()> {
     let bytes = fixtures.join("digest.tsrb");
     freestanding(root, cc, &release)?;
     let reader = crate::binding::executable(&release, "teistro-digest-read");
-    let warned = ["-std=c11", "-Wall", "-Wextra", "-Wpedantic", "-Werror"];
+    // The define quiets MSVC's headers calling `fopen` unsafe, which
+    // `-Werror` would turn into a refusal to build the reader.
+    let warned = [
+        "-std=c11",
+        "-Wall",
+        "-Wextra",
+        "-Wpedantic",
+        "-Werror",
+        "-D_CRT_SECURE_NO_WARNINGS",
+    ];
     let compile = |sanitized: bool| {
         let mut command = Command::new(cc);
         command.args(warned);
@@ -86,17 +95,28 @@ fn digest_reader(root: &Path, cc: &str) -> Result<(), ()> {
             .arg("-o")
             .arg(&reader)
             .arg(root.join(DIGEST_TEST))
-            .arg(root.join(DIGEST_SOURCE))
-            .stderr(std::process::Stdio::null());
-        command.status().is_ok_and(|status| status.success())
+            .arg(root.join(DIGEST_SOURCE));
+        command.output()
     };
-    if !compile(true) {
-        crate::skip::skip(format_args!(
-            "`{cc}` has no sanitizers here, so the digest reader runs without them"
-        ));
-        if !compile(false) {
-            println!("FAIL  {DIGEST_TEST} does not compile");
-            return Err(());
+    if !compile(true).is_ok_and(|output| output.status.success()) {
+        let unsanitized =
+            format!("`{cc}` has no sanitizers here, so the digest reader runs without them");
+        if cfg!(any(windows, target_env = "musl")) {
+            crate::skip::excused(unsanitized, "this libc has no sanitizer runtime");
+        } else {
+            crate::skip::skip(unsanitized);
+        }
+        match compile(false) {
+            Ok(output) if output.status.success() => {}
+            Ok(output) => {
+                let said = String::from_utf8_lossy(&output.stderr);
+                println!("FAIL  {DIGEST_TEST} does not compile:\n{said}");
+                return Err(());
+            }
+            Err(why) => {
+                println!("FAIL  `{cc}` did not run: {why}");
+                return Err(());
+            }
         }
     }
     let run = |mode: &str| {
@@ -113,9 +133,11 @@ fn digest_reader(root: &Path, cc: &str) -> Result<(), ()> {
     let wanted = std::fs::read(fixtures.join("digest.dump")).map_err(|why| {
         println!("FAIL  the digest's dump: {why}");
     })?;
-    if !dumped.status.success() || dumped.stdout != wanted {
-        let line = dumped
-            .stdout
+    // Windows' C runtime writes stdout as text, turning each `\n` to `\r\n`.
+    let said = String::from_utf8_lossy(&dumped.stdout).replace("\r\n", "\n");
+    if !dumped.status.success() || said.as_bytes() != wanted {
+        let line = said
+            .as_bytes()
             .split(|byte| *byte == b'\n')
             .zip(wanted.split(|byte| *byte == b'\n'))
             .position(|(got, want)| got != want);
