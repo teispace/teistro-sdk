@@ -465,6 +465,19 @@ public final class AlmanacDay {
     }
 
     /**
+     * The Gowri panchangam, when the request asked for it ({@code 03-design/gowri-panchangam.md}): eight Gowri of
+     * the daylight and eight of the night, each an eighth of its arc, a printed reading (crux C1052). Empty when not
+     * asked for.
+     *
+     * @return the periods
+     */
+    public List<GowriPeriod> gowri() {
+        Panchanga.Gowri c = batch.decoded().gowri();
+        return rows("gowri", i -> new GowriPeriod(Gowri.of(c.gowri(i)), new Interval(c.from(i), c.to(i)),
+                c.daytime(i) != 0));
+    }
+
+    /**
      * The twenty-four horas, from sunrise.
      *
      * @return the horas

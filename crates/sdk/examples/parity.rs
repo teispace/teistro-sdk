@@ -7443,7 +7443,7 @@ fn markers(report: &mut Report, place: &Place, offset: UtcOffset) {
             &date,
             place,
             offset,
-            &AlmanacRequest::new().with_markers(),
+            &AlmanacRequest::new().with_markers().with_gowri(),
         )
         .expect("the built-in sky's markers");
     let day = answer
@@ -7457,6 +7457,16 @@ fn markers(report: &mut Report, place: &Place, offset: UtcOffset) {
         day.markers
             .iter()
             .map(|span| span.member.full_key())
+            .collect::<Vec<_>>()
+            .join(" "),
+    );
+    // And its Gowri panchangam, the names only for the same reason.
+    put(
+        report,
+        "gowri",
+        day.gowri
+            .iter()
+            .map(|part| part.gowri.full_key())
             .collect::<Vec<_>>()
             .join(" "),
     );

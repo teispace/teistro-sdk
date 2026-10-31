@@ -267,6 +267,7 @@ import type {
   Ayanamsha,
   BhadraVasa,
   DayMarker,
+  Gowri,
   Panchaka,
   ShivaVasa,
   ChainEnd,
@@ -716,6 +717,7 @@ function almanac(): string {
   const fire: AgniVasa = day.agniVasa[0]!.member;
   const shunned: AshubhaYoga | undefined = day.ashubhaYogas[0]?.member;
   const bhadra: BhadraVasa | undefined = day.bhadraVasa[0]?.member;
+  const gowri: Gowri | 'unknown' | undefined = ctx.almanac.of({ from, to, place, utcOffsetSeconds: 20700, gowri: true }).at(0).gowri[0]?.gowri;
   const marked: DayMarker | undefined = ctx.almanac.of({ from, to, place, utcOffsetSeconds: 20700, markers: true }).at(0).markers[0]?.member;
   const shiva: ShivaVasa = day.shivaVasa[0]!.member;
   const named: Panchaka | undefined = day.namedPanchaka[0]?.member;

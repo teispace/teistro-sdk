@@ -75,6 +75,7 @@ from ._ffi import (
     CHART_VIMSHOPAKA,
     CONTEXT_TEST_PROVIDER,
     PANCHANGA_ECLIPSES,
+    PANCHANGA_GOWRI,
     PANCHANGA_HOMA_AHUTI,
     PANCHANGA_LAGNAS,
     PANCHANGA_MARKERS,
@@ -889,6 +890,7 @@ from .catalogue import (
     ChartKind,
     ChartLayout,
     Choghadiya,
+    Gowri,
     DashaSystem,
     DayPart,
     Direction,
@@ -1040,6 +1042,7 @@ __all__ = [
     "Latitude",
     "Longitude",
     "ChoghadiyaPeriod",
+    "GowriPeriod",
     "HeldYoga",
     "Hora",
     "Interval",
@@ -1966,6 +1969,7 @@ __all__ = [
     "BodyClass",
     "CharaKaraka",
     "Choghadiya",
+    "Gowri",
     "DashaFamily",
     "DayPart",
     "Degeneracy",
@@ -3420,6 +3424,7 @@ class AlmanacArea(_Area):
         lagnas: bool = False,
         homa_ahuti: bool = False,
         markers: bool = False,
+        gowri: bool = False,
         sky: bool = False,
         sky_step_minutes: int = 0,
         days: bool = True,
@@ -3446,7 +3451,8 @@ class AlmanacArea(_Area):
         `homa_ahuti=True` gives each day its homa ahuti, as
         `AlmanacDay.homa_ahuti`: the Sun's stars cost a search a day does
         not otherwise make, so only on asking. `markers=True` gives each
-        day its ganda mula, gandanta and vinchudo, as `AlmanacDay.markers`.
+        day its ganda mula, gandanta and vinchudo, as `AlmanacDay.markers`,
+        and `gowri=True` its Gowri panchangam, as `AlmanacDay.gowri`.
         `days=False` leaves the days out
         and answers only what is asked beside them; festivals alone are
         then founded as only what their rules read, which is what
@@ -3466,6 +3472,7 @@ class AlmanacArea(_Area):
             | (PANCHANGA_LAGNAS if lagnas else 0)
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
             | (PANCHANGA_MARKERS if markers else 0)
+            | (PANCHANGA_GOWRI if gowri else 0)
             | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
             sky_step_minutes,
@@ -3486,6 +3493,7 @@ class AlmanacArea(_Area):
         lagnas: bool = False,
         homa_ahuti: bool = False,
         markers: bool = False,
+        gowri: bool = False,
         sky: bool = False,
         sky_step_minutes: int = 0,
         days: bool = True,
@@ -3509,6 +3517,7 @@ class AlmanacArea(_Area):
             | (PANCHANGA_LAGNAS if lagnas else 0)
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
             | (PANCHANGA_MARKERS if markers else 0)
+            | (PANCHANGA_GOWRI if gowri else 0)
             | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
             sky_step_minutes,
@@ -19831,6 +19840,20 @@ class KaalaPeriod:
 
 
 @dataclass(frozen=True)
+class GowriPeriod:
+    """One Gowri of the Gowri panchangam, of the daylight or of the night."""
+
+    gowri: Gowri
+    """Which Gowri, which carries its lord and whether it is auspicious."""
+
+    at: Interval
+    """When it runs."""
+
+    daytime: bool
+    """Whether it is one of the eight of the daylight."""
+
+
+@dataclass(frozen=True)
 class ChoghadiyaPeriod:
     """One choghadiya, of the daylight or of the night."""
 
@@ -20230,6 +20253,23 @@ class AlmanacDay:
         )
 
     @property
+    def gowri(self) -> list[GowriPeriod]:
+        """The Gowri panchangam, when `gowri=True` asked for it
+        (`03-design/gowri-panchangam.md`): eight Gowri of the daylight and
+        eight of the night, each an eighth of its arc, a printed reading
+        (crux C1052). Empty when not asked for.
+        """
+        columns = self.batch.decoded.gowri
+        return self._rows(
+            "gowri",
+            lambda i: GowriPeriod(
+                gowri=Gowri(columns.gowri[i]),
+                at=Interval(columns.from_[i], columns.to[i]),
+                daytime=bool(columns.daytime[i]),
+            ),
+        )
+
+    @property
     def horas(self) -> list[Hora]:
         """The twenty-four horas, from sunrise."""
         columns = self.batch.decoded.horas
@@ -20350,6 +20390,7 @@ class Almanac:
             "shiva_vasa",
             "named_panchaka",
             "markers",
+            "gowri",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

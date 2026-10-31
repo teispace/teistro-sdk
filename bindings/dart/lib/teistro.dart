@@ -1397,7 +1397,8 @@ final class AlmanacArea extends _Area {
   /// homa ahuti, as [AlmanacDay.homaAhuti]: the Sun's stars cost a search
   /// a day does not otherwise make, so only on asking. [markers] gives
   /// each day its ganda mula, gandanta and vinchudo, as
-  /// [AlmanacDay.markers]. [days] `false` leaves the days out and answers only what is asked beside them;
+  /// [AlmanacDay.markers], and [gowri] its Gowri panchangam, as
+  /// [AlmanacDay.gowri]. [days] `false` leaves the days out and answers only what is asked beside them;
   /// festivals alone are then founded as only what their rules read, which
   /// is what [festivals] asks.
   Almanac of({
@@ -1413,6 +1414,7 @@ final class AlmanacArea extends _Area {
     bool lagnas = false,
     bool homaAhuti = false,
     bool markers = false,
+    bool gowri = false,
     bool sky = false,
     int skyStepMinutes = 0,
     bool days = true,
@@ -1430,6 +1432,7 @@ final class AlmanacArea extends _Area {
         (lagnas ? panchangaLagnas : 0) |
         (homaAhuti ? panchangaHomaAhuti : 0) |
         (markers ? panchangaMarkers : 0) |
+        (gowri ? panchangaGowri : 0) |
         (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
     skyStepMinutes,
@@ -1453,6 +1456,7 @@ final class AlmanacArea extends _Area {
     bool lagnas = false,
     bool homaAhuti = false,
     bool markers = false,
+    bool gowri = false,
     bool sky = false,
     int skyStepMinutes = 0,
     bool days = true,
@@ -1470,6 +1474,7 @@ final class AlmanacArea extends _Area {
         (lagnas ? panchangaLagnas : 0) |
         (homaAhuti ? panchangaHomaAhuti : 0) |
         (markers ? panchangaMarkers : 0) |
+        (gowri ? panchangaGowri : 0) |
         (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
     skyStepMinutes,
@@ -29447,6 +29452,24 @@ final class ChoghadiyaPeriod {
   final bool daytime;
 }
 
+/// One Gowri of the Gowri panchangam, of the daylight or of the night.
+final class GowriPeriod {
+  const GowriPeriod({
+    required this.gowri,
+    required this.at,
+    required this.daytime,
+  });
+
+  /// Which Gowri, which carries its lord and whether it is auspicious.
+  final Gowri gowri;
+
+  /// When it runs.
+  final Interval at;
+
+  /// Whether it is one of the eight of the daylight.
+  final bool daytime;
+}
+
 /// One hora, from sunrise.
 final class Hora {
   const Hora({
@@ -29671,6 +29694,7 @@ final class Almanac {
       'shivaVasa': counts.shivaVasa,
       'namedPanchaka': counts.namedPanchaka,
       'markers': counts.markers,
+      'gowri': counts.gowri,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -30164,6 +30188,22 @@ final class AlmanacDay {
       (i) => ChoghadiyaPeriod(
         choghadiya: Choghadiya.byId(c.choghadiya[i]),
         lord: Graha.byId(c.lord[i]),
+        at: Interval(from: c.from[i], to: c.to[i]),
+        daytime: c.daytime[i] == 1,
+      ),
+    );
+  }
+
+  /// The Gowri panchangam, when the request asked with `gowri: true`
+  /// (`03-design/gowri-panchangam.md`): eight Gowri of the daylight and
+  /// eight of the night, each an eighth of its arc, a printed reading
+  /// (crux C1052). Empty when not asked for.
+  List<GowriPeriod> get gowri {
+    final c = batch.decoded.gowri;
+    return _rows(
+      'gowri',
+      (i) => GowriPeriod(
+        gowri: Gowri.byId(c.gowri[i]),
         at: Interval(from: c.from[i], to: c.to[i]),
         daytime: c.daytime[i] == 1,
       ),

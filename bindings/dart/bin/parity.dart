@@ -3764,12 +3764,14 @@ void main() {
         place: place,
         utcOffsetSeconds: 20700,
         markers: true,
+        gowri: true,
       )
       .at(0);
   put(
     'markers',
     [for (final s in markedDay.markers) s.member.fullKey].join(' '),
   );
+  put('gowri', [for (final p in markedDay.gowri) p.gowri.fullKey].join(' '));
   final eclipses =
       builtin.almanac
           .of(

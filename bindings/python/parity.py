@@ -3167,8 +3167,10 @@ def main() -> None:
             place=place,
             utc_offset_seconds=20700,
             markers=True,
+            gowri=True,
         ).at(0)
         put("markers", " ".join(s.member.full_key for s in marked_day.markers))
+        put("gowri", " ".join(p.gowri.full_key for p in marked_day.gowri))
 
     def eclipse_moment(m: Optional[EclipseMoment]) -> str:
         return "-" if m is None else f"{number(m.at)}@{number(m.altitude_deg)}"

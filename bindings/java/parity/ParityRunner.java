@@ -1534,12 +1534,17 @@ public final class ParityRunner {
             try (Context builtin = teistro.context(ContextOptions.builder()
                     .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
                 var markedDay = builtin.almanac().of(date(2025, 6, 11), date(2025, 6, 11), place, 20700,
-                        null, null, false, false, false, false, false, false, 0, true).at(0);
+                        null, null, false, false, false, false, false, false, 0, true, true).at(0);
                 var keys = new java.util.ArrayList<String>();
                 for (var span : markedDay.markers()) {
                     keys.add(span.member().fullKey());
                 }
                 put("markers", String.join(" ", keys));
+                var gowri = new java.util.ArrayList<String>();
+                for (var part : markedDay.gowri()) {
+                    gowri.add(part.gowri().fullKey());
+                }
+                put("gowri", String.join(" ", gowri));
             }
 
             // ── The eclipses ──────────────────────────────────────────────
