@@ -764,7 +764,10 @@ group!(
         centre: Centre,
         /// Which window the Moon's rise and set are found in.
         moon_events: MoonEvents,
-        /// The muhurta yoga tables' key, as `aspect.drishti_table` is.
+        /// The muhurta yoga tables' key, as `aspect.drishti_table` is:
+        /// `CLASSICAL`, read at the star and tithi of sunrise, or
+        /// `MUHURTA_CHINTAMANI`, the text's full tables over every star of
+        /// the day (`03-design/day-markers.md` §2).
         muhurta_tables: String,
         /// Where panchaka begins: Dhanishtha's third quarter or the
         /// whole of it (crux C158).

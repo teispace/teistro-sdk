@@ -3753,6 +3753,23 @@ void main() {
       );
     }
   }
+  // ── The day's markers ────────────────────────────────────────────────
+  // 11 June 2025 at Kathmandu over the same sky, the full Moon passing
+  // from Jyeshtha in Scorpio to Mula (`03-design/day-markers.md` §3): the
+  // members only.
+  final markedDay = builtin.almanac
+      .of(
+        from: Calendar.gregorian.date(2025, 6, 11),
+        to: Calendar.gregorian.date(2025, 6, 11),
+        place: place,
+        utcOffsetSeconds: 20700,
+        markers: true,
+      )
+      .at(0);
+  put(
+    'markers',
+    [for (final s in markedDay.markers) s.member.fullKey].join(' '),
+  );
   final eclipses =
       builtin.almanac
           .of(

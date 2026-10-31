@@ -44,6 +44,7 @@ import {
   PANCHANGA_ECLIPSES,
   PANCHANGA_HOMA_AHUTI,
   PANCHANGA_LAGNAS,
+  PANCHANGA_MARKERS,
   PANCHANGA_NEPAL_SAMBAT,
   PANCHANGA_SKY,
   PANCHANGA_WITHOUT_DAYS,
@@ -65,6 +66,7 @@ import {
   AgniVasaById,
   AshubhaYogaById,
   BhadraVasaById,
+  DayMarkerById,
   ShivaVasaById,
   GhatiReckoningById,
   GrahaById,
@@ -2307,6 +2309,19 @@ export class AlmanacDay {
    */
   get homaAhuti() {
     return this.#spans('homaAhuti', GrahaById);
+  }
+
+  /**
+   * The day's markers from the Moon alone, when the request asked with
+   * `markers: true` (`03-design/day-markers.md` §3): `GANDA_MULA` over
+   * each of the six junction stars, `GANDANTA` over two ghatis each side
+   * of a junction (Muhurta Chintamani, Vivaha-prakarana v. 41) and
+   * `VINCHUDO` while the Moon is in Scorpio, in the order they begin;
+   * ganda mula's whole star and vinchudo are printed readings (crux
+   * C1051). Empty when not asked for.
+   */
+  get markers() {
+    return this.#spans('markers', DayMarkerById);
   }
 
   /** The signs the Moon stood in. */
@@ -7582,6 +7597,8 @@ export class AlmanacArea extends Area {
    * @param {boolean} [request.homaAhuti] whether to give each day its
    *   homa ahuti, as `AlmanacDay.homaAhuti`: the Sun's stars cost a
    *   search a day does not otherwise make, so only on asking
+   * @param {boolean} [request.markers] whether to give each day its ganda
+   *   mula, gandanta and vinchudo, as `AlmanacDay.markers`
    * @param {boolean} [request.days] `false` to leave the days out and
    *   answer only what is asked beside them; festivals alone are then
    *   founded as only what their rules read, which is what `festivals`
@@ -7636,6 +7653,7 @@ export class AlmanacArea extends Area {
           (request.lagnas === true ? PANCHANGA_LAGNAS : 0) |
           (request.homaAhuti === true ? PANCHANGA_HOMA_AHUTI : 0) |
           (request.sky === true ? PANCHANGA_SKY : 0) |
+          (request.markers === true ? PANCHANGA_MARKERS : 0) |
           (request.days === false ? PANCHANGA_WITHOUT_DAYS : 0),
       }),
     );
@@ -7658,7 +7676,7 @@ export class AlmanacArea extends Area {
     if (request?.festivals == null) {
       throw new TypeError("festivals: expected a festivals request record, e.g. { rules: 'NEPAL' }");
     }
-    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, sky: false, skyStepMinutes: undefined, days: false }).festivals;
+    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, markers: false, sky: false, skyStepMinutes: undefined, days: false }).festivals;
   }
 
   /**

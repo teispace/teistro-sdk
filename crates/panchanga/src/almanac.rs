@@ -22,8 +22,8 @@ use teistro_calendar::solar::{SolarModel, civil_day_lights};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_chart::zodiac::ChartZodiac;
 use teistro_core::catalogue::{
-    AgniVasa, AshubhaYoga, BhadraVasa, Direction, Graha, Nakshatra, Panchaka, Rashi, Ritu,
-    ShivaVasa, Tithi, Vara,
+    AgniVasa, AshubhaYoga, BhadraVasa, DayMarker, Direction, Graha, Nakshatra, Panchaka, Rashi,
+    Ritu, ShivaVasa, Tithi, Vara,
 };
 use teistro_core::envelope::{Envelope, Hash, Provenance, Version, content_hash};
 use teistro_core::error::{Error, Status};
@@ -160,6 +160,13 @@ pub struct Panchanga {
     /// the day's document when empty.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub homa_ahuti: Vec<Span<Graha>>,
+    /// The day's markers from the Moon alone, ganda mula, gandanta and
+    /// vinchudo, in the order they begin ([`Panchanga::mark`],
+    /// `03-design/day-markers.md` §3). **Empty unless asked for** (the
+    /// façade's `AlmanacRequest::with_markers`), so a day not asked pays
+    /// nothing; and left out of the day's document when empty.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub markers: Vec<Span<DayMarker>>,
     /// Where Shiva dwells, one span for each tithi the day held, under
     /// `panchanga.shiva_vasa`: **a printed convention** with no text
     /// behind it, which the answer's provenance names
@@ -678,6 +685,53 @@ impl Panchanga {
     #[must_use]
     pub fn bhadra_vasa(&self) -> Vec<Span<BhadraVasa>> {
         omen::bhadra_vasas(&self.limbs.karana, &self.moon.signs, self.window)
+    }
+
+    /// Fills [`Panchanga::markers`] from the day's own stars and the
+    /// Moon's signs ([`omen::day_markers`], `03-design/day-markers.md`
+    /// §3): ganda mula over each of the six junction stars, gandanta over
+    /// two ghatis each side of a junction (Muhurta Chintamani,
+    /// Vivaha-prakarana v. 41), and vinchudo while the Moon is in Scorpio,
+    /// in the order they begin. Ganda mula's whole star and vinchudo are
+    /// printed readings (crux C1051).
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let mut day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// use teistro_core::catalogue::{DayMarker, Rashi};
+    ///
+    /// assert!(day.markers.is_empty(), "not asked for");
+    /// day.mark();
+    /// // Vinchudo holds exactly while the Moon is in Scorpio.
+    /// let vinchudo = day.markers.iter().filter(|m| m.member == DayMarker::Vinchudo).count();
+    /// assert_eq!(vinchudo, day.moon.signs.iter().filter(|s| s.member == Rashi::Scorpio).count());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    pub fn mark(&mut self) {
+        self.markers = omen::day_markers(&self.limbs.nakshatra, &self.moon.signs, self.window);
     }
 
     /// The directions Rahu walks over the daylight, an eighth of sunrise
@@ -2986,6 +3040,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 lagnas: Vec::new(),
                 punya_kala,
                 homa_ahuti: Vec::new(),
+                markers: Vec::new(),
                 named_panchaka,
                 clock: Some(self.clock.reading(window.from))
                     .filter(|clock| clock.source != ZoneSource::Manual),

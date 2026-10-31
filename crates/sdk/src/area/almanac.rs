@@ -641,6 +641,9 @@ impl<'a> AlmanacArea<'a> {
                 almanac.homa_ahuti(&mut days.value, place)
             })?;
         }
+        if request.markers && request.days == Days::Handed {
+            days.value.iter_mut().for_each(Panchanga::mark);
+        }
         let festivals = request
             .festivals
             .as_ref()
@@ -1164,6 +1167,7 @@ pub struct AlmanacRequest {
     nepal_sambat: bool,
     lagnas: bool,
     homa_ahuti: bool,
+    markers: bool,
     sky: Option<SkyStep>,
     days: Days,
 }
@@ -1254,6 +1258,23 @@ impl AlmanacRequest {
     #[must_use]
     pub fn with_homa_ahuti(mut self) -> AlmanacRequest {
         self.homa_ahuti = true;
+        self
+    }
+
+    /// With each day's markers from the Moon alone ([`Panchanga::markers`],
+    /// `03-design/day-markers.md` §3): ganda mula, gandanta and vinchudo.
+    /// Read from spans the day already holds, and asked so that a day's
+    /// answer grows only for a caller who wants them.
+    ///
+    /// ```
+    /// use teistro::AlmanacRequest;
+    ///
+    /// assert!(AlmanacRequest::new().with_markers().markers());
+    /// assert!(!AlmanacRequest::new().markers());
+    /// ```
+    #[must_use]
+    pub fn with_markers(mut self) -> AlmanacRequest {
+        self.markers = true;
         self
     }
 
@@ -1355,6 +1376,12 @@ impl AlmanacRequest {
     #[must_use]
     pub fn homa_ahuti(&self) -> bool {
         self.homa_ahuti
+    }
+
+    /// Whether the days' markers were asked.
+    #[must_use]
+    pub fn markers(&self) -> bool {
+        self.markers
     }
 
     /// The step of the days' sky, when it was asked.

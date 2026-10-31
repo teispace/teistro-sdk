@@ -7424,6 +7424,44 @@ fn lagnas(report: &mut Report, place: &Place, offset: UtcOffset) {
     }
 }
 
+/// A day's markers, asked beside the day: 11 June 2025 at Kathmandu over
+/// the built-in sky, the full Moon passing from Jyeshtha in Scorpio to Mula
+/// (`03-design/day-markers.md` §3). The members only: where a marker
+/// begins is where the Moon's star or sign changes, which the compact
+/// tier moves by a second or so.
+fn markers(report: &mut Report, place: &Place, offset: UtcOffset) {
+    let sky = Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a context over the built-in sky");
+    let date = CalendarDate::defined(Calendar::Gregorian, 2025, 6, 11);
+    let answer = sky
+        .almanac()
+        .asked(
+            &date,
+            &date,
+            place,
+            offset,
+            &AlmanacRequest::new().with_markers(),
+        )
+        .expect("the built-in sky's markers");
+    let day = answer
+        .days
+        .value
+        .first()
+        .expect("a range of one day answers one");
+    put(
+        report,
+        "markers",
+        day.markers
+            .iter()
+            .map(|span| span.member.full_key())
+            .collect::<Vec<_>>()
+            .join(" "),
+    );
+}
+
 /// The eclipses a panchanga request carries, as the report prints them.
 ///
 /// September 2025 at Kathmandu over the built-in sky, which the test
@@ -8156,6 +8194,7 @@ fn main() {
     the_published_and_tibetan(&mut report, &geo);
     eclipses(&mut report, &place, offset);
     lagnas(&mut report, &place, offset);
+    markers(&mut report, &place, offset);
     the_lilith(&mut report, &place, offset);
     the_zones(&mut report, &place, offset);
 
