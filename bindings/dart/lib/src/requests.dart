@@ -5413,49 +5413,6 @@ enum NameClause implements _Keyed {
   final String key;
 }
 
-/// A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
-final class CalendarDay extends _Request {
-  const CalendarDay({
-    required this.calendar,
-    required this.day,
-    this.era,
-    this.leap,
-    required this.month,
-    required this.year,
-  });
-
-  /// Its calendar.
-  final Calendar calendar;
-
-  /// The day, 1-based.
-  final int day;
-
-  /// The era, for a calendar that counts several.
-  final EraNumber? era;
-
-  /// A leap month or day, for a calendar that marks one.
-  final Leap? leap;
-
-  /// The month, 1-based.
-  final int month;
-
-  /// The astronomical year.
-  final int year;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'calendar': calendar.key,
-    'day': day,
-    if (era case final eraValue?) 'era': eraValue._wire,
-    if (leap case final leapValue?) 'leap': leapValue.key,
-    'month': month,
-    'year': year,
-  };
-
-  @override
-  List<Object?> get _fields => [calendar, day, era, leap, month, year];
-}
-
 /// Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
 enum TithiHalf implements _Keyed {
   /// The first.
@@ -9249,29 +9206,6 @@ enum NonLatin implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
-}
-
-/// A year in an era, for presentation.
-final class EraNumber extends _Request {
-  const EraNumber({
-    required this.era,
-    required this.year,
-  });
-
-  /// The era.
-  final Era era;
-
-  /// The year in it, 1-based.
-  final int year;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'era': era.key,
-    'year': year,
-  };
-
-  @override
-  List<Object?> get _fields => [era, year];
 }
 
 /// Whether the deceased had the upanayana.
