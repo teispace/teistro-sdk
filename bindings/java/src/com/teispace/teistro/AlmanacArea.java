@@ -832,4 +832,58 @@ public final class AlmanacArea {
                 Reads.integer(value, "limitDays"),
                 Reads.integer(value, "searchedDays"));
     }
+
+    /**
+     * <b>A day in sentences</b> ({@code 03-design/day-in-sentences.md}): one date's facts as short sentences
+     * from templates, every value from the day's answer.
+     *
+     * <pre>{@code
+     * DaySentences day = sdk.almanac().sentences(date, kathmandu, 20_700, "ne-Deva-NP");
+     * System.out.println(day.sentences().get(0).text());
+     * }</pre>
+     *
+     * @param date the day
+     * @param place where the day is reckoned
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param locale the locale, null for the context's
+     * @return the sentences
+     * @throws TeistroException {@code UNSUPPORTED} naming {@code locale} for a locale without the templates
+     */
+    public DaySentences sentences(CalendarDate date, Observer place, int utcOffsetSeconds, String locale) {
+        if (date == null) {
+            throw Reads.invalid("date is a CalendarDate", "date");
+        }
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        Map<String, Object> day = new java.util.LinkedHashMap<>();
+        day.put("year", date.year());
+        day.put("month", date.month());
+        day.put("day", date.day());
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("calendar", date.calendar().key());
+        asked.put("date", day);
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (locale != null) {
+            asked.put("locale", locale);
+        }
+        String json = Json.write(asked);
+        Map<?, ?> envelope =
+                Reads.object(Json.read(context.locked((lib, raw) -> Calls.almanacSentences(lib, raw, json))));
+        Map<?, ?> value = Reads.object(envelope, "value");
+        return new DaySentences(
+                Reads.string(value, "locale"),
+                Reads.flag(value, "draft"),
+                Reads.each(value, "sentences", row -> {
+                    Map<?, ?> sentence = Reads.object(row);
+                    return new DaySentences.Sentence(
+                            Reads.string(sentence, "key"),
+                            Reads.object(sentence, "params"),
+                            Reads.string(sentence, "text"));
+                }),
+                Reads.each(value, "withheld", Reads::string));
+    }
 }

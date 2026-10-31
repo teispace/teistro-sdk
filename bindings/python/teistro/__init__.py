@@ -398,6 +398,7 @@ from ._requests import (
     FestivalCalendarRequest as FestivalCalendarRequest,
     FeedForm as FeedForm,
     DigestRequest as DigestRequest,
+    SentencesRequest as SentencesRequest,
     FeedAlarm as FeedAlarm,
     FeedHint as FeedHint,
     FeedSelector as FeedSelector,
@@ -980,6 +981,7 @@ __all__ = [
     "FeedForm",
     "decode_digest",
     "DigestRequest",
+    "SentencesRequest",
     "FeedAlarm",
     "FeedHint",
     "FeedSelector",
@@ -1051,6 +1053,8 @@ __all__ = [
     "ChangePoint",
     "ChangePoints",
     "NextOccurrence",
+    "DaySentence",
+    "DaySentences",
     "ZoneDatabase",
     "Status",
     "Teistro",
@@ -3753,6 +3757,42 @@ class AlmanacArea(_Area):
             lambda: other._through_provider(lambda: self._context.inner.almanac_disagreements(theirs, json.dumps(asked)))
         )
         return _disagreements_answer(answered)
+
+    def sentences(
+        self,
+        *,
+        date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+        locale: Optional[str] = None,
+    ) -> "DaySentences":
+        """**A day in sentences** (`03-design/day-in-sentences.md`): one
+        date's facts as short sentences from templates, every value from
+        the day's answer. A locale without the templates raises
+        `UNSUPPORTED` on `locale`.
+
+        >>> # day = ctx.almanac.sentences(date=day, place=kathmandu,
+        >>> #     utc_offset_seconds=20700, locale="ne-Deva-NP")
+        >>> # day.sentences[0].text
+        """
+        asked: Dict[str, Any] = {
+            "calendar": date.calendar.key,
+            "date": {"year": date.year, "month": date.month, "day": date.day},
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+        }
+        if locale is not None:
+            asked["locale"] = locale
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_sentences(json.dumps(asked)))
+        value = json.loads(answered)["value"]
+        return DaySentences(
+            locale=value["locale"],
+            draft=value["draft"],
+            sentences=tuple(DaySentence(key=s["key"], params=s["params"], text=s["text"]) for s in value["sentences"]),
+            withheld=tuple(value["withheld"]),
+        )
 
     def next(
         self,
@@ -9402,6 +9442,37 @@ class ChangePoints:
 
     provenance: Provenance
     """What computed it, and the clock it was asked on."""
+
+
+@dataclass(frozen=True)
+class DaySentence:
+    """One sentence of `almanac.sentences`."""
+
+    key: str
+    """The template, as `sdk.day.tithi`."""
+
+    params: Mapping[str, Any]
+    """Its slots, as `intl.render` takes them."""
+
+    text: str
+    """The sentence."""
+
+
+@dataclass(frozen=True)
+class DaySentences:
+    """A day said in a locale (`03-design/day-in-sentences.md`)."""
+
+    locale: str
+    """The locale the sentences are in."""
+
+    draft: bool
+    """Whether its templates still wait for a native reviewer (Q42)."""
+
+    sentences: Tuple[DaySentence, ...]
+    """The sentences, in the order a printed day runs."""
+
+    withheld: Tuple[str, ...]
+    """The facts a polar day holds elsewhere and so does not say here."""
 
 
 @dataclass(frozen=True)

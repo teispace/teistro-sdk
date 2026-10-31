@@ -83,6 +83,7 @@ pub use area::{
     DIGEST_FORMAT_MINOR, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DIGEST_NO_TIME, DIGEST_SCHEMA,
     DigestRequest, DigestSpan, digest_schema,
 };
+pub use area::{DaySentence, DaySentences, SentencesRequest};
 pub use area::{PackForm, PackListing, PackRequest, PackRow};
 pub use teistro_panchanga::festival::NextKind;
 #[cfg(feature = "western")]

@@ -23,7 +23,7 @@ use teistro_ffi::calendar::{
     TsCalendarDate, TsDateSpan, TsOverflow, ts_calendar_add, ts_calendar_between,
 };
 use teistro_ffi::intl::ts_intl_in_words;
-use teistro_ffi::panchanga::ts_almanac_next;
+use teistro_ffi::panchanga::{ts_almanac_next, ts_almanac_sentences};
 use teistro_ffi::string::TsString;
 
 mod common;
@@ -341,4 +341,28 @@ fn a_next_request_is_refused_as_its_contract_says() {
         json_call(&bare, ts_almanac_next, &request).0,
         Status::Capability
     );
+}
+
+/// **A day in sentences** across the boundary: a day answers in English
+/// and Nepali, and each refusal its contract names has its status and field.
+#[test]
+fn a_day_is_said_across_the_boundary_and_refused_as_its_contract_says() {
+    let ctx = test_ctx();
+    let asked = |locale: &str| {
+        serde_json::json!({
+            "date": {"year": 2026, "month": 3, "day": 18},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+            "utcOffsetSeconds": 20700, "locale": locale,
+        })
+    };
+    let (status, answer) = json_call(&ctx, ts_almanac_sentences, &asked("ne-Deva-NP"));
+    assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
+    let value = &answer.unwrap()["value"];
+    assert_eq!(value["draft"], true);
+    assert_eq!(value["sentences"][0]["key"], "sdk.day.vara");
+
+    let hindi = json_call(&ctx, ts_almanac_sentences, &asked("hi-Deva-IN"));
+    refused(&ctx, &hindi, Status::Unsupported, "locale");
+    let wrong = json_call(&ctx, ts_almanac_sentences, &serde_json::json!({"date": 1}));
+    refused(&ctx, &wrong, Status::InvalidArg, "sentences");
 }

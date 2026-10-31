@@ -62,6 +62,7 @@ Object _argument(ParameterMirror parameter) {
     'num' || 'double' => 2460000.25,
     'String' => name == 'zone' ? 'Asia/Kathmandu' : 'x',
     'List' => const <Object>['x'],
+    'TimeValue' => const intl.TimeValue(hour: 6, minute: 5),
     final other => throw StateError('no argument for $name, a $other'),
   };
 }

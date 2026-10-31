@@ -29,6 +29,7 @@ __all__ = [
     "PakshiRequest",
     "PublishedReasonsRequest",
     "SankalpaRequest",
+    "SentencesRequest",
     "AddAsked",
     "BetweenAsked",
     "CalendarAsked",
@@ -981,6 +982,26 @@ class SankalpaRequest(TypedDict, total=False):
 
     utcOffsetSeconds: Required[int]
     """The offset from UTC the place's civil days run at, in seconds, east positive."""
+
+
+class SentencesRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+    """The calendar `date` is in; Gregorian when left out."""
+
+    date: Required[DayAsked]
+
+    latitudeDeg: Required[float]
+
+    locale: Optional[str]
+    """The locale to say the day in; the context's when left out."""
+
+    longitudeDeg: Required[float]
+
+    utcOffsetSeconds: Required[int]
 
 
 class AddAsked(TypedDict, total=False):

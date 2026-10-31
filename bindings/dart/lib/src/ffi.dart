@@ -2010,6 +2010,8 @@ typedef TsAlmanacDigestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poi
 typedef TsAlmanacDigestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsAlmanacNextNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacNextDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacSentencesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacSentencesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalPackNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalPackDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacChangesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2113,6 +2115,7 @@ final class TeistroLibrary {
         ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
         ts_almanac_digest = library.lookupFunction<TsAlmanacDigestNative, TsAlmanacDigestDart>('ts_almanac_digest'),
         ts_almanac_next = library.lookupFunction<TsAlmanacNextNative, TsAlmanacNextDart>('ts_almanac_next'),
+        ts_almanac_sentences = library.lookupFunction<TsAlmanacSentencesNative, TsAlmanacSentencesDart>('ts_almanac_sentences'),
         ts_almanac_festival_pack = library.lookupFunction<TsAlmanacFestivalPackNative, TsAlmanacFestivalPackDart>('ts_almanac_festival_pack'),
         ts_almanac_changes = library.lookupFunction<TsAlmanacChangesNative, TsAlmanacChangesDart>('ts_almanac_changes'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
@@ -2640,6 +2643,21 @@ final class TeistroLibrary {
   /// `OUT_OF_RANGE`; nothing within the limit `LIMIT`, naming `limitDays`;
   /// a context without an ephemeris `CAPABILITY`.
   final TsAlmanacNextDart ts_almanac_next;
+
+  /// One day's facts as short declarative sentences
+  /// (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+  /// value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+  /// params, text}`, `draft` true while the locale's templates wait for a
+  /// native reviewer (Q42), and `withheld` the facts a polar day holds
+  /// elsewhere.
+  ///
+  /// `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+  /// altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+  /// place or offset out of range, is `INVALID_ARG`, named under
+  /// `sentences`; a locale not loaded, or one without the templates, is
+  /// `UNSUPPORTED` on `locale`; a context without an ephemeris is
+  /// `CAPABILITY`; otherwise as the day.
+  final TsAlmanacSentencesDart ts_almanac_sentences;
 
   /// Every rule of a festival pack with what it is
   /// (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
@@ -6536,6 +6554,30 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_almanac_next(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// One day's facts as short declarative sentences
+  /// (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+  /// value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+  /// params, text}`, `draft` true while the locale's templates wait for a
+  /// native reviewer (Q42), and `withheld` the facts a polar day holds
+  /// elsewhere.
+  ///
+  /// `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+  /// altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+  /// place or offset out of range, is `INVALID_ARG`, named under
+  /// `sentences`; a locale not loaded, or one without the templates, is
+  /// `UNSUPPORTED` on `locale`; a context without an ephemeris is
+  /// `CAPABILITY`; otherwise as the day.
+  String almanacSentences(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_sentences(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

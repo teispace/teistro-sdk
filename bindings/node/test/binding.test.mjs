@@ -4468,6 +4468,32 @@ test('a span says which sunrises it held and when it ended in ghatis', () => {
 });
 
 /**
+ * A day in sentences (`03-design/day-in-sentences.md`): English and Nepali
+ * say the same day, Hindi is refused on `locale`, and Tromso under the
+ * midnight sun says so.
+ */
+test('a day is said in sentences and a locale without templates is refused', () => {
+  const ctx = new Context({ ephemeris: catalogue.Ephemeris.SuryaSiddhanta });
+  const asked = {
+    date: { year: 2026, month: 3, day: 18 },
+    place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+  };
+  const en = ctx.almanac.sentences({ ...asked, locale: 'en-Latn' });
+  assert.equal(en.sentences[0].text, 'The day is Wednesday.');
+  assert.equal(en.draft, false);
+  const ne = ctx.almanac.sentences({ ...asked, locale: 'ne-Deva-NP' });
+  assert.equal(ne.sentences[0].text, 'यो दिन बुधबार हो।');
+  assert.equal(ne.draft, true);
+  assert.ok(Object.isFrozen(ne));
+  assert.throws(
+    () => ctx.almanac.sentences({ ...asked, locale: 'hi-Deva-IN' }),
+    (e) => e instanceof TeistroError && e.field === 'locale',
+  );
+  ctx.dispose();
+});
+
+/**
  * The next occurrence (`03-design/next-occurrence.md`): Maghe sankranti
  * from 1 January 2026 in the first window, Vijaya Dashami within the
  * default limit, and a search too short refused on `limitDays`.

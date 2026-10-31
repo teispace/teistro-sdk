@@ -1938,6 +1938,55 @@ final class AlmanacArea extends _Area {
           )
           as Map<String, Object?>;
 
+  /// **A day in sentences** (`03-design/day-in-sentences.md`): one date's
+  /// facts as short sentences from templates, every value from the day's
+  /// answer. A locale without the templates is refused on `locale`.
+  ///
+  /// ```dart
+  /// final day = sdk.almanac.sentences(
+  ///   date: Calendar.gregorian.date(2026, 3, 18), place: kathmandu,
+  ///   utcOffsetSeconds: 20700, locale: 'ne-Deva-NP',
+  /// );
+  /// print(day.sentences.first.text);
+  /// ```
+  DaySentences sentences({
+    required CalendarDate date,
+    required Observer place,
+    required int utcOffsetSeconds,
+    String? locale,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'calendar': date.calendar.key,
+      'date': _dayParts(date),
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      if (locale != null) 'locale': locale,
+    });
+    final envelope =
+        jsonDecode(
+              _context._guarded(() => _context._inner.almanacSentences(asked)),
+            )
+            as Map<String, Object?>;
+    final value = envelope['value']! as Map<String, Object?>;
+    return DaySentences(
+      locale: value['locale']! as String,
+      draft: value['draft']! as bool,
+      sentences: [
+        for (final row
+            in (value['sentences']! as List<Object?>)
+                .cast<Map<String, Object?>>())
+          DaySentence(
+            key: row['key']! as String,
+            params: row['params']! as Map<String, Object?>,
+            text: row['text']! as String,
+          ),
+      ],
+      withheld: (value['withheld']! as List<Object?>).cast<String>(),
+    );
+  }
+
   NextOccurrence next({
     required double after,
     required Observer place,
@@ -2056,6 +2105,46 @@ final class ChangePoints {
 
   /// What computed it, and the clock it was asked on.
   final Provenance provenance;
+}
+
+/// One sentence of [AlmanacArea.sentences].
+final class DaySentence {
+  const DaySentence({
+    required this.key,
+    required this.params,
+    required this.text,
+  });
+
+  /// The template, as `sdk.day.tithi`.
+  final String key;
+
+  /// Its slots, as `intl.render` takes them.
+  final Map<String, Object?> params;
+
+  /// The sentence.
+  final String text;
+}
+
+/// A day said in a locale (`03-design/day-in-sentences.md`).
+final class DaySentences {
+  const DaySentences({
+    required this.locale,
+    required this.draft,
+    required this.sentences,
+    required this.withheld,
+  });
+
+  /// The locale the sentences are in.
+  final String locale;
+
+  /// Whether its templates still wait for a native reviewer (Q42).
+  final bool draft;
+
+  /// The sentences, in the order a printed day runs.
+  final List<DaySentence> sentences;
+
+  /// The facts a polar day holds elsewhere and so does not say here.
+  final List<String> withheld;
 }
 
 /// The next day [AlmanacArea.next] found (`03-design/next-occurrence.md`).

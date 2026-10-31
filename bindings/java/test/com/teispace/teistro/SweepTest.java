@@ -95,6 +95,9 @@ final class SweepTest {
         if (type == String.class) {
             return "x";
         }
+        if (type == com.teispace.teistro.messages.Messages.TimeValue.class) {
+            return new com.teispace.teistro.messages.Messages.TimeValue(6, 5, 0);
+        }
         if (type == List.class) {
             return List.of("x");
         }

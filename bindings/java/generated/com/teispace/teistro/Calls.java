@@ -1003,6 +1003,33 @@ final class Calls {
     }
 
     /**
+     * `ts_almanac_sentences`: One day's facts as short declarative sentences
+     * (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+     * value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+     * params, text}`, `draft` true while the locale's templates wait for a
+     * native reviewer (Q42), and `withheld` the facts a polar day holds
+     * elsewhere.
+     *
+     * `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+     * altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+     * place or offset out of range, is `INVALID_ARG`, named under
+     * `sentences`; a locale not loaded, or one without the templates, is
+     * `UNSUPPORTED` on `locale`; a context without an ephemeris is
+     * `CAPABILITY`; otherwise as the day.
+     */
+    static String almanacSentences(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_sentences.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_almanac_festival_pack`: Every rule of a festival pack with what it is
      * (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
      * each row `{key, form, source, meta, unsourced}`, `form` how its day is

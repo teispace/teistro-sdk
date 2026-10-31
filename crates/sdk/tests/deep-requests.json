@@ -2056,6 +2056,22 @@
     }
   },
   {
+    "record": "almanac.sentences",
+    "request": {
+      "altitudeM": 1.5,
+      "calendar": "calendar.JULIAN",
+      "date": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "latitudeDeg": 1.5,
+      "locale": "x",
+      "longitudeDeg": 1.5,
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
     "record": "calendar.add",
     "request": {
       "calendar": "calendar.JULIAN",

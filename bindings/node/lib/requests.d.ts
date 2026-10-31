@@ -308,6 +308,25 @@ export interface SankalpaRequest {
 }
 
 /**
+ * The request as a binding writes it.
+ */
+export interface SentencesRequest {
+  readonly altitudeM?: number;
+  /**
+   * The calendar `date` is in; Gregorian when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  readonly date: DayAsked;
+  readonly latitudeDeg: number;
+  /**
+   * The locale to say the day in; the context's when left out.
+   */
+  readonly locale?: string | null;
+  readonly longitudeDeg: number;
+  readonly utcOffsetSeconds: number;
+}
+
+/**
  * An add request as a binding writes it.
  */
 export interface AddAsked {

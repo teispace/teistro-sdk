@@ -8172,6 +8172,50 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **A day in sentences** (`03-design/day-in-sentences.md`): one date's
+   * facts as short sentences from templates, every value from the day's
+   * answer. A locale without the templates is refused on `locale`.
+   *
+   * @example
+   * const day = sdk.almanac.sentences({
+   *   date: { year: 2026, month: 3, day: 18 },
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   *   locale: 'ne-Deva-NP',
+   * });
+   * // day.sentences[0].text, day.draft, day.withheld
+   *
+   * @param {object} request
+   * @param {{year: number, month: number, day: number}} request.date the day
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {string} [request.calendar] the date's calendar; Gregorian when left out
+   * @param {string} [request.locale] the locale; the context's when left out
+   * @returns {object} `{ locale, draft, sentences, withheld }`
+   */
+  sentences(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('sentences: expected a request, e.g. { date, place, utcOffsetSeconds }');
+    }
+    const { date, place: where, utcOffsetSeconds, ...rest } = request;
+    const place = where ?? {};
+    const asked = {
+      ...rest,
+      date: {
+        year: finite(date?.year, 'date.year'),
+        month: finite(date?.month, 'date.month'),
+        day: finite(date?.day, 'date.day'),
+      },
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    };
+    const { value } = JSON.parse(run(this, (inner) => inner.almanacSentences(JSON.stringify(asked))));
+    return deepFreeze(value);
+  }
+
+  /**
    * Every instant in a range at which the tithi, nakshatra, yoga, karana,
    * the Moon's or Sun's sign or the weekday changes, sorted, as one list
    * (`03-design/change-points.md`). The range is asked on

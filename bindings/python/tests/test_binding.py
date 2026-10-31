@@ -1004,6 +1004,22 @@ class AnEngine(WithLibrary):
                 ctx.almanac.first_year(place=kathmandu, utc_offset_seconds=20700, request=unkeyed)
             self.assertEqual(empty.exception.field, "firstYear.request.key")
 
+    def test_a_day_is_said_in_sentences(self) -> None:
+        """English and Nepali say one day, and Hindi is refused on `locale`
+        (`03-design/day-in-sentences.md`)."""
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        day = date(Calendar.GREGORIAN, 2026, 3, 18)
+        with self.teistro.context(**nepal_official()) as sky:
+            en = sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="en-Latn")
+            self.assertEqual(en.sentences[0].text, "The day is Wednesday.")
+            self.assertFalse(en.draft)
+            ne = sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="ne-Deva-NP")
+            self.assertEqual(ne.sentences[0].text, "यो दिन बुधबार हो।")
+            self.assertTrue(ne.draft)
+            with self.assertRaises(TeistroError) as refused:
+                sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="hi-Deva-IN")
+            self.assertEqual(refused.exception.field, "locale")
+
     def test_the_next_sankranti_and_a_packs_festival_are_found(self) -> None:
         """From noon on 1 January 2026 at Kathmandu, Maghe sankranti on the
         15th, found in the first window, and Vijaya Dashami found within

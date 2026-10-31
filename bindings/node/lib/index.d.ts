@@ -7628,6 +7628,19 @@ export declare class AlmanacArea {
    */
   next(request: NextRequest): NextOccurrence;
   /**
+   * **A day in sentences** (`03-design/day-in-sentences.md`): one date's facts
+   * as short sentences from templates, every value from the day's answer. A
+   * locale without the templates is refused on `locale`.
+   *
+   * @example
+   * const day = sdk.almanac.sentences({
+   *   date: { year: 2026, month: 3, day: 18 },
+   *   place: { latitude: 27.7172, longitude: 85.324 },
+   *   utcOffsetSeconds: 20700,
+   * });
+   */
+  sentences(request: DaySentencesAsked): DaySentences;
+  /**
    * Every instant in a range at which something changes, sorted, as one
    * list (`03-design/change-points.md`).
    */
@@ -7673,6 +7686,42 @@ export interface FestivalPackRow {
   readonly subjectTo?: string;
   /** For a published row, the last year with a day. */
   readonly lastYear?: number;
+}
+
+/** What `almanac.sentences` says, where and in which locale. */
+export interface DaySentencesAsked {
+  /** The day. */
+  readonly date: { readonly year: number; readonly month: number; readonly day: number };
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The date's calendar; Gregorian when left out. */
+  readonly calendar?: Calendar;
+  /** The locale; the context's when left out. */
+  readonly locale?: string;
+}
+
+/** A day said in a locale, frozen. */
+export interface DaySentences {
+  /** The locale the sentences are in. */
+  readonly locale: string;
+  /** Whether its templates still wait for a native reviewer (Q42). */
+  readonly draft: boolean;
+  /** The sentences, in the order a printed day runs. */
+  readonly sentences: readonly DaySentence[];
+  /** The facts a polar day holds elsewhere and so does not say here. */
+  readonly withheld: readonly string[];
+}
+
+/** One sentence of `almanac.sentences`. */
+export interface DaySentence {
+  /** The template, as `sdk.day.tithi`. */
+  readonly key: string;
+  /** Its slots, as `intl.render` takes them. */
+  readonly params: Readonly<Record<string, unknown>>;
+  /** The sentence. */
+  readonly text: string;
 }
 
 /** What `almanac.next` looks for, and where and how far. */

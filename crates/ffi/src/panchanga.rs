@@ -1826,6 +1826,68 @@ pub unsafe extern "C" fn ts_almanac_next(
     })
 }
 
+/// One day's facts as short declarative sentences
+/// (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+/// value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+/// params, text}`, `draft` true while the locale's templates wait for a
+/// native reviewer (Q42), and `withheld` the facts a polar day holds
+/// elsewhere.
+///
+/// `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+/// altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+/// place or offset out of range, is `INVALID_ARG`, named under
+/// `sentences`; a locale not loaded, or one without the templates, is
+/// `UNSUPPORTED` on `locale`; a context without an ephemeris is
+/// `CAPABILITY`; otherwise as the day.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, teistro::Ephemeris::SuryaSiddhanta)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_sentences;
+/// use teistro_ffi::string::TsString;
+///
+/// let asked = c"{\"date\": {\"year\": 2026, \"month\": 3, \"day\": 18}, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"utcOffsetSeconds\": 20700}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// assert_eq!(unsafe { ts_almanac_sentences(&raw const ctx, asked.as_ptr(), &raw mut out) }, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// assert_eq!(answer["value"]["sentences"][0]["key"], "sdk.day.vara");
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_almanac_sentences(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::SentencesRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().sentences(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 /// Every rule of a festival pack with what it is
 /// (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
 /// each row `{key, form, source, meta, unsourced}`, `form` how its day is

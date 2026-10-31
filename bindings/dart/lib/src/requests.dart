@@ -597,6 +597,49 @@ final class SankalpaRequest extends _Request {
   List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, longitudeDeg, utcOffsetSeconds];
 }
 
+/// The request as a binding writes it.
+final class SentencesRequest extends _Request {
+  const SentencesRequest({
+    this.altitudeM = 0.0,
+    this.calendar,
+    required this.date,
+    required this.latitudeDeg,
+    this.locale,
+    required this.longitudeDeg,
+    required this.utcOffsetSeconds,
+  });
+
+  final double altitudeM;
+
+  /// The calendar `date` is in; Gregorian when left out.
+  final Calendar? calendar;
+
+  final DayAsked date;
+
+  final double latitudeDeg;
+
+  /// The locale to say the day in; the context's when left out.
+  final String? locale;
+
+  final double longitudeDeg;
+
+  final int utcOffsetSeconds;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'date': date._wire,
+    'latitudeDeg': latitudeDeg,
+    if (locale case final localeValue?) 'locale': localeValue,
+    'longitudeDeg': longitudeDeg,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, calendar, date, latitudeDeg, locale, longitudeDeg, utcOffsetSeconds];
+}
+
 /// An add request as a binding writes it.
 final class AddAsked extends _Request {
   const AddAsked({

@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 352 of the examples' 364 members.
+/// The cases compare 353 of the examples' 365 members.
 library;
 
 import 'dart:convert';
@@ -1472,6 +1472,24 @@ void main() {
         at: 1.5,
         ayana: AyanaReckoning.tropical,
         latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        utcOffsetSeconds: 1,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.sentences: SentencesRequest', () {
+    _holds(
+      'almanac.sentences',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: SentencesRequest(
+        altitudeM: 1.5,
+        calendar: Calendar.julian,
+        date: DayAsked(day: 1, month: 1, year: 1),
+        latitudeDeg: 1.5,
+        locale: 'x',
         longitudeDeg: 1.5,
         utcOffsetSeconds: 1,
       ).toJson(),
