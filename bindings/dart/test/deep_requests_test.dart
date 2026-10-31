@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 362 of the examples' 374 members.
+/// The cases compare 359 of the examples' 371 members.
 library;
 
 import 'dart:convert';
