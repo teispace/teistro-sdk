@@ -207,13 +207,16 @@ impl MonthStartRule {
     /// # Errors
     ///
     /// Whatever `arc_of` refuses.
-    pub fn month_start_by(
+    pub fn month_start_by<F>(
         self,
         sign: u8,
         sankranti: JulianDay<Utc>,
         clock: &dyn LocalClock,
-        arc_of: &dyn Fn(FixedDay) -> Result<DayArc, Error>,
-    ) -> Result<FixedDay, Error> {
+        arc_of: &F,
+    ) -> Result<FixedDay, Error>
+    where
+        F: Fn(FixedDay) -> Result<DayArc, Error> + ?Sized,
+    {
         let (day, _) = local_day(clock, sankranti);
         Ok(match self {
             MonthStartRule::SankrantiDay => day,
