@@ -13,7 +13,7 @@ set -eu
 # Node 22 and npm for the Node packages, Python and its venv for the
 # Python ones, GNU tar for the JDK below. Dart has no musl build, so it is
 # not here.
-apk add --no-cache bash build-base curl git nodejs npm python3 tar
+apk add --no-cache bash build-base curl git nodejs npm py3-pip python3 tar
 
 # A JDK for the Java binding and its package (`xtask/temurin-alpine.txt`
 # says why Temurin and not Alpine's own), checked against its pinned
