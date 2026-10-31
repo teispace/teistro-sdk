@@ -4181,6 +4181,9 @@ test('an almanac carries the lunar years it was asked for', () => {
   assert.ok(value[1].opened < value[1].began);
   assert.equal(value[1].jovian[0].member.split('.')[0], 'samvatsara');
   assert.ok(Object.isFrozen(value[1].jovian[0]), 'frozen to its leaves');
+  // Thursday 19 March 2026 opened VS 2083: Jupiter is raja (`03-design/year-rulers.md`).
+  const [raja] = value[1].rulers;
+  assert.deepEqual([raja.office, raja.readings[0].rule, raja.readings[0].lord], ['RAJA', 'SUNRISE', 'graha.JUPITER']);
   assert.equal(typeof provenance.contentHash, 'string');
   for (let k = 0; k < plain.length; k += 1) {
     assert.equal(almanac.at(k).provenance.contentHash, plain.at(k).provenance.contentHash);

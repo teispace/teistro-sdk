@@ -3069,6 +3069,9 @@ public final class ParityRunner {
                     year.lupta() == null ? "-" : year.lupta().fullKey()));
             put("years-" + k + "-jovian",
                     orNone(join(" ", year.jovian(), j -> j.member().fullKey() + ":" + j.count() + ":" + number(j.from()))));
+            put("years-" + k + "-rulers",
+                    orNone(join(" ", year.rulers(), r -> r.office() + ":" + number(r.event()) + ":"
+                            + join(",", r.readings(), d -> d.rule() + "=" + d.lord().fullKey()))));
         }
 
         // The Nepal Sambat dates over 2024-10-30..11-03, which holds

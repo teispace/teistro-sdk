@@ -19,12 +19,15 @@ import java.util.List;
  * @param jovian the Jovian years running between {@code began} and {@code ended}, in order
  * @param lupta the Jovian year that began and ended inside this one and so
  *     names no year; may be null
+ * @param rulers the year's office-bearers, the raja first, each read under
+ *     every rule its texts give ({@code 03-design/year-rulers.md})
  */
 public record LunarYear(
         Samvatsara samvatsara, String count, int vikrama, int shaka, int kali, double opened, double began, double ended,
-        List<JovianYear> jovian, Samvatsara lupta) {
-    /** Keeps the list unmodifiable. */
+        List<JovianYear> jovian, Samvatsara lupta, List<YearRuler> rulers) {
+    /** Keeps the lists unmodifiable. */
     public LunarYear {
         jovian = List.copyOf(jovian);
+        rulers = List.copyOf(rulers);
     }
 }
