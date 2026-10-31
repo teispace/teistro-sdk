@@ -494,13 +494,23 @@ release. `report()` lists each locale's drafts. `is_draft` crosses the
 render blob as a section of its own, so a reader of the older blob is
 unaffected.
 
-**`check-intl` holds it** (`validate::check_draft`): a strict locale may
-draft nothing, since strict is the promise a consumer ships on; an entry
-must name a namespace the locale has; and a drafted namespace must carry
+**`check-intl` holds it** (`validate::check_draft`): an entry must name a
+namespace the locale has, and a drafted namespace must carry
 every key of the base's, so a draft is a whole text to review and not a
 patchwork of three sources. The mark comes off only with the reviewer
 named in `QUESTIONS.md` Q42: `crates/intl/tests/draft.rs` pins it, and
 the two files appear on `locale-coverage-measured.md`.
+
+**A strict locale may draft (C987).** Q42's words are a status "that a
+strict locale refuses". Built literally, the Nepali day sentences (SR-13)
+would ship with no mark at all, since `ne-Deva-NP` is strict, which says
+less than the truth. Strict and draft answer different questions: strict
+that every key is present, so no reader meets a fallback; draft that no
+one has read them. A strict locale therefore drafts a namespace it holds
+whole (`ne-Deva-NP` drafts `sdk.day`), and every render says so, for the
+consumer to show, hide or refuse. The consumer's answer to SR-75, to ship
+marked rather than wait, reads the same way; the addendum asks them to
+confirm it for Nepali.
 
 **`sa-Latn` carries no `sdk.calendar`.** It is derived for names; a
 transliterated Sanskrit date for a Latin reader is a design of its own,

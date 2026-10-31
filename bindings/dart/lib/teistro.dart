@@ -2027,47 +2027,36 @@ final class AlmanacArea extends _Area {
 
   /// **Anniversaries kept by the tithi over a span of years**, for many
   /// people in one call (`03-design/anniversary-span.md`). The span's days
-  /// are founded once, and every person's are read from them. [years]
-  /// is 1 to 100, counted in [calendar]; [anniversaries], at most 1000, are
-  /// each as a festival request writes one. Each day's `dayRule` says
-  /// whether its tithi was `KSHAYA` or `VRIDDHI`, the window read, the clause
-  /// that chose the day and its source.
+  /// are founded once, and every person's are read from them. The request
+  /// is the generated [AnniversariesRequest]: `years` is 1 to 100, counted
+  /// in its `calendar`, and its anniversaries, at most 1000, are typed as a
+  /// festival request's. Each day's `dayRule` says whether its tithi was
+  /// `KSHAYA` or `VRIDDHI`, the window read, the clause that chose the day
+  /// and its source.
   ///
   /// ```dart
   /// final span = sdk.almanac.anniversaries(
-  ///   fromYear: 2026,
-  ///   years: 10,
-  ///   place: kathmandu,
-  ///   utcOffsetSeconds: 20700,
-  ///   anniversaries: [
-  ///     {
-  ///       'key': 'GRANDFATHER',
-  ///       'origin': {'by': 'LUNAR', 'month': 'KARTIKA', 'tithi': 'SHUKLA_DASHAMI'},
-  ///     },
-  ///   ],
+  ///   const AnniversariesRequest(
+  ///     fromYear: 2026,
+  ///     years: 10,
+  ///     latitudeDeg: 27.7172,
+  ///     longitudeDeg: 85.324,
+  ///     utcOffsetSeconds: 20700,
+  ///     anniversaries: [
+  ///       Anniversary(
+  ///         key: 'GRANDFATHER',
+  ///         origin: OriginLunar(month: Masa.kartika, tithi: Tithi.shuklaDashami),
+  ///       ),
+  ///     ],
+  ///   ),
   /// );
   /// print(span.anniversaries.first.dayRule.clause);
   /// ```
-  FestivalAnswer anniversaries({
-    required int fromYear,
-    required int years,
-    required Observer place,
-    required int utcOffsetSeconds,
-    required List<Map<String, Object?>> anniversaries,
-    Calendar? calendar,
-  }) {
-    final asked = jsonEncode(<String, Object?>{
-      'fromYear': fromYear,
-      'years': years,
-      'latitudeDeg': place.latitudeDeg,
-      'longitudeDeg': place.longitudeDeg,
-      'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
-      if (calendar != null) 'calendar': calendar.key,
-      'anniversaries': anniversaries,
-    });
+  FestivalAnswer anniversaries(AnniversariesRequest request) {
     return _festivalAnswer(
-      _context._guarded(() => _context._inner.almanacAnniversaries(asked)),
+      _context._guarded(
+        () => _context._inner.almanacAnniversaries(jsonEncode(request)),
+      ),
     );
   }
 

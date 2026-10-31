@@ -18,11 +18,6 @@ use crate::asked::{DayAsked, offset_of, place_of};
 /// The field a sentence request's refusals are named under.
 const SENTENCES: &str = "sentences";
 
-/// The shipped locales whose templates are drafts no native reviewer has
-/// signed yet (Q42): the answer marks their sentences so, and the design
-/// page lists every string a reviewer reads.
-const DRAFTS: [&str; 1] = ["ne-Deva-NP"];
-
 /// One day to be said: the date, the place, the clock and the locale.
 ///
 /// ```
@@ -205,19 +200,23 @@ impl AlmanacArea<'_> {
         let day = self.day(&asked.date, &asked.place, asked.offset)?;
         let DayPlan { plan, withheld } = day_sentences(&day.value, &asked.offset);
         let intl = self.context.locale_engine();
+        // The answer is a draft when any sentence drew on text no reviewer
+        // has signed (Q42, C987): the mark is the pack's own, so a
+        // reviewer's pack clears it with no SDK release.
+        let mut draft = false;
         let sentences = plan
             .items
             .into_iter()
             .map(|item| {
-                let text = intl.render_in(&tag, &item.key, &item.params).text;
+                let rendered = intl.render_in(&tag, &item.key, &item.params);
+                draft |= rendered.is_draft;
                 DaySentence {
                     key: item.key,
                     params: item.params,
-                    text,
+                    text: rendered.text,
                 }
             })
             .collect();
-        let draft = DRAFTS.contains(&tag.as_str());
         Ok(Envelope::sealing(
             DaySentences {
                 locale: tag,

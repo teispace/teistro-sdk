@@ -24,8 +24,12 @@ day's season is read from its civil date (C930). No other day moves.
 **A date or a time as text and parts; Hindi and Sanskrit calendar text, marked unreviewed.**
 **Numbers:** none. Text moves: `hi-Deva-IN` and `sa-Deva` now answer `sdk.calendar` keys that fell back to English.
 - `intl.time` and `intl.date` in every binding and MCP (`ts_intl_time`, `ts_intl_date`): the locale's pattern and parts of the day, as text and typed parts (SR-76).
-- Hindi and Sanskrit `sdk.calendar` ship as drafts (SR-75), named in `_meta.json`'s new `draft`; a render says `isDraft`, `check-intl` refuses a draft in a strict locale, and the render blob gains a `review` section.
+- Hindi and Sanskrit `sdk.calendar` ship as drafts (SR-75), named in `_meta.json`'s new `draft`; a render says `isDraft`, `check-intl` refuses a draft that is not a whole namespace, and the render blob gains a `review` section.
 - `:datetime style=full` writes its time through `long` instead of warning and using the built-in pattern.
+- A strict locale may draft a namespace it holds whole (C987): `ne-Deva-NP` drafts `sdk.day`, and
+  `almanac.sentences`' `draft` now reads the pack's own mark, so a reviewer's pack clears it.
+- Dart's `almanac.anniversaries` takes the generated `AnniversariesRequest`, as Node, Python and Java do,
+  in place of named parameters with untyped anniversaries.
 
 **Anniversaries over a span of years, for many people in one call.**
 **Numbers:** no day moves. An anniversary's sealed answer gains `dayRule`, so its digest

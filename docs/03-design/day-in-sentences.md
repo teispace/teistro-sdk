@@ -130,13 +130,11 @@ from the civil date, and the season is read from the civil date's own signs
 The consumer supplies the Nepali, Hindi and Sanskrit reviewers (Q42, decided).
 Every Nepali string below is the SDK's draft, in terms the entity names and
 `sdk.reason.panchanga` already use, and it waits for review. The answer's `draft`
-says so at runtime, from one list in `sentences.rs`. When a reviewer signs, the
-locale leaves the list.
-
-Q42 also says a draft stays behind a status "that a strict locale refuses". No such
-status exists in the packs: strict completeness requires a key to be present, and
-a per-string marker is not built. This lane follows the precedent of
-`amounts-in-words.md` §5, a list here, and adds the answer's flag.
+says so at runtime: `ne-Deva-NP`'s `_meta.json` drafts `sdk.day`, and the answer is
+a draft when any of its sentences rendered draft text, the same mark every render
+carries (`intl-engine-and-packs.md`, "Text not yet reviewed"). A reviewer's pack
+clears it with no SDK release. `ne-Deva-NP` is strict and drafts all the same
+(C987): strict says every key is present, the mark that no one has read them.
 
 | key | `ne-Deva-NP` (slots shortened) |
 |---|---|

@@ -88,13 +88,11 @@ fn a_render_says_when_draft_text_answered() {
 fn check_intl_holds_the_mark() {
     assert!(errors(&tree()).is_empty(), "{:?}", errors(&tree()));
 
+    // A strict locale drafts a namespace it holds whole (C987): every key
+    // is there, and the mark says no one has read them.
     let mut strict = tree();
     strict.locales.get_mut("ne-Deva-NP").unwrap().meta.draft = vec!["sdk.calendar".into()];
-    assert!(
-        errors(&strict)
-            .iter()
-            .any(|e| e.contains("strict locale ships no draft"))
-    );
+    assert!(errors(&strict).is_empty(), "{:?}", errors(&strict));
 
     let mut absent = tree();
     absent.locales.get_mut("sa-Deva").unwrap().meta.draft = vec!["sdk.reading".into()];
