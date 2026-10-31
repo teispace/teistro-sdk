@@ -619,18 +619,13 @@ fn check_day_periods(findings: &mut Findings, tag: &str, meta: &Meta) {
     }
 }
 
-/// Text no reviewer has read (Q42): never in a strict locale, in a
-/// namespace the locale holds, and whole, so that a reviewer reads one
-/// text and a reader never meets a draft patched from the base.
+/// Text no reviewer has read (Q42): in a namespace the locale holds, and
+/// whole, so that a reviewer reads one text and a reader never meets a
+/// draft patched from the base. A strict locale may draft too (C987):
+/// strict promises every key is present, the mark says no one has read
+/// them, and each render carries the mark for a consumer to act on.
 fn check_draft(findings: &mut Findings, locale: &LocaleSource, missing: &[String]) {
     for namespace in &locale.meta.draft {
-        if locale.meta.completeness == Completeness::Strict {
-            findings.error(
-                &locale.tag,
-                namespace,
-                "a strict locale ships no draft; review it or declare `base` completeness",
-            );
-        }
         if !locale.namespaces.contains_key(namespace) {
             findings.error(
                 &locale.tag,

@@ -414,27 +414,21 @@ void main() {
       profile: 'nepali-committee',
       ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
     );
-    final kathmandu = Observer(
-      latitudeDeg: Latitude(27.7172),
-      longitudeDeg: Longitude(85.324),
-      altitudeM: Altitude(1400),
-    );
-    const origin = {
-      'by': 'LUNAR',
-      'month': 'KARTIKA',
-      'tithi': 'SHUKLA_DASHAMI',
-    };
-    final asked = [
-      {'key': 'BARKHI', 'origin': origin},
-      {'key': 'WEDDING', 'origin': origin, 'kind': 'EVENT'},
-    ];
-    final span = ctx.almanac.anniversaries(
+    const origin = OriginLunar(month: Masa.kartika, tithi: Tithi.shuklaDashami);
+    AnniversariesRequest asked({int years = 2}) => AnniversariesRequest(
       fromYear: 2026,
-      years: 2,
-      place: kathmandu,
+      years: years,
+      latitudeDeg: 27.7172,
+      longitudeDeg: 85.324,
+      altitudeM: 1400,
       utcOffsetSeconds: 20700,
-      anniversaries: asked,
+      calendar: Calendar.gregorian,
+      anniversaries: const [
+        Anniversary(key: 'BARKHI', origin: origin),
+        Anniversary(key: 'WEDDING', origin: origin, kind: AnniversaryKind.event),
+      ],
     );
+    final span = ctx.almanac.anniversaries(asked());
     expect(span.anniversaries, hasLength(4));
     final barkhi = span.anniversaries.firstWhere((d) => d.key == 'BARKHI');
     expect(barkhi.kind, 'EKODDISHTA');
@@ -444,14 +438,7 @@ void main() {
     expect(wedding.dayRule.at.window, 'SUNRISE');
     expect(wedding.dayRule.source, contains('convention'));
     expect(
-      () => ctx.almanac.anniversaries(
-        fromYear: 2026,
-        years: 101,
-        place: kathmandu,
-        utcOffsetSeconds: 20700,
-        anniversaries: asked,
-        calendar: Calendar.gregorian,
-      ),
+      () => ctx.almanac.anniversaries(asked(years: 101)),
       throwsA(
         isA<TeistroException>().having(
           (e) => e.field,
