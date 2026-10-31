@@ -126,10 +126,16 @@ fn a_pattern_that_does_not_parse_is_refused() {
 /// An engine over a lone `en-Latn` that declares no messages, no digit
 /// grouping and no `or` list: every pattern falls back to its built-in
 /// default.
+///
+/// Each call writes a directory of its own: two tests asking at once
+/// removed and rewrote one directory under each other, and a write then
+/// failed with `EINVAL`.
 fn bare() -> Intl {
+    static CALLS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+    let call = CALLS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
     let root = std::path::Path::new(env!("CARGO_TARGET_TMPDIR"))
         .join("intl-patterns")
-        .join("bare");
+        .join(format!("bare-{}-{call}", std::process::id()));
     let _ = std::fs::remove_dir_all(&root);
     let dir = root.join("en-Latn");
     std::fs::create_dir_all(&dir).unwrap();
