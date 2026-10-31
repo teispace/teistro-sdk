@@ -437,10 +437,10 @@ mod tests {
         assert_eq!(at(-(3600 + 60 + 5)), "-010105");
     }
 
-    /// A borrowed provider answers every question as the provider does,
-    /// refusals included, so the blanket impl forwards each method; one
-    /// given a default later and left out of the impl would answer the
-    /// default through a borrow and fail here.
+    /// A borrowed or shared provider answers every question as the
+    /// provider does, refusals included, so the blanket impls forward
+    /// each method; one given a default later and left out of an impl
+    /// would answer the default through it and fail here.
     #[test]
     fn a_borrowed_provider_answers_as_the_provider() {
         fn answers<P: TimeZoneProvider>(provider: &P, zone: &str) -> String {
@@ -461,6 +461,8 @@ mod tests {
         }
         for zone in ["Asia/Kathmandu", "Asia/Kathmandoo"] {
             assert_eq!(answers(&&kathmandu(), zone), answers(&kathmandu(), zone));
+            let shared = std::sync::Arc::new(kathmandu());
+            assert_eq!(answers(&shared, zone), answers(&kathmandu(), zone));
         }
         assert!(answers(&&kathmandu(), "Asia/Kathmandoo").contains("did you mean"));
     }
