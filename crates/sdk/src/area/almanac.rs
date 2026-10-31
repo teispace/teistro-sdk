@@ -190,6 +190,7 @@ impl<'a> AlmanacArea<'a> {
     /// its database and its era, and each day its `clock`.
     ///
     /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// use teistro::catalogue::Calendar;
     /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
     /// use teistro::{AlmanacRequest, CalendarDate, Context, Ephemeris, ZoneSpec};
@@ -201,6 +202,7 @@ impl<'a> AlmanacArea<'a> {
     /// let answer = sdk.almanac().in_zone(&day, &day, &kathmandu, &zone, &AlmanacRequest::new())?;
     /// let clock = answer.days.provenance.time.clock.ok_or("a clock")?;
     /// assert_eq!(clock.offset.seconds(), 20_700);
+    /// # }
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     ///
