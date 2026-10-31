@@ -20,8 +20,8 @@ is therefore one nothing touches.
 
 | surface | declares | exercised | untouched |
 |---|---:|---:|---:|
-| Node | 69 | 65 | 4 |
-| Dart | 57 | 53 | 4 |
+| Node | 68 | 64 | 4 |
+| Dart | 58 | 54 | 4 |
 | Rust | 185 | 180 | 5 |
 | Python | 209 | 204 | 5 |
 

@@ -4541,6 +4541,43 @@ test('the next sankranti and a pack\'s festival are found', () => {
 });
 
 /**
+ * Anniversaries over a span of years (`03-design/anniversary-span.md`): a
+ * barkhi and an event, each year's day naming the rule that chose it, and
+ * a span too long refused on `years`.
+ */
+test('anniversaries over a span name the rule of each day', () => {
+  const ctx = new Context({ profile: 'nepali-committee', ephemeris: catalogue.Ephemeris.SuryaSiddhanta });
+  const origin = { by: 'LUNAR', month: 'KARTIKA', tithi: 'SHUKLA_DASHAMI' };
+  const asked = {
+    fromYear: 2026,
+    years: 2,
+    latitudeDeg: 27.7172,
+    longitudeDeg: 85.324,
+    altitudeM: 1400,
+    utcOffsetSeconds: 20700,
+    anniversaries: [{ key: 'BARKHI', origin }, { key: 'WEDDING', origin, kind: 'EVENT' }],
+  };
+  const span = ctx.almanac.anniversaries(asked);
+  assert.equal(span.anniversaries.length, 4);
+  assert.ok(Object.isFrozen(span));
+  const barkhi = span.anniversaries.find((day) => day.key === 'BARKHI');
+  assert.equal(barkhi.kind, 'EKODDISHTA');
+  assert.equal(barkhi.observance.day.year, 2026);
+  assert.equal(barkhi.dayRule.at.window, 'DAY_MUHURTA');
+  assert.ok(['ORDINARY', 'KSHAYA', 'VRIDDHI'].includes(barkhi.dayRule.tithi));
+  assert.match(barkhi.dayRule.source, /Dharmasindhu/);
+  const wedding = span.anniversaries.find((day) => day.key === 'WEDDING');
+  assert.equal(wedding.dayRule.at.window, 'SUNRISE');
+  assert.match(wedding.dayRule.source, /convention/);
+  assert.ok(span.provenance.appliedConventions.some((c) => c.knob === 'anniversary.event'));
+  assert.throws(
+    () => ctx.almanac.anniversaries({ ...asked, years: 101 }),
+    (e) => e instanceof TeistroError && e.field === 'anniversaries.years',
+  );
+  ctx.dispose();
+});
+
+/**
  * Festival rules cross beside the days they fall on
  * (`03-design/festival-rules.md` §7): frozen, their dates in this layer's
  * shape, the days the almanac's own, a shipped rule replaced by its key,

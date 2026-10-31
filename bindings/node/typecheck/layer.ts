@@ -1489,6 +1489,17 @@ function theArithmetic(ctx: Context): string {
     utcOffsetSeconds: 20700,
     kind: 'SANKRANTI',
   });
+  const kept = ctx.almanac.anniversaries({
+    fromYear: 2026,
+    years: 10,
+    latitudeDeg: 0,
+    longitudeDeg: 0,
+    utcOffsetSeconds: 0,
+    anniversaries: [],
+  });
+  void kept.anniversaries[0]?.dayRule.clause;
+  // @ts-expect-error a span names how many years
+  ctx.almanac.anniversaries({ fromYear: 2026, latitudeDeg: 0, longitudeDeg: 0, utcOffsetSeconds: 0, anniversaries: [] });
   // @ts-expect-error a kind is one of four
   ctx.almanac.next({ after: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, kind: 'HOLI' });
   return `${age.years} ${next.keys.join()} ${next.day.day} ${next.searchedDays}`;

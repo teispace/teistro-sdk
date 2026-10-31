@@ -23,7 +23,7 @@ use teistro_ffi::calendar::{
     TsCalendarDate, TsDateSpan, TsOverflow, ts_calendar_add, ts_calendar_between,
 };
 use teistro_ffi::intl::{ts_intl_date, ts_intl_in_words, ts_intl_time};
-use teistro_ffi::panchanga::{ts_almanac_next, ts_almanac_sentences};
+use teistro_ffi::panchanga::{ts_almanac_anniversaries, ts_almanac_next, ts_almanac_sentences};
 use teistro_ffi::string::TsString;
 
 mod common;
@@ -416,4 +416,71 @@ fn a_day_is_said_across_the_boundary_and_refused_as_its_contract_says() {
     refused(&ctx, &hindi, Status::Unsupported, "locale");
     let wrong = json_call(&ctx, ts_almanac_sentences, &serde_json::json!({"date": 1}));
     refused(&ctx, &wrong, Status::InvalidArg, "sentences");
+}
+
+fn anniversaries(extra: &Value) -> Value {
+    let mut request = serde_json::json!({
+        "fromYear": 2026, "years": 2, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+        "utcOffsetSeconds": 20_700, "anniversaries": [{
+            "key": "BARKHI",
+            "origin": { "by": "LUNAR", "month": "KARTIKA", "tithi": "SHUKLA_DASHAMI" },
+        }],
+    });
+    for (key, value) in extra.as_object().unwrap() {
+        request[key] = value.clone();
+    }
+    request
+}
+
+/// **Anniversaries over a span** on the test sky: the answer is the
+/// festival answer, each day naming its rule, and each refusal its contract
+/// names is named by its field.
+#[test]
+fn anniversaries_over_a_span_cross_the_boundary() {
+    let ctx = test_ctx();
+    let (status, answer) = json_call(
+        &ctx,
+        ts_almanac_anniversaries,
+        &anniversaries(&serde_json::json!({})),
+    );
+    assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
+    let answer = answer.unwrap();
+    let days = answer["value"]["anniversaries"].as_array().unwrap();
+    assert!(!days.is_empty(), "{answer}");
+    assert_eq!(days[0]["key"], "BARKHI");
+    assert!(days[0]["dayRule"]["clause"].is_string(), "{answer}");
+    let origin = serde_json::json!({ "by": "LUNAR", "month": "KARTIKA", "tithi": "PURNIMA" });
+    let many: Vec<Value> = (0..=teistro::MOST_ANNIVERSARIES)
+        .map(|at| serde_json::json!({ "key": format!("K{at}"), "origin": origin }))
+        .collect();
+    for (extra, status, field) in [
+        (
+            serde_json::json!({ "years": 0 }),
+            Status::OutOfRange,
+            "anniversaries.years",
+        ),
+        (
+            serde_json::json!({ "anniversaries": many }),
+            Status::Limit,
+            "anniversaries.anniversaries",
+        ),
+        (
+            serde_json::json!({ "unknown": 1 }),
+            Status::InvalidArg,
+            "anniversaries",
+        ),
+    ] {
+        let got = json_call(&ctx, ts_almanac_anniversaries, &anniversaries(&extra));
+        refused(&ctx, &got, status, field);
+    }
+    let bare = Ctx::defaults();
+    assert_eq!(
+        json_call(
+            &bare,
+            ts_almanac_anniversaries,
+            &anniversaries(&serde_json::json!({}))
+        )
+        .0,
+        Status::Capability
+    );
 }

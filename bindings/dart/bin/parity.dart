@@ -3870,6 +3870,7 @@ void main() {
     ('almanac.festival_calendar', ctx.almanac.festivalCalendar),
     ('almanac.next', ctx.almanac.next),
     ('almanac.sentences', ctx.almanac.sentences),
+    ('almanac.anniversaries', ctx.almanac.anniversaries),
     ('almanac.festivalPack', ctx.almanac.festivalPack),
     ('almanac.day', ctx.almanac.day),
     ('almanac.pakshi', ctx.almanac.pakshi),

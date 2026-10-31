@@ -770,6 +770,31 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>Anniversaries kept by the tithi over a span of years</b>, for many people in one call
+     * ({@code 03-design/anniversary-span.md}). The span's days are founded once, and every
+     * person's are read from them. Each day's {@code dayRule} says whether its tithi was
+     * {@code KSHAYA} or {@code VRIDDHI}, the window read, the clause and its source.
+     *
+     * <pre>{@code
+     * AnniversariesRequest asked = AnniversariesRequest.of(Map.of("fromYear", 2026, "years", 10,
+     *         "latitudeDeg", 27.7172, "longitudeDeg", 85.324, "utcOffsetSeconds", 20_700,
+     *         "anniversaries", List.of(Map.of("key", "GRANDFATHER",
+     *                 "origin", Map.of("by", "LUNAR", "month", "KARTIKA", "tithi", "SHUKLA_DASHAMI")))));
+     * FestivalAnswer span = sdk.almanac().anniversaries(asked);
+     * System.out.println(span.anniversaries().get(0).dayRule().clause());
+     * }</pre>
+     *
+     * @param request the span in {@code calendar}, the place, and at most 1000 anniversaries
+     * @return the festival answer, its anniversaries holding each person's days
+     * @throws TeistroException {@code OUT_OF_RANGE} naming {@code years}, {@code LIMIT} naming
+     *     {@code anniversaries}
+     */
+    public FestivalAnswer anniversaries(com.teispace.teistro.request.AnniversariesRequest request) {
+        String json = Json.write(request);
+        return AlmanacReads.festivalsAnswer(context.locked((lib, raw) -> Calls.almanacAnniversaries(lib, raw, json)));
+    }
+
+    /**
      * <b>The next day a rule or a kind of day falls on</b> after an instant at a place, with no year
      * asked ({@code 03-design/next-occurrence.md}). The civil day holding the instant counts. Give a
      * {@code kind}, {@code EKADASHI}, {@code PURNIMA}, {@code AMAVASYA} or {@code SANKRANTI}, read by

@@ -2008,6 +2008,52 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **Anniversaries kept by the tithi over a span of years**, for many
+  /// people in one call (`03-design/anniversary-span.md`). The span's days
+  /// are founded once, and every person's are read from them. [years]
+  /// is 1 to 100, counted in [calendar]; [anniversaries], at most 1000, are
+  /// each as a festival request writes one. Each day's `dayRule` says
+  /// whether its tithi was `KSHAYA` or `VRIDDHI`, the window read, the clause
+  /// that chose the day and its source.
+  ///
+  /// ```dart
+  /// final span = sdk.almanac.anniversaries(
+  ///   fromYear: 2026,
+  ///   years: 10,
+  ///   place: kathmandu,
+  ///   utcOffsetSeconds: 20700,
+  ///   anniversaries: [
+  ///     {
+  ///       'key': 'GRANDFATHER',
+  ///       'origin': {'by': 'LUNAR', 'month': 'KARTIKA', 'tithi': 'SHUKLA_DASHAMI'},
+  ///     },
+  ///   ],
+  /// );
+  /// print(span.anniversaries.first.dayRule.clause);
+  /// ```
+  FestivalAnswer anniversaries({
+    required int fromYear,
+    required int years,
+    required Observer place,
+    required int utcOffsetSeconds,
+    required List<Map<String, Object?>> anniversaries,
+    Calendar? calendar,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'fromYear': fromYear,
+      'years': years,
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      if (calendar != null) 'calendar': calendar.key,
+      'anniversaries': anniversaries,
+    });
+    return _festivalAnswer(
+      _context._guarded(() => _context._inner.almanacAnniversaries(asked)),
+    );
+  }
+
   NextOccurrence next({
     required double after,
     required Observer place,
@@ -16283,6 +16329,7 @@ final class AnniversaryDay extends _Value {
     required this.kind,
     required this.origin,
     required this.monthBy,
+    required this.dayRule,
     required this.observance,
   });
 
@@ -16293,7 +16340,7 @@ final class AnniversaryDay extends _Value {
   /// janma tithi's the age turned; null for a lunar origin given no moment.
   final int? count;
 
-  /// `EKODDISHTA`, `PARVANA` or `JANMA_TITHI`.
+  /// `EKODDISHTA`, `PARVANA`, `JANMA_TITHI` or `EVENT`.
   final String kind;
   final AnniversaryOrigin origin;
 
@@ -16301,11 +16348,51 @@ final class AnniversaryDay extends _Value {
   /// `ADHIKA_ORIGIN`, `KSHAYA_JOINED` or `SAMSARPA` (C666, C667, C669).
   final String monthBy;
 
+  /// The rule that chose the day (`03-design/anniversary-span.md`).
+  final AnniversaryDayRule dayRule;
+
   /// The day as the festival evaluator judged it.
   final FestivalObservance observance;
 
   @override
-  List<Object?> get _fields => [key, count, kind, origin, monthBy, observance];
+  List<Object?> get _fields => [
+    key,
+    count,
+    kind,
+    origin,
+    monthBy,
+    dayRule,
+    observance,
+  ];
+}
+
+/// The rule applied to an anniversary's day
+/// (`03-design/anniversary-span.md`).
+final class AnniversaryDayRule extends _Value {
+  const AnniversaryDayRule({
+    required this.tithi,
+    required this.at,
+    required this.clause,
+    required this.source,
+  });
+
+  /// How the tithi stood: `ORDINARY`, `KSHAYA` or `VRIDDHI`, one sunrise,
+  /// none or two (C910).
+  final String tithi;
+
+  /// The rite's time it was read at.
+  final FestivalWindow at;
+
+  /// The clause that chose the day: `ONE_DAY`, `BOTH_WHOLE`, `NEITHER`,
+  /// `EQUAL_PARTS`, `GREATER_SHARE`, `BIRTH_NAKSHATRA` or
+  /// `TWO_MUHURTA_FLOOR`.
+  final String clause;
+
+  /// Where the clause is stated, or the convention's name.
+  final String source;
+
+  @override
+  List<Object?> get _fields => [tithi, at, clause, source];
 }
 
 /// An Ekadashi fast: the day a rule gives the 11th, by its vedha and the
@@ -17220,8 +17307,18 @@ AnniversaryDay _anniversaryDay(Map<String, Object?> raw) => AnniversaryDay(
   kind: raw['kind']! as String,
   origin: _anniversaryOrigin(_festivalAt(raw['origin'])),
   monthBy: raw['monthBy']! as String,
+  dayRule: _anniversaryDayRule(_festivalAt(raw['dayRule'])),
   observance: _festivalObservance(_festivalAt(raw['observance'])),
 );
+
+/// The rule that chose an anniversary's day, as a festival answer writes it.
+AnniversaryDayRule _anniversaryDayRule(Map<String, Object?> raw) =>
+    AnniversaryDayRule(
+      tithi: raw['tithi']! as String,
+      at: _festivalWindow(_festivalAt(raw['at'])),
+      clause: raw['clause']! as String,
+      source: raw['source']! as String,
+    );
 
 /// An origin as found, as an anniversary's day and a first year write it.
 AnniversaryOrigin _anniversaryOrigin(Map<String, Object?> origin) {

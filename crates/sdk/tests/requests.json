@@ -357,6 +357,42 @@
     }
   },
   {
+    "record": "almanac.anniversaries",
+    "request": {
+      "fromYear": 2026,
+      "years": 10,
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "calendar": "BIKRAM_SAMBAT",
+      "anniversaries": [
+        {
+          "key": "GRANDFATHER",
+          "origin": {
+            "by": "LUNAR",
+            "month": "KARTIKA",
+            "tithi": "SHUKLA_DASHAMI"
+          }
+        },
+        {
+          "key": "WEDDING",
+          "origin": {
+            "by": "LUNAR",
+            "month": "MARGASHIRSHA",
+            "tithi": "SHUKLA_PANCHAMI"
+          },
+          "kind": "EVENT",
+          "window": {
+            "window": "DAY_MUHURTA",
+            "from": 8,
+            "to": 9
+          }
+        }
+      ]
+    }
+  },
+  {
     "record": "almanac.next",
     "request": {
       "after": 2461042.0,

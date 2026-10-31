@@ -22,8 +22,8 @@ use teistro_core::settings::LunarMonth as Convention;
 use crate::month;
 
 use super::{
-    Case, Choice, DayPart, Edge, FestivalDay, FestivalRule, Guard, InAdhika, Observance,
-    Observances, Predicate, Which, Window, by_share, case, observances,
+    Case, Choice, DayPart, Decided, Edge, FestivalDay, FestivalRule, Guard, InAdhika, Observance,
+    Observances, Predicate, Reckoned, Which, Window, by_share, case, observances_over,
 };
 
 /// A sidereal year, days: what an anniversary's number is counted in. A
@@ -181,6 +181,12 @@ pub enum AnniversaryKind {
     /// A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in
     /// the ordinary month (DS, C671).
     JanmaTithi,
+    /// Any other event a family keeps by the tithi, a wedding or a
+    /// founding: the window the request states, sunrise by default, judged
+    /// by share, in the ordinary month. No text rules on it, so it ships as
+    /// a convention (`anniversary.event`, C911), read from the janma
+    /// tithi's.
+    Event,
 }
 
 impl AnniversaryKind {
@@ -194,8 +200,15 @@ impl AnniversaryKind {
             AnniversaryKind::Parvana => Window::Part {
                 part: DayPart::Aparahna,
             },
-            AnniversaryKind::JanmaTithi => Window::Sunrise,
+            AnniversaryKind::JanmaTithi | AnniversaryKind::Event => Window::Sunrise,
         }
+    }
+
+    /// Whether the kind keeps only the ordinary month, as a birthday does:
+    /// a shraddha's adhika and samsarpa policies do not reach it (C671).
+    #[must_use]
+    pub const fn keeps_the_nija(self) -> bool {
+        matches!(self, AnniversaryKind::JanmaTithi | AnniversaryKind::Event)
     }
 }
 
@@ -320,6 +333,153 @@ pub enum MonthClause {
     Samsarpa,
 }
 
+/// How a tithi stood against the sunrises around it. The texts' *kṣaya*
+/// and *vṛddhi* of a tithi read this way: `festival-rules.md`'s sunrise
+/// rule has the day named by the tithi at its sunrise, so one holding none
+/// names no day and one holding two names two (C910).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum TithiShape {
+    /// It held one sunrise.
+    Ordinary,
+    /// *Kṣaya*: it held none, beginning after one and ending before the
+    /// next.
+    Kshaya,
+    /// *Vṛddhi*: it held two.
+    Vriddhi,
+}
+
+impl TithiShape {
+    /// The shape of an occurrence holding this many sunrises.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::TithiShape;
+    ///
+    /// assert_eq!(TithiShape::of(0), TithiShape::Kshaya);
+    /// assert_eq!(TithiShape::of(1), TithiShape::Ordinary);
+    /// assert_eq!(TithiShape::of(2), TithiShape::Vriddhi);
+    /// ```
+    #[must_use]
+    pub const fn of(sunrises: usize) -> TithiShape {
+        match sunrises {
+            0 => TithiShape::Kshaya,
+            1 => TithiShape::Ordinary,
+            _ => TithiShape::Vriddhi,
+        }
+    }
+}
+
+/// The clause that chose an anniversary's day between the two a tithi
+/// touches (`03-design/anniversary-span.md` §2).
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "AnniversaryClause"))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+#[non_exhaustive]
+pub enum DayClause {
+    /// One day alone held the tithi at the rite's time: that day.
+    OneDay,
+    /// Both days held it wholly, as a vriddhi tithi can: the earlier.
+    BothWhole,
+    /// Neither day held it, as a kshaya tithi can miss a time: the earlier,
+    /// the day it runs in.
+    Neither,
+    /// Both held a part, equal to the last digit: the earlier (C170).
+    EqualParts,
+    /// Both held a part, unequally: the day holding more of it.
+    GreaterShare,
+    /// A janma tithi's option: both sunrises held the tithi, and the
+    /// birth nakshatra stood at one of them (DS, C670).
+    BirthNakshatra,
+    /// A janma tithi's option: the sunrise tithi lasted under two muhurtas
+    /// past sunrise, so the day before (DS, C670).
+    TwoMuhurtaFloor,
+}
+
+impl DayClause {
+    /// The clause an observance was decided by, for an anniversary kept as
+    /// `kind`.
+    fn of(observance: &Observance, kind: AnniversaryKind) -> DayClause {
+        match observance.case {
+            Case::Both
+                if kind == AnniversaryKind::JanmaTithi
+                    && matches!(observance.decided_by, Decided::Guard { .. }) =>
+            {
+                DayClause::BirthNakshatra
+            }
+            Case::Both => DayClause::BothWhole,
+            Case::Neither => DayClause::Neither,
+            Case::EqualParts => DayClause::EqualParts,
+            Case::UnequalParts => DayClause::GreaterShare,
+            Case::LaterOnly if observance.choice == Choice::Earlier => DayClause::TwoMuhurtaFloor,
+            Case::EarlierOnly | Case::LaterOnly => DayClause::OneDay,
+        }
+    }
+
+    /// Where the clause is stated, for an anniversary kept as `kind`: the
+    /// source's page, or the convention's name when no text rules on it.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::{AnniversaryKind, DayClause};
+    ///
+    /// assert!(DayClause::Neither.source(AnniversaryKind::JanmaTithi).starts_with("Kane V.1 p. 89"));
+    /// assert!(DayClause::Neither.source(AnniversaryKind::Event).starts_with("a convention"));
+    /// ```
+    #[must_use]
+    pub const fn source(self, kind: AnniversaryKind) -> &'static str {
+        match (kind, self) {
+            (AnniversaryKind::Event, _) => {
+                "a convention, anniversary.event (C911): no text rules on a family's own event; read as the janma tithi's rule and Dharmasindhu p. 266's shares"
+            }
+            (_, DayClause::BirthNakshatra | DayClause::TwoMuhurtaFloor) => {
+                "Dharmasindhu, vardhapana-vidhi (C670), taken only when asked"
+            }
+            (AnniversaryKind::JanmaTithi, DayClause::BothWhole) => {
+                "Nirnayasindhu p. 531 and Kane V.1 p. 89: on two sunrises, the earlier"
+            }
+            (AnniversaryKind::JanmaTithi, DayClause::Neither) => {
+                "Kane V.1 p. 89: on no sunrise, the day the tithi runs in"
+            }
+            (AnniversaryKind::JanmaTithi, _) => "Nirnayasindhu p. 531: the sunrise tithi",
+            (AnniversaryKind::Parvana, DayClause::OneDay) => {
+                "Dharmasindhu p. 266: the day holding the aparahna alone"
+            }
+            (AnniversaryKind::Parvana, DayClause::GreaterShare) => {
+                "Dharmasindhu p. 266: held unequally, the greater"
+            }
+            (AnniversaryKind::Parvana, _) => {
+                "Dharmasindhu p. 266: on both days, on neither, or equally, the earlier"
+            }
+            (_, DayClause::OneDay) => {
+                "Dharmasindhu pp. 265-266: the day holding kutapa to rauhina alone"
+            }
+            (_, DayClause::GreaterShare) => "Dharmasindhu p. 266: held unequally, the greater",
+            (_, DayClause::Neither) => {
+                "Dharmasindhu p. 266, Nirnayasindhu p. 987: on neither, the earlier, the Gaudas' later refused"
+            }
+            (_, _) => "Dharmasindhu p. 266: on both days or equally, the earlier",
+        }
+    }
+}
+
+/// The rule applied to a day: how the tithi stood, the time it was read
+/// at, the clause that chose, and where that clause is stated.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct DayRule {
+    /// How the tithi stood: ordinary, kshaya or vriddhi.
+    pub tithi: TithiShape,
+    /// The rite's time it was read at.
+    pub at: Window,
+    /// The clause that chose the day.
+    pub clause: DayClause,
+    /// Where the clause is stated.
+    pub source: String,
+}
+
 /// An anniversary's day.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
@@ -339,6 +499,8 @@ pub struct AnniversaryDay {
     pub origin: OriginFound,
     /// The clause that chose the month.
     pub month_by: MonthClause,
+    /// The rule that chose the day, naming a kshaya or a vriddhi tithi.
+    pub day_rule: DayRule,
     /// The day, as the festival evaluator judged it: the tithi's two days,
     /// the case, the window on each and what decided.
     pub observance: Observance,
@@ -368,17 +530,16 @@ impl Anniversary {
         if self.key.trim().is_empty() {
             return Err(Error::invalid_arg("an anniversary needs a key").with_field("key"));
         }
-        let janma = self.kind == AnniversaryKind::JanmaTithi;
-        if janma && self.window.is_some() {
+        if self.kind == AnniversaryKind::JanmaTithi && self.window.is_some() {
             return Err(Error::invalid_arg(format!(
                 "{}: a janma tithi is kept by the sunrise tithi, so it takes no window",
                 self.key
             ))
             .with_field("window"));
         }
-        if !janma && !self.janma.is_default() {
+        if self.kind != AnniversaryKind::JanmaTithi && !self.janma.is_default() {
             return Err(Error::invalid_arg(format!(
-                "{}: `janma` is a janma tithi's options, and this anniversary is a shraddha",
+                "{}: `janma` is a janma tithi's options, and this anniversary is another kind",
                 self.key
             ))
             .with_field("janma"));
@@ -396,10 +557,16 @@ impl Anniversary {
         }
     }
 
+    /// The time it is read at, kept as `kind`: the request's, else the
+    /// kind's.
+    fn window_of(&self, kind: AnniversaryKind) -> Window {
+        self.window.unwrap_or_else(|| kind.window())
+    }
+
     /// One year rule: the anniversary as a festival rule in `month`.
     fn rule(&self, origin: &OriginFound, month: Masa, in_adhika: InAdhika) -> FestivalRule {
         let kind = self.kept_as(origin);
-        let at = self.window.unwrap_or_else(|| kind.window());
+        let at = self.window_of(kind);
         let (decide, otherwise) = if kind == AnniversaryKind::JanmaTithi {
             self.janma.guards(origin.nakshatra)
         } else {
@@ -429,14 +596,14 @@ impl Anniversary {
         kshaya: bool,
         samsarpa: bool,
     ) -> Vec<(Year, FestivalRule)> {
-        let janma = self.kept_as(origin) == AnniversaryKind::JanmaTithi;
-        let later = if origin.kind == MonthKind::Adhika && !janma {
+        let nija = self.kept_as(origin).keeps_the_nija();
+        let later = if origin.kind == MonthKind::Adhika && !nija {
             InAdhika::First
         } else {
             InAdhika::Nija
         };
         let mut rules = vec![(Year::Later, self.rule(origin, origin.month, later))];
-        if !janma
+        if !nija
             && origin.at.is_some()
             && later == InAdhika::Nija
             && self.first_year_adhika == FirstYearAdhika::Adhika
@@ -452,7 +619,7 @@ impl Anniversary {
                 self.rule(origin, month::previous(origin.month), InAdhika::Nija),
             ));
         }
-        if samsarpa && !janma && later == InAdhika::Nija && self.in_samsarpa == InSamsarpa::Also {
+        if samsarpa && !nija && later == InAdhika::Nija && self.in_samsarpa == InSamsarpa::Also {
             rules.push((
                 Year::Samsarpa,
                 self.rule(origin, origin.month, InAdhika::First),
@@ -473,6 +640,9 @@ impl AnniversaryKind {
             }
             AnniversaryKind::JanmaTithi => {
                 "Nirnayasindhu p. 531: the sunrise tithi, the earlier when both sunrises hold it; Dharmasindhu's options when asked"
+            }
+            AnniversaryKind::Event => {
+                "a convention, anniversary.event (C911): the window stated, sunrise by default; the day holding it alone, the earlier when both or neither do or on a tie, else the greater"
             }
         }
     }
@@ -562,6 +732,9 @@ pub fn anniversaries(
     samsarpas: &[Interval],
 ) -> Result<Observances, Error> {
     let mut answer = Observances::default();
+    // Found once: every person reads the same occurrences, so a batch costs
+    // each only its own (`03-design/anniversary-span.md` §4).
+    let reckoned = Reckoned::new(days);
     let any_kshaya = days.iter().any(|day| day.month.kind == MonthKind::Kshaya);
     let in_samsarpa = |day: &FestivalDay| {
         samsarpas
@@ -574,9 +747,9 @@ pub fn anniversaries(
         let rules = anniversary.rules(origin, any_kshaya, !samsarpas.is_empty());
         let has_first = rules.iter().any(|(year, _)| *year == Year::First);
         for (year, rule) in rules {
-            let found = observances(core::slice::from_ref(&rule), days)?;
+            let found = observances_over(core::slice::from_ref(&rule), &reckoned)?;
             for observance in found.observances {
-                let day = days.iter().find(|day| day.date == observance.day);
+                let day = reckoned.kept_on(observance.tithi, &observance.day);
                 let kshaya = day.is_some_and(|day| day.month.kind == MonthKind::Kshaya);
                 let samsarpa = observance.adhika && day.is_some_and(in_samsarpa);
                 let count = match Counted::of(origin, &observance) {
@@ -598,12 +771,20 @@ pub fn anniversaries(
                     _ if kshaya => MonthClause::KshayaJoined,
                     _ => MonthClause::Nija,
                 };
+                let clause = DayClause::of(&observance, kind);
+                let day_rule = DayRule {
+                    tithi: TithiShape::of(reckoned.sunrises_in(observance.tithi)),
+                    at: anniversary.window_of(kind),
+                    clause,
+                    source: clause.source(kind).to_owned(),
+                };
                 answer.anniversaries.push(AnniversaryDay {
                     key: anniversary.key.clone(),
                     count,
                     kind,
                     origin: origin.clone(),
                     month_by,
+                    day_rule,
                     observance,
                 });
             }

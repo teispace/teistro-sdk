@@ -9930,39 +9930,6 @@ ts_status ts_intl_has(const ts_context * context, const char * key, uint8_t * ou
 ts_status ts_intl_in_words(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
- * A time of day as text and parts, through the locale's pattern and its
- * parts of the day (`03-design/intl-engine-and-packs.md`), answered as
- * canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
- * isDraft, warnings}`, each part `{kind, text}` and the parts joined being
- * `text`.
- *
- * `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
- * (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
- * out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
- * of the time out of range is `INVALID_ARG`, named under `time`; a
- * locale not loaded is `UNSUPPORTED`.
- * Safety: `context` must be a live handle; `request_json` NUL-terminated;
- * `out_json` valid for a write.
- */
-ts_status ts_intl_time(const ts_context * context, const char * request_json, ts_string * out_json);
-
-/**
- * A date as text and parts, in its own calendar, through the locale's
- * pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
- * answers.
- *
- * `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
- * "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
- * context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
- * not read or a date its calendar does not hold is `INVALID_ARG`, named
- * under `date`; a locale not loaded, a calendar not shipped or one with no
- * pattern is `UNSUPPORTED`.
- * Safety: `context` must be a live handle; `request_json` NUL-terminated;
- * `out_json` valid for a write.
- */
-ts_status ts_intl_date(const ts_context * context, const char * request_json, ts_string * out_json);
-
-/**
  * Text from one script into another (`deva`, `iast`), as a string lent
  * until the next call on the context. A pair the build has no table for
  * is `UNSUPPORTED` naming both scripts; anything the table does not know
@@ -10270,23 +10237,30 @@ ts_status ts_almanac_digest(const ts_context * context, const char * request_jso
 ts_status ts_almanac_next(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
- * One day's facts as short declarative sentences
- * (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
- * value is `{locale, draft, sentences, withheld}`, each sentence `{key,
- * params, text}`, `draft` true while the locale's templates wait for a
- * native reviewer (Q42), and `withheld` the facts a polar day holds
- * elsewhere.
+ * Anniversaries kept by the tithi over a span of years, for many people
+ * in one call (`03-design/anniversary-span.md`), as canonical JSON
+ * `{value, provenance}`: `value` is a festival answer whose
+ * `anniversaries` hold each person's days in the order their tithis
+ * begin, each `{key, count, kind, origin, monthBy, dayRule, observance}`
+ * as a festival request's (`festivals_json`), `dayRule` being `{tithi, at,
+ * clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the
+ * window read, the clause that chose the day and where it is stated.
+ * Occurrences no day could judge are in `unjudged`.
  *
- * `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
- * altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
- * place or offset out of range, is `INVALID_ARG`, named under
- * `sentences`; a locale not loaded, or one without the templates, is
- * `UNSUPPORTED` on `locale`; a context without an ephemeris is
- * `CAPABILITY`; otherwise as the day.
+ * `request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg",
+ * "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`:
+ * `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when
+ * left out, the span running from month 1, day 1 of the first year to the
+ * day before month 1 of the year after the last; `altitudeM` optional;
+ * `anniversaries` at most 1000, each as a festival request writes one. A
+ * key it does not read, a place or offset out of range, an anniversary
+ * its check refuses or a key given twice is `INVALID_ARG`, named under
+ * `anniversaries`; a `years` out of range `OUT_OF_RANGE`; too many
+ * anniversaries `LIMIT`; a context without an ephemeris `CAPABILITY`.
  * Safety: `context` must be a live handle; `request_json` NUL-terminated;
  * `out_json` valid for a write.
  */
-ts_status ts_almanac_sentences(const ts_context * context, const char * request_json, ts_string * out_json);
+ts_status ts_almanac_anniversaries(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
  * Every rule of a festival pack with what it is

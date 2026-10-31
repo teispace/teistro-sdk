@@ -195,6 +195,10 @@ name = "sentences"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "anniversaries"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "published"
 required-features = ["builtin-ephemeris"]
 

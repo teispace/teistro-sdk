@@ -18,15 +18,31 @@ import java.util.List;
  * @param count which anniversary: 1 for the first recurrence after the
  *     origin, a janma tithi's the age turned; null for a lunar origin given
  *     no moment
- * @param kind {@code EKODDISHTA}, {@code PARVANA} or {@code JANMA_TITHI}
+ * @param kind {@code EKODDISHTA}, {@code PARVANA}, {@code JANMA_TITHI} or
+ *     {@code EVENT}
  * @param origin the origin, as found
  * @param monthBy the clause that chose the month: {@code NIJA},
  *     {@code FIRST_YEAR_ADHIKA}, {@code ADHIKA_ORIGIN},
  *     {@code KSHAYA_JOINED} or {@code SAMSARPA} (C666, C667, C669)
+ * @param dayRule the rule that chose the day
  * @param observance the day as the festival evaluator judged it
  */
 public record AnniversaryDay(String key, Integer count, String kind, Origin origin, String monthBy,
-        FestivalObservance observance) {
+        DayRule dayRule, FestivalObservance observance) {
+
+    /**
+     * The rule applied to the day ({@code 03-design/anniversary-span.md}).
+     *
+     * @param tithi how the tithi stood: {@code ORDINARY}, {@code KSHAYA} or
+     *     {@code VRIDDHI}, one sunrise, none or two (C910)
+     * @param at the rite's time it was read at
+     * @param clause the clause that chose the day: {@code ONE_DAY},
+     *     {@code BOTH_WHOLE}, {@code NEITHER}, {@code EQUAL_PARTS},
+     *     {@code GREATER_SHARE}, {@code BIRTH_NAKSHATRA} or
+     *     {@code TWO_MUHURTA_FLOOR}
+     * @param source where the clause is stated, or the convention's name
+     */
+    public record DayRule(String tithi, FestivalWindow at, String clause, String source) {}
 
     /**
      * An anniversary's origin as found: the tithi at the moment, the amanta

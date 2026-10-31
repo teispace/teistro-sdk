@@ -347,6 +347,63 @@ void main() {
     ctx.dispose();
   });
 
+  // Anniversaries over a span (`03-design/anniversary-span.md`): a barkhi
+  // and an event, each day naming the rule that chose it, and a span too
+  // long refused on `years`.
+  test('anniversaries over a span name the rule of each day', () {
+    final ctx = teistro.context(
+      profile: 'nepali-committee',
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    const origin = {
+      'by': 'LUNAR',
+      'month': 'KARTIKA',
+      'tithi': 'SHUKLA_DASHAMI',
+    };
+    final asked = [
+      {'key': 'BARKHI', 'origin': origin},
+      {'key': 'WEDDING', 'origin': origin, 'kind': 'EVENT'},
+    ];
+    final span = ctx.almanac.anniversaries(
+      fromYear: 2026,
+      years: 2,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      anniversaries: asked,
+    );
+    expect(span.anniversaries, hasLength(4));
+    final barkhi = span.anniversaries.firstWhere((d) => d.key == 'BARKHI');
+    expect(barkhi.kind, 'EKODDISHTA');
+    expect(barkhi.dayRule.at.window, 'DAY_MUHURTA');
+    expect(barkhi.dayRule.source, contains('Dharmasindhu'));
+    final wedding = span.anniversaries.firstWhere((d) => d.key == 'WEDDING');
+    expect(wedding.dayRule.at.window, 'SUNRISE');
+    expect(wedding.dayRule.source, contains('convention'));
+    expect(
+      () => ctx.almanac.anniversaries(
+        fromYear: 2026,
+        years: 101,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+        anniversaries: asked,
+        calendar: Calendar.gregorian,
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'anniversaries.years',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   // The next occurrence (`03-design/next-occurrence.md`): Maghe sankranti
   // from 1 January 2026 in the first window, Vijaya Dashami within the
   // default limit, and a search too short refused on `limitDays`.

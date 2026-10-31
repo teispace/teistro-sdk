@@ -26,6 +26,41 @@ import 'package:teistro/teistro.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('almanac.anniversaries: AnniversariesRequest', () {
+    _holds(
+      'almanac.anniversaries',
+      path: [],
+      dropping: [],
+      members: 3,
+      written: AnniversariesRequest(
+        altitudeM: 1.5,
+        anniversaries: [
+          Anniversary(
+            firstYearAdhika: FirstYearAdhika.nija,
+            inSamsarpa: InSamsarpa.nija,
+            janma: JanmaOptions(nakshatraTie: true, twoMuhurtaFloor: true),
+            key: 'x',
+            kind: AnniversaryKind.ekoddishta,
+            origin: OriginLunar(
+              adhika: true,
+              at: 1.5,
+              half: TithiHalf.second,
+              month: Masa.vaishakha,
+              tithi: Tithi.shuklaDvitiya,
+            ),
+            window: WindowDayMuhurta(from: 1, to: 1),
+          ),
+        ],
+        calendar: Calendar.julian,
+        fromYear: 1,
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        utcOffsetSeconds: 1,
+        years: 1,
+      ).toJson(),
+    );
+  });
+
   test('almanac.ashauch at request.event.deceased: Deceased', () {
     _holds(
       'almanac.ashauch',

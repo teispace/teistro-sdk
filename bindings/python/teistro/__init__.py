@@ -149,6 +149,7 @@ from ._requests import (
     AfterCycle as AfterCycle,
     AlmanacDaysRequest as AlmanacDaysRequest,
     ChangeKind as ChangeKind,
+    AnniversariesRequest as AnniversariesRequest,
     ChangesRequest as ChangesRequest,
     MahadvadashiKind as MahadvadashiKind,
     MuhurtaRequest as MuhurtaRequest,
@@ -1426,6 +1427,7 @@ __all__ = [
     "Tradition",
     "DatedObservance",
     "AnniversaryDay",
+    "AnniversaryDayRule",
     "AnniversaryOrigin",
     "FestivalAnswer",
     "FestivalSait",
@@ -3876,6 +3878,25 @@ class AlmanacArea(_Area):
             from_date=_serde_date(value["from"]),
             limit_days=int(value["limitDays"]),
             searched_days=int(value["searchedDays"]),
+        )
+
+    def anniversaries(self, request: AnniversariesRequest) -> "FestivalAnswer":
+        """**Anniversaries kept by the tithi over a span of years**, for many
+        people in one call (`03-design/anniversary-span.md`). The span's days
+        are founded once, and every person's are read from them. `years` is
+        1 to 100, counted in `calendar`; `anniversaries`, at most 1000, are
+        each as a festival request writes one. Each day's `day_rule` says
+        whether its tithi was `KSHAYA` or `VRIDDHI`, the window read, the
+        clause that chose the day and its source.
+
+        >>> # span = ctx.almanac.anniversaries({"fromYear": 2026, "years": 10,
+        >>> #     "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+        >>> #     "anniversaries": [{"key": "GRANDFATHER", "origin": {
+        >>> #         "by": "LUNAR", "month": "KARTIKA", "tithi": "SHUKLA_DASHAMI"}}]})
+        >>> # span.anniversaries[0].day_rule.clause
+        """
+        return _festivals_answer(
+            self._context._through_provider(lambda: self._context.inner.almanac_anniversaries(json.dumps(_written(request))))
         )
 
     def festival_pack(self, pack: str) -> Mapping[str, Any]:
@@ -9435,6 +9456,29 @@ class AnniversaryOrigin:
 
 
 @dataclass(frozen=True)
+class AnniversaryDayRule:
+    """The rule applied to an anniversary's day
+    (`03-design/anniversary-span.md`).
+
+    >>> # span.anniversaries[0].day_rule.tithi
+    """
+
+    tithi: Literal["ORDINARY", "KSHAYA", "VRIDDHI"]
+    """How the tithi stood: one sunrise, none or two (C910)."""
+
+    at: FestivalWindow
+    """The rite's time it was read at."""
+
+    clause: Literal[
+        "ONE_DAY", "BOTH_WHOLE", "NEITHER", "EQUAL_PARTS", "GREATER_SHARE", "BIRTH_NAKSHATRA", "TWO_MUHURTA_FLOOR"
+    ]
+    """The clause that chose the day."""
+
+    source: str
+    """Where the clause is stated, or the convention's name."""
+
+
+@dataclass(frozen=True)
 class AnniversaryDay:
     """An anniversary's day: a yearly shraddha, a barkhi or a janma tithi
     (`03-design/shraddha.md`).
@@ -9448,10 +9492,13 @@ class AnniversaryDay:
     """Which anniversary: 1 for the first recurrence after the origin, a
     janma tithi's the age turned; None for a lunar origin given no moment."""
 
-    kind: Literal["EKODDISHTA", "PARVANA", "JANMA_TITHI"]
+    kind: Literal["EKODDISHTA", "PARVANA", "JANMA_TITHI", "EVENT"]
     origin: AnniversaryOrigin
     month_by: Literal["NIJA", "FIRST_YEAR_ADHIKA", "ADHIKA_ORIGIN", "KSHAYA_JOINED", "SAMSARPA"]
     """The clause that chose the month (C666, C667, C669)."""
+
+    day_rule: AnniversaryDayRule
+    """The rule that chose the day (`03-design/anniversary-span.md`)."""
 
     observance: FestivalObservance
     """The day as the festival evaluator judged it."""
@@ -15893,6 +15940,12 @@ def _anniversary_day(raw: Mapping[str, Any]) -> AnniversaryDay:
         kind=raw["kind"],
         origin=_anniversary_origin(raw["origin"]),
         month_by=raw["monthBy"],
+        day_rule=AnniversaryDayRule(
+            tithi=raw["dayRule"]["tithi"],
+            at=_festival_window(raw["dayRule"]["at"]),
+            clause=raw["dayRule"]["clause"],
+            source=raw["dayRule"]["source"],
+        ),
         observance=_festival_observance(raw["observance"]),
     )
 

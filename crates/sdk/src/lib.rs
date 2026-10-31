@@ -71,13 +71,16 @@ pub use area::{
     FestivalDisagreement, FestivalDisagreements, FrameArea, IntlArea, KeysArea, LimbChange,
     LimbDisagreement, ReckonedLimb, SuppliedEvent, TimeArea, ZoneDatabase, ZoneDatabaseSource,
 };
+pub use area::{
+    AnniversariesRequest, ChangesRequest, DayClock, MOST_ANNIVERSARIES, MOST_YEARS, NextOccurrence,
+    NextRequest, NextTarget,
+};
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, NamingArea, Plans};
 pub use area::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
 };
-pub use area::{ChangesRequest, DayClock, NextOccurrence, NextRequest, NextTarget};
 pub use area::{
     DIGEST_DEFAULT_DAYS, DIGEST_FLAG_FAST, DIGEST_FLAG_PUBLISHED, DIGEST_FORMAT_MAJOR,
     DIGEST_FORMAT_MINOR, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DIGEST_NO_TIME, DIGEST_SCHEMA,

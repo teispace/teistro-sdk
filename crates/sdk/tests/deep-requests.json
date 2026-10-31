@@ -1,5 +1,42 @@
 [
   {
+    "record": "almanac.anniversaries",
+    "request": {
+      "altitudeM": 1.5,
+      "anniversaries": [
+        {
+          "firstYearAdhika": "NIJA",
+          "inSamsarpa": "NIJA",
+          "janma": {
+            "nakshatraTie": true,
+            "twoMuhurtaFloor": true
+          },
+          "key": "x",
+          "kind": "EKODDISHTA",
+          "origin": {
+            "by": "LUNAR",
+            "adhika": true,
+            "at": 1.5,
+            "half": "SECOND",
+            "month": "masa.VAISHAKHA",
+            "tithi": "tithi.SHUKLA_DVITIYA"
+          },
+          "window": {
+            "window": "DAY_MUHURTA",
+            "from": 1,
+            "to": 1
+          }
+        }
+      ],
+      "calendar": "calendar.JULIAN",
+      "fromYear": 1,
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "utcOffsetSeconds": 1,
+      "years": 1
+    }
+  },
+  {
     "record": "almanac.ashauch",
     "request": {
       "altitudeM": 1.5,

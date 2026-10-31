@@ -44,8 +44,8 @@ mod sait;
 mod vrata;
 
 pub use anniversary::{
-    Anniversary, AnniversaryDay, AnniversaryKind, FirstYearAdhika, Half, InSamsarpa, JanmaOptions,
-    MonthClause, Origin, OriginFound, anniversaries,
+    Anniversary, AnniversaryDay, AnniversaryKind, DayClause, DayRule, FirstYearAdhika, Half,
+    InSamsarpa, JanmaOptions, MonthClause, Origin, OriginFound, TithiShape, anniversaries,
 };
 pub use dated::{Dated, DatedObservance, DatedRule, dated};
 pub use ekadashi::{
@@ -1544,6 +1544,7 @@ impl FestivalRule {
         if self.key.trim().is_empty() {
             return Err(Error::invalid_arg("a festival rule needs a key").with_field("key"));
         }
+        self.check_size()?;
         let choices = self
             .decide
             .iter()
@@ -1593,6 +1594,53 @@ impl FestivalRule {
                     _ => {}
                 }
             }
+        }
+        Ok(())
+    }
+}
+
+impl FestivalRule {
+    /// The longest key a rule may have, in bytes.
+    pub const MOST_KEY_BYTES: usize = 128;
+    /// The most guards a rule may list.
+    pub const MOST_GUARDS: usize = 32;
+    /// The most predicates a guard may ask together.
+    pub const MOST_PREDICATES: usize = 16;
+
+    /// Refuses a rule past the limits a caller's rule is held to
+    /// (`03-design/anniversary-span.md` §6), each naming its field: a rule
+    /// is judged for every occurrence in a range, so its size is a cost
+    /// the request pays many times over.
+    fn check_size(&self) -> Result<(), Error> {
+        if self.key.len() > FestivalRule::MOST_KEY_BYTES {
+            return Err(Error::limit(format!(
+                "a rule's key holds at most {} bytes, not {}",
+                FestivalRule::MOST_KEY_BYTES,
+                self.key.len()
+            ))
+            .with_field("key"));
+        }
+        if self.decide.len() > FestivalRule::MOST_GUARDS {
+            return Err(Error::limit(format!(
+                "{}: a rule lists at most {} guards, not {}",
+                self.key,
+                FestivalRule::MOST_GUARDS,
+                self.decide.len()
+            ))
+            .with_field("decide"));
+        }
+        if let Some(guard) = self
+            .decide
+            .iter()
+            .find(|guard| guard.when.len() > FestivalRule::MOST_PREDICATES)
+        {
+            return Err(Error::limit(format!(
+                "{}: a guard asks at most {} predicates, not {}",
+                self.key,
+                FestivalRule::MOST_PREDICATES,
+                guard.when.len()
+            ))
+            .with_field("decide.when"));
         }
         Ok(())
     }
@@ -3038,6 +3086,52 @@ impl Observances {
 ///
 /// A rule's own refusal ([`FestivalRule::check`]), naming it.
 pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Observances, Error> {
+    observances_over(rules, &Reckoned::new(days))
+}
+
+/// What every rule reads of a run of days, found once: the occurrences a
+/// batch of rules over the same days shares (`03-design/anniversary-span.md`
+/// §4), so that a rule costs its own occurrences and not a walk of the days.
+pub(crate) struct Reckoned<'a> {
+    days: &'a [FestivalDay],
+    tithis: Vec<Span<Tithi>>,
+    nakshatras: Vec<Span<Nakshatra>>,
+}
+
+impl<'a> Reckoned<'a> {
+    /// The occurrences of consecutive sunrise days.
+    pub(crate) fn new(days: &'a [FestivalDay]) -> Reckoned<'a> {
+        Reckoned {
+            days,
+            tithis: occurrences(days),
+            nakshatras: distinct(days.iter().flat_map(|day| day.nakshatra.iter())),
+        }
+    }
+
+    /// How many of the days' sunrises an occurrence holds.
+    pub(crate) fn sunrises_in(&self, span: Interval) -> usize {
+        let before = |at: f64| self.days.partition_point(|day| day.sunrise.get() < at);
+        before(span.to.get()) - before(span.from.get())
+    }
+
+    /// The day an occurrence was kept on, of the two it is judged between.
+    pub(crate) fn kept_on(&self, span: Interval, date: &CalendarDate) -> Option<&'a FestivalDay> {
+        let (earlier, later) = pair(span, self.days)?;
+        [earlier, later].into_iter().find(|day| day.date == *date)
+    }
+}
+
+/// [`observances`] over days already reckoned.
+pub(crate) fn observances_over(
+    rules: &[FestivalRule],
+    reckoned: &Reckoned<'_>,
+) -> Result<Observances, Error> {
+    let Reckoned {
+        days,
+        tithis,
+        nakshatras,
+    } = reckoned;
+    let days = *days;
     for rule in rules {
         rule.check()?;
         for (index, reading) in rule.parana.iter().enumerate() {
@@ -3052,8 +3146,6 @@ pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Obser
             }
         }
     }
-    let tithis = occurrences(days);
-    let nakshatras = distinct(days.iter().flat_map(|day| day.nakshatra.iter()));
     let mut kept: Vec<(&FestivalRule, Interval, Result<LunarMonth, String>)> = Vec::new();
     for rule in rules {
         match rule.occurs {
@@ -3066,7 +3158,7 @@ pub fn observances(rules: &[FestivalRule], days: &[FestivalDay]) -> Result<Obser
             }
             Occurs::Nakshatra { nakshatra, paksha } => {
                 for occurrence in nakshatras.iter().filter(|held| held.member == nakshatra) {
-                    let Some(tithi) = running_at_middle(occurrence.whole, &tithis) else {
+                    let Some(tithi) = running_at_middle(occurrence.whole, tithis) else {
                         continue;
                     };
                     if tithi.member.attributes().paksha != paksha {
@@ -3206,13 +3298,14 @@ fn month_of(
     occurrence: &Span<Tithi>,
     days: &[FestivalDay],
 ) -> Option<Result<LunarMonth, String>> {
+    // The days run in order, so each is found without walking them, which
+    // a batch over a decade would otherwise pay for every occurrence.
     let at = if occurrence.member == Tithi::Amavasya {
-        days.iter()
-            .rposition(|day| day.sunrise.get() < occurrence.whole.to.get())
+        days.partition_point(|day| day.sunrise.get() < occurrence.whole.to.get())
+            .checked_sub(1)?
     } else {
-        days.iter()
-            .position(|day| day.sunrise.get() >= occurrence.whole.from.get())
-    }?;
+        days.partition_point(|day| day.sunrise.get() < occurrence.whole.from.get())
+    };
     let day = days.get(at)?;
     let month = month::of(
         day.month.amanta,
@@ -3261,9 +3354,10 @@ fn doubled(days: &[FestivalDay], at: usize, name: Masa) -> Option<bool> {
 /// it begins in and the next, or, when it holds two sunrises, the two it
 /// holds them on.
 fn pair(tithi: Interval, days: &[FestivalDay]) -> Option<(&FestivalDay, &FestivalDay)> {
-    let begins = days
-        .iter()
-        .position(|day| day.sunrise_day().contains(tithi.from))?;
+    let begins = days.partition_point(|day| day.next_sunrise.get() <= tithi.from.get());
+    if !days.get(begins)?.sunrise_day().contains(tithi.from) {
+        return None;
+    }
     let first = match days.get(begins + 2) {
         Some(third) if tithi.contains(third.sunrise) => begins + 1,
         _ => begins,

@@ -524,8 +524,19 @@ fn naming_records() -> [Record; 5] {
 /// The almanac's records every build carries over a range or a death: its
 /// change points, an ashauch, a first year, its days with what is asked
 /// beside them, and its festivals as a feed.
-fn almanac_records() -> [Record; 5] {
+fn almanac_records() -> [Record; 6] {
     [
+        Record {
+            name: "almanac.anniversaries",
+            boundary: "ts_almanac_anniversaries",
+            title: "Anniversaries kept by the tithi over a span of years, for many people in one call, each day naming the rule that chose it",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::AnniversariesRequest::from_json(json)?;
+                Answered::sealed(context.almanac().anniversaries_in_full(&asked)?)
+            },
+            schemas: schemas!(crate::area::AnniversariesAsked => teistro_panchanga::festival::Observances),
+        },
         Record {
             name: "almanac.changes",
             boundary: "ts_almanac_changes",

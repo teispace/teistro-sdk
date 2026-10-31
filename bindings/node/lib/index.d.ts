@@ -277,6 +277,7 @@ import type {
   WesternAspectRequest,
   YogaRules,
   ChangeKind,
+  AnniversariesRequest,
   ChangesRequest,
 } from './requests.js';
 
@@ -5910,7 +5911,7 @@ export interface AnniversaryDay {
   readonly key: string;
   /** Which anniversary: 1 for the first recurrence after the origin, a janma tithi's the age turned; absent for a lunar origin given no moment. */
   readonly count?: number;
-  readonly kind: 'EKODDISHTA' | 'PARVANA' | 'JANMA_TITHI';
+  readonly kind: 'EKODDISHTA' | 'PARVANA' | 'JANMA_TITHI' | 'EVENT';
   /** The origin as found: the tithi, the amanta month it names, that lunation's kind and the tithi's half. */
   readonly origin: {
     readonly tithi: Tithi;
@@ -5927,7 +5928,21 @@ export interface AnniversaryDay {
   };
   /** The clause that chose the month (C666, C667, C669). */
   readonly monthBy: 'NIJA' | 'FIRST_YEAR_ADHIKA' | 'ADHIKA_ORIGIN' | 'KSHAYA_JOINED' | 'SAMSARPA';
+  /** The rule that chose the day (`03-design/anniversary-span.md`). */
+  readonly dayRule: AnniversaryDayRule;
   readonly observance: FestivalObservance;
+}
+
+/** The rule applied to an anniversary's day. */
+export interface AnniversaryDayRule {
+  /** How the tithi stood: one sunrise, none or two (C910). */
+  readonly tithi: 'ORDINARY' | 'KSHAYA' | 'VRIDDHI';
+  /** The rite's time it was read at, as a rule spells a window. */
+  readonly at: { readonly window: string; readonly [field: string]: unknown };
+  /** The clause that chose the day. */
+  readonly clause: 'ONE_DAY' | 'BOTH_WHOLE' | 'NEITHER' | 'EQUAL_PARTS' | 'GREATER_SHARE' | 'BIRTH_NAKSHATRA' | 'TWO_MUHURTA_FLOOR';
+  /** Where the clause is stated, or the convention's name. */
+  readonly source: string;
 }
 
 /**
@@ -7661,6 +7676,19 @@ export declare class AlmanacArea {
    * });
    */
   next(request: NextRequest): NextOccurrence;
+
+  /**
+   * Anniversaries kept by the tithi over a span of years, for many people
+   * in one call (`03-design/anniversary-span.md`); each day names the rule
+   * that chose it in `dayRule`.
+   *
+   * @example
+   * const span = sdk.almanac.anniversaries({
+   *   fromYear: 2026, years: 10, latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700,
+   *   anniversaries: [{ key: 'GRANDFATHER', origin: { by: 'LUNAR', month: 'KARTIKA', tithi: 'SHUKLA_DASHAMI' } }],
+   * });
+   */
+  anniversaries(request: AnniversariesRequest): FestivalAnswer;
   /**
    * **A day in sentences** (`03-design/day-in-sentences.md`): one date's facts
    * as short sentences from templates, every value from the day's answer. A

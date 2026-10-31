@@ -149,7 +149,17 @@ final class AlmanacReads {
                 Reads.string(a, "kind"),
                 origin(o),
                 Reads.string(a, "monthBy"),
+                dayRule(Reads.object(a, "dayRule")),
                 observance(Reads.field(a, "observance")));
+    }
+
+    /** The rule that chose an anniversary's day. */
+    private static AnniversaryDay.DayRule dayRule(Map<?, ?> r) {
+        return new AnniversaryDay.DayRule(
+                Reads.string(r, "tithi"),
+                festivalWindow(Reads.object(r, "at")),
+                Reads.string(r, "clause"),
+                Reads.string(r, "source"));
     }
 
     /** An anniversary's origin as found, as an anniversary and a first year write it. */

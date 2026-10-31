@@ -2477,6 +2477,7 @@ for (const [path, member] of [
   ['almanac.festival_calendar', shape.almanac.festivalCalendar],
   ['almanac.next', shape.almanac.next],
   ['almanac.sentences', shape.almanac.sentences],
+  ['almanac.anniversaries', shape.almanac.anniversaries],
   ['almanac.festivalPack', shape.almanac.festivalPack],
   ['almanac.day', shape.almanac.day],
   ['almanac.pakshi', shape.almanac.pakshi],

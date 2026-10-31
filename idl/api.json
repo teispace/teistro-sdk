@@ -16486,108 +16486,6 @@
       "source": "crates/ffi/src/intl.rs"
     },
     {
-      "name": "ts_intl_time",
-      "doc": "A time of day as text and parts, through the locale's pattern and its\nparts of the day (`03-design/intl-engine-and-packs.md`), answered as\ncanonical JSON: `{text, parts, locale, resolvedFrom, isFallback,\nisDraft, warnings}`, each part `{kind, text}` and the parts joined being\n`text`.\n\n`request_json` is `{\"at\": {\"hour\", \"minute\", \"second\"}}`, with `\"style\"`\n(`NUMERIC`, `LONG`), `\"hour12\"`, `\"locale\"` (the context's when left\nout) and `\"digits\"` (`LATN`, `DEVA`). A key it does not read or a part\nof the time out of range is `INVALID_ARG`, named under `time`; a\nlocale not loaded is `UNSUPPORTED`.",
-      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
-      "params": [
-        {
-          "name": "context",
-          "ty": {
-            "kind": "pointer",
-            "to": {
-              "kind": "opaque",
-              "name": "TsContext"
-            },
-            "mutable": false
-          },
-          "role": "handle",
-          "meta": {}
-        },
-        {
-          "name": "request_json",
-          "ty": {
-            "kind": "pointer",
-            "to": {
-              "kind": "char"
-            },
-            "mutable": false
-          },
-          "role": "string_in",
-          "meta": {}
-        },
-        {
-          "name": "out_json",
-          "ty": {
-            "kind": "pointer",
-            "to": {
-              "kind": "struct",
-              "name": "TsString"
-            },
-            "mutable": true
-          },
-          "role": "string_out",
-          "meta": {}
-        }
-      ],
-      "returns": {
-        "kind": "enum",
-        "name": "Status"
-      },
-      "meta": {},
-      "source": "crates/ffi/src/intl.rs"
-    },
-    {
-      "name": "ts_intl_date",
-      "doc": "A date as text and parts, in its own calendar, through the locale's\npattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`\nanswers.\n\n`request_json` is `{\"at\": {\"calendar\", \"year\", \"month\", \"day\", \"era\",\n\"leap\"}}`, with `\"style\"` (`NUMERIC`, `LONG`, `FULL`), `\"locale\"` (the\ncontext's when left out) and `\"digits\"` (`LATN`, `DEVA`). A key it does\nnot read or a date its calendar does not hold is `INVALID_ARG`, named\nunder `date`; a locale not loaded, a calendar not shipped or one with no\npattern is `UNSUPPORTED`.",
-      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
-      "params": [
-        {
-          "name": "context",
-          "ty": {
-            "kind": "pointer",
-            "to": {
-              "kind": "opaque",
-              "name": "TsContext"
-            },
-            "mutable": false
-          },
-          "role": "handle",
-          "meta": {}
-        },
-        {
-          "name": "request_json",
-          "ty": {
-            "kind": "pointer",
-            "to": {
-              "kind": "char"
-            },
-            "mutable": false
-          },
-          "role": "string_in",
-          "meta": {}
-        },
-        {
-          "name": "out_json",
-          "ty": {
-            "kind": "pointer",
-            "to": {
-              "kind": "struct",
-              "name": "TsString"
-            },
-            "mutable": true
-          },
-          "role": "string_out",
-          "meta": {}
-        }
-      ],
-      "returns": {
-        "kind": "enum",
-        "name": "Status"
-      },
-      "meta": {},
-      "source": "crates/ffi/src/intl.rs"
-    },
-    {
       "name": "ts_intl_transliterate",
       "doc": "Text from one script into another (`deva`, `iast`), as a string lent\nuntil the next call on the context. A pair the build has no table for\nis `UNSUPPORTED` naming both scripts; anything the table does not know\npasses through, so a name written in two scripts is transliterated in\nthe half that needs it.",
       "safety": "`context` must be a live handle; `text`, `from` and `to`\nNUL-terminated strings; `out_text` valid for a write.",
@@ -17325,8 +17223,8 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
-      "name": "ts_almanac_sentences",
-      "doc": "One day's facts as short declarative sentences\n(`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose\nvalue is `{locale, draft, sentences, withheld}`, each sentence `{key,\nparams, text}`, `draft` true while the locale's templates wait for a\nnative reviewer (Q42), and `withheld` the facts a polar day holds\nelsewhere.\n\n`request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,\naltitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a\nplace or offset out of range, is `INVALID_ARG`, named under\n`sentences`; a locale not loaded, or one without the templates, is\n`UNSUPPORTED` on `locale`; a context without an ephemeris is\n`CAPABILITY`; otherwise as the day.",
+      "name": "ts_almanac_anniversaries",
+      "doc": "Anniversaries kept by the tithi over a span of years, for many people\nin one call (`03-design/anniversary-span.md`), as canonical JSON\n`{value, provenance}`: `value` is a festival answer whose\n`anniversaries` hold each person's days in the order their tithis\nbegin, each `{key, count, kind, origin, monthBy, dayRule, observance}`\nas a festival request's (`festivals_json`), `dayRule` being `{tithi, at,\nclause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the\nwindow read, the clause that chose the day and where it is stated.\nOccurrences no day could judge are in `unjudged`.\n\n`request_json` is `{\"fromYear\", \"years\", \"latitudeDeg\", \"longitudeDeg\",\n\"altitudeM\", \"utcOffsetSeconds\", \"calendar\", \"anniversaries\"}`:\n`fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when\nleft out, the span running from month 1, day 1 of the first year to the\nday before month 1 of the year after the last; `altitudeM` optional;\n`anniversaries` at most 1000, each as a festival request writes one. A\nkey it does not read, a place or offset out of range, an anniversary\nits check refuses or a key given twice is `INVALID_ARG`, named under\n`anniversaries`; a `years` out of range `OUT_OF_RANGE`; too many\nanniversaries `LIMIT`; a context without an ephemeris `CAPABILITY`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -18650,19 +18548,6 @@
           "doc": "UTF-8 JSON: the message's parts, for a rich renderer — `{\"type\": \"text\", \"value\": ...}` or `{\"type\": \"markup\", \"kind\": \"open\"|\"close\"|\"standalone\", \"name\": ..., \"options\": {...}}`, adjacent text in one part. **Empty when the message has no markup**, the whole of it being `text`; a reader turns that into the one text part rather than asking for it twice.",
           "kind": "bytes",
           "fields": []
-        },
-        {
-          "id": 6,
-          "name": "review",
-          "doc": "Whether the text has been reviewed.",
-          "kind": "fixed",
-          "fields": [
-            {
-              "name": "is_draft",
-              "scalar": "u8",
-              "doc": "Non-zero when any text came from a namespace its locale marks unreviewed."
-            }
-          ]
         }
       ]
     },
@@ -25762,7 +25647,7 @@
         {
           "id": 22,
           "name": "festivals",
-          "doc": "UTF-8 JSON, canonical: the days the rules `festivals_json` asked for fall on over these days, as the envelope `{value, provenance}` (`03-design/festival-rules.md` §7). `value` is `{observances, ekadashis, unjudged}`, `dated` beside them when a rule kept on a date gave a day, and `anniversaries` when the request named one: each observance `{rule, day, tithi, month, adhika, case, extents, decidedBy, choice, marginSeconds, parana}`, the rule's key, the calendar date it falls on, the occurrence judged `{from, to}` in UTC Julian days (the tithi's, or the nakshatra's for a rule kept on one), its amanta month as a full key and whether that month is adhika, the case between its two days (`EARLIER_ONLY`, `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS`), each day's extent `{day, window, held}`, `decidedBy` `{by: GUARD, index}`, `{by: OTHERWISE}` or, for a rule counted from another's day, `{by: AFTER, rule, days}` (its tithi, case and extents then the counted-from observance's), the choice that decided (`EARLIER`, `LATER` or `BY_YUGMA`, which `day` resolves), and the seconds of time every instant the day was decided from (the two sunrises, the next, the windows the rule and its guards draw) may move, as a different place moves them, before the day can change: 0 for two equal parts; and, for a rule whose fast is broken by a reading (§8.7), each reading answered `{reading, day, from, fromBy, to, toBy}`, the rule's reading as it spells it (`TITHI_END`, `WITHIN`, `SUNRISE`, `AFTER_WINDOW`, `NEXT_TITHI`, `AFTER_RITE` with its `rite` and `remnant`), the day the meal falls on (the day after for most, the fast day for a reading ending on it, the rite's day after a rite), when the meal may begin, what set it (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END`, `YAMAS`, `WINDOW_END`, `RITE`), and when it must be taken by and what set that (absent when the reading sets no end); each Ekadashi fast `{rule, tithi, month, adhika, tithis, days, piercedAt, pierced, excess, choice, day, marginSeconds, parana, mahadvadashi}`, the rule's key, the 11th and its lunar month as full keys, whether that month is adhika, the 10th, the 11th and the 12th as `{from, to}`, the 11th's own day and the next, where the 10th reached into the 11th's day (`SUNRISE`, `ARUNODAYA` or null), whether that counts under the rule's vedha, which of the 11th and the 12th holds the next sunrise (`ELEVENTH`, `TWELFTH`, `BOTH`, `NEITHER`), the choice (`EARLIER` or `LATER`, which `day` resolves unless a mahadvadashi moved it, perhaps to the day after both), and the seconds of time every instant the fast was decided from (the sunsets that give the 11th its own day, that day's sunrise and, under a Vaishnava vedha, its arunodaya, and the two sunrises after) may move before the day can change, and, for a rule with a parana, when the fast is broken (§8.5): `{day, tithi, hariVasaraEnds, kept, barred}`, the day after the fast, the tithi the meal is kept in as a full key, when the 12th's first quarter ends if after that day's sunrise (else null), the window kept `{span, at, fromBy, toBy}` (null when none of the rule's leaves time), `at` the rule's window as it spells it and each edge's clause `WINDOW`, `HARI_VASARA`, `TITHI_START`, `TITHI_END`, `NAKSHATRA` or `JOINED_NAKSHATRA`, and, for a rule whose parana lists `bars` (C700) when one met that day's daylight, `barred` `{bar, span, setAside}`: the bar `{tithi, month, nakshatra, portion}` as the rule spells it (`portion` `{parts, which}`, absent for the whole nakshatra), the Moon's stay in the barred share, and whether the bar was set aside because the share outlasts the tithi the meal is kept in; and, for a rule keeping mahadvadashis (§8.9) when one held, `mahadvadashi` `{kind, held, clause, joined}`: the kind that set the day (`UNMILANI`, `VYANJULI`, `TRISPRISHA`, `PAKSHAVARDHINI`, `JAYA`, `VIJAYA`, `JAYANTI`, `PAPANASHINI`), every kind that held in the rule's order, the verse that defines it, and for the four nakshatra kinds the joined nakshatra `{nakshatra, span}`, a full key and its whole stay; each unjudged occurrence `{rule, tithi, why}`; each dated day `{rule, day, on}`, the rule's key, the day, and the same day in the rule's own calendar (`calendar.BIKRAM_SAMBAT` for a sankranti); each anniversary's day (`03-design/shraddha.md`) `{key, count, kind, origin, monthBy, observance}`, the request's key, which anniversary it is (1 for the first recurrence, a janma tithi's the age turned, absent for a lunar origin given no moment), the kind kept (`EKODDISHTA`, `PARVANA`, `JANMA_TITHI`), the origin as found `{tithi, month, kind, half, nakshatra, at, assumedSunrise, candidates}` (the tithi and amanta month as full keys, the lunation's `NIJA`, `ADHIKA` or `KSHAYA`, the tithi's `FIRST` or `SECOND` half, the nakshatra then as a full key, the moment as a UTC Julian day, whether the tithi is a date's sunrise tithi for want of an hour, and every tithi the date held when more than one), the clause that chose the month (`NIJA`, `FIRST_YEAR_ADHIKA`, `ADHIKA_ORIGIN`, `KSHAYA_JOINED`), and the day as an observance. A date's calendar and era are written as full keys (`calendar.GREGORIAN`), and the envelope is sealed over exactly this value; its provenance names the widened days as `festival.days`. Empty when `festivals_json` asked for none.",
+          "doc": "UTF-8 JSON, canonical: the days the rules `festivals_json` asked for fall on over these days, as the envelope `{value, provenance}` (`03-design/festival-rules.md` §7). `value` is `{observances, ekadashis, unjudged}`, `dated` beside them when a rule kept on a date gave a day, and `anniversaries` when the request named one: each observance `{rule, day, tithi, month, adhika, case, extents, decidedBy, choice, marginSeconds, parana}`, the rule's key, the calendar date it falls on, the occurrence judged `{from, to}` in UTC Julian days (the tithi's, or the nakshatra's for a rule kept on one), its amanta month as a full key and whether that month is adhika, the case between its two days (`EARLIER_ONLY`, `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS`), each day's extent `{day, window, held}`, `decidedBy` `{by: GUARD, index}`, `{by: OTHERWISE}` or, for a rule counted from another's day, `{by: AFTER, rule, days}` (its tithi, case and extents then the counted-from observance's), the choice that decided (`EARLIER`, `LATER` or `BY_YUGMA`, which `day` resolves), and the seconds of time every instant the day was decided from (the two sunrises, the next, the windows the rule and its guards draw) may move, as a different place moves them, before the day can change: 0 for two equal parts; and, for a rule whose fast is broken by a reading (§8.7), each reading answered `{reading, day, from, fromBy, to, toBy}`, the rule's reading as it spells it (`TITHI_END`, `WITHIN`, `SUNRISE`, `AFTER_WINDOW`, `NEXT_TITHI`, `AFTER_RITE` with its `rite` and `remnant`), the day the meal falls on (the day after for most, the fast day for a reading ending on it, the rite's day after a rite), when the meal may begin, what set it (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END`, `YAMAS`, `WINDOW_END`, `RITE`), and when it must be taken by and what set that (absent when the reading sets no end); each Ekadashi fast `{rule, tithi, month, adhika, tithis, days, piercedAt, pierced, excess, choice, day, marginSeconds, parana, mahadvadashi}`, the rule's key, the 11th and its lunar month as full keys, whether that month is adhika, the 10th, the 11th and the 12th as `{from, to}`, the 11th's own day and the next, where the 10th reached into the 11th's day (`SUNRISE`, `ARUNODAYA` or null), whether that counts under the rule's vedha, which of the 11th and the 12th holds the next sunrise (`ELEVENTH`, `TWELFTH`, `BOTH`, `NEITHER`), the choice (`EARLIER` or `LATER`, which `day` resolves unless a mahadvadashi moved it, perhaps to the day after both), and the seconds of time every instant the fast was decided from (the sunsets that give the 11th its own day, that day's sunrise and, under a Vaishnava vedha, its arunodaya, and the two sunrises after) may move before the day can change, and, for a rule with a parana, when the fast is broken (§8.5): `{day, tithi, hariVasaraEnds, kept, barred}`, the day after the fast, the tithi the meal is kept in as a full key, when the 12th's first quarter ends if after that day's sunrise (else null), the window kept `{span, at, fromBy, toBy}` (null when none of the rule's leaves time), `at` the rule's window as it spells it and each edge's clause `WINDOW`, `HARI_VASARA`, `TITHI_START`, `TITHI_END`, `NAKSHATRA` or `JOINED_NAKSHATRA`, and, for a rule whose parana lists `bars` (C700) when one met that day's daylight, `barred` `{bar, span, setAside}`: the bar `{tithi, month, nakshatra, portion}` as the rule spells it (`portion` `{parts, which}`, absent for the whole nakshatra), the Moon's stay in the barred share, and whether the bar was set aside because the share outlasts the tithi the meal is kept in; and, for a rule keeping mahadvadashis (§8.9) when one held, `mahadvadashi` `{kind, held, clause, joined}`: the kind that set the day (`UNMILANI`, `VYANJULI`, `TRISPRISHA`, `PAKSHAVARDHINI`, `JAYA`, `VIJAYA`, `JAYANTI`, `PAPANASHINI`), every kind that held in the rule's order, the verse that defines it, and for the four nakshatra kinds the joined nakshatra `{nakshatra, span}`, a full key and its whole stay; each unjudged occurrence `{rule, tithi, why}`; each dated day `{rule, day, on}`, the rule's key, the day, and the same day in the rule's own calendar (`calendar.BIKRAM_SAMBAT` for a sankranti); each anniversary's day (`03-design/shraddha.md`) `{key, count, kind, origin, monthBy, dayRule, observance}`, the request's key, which anniversary it is (1 for the first recurrence, a janma tithi's the age turned, absent for a lunar origin given no moment), the kind kept (`EKODDISHTA`, `PARVANA`, `JANMA_TITHI`, `EVENT`), the origin as found `{tithi, month, kind, half, nakshatra, at, assumedSunrise, candidates}` (the tithi and amanta month as full keys, the lunation's `NIJA`, `ADHIKA` or `KSHAYA`, the tithi's `FIRST` or `SECOND` half, the nakshatra then as a full key, the moment as a UTC Julian day, whether the tithi is a date's sunrise tithi for want of an hour, and every tithi the date held when more than one), the clause that chose the month (`NIJA`, `FIRST_YEAR_ADHIKA`, `ADHIKA_ORIGIN`, `KSHAYA_JOINED`, `SAMSARPA`), the rule that chose the day `{tithi, at, clause, source}` (the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the window read as a rule spells it, the clause `ONE_DAY`, `BOTH_WHOLE`, `NEITHER`, `EQUAL_PARTS`, `GREATER_SHARE`, `BIRTH_NAKSHATRA` or `TWO_MUHURTA_FLOOR`, and where it is stated), and the day as an observance. A date's calendar and era are written as full keys (`calendar.GREGORIAN`), and the envelope is sealed over exactly this value; its provenance names the widened days as `festival.days`. Empty when `festivals_json` asked for none.",
           "kind": "bytes",
           "fields": []
         },

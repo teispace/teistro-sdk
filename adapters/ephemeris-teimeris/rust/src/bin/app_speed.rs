@@ -58,8 +58,9 @@ use teistro::catalogue::{Calendar, DashaSystem};
 use teistro::muhurta::ActivityRules;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rectification::{Rules, Window};
+use teistro::festival::Anniversary;
 use teistro::{
-    CalendarDate, ChangesRequest, ChartRequest, Context, DayClock, Ephemeris, FestivalPack, FestivalRequest, Hash,
+    AnniversariesRequest, CalendarDate, ChangesRequest, ChartRequest, Context, DayClock, Ephemeris, FestivalPack, FestivalRequest, Hash,
     KootaRules, MuhurtaRequest, RuleRequest, RuleSet, ShippedRules, UtcOffset, content_hash,
 };
 use teistro_ephemeris_teimeris::{DATA_DIR_ENV, TeimerisProvider, data_dir_from_env};
@@ -109,8 +110,13 @@ const SETUPS: [Setup; 3] = [
     },
 ];
 
+/// A row run only when named: fifty calls cost minutes on the built-in
+/// chain, and the record needs only the comparison it makes once
+/// (`03-design/anniversary-span.md` §5).
+const ASKED_BY_NAME: &str = "anniversaries-apart";
+
 /// The requests, in the order the page prints them.
-const REQUESTS: [&str; 12] = [
+const REQUESTS: [&str; 16] = [
     "open",
     "day",
     "month",
@@ -123,6 +129,10 @@ const REQUESTS: [&str; 12] = [
     "widest-chart",
     "matching",
     "rectify",
+    "anniversaries",
+    "anniversaries-one",
+    "anniversaries-yearly",
+    "anniversaries-apart",
 ];
 
 /// Runs a request gets: at least [`MIN_RUNS`], and more while the total
@@ -206,6 +216,61 @@ fn read_with_rules(sdk: &Context, request: &ChartRequest, set: &RuleSet) {
     );
 }
 
+/// The people an `anniversaries` run asks for: half births, half deaths,
+/// each at a moment, as an application's saved family holds them.
+const PEOPLE: usize = 50;
+/// The years it spans.
+const YEARS: u16 = 10;
+
+/// `count` people's anniversaries, their moments spread over sixty years so
+/// their tithis and months fall as a family's do.
+fn people(count: usize) -> Vec<Anniversary> {
+    (0..count)
+        .map(|person| {
+            let at = 2_438_000.0 + 433.7 * person as f64;
+            serde_json::from_value(serde_json::json!({
+                "key": format!("PERSON_{person}"),
+                "origin": {"by": "INSTANT", "at": at},
+                "kind": if person % 2 == 0 { "JANMA_TITHI" } else { "SHRADDHA" },
+            }))
+            .expect("an anniversary")
+        })
+        .collect()
+}
+
+/// `asked` over [`YEARS`] from 2026, in one call.
+fn over_the_span(sdk: &Context, asked: Vec<Anniversary>) {
+    let request = AnniversariesRequest {
+        from_year: 2026,
+        years: YEARS,
+        place: place(),
+        offset: offset(),
+        calendar: Calendar::Gregorian,
+        anniversaries: asked,
+    };
+    drop(
+        sdk.almanac()
+            .anniversaries(&request)
+            .expect("anniversaries over the span"),
+    );
+}
+
+/// [`PEOPLE`] over [`YEARS`] as a festival request a year: what an
+/// application has without the span.
+fn a_year_at_a_time(sdk: &Context) {
+    let request = people(PEOPLE).into_iter().fold(
+        FestivalRequest::new(Vec::new()),
+        FestivalRequest::with_anniversary,
+    );
+    for year in 2026..2026 + i32::from(YEARS) {
+        drop(
+            sdk.almanac()
+                .festivals(&date(year, 1, 1), &date(year, 12, 31), &place(), offset(), &request)
+                .expect("a year of anniversaries"),
+        );
+    }
+}
+
 /// Times one run of `request` on a fresh context; `open` times the build.
 fn run(setup: Setup, request: &str) -> Duration {
     if request == "open" {
@@ -247,6 +312,14 @@ fn run(setup: Setup, request: &str) -> Duration {
                 .of(&date(2026, 1, 1), &date(2026, 12, 31), &place(), offset())
                 .expect("a year"),
         ),
+        "anniversaries" => over_the_span(&sdk, people(PEOPLE)),
+        "anniversaries-one" => over_the_span(&sdk, people(1)),
+        "anniversaries-apart" => {
+            for person in people(PEOPLE) {
+                over_the_span(&sdk, vec![person]);
+            }
+        }
+        "anniversaries-yearly" => a_year_at_a_time(&sdk),
         "festivals" => drop(
             sdk.almanac()
                 .festivals(
@@ -567,7 +640,7 @@ fn os() -> String {
 /// lets a row run: a profiler's way to time one request alone. Unset, every
 /// row runs; a partial run is a profile, not a record.
 fn wanted(setup: Setup, request: &str) -> bool {
-    var("TEISTRO_APP_SPEED_ONLY").is_none_or(|only| {
+    var("TEISTRO_APP_SPEED_ONLY").map_or(request != ASKED_BY_NAME, |only| {
         only.split(',')
             .any(|row| row.trim() == format!("{}:{request}", setup.key))
     })

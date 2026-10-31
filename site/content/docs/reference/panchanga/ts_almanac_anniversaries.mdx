@@ -1,0 +1,73 @@
+---
+title: ts_almanac_anniversaries
+description: "Anniversaries kept by the tithi over a span of years, for many people in one call (`03-design/anniversary-span.md`), as canonical JSON `{value, provenance}`: `value` is a festival answer whose `anniversaries` hold each person's days in the order their tithis begin, each `{key, count, kind, origin, monthBy, dayRule, observance}` as a festival request's (`festivals_json`), `dayRule` being `{tithi, at, clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the window read, the clause that chose the day and where it is stated."
+---
+
+Anniversaries kept by the tithi over a span of years, for many people in one call (`03-design/anniversary-span.md`), as canonical JSON `{value, provenance}`: `value` is a festival answer whose `anniversaries` hold each person's days in the order their tithis begin, each `{key, count, kind, origin, monthBy, dayRule, observance}` as a festival request's (`festivals_json`), `dayRule` being `{tithi, at, clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the window read, the clause that chose the day and where it is stated. Occurrences no day could judge are in `unjudged`.
+
+`request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`: `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when left out, the span running from month 1, day 1 of the first year to the day before month 1 of the year after the last; `altitudeM` optional; `anniversaries` at most 1000, each as a festival request writes one. A key it does not read, a place or offset out of range, an anniversary its check refuses or a key given twice is `INVALID_ARG`, named under `anniversaries`; a `years` out of range `OUT_OF_RANGE`; too many anniversaries `LIMIT`; a context without an ephemeris `CAPABILITY`.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.anniversaries
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.anniversaries
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.anniversaries
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().anniversaries
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().anniversaries
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_almanac_anniversaries(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `almanac.anniversaries` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.
