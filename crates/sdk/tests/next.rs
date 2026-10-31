@@ -328,6 +328,65 @@ fn an_added_day_is_found_and_a_withdrawn_one_is_passed_over() {
     }
 }
 
+/// Each list a rule can stand in is searched: an anniversary a request
+/// spells out, a rule counted from another's day, which keeps that other
+/// out of the answer, and an Ekadashi and its withdrawn occurrence.
+#[test]
+fn a_rule_is_found_in_each_list_of_a_request() {
+    let sdk = committee();
+    let anniversary = sdk
+        .almanac()
+        .next(&asked(
+            noon(2026, 1, 1),
+            r#""rule": "GRANDFATHER", "festivals": {"rules": [{"key": "GRANDFATHER",
+               "origin": {"by": "LUNAR", "month": "KARTIKA", "tithi": "SHUKLA_DASHAMI"},
+               "kind": "PARVANA"}]}"#,
+        ))
+        .unwrap()
+        .value;
+    assert_eq!(anniversary.keys, ["GRANDFATHER"]);
+    assert_eq!(anniversary.festivals.anniversaries.len(), 1);
+
+    let following = sdk
+        .almanac()
+        .next(&asked(
+            noon(2026, 1, 1),
+            r#""rule": "MINE", "festivals": {"rules": ["NEPAL",
+               {"key": "MINE", "source": "mine", "after": "HOLIKA", "days": 2}]}"#,
+        ))
+        .unwrap()
+        .value;
+    assert_eq!(following.keys, ["MINE"]);
+    assert!(
+        following
+            .festivals
+            .observances
+            .iter()
+            .all(|o| o.rule == "MINE")
+    );
+
+    let rules = NextKind::Ekadashi.rules();
+    let key = rules.ekadashis[0].key.clone();
+    let of_kind = FestivalRequest::of_kind(rules);
+    let search = |festivals: FestivalRequest| NextRequest {
+        target: NextTarget::Rule(key.clone()),
+        festivals: Some(festivals),
+        limit_days: 800,
+        ..asked(noon(2026, 1, 1), r#""kind": "EKADASHI""#)
+    };
+    let first = sdk.almanac().next(&search(of_kind.clone())).unwrap().value;
+    assert_eq!(first.keys, [key.as_str()]);
+    assert_eq!(first.festivals.ekadashis.len(), 1);
+    let entry = serde_json::json!({
+        "format": "teistro.published/1", "publisher": "p", "id": "np", "version": 1,
+        "entries": [{ "action": "WITHDRAW", "rule": key, "source": "p. 1",
+                      "day": teistro_calendar::CalendarDay::from(&first.day) }],
+    });
+    let withdrawn = of_kind.with_published(serde_json::from_value(entry).unwrap());
+    let later = sdk.almanac().next(&search(withdrawn)).unwrap().value;
+    assert!(fixed_of(&later.day) > fixed_of(&first.day));
+}
+
 #[test]
 fn nothing_in_the_limit_and_every_bad_request_is_refused_by_its_field() {
     let sdk = committee();
