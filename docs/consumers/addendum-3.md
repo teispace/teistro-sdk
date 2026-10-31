@@ -53,7 +53,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 | SR | Status | Where | Note or question |
 |---|---|---|---|
 | SR-23 | done | `AnniversaryKind::Event`; `FestivalRequest::check` | `EVENT` keeps any event by the tithi at the window the request states, sunrise by default. No text rules on it, so it ships as a convention, `anniversary.event`, named in the answer (C911). A caller's rules are held to stated limits, each refused as `LIMIT` by its field: `anniversary-span.md` §6. |
-| SR-24 | done | `almanac.anniversaries`; `05-testing/app-speed-measured.md`, the `anniversaries` row | 50 people over 10 years: 717 ms on this Mac against 28.4 s as 50 calls; 900 ms desktop budget, whose Android ratio is an emulator's (C913), so it says nothing of a low-end phone |
+| SR-24 | done | `almanac.anniversaries`; `05-testing/app-speed-measured.md`, the `anniversaries` row | 50 people over 10 years: 706 ms on this Mac against 28.4 s as 50 calls; 900 ms desktop budget, whose Android ratio is an emulator's (C913), so it says nothing of a low-end phone |
 | SR-25 | partly built | the saits | Laxmi Puja ships the text's pradosha window; no printed lagna for it was found (C824). The Vijaya Dashami tika is not shipped: no rule fits all four printed years (C823). |
 | SR-26 | planned | `panchanga` | The death-time check: dhanishtha panchaka, and tripada and dwipada nakshatras at an instant, from a cited text. |
 | SR-27 | planned | `panchanga` (ashauch) | A relation resolver: a path in a family graph gives the ashauch relation and the sapinda degree the texts use. |
