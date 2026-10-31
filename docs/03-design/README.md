@@ -208,6 +208,7 @@ the rise and set solver when the port was promoted.
 | [`day-in-sentences.md`](day-in-sentences.md) | one day's facts as short sentences from templates, every value from the answer, in `en` and `ne`; a locale without templates refused; what a polar day says (built, SR-13) |
 | [`next-occurrence.md`](next-occurrence.md) | the next day a festival rule or a kind of day (Ekadashi, Purnima, Amavasya, Sankranti) falls on after an instant, with no year asked: the kinds' rules, the 400-day limit, the growing windows (built, SR-06) |
 | [`anniversary-span.md`](anniversary-span.md) | built 2026-10-31 (SR-04, SR-23, SR-24): anniversaries over a span of years for many people in one call, each day naming the rule that chose it, the `EVENT` kind, and the limits of a rule a caller writes |
+| [`year-rulers.md`](year-rulers.md) | the year's office-bearers: the raja, the mantri and seven lords, each from its text, each weekday under every rule the texts give (built, SR-46) |
 | [`sankalpa.md`](sankalpa.md) | the time a sankalpa recites: which instant reads each part, the conventions named in the answer, the words still to come (built, P2-3) |
 | [`ashauch.md`](ashauch.md) | the period of impurity after a birth or a death: the night rule, the lengths, the Dharmasindhu's table as data, late news and overlap (built, P2-3) |
 | [`festival-metadata.md`](festival-metadata.md) | built 2026-10-30 (SR-02): kind, tradition, communities and regions on every rule, each from a named source, a filter on a request, and a pack listing |

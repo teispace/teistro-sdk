@@ -6966,6 +6966,23 @@ fn lunar_years(report: &mut Report, geo: &Context, place: &Place, offset: UtcOff
                 )
             })),
         );
+        put(
+            report,
+            &format!("years-{k}-rulers"),
+            listed(year.rulers.iter().map(|ruler| {
+                let readings: Vec<String> = ruler
+                    .readings
+                    .iter()
+                    .map(|reading| format!("{}={}", tag(&reading.rule), reading.lord.full_key()))
+                    .collect();
+                format!(
+                    "{}:{}:{}",
+                    tag(&ruler.office),
+                    number(ruler.event.get()),
+                    readings.join(",")
+                )
+            })),
+        );
     }
 }
 
