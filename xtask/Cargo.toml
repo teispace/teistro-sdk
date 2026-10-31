@@ -49,3 +49,8 @@ teistro-vargas = { path = "../crates/vargas" }
 
 [lints]
 workspace = true
+
+[package.metadata.cargo-machete]
+# Each is used where the tool cannot see it.
+# md-5: the crate is `md5` in code.
+ignored = ["md-5"]

@@ -1,4 +1,4 @@
-# Reply to the consumer's addenda 2, 3 and 4
+# Reply to the consumer's addenda 2, 3, 4 and 5
 
 Addendum 3 (2026-10-29) asks for 58 general features, SR-01 to SR-58, and sends
 addendum 2 (A2-1 to A2-10) with it, now approved. This page answers each by number:
@@ -6,7 +6,8 @@ its **status** (`done`, `partly built`, `planned`, `needs a decision`, `declined
 lives or will live, and any **question**. It was checked against `main` at `0b69926d`.
 The schedule is in `07-roadmap/00-roadmap.md`, "Addendum 3". Addendum 4 (2026-10-29) answered
 this page's questions and added SR-59 to SR-62; its answers are folded into the rows below and its
-requests are in §10.
+requests are in §10. Addendum 5 (2026-10-31) added SR-63 to SR-76 and moved SR-58; its requests
+are in §11, each checked against `batch/2026-10-31a` (PR #423).
 
 **Order.** The v1.0 release candidate comes first and keeps its scope. After it come the
 consumer's P0 requests, then P1, P2, and P3 and later. A request is done when it is
@@ -126,7 +127,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 | SR | Status | Where | Note or question |
 |---|---|---|---|
 | SR-57 | planned | `research` | A dataset format with a reliability rating per record and a settings snapshot per study. |
-| SR-58 | partly built | `astro` (topocentric altitude and azimuth, visibility) | Planned: a record for a device pose and an instant, giving the grahas, the Moon's junction stars and the rising lagna point. |
+| SR-58 | partly built, the sky view moved to P2 and the pose to P3 by addendum 5 | `astro` (topocentric altitude and azimuth, visibility) | Planned: every graha, the junction stars, the ecliptic and the horizon at a place and instant first (P2); then a record for a device pose and an instant, giving the grahas, the Moon's junction stars and the rising lagna point. |
 
 ## 10. Addendum 4's requests
 
@@ -138,3 +139,30 @@ All four are P1, and each is planned in the P1 wave.
 | SR-60 | partly built | `03-design/festival-rule-language.md` §3.1 (`MOONRISE`); the `DHARMASINDHU` pack | The moonrise window is built from *Dharmasindhu* p. 9: the first moonrise after the day's sunrise and before the next, so a moonrise after midnight belongs to the day it follows, and a day without a moonrise is left unjudged and says so. Sankashta chaturthi and the Karaka chaturthi (Karva Chauth, p. 76) are rules, 12 of 12 against a published 2025 list for Delhi. Planned: the moonrise time and place on the answer, and the other vratas broken at moonrise. |
 | SR-61 | planned | `intl`, on A2-3's lexicon | Bikram Sambat and Gregorian dates found in free text in ne, en and hi, with Devanagari or Latin digits and month names in any script or romanised, returned as spans with the parsed date and its calendar. An ambiguous span is returned with every reading, not guessed. |
 | SR-62 | partly built | `ParanaRule` on every `EkadashiRule` (Q41) | The Ekadashi parana is built. Planned: the fast's kind (nirjala, phalahar, ekabhukta), its start and its parana window as catalogue fields on every vrata, alongside SR-02's fields. |
+
+## 11. Addendum 5's requests
+
+Checked against the code, not only the request: three rows are already answered, and the
+cause of two differs from what the addendum read.
+
+| SR | Wave | Status | Where | Note or question |
+|---|---|---|---|---|
+| SR-63 | P0 | planned | `astro/src/phenomena.rs`, `almanac` | The day's sky: transits with altitudes, a sampled altitude and azimuth track with the exact rises, transits and sets as points, and the Moon's illuminated fraction, phase angle, waxing or waning, bright-limb position angle and parallactic angle. `Phenomena` holds the phase geometry; no day answer carries any of it, and neither a transit nor a parallactic angle exists. |
+| SR-64 | P1 | planned | `intl` | `set_locale` refuses a short tag today, as reported. RFC 4647 lookup, the answer naming the locale used. |
+| SR-65 | P0 | needs a decision | `fixtures/official`, `teistro-conformance` | Days for the published years, as a gate. `fixtures/official` already holds the committee's printed Sun, Moon and tithi rows for measured pages, and the 730-day check is the consumer's. Modern panchangas are cited and never redistributed here, and the corpus is CC0, so whether the days can enter it is the maintainer's call, and a corpus release needs their yes. Until then the gate can run on the consumer's side. |
+| SR-66 | P0 | planned | `03-design/settings-and-profiles.md`, `Context` | Documented now in the profile table: `nepali-default` is a drik reckoning and not the official calendar; `nepal_official` is. Decided: `nepali-drik` becomes its name, and `nepali-default` stays as an alias, since nothing is published yet. The 59 of 730 is the consumer's figure, to be measured with the new name. |
+| SR-67 | P1 | planned | Teimeris | `teimeris-sys` on `wasm32-unknown-unknown`, or a documented link to `bindings/wasm` from the adapter. |
+| SR-68 | P1 | partly waits on the maintainer | Teimeris, the adapter | A crate that builds from a plain checkout can be built now. Published crates wait on the maintainer: nothing is published yet. |
+| SR-69 | P1 | waits on the maintainer | release | No `v*` tag is pushed until the maintainer says so. A non-release pin for a commit can be offered in the meantime. |
+| SR-70 | P1 | mostly done | `teistro::catalogue` | Every catalogue enum already has a public `key()` (`Tithi` included, spelling `SHUKLA_PRATIPADA`-style keys) and `key_id()`, reached as `teistro::catalogue`. Planned: a tithi's place in the month, and `Display`. |
+| SR-71 | P1 | planned | `sdk/src/context.rs`; `03-design/rust-consumer-surface.md` §9 | `Context` is neither `Send` nor `Sync`, by a documented rule. The first cause is `icu_plurals`' `Rc`, which `icu_provider`'s `sync` feature lifts; the caches' `RefCell` and `Rc` come after it. Price the lock on a day's path before choosing. |
+| SR-72 | P1 | not reproduced | Teimeris | Clean in the local checkout at `3f169fc`; to be tried from a fresh submodule update. |
+| SR-73 | P1 | done with PR #423 | `almanac.inZone`, `AlmanacArea::in_zone` | Takes a `ZoneSpec`, in every binding, and each day's offset is read at its noon. A `ts_panchanga_days` blob has no per-day clock yet: bindings read it from provenance, at the first day. |
+| SR-74 | P2 | done for teistro | the manifests | `proc-macro2`, `md-5` and `serde_bytes` are in use: `cargo machete` misses a feature, a renamed crate and a `serde(with)` path. Each is now ignored with its reason, as is the spike's `diplomat-runtime`. Teimeris's `swisseph-rs` remains. |
+| SR-75 | P0 | planned, review by the consumer | `i18n/hi-Deva-IN`, `i18n/sa-Deva` | Confirmed: `hi-Deva-IN`'s `sdk.calendar` has 1 of the base's messages and `sa-Deva` has no file. Drafted in the wave; ships on Q42's sign-off, so the P0 date depends on the reviewers. |
+| SR-76 | P0 | planned | `intl` | `:time` renders only inside a message, and no `IntlArea` call reaches it. `intl().time` and a date counterpart, returning text and parts. |
+
+**The polar note.** `NEAREST_EVENT`'s span is the intended reading: the day runs from the last
+sunrise to the next, so it can hold many tithis. `03-design/settings-and-profiles.md` now says so,
+and that `CIVIL_MIDNIGHT` is what a calendar shows. A day with no sunrise under the default solar
+month rule is being handled in the same wave.

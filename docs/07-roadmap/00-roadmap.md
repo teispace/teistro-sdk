@@ -1137,11 +1137,16 @@ gates, the IDL, every binding, and an MCP tool where it asks for one.
 | **P0** | Festival coverage, metadata and India's central and state holidays (SR-01–03); lunar dates over a span of years, Bikram Sambat arithmetic, the next occurrence, a range's change points (SR-04–07); the N-day digest and its C reader (SR-08, A2-10); the zone database from a signed pack, and the clock offset on every answer (SR-09, SR-10's dates); the iCalendar feed (SR-11); a day in sentences (SR-13); bhadra vasa, the panchaka's kind and printed conventions (SR-18–20); anniversaries, batched within a budget (SR-23, 24); the remaining saits (SR-25); amounts in words (SR-49); no panic across the wasm boundary, with a host hook (SR-52); lazy wasm modules and start time (SR-53); MCP `input_required`, the trace context and a test of tool order (A2-6) | three and a half to four weeks |
 | **P1** | SR-15, 17, 21, 26–34 (SR-34's house and business rites), 36–40, 51; SR-10's charts; A2-1 to A2-5 and A2-7; addendum 4's Jain calendar, moonrise vratas, dates found in text, and vrata kinds and paranas (SR-59–62) | about five weeks |
 | **P2** | SR-14, 16 (A2-8), 22, 41–44, 54, 55; the regional festival packs (SR-03); SR-34's other rites; the Tamil school (A2-9) | about three weeks |
-| **P3 and later** | SR-35, 45–48, 56–58 | v1.x |
+| **P3 and later** | SR-35, 45–48, 56, 57, SR-58's device pose | v1.x |
+| **Addendum 5** | Adds to P0: SR-63, 65, 66, 75, 76. To P1: SR-64, 67–73. To P2: SR-58's sky view, SR-74 | about two weeks more, across the waves |
 
 Text in Hindi, Sanskrit and Nepali (SR-12, 13, 29, 31, 37, 38) is drafted in its
 wave and ships only when one of the consumer's reviewers signs it off (`QUESTIONS.md` Q42, decided). The licence
 for hosted serving of Teimeris's output (SR-55) is Q43.
+
+Addendum 5's rows are answered in the same page, §11. SR-75 waits on Q42's review, SR-65 on
+whether published days may enter the CC0 corpus, and SR-68 and SR-69 on the rule that nothing is
+published or tagged until the maintainer says so.
 
 ## v1.0 release and baseline migration
 
