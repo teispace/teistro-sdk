@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
-use teistro_calendar::ical::{self, Event, Feed, When};
+use teistro_calendar::ical::{self, Alarm, Color, Event, Feed, Hints, When};
 use teistro_calendar::{CalendarDate, FixedDay};
 use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::{Envelope, Hash, canonical_json};
@@ -21,6 +21,9 @@ use crate::festival_request::FestivalRequest;
 /// The field a feed request's refusals are named under.
 const FESTIVAL_CALENDAR: &str = "festivalCalendar";
 
+/// The fixed day of 1970-01-01.
+const UNIX_EPOCH_DAY: i64 = 719_163;
+
 /// What a feed says of itself: its name, the product that wrote it, how
 /// often a subscriber fetches it again, and the instant every event is
 /// stamped with.
@@ -36,6 +39,148 @@ pub struct FeedOptions {
     /// Every event's `DTSTAMP`, in seconds since 1970-01-01T00:00:00Z.
     /// The caller gives it, so the same request writes the same bytes.
     pub stamp_unix_seconds: i64,
+    /// The feed's own categories.
+    pub categories: Vec<String>,
+    /// The feed's colour.
+    pub color: Option<Color>,
+    /// The alarm on every event no [`FeedHint`] or event of its own
+    /// gives another; none writes none.
+    pub alarm: Option<Alarm>,
+    /// Which events the feed keeps: those any selector selects, every
+    /// event when empty.
+    pub only: Vec<FeedSelector>,
+    /// Categories, a colour and an alarm by what an event is; the first
+    /// that selects an event gives it its own.
+    pub hints: Vec<FeedHint>,
+    /// The caller's own events, merged into the day's order. One whose
+    /// `UID` is a computed event's stands in its place.
+    pub events: Vec<SuppliedEvent>,
+}
+
+/// How a feed's event came to be, which a [`FeedSelector`] can name.
+///
+/// ```
+/// use teistro::FeedForm;
+///
+/// assert_eq!(serde_json::to_string(&FeedForm::Parana)?, "\"PARANA\"");
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum FeedForm {
+    /// A yearly rule's observance.
+    Observance,
+    /// An Ekadashi fast.
+    Ekadashi,
+    /// A dated rule's day.
+    Dated,
+    /// An anniversary.
+    Anniversary,
+    /// A day a published set added.
+    Added,
+    /// The timed window a fast is broken in.
+    Parana,
+    /// An event the caller supplied.
+    Supplied,
+}
+
+/// What selects an event: a list left empty asks nothing, a list given
+/// holds the event's value, and every list given must. `kinds` and
+/// `traditions` read a rule's catalogue fields (`03-design/icalendar.md`
+/// §6); `rules` holds rule keys, a parana answering to its fast's and a
+/// supplied event to its `UID`.
+///
+/// ```
+/// use teistro::{FeedForm, FeedSelector};
+///
+/// let fasts: FeedSelector = serde_json::from_str(r#"{"forms": ["EKADASHI", "PARANA"]}"#)?;
+/// assert_eq!(fasts.forms, [FeedForm::Ekadashi, FeedForm::Parana]);
+/// assert!(fasts.rules.is_empty());
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields, default)]
+pub struct FeedSelector {
+    /// How the event came to be.
+    pub forms: Vec<FeedForm>,
+    /// A rule's catalogue kind, or a supplied event's own.
+    pub kinds: Vec<String>,
+    /// A rule's tradition, or a supplied event's own.
+    pub traditions: Vec<String>,
+    /// A rule's key.
+    pub rules: Vec<String>,
+}
+
+/// What the events a selector selects say: categories, a colour and an
+/// alarm, each optional.
+///
+/// ```
+/// use teistro::{FeedHint, FeedSelector};
+///
+/// let hint = FeedHint { select: FeedSelector::default(), hints: Default::default() };
+/// assert!(hint.hints.categories.is_empty());
+/// ```
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct FeedHint {
+    /// The events it speaks of.
+    pub select: FeedSelector,
+    /// What they say.
+    pub hints: Hints,
+}
+
+/// An event the caller supplies, a holiday from its own data, written
+/// among the computed ones.
+///
+/// ```
+/// use teistro::{SuppliedEvent, FixedDay};
+/// use teistro::calendar_feed::When;
+///
+/// let holiday = SuppliedEvent::new("Republic Day", When::Day(FixedDay::new(739_637)));
+/// assert_eq!(holiday.uid, None);
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct SuppliedEvent {
+    /// The `UID`. None hashes the summary, the time and the place as a
+    /// computed event's is hashed, so it stays stable while they do.
+    pub uid: Option<String>,
+    /// `SUMMARY`.
+    pub summary: String,
+    /// `DESCRIPTION`.
+    pub description: Option<String>,
+    /// When it is.
+    pub when: When,
+    /// Its kind, for a selector, and a category.
+    pub kind: Option<String>,
+    /// Its tradition, for a selector, and a category.
+    pub tradition: Option<String>,
+    /// Its own categories, colour and alarm, ahead of any [`FeedHint`].
+    pub hints: Hints,
+}
+
+impl SuppliedEvent {
+    /// An event of this summary and time, and nothing else.
+    ///
+    /// ```
+    /// use teistro::{SuppliedEvent, FixedDay};
+    /// use teistro::calendar_feed::When;
+    ///
+    /// let event = SuppliedEvent::new("Office closed", When::Day(FixedDay::new(739_637)));
+    /// assert_eq!(event.summary, "Office closed");
+    /// ```
+    #[must_use]
+    pub fn new(summary: impl Into<String>, when: When) -> SuppliedEvent {
+        SuppliedEvent {
+            uid: None,
+            summary: summary.into(),
+            description: None,
+            when,
+            kind: None,
+            tradition: None,
+            hints: Hints::default(),
+        }
+    }
 }
 
 impl FeedOptions {
@@ -48,6 +193,12 @@ impl FeedOptions {
             product: format!("-//Teispace//Teistro SDK {}//EN", env!("CARGO_PKG_VERSION")),
             refresh_minutes: Some(1_440),
             stamp_unix_seconds,
+            categories: Vec::new(),
+            color: None,
+            alarm: None,
+            only: Vec::new(),
+            hints: Vec::new(),
+            events: Vec::new(),
         }
     }
 
@@ -118,6 +269,104 @@ pub(crate) struct FestivalCalendarAsked {
     /// A day when left out; zero writes none.
     #[serde(default)]
     refresh_minutes: Option<u32>,
+    /// The feed's own categories.
+    #[serde(default)]
+    categories: Vec<String>,
+    /// The feed's colour: a CSS3 colour name, which RFC 7986 requires.
+    #[serde(default)]
+    color: Option<String>,
+    /// The alarm on every event no hint or event of its own gives another.
+    #[serde(default)]
+    alarm: Option<AlarmAsked>,
+    /// Which events the feed keeps: those any selector selects, every
+    /// event when left out.
+    #[serde(default)]
+    only: Vec<FeedSelector>,
+    /// Categories, a colour and an alarm by what an event is; the first
+    /// that selects an event gives it its own.
+    #[serde(default)]
+    hints: Vec<FeedHintAsked>,
+    /// The caller's own events, merged in.
+    #[serde(default)]
+    events: Vec<SuppliedEventAsked>,
+}
+
+/// A display alarm as a binding writes it.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FeedAlarm"))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct AlarmAsked {
+    /// Minutes from the event's start: negative before it, positive after.
+    trigger_minutes: i32,
+    /// What the alarm says; the event's summary when left out.
+    #[serde(default)]
+    description: Option<String>,
+}
+
+impl From<AlarmAsked> for Alarm {
+    fn from(asked: AlarmAsked) -> Alarm {
+        Alarm {
+            trigger_minutes: asked.trigger_minutes,
+            description: asked.description,
+        }
+    }
+}
+
+/// A hint as a binding writes it.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "FeedHint"))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct FeedHintAsked {
+    /// The events it speaks of; every event when left out.
+    #[serde(default)]
+    select: FeedSelector,
+    #[serde(default)]
+    categories: Vec<String>,
+    /// A CSS3 colour name.
+    #[serde(default)]
+    color: Option<String>,
+    #[serde(default)]
+    alarm: Option<AlarmAsked>,
+}
+
+/// A supplied event as a binding writes it: `day`, or `fromUnixSeconds`
+/// and `toUnixSeconds`.
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "SuppliedEvent"))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub(crate) struct SuppliedEventAsked {
+    /// Hashed from the summary, the time and the place when left out.
+    #[serde(default)]
+    uid: Option<String>,
+    summary: String,
+    #[serde(default)]
+    description: Option<String>,
+    /// The request's calendar when left out.
+    #[serde(default)]
+    calendar: Option<Calendar>,
+    /// A whole day.
+    #[serde(default)]
+    day: Option<DayAsked>,
+    /// A span's start, in seconds since 1970.
+    #[serde(default)]
+    from_unix_seconds: Option<i64>,
+    /// A span's end, exclusive.
+    #[serde(default)]
+    to_unix_seconds: Option<i64>,
+    #[serde(default)]
+    kind: Option<String>,
+    #[serde(default)]
+    tradition: Option<String>,
+    #[serde(default)]
+    categories: Vec<String>,
+    /// A CSS3 colour name.
+    #[serde(default)]
+    color: Option<String>,
+    #[serde(default)]
+    alarm: Option<AlarmAsked>,
 }
 
 impl FestivalCalendarRequest {
@@ -125,8 +374,10 @@ impl FestivalCalendarRequest {
     /// first when left out) as `{"year", "month", "day"}` in `calendar`
     /// (Gregorian when left out), `latitudeDeg`, `longitudeDeg`,
     /// `altitudeM` and `utcOffsetSeconds`; `festivals`, a festival
-    /// request; `stampUnixSeconds`; and optionally `name`, `product` and
-    /// `refreshMinutes` (a day when left out, none when zero).
+    /// request; `stampUnixSeconds`; and optionally `name`, `product`,
+    /// `refreshMinutes` (a day when left out, none when zero),
+    /// `categories`, `color`, `alarm`, `only`, `hints` and `events`
+    /// (`03-design/icalendar.md` §6).
     ///
     /// ```
     /// use teistro::FestivalCalendarRequest;
@@ -175,6 +426,36 @@ impl FestivalCalendarAsked {
         if let Some(product) = self.product {
             feed = feed.with_product(product);
         }
+        feed.categories = self.categories;
+        feed.color = color_of(self.color.as_deref(), "color")?;
+        feed.alarm = self.alarm.map(Alarm::from);
+        feed.only = self.only;
+        feed.hints = self
+            .hints
+            .into_iter()
+            .enumerate()
+            .map(|(at, hint)| {
+                Ok(FeedHint {
+                    select: hint.select,
+                    hints: Hints {
+                        categories: hint.categories,
+                        color: color_of(hint.color.as_deref(), "color")
+                            .map_err(|why| why.under(&format!("hints[{at}]")))?,
+                        alarm: hint.alarm.map(Alarm::from),
+                    },
+                })
+            })
+            .collect::<Result<_, Error>>()?;
+        feed.events = self
+            .events
+            .into_iter()
+            .enumerate()
+            .map(|(at, event)| {
+                event
+                    .supplied(calendar)
+                    .map_err(|why| why.under(&format!("events[{at}]")))
+            })
+            .collect::<Result<_, Error>>()?;
         Ok(FestivalCalendarRequest {
             from: self.first.in_calendar(calendar),
             to: self.last.unwrap_or(self.first).in_calendar(calendar),
@@ -184,6 +465,210 @@ impl FestivalCalendarAsked {
             feed,
         })
     }
+}
+
+impl SuppliedEventAsked {
+    fn supplied(self, calendar: Calendar) -> Result<SuppliedEvent, Error> {
+        let when = match (self.day, self.from_unix_seconds, self.to_unix_seconds) {
+            (Some(day), None, None) => {
+                let date = day.in_calendar(self.calendar.unwrap_or(calendar));
+                When::Day(system_of(date.calendar)?.fixed_of(&date)?)
+            }
+            (None, Some(from_unix_seconds), Some(to_unix_seconds)) => When::Span {
+                from_unix_seconds,
+                to_unix_seconds,
+            },
+            _ => {
+                return Err(Error::invalid_arg(
+                    "an event is a `day`, or `fromUnixSeconds` with `toUnixSeconds`",
+                ));
+            }
+        };
+        Ok(SuppliedEvent {
+            uid: self.uid,
+            summary: self.summary,
+            description: self.description,
+            when,
+            kind: self.kind,
+            tradition: self.tradition,
+            hints: Hints {
+                categories: self.categories,
+                color: color_of(self.color.as_deref(), "color")?,
+                alarm: self.alarm.map(Alarm::from),
+            },
+        })
+    }
+}
+
+/// A colour a request names, refused by its field.
+fn color_of(name: Option<&str>, field: &str) -> Result<Option<Color>, Error> {
+    name.map(|name| Color::named(name).map_err(|why| why.with_field(field)))
+        .transpose()
+}
+
+/// An event on its way into the feed, with what orders and selects it.
+struct Draft {
+    /// The civil day.
+    day: FixedDay,
+    /// The start of a span; a whole day's comes first.
+    start: Option<i64>,
+    /// The rule's key, or a supplied event's `UID`.
+    rule: String,
+    form: FeedForm,
+    classes: Classes,
+    event: Event,
+}
+
+/// What the catalogue says a rule is. Supplied events give their own; a
+/// computed event reads [`classes_of`].
+#[derive(Default)]
+struct Classes {
+    kind: Option<String>,
+    tradition: Option<String>,
+}
+
+/// A rule's catalogue fields, the one place the feed reads them.
+///
+/// SR-02 adds them to the rules: this is where they arrive. Until a rule
+/// carries them a selector naming them is refused by
+/// [`refuse_unclassified`] rather than answered with an empty feed.
+fn classes_of(_festivals: &FestivalRequest, _rule: &str) -> Classes {
+    Classes::default()
+}
+
+impl FeedSelector {
+    /// Whether every list given holds this event's value.
+    fn selects(&self, draft: &Draft) -> bool {
+        let holds = |list: &[String], value: Option<&str>| {
+            list.is_empty() || value.is_some_and(|value| list.iter().any(|item| item == value))
+        };
+        (self.forms.is_empty() || self.forms.contains(&draft.form))
+            && holds(&self.kinds, draft.classes.kind.as_deref())
+            && holds(&self.traditions, draft.classes.tradition.as_deref())
+            && holds(&self.rules, Some(&draft.rule))
+    }
+}
+
+/// `UNSUPPORTED` when a selector names a field no event of this feed
+/// carries: an empty feed would read as "nothing is of that tradition".
+fn refuse_unclassified(drafts: &[Draft], options: &FeedOptions) -> Result<(), Error> {
+    if drafts.is_empty() {
+        return Ok(());
+    }
+    let selectors = || {
+        options
+            .only
+            .iter()
+            .chain(options.hints.iter().map(|hint| &hint.select))
+    };
+    if selectors().any(|selector| !selector.kinds.is_empty())
+        && drafts.iter().all(|draft| draft.classes.kind.is_none())
+    {
+        return Err(
+            Error::unsupported("no event of this feed carries a kind to select by")
+                .with_field("kinds"),
+        );
+    }
+    if selectors().any(|selector| !selector.traditions.is_empty())
+        && drafts.iter().all(|draft| draft.classes.tradition.is_none())
+    {
+        return Err(
+            Error::unsupported("no event of this feed carries a tradition to select by")
+                .with_field("traditions"),
+        );
+    }
+    Ok(())
+}
+
+/// A supplied event as a draft: a span on the civil day its start falls
+/// on at `offset`.
+fn supplied_draft(supplied: &SuppliedEvent, place: &Place, offset: UtcOffset) -> Draft {
+    let (day, start, hashed) = match supplied.when {
+        When::Day(day) => (day, None, format!("SUPPLIED|{}", supplied.summary)),
+        When::Span {
+            from_unix_seconds,
+            to_unix_seconds,
+        } => {
+            let local = from_unix_seconds.saturating_add(i64::from(offset.seconds()));
+            (
+                FixedDay::new(UNIX_EPOCH_DAY + local.div_euclid(86_400)),
+                Some(from_unix_seconds),
+                format!(
+                    "SUPPLIED|{}|{from_unix_seconds}|{to_unix_seconds}",
+                    supplied.summary
+                ),
+            )
+        }
+    };
+    let uid = supplied
+        .uid
+        .clone()
+        .unwrap_or_else(|| uid(&hashed, day, place));
+    Draft {
+        day,
+        start,
+        rule: uid.clone(),
+        form: FeedForm::Supplied,
+        classes: Classes {
+            kind: supplied.kind.clone(),
+            tradition: supplied.tradition.clone(),
+        },
+        event: Event {
+            uid,
+            summary: supplied.summary.clone(),
+            description: supplied.description.clone(),
+            when: supplied.when,
+            hints: supplied.hints.clone(),
+        },
+    }
+}
+
+/// The feed's events: the supplied merged over the computed, those the
+/// options keep, each with its hints, in the feed's order.
+fn merged(
+    mut drafts: Vec<Draft>,
+    options: &FeedOptions,
+    place: &Place,
+    offset: UtcOffset,
+) -> Result<Vec<Event>, Error> {
+    let supplied: Vec<Draft> = options
+        .events
+        .iter()
+        .map(|event| supplied_draft(event, place, offset))
+        .collect();
+    drafts.retain(|draft| {
+        !supplied
+            .iter()
+            .any(|event| event.event.uid == draft.event.uid)
+    });
+    drafts.extend(supplied);
+    refuse_unclassified(&drafts, options)?;
+    if !options.only.is_empty() {
+        drafts.retain(|draft| options.only.iter().any(|selector| selector.selects(draft)));
+    }
+    for draft in &mut drafts {
+        let hint = options.hints.iter().find(|hint| hint.select.selects(draft));
+        let hints = &mut draft.event.hints;
+        let classes = [draft.classes.kind.take(), draft.classes.tradition.take()];
+        let mut categories: Vec<String> = classes.into_iter().flatten().collect();
+        categories.append(&mut hints.categories);
+        if let Some(hint) = hint {
+            categories.extend(hint.hints.categories.iter().cloned());
+            hints.color = hints.color.or(hint.hints.color);
+            hints.alarm = hints.alarm.take().or_else(|| hint.hints.alarm.clone());
+        }
+        hints.alarm = hints.alarm.take().or_else(|| options.alarm.clone());
+        let mut seen = std::collections::BTreeSet::new();
+        categories.retain(|category| seen.insert(category.clone()));
+        hints.categories = categories;
+    }
+    drafts.sort_by(|a, b| {
+        a.day
+            .cmp(&b.day)
+            .then(a.start.cmp(&b.start))
+            .then_with(|| a.rule.cmp(&b.rule))
+    });
+    Ok(drafts.into_iter().map(|draft| draft.event).collect())
 }
 
 impl AlmanacArea<'_> {
@@ -220,6 +705,14 @@ impl AlmanacArea<'_> {
     ///   event, and an observance a new setup moves to another day is a
     ///   new event there.
     ///
+    /// The feed then takes what [`FeedOptions`] asks: the caller's own
+    /// events merged in, one whose `UID` is a computed event's standing
+    /// in its place; only the events [`FeedOptions::only`] selects, every
+    /// one when empty; and each event's categories (its kind and
+    /// tradition, its own, then the hint's), colour and alarm, its own
+    /// ahead of the first [`FeedHint`] that selects it, ahead of
+    /// [`FeedOptions::alarm`].
+    ///
     /// The text is sealed with the festival answer's provenance, its
     /// content hash taken over the text.
     ///
@@ -245,7 +738,10 @@ impl AlmanacArea<'_> {
     /// # Errors
     ///
     /// As [`AlmanacArea::festivals`]; `OUT_OF_RANGE` for a day outside the
-    /// years 1 to 9999.
+    /// years 1 to 9999; `INVALID_ARG` for a `UID` two supplied events
+    /// share or an empty category; `UNSUPPORTED`, on `kinds` or
+    /// `traditions`, when a selector names a field no event of the feed
+    /// carries.
     pub fn festival_calendar(
         self,
         from: &CalendarDate,
@@ -269,10 +765,8 @@ impl AlmanacArea<'_> {
             Some(source) => format!("{source}\n{about}"),
             None => about.clone(),
         };
-        // Each event, keyed by its day, its start (a whole day's first)
-        // and its rule, the order the feed lists them in.
-        let mut events: Vec<(FixedDay, Option<i64>, &str, Event)> = Vec::new();
-        for (rule, day, published) in occurrences {
+        let mut drafts: Vec<Draft> = Vec::new();
+        for (rule, day, published, form) in occurrences {
             let fixed = system_of(day.calendar)?.fixed_of(day)?;
             let event = Event {
                 uid: uid(rule, fixed, place),
@@ -282,8 +776,16 @@ impl AlmanacArea<'_> {
                     None => describe(rule),
                 }),
                 when: When::Day(fixed),
+                hints: Hints::default(),
             };
-            events.push((fixed, None, rule, event));
+            drafts.push(Draft {
+                day: fixed,
+                start: None,
+                rule: rule.clone(),
+                form,
+                classes: classes_of(festivals, rule),
+                event,
+            });
         }
         for added in &value.added {
             let fixed = system_of(added.day.calendar)?.fixed_of(&added.day)?;
@@ -292,9 +794,40 @@ impl AlmanacArea<'_> {
                 summary: self.added_name(&added.key, &added.names),
                 description: Some(published_by(&added.published, &answered)?),
                 when: When::Day(fixed),
+                hints: Hints::default(),
             };
-            events.push((fixed, None, &added.key, event));
+            drafts.push(Draft {
+                day: fixed,
+                start: None,
+                rule: added.key.clone(),
+                form: FeedForm::Added,
+                classes: Classes::default(),
+                event,
+            });
         }
+        drafts.extend(self.parana_drafts(&value, festivals, place, &describe)?);
+        let feed = Feed {
+            product: options.product.clone(),
+            name: options.name.clone(),
+            refresh_minutes: options.refresh_minutes,
+            stamp_unix_seconds: options.stamp_unix_seconds,
+            categories: options.categories.clone(),
+            color: options.color,
+            events: merged(drafts, options, place, offset)?,
+        };
+        Ok(Envelope::sealing(ical::write(&feed)?, provenance))
+    }
+
+    /// The timed events: an Ekadashi's kept window, and a vrata's first
+    /// reading when it has an end.
+    fn parana_drafts(
+        self,
+        value: &teistro_panchanga::festival::Observances,
+        festivals: &FestivalRequest,
+        place: &Place,
+        describe: &dyn Fn(&str) -> String,
+    ) -> Result<Vec<Draft>, Error> {
+        let mut drafts = Vec::new();
         // An Ekadashi's kept window, and a vrata's first reading when it
         // has an end: an open reading ("from the 8th's end") has no window
         // to write.
@@ -334,18 +867,18 @@ impl AlmanacArea<'_> {
                     from_unix_seconds: from,
                     to_unix_seconds: to,
                 },
+                hints: Hints::default(),
             };
-            events.push((fixed, Some(from), rule, event));
+            drafts.push(Draft {
+                day: fixed,
+                start: Some(from),
+                rule: rule.clone(),
+                form: FeedForm::Parana,
+                classes: classes_of(festivals, rule),
+                event,
+            });
         }
-        events.sort_by(|(a, s, x, _), (b, t, y, _)| a.cmp(b).then(s.cmp(t)).then_with(|| x.cmp(y)));
-        let feed = Feed {
-            product: options.product.clone(),
-            name: options.name.clone(),
-            refresh_minutes: options.refresh_minutes,
-            stamp_unix_seconds: options.stamp_unix_seconds,
-            events: events.into_iter().map(|(_, _, _, event)| event).collect(),
-        };
-        Ok(Envelope::sealing(ical::write(&feed)?, provenance))
+        Ok(drafts)
     }
 
     /// As [`AlmanacArea::festival_calendar`], for a request a binding
@@ -370,7 +903,11 @@ impl AlmanacArea<'_> {
 
     /// An added day's name in the context's locale: the locale's own,
     /// then its language's, then the first the set gives, then its key.
-    fn added_name(self, key: &str, names: &std::collections::BTreeMap<String, String>) -> String {
+    pub(super) fn added_name(
+        self,
+        key: &str,
+        names: &std::collections::BTreeMap<String, String>,
+    ) -> String {
         let engine = self.context.locale_engine();
         let locale = engine.locale();
         let language = locale.split('-').next().unwrap_or(locale);
@@ -387,45 +924,63 @@ impl AlmanacArea<'_> {
     }
 
     /// A rule's name in the context's locale, or its key.
-    fn festival_name(self, rule: &str) -> String {
+    pub(super) fn festival_name(self, rule: &str) -> String {
         let engine = self.context.locale_engine();
         engine
             .entity_from(engine.locale(), &format!("festival.{rule}"))
             .and_then(|entity| entity.form("name"))
             .map_or_else(|| rule.to_owned(), str::to_owned)
     }
+
+    /// A catalogue member's name in the context's locale, or its full key.
+    pub(super) fn entity_name(self, key: &str) -> String {
+        let engine = self.context.locale_engine();
+        engine
+            .entity_from(engine.locale(), key)
+            .and_then(|entity| entity.form("name"))
+            .map_or_else(|| key.to_owned(), str::to_owned)
+    }
 }
 
-/// Every whole day the answer keeps, with what published it: the
-/// observances, the Ekadashi fasts, the dated rules' days and the
-/// anniversaries. A withdrawn day is not kept, so a subscriber's calendar
-/// drops it.
-fn kept_days(
+/// Every whole day the answer keeps, with what published it and its
+/// form: the observances, the Ekadashi fasts, the dated rules' days and
+/// the anniversaries. A withdrawn day is not kept, so a subscriber's
+/// calendar drops it.
+pub(super) fn kept_days(
     value: &teistro_panchanga::festival::Observances,
-) -> impl Iterator<Item = (&String, &CalendarDate, &Option<Published>)> {
+) -> impl Iterator<Item = (&String, &CalendarDate, &Option<Published>, FeedForm)> {
     value
         .observances
         .iter()
-        .map(|observance| (&observance.rule, &observance.day, &observance.published))
+        .map(|observance| {
+            (
+                &observance.rule,
+                &observance.day,
+                &observance.published,
+                FeedForm::Observance,
+            )
+        })
         .chain(
             value
                 .ekadashis
                 .iter()
-                .map(|fast| (&fast.rule, &fast.day, &fast.published)),
+                .map(|fast| (&fast.rule, &fast.day, &fast.published, FeedForm::Ekadashi)),
         )
         .chain(
             value
                 .dated
                 .iter()
-                .map(|kept| (&kept.rule, &kept.day, &kept.published)),
+                .map(|kept| (&kept.rule, &kept.day, &kept.published, FeedForm::Dated)),
         )
-        .chain(
-            value
-                .anniversaries
-                .iter()
-                .map(|kept| (&kept.key, &kept.observance.day, &kept.observance.published)),
-        )
-        .filter(|(_, _, published)| !withdrawn(published.as_ref()))
+        .chain(value.anniversaries.iter().map(|kept| {
+            (
+                &kept.key,
+                &kept.observance.day,
+                &kept.observance.published,
+                FeedForm::Anniversary,
+            )
+        }))
+        .filter(|(_, _, published, _)| !withdrawn(published.as_ref()))
 }
 
 /// Whether a published set withdrew the day, which the feed then leaves

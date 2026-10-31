@@ -1993,6 +1993,8 @@ typedef TsAlmanacFirstYearNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.
 typedef TsAlmanacFirstYearDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalCalendarNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalCalendarDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacDigestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
+typedef TsAlmanacDigestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsAlmanacNextNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacNextDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalPackNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2092,6 +2094,7 @@ final class TeistroLibrary {
         ts_almanac_ashauch = library.lookupFunction<TsAlmanacAshauchNative, TsAlmanacAshauchDart>('ts_almanac_ashauch'),
         ts_almanac_first_year = library.lookupFunction<TsAlmanacFirstYearNative, TsAlmanacFirstYearDart>('ts_almanac_first_year'),
         ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
+        ts_almanac_digest = library.lookupFunction<TsAlmanacDigestNative, TsAlmanacDigestDart>('ts_almanac_digest'),
         ts_almanac_next = library.lookupFunction<TsAlmanacNextNative, TsAlmanacNextDart>('ts_almanac_next'),
         ts_almanac_festival_pack = library.lookupFunction<TsAlmanacFestivalPackNative, TsAlmanacFestivalPackDart>('ts_almanac_festival_pack'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
@@ -2562,6 +2565,20 @@ final class TeistroLibrary {
   /// outside the years 1 to 9999, is `OUT_OF_RANGE`, and a context without
   /// an ephemeris `CAPABILITY`. `out_text` is the feed, CRLF lines.
   final TsAlmanacFestivalCalendarDart ts_almanac_festival_calendar;
+
+  /// **The N-day digest** (`03-design/digest-format.md`): the days from
+  /// `first`, every limb and window, the Moon and the observances, as a
+  /// `digest` blob a process with no engine reads with `bindings/c/digest`.
+  /// The same request writes the same bytes on every platform.
+  ///
+  /// `request_json` is `{"first", "calendar", "days", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals"}`: `first`
+  /// `{year, month, day}` in `calendar` (Gregorian when left out), `days` 1 to
+  /// 366 and 60 when left out, `altitudeM` optional and `festivals` an
+  /// optional festival request. A key it does not read, a place or offset
+  /// out of range or a festival request its reader refuses is `INVALID_ARG`,
+  /// named under `digest`; a count out of range `OUT_OF_RANGE` on `days`.
+  final TsAlmanacDigestDart ts_almanac_digest;
 
   /// The next day a festival rule or a kind of day falls on after an
   /// instant at a place, with no year asked (`03-design/next-occurrence.md`),
@@ -6363,6 +6380,29 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_almanac_festival_calendar(_handle, rawrequestJson, outText);
         if (status != 0) _fail(status);
         return _takeString(_lib, outText);
+    });
+  }
+
+  /// **The N-day digest** (`03-design/digest-format.md`): the days from
+  /// `first`, every limb and window, the Moon and the observances, as a
+  /// `digest` blob a process with no engine reads with `bindings/c/digest`.
+  /// The same request writes the same bytes on every platform.
+  ///
+  /// `request_json` is `{"first", "calendar", "days", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals"}`: `first`
+  /// `{year, month, day}` in `calendar` (Gregorian when left out), `days` 1 to
+  /// 366 and 60 when left out, `altitudeM` optional and `festivals` an
+  /// optional festival request. A key it does not read, a place or offset
+  /// out of range or a festival request its reader refuses is `INVALID_ARG`,
+  /// named under `digest`; a count out of range `OUT_OF_RANGE` on `days`.
+  Uint8List almanacDigest(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outBlob = arena<BlobStruct>();
+        final status = _lib.ts_almanac_digest(_handle, rawrequestJson, outBlob);
+        if (status != 0) _fail(status);
+        return _takeBlob(_lib, outBlob);
     });
   }
 

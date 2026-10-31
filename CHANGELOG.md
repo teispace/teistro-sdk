@@ -51,6 +51,26 @@ hashes; its provenance gains the stamp. `ts_panchanga_request` gains
 every instant the tithi, nakshatra, yoga, karana, the Moon's or Sun's sign or
 the vara changes in a range, in every binding and as an agent tool.
 **Numbers:** none.
+**The iCalendar feed merges a caller's events, and takes alarms, colours and a filter (SR-11).**
+**Numbers:** none; a request naming none of it writes the bytes it wrote, but
+for a control character in a name, which is dropped now as RFC 5545 requires.
+- `almanac.festivalCalendar` takes `events`, the caller's own days and spans,
+  each with a stable `UID` and merged in the day's order; one whose `UID` is a
+  computed event's stands in its place.
+- `only` keeps the events a selector selects, by form, rule, kind or
+  tradition. `kinds` and `traditions` read a rule's catalogue fields, and a
+  selector on a field no event carries is `UNSUPPORTED`, not an empty feed.
+- `hints`, `alarm`, `categories` and `color` write `CATEGORIES`, a `VALARM`
+  and RFC 7986's `COLOR`, refused unless it is a CSS3 name.
+- A `UID` two events share and an empty `UID` or category are refused.
+
+**A compact N-day digest, and a reader in C with no dependencies (SR-08).**
+**Numbers:** none.
+- `almanac.digest` writes the days from a date, 60 by default, as a `digest`
+  blob: every limb and window, the Moon, the observances and their names,
+  versioned, sealed by SHA-256, the same bytes on every platform.
+- `bindings/c/digest` reads it with no allocation and no C library, so Swift
+  and Kotlin call one reader; `03-design/digest-format.md` is the format.
 
 **A wasm module that traps refuses as `INTERNAL`, and a host hears of it.**
 **Numbers:** none.

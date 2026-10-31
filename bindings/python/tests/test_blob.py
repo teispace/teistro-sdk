@@ -20,6 +20,7 @@ from teistro import Body, TimeScale
 from teistro._blob import (
     BlobError,
     decode_charts,
+    decode_digest,
     decode_intl_render,
     decode_naam,
     decode_panchanga,
@@ -140,6 +141,7 @@ _SCHEMAS: tuple[tuple[str, Callable[[bytes], object]], ...] = (
     ("intl_render.tsrb", decode_intl_render),
     ("charts.tsrb", decode_charts),
     ("panchanga.tsrb", decode_panchanga),
+    ("digest.tsrb", decode_digest),
     ("naam.tsrb", decode_naam),
 )
 

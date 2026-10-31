@@ -11,20 +11,26 @@ import java.util.Objects;
 /**
  * The request as a binding writes it.
  *
+ * @param alarm The alarm on every event no hint or event of its own gives another. Null leaves the SDK's default.
  * @param altitudeM The {@code altitudeM} field. Null leaves the SDK's default.
  * @param calendar The {@code calendar} field. Null leaves the SDK's default.
+ * @param categories The feed's own categories. Null leaves the SDK's default.
+ * @param color The feed's colour: a CSS3 colour name, which RFC 7986 requires. Null leaves the SDK's default.
+ * @param events The caller's own events, merged in. Null leaves the SDK's default.
  * @param festivals The festivals, as a festival request.
  * @param first A civil day as a request names it.
+ * @param hints Categories, a colour and an alarm by what an event is; the first that selects an event gives it its own. Null leaves the SDK's default.
  * @param last A civil day as a request names it. Null leaves the SDK's default.
  * @param latitudeDeg The {@code latitudeDeg} field.
  * @param longitudeDeg The {@code longitudeDeg} field.
  * @param name The {@code name} field. Null leaves the SDK's default.
+ * @param only Which events the feed keeps: those any selector selects, every event when left out. Null leaves the SDK's default.
  * @param product The {@code product} field. Null leaves the SDK's default.
  * @param refreshMinutes A day when left out; zero writes none. Null leaves the SDK's default.
  * @param stampUnixSeconds The {@code stampUnixSeconds} field.
  * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
  */
-public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, FestivalRequest festivals, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, String name, String product, Long refreshMinutes, long stampUnixSeconds, int utcOffsetSeconds) implements RequestJson {
+public record FestivalCalendarRequest(FeedAlarm alarm, Double altitudeM, com.teispace.teistro.Calendar calendar, List<String> categories, String color, List<SuppliedEvent> events, FestivalRequest festivals, DayAsked first, List<FeedHint> hints, DayAsked last, double latitudeDeg, double longitudeDeg, String name, List<FeedSelector> only, String product, Long refreshMinutes, long stampUnixSeconds, int utcOffsetSeconds) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -33,8 +39,12 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
      * @throws NullPointerException naming the required field that is missing
      */
     public FestivalCalendarRequest {
+        categories = categories == null ? null : List.copyOf(categories);
+        events = events == null ? null : List.copyOf(events);
         Objects.requireNonNull(festivals, "`FestivalCalendarRequest.festivals` is required");
         Objects.requireNonNull(first, "`FestivalCalendarRequest.first` is required");
+        hints = hints == null ? null : List.copyOf(hints);
+        only = only == null ? null : List.copyOf(only);
         if (refreshMinutes != null) {
             Read.range(refreshMinutes, "FestivalCalendarRequest.refreshMinutes", 0L, 4294967295L);
         }
@@ -52,7 +62,7 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
      * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
     public FestivalCalendarRequest(FestivalRequest festivals, DayAsked first, double latitudeDeg, double longitudeDeg, long stampUnixSeconds, int utcOffsetSeconds) {
-        this(null, null, festivals, first, null, latitudeDeg, longitudeDeg, null, null, null, stampUnixSeconds, utcOffsetSeconds);
+        this(null, null, null, null, null, null, festivals, first, null, null, latitudeDeg, longitudeDeg, null, null, null, null, stampUnixSeconds, utcOffsetSeconds);
     }
 
     /**
@@ -67,20 +77,37 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
 
     /** Builds a {@link FestivalCalendarRequest} a field at a time. */
     public static final class Builder {
+        private FeedAlarm alarm;
         private Double altitudeM;
         private com.teispace.teistro.Calendar calendar;
+        private List<String> categories;
+        private String color;
+        private List<SuppliedEvent> events;
         private FestivalRequest festivals;
         private DayAsked first;
+        private List<FeedHint> hints;
         private DayAsked last;
         private Double latitudeDeg;
         private Double longitudeDeg;
         private String name;
+        private List<FeedSelector> only;
         private String product;
         private Long refreshMinutes;
         private Long stampUnixSeconds;
         private Integer utcOffsetSeconds;
 
         private Builder() {}
+
+        /**
+         * Sets {@code alarm}.
+         *
+         * @param alarm The alarm on every event no hint or event of its own gives another. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder alarm(FeedAlarm alarm) {
+            this.alarm = alarm;
+            return this;
+        }
 
         /**
          * Sets {@code altitudeM}.
@@ -105,6 +132,39 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
         }
 
         /**
+         * Sets {@code categories}.
+         *
+         * @param categories The feed's own categories. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder categories(List<String> categories) {
+            this.categories = categories;
+            return this;
+        }
+
+        /**
+         * Sets {@code color}.
+         *
+         * @param color The feed's colour: a CSS3 colour name, which RFC 7986 requires. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder color(String color) {
+            this.color = color;
+            return this;
+        }
+
+        /**
+         * Sets {@code events}.
+         *
+         * @param events The caller's own events, merged in. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder events(List<SuppliedEvent> events) {
+            this.events = events;
+            return this;
+        }
+
+        /**
          * Sets {@code festivals}.
          *
          * @param festivals The festivals, as a festival request.
@@ -123,6 +183,17 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
          */
         public Builder first(DayAsked first) {
             this.first = first;
+            return this;
+        }
+
+        /**
+         * Sets {@code hints}.
+         *
+         * @param hints Categories, a colour and an alarm by what an event is; the first that selects an event gives it its own. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder hints(List<FeedHint> hints) {
+            this.hints = hints;
             return this;
         }
 
@@ -167,6 +238,17 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
          */
         public Builder name(String name) {
             this.name = name;
+            return this;
+        }
+
+        /**
+         * Sets {@code only}.
+         *
+         * @param only Which events the feed keeps: those any selector selects, every event when left out. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder only(List<FeedSelector> only) {
+            this.only = only;
             return this;
         }
 
@@ -221,7 +303,7 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalCalendarRequest build() {
-            return new FestivalCalendarRequest(altitudeM, calendar, festivals, first, last, Objects.requireNonNull(latitudeDeg, "`FestivalCalendarRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`FestivalCalendarRequest.longitudeDeg` is required"), name, product, refreshMinutes, Objects.requireNonNull(stampUnixSeconds, "`FestivalCalendarRequest.stampUnixSeconds` is required"), Objects.requireNonNull(utcOffsetSeconds, "`FestivalCalendarRequest.utcOffsetSeconds` is required"));
+            return new FestivalCalendarRequest(alarm, altitudeM, calendar, categories, color, events, festivals, first, hints, last, Objects.requireNonNull(latitudeDeg, "`FestivalCalendarRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`FestivalCalendarRequest.longitudeDeg` is required"), name, only, product, refreshMinutes, Objects.requireNonNull(stampUnixSeconds, "`FestivalCalendarRequest.stampUnixSeconds` is required"), Objects.requireNonNull(utcOffsetSeconds, "`FestivalCalendarRequest.utcOffsetSeconds` is required"));
         }
     }
 
@@ -235,14 +317,20 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
     public static FestivalCalendarRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "FestivalCalendarRequest");
         return new FestivalCalendarRequest(
+            Read.orNull(json.get("alarm"), present -> FeedAlarm.of(present)),
             Read.orNull(json.get("altitudeM"), present -> Read.number(present, "FestivalCalendarRequest.altitudeM")),
             Read.orNull(json.get("calendar"), present -> Read.member(present, "FestivalCalendarRequest.calendar", com.teispace.teistro.Calendar::byKey)),
+            Read.orNull(json.get("categories"), present -> Read.list(present, "FestivalCalendarRequest.categories", item0 -> Read.text(item0, "FestivalCalendarRequest.categories"))),
+            Read.orNull(json.get("color"), present -> Read.text(present, "FestivalCalendarRequest.color")),
+            Read.orNull(json.get("events"), present -> Read.list(present, "FestivalCalendarRequest.events", item0 -> SuppliedEvent.of(item0))),
             FestivalRequest.of(Read.required(json.get("festivals"), "FestivalCalendarRequest.festivals")),
             DayAsked.of(Read.required(json.get("first"), "FestivalCalendarRequest.first")),
+            Read.orNull(json.get("hints"), present -> Read.list(present, "FestivalCalendarRequest.hints", item0 -> FeedHint.of(item0))),
             Read.orNull(json.get("last"), present -> DayAsked.of(present)),
             Read.number(Read.required(json.get("latitudeDeg"), "FestivalCalendarRequest.latitudeDeg"), "FestivalCalendarRequest.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "FestivalCalendarRequest.longitudeDeg"), "FestivalCalendarRequest.longitudeDeg"),
             Read.orNull(json.get("name"), present -> Read.text(present, "FestivalCalendarRequest.name")),
+            Read.orNull(json.get("only"), present -> Read.list(present, "FestivalCalendarRequest.only", item0 -> FeedSelector.of(item0))),
             Read.orNull(json.get("product"), present -> Read.text(present, "FestivalCalendarRequest.product")),
             Read.orNull(json.get("refreshMinutes"), present -> Read.integer(present, "FestivalCalendarRequest.refreshMinutes")),
             Read.integer(Read.required(json.get("stampUnixSeconds"), "FestivalCalendarRequest.stampUnixSeconds"), "FestivalCalendarRequest.stampUnixSeconds"),
@@ -252,14 +340,29 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        if (alarm != null) {
+            json.put("alarm", alarm.toJson());
+        }
         if (altitudeM != null) {
             json.put("altitudeM", altitudeM);
         }
         if (calendar != null) {
             json.put("calendar", calendar.fullKey());
         }
+        if (categories != null) {
+            json.put("categories", categories);
+        }
+        if (color != null) {
+            json.put("color", color);
+        }
+        if (events != null) {
+            json.put("events", events.stream().map(item0 -> item0.toJson()).toList());
+        }
         json.put("festivals", festivals.toJson());
         json.put("first", first.toJson());
+        if (hints != null) {
+            json.put("hints", hints.stream().map(item0 -> item0.toJson()).toList());
+        }
         if (last != null) {
             json.put("last", last.toJson());
         }
@@ -267,6 +370,9 @@ public record FestivalCalendarRequest(Double altitudeM, com.teispace.teistro.Cal
         json.put("longitudeDeg", longitudeDeg);
         if (name != null) {
             json.put("name", name);
+        }
+        if (only != null) {
+            json.put("only", only.stream().map(item0 -> item0.toJson()).toList());
         }
         if (product != null) {
             json.put("product", product);

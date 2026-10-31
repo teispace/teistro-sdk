@@ -1839,6 +1839,12 @@ final class AlmanacArea extends _Area {
     String? name,
     String? product,
     int? refreshMinutes = 1440,
+    List<String> categories = const [],
+    String? color,
+    FeedAlarm? alarm,
+    List<FeedSelector> only = const [],
+    List<FeedHint> hints = const [],
+    List<SuppliedEvent> events = const [],
   }) {
     final asked = jsonEncode(<String, Object?>{
       'calendar': from.calendar.key,
@@ -1854,10 +1860,49 @@ final class AlmanacArea extends _Area {
       if (name != null) 'name': name,
       if (product != null) 'product': product,
       'refreshMinutes': refreshMinutes ?? 0,
+      if (categories.isNotEmpty) 'categories': categories,
+      if (color != null) 'color': color,
+      if (alarm != null) 'alarm': alarm,
+      if (only.isNotEmpty) 'only': only,
+      if (hints.isNotEmpty) 'hints': hints,
+      if (events.isNotEmpty) 'events': events,
     });
     return _context._guarded(
       () => _context._inner.almanacFestivalCalendar(asked),
     );
+  }
+
+  /// **The N-day digest** (`03-design/digest-format.md`): the days from
+  /// [from], 60 unless [days] says, every limb and window, the Moon and the
+  /// observances, as bytes a process with no engine reads with
+  /// `bindings/c/digest`, and [decodeDigest] reads here. The same request
+  /// writes the same bytes on every platform.
+  ///
+  /// ```dart
+  /// final bytes = sdk.almanac.digest(
+  ///   from: Calendar.gregorian.date(2026, 1, 1),
+  ///   place: kathmandu, utcOffsetSeconds: 20700,
+  /// );
+  /// File('widget.digest').writeAsBytesSync(bytes);
+  /// ```
+  Uint8List digest({
+    required CalendarDate from,
+    required Observer place,
+    required int utcOffsetSeconds,
+    int? days,
+    FestivalRequest? festivals,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'calendar': from.calendar.key,
+      'first': _dayParts(from),
+      if (days != null) 'days': days,
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      if (festivals != null) 'festivals': jsonDecode(festivals._json),
+    });
+    return _context._guarded(() => _context._inner.almanacDigest(asked));
   }
 
   /// **The next day a rule or a kind of day falls on** after an instant

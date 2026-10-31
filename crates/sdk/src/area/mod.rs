@@ -85,6 +85,8 @@ pub(crate) fn drik_sun<'p>(
 }
 
 #[cfg(feature = "schema")]
+#[cfg(feature = "schema")]
+pub(crate) use almanac::DigestAsked;
 pub(crate) use almanac::FestivalCalendarAsked;
 #[cfg(feature = "muhurta")]
 pub use almanac::MuhurtaDays;
@@ -94,9 +96,9 @@ pub(crate) use almanac::PackAsked;
 pub(crate) use almanac::ReasonsAsked;
 pub use almanac::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, DayDisagreement, DayDisagreements,
-    DisagreementRequest, Disagreements, EkadashiDisagreement, FeedOptions, FestivalCalendarRequest,
-    FestivalDays, FestivalDisagreement, FestivalDisagreements, LimbChange, LimbDisagreement,
-    ReckonedLimb,
+    DisagreementRequest, Disagreements, EkadashiDisagreement, FeedForm, FeedHint, FeedOptions,
+    FeedSelector, FestivalCalendarRequest, FestivalDays, FestivalDisagreement,
+    FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb, SuppliedEvent,
 };
 pub use almanac::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
@@ -106,6 +108,11 @@ pub use almanac::{
 pub(crate) use almanac::{ChangesAsked, NextAsked};
 pub use almanac::{ChangesRequest, DayClock, NextOccurrence, NextRequest, NextTarget};
 pub use almanac::{PackForm, PackListing, PackRequest, PackRow};
+pub use almanac::{
+    DIGEST_DEFAULT_DAYS, DIGEST_FLAG_FAST, DIGEST_FLAG_PUBLISHED, DIGEST_FORMAT_MAJOR,
+    DIGEST_FORMAT_MINOR, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DIGEST_NO_TIME, DIGEST_SCHEMA,
+    DigestRequest, DigestSpan, digest_schema,
+};
 pub use calendar::CalendarArea;
 #[cfg(feature = "chart")]
 pub use chart::{ChartArea, Interpreted};

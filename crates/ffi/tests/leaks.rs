@@ -125,6 +125,22 @@ fn positions_and_charts_give_back_their_blobs() {
     holds_nothing("a chart", || {
         chart_blob(&ctx, &asked).unwrap();
     });
+    let days = std::ffi::CString::new(
+        r#"{"first": {"year": 2025, "month": 10, "day": 1}, "days": 2, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700, "festivals": {"rules": "NEPAL"}}"#,
+    )
+    .unwrap();
+    holds_nothing("a digest", || {
+        let mut blob = TsBlob::empty();
+        // SAFETY: a live context, a NUL-terminated request and a valid slot.
+        assert_eq!(
+            unsafe {
+                teistro_ffi::panchanga::ts_almanac_digest(ctx.handle, days.as_ptr(), &raw mut blob)
+            },
+            Status::Ok
+        );
+        // SAFETY: a descriptor the library wrote.
+        unsafe { ts_blob_free(&raw mut blob) };
+    });
     let refused = chart_request(&instants, (127.0, 85.324), 20_700);
     holds_nothing("a refused chart and its record", || {
         assert_eq!(chart_blob(&ctx, &refused), Err(Status::InvalidArg));

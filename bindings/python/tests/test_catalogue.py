@@ -106,8 +106,9 @@ class TheCatalogue(unittest.TestCase):
         # the agni vasa's `AgniVasa`; 168 since the inauspicious yogas'
         # `AshubhaYoga`; 169 since date arithmetic's `Overflow`; 171 since
         # Bhadra's `BhadraVasa` and the Shiva vasa's `ShivaVasa`; 173 since
-        # a festival's `FestivalKind` and `Tradition`.
-        self.assertEqual(len(every_enum()), 173)
+        # a festival's `FestivalKind` and `Tradition`; 174 since the
+        # digest's `DigestSpan`.
+        self.assertEqual(len(every_enum()), 174)
         self.assertEqual(
             sum(len(list(found)) for found in every_enum()),
             946 + 73 + 8 + 2 + 4 + 2 + 31 + 1 + 4 + 1 + 3 + 7 + 5 + 4 + 16 + 5 + 41 + 12 + 5 + 5 + 4 + 3 + 1 + 2 + 4 + 2 + 2 + 3 + 3 + 4 + 2 + 8 + 3 + 4 + 2 + 3 + 2 + 4 + 1 + 13 + 4 + 5 + 3 + 2 + 4 + 5 + 2 + 24 + 2 + 2 + 2 + 3 + 14 + 5 + 2 + 2 + 5 + 3 + 3 + 3 + 7 + 9 + 4 + 3 + 7 + 4 + 11 + 5 + 3 + 2 + 8 + 3 + 4 + 5 + 4 + 3 + 13 + 5 + 2 + 1 + 2 + 1 + 3
@@ -132,7 +133,9 @@ class TheCatalogue(unittest.TestCase):
             # with its UNKNOWN and its member of `Kind`.
             + 4 + 1 + 8 + 1
             # `FestivalKind`'s four and `Tradition`'s six, the same way.
-            + 6 + 8,
+            + 6 + 8
+            # `DigestSpan`'s eighteen.
+            + 18,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

@@ -1,0 +1,77 @@
+---
+title: ts_almanac_digest
+description: "**The N-day digest** (`03-design/digest-format.md`): the days from `first`, every limb and window, the Moon and the observances, as a `digest` blob a process with no engine reads with `bindings/c/digest`."
+---
+
+**The N-day digest** (`03-design/digest-format.md`): the days from `first`, every limb and window, the Moon and the observances, as a `digest` blob a process with no engine reads with `bindings/c/digest`. The same request writes the same bytes on every platform.
+
+`request_json` is `{"first", "calendar", "days", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals"}`: `first` `{year, month, day}` in `calendar` (Gregorian when left out), `days` 1 to 366 and 60 when left out, `altitudeM` optional and `festivals` an optional festival request. A key it does not read, a place or offset out of range or a festival request its reader refuses is `INVALID_ARG`, named under `digest`; a count out of range `OUT_OF_RANGE` on `days`.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.digest
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.digest
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.digest
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().digest
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().digest
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_almanac_digest(const ts_context * context, const char * request_json, ts_blob * out_blob);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `almanac.digest` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_blob` | `ts_blob *` | receives a blob | — |
+
+## What it hands back
+
+`blob`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## The result blob
+
+The call fills a blob following the `digest` schema, which the binding's generated decoder reads. The schema is in `idl/api.json`, and every binding decodes it from the blob's own bytes rather than copying them.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_blob` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.

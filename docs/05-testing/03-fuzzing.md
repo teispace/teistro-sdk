@@ -1,6 +1,6 @@
 # Fuzzing
 
-Status: `built`, 2026-10-12; the `mf2` and `blob` targets 2026-10-23;
+Status: `built`, 2026-10-12; the `mf2` and `blob` targets 2026-10-23; the `digest` target 2026-10-30;
 the `mcp` target 2026-10-27.
 The quality bar's fuzzing row ([`01-quality-bar.md`](01-quality-bar.md)):
 pack parsers, the MF2 engine, the blob decoders, every C ABI entry
@@ -23,6 +23,7 @@ reaches as written, and miss the boundary's own copying and checks.
 | `key` | `ts_key_parse`, `ts_intl_render`'s key, `ts_intl_entity` | the text |
 | `mf2` | the MF2 parser and formatter, through `ts_intl_render` | a selector byte picks the base locale or Nepali; the rest is a message's source, set as an override under a key no locale has and rendered with one parameter of every type the engine formats |
 | `blob` | the result-blob reader (`teistro_idl::blob::Reader`) | the bytes as a blob, read under the schema its header names: every section by its kind, every field of each |
+| `digest` | the digest's C reader (`bindings/c/digest`) | the bytes with the header's length and the seal made right, so a mutant reaches the checks behind them; every day, span, observance and name is walked and each name's bytes read |
 | `published` | `ts_published_verify` | the first byte as the newest version applied, the rest as a publisher's pack, signed by the harness with a key made from a fixed seed, so the fuzzer reaches the reader behind the signature: a hostile publisher's bytes |
 | `mcp` | `teistro_mcp::Server::handle_bytes`, the one entry both transports read a message through | the bytes as one message, to a fresh server over the built-in ephemeris that runs no task in the background |
 

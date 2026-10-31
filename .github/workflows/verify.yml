@@ -434,6 +434,9 @@ jobs:
         run: cargo +nightly test --manifest-path fuzz/Cargo.toml --lib
       - name: Each target for a minute from the committed corpus
         working-directory: fuzz
+        # The digest's C reader is built with clang's sanitizers.
+        env:
+          CC: clang
         # The installed cargo-fuzz is a musl build and would build for musl,
         # where a sanitizer cannot link, so the host's triple is named.
         run: |

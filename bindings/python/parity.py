@@ -21,6 +21,7 @@ from typing import Any, Iterable, Optional, Sequence, cast
 import json
 
 from teistro import (
+    decode_digest,
     DatedRule,
     FestivalRule,
     FollowingRule,
@@ -1043,6 +1044,14 @@ def put_rites(geo: Context) -> None:
     mourners = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1337))
     died = 2461051.677083
 
+    digest = geo.almanac.digest(
+        first=date(Calendar.GREGORIAN, 2025, 10, 1),
+        place=kathmandu,
+        utc_offset_seconds=20700,
+        days=7,
+        festivals={"rules": "NEPAL"},
+    )
+    put("rites-digest-seal", decode_digest(digest).seal)
     sankalpa = geo.almanac.sankalpa(at=2461055.59375, place=kathmandu, utc_offset_seconds=20700, ayana="TROPICAL")
     put("rites-sankalpa-hash", sankalpa.provenance.content_hash)
     said = sankalpa.value
@@ -3232,6 +3241,7 @@ def main() -> None:
         ("almanac.of", ctx.almanac.of),
         ("almanac.festivals", ctx.almanac.festivals),
         ("almanac.disagreements", ctx.almanac.disagreements),
+        ("almanac.digest", ctx.almanac.digest),
         ("almanac.festival_calendar", ctx.almanac.festival_calendar),
         ("almanac.next", ctx.almanac.next),
         ("almanac.festivalPack", ctx.almanac.festival_pack),

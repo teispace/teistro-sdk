@@ -7294,6 +7294,85 @@ typedef enum ts_sunrises {
 } ts_sunrises;
 
 /**
+ * What a digest's span is (`03-design/digest-format.md`), a number the
+ * `digest` blob's `spans.kind` holds. The numbers are the format's.
+ */
+typedef enum ts_digest_span {
+    /**
+     * The tithi.
+     */
+    TS_DIGEST_SPAN_TITHI = 1,
+    /**
+     * The nakshatra.
+     */
+    TS_DIGEST_SPAN_NAKSHATRA = 2,
+    /**
+     * The nitya yoga.
+     */
+    TS_DIGEST_SPAN_YOGA = 3,
+    /**
+     * The karana.
+     */
+    TS_DIGEST_SPAN_KARANA = 4,
+    /**
+     * Rahu kaala.
+     */
+    TS_DIGEST_SPAN_RAHU_KAALA = 5,
+    /**
+     * Yamaghanda.
+     */
+    TS_DIGEST_SPAN_YAMAGHANDA = 6,
+    /**
+     * Gulika kaala.
+     */
+    TS_DIGEST_SPAN_GULIKA_KAALA = 7,
+    /**
+     * A choghadiya.
+     */
+    TS_DIGEST_SPAN_CHOGHADIYA = 8,
+    /**
+     * A hora, named by its lord.
+     */
+    TS_DIGEST_SPAN_HORA = 9,
+    /**
+     * Abhijit muhurta.
+     */
+    TS_DIGEST_SPAN_ABHIJIT = 10,
+    /**
+     * Bhadra, named by where she dwells.
+     */
+    TS_DIGEST_SPAN_BHADRA = 11,
+    /**
+     * Brahma muhurta.
+     */
+    TS_DIGEST_SPAN_BRAHMA_MUHURTA = 12,
+    /**
+     * A durmuhurta.
+     */
+    TS_DIGEST_SPAN_DURMUHURTA = 13,
+    /**
+     * The varjyam.
+     */
+    TS_DIGEST_SPAN_VARJYAM = 14,
+    /**
+     * The amrita kalam.
+     */
+    TS_DIGEST_SPAN_AMRIT_KALAM = 15,
+    /**
+     * The panchaka.
+     */
+    TS_DIGEST_SPAN_PANCHAKA = 16,
+    /**
+     * The sign the Moon stood in.
+     */
+    TS_DIGEST_SPAN_MOON_SIGN = 17,
+    /**
+     * The sign the Sun stood in.
+     */
+    TS_DIGEST_SPAN_SUN_SIGN = 18,
+} ts_digest_span;
+
+/**
  * Which of the eight letter groups a name begins in, by the animal
  * *Muhurta Chintamani* VI.35 gives it (C295).
  *
@@ -10072,6 +10151,25 @@ ts_status ts_almanac_first_year(const ts_context * context, const char * request
  * `out_text` valid for a write.
  */
 ts_status ts_almanac_festival_calendar(const ts_context * context, const char * request_json, ts_string * out_text);
+
+/**
+ * **The N-day digest** (`03-design/digest-format.md`): the days from
+ * `first`, every limb and window, the Moon and the observances, as a
+ * `digest` blob a process with no engine reads with `bindings/c/digest`.
+ * The same request writes the same bytes on every platform.
+ *
+ * `request_json` is `{"first", "calendar", "days", "latitudeDeg",
+ * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals"}`: `first`
+ * `{year, month, day}` in `calendar` (Gregorian when left out), `days` 1 to
+ * 366 and 60 when left out, `altitudeM` optional and `festivals` an
+ * optional festival request. A key it does not read, a place or offset
+ * out of range or a festival request its reader refuses is `INVALID_ARG`,
+ * named under `digest`; a count out of range `OUT_OF_RANGE` on `days`.
+ * The blob follows the `digest` schema of idl/api.json.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_blob` valid for a write.
+ */
+ts_status ts_almanac_digest(const ts_context * context, const char * request_json, ts_blob * out_blob);
 
 /**
  * The next day a festival rule or a kind of day falls on after an

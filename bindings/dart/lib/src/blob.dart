@@ -9877,3 +9877,305 @@ Naam decodeNaam(Uint8List bytes) {
   );
 }
 
+/// The `days` section of a Digest blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// One row a day, in order.
+final class DigestDays {
+  const DigestDays({
+    required this.year,
+    required this.month,
+    required this.day,
+    required this.vara,
+    required this.state,
+    required this.fixedDay,
+    required this.sunrise,
+    required this.sunset,
+    required this.moonrise,
+    required this.moonset,
+    required this.moonPhase,
+    required this.lunarMonth,
+    required this.spanFirst,
+    required this.spanCount,
+    required this.observanceFirst,
+    required this.observanceCount,
+    required this.length,
+  });
+
+  /// The date's year, in `summary.calendar`.
+  final Int32List year;
+
+  /// The date's month.
+  final Uint8List month;
+
+  /// The date's day of the month.
+  final Uint8List day;
+
+  /// The vara, 0 for Sunday.
+  final Uint8List vara;
+
+  /// 0 an ordinary day, 1 the Sun did not rise, 2 it did not set, when `sunrise` and `sunset` are the policy's.
+  final Uint8List state;
+
+  /// The day's fixed number, 1 for 0001-01-01 Gregorian.
+  final Int32List fixedDay;
+
+  /// seconds from `base_unix_seconds`
+  final Int32List sunrise;
+
+  /// seconds from `base_unix_seconds`
+  final Int32List sunset;
+
+  /// The day's first moonrise, in seconds from `base_unix_seconds`, or `i32::MIN`.
+  final Int32List moonrise;
+
+  /// The day's first moonset, in seconds from `base_unix_seconds`, or `i32::MIN`.
+  final Int32List moonset;
+
+  /// Thousandths of a lunation at sunrise, 0 new and 500 full, read from the tithi that held it and how far through it sunrise fell.
+  final Uint16List moonPhase;
+
+  /// The lunar month's row in `names`.
+  final Uint16List lunarMonth;
+
+  /// The day's first row in `spans`.
+  final Uint32List spanFirst;
+
+  /// The day's rows in `spans`.
+  final Uint16List spanCount;
+
+  /// The day's first row in `observances`.
+  final Uint32List observanceFirst;
+
+  /// The day's rows in `observances`.
+  final Uint16List observanceCount;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `spans` section of a Digest blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each day's limbs and windows, by kind and then in the order they run. A limb's span is the whole limb, so one may run past either end of its day.
+final class DigestSpans {
+  const DigestSpans({
+    required this.kind,
+    required this.name,
+    required this.from,
+    required this.to,
+    required this.length,
+  });
+
+  /// What the span is.
+  final Uint8List kind;
+
+  /// Its row in `names`, or 65535 when it has no name of its own.
+  final Uint16List name;
+
+  /// seconds from `base_unix_seconds`
+  final Int32List from;
+
+  /// seconds from `base_unix_seconds`
+  final Int32List to;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `observances` section of a Digest blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Each day's observances, sorted by rule.
+final class DigestObservances {
+  const DigestObservances({
+    required this.name,
+    required this.flags,
+    required this.length,
+  });
+
+  /// Its row in `names`.
+  final Uint16List name;
+
+  /// Bit 0: a fast. Bit 1: a published set decided the day.
+  final Uint8List flags;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `names` section of a Digest blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// Every name the digest uses, once, in the order first met.
+final class DigestNames {
+  const DigestNames({
+    required this.keyAt,
+    required this.keyLength,
+    required this.textAt,
+    required this.textLength,
+    required this.length,
+  });
+
+  /// The catalogue or rule key's offset in `text`.
+  final Uint32List keyAt;
+
+  /// Its length in octets.
+  final Uint16List keyLength;
+
+  /// The name's offset in `text`, in the context's locale.
+  final Uint32List textAt;
+
+  /// Its length in octets.
+  final Uint16List textLength;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// A decoded Digest blob.
+///
+/// A range of days for a process that cannot run the engine (`03-design/digest-format.md`): every limb and window of each day, its Moon and its observances, every time whole seconds from the first day's local midnight, every name interned once, sealed by SHA-256.
+final class Digest {
+  const Digest({
+    required this.formatMajor,
+    required this.formatMinor,
+    required this.dayCount,
+    required this.baseUnixSeconds,
+    required this.utcOffsetSeconds,
+    required this.calendar,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.altitudeM,
+    required this.days,
+    required this.spans,
+    required this.observances,
+    required this.names,
+    required this.text,
+    required this.locale,
+    required this.provenanceJson,
+    required this.seal,
+  });
+
+  /// The format's major version; a reader refuses another.
+  final int formatMajor;
+
+  /// The format's minor version; a reader skips what it does not know.
+  final int formatMinor;
+
+  /// How many days the digest holds, the rows of `days`.
+  final int dayCount;
+
+  /// The first day's local midnight in seconds since 1970, which every time counts from.
+  final int baseUnixSeconds;
+
+  /// The offset the civil days run at, east positive.
+  final int utcOffsetSeconds;
+
+  /// The calendar `days` dates are read in.
+  final int calendar;
+
+  /// The place's latitude, degrees north.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east.
+  final double longitudeDeg;
+
+  /// The place's altitude, metres.
+  final double altitudeM;
+
+  /// One row a day, in order.
+  final DigestDays days;
+
+  /// Each day's limbs and windows, by kind and then in the order they run. A limb's span is the whole limb, so one may run past either end of its day.
+  final DigestSpans spans;
+
+  /// Each day's observances, sorted by rule.
+  final DigestObservances observances;
+
+  /// Every name the digest uses, once, in the order first met.
+  final DigestNames names;
+
+  /// UTF-8 text: the keys and names, with nothing between them.
+  final String text;
+
+  /// UTF-8 text: the BCP 47 tag `names` is in.
+  final String locale;
+
+  /// UTF-8 JSON, canonical: the days' provenance, its `content_hash` theirs.
+  final String provenanceJson;
+
+  /// SHA-256 of every byte before this section, which ends the digest, in 64 lowercase hexadecimal digits.
+  final String seal;
+
+}
+
+/// Decodes a Digest blob. The columns are views over `bytes`, so the
+/// buffer must outlive the result; a blob of another layout version or
+/// another schema is a [FormatException].
+Digest decodeDigest(Uint8List bytes) {
+  final blob = _Blob.open(bytes, 6, 'digest');
+  final atSummary = blob.fixed(1, 'summary', 9);
+  final atDays = blob.section(2, 'days');
+  final atSpans = blob.section(3, 'spans');
+  final atObservances = blob.section(4, 'observances');
+  final atNames = blob.section(5, 'names');
+  final atText = blob.section(6, 'text');
+  final atLocale = blob.section(7, 'locale');
+  final atProvenanceJson = blob.section(8, 'provenance_json');
+  final atSeal = blob.section(9, 'seal');
+  return Digest(
+    formatMajor: blob.data.getUint32(atSummary.offset + 0, Endian.little),
+    formatMinor: blob.data.getUint32(atSummary.offset + 8, Endian.little),
+    dayCount: blob.data.getUint32(atSummary.offset + 16, Endian.little),
+    baseUnixSeconds: blob.data.getInt64(atSummary.offset + 24, Endian.little),
+    utcOffsetSeconds: blob.data.getInt32(atSummary.offset + 32, Endian.little),
+    calendar: blob.data.getUint16(atSummary.offset + 40, Endian.little),
+    latitudeDeg: blob.data.getFloat64(atSummary.offset + 48, Endian.little),
+    longitudeDeg: blob.data.getFloat64(atSummary.offset + 56, Endian.little),
+    altitudeM: blob.data.getFloat64(atSummary.offset + 64, Endian.little),
+    days: DigestDays(
+      year: blob.column(atDays, 0, 4, Int32List.sublistView),
+      month: blob.column(atDays, 1, 1, Uint8List.sublistView),
+      day: blob.column(atDays, 2, 1, Uint8List.sublistView),
+      vara: blob.column(atDays, 3, 1, Uint8List.sublistView),
+      state: blob.column(atDays, 4, 1, Uint8List.sublistView),
+      fixedDay: blob.column(atDays, 5, 4, Int32List.sublistView),
+      sunrise: blob.column(atDays, 6, 4, Int32List.sublistView),
+      sunset: blob.column(atDays, 7, 4, Int32List.sublistView),
+      moonrise: blob.column(atDays, 8, 4, Int32List.sublistView),
+      moonset: blob.column(atDays, 9, 4, Int32List.sublistView),
+      moonPhase: blob.column(atDays, 10, 2, Uint16List.sublistView),
+      lunarMonth: blob.column(atDays, 11, 2, Uint16List.sublistView),
+      spanFirst: blob.column(atDays, 12, 4, Uint32List.sublistView),
+      spanCount: blob.column(atDays, 13, 2, Uint16List.sublistView),
+      observanceFirst: blob.column(atDays, 14, 4, Uint32List.sublistView),
+      observanceCount: blob.column(atDays, 15, 2, Uint16List.sublistView),
+      length: atDays.count,
+    ),
+    spans: DigestSpans(
+      kind: blob.column(atSpans, 0, 1, Uint8List.sublistView),
+      name: blob.column(atSpans, 1, 2, Uint16List.sublistView),
+      from: blob.column(atSpans, 2, 4, Int32List.sublistView),
+      to: blob.column(atSpans, 3, 4, Int32List.sublistView),
+      length: atSpans.count,
+    ),
+    observances: DigestObservances(
+      name: blob.column(atObservances, 0, 2, Uint16List.sublistView),
+      flags: blob.column(atObservances, 1, 1, Uint8List.sublistView),
+      length: atObservances.count,
+    ),
+    names: DigestNames(
+      keyAt: blob.column(atNames, 0, 4, Uint32List.sublistView),
+      keyLength: blob.column(atNames, 1, 2, Uint16List.sublistView),
+      textAt: blob.column(atNames, 2, 4, Uint32List.sublistView),
+      textLength: blob.column(atNames, 3, 2, Uint16List.sublistView),
+      length: atNames.count,
+    ),
+    text: blob.text(atText, 'text'),
+    locale: blob.text(atLocale, 'locale'),
+    provenanceJson: blob.text(atProvenanceJson, 'provenance_json'),
+    seal: blob.text(atSeal, 'seal'),
+  );
+}
+

@@ -14,8 +14,9 @@ use std::collections::BTreeSet;
 use teistro::catalogue::Calendar;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
-    CalendarDate, Context, FeedOptions, FestivalCalendarRequest, FestivalPack, FestivalRequest,
-    UtcOffset,
+    CalendarDate, Context, FeedForm, FeedHint, FeedOptions, FeedSelector, FestivalCalendarRequest,
+    FestivalPack, FestivalRequest, Status, SuppliedEvent, UtcOffset,
+    calendar_feed::{Alarm, Color, Hints, When},
 };
 use teistro_calendar::CalendarSystem as _;
 use teistro_core::envelope::Hash;
@@ -349,4 +350,261 @@ fn a_vrata_s_parana_is_timed_from_its_first_reading_when_that_ends() {
             "{rule}"
         );
     }
+}
+
+fn sdk() -> Context {
+    Context::builder().nepal_official([]).build().unwrap()
+}
+
+/// The value of each `name:` line of an unfolded feed.
+fn lines<'a>(unfolded: &'a str, name: &str) -> Vec<&'a str> {
+    let prefix = format!("{name}:");
+    unfolded
+        .split("\r\n")
+        .filter_map(|line| line.strip_prefix(prefix.as_str()))
+        .collect()
+}
+
+fn unfolded(text: &str) -> String {
+    text.replace("\r\n ", "")
+}
+
+fn gregorian_fixed(month: u8, of: u8) -> teistro::FixedDay {
+    teistro_calendar::Gregorian
+        .to_fixed_ymd(2025, month, of)
+        .unwrap()
+}
+
+#[test]
+fn a_supplied_event_is_merged_in_day_order_and_keeps_its_hints() {
+    let sdk = sdk();
+    let mut holiday = SuppliedEvent::new("Office closed", When::Day(gregorian_fixed(10, 3)));
+    holiday.kind = Some("HOLIDAY".to_owned());
+    holiday.tradition = Some("CIVIL".to_owned());
+    holiday.hints.categories = vec!["Work".to_owned(), "HOLIDAY".to_owned()];
+    holiday.hints.color = Some(Color::named("red").unwrap());
+    // 2025-10-02T20:00:00Z is 01:45 on the 3rd at Kathmandu.
+    let call = SuppliedEvent::new(
+        "Call",
+        When::Span {
+            from_unix_seconds: 1_759_435_200,
+            to_unix_seconds: 1_759_438_800,
+        },
+    );
+    let mut options = FeedOptions::new(STAMP);
+    options.events = vec![call, holiday];
+    let text = unfolded(&feed(&sdk, &options));
+    let plain = unfolded(&feed(&sdk, &FeedOptions::new(STAMP)));
+    assert_eq!(
+        lines(&text, "BEGIN").len(),
+        lines(&plain, "BEGIN").len() + 2
+    );
+    let days = lines(&text, "DTSTART;VALUE=DATE");
+    let mut sorted = days.clone();
+    sorted.sort_unstable();
+    assert_eq!(days, sorted, "whole days stay in order");
+    let summaries = lines(&text, "SUMMARY");
+    let closed = summaries
+        .iter()
+        .position(|s| *s == "Office closed")
+        .unwrap();
+    let call = summaries.iter().position(|s| *s == "Call").unwrap();
+    // Whole days first on the 3rd, the timed call after them.
+    assert!(closed < call);
+    assert!(text.contains("CATEGORIES:HOLIDAY,CIVIL,Work\r\nCOLOR:red\r\n"));
+    // Its UID is the same each time.
+    assert_eq!(
+        lines(&text, "UID"),
+        lines(&unfolded(&feed(&sdk, &options)), "UID")
+    );
+}
+
+#[test]
+fn a_supplied_uid_replaces_the_computed_event_and_two_supplied_are_refused() {
+    let sdk = sdk();
+    let plain = unfolded(&feed(&sdk, &FeedOptions::new(STAMP)));
+    let first = lines(&plain, "UID")[0].to_owned();
+    let mut mine = SuppliedEvent::new("My own day", When::Day(gregorian_fixed(9, 25)));
+    mine.uid = Some(first.clone());
+    let mut options = FeedOptions::new(STAMP);
+    options.events = vec![mine.clone()];
+    let text = unfolded(&feed(&sdk, &options));
+    assert_eq!(lines(&text, "UID").len(), lines(&plain, "UID").len());
+    assert_eq!(
+        lines(&text, "UID").iter().filter(|u| **u == first).count(),
+        1
+    );
+    assert!(text.contains("SUMMARY:My own day\r\n"));
+    options.events = vec![mine.clone(), mine];
+    let refused = sdk
+        .almanac()
+        .festival_calendar(
+            &day(9, 20),
+            &day(11, 10),
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+            &FestivalRequest::from(FestivalPack::NepalPanchanga),
+            &options,
+        )
+        .unwrap_err();
+    assert_eq!(refused.status, Status::InvalidArg);
+}
+
+#[test]
+fn only_keeps_what_a_selector_selects_and_a_parana_answers_to_its_fast() {
+    let sdk = sdk();
+    let mut options = FeedOptions::new(STAMP);
+    options.only = vec![FeedSelector {
+        forms: vec![FeedForm::Ekadashi, FeedForm::Parana],
+        ..FeedSelector::default()
+    }];
+    let text = unfolded(&feed(&sdk, &options));
+    let plain = unfolded(&feed(&sdk, &FeedOptions::new(STAMP)));
+    let fewer = lines(&text, "UID").len();
+    assert!(fewer > 0 && fewer < lines(&plain, "UID").len());
+    assert!(lines(&text, "SUMMARY").iter().any(|s| s.contains("Parana")));
+    assert!(!text.contains("SUMMARY:Vijaya Dashami\r\n"));
+    // Two lists must both hold the event: a parana of a rule nothing names
+    // falls, the rule's own event stays.
+    options.only = vec![FeedSelector {
+        rules: vec!["VIJAYA_DASHAMI".to_owned()],
+        ..FeedSelector::default()
+    }];
+    let one = unfolded(&feed(&sdk, &options));
+    assert_eq!(lines(&one, "SUMMARY"), ["Vijaya Dashami"]);
+    options.only[0].forms = vec![FeedForm::Parana];
+    assert_eq!(lines(&unfolded(&feed(&sdk, &options)), "UID"), [""; 0]);
+}
+
+#[test]
+fn the_first_hint_that_selects_speaks_and_the_feed_alarm_fills_in() {
+    let sdk = sdk();
+    let mut options = FeedOptions::new(STAMP);
+    options.categories = vec!["Festivals".to_owned()];
+    options.color = Some(Color::named("gold").unwrap());
+    options.alarm = Some(Alarm {
+        trigger_minutes: 540,
+        description: None,
+    });
+    options.hints = vec![
+        FeedHint {
+            select: FeedSelector {
+                forms: vec![FeedForm::Ekadashi],
+                ..FeedSelector::default()
+            },
+            hints: Hints {
+                categories: vec!["Fast".to_owned()],
+                color: Some(Color::named("teal").unwrap()),
+                alarm: Some(Alarm {
+                    trigger_minutes: -720,
+                    description: Some("Fast tomorrow".to_owned()),
+                }),
+            },
+        },
+        FeedHint {
+            select: FeedSelector::default(),
+            hints: Hints {
+                categories: vec!["Other".to_owned()],
+                ..Hints::default()
+            },
+        },
+    ];
+    let text = unfolded(&feed(&sdk, &options));
+    assert!(text.contains("COLOR:gold\r\nX-APPLE-CALENDAR-COLOR:#FFD700\r\n"));
+    let events = lines(&text, "UID").len();
+    assert_eq!(lines(&text, "BEGIN").len(), 1 + 2 * events);
+    let fasts = text.matches("CATEGORIES:Fast\r\nCOLOR:teal\r\n").count();
+    assert!(fasts > 0);
+    assert_eq!(text.matches("TRIGGER:-PT12H\r\n").count(), fasts);
+    assert_eq!(text.matches("TRIGGER:PT9H\r\n").count(), events - fasts);
+    assert_eq!(text.matches("CATEGORIES:Other\r\n").count(), events - fasts);
+}
+
+#[test]
+fn a_selector_on_a_field_nothing_carries_is_refused_not_answered_empty() {
+    let sdk = sdk();
+    let asked = |select: FeedSelector, extra: Option<SuppliedEvent>| {
+        let mut options = FeedOptions::new(STAMP);
+        options.only = vec![select];
+        options.events.extend(extra);
+        sdk.almanac().festival_calendar(
+            &day(9, 20),
+            &day(11, 10),
+            &kathmandu(),
+            UtcOffset::literal(5, 45, 0),
+            &FestivalRequest::from(FestivalPack::NepalPanchanga),
+            &options,
+        )
+    };
+    let traditions = FeedSelector {
+        traditions: vec!["VAISHNAVA".to_owned()],
+        ..FeedSelector::default()
+    };
+    let kinds = FeedSelector {
+        kinds: vec!["HOLIDAY".to_owned()],
+        ..FeedSelector::default()
+    };
+    let refused = asked(traditions.clone(), None).unwrap_err();
+    assert_eq!(refused.status, Status::Unsupported);
+    assert_eq!(refused.field(), Some("traditions"));
+    let refused = asked(kinds.clone(), None).unwrap_err();
+    assert_eq!(refused.field(), Some("kinds"));
+    // One event carrying the field is enough: the filter then reads it,
+    // as it will read a rule's own once a rule carries it.
+    let mut held = SuppliedEvent::new("Mine", When::Day(gregorian_fixed(10, 1)));
+    held.tradition = Some("VAISHNAVA".to_owned());
+    held.kind = Some("HOLIDAY".to_owned());
+    for select in [traditions, kinds] {
+        let text = unfolded(&asked(select, Some(held.clone())).unwrap().value);
+        assert_eq!(lines(&text, "SUMMARY"), ["Mine"]);
+    }
+}
+
+#[test]
+fn the_record_reads_hints_and_events_and_names_a_refusal_by_its_field() {
+    let base = r#""first": {"year": 2026, "month": 1, "day": 1},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+        "festivals": {"rules": "NEPAL"}, "stampUnixSeconds": 1767225600"#;
+    let asked = FestivalCalendarRequest::from_json(&format!(
+        r#"{{{base}, "color": "Navy", "categories": ["A"],
+            "alarm": {{"triggerMinutes": -30}},
+            "only": [{{"forms": ["OBSERVANCE", "SUPPLIED"]}}],
+            "hints": [{{"select": {{"rules": ["X"]}}, "categories": ["B"], "color": "red", "alarm": {{"triggerMinutes": 5, "description": "d"}}}}],
+            "events": [
+              {{"uid": "a@x", "summary": "Day", "day": {{"year": 2081, "month": 1, "day": 1}}, "calendar": "BIKRAM_SAMBAT", "kind": "K", "tradition": "T", "categories": ["C"], "color": "blue", "alarm": {{"triggerMinutes": 0}}, "description": "d"}},
+              {{"summary": "Span", "fromUnixSeconds": 10, "toUnixSeconds": 20}}
+            ]}}"#
+    ))
+    .unwrap();
+    assert_eq!(asked.feed.color.unwrap().name(), "navy");
+    assert_eq!(asked.feed.alarm.as_ref().unwrap().trigger_minutes, -30);
+    assert_eq!(asked.feed.events.len(), 2);
+    assert_eq!(asked.feed.hints[0].hints.color.unwrap().name(), "red");
+    assert!(matches!(asked.feed.events[0].when, When::Day(_)));
+    let refused = |rest: &str| {
+        FestivalCalendarRequest::from_json(&format!("{{{base}, {rest}}}"))
+            .unwrap_err()
+            .field()
+            .unwrap()
+            .to_owned()
+    };
+    assert_eq!(refused(r##""color": "#ff0000""##), "festivalCalendar.color");
+    assert_eq!(
+        refused(r#""hints": [{"color": "nope"}]"#),
+        "festivalCalendar.hints[0].color"
+    );
+    assert_eq!(
+        refused(r#""events": [{"summary": "x"}]"#),
+        "festivalCalendar.events[0]"
+    );
+    assert_eq!(
+        refused(
+            r#""events": [{"summary": "x", "color": "nope", "day": {"year": 2026, "month": 1, "day": 1}}]"#
+        ),
+        "festivalCalendar.events[0].color"
+    );
+    assert_eq!(
+        refused(r#""events": [{"summary": "x", "day": {"year": 2026, "month": 13, "day": 1}}]"#),
+        "festivalCalendar.events[0].month"
+    );
 }

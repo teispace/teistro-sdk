@@ -67,9 +67,9 @@ pub use area::ResearchArea;
 pub use area::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, CalendarArea, DayDisagreement,
     DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement, EngineArea,
-    FeedOptions, FestivalCalendarRequest, FestivalDays, FestivalDisagreement,
-    FestivalDisagreements, FrameArea, IntlArea, KeysArea, LimbChange, LimbDisagreement,
-    ReckonedLimb, TimeArea, ZoneDatabase, ZoneDatabaseSource,
+    FeedForm, FeedHint, FeedOptions, FeedSelector, FestivalCalendarRequest, FestivalDays,
+    FestivalDisagreement, FestivalDisagreements, FrameArea, IntlArea, KeysArea, LimbChange,
+    LimbDisagreement, ReckonedLimb, SuppliedEvent, TimeArea, ZoneDatabase, ZoneDatabaseSource,
 };
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, NamingArea, Plans};
@@ -79,6 +79,11 @@ pub use area::{
 };
 pub use area::{ChangesRequest, DayClock, NextOccurrence, NextRequest, NextTarget};
 pub use area::{PackForm, PackListing, PackRequest, PackRow};
+pub use area::{
+    DIGEST_DEFAULT_DAYS, DIGEST_FLAG_FAST, DIGEST_FLAG_PUBLISHED, DIGEST_FORMAT_MAJOR,
+    DIGEST_FORMAT_MINOR, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DIGEST_NO_TIME, DIGEST_SCHEMA,
+    DigestRequest, DigestSpan, digest_schema,
+};
 pub use teistro_panchanga::festival::NextKind;
 #[cfg(feature = "western")]
 mod antiscia;
@@ -189,6 +194,10 @@ pub use scale::{Conversion, Scale};
 pub use teistro_astro::DeltaTModel;
 pub use teistro_astro::delta_t::DeltaT;
 pub use teistro_calendar::arithmetic::{DateSpan, Overflow};
+/// What an iCalendar feed's events say (`03-design/icalendar.md`).
+pub mod calendar_feed {
+    pub use teistro_calendar::ical::{Alarm, Color, Hints, When};
+}
 pub use teistro_calendar::{CalendarDate, CalendarDay, FixedDay, Weekday};
 pub use teistro_chart::day::ChartDay;
 pub use teistro_chart::foundation::{

@@ -69,6 +69,7 @@ from .catalogue import (
     Deity,
     DeltaTSource,
     DhinamRule,
+    DigestSpan,
     Dignity,
     Direction,
     DistanceUnit,
@@ -4283,6 +4284,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_festival_calendar.restype = ctypes.c_int32
+        self.ts_almanac_digest: Any = library.ts_almanac_digest
+        self.ts_almanac_digest.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_BlobStruct),
+        ]
+        self.ts_almanac_digest.restype = ctypes.c_int32
         self.ts_almanac_next: Any = library.ts_almanac_next
         self.ts_almanac_next.argtypes = [
             ctypes.POINTER(_Context),
@@ -5477,6 +5485,36 @@ class TeistroContext:
             owned.clear()
             text = _take_string(self._lib, _out_text)
             return text
+
+    def almanac_digest(self, request_json: str) -> bytes:
+        """**The N-day digest** (`03-design/digest-format.md`): the days from
+        `first`, every limb and window, the Moon and the observances, as a
+        `digest` blob a process with no engine reads with `bindings/c/digest`.
+        The same request writes the same bytes on every platform.
+
+        `request_json` is `{"first", "calendar", "days", "latitudeDeg",
+        "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals"}`: `first`
+        `{year, month, day}` in `calendar` (Gregorian when left out), `days` 1 to
+        366 and 60 when left out, `altitudeM` optional and `festivals` an
+        optional festival request. A key it does not read, a place or offset
+        out of range or a festival request its reader refuses is `INVALID_ARG`,
+        named under `digest`; a count out of range `OUT_OF_RANGE` on `days`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_blob = _BlobStruct()
+            status = Status(self._lib.ts_almanac_digest(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_blob),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            blob = _take_blob(self._lib, _out_blob)
+            return blob
 
     def almanac_next(self, request_json: str) -> str:
         """The next day a festival rule or a kind of day falls on after an

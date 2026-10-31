@@ -1,8 +1,8 @@
 # iCalendar feeds
 
-Status: `built`, 2026-10-20. Design for the consumer brief's P2-2, written
-before the code and corrected by it. §5 is measured through the built
-writer (`crates/sdk/tests/festival_calendar.rs`).
+Status: `built`, 2026-10-20; §6, SR-11, 2026-10-30. Design for the consumer
+brief's P2-2, written before the code and corrected by it. §5 is measured
+through the built writer (`crates/sdk/tests/festival_calendar.rs`).
 
 A calendar app subscribes to a feed of observances, and a user exports a
 year of them. Both need one writer, in every binding, that a validator
@@ -14,13 +14,18 @@ designs that writer and the almanac call that feeds it.
 | part | the rule | source |
 |---|---|---|
 | lines | CRLF ends every line; a line longer than 75 octets is folded by CRLF and one space, never inside a UTF-8 sequence | RFC 5545 §3.1 |
-| text | `\` `;` `,` escaped with `\`, a newline written `\n` | §3.3.11 |
+| text | `\` `;` `,` escaped with `\`, a newline written `\n`; no control character but a tab, the rest dropped | §3.3.11 |
 | calendar | `VERSION:2.0` and `PRODID` required; `CALSCALE:GREGORIAN`, `METHOD:PUBLISH` for a published feed | §3.7 |
 | event | `UID` and `DTSTAMP` required; `DTSTART` | §3.6.1 |
 | all-day | `DTSTART;VALUE=DATE:YYYYMMDD`, and `DTEND;VALUE=DATE` the next day, exclusive | §3.6.1, §3.8.2.2 |
 | timed | `DTSTART:YYYYMMDDTHHMMSSZ` and `DTEND` in UTC (form 2), the end exclusive | §3.3.5, §3.8.2.2 |
 | busy time | `TRANSP:TRANSPARENT`: an observance does not block the day | §3.8.2.7 |
 | name, refresh | `NAME` and `REFRESH-INTERVAL;VALUE=DURATION` | RFC 7986 §5.1, §5.7 |
+| uid | unique among a feed's events, so a second is refused | §3.8.4.7 |
+| categories | `CATEGORIES`, values escaped, joined by unescaped commas; on an event and on the calendar | §3.8.1.2; RFC 7986 §5.6 |
+| colour | `COLOR`, a CSS3 colour name and nothing else; on an event and on the calendar | RFC 7986 §5.9; CSS Color Level 3 §4.3 |
+| the same, as clients read it | `X-APPLE-CALENDAR-COLOR:#RRGGBB` on the calendar | Apple's clients read a hexadecimal value |
+| alarm | `VALARM` inside the event: `ACTION:DISPLAY`, `TRIGGER`, a duration from the start, and `DESCRIPTION`, which a display alarm requires | §3.6.6, §3.8.6.3 |
 | the same, as clients read them | `X-WR-CALNAME`, `X-PUBLISHED-TTL` | Apple and Google read these; Outlook reads `X-PUBLISHED-TTL` |
 
 No `RRULE`: a lunar date does not recur in Gregorian terms, so each
@@ -152,3 +157,59 @@ as `almanac.festivalCalendar`.
   one whole-day event per occurrence and one timed event per parana.
 - Importing into Apple Calendar, Google Calendar and Outlook is a manual
   check, recorded once. Not done here.
+
+## 6. Merging, filtering and hints (SR-11)
+
+A feed publisher's holidays are data: the consumer asks to merge its own
+dated events, to set an alarm, to colour and categorise, and to filter by
+kind or tradition. All of it is optional on `FeedOptions` and on the
+request record, and a request naming none of it writes the bytes it wrote.
+
+| field | what it does |
+|---|---|
+| `events` | The caller's own, each a `day` (in `calendar`, the request's when left out) or `fromUnixSeconds` with `toUnixSeconds`. `uid` is optional: left out, it hashes the summary, the time and the place as §3 hashes a rule's. A supplied event whose `UID` is a computed event's stands in its place, the one way to correct one day of a feed; two supplied events of one `UID` are refused. |
+| `only` | Selectors; the feed keeps the events any selects, every event when left out. |
+| `hints` | Selector, `categories`, `color`, `alarm`: the first that selects an event speaks for it. |
+| `alarm` | The alarm on every event no hint or event of its own gives another. |
+| `categories`, `color` | The calendar's own. |
+
+A **selector** is `forms`, `kinds`, `traditions` and `rules`. A list left
+out asks nothing, a list given must hold the event's value, and every list
+given must. `forms` is how the event came to be: `OBSERVANCE`, `EKADASHI`,
+`DATED`, `ANNIVERSARY`, `ADDED`, `PARANA`, `SUPPLIED`. `rules` holds rule
+keys; a parana answers to its fast's key and a supplied event to its `UID`.
+A filter applies to every event alike, a supplied one included, so one rule
+states what a filter keeps; `{"forms": ["SUPPLIED"]}` keeps a caller's own.
+
+An event's `CATEGORIES` are its kind, its tradition, its own and the
+hint's, in that order, a repeat written once. Its colour and alarm are its
+own, then the hint's, and for the alarm then the feed's. An alarm's
+`triggerMinutes` is signed from the event's start, and a whole day starts
+at its first moment, so `540` rings at 09:00 on the day and `-720` at noon
+before it. `TRIGGER` is relative, so a client rings it in the viewer's
+zone. Its `DESCRIPTION` is the event's summary unless the alarm says more.
+
+**Kind and tradition come from SR-02.** A rule's catalogue fields are read
+in one function, `classes_of` in `sdk/src/area/almanac/feed.rs`, and until a
+rule carries them it returns none; a supplied event states its own `kind`
+and `tradition` today. A selector naming `kinds` or `traditions` when no
+event of the feed carries that field is refused, `UNSUPPORTED` on that
+field, and not answered with an empty feed that would read as "nothing is
+of that tradition" (C870). The refusal is about the data, so it needs no
+change when SR-02 lands: a feed of rules that carry a tradition stops
+being refused, and a caller's custom rules that carry none keep being.
+
+### Acceptance
+
+- `festival_calendar.rs`: a supplied day and span merged in the day's order
+  with a stable `UID`; a supplied `UID` replacing a computed event and two
+  of one `UID` refused; `only` by form and by rule, a parana answering to
+  its fast; the first hint speaking, the feed's alarm filling in; a
+  selector on a field nothing carries refused and, with one event carrying
+  it, read; the record's refusals named by field.
+- Read back by a parser used as a black box: `check-python` writes a feed
+  through the binding with every field set, in `ne-Deva-NP`, and reads it
+  with Python's `icalendar` at the pin in
+  `bindings/python/blackbox/requirements.txt`, then its own octet rules
+  (`bindings/python/blackbox/ical_feed.py`): CRLF, 75 octets, no bare
+  control character, no fold inside a character.

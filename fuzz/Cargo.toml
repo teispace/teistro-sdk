@@ -11,6 +11,10 @@ license = "Apache-2.0"
 [package.metadata]
 cargo-fuzz = true
 
+# Compiles the digest's C reader into the `digest` target.
+[build-dependencies]
+cc = "1"
+
 [dependencies]
 crc32fast = "1"
 libfuzzer-sys = "0.4"
@@ -67,6 +71,13 @@ bench = false
 [[bin]]
 name = "blob"
 path = "fuzz_targets/blob.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "digest"
+path = "fuzz_targets/digest.rs"
 test = false
 doc = false
 bench = false

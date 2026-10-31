@@ -5740,6 +5740,66 @@ class Sunrises(Member):
     """Neither: the member names no day (kshaya)."""
 
 
+class DigestSpan(Member):
+    """What a digest's span is (`03-design/digest-format.md`), a number the
+    `digest` blob's `spans.kind` holds. The numbers are the format's.
+    """
+
+    TITHI = 1
+    """The tithi."""
+
+    NAKSHATRA = 2
+    """The nakshatra."""
+
+    YOGA = 3
+    """The nitya yoga."""
+
+    KARANA = 4
+    """The karana."""
+
+    RAHU_KAALA = 5
+    """Rahu kaala."""
+
+    YAMAGHANDA = 6
+    """Yamaghanda."""
+
+    GULIKA_KAALA = 7
+    """Gulika kaala."""
+
+    CHOGHADIYA = 8
+    """A choghadiya."""
+
+    HORA = 9
+    """A hora, named by its lord."""
+
+    ABHIJIT = 10
+    """Abhijit muhurta."""
+
+    BHADRA = 11
+    """Bhadra, named by where she dwells."""
+
+    BRAHMA_MUHURTA = 12
+    """Brahma muhurta."""
+
+    DURMUHURTA = 13
+    """A durmuhurta."""
+
+    VARJYAM = 14
+    """The varjyam."""
+
+    AMRIT_KALAM = 15
+    """The amrita kalam."""
+
+    PANCHAKA = 16
+    """The panchaka."""
+
+    MOON_SIGN = 17
+    """The sign the Moon stood in."""
+
+    SUN_SIGN = 18
+    """The sign the Sun stood in."""
+
+
 class NameVarga(Member):
     """Which of the eight letter groups a name begins in, by the animal
     *Muhurta Chintamani* VI.35 gives it (C295).
@@ -7640,6 +7700,26 @@ _KEYS: dict[str, dict[int, str]] = {
         1: "NEXT",
         2: "BOTH",
         3: "NEITHER",
+    },
+    "DigestSpan": {
+        1: "TITHI",
+        2: "NAKSHATRA",
+        3: "YOGA",
+        4: "KARANA",
+        5: "RAHU_KAALA",
+        6: "YAMAGHANDA",
+        7: "GULIKA_KAALA",
+        8: "CHOGHADIYA",
+        9: "HORA",
+        10: "ABHIJIT",
+        11: "BHADRA",
+        12: "BRAHMA_MUHURTA",
+        13: "DURMUHURTA",
+        14: "VARJYAM",
+        15: "AMRIT_KALAM",
+        16: "PANCHAKA",
+        17: "MOON_SIGN",
+        18: "SUN_SIGN",
     },
     "NameVarga": {
         0: "GARUDA",

@@ -161,6 +161,7 @@ import type {
 // The typed accessors and an entity's forms, declared where `sdk.intl`
 // answers with them: the flat surface had both members and declared
 // neither, which the areas made visible.
+import type { FeedAlarm, FeedHint, FeedSelector, SuppliedEvent } from './requests.js';
 import type { EntityForms, Messages } from './messages.js';
 import type { Provenance, Step } from './records.js';
 // The request records, generated from the façade's own schemas of them
@@ -379,7 +380,7 @@ export declare function fixedZone(offsetSeconds: number): ZoneSpec;
  */
 export declare function localMeanZone(longitudeDeg: Longitude): ZoneSpec;
 
-export { BlobFormatError, decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
+export { BlobFormatError, decodeCharts, decodeDigest, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
 
 /** The stable code of the `INTERNAL` status, the same in every binding. */
@@ -7598,6 +7599,19 @@ export declare class AlmanacArea {
    * });
    */
   festivalCalendar(request: FestivalCalendarRequest): string;
+  /**
+   * **The N-day digest** (`03-design/digest-format.md`): the days from
+   * `from`, 60 unless `days` says, as bytes a process with no engine reads
+   * with `bindings/c/digest`, and `decodeDigest` reads here.
+   *
+   * @example
+   * const bytes = sdk.almanac.digest({
+   *   from: { year: 2026, month: 1, day: 1 },
+   *   place: { latitude: 27.7172, longitude: 85.324 },
+   *   utcOffsetSeconds: 20700,
+   * });
+   */
+  digest(request: DigestOptions): Uint8Array;
 
   /**
    * The next day a rule or a kind of day falls on after an instant at a
@@ -7741,6 +7755,32 @@ export interface FestivalCalendarRequest {
   readonly product?: string;
   /** How often a subscriber fetches it again; a day when left out, none when zero. */
   readonly refreshMinutes?: number;
+  /** The calendar's own categories. */
+  readonly categories?: readonly string[];
+  /** The calendar's colour, a CSS3 name. */
+  readonly color?: string;
+  /** The alarm on every event no hint or event of its own gives another. */
+  readonly alarm?: FeedAlarm;
+  /** Which events the feed keeps: those any selector selects. */
+  readonly only?: readonly FeedSelector[];
+  /** Categories, a colour and an alarm by what an event is. */
+  readonly hints?: readonly FeedHint[];
+  /** The caller's own events, merged in. */
+  readonly events?: readonly SuppliedEvent[];
+}
+
+/** A range of days, as `almanac.digest` writes them. */
+export interface DigestOptions {
+  /** The first day, and the calendar the digest's dates are in. */
+  readonly from: CalendarDate;
+  /** How many days, 1 to 366; 60 when left out. */
+  readonly days?: number;
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The festivals to list; none when left out. */
+  readonly festivals?: FestivalRequest;
 }
 
 /** An instant and a place, as `almanac.sankalpa` reads them. */

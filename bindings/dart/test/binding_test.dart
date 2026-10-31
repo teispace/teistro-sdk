@@ -889,6 +889,44 @@ void _engineTests() {
     );
     final ics = feed();
     expect(ics, startsWith('BEGIN:VCALENDAR\r\nVERSION:2.0\r\n'));
+    final hinted = sky.almanac.festivalCalendar(
+      from: from,
+      to: to,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      festivals: panchanga,
+      stampUnixSeconds: 1767225600,
+      color: 'gold',
+      categories: const ['Nepal'],
+      alarm: const FeedAlarm(triggerMinutes: -60),
+      events: [
+        SuppliedEvent(
+          uid: 'mine@app',
+          summary: 'Mine',
+          day: const DayAsked(year: 2025, month: 10, day: 5),
+        ),
+      ],
+    );
+    expect(hinted, contains('COLOR:gold\r\n'));
+    expect(hinted, contains('UID:mine@app\r\n'));
+    expect(hinted, contains('BEGIN:VALARM\r\n'));
+    final digest = sky.almanac.digest(
+      from: from,
+      days: 3,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      festivals: panchanga,
+    );
+    expect(decodeDigest(digest).dayCount, 3);
+    expect(
+      () => sky.almanac.digest(
+        from: from,
+        days: 0,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+      ),
+      throwsA(isA<TeistroException>()),
+    );
     expect(ics, contains('X-WR-CALNAME:Dashain\r\n'));
     final answer = sky.almanac.festivals(
       from: from,

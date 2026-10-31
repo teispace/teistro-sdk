@@ -7746,3 +7746,236 @@ export interface Naam {
  */
 export declare function decodeNaam(bytes: Uint8Array): Naam;
 
+/**
+ * The `days` section of a Digest blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * One row a day, in order.
+ */
+export interface DigestDays {
+  /**
+   * The date's year, in `summary.calendar`.
+   */
+  readonly year: Int32Array;
+  /**
+   * The date's month.
+   */
+  readonly month: Uint8Array;
+  /**
+   * The date's day of the month.
+   */
+  readonly day: Uint8Array;
+  /**
+   * The vara, 0 for Sunday.
+   */
+  readonly vara: Uint8Array;
+  /**
+   * 0 an ordinary day, 1 the Sun did not rise, 2 it did not set, when `sunrise` and `sunset` are the policy's.
+   */
+  readonly state: Uint8Array;
+  /**
+   * The day's fixed number, 1 for 0001-01-01 Gregorian.
+   */
+  readonly fixedDay: Int32Array;
+  /**
+   * seconds from `base_unix_seconds`
+   */
+  readonly sunrise: Int32Array;
+  /**
+   * seconds from `base_unix_seconds`
+   */
+  readonly sunset: Int32Array;
+  /**
+   * The day's first moonrise, in seconds from `base_unix_seconds`, or `i32::MIN`.
+   */
+  readonly moonrise: Int32Array;
+  /**
+   * The day's first moonset, in seconds from `base_unix_seconds`, or `i32::MIN`.
+   */
+  readonly moonset: Int32Array;
+  /**
+   * Thousandths of a lunation at sunrise, 0 new and 500 full, read from the tithi that held it and how far through it sunrise fell.
+   */
+  readonly moonPhase: Uint16Array;
+  /**
+   * The lunar month's row in `names`.
+   */
+  readonly lunarMonth: Uint16Array;
+  /**
+   * The day's first row in `spans`.
+   */
+  readonly spanFirst: Uint32Array;
+  /**
+   * The day's rows in `spans`.
+   */
+  readonly spanCount: Uint16Array;
+  /**
+   * The day's first row in `observances`.
+   */
+  readonly observanceFirst: Uint32Array;
+  /**
+   * The day's rows in `observances`.
+   */
+  readonly observanceCount: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `spans` section of a Digest blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each day's limbs and windows, by kind and then in the order they run. A limb's span is the whole limb, so one may run past either end of its day.
+ */
+export interface DigestSpans {
+  /**
+   * What the span is.
+   * The values are `DigestSpan` ids.
+   */
+  readonly kind: Uint8Array;
+  /**
+   * Its row in `names`, or 65535 when it has no name of its own.
+   */
+  readonly name: Uint16Array;
+  /**
+   * seconds from `base_unix_seconds`
+   */
+  readonly from: Int32Array;
+  /**
+   * seconds from `base_unix_seconds`
+   */
+  readonly to: Int32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `observances` section of a Digest blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Each day's observances, sorted by rule.
+ */
+export interface DigestObservances {
+  /**
+   * Its row in `names`.
+   */
+  readonly name: Uint16Array;
+  /**
+   * Bit 0: a fast. Bit 1: a published set decided the day.
+   */
+  readonly flags: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `names` section of a Digest blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * Every name the digest uses, once, in the order first met.
+ */
+export interface DigestNames {
+  /**
+   * The catalogue or rule key's offset in `text`.
+   */
+  readonly keyAt: Uint32Array;
+  /**
+   * Its length in octets.
+   */
+  readonly keyLength: Uint16Array;
+  /**
+   * The name's offset in `text`, in the context's locale.
+   */
+  readonly textAt: Uint32Array;
+  /**
+   * Its length in octets.
+   */
+  readonly textLength: Uint16Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * A decoded Digest blob.
+ *
+ * A range of days for a process that cannot run the engine (`03-design/digest-format.md`): every limb and window of each day, its Moon and its observances, every time whole seconds from the first day's local midnight, every name interned once, sealed by SHA-256.
+ */
+export interface Digest {
+  /**
+   * The format's major version; a reader refuses another.
+   */
+  readonly formatMajor: number;
+  /**
+   * The format's minor version; a reader skips what it does not know.
+   */
+  readonly formatMinor: number;
+  /**
+   * How many days the digest holds, the rows of `days`.
+   */
+  readonly dayCount: number;
+  /**
+   * The first day's local midnight in seconds since 1970, which every time counts from.
+   */
+  readonly baseUnixSeconds: bigint;
+  /**
+   * The offset the civil days run at, east positive.
+   */
+  readonly utcOffsetSeconds: number;
+  /**
+   * The calendar `days` dates are read in.
+   * The value is a `Calendar` id.
+   */
+  readonly calendar: number;
+  /**
+   * The place's latitude, degrees north.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The place's altitude, metres.
+   */
+  readonly altitudeM: number;
+  /**
+   * One row a day, in order.
+   */
+  readonly days: DigestDays;
+  /**
+   * Each day's limbs and windows, by kind and then in the order they run. A limb's span is the whole limb, so one may run past either end of its day.
+   */
+  readonly spans: DigestSpans;
+  /**
+   * Each day's observances, sorted by rule.
+   */
+  readonly observances: DigestObservances;
+  /**
+   * Every name the digest uses, once, in the order first met.
+   */
+  readonly names: DigestNames;
+  /**
+   * UTF-8 text: the keys and names, with nothing between them.
+   */
+  readonly text: string;
+  /**
+   * UTF-8 text: the BCP 47 tag `names` is in.
+   */
+  readonly locale: string;
+  /**
+   * UTF-8 JSON, canonical: the days' provenance, its `content_hash` theirs.
+   */
+  readonly provenanceJson: string;
+  /**
+   * SHA-256 of every byte before this section, which ends the digest, in 64 lowercase hexadecimal digits.
+   */
+  readonly seal: string;
+}
+
+/**
+ * Decodes a Digest blob. The columns are views over `bytes`, so the
+ * buffer must outlive the result; a blob of another layout version or
+ * another schema is a `BlobFormatError`.
+ */
+export declare function decodeDigest(bytes: Uint8Array): Digest;
+

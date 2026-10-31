@@ -810,6 +810,7 @@ fn the_surface(report: &mut Report) {
         ("(root).settings_json", "present"),
         ("almanac.day", "present"),
         ("almanac.disagreements", "present"),
+        ("almanac.digest", "present"),
         ("almanac.festival_calendar", "present"),
         ("almanac.festivals", "present"),
         ("almanac.changes", "present"),
@@ -7024,11 +7025,23 @@ fn written_len(record: &serde_json::Value, name: &str) -> usize {
     field(record, name).as_array().map_or(0, Vec::len)
 }
 
+/// The week every binding asks a digest of: one seal is one set of bytes.
+const DIGEST_ASKED: &str = r#"{"first":{"year":2025,"month":10,"day":1},"days":7,"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"festivals":{"rules":"NEPAL"}}"#;
+
 /// The almanac's rites: each answer's content hash, which proves the same
 /// request reached the same answer, and a line of its fields, which proves
 /// each binding read it.
 fn the_rites(report: &mut Report, geo: &Context) {
     let almanac = geo.almanac();
+    let digest = almanac
+        .digest(&teistro::DigestRequest::from_json(DIGEST_ASKED).expect("a request"))
+        .expect("a digest");
+    let seal = digest.value.len().saturating_sub(64);
+    put(
+        report,
+        "rites-digest-seal",
+        String::from_utf8_lossy(digest.value.get(seal..).unwrap_or_default()).into_owned(),
+    );
     let sankalpa = almanac
         .sankalpa_request(&teistro::SankalpaRequest::from_json(SANKALPA_ASKED).expect("a request"))
         .expect("a sankalpa");

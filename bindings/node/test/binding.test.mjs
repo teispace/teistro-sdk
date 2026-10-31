@@ -49,6 +49,7 @@ import {
   packFrame,
   sdkVersion,
   unpackFrame,
+  decodeDigest,
 } from '../lib/index.js';
 import * as catalogue from '../lib/catalogue.js';
 
@@ -785,8 +786,9 @@ test('every catalogue enum has a complete id table', () => {
   // 1418 since `TsCalendar` gained the four regional solar calendars;
   // 1433 since Bhadra's `TsBhadraVasa`, three, and the Shiva vasa's
   // `TsShivaVasa`, seven, each with its member of `TsKind`, after date
-  // arithmetic's `TsOverflow`, three.
-  assert.equal(entries, 1445, 'every member of every enum is in a table');
+  // arithmetic's `TsOverflow`, three; 1463 since the digest's `TsDigestSpan`,
+  // eighteen.
+  assert.equal(entries, 1463, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -5502,6 +5504,22 @@ test('an almanac writes its festivals as an iCalendar feed', () => {
       festivals: { rules: 'NEPAL_PANCHANGA' },
     };
     const ics = ctx.almanac.festivalCalendar({ ...season, stampUnixSeconds: 1767225600, name: 'Dashain' });
+    const hinted = ctx.almanac.festivalCalendar({
+      ...season,
+      stampUnixSeconds: 1767225600,
+      color: 'gold',
+      categories: ['Nepal'],
+      alarm: { triggerMinutes: -60 },
+      events: [{ uid: 'mine@app', summary: 'Mine', day: { year: 2025, month: 10, day: 5 } }],
+    });
+    assert.ok(hinted.includes('COLOR:gold\r\n'));
+    assert.ok(hinted.includes('UID:mine@app\r\n'));
+    assert.ok(hinted.includes('BEGIN:VALARM\r\n'));
+    const digest = ctx.almanac.digest({ from: season.from, days: 3, place: season.place, utcOffsetSeconds: 20700, festivals: season.festivals });
+    assert.ok(digest instanceof Uint8Array);
+    assert.equal(decodeDigest(digest).dayCount, 3);
+    assert.throws(() => ctx.almanac.digest({ ...season, days: 0 }), (error) => error.field === 'days');
+    assert.throws(() => ctx.almanac.digest(null), TypeError);
     assert.ok(ics.startsWith('BEGIN:VCALENDAR\r\nVERSION:2.0\r\n'));
     assert.ok(ics.endsWith('END:VCALENDAR\r\n'));
     assert.ok(ics.includes('X-WR-CALNAME:Dashain\r\n'));

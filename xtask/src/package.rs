@@ -326,6 +326,13 @@ fn c_bundle(
         &format!("{stem}/include/teistro.h"),
         &root.join("bindings/c/include/teistro.h"),
     )?;
+    for file in ["teistro_digest.h", "teistro_digest.c"] {
+        append(
+            &mut archive,
+            &format!("{stem}/digest/{file}"),
+            &root.join("bindings/c/digest").join(file),
+        )?;
+    }
     let mut libraries = vec![
         platform.shared(LIBRARY_STEM),
         platform.static_library(LIBRARY_STEM),
