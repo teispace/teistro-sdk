@@ -177,6 +177,15 @@ extern "C" {
 #define TS_PANCHANGA_HOMA_AHUTI ((uint32_t)32)
 
 /**
+ * `TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's
+ * `sections` for each day's sky, in the `sky` section: the paths of the
+ * Sun and the Moon at `sky_step_minutes`, their rises, transits and sets
+ * as exact points, and the Moon's lit shape from the place
+ * (`03-design/day-sky.md`). A request that does not set it pays nothing.
+ */
+#define TS_PANCHANGA_SKY ((uint32_t)64)
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 typedef enum ts_kind {
@@ -9388,9 +9397,12 @@ struct ts_panchanga_request {
      */
     uint16_t calendar;
     /**
-     * Reserved; write zero.
+     * The step of the sky's track in minutes when `sections` asks for
+     * `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+     * was a reserved field every caller wrote zero to.
+     * Unit: min. Range: [0,240]. Example: 0.
      */
-    uint16_t reserved;
+    uint16_t sky_step_minutes;
     /**
      * The first day's astronomical year.
      * Example: 2026.
@@ -9453,7 +9465,8 @@ struct ts_panchanga_request {
      * only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
      * lagna table, in the `lagnas` span section;
      * `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-     * `homa_ahuti` span section.
+     * `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+     * in the `sky` section, at `sky_step_minutes`.
      * Zero for the days alone, which is what every
      * caller compiled against an earlier header passes, since this was a
      * reserved field it wrote zero to.

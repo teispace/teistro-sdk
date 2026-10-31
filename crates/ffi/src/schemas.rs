@@ -857,6 +857,11 @@ pub fn panchanga() -> BlobSchema {
             span_section(37, "bhadra_vasa", "Where Bhadra dwells while the vishti karana holds, by the sign the Moon stands in (Muhurta Chintamani, Shubhashubha-prakarana v. 45, crux C820): `MARTYA` with the Moon in Cancer, Leo, Aquarius or Pisces, `SVARGA` in Aries, Taurus, Gemini or Scorpio, `PATALA` in the rest; only `MARTYA`, the earth, is harmful. One span for each stretch a vishti and a sign both held, so a sign change in Bhadra splits it; empty on a day with no vishti.", "Where Bhadra dwells.", "BhadraVasa"),
             span_section(38, "shiva_vasa", "Where Shiva dwells, one span for each tithi the day held, under `panchanga.shiva_vasa`: a printed convention with no text behind it, named in the provenance's `applied_conventions` (crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7: 1 Kailasa, 2 beside Gauri, 3 on the bull, 4 the assembly, 5 the meal, 6 at play, 0 the cremation ground. Empty under `NONE`.", "Where Shiva dwells.", "ShivaVasa"),
             span_section(39, "named_panchaka", "The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`.", "The panchaka's name.", "Panchaka"),
+            SectionSchema::bytes(
+                40,
+                "sky",
+                "UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for.",
+            ),
         ],
     }
 }

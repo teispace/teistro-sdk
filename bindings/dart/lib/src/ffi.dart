@@ -1765,9 +1765,12 @@ final class PanchangaRequestStruct extends ffi.Struct {
   @ffi.Uint16()
   external int calendar;
 
-  /// Reserved; write zero.
+  /// The step of the sky's track in minutes when `sections` asks for
+  /// `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+  /// was a reserved field every caller wrote zero to.
+  /// Unit: min. Range: [0,240]. Example: 0.
   @ffi.Uint16()
-  external int reserved;
+  external int skyStepMinutes;
 
   /// The first day's astronomical year.
   /// Example: 2026.
@@ -1830,7 +1833,8 @@ final class PanchangaRequestStruct extends ffi.Struct {
   /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
   /// lagna table, in the `lagnas` span section;
   /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-  /// `homa_ahuti` span section.
+  /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+  /// in the `sky` section, at `sky_step_minutes`.
   /// Zero for the days alone, which is what every
   /// caller compiled against an earlier header passes, since this was a
   /// reserved field it wrote zero to.
@@ -5476,11 +5480,17 @@ final class IntlLoaded {
 /// one day passes a range of one.
 final class PanchangaRequest {
   /// A PanchangaRequest with every field named.
-  const PanchangaRequest({required this.calendar, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, this.muhurtaJson, this.festivalsJson, this.zoneJson});
+  const PanchangaRequest({required this.calendar, required this.skyStepMinutes, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, this.muhurtaJson, this.festivalsJson, this.zoneJson});
 
   /// The calendar the range's dates are written in.
   /// Enum: Calendar. Example: 0.
   final Calendar calendar;
+
+  /// The step of the sky's track in minutes when `sections` asks for
+  /// `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+  /// was a reserved field every caller wrote zero to.
+  /// Unit: min. Range: [0,240]. Example: 0.
+  final int skyStepMinutes;
 
   /// The first day's astronomical year.
   /// Example: 2026.
@@ -5533,7 +5543,8 @@ final class PanchangaRequest {
   /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
   /// lagna table, in the `lagnas` span section;
   /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-  /// `homa_ahuti` span section.
+  /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+  /// in the `sky` section, at `sky_step_minutes`.
   /// Zero for the days alone, which is what every
   /// caller compiled against an earlier header passes, since this was a
   /// reserved field it wrote zero to.
@@ -5597,8 +5608,9 @@ final class PanchangaRequest {
   final String? zoneJson;
 
   /// This value with the fields given replaced, and the rest kept.
-  PanchangaRequest copyWith({Calendar? calendar, int? fromYear, int? fromMonth, int? fromDay, int? toMonth, int? toDay, int? toYear, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, String? muhurtaJson, String? festivalsJson, String? zoneJson}) => PanchangaRequest(
+  PanchangaRequest copyWith({Calendar? calendar, int? skyStepMinutes, int? fromYear, int? fromMonth, int? fromDay, int? toMonth, int? toDay, int? toYear, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, String? muhurtaJson, String? festivalsJson, String? zoneJson}) => PanchangaRequest(
     calendar: calendar ?? this.calendar,
+    skyStepMinutes: skyStepMinutes ?? this.skyStepMinutes,
     fromYear: fromYear ?? this.fromYear,
     fromMonth: fromMonth ?? this.fromMonth,
     fromDay: fromDay ?? this.fromDay,
@@ -5625,6 +5637,7 @@ final class PanchangaRequest {
   void writeInto(PanchangaRequestStruct raw, ffi.Allocator arena) {
     raw.structSize = ffi.sizeOf<PanchangaRequestStruct>();
     raw.calendar = calendar.id;
+    raw.skyStepMinutes = skyStepMinutes;
     raw.fromYear = fromYear;
     raw.fromMonth = fromMonth;
     raw.fromDay = fromDay;
@@ -5653,6 +5666,7 @@ final class PanchangaRequest {
   /// Reads a value out of a struct, which may be one held inside another.
   static PanchangaRequest readFrom(PanchangaRequestStruct raw) => PanchangaRequest(
         calendar: Calendar.byId(raw.calendar),
+        skyStepMinutes: raw.skyStepMinutes,
         fromYear: raw.fromYear,
         fromMonth: raw.fromMonth,
         fromDay: raw.fromDay,

@@ -719,6 +719,8 @@
         }
       },
       "nepalSambat": true,
+      "sky": true,
+      "skyStepMinutes": 1,
       "utcOffsetSeconds": 1,
       "years": true,
       "zone": {

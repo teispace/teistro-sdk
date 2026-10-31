@@ -1406,6 +1406,8 @@ final class AlmanacArea extends _Area {
     bool nepalSambat = false,
     bool lagnas = false,
     bool homaAhuti = false,
+    bool sky = false,
+    int skyStepMinutes = 0,
     bool days = true,
   }) => _range(
     from,
@@ -1420,7 +1422,9 @@ final class AlmanacArea extends _Area {
         (nepalSambat ? panchangaNepalSambat : 0) |
         (lagnas ? panchangaLagnas : 0) |
         (homaAhuti ? panchangaHomaAhuti : 0) |
+        (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
+    skyStepMinutes,
   );
 
   /// [of] on a zone's clock: each day on the offset of its own noon, and
@@ -1440,6 +1444,8 @@ final class AlmanacArea extends _Area {
     bool nepalSambat = false,
     bool lagnas = false,
     bool homaAhuti = false,
+    bool sky = false,
+    int skyStepMinutes = 0,
     bool days = true,
   }) => _range(
     from,
@@ -1454,7 +1460,9 @@ final class AlmanacArea extends _Area {
         (nepalSambat ? panchangaNepalSambat : 0) |
         (lagnas ? panchangaLagnas : 0) |
         (homaAhuti ? panchangaHomaAhuti : 0) |
+        (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
+    skyStepMinutes,
   );
 
   Almanac _range(
@@ -1466,12 +1474,14 @@ final class AlmanacArea extends _Area {
     MuhurtaRequest? muhurta,
     FestivalRequest? festivals,
     int sections,
+    int skyStepMinutes,
   ) => Almanac(
     decodePanchanga(
       _context._guarded(
         () => _context._inner.panchangaDays(
           PanchangaRequest(
             calendar: from.calendar,
+            skyStepMinutes: skyStepMinutes,
             fromYear: from.year,
             fromMonth: from.month,
             fromDay: from.day,
@@ -17532,6 +17542,178 @@ NepalSambatDates _nepalSambat(String json) {
   );
 }
 
+/// The Moon's lit shape at an instant, seen from the place
+/// (`03-design/day-sky.md`). Turn the bright limb from the zenith by
+/// `brightLimbDeg - parallacticAngleDeg` to draw it.
+final class MoonShape {
+  const MoonShape({
+    required this.illuminatedFraction,
+    required this.phaseAngleDeg,
+    required this.waxing,
+    required this.brightLimbDeg,
+    required this.parallacticAngleDeg,
+  });
+
+  /// The fraction of the disc lit, 0 to 1, from the place.
+  final double illuminatedFraction;
+
+  /// The angle at the Moon between the place and the Sun, degrees: 0 at
+  /// full, 180 at new.
+  final double phaseAngleDeg;
+
+  /// Whether the Moon is growing, the Earth's-centre sign of her
+  /// elongation, which agrees with the paksha.
+  final bool waxing;
+
+  /// The position angle of the bright limb's midpoint, degrees in
+  /// `[0, 360)`, from the disc's north point through the east.
+  final double brightLimbDeg;
+
+  /// The position angle of the zenith, degrees in `(-180, 180]`, from the
+  /// disc's north point through the east.
+  final double parallacticAngleDeg;
+}
+
+/// A point on a body's track: a step's reading or an exact event.
+final class SkyPoint {
+  const SkyPoint({
+    required this.at,
+    required this.kind,
+    required this.altitudeDeg,
+    required this.refractedAltitudeDeg,
+    required this.azimuthDeg,
+    required this.moon,
+  });
+
+  /// The instant, Julian day, UT1 read as UTC.
+  final double at;
+
+  /// `SAMPLE`, `RISE`, `TRANSIT` or `SET`.
+  final String kind;
+
+  /// The airless topocentric altitude of the centre, degrees.
+  final double altitudeDeg;
+
+  /// The altitude with the standard atmosphere's refraction, degrees; the
+  /// airless altitude where the body stays below the horizon.
+  final double refractedAltitudeDeg;
+
+  /// The topocentric azimuth, degrees in `[0, 360)`, from north through
+  /// east.
+  final double azimuthDeg;
+
+  /// The Moon's shape at the instant, on the Moon's track only.
+  final MoonShape? moon;
+}
+
+/// One body's day.
+final class BodySky {
+  const BodySky({required this.state, required this.track});
+
+  /// `CROSSES`, or on a day with no rise or set `ALWAYS_ABOVE` or
+  /// `ALWAYS_BELOW`.
+  final String state;
+
+  /// Every step's reading and every exact event, in time order.
+  final List<SkyPoint> track;
+}
+
+/// The sky of one day at one place (`03-design/day-sky.md`).
+final class DaySky {
+  const DaySky({
+    required this.from,
+    required this.to,
+    required this.stepMinutes,
+    required this.sun,
+    required this.moon,
+  });
+
+  /// The window's start, Julian day, UT1 read as UTC.
+  final double from;
+
+  /// The window's end; an event here is the next window's.
+  final double to;
+
+  /// The step asked, minutes.
+  final int stepMinutes;
+
+  /// The Sun.
+  final BodySky sun;
+
+  /// The Moon.
+  final BodySky moon;
+}
+
+/// Each day's sky, in the days' order.
+///
+/// ```dart
+/// final almanac = sdk.almanac.of(
+///     from: from, to: to, place: place, utcOffsetSeconds: 20700,
+///     sky: true, skyStepMinutes: 10);
+/// final noon = almanac.sky?.value.first.sun.track
+///     .where((point) => point.kind == 'TRANSIT');
+/// ```
+final class DaySkies {
+  const DaySkies({required this.value, required this.provenance});
+
+  /// One record a day, in the days' order.
+  final List<DaySky> value;
+
+  /// The days' own provenance with the window's reading named, and the
+  /// hash of [value].
+  final Provenance provenance;
+}
+
+/// The `sky` section: one record a day, with the provenance beside them.
+DaySkies _daySkies(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  double number(Object? value) => (value! as num).toDouble();
+  MoonShape shape(Map<String, Object?> raw) => MoonShape(
+    illuminatedFraction: number(raw['illuminatedFraction']),
+    phaseAngleDeg: number(raw['phaseAngleDeg']),
+    waxing: raw['waxing']! as bool,
+    brightLimbDeg: number(raw['brightLimbDeg']),
+    parallacticAngleDeg: number(raw['parallacticAngleDeg']),
+  );
+  SkyPoint point(Map<String, Object?> raw) {
+    final moon = raw['moon'] as Map<String, Object?>?;
+    return SkyPoint(
+      at: number(raw['at']),
+      kind: raw['kind']! as String,
+      altitudeDeg: number(raw['altitudeDeg']),
+      refractedAltitudeDeg: number(raw['refractedAltitudeDeg']),
+      azimuthDeg: number(raw['azimuthDeg']),
+      moon: moon == null ? null : shape(moon),
+    );
+  }
+
+  BodySky body(Map<String, Object?> raw) => BodySky(
+    state: raw['state']! as String,
+    track: List.unmodifiable([
+      for (final item in raw['track']! as List<Object?>)
+        point(item! as Map<String, Object?>),
+    ]),
+  );
+  return DaySkies(
+    value: List.unmodifiable([
+      for (final item in envelope['value']! as List<Object?>)
+        () {
+          final raw = item! as Map<String, Object?>;
+          return DaySky(
+            from: number(raw['from']),
+            to: number(raw['to']),
+            stepMinutes: raw['stepMinutes']! as int,
+            sun: body(raw['sun']! as Map<String, Object?>),
+            moon: body(raw['moon']! as Map<String, Object?>),
+          );
+        }(),
+    ]),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
+}
+
 /// The `years` section: the envelope's years as values, with the
 /// provenance beside them.
 LunarYears _lunarYears(String json) {
@@ -29413,6 +29595,11 @@ final class Almanac {
   /// Parsed once.
   late final NepalSambatDates? nepalSambat =
       decoded.nepalSambat.isEmpty ? null : _nepalSambat(decoded.nepalSambat);
+
+  /// Each day's sky, or null when the request did not ask with `sky: true`
+  /// (`03-design/day-sky.md`).
+  late final DaySkies? sky =
+      decoded.sky.isEmpty ? null : _daySkies(decoded.sky);
 
   /// One day of the batch, by index.
   AlmanacDay at(int index) {

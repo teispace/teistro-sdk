@@ -45,6 +45,7 @@ import {
   PANCHANGA_HOMA_AHUTI,
   PANCHANGA_LAGNAS,
   PANCHANGA_NEPAL_SAMBAT,
+  PANCHANGA_SKY,
   PANCHANGA_WITHOUT_DAYS,
   PANCHANGA_YEARS,
   CalendarById,
@@ -1893,6 +1894,7 @@ export class Almanac extends Stamped {
   #years = undefined;
   #eclipses = undefined;
   #nepalSambat = undefined;
+  #sky = undefined;
 
   constructor(bytes) {
     super(bytes, decodePanchanga);
@@ -1993,6 +1995,21 @@ export class Almanac extends Stamped {
   get nepalSambat() {
     if (this.#nepalSambat === undefined) this.#nepalSambat = envelopeFrom(this.decoded.nepalSambat);
     return this.#nepalSambat;
+  }
+
+  /**
+   * Each day's sky (`03-design/day-sky.md`), or `null` when the request
+   * did not ask with `sky: true`: `{ value, provenance }`, `value` one
+   * record a day holding `from`, `to`, `stepMinutes`, `sun` and `moon`,
+   * each a `state` and a `track` of points in time order. A point's `kind`
+   * is `'SAMPLE'`, `'RISE'`, `'TRANSIT'` or `'SET'`; a Moon's point carries
+   * her lit shape in `moon`. Parsed once, and frozen to its leaves.
+   *
+   * @returns {object|null}
+   */
+  get sky() {
+    if (this.#sky === undefined) this.#sky = envelopeFrom(this.decoded.sky);
+    return this.#sky;
   }
 
 
@@ -7519,6 +7536,11 @@ export class AlmanacArea extends Area {
    * @param {boolean} [request.lagnas] whether to give each day its lagna
    *   table, as `AlmanacDay.lagnas`: some four hundred ascendants a day,
    *   so only on asking
+   * @param {boolean} [request.sky] whether to answer each day's sky, as
+   *   `Almanac.sky`: the Sun's and the Moon's paths, rises, transits and
+   *   sets, and the Moon's lit shape; `false` by default, which costs nothing
+   * @param {number} [request.skyStepMinutes] the step of those paths, 1 to
+   *   240, ten when left out
    * @param {boolean} [request.homaAhuti] whether to give each day its
    *   homa ahuti, as `AlmanacDay.homaAhuti`: the Sun's stars cost a
    *   search a day does not otherwise make, so only on asking
@@ -7565,6 +7587,7 @@ export class AlmanacArea extends Area {
         longitudeDeg: finite(place.longitude, 'place.longitude'),
         altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
         utcOffsetSeconds,
+        skyStepMinutes: request.skyStepMinutes ?? 0,
         zoneJson: zone,
         muhurtaJson: recordJson(request.muhurta, 'muhurta', "a muhurta request record, e.g. { rules: 'RAMAN_MARRIAGE' }"),
         festivalsJson: recordJson(request.festivals, 'festivals', "a festivals request record, e.g. { rules: 'DHARMASINDHU' }"),
@@ -7574,6 +7597,7 @@ export class AlmanacArea extends Area {
           (request.nepalSambat === true ? PANCHANGA_NEPAL_SAMBAT : 0) |
           (request.lagnas === true ? PANCHANGA_LAGNAS : 0) |
           (request.homaAhuti === true ? PANCHANGA_HOMA_AHUTI : 0) |
+          (request.sky === true ? PANCHANGA_SKY : 0) |
           (request.days === false ? PANCHANGA_WITHOUT_DAYS : 0),
       }),
     );
@@ -7596,7 +7620,7 @@ export class AlmanacArea extends Area {
     if (request?.festivals == null) {
       throw new TypeError("festivals: expected a festivals request record, e.g. { rules: 'NEPAL' }");
     }
-    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, days: false }).festivals;
+    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, sky: false, skyStepMinutes: undefined, days: false }).festivals;
   }
 
   /**

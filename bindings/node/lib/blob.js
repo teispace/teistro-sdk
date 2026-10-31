@@ -2493,6 +2493,10 @@ export function decodePanchanga(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 40, 'sky');
+    out.sky = text(blob, at, 'sky');
+  }
   return out;
 }
 

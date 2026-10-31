@@ -265,6 +265,9 @@ pub use teistro_panchanga::first_year;
 // A day's Nepal Sambat date, which `Panchanga::nepal_sambat` reads and
 // `AlmanacRequest::with_nepal_sambat` answers beside the days.
 pub use teistro_panchanga::nepal_sambat::NepalSambatDate;
+// A day's sky, which `AlmanacRequest::with_sky` asks and
+// `AlmanacAnswer::sky` answers (`03-design/day-sky.md`).
+pub use teistro_astro::day_sky;
 // What a reading answers with, and the sections it holds: the document
 // is `teistro-serial`'s, and an operation that answers one must let a
 // consumer name it and every section of it.

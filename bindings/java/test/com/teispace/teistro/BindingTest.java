@@ -217,6 +217,15 @@ public final class BindingTest {
             try (Context sky = context(teistro)) {
                 CalendarDate first = Civil.date(Calendar.GREGORIAN, 2024, 11, 25);
                 CalendarDate last = Civil.date(Calendar.GREGORIAN, 2024, 11, 27);
+                DaySkies daySkies = sky.almanac().of(first, first, kathmandu, 20_700, null, null, false, false, false,
+                        false, false, true, 60).sky().orElseThrow();
+                DaySky today = daySkies.value().get(0);
+                same(60, today.stepMinutes(), "the step asked");
+                same("CROSSES", today.sun().state(), "a temperate Sun crosses");
+                same(1L, today.sun().track().stream().filter(point -> point.kind().equals("TRANSIT")).count(), "a noon");
+                check(today.moon().track().stream().allMatch(point -> point.moon().isPresent()), "her shape");
+                check(today.sun().track().stream().allMatch(point -> point.moon().isEmpty()), "no shape on the Sun");
+
                 TeistroException muhurta = refusal(() -> sky.almanac().of(first, last, kathmandu, 20_700,
                         MuhurtaRequest.of(Map.of("rules", "RAMAN_MARRIAGE", "most", 0)), null, false, false, false));
                 check("muhurta.most".equals(muhurta.field()), "muhurta: " + muhurta.field());

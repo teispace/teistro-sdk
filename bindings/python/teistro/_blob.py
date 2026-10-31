@@ -9277,6 +9277,9 @@ class Panchanga:
     named_panchaka: PanchangaNamedPanchaka
     """The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`."""
 
+    sky: str
+    """UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -9325,6 +9328,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_bhadra_vasa = blob.section(37, "bhadra_vasa")
     at_shiva_vasa = blob.section(38, "shiva_vasa")
     at_named_panchaka = blob.section(39, "named_panchaka")
+    at_sky = blob.section(40, "sky")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -10088,6 +10092,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ).cast("B"),
             length=at_named_panchaka.count,
         ),
+        sky=blob.text(at_sky, "sky"),
     )
 
 

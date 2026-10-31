@@ -125,6 +125,13 @@ const int panchangaLagnas = 16;
 /// not set it pays nothing.
 const int panchangaHomaAhuti = 32;
 
+/// `TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's
+/// `sections` for each day's sky, in the `sky` section: the paths of the
+/// Sun and the Moon at `sky_step_minutes`, their rises, transits and sets
+/// as exact points, and the Moon's lit shape from the place
+/// (`03-design/day-sky.md`). A request that does not set it pays nothing.
+const int panchangaSky = 64;
+
 /// A key of one kind: a member this build catalogues, or one a context
 /// registered at run time.
 abstract interface class KeyOf<K> {

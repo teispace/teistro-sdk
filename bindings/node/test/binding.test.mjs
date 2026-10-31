@@ -4429,6 +4429,19 @@ test('an almanac carries each day\'s Nepal Sambat date', () => {
   const said = ctx.intl.render('sdk.calendar.nepalSambatDate', value[2]);
   assert.deepEqual(said.warnings, []);
   assert.equal(said.text, 'ने.सं. ११४६ कछलाथ्व');
+  // Beside the days, as a flag with its step.
+  assert.equal(ctx.almanac.of(days).sky, null);
+  const { sky } = ctx.almanac.of({ ...days, sky: true, skyStepMinutes: 60 });
+  assert.equal(sky.value.length, almanac.length);
+  const [first] = sky.value;
+  assert.equal(first.stepMinutes, 60);
+  assert.equal(first.sun.state, 'CROSSES');
+  const noon = first.sun.track.filter((point) => point.kind === 'TRANSIT');
+  assert.equal(noon.length, 1);
+  assert.ok(noon[0].altitudeDeg > 40 && noon[0].altitudeDeg < 70);
+  assert.ok(first.moon.track.every((point) => point.moon.illuminatedFraction >= 0));
+  assert.ok(first.sun.track.every((point) => point.moon === undefined));
+  assert.throws(() => ctx.almanac.of({ ...days, skyStepMinutes: 60 }), /sky/);
   ctx.dispose();
 });
 

@@ -156,6 +156,15 @@ export const PANCHANGA_LAGNAS = 16;
  */
 export const PANCHANGA_HOMA_AHUTI = 32;
 
+/**
+ * `TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's
+ * `sections` for each day's sky, in the `sky` section: the paths of the
+ * Sun and the Moon at `sky_step_minutes`, their rises, transits and sets
+ * as exact points, and the Moon's lit shape from the place
+ * (`03-design/day-sky.md`). A request that does not set it pays nothing.
+ */
+export const PANCHANGA_SKY = 64;
+
 /** A longitude in deg, checked. */
 export function longitude(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) {

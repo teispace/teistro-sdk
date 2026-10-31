@@ -28,6 +28,7 @@
 
 use core::ffi::c_char;
 
+use teistro::day_sky::SkyStep;
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::Calendar;
@@ -223,7 +224,7 @@ impl From<Sunrises> for TsSunrises {
 /// let request = TsPanchangaRequest {
 ///     struct_size: u32::try_from(size_of::<TsPanchangaRequest>())?,
 ///     calendar: 0,
-///     reserved: 0,
+///     sky_step_minutes: 0,
 ///     from_year: 2026,
 ///     from_month: 9,
 ///     from_day: 1,
@@ -250,8 +251,11 @@ pub struct TsPanchangaRequest {
     /// The calendar the range's dates are written in.
     /// `api: enum=Calendar example=0`
     pub calendar: u16,
-    /// Reserved; write zero.
-    pub reserved: u16,
+    /// The step of the sky's track in minutes when `sections` asks for
+    /// `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+    /// was a reserved field every caller wrote zero to.
+    /// `api: unit=min range=[0,240] example=0`
+    pub sky_step_minutes: u16,
     /// The first day's astronomical year.
     /// `api: example=2026`
     pub from_year: i32,
@@ -293,7 +297,8 @@ pub struct TsPanchangaRequest {
     /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
     /// lagna table, in the `lagnas` span section;
     /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-    /// `homa_ahuti` span section.
+    /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+    /// in the `sky` section, at `sky_step_minutes`.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -470,6 +475,23 @@ pub const TS_PANCHANGA_LAGNAS: u32 = 16;
 /// assert_eq!((TS_PANCHANGA_HOMA_AHUTI | TS_PANCHANGA_LAGNAS) & TS_PANCHANGA_LAGNAS, TS_PANCHANGA_LAGNAS);
 /// ```
 pub const TS_PANCHANGA_HOMA_AHUTI: u32 = 32;
+
+/// `TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's
+/// `sections` for each day's sky, in the `sky` section: the paths of the
+/// Sun and the Moon at `sky_step_minutes`, their rises, transits and sets
+/// as exact points, and the Moon's lit shape from the place
+/// (`03-design/day-sky.md`). A request that does not set it pays nothing.
+///
+/// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_HOMA_AHUTI, TS_PANCHANGA_SKY};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_SKY, 1 << 6);
+/// assert_eq!((TS_PANCHANGA_SKY | TS_PANCHANGA_HOMA_AHUTI) & TS_PANCHANGA_SKY, TS_PANCHANGA_SKY);
+/// ```
+pub const TS_PANCHANGA_SKY: u32 = 64;
 
 /// A day's own values, in the order `days` declares them.
 #[must_use]
@@ -867,6 +889,8 @@ pub struct Beside<'a> {
     pub eclipses: &'a str,
     /// The `nepal_sambat` section.
     pub nepal_sambat: &'a str,
+    /// The `sky` section.
+    pub sky: &'a str,
 }
 
 /// A batch of almanacs as the blob its schema describes.
@@ -977,6 +1001,7 @@ pub fn encode(
         writer.rows("bhadra_vasa", &ragged.bhadra_vasa)?;
         writer.rows("shiva_vasa", &ragged.shiva_vasa)?;
         writer.rows("named_panchaka", &ragged.named_panchaka)?;
+        writer.bytes("sky", beside.sky.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -985,6 +1010,29 @@ pub fn encode(
             format!("the panchanga blob could not be written: {error}"),
         )
     })
+}
+
+/// `beside` with the sky `sections` asks for, at `step` minutes, zero for
+/// the default; a step with no sky asked is refused rather than ignored.
+fn with_sky(
+    beside: teistro::AlmanacRequest,
+    sections: u32,
+    step: u16,
+) -> Result<teistro::AlmanacRequest, Error> {
+    if sections & TS_PANCHANGA_SKY == TS_PANCHANGA_SKY {
+        let step = match step {
+            0 => SkyStep::default(),
+            minutes => SkyStep::of_minutes(minutes)?,
+        };
+        Ok(beside.with_sky(step))
+    } else if step == 0 {
+        Ok(beside)
+    } else {
+        Err(
+            Error::invalid_arg("a sky step asks for no sky without `TS_PANCHANGA_SKY`")
+                .with_field("sky_step_minutes"),
+        )
+    }
 }
 
 /// Founds the almanac of every day in a range at one place and answers
@@ -1027,7 +1075,7 @@ pub fn encode(
 /// // A week of September 2026 at Kathmandu.
 /// let request = TsPanchangaRequest {
 ///     struct_size: u32::try_from(size_of::<TsPanchangaRequest>())?,
-///     calendar: 0, reserved: 0,
+///     calendar: 0, sky_step_minutes: 0,
 ///     from_year: 2026, from_month: 9, from_day: 1,
 ///     to_month: 9, to_day: 7, to_year: 2026,
 ///     latitude_deg: 27.7172, longitude_deg: 85.324, altitude_m: 1400.0,
@@ -1124,6 +1172,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
         if asked.sections & TS_PANCHANGA_HOMA_AHUTI == TS_PANCHANGA_HOMA_AHUTI {
             beside = beside.with_homa_ahuti();
         }
+        beside = with_sky(beside, asked.sections, asked.sky_step_minutes)?;
         if asked.sections & TS_PANCHANGA_WITHOUT_DAYS == TS_PANCHANGA_WITHOUT_DAYS {
             beside = beside.without_days();
         }
@@ -1163,6 +1212,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
                 years: &json(&sections.years),
                 eclipses: &json(&sections.eclipses),
                 nepal_sambat: &json(&sections.nepal_sambat),
+                sky: &json(&sections.sky),
             },
         )?;
         // SAFETY: the entry point's contract.

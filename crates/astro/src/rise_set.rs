@@ -845,6 +845,38 @@ impl<'a> Solver<'a> {
         Ok(self.sample(ut1.get(), &mut evaluations)?.altitude_deg)
     }
 
+    /// Whether the body stands above the altitude its rise and set are
+    /// at: which side of the convention's horizon it is on, which is what
+    /// names a window without a crossing as always above or always below.
+    ///
+    /// ```
+    /// # use teistro_astro::rise_set::Solver;
+    /// # use teistro_astro::{Completion, DeltaTModel};
+    /// # use teistro_core::quantity::{JulianDay, Place, Ut1};
+    /// # use teistro_core::settings::OverridePolicy;
+    /// # use teistro_port_ephemeris::{Body, Horizon, TestProvider};
+    /// #
+    /// # let provider = TestProvider::new();
+    /// # let sky = Completion::new(&provider, OverridePolicy::SdkOnly, DeltaTModel::TableThenModel);
+    /// # let place = Place::try_from_degrees(27.7172, 85.324, 0.0)?;
+    /// # let solver = Solver::new(&sky, Body::Sun, place, Horizon::UPPER_LIMB_REFRACTION, DeltaTModel::TableThenModel);
+    /// # // The local mean day of 2024-06-21 there.
+    /// # let midnight = JulianDay::<Ut1>::literal(2_460_482.5 - 85.324 / 360.0);
+    ///
+    /// assert!(!solver.is_above(midnight)?);
+    /// assert!(solver.is_above(JulianDay::<Ut1>::literal(midnight.get() + 0.5))?);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Solver::altitude_deg`].
+    pub fn is_above(&self, ut1: JulianDay<Ut1>) -> Result<bool, Error> {
+        let mut evaluations = 0;
+        let sample = self.sample(ut1.get(), &mut evaluations)?;
+        Ok(sample.altitude_deg > sample.target_deg)
+    }
+
     /// The sky at an instant: altitude, target, hour angle, declination.
     /// The sky at many instants at once, in the solver's own terms.
     ///

@@ -3327,6 +3327,27 @@ void main() {
     ]),
   );
 
+  // The day's sky over two days, at an hour's step.
+  final sky =
+      geo.almanac
+          .of(
+            from: Calendar.gregorian.date(2024, 10, 30),
+            to: Calendar.gregorian.date(2024, 10, 31),
+            place: place,
+            utcOffsetSeconds: 20700,
+            sky: true,
+            skyStepMinutes: 60,
+          )
+          .sky!;
+  put('day-sky-hash', sky.provenance.contentHash);
+  put(
+    'day-sky',
+    listed([
+      for (final d in sky.value)
+        '${d.sun.state}:${d.sun.track.length}:${d.moon.state}:${d.moon.track.length}',
+    ]),
+  );
+
   // The rashifal batch every runner sends: a week read at sunrise with the
   // baseline's weekly scores, and a day read at 06:00 reporting only Mars's
   // and Saturn's events.

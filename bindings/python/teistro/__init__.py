@@ -78,6 +78,7 @@ from ._ffi import (
     PANCHANGA_HOMA_AHUTI,
     PANCHANGA_LAGNAS,
     PANCHANGA_NEPAL_SAMBAT,
+    PANCHANGA_SKY,
     PANCHANGA_WITHOUT_DAYS,
     PANCHANGA_YEARS,
     GENERATED_ABI_VERSION,
@@ -1518,6 +1519,11 @@ __all__ = [
     "LunarYear",
     "JovianYear",
     "NepalSambatDates",
+    "DaySkies",
+    "DaySky",
+    "BodySky",
+    "SkyPoint",
+    "MoonShape",
     "NepalSambatDate",
     "TaraReading",
     "ClosedDay",
@@ -3402,6 +3408,8 @@ class AlmanacArea(_Area):
         nepal_sambat: bool = False,
         lagnas: bool = False,
         homa_ahuti: bool = False,
+        sky: bool = False,
+        sky_step_minutes: int = 0,
         days: bool = True,
     ) -> Almanac:
         """The almanac of every day in a range, at one place.
@@ -3421,6 +3429,8 @@ class AlmanacArea(_Area):
         lagna table, as `AlmanacDay.lagnas`: every sign rising from sunrise
         to the next sunrise, from the ascendant `panchanga.lagna_table`
         names, some four hundred ascendants a day, so only on asking.
+        `sky=True` answers each day's sky, as `Almanac.sky`, at
+        `sky_step_minutes`, 1 to 240, ten when left at zero.
         `homa_ahuti=True` gives each day its homa ahuti, as
         `AlmanacDay.homa_ahuti`: the Sun's stars cost a search a day does
         not otherwise make, so only on asking. `days=False` leaves the days
@@ -3442,7 +3452,9 @@ class AlmanacArea(_Area):
             | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
             | (PANCHANGA_LAGNAS if lagnas else 0)
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
+            | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
+            sky_step_minutes,
         )
 
     def in_zone(
@@ -3459,6 +3471,8 @@ class AlmanacArea(_Area):
         nepal_sambat: bool = False,
         lagnas: bool = False,
         homa_ahuti: bool = False,
+        sky: bool = False,
+        sky_step_minutes: int = 0,
         days: bool = True,
     ) -> Almanac:
         """`of` on a zone's clock: each day on the offset of its own noon, and
@@ -3479,7 +3493,9 @@ class AlmanacArea(_Area):
             | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
             | (PANCHANGA_LAGNAS if lagnas else 0)
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
+            | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
+            sky_step_minutes,
         )
 
     def _range(
@@ -3492,9 +3508,11 @@ class AlmanacArea(_Area):
         muhurta: Optional[MuhurtaRequest],
         festivals: Optional[FestivalRequest],
         sections: int,
+        sky_step_minutes: int,
     ) -> Almanac:
         request = PanchangaRequest(
             calendar=from_date.calendar,
+            sky_step_minutes=sky_step_minutes,
             from_year=from_date.year,
             from_month=from_date.month,
             from_day=from_date.day,
@@ -10302,6 +10320,100 @@ class NepalSambatDates:
 
 
 @dataclass(frozen=True)
+class MoonShape:
+    """The Moon's lit shape at an instant, seen from the place
+    (`03-design/day-sky.md`). Turn the bright limb from the zenith by
+    `bright_limb_deg - parallactic_angle_deg` to draw it."""
+
+    illuminated_fraction: float
+    """The fraction of the disc lit, 0 to 1, from the place."""
+
+    phase_angle_deg: float
+    """The angle at the Moon between the place and the Sun, degrees: 0 at
+    full, 180 at new."""
+
+    waxing: bool
+    """Whether the Moon is growing, the Earth's-centre sign of her
+    elongation, which agrees with the paksha."""
+
+    bright_limb_deg: float
+    """The position angle of the bright limb's midpoint, degrees in
+    `[0, 360)`, from the disc's north point through the east."""
+
+    parallactic_angle_deg: float
+    """The position angle of the zenith, degrees in `(-180, 180]`, from the
+    disc's north point through the east."""
+
+
+@dataclass(frozen=True)
+class SkyPoint:
+    """A point on a body's track: a step's reading or an exact event."""
+
+    at: float
+    """The instant, Julian day, UT1 read as UTC."""
+
+    kind: str
+    """`SAMPLE`, `RISE`, `TRANSIT` or `SET`."""
+
+    altitude_deg: float
+    """The airless topocentric altitude of the centre, degrees."""
+
+    refracted_altitude_deg: float
+    """The altitude with the standard atmosphere's refraction, degrees; the
+    airless altitude where the body stays below the horizon."""
+
+    azimuth_deg: float
+    """The topocentric azimuth, degrees in `[0, 360)`, from north through
+    east."""
+
+    moon: Optional[MoonShape]
+    """The Moon's shape at the instant, on the Moon's track only."""
+
+
+@dataclass(frozen=True)
+class BodySky:
+    """One body's day."""
+
+    state: str
+    """`CROSSES`, or on a day with no rise or set `ALWAYS_ABOVE` or
+    `ALWAYS_BELOW`."""
+
+    track: Tuple[SkyPoint, ...]
+    """Every step's reading and every exact event, in time order."""
+
+
+@dataclass(frozen=True)
+class DaySky:
+    """The sky of one day at one place (`03-design/day-sky.md`)."""
+
+    start: float
+    """The window's start, Julian day, UT1 read as UTC."""
+
+    end: float
+    """The window's end; an event here is the next window's."""
+
+    step_minutes: int
+    """The step asked, minutes."""
+
+    sun: BodySky
+    moon: BodySky
+
+
+@dataclass(frozen=True)
+class DaySkies:
+    """Each day's sky, in the days' order.
+
+    >>> # almanac = ctx.almanac.of(..., sky=True, sky_step_minutes=10)
+    >>> # noon = [p for p in almanac.sky.value[0].sun.track if p.kind == "TRANSIT"]
+    """
+
+    value: Tuple[DaySky, ...]
+    provenance: Provenance
+    """The days' own provenance with the window's reading named, and the
+    hash of `value`."""
+
+
+@dataclass(frozen=True)
 class EclipseMoment:
     """One moment of an eclipse at the place: when, and the body's
     topocentric geometric altitude there."""
@@ -16256,6 +16368,49 @@ def _nepal_sambat_answer(text: str) -> NepalSambatDates:
     )
 
 
+def _sky_answer(text: str) -> DaySkies:
+    """The `sky` section: one frozen record a day, with the provenance
+    beside them."""
+    envelope = json.loads(text)
+
+    def shape(raw: Mapping[str, Any]) -> MoonShape:
+        return MoonShape(
+            illuminated_fraction=raw["illuminatedFraction"],
+            phase_angle_deg=raw["phaseAngleDeg"],
+            waxing=raw["waxing"],
+            bright_limb_deg=raw["brightLimbDeg"],
+            parallactic_angle_deg=raw["parallacticAngleDeg"],
+        )
+
+    def point(raw: Mapping[str, Any]) -> SkyPoint:
+        moon = raw.get("moon")
+        return SkyPoint(
+            at=raw["at"],
+            kind=raw["kind"],
+            altitude_deg=raw["altitudeDeg"],
+            refracted_altitude_deg=raw["refractedAltitudeDeg"],
+            azimuth_deg=raw["azimuthDeg"],
+            moon=None if moon is None else shape(moon),
+        )
+
+    def body(raw: Mapping[str, Any]) -> BodySky:
+        return BodySky(state=raw["state"], track=tuple(point(item) for item in raw["track"]))
+
+    return DaySkies(
+        value=tuple(
+            DaySky(
+                start=raw["from"],
+                end=raw["to"],
+                step_minutes=raw["stepMinutes"],
+                sun=body(raw["sun"]),
+                moon=body(raw["moon"]),
+            )
+            for raw in envelope["value"]
+        ),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
 def _eclipses_answer(text: str) -> Eclipses:
     """The `eclipses` section: the envelope's eclipses as frozen records,
     with the provenance beside them."""
@@ -20254,6 +20409,13 @@ class Almanac:
         once."""
         text = self.decoded.nepal_sambat
         return _nepal_sambat_answer(text) if text else None
+
+    @property
+    def sky(self) -> Optional[DaySkies]:
+        """Each day's sky, or `None` when `sky=True` was not asked
+        (`03-design/day-sky.md`)."""
+        text = self.decoded.sky
+        return _sky_answer(text) if text else None
 
     @property
     def provenance_json(self) -> str:

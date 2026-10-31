@@ -46,7 +46,8 @@ use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
 use teistro_ffi::panchanga::{
     TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_HOMA_AHUTI, TS_PANCHANGA_LAGNAS, TS_PANCHANGA_NEPAL_SAMBAT,
-    TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
+    TS_PANCHANGA_SKY, TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_YEARS, TsPanchangaRequest,
+    ts_panchanga_days,
 };
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
@@ -5660,9 +5661,21 @@ fn panchanga_asked(
 fn panchanga_asked_in(
     ctx: &Ctx,
     year: i32,
+    range: ((u8, u8), (u8, u8)),
+    records: (Option<&str>, Option<&str>),
+    sections: u32,
+) -> Result<Vec<u8>, Record> {
+    panchanga_stepped(ctx, year, range, records, sections, 0)
+}
+
+/// [`panchanga_asked_in`] with the sky's step.
+fn panchanga_stepped(
+    ctx: &Ctx,
+    year: i32,
     ((from_month, from_day), (to_month, to_day)): ((u8, u8), (u8, u8)),
     (muhurta, festivals): (Option<&str>, Option<&str>),
     sections: u32,
+    sky_step_minutes: u16,
 ) -> Result<Vec<u8>, Record> {
     let muhurta = muhurta.map(|text| CString::new(text).unwrap());
     let festivals = festivals.map(|text| CString::new(text).unwrap());
@@ -5670,7 +5683,7 @@ fn panchanga_asked_in(
         TsPanchangaRequest {
             struct_size: 0,
             calendar: Calendar::Gregorian.id(),
-            reserved: 0,
+            sky_step_minutes,
             from_year: year,
             from_month,
             from_day,
@@ -6148,7 +6161,7 @@ fn a_panchanga_request_in_no_calendar_is_refused_by_its_field() {
         TsPanchangaRequest {
             struct_size: 0,
             calendar: 0xFFFF,
-            reserved: 0,
+            sky_step_minutes: 0,
             from_year: 2026,
             from_month: 1,
             from_day: 1,
@@ -6177,6 +6190,52 @@ fn a_panchanga_request_in_no_calendar_is_refused_by_its_field() {
 /// (`calendar-indian-lunisolar.md` §11): asked by its own bit, one per
 /// day in the days' order, its paksha written in full, sealed over what
 /// it holds, and the year turning at Kachhala's first day.
+#[test]
+fn a_panchanga_request_answers_each_days_sky_at_its_step() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let range = ((10, 20), (10, 21));
+    let asked = |sections, step| panchanga_stepped(&ctx, 2025, range, (None, None), sections, step);
+    let schema = schemas::panchanga();
+    let (with, without) = (asked(TS_PANCHANGA_SKY, 60).unwrap(), asked(0, 0).unwrap());
+    let (with, without) = (
+        Reader::parse(&with, &schema).unwrap(),
+        Reader::parse(&without, &schema).unwrap(),
+    );
+    assert_eq!(
+        with.text("content_hashes").unwrap(),
+        without.text("content_hashes").unwrap()
+    );
+    assert_eq!(without.text("sky").unwrap(), "");
+    let envelope: serde_json::Value = serde_json::from_str(with.text("sky").unwrap()).unwrap();
+    let provenance: teistro::Provenance =
+        serde_json::from_value(envelope["provenance"].clone()).unwrap();
+    assert_eq!(
+        provenance.content_hash,
+        teistro::content_hash(&envelope["value"])
+    );
+    let days = envelope["value"].as_array().unwrap();
+    assert_eq!(days.len(), 2);
+    assert_eq!(days[0]["stepMinutes"], 60);
+    assert_eq!(days[0]["sun"]["state"], "CROSSES");
+    assert!(days[0]["moon"]["track"][0]["moon"]["illuminatedFraction"].is_f64());
+
+    // Zero is the default's ten minutes, in the same field.
+    let ten = asked(TS_PANCHANGA_SKY, 0).unwrap();
+    let ten = Reader::parse(&ten, &schema).unwrap();
+    let ten: serde_json::Value = serde_json::from_str(ten.text("sky").unwrap()).unwrap();
+    assert_eq!(ten["value"][0]["stepMinutes"], 10);
+
+    // A step past the most, and a step with nothing to step, say so.
+    assert_eq!(
+        asked(TS_PANCHANGA_SKY, 241).unwrap_err().2.as_deref(),
+        Some("sky_step_minutes")
+    );
+    assert_eq!(
+        asked(0, 60).unwrap_err().2.as_deref(),
+        Some("sky_step_minutes")
+    );
+}
+
 #[test]
 fn a_panchanga_request_answers_each_days_nepal_sambat_date() {
     let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();

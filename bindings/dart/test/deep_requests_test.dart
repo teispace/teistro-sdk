@@ -146,6 +146,8 @@ void main() {
         latitudeDeg: 1.5,
         longitudeDeg: 1.5,
         nepalSambat: true,
+        sky: true,
+        skyStepMinutes: 1,
         utcOffsetSeconds: 1,
         years: true,
         zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},

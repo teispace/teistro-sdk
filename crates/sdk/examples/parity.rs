@@ -7161,6 +7161,43 @@ fn the_published_and_tibetan(report: &mut Report, geo: &Context) {
     );
 }
 
+fn day_sky(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
+    let from = CalendarDate::defined(Calendar::Gregorian, 2024, 10, 30);
+    let to = CalendarDate::defined(Calendar::Gregorian, 2024, 10, 31);
+    let step = teistro::day_sky::SkyStep::of_minutes(60).expect("an hour");
+    let answer = geo
+        .almanac()
+        .asked(
+            &from,
+            &to,
+            place,
+            offset,
+            &AlmanacRequest::new().with_sky(step),
+        )
+        .expect("the test provider");
+    let sections = answer.sections().expect("written sections");
+    let written = sections.sky.expect("the sky was asked");
+    put(
+        report,
+        "day-sky-hash",
+        written.provenance.content_hash.to_string(),
+    );
+    let skies = answer.sky.expect("the sky was asked");
+    put(
+        report,
+        "day-sky",
+        listed(skies.value.iter().map(|day| {
+            format!(
+                "{}:{}:{}:{}",
+                tag(&day.sun.state),
+                day.sun.track.len(),
+                tag(&day.moon.state),
+                day.moon.track.len()
+            )
+        })),
+    );
+}
+
 fn nepal_sambat(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffset) {
     let from = CalendarDate::defined(Calendar::Gregorian, 2024, 10, 30);
     let to = CalendarDate::defined(Calendar::Gregorian, 2024, 11, 3);
@@ -8109,6 +8146,7 @@ fn main() {
     festivals(&mut report, &geo, &place, offset);
     lunar_years(&mut report, &geo, &place, offset);
     nepal_sambat(&mut report, &geo, &place, offset);
+    day_sky(&mut report, &geo, &place, offset);
     the_rites(&mut report, &geo);
     the_published_and_tibetan(&mut report, &geo);
     eclipses(&mut report, &place, offset);

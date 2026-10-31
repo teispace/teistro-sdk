@@ -193,6 +193,15 @@ public final class Native {
      */
     public static final int TS_PANCHANGA_HOMA_AHUTI = 32;
 
+    /**
+     * `TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's
+     * `sections` for each day's sky, in the `sky` section: the paths of the
+     * Sun and the Moon at `sky_step_minutes`, their rises, transits and sets
+     * as exact points, and the Moon's lit shape from the place
+     * (`03-design/day-sky.md`). A request that does not set it pays nothing.
+     */
+    public static final int TS_PANCHANGA_SKY = 64;
+
     /** The ABI these declarations were generated from; a library that answers otherwise is refused. */
     public static final int GENERATED_ABI_VERSION = 1;
 
@@ -3629,7 +3638,7 @@ public final class Native {
         public static final StructLayout LAYOUT = MemoryLayout.structLayout(
             JAVA_INT.withName("struct_size"),
             JAVA_SHORT.withName("calendar"),
-            JAVA_SHORT.withName("reserved"),
+            JAVA_SHORT.withName("sky_step_minutes"),
             JAVA_INT.withName("from_year"),
             JAVA_BYTE.withName("from_month"),
             JAVA_BYTE.withName("from_day"),
@@ -3671,12 +3680,15 @@ public final class Native {
         public static final VarHandle CALENDAR = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("calendar"));
 
         /**
-         * The offset of `reserved`. Reserved; write zero.
+         * The offset of `sky_step_minutes`. The step of the sky's track in minutes when `sections` asks for
+         * `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+         * was a reserved field every caller wrote zero to.
+         * Unit: min. Range: [0,240]. Example: 0.
          */
-        public static final long RESERVED_OFFSET = 6;
+        public static final long SKY_STEP_MINUTES_OFFSET = 6;
 
-        /** The handle that reads and writes `reserved`: coordinates {@code (MemorySegment, long)}. */
-        public static final VarHandle RESERVED = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("reserved"));
+        /** The handle that reads and writes `sky_step_minutes`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle SKY_STEP_MINUTES = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("sky_step_minutes"));
 
         /**
          * The offset of `from_year`. The first day's astronomical year.
@@ -3780,7 +3792,8 @@ public final class Native {
          * only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
          * lagna table, in the `lagnas` span section;
          * `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-         * `homa_ahuti` span section.
+         * `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+         * in the `sky` section, at `sky_step_minutes`.
          * Zero for the days alone, which is what every
          * caller compiled against an earlier header passes, since this was a
          * reserved field it wrote zero to.

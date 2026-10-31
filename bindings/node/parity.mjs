@@ -2045,6 +2045,20 @@ for (const [name, rules, published] of [
   put('nepal-sambat', listed(nepalSambat.value.map((d) => `${d.year}:${d.month}:${d.kind}:${d.paksha}`)));
 }
 
+// ── The day's sky ──────────────────────────────────────────────────────
+{
+  const { sky } = geo.almanac.of({
+    from: gregorian(2024, 10, 30),
+    to: gregorian(2024, 10, 31),
+    place,
+    utcOffsetSeconds: 20700,
+    sky: true,
+    skyStepMinutes: 60,
+  });
+  put('day-sky-hash', sky.provenance.contentHash);
+  put('day-sky', listed(sky.value.map((d) => `${d.sun.state}:${d.sun.track.length}:${d.moon.state}:${d.moon.track.length}`)));
+}
+
 // ── The rites and the Tibetan year ─────────────────────────────────────
 // The requests every runner sends: a sankalpa, a period of impurity and
 // the first year after a death at Kathmandu, and the reasons a published
