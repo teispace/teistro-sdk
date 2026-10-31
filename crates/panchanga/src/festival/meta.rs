@@ -669,6 +669,7 @@ const NEPAL_KEYS: [(&str, u8); 359] = [
 ];
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::*;
 

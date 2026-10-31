@@ -513,29 +513,30 @@ fn the_first_hint_that_selects_speaks_and_the_feed_alarm_fills_in() {
     assert!(text.contains("COLOR:gold\r\nX-APPLE-CALENDAR-COLOR:#FFD700\r\n"));
     let events = lines(&text, "UID").len();
     assert_eq!(lines(&text, "BEGIN").len(), 1 + 2 * events);
-    let fasts = text.matches("CATEGORIES:Fast\r\nCOLOR:teal\r\n").count();
+    let fasts = text.matches("Fast\r\nCOLOR:teal\r\n").count();
     assert!(fasts > 0);
     assert_eq!(text.matches("TRIGGER:-PT12H\r\n").count(), fasts);
     assert_eq!(text.matches("TRIGGER:PT9H\r\n").count(), events - fasts);
-    assert_eq!(text.matches("CATEGORIES:Other\r\n").count(), events - fasts);
+    assert_eq!(text.matches("Other\r\n").count(), events - fasts);
 }
 
 #[test]
 fn a_selector_on_a_field_nothing_carries_is_refused_not_answered_empty() {
     let sdk = sdk();
-    let asked = |select: FeedSelector, extra: Option<SuppliedEvent>| {
-        let mut options = FeedOptions::new(STAMP);
-        options.only = vec![select];
-        options.events.extend(extra);
-        sdk.almanac().festival_calendar(
-            &day(9, 20),
-            &day(11, 10),
-            &kathmandu(),
-            UtcOffset::literal(5, 45, 0),
-            &FestivalRequest::from(FestivalPack::NepalPanchanga),
-            &options,
-        )
-    };
+    let asked =
+        |festivals: &FestivalRequest, select: FeedSelector, extra: Option<SuppliedEvent>| {
+            let mut options = FeedOptions::new(STAMP);
+            options.only = vec![select];
+            options.events.extend(extra);
+            sdk.almanac().festival_calendar(
+                &day(9, 20),
+                &day(11, 10),
+                &kathmandu(),
+                UtcOffset::literal(5, 45, 0),
+                festivals,
+                &options,
+            )
+        };
     let traditions = FeedSelector {
         traditions: vec!["VAISHNAVA".to_owned()],
         ..FeedSelector::default()
@@ -544,20 +545,31 @@ fn a_selector_on_a_field_nothing_carries_is_refused_not_answered_empty() {
         kinds: vec!["HOLIDAY".to_owned()],
         ..FeedSelector::default()
     };
-    let refused = asked(traditions.clone(), None).unwrap_err();
+    // Rules that carry neither field are refused, not answered empty.
+    let bare = FestivalRequest::of_kind(teistro::NextKind::Purnima.rules());
+    let refused = asked(&bare, traditions.clone(), None).unwrap_err();
     assert_eq!(refused.status, Status::Unsupported);
     assert_eq!(refused.field(), Some("traditions"));
-    let refused = asked(kinds.clone(), None).unwrap_err();
+    let refused = asked(&bare, kinds.clone(), None).unwrap_err();
     assert_eq!(refused.field(), Some("kinds"));
-    // One event carrying the field is enough: the filter then reads it,
-    // as it will read a rule's own once a rule carries it.
+    // One event carrying the field is enough: the filter then reads it.
     let mut held = SuppliedEvent::new("Mine", When::Day(gregorian_fixed(10, 1)));
     held.tradition = Some("VAISHNAVA".to_owned());
     held.kind = Some("HOLIDAY".to_owned());
     for select in [traditions, kinds] {
-        let text = unfolded(&asked(select, Some(held.clone())).unwrap().value);
+        let text = unfolded(&asked(&bare, select, Some(held.clone())).unwrap().value);
         assert_eq!(lines(&text, "SUMMARY"), ["Mine"]);
     }
+    // A pack's rules carry their own: a filter keeps some, not all.
+    let pack = FestivalRequest::from(FestivalPack::NepalPanchanga);
+    let all = unfolded(&asked(&pack, FeedSelector::default(), None).unwrap().value);
+    let gazetted = FeedSelector {
+        kinds: vec!["GAZETTED".to_owned()],
+        ..FeedSelector::default()
+    };
+    let kept = unfolded(&asked(&pack, gazetted, None).unwrap().value);
+    let (all, kept) = (lines(&all, "SUMMARY").len(), lines(&kept, "SUMMARY").len());
+    assert!(0 < kept && kept < all, "{kept} of {all}");
 }
 
 #[test]

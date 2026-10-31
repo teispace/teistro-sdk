@@ -107,16 +107,6 @@ export interface AlmanacDaysRequest {
 }
 
 /**
- * [`PackRequest`] as the bindings write it.
- */
-export interface PackRequest {
-  /**
-   * A pack the SDK ships, by name.
-   */
-  readonly pack: string;
-}
-
-/**
  * The request as a binding writes it.
  */
 export interface DigestRequest {
@@ -137,6 +127,16 @@ export interface DigestRequest {
   readonly latitudeDeg: number;
   readonly longitudeDeg: number;
   readonly utcOffsetSeconds: number;
+}
+
+/**
+ * [`PackRequest`] as the bindings write it.
+ */
+export interface PackRequest {
+  /**
+   * A pack the SDK ships, by name.
+   */
+  readonly pack: string;
 }
 
 /**

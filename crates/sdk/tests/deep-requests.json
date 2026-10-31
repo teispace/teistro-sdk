@@ -691,12 +691,6 @@
     }
   },
   {
-    "record": "almanac.festivalPack",
-    "request": {
-      "pack": "x"
-    }
-  },
-  {
     "record": "almanac.digest",
     "request": {
       "altitudeM": 1.5,
@@ -997,6 +991,12 @@
     }
   },
   {
+    "record": "almanac.festivalPack",
+    "request": {
+      "pack": "x"
+    }
+  },
+  {
     "record": "almanac.festival_calendar",
     "request": {
       "alarm": {
@@ -1035,12 +1035,25 @@
         }
       ],
       "festivals": {
+        "only": {
+          "communities": [
+            "x"
+          ],
+          "kinds": [
+            "festival_kind.RELIGIOUS_CULTURAL"
+          ],
+          "regions": [
+            "x"
+          ],
+          "traditions": [
+            "tradition.BUDDHIST"
+          ]
+        },
         "published": [
           {
             "entries": [
               {
-                "action": "SET",
-                "adhika": true,
+                "action": "ADD",
                 "day": {
                   "calendar": "calendar.JULIAN",
                   "day": 1,
@@ -1052,9 +1065,23 @@
                   "month": 1,
                   "year": 1
                 },
-                "month": "masa.VAISHAKHA",
-                "rule": "x",
+                "key": "x",
+                "meta": {
+                  "communities": [
+                    "x"
+                  ],
+                  "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "optional": true,
+                  "regions": [
+                    "x"
+                  ],
+                  "tradition": "tradition.BUDDHIST"
+                },
+                "names": {
+                  "x": "x"
+                },
                 "source": "x",
+                "subject_to": "MOON_SIGHTING",
                 "window": {
                   "from": 1.5,
                   "to": 1.5
@@ -1108,6 +1135,17 @@
               "sampurna": true,
               "trisprisha": "ARUNODAYA",
               "vyanjuli": "HALF_MUHURTA"
+            },
+            "meta": {
+              "communities": [
+                "x"
+              ],
+              "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "optional": true,
+              "regions": [
+                "x"
+              ],
+              "tradition": "tradition.BUDDHIST"
             },
             "parana": {
               "at": [
@@ -1174,6 +1212,17 @@
             "after": "x",
             "days": 1,
             "key": "x",
+            "meta": {
+              "communities": [
+                "x"
+              ],
+              "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "optional": true,
+              "regions": [
+                "x"
+              ],
+              "tradition": "tradition.BUDDHIST"
+            },
             "source": "x"
           },
           {
@@ -1194,6 +1243,17 @@
               "days": 1
             },
             "key": "x",
+            "meta": {
+              "communities": [
+                "x"
+              ],
+              "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "optional": true,
+              "regions": [
+                "x"
+              ],
+              "tradition": "tradition.BUDDHIST"
+            },
             "source": "x",
             "sunEnters": {
               "days": 1,
@@ -1231,6 +1291,17 @@
             ],
             "inAdhika": true,
             "key": "x",
+            "meta": {
+              "communities": [
+                "x"
+              ],
+              "kind": "festival_kind.RELIGIOUS_CULTURAL",
+              "optional": true,
+              "regions": [
+                "x"
+              ],
+              "tradition": "tradition.BUDDHIST"
+            },
             "month": "masa.VAISHAKHA",
             "nakshatra": "nakshatra.BHARANI",
             "otherwise": "LATER",

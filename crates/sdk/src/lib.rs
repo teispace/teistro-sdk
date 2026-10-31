@@ -78,12 +78,12 @@ pub use area::{
     ReckonedPlace,
 };
 pub use area::{ChangesRequest, DayClock, NextOccurrence, NextRequest, NextTarget};
-pub use area::{PackForm, PackListing, PackRequest, PackRow};
 pub use area::{
     DIGEST_DEFAULT_DAYS, DIGEST_FLAG_FAST, DIGEST_FLAG_PUBLISHED, DIGEST_FORMAT_MAJOR,
     DIGEST_FORMAT_MINOR, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DIGEST_NO_TIME, DIGEST_SCHEMA,
     DigestRequest, DigestSpan, digest_schema,
 };
+pub use area::{PackForm, PackListing, PackRequest, PackRow};
 pub use teistro_panchanga::festival::NextKind;
 #[cfg(feature = "western")]
 mod antiscia;

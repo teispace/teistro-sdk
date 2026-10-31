@@ -3630,6 +3630,14 @@ pub struct PanchangaRequest {
     /// `festivals`, down to a rule's own field under `festivals.rules`.
     /// Example: `{"rules":"DHARMASINDHU"}`. May be null.
     pub festivals_json: Option<String>,
+    /// The zone the days are reckoned on, as JSON, the record
+    /// `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+    /// "Asia/Kathmandu"}`. Each day is then read on its own offset,
+    /// `utc_offset_seconds` is not read, and the answer's provenance names
+    /// the zone's offset, source, era and database
+    /// (`03-design/time-and-timezone.md` §3.4). Null for the offset.
+    /// Example: `{"kind":"IANA","zone":"Asia/Kathmandu"}`. May be null.
+    pub zone_json: Option<String>,
 }
 
 /// What a `PanchangaRequest` lends the C struct built from it: the buffers its
@@ -3649,6 +3657,7 @@ pub struct HeldPanchangaRequest {
     sections: u32,
     muhurta_json: Option<std::ffi::CString>,
     festivals_json: Option<std::ffi::CString>,
+    zone_json: Option<std::ffi::CString>,
 }
 
 impl HeldPanchangaRequest {
@@ -3677,6 +3686,7 @@ impl HeldPanchangaRequest {
                 .festivals_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
+            zone_json: self.zone_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -3707,6 +3717,11 @@ impl PanchangaRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            zone_json: self
+                .zone_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -3732,6 +3747,7 @@ impl PanchangaRequest {
             sections: raw.sections as _,
             muhurta_json: unsafe { lent_text(raw.muhurta_json) },
             festivals_json: unsafe { lent_text(raw.festivals_json) },
+            zone_json: unsafe { lent_text(raw.zone_json) },
         }
     }
 }
@@ -4426,6 +4442,65 @@ impl Context {
         })
     }
 
+    /// The zone database a context reads, as JSON: `{source, version, zones,
+    /// bundled}` (`03-design/zone-packs.md` §4).
+    #[napi]
+    pub fn time_zone_database(&self, env: Env) -> Result<String> {
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe { ffi::time::ts_time_zone_database(self.handle, &raw mut out_json) };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// Verifies a signed zone pack and replaces the context's zone database
+    /// with it, answering the database as `ts_time_zone_database` does.
+    /// `pack` is the file's exact bytes, `signature` the publisher's detached
+    /// Ed25519 signature over them (64 bytes) and `key` the publisher's public
+    /// key (32 bytes), which the caller fixes at its own build: the library
+    /// embeds none. A release older than `at_least`, the newest the caller has
+    /// applied (`""` for any), is refused, so a replayed pack cannot roll a
+    /// correction back. A refused pack leaves the context as it was.
+    ///
+    /// A key that is no curve point is `INVALID_ARG` on `key`; a signature
+    /// that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+    /// bytes that are not a pack, `INVALID_ARG` on the field that is wrong; an
+    /// older release, `INVALID_ARG` on `version`. A build without
+    /// `signed-packs` answers `CAPABILITY`.
+    #[napi]
+    pub fn time_load_zones(
+        &self,
+        env: Env,
+        pack: Uint8Array,
+        signature: Uint8Array,
+        key: Uint8Array,
+        at_least: String,
+    ) -> Result<String> {
+        let at_least =
+            std::ffi::CString::new(at_least).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::time::ts_time_load_zones(
+                self.handle,
+                pack.as_ptr(),
+                pack.len(),
+                signature.as_ptr(),
+                signature.len(),
+                key.as_ptr(),
+                key.len(),
+                at_least.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Converts an instant between UT1, TT and UTC under the context's Delta T
     /// model, reporting what was applied. A model that cannot answer for the
     /// instant is `OUT_OF_RANGE`.
@@ -5079,6 +5154,29 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::panchanga::ts_almanac_festival_pack(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// Every instant in a range at which something changes, as sealed JSON
+    /// (`03-design/change-points.md`). `request_json` is the record: `first`,
+    /// optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+    /// `utcOffsetSeconds` or `zone`, and optional `kinds`.
+    #[napi]
+    pub fn almanac_changes(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_changes(
                 self.handle,
                 request_json.as_ptr(),
                 &raw mut out_json,

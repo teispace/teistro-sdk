@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 317 of the examples' 329 members.
+/// The cases compare 352 of the examples' 364 members.
 library;
 
 import 'dart:convert';
@@ -438,6 +438,231 @@ void main() {
     );
   });
 
+  test('almanac.digest: DigestRequest', () {
+    _holds(
+      'almanac.digest',
+      path: [],
+      dropping: [['festivals']],
+      members: 1,
+      written: DigestRequest(
+        altitudeM: 1.5,
+        calendar: Calendar.julian,
+        days: 1,
+        first: DayAsked(day: 1, month: 1, year: 1),
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        utcOffsetSeconds: 1,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.digest at festivals.only: MetaFilter', () {
+    _holds(
+      'almanac.digest',
+      path: ['festivals', 'only'],
+      dropping: [],
+      members: 2,
+      written: MetaFilter(
+        communities: ['x'],
+        kinds: [FestivalKind.religiousCultural],
+        regions: ['x'],
+        traditions: [Tradition.buddhist],
+      ).toJson(),
+    );
+  });
+
+  test('almanac.digest at festivals.published[0]: PublishedSet', () {
+    _holds(
+      'almanac.digest',
+      path: ['festivals', 'published', 0],
+      dropping: [['entries', 0, 'window']],
+      members: 4,
+      written: PublishedSet(
+        entries: [
+          PublishedEntryAdd(
+            day: CalendarDay(
+              calendar: Calendar.julian,
+              day: 1,
+              era: EraNumber(era: Era.shaka, year: 1),
+              leap: Leap.day,
+              month: 1,
+              year: 1,
+            ),
+            key: 'x',
+            meta: FestivalMeta(
+              communities: ['x'],
+              kind: FestivalKind.religiousCultural,
+              optional: true,
+              regions: ['x'],
+              tradition: Tradition.buddhist,
+            ),
+            names: {'x': 'x'},
+            source: 'x',
+            subjectTo: SubjectTo.moonSighting,
+          ),
+        ],
+        format: 'x',
+        id: 'x',
+        publisher: 'x',
+        version: 1,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.digest at festivals.rules: FestivalRules', () {
+    _holds(
+      'almanac.digest',
+      path: ['festivals', 'rules'],
+      dropping: [],
+      members: 26,
+      written: FestivalRulesValue([
+        FestivalRuleItemSaitRule(SaitRule(
+          choose: SaitChoice.latest,
+          rising: SaitRising(
+            freeOf: [Graha.moon],
+            modalities: [Modality.sthira],
+            of: RisingOf.lagna,
+          ),
+          rule: 'x',
+          source: 'x',
+          windows: [
+            SaitWindowRule(
+              avoid: [SaitAvoidNakshatra(nakshatra: Nakshatra.bharani, quarters: 1)],
+              within: SaitWindowDayMuhurta(from: 1, to: 1),
+            ),
+          ],
+        )),
+        FestivalRuleItemEkadashiRule(EkadashiRule(
+          key: 'x',
+          mahadvadashi: MahadvadashiRule(
+            joining: NakshatraJoining.outlastsTwelfth,
+            kinds: [MahadvadashiKind.vyanjuli],
+            sampurna: true,
+            trisprisha: TrisprishaAt.arunodaya,
+            vyanjuli: VyanjuliPast.halfMuhurta,
+          ),
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          parana: ParanaRule(
+            at: [WindowDayMuhurta(from: 1, to: 1)],
+            bars: [
+              <String, Object?>{'month': 'masa.VAISHAKHA', 'nakshatra': 'nakshatra.BHARANI', 'portion': <String, Object?>{'parts': 1, 'which': 1}, 'tithi': 'tithi.SHUKLA_DVITIYA'},
+            ],
+            hariVasara: true,
+          ),
+          source: 'x',
+          table: EkadashiTable(
+            pierced: EkadashiKinds(
+              both: FestivalWhich.later,
+              eleventh: FestivalWhich.later,
+              neither: FestivalWhich.later,
+              twelfth: FestivalWhich.later,
+            ),
+            pure: EkadashiKinds(
+              both: FestivalWhich.later,
+              eleventh: FestivalWhich.later,
+              neither: FestivalWhich.later,
+              twelfth: FestivalWhich.later,
+            ),
+          ),
+          vedha: EkadashiVedha.sunrise,
+        )),
+        FestivalRuleItemAnniversary(Anniversary(
+          firstYearAdhika: FirstYearAdhika.nija,
+          inSamsarpa: InSamsarpa.nija,
+          janma: JanmaOptions(nakshatraTie: true, twoMuhurtaFloor: true),
+          key: 'x',
+          kind: AnniversaryKind.ekoddishta,
+          origin: OriginLunar(
+            adhika: true,
+            at: 1.5,
+            half: TithiHalf.second,
+            month: Masa.vaishakha,
+            tithi: Tithi.shuklaDvitiya,
+          ),
+          window: WindowDayMuhurta(from: 1, to: 1),
+        )),
+        FestivalRuleItemFollowingRule(FollowingRule(
+          after: 'x',
+          days: 1,
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          source: 'x',
+        )),
+        FestivalRuleItemDatedRule(DatedRule(
+          civilDate: DatedRuleCivilDate(
+            calendar: Calendar.julian,
+            day: 1,
+            month: 1,
+            skipped: SkippedDay.after,
+          ),
+          civilWeekday: DatedRuleCivilWeekday(
+            calendar: Calendar.julian,
+            month: 1,
+            nth: 1,
+            weekday: Vara.somavara,
+          ),
+          easter: DatedRuleEaster(computus: Computus.julian, days: 1),
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          source: 'x',
+          sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
+        )),
+        FestivalRuleItemFestivalRule(FestivalRule(
+          at: WindowDayMuhurta(from: 1, to: 1),
+          convention: LunarMonth.purnimanta,
+          dayOfPaksha: 1,
+          decide: [
+            Guard(
+              choose: FestivalChoice.later,
+              when: [
+                PredicateJoined(
+                  at: WindowDayMuhurta(from: 1, to: 1),
+                  day: FestivalWhich.later,
+                  nakshatra: Nakshatra.bharani,
+                  portion: Portion(parts: 1, which: 1),
+                ),
+              ],
+            ),
+          ],
+          inAdhika: InAdhikaValue(true),
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          month: Masa.vaishakha,
+          nakshatra: Nakshatra.bharani,
+          otherwise: FestivalChoice.later,
+          paksha: Paksha.krishna,
+          parana: [VrataParanaTithiEnd(nakshatra: Nakshatra.bharani, yamas: 1)],
+          source: 'x',
+          tithi: Tithi.shuklaDvitiya,
+        )),
+      ]).toJson(),
+    );
+  });
+
   test('almanac.festivalPack: PackRequest', () {
     _holds(
       'almanac.festivalPack',
@@ -445,6 +670,39 @@ void main() {
       dropping: [],
       members: 0,
       written: PackRequest(pack: 'x').toJson(),
+    );
+  });
+
+  test('almanac.festival_calendar at alarm: FeedAlarm', () {
+    _holds(
+      'almanac.festival_calendar',
+      path: ['alarm'],
+      dropping: [],
+      members: 0,
+      written: FeedAlarm(description: 'x', triggerMinutes: 1).toJson(),
+    );
+  });
+
+  test('almanac.festival_calendar at events[0]: SuppliedEvent', () {
+    _holds(
+      'almanac.festival_calendar',
+      path: ['events', 0],
+      dropping: [],
+      members: 1,
+      written: SuppliedEvent(
+        alarm: FeedAlarm(description: 'x', triggerMinutes: 1),
+        calendar: Calendar.julian,
+        categories: ['x'],
+        color: 'x',
+        day: DayAsked(day: 1, month: 1, year: 1),
+        description: 'x',
+        fromUnixSeconds: 1,
+        kind: 'x',
+        summary: 'x',
+        toUnixSeconds: 1,
+        tradition: 'x',
+        uid: 'x',
+      ).toJson(),
     );
   });
 
@@ -665,6 +923,26 @@ void main() {
     );
   });
 
+  test('almanac.festival_calendar at hints[0]: FeedHint', () {
+    _holds(
+      'almanac.festival_calendar',
+      path: ['hints', 0],
+      dropping: [],
+      members: 0,
+      written: FeedHint(
+        alarm: FeedAlarm(description: 'x', triggerMinutes: 1),
+        categories: ['x'],
+        color: 'x',
+        select: FeedSelector(
+          forms: [FeedForm.ekadashi],
+          kinds: ['x'],
+          rules: ['x'],
+          traditions: ['x'],
+        ),
+      ).toJson(),
+    );
+  });
+
   test('almanac.festival_calendar at last: DayAsked', () {
     _holds(
       'almanac.festival_calendar',
@@ -672,6 +950,21 @@ void main() {
       dropping: [],
       members: 0,
       written: DayAsked(day: 1, month: 1, year: 1).toJson(),
+    );
+  });
+
+  test('almanac.festival_calendar at only[0]: FeedSelector', () {
+    _holds(
+      'almanac.festival_calendar',
+      path: ['only', 0],
+      dropping: [],
+      members: 0,
+      written: FeedSelector(
+        forms: [FeedForm.ekadashi],
+        kinds: ['x'],
+        rules: ['x'],
+        traditions: ['x'],
+      ).toJson(),
     );
   });
 

@@ -9509,6 +9509,16 @@ struct ts_panchanga_request {
      * Example: {"rules":"DHARMASINDHU"}. May be null.
      */
     const char * festivals_json;
+    /**
+     * The zone the days are reckoned on, as JSON, the record
+     * `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+     * "Asia/Kathmandu"}`. Each day is then read on its own offset,
+     * `utc_offset_seconds` is not read, and the answer's provenance names
+     * the zone's offset, source, era and database
+     * (`03-design/time-and-timezone.md` §3.4). Null for the offset.
+     * Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
+     */
+    const char * zone_json;
 };
 
 /**
@@ -9819,6 +9829,34 @@ ts_status ts_time_resolve(const ts_context * context, const ts_civil_date_time *
  * and `out_resolution` valid for reads of their `struct_size` and writes.
  */
 ts_status ts_time_civil(const ts_context * context, double jd_utc, const ts_zone_spec * zone, uint16_t calendar, ts_civil_date_time * out_civil, ts_zone_resolution * out_resolution);
+
+/**
+ * The zone database a context reads, as JSON: `{source, version, zones,
+ * bundled}` (`03-design/zone-packs.md` §4).
+ * Safety: `context` must be a live handle; `out_json` valid for a write.
+ */
+ts_status ts_time_zone_database(const ts_context * context, ts_string * out_json);
+
+/**
+ * Verifies a signed zone pack and replaces the context's zone database
+ * with it, answering the database as `ts_time_zone_database` does.
+ * `pack` is the file's exact bytes, `signature` the publisher's detached
+ * Ed25519 signature over them (64 bytes) and `key` the publisher's public
+ * key (32 bytes), which the caller fixes at its own build: the library
+ * embeds none. A release older than `at_least`, the newest the caller has
+ * applied (`""` for any), is refused, so a replayed pack cannot roll a
+ * correction back. A refused pack leaves the context as it was.
+ *
+ * A key that is no curve point is `INVALID_ARG` on `key`; a signature
+ * that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+ * bytes that are not a pack, `INVALID_ARG` on the field that is wrong; an
+ * older release, `INVALID_ARG` on `version`. A build without
+ * `signed-packs` answers `CAPABILITY`.
+ * Safety: `context` must be a live handle; `pack`, `signature` and `key` valid
+ * for their lengths' reads; `at_least` NUL-terminated; `out_json` valid
+ * for a write.
+ */
+ts_status ts_time_load_zones(const ts_context * context, const uint8_t * pack, size_t pack_len, const uint8_t * signature, size_t signature_len, const uint8_t * key, size_t key_len, const char * at_least, ts_string * out_json);
 
 /**
  * Converts an instant between UT1, TT and UTC under the context's Delta T
@@ -10215,6 +10253,16 @@ ts_status ts_almanac_next(const ts_context * context, const char * request_json,
 ts_status ts_almanac_festival_pack(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
+ * Every instant in a range at which something changes, as sealed JSON
+ * (`03-design/change-points.md`). `request_json` is the record: `first`,
+ * optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+ * `utcOffsetSeconds` or `zone`, and optional `kinds`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_almanac_changes(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
  * Matches two names star to star (naam milan) and answers with the
  * `naam` blob: each name's first syllable in the śatapada cakra, the
  * varga koota, and the Ashta Koota and the ten considerations of the two
@@ -10583,7 +10631,7 @@ _Static_assert(sizeof(ts_zone_resolution) == 48, "ts_zone_resolution is 48 bytes
 _Static_assert(sizeof(ts_time_conversion) == 56, "ts_time_conversion is 56 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_delta_t) == 32, "ts_delta_t is 32 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_intl_loaded) == 32, "ts_intl_loaded is 32 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_panchanga_request) == 72, "ts_panchanga_request is 72 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_panchanga_request) == 80, "ts_panchanga_request is 80 bytes on 64-bit targets");
 #endif
 
 #ifdef __cplusplus

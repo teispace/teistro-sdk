@@ -1736,7 +1736,7 @@ pub enum TsDigestSpan {
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_blob` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_almanac_digest(
     context: *const TsContext,
     request_json: *const c_char,
@@ -1864,7 +1864,7 @@ pub unsafe extern "C" fn ts_almanac_next(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_almanac_festival_pack(
     context: *const TsContext,
     request_json: *const c_char,
@@ -1906,7 +1906,7 @@ pub unsafe extern "C" fn ts_almanac_festival_pack(
 ///
 /// `context` must be a live handle; `request_json` NUL-terminated;
 /// `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_almanac_changes(
     context: *const TsContext,
     request_json: *const c_char,

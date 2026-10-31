@@ -339,7 +339,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_time_conversion": 56,
     "ts_delta_t": 32,
     "ts_intl_loaded": 32,
-    "ts_panchanga_request": 72,
+    "ts_panchanga_request": 80,
 }
 
 _SIZES_32: Final[dict[str, int]] = {
@@ -370,7 +370,7 @@ _SIZES_32: Final[dict[str, int]] = {
     "ts_time_conversion": 56,
     "ts_delta_t": 32,
     "ts_intl_loaded": 24,
-    "ts_panchanga_request": 64,
+    "ts_panchanga_request": 72,
 }
 
 # The size the C compiler gives every boundary struct on this target, as
@@ -962,6 +962,7 @@ class _PanchangaRequestStruct(ctypes.Structure):
         ("sections", ctypes.c_uint32),
         ("muhurta_json", ctypes.c_char_p),
         ("festivals_json", ctypes.c_char_p),
+        ("zone_json", ctypes.c_char_p),
     ]
 
 
@@ -3839,6 +3840,16 @@ class PanchangaRequest:
     Example: {"rules":"DHARMASINDHU"}. May be null.
     """
 
+    zone_json: Optional[str] = None
+    """The zone the days are reckoned on, as JSON, the record
+    `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+    "Asia/Kathmandu"}`. Each day is then read on its own offset,
+    `utc_offset_seconds` is not read, and the answer's provenance names
+    the zone's offset, source, era and database
+    (`03-design/time-and-timezone.md` §3.4). Null for the offset.
+    Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
+    """
+
     def _into(self, raw: _PanchangaRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -3865,6 +3876,9 @@ class PanchangaRequest:
         _festivals_json = None if self.festivals_json is None else self.festivals_json.encode("utf-8")
         owned.append(_festivals_json)
         raw.festivals_json = _festivals_json
+        _zone_json = None if self.zone_json is None else self.zone_json.encode("utf-8")
+        owned.append(_zone_json)
+        raw.zone_json = _zone_json
 
     def _to_c(self, owned: list[Any]) -> _PanchangaRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -3895,6 +3909,7 @@ class PanchangaRequest:
             sections=raw.sections,
             muhurta_json=_text(raw.muhurta_json),
             festivals_json=_text(raw.festivals_json),
+            zone_json=_text(raw.zone_json),
         )
 
 
@@ -4152,6 +4167,25 @@ class TeistroLibrary:
             ctypes.POINTER(_ZoneResolutionStruct),
         ]
         self.ts_time_civil.restype = ctypes.c_int32
+        self.ts_time_zone_database: Any = library.ts_time_zone_database
+        self.ts_time_zone_database.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_time_zone_database.restype = ctypes.c_int32
+        self.ts_time_load_zones: Any = library.ts_time_load_zones
+        self.ts_time_load_zones.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.POINTER(ctypes.c_uint8),
+            ctypes.c_size_t,
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_time_load_zones.restype = ctypes.c_int32
         self.ts_time_convert: Any = library.ts_time_convert
         self.ts_time_convert.argtypes = [
             ctypes.POINTER(_Context),
@@ -4305,6 +4339,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_festival_pack.restype = ctypes.c_int32
+        self.ts_almanac_changes: Any = library.ts_almanac_changes
+        self.ts_almanac_changes.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_changes.restype = ctypes.c_int32
         self.ts_naam_milan: Any = library.ts_naam_milan
         self.ts_naam_milan.argtypes = [
             ctypes.POINTER(_Context),
@@ -4946,6 +4987,65 @@ class TeistroContext:
             resolution = ZoneResolution._of(_out_resolution)
             return TimeCivilResult(civil=civil, resolution=resolution)
 
+    def time_zone_database(self) -> str:
+        """The zone database a context reads, as JSON: `{source, version, zones,
+        bundled}` (`03-design/zone-packs.md` §4).
+        """
+        with self._lock:
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_time_zone_database(
+                self._raw,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def time_load_zones(self, pack: bytes, signature: bytes, key: bytes, at_least: str) -> str:
+        """Verifies a signed zone pack and replaces the context's zone database
+        with it, answering the database as `ts_time_zone_database` does.
+        `pack` is the file's exact bytes, `signature` the publisher's detached
+        Ed25519 signature over them (64 bytes) and `key` the publisher's public
+        key (32 bytes), which the caller fixes at its own build: the library
+        embeds none. A release older than `at_least`, the newest the caller has
+        applied (`""` for any), is refused, so a replayed pack cannot roll a
+        correction back. A refused pack leaves the context as it was.
+
+        A key that is no curve point is `INVALID_ARG` on `key`; a signature
+        that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+        bytes that are not a pack, `INVALID_ARG` on the field that is wrong; an
+        older release, `INVALID_ARG` on `version`. A build without
+        `signed-packs` answers `CAPABILITY`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _pack = (ctypes.c_uint8 * len(pack)).from_buffer_copy(pack)
+            owned.append(_pack)
+            _signature = (ctypes.c_uint8 * len(signature)).from_buffer_copy(signature)
+            owned.append(_signature)
+            _key = (ctypes.c_uint8 * len(key)).from_buffer_copy(key)
+            owned.append(_key)
+            _at_least = at_least.encode("utf-8")
+            owned.append(_at_least)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_time_load_zones(
+                self._raw,
+                _pack,
+                len(pack),
+                _signature,
+                len(signature),
+                _key,
+                len(key),
+                _at_least,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
     def time_convert(self, jd: float, from_: Scale, to: Scale) -> TimeConversion:
         """Converts an instant between UT1, TT and UTC under the context's Delta T
         model, reporting what was applied. A model that cannot answer for the
@@ -5573,6 +5673,28 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_almanac_festival_pack(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_changes(self, request_json: str) -> str:
+        """Every instant in a range at which something changes, as sealed JSON
+        (`03-design/change-points.md`). `request_json` is the record: `first`,
+        optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+        `utcOffsetSeconds` or `zone`, and optional `kinds`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_changes(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

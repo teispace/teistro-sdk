@@ -337,8 +337,15 @@ impl FestivalRequest {
         let Some(only) = &self.only else {
             return true;
         };
-        let meta = self
-            .rules
+        self.meta_of(key).is_some_and(|meta| only.admits(meta))
+    }
+
+    /// What the rule of this key says of itself, of whichever list holds
+    /// it: `None` for a key no rule has, and for an anniversary, which
+    /// carries no values.
+    #[must_use]
+    pub fn meta_of(&self, key: &str) -> Option<&FestivalMeta> {
+        self.rules
             .iter()
             .find(|rule| rule.key == key)
             .map(|rule| &rule.meta)
@@ -370,8 +377,7 @@ impl FestivalRequest {
                         } if added == key => Some(meta),
                         _ => None,
                     })
-            });
-        meta.is_some_and(|meta| only.admits(meta))
+            })
     }
 
     /// Drops the rule with this key, of whichever kind.

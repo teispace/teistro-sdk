@@ -420,6 +420,52 @@ final class Calls {
     }
 
     /**
+     * `ts_time_zone_database`: The zone database a context reads, as JSON: `{source, version, zones,
+     * bundled}` (`03-design/zone-packs.md` §4).
+     */
+    static String timeZoneDatabase(Native lib, MemorySegment context) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_time_zone_database.invokeExact(context, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
+     * `ts_time_load_zones`: Verifies a signed zone pack and replaces the context's zone database
+     * with it, answering the database as `ts_time_zone_database` does.
+     * `pack` is the file's exact bytes, `signature` the publisher's detached
+     * Ed25519 signature over them (64 bytes) and `key` the publisher's public
+     * key (32 bytes), which the caller fixes at its own build: the library
+     * embeds none. A release older than `at_least`, the newest the caller has
+     * applied (`""` for any), is refused, so a replayed pack cannot roll a
+     * correction back. A refused pack leaves the context as it was.
+     *
+     * A key that is no curve point is `INVALID_ARG` on `key`; a signature
+     * that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+     * bytes that are not a pack, `INVALID_ARG` on the field that is wrong; an
+     * older release, `INVALID_ARG` on `version`. A build without
+     * `signed-packs` answers `CAPABILITY`.
+     */
+    static String timeLoadZones(Native lib, MemorySegment context, byte[] pack, byte[] signature, byte[] key, String atLeast) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment packRaw = arena.allocateFrom(JAVA_BYTE, Objects.requireNonNull(pack, "pack"));
+            MemorySegment signatureRaw = arena.allocateFrom(JAVA_BYTE, Objects.requireNonNull(signature, "signature"));
+            MemorySegment keyRaw = arena.allocateFrom(JAVA_BYTE, Objects.requireNonNull(key, "key"));
+            MemorySegment atLeastRaw = Boundary.cString(arena, Objects.requireNonNull(atLeast, "atLeast"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_time_load_zones.invokeExact(context, packRaw, (long) pack.length, signatureRaw, (long) signature.length, keyRaw, (long) key.length, atLeastRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_time_convert`: Converts an instant between UT1, TT and UTC under the context's Delta T
      * model, reporting what was applied. A model that cannot answer for the
      * instant is `OUT_OF_RANGE`.
@@ -973,6 +1019,24 @@ final class Calls {
             MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
             MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
             int status = Boundary.call(() -> (int) lib.ts_almanac_festival_pack.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
+     * `ts_almanac_changes`: Every instant in a range at which something changes, as sealed JSON
+     * (`03-design/change-points.md`). `request_json` is the record: `first`,
+     * optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+     * `utcOffsetSeconds` or `zone`, and optional `kinds`.
+     */
+    static String almanacChanges(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_changes.invokeExact(context, requestJsonRaw, outJson));
             if (status != 0) {
                 throw refused(lib, context, status);
             }

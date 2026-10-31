@@ -189,15 +189,14 @@ at its first moment, so `540` rings at 09:00 on the day and `-720` at noon
 before it. `TRIGGER` is relative, so a client rings it in the viewer's
 zone. Its `DESCRIPTION` is the event's summary unless the alarm says more.
 
-**Kind and tradition come from SR-02.** A rule's catalogue fields are read
-in one function, `classes_of` in `sdk/src/area/almanac/feed.rs`, and until a
-rule carries them it returns none; a supplied event states its own `kind`
-and `tradition` today. A selector naming `kinds` or `traditions` when no
-event of the feed carries that field is refused, `UNSUPPORTED` on that
-field, and not answered with an empty feed that would read as "nothing is
-of that tradition" (C870). The refusal is about the data, so it needs no
-change when SR-02 lands: a feed of rules that carry a tradition stops
-being refused, and a caller's custom rules that carry none keep being.
+**Kind and tradition come from a rule's metadata** (SR-02,
+`03-design/festival-metadata.md`), read in one function, `classes_of` in
+`sdk/src/area/almanac/feed.rs`, and spelt as a request's `only` spells
+them; a supplied event states its own. A selector naming `kinds` or
+`traditions` when no event of the feed carries that field is refused,
+`UNSUPPORTED` on that field, and not answered with an empty feed that
+would read as "nothing is of that tradition" (C870): a caller's custom
+rules that carry none stay refused.
 
 ### Acceptance
 
