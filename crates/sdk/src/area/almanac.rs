@@ -101,6 +101,7 @@ pub use disagreement::{
     DayDisagreement, DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement,
     FestivalDisagreement, FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb,
 };
+#[cfg(feature = "schema")]
 pub(crate) use feed::FestivalCalendarAsked;
 pub use feed::{
     FeedForm, FeedHint, FeedOptions, FeedSelector, FestivalCalendarRequest, SuppliedEvent,
@@ -108,6 +109,7 @@ pub use feed::{
 #[cfg(feature = "schema")]
 pub(crate) use next::NextAsked;
 pub use next::{NextOccurrence, NextRequest, NextTarget};
+#[cfg(feature = "schema")]
 pub(crate) use pack::PackAsked;
 pub use pack::{PackForm, PackListing, PackRequest, PackRow};
 #[cfg(feature = "schema")]
