@@ -32,6 +32,7 @@ getrandom = "0.3"
 
 [dev-dependencies]
 boon = "0.6"
+jiff-tzdb = "0.1"
 teistro-test-adapter = { path = "../test-adapter" }
 
 [build-dependencies]

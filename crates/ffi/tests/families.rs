@@ -68,6 +68,7 @@ fn muhurta_status(ctx: &Ctx, text: &str) -> Status {
             sections: 0,
             muhurta_json: muhurta.as_ptr(),
             festivals_json: core::ptr::null(),
+            zone_json: core::ptr::null(),
         },
         |r, s| r.struct_size = s,
     );

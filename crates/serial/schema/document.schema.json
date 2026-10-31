@@ -1817,6 +1817,81 @@
         }
       ]
     },
+    "ClockEra": {
+      "description": "Which rules produced an offset.",
+      "oneOf": [
+        {
+          "const": "CURRENT",
+          "description": "An offset the zone applies in the database's own year.",
+          "type": "string"
+        },
+        {
+          "const": "HISTORICAL",
+          "description": "An offset from the zone's earlier rules.",
+          "type": "string"
+        },
+        {
+          "const": "BEFORE_RULES",
+          "description": "Before the zone's first rule: the database's local-mean-time stub.",
+          "type": "string"
+        }
+      ]
+    },
+    "ClockReading": {
+      "description": "A clock's offset at an instant and what gave it: what an answer carries so a caller does not resolve its zone again.",
+      "properties": {
+        "abbreviation": {
+          "description": "The zone's abbreviation for the row, when the database has one.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "era": {
+          "$ref": "#/$defs/ClockEra",
+          "description": "Which rules produced it."
+        },
+        "offset": {
+          "$ref": "#/$defs/UtcOffset",
+          "description": "The offset."
+        },
+        "source": {
+          "$ref": "#/$defs/ClockSource",
+          "description": "Where it came from."
+        },
+        "tzdb_version": {
+          "description": "The database's release, `lmt` or `manual`.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "offset",
+        "source",
+        "era",
+        "tzdb_version"
+      ],
+      "type": "object"
+    },
+    "ClockSource": {
+      "description": "Where an offset came from.",
+      "oneOf": [
+        {
+          "const": "IANA",
+          "description": "The zone database.",
+          "type": "string"
+        },
+        {
+          "const": "LOCAL_MEAN",
+          "description": "Local mean time from the longitude.",
+          "type": "string"
+        },
+        {
+          "const": "MANUAL",
+          "description": "A fixed offset the consumer stated.",
+          "type": "string"
+        }
+      ]
+    },
     "Combustion": {
       "description": "What the Sun does to one body.",
       "properties": {
@@ -5524,6 +5599,17 @@
           },
           "type": "array"
         },
+        "clock": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClockReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The clock the day was asked on, at the day's opening, for a day asked by zone or local mean time. A day asked by a bare offset has nothing to add to its answer's provenance, and leaves this out of its document (`docs/03-design/time-and-timezone.md` §3.4)."
+        },
         "day": {
           "$ref": "#/$defs/LocalDay",
           "description": "The day, with its arc, its vara, its polar state and the sunrise convention it was reckoned under."
@@ -7547,6 +7633,17 @@
     "TimeStamp": {
       "description": "What the time layer applied.",
       "properties": {
+        "clock": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClockReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The clock the answer's days were reckoned on, at the first day's noon, when the answer has days; left out otherwise (`docs/03-design/time-and-timezone.md` §3.4)."
+        },
         "delta_t_model": {
           "description": "The Delta T model's key.",
           "type": "string"
@@ -7830,6 +7927,11 @@
         "y"
       ],
       "type": "object"
+    },
+    "UtcOffset": {
+      "description": "An offset from UTC in whole seconds, east positive, within ±18 hours (the bound `java.time` and RFC 3339 implementations share; tzdb's widest offsets are inside it).",
+      "format": "int32",
+      "type": "integer"
     },
     "Vaiseshikamsa": {
       "anyOf": [

@@ -1,31 +1,21 @@
 //! The embedded zone database: tzdb bundled as `TZif` data, read through
 //! the `jiff` engine and never from the host, so a resolution is the
 //! same on every machine (ADR-0022). Implements the time-zone port and
-//! offers any of its zones as a [`LocalClock`].
+//! offers any of its zones as a `LocalClock`. A signed pack replaces it
+//! on a context (`zone::pack`, `docs/03-design/zone-packs.md`), and this
+//! stays the fallback.
 
 use std::sync::OnceLock;
 
-use jiff::Timestamp;
-use jiff::civil::DateTime;
-use jiff::tz::{AmbiguousOffset, TimeZone, TimeZoneDatabase};
-use teistro_core::catalogue::distance;
-use teistro_core::error::{Error, Status};
+use jiff::tz::{TimeZone, TimeZoneDatabase};
+use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
-use teistro_core::time::{LocalClock, UtcOffset};
+use teistro_core::time::UtcOffset;
 use teistro_port_timezone::{
     LocalCandidates, LocalSeconds, OffsetInfo, TimeZoneProvider, unknown_zone,
 };
 
-/// Seconds in a day.
-const SECONDS_PER_DAY: f64 = 86_400.0;
-/// The year the bundled data is taken to describe when its version
-/// cannot be read.
-const FALLBACK_VERSION_YEAR: i16 = 2026;
-/// How many suggestions an unknown zone gets.
-const SUGGESTIONS: usize = 3;
-/// The edit distance a suggestion is worth: the core's own threshold,
-/// beyond which its distance answers with a lower bound.
-const SUGGESTION_DISTANCE: usize = 2;
+use super::engine::{self, ZoneClock};
 
 /// The embedded database.
 ///
@@ -102,22 +92,7 @@ impl EmbeddedTzdb {
     /// ```
     #[must_use]
     pub fn suggest(&self, name: &str) -> Vec<String> {
-        let wanted = name.to_ascii_lowercase();
-        let mut scored: Vec<(usize, String)> = self
-            .db
-            .available()
-            .map(|known| {
-                let name = known.to_string();
-                (distance(&wanted, &name.to_ascii_lowercase()), name)
-            })
-            .filter(|(d, _)| *d <= SUGGESTION_DISTANCE)
-            .collect();
-        scored.sort();
-        scored
-            .into_iter()
-            .take(SUGGESTIONS)
-            .map(|(_, name)| name)
-            .collect()
+        engine::suggest(self.db.available().map(|known| known.to_string()), name)
     }
 
     /// A zone of the database as a clock.
@@ -141,18 +116,11 @@ impl EmbeddedTzdb {
     ///
     /// An unknown zone, with the nearest names as the hint.
     pub fn clock(&self, name: &str) -> Result<ZoneClock, Error> {
-        Ok(ZoneClock {
-            tz: self.zone(name)?,
-            name: name.to_string(),
-            version: EmbeddedTzdb::bundled_version(),
-        })
-    }
-
-    fn version_year(&self) -> i16 {
-        self.version()
-            .get(..4)
-            .and_then(|digits| digits.parse().ok())
-            .unwrap_or(FALLBACK_VERSION_YEAR)
+        Ok(ZoneClock::new(
+            self.zone(name)?,
+            name,
+            EmbeddedTzdb::bundled_version(),
+        ))
     }
 }
 
@@ -160,32 +128,6 @@ impl Default for EmbeddedTzdb {
     fn default() -> EmbeddedTzdb {
         EmbeddedTzdb::new()
     }
-}
-
-/// A Julian day as the engine's timestamp.
-fn timestamp(instant: JulianDay<Utc>) -> Result<Timestamp, Error> {
-    let seconds = (instant.get() - JulianDay::<Utc>::UNIX_EPOCH.get()) * SECONDS_PER_DAY;
-    let whole = seconds.floor();
-    let nanos = ((seconds - whole) * 1e9).round();
-    #[allow(
-        clippy::cast_possible_truncation,
-        reason = "a floored second count and a rounded sub-second"
-    )]
-    let (mut second, mut nano) = (whole as i64, nanos as i32);
-    if nano >= 1_000_000_000 {
-        second = second.saturating_add(1);
-        nano = 0;
-    }
-    Timestamp::new(second, nano).map_err(|_| {
-        Error::new(
-            Status::OutOfRange,
-            format!("{instant} is outside the zone database's range (years -9999 to 9999)"),
-        )
-    })
-}
-
-fn offset_of(offset: jiff::tz::Offset) -> Result<UtcOffset, Error> {
-    Ok(UtcOffset::try_from_seconds(offset.seconds())?)
 }
 
 impl TimeZoneProvider for EmbeddedTzdb {
@@ -202,111 +144,15 @@ impl TimeZoneProvider for EmbeddedTzdb {
     }
 
     fn offset_at(&self, zone: &str, instant: JulianDay<Utc>) -> Result<OffsetInfo, Error> {
-        let tz = self.zone(zone)?;
-        let ts = timestamp(instant)?;
-        let info = tz.to_offset_info(ts);
-        Ok(OffsetInfo {
-            offset: offset_of(info.offset())?,
-            abbreviation: info.abbreviation().to_string(),
-            is_dst: info.dst().is_dst(),
-            before_rules: tz.preceding(ts).next().is_none(),
-        })
+        engine::offset_info(&self.zone(zone)?, instant)
     }
 
     fn candidates(&self, zone: &str, local: LocalSeconds) -> Result<LocalCandidates, Error> {
-        let tz = self.zone(zone)?;
-        let nanos = i32::try_from(local.nanos).unwrap_or(0);
-        let as_utc = Timestamp::new(local.seconds, nanos).map_err(|_| {
-            Error::new(
-                Status::OutOfRange,
-                format!("{local} is outside the zone database's range"),
-            )
-        })?;
-        let civil: DateTime = TimeZone::UTC.to_datetime(as_utc);
-        Ok(match tz.to_ambiguous_timestamp(civil).offset() {
-            AmbiguousOffset::Unambiguous { offset } => LocalCandidates::Unambiguous {
-                offset: offset_of(offset)?,
-            },
-            AmbiguousOffset::Gap { before, after } => LocalCandidates::Gap {
-                before: offset_of(before)?,
-                after: offset_of(after)?,
-            },
-            AmbiguousOffset::Fold { before, after } => LocalCandidates::Overlap {
-                earlier: offset_of(before)?,
-                later: offset_of(after)?,
-            },
-        })
+        engine::candidates(&self.zone(zone)?, local)
     }
 
     fn current_offsets(&self, zone: &str) -> Result<Vec<UtcOffset>, Error> {
-        let tz = self.zone(zone)?;
-        let year = self.version_year();
-        let mut offsets = Vec::with_capacity(2);
-        for month in [1i8, 4, 7, 10] {
-            let Ok(civil) = DateTime::new(year, month, 1, 12, 0, 0, 0) else {
-                continue;
-            };
-            let Ok(ts) = TimeZone::UTC.to_timestamp(civil) else {
-                continue;
-            };
-            let offset = offset_of(tz.to_offset(ts))?;
-            if !offsets.contains(&offset) {
-                offsets.push(offset);
-            }
-        }
-        offsets.sort();
-        Ok(offsets)
-    }
-}
-
-/// A zone of the embedded database as a clock.
-///
-/// ```
-/// use teistro_core::quantity::{JulianDay, Utc};
-/// use teistro_time::{EmbeddedTzdb, LocalClock, UtcOffset};
-///
-/// let new_york = EmbeddedTzdb::shared().clock("America/New_York")?;
-/// let (january, july) = (JulianDay::<Utc>::try_new(2_460_311.0)?, JulianDay::<Utc>::try_new(2_460_492.0)?);
-/// assert_eq!(new_york.offset_at(january), UtcOffset::literal(-5, 0, 0));
-/// assert_eq!(new_york.offset_at(july), UtcOffset::literal(-4, 0, 0));
-/// assert!(new_york.describe().starts_with("America/New_York (tzdb "));
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-#[derive(Clone, Debug)]
-pub struct ZoneClock {
-    tz: TimeZone,
-    name: String,
-    version: &'static str,
-}
-
-impl ZoneClock {
-    /// The zone's name.
-    ///
-    /// ```
-    /// use teistro_time::EmbeddedTzdb;
-    ///
-    /// assert_eq!(EmbeddedTzdb::shared().clock("Europe/London")?.name(), "Europe/London");
-    /// # Ok::<(), teistro_core::error::Error>(())
-    /// ```
-    #[must_use]
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-}
-
-impl LocalClock for ZoneClock {
-    fn offset_at(&self, instant: JulianDay<Utc>) -> UtcOffset {
-        let ts =
-            timestamp(instant).unwrap_or(if instant.get() < JulianDay::<Utc>::UNIX_EPOCH.get() {
-                Timestamp::MIN
-            } else {
-                Timestamp::MAX
-            });
-        UtcOffset::try_from_seconds(self.tz.to_offset(ts).seconds()).unwrap_or(UtcOffset::UTC)
-    }
-
-    fn describe(&self) -> String {
-        format!("{} (tzdb {})", self.name, self.version)
+        engine::current_offsets(&self.zone(zone)?, self.version())
     }
 }
 
@@ -316,6 +162,7 @@ mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 
     use super::*;
+    use teistro_core::time::LocalClock;
 
     fn at(jd: f64) -> JulianDay<Utc> {
         JulianDay::try_new(jd).unwrap()

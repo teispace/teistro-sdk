@@ -1681,6 +1681,7 @@ name = "teistro"
 version = "1.0.0-rc.1"
 dependencies = [
  "ed25519-dalek",
+ "jiff-tzdb",
  "schemars",
  "serde",
  "serde_json",
@@ -1789,6 +1790,7 @@ name = "teistro-core"
 version = "1.0.0-rc.1"
 dependencies = [
  "criterion",
+ "ed25519-dalek",
  "libm",
  "proptest",
  "schemars",
@@ -1997,6 +1999,7 @@ version = "1.0.0-rc.1"
 dependencies = [
  "boon",
  "getrandom 0.3.4",
+ "jiff-tzdb",
  "schemars",
  "serde",
  "serde_json",
@@ -2375,7 +2378,9 @@ version = "1.0.0-rc.1"
 name = "teistro-time"
 version = "1.0.0-rc.1"
 dependencies = [
+ "base64",
  "criterion",
+ "ed25519-dalek",
  "jiff",
  "jiff-tzdb",
  "proptest",

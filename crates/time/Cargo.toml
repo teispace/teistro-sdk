@@ -21,7 +21,13 @@ publish = false
 # (`docs/03-design/document-schema.md`).
 schema = ["dep:schemars", "teistro-astro/schema", "teistro-calendar/schema", "teistro-core/schema", "teistro-port-ephemeris/schema", "teistro-port-timezone/schema"]
 
+# Reads a zone pack from its exact bytes, a detached Ed25519 signature and
+# the caller's key (`docs/03-design/zone-packs.md`).
+signed-packs = ["teistro-core/signed-packs"]
+
 [dependencies]
+# A zone pack's TZif, as standard base64.
+base64 = { version = "0.22", default-features = false, features = ["alloc"] }
 # The embedded zone database: tzdb as TZif, bundled and never read from
 # the host, so a resolution is the same on every machine (ADR-0022).
 jiff = { version = "0.2", default-features = false, features = ["std", "tzdb-bundle-always"] }
@@ -36,6 +42,7 @@ schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]
 criterion = { version = "0.5", default-features = false }
+ed25519-dalek = { version = "3", default-features = false }
 proptest = "1"
 serde_json = "1"
 teistro-siddhanta = { path = "../siddhanta" }

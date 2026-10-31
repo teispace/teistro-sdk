@@ -31,6 +31,26 @@ rule now carries its values.
   within a week, as a `SET` replaces a day.
 - `FAGU_PURNIMA` ships in `NEPAL_PANCHANGA` on the Holika day, from the Ministry of Home
   Affairs' lists of 2082 and 2083.
+**The zone database loads from a signed pack.** `time.loadZones` verifies a
+`teistro.zones/1` pack against the caller's key and replaces the context's
+database, so a clock change needs no SDK release; `cargo xtask zone-pack`
+writes one from a tree `zic` compiled, and the embedded database stays the
+fallback. The agent server takes `--zones`. `signed-packs` now also reaches
+`teistro-core`, where the one signature check lives.
+**Numbers:** none without a pack.
+
+**An almanac answer says its clock.** `provenance.time.clock` states the
+offset, its source, its era and the database on every almanac answer, and a
+range can be asked by `zone`, each day then read on its own offset and
+carrying `clock`. A range asked by a bare offset keeps its documents and day
+hashes; its provenance gains the stamp. `ts_panchanga_request` gains
+`zone_json`.
+**Numbers:** none.
+
+**A range's change points.** `almanac.changes` answers one sorted list of
+every instant the tithi, nakshatra, yoga, karana, the Moon's or Sun's sign or
+the vara changes in a range, in every binding and as an agent tool.
+**Numbers:** none.
 
 **A wasm module that traps refuses as `INTERNAL`, and a host hears of it.**
 **Numbers:** none.

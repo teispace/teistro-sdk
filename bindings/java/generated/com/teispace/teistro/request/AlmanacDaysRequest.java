@@ -23,10 +23,11 @@ import java.util.Objects;
  * @param longitudeDeg The {@code longitudeDeg} field.
  * @param muhurta A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes. Null leaves the SDK's default.
  * @param nepalSambat The {@code nepalSambat} field. Null leaves the SDK's default.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The {@code utcOffsetSeconds} field. Null leaves the SDK's default.
  * @param years The {@code years} field. Null leaves the SDK's default.
+ * @param zone The zone, in place of `utcOffsetSeconds`. Null leaves the SDK's default.
  */
-public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Boolean eclipses, FestivalRequest festivals, DayAsked first, Boolean homaAhuti, Boolean lagnas, DayAsked last, double latitudeDeg, double longitudeDeg, MuhurtaRequest muhurta, Boolean nepalSambat, int utcOffsetSeconds, Boolean years) implements RequestJson {
+public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Boolean eclipses, FestivalRequest festivals, DayAsked first, Boolean homaAhuti, Boolean lagnas, DayAsked last, double latitudeDeg, double longitudeDeg, MuhurtaRequest muhurta, Boolean nepalSambat, Integer utcOffsetSeconds, Boolean years, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -45,10 +46,9 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
      * @param first A civil day as a request names it.
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
-    public AlmanacDaysRequest(DayAsked first, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
-        this(null, null, null, null, first, null, null, null, latitudeDeg, longitudeDeg, null, null, utcOffsetSeconds, null);
+    public AlmanacDaysRequest(DayAsked first, double latitudeDeg, double longitudeDeg) {
+        this(null, null, null, null, first, null, null, null, latitudeDeg, longitudeDeg, null, null, null, null, null);
     }
 
     /**
@@ -77,6 +77,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         private Boolean nepalSambat;
         private Integer utcOffsetSeconds;
         private Boolean years;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -215,7 +216,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
@@ -235,13 +236,24 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         }
 
         /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone, in place of `utcOffsetSeconds`. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public AlmanacDaysRequest build() {
-            return new AlmanacDaysRequest(altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, Objects.requireNonNull(latitudeDeg, "`AlmanacDaysRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`AlmanacDaysRequest.longitudeDeg` is required"), muhurta, nepalSambat, Objects.requireNonNull(utcOffsetSeconds, "`AlmanacDaysRequest.utcOffsetSeconds` is required"), years);
+            return new AlmanacDaysRequest(altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, Objects.requireNonNull(latitudeDeg, "`AlmanacDaysRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`AlmanacDaysRequest.longitudeDeg` is required"), muhurta, nepalSambat, utcOffsetSeconds, years, zone);
         }
     }
 
@@ -267,8 +279,9 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
             Read.number(Read.required(json.get("longitudeDeg"), "AlmanacDaysRequest.longitudeDeg"), "AlmanacDaysRequest.longitudeDeg"),
             Read.orNull(json.get("muhurta"), present -> MuhurtaRequest.of(present)),
             Read.orNull(json.get("nepalSambat"), present -> Read.bool(present, "AlmanacDaysRequest.nepalSambat")),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "AlmanacDaysRequest.utcOffsetSeconds"), "AlmanacDaysRequest.utcOffsetSeconds"),
-            Read.orNull(json.get("years"), present -> Read.bool(present, "AlmanacDaysRequest.years")));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "AlmanacDaysRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("years"), present -> Read.bool(present, "AlmanacDaysRequest.years")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -304,9 +317,14 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         if (nepalSambat != null) {
             json.put("nepalSambat", nepalSambat);
         }
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
         if (years != null) {
             json.put("years", years);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
         }
         return json;
     }

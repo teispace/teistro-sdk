@@ -11,9 +11,10 @@ use teistro_core::catalogue::Calendar;
 use teistro_core::error::Error;
 use teistro_core::quantity::Place;
 use teistro_core::strict;
-use teistro_core::time::UtcOffset;
+use teistro_time::ZoneSpec;
 
-use crate::asked::{DayAsked, offset_of, place_of};
+use crate::area::DayClock;
+use crate::asked::{DayAsked, place_of};
 use crate::{AlmanacRequest, FestivalRequest};
 
 /// A range of days read from JSON: the first and last day, the place and
@@ -39,7 +40,7 @@ pub struct DaysRequest {
     /// Where the days are reckoned.
     pub place: Place,
     /// The clock they are reckoned on.
-    pub offset: UtcOffset,
+    pub clock: DayClock,
     /// What is asked beside the days.
     pub beside: AlmanacRequest,
 }
@@ -47,7 +48,7 @@ pub struct DaysRequest {
 impl DaysRequest {
     /// What a JSON days request is, for a caller choosing it by name (the
     /// agent server's `almanac.days`).
-    pub const DESCRIPTION: &'static str = "`request` is a range of days: `first` and optional `last` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out), `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`; and beside the days, optionally, a `muhurta` search and a `festivals` reckoning, each the record its area reads, and `true` flags for the lunar `years`, the `eclipses` and each day's `nepalSambat` date. The answer's `days` are every day's panchanga, and each section asked is its own `{value, provenance}`.";
+    pub const DESCRIPTION: &'static str = "`request` is a range of days: `first` and optional `last` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out), `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each day then read on its own offset and carrying its `clock`; and beside the days, optionally, a `muhurta` search and a `festivals` reckoning, each the record its area reads, and `true` flags for the lunar `years`, the `eclipses` and each day's `nepalSambat` date. The answer's `days` are every day's panchanga, and each section asked is its own `{value, provenance}`.";
 
     /// The request a binding writes for a range of days, read and checked;
     /// a refusal names the field as written, a record's from the record's
@@ -89,7 +90,7 @@ impl DaysRequest {
             first: asked.first.in_calendar(calendar),
             last: asked.last.unwrap_or(asked.first).in_calendar(calendar),
             place: place_of(asked.latitude_deg, asked.longitude_deg, asked.altitude_m)?,
-            offset: offset_of(asked.utc_offset_seconds)?,
+            clock: DayClock::asked(asked.utc_offset_seconds, asked.zone)?,
             beside,
         })
     }
@@ -162,7 +163,11 @@ pub(crate) struct Asked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone, in place of `utcOffsetSeconds`.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     #[serde(default)]
     years: bool,
     #[serde(default)]

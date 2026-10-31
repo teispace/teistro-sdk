@@ -153,6 +153,7 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
             sections: 0,
             muhurta_json: ptr::null(),
             festivals_json: ptr::null(),
+            zone_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );

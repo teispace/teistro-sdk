@@ -5,6 +5,10 @@
 //! and §4).
 
 pub mod embedded;
+mod engine;
+pub mod pack;
+
+pub use engine::ZoneClock;
 
 use core::fmt;
 
@@ -14,7 +18,8 @@ use teistro_core::catalogue::Calendar;
 use teistro_core::error::{Detail, Error};
 use teistro_core::quantity::{JulianDay, Longitude, Place, Utc};
 use teistro_core::settings::{DstGap, DstOverlap, PolarDayPolicy, Settings, UnknownTime};
-use teistro_core::time::{LocalClock, LocalMeanTime, UtcOffset};
+use teistro_core::time::{ClockReading, LocalClock, LocalMeanTime, UtcOffset};
+pub use teistro_core::time::{ZoneEra, ZoneSource};
 use teistro_port_timezone::{LocalCandidates, LocalSeconds, TimeZoneProvider};
 
 use crate::civil::{CivilDateTime, CivilTime, NANOS_PER_SECOND, SECONDS_PER_DAY};
@@ -104,6 +109,30 @@ impl ZoneSpec {
     }
 }
 
+impl ZoneSpec {
+    /// The zone as a clock over a database.
+    ///
+    /// ```
+    /// use teistro_time::{EmbeddedTzdb, ZoneSpec};
+    ///
+    /// let refused = ZoneSpec::iana("Asia/Kathmandoo").clock(EmbeddedTzdb::shared());
+    /// assert!(refused.is_err_and(|why| why.field() == Some("zone")));
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A zone the database does not have, with the nearest names.
+    pub fn clock<P: TimeZoneProvider>(&self, provider: P) -> Result<ProviderClock<P>, Error> {
+        if let ZoneSpec::Iana { zone } = self {
+            provider.offset_at(zone, JulianDay::<Utc>::J2000)?;
+        }
+        Ok(ProviderClock {
+            provider,
+            zone: self.clone(),
+        })
+    }
+}
+
 impl fmt::Display for ZoneSpec {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -177,82 +206,6 @@ impl Default for Policy {
             unknown_time: UnknownTime::Refuse,
         }
     }
-}
-
-/// Where the offset came from.
-///
-/// ```
-/// # use teistro_calendar::CalendarDate;
-/// # use teistro_core::catalogue::Calendar;
-/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
-/// use teistro_core::time::UtcOffset;
-/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
-/// use teistro_time::ZoneSource;
-///
-/// let tzdb = EmbeddedTzdb::shared();
-/// let fixed = ZoneSpec::fixed(UtcOffset::literal(5, 45, 0));
-/// assert_eq!(resolve(&noon(2024, 1, 1), &fixed, &Policy::default(), tzdb)?.zone.source, ZoneSource::Manual);
-/// let zone = ZoneSpec::iana("Asia/Kathmandu");
-/// assert_eq!(resolve(&noon(2024, 1, 1), &zone, &Policy::default(), tzdb)?.zone.source, ZoneSource::Iana);
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum ZoneSource {
-    /// The zone database.
-    Iana,
-    /// Local mean time from the longitude.
-    LocalMean,
-    /// A fixed offset the consumer stated.
-    Manual,
-}
-
-impl ZoneSource {
-    /// The key it is serialised as: `IANA`, `LOCAL_MEAN`, `MANUAL`.
-    ///
-    /// ```
-    /// use teistro_time::ZoneSource;
-    ///
-    /// assert_eq!(ZoneSource::LocalMean.key(), "LOCAL_MEAN");
-    /// ```
-    #[must_use]
-    pub const fn key(self) -> &'static str {
-        match self {
-            ZoneSource::Iana => "IANA",
-            ZoneSource::LocalMean => "LOCAL_MEAN",
-            ZoneSource::Manual => "MANUAL",
-        }
-    }
-}
-
-/// Which rules produced the offset.
-///
-/// ```
-/// # use teistro_calendar::CalendarDate;
-/// # use teistro_core::catalogue::Calendar;
-/// # let noon = |y, m, d| CivilDateTime::at(CalendarDate::defined(Calendar::Gregorian, y, m, d), CivilTime::NOON);
-/// use teistro_time::{CivilDateTime, CivilTime, EmbeddedTzdb, Policy, ZoneSpec, resolve};
-/// use teistro_time::ZoneEra;
-///
-/// let kathmandu = ZoneSpec::iana("Asia/Kathmandu");
-/// let era = |y| resolve(&noon(y, 1, 1), &kathmandu, &Policy::default(), EmbeddedTzdb::shared()).map(|read| read.zone.era);
-/// // +05:45 today, +05:30 in 1985, local mean time before the first rule.
-/// assert_eq!(era(2024)?, ZoneEra::Current);
-/// assert_eq!(era(1985)?, ZoneEra::Historical);
-/// assert_eq!(era(1900)?, ZoneEra::BeforeRules);
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum ZoneEra {
-    /// An offset the zone applies in the database's own year.
-    Current,
-    /// An offset from the zone's earlier rules.
-    Historical,
-    /// Before the zone's first rule: the database's local-mean-time stub.
-    BeforeRules,
 }
 
 /// Which occurrence an overlap resolved to.
@@ -688,16 +641,32 @@ impl fmt::Debug for DayContext<'_> {
     }
 }
 
-/// A zone as a clock, read through the provider: what the local day
-/// needs to place a civil midnight when the polar policy asks for one.
-struct ProviderClock<'a> {
-    provider: &'a dyn TimeZoneProvider,
-    zone: &'a ZoneSpec,
+/// A zone as a clock, read through a database: what an almanac asked by
+/// zone reckons on (`docs/03-design/time-and-timezone.md` §3.4), and what
+/// the local day needs to place a civil midnight when the polar policy
+/// asks for one. Built by [`ZoneSpec::clock`], which has looked the zone
+/// up.
+///
+/// ```
+/// use teistro_core::quantity::JulianDay;
+/// use teistro_time::{EmbeddedTzdb, LocalClock, ZoneSource, ZoneSpec};
+///
+/// let zone = ZoneSpec::iana("Asia/Kathmandu");
+/// let clock = zone.clock(EmbeddedTzdb::shared())?;
+/// let read = clock.reading(JulianDay::J2000);
+/// assert_eq!((read.offset.seconds(), read.source), (20_700, ZoneSource::Iana));
+/// assert_eq!(read.tzdb_version, EmbeddedTzdb::bundled_version());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Debug)]
+pub struct ProviderClock<P> {
+    provider: P,
+    zone: ZoneSpec,
 }
 
-impl LocalClock for ProviderClock<'_> {
+impl<P: TimeZoneProvider> LocalClock for ProviderClock<P> {
     fn offset_at(&self, instant: JulianDay<Utc>) -> UtcOffset {
-        match self.zone {
+        match &self.zone {
             ZoneSpec::Fixed { offset } => *offset,
             ZoneSpec::LocalMean { longitude } => LocalMeanTime::new(*longitude).offset(),
             // The zone was looked up before this clock was built, so the
@@ -712,6 +681,25 @@ impl LocalClock for ProviderClock<'_> {
 
     fn describe(&self) -> String {
         format!("{} ({})", self.zone, self.provider.version())
+    }
+
+    fn reading(&self, instant: JulianDay<Utc>) -> ClockReading {
+        match &self.zone {
+            ZoneSpec::Fixed { offset } => offset.reading(instant),
+            ZoneSpec::LocalMean { longitude } => LocalMeanTime::new(*longitude).reading(instant),
+            ZoneSpec::Iana { zone } => {
+                let offset = self.offset_at(instant);
+                let found = era_of(&self.provider, zone, offset, instant, &mut Vec::new());
+                let (era, abbreviation) = found.unwrap_or((ZoneEra::Historical, String::new()));
+                ClockReading {
+                    offset,
+                    source: ZoneSource::Iana,
+                    era,
+                    tzdb_version: self.provider.version().to_string(),
+                    abbreviation: (!abbreviation.is_empty()).then_some(abbreviation),
+                }
+            }
+        }
     }
 }
 
@@ -806,12 +794,8 @@ pub fn resolve_at_place_with(
     if civil.time.is_some() || policy.unknown_time != UnknownTime::Sunrise {
         return resolve_with(calendar, civil, zone, policy, provider);
     }
-    if let ZoneSpec::Iana { zone: name } = zone {
-        // An unknown zone is refused here, with the provider's suggestions,
-        // before the clock below is built over it.
-        provider.offset_at(name, JulianDay::J2000)?;
-    }
-    let clock = ProviderClock { provider, zone };
+    // An unknown zone is refused here, with the provider's suggestions.
+    let clock = zone.clock(provider)?;
     let local = local_day(
         day.model,
         calendar,

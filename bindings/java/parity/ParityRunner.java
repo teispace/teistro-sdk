@@ -1472,6 +1472,39 @@ public final class ParityRunner {
                 }
             }
 
+            // ── The zones ─────────────────────────────────────────────────
+            // A signed one-zone pack of an imagined release, so a provenance
+            // naming it can only have come from the pack (03-design/zone-packs.md).
+            try (Context zoned = teistro.context(ContextOptions.builder()
+                    .profile("nepali-default").ephemeris(Ephemeris.BUILTIN).build())) {
+                java.util.function.Function<ZoneDatabase, String> zonesLine = zones -> zones.source() + " "
+                        + zones.version() + " " + zones.zones() + " " + zones.bundled();
+                put("time-zone-database", zonesLine.apply(zoned.time().zoneDatabase()));
+                java.util.HexFormat hex = java.util.HexFormat.of();
+                put("time-zone-pack", zonesLine.apply(zoned.time().loadZones(
+                        "{\"format\":\"teistro.zones/1\",\"version\":\"2099a\",\"zones\":{\"Asia/Kathmandu\":\"VFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAVFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAAABD/////ofJ9hAAAAAAeGDCoAQIAAE/8AAAAAE1YAAQAAFDcAApMTVQAKzA1MzAAKzA1NDUACjwrMDU0NT4tNTo0NQo=\"},\"links\":{\"Asia/Katmandu\":\"Asia/Kathmandu\"}}"
+                                .getBytes(StandardCharsets.UTF_8),
+                        hex.parseHex("73a4a729d2d30fdf174da7411bf20d8ff297231d816d0004b7435b6e7b70449d2e128616f7fb7cdcb2d6d0aecab2e1a287f806da782520c99bfe770dd0b9b406"),
+                        hex.parseHex("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c"),
+                        "2099a")));
+                var clock = zoned.almanac()
+                        .inZone(date(2026, 11, 1), date(2026, 11, 1), place, Civil.ianaZone("Asia/Kathmandu"))
+                        .provenance().time().clock();
+                put("almanac-in-zone", clock.offset() + " " + clock.abbreviation() + " " + clock.tzdbVersion());
+                ChangePoints changes = zoned.almanac().changes(
+                        com.teispace.teistro.request.ChangesRequest.builder()
+                                .first(new com.teispace.teistro.request.DayAsked(1, 11, 2026))
+                                .last(new com.teispace.teistro.request.DayAsked(2, 11, 2026))
+                                .latitudeDeg(place.latitudeDeg().value())
+                                .longitudeDeg(place.longitudeDeg().value())
+                                .altitudeM(place.altitudeM().value())
+                                .utcOffsetSeconds(20_700)
+                                .build());
+                ChangePoints.Point point = changes.points().get(0);
+                put("almanac-changes", changes.points().size() + " " + point.kind() + " " + point.from() + " "
+                        + point.to());
+            }
+
             // ── The lagna table and the homa ahuti ────────────────────────
             // 15 June 2025 at Kathmandu over the built-in sky, each sign's span
             // (03-design/amrit-kalam-and-lagnas.md §2) and each graha's share
@@ -1592,6 +1625,10 @@ public final class ParityRunner {
             surface("almanac.first_year", () -> ctx.almanac().firstYear(null, place, 0));
             surface("almanac.published_reasons", () -> ctx.almanac().publishedReasons(day, day, place, 0, null,
                     List.of(), null));
+            surface("almanac.changes", () -> ctx.almanac().changes(null));
+            surface("almanac.in_zone", () -> ctx.almanac().inZone(null, null, null, null));
+            surface("time.load_zones", () -> ctx.time().loadZones(null, null, null, null));
+            surface("time.zone_database", () -> ctx.time().zoneDatabase());
             surface("almanac.published_from_signed", () -> ctx.almanac().publishedFromSigned(new byte[0],
                     new byte[0], new byte[0], 0));
             surface("calendar.tibetan_year", () -> ctx.calendar().tibetanYear(2026));

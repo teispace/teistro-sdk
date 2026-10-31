@@ -72,6 +72,60 @@ final class AshauchQuery extends _Request {
   List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg, request, table, tradition, utcOffsetSeconds];
 }
 
+/// The request as a binding writes it.
+final class ChangesRequest extends _Request {
+  const ChangesRequest({
+    this.altitudeM = 0.0,
+    this.calendar,
+    required this.first,
+    this.kinds = const [],
+    this.last,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    this.utcOffsetSeconds,
+    this.zone,
+  });
+
+  final double altitudeM;
+
+  /// The calendar the days are written in; Gregorian when left out.
+  final Calendar? calendar;
+
+  final DayAsked first;
+
+  /// The kinds wanted; every kind when left out.
+  final List<ChangeKind> kinds;
+
+  /// The last day; the first when left out.
+  final DayAsked? last;
+
+  final double latitudeDeg;
+
+  final double longitudeDeg;
+
+  /// The clock's offset; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone; or `utcOffsetSeconds`, not both.
+  final Object? zone;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'first': first._wire,
+    'kinds': [for (final e0 in kinds) e0.key],
+    if (last case final lastValue?) 'last': lastValue._wire,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, calendar, first, kinds, last, latitudeDeg, longitudeDeg, utcOffsetSeconds, zone];
+}
+
 /// The request as a binding writes it, the records taken out.
 final class AlmanacDaysRequest extends _Request {
   const AlmanacDaysRequest({
@@ -87,8 +141,9 @@ final class AlmanacDaysRequest extends _Request {
     required this.longitudeDeg,
     this.muhurta,
     this.nepalSambat = false,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
     this.years = false,
+    this.zone,
   });
 
   final double altitudeM;
@@ -115,9 +170,12 @@ final class AlmanacDaysRequest extends _Request {
 
   final bool nepalSambat;
 
-  final int utcOffsetSeconds;
+  final int? utcOffsetSeconds;
 
   final bool years;
+
+  /// The zone, in place of `utcOffsetSeconds`.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -133,12 +191,13 @@ final class AlmanacDaysRequest extends _Request {
     'longitudeDeg': longitudeDeg,
     if (muhurta case final muhurtaValue?) 'muhurta': muhurtaValue._wire,
     'nepalSambat': nepalSambat,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
     'years': years,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, muhurta, nepalSambat, utcOffsetSeconds, years];
+  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, muhurta, nepalSambat, utcOffsetSeconds, years, zone];
 }
 
 /// [`PackRequest`] as the bindings write it.
@@ -1343,6 +1402,30 @@ final class DayAsked extends _Request {
 
   @override
   List<Object?> get _fields => [day, month, year];
+}
+
+/// What a change point changes. The order is the order two points on one instant stand in.
+enum ChangeKind implements _Keyed {
+  /// The tithi.
+  tithi('TITHI'),
+  /// The Moon's nakshatra.
+  nakshatra('NAKSHATRA'),
+  /// The nitya yoga.
+  yoga('YOGA'),
+  /// The karana.
+  karana('KARANA'),
+  /// The Moon's sign.
+  moonSign('MOON_SIGN'),
+  /// The Sun's sign: the sankranti.
+  sunSign('SUN_SIGN'),
+  /// The vara, at sunrise.
+  vara('VARA');
+
+  const ChangeKind(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }
 
 /// A kind of day a search may ask for without naming a pack, each read by rules the SDK states (`03-design/next-occurrence.md` §2).

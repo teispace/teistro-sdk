@@ -334,6 +334,7 @@ struct Own {
     layouts: Vec<teistro::Layout>,
     dashas: Vec<teistro::DashaDefinition>,
     packs: Vec<Pack>,
+    zones: Option<Arc<teistro::ZonePack>>,
 }
 
 impl Own {
@@ -347,6 +348,10 @@ impl Own {
         let builder = self.dashas.iter().fold(builder, |builder, definition| {
             builder.dasha_system(definition.clone())
         });
+        let builder = match &self.zones {
+            Some(zones) => builder.zones(Arc::clone(zones)),
+            None => builder,
+        };
         let context = builder.build()?;
         for pack in &self.packs {
             context.intl().load_pack(&pack.bytes)?;
@@ -601,6 +606,28 @@ impl Server {
         // A context built before the pack would answer without it.
         self.contexts.clear();
         Ok(self)
+    }
+
+    /// A zone database every answer reads in place of the embedded one
+    /// (`03-design/zone-packs.md`): the operator verifies the pack, as
+    /// `ZonePack::from_signed` does, and every context shares it.
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro::ZonePack;
+    /// use teistro_mcp::{Engine, Server};
+    ///
+    /// let utc = jiff_tzdb::get("UTC").ok_or("a zone")?.1;
+    /// let pack = ZonePack::from_bytes(&ZonePack::write("2026f", [("UTC", utc)]))?;
+    /// let _server = Server::new(Engine::None).with_zones(Arc::new(pack));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn with_zones(mut self, pack: Arc<teistro::ZonePack>) -> Server {
+        self.own.zones = Some(pack);
+        // A context built before the pack would answer without it.
+        self.contexts.clear();
+        self
     }
 
     /// What each pack reported when it was loaded, in the order given.

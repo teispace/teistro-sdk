@@ -273,6 +273,8 @@ import type {
   VrataParana,
   WesternAspectRequest,
   YogaRules,
+  ChangeKind,
+  ChangesRequest,
 } from './requests.js';
 
 export * from './catalogue.js';
@@ -7340,6 +7342,25 @@ export declare class TimeArea {
   convert(jd: number, from: Scale, to: Scale): TimeConversion;
   /** Delta T at a UT1 instant, with what produced it. */
   deltaT(jdUt1: number): DeltaT;
+  /** The zone database this context reads (`03-design/zone-packs.md` §4). */
+  zoneDatabase(): ZoneDatabase;
+  /**
+   * Replaces this context's zone database with a signed pack, for every
+   * answer after this one. A release under `atLeast` is refused.
+   */
+  loadZones(pack: Uint8Array, signature: Uint8Array, key: Uint8Array, atLeast?: string): ZoneDatabase;
+}
+
+/** The zone database a context reads. */
+export interface ZoneDatabase {
+  /** Where it comes from. */
+  readonly source: 'EMBEDDED' | 'PACK';
+  /** Its release (`2026f`), as every answer's provenance names it. */
+  readonly version: string;
+  /** How many names it holds, links included. */
+  readonly zones: number;
+  /** The release compiled into this build: the fallback. */
+  readonly bundled: string;
 }
 
 /** `sdk.intl` — the locale, its messages and the scripts they are in. */
@@ -7424,6 +7445,11 @@ export declare class AlmanacArea {
    * computed separately.
    */
   of(request: AlmanacRequest): Almanac;
+  /**
+   * `of` on a zone's clock: each day on the offset of its own noon
+   * (`03-design/time-and-timezone.md` §3.4).
+   */
+  inZone(request: Omit<AlmanacRequest, 'utcOffsetSeconds'> & { readonly zone: ZoneSpec }): Almanac;
   /** The almanac of one day, which is the range of one unwrapped. */
   day(request: AlmanacDayRequest): AlmanacDay;
   /**
@@ -7588,6 +7614,12 @@ export declare class AlmanacArea {
    */
   next(request: NextRequest): NextOccurrence;
   /**
+   * Every instant in a range at which something changes, sorted, as one
+   * list (`03-design/change-points.md`).
+   */
+  changes(request: ChangesRequest): ChangePoints;
+
+  /**
    * Every rule of a festival pack with what it is, and the fields no source
    * gives.
    *
@@ -7650,6 +7682,28 @@ export interface NextRequest {
 }
 
 /** The next day `almanac.next` found, frozen. */
+export interface ChangePoint {
+  /** The instant, as a UTC Julian day. */
+  readonly at: number;
+  /** What changes. */
+  readonly kind: ChangeKind;
+  /** The catalogue key of the member that ended. */
+  readonly from: string;
+  /** The catalogue key of the member that began. */
+  readonly to: string;
+}
+
+/** A range's change points, sorted, with the window they were read over. */
+export interface ChangePoints {
+  /** Every point at or after the window's start and before its end. */
+  readonly points: readonly ChangePoint[];
+  /** The instants the range covers. */
+  readonly window: { readonly from: number; readonly to: number };
+  /** What computed it, and the clock it was asked on. */
+  readonly provenance: Provenance;
+}
+
+/** The next day `AlmanacArea.next` found. */
 export interface NextOccurrence {
   /** The day. */
   readonly day: CalendarDate;

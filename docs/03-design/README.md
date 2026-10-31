@@ -202,6 +202,8 @@ the rise and set solver when the port was promoted.
 | [`festival-rule-language.md`](festival-rule-language.md) | the forms the festival rule language lacks (moonrise, day muhurtas, `GREATER`, either paksha, the weekday, solar and civil dates, the adhika month, the Sun's sign, counts back and two days), each sourced and tested against the 57 excluded festivals; design, not built |
 | [`setup-disagreements.md`](setup-disagreements.md) | where the official (committee) and the modern reckoning name another day, and the instants that say why (draft, P1-10) |
 | [`icalendar.md`](icalendar.md) | the iCalendar feed of a range's observances: the writer, the stable UID, the almanac call (built, P2-2) |
+| [`change-points.md`](change-points.md) | a range's change points: one sorted list of tagged instants read from the spans a range already finds (built, SR-07) |
+| [`zone-packs.md`](zone-packs.md) | the zone database from a signed pack: IANA's compiled TZif as data, the shared signature check, the per-context fallback (built, SR-09) |
 | [`next-occurrence.md`](next-occurrence.md) | the next day a festival rule or a kind of day (Ekadashi, Purnima, Amavasya, Sankranti) falls on after an instant, with no year asked: the kinds' rules, the 400-day limit, the growing windows (built, SR-06) |
 | [`sankalpa.md`](sankalpa.md) | the time a sankalpa recites: which instant reads each part, the conventions named in the answer, the words still to come (built, P2-3) |
 | [`ashauch.md`](ashauch.md) | the period of impurity after a birth or a death: the night rule, the lengths, the Dharmasindhu's table as data, late news and overlap (built, P2-3) |

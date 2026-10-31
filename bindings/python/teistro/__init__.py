@@ -147,6 +147,8 @@ from ._requests import (
     AddSign as AddSign,
     AfterCycle as AfterCycle,
     AlmanacDaysRequest as AlmanacDaysRequest,
+    ChangeKind as ChangeKind,
+    ChangesRequest as ChangesRequest,
     MahadvadashiKind as MahadvadashiKind,
     MuhurtaRequest as MuhurtaRequest,
     AngleMethod as AngleMethod,
@@ -1030,7 +1032,10 @@ __all__ = [
     "Scale",
     "Overflow",
     "DateSpan",
+    "ChangePoint",
+    "ChangePoints",
     "NextOccurrence",
+    "ZoneDatabase",
     "Status",
     "Teistro",
     "TeistroError",
@@ -2774,6 +2779,57 @@ class TimeArea(_Area):
         """TT less UT1 at an instant, and where the value came from."""
         return self._context.inner.time_delta_t(jd_ut1)
 
+    def zone_database(self) -> "ZoneDatabase":
+        """The zone database this context reads (`03-design/zone-packs.md`
+        §4): the release every answer's provenance names, and whether it
+        came from a signed pack or the build."""
+        return _zone_database(self._context.inner.time_zone_database())
+
+    def load_zones(self, pack: bytes, signature: bytes, key: bytes, at_least: str = "") -> "ZoneDatabase":
+        """Replaces this context's zone database with a signed pack, for
+        every answer after this one. `signature` is the publisher's detached
+        Ed25519 signature over `pack` (64 bytes), `key` the publisher's
+        public key (32 bytes), which the app fixes at its own build. A
+        release under `at_least`, the newest the app has applied, is
+        refused, so a replayed pack cannot roll the rules back.
+
+        Raises :class:`TeistroError` `INVALID_ARG` naming `key`, `signature`,
+        `version`, `at_least` or `pack`, and leaves the database as it was."""
+        return _zone_database(self._context.inner.time_load_zones(pack, signature, key, at_least))
+
+
+@dataclass(frozen=True)
+class ZoneDatabase:
+    """The zone database a context reads (`03-design/zone-packs.md` §4)."""
+
+    source: str
+    """`EMBEDDED` or `PACK`."""
+
+    version: str
+    """Its release (`2026f`), as every answer's provenance names it."""
+
+    zones: int
+    """How many names it holds, links included."""
+
+    bundled: str
+    """The release compiled into this build: the fallback."""
+
+
+def _zone_database(text: str) -> ZoneDatabase:
+    raw = json.loads(text)
+    return ZoneDatabase(
+        source=raw["source"], version=raw["version"], zones=int(raw["zones"]), bundled=raw["bundled"]
+    )
+
+
+def _zone_json(zone: ZoneSpec) -> str:
+    """A zone as the record the boundary reads beside a range."""
+    if zone.kind == ZoneKind.IANA:
+        return json.dumps({"kind": "IANA", "zone": zone.zone})
+    if zone.kind == ZoneKind.FIXED:
+        return json.dumps({"kind": "FIXED", "offset": zone.offset_seconds})
+    return json.dumps({"kind": "LOCAL_MEAN", "longitude": float(zone.longitude_deg)})
+
 
 @dataclass(frozen=True)
 class MessagePart:
@@ -3321,6 +3377,70 @@ class AlmanacArea(_Area):
         then founded as only what their rules read, which is what
         `AlmanacArea.festivals` asks.
         """
+        return self._range(
+            from_date,
+            to_date,
+            place,
+            utc_offset_seconds,
+            None,
+            muhurta,
+            festivals,
+            (PANCHANGA_YEARS if years else 0)
+            | (PANCHANGA_ECLIPSES if eclipses else 0)
+            | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
+            | (PANCHANGA_LAGNAS if lagnas else 0)
+            | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
+            | (0 if days else PANCHANGA_WITHOUT_DAYS),
+        )
+
+    def in_zone(
+        self,
+        *,
+        from_date: CalendarDate,
+        to_date: CalendarDate,
+        place: Observer,
+        zone: ZoneSpec,
+        muhurta: Optional[MuhurtaRequest] = None,
+        festivals: Optional[FestivalRequest] = None,
+        years: bool = False,
+        eclipses: bool = False,
+        nepal_sambat: bool = False,
+        lagnas: bool = False,
+        homa_ahuti: bool = False,
+        days: bool = True,
+    ) -> Almanac:
+        """`of` on a zone's clock: each day on the offset of its own noon, and
+        the provenance names the zone's offset, source and era at the first
+        day (`03-design/time-and-timezone.md` §3.4). A range crossing a
+        clock change is refused on `zone` when a section is asked beside the
+        days, since a section reckons on one offset."""
+        return self._range(
+            from_date,
+            to_date,
+            place,
+            0,
+            _zone_json(zone),
+            muhurta,
+            festivals,
+            (PANCHANGA_YEARS if years else 0)
+            | (PANCHANGA_ECLIPSES if eclipses else 0)
+            | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
+            | (PANCHANGA_LAGNAS if lagnas else 0)
+            | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
+            | (0 if days else PANCHANGA_WITHOUT_DAYS),
+        )
+
+    def _range(
+        self,
+        from_date: CalendarDate,
+        to_date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+        zone_json: Optional[str],
+        muhurta: Optional[MuhurtaRequest],
+        festivals: Optional[FestivalRequest],
+        sections: int,
+    ) -> Almanac:
         request = PanchangaRequest(
             calendar=from_date.calendar,
             from_year=from_date.year,
@@ -3335,12 +3455,8 @@ class AlmanacArea(_Area):
             utc_offset_seconds=utc_offset_seconds,
             muhurta_json=_muhurta_json(muhurta),
             festivals_json=_festivals_json(festivals),
-            sections=(PANCHANGA_YEARS if years else 0)
-            | (PANCHANGA_ECLIPSES if eclipses else 0)
-            | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
-            | (PANCHANGA_LAGNAS if lagnas else 0)
-            | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
-            | (0 if days else PANCHANGA_WITHOUT_DAYS),
+            zone_json=zone_json,
+            sections=sections,
         )
         return Almanac(
             decode_panchanga(
@@ -3689,6 +3805,26 @@ class AlmanacArea(_Area):
         )
         listing: Mapping[str, Any] = json.loads(answered)
         return listing
+
+    def changes(self, request: ChangesRequest) -> "ChangePoints":
+        """Every instant in a range at which the tithi, nakshatra, yoga,
+        karana, the Moon's or Sun's sign or the weekday changes, sorted, as
+        one list (`03-design/change-points.md`): the points in `request`'s
+        `kinds`, or every kind. The range is asked on `utcOffsetSeconds` or
+        a `zone`, and every point is the same instant either way."""
+        answered = self._context._through_provider(
+            lambda: self._context.inner.almanac_changes(json.dumps(request))
+        )
+        envelope = json.loads(answered)
+        value = envelope["value"]
+        return ChangePoints(
+            points=tuple(
+                ChangePoint(at=p["at"], kind=p["kind"], from_key=p["from"], to_key=p["to"])
+                for p in value["points"]
+            ),
+            window=_interval(value["window"]),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
 
     def published_reasons(
         self,
@@ -9165,6 +9301,38 @@ class FestivalAnswer:
 
     applied: Tuple[PublishedApplied, ...] = ()
     """The published sets laid over the answer, in order."""
+
+
+@dataclass(frozen=True)
+class ChangePoint:
+    """One instant at which something changes (`03-design/change-points.md`)."""
+
+    at: float
+    """The instant, as a UTC Julian day."""
+
+    kind: str
+    """What changes: `TITHI`, `NAKSHATRA`, `YOGA`, `KARANA`, `MOON_SIGN`,
+    `SUN_SIGN` or `VARA`."""
+
+    from_key: str
+    """The catalogue key of the member that ended."""
+
+    to_key: str
+    """The catalogue key of the member that began."""
+
+
+@dataclass(frozen=True)
+class ChangePoints:
+    """A range's change points, sorted, with the window they were read over."""
+
+    points: Tuple[ChangePoint, ...]
+    """Every point at or after the window's start and before its end."""
+
+    window: Interval
+    """The instants the range covers."""
+
+    provenance: Provenance
+    """What computed it, and the clock it was asked on."""
 
 
 @dataclass(frozen=True)

@@ -1,0 +1,70 @@
+---
+title: ts_time_zone_database
+description: "The zone database a context reads, as JSON: `{source, version, zones, bundled}` (`03-design/zone-packs.md` §4)."
+---
+
+The zone database a context reads, as JSON: `{source, version, zones, bundled}` (`03-design/zone-packs.md` §4).
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.time.zoneDatabase
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.time.zone_database
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.time.zoneDatabase
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.time().zoneDatabase
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.time().zone_database
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_time_zone_database(const ts_context * context, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `time.zone_database` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/time.rs`.

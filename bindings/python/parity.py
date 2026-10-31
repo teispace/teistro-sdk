@@ -115,6 +115,7 @@ from teistro import (
     Varga,
     at,
     date,
+    ZoneDatabase,
     iana_zone,
     intl,
     message_parts,
@@ -3032,6 +3033,46 @@ def main() -> None:
         for k, chart in enumerate(lilith_charts):
             put(f"lilith-{k}", lilith_line(chart.lilith))
 
+    # ── The zones ───────────────────────────────────────────────────
+    # A signed one-zone pack of an imagined release, so a provenance naming
+    # it can only have come from the pack (`03-design/zone-packs.md`).
+    def zones_line(zones: ZoneDatabase) -> str:
+        return f"{zones.source} {zones.version} {zones.zones} {zones.bundled}"
+
+    with teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as zoned:
+        put("time-zone-database", zones_line(zoned.time.zone_database()))
+        loaded = zoned.time.load_zones(
+            '{"format":"teistro.zones/1","version":"2099a","zones":{"Asia/Kathmandu":"VFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAVFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAAABD/////ofJ9hAAAAAAeGDCoAQIAAE/8AAAAAE1YAAQAAFDcAApMTVQAKzA1MzAAKzA1NDUACjwrMDU0NT4tNTo0NQo="},"links":{"Asia/Katmandu":"Asia/Kathmandu"}}'.encode(),
+            bytes.fromhex("73a4a729d2d30fdf174da7411bf20d8ff297231d816d0004b7435b6e7b70449d2e128616f7fb7cdcb2d6d0aecab2e1a287f806da782520c99bfe770dd0b9b406"),
+            bytes.fromhex("ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c"),
+            at_least="2099a",
+        )
+        put("time-zone-pack", zones_line(loaded))
+        first_of_november = date(Calendar.GREGORIAN, 2026, 11, 1)
+        clock = zoned.almanac.in_zone(
+            from_date=first_of_november,
+            to_date=first_of_november,
+            place=place,
+            zone=iana_zone("Asia/Kathmandu"),
+        ).provenance.time.clock
+        assert clock is not None
+        put("almanac-in-zone", f"{clock.offset} {clock.abbreviation} {clock.tzdb_version}")
+        changes = zoned.almanac.changes(
+            {
+                "first": {"year": 2026, "month": 11, "day": 1},
+                "last": {"year": 2026, "month": 11, "day": 2},
+                "latitudeDeg": place.latitude_deg,
+                "longitudeDeg": place.longitude_deg,
+                "altitudeM": place.altitude_m,
+                "utcOffsetSeconds": 20700,
+            }
+        )
+        first_change = changes.points[0]
+        put(
+            "almanac-changes",
+            f"{len(changes.points)} {first_change.kind} {first_change.from_key} {first_change.to_key}",
+        )
+
     # ── The eclipses ──────────────────────────────────────────────────
     # September 2025 at Kathmandu over the built-in sky, which the test
     # provider cannot complete: a total lunar eclipse seen whole and a
@@ -3201,6 +3242,10 @@ def main() -> None:
         ("almanac.first_year", ctx.almanac.first_year),
         ("almanac.published_reasons", ctx.almanac.published_reasons),
         ("almanac.published_from_signed", ctx.almanac.published_from_signed),
+        ("almanac.changes", ctx.almanac.changes),
+        ("almanac.in_zone", ctx.almanac.in_zone),
+        ("time.load_zones", ctx.time.load_zones),
+        ("time.zone_database", ctx.time.zone_database),
         ("research.counts", ctx.research.counts),
         ("research.compare", ctx.research.compare),
         ("research.expected", ctx.research.expected),

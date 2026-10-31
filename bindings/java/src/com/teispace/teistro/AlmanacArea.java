@@ -196,8 +196,73 @@ public final class AlmanacArea {
         return com.teispace.teistro.request.PublishedSet.of(Json.object(json));
     }
 
+    /**
+     * {@code of} on a zone's clock: each day on the offset of its own noon,
+     * and the provenance names the zone's offset, source and era at the
+     * first day ({@code 03-design/time-and-timezone.md} §3.4).
+     *
+     * @param fromDate the first day; its calendar is the range's
+     * @param toDate the last day
+     * @param place where
+     * @param zone the zone, from {@code Civil.ianaZone} and its neighbours
+     * @return the days
+     */
+    public Almanac inZone(CalendarDate fromDate, CalendarDate toDate, Observer place, ZoneSpec zone) {
+        return asked(fromDate, toDate, place, 0, zoneJson(zone), null, null, 0);
+    }
+
+    /** A zone as the record the boundary reads beside a range. */
+    private static String zoneJson(ZoneSpec zone) {
+        Map<String, Object> written = new java.util.LinkedHashMap<>();
+        switch (zone.kind()) {
+            case IANA -> {
+                written.put("kind", "IANA");
+                written.put("zone", zone.zone());
+            }
+            case FIXED -> {
+                written.put("kind", "FIXED");
+                written.put("offset", zone.offsetSeconds());
+            }
+            default -> {
+                written.put("kind", "LOCAL_MEAN");
+                written.put("longitude", zone.longitudeDeg().value());
+            }
+        }
+        return Json.write(written);
+    }
+
+    /**
+     * Every instant in a range at which the tithi, nakshatra, yoga, karana,
+     * the Moon's or Sun's sign or the weekday changes, sorted, as one list
+     * ({@code 03-design/change-points.md}). The range is asked on
+     * {@code utcOffsetSeconds} or a {@code zone}, and every point is the
+     * same instant either way.
+     *
+     * @param request the range, its clock and the kinds wanted
+     * @return the points, the window and the provenance
+     */
+    public ChangePoints changes(com.teispace.teistro.request.ChangesRequest request) {
+        String json = Json.write(request);
+        Map<?, ?> envelope = Reads.object(Json.read(context.locked((lib, raw) -> Calls.almanacChanges(lib, raw, json))));
+        Map<?, ?> value = Reads.object(envelope, "value");
+        return new ChangePoints(
+                Reads.each(value, "points", raw -> {
+                    Map<?, ?> point = Reads.object(raw);
+                    return new ChangePoints.Point(Reads.number(point, "at"), Reads.string(point, "kind"),
+                            Reads.string(point, "from"), Reads.string(point, "to"));
+                }),
+                Reads.interval(Reads.field(value, "window")),
+                com.teispace.teistro.record.Provenance.of(Reads.field(envelope, "provenance")));
+    }
+
     private Almanac asked(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
             com.teispace.teistro.request.MuhurtaRequest muhurta,
+            com.teispace.teistro.request.FestivalRequest festivals, long sections) {
+        return asked(fromDate, toDate, place, utcOffsetSeconds, null, muhurta, festivals, sections);
+    }
+
+    private Almanac asked(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
+            String zoneJson, com.teispace.teistro.request.MuhurtaRequest muhurta,
             com.teispace.teistro.request.FestivalRequest festivals, long sections) {
         PanchangaRequest request = new PanchangaRequest(
                 fromDate.calendar(),
@@ -213,7 +278,8 @@ public final class AlmanacArea {
                 utcOffsetSeconds,
                 sections,
                 muhurta == null ? null : Json.write(muhurta),
-                festivals == null ? null : Json.write(festivals));
+                festivals == null ? null : Json.write(festivals),
+                zoneJson);
         return new Almanac(Panchanga.decode(context.locked((lib, raw) -> Calls.panchangaDays(lib, raw, request))));
     }
 

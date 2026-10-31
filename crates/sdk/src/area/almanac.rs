@@ -6,9 +6,10 @@ use teistro_astro::Completion;
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::CalendarDate;
-use teistro_calendar::lunisolar::MonthKind;
 #[cfg(feature = "muhurta")]
-use teistro_calendar::{CalendarSystem, FixedDay};
+use teistro_calendar::CalendarSystem;
+use teistro_calendar::FixedDay;
+use teistro_calendar::lunisolar::MonthKind;
 use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::{Convention, Envelope, Hash, content_hash};
@@ -18,9 +19,7 @@ use teistro_core::quantity::{JulianDay, Place, Utc};
 #[cfg(feature = "muhurta")]
 use teistro_core::settings::EclipseVedha;
 use teistro_core::settings::LunarMonth;
-#[cfg(feature = "muhurta")]
-use teistro_core::time::LocalClock;
-use teistro_core::time::UtcOffset;
+use teistro_core::time::{LocalClock, UtcOffset};
 #[cfg(feature = "muhurta")]
 use teistro_muhurta::Answer;
 #[cfg(feature = "muhurta")]
@@ -41,6 +40,7 @@ use teistro_panchanga::span::Span;
 use teistro_panchanga::year::LunarYear;
 
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
+use teistro_time::ZoneSpec;
 use teistro_time::local_day::local_midnight;
 
 use crate::area::{drik_sun, system_of};
@@ -59,11 +59,24 @@ use crate::muhurta_request::MuhurtaRequest;
 /// share a boundary — day n's next sunrise is day n+1's sunrise — so a
 /// week asked for together costs much less than seven days asked for
 /// separately, which is why `of` takes a range.
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy)]
 pub struct AlmanacArea<'a> {
     context: &'a Context,
+    /// The clock a zone gave, in place of the offset a call names
+    /// ([`AlmanacArea::in_zone`]).
+    clock: Option<&'a dyn LocalClock>,
 }
 
+impl core::fmt::Debug for AlmanacArea<'_> {
+    fn fmt(&self, out: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        out.debug_struct("AlmanacArea")
+            .field("context", &self.context)
+            .field("clock", &self.clock.map(LocalClock::describe))
+            .finish()
+    }
+}
+
+mod changes;
 mod disagreement;
 mod feed;
 #[cfg(feature = "muhurta")]
@@ -73,6 +86,9 @@ mod pack;
 mod reasons;
 mod sait;
 
+#[cfg(feature = "schema")]
+pub(crate) use changes::ChangesAsked;
+pub use changes::{ChangesRequest, DayClock};
 pub use disagreement::{
     DayDisagreement, DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement,
     FestivalDisagreement, FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb,
@@ -94,7 +110,10 @@ pub use reasons::{
 
 impl<'a> AlmanacArea<'a> {
     pub(crate) fn of_context(context: &'a Context) -> AlmanacArea<'a> {
-        AlmanacArea { context }
+        AlmanacArea {
+            context,
+            clock: None,
+        }
     }
 
     /// The context this area was read off.
@@ -154,6 +173,87 @@ impl<'a> AlmanacArea<'a> {
         })
     }
 
+    /// [`AlmanacArea::asked`] with the days on a zone's clock
+    /// (`03-design/time-and-timezone.md` §3.4): each day read on its own
+    /// offset, across a change, every answer's provenance naming the zone,
+    /// its database and its era, and each day its `clock`.
+    ///
+    /// ```
+    /// use teistro::catalogue::Calendar;
+    /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// use teistro::{AlmanacRequest, CalendarDate, Context, Ephemeris, ZoneSpec};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
+    /// let day = CalendarDate::defined(Calendar::Gregorian, 2026, 11, 1);
+    /// let zone = ZoneSpec::iana("Asia/Kathmandu");
+    /// let answer = sdk.almanac().in_zone(&day, &day, &kathmandu, &zone, &AlmanacRequest::new())?;
+    /// let clock = answer.days.provenance.time.clock.ok_or("a clock")?;
+    /// assert_eq!(clock.offset.seconds(), 20_700);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::asked`]; a zone the database does not have; and
+    /// `INVALID_ARG` on `zone` for anything asked beside the days over a
+    /// range whose clock changes, since those sections reckon on one
+    /// offset.
+    pub fn in_zone(
+        self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        zone: &ZoneSpec,
+        request: &AlmanacRequest,
+    ) -> Result<AlmanacAnswer, Error> {
+        let clock = zone.clock(self.context.zones())?;
+        let offset = Self::steady_offset(from, to, &clock, request.is_days_alone())?;
+        self.on(&clock).asked(from, to, place, offset, request)
+    }
+
+    /// This area with every almanac on `clock`.
+    fn on<'c>(self, clock: &'c dyn LocalClock) -> AlmanacArea<'c>
+    where
+        'a: 'c,
+    {
+        AlmanacArea {
+            context: self.context,
+            clock: Some(clock),
+        }
+    }
+
+    /// The offset a range's sections reckon on: the first day's. Sections
+    /// take one offset, so over a change they are refused unless no
+    /// section was asked.
+    fn steady_offset(
+        from: &CalendarDate,
+        to: &CalendarDate,
+        clock: &dyn LocalClock,
+        days_alone: bool,
+    ) -> Result<UtcOffset, Error> {
+        let calendar = system_of(from.calendar)?;
+        let (first, last) = (calendar.fixed_of(from)?, calendar.fixed_of(to)?);
+        let noon = |day: FixedDay| -> Result<UtcOffset, Error> {
+            let at = day.jd_at_midnight()?.get() + 0.5;
+            Ok(clock.offset_at(JulianDay::try_new(at)?))
+        };
+        let offset = noon(first)?;
+        if !days_alone {
+            for step in 1..=first.days_until(last) {
+                if noon(first.plus_days(step))? != offset {
+                    return Err(Error::invalid_arg(format!(
+                        "{} changes its clock in this range, and a section asked beside the days reckons on one offset",
+                        clock.describe()
+                    ))
+                    .with_field("zone")
+                    .with_hint("ask the sections over each side of the change"));
+                }
+            }
+        }
+        Ok(offset)
+    }
+
     /// Runs `work` over this context's almanac for a range written in
     /// `from`'s calendar, on `offset`'s clock.
     fn with_almanac<T>(
@@ -170,7 +270,7 @@ impl<'a> AlmanacArea<'a> {
             self.context.resolved(),
             &model,
             calendar,
-            &offset,
+            self.clock.unwrap_or(&offset),
             PrecessionModel::default(),
             self.context.delta_t(),
         ))
@@ -1102,6 +1202,20 @@ impl AlmanacRequest {
     #[must_use]
     pub fn festivals(&self) -> Option<&FestivalRequest> {
         self.festivals.as_ref()
+    }
+
+    /// Whether nothing but the days was asked for.
+    pub(crate) fn is_days_alone(&self) -> bool {
+        #[cfg(feature = "muhurta")]
+        let searched = self.muhurta.is_some();
+        #[cfg(not(feature = "muhurta"))]
+        let searched = false;
+        !searched
+            && self.festivals.is_none()
+            && !self.years
+            && !self.eclipses
+            && !self.lagnas
+            && self.days == Days::Handed
     }
 
     /// Whether the lunar years were asked.

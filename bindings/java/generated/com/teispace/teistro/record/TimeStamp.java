@@ -9,6 +9,7 @@ import java.util.Map;
 /**
  * What the time layer applied.
  *
+ * @param clock The clock the answer's days were reckoned on, at the first day's noon, when the answer has days; left out otherwise (`docs/03-design/time-and-timezone.md` §3.4). May be null.
  * @param deltaTModel The Delta T model's key.
  * @param deltaTSeconds Delta T in seconds at the instant.
  * @param leapTable The leap-second table version.
@@ -17,7 +18,7 @@ import java.util.Map;
  * @param uncertaintySeconds Delta T's uncertainty in seconds for deep-time instants. May be null.
  */
 @SuppressWarnings("unused")
-public record TimeStamp(String deltaTModel, double deltaTSeconds, String leapTable, String timeBasisApplied, String tzdbVersion, Double uncertaintySeconds) {
+public record TimeStamp(ClockReading clock, String deltaTModel, double deltaTSeconds, String leapTable, String timeBasisApplied, String tzdbVersion, Double uncertaintySeconds) {
     /**
      * A `TimeStamp` from its JSON, as {@code Json.read} answers it.
      *
@@ -28,6 +29,7 @@ public record TimeStamp(String deltaTModel, double deltaTSeconds, String leapTab
     public static TimeStamp of(Object raw) {
         Map<String, Object> json = Read.object(raw, "TimeStamp");
         return new TimeStamp(
+            Read.orNull(json.get("clock"), value -> ClockReading.of(value)),
             Read.text(Read.required(json.get("delta_t_model"), "TimeStamp.delta_t_model"), "TimeStamp.delta_t_model"),
             Read.number(Read.required(json.get("delta_t_seconds"), "TimeStamp.delta_t_seconds"), "TimeStamp.delta_t_seconds"),
             Read.text(Read.required(json.get("leap_table"), "TimeStamp.leap_table"), "TimeStamp.leap_table"),

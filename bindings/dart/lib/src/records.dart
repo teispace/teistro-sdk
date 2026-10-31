@@ -371,10 +371,11 @@ final class ProviderStamp {
 /// What the time layer applied.
 final class TimeStamp {
   /// A TimeStamp with every field named.
-  const TimeStamp({required this.deltaTModel, required this.deltaTSeconds, required this.leapTable, required this.timeBasisApplied, required this.tzdbVersion, required this.uncertaintySeconds});
+  const TimeStamp({required this.clock, required this.deltaTModel, required this.deltaTSeconds, required this.leapTable, required this.timeBasisApplied, required this.tzdbVersion, required this.uncertaintySeconds});
 
   /// A TimeStamp from its JSON.
   factory TimeStamp.fromJson(Map<String, Object?> json) => TimeStamp(
+        clock: json['clock'] == null ? null : ClockReading.fromJson(json['clock']! as Map<String, Object?>),
         deltaTModel: json['delta_t_model']! as String,
         deltaTSeconds: (json['delta_t_seconds']! as num).toDouble(),
         leapTable: json['leap_table']! as String,
@@ -382,6 +383,9 @@ final class TimeStamp {
         tzdbVersion: json['tzdb_version']! as String,
         uncertaintySeconds: json['uncertainty_seconds'] == null ? null : (json['uncertainty_seconds']! as num).toDouble(),
       );
+
+  /// The clock the answer's days were reckoned on, at the first day's noon, when the answer has days; left out otherwise (`docs/03-design/time-and-timezone.md` §3.4).
+  final ClockReading? clock;
 
   /// The Delta T model's key.
   final String deltaTModel;
@@ -461,4 +465,76 @@ final class MonthDay {
 
   /// The month, 1-based.
   final int month;
+}
+
+/// A clock's offset at an instant and what gave it: what an answer carries so a caller does not resolve its zone again.
+final class ClockReading {
+  /// A ClockReading with every field named.
+  const ClockReading({required this.abbreviation, required this.era, required this.offset, required this.source, required this.tzdbVersion});
+
+  /// A ClockReading from its JSON.
+  factory ClockReading.fromJson(Map<String, Object?> json) => ClockReading(
+        abbreviation: json['abbreviation'] == null ? null : json['abbreviation']! as String,
+        era: ClockEra.fromJson(json['era']),
+        offset: (json['offset']! as num).toInt(),
+        source: ClockSource.fromJson(json['source']),
+        tzdbVersion: json['tzdb_version']! as String,
+      );
+
+  /// The zone's abbreviation for the row, when the database has one.
+  final String? abbreviation;
+
+  /// Which rules produced it.
+  final ClockEra era;
+
+  /// The offset.
+  final int offset;
+
+  /// Where it came from.
+  final ClockSource source;
+
+  /// The database's release, `lmt` or `manual`.
+  final String tzdbVersion;
+}
+
+/// Which rules produced an offset.
+enum ClockEra {
+  /// An offset the zone applies in the database's own year.
+  current('CURRENT'),
+  /// An offset from the zone's earlier rules.
+  historical('HISTORICAL'),
+  /// Before the zone's first rule: the database's local-mean-time stub.
+  beforeRules('BEFORE_RULES');
+
+  const ClockEra(this.key);
+
+  /// The key, as the wire writes it.
+  final String key;
+
+  /// The ClockEra a key names.
+  static ClockEra fromJson(Object? json) => values.firstWhere(
+        (value) => value.key == json,
+        orElse: () => throw FormatException('not a ClockEra: $json'),
+      );
+}
+
+/// Where an offset came from.
+enum ClockSource {
+  /// The zone database.
+  iana('IANA'),
+  /// Local mean time from the longitude.
+  localMean('LOCAL_MEAN'),
+  /// A fixed offset the consumer stated.
+  manual('MANUAL');
+
+  const ClockSource(this.key);
+
+  /// The key, as the wire writes it.
+  final String key;
+
+  /// The ClockSource a key names.
+  static ClockSource fromJson(Object? json) => values.firstWhere(
+        (value) => value.key == json,
+        orElse: () => throw FormatException('not a ClockSource: $json'),
+      );
 }

@@ -59,7 +59,7 @@ use teistro::muhurta::ActivityRules;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rectification::{Rules, Window};
 use teistro::{
-    CalendarDate, ChartRequest, Context, Ephemeris, FestivalPack, FestivalRequest, Hash,
+    CalendarDate, ChangesRequest, ChartRequest, Context, DayClock, Ephemeris, FestivalPack, FestivalRequest, Hash,
     KootaRules, MuhurtaRequest, RuleRequest, RuleSet, ShippedRules, UtcOffset, content_hash,
 };
 use teistro_ephemeris_teimeris::{DATA_DIR_ENV, TeimerisProvider, data_dir_from_env};
@@ -110,12 +110,13 @@ const SETUPS: [Setup; 3] = [
 ];
 
 /// The requests, in the order the page prints them.
-const REQUESTS: [&str; 11] = [
+const REQUESTS: [&str; 12] = [
     "open",
     "day",
     "month",
     "year",
     "festivals",
+    "changes",
     "muhurta",
     "chart",
     "parity-chart",
@@ -256,6 +257,17 @@ fn run(setup: Setup, request: &str) -> Duration {
                     &FestivalRequest::from(FestivalPack::Nepal),
                 )
                 .expect("a year of festivals"),
+        ),
+        "changes" => drop(
+            sdk.almanac()
+                .changes(&ChangesRequest {
+                    first: date(2026, 1, 1),
+                    last: date(2026, 12, 31),
+                    place: place(),
+                    clock: DayClock::Offset(offset()),
+                    kinds: Vec::new(),
+                })
+                .expect("a year of change points"),
         ),
         "muhurta" => drop(
             sdk.almanac()

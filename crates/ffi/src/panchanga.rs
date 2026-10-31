@@ -237,6 +237,7 @@ impl From<Sunrises> for TsSunrises {
 ///     sections: TS_PANCHANGA_YEARS | TS_PANCHANGA_ECLIPSES,
 ///     muhurta_json: core::ptr::null(),
 ///     festivals_json: core::ptr::null(),
+///     zone_json: core::ptr::null(),
 /// };
 /// assert_eq!(request.sections, 3);
 /// # Ok::<(), core::num::TryFromIntError>(())
@@ -343,6 +344,14 @@ pub struct TsPanchangaRequest {
     /// `festivals`, down to a rule's own field under `festivals.rules`.
     /// `api: nullable example={"rules":"DHARMASINDHU"}`
     pub festivals_json: *const c_char,
+    /// The zone the days are reckoned on, as JSON, the record
+    /// `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+    /// "Asia/Kathmandu"}`. Each day is then read on its own offset,
+    /// `utc_offset_seconds` is not read, and the answer's provenance names
+    /// the zone's offset, source, era and database
+    /// (`03-design/time-and-timezone.md` §3.4). Null for the offset.
+    /// `api: nullable example={"kind":"IANA","zone":"Asia/Kathmandu"}`
+    pub zone_json: *const c_char,
 }
 
 // **The handshake, which this struct carried and nothing read.**
@@ -1023,7 +1032,7 @@ pub fn encode(
 ///     to_month: 9, to_day: 7, to_year: 2026,
 ///     latitude_deg: 27.7172, longitude_deg: 85.324, altitude_m: 1400.0,
 ///     utc_offset_seconds: 20_700, sections: 0,
-///     muhurta_json: core::ptr::null(), festivals_json: core::ptr::null(),
+///     muhurta_json: core::ptr::null(), festivals_json: core::ptr::null(), zone_json: core::ptr::null(),
 /// };
 /// let mut blob = TsBlob::empty();
 /// // SAFETY: a live context, a sized request and a writable slot.
@@ -1119,10 +1128,20 @@ pub unsafe extern "C" fn ts_panchanga_days(
             beside = beside.without_days();
         }
         // The façade founds the days once for everything asked beside them.
-        let answered = ctx
-            .sdk()
-            .almanac()
-            .asked(&from, &to, &place, clock, &beside)?;
+        // SAFETY: as above.
+        let zone = unsafe { optional_text(asked.zone_json, "zone_json") }?
+            .map(|json| teistro_core::strict::read(json, "zone_json"))
+            .transpose()?;
+        let answered = match zone {
+            Some(zone) => ctx
+                .sdk()
+                .almanac()
+                .in_zone(&from, &to, &place, &zone, &beside)?,
+            None => ctx
+                .sdk()
+                .almanac()
+                .asked(&from, &to, &place, clock, &beside)?,
+        };
         // Each section written and sealed by the façade's one writer,
         // which the agent server's `almanac.days` answers with too.
         let sections = answered.sections()?;
@@ -1751,6 +1770,48 @@ pub unsafe extern "C" fn ts_almanac_festival_pack(
             crate::support::text(request_json, "request_json")
         }?)?;
         let answer = ctx.sdk().almanac().festival_pack(&asked);
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
+/// Every instant in a range at which something changes, as sealed JSON
+/// (`03-design/change-points.md`). `request_json` is the record: `first`,
+/// optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+/// `utcOffsetSeconds` or `zone`, and optional `kinds`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_changes;
+/// use teistro_ffi::string::TsString;
+///
+/// let asked = c"{\"first\": {\"year\": 2026, \"month\": 11, \"day\": 1}, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// assert_eq!(unsafe { ts_almanac_changes(&raw const ctx, asked.as_ptr(), &raw mut out) }, Status::Ok);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_almanac_changes(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::ChangesRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().changes(&asked)?;
         let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_json, "out_json", json) }

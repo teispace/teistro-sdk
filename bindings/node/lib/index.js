@@ -2773,6 +2773,49 @@ export class TimeArea extends Area {
   deltaT(jdUt1) {
     return run(this, (inner) => inner.timeDeltaT(finite(jdUt1, 'jdUt1')));
   }
+
+  /**
+   * The zone database this context reads (`03-design/zone-packs.md` §4):
+   * the release every answer's provenance names, and whether it came from
+   * a signed pack or the build.
+   *
+   * @returns {{ source: string, version: string, zones: number, bundled: string }}
+   */
+  zoneDatabase() {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.timeZoneDatabase())));
+  }
+
+  /**
+   * Replaces this context's zone database with a signed pack, for every
+   * answer after this one. A release under `atLeast`, the newest the app
+   * has applied, is refused, so a replayed pack cannot roll the rules back.
+   *
+   * @param {Uint8Array} pack the pack's exact bytes
+   * @param {Uint8Array} signature the publisher's detached Ed25519
+   *   signature over them, 64 bytes
+   * @param {Uint8Array} key the publisher's public key, 32 bytes, which the
+   *   app fixes at its own build
+   * @param {string} [atLeast] the newest release applied; `''` takes any
+   * @returns {{ source: string, version: string, zones: number, bundled: string }}
+   * @throws {TeistroError} `INVALID_ARG` naming `key`, `signature`,
+   *   `version`, `at_least` or `pack`; the database stays as it was
+   */
+  loadZones(pack, signature, key, atLeast = '') {
+    const bytes = bytesOf(pack, 'pack');
+    const signed = bytesOf(signature, 'signature');
+    const publisher = bytesOf(key, 'key');
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.timeLoadZones(bytes, signed, publisher, atLeast))));
+  }
+}
+
+/** A zone as the record the boundary reads beside a range. */
+function zoneJson(zone) {
+  if (typeof zone !== 'object' || zone === null) {
+    throw new TypeError("zone: expected a zone, e.g. ianaZone('Asia/Kathmandu')");
+  }
+  if (zone.kind === 'IANA') return JSON.stringify({ kind: 'IANA', zone: zone.zone });
+  if (zone.kind === 'FIXED') return JSON.stringify({ kind: 'FIXED', offset: zone.offsetSeconds });
+  return JSON.stringify({ kind: 'LOCAL_MEAN', longitude: zone.longitudeDeg });
 }
 
 /** `sdk.intl` — the locale, its messages and the scripts they are in. */
@@ -7457,6 +7500,26 @@ export class AlmanacArea extends Area {
    * @returns {Almanac}
    */
   of(request) {
+    return this.#range(request, finite(request.utcOffsetSeconds, 'utcOffsetSeconds'), undefined);
+  }
+
+  /**
+   * `of` on a zone's clock: `zone` in place of `utcOffsetSeconds`, each day
+   * on the offset of its own noon, and the provenance names the zone's
+   * offset, source and era at the first day
+   * (`03-design/time-and-timezone.md` §3.4). A range crossing a clock
+   * change is refused on `zone` when a section is asked beside the days,
+   * since a section reckons on one offset.
+   *
+   * @param {object} request as `of` takes it, with `zone` from `ianaZone`,
+   *   `fixedZone` or `localMeanZone`
+   * @returns {Almanac}
+   */
+  inZone(request) {
+    return this.#range(request, 0, zoneJson(request.zone));
+  }
+
+  #range(request, utcOffsetSeconds, zone) {
     const place = request.place ?? {};
     const from = request.from ?? {};
     const to = request.to ?? from;
@@ -7472,7 +7535,8 @@ export class AlmanacArea extends Area {
         latitudeDeg: finite(place.latitude, 'place.latitude'),
         longitudeDeg: finite(place.longitude, 'place.longitude'),
         altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-        utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
+        utcOffsetSeconds,
+        zoneJson: zone,
         muhurtaJson: recordJson(request.muhurta, 'muhurta', "a muhurta request record, e.g. { rules: 'RAMAN_MARRIAGE' }"),
         festivalsJson: recordJson(request.festivals, 'festivals', "a festivals request record, e.g. { rules: 'DHARMASINDHU' }"),
         sections:
@@ -8049,6 +8113,26 @@ export class AlmanacArea extends Area {
       searchedDays: value.searchedDays,
       provenance: found.provenance,
     });
+  }
+
+  /**
+   * Every instant in a range at which the tithi, nakshatra, yoga, karana,
+   * the Moon's or Sun's sign or the weekday changes, sorted, as one list
+   * (`03-design/change-points.md`). The range is asked on
+   * `utcOffsetSeconds` or a `zone`, and every point is the same instant
+   * either way.
+   *
+   * @param {object} request a `ChangesRequest`: `first`, `last`,
+   *   `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`, the clock and
+   *   `kinds`, every kind when left out
+   * @returns {object} `{ points, window, provenance }`, each point
+   *   `{ at, kind, from, to }`
+   */
+  changes(request) {
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacChanges(JSON.stringify(request))),
+    );
+    return deepFreeze({ ...value, provenance: decodeProvenance(provenance) });
   }
 
   /**

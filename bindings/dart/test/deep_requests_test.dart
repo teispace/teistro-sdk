@@ -74,6 +74,26 @@ void main() {
     );
   });
 
+  test('almanac.changes: ChangesRequest', () {
+    _holds(
+      'almanac.changes',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: ChangesRequest(
+        altitudeM: 1.5,
+        calendar: Calendar.julian,
+        first: DayAsked(day: 1, month: 1, year: 1),
+        kinds: [ChangeKind.nakshatra],
+        last: DayAsked(day: 1, month: 1, year: 1),
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
+      ).toJson(),
+    );
+  });
+
   test('almanac.days: AlmanacDaysRequest', () {
     _holds(
       'almanac.days',
@@ -93,6 +113,7 @@ void main() {
         nepalSambat: true,
         utcOffsetSeconds: 1,
         years: true,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });

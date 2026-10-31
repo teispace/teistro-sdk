@@ -1800,6 +1800,17 @@ export interface PanchangaRequest {
    * @nullable
    */
   readonly festivalsJson?: string;
+  /**
+   * The zone the days are reckoned on, as JSON, the record
+   * `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+   * "Asia/Kathmandu"}`. Each day is then read on its own offset,
+   * `utc_offset_seconds` is not read, and the answer's provenance names
+   * the zone's offset, source, era and database
+   * (`03-design/time-and-timezone.md` §3.4). Null for the offset.
+   * @example {"kind":"IANA","zone":"Asia/Kathmandu"}
+   * @nullable
+   */
+  readonly zoneJson?: string;
 }
 
 /**
