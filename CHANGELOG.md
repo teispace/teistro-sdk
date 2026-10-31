@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A festival request moves the tabular Hijri calendar a day or two toward a sighting.**
+**Numbers:** none unless asked: a request without `hijriOffset` answers and hashes as before.
+- `hijriOffset` on the festival request (`FestivalRequest::with_hijri_offset`, `HijriOffset`), −2 to 2,
+  in every binding's request and over MCP: each rule kept on a `HIJRI_TABULAR` date reads a day as the
+  table reads the day `hijriOffset` days on, and a published set's day still lays over it. The answer's
+  provenance names it as `festivals.hijriOffset`; past two days either way is `OUT_OF_RANGE` on
+  `festivals.hijriOffset` (SR-14, `03-design/published-overrides.md` §7).
+
 **A day in sentences; a polar sankranti answers.**
 **Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or
 `CIVIL_MIDNIGHT` that the default month start refused now answers, and a `NEAREST_EVENT`

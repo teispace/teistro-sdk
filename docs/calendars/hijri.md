@@ -59,9 +59,16 @@ with its own digits and weekday. No vetted Nepali or Hindi name for the
 era or the calendar is in hand, so `era.HIJRI` and the calendar are
 listed as unnamed in `xtask/src/intl.rs`, and Hindi falls back to English.
 
-## What waits
+## A sighted calendar
 
-**A sighted calendar.** A consumer that needs the declared Eid wants the
-published month beginnings, carried as data and laid over the tabular
-calendar: P2-4's published overrides. The tabular date is then the
-answer only where no declaration covers the month.
+A consumer that needs the declared Eid has the published month
+beginnings, carried as data and laid over the tabular calendar: P2-4's
+published sets (`03-design/published-overrides.md`). The tabular date is
+the answer only where no declaration covers the month.
+
+Before a declaration, or for a community that keeps another authority's
+sighting, a festival request moves the whole table: `hijriOffset`, −2 to
+2 days, read as the days added to the tabular date (`HijriOffset`,
+`03-design/published-overrides.md` §7, SR-14). Under +1, 31 March 2025,
+1 Shawwal 1446 by the table, is read as 2 Shawwal, so Eid falls on the
+30th. The answer's provenance names the offset.

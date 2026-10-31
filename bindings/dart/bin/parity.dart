@@ -3186,6 +3186,13 @@ void main() {
       },
     },
   ];
+  // A rule kept on the tenth of Rabi II by the tabular Hijri calendar,
+  // asked with the calendar moved a day toward a sighting.
+  const ownHijri = <String, Object?>{
+    'key': 'RABI_II_TENTH',
+    'source': 'the tenth of Rabi II',
+    'civilDate': {'calendar': 'calendar.HIJRI_TABULAR', 'month': 4, 'day': 10},
+  };
   const ownFollowing = <String, Object?>{
     'key': 'TWO_AFTER',
     'source': 'two days after Lakshmi puja',
@@ -3233,13 +3240,14 @@ void main() {
       },
     ],
   };
-  for (final (name, rules, published)
-      in <(String, Object, List<Map<String, Object?>>)>[
-        ('shipped', FestivalPack.dharmasindhu, const []),
-        ('amended', [FestivalPack.dharmasindhu, ownRule], const []),
-        ('nepal', [FestivalPack.nepal, ownFollowing], const []),
-        ('dated', [FestivalPack.nepal, ...ownDated], const []),
-        ('published', FestivalPack.dharmasindhu, [publishedSet]),
+  for (final (name, rules, published, hijriOffset)
+      in <(String, Object, List<Map<String, Object?>>, int?)>[
+        ('shipped', FestivalPack.dharmasindhu, const [], null),
+        ('amended', [FestivalPack.dharmasindhu, ownRule], const [], null),
+        ('nepal', [FestivalPack.nepal, ownFollowing], const [], null),
+        ('dated', [FestivalPack.nepal, ...ownDated], const [], null),
+        ('hijri', [ownHijri], const [], 1),
+        ('published', FestivalPack.dharmasindhu, [publishedSet], null),
       ]) {
     // The shipped pack is asked of the lean call, the others of the
     // almanac's: the two answer alike, so the report cannot tell.
@@ -3250,7 +3258,11 @@ void main() {
               to: Calendar.gregorian.date(2024, 11, 3),
               place: place,
               utcOffsetSeconds: 20700,
-              festivals: FestivalRequest(rules: rules, published: published),
+              festivals: FestivalRequest(
+                rules: rules,
+                published: published,
+                hijriOffset: hijriOffset,
+              ),
             )
             : geo.almanac
                 .of(
@@ -3261,6 +3273,7 @@ void main() {
                   festivals: FestivalRequest(
                     rules: rules,
                     published: published,
+                    hijriOffset: hijriOffset,
                   ),
                 )
                 .festivals!;

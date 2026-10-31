@@ -198,3 +198,52 @@ each binding is measured before it ships (`SIZES`).
   included.
 - **Every binding** reads one set with each action back, through its
   parity runner.
+
+## 7. A request's Hijri offset (SR-14)
+
+Status: `built`, 2026-10-31. Written before the code.
+
+**Why.** A sighted Hijri month begins on the evening the crescent is seen,
+so its first day can fall a day or two either side of the tabular
+calendar's (`calendars/hijri.md`). A published set (§2) carries what an
+authority declared, month by month, once it has declared it. Before that,
+and for a community that keeps another authority's sighting, a reader
+moves the whole tabular calendar by a day or two, the "Hijri adjustment"
+every Islamic calendar product offers. That is a choice of the request,
+not a fact of the day, so it rides on the request beside the sets.
+
+**The shape.** `hijriOffset` on the festival request: a whole number of
+days from −2 to 2, `HijriOffset` in `teistro_calendar::hijri` (Rust:
+`FestivalRequest::with_hijri_offset`). It is left out of the request's
+JSON when 0, so a request without it hashes as it did.
+
+**What it means.** The days added to the tabular date. Under +1 a day is
+read as the tabular calendar reads the day after it: the crescent was
+seen a day earlier than the table expects, so 1 Shawwal, and Eid with it,
+comes a day earlier. Under −1 it comes a day later.
+
+**What it moves.** Every dated rule kept on a date of `HIJRI_TABULAR`, by
+day (`civilDate`) or by weekday (`civilWeekday`); a dated observance's
+`on` is the moved date. No other calendar is a sighting's, so no other
+rule moves. A published set still lays its day over the moved one,
+since the authority's declaration is the answer and the offset an
+estimate of it; a `SET` finds its occurrence within seven days as
+before.
+
+**Provenance.** An answer whose request moved the calendar names the
+offset in `applied_conventions`: knob `festivals.hijriOffset`, the days as
+the value (`+1 day`, `-2 days`), and why. The input hash covers the
+request, so two offsets never share a stored answer.
+
+**Refusals.** An offset outside −2 to 2 is `OUT_OF_RANGE` on
+`festivals.hijriOffset`, saying the range: a sighting parts from the
+tabular calendar by a day or two, and a larger move is a different
+calendar, which a published set states month by month.
+
+**Tests.** The tabular Eid al-Fitr of 1446 is 31 March 2025 (1 Ramadan
+1446 is 1 March 2025, and Ramadan has 30 days); +1 puts it on 30 March
+and −1 on 1 April, a weekday rule moves with it, a Gregorian rule does
+not, a published `SET` still lays its day over the moved one, the
+provenance names the offset only when it is not 0, and ±3 is refused
+through the builder and the JSON reader every binding sends; each
+binding's parity runner asks one rule with an offset.

@@ -16,6 +16,7 @@
 )]
 
 use teistro_calendar::EraNumber;
+use teistro_calendar::hijri::HijriOffset;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Era, Masa, Nakshatra, Paksha, Rashi, Tithi, Vara};
 use teistro_core::interval::Interval;
@@ -1237,7 +1238,7 @@ fn a_rule_on_the_suns_entry_keeps_that_day_or_counts_from_it() {
         .filter(DatedRule::reads_sun_entry)
         .collect();
     let kept: Vec<(&str, u8, u8)> = Vec::new();
-    let found = dated(&shipped, &days).unwrap();
+    let found = dated(&shipped, &days, HijriOffset::NONE).unwrap();
     let kept = found.dated.iter().fold(kept, |mut kept, one| {
         kept.push((one.rule.as_str(), one.day.day - 1, one.on.day - 1));
         kept
@@ -1245,9 +1246,9 @@ fn a_rule_on_the_suns_entry_keeps_that_day_or_counts_from_it() {
     assert_eq!(kept, [("BHUMIRAJ", 1, 1), ("BHUMI_PUJA", 4, 1)]);
     // Another nakshatra's entry keeps nothing.
     days[1].sun_entry = SunEntry::Entered(Nakshatra::Punarvasu);
-    assert_eq!(dated(&shipped, &days).unwrap().dated, []);
+    assert_eq!(dated(&shipped, &days, HijriOffset::NONE).unwrap().dated, []);
     days[1].sun_entry = SunEntry::Unsearched;
-    let refused = dated(&shipped, &days).unwrap_err();
+    let refused = dated(&shipped, &days, HijriOffset::NONE).unwrap_err();
     assert!(refused.message.contains("sun_entries"), "{refused:?}");
     // A count is checked before any day is read.
     let far = DatedRule {

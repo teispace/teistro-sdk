@@ -1880,6 +1880,13 @@ const ownDated = [
     civilWeekday: { calendar: 'calendar.GREGORIAN', month: 10, weekday: 'vara.RAVIVARA', nth: -1 },
   },
 ];
+// A rule kept on the tenth of Rabi II by the tabular Hijri calendar,
+// asked with the calendar moved a day toward a sighting.
+const ownHijri = {
+  key: 'RABI_II_TENTH',
+  source: 'the tenth of Rabi II',
+  civilDate: { calendar: 'calendar.HIJRI_TABULAR', month: 4, day: 10 },
+};
 const ownFollowing = {
   key: 'TWO_AFTER',
   source: 'two days after Lakshmi puja',
@@ -1901,11 +1908,12 @@ const publishedSet = {
     { action: 'SET', rule: 'HOLIKA', day: day2024(10, 25), source: 'p. 4' },
   ],
 };
-for (const [name, rules, published] of [
+for (const [name, rules, published, hijriOffset] of [
   ['shipped', 'DHARMASINDHU'],
   ['amended', ['DHARMASINDHU', ownRule]],
   ['nepal', ['NEPAL', ownFollowing]],
   ['dated', ['NEPAL', ...ownDated]],
+  ['hijri', [ownHijri], undefined, 1],
   ['published', 'DHARMASINDHU', [publishedSet]],
 ]) {
   // The shipped pack is asked of the lean call, the others of the
@@ -1915,7 +1923,11 @@ for (const [name, rules, published] of [
     to: gregorian(2024, 11, 3),
     place,
     utcOffsetSeconds: 20700,
-    festivals: published ? { rules, published } : { rules },
+    festivals: {
+      rules,
+      ...(published ? { published } : {}),
+      ...(hijriOffset ? { hijriOffset } : {}),
+    },
   };
   const festivals =
     name === 'shipped' ? geo.almanac.festivals(asked) : geo.almanac.of(asked).festivals;
