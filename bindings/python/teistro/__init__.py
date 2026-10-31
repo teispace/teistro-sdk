@@ -455,6 +455,8 @@ from ._requests import (
     TimeStyle as TimeStyle,
     InWordsRequest as InWordsRequest,
     TimeTextRequest as TimeTextRequest,
+    LexiconRequest as LexiconRequest,
+    LookupRequest as LookupRequest,
     WordsAmount as WordsAmount,
     WordsAmountValue as WordsAmountValue,
     WordsDigits as WordsDigits,
@@ -1198,6 +1200,8 @@ __all__ = [
     "TimeStyle",
     "InWordsRequest",
     "TimeTextRequest",
+    "LexiconRequest",
+    "LookupRequest",
     "WordsAmount",
     "WordsAmountValue",
     "WordsDigits",
@@ -1206,6 +1210,13 @@ __all__ = [
     "WordsStyle",
     "CivilPart",
     "CivilText",
+    # A locale's names, and the members a text may name.
+    "LexiconForm",
+    "LexiconEntry",
+    "Lexicon",
+    "LookupCandidate",
+    "LookupMatch",
+    "Lookup",
     "InWords",
     "AmountInWords",
     # The transit hit list, and its names.
@@ -3092,6 +3103,25 @@ class IntlArea(_Area):
         '31 October 2026'
         """
         return CivilText._of(json.loads(self._context.inner.intl_date(json.dumps(request))))
+
+    def lexicon(self, request: LexiconRequest) -> "Lexicon":
+        """Every catalogue member's names in a locale, romanised forms too
+        (`03-design/lexicon.md`): built once per context and locale.
+
+        >>> sdk.intl.lexicon({"locale": "ne", "kinds": ["masa"]}).locale
+        'ne-Deva-NP'
+        """
+        return Lexicon._of(json.loads(self._context.inner.intl_lexicon(json.dumps(request))))
+
+    def lookup(self, request: LookupRequest) -> "Lookup":
+        """The catalogue members a text may name: each span with every
+        member it may name, never a guess. `start` and `end` count code
+        points.
+
+        >>> [c.key for c in sdk.intl.lookup({"text": "आज एकादशी", "kinds": ["tithi"]}).matches[0].candidates]
+        ['tithi.KRISHNA_EKADASHI', 'tithi.SHUKLA_EKADASHI']
+        """
+        return Lookup._of(json.loads(self._context.inner.intl_lookup(json.dumps(request))))
 
     def transliterate(self, text: str, source: str = "Deva", into: str = "Latn") -> str:
         """Text from one script into another."""
@@ -8473,6 +8503,117 @@ class CivilPart:
 
     text: str
     """Its text."""
+
+
+@dataclass(frozen=True)
+class LexiconForm:
+    """One form of a name: what it is, its text, and the locale that gave
+    it."""
+
+    form: str
+    """`name`, `prose`, `short`, `iast`, any the locale adds, or
+    `romanised`, derived."""
+
+    text: str
+    """Its text."""
+
+    locale: str
+    """The locale that gave it: the one asked for, or a fallback."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "LexiconForm":
+        return LexiconForm(form=raw["form"], text=raw["text"], locale=raw["locale"])
+
+
+@dataclass(frozen=True)
+class LexiconEntry:
+    """A member and its forms."""
+
+    key: str
+    """The catalogue key, `kind.MEMBER`."""
+
+    forms: Tuple[LexiconForm, ...]
+    """Its forms, each text once, the locale's own first."""
+
+
+@dataclass(frozen=True)
+class Lexicon:
+    """A locale's names for every member asked for, as `intl.lexicon`
+    gives them."""
+
+    locale: str
+    """The loaded locale the request's tag meant."""
+
+    entries: Tuple[LexiconEntry, ...]
+    """Every member a locale in the chain names, in the catalogue's
+    order."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "Lexicon":
+        return Lexicon(
+            locale=raw["locale"],
+            entries=tuple(
+                LexiconEntry(key=entry["key"], forms=tuple(LexiconForm._of(form) for form in entry["forms"]))
+                for entry in raw["entries"]
+            ),
+        )
+
+
+@dataclass(frozen=True)
+class LookupCandidate:
+    """A member a span may name, with the forms the span met."""
+
+    key: str
+    """The catalogue key."""
+
+    via: Tuple[LexiconForm, ...]
+    """The forms whose fold the span's is."""
+
+
+@dataclass(frozen=True)
+class LookupMatch:
+    """One span of a text that may name a member."""
+
+    start: int
+    """Where the span begins, counted in code points."""
+
+    end: int
+    """Where it ends, exclusive, in the same count."""
+
+    text: str
+    """The span's text."""
+
+    candidates: Tuple[LookupCandidate, ...]
+    """Every member it may name, in key order."""
+
+
+@dataclass(frozen=True)
+class Lookup:
+    """The spans of a text that may name a member, as `intl.lookup` gives
+    them."""
+
+    matches: Tuple[LookupMatch, ...]
+    """The spans, in the text's order."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "Lookup":
+        return Lookup(
+            matches=tuple(
+                LookupMatch(
+                    start=found["start"],
+                    end=found["end"],
+                    text=found["text"],
+                    candidates=tuple(
+                        LookupCandidate(
+                            key=candidate["key"],
+                            via=tuple(LexiconForm._of(form) for form in candidate["via"]),
+                        )
+                        for candidate in found["candidates"]
+                    ),
+                )
+                for found in raw["matches"]
+            )
+        )
 
 
 @dataclass(frozen=True)

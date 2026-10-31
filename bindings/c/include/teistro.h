@@ -10230,6 +10230,42 @@ ts_status ts_intl_time(const ts_context * context, const char * request_json, ts
 ts_status ts_intl_date(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
+ * Every catalogue member's names in a locale, romanised forms too
+ * (`03-design/lexicon.md` §1), answered as canonical JSON: `{locale,
+ * entries}`, each entry `{key, forms}` and each form `{form, text,
+ * locale}`, the form `name`, `prose`, `short`, `iast`, any the locale adds,
+ * or `romanised`, and `locale` the one in the chain that gave it.
+ *
+ * `request_json` is `{}`, with `"locale"` (a loaded tag or one that means
+ * one, `ne`; the context's when left out) and `"kinds"` (`["tithi",
+ * "nakshatra"]`; every kind when left out). A key it does not read or a
+ * kind no member's name has is `INVALID_ARG`, named under `lexicon`; a
+ * locale no loaded one answers is `UNSUPPORTED`. The lexicon is built the
+ * first time a locale is asked for and kept on the context.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_intl_lexicon(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * The catalogue members a text may name (`03-design/lexicon.md` §1.3),
+ * answered as canonical JSON: `{matches}`, each match `{start, end, text,
+ * candidates}` in the text's order, `start` and `end` counted in Unicode
+ * scalar values, and each candidate `{key, via}`, `via` the forms whose
+ * fold the span's is. A span that may name several members answers every
+ * one of them.
+ *
+ * `request_json` is `{"text"}`, with `"locale"` (whose chain's names are
+ * searched; every loaded locale's when left out) and `"kinds"` (every kind
+ * when left out). A key it does not read or a kind no member's name has is
+ * `INVALID_ARG`, named under `lookup`; a locale no loaded one answers is
+ * `UNSUPPORTED`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_intl_lookup(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
  * Text from one script into another (`deva`, `iast`), as a string lent
  * until the next call on the context. A pair the build has no table for
  * is `UNSUPPORTED` naming both scripts; anything the table does not know

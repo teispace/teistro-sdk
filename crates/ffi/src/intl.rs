@@ -454,6 +454,120 @@ pub unsafe extern "C" fn ts_intl_date(
     })
 }
 
+/// Every catalogue member's names in a locale, romanised forms too
+/// (`03-design/lexicon.md` §1), answered as canonical JSON: `{locale,
+/// entries}`, each entry `{key, forms}` and each form `{form, text,
+/// locale}`, the form `name`, `prose`, `short`, `iast`, any the locale adds,
+/// or `romanised`, and `locale` the one in the chain that gave it.
+///
+/// `request_json` is `{}`, with `"locale"` (a loaded tag or one that means
+/// one, `ne`; the context's when left out) and `"kinds"` (`["tithi",
+/// "nakshatra"]`; every kind when left out). A key it does not read or a
+/// kind no member's name has is `INVALID_ARG`, named under `lexicon`; a
+/// locale no loaded one answers is `UNSUPPORTED`. The lexicon is built the
+/// first time a locale is asked for and kept on the context.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_lexicon;
+/// use teistro_ffi::string::{TsString, ts_string_free};
+///
+/// let request = c"{\"locale\": \"ne\", \"kinds\": [\"masa\"]}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_intl_lexicon(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// let bytes = unsafe { core::slice::from_raw_parts(out.data, out.len) };
+/// let answer: serde_json::Value = serde_json::from_slice(bytes)?;
+/// assert_eq!(answer["locale"], "ne-Deva-NP");
+/// assert_eq!(answer["entries"][0]["key"], "masa.CHAITRA");
+/// // SAFETY: a descriptor the library wrote, freed once.
+/// unsafe { ts_string_free(&raw mut out) };
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_intl_lexicon(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked =
+            teistro::LexiconRequest::from_json(unsafe { text(request_json, "request_json") }?)?;
+        let answer = ctx.intl().lexicon(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
+/// The catalogue members a text may name (`03-design/lexicon.md` §1.3),
+/// answered as canonical JSON: `{matches}`, each match `{start, end, text,
+/// candidates}` in the text's order, `start` and `end` counted in Unicode
+/// scalar values, and each candidate `{key, via}`, `via` the forms whose
+/// fold the span's is. A span that may name several members answers every
+/// one of them.
+///
+/// `request_json` is `{"text"}`, with `"locale"` (whose chain's names are
+/// searched; every loaded locale's when left out) and `"kinds"` (every kind
+/// when left out). A key it does not read or a kind no member's name has is
+/// `INVALID_ARG`, named under `lookup`; a locale no loaded one answers is
+/// `UNSUPPORTED`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_lookup;
+/// use teistro_ffi::string::{TsString, ts_string_free};
+///
+/// let request = c"{\"text\": \"आज एकादशी हो\", \"kinds\": [\"tithi\"]}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_intl_lookup(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// let bytes = unsafe { core::slice::from_raw_parts(out.data, out.len) };
+/// let answer: serde_json::Value = serde_json::from_slice(bytes)?;
+/// assert_eq!(answer["matches"][0]["text"], "एकादशी");
+/// assert_eq!(answer["matches"][0]["candidates"].as_array().map(Vec::len), Some(2));
+/// // SAFETY: a descriptor the library wrote, freed once.
+/// unsafe { ts_string_free(&raw mut out) };
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_intl_lookup(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked =
+            teistro::LookupRequest::from_json(unsafe { text(request_json, "request_json") }?)?;
+        let answer = ctx.intl().lookup(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 /// Text from one script into another (`deva`, `iast`), as a string lent
 /// until the next call on the context. A pair the build has no table for
 /// is `UNSUPPORTED` naming both scripts; anything the table does not know

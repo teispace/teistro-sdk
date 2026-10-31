@@ -212,6 +212,8 @@ import type {
   HarshaRules,
   HitRequest,
   DateTextRequest,
+  LexiconRequest,
+  LookupRequest,
   InWordsRequest,
   TimeTextRequest,
   Interval,
@@ -2311,6 +2313,58 @@ export interface CivilPart {
   readonly kind: 'YEAR' | 'MONTH' | 'DAY' | 'WEEKDAY' | 'ERA' | 'HOUR' | 'MINUTE' | 'SECOND' | 'DAY_PERIOD' | 'LITERAL';
   /** Its text. */
   readonly text: string;
+}
+
+/** One form of a name: what it is, its text, and the locale that gave it. */
+export interface LexiconForm {
+  /** `name`, `prose`, `short`, `iast`, any the locale adds, or `romanised`, derived. */
+  readonly form: string;
+  /** Its text. */
+  readonly text: string;
+  /** The locale that gave it: the one asked for, or a fallback. */
+  readonly locale: string;
+}
+
+/** A member and its forms. */
+export interface LexiconEntry {
+  /** The catalogue key, `kind.MEMBER`. */
+  readonly key: string;
+  /** Its forms, each text once, the locale's own first. */
+  readonly forms: readonly LexiconForm[];
+}
+
+/** A locale's names for every member asked for, as `intl.lexicon` gives them. */
+export interface Lexicon {
+  /** The loaded locale the request's tag meant. */
+  readonly locale: string;
+  /** Every member a locale in the chain names, in the catalogue's order. */
+  readonly entries: readonly LexiconEntry[];
+}
+
+/** A member a span may name, with the forms the span met. */
+export interface LookupCandidate {
+  /** The catalogue key. */
+  readonly key: string;
+  /** The forms whose fold the span's is. */
+  readonly via: readonly LexiconForm[];
+}
+
+/** One span of a text that may name a member. */
+export interface LookupMatch {
+  /** Where the span begins, counted in Unicode scalar values (code points). */
+  readonly start: number;
+  /** Where it ends, exclusive, in the same count. */
+  readonly end: number;
+  /** The span's text. */
+  readonly text: string;
+  /** Every member it may name, in key order. */
+  readonly candidates: readonly LookupCandidate[];
+}
+
+/** The spans of a text that may name a member, as `intl.lookup` gives them. */
+export interface Lookup {
+  /** The spans, in the text's order. */
+  readonly matches: readonly LookupMatch[];
 }
 
 /** An amount's parts, for an application that composes them its own way. */
@@ -7583,6 +7637,10 @@ export declare class IntlArea {
   time(request: TimeTextRequest): CivilText;
   /** A date as text and parts, in its own calendar and the locale's pattern. */
   date(request: DateTextRequest): CivilText;
+  /** Every catalogue member's names in a locale, romanised forms too. */
+  lexicon(request: LexiconRequest): Lexicon;
+  /** The catalogue members a text may name, every candidate of each span. */
+  lookup(request: LookupRequest): Lookup;
   /** The typed accessors: every message and every catalogued entity. */
   readonly messages: Messages;
   /** Loads a `.tpack` or `.tbundle` file into the locale engine. */

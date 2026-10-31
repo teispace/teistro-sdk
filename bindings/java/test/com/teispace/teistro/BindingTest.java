@@ -327,6 +327,14 @@ public final class BindingTest {
                 same("सुबह ६:०५", dawn.text(), "the locale's clock");
                 same("DAY_PERIOD", dawn.parts().get(0).kind(), "the day's part is typed");
                 check(dawn.isDraft(), "Hindi's calendar text says it is unreviewed");
+                Lexicon months = sky.intl().lexicon(com.teispace.teistro.request.LexiconRequest.builder()
+                        .locale("ne").kinds(java.util.List.of("masa")).build());
+                same("ne-Deva-NP", months.locale(), "a short tag means the loaded one");
+                same("चैत्र", months.entries().get(0).forms().get(0).text(), "the month's name");
+                Lookup found = sky.intl().lookup(com.teispace.teistro.request.LookupRequest.builder()
+                        .text("आज एकादशी हो").kinds(java.util.List.of("tithi")).build());
+                same(2, found.matches().get(0).candidates().size(), "both fortnights' Ekadashi");
+                same(3, found.matches().get(0).start(), "counted in code points");
             }
         });
 

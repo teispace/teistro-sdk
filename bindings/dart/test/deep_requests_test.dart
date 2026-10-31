@@ -2729,6 +2729,26 @@ void main() {
     );
   });
 
+  test('intl.lexicon: LexiconRequest', () {
+    _holds(
+      'intl.lexicon',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: LexiconRequest(kinds: ['x'], locale: 'x').toJson(),
+    );
+  });
+
+  test('intl.lookup: LookupRequest', () {
+    _holds(
+      'intl.lookup',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: LookupRequest(kinds: ['x'], locale: 'x', text: 'x').toJson(),
+    );
+  });
+
   test('intl.time: TimeTextRequest', () {
     _holds(
       'intl.time',

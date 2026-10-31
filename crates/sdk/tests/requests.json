@@ -295,6 +295,20 @@
     }
   },
   {
+    "record": "intl.lexicon",
+    "request": {
+      "locale": "ne-Deva-NP",
+      "kinds": ["masa", "vara"]
+    }
+  },
+  {
+    "record": "intl.lookup",
+    "request": {
+      "text": "आज एकादशी हो, चन्द्रमा रोहिणीमा छ",
+      "kinds": ["tithi", "nakshatra", "graha"]
+    }
+  },
+  {
     "record": "almanac.digest",
     "request": {
       "first": {

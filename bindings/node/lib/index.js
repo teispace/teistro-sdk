@@ -2985,6 +2985,30 @@ export class IntlArea extends Area {
   }
 
   /**
+   * Every catalogue member's names in a locale, romanised forms too
+   * (`03-design/lexicon.md`): built once per context and locale.
+   *
+   * ```js
+   * sdk.intl.lexicon({ locale: 'ne', kinds: ['masa'] }).entries[0].forms[0].text;
+   * ```
+   */
+  lexicon(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.intlLexicon(JSON.stringify(request)))));
+  }
+
+  /**
+   * The catalogue members a text may name: each span with every member it
+   * may name, never a guess. `start` and `end` count code points.
+   *
+   * ```js
+   * sdk.intl.lookup({ text: 'आज एकादशी हो', kinds: ['tithi'] }).matches[0].candidates.length; // 2
+   * ```
+   */
+  lookup(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.intlLookup(JSON.stringify(request)))));
+  }
+
+  /**
    * An entity's forms in the current locale or its fallbacks: its name,
    * its prose form, its transliteration, and the glyph and gender the
    * locale gives it.

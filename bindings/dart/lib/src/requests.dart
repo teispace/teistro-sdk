@@ -1292,6 +1292,57 @@ final class InWordsRequest extends _Request {
   List<Object?> get _fields => [amount, digits, grouping, locale, number, style];
 }
 
+/// What a caller asks to be listed: a locale's names for every member, or for some kinds.
+final class LexiconRequest extends _Request {
+  const LexiconRequest({
+    this.kinds,
+    this.locale,
+  });
+
+  /// The kinds to list (`tithi`, `nakshatra`); every kind when left out.
+  final List<String>? kinds;
+
+  /// The locale, a loaded tag or one that means one (`ne`); the engine's current one when left out.
+  final String? locale;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (kinds case final kindsValue?) 'kinds': kindsValue,
+    if (locale case final localeValue?) 'locale': localeValue,
+  };
+
+  @override
+  List<Object?> get _fields => [kinds, locale];
+}
+
+/// What a caller asks to be found: the members a text may name.
+final class LookupRequest extends _Request {
+  const LookupRequest({
+    this.kinds,
+    this.locale,
+    required this.text,
+  });
+
+  /// The kinds a match may be of; every kind when left out.
+  final List<String>? kinds;
+
+  /// The locale whose chain's names are searched; every loaded locale's when left out, so a Hindi word in a Nepali sentence is found.
+  final String? locale;
+
+  /// The text.
+  final String text;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (kinds case final kindsValue?) 'kinds': kindsValue,
+    if (locale case final localeValue?) 'locale': localeValue,
+    'text': text,
+  };
+
+  @override
+  List<Object?> get _fields => [kinds, locale, text];
+}
+
 /// What a caller asks to be written: a time of day, and how.
 final class TimeTextRequest extends _Request {
   const TimeTextRequest({

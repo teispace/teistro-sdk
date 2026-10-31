@@ -972,6 +972,27 @@ final class IntlArea extends _Area {
         as Map<String, Object?>,
   );
 
+  /// Every catalogue member's names in a locale, romanised forms too
+  /// (`03-design/lexicon.md`): built once per context and locale.
+  ///
+  /// ```dart
+  /// final months = sdk.intl.lexicon(
+  ///   const LexiconRequest(locale: 'ne', kinds: ['masa']),
+  /// );
+  /// ```
+  Lexicon lexicon(LexiconRequest request) => Lexicon._of(
+    jsonDecode(_context._inner.intlLexicon(jsonEncode(request._wire)))
+        as Map<String, Object?>,
+  );
+
+  /// The catalogue members a text may name: each span with every member
+  /// it may name, never a guess. [LookupMatch.start] and
+  /// [LookupMatch.end] count code points, not UTF-16 units.
+  Lookup lookup(LookupRequest request) => Lookup._of(
+    jsonDecode(_context._inner.intlLookup(jsonEncode(request._wire)))
+        as Map<String, Object?>,
+  );
+
   /// An entity's forms in the current locale or its fallbacks: its name,
   /// its prose form, its transliteration, and the glyph and gender the
   /// locale gives it.
@@ -11493,6 +11514,152 @@ final class CivilText extends _Value {
     isDraft,
     warnings,
   ];
+}
+
+/// One form of a name: what it is, its text, and the locale that gave it.
+final class LexiconForm extends _Value {
+  const LexiconForm({
+    required this.form,
+    required this.text,
+    required this.locale,
+  });
+
+  /// `name`, `prose`, `short`, `iast`, any the locale adds, or
+  /// `romanised`, derived.
+  final String form;
+
+  /// Its text.
+  final String text;
+
+  /// The locale that gave it: the one asked for, or a fallback.
+  final String locale;
+
+  static LexiconForm _of(Map<String, Object?> raw) => LexiconForm(
+    form: raw['form']! as String,
+    text: raw['text']! as String,
+    locale: raw['locale']! as String,
+  );
+
+  static List<LexiconForm> _list(Object? raw) => List.unmodifiable(
+    (raw! as List<Object?>).cast<Map<String, Object?>>().map(LexiconForm._of),
+  );
+
+  @override
+  List<Object?> get _fields => [form, text, locale];
+}
+
+/// A member and its forms.
+final class LexiconEntry extends _Value {
+  const LexiconEntry({required this.key, required this.forms});
+
+  /// The catalogue key, `kind.MEMBER`.
+  final String key;
+
+  /// Its forms, each text once, the locale's own first.
+  final List<LexiconForm> forms;
+
+  @override
+  List<Object?> get _fields => [key, forms];
+}
+
+/// A locale's names for every member asked for, as `intl.lexicon` gives
+/// them.
+final class Lexicon extends _Value {
+  const Lexicon({required this.locale, required this.entries});
+
+  /// The loaded locale the request's tag meant.
+  final String locale;
+
+  /// Every member a locale in the chain names, in the catalogue's order.
+  final List<LexiconEntry> entries;
+
+  static Lexicon _of(Map<String, Object?> raw) => Lexicon(
+    locale: raw['locale']! as String,
+    entries: List.unmodifiable(
+      (raw['entries']! as List<Object?>).cast<Map<String, Object?>>().map(
+        (entry) => LexiconEntry(
+          key: entry['key']! as String,
+          forms: LexiconForm._list(entry['forms']),
+        ),
+      ),
+    ),
+  );
+
+  @override
+  List<Object?> get _fields => [locale, entries];
+}
+
+/// A member a span may name, with the forms the span met.
+final class LookupCandidate extends _Value {
+  const LookupCandidate({required this.key, required this.via});
+
+  /// The catalogue key.
+  final String key;
+
+  /// The forms whose fold the span's is.
+  final List<LexiconForm> via;
+
+  @override
+  List<Object?> get _fields => [key, via];
+}
+
+/// One span of a text that may name a member.
+final class LookupMatch extends _Value {
+  const LookupMatch({
+    required this.start,
+    required this.end,
+    required this.text,
+    required this.candidates,
+  });
+
+  /// Where the span begins, counted in code points.
+  final int start;
+
+  /// Where it ends, exclusive, in the same count.
+  final int end;
+
+  /// The span's text.
+  final String text;
+
+  /// Every member it may name, in key order.
+  final List<LookupCandidate> candidates;
+
+  @override
+  List<Object?> get _fields => [start, end, text, candidates];
+}
+
+/// The spans of a text that may name a member, as `intl.lookup` gives
+/// them.
+final class Lookup extends _Value {
+  const Lookup({required this.matches});
+
+  /// The spans, in the text's order.
+  final List<LookupMatch> matches;
+
+  static Lookup _of(Map<String, Object?> raw) => Lookup(
+    matches: List.unmodifiable(
+      (raw['matches']! as List<Object?>).cast<Map<String, Object?>>().map(
+        (found) => LookupMatch(
+          start: found['start']! as int,
+          end: found['end']! as int,
+          text: found['text']! as String,
+          candidates: List.unmodifiable(
+            (found['candidates']! as List<Object?>)
+                .cast<Map<String, Object?>>()
+                .map(
+                  (candidate) => LookupCandidate(
+                    key: candidate['key']! as String,
+                    via: LexiconForm._list(candidate['via']),
+                  ),
+                ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  @override
+  List<Object?> get _fields => [matches];
 }
 
 /// One part of a date or a time.

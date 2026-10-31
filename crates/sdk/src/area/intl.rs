@@ -4,6 +4,7 @@
 use teistro_core::Status;
 use teistro_core::error::Error;
 use teistro_intl::civil::{CivilText, DateTextRequest, TimeTextRequest};
+use teistro_intl::lexicon::{Lexicon, LexiconRequest, Lookup, LookupRequest};
 use teistro_intl::source::Entity;
 use teistro_intl::translit::{Script, transliterate};
 use teistro_intl::words::{InWords, InWordsRequest};
@@ -222,6 +223,50 @@ impl<'a> IntlArea<'a> {
     /// As [`teistro_intl::Intl::date`], named under `date`.
     pub fn date(self, request: &DateTextRequest) -> Result<CivilText, Error> {
         self.context.locale_engine().date(request)
+    }
+
+    /// Every catalogue member's names in a locale, romanised forms too
+    /// (`03-design/lexicon.md` §1): the request's locale, or this area's
+    /// when it names none. Built once per context and locale.
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let asked = teistro::LexiconRequest::from_json(r#"{"locale": "ne", "kinds": ["graha"]}"#)?;
+    /// let grahas = sdk.intl().lexicon(&asked)?;
+    /// assert_eq!(grahas.entries[0].forms[0].text, "सूर्य");
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`teistro_intl::Intl::lexicon`], named under `lexicon`.
+    pub fn lexicon(self, request: &LexiconRequest) -> Result<Lexicon, Error> {
+        self.context.locale_engine().lexicon(request)
+    }
+
+    /// Every span of a text that may name a catalogue member, each with
+    /// every member it may name (`03-design/lexicon.md` §1.3).
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let asked = teistro::LookupRequest::from_json(r#"{"text": "the Moon is in Rohini", "kinds": ["graha", "nakshatra"]}"#)?;
+    /// let found = sdk.intl().lookup(&asked)?;
+    /// let keys: Vec<&str> = found.matches.iter().map(|m| m.candidates[0].key.as_str()).collect();
+    /// assert_eq!(keys, ["graha.MOON", "nakshatra.ROHINI"]);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`teistro_intl::Intl::lookup`], named under `lookup`.
+    pub fn lookup(self, request: &LookupRequest) -> Result<Lookup, Error> {
+        self.context.locale_engine().lookup(request)
     }
 
     /// A locale pack loaded at run time, whose locales join the embedded

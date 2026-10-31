@@ -194,6 +194,25 @@ void main() {
     );
   });
 
+  test('a locale\'s names, and the members a text may name', () {
+    final ctx = context();
+    addTearDown(ctx.dispose);
+    final months = ctx.intl.lexicon(
+      const LexiconRequest(locale: 'ne', kinds: ['masa']),
+    );
+    expect(months.locale, 'ne-Deva-NP');
+    expect(months.entries, hasLength(12));
+    expect(months.entries.first.forms.first.text, 'चैत्र');
+    final found = ctx.intl.lookup(
+      const LookupRequest(text: 'आज एकादशी हो', kinds: ['tithi']),
+    );
+    expect(found.matches.single.candidates.map((c) => c.key), [
+      'tithi.KRISHNA_EKADASHI',
+      'tithi.SHUKLA_EKADASHI',
+    ]);
+    expect([found.matches.single.start, found.matches.single.end], [3, 9]);
+  });
+
   test('a date and a time as text and parts', () {
     final ctx = context();
     addTearDown(ctx.dispose);

@@ -1028,6 +1028,10 @@ pub struct Intl {
     /// render, and an entry changes only through the runtime API, which
     /// forgets what it replaced.
     pub(crate) parsed: RwLock<HashMap<(String, String), Arc<Message>>>,
+    /// The lexicons built, by locale tag or `*` for every locale, each the
+    /// first time it is asked for (`docs/03-design/lexicon.md` §1.4); a
+    /// change through the runtime API forgets them all.
+    pub(crate) lexicons: RwLock<HashMap<String, Arc<crate::lexicon::Index>>>,
     /// In-memory overrides by locale and full key, consulted before the
     /// locale's own entries ([`Intl::set_override`]).
     pub(crate) overrides: BTreeMap<String, BTreeMap<String, Entry>>,
@@ -1215,6 +1219,7 @@ impl Intl {
             plurals,
             current,
             parsed: RwLock::new(HashMap::new()),
+            lexicons: RwLock::new(HashMap::new()),
             overrides: BTreeMap::new(),
             loaded: Vec::new(),
             zones: None,
@@ -1505,6 +1510,11 @@ impl Intl {
     /// Forgets the parsed messages of a locale, or of one key of it, after
     /// the runtime API replaced them.
     pub(crate) fn forget_parsed(&self, tag: &str, key: Option<&str>) {
+        // A name may come from any locale's chain, so every lexicon goes.
+        self.lexicons
+            .write()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clear();
         let mut parsed = self.parsed.write().unwrap_or_else(PoisonError::into_inner);
         match key {
             Some(key) => {

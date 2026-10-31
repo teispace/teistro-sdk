@@ -665,6 +665,12 @@ pub use teistro_intl::ClockTime;
 pub use teistro_intl::civil::{
     CivilPart, CivilPartKind, CivilText, DateStyle, DateTextRequest, TimeStyle, TimeTextRequest,
 };
+// The lexicon and its reverse (`03-design/lexicon.md`): what
+// `intl().lexicon` and `intl().lookup` take and answer with.
+pub use teistro_intl::lexicon::{
+    Lexicon, LexiconEntry, LexiconForm, LexiconRequest, Lookup, LookupCandidate, LookupMatch,
+    LookupRequest,
+};
 // Making a pack, which is the other half of loading one. `Loaded` is what
 // `load_pack` answers with and was published already; this is what a
 // consumer with locale sources of its own — or with the SDK's readings

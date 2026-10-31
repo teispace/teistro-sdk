@@ -200,6 +200,36 @@ public final class IntlArea {
     }
 
     /**
+     * Every catalogue member's names in a locale, romanised forms too
+     * ({@code 03-design/lexicon.md}): built once per context and locale.
+     *
+     * @param request the locale, and the kinds to list
+     * @return the names
+     */
+    public Lexicon lexicon(com.teispace.teistro.request.LexiconRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is a LexiconRequest", "request");
+        }
+        String json = Json.write(request);
+        return Lexicon.read(Json.read(context.locked((lib, raw) -> Calls.intlLexicon(lib, raw, json))));
+    }
+
+    /**
+     * The catalogue members a text may name: each span with every member
+     * it may name, never a guess.
+     *
+     * @param request the text, and the locale and kinds to search
+     * @return the spans
+     */
+    public Lookup lookup(com.teispace.teistro.request.LookupRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is a LookupRequest", "request");
+        }
+        String json = Json.write(request);
+        return Lookup.read(Json.read(context.locked((lib, raw) -> Calls.intlLookup(lib, raw, json))));
+    }
+
+    /**
      * Loads a locale pack's bytes into the engine.
      *
      * @param data the pack

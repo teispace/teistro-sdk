@@ -622,6 +622,38 @@ export interface InWordsRequest {
 }
 
 /**
+ * What a caller asks to be listed: a locale's names for every member, or for some kinds.
+ */
+export interface LexiconRequest {
+  /**
+   * The kinds to list (`tithi`, `nakshatra`); every kind when left out.
+   */
+  readonly kinds?: readonly string[] | null;
+  /**
+   * The locale, a loaded tag or one that means one (`ne`); the engine's current one when left out.
+   */
+  readonly locale?: string | null;
+}
+
+/**
+ * What a caller asks to be found: the members a text may name.
+ */
+export interface LookupRequest {
+  /**
+   * The kinds a match may be of; every kind when left out.
+   */
+  readonly kinds?: readonly string[] | null;
+  /**
+   * The locale whose chain's names are searched; every loaded locale's when left out, so a Hindi word in a Nepali sentence is found.
+   */
+  readonly locale?: string | null;
+  /**
+   * The text.
+   */
+  readonly text: string;
+}
+
+/**
  * What a caller asks to be written: a time of day, and how.
  */
 export interface TimeTextRequest {

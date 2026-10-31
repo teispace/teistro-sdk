@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"intl.lexicon","arguments":{"request":{"locale":"ne-Deva-NP","kinds":["masa","vara"]}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":120}

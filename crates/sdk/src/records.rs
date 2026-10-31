@@ -424,7 +424,7 @@ pub fn records() -> Vec<Record> {
 }
 
 /// The locale engine's records.
-fn intl_records() -> [Record; 3] {
+fn intl_records() -> [Record; 5] {
     [
         Record {
             name: "intl.inWords",
@@ -467,6 +467,34 @@ fn intl_records() -> [Record; 3] {
                 )
             },
             schemas: schemas!(crate::DateTextRequest => crate::CivilText),
+        },
+        Record {
+            name: "intl.lexicon",
+            boundary: "ts_intl_lexicon",
+            title: "Every catalogue member's names in a locale, romanised forms too",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .intl()
+                        .lexicon(&crate::LexiconRequest::from_json(json)?)?,
+                )
+            },
+            schemas: schemas!(crate::LexiconRequest => crate::Lexicon),
+        },
+        Record {
+            name: "intl.lookup",
+            boundary: "ts_intl_lookup",
+            title: "The catalogue members a text may name, every candidate of each span",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .intl()
+                        .lookup(&crate::LookupRequest::from_json(json)?)?,
+                )
+            },
+            schemas: schemas!(crate::LookupRequest => crate::Lookup),
         },
     ]
 }

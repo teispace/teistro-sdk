@@ -4073,6 +4073,25 @@
     }
   },
   {
+    "record": "intl.lexicon",
+    "request": {
+      "kinds": [
+        "x"
+      ],
+      "locale": "x"
+    }
+  },
+  {
+    "record": "intl.lookup",
+    "request": {
+      "kinds": [
+        "x"
+      ],
+      "locale": "x",
+      "text": "x"
+    }
+  },
+  {
     "record": "intl.time",
     "request": {
       "at": {

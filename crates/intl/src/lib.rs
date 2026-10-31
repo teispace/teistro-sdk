@@ -19,6 +19,8 @@
 //! - [`runtime`]: the engine's runtime API, packs and bundles loaded
 //!   after construction, in-memory overrides and the report of what is
 //!   loaded and covered;
+//! - [`lexicon`]: every catalogue member's names in a locale, romanised
+//!   forms too, and the members a text may name;
 //! - [`words`]: numbers and currency amounts in words, by CLDR's
 //!   rule-based number formats, with the Indian grouping;
 //! - [`messages`]: the SDK's own namespaces as typed Rust accessors,
@@ -52,6 +54,7 @@ pub mod civil;
 pub mod cli;
 pub mod derive;
 pub mod generate;
+pub mod lexicon;
 mod lookup;
 pub mod mf2;
 pub mod migrate;
