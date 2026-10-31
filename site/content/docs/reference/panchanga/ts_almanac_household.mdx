@@ -1,0 +1,40 @@
+---
+title: ts_almanac_household
+description: "Several births and deaths and several observers at a place (`03-design/ashauch.md` §11), answered with `{value, provenance}` as canonical JSON."
+---
+
+Several births and deaths and several observers at a place (`03-design/ashauch.md` §11), answered with `{value, provenance}` as canonical JSON.
+
+`value` is `{observers}`, each `{key, periods, pureAt}`: `periods` an ashauch answer for each tie, in the order the news reached that observer, each overlap resolved against those before it, and `pureAt` the instant the last ends.
+
+`request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "table", "tradition", "household"}`: `household` `{events, observers}`, an event `{key, event}` and an observer `{key, ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays, fireGiver}`. A household that does not hold together, or a key it does not read, is `INVALID_ARG` named under `household`; a relation the table names no row for is `UNSUPPORTED`; a context without an ephemeris is `CAPABILITY`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_almanac_household(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `almanac.household` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.

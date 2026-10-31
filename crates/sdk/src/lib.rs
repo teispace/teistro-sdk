@@ -265,6 +265,9 @@ pub use teistro_calendar::tibetan::TibetanYear;
 // The period of impurity after a birth or a death: what
 // `sdk.almanac().ashauch` asks and answers with, every table row data.
 pub use teistro_panchanga::ashauch;
+// The death-time check: what `sdk.almanac().death_time` asks and answers
+// with, every list data.
+pub use teistro_panchanga::death_time;
 // A death's first year: the sixteen shraddhas, the sapindana and the
 // first abdika, what `sdk.almanac().first_year` asks and answers with.
 pub use teistro_panchanga::first_year;
@@ -577,7 +580,9 @@ pub use teistro_rectification as rectification;
 pub use teistro_lalkitab as lalkitab;
 // Pancha Pakshi: the five birds' activities by yama and sub-period, the
 // death birds and the relations (`03-design/pakshi.md`).
-pub use crate::ashauch_request::AshauchQuery;
+pub use crate::ashauch_request::{
+    AshauchQuery, DeathTimeQuery, HouseholdQuery, KinQuery, RiteQuery,
+};
 pub use crate::first_year_request::FirstYearQuery;
 #[cfg(feature = "pakshi")]
 pub use crate::pakshi_request::{PakshiDay, PakshiNative, PakshiRequest};

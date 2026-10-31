@@ -188,6 +188,27 @@ from ._requests import (
     AshauchRelationRow as AshauchRelationRow,
     AshauchRequest as AshauchRequest,
     AshauchRunning as AshauchRunning,
+    KinQuery as KinQuery,
+    RiteQuery as RiteQuery,
+    DeathTimeQuery as DeathTimeQuery,
+    HouseholdQuery as HouseholdQuery,
+    KinAsked as KinAsked,
+    KinTable as KinTable,
+    AshauchRiteAsked as AshauchRiteAsked,
+    AshauchRiteTable as AshauchRiteTable,
+    DeathTimeTable as DeathTimeTable,
+    Household as Household,
+    KinObserver as KinObserver,
+    KinStep as KinStep,
+    KinRow as KinRow,
+    AshauchRite as AshauchRite,
+    AshauchRiteRow as AshauchRiteRow,
+    HouseholdEvent as HouseholdEvent,
+    HouseholdObserver as HouseholdObserver,
+    KinKeeps as KinKeeps,
+    RiteBeginning as RiteBeginning,
+    RiteVerdict as RiteVerdict,
+    HouseholdTie as HouseholdTie,
     AshauchSex as AshauchSex,
     AshauchTable as AshauchTable,
     AshauchTradition as AshauchTradition,
@@ -1489,6 +1510,27 @@ __all__ = [
     "AshauchEvent",
     "AshauchRunning",
     "AshauchRequest",
+    "KinQuery",
+    "RiteQuery",
+    "DeathTimeQuery",
+    "HouseholdQuery",
+    "KinAsked",
+    "KinTable",
+    "AshauchRiteAsked",
+    "AshauchRiteTable",
+    "DeathTimeTable",
+    "Household",
+    "KinObserver",
+    "KinStep",
+    "KinRow",
+    "AshauchRite",
+    "AshauchRiteRow",
+    "HouseholdEvent",
+    "HouseholdObserver",
+    "KinKeeps",
+    "RiteBeginning",
+    "RiteVerdict",
+    "HouseholdTie",
     "AshauchRelationRow",
     "AshauchMark",
     "AshauchBand",
@@ -1502,6 +1544,16 @@ __all__ = [
     "AshauchOverlapped",
     "Ashauch",
     "AshauchAnswer",
+    "HouseholdPeriods",
+    "HouseholdAshauch",
+    "HouseholdAnswer",
+    "KinDegree",
+    "Kin",
+    "AshauchRiteAnswer",
+    "DeathInstant",
+    "DeathRite",
+    "DeathTime",
+    "DeathTimeAnswer",
     "FirstAbdika",
     "FirstYearAdhika",
     "SapindanaAt",
@@ -3753,6 +3805,128 @@ class AlmanacArea(_Area):
             asked["tradition"] = tradition
         answered = self._context._through_provider(lambda: self._context.inner.almanac_ashauch(json.dumps(asked)))
         return _ashauch_answer(answered)
+
+    def household(
+        self,
+        *,
+        place: Observer,
+        utc_offset_seconds: int,
+        household: "Household",
+        table: Optional["AshauchTable"] = None,
+        tradition: Optional["AshauchTradition"] = None,
+    ) -> "HouseholdAnswer":
+        """**A household's periods of impurity** at a place
+        (`03-design/ashauch.md` §11): several births and deaths and
+        several observers in one request. Each observer's `ties` name an
+        event by its key and the observer's relation to it; they are read
+        in the order the news reached that observer, each against the ones
+        before it (DS p. 305: the news, not the event, decides).
+        `household`, `table` and `tradition` cross as written, so a key the
+        SDK does not read is refused by name under `household`.
+
+        >>> # found = ctx.almanac.household(place=kathmandu, utc_offset_seconds=20700, household={
+        >>> #     "events": [{"key": "grandfather", "event": {"event": "DEATH", "at": 2461051.677083}}],
+        >>> #     "observers": [{"key": "son", "ties": [{"event": "grandfather", "relation": "CHILD"}]}]})
+        >>> # found.value.observers[0].periods[0].days  # 10
+        """
+        asked: Dict[str, Any] = {
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+            "household": household,
+        }
+        if table is not None:
+            asked["table"] = table
+        if tradition is not None:
+            asked["tradition"] = tradition
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_household(json.dumps(asked)))
+        return _household_answer(answered)
+
+    def ashauch_kin(self, *, kin: "KinAsked", table: Optional["KinTable"] = None) -> Kin:
+        """**The ashauch relation a path in a family gives**
+        (`03-design/ashauch.md` §10): the steps from the observer to the
+        one who died or was born (`FATHER`, `MOTHER`, `SON`, `DAUGHTER`,
+        `HUSBAND`, `WIFE`), read as the *Dharmasindhu* counts kin (pp.
+        299–302). Needs no place or ephemeris; a path that steps back, or
+        a fact a row turns on and `kin` leaves out, is refused by name
+        under `kin`.
+
+        >>> # found = ctx.almanac.ashauch_kin(kin={"path": ["FATHER", "SON"], "observer": {"sex": "MALE"}})
+        >>> # found.relation, found.degree.observer  # ("SAPINDA", 2)
+        """
+        asked: Dict[str, Any] = {"kin": kin}
+        if table is not None:
+            asked["table"] = table
+        raw = json.loads(self._context.inner.almanac_ashauch_kin(json.dumps(asked)))
+        degree = raw.get("degree")
+        return Kin(
+            relation=raw.get("relation"),
+            keeps=raw["keeps"],
+            degree=None
+            if degree is None
+            else KinDegree(observer=degree["observer"], person=degree["person"], reach=degree["reach"]),
+            within_girls_reach=raw.get("withinGirlsReach"),
+            clause=raw["clause"],
+            table=raw["table"],
+        )
+
+    def ashauch_rite(self, *, rite: "AshauchRiteAsked", table: Optional["AshauchRiteTable"] = None) -> AshauchRiteAnswer:
+        """**Whether a rite may go on during a period of impurity**
+        (`03-design/ashauch.md` §12): `GOES_ON`, `IN_PART` or `BARRED`,
+        what opens the rite and the clause, from the *Dharmasindhu*'s
+        exceptions (pp. 309–310) when no `table` is given. Needs no place
+        or ephemeris.
+
+        >>> # found = ctx.almanac.ashauch_rite(rite={"rite": "MARRIAGE", "begun": True, "noOtherWay": True})
+        >>> # found.verdict  # "GOES_ON"
+        """
+        asked: Dict[str, Any] = {"rite": rite}
+        if table is not None:
+            asked["table"] = table
+        raw = json.loads(self._context.inner.almanac_ashauch_rite(json.dumps(asked)))
+        return AshauchRiteAnswer(
+            rite=raw["rite"],
+            verdict=raw["verdict"],
+            beginning=raw.get("beginning"),
+            row=raw["row"],
+            clause=raw["clause"],
+            table=raw["table"],
+        )
+
+    def death_time(
+        self,
+        *,
+        place: Observer,
+        utc_offset_seconds: int,
+        at: float,
+        cremated_at: Optional[float] = None,
+        table: Optional["DeathTimeTable"] = None,
+    ) -> "DeathTimeAnswer":
+        """**The death-time check** at a place (`03-design/death-time.md`):
+        at the death and at the burning, the nakshatra, tithi, vara and
+        the Moon's sign, whether it is the panchaka, the nakshatra's feet
+        and any pushkara yoga; and the rites the *Dharmasindhu* ties to
+        them (pp. 334–335), each with its clause. With no `cremated_at`
+        the burning is taken to fall as the death did; one before the
+        death is refused as `deathTime.crematedAt`.
+
+        >>> # found = ctx.almanac.death_time(place=kathmandu, utc_offset_seconds=20700, at=2461051.677083)
+        >>> # found.value.death.panchaka  # False
+        """
+        asked: Dict[str, Any] = {
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+            "at": at,
+        }
+        if cremated_at is not None:
+            asked["crematedAt"] = cremated_at
+        if table is not None:
+            asked["table"] = table
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_death_time(json.dumps(asked)))
+        return _death_time_answer(answered)
 
     def first_year(
         self,
@@ -10209,14 +10383,20 @@ class AshauchClause(TypedDict, total=False):
     abroad: bool
 
 
-class AshauchOverlapped(TypedDict, total=False):
-    """What an overlap did, by its `overlap`, `earlier` the earlier
-    answer's key: `"ENDS_WITH_EARLIER"`, `"LAST_NIGHT"` with the `days`
-    added, or `"MOTHER_AFTER_FATHER"`."""
-
-    overlap: Required[Literal["ENDS_WITH_EARLIER", "LAST_NIGHT", "MOTHER_AFTER_FATHER"]]
-    earlier: Required[str]
-    days: int
+# What an overlap did, by its `overlap`, `earlier` the earlier answer's
+# key: `"ENDS_WITH_EARLIER"`, `"LAST_NIGHT"` with the `days` added from
+# `from`, the earlier period's own end (a UTC Julian day), or
+# `"MOTHER_AFTER_FATHER"`. Spelt as a call, since `from` is a keyword.
+AshauchOverlapped = TypedDict(
+    "AshauchOverlapped",
+    {
+        "overlap": Required[Literal["ENDS_WITH_EARLIER", "LAST_NIGHT", "MOTHER_AFTER_FATHER"]],
+        "earlier": Required[str],
+        "days": int,
+        "from": float,
+    },
+    total=False,
+)
 
 
 @dataclass(frozen=True)
@@ -10293,6 +10473,11 @@ class Ashauch:
             found["sex"] = self.sex
         if self.days is not None:
             found["days"] = self.days
+        # The days a last night added take in less than the period did
+        # (DS p. 306).
+        if self.overlap is not None and self.overlap["overlap"] == "LAST_NIGHT":
+            found["extendedFrom"] = self.overlap["from"]
+            found["extendedDays"] = self.overlap["days"]
         return found
 
 
@@ -10305,6 +10490,180 @@ class AshauchAnswer:
     """
 
     value: Ashauch
+    provenance: Provenance
+    """What computed it, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
+class HouseholdPeriods:
+    """One observer's periods in a household (`03-design/ashauch.md`
+    §11), in the order the news reached the observer."""
+
+    key: str
+    """The observer's key."""
+
+    periods: Tuple[Ashauch, ...]
+    """A period for each tie, each overlap resolved against those before
+    it."""
+
+    pure_at: float
+    """When the last ends, a UTC Julian day."""
+
+
+@dataclass(frozen=True)
+class HouseholdAshauch:
+    """A household's periods: each observer's."""
+
+    observers: Tuple[HouseholdPeriods, ...]
+    """Each observer, in the request's order."""
+
+
+@dataclass(frozen=True)
+class HouseholdAnswer:
+    """What `almanac.household` answers.
+
+    >>> # found = ctx.almanac.household(place=kathmandu, utc_offset_seconds=20700, household=asked)
+    >>> # found.value.observers[0].pure_at
+    """
+
+    value: HouseholdAshauch
+    provenance: Provenance
+    """What computed it, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
+class KinDegree:
+    """The degree of a line counted out, the common forebear first
+    (*Dharmasindhu* p. 299)."""
+
+    observer: int
+    """The observer's number from the common forebear, who is 1."""
+
+    person: int
+    """The person's number."""
+
+    reach: int
+    """The last person who is a sapinda here, the living forebears
+    added."""
+
+
+@dataclass(frozen=True)
+class Kin:
+    """What `almanac.ashauch_kin` answers: the relation an ashauch asks
+    for, what is kept and why (`03-design/ashauch.md` §10)."""
+
+    relation: Optional[AshauchRelation]
+    """The relation to ask an ashauch with, when a period is kept."""
+
+    keeps: str
+    """`PERIOD`, `BATH` or `NOTHING`."""
+
+    degree: Optional[KinDegree]
+    """The degree, when the path is one line."""
+
+    within_girls_reach: Optional[bool]
+    """For an unmarried daughter of the line, whether the observer stands
+    within the persons her bands name."""
+
+    clause: str
+    """The text and page."""
+
+    table: str
+    """The table's name."""
+
+
+@dataclass(frozen=True)
+class AshauchRiteAnswer:
+    """What `almanac.ashauch_rite` answers (`03-design/ashauch.md`
+    §12)."""
+
+    rite: str
+    """The rite, as asked."""
+
+    verdict: str
+    """`GOES_ON`, `IN_PART` or `BARRED`."""
+
+    beginning: Optional[str]
+    """What opens the rite, when the texts name it: `NANDI_SHRADDHA`,
+    `SANKALPA`, `CHOOSING_PRIESTS` or `COOKING`."""
+
+    row: int
+    """The row's index in the table."""
+
+    clause: str
+    """The text and page."""
+
+    table: str
+    """The table's name."""
+
+
+@dataclass(frozen=True)
+class DeathInstant:
+    """What stood at a death or a burning (`03-design/death-time.md`)."""
+
+    at: float
+    """The instant, a UTC Julian day."""
+
+    nakshatra: Nakshatra
+    """The nakshatra at it."""
+
+    tithi: Tithi
+    """The tithi at it."""
+
+    vara: Vara
+    """The vara of the sunrise day holding it."""
+
+    moon: Rashi
+    """The Moon's sidereal sign at it."""
+
+    panchaka: bool
+    """Whether it is in the panchaka: the Moon in Aquarius or Pisces."""
+
+    feet: Optional[str]
+    """`TRIPADA` or `DVIPADA`, when the nakshatra straddles a sign so."""
+
+    pushkara: Optional[str]
+    """`TRIPUSHKARA` or `DVIPUSHKARA`, when one holds."""
+
+
+@dataclass(frozen=True)
+class DeathRite:
+    """A rite the texts tie to the readings, with its clause."""
+
+    rite: str
+    """`PANCHAKA_FIGURES`, `CLOSING_SHANTI` or `PUSHKARA_FIGURES`."""
+
+    clause: str
+    """The text and page."""
+
+
+@dataclass(frozen=True)
+class DeathTime:
+    """The death-time check: the readings and the rites owed."""
+
+    death: DeathInstant
+    """The death's reading."""
+
+    cremation: Optional[DeathInstant]
+    """The burning's reading, when its instant was given."""
+
+    rites: Tuple[DeathRite, ...]
+    """The rites owed; with no burning given, it is taken to fall as the
+    death did."""
+
+    table: str
+    """The table's name."""
+
+
+@dataclass(frozen=True)
+class DeathTimeAnswer:
+    """What `almanac.death_time` answers.
+
+    >>> # found = ctx.almanac.death_time(place=kathmandu, utc_offset_seconds=20700, at=2461051.677083)
+    >>> # found.value.death.panchaka
+    """
+
+    value: DeathTime
     provenance: Provenance
     """What computed it, and the hash of `value`."""
 
@@ -16435,29 +16794,80 @@ def _sankalpa_answer(text: str) -> "SankalpaAnswer":
     )
 
 
+def _ashauch(raw: Mapping[str, Any]) -> Ashauch:
+    """One span as the SDK writes it: its days as this binding's dates and
+    its tagged parts as written."""
+    last_day = raw.get("lastDay")
+    return Ashauch(
+        key=raw["key"],
+        kind=raw["kind"],
+        relation=raw["relation"],
+        sex=raw.get("sex"),
+        start=raw["start"],
+        day_one=_serde_date(raw["dayOne"]),
+        day_one_by=raw["dayOneBy"],
+        end=raw["end"],
+        last_day=None if last_day is None else _serde_date(last_day),
+        length=raw["length"],
+        days=raw.get("days"),
+        clause=raw["clause"],
+        overlap=raw.get("overlap"),
+        rites_from=raw.get("ritesFrom"),
+        table=raw["table"],
+    )
+
+
 def _ashauch_answer(text: str) -> "AshauchAnswer":
-    """`ts_almanac_ashauch`'s answer: the span as a frozen record, its days
-    as this binding's dates and its tagged parts as the SDK writes them,
-    with the provenance beside it."""
+    """`ts_almanac_ashauch`'s answer: the span as a frozen record, with
+    the provenance beside it."""
+    envelope = json.loads(text)
+    return AshauchAnswer(value=_ashauch(envelope["value"]), provenance=decode_provenance(envelope["provenance"]))
+
+
+def _household_answer(text: str) -> "HouseholdAnswer":
+    """`ts_almanac_household`'s answer: each observer's spans, with the
+    provenance beside them."""
+    envelope = json.loads(text)
+    return HouseholdAnswer(
+        value=HouseholdAshauch(
+            observers=tuple(
+                HouseholdPeriods(
+                    key=raw["key"],
+                    periods=tuple(_ashauch(period) for period in raw["periods"]),
+                    pure_at=raw["pureAt"],
+                )
+                for raw in envelope["value"]["observers"]
+            )
+        ),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _death_instant(raw: Mapping[str, Any]) -> DeathInstant:
+    """One reading of the death-time check, its members (written in full)
+    as this binding's enums."""
+    return DeathInstant(
+        at=raw["at"],
+        nakshatra=_member(Nakshatra, raw["nakshatra"]),
+        tithi=_member(Tithi, raw["tithi"]),
+        vara=_member(Vara, raw["vara"]),
+        moon=_member(Rashi, raw["moon"]),
+        panchaka=bool(raw["panchaka"]),
+        feet=raw.get("feet"),
+        pushkara=raw.get("pushkara"),
+    )
+
+
+def _death_time_answer(text: str) -> "DeathTimeAnswer":
+    """`ts_almanac_death_time`'s answer, with the provenance beside it."""
     envelope = json.loads(text)
     raw = envelope["value"]
-    last_day = raw.get("lastDay")
-    return AshauchAnswer(
-        value=Ashauch(
-            key=raw["key"],
-            kind=raw["kind"],
-            relation=raw["relation"],
-            sex=raw.get("sex"),
-            start=raw["start"],
-            day_one=_serde_date(raw["dayOne"]),
-            day_one_by=raw["dayOneBy"],
-            end=raw["end"],
-            last_day=None if last_day is None else _serde_date(last_day),
-            length=raw["length"],
-            days=raw.get("days"),
-            clause=raw["clause"],
-            overlap=raw.get("overlap"),
-            rites_from=raw.get("ritesFrom"),
+    cremation = raw.get("cremation")
+    return DeathTimeAnswer(
+        value=DeathTime(
+            death=_death_instant(raw["death"]),
+            cremation=None if cremation is None else _death_instant(cremation),
+            rites=tuple(DeathRite(rite=one["rite"], clause=one["clause"]) for one in raw["rites"]),
             table=raw["table"],
         ),
         provenance=decode_provenance(envelope["provenance"]),

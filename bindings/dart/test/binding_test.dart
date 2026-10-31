@@ -1318,6 +1318,196 @@ void _engineTests() {
     expect(named.value.table, 'MITAKSHARA');
   });
 
+  // A household at Kathmandu (`03-design/ashauch.md` §11): a father dies at
+  // 10:00 on 11 January 2026 and the mother at 14:00 on 15 January. The son
+  // keeps the father's end and a pakshini; a sapinda's second period ends
+  // with the first. The relation resolver and the rite answer without a
+  // sky (§§10, 12); the death-time check reads the Moon (`death-time.md`).
+  test(
+    'an almanac says a household, a relation, a rite and the death time',
+    () {
+      final sky = teistro.context(
+        profile: 'nepali-drik',
+        ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+      );
+      addTearDown(sky.dispose);
+      final kathmandu = Observer(
+        latitudeDeg: Latitude(27.7172),
+        longitudeDeg: Longitude(85.324),
+        altitudeM: Altitude(1337),
+      );
+      const father = 2461051.677083;
+      const mother = 2461055.84375;
+      final found = sky.almanac.household(
+        household: const Household(
+          events: [
+            HouseholdEvent(
+              key: 'father',
+              event: AshauchDeath(
+                at: father,
+                deceased: Deceased(sex: AshauchSex.male),
+              ),
+            ),
+            HouseholdEvent(
+              key: 'mother',
+              event: AshauchDeath(
+                at: mother,
+                deceased: Deceased(sex: AshauchSex.female),
+              ),
+            ),
+          ],
+          observers: [
+            HouseholdObserver(
+              key: 'son',
+              ties: [
+                HouseholdTie(event: 'father', relation: AshauchRelation.child),
+                HouseholdTie(event: 'mother', relation: AshauchRelation.child),
+              ],
+            ),
+            HouseholdObserver(
+              key: 'nephew',
+              ties: [
+                HouseholdTie(
+                  event: 'father',
+                  relation: AshauchRelation.sapinda,
+                ),
+                HouseholdTie(
+                  event: 'mother',
+                  relation: AshauchRelation.sapinda,
+                ),
+              ],
+            ),
+          ],
+        ),
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+      );
+      expect(found.provenance.inputHash, isNotEmpty);
+      final [son, nephew] = found.value.observers;
+      expect(son.periods[1].overlap?.overlap, 'MOTHER_AFTER_FATHER');
+      expect(son.pureAt, son.periods[1].end);
+      expect(nephew.periods[1].overlap?.overlap, 'ENDS_WITH_EARLIER');
+      expect(nephew.pureAt, nephew.periods[0].end);
+      expect(
+        () => sky.almanac.household(
+          household: const Household(
+            events: [],
+            observers: [
+              HouseholdObserver(
+                key: 'son',
+                ties: [
+                  HouseholdTie(event: 'uncle', relation: AshauchRelation.child),
+                ],
+              ),
+            ],
+          ),
+          place: kathmandu,
+          utcOffsetSeconds: 20700,
+        ),
+        throwsA(
+          isA<TeistroException>().having(
+            (error) => error.field,
+            'field',
+            'household.household.observers[0].ties[0].event',
+          ),
+        ),
+      );
+
+      AshauchAnswer ask(AshauchRequest request) => sky.almanac.ashauch(
+        request: request,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+      );
+      final first =
+          ask(
+            const AshauchRequest(
+              key: 'first',
+              event: AshauchDeath(at: father),
+              relation: AshauchRelation.sapinda,
+            ),
+          ).value;
+      final second =
+          ask(
+            AshauchRequest(
+              key: 'second',
+              event: const AshauchDeath(at: father + 9.55),
+              relation: AshauchRelation.sapinda,
+              during: [first.running],
+            ),
+          ).value;
+      expect(second.overlap?.overlap, 'LAST_NIGHT');
+      expect(second.overlap?.from, first.end);
+      expect(second.running.extendedFrom, first.end);
+      expect(second.running.extendedDays, second.overlap?.days);
+
+      final kin = sky.almanac.ashauchKin(
+        const KinQuery(
+          kin: KinAsked(
+            path: [KinStep.father, KinStep.father, KinStep.son, KinStep.son],
+            observer: KinObserver(sex: AshauchSex.male),
+          ),
+        ),
+      );
+      expect(kin.relation, AshauchRelation.sapinda);
+      expect(kin.keeps, KinKeeps.period);
+      expect(kin.degree?.observer, 3);
+      expect(
+        () => sky.almanac.ashauchKin(
+          const KinQuery(
+            kin: KinAsked(
+              path: [KinStep.son, KinStep.father],
+              observer: KinObserver(sex: AshauchSex.male),
+            ),
+          ),
+        ),
+        throwsA(
+          isA<TeistroException>().having(
+            (error) => error.field,
+            'field',
+            'kin.kin.path[1]',
+          ),
+        ),
+      );
+      final rite = sky.almanac.ashauchRite(
+        const RiteQuery(
+          rite: AshauchRiteAsked(
+            rite: AshauchRite.marriage,
+            begun: true,
+            noOtherWay: true,
+          ),
+        ),
+      );
+      expect(rite.verdict, RiteVerdict.goesOn);
+
+      final death = sky.almanac.deathTime(
+        at: father,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+      );
+      expect(death.value.table, 'DHARMASINDHU');
+      expect(
+        death.value.death.panchaka,
+        [Rashi.aquarius, Rashi.pisces].contains(death.value.death.moon),
+      );
+      expect(death.value.cremation, isNull);
+      expect(
+        () => sky.almanac.deathTime(
+          at: father,
+          crematedAt: father - 1,
+          place: kathmandu,
+          utcOffsetSeconds: 20700,
+        ),
+        throwsA(
+          isA<TeistroException>().having(
+            (error) => error.field,
+            'field',
+            'deathTime.crematedAt',
+          ),
+        ),
+      );
+    },
+  );
+
   // A death at 10:00 on 20 October 2026 in Kathmandu: the sixteen, fifteen
   // of them done again after a twelfth-day sapindana (DS p. 331); with
   // Dhakal's readings for Nepal the first abdika is the eleventh day's and

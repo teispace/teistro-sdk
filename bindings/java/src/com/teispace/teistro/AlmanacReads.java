@@ -7,8 +7,12 @@ import com.teispace.teistro.record.Provenance;
 import com.teispace.teistro.request.AshauchKind;
 import com.teispace.teistro.request.AshauchLength;
 import com.teispace.teistro.request.AshauchRelation;
+import com.teispace.teistro.request.AshauchRite;
 import com.teispace.teistro.request.AshauchSex;
+import com.teispace.teistro.request.KinKeeps;
 import com.teispace.teistro.request.NightRule;
+import com.teispace.teistro.request.RiteBeginning;
+import com.teispace.teistro.request.RiteVerdict;
 
 /**
  * The almanac's JSON sections, each an envelope of a value and its
@@ -505,7 +509,79 @@ final class AlmanacReads {
     /** {@code ts_almanac_ashauch}'s answer: the period, its members resolved, with the provenance beside it. */
     static AshauchAnswer ashauchAnswer(String text) {
         Map<?, ?> envelope = Reads.object(Json.read(text));
+        return new AshauchAnswer(ashauch(Reads.object(envelope, "value")), provenance(envelope));
+    }
+
+    /** {@code ts_almanac_household}'s answer: each observer's periods, with the provenance beside them. */
+    static HouseholdAnswer householdAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
         Map<?, ?> v = Reads.object(envelope, "value");
+        return new HouseholdAnswer(new HouseholdAshauch(Reads.each(v, "observers", raw -> {
+            Map<?, ?> o = Reads.object(raw);
+            return new HouseholdPeriods(Reads.string(o, "key"),
+                    Reads.each(o, "periods", period -> ashauch(Reads.object(period))), Reads.number(o, "pureAt"));
+        })), provenance(envelope));
+    }
+
+    /** {@code ts_almanac_ashauch_kin}'s answer. */
+    static Kin kin(String text) {
+        Map<?, ?> v = Reads.object(Json.read(text));
+        Object relation = v.get("relation");
+        Object degree = v.get("degree");
+        Map<?, ?> d = degree == null ? null : Reads.object(degree);
+        return new Kin(
+                relation == null ? null : AshauchRelation.of(relation),
+                KinKeeps.of(Reads.field(v, "keeps")),
+                d == null ? null : new KinDegree(
+                        Reads.integer(d, "observer"), Reads.integer(d, "person"), Reads.integer(d, "reach")),
+                v.get("withinGirlsReach") == null ? null : Reads.flag(v, "withinGirlsReach"),
+                Reads.string(v, "clause"),
+                Reads.string(v, "table"));
+    }
+
+    /** {@code ts_almanac_ashauch_rite}'s answer. */
+    static AshauchRiteAnswer ashauchRite(String text) {
+        Map<?, ?> v = Reads.object(Json.read(text));
+        Object beginning = v.get("beginning");
+        return new AshauchRiteAnswer(
+                AshauchRite.of(Reads.field(v, "rite")),
+                RiteVerdict.of(Reads.field(v, "verdict")),
+                beginning == null ? null : RiteBeginning.of(beginning),
+                Reads.integer(v, "row"),
+                Reads.string(v, "clause"),
+                Reads.string(v, "table"));
+    }
+
+    /** {@code ts_almanac_death_time}'s answer: the readings, their members resolved, with the provenance beside them. */
+    static DeathTimeAnswer deathTimeAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        Map<?, ?> v = Reads.object(envelope, "value");
+        Object cremation = v.get("cremation");
+        return new DeathTimeAnswer(new DeathTime(
+                deathInstant(Reads.object(v, "death")),
+                cremation == null ? null : deathInstant(Reads.object(cremation)),
+                Reads.each(v, "rites", raw -> {
+                    Map<?, ?> r = Reads.object(raw);
+                    return new DeathRite(Reads.string(r, "rite"), Reads.string(r, "clause"));
+                }),
+                Reads.string(v, "table")), provenance(envelope));
+    }
+
+    /** One reading of the death-time check. */
+    private static DeathInstant deathInstant(Map<?, ?> r) {
+        return new DeathInstant(
+                Reads.number(r, "at"),
+                member(r, "nakshatra", "Nakshatra", Nakshatra::byKey),
+                member(r, "tithi", "Tithi", Tithi::byKey),
+                member(r, "vara", "Vara", Vara::byKey),
+                member(r, "moon", "Rashi", Rashi::byKey),
+                Reads.flag(r, "panchaka"),
+                Reads.optionalString(r, "feet"),
+                Reads.optionalString(r, "pushkara"));
+    }
+
+    /** One period as the SDK writes it. */
+    private static Ashauch ashauch(Map<?, ?> v) {
         // The clause's fields are spelt as Rust names them: no rename reaches
         // inside a variant, so `within_days` keeps its underscore.
         Map<?, ?> c = Reads.object(v, "clause");
@@ -513,7 +589,7 @@ final class AlmanacReads {
         Object lastDay = v.get("lastDay");
         Object overlap = v.get("overlap");
         Map<?, ?> o = overlap == null ? null : Reads.object(overlap);
-        return new AshauchAnswer(new Ashauch(
+        return new Ashauch(
                 Reads.string(v, "key"),
                 AshauchKind.of(Reads.field(v, "kind")),
                 AshauchRelation.of(Reads.field(v, "relation")),
@@ -532,9 +608,10 @@ final class AlmanacReads {
                         Reads.optionalInteger(c, "within_days"),
                         c.get("abroad") == null ? null : Reads.flag(c, "abroad")),
                 o == null ? null : new AshauchOverlapped(
-                        Reads.string(o, "overlap"), Reads.string(o, "earlier"), Reads.optionalInteger(o, "days")),
+                        Reads.string(o, "overlap"), Reads.string(o, "earlier"), Reads.optionalInteger(o, "days"),
+                        Reads.optionalNumber(o, "from")),
                 Reads.optionalNumber(v, "ritesFrom"),
-                Reads.string(v, "table")), provenance(envelope));
+                Reads.string(v, "table"));
     }
 
     /** Why a count's first day is the day it is, as an ashauch and a first year write it. */

@@ -1,6 +1,6 @@
 # Ashauch: the period of impurity after a birth or a death
 
-Status: `built`, 2026-10-22. Research and design for P2-3's second half
+Status: `built`, 2026-10-22; §§10–12 built 2026-10-31. Research and design for P2-3's second half
 (the sankalpa half is `sankalpa.md`). §§1–3 are the research, §4.2 what
 was built and where it differs from the draft, §5 the cases the tests
 hold (T1–T29 on synthetic days in `crates/panchanga/tests/ashauch.rs`,
@@ -321,9 +321,14 @@ viśuddhiḥ syāt svakālenaiva śudhyati"); GP 2.39.12. Then:
    "rātriśeṣe dvyahāc chuddhir yāmaśeṣe śucis tryahāt". DS pp. 305–306
    ("दशाहान्त्यरात्रौ यदि निवृत्तियोग्यदशाहसंपातस्तदा दिनद्वयमधिकं कार्यम्;
    दशमरात्रेश्चतुर्थयामे … दिनत्रयमधिकम्"), only for a 10-day falling into a
-   10-day; a 3-day falling into the 10th night ends with the first; the
-   extended days themselves absorb a pakṣiṇī (the two) or a 3-day (the
-   three) but not a 10-day. NS p. 381 ("पूर्वाशौचान्त्यरात्रावन्याशौचेऽहोरात्र-
+   10-day; a 3-day falling into the 10th night ends with the first; 3-day
+   and shorter periods falling into each other's third night end with the
+   first and add nothing ("एवं त्र्यहाद्याशौचानां निवृत्तियोग्यानां परस्परं
+   तृतीयरात्रौ तृतीयरात्रिशेषे वा संपाते पूर्वेण शुद्धिर्न द्व्यहादिवृद्धिः");
+   the extended days themselves absorb a pakṣiṇī (the two) or a 3-day (the
+   three) but not a 10-day ("वर्धितद्विदिने दशाहान्तरपाते पूर्वेण द्विरात्रेण
+   त्रिरात्रेण वा न निवृत्तिः; वर्धितद्विरात्रेण पक्षिण्या निवृत्तिः;
+   वर्धितत्रिरात्रेणान्यत्रिरात्रस्य निवृत्तिः"). NS p. 381 ("पूर्वाशौचान्त्यरात्रावन्याशौचेऽहोरात्र-
    द्वयमधिकम्, रात्रेरन्त्ययामे तु दिनत्रयम् … एतत् सवर्णाशौचसंपाते एव;
    रात्रिशेषे त्रिरात्रादिसंपाते तु पूर्वशेषेणैव शुद्धिः"). Pr rule 6 has only
    the two days, "दशौं दिनको मध्यरात्रीसम्म".
@@ -331,11 +336,19 @@ viśuddhiḥ syāt svakālenaiva śudhyati"); GP 2.39.12. Then:
    pramītāyām aśuddhau mriyate pitā / pituḥ śeṣeṇa śuddhiḥ syān mātuḥ kuryāt
    tu pakṣiṇīm"), read there: the father dying in the mother's period, the
    father's full period; the mother dying in the father's, the father's
-   then a pakṣiṇī more. DS p. 306 the same, the pakṣiṇī only if the mother
-   dies before the 10th night (in the 10th night or its last watch, the 2
-   or 3 days instead); "स्मृत्यर्थसारादयः" the father's full in the mother's.
-   Kane IV p. 294 records Aparārka's other reading. NS pp. 381–382 the
-   same as DS.
+   then a pakṣiṇī more. DS p. 306 differs on the first half: "मात्राशौचमध्ये
+   पित्राशौचपाते पूर्वान्ते शुद्धिः; स्मृत्यर्थसारादयस्तु पितुः संपूर्णमेवाशौचं
+   कार्यमित्याहुः", the father's ends with the mother's, and the full period is
+   the *Smṛtyarthasāra*'s; on the second half it agrees, the pakṣiṇī only if
+   the mother dies before the 10th night (in the 10th night or its last
+   watch, the 2 or 3 days instead). Kane IV p. 294 records Aparārka's other
+   reading. NS pp. 381–382 quotes the verse as Śaṅkha's and calls its
+   first three quarters plain ("पादत्रयं स्पष्टम्"), the Mitākṣarā's
+   reading; so DS stands alone among the three on the father (C957). NS p.
+   381 agrees with DS on the other two rules: "एतत्संपूर्णाशौचसंपात एव;
+   रात्रिशेषे त्रिरात्रादिसंपाते तु पूर्वशेषेणैव शुद्धिः" and
+   "पूर्वाशौचान्तवर्धितद्वित्रिदिनमध्येऽधिकाशौचान्तरपाते तु वर्धितस्याल्पत्वादधिकेनैव
+   शुद्धिः".
 4. **Not absorbed at all**: the mother of a newborn (*sūtikā*) and the one
    who cremates (DS p. 306, "इयं संपाते पूर्वेण शुद्धिः सूतिकाया अग्निदस्य च
    नास्ति"; Ṣaḍaśīti in Kane IV p. 295); a son's period for a parent by a
@@ -456,7 +469,7 @@ texts' rule is the reverse, §2.7). Recorded as a gap, not a source.
 | F10 | whether "abroad" | **a request fact**, `abroad: bool`, never derived | the texts disagree on the test and DS's distances are graded by varṇa | — |
 | F11 | the last night of a 10-day period | **+2 days; in its last watch (the night's last quarter), +3** | Gautama and Śātātapa in Mit on III.20; DS pp. 305–306; NS p. 381 | Pr rule 6, +2 only before the 10th day's midnight |
 | F12 | a shorter death and a longer birth | **neither absorbs the other** ("बहवः") | DS p. 305 | "कश्चित्": the death absorbs the birth (DS p. 305) |
-| F13 | mother then father | **Mit's reading**: father's full period in the mother's; mother's in the father's, the father's then a pakṣiṇī (2 or 3 days instead when in the 10th night) | Mit on III.20, DS p. 306, NS pp. 381–382 | the Smṛtyarthasāra's (father's full in the mother's, no pakṣiṇī rule) |
+| F13 | mother then father | **each table its own text**: `DHARMASINDHU` ends the father's with the mother's (DS p. 306); `MITAKSHARA` keeps his full period (Mit on III.20); the mother's in the father's, the father's then a pakṣiṇī (2 or 3 days instead when in the 10th night) in both | DS p. 306; Mit on III.20, NS pp. 381–382 (Śaṅkha) | `fatherKeepsHisOwn`, the reading of Mit, NS and the *Smṛtyarthasāra* (DS p. 306 reports it) |
 | F14 | the mother's bar on rites after the birth period | **reported as a second span**, to the 30th day after a son and the 40th after a daughter | DS p. 299 (Paiṭhīnasi in Mit on III.19, 20 and 30 after the 10) | Pr rule 17, 30 nights without the distinction; off |
 | F15 | the teething-to-chūḍā band | **1 day for sapiṇḍas** | DS p. 300, Mit on III.23 | "केचित्": burial 1, cremation 3 (DS p. 300) |
 | F16 | parents of a child before upanayana | **DS's bands** | DS p. 300 | Vijñāneśvara's 3 days from the 11th day to upanayana (DS p. 300) |
@@ -537,9 +550,19 @@ Where the build differs from the draft above, and why:
   the running one, weighed in half days (a bath 0, a sajyotiḥ 1, a
   pakṣiṇī 3, a count twice its days). It is never extended past its own
   end.
-- **The last-night rule needs equal counts of one kind** (NS p. 381,
-  "सवर्णाशौचसंपाते एव"): a 3-day death in the 10th night ends with the
-  first (T21).
+- **The last-night rule needs two full periods of one kind** (NS p. 381,
+  "सवर्णाशौचसंपाते एव"; DS p. 306): a 3-day death in the 10th night ends
+  with the first (T21), and two 3-day periods add nothing (T30). The first
+  build asked only for equal counts and added days between two 3-day
+  periods; corrected 2026-10-31.
+- **The added days are their own span** (DS p. 306): an answer extended by
+  the last night says where its added days begin (`Overlapped::LastNight`
+  `from`, `Running.extendedFrom` and `extendedDays`), and a period known in
+  them is taken in only when no longer than a pakṣiṇī (two added) or three
+  days (three added) (T31, T32).
+- **The fire-giver and the new mother are never taken in** (DS p. 306,
+  "सूतिकाया अग्निदस्य च नास्ति"): `fireGiver` on a request (T33). The first
+  build kept only the mother's.
 - **`during` takes `Running` records**, the parts of an earlier answer
   the overlap rules read, rather than whole answers, so a request carries
   no calendar date and every binding writes it from its own answer type.
@@ -605,12 +628,16 @@ consumer's source string, and the answer repeats it.
 | T21 | a 3-day death known in the 10th night of a 10-day | ends with the first | DS p. 306; NS p. 381 |
 | T22 | a death known during a 10-day birth period | the death's full period from its own day | Mit (Aṅgiras); DS p. 305 |
 | T23 | a 10-day birth during a 10-day death | ends with the death | DS p. 305 |
-| T24 | father dies in the mother's period, observer their son | the father's full period | Mit on III.20; DS p. 306 |
+| T24 | father dies in the mother's period, observer their son | ends with the mother's (`DHARMASINDHU`); the father's full period (`MITAKSHARA`) | DS p. 306; Mit on III.20 |
 | T25 | mother dies on day 4 of the father's period | the father's end + pakṣiṇī | as T24 |
 | T26 | mother dies in the father's 10th night | the father's end + 2 days (no pakṣiṇī) | DS p. 306 |
 | T27 | the birthing mother during a sapiṇḍa's death period | her own 10 days, not absorbed | DS p. 306 |
 | T28 | married daughter, her father's death on day 3 / on day 40 | 3 days / pakṣiṇī | DS pp. 301, 303 |
 | T29 | naming day for a birth on day 1, full_days 10 / 12 | day 11 / day 13 | NS via Dk p. 1072 |
+| T30 | a 3-day death known in another 3-day death's third night | ends with the first, no days added | DS p. 306 |
+| T31 | a 10-day death known in the two days a last night added | its own full period | DS p. 306 |
+| T32 | a pakṣiṇī in those two days; a 3-day in two added / in three added | ends with them; its own / ends with them | DS p. 306 |
+| T33 | the fire-giver, a sapiṇḍa's death on day 4 of another's | his own full period | DS p. 306 |
 
 ### 5.2 Dated at Kathmandu (sun computed here, to be held to the SDK's)
 
@@ -653,7 +680,7 @@ the archive scan) before relying on either sentence (crux C716).
   rites (§2.9; F2 covers either by `full_days`).
 - A dated night birth with its naming day, to test F3 against practice.
 
-## 6. Crux rows (register format; the integrator numbers them)
+## 6. Crux rows (register format)
 
 | # | item | what is known | what is missing | rank of the evidence | action |
 |---|---|---|---|---|---|
@@ -673,6 +700,11 @@ the archive scan) before relying on either sentence (crux C716).
 | C726 | a married daughter's death away from her parents' house | DS p. 301 gives her parents three days when she dies in her father's house; no length for elsewhere was read | the clause for elsewhere | 1 | `UNSUPPORTED` with a hint: a family adds its row |
 | C727 | a child's death, the relations its band does not name | DS pp. 300–301's bands name the parents, the sapiṇḍas and the samānodakas | a clause for the maternal kin of a child | 1 | built: a bath, the band's clause cited |
 | C733 | ashauch: the Mitākṣarā's own table | Mit on Yā III.18 reads "ūnadvivarṣa ubhayoḥ" first as the parents' full period; its III.23 summary cuts the first three years by the cūḍā; its night is three kalpas by local usage (III.20) | which kalpa a family in Nepal keeps; a Nepal statement for the parents' period | 1 | built: `MITAKSHARA` with the parents' full period, bands filtered by `chudakarana`, the first kalpa (`HALF_NIGHT`); every row data a family can change |
+| C955 | The sapinda degree | DS p. 299: from the kūṭastha, who is first; the observer's own number decides; pp. 299–300 prefers Śūlapāṇi's reach (NS p. 257). The text works the 7th and 8th only; `MITAKSHARA` has no kin table of its own | Mit's counting read through; a far descendant, where the observer's small number gives ten days for a person past the 14th | 1 | built: `livingExtend`, bounds as data; the one preset is DS's |
+| C956 | An unmarried girl's sapindas | Vasiṣṭha: three persons; the *Kūrma*: seven (NS p. 257); DS pp. 300–301 "three generations" before betrothal, seven after | which persons count for her in the bands | 1 | open: `withinGirlsReach` reports it (kūṭastha first, three persons); an ashauch request does not read it |
+| C957 | A father dying in the mother's period | DS p. 306: his ends with hers, and reports the *Smṛtyarthasāra*'s full period; Mit on III.20 and NS pp. 381–382 (Śaṅkha's verse, "पादत्रयं स्पष्टम्") the full period | which a family keeps | 1 | each preset its own text: `fatherKeepsHisOwn` off in `DHARMASINDHU`, on in `MITAKSHARA`; `ashauch.md` F13 and T24 corrected 2026-10-31 |
+| C958 | A husband's period for his wife under another's | DS p. 306: a wife's for her husband is not taken in; "केचित्" the husband's too; NS p. 382 "एवं भर्तुरपि" does not say which way. `Relation::Spouse` does not tell the two | whether to split them | 1 | open: both are kept whole, the "केचित्" reading |
+| C959 | Whether an exception needs "no other way" | DS p. 310 (NS, Nāgoji) yes; "kecit" no, for vows, priests and begun festivities | which a family keeps | 1 | default yes; a table can drop the row |
 
 ## 7. The order of work, each step with its test
 
@@ -732,11 +764,117 @@ The clause keys' locale names wait on a Nepali reader (§8).
 
 ## 9. Not yet
 
-- *Apavāda* as its own question ("may this rite go on during the
-  period?", §2.8).
-- A household view: several events and several observers at once, which
-  is the same request repeated with `during` filled; a convenience
-  wrapper can come after step 6.
+- *Apavāda* by person, goods and the death's cause (§12 answers the
+  rite's).
+- One performing another's last rites, whose period is lighter (C960).
 - The kriya days themselves (11th, 12th, 13th) belong to `shraddha.md`'s
   first-year schedule (C673, §3.3), built: its 11th day is this page's day
   one plus ten under the same night rule.
+
+## 10. The relation resolver (SR-27)
+
+An ashauch asks for a `Relation`. A family knows a path: my father's
+father's son's son. `almanac.ashauchKin` turns the one into the other
+(`ashauch/kin.rs`).
+
+**Counting.** DS p. 299: "कूटस्थमारभ्य सप्तमपुरुषपर्यन्ताः सपिण्डाः, ततः सप्त
+समानोदकाः", then sagotras to the 21st. The *kūṭastha*, the common forebear,
+is the first, so a man is 2 from his father and his brother is 2 as well.
+Śūlapāṇi's count agrees (NS p. 257): the performer, three who take the
+pinda, three who take the wiping, seven persons.
+
+**Whose number decides.** DS p. 299 works the case: where one line reaches
+an 8th and the other a 7th, "the sapinda tie runs on one side and has
+ended on the other". The 8th keeps three days for the 7th and those above
+him in the other line, and the 7th keeps ten for the 8th. So the
+**observer's** number is the one read (C955).
+
+**The living forebears.** DS pp. 299–300 reports two views. "केचित्": an 8th
+keeps three days whether or not his father lives. "अपरे", on Śūlapāṇi in NS
+p. 257 reading Sumantu's "ā daśamāt": the reach is ten persons with father,
+grandfather and great-grandfather living, nine with two, eight with the
+father. DS: "अत्र मम द्वितीयपक्ष एव युक्तो भाति". So `livingForebears` adds
+to the reach, up to three, and `livingExtend: false` keeps the first view.
+These two are the acceptance values:
+`ds_299_the_observers_own_number_decides_at_the_seventh` and
+`ds_300_ns_257_each_living_forebear_adds_a_person`.
+
+**Who keeps anything.** DS p. 301: "सर्वत्र पुरुषस्योपनीतस्यैव स्त्रियाश्च
+विवाहिताया एव मातापित्रतिरिक्ताशौचाधिकारः": apart from parents, only a man
+after his upanayana and a married woman. Such an observer gets `NOTHING`.
+Where no upanayana is performed, marriage takes its place (p. 301).
+
+**A woman's line.** A wife stands at her husband's number (path through
+`HUSBAND`); a daughter married has left the line (a `personMarried: true`
+daughter is not counted in it); a married woman's natal grandfather or
+uncle is a bath (p. 301).
+
+**Named kin.** Every path a text names is a `KinRow`, the first that fits
+answering, and a mother named between two generations reads as the father,
+since the line turns on the parent and not on which is named. DS's rows
+needed six relations `AshauchTable` lacked: `MATERNAL_AUNT`,
+`PATERNAL_AUNT`, `MATERNAL_UNCLES_WIFE`, `SISTERS_SON`, `DAUGHTERS_SON`,
+`WIFES_BROTHER`. The nine bandhus are their paths; the six that are not
+one's own bind one way only (p. 302), and the reverse falls to the unnamed
+case. A path no row or line holds is a bath when near (p. 309, of its three
+readings the one that covers every path), with its clause.
+
+Refusals: an empty or overlong path, a step back (`SON` then `FATHER`), more
+than three forebears, and a fact a row turns on and the request leaves out,
+named by its field. `KinTable::dharmasindhu()` is the one preset (C955).
+
+## 11. A household (SR-28)
+
+`almanac.household` takes `{events, observers}`; an observer's `ties` name
+an event and the observer's relation, hearing and nearness. Each observer's
+ties are asked in the order the news reached that observer, each with the
+ones before it in `during`. Order by knowing is DS p. 305's rule: "संपात
+एव ज्ञानकृतो न तु पूर्वत्वादिकम्". The answer gives each observer's periods
+and `pureAt`, the last end.
+
+Reading the overlap section again for this request, on the page image
+of p. 306 and again on the archive's text of it, found four rules the
+table lacked or had wrong:
+
+- **Father in the mother's period.** DS p. 306: "मात्राशौचमध्ये पित्राशौचपाते
+  पूर्वान्ते शुद्धिः; स्मृत्यर्थसारादयस्तु पितुः संपूर्णमेवाशौचं कार्यमित्याहुः".
+  The father's ends with the mother's, and the full period is the
+  *Smṛtyarthasāra*'s view. T24, F13 and the first build gave the
+  `DHARMASINDHU` table the second, which is also NS's (pp. 381–382,
+  Śaṅkha's verse, "पादत्रयं स्पष्टम्") and Mit's. The texts disagree, so
+  each preset keeps its own (C957): `DHARMASINDHU` ends with hers;
+  `fatherKeepsHisOwn` is the other reading, and `MITAKSHARA` sets it.
+- **The last-night rule between ten-day periods only.** DS p. 306:
+  three-day periods "परस्परं … पूर्वेण शुद्धिर्न द्व्यहादिवृद्धिः". The first
+  build added days to any equal counts. It now asks for two full periods.
+- **The added days.** DS p. 306: they take in a pakṣiṇī (two added) or a
+  three-day period (three added), and never a ten-day one.
+  `Overlapped::LastNight` carries `from`, `Running` carries `extendedFrom`
+  and `extendedDays`, so a chain reads them.
+- **The fire-giver** is not taken in (DS p. 306, with the new mother);
+  `fireGiver` on a request or a tie.
+
+## 12. May this rite go on? (SR-28)
+
+DS §40 (p. 309) sorts the exceptions five ways: by the person, the rite,
+the goods, the death and the rule. `almanac.ashauchRite` answers the rite's
+(§§40–41, pp. 309–310): `{rite, begun, noOtherWay, calamity, kind}` gives
+`GOES_ON`, `IN_PART` or `BARRED`, what opens that rite, and the clause.
+
+What opens a rite is Laghu-Viṣṇu in NS p. 384: "प्रारम्भो वरणं यज्ञे संकल्पो
+व्रतसत्रयोः, नान्दीश्राद्धं विवाहादौ, श्राद्धे पाकपरिक्रिया". The rows are
+data in a `RiteTable`, the first that fits answering.
+
+The main clause: a marriage, upanayana, cūḍā, installing, tank dedication,
+koṭi-homa or tulāpuruṣa past its nāndīśrāddha has no impurity (p. 309). And
+"सर्वोऽप्ययमाशौचापवादोऽनन्यगतिकत्वे" (p. 310, from NS and Nāgoji): only where
+no other way serves. "केचित्" hold it for such rites regardless. The default
+is DS's closing, so `noOtherWay` must be set (C959); a table dropping the
+requirement answers the others. A vow goes on `IN_PART`: its bodily rules
+oneself, its worship by another, the feeding after (p. 309). A calamity of
+the land lifts every bar, with the rest of the period kept after (p. 309).
+
+Not built here: the exceptions by person (ascetics, students), which turn
+on who the observer is and are `OF_ASCETIC`'s kind of question; goods (DS
+§42, not a rite); and the death's own cause (§43, C724, kept out on
+purpose, §8).

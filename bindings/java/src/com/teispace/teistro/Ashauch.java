@@ -39,6 +39,9 @@ public record Ashauch(
      * @return the parts of it the overlap rules read
      */
     public AshauchRunning running() {
-        return new AshauchRunning(days, end, key, kind, length, relation, sex, start);
+        // The days a last night added take in less than the period did (DS p. 306).
+        boolean extended = overlap != null && "LAST_NIGHT".equals(overlap.overlap());
+        return new AshauchRunning(days, end, extended ? overlap.days() : null, extended ? overlap.from() : null,
+                key, kind, length, relation, sex, start);
     }
 }

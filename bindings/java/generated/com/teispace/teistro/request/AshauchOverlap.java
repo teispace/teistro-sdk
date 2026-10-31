@@ -12,9 +12,10 @@ import java.util.Objects;
  * What a period known during another does (*āśauca-saṃpāta*).
  *
  * @param deathAbsorbsLongerBirth Whether a birth known during a shorter death ends with it ("कश्चित्", *Dharmasindhu* p. 305); "बहवः" say no.
+ * @param fatherKeepsHisOwn Whether a father dying in the mother's period keeps his own full period. Off, his ends with hers (*Dharmasindhu* p. 306); on, the Mitākṣarā on III.20 and the *Smṛtyarthasāra*, which DS reports. Null leaves the SDK's default.
  * @param lastNight The days a period known in an equal period's last night adds past its end, and in that night's last quarter (Gautama and Śātātapa in the Mitākṣarā on Yājñavalkya III.20; *Dharmasindhu* pp. 305–306): `[2, 3]`; `[2, 2]` adds two throughout, `[0, 0]` none.
  */
-public record AshauchOverlap(boolean deathAbsorbsLongerBirth, List<Integer> lastNight) implements RequestJson {
+public record AshauchOverlap(boolean deathAbsorbsLongerBirth, Boolean fatherKeepsHisOwn, List<Integer> lastNight) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -28,6 +29,79 @@ public record AshauchOverlap(boolean deathAbsorbsLongerBirth, List<Integer> last
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param deathAbsorbsLongerBirth Whether a birth known during a shorter death ends with it ("कश्चित्", *Dharmasindhu* p. 305); "बहवः" say no.
+     * @param lastNight The days a period known in an equal period's last night adds past its end, and in that night's last quarter (Gautama and Śātātapa in the Mitākṣarā on Yājñavalkya III.20; *Dharmasindhu* pp. 305–306): `[2, 3]`; `[2, 2]` adds two throughout, `[0, 0]` none.
+     */
+    public AshauchOverlap(boolean deathAbsorbsLongerBirth, List<Integer> lastNight) {
+        this(deathAbsorbsLongerBirth, null, lastNight);
+    }
+
+    /**
+     * A builder, every field unset: an unset optional field is left out, and the
+     * SDK's default stands.
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /** Builds a {@link AshauchOverlap} a field at a time. */
+    public static final class Builder {
+        private Boolean deathAbsorbsLongerBirth;
+        private Boolean fatherKeepsHisOwn;
+        private List<Integer> lastNight;
+
+        private Builder() {}
+
+        /**
+         * Sets {@code deathAbsorbsLongerBirth}.
+         *
+         * @param deathAbsorbsLongerBirth Whether a birth known during a shorter death ends with it ("कश्चित्", *Dharmasindhu* p. 305); "बहवः" say no.
+         * @return this builder
+         */
+        public Builder deathAbsorbsLongerBirth(boolean deathAbsorbsLongerBirth) {
+            this.deathAbsorbsLongerBirth = deathAbsorbsLongerBirth;
+            return this;
+        }
+
+        /**
+         * Sets {@code fatherKeepsHisOwn}.
+         *
+         * @param fatherKeepsHisOwn Whether a father dying in the mother's period keeps his own full period. Off, his ends with hers (*Dharmasindhu* p. 306); on, the Mitākṣarā on III.20 and the *Smṛtyarthasāra*, which DS reports. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder fatherKeepsHisOwn(boolean fatherKeepsHisOwn) {
+            this.fatherKeepsHisOwn = fatherKeepsHisOwn;
+            return this;
+        }
+
+        /**
+         * Sets {@code lastNight}.
+         *
+         * @param lastNight The days a period known in an equal period's last night adds past its end, and in that night's last quarter (Gautama and Śātātapa in the Mitākṣarā on Yājñavalkya III.20; *Dharmasindhu* pp. 305–306): `[2, 3]`; `[2, 2]` adds two throughout, `[0, 0]` none.
+         * @return this builder
+         */
+        public Builder lastNight(List<Integer> lastNight) {
+            this.lastNight = lastNight;
+            return this;
+        }
+
+        /**
+         * The record.
+         *
+         * @return the record
+         * @throws NullPointerException naming a required field left unset
+         */
+        public AshauchOverlap build() {
+            return new AshauchOverlap(Objects.requireNonNull(deathAbsorbsLongerBirth, "`AshauchOverlap.deathAbsorbsLongerBirth` is required"), fatherKeepsHisOwn, lastNight);
+        }
+    }
+
+    /**
      * A {@code AshauchOverlap} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
@@ -38,6 +112,7 @@ public record AshauchOverlap(boolean deathAbsorbsLongerBirth, List<Integer> last
         Map<String, Object> json = Read.object(raw, "AshauchOverlap");
         return new AshauchOverlap(
             Read.bool(Read.required(json.get("deathAbsorbsLongerBirth"), "AshauchOverlap.deathAbsorbsLongerBirth"), "AshauchOverlap.deathAbsorbsLongerBirth"),
+            Read.orNull(json.get("fatherKeepsHisOwn"), present -> Read.bool(present, "AshauchOverlap.fatherKeepsHisOwn")),
             Read.list(Read.required(json.get("lastNight"), "AshauchOverlap.lastNight"), "AshauchOverlap.lastNight", item0 -> Read.int32(item0, "AshauchOverlap.lastNight")));
     }
 
@@ -45,6 +120,9 @@ public record AshauchOverlap(boolean deathAbsorbsLongerBirth, List<Integer> last
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
         json.put("deathAbsorbsLongerBirth", deathAbsorbsLongerBirth);
+        if (fatherKeepsHisOwn != null) {
+            json.put("fatherKeepsHisOwn", fatherKeepsHisOwn);
+        }
         json.put("lastNight", lastNight);
         return json;
     }

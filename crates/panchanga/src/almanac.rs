@@ -40,8 +40,12 @@ use teistro_time::local_day::{
     Carried, LocalDay, local_day, local_day_carrying, local_day_lit, local_midnight,
 };
 
-use crate::ashauch::{self, Ashauch, AshauchRequest, AshauchTable};
+use crate::ashauch::{
+    self, Ashauch, AshauchRequest, AshauchTable, Household, HouseholdAnswer, HouseholdPeriods,
+    Running,
+};
 use crate::change::{ChangeDay, ChangePoints};
+use crate::death_time::{self, DeathInstant, DeathTime, DeathTimeTable};
 use crate::festival::{
     FestivalDay, Half, MoonArc, MoonArcs, Moonrise, Origin, OriginFound, SunEntry,
 };
@@ -1233,6 +1237,29 @@ struct SankalpaInput {
 struct AshauchInput<'r> {
     table: &'r AshauchTable,
     request: &'r AshauchRequest,
+    latitude_deg: f64,
+    longitude_deg: f64,
+    altitude_m: f64,
+}
+
+/// What a household's answer is a function of.
+#[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+struct HouseholdInput<'r> {
+    table: &'r AshauchTable,
+    household: &'r Household,
+    latitude_deg: f64,
+    longitude_deg: f64,
+    altitude_m: f64,
+}
+
+/// What a death-time check's answer is a function of.
+#[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+struct DeathTimeInput<'r> {
+    table: &'r DeathTimeTable,
+    at: f64,
+    cremated_at: Option<f64>,
     latitude_deg: f64,
     longitude_deg: f64,
     altitude_m: f64,
@@ -2612,6 +2639,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     ///     nearness: Nearness::SameVillage,
     ///     full_days: None,
     ///     during: Vec::new(),
+    ///     fire_giver: false,
     /// };
     /// let found = almanac.ashauch(&AshauchTable::dharmasindhu(), &request, &kathmandu)?.value;
     /// assert_eq!((found.days, found.day_one.day), (Some(10), 25));
@@ -2662,6 +2690,193 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         });
         let value = ashauch::ashauch(table, request, &days, self.clock)?;
         Ok(Envelope::new(value, provenance))
+    }
+
+    /// A household's periods at a place (`03-design/ashauch.md` §11):
+    /// each observer's ties asked in the order the news reached them,
+    /// each with the periods before it running, so the overlaps resolve
+    /// as the texts order them, by the knowing.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// # let sunrise = day.day.sunrise;
+    ///
+    /// use teistro_panchanga::ashauch::{AshauchTable, Household};
+    ///
+    /// // A father's death at noon, heard at once by his son.
+    /// let household: Household = serde_json::from_value(serde_json::json!({
+    ///     "events": [{ "key": "father", "event": { "event": "DEATH", "at": sunrise.get() + 0.25 } }],
+    ///     "observers": [{ "key": "son", "ties": [{ "event": "father", "relation": "CHILD" }] }],
+    /// }))?;
+    /// let found = almanac.household(&AshauchTable::dharmasindhu(), &household, &kathmandu)?.value;
+    /// let son = &found.observers[0];
+    /// assert_eq!(son.periods[0].days, Some(10));
+    /// assert_eq!(son.pure_at, son.periods[0].end);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Household::check`], and as [`Almanac::ashauch`] for each tie,
+    /// a refusal named under its observer.
+    pub fn household(
+        &self,
+        table: &AshauchTable,
+        household: &Household,
+        place: &Place,
+    ) -> Result<Envelope<HouseholdAnswer>, Error> {
+        table.check()?;
+        household.check()?;
+        let mut stamp = None;
+        let mut observers = Vec::with_capacity(household.observers.len());
+        for (index, observer) in household.observers.iter().enumerate() {
+            let mut periods: Vec<Ashauch> = Vec::new();
+            for mut request in household.requests(observer) {
+                request.during = periods.iter().map(Running::from).collect();
+                let found = self
+                    .ashauch(table, &request, place)
+                    .map_err(|why| why.under(&format!("observers[{index}]")))?;
+                stamp.get_or_insert(found.provenance);
+                periods.push(found.value);
+            }
+            let pure_at = periods
+                .iter()
+                .map(|period| period.end)
+                .max_by(|one, other| one.get().total_cmp(&other.get()))
+                .ok_or_else(|| Error::internal("a checked observer named no tie"))?;
+            observers.push(HouseholdPeriods {
+                key: observer.key.clone(),
+                periods,
+                pure_at,
+            });
+        }
+        let mut provenance: Provenance =
+            stamp.ok_or_else(|| Error::internal("a checked household named no tie"))?;
+        provenance.input_hash = content_hash(&HouseholdInput {
+            table,
+            household,
+            latitude_deg: place.latitude.get(),
+            longitude_deg: place.longitude.get(),
+            altitude_m: place.altitude.get(),
+        });
+        Ok(Envelope::new(HouseholdAnswer { observers }, provenance))
+    }
+
+    /// The death-time check at a place (`03-design/death-time.md`): what
+    /// stood at a death and, when given, its cremation, and the rites the
+    /// texts tie to them. Each instant is read as a sankalpa reads it,
+    /// the tithi and nakshatra at the instant and the vara of the sunrise
+    /// day holding it.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// # let sunrise = day.day.sunrise;
+    ///
+    /// use teistro_panchanga::death_time::DeathTimeTable;
+    ///
+    /// // A death at noon, the burning left to fall as the death did.
+    /// let at = JulianDay::literal(sunrise.get() + 0.25);
+    /// let found = almanac.death_time(&DeathTimeTable::dharmasindhu(), at, None, &kathmandu)?.value;
+    /// assert_eq!(found.death.at, at);
+    /// assert!(found.cremation.is_none());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Almanac::sankalpa`] for each instant.
+    pub fn death_time(
+        &self,
+        table: &DeathTimeTable,
+        at: JulianDay<Utc>,
+        cremated_at: Option<JulianDay<Utc>>,
+        place: &Place,
+    ) -> Result<Envelope<DeathTime>, Error> {
+        let read = |instant: JulianDay<Utc>| {
+            let Envelope { value, provenance } =
+                self.sankalpa(instant, place, AyanaReckoning::Sidereal)?;
+            let read = DeathInstant::read(
+                table,
+                instant,
+                value.nakshatra,
+                value.tithi,
+                value.vara,
+                value.moon,
+            );
+            Ok::<_, Error>((read, provenance))
+        };
+        let (death, mut provenance) = read(at)?;
+        let cremation = cremated_at
+            .map(|instant| read(instant).map(|(reading, _)| reading))
+            .transpose()?;
+        provenance.input_hash = content_hash(&DeathTimeInput {
+            table,
+            at: at.get(),
+            cremated_at: cremated_at.map(JulianDay::get),
+            latitude_deg: place.latitude.get(),
+            longitude_deg: place.longitude.get(),
+            altitude_m: place.altitude.get(),
+        });
+        let rites = death_time::owed(&death, cremation.as_ref());
+        Ok(Envelope::new(
+            DeathTime {
+                death,
+                cremation,
+                rites,
+                table: table.name.clone(),
+            },
+            provenance,
+        ))
     }
 
     /// A death's first year at a place (`03-design/shraddha.md` §3.3):

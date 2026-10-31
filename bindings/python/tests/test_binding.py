@@ -1033,6 +1033,85 @@ class AnEngine(WithLibrary):
             named = ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request=grandfather, tradition="MITAKSHARA")
             self.assertEqual(named.value.table, "MITAKSHARA")
 
+    def test_an_almanac_says_a_household_a_relation_a_rite_and_the_death_time(self) -> None:
+        """A household at Kathmandu (`03-design/ashauch.md` §11): a father
+        dies at 10:00 on 11 January 2026 and the mother at 14:00 on 15
+        January; the son keeps the father's end and a pakshini, a
+        sapinda's second period ends with the first. The relation resolver
+        and the rite answer without a sky (§§10, 12); the death-time check
+        reads the Moon (`03-design/death-time.md`)."""
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1337))
+        father, mother = 2461051.677083, 2461055.84375
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
+            found = ctx.almanac.household(
+                place=kathmandu,
+                utc_offset_seconds=20700,
+                household={
+                    "events": [
+                        {"key": "father", "event": {"event": "DEATH", "at": father, "deceased": {"sex": "MALE"}}},
+                        {"key": "mother", "event": {"event": "DEATH", "at": mother, "deceased": {"sex": "FEMALE"}}},
+                    ],
+                    "observers": [
+                        {"key": "son", "ties": [{"event": "father", "relation": "CHILD"}, {"event": "mother", "relation": "CHILD"}]},
+                        {"key": "nephew", "ties": [{"event": "father", "relation": "SAPINDA"}, {"event": "mother", "relation": "SAPINDA"}]},
+                    ],
+                },
+            )
+            self.assertTrue(found.provenance.input_hash)
+            son, nephew = found.value.observers
+            assert son.periods[1].overlap is not None and nephew.periods[1].overlap is not None
+            self.assertEqual(son.periods[1].overlap["overlap"], "MOTHER_AFTER_FATHER")
+            self.assertEqual(son.pure_at, son.periods[1].end)
+            self.assertEqual(nephew.periods[1].overlap["overlap"], "ENDS_WITH_EARLIER")
+            self.assertEqual(nephew.pure_at, nephew.periods[0].end)
+            self.assertEqual(nephew.periods[0].day_one.year, 2026)
+            with self.assertRaises(TeistroError) as unknown:
+                ctx.almanac.household(
+                    place=kathmandu,
+                    utc_offset_seconds=20700,
+                    household={"events": [], "observers": [{"key": "son", "ties": [{"event": "uncle", "relation": "CHILD"}]}]},
+                )
+            self.assertEqual(unknown.exception.field, "household.household.observers[0].ties[0].event")
+
+            first = ctx.almanac.ashauch(
+                place=kathmandu,
+                utc_offset_seconds=20700,
+                request={"key": "first", "relation": "SAPINDA", "event": {"event": "DEATH", "at": father}},
+            ).value
+            second = ctx.almanac.ashauch(
+                place=kathmandu,
+                utc_offset_seconds=20700,
+                request={
+                    "key": "second",
+                    "relation": "SAPINDA",
+                    "event": {"event": "DEATH", "at": father + 9.55},
+                    "during": [first.running()],
+                },
+            ).value
+            assert second.overlap is not None
+            self.assertEqual((second.overlap["overlap"], second.overlap.get("from")), ("LAST_NIGHT", first.end))
+            running = second.running()
+            self.assertEqual((running.get("extendedFrom"), running.get("extendedDays")), (first.end, second.overlap.get("days")))
+
+            kin = ctx.almanac.ashauch_kin(kin={"path": ["FATHER", "FATHER", "SON", "SON"], "observer": {"sex": "MALE"}})
+            self.assertEqual((kin.relation, kin.keeps), ("SAPINDA", "PERIOD"))
+            assert kin.degree is not None
+            self.assertEqual(kin.degree.observer, 3)
+            with self.assertRaises(TeistroError) as back:
+                ctx.almanac.ashauch_kin(kin={"path": ["SON", "FATHER"], "observer": {"sex": "MALE"}})
+            self.assertEqual(back.exception.field, "kin.kin.path[1]")
+            rite = ctx.almanac.ashauch_rite(rite={"rite": "MARRIAGE", "begun": True, "noOtherWay": True})
+            self.assertEqual(rite.verdict, "GOES_ON")
+            self.assertEqual(ctx.almanac.ashauch_rite(rite={"rite": "MARRIAGE"}).verdict, "BARRED")
+
+            death = ctx.almanac.death_time(place=kathmandu, utc_offset_seconds=20700, at=father).value
+            self.assertEqual(death.table, "DHARMASINDHU")
+            self.assertEqual(death.death.panchaka, death.death.moon in (Rashi.AQUARIUS, Rashi.PISCES))
+            self.assertIsNone(death.cremation)
+            with self.assertRaises(TeistroError) as early:
+                ctx.almanac.death_time(place=kathmandu, utc_offset_seconds=20700, at=father, cremated_at=father - 1)
+            self.assertEqual(early.exception.field, "deathTime.crematedAt")
+
     def test_an_almanac_schedules_the_first_year_after_a_death(self) -> None:
         """A death at 10:00 on 20 October 2026 in Kathmandu: the
         *Dharmasindhu*'s sixteen shraddhas each with its place, the first

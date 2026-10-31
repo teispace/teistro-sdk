@@ -4361,6 +4361,34 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_ashauch.restype = ctypes.c_int32
+        self.ts_almanac_household: Any = library.ts_almanac_household
+        self.ts_almanac_household.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_household.restype = ctypes.c_int32
+        self.ts_almanac_ashauch_kin: Any = library.ts_almanac_ashauch_kin
+        self.ts_almanac_ashauch_kin.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_ashauch_kin.restype = ctypes.c_int32
+        self.ts_almanac_ashauch_rite: Any = library.ts_almanac_ashauch_rite
+        self.ts_almanac_ashauch_rite.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_ashauch_rite.restype = ctypes.c_int32
+        self.ts_almanac_death_time: Any = library.ts_almanac_death_time
+        self.ts_almanac_death_time.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_death_time.restype = ctypes.c_int32
         self.ts_almanac_first_year: Any = library.ts_almanac_first_year
         self.ts_almanac_first_year.argtypes = [
             ctypes.POINTER(_Context),
@@ -5661,6 +5689,135 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_almanac_ashauch(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_household(self, request_json: str) -> str:
+        """Several births and deaths and several observers at a place
+        (`03-design/ashauch.md` §11), answered with `{value, provenance}` as
+        canonical JSON.
+
+        `value` is `{observers}`, each `{key, periods, pureAt}`: `periods` an
+        ashauch answer for each tie, in the order the news reached that
+        observer, each overlap resolved against those before it, and `pureAt`
+        the instant the last ends.
+
+        `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+        "utcOffsetSeconds", "table", "tradition", "household"}`: `household`
+        `{events, observers}`, an event `{key, event}` and an observer `{key,
+        ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,
+        fireGiver}`. A household that does not hold together, or a key it
+        does not read, is `INVALID_ARG` named under `household`; a relation
+        the table names no row for is `UNSUPPORTED`; a context without an
+        ephemeris is `CAPABILITY`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_household(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_ashauch_kin(self, request_json: str) -> str:
+        """The ashauch relation and sapinda degree a path in a family gives
+        (`03-design/ashauch.md` §10), answered as canonical JSON.
+
+        The answer is `{relation, keeps, degree, withinGirlsReach, clause,
+        table}`: `relation` what `ts_almanac_ashauch` asks with, absent when
+        no period is kept; `keeps` `PERIOD`, `BATH` or `NOTHING`; `degree`,
+        for one line, `{observer, person, reach}` counted from the kūṭastha,
+        who is 1.
+
+        `request_json` is `{"table", "kin"}`: `table` the *Dharmasindhu*'s
+        when left out, every row data; `kin` `{path, observer, personMarried,
+        livingForebears}`, `path` the steps `FATHER`, `MOTHER`, `SON`,
+        `DAUGHTER`, `HUSBAND`, `WIFE` from the observer to the person. A path
+        that steps back, or a fact a row turns on and the request leaves out,
+        is `INVALID_ARG` named under `kin`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_ashauch_kin(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_ashauch_rite(self, request_json: str) -> str:
+        """Whether a rite may go on during a period of impurity
+        (`03-design/ashauch.md` §12), answered as canonical JSON.
+
+        The answer is `{rite, verdict, beginning, row, clause, table}`:
+        `verdict` `GOES_ON`, `IN_PART` or `BARRED`, `beginning` what opens
+        this rite when the texts name it.
+
+        `request_json` is `{"table", "rite"}`: `table` the *Dharmasindhu*'s
+        when left out, every row data; `rite` `{rite, begun, noOtherWay,
+        calamity, kind}`. A key it does not read is `INVALID_ARG` named under
+        `rite`; a rite the table names no row for is `UNSUPPORTED`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_ashauch_rite(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_death_time(self, request_json: str) -> str:
+        """The death-time check at a place (`03-design/death-time.md`), answered
+        with `{value, provenance}` as canonical JSON.
+
+        `value` is `{death, cremation, rites, table}`: `death` and `cremation`
+        each `{at, nakshatra, tithi, vara, moon, panchaka, feet, pushkara}`,
+        `rites` each `{rite, clause}`. With no cremation given, the cremation
+        is taken to fall as the death did.
+
+        `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+        "utcOffsetSeconds", "at", "crematedAt", "table"}`, the instants UTC
+        Julian days and `table` the *Dharmasindhu*'s lists when left out. A
+        cremation before the death, or a key it does not read, is
+        `INVALID_ARG` named under `deathTime`; a context without an ephemeris
+        is `CAPABILITY`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_death_time(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

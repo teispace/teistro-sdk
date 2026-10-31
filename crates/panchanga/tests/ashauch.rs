@@ -113,6 +113,7 @@ fn asked(key: &str, event: AshauchEvent, relation: Relation) -> AshauchRequest {
         nearness: Nearness::SameVillage,
         full_days: None,
         during: Vec::new(),
+        fire_giver: false,
     }
 }
 
@@ -508,7 +509,8 @@ fn t18_to_t21_a_death_during_another() {
         t19.overlap,
         Some(Overlapped::LastNight {
             earlier: "first".to_owned(),
-            days: 2
+            days: 2,
+            from: JulianDay::literal(11.0),
         })
     );
     assert_eq!(t19.last_day, Some(date(12)));
@@ -567,8 +569,30 @@ fn t24_to_t26_a_son_for_his_father_and_his_mother() {
             std::slice::from_ref(earlier),
         ))
     };
+    // T24: DS p. 306, the father's ends with the mother's; the
+    // Mitākṣarā's, his own full period.
     let t24 = then(4.2, Sex::Male, &mother);
-    assert_eq!((ends(&t24), t24.overlap), (14.0, None));
+    assert_eq!(ends(&t24), 11.0);
+    assert!(matches!(
+        t24.overlap,
+        Some(Overlapped::EndsWithEarlier { .. })
+    ));
+    let his_own = AshauchTable {
+        overlap: teistro_panchanga::ashauch::Overlap {
+            father_keeps_his_own: true,
+            ..AshauchTable::dharmasindhu().overlap
+        },
+        ..AshauchTable::dharmasindhu()
+    };
+    let t24_mit = under(
+        &his_own,
+        &during(
+            asked("then", of(4.2, parent(Sex::Male)), Relation::Child),
+            std::slice::from_ref(&mother),
+        ),
+    );
+    assert_eq!((ends(&t24_mit), t24_mit.overlap), (14.0, None));
+    assert!(AshauchTable::mitakshara().overlap.father_keeps_his_own);
     let t25 = then(4.2, Sex::Female, &father);
     // The father's end at day 11's sunrise, and a pakṣiṇī begun by day.
     assert_eq!(ends(&t25), 12.5);
@@ -929,4 +953,52 @@ fn m8_the_mitakshara_table_is_counted() {
     let json = serde_json::to_string(&AshauchTable::mitakshara()).unwrap();
     let back: AshauchTable = serde_json::from_str(&json).unwrap();
     assert_eq!(back, AshauchTable::mitakshara());
+}
+
+#[test]
+fn ds_306_three_day_periods_add_no_last_night_days() {
+    // A three-day death known in another's third night ends with it.
+    let earlier = first(Relation::Samanodaka, Deceased::default());
+    assert_eq!(ends(&earlier), 4.0);
+    let found = answer(&during(
+        asked("second", death(3.9), Relation::Samanodaka),
+        &[earlier],
+    ));
+    assert_eq!(ends(&found), 4.0);
+    assert!(matches!(
+        found.overlap,
+        Some(Overlapped::EndsWithEarlier { .. })
+    ));
+}
+
+#[test]
+fn ds_306_the_added_days_take_in_less_than_the_period() {
+    // Ends at 11; a second known in the last night adds two, to 13.
+    let earlier = first(Relation::Sapinda, Deceased::default());
+    let second = answer(&during(
+        asked("second", death(10.6), Relation::Sapinda),
+        std::slice::from_ref(&earlier),
+    ));
+    assert_eq!(ends(&second), 13.0);
+    let running = [earlier, second];
+    let third = |relation| answer(&during(asked("third", death(11.2), relation), &running));
+    // A ten-day death in the added days keeps its own period.
+    let ten = third(Relation::Sapinda);
+    assert_eq!((ends(&ten), ten.overlap), (21.0, None));
+    // A pakṣiṇī ends with them.
+    let short = third(Relation::MaternalGrandmother);
+    assert_eq!(ends(&short), 12.5);
+    assert_eq!(short.overlap, None);
+    // A three-day death is past two added days.
+    let three = third(Relation::Samanodaka);
+    assert_eq!((ends(&three), three.overlap), (14.0, None));
+}
+
+#[test]
+fn ds_306_the_fire_giver_is_not_taken_in() {
+    let earlier = first(Relation::Sapinda, Deceased::default());
+    let mut asked_by = during(asked("second", death(4.2), Relation::Sapinda), &[earlier]);
+    asked_by.fire_giver = true;
+    let found = answer(&asked_by);
+    assert_eq!((ends(&found), found.overlap), (14.0, None));
 }

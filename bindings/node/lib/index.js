@@ -7904,14 +7904,127 @@ export class AlmanacArea extends Area {
     const { value, provenance } = JSON.parse(
       run(this, (inner) => inner.almanacAshauch(JSON.stringify(asked))),
     );
+    return deepFreeze({ value: ashauchFrom(value), provenance: decodeProvenance(provenance) });
+  }
+
+  /**
+   * **A household's periods of impurity** at a place
+   * (`03-design/ashauch.md` §11): several births and deaths and several
+   * observers in one request. Each observer's `ties` name an event by its
+   * key and the observer's relation to it; they are read in the order the
+   * news reached that observer, each against the ones before it, so the
+   * overlap rules (DS p. 305: the news, not the event, decides) apply
+   * without the caller chaining `during`. `value.observers` holds each
+   * observer's `periods`, an ashauch answer per tie in that order, and
+   * `pureAt`, the instant the last ends.
+   *
+   * @example
+   * const { value } = sdk.almanac.household({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
+   *   utcOffsetSeconds: 20700,
+   *   household: {
+   *     events: [{ key: 'grandfather', event: { event: 'DEATH', at: 2461051.677083 } }],
+   *     observers: [{ key: 'son', ties: [{ event: 'grandfather', relation: 'CHILD', fireGiver: true }] }],
+   *   },
+   * });
+   * value.observers[0].periods[0].days; // 10
+   *
+   * @param {object} query
+   * @param {object} query.place `{ latitude, longitude, altitude }`
+   * @param {number} query.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {object} query.household `{ events, observers }`, an event `{ key, event }`, an observer
+   *   `{ key, ties }`, a tie `{ event, relation, heardAt, abroad, nearness, fullDays, fireGiver }`
+   * @param {object} [query.table] the tradition's table, every row data
+   * @returns {{ value: object, provenance: object }}
+   */
+  household(query) {
+    const asked = located(query, 'household', '{ place, utcOffsetSeconds, household }');
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacHousehold(JSON.stringify(asked))),
+    );
     return deepFreeze({
       value: {
         ...value,
-        dayOne: dateFrom(value.dayOne),
-        ...(value.lastDay == null ? {} : { lastDay: dateFrom(value.lastDay) }),
+        observers: value.observers.map((observer) => ({
+          ...observer,
+          periods: observer.periods.map(ashauchFrom),
+        })),
       },
       provenance: decodeProvenance(provenance),
     });
+  }
+
+  /**
+   * **The ashauch relation a path in a family gives**
+   * (`03-design/ashauch.md` §10): the steps from the observer to the one
+   * who died or was born (`FATHER`, `MOTHER`, `SON`, `DAUGHTER`,
+   * `HUSBAND`, `WIFE`), read as the *Dharmasindhu* counts kin (pp.
+   * 299–302): `relation` to ask `almanac.ashauch` with, `keeps` (`PERIOD`,
+   * `BATH` or `NOTHING`), the line's `degree` counted from the common
+   * forebear, who is first, and the clause. Needs no place or ephemeris.
+   *
+   * @example
+   * const kin = sdk.almanac.ashauchKin({ kin: { path: ['FATHER', 'FATHER', 'SON', 'SON'], observer: { sex: 'MALE' } } });
+   * kin.relation; // 'SAPINDA'
+   * kin.degree.observer; // 3
+   *
+   * @param {object} query `{ kin, table }`: `kin` `{ path, observer, personMarried, livingForebears }`
+   * @returns {object} the answer, frozen
+   */
+  ashauchKin(query) {
+    return deepFreeze(JSON.parse(plainAsked(this, query, 'ashauchKin', (inner, json) => inner.almanacAshauchKin(json))));
+  }
+
+  /**
+   * **Whether a rite may go on during a period of impurity**
+   * (`03-design/ashauch.md` §12): `verdict` `GOES_ON`, `IN_PART` (its
+   * bodily rules kept by oneself, the rest by another or after) or
+   * `BARRED`, what opens the rite (`beginning`), and the clause, from the
+   * *Dharmasindhu*'s exceptions (§§40–41, pp. 309–310) when no `table` is
+   * given. Needs no place or ephemeris.
+   *
+   * @example
+   * const answer = sdk.almanac.ashauchRite({ rite: { rite: 'MARRIAGE', begun: true, noOtherWay: true } });
+   * answer.verdict; // 'GOES_ON'
+   *
+   * @param {object} query `{ rite, table }`: `rite` `{ rite, begun, noOtherWay, calamity, kind }`
+   * @returns {object} the answer, frozen
+   */
+  ashauchRite(query) {
+    return deepFreeze(JSON.parse(plainAsked(this, query, 'ashauchRite', (inner, json) => inner.almanacAshauchRite(json))));
+  }
+
+  /**
+   * **The death-time check** at a place (`03-design/death-time.md`): at
+   * the death and at the burning, the nakshatra, the tithi, the vara, the
+   * Moon's sign, whether it is the panchaka (the Moon in Aquarius or
+   * Pisces), the nakshatra's `feet` (`TRIPADA`, `DVIPADA`) and any
+   * `pushkara` yoga; and `rites`, each rite the *Dharmasindhu* ties to
+   * them (pp. 334–335) with its clause. With no `crematedAt` the burning
+   * is taken to fall as the death did.
+   *
+   * @example
+   * const { value } = sdk.almanac.deathTime({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
+   *   utcOffsetSeconds: 20700,
+   *   at: 2461051.677083,
+   * });
+   * value.death.panchaka; // false
+   *
+   * @param {object} query
+   * @param {object} query.place `{ latitude, longitude, altitude }`
+   * @param {number} query.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} query.at the death, a UTC Julian day
+   * @param {number} [query.crematedAt] the burning, a UTC Julian day
+   * @param {object} [query.table] the tradition's lists, every one data
+   * @returns {{ value: object, provenance: object }}
+   */
+  deathTime(query) {
+    const asked = located(query, 'deathTime', '{ place, utcOffsetSeconds, at }');
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacDeathTime(JSON.stringify(asked))),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
   }
 
   /**
@@ -9116,7 +9229,48 @@ export const ashauchRunning = (answer) => ({
   end: answer.end,
   length: answer.length,
   ...(answer.days == null ? {} : { days: answer.days }),
+  // The days a last night added take in less than the period did (DS p. 306).
+  ...(answer.overlap?.overlap === 'LAST_NIGHT'
+    ? { extendedFrom: answer.overlap.from, extendedDays: answer.overlap.days }
+    : {}),
 });
+
+/** An ashauch answer's value with its days as dates. */
+function ashauchFrom(value) {
+  return {
+    ...value,
+    dayOne: dateFrom(value.dayOne),
+    ...(value.lastDay == null ? {} : { lastDay: dateFrom(value.lastDay) }),
+  };
+}
+
+/**
+ * A query with a place and a clock as the SDK reads it: the rest crosses
+ * as written, so a key the SDK does not read is refused by name there
+ * rather than dropped here.
+ */
+function located(query, name, shape) {
+  if (typeof query !== 'object' || query === null || Array.isArray(query)) {
+    throw new TypeError(`${name}: expected a query, e.g. ${shape}`);
+  }
+  const { place: where, utcOffsetSeconds, ...rest } = query;
+  const place = where ?? {};
+  return {
+    ...rest,
+    latitudeDeg: finite(place.latitude, 'place.latitude'),
+    longitudeDeg: finite(place.longitude, 'place.longitude'),
+    altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+    utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+  };
+}
+
+/** A query that needs no place, sent as written; its answer's text. */
+function plainAsked(area, query, name, call) {
+  if (typeof query !== 'object' || query === null || Array.isArray(query)) {
+    throw new TypeError(`${name}: expected a query object`);
+  }
+  return run(area, (inner) => call(inner, JSON.stringify(query)));
+}
 
 export { BlobFormatError, decodeCharts, decodeDigest, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';

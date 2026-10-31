@@ -532,6 +532,93 @@
     }
   },
   {
+    "record": "almanac.household",
+    "request": {
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1337,
+      "utcOffsetSeconds": 20700,
+      "household": {
+        "events": [
+          {
+            "key": "father",
+            "event": {
+              "event": "DEATH",
+              "at": 2461051.677083,
+              "deceased": {
+                "sex": "MALE"
+              }
+            }
+          },
+          {
+            "key": "mother",
+            "event": {
+              "event": "DEATH",
+              "at": 2461055.84375,
+              "deceased": {
+                "sex": "FEMALE"
+              }
+            }
+          }
+        ],
+        "observers": [
+          {
+            "key": "son",
+            "ties": [
+              {
+                "event": "father",
+                "relation": "CHILD",
+                "fireGiver": true
+              },
+              {
+                "event": "mother",
+                "relation": "CHILD"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "record": "almanac.ashauchKin",
+    "request": {
+      "kin": {
+        "path": [
+          "FATHER",
+          "FATHER",
+          "SON",
+          "SON"
+        ],
+        "observer": {
+          "sex": "MALE"
+        },
+        "livingForebears": 1
+      }
+    }
+  },
+  {
+    "record": "almanac.ashauchRite",
+    "request": {
+      "rite": {
+        "rite": "MARRIAGE",
+        "begun": true,
+        "noOtherWay": true
+      }
+    }
+  },
+  {
+    "record": "almanac.deathTime",
+    "request": {
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1337,
+      "utcOffsetSeconds": 20700,
+      "at": 2461051.677083,
+      "crematedAt": 2461052.0
+    }
+  },
+  {
     "record": "almanac.festivalPack",
     "request": {
       "pack": "INDIA_CENTRAL"

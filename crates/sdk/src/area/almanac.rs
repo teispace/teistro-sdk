@@ -27,7 +27,10 @@ use teistro_muhurta::Answer;
 #[cfg(feature = "muhurta")]
 use teistro_muhurta::season::{SeenEclipse, SeenKind, VEDHA_DAYS_AROUND, vedha_over_days};
 use teistro_panchanga::almanac::{Almanac, Panchanga};
-use teistro_panchanga::ashauch::{Ashauch, AshauchRequest, AshauchTable};
+use teistro_panchanga::ashauch::{
+    Ashauch, AshauchRequest, AshauchTable, Household, HouseholdAnswer,
+};
+use teistro_panchanga::death_time::{DeathTime, DeathTimeTable};
 #[cfg(feature = "signed-packs")]
 use teistro_panchanga::festival::PublishedSet;
 use teistro_panchanga::festival::{
@@ -1022,6 +1025,7 @@ impl<'a> AlmanacArea<'a> {
     ///     nearness: Nearness::SameVillage,
     ///     full_days: None,
     ///     during: Vec::new(),
+    ///     fire_giver: false,
     /// };
     /// let found = sdk.almanac().ashauch(&AshauchTable::dharmasindhu(), &request, &kathmandu, UtcOffset::literal(5, 45, 0))?;
     /// println!("{:?} to {:?}: {:?}", found.value.day_one, found.value.last_day, found.value.clause);
@@ -1043,6 +1047,83 @@ impl<'a> AlmanacArea<'a> {
     ) -> Result<Envelope<Ashauch>, Error> {
         let found = self.with_almanac(Calendar::Gregorian, offset, |almanac| {
             almanac.ashauch(table, request, place)
+        })?;
+        Ok(Envelope::sealing(found.value, found.provenance))
+    }
+
+    /// A household's periods at a place (`03-design/ashauch.md` §11):
+    /// several events and observers, each observer's overlaps resolved in
+    /// the order the news reached them.
+    ///
+    /// ```no_run
+    /// use teistro::ashauch::{AshauchEvent, AshauchTable, Deceased, Household, HouseholdEvent, HouseholdObserver, HouseholdTie, Nearness, Relation};
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro::{Context, UtcOffset};
+    ///
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
+    /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1337.0)?);
+    /// let household = Household {
+    ///     events: vec![HouseholdEvent {
+    ///         key: String::from("grandfather"),
+    ///         event: AshauchEvent::Death { at: JulianDay::try_new(2_461_051.677_083)?, cremated_at: None, ahitagni: false, deceased: Deceased::default() },
+    ///     }],
+    ///     observers: vec![HouseholdObserver {
+    ///         key: String::from("son"),
+    ///         ties: vec![HouseholdTie { event: String::from("grandfather"), relation: Relation::Child, heard_at: None, abroad: false, nearness: Nearness::SameVillage, full_days: None, fire_giver: true }],
+    ///     }],
+    /// };
+    /// let found = sdk.almanac().household(&AshauchTable::dharmasindhu(), &household, &kathmandu, UtcOffset::literal(5, 45, 0))?;
+    /// assert_eq!(found.value.observers.len(), 1);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::ashauch`] for each tie; a household that does
+    /// not hold together (`INVALID_ARG`).
+    pub fn household(
+        self,
+        table: &AshauchTable,
+        household: &Household,
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<Envelope<HouseholdAnswer>, Error> {
+        let found = self.with_almanac(Calendar::Gregorian, offset, |almanac| {
+            almanac.household(table, household, place)
+        })?;
+        Ok(Envelope::sealing(found.value, found.provenance))
+    }
+
+    /// The death-time check at a place (`03-design/death-time.md`): the
+    /// panchaka, the nakshatra's feet and the pushkara yogas at a death
+    /// and its cremation, and the rites the texts tie to them.
+    ///
+    /// ```no_run
+    /// use teistro::death_time::DeathTimeTable;
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro::{Context, UtcOffset};
+    ///
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
+    /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1337.0)?);
+    /// let at = JulianDay::try_new(2_461_051.677_083)?;
+    /// let found = sdk.almanac().death_time(&DeathTimeTable::dharmasindhu(), at, None, &kathmandu, UtcOffset::literal(5, 45, 0))?;
+    /// println!("{:?} {:?}", found.value.death.nakshatra, found.value.rites);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::of`]; an instant the almanac cannot hold.
+    pub fn death_time(
+        self,
+        table: &DeathTimeTable,
+        at: JulianDay<Utc>,
+        cremated_at: Option<JulianDay<Utc>>,
+        place: &Place,
+        offset: UtcOffset,
+    ) -> Result<Envelope<DeathTime>, Error> {
+        let found = self.with_almanac(Calendar::Gregorian, offset, |almanac| {
+            almanac.death_time(table, at, cremated_at, place)
         })?;
         Ok(Envelope::sealing(found.value, found.provenance))
     }

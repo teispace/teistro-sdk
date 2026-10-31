@@ -2616,6 +2616,79 @@ public final class BindingTest {
             }
         });
 
+        tests.put("an almanac says a household, a relation, a rite and the death time", () -> {
+            // A father dies at 10:00 on 11 January 2026 in Kathmandu and the
+            // mother at 14:00 on 15 January: the son keeps the father's end and
+            // a pakshini, a sapinda's second period ends with the first. The
+            // relation resolver and the rite answer without a sky; the
+            // death-time check reads the Moon.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1337));
+            double father = 2_461_051.677_083;
+            double mother = 2_461_055.843_75;
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                HouseholdTie.Builder child = HouseholdTie.builder().relation(AshauchRelation.CHILD);
+                HouseholdTie.Builder sapinda = HouseholdTie.builder().relation(AshauchRelation.SAPINDA);
+                Household household = new Household(
+                        List.of(
+                                new HouseholdEvent(AshauchEventDeath.builder().at(father)
+                                        .deceased(Deceased.builder().sex(AshauchSex.MALE).build()).build(), "father"),
+                                new HouseholdEvent(AshauchEventDeath.builder().at(mother)
+                                        .deceased(Deceased.builder().sex(AshauchSex.FEMALE).build()).build(), "mother")),
+                        List.of(
+                                new HouseholdObserver("son", List.of(
+                                        child.event("father").build(), child.event("mother").build())),
+                                new HouseholdObserver("nephew", List.of(
+                                        sapinda.event("father").build(), sapinda.event("mother").build()))));
+                HouseholdAnswer found = sky.almanac().household(household, kathmandu, 20_700, null);
+                check(!found.provenance().inputHash().isEmpty(), "the request is sealed");
+                HouseholdPeriods son = found.value().observers().get(0);
+                HouseholdPeriods nephew = found.value().observers().get(1);
+                same("MOTHER_AFTER_FATHER", son.periods().get(1).overlap().overlap(), "the father's end and more");
+                same(son.periods().get(1).end(), son.pureAt(), "pure when the last ends");
+                same("ENDS_WITH_EARLIER", nephew.periods().get(1).overlap().overlap(), "a sapinda's second");
+                same(nephew.periods().get(0).end(), nephew.pureAt(), "pure with the first");
+                TeistroException unknown = refusal(() -> sky.almanac().household(new Household(List.of(),
+                        List.of(new HouseholdObserver("son", List.of(child.event("uncle").build())))), kathmandu, 20_700, null));
+                same("household.household.observers[0].ties[0].event", unknown.field(), "the tie's event");
+
+                Ashauch first = sky.almanac().ashauch(AshauchRequest.builder()
+                        .key("first").relation(AshauchRelation.SAPINDA)
+                        .event(AshauchEventDeath.builder().at(father).build()).build(), kathmandu, 20_700).value();
+                Ashauch second = sky.almanac().ashauch(AshauchRequest.builder()
+                        .key("second").relation(AshauchRelation.SAPINDA)
+                        .event(AshauchEventDeath.builder().at(father + 9.55).build())
+                        .during(List.of(first.running())).build(), kathmandu, 20_700).value();
+                same("LAST_NIGHT", second.overlap().overlap(), "known in the last night");
+                same(first.end(), second.overlap().from(), "its days added from the first's end");
+                same(first.end(), second.running().extendedFrom(), "a running period carries them");
+                same(second.overlap().days(), second.running().extendedDays(), "and how many");
+
+                Kin kin = sky.almanac().ashauchKin(KinQuery.builder().kin(KinAsked.builder()
+                        .path(List.of(KinStep.FATHER, KinStep.FATHER, KinStep.SON, KinStep.SON))
+                        .observer(KinObserver.builder().sex(AshauchSex.MALE).build()).build()).build());
+                same(AshauchRelation.SAPINDA, kin.relation(), "a first cousin is a sapinda");
+                same(KinKeeps.PERIOD, kin.keeps(), "who keeps the period");
+                same(3, kin.degree().observer(), "the third from the common forebear");
+                TeistroException back = refusal(() -> sky.almanac().ashauchKin(KinQuery.builder().kin(KinAsked.builder()
+                        .path(List.of(KinStep.SON, KinStep.FATHER))
+                        .observer(KinObserver.builder().sex(AshauchSex.MALE).build()).build()).build()));
+                same("kin.kin.path[1]", back.field(), "the step that leads back");
+                AshauchRiteAnswer rite = sky.almanac().ashauchRite(RiteQuery.builder().rite(AshauchRiteAsked.builder()
+                        .rite(AshauchRite.MARRIAGE).begun(true).noOtherWay(true).build()).build());
+                same(RiteVerdict.GOES_ON, rite.verdict(), "a marriage past its nandishraddha");
+
+                DeathTimeAnswer death = sky.almanac().deathTime(father, null, kathmandu, 20_700, null);
+                same("DHARMASINDHU", death.value().table(), "the default lists");
+                same(death.value().death().moon() == Rashi.AQUARIUS || death.value().death().moon() == Rashi.PISCES,
+                        death.value().death().panchaka(), "the panchaka is the Moon's sign");
+                check(death.value().cremation() == null, "no burning given");
+                TeistroException early = refusal(() -> sky.almanac().deathTime(father, father - 1, kathmandu, 20_700,
+                        null));
+                same("deathTime.crematedAt", early.field(), "a burning before the death");
+            }
+        });
+
         tests.put("an almanac says the rites of a death's first year", () -> {
             // A death in Kathmandu at Julian day 2461333.677083: the sixteen
             // each in its place, fifteen of them first done on the

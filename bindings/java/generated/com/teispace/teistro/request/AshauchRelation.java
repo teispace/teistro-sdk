@@ -94,7 +94,31 @@ public enum AshauchRelation implements RequestJson {
     /**
      * A sapiṇḍa of an ascetic (*yati*).
      */
-    OF_ASCETIC("OF_ASCETIC");
+    OF_ASCETIC("OF_ASCETIC"),
+    /**
+     * The deceased was the observer's mother's sister.
+     */
+    MATERNAL_AUNT("MATERNAL_AUNT"),
+    /**
+     * The deceased was the observer's married father's sister.
+     */
+    PATERNAL_AUNT("PATERNAL_AUNT"),
+    /**
+     * The deceased was the observer's maternal uncle's wife.
+     */
+    MATERNAL_UNCLES_WIFE("MATERNAL_UNCLES_WIFE"),
+    /**
+     * The deceased was the observer's sister's son (*bhāgineya*).
+     */
+    SISTERS_SON("SISTERS_SON"),
+    /**
+     * The deceased was the observer's daughter's son (*dauhitra*).
+     */
+    DAUGHTERS_SON("DAUGHTERS_SON"),
+    /**
+     * The deceased was the observer's wife's brother (*śyālaka*).
+     */
+    WIFES_BROTHER("WIFES_BROTHER");
 
     private final String key;
 

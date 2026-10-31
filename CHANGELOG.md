@@ -69,6 +69,28 @@ section's digest moves; a sankalpa's year carries none.
 - `teimeris-sys` refuses `wasm32-unknown-unknown` by name (SR-67) and points to `bindings/wasm`,
   which a browser reaches from JavaScript (C1031).
 
+**The death-time check, the relation resolver, a household and the rite; four overlap rules corrected.**
+**Numbers:** ashauch ends move in four overlaps, each read again on *Dharmasindhu* p. 306
+(`03-design/ashauch.md` §11). Under `DHARMASINDHU` a father dying in the mother's period now
+ends with hers (it kept his own ten days, which is the *Mitākṣarā*'s and *Nirṇayasindhu*'s
+reading and stays `MITAKSHARA`'s, C957); a three-day period known in another's third night
+ends with it (it gained two or three days); a ten-day period known in the days a last night
+added keeps its own (it ended with them); and `fireGiver` keeps the one who lights the pyre
+out of any earlier period. No other period moves.
+- `almanac.deathTime` (SR-26): the panchaka, the nakshatra's feet and the pushkara yogas at a
+  death and its burning, and the rites the *Dharmasindhu* ties to them with their clauses
+  (`03-design/death-time.md`, C950–C954).
+- `almanac.ashauchKin` (SR-27): a path in a family gives the relation an ashauch asks for and
+  the degree the texts count (C955, C956, C961).
+- `almanac.household` and `almanac.ashauchRite` (SR-28): several events and observers in one
+  request, overlaps resolved in the order the news reached each observer; and whether a rite
+  may go on during a period, with its clause (C957–C960).
+- Six relations join `AshauchRelation` for the rows DS pp. 301–302 name: `MATERNAL_AUNT`,
+  `PATERNAL_AUNT`, `MATERNAL_UNCLES_WIFE`, `SISTERS_SON`, `DAUGHTERS_SON`, `WIFES_BROTHER`.
+  A last-night overlap answers `from`, and a running period carries `extendedFrom` and
+  `extendedDays`, so a chain reads the added days.
+- Every binding and MCP reach the four calls.
+
 **A day in sentences; a polar sankranti answers.**
 **Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or
 `CIVIL_MIDNIGHT` that the default month start refused now answers, and a `NEAREST_EVENT`

@@ -2015,6 +2015,14 @@ typedef TsAlmanacSankalpaNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.P
 typedef TsAlmanacSankalpaDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacAshauchNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacAshauchDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacHouseholdNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacHouseholdDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacAshauchKinNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacAshauchKinDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacAshauchRiteNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacAshauchRiteDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacDeathTimeNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacDeathTimeDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFirstYearNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFirstYearDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalCalendarNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2131,6 +2139,10 @@ final class TeistroLibrary {
         ts_almanac_published_reasons = library.lookupFunction<TsAlmanacPublishedReasonsNative, TsAlmanacPublishedReasonsDart>('ts_almanac_published_reasons'),
         ts_almanac_sankalpa = library.lookupFunction<TsAlmanacSankalpaNative, TsAlmanacSankalpaDart>('ts_almanac_sankalpa'),
         ts_almanac_ashauch = library.lookupFunction<TsAlmanacAshauchNative, TsAlmanacAshauchDart>('ts_almanac_ashauch'),
+        ts_almanac_household = library.lookupFunction<TsAlmanacHouseholdNative, TsAlmanacHouseholdDart>('ts_almanac_household'),
+        ts_almanac_ashauch_kin = library.lookupFunction<TsAlmanacAshauchKinNative, TsAlmanacAshauchKinDart>('ts_almanac_ashauch_kin'),
+        ts_almanac_ashauch_rite = library.lookupFunction<TsAlmanacAshauchRiteNative, TsAlmanacAshauchRiteDart>('ts_almanac_ashauch_rite'),
+        ts_almanac_death_time = library.lookupFunction<TsAlmanacDeathTimeNative, TsAlmanacDeathTimeDart>('ts_almanac_death_time'),
         ts_almanac_first_year = library.lookupFunction<TsAlmanacFirstYearNative, TsAlmanacFirstYearDart>('ts_almanac_first_year'),
         ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
         ts_almanac_digest = library.lookupFunction<TsAlmanacDigestNative, TsAlmanacDigestDart>('ts_almanac_digest'),
@@ -2619,6 +2631,71 @@ final class TeistroLibrary {
   /// row for is `UNSUPPORTED`; a context without an ephemeris is
   /// `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
   final TsAlmanacAshauchDart ts_almanac_ashauch;
+
+  /// Several births and deaths and several observers at a place
+  /// (`03-design/ashauch.md` §11), answered with `{value, provenance}` as
+  /// canonical JSON.
+  ///
+  /// `value` is `{observers}`, each `{key, periods, pureAt}`: `periods` an
+  /// ashauch answer for each tie, in the order the news reached that
+  /// observer, each overlap resolved against those before it, and `pureAt`
+  /// the instant the last ends.
+  ///
+  /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+  /// "utcOffsetSeconds", "table", "tradition", "household"}`: `household`
+  /// `{events, observers}`, an event `{key, event}` and an observer `{key,
+  /// ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,
+  /// fireGiver}`. A household that does not hold together, or a key it
+  /// does not read, is `INVALID_ARG` named under `household`; a relation
+  /// the table names no row for is `UNSUPPORTED`; a context without an
+  /// ephemeris is `CAPABILITY`.
+  final TsAlmanacHouseholdDart ts_almanac_household;
+
+  /// The ashauch relation and sapinda degree a path in a family gives
+  /// (`03-design/ashauch.md` §10), answered as canonical JSON.
+  ///
+  /// The answer is `{relation, keeps, degree, withinGirlsReach, clause,
+  /// table}`: `relation` what `ts_almanac_ashauch` asks with, absent when
+  /// no period is kept; `keeps` `PERIOD`, `BATH` or `NOTHING`; `degree`,
+  /// for one line, `{observer, person, reach}` counted from the kūṭastha,
+  /// who is 1.
+  ///
+  /// `request_json` is `{"table", "kin"}`: `table` the *Dharmasindhu*'s
+  /// when left out, every row data; `kin` `{path, observer, personMarried,
+  /// livingForebears}`, `path` the steps `FATHER`, `MOTHER`, `SON`,
+  /// `DAUGHTER`, `HUSBAND`, `WIFE` from the observer to the person. A path
+  /// that steps back, or a fact a row turns on and the request leaves out,
+  /// is `INVALID_ARG` named under `kin`.
+  final TsAlmanacAshauchKinDart ts_almanac_ashauch_kin;
+
+  /// Whether a rite may go on during a period of impurity
+  /// (`03-design/ashauch.md` §12), answered as canonical JSON.
+  ///
+  /// The answer is `{rite, verdict, beginning, row, clause, table}`:
+  /// `verdict` `GOES_ON`, `IN_PART` or `BARRED`, `beginning` what opens
+  /// this rite when the texts name it.
+  ///
+  /// `request_json` is `{"table", "rite"}`: `table` the *Dharmasindhu*'s
+  /// when left out, every row data; `rite` `{rite, begun, noOtherWay,
+  /// calamity, kind}`. A key it does not read is `INVALID_ARG` named under
+  /// `rite`; a rite the table names no row for is `UNSUPPORTED`.
+  final TsAlmanacAshauchRiteDart ts_almanac_ashauch_rite;
+
+  /// The death-time check at a place (`03-design/death-time.md`), answered
+  /// with `{value, provenance}` as canonical JSON.
+  ///
+  /// `value` is `{death, cremation, rites, table}`: `death` and `cremation`
+  /// each `{at, nakshatra, tithi, vara, moon, panchaka, feet, pushkara}`,
+  /// `rites` each `{rite, clause}`. With no cremation given, the cremation
+  /// is taken to fall as the death did.
+  ///
+  /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+  /// "utcOffsetSeconds", "at", "crematedAt", "table"}`, the instants UTC
+  /// Julian days and `table` the *Dharmasindhu*'s lists when left out. A
+  /// cremation before the death, or a key it does not read, is
+  /// `INVALID_ARG` named under `deathTime`; a context without an ephemeris
+  /// is `CAPABILITY`.
+  final TsAlmanacDeathTimeDart ts_almanac_death_time;
 
   /// A death's first year at a place (`03-design/shraddha.md` §3.3),
   /// answered with `{value, provenance}` as canonical JSON.
@@ -6602,6 +6679,107 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_almanac_ashauch(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Several births and deaths and several observers at a place
+  /// (`03-design/ashauch.md` §11), answered with `{value, provenance}` as
+  /// canonical JSON.
+  ///
+  /// `value` is `{observers}`, each `{key, periods, pureAt}`: `periods` an
+  /// ashauch answer for each tie, in the order the news reached that
+  /// observer, each overlap resolved against those before it, and `pureAt`
+  /// the instant the last ends.
+  ///
+  /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+  /// "utcOffsetSeconds", "table", "tradition", "household"}`: `household`
+  /// `{events, observers}`, an event `{key, event}` and an observer `{key,
+  /// ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,
+  /// fireGiver}`. A household that does not hold together, or a key it
+  /// does not read, is `INVALID_ARG` named under `household`; a relation
+  /// the table names no row for is `UNSUPPORTED`; a context without an
+  /// ephemeris is `CAPABILITY`.
+  String almanacHousehold(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_household(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// The ashauch relation and sapinda degree a path in a family gives
+  /// (`03-design/ashauch.md` §10), answered as canonical JSON.
+  ///
+  /// The answer is `{relation, keeps, degree, withinGirlsReach, clause,
+  /// table}`: `relation` what `ts_almanac_ashauch` asks with, absent when
+  /// no period is kept; `keeps` `PERIOD`, `BATH` or `NOTHING`; `degree`,
+  /// for one line, `{observer, person, reach}` counted from the kūṭastha,
+  /// who is 1.
+  ///
+  /// `request_json` is `{"table", "kin"}`: `table` the *Dharmasindhu*'s
+  /// when left out, every row data; `kin` `{path, observer, personMarried,
+  /// livingForebears}`, `path` the steps `FATHER`, `MOTHER`, `SON`,
+  /// `DAUGHTER`, `HUSBAND`, `WIFE` from the observer to the person. A path
+  /// that steps back, or a fact a row turns on and the request leaves out,
+  /// is `INVALID_ARG` named under `kin`.
+  String almanacAshauchKin(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_ashauch_kin(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Whether a rite may go on during a period of impurity
+  /// (`03-design/ashauch.md` §12), answered as canonical JSON.
+  ///
+  /// The answer is `{rite, verdict, beginning, row, clause, table}`:
+  /// `verdict` `GOES_ON`, `IN_PART` or `BARRED`, `beginning` what opens
+  /// this rite when the texts name it.
+  ///
+  /// `request_json` is `{"table", "rite"}`: `table` the *Dharmasindhu*'s
+  /// when left out, every row data; `rite` `{rite, begun, noOtherWay,
+  /// calamity, kind}`. A key it does not read is `INVALID_ARG` named under
+  /// `rite`; a rite the table names no row for is `UNSUPPORTED`.
+  String almanacAshauchRite(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_ashauch_rite(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// The death-time check at a place (`03-design/death-time.md`), answered
+  /// with `{value, provenance}` as canonical JSON.
+  ///
+  /// `value` is `{death, cremation, rites, table}`: `death` and `cremation`
+  /// each `{at, nakshatra, tithi, vara, moon, panchaka, feet, pushkara}`,
+  /// `rites` each `{rite, clause}`. With no cremation given, the cremation
+  /// is taken to fall as the death did.
+  ///
+  /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+  /// "utcOffsetSeconds", "at", "crematedAt", "table"}`, the instants UTC
+  /// Julian days and `table` the *Dharmasindhu*'s lists when left out. A
+  /// cremation before the death, or a key it does not read, is
+  /// `INVALID_ARG` named under `deathTime`; a context without an ephemeris
+  /// is `CAPABILITY`.
+  String almanacDeathTime(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_death_time(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

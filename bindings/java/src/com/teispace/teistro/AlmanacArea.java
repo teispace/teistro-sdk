@@ -609,6 +609,136 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>A household's periods of impurity</b> at a place ({@code 03-design/ashauch.md} §11): several
+     * births and deaths and several observers in one request. Each observer's ties name an event by its
+     * key and the observer's relation to it; they are read in the order the news reached that observer,
+     * each against the ones before it (DS p. 305: the news, not the event, decides).
+     *
+     * <pre>{@code
+     * HouseholdAnswer found = sdk.almanac().household(Household.builder()
+     *         .events(List.of(HouseholdEvent.builder().key("grandfather")
+     *                 .event(AshauchEventDeath.builder().at(2_461_051.677_083).build()).build()))
+     *         .observers(List.of(HouseholdObserver.builder().key("son")
+     *                 .ties(List.of(HouseholdTie.builder().event("grandfather").relation(AshauchRelation.CHILD).build()))
+     *                 .build()))
+     *         .build(), kathmandu, 20_700, null);
+     * double pure = found.value().observers().get(0).pureAt();
+     * }</pre>
+     *
+     * @param household the events and the observers, its instants UTC Julian days
+     * @param place where the days are counted
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param table the tradition's table, every row data; null for the <i>Dharmasindhu</i>'s
+     * @return each observer's periods, sealed
+     */
+    public HouseholdAnswer household(com.teispace.teistro.request.Household household, Observer place,
+            int utcOffsetSeconds, com.teispace.teistro.request.AshauchTable table) {
+        if (household == null) {
+            throw Reads.invalid("household is a Household", "household");
+        }
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (table != null) {
+            asked.put("table", table);
+        }
+        asked.put("household", household);
+        String json = Json.write(asked);
+        return AlmanacReads.householdAnswer(context.locked((lib, raw) -> Calls.almanacHousehold(lib, raw, json)));
+    }
+
+    /**
+     * <b>The ashauch relation a path in a family gives</b> ({@code 03-design/ashauch.md} §10): the steps
+     * from the observer to the one who died or was born, read as the <i>Dharmasindhu</i> counts kin (pp.
+     * 299–302). Needs no place or ephemeris; a path that steps back is refused as
+     * {@code kin.kin.path[n]}.
+     *
+     * <pre>{@code
+     * Kin kin = sdk.almanac().ashauchKin(KinQuery.builder().kin(KinAsked.builder()
+     *         .path(List.of(KinStep.FATHER, KinStep.SON))
+     *         .observer(KinObserver.builder().sex(AshauchSex.MALE).build()).build()).build());
+     * AshauchRelation relation = kin.relation(); // SAPINDA
+     * }</pre>
+     *
+     * @param query the path, the facts it reads, and the table (the <i>Dharmasindhu</i>'s when left out)
+     * @return the relation, what is kept and the clause
+     */
+    public Kin ashauchKin(com.teispace.teistro.request.KinQuery query) {
+        if (query == null) {
+            throw Reads.invalid("query is a KinQuery", "kin");
+        }
+        String json = Json.write(query);
+        return AlmanacReads.kin(context.locked((lib, raw) -> Calls.almanacAshauchKin(lib, raw, json)));
+    }
+
+    /**
+     * <b>Whether a rite may go on during a period of impurity</b> ({@code 03-design/ashauch.md} §12):
+     * goes on, in part, or waits, what opens the rite and the clause, from the <i>Dharmasindhu</i>'s
+     * exceptions (pp. 309–310) when the query names no table. Needs no place or ephemeris.
+     *
+     * <pre>{@code
+     * AshauchRiteAnswer answer = sdk.almanac().ashauchRite(RiteQuery.builder().rite(AshauchRiteAsked.builder()
+     *         .rite(AshauchRite.MARRIAGE).begun(true).noOtherWay(true).build()).build());
+     * RiteVerdict verdict = answer.verdict(); // GOES_ON
+     * }</pre>
+     *
+     * @param query the rite, the facts it reads, and the table
+     * @return the verdict and its clause
+     */
+    public AshauchRiteAnswer ashauchRite(com.teispace.teistro.request.RiteQuery query) {
+        if (query == null) {
+            throw Reads.invalid("query is a RiteQuery", "rite");
+        }
+        String json = Json.write(query);
+        return AlmanacReads.ashauchRite(context.locked((lib, raw) -> Calls.almanacAshauchRite(lib, raw, json)));
+    }
+
+    /**
+     * <b>The death-time check</b> at a place ({@code 03-design/death-time.md}): at the death and at the
+     * burning, the nakshatra, the tithi, the vara and the Moon's sign, whether it is the panchaka, the
+     * nakshatra's feet and any pushkara yoga; and the rites the <i>Dharmasindhu</i> ties to them (pp.
+     * 334–335), each with its clause. With no burning given it is taken to fall as the death did; one
+     * before the death is refused as {@code deathTime.crematedAt}.
+     *
+     * <pre>{@code
+     * DeathTimeAnswer found = sdk.almanac().deathTime(2_461_051.677_083, null, kathmandu, 20_700, null);
+     * boolean panchaka = found.value().death().panchaka();
+     * }</pre>
+     *
+     * @param at the death, a UTC Julian day
+     * @param crematedAt the burning, a UTC Julian day; null when it falls as the death did
+     * @param place where the day and the sky are read
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param table the tradition's lists, every one data; null for the <i>Dharmasindhu</i>'s
+     * @return the readings and the rites, sealed
+     */
+    public DeathTimeAnswer deathTime(double at, Double crematedAt, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.DeathTimeTable table) {
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.put("at", at);
+        if (crematedAt != null) {
+            asked.put("crematedAt", crematedAt);
+        }
+        if (table != null) {
+            asked.put("table", table);
+        }
+        String json = Json.write(asked);
+        return AlmanacReads.deathTimeAnswer(context.locked((lib, raw) -> Calls.almanacDeathTime(lib, raw, json)));
+    }
+
+    /**
      * <b>A death's first year</b> at a place ({@code 03-design/shraddha.md} §3.3): the
      * <i>Dharmasindhu</i>'s sixteen shraddhas, the first abdika and the sapindana, each on its day. The
      * eleventh day is the ashauch's day one plus ten, and every day kept on a tithi is the festival

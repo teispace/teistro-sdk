@@ -4084,6 +4084,10 @@ public final class Native {
         "ts_almanac_published_reasons",
         "ts_almanac_sankalpa",
         "ts_almanac_ashauch",
+        "ts_almanac_household",
+        "ts_almanac_ashauch_kin",
+        "ts_almanac_ashauch_rite",
+        "ts_almanac_death_time",
         "ts_almanac_first_year",
         "ts_almanac_festival_calendar",
         "ts_almanac_digest",
@@ -4684,6 +4688,79 @@ public final class Native {
     public final MethodHandle ts_almanac_ashauch;
 
     /**
+     * Several births and deaths and several observers at a place
+     * (`03-design/ashauch.md` §11), answered with `{value, provenance}` as
+     * canonical JSON.
+     *
+     * `value` is `{observers}`, each `{key, periods, pureAt}`: `periods` an
+     * ashauch answer for each tie, in the order the news reached that
+     * observer, each overlap resolved against those before it, and `pureAt`
+     * the instant the last ends.
+     *
+     * `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+     * "utcOffsetSeconds", "table", "tradition", "household"}`: `household`
+     * `{events, observers}`, an event `{key, event}` and an observer `{key,
+     * ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,
+     * fireGiver}`. A household that does not hold together, or a key it
+     * does not read, is `INVALID_ARG` named under `household`; a relation
+     * the table names no row for is `UNSUPPORTED`; a context without an
+     * ephemeris is `CAPABILITY`.
+     */
+    public final MethodHandle ts_almanac_household;
+
+    /**
+     * The ashauch relation and sapinda degree a path in a family gives
+     * (`03-design/ashauch.md` §10), answered as canonical JSON.
+     *
+     * The answer is `{relation, keeps, degree, withinGirlsReach, clause,
+     * table}`: `relation` what `ts_almanac_ashauch` asks with, absent when
+     * no period is kept; `keeps` `PERIOD`, `BATH` or `NOTHING`; `degree`,
+     * for one line, `{observer, person, reach}` counted from the kūṭastha,
+     * who is 1.
+     *
+     * `request_json` is `{"table", "kin"}`: `table` the *Dharmasindhu*'s
+     * when left out, every row data; `kin` `{path, observer, personMarried,
+     * livingForebears}`, `path` the steps `FATHER`, `MOTHER`, `SON`,
+     * `DAUGHTER`, `HUSBAND`, `WIFE` from the observer to the person. A path
+     * that steps back, or a fact a row turns on and the request leaves out,
+     * is `INVALID_ARG` named under `kin`.
+     */
+    public final MethodHandle ts_almanac_ashauch_kin;
+
+    /**
+     * Whether a rite may go on during a period of impurity
+     * (`03-design/ashauch.md` §12), answered as canonical JSON.
+     *
+     * The answer is `{rite, verdict, beginning, row, clause, table}`:
+     * `verdict` `GOES_ON`, `IN_PART` or `BARRED`, `beginning` what opens
+     * this rite when the texts name it.
+     *
+     * `request_json` is `{"table", "rite"}`: `table` the *Dharmasindhu*'s
+     * when left out, every row data; `rite` `{rite, begun, noOtherWay,
+     * calamity, kind}`. A key it does not read is `INVALID_ARG` named under
+     * `rite`; a rite the table names no row for is `UNSUPPORTED`.
+     */
+    public final MethodHandle ts_almanac_ashauch_rite;
+
+    /**
+     * The death-time check at a place (`03-design/death-time.md`), answered
+     * with `{value, provenance}` as canonical JSON.
+     *
+     * `value` is `{death, cremation, rites, table}`: `death` and `cremation`
+     * each `{at, nakshatra, tithi, vara, moon, panchaka, feet, pushkara}`,
+     * `rites` each `{rite, clause}`. With no cremation given, the cremation
+     * is taken to fall as the death did.
+     *
+     * `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
+     * "utcOffsetSeconds", "at", "crematedAt", "table"}`, the instants UTC
+     * Julian days and `table` the *Dharmasindhu*'s lists when left out. A
+     * cremation before the death, or a key it does not read, is
+     * `INVALID_ARG` named under `deathTime`; a context without an ephemeris
+     * is `CAPABILITY`.
+     */
+    public final MethodHandle ts_almanac_death_time;
+
+    /**
      * A death's first year at a place (`03-design/shraddha.md` §3.3),
      * answered with `{value, provenance}` as canonical JSON.
      *
@@ -5210,6 +5287,10 @@ public final class Native {
         ts_almanac_published_reasons = linker.downcallHandle(symbols.find("ts_almanac_published_reasons").orElseThrow(() -> missing("ts_almanac_published_reasons")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_sankalpa = linker.downcallHandle(symbols.find("ts_almanac_sankalpa").orElseThrow(() -> missing("ts_almanac_sankalpa")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_ashauch = linker.downcallHandle(symbols.find("ts_almanac_ashauch").orElseThrow(() -> missing("ts_almanac_ashauch")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_household = linker.downcallHandle(symbols.find("ts_almanac_household").orElseThrow(() -> missing("ts_almanac_household")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_ashauch_kin = linker.downcallHandle(symbols.find("ts_almanac_ashauch_kin").orElseThrow(() -> missing("ts_almanac_ashauch_kin")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_ashauch_rite = linker.downcallHandle(symbols.find("ts_almanac_ashauch_rite").orElseThrow(() -> missing("ts_almanac_ashauch_rite")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_death_time = linker.downcallHandle(symbols.find("ts_almanac_death_time").orElseThrow(() -> missing("ts_almanac_death_time")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_first_year = linker.downcallHandle(symbols.find("ts_almanac_first_year").orElseThrow(() -> missing("ts_almanac_first_year")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_festival_calendar = linker.downcallHandle(symbols.find("ts_almanac_festival_calendar").orElseThrow(() -> missing("ts_almanac_festival_calendar")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_digest = linker.downcallHandle(symbols.find("ts_almanac_digest").orElseThrow(() -> missing("ts_almanac_digest")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
