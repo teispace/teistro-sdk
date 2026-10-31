@@ -126,10 +126,10 @@ test('a short tag finds the locale it means, and says which', () => {
 });
 
 test('a tithi says its number in the month', () => {
-  assert.equal(tithiMonthNumber(Tithi.ShuklaPratipada), 1);
-  assert.equal(tithiMonthNumber(Tithi.Purnima), 15);
-  assert.equal(tithiMonthNumber(Tithi.KrishnaPratipada), 16);
-  assert.equal(tithiMonthNumber(Tithi.Amavasya), 30);
+  assert.equal(tithiMonthNumber(catalogue.Tithi.ShuklaPratipada), 1);
+  assert.equal(tithiMonthNumber(catalogue.Tithi.Purnima), 15);
+  assert.equal(tithiMonthNumber(catalogue.Tithi.KrishnaPratipada), 16);
+  assert.equal(tithiMonthNumber(catalogue.Tithi.Amavasya), 30);
   assert.throws(() => tithiMonthNumber('tithi.NO_SUCH'), TypeError);
 });
 

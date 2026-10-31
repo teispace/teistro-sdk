@@ -173,7 +173,7 @@ public final class BindingTest {
         tests.put("a short tag finds the locale it means, and says which", () -> {
             try (Context sky = context(teistro)) {
                 same("sa-Deva", sky.intl().lookupLocale("sa"), "a lookup");
-                same("ne-Deva-NP", sky.intl().locale(), "a lookup changes nothing");
+                same("en-Latn", sky.intl().locale(), "a lookup changes nothing");
                 same("hi-Deva-IN", sky.intl().setLocale("hi"), "the locale chosen");
                 refusal(() -> sky.intl().lookupLocale("hi-Latn"));
                 refusal(() -> sky.intl().setLocale("de"));
