@@ -109,6 +109,11 @@ path = "src/bin/ranges.rs"
 [dependencies]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
+# Teimeris checked out beside the SDK, as verify's `teimeris` job clones it.
+# A plain checkout is enough: since SR-68 `teimeris-sys` compiles that
+# checkout's own core with no staging step, so a clone, a submodule or a cargo
+# `git` dependency builds. A version dependency waits on publishing, which is
+# held; a consumer pinning by commit uses a `git` dependency with a `rev`.
 teimeris = { path = "../../../../teimeris/bindings/rust/teimeris" }
 teistro = { path = "../../../crates/sdk", optional = true }
 teistro-astro = { path = "../../../crates/astro" }
