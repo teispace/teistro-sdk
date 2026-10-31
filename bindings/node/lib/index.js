@@ -8140,6 +8140,36 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **Anniversaries kept by the tithi over a span of years**, for many
+   * people in one call (`03-design/anniversary-span.md`). The span's days
+   * are founded once, and every person's are read from them. Each day
+   * names the rule that chose it: `dayRule` says whether the tithi was
+   * `KSHAYA` or `VRIDDHI`, the window read, the clause and its source.
+   *
+   * @example
+   * const span = sdk.almanac.anniversaries({
+   *   fromYear: 2026,
+   *   years: 10,
+   *   latitudeDeg: 27.7172,
+   *   longitudeDeg: 85.324,
+   *   altitudeM: 1400,
+   *   utcOffsetSeconds: 20700,
+   *   anniversaries: [
+   *     { key: 'GRANDFATHER', origin: { by: 'LUNAR', month: 'KARTIKA', tithi: 'SHUKLA_DASHAMI' } },
+   *   ],
+   * });
+   * // span.anniversaries[0].observance.day, span.anniversaries[0].dayRule.clause
+   *
+   * @param {object} request an `AnniversariesRequest`: `fromYear`, `years`
+   *   (1 to 100), `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+   *   `utcOffsetSeconds`, `calendar`, and at most 1000 `anniversaries`
+   * @returns {object} the festival answer, its `anniversaries` holding each person's days
+   */
+  anniversaries(request) {
+    return festivalsFrom(run(this, (inner) => inner.almanacAnniversaries(JSON.stringify(request))));
+  }
+
+  /**
    * **The next day a rule or a kind of day falls on** after an instant at
    * a place, with no year asked (`03-design/next-occurrence.md`). The
    * civil day holding the instant counts. A `kind` is `'EKADASHI'`,

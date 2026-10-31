@@ -133,13 +133,13 @@ later. Counting the derives over the layer's own source:
 |---|---|---|
 | `serial` | 6 | 5 |
 | `chart` | 19 | 16 |
-| `panchanga` | 135 | 132 |
+| `panchanga` | 138 | 135 |
 | `vargas` | 11 | 7 |
 | `state` | 12 | 12 |
 | `aspect` | 10 | 8 |
 | `points` | 5 | 5 |
 | `houses` | 5 | 5 |
-| **total** | **203** | **190** |
+| **total** | **206** | **193** |
 
 Each type that serialises without a derived reader, found where its
 derive names `Serialize` and not `Deserialize`, with how it is read
@@ -266,7 +266,7 @@ for, and that is where a fixed count of decimals ran out.
 |---|---|---|
 | the schema can be derived from the documents | falsified | 45 of 174 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
-| the layer's types read back, so a round trip can gate the schema | **holds** | 190 types that serialise also derive `Deserialize` |
+| the layer's types read back, so a round trip can gate the schema | **holds** | 193 types that serialise also derive `Deserialize` |
 | every word a document writes is spelt as a key | **holds** | 0 of the schema's words are not |
 | every number the form writes reads back as the same double | **holds** | 0 of 5570 move under a correct parser |
 | this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5570 |

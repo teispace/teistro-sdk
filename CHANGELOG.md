@@ -27,6 +27,20 @@ day's season is read from its civil date (C930). No other day moves.
 - Hindi and Sanskrit `sdk.calendar` ship as drafts (SR-75), named in `_meta.json`'s new `draft`; a render says `isDraft`, `check-intl` refuses a draft in a strict locale, and the render blob gains a `review` section.
 - `:datetime style=full` writes its time through `long` instead of warning and using the built-in pattern.
 
+**Anniversaries over a span of years, for many people in one call.**
+**Numbers:** no day moves. An anniversary's sealed answer gains `dayRule`, so its digest
+moves; a festival answer holding no anniversary does not.
+- `almanac.anniversaries` answers 1 to 100 years for up to 1,000 people at one place, the
+  span's days founded once (`03-design/anniversary-span.md`). Fifty people over ten years take 717 ms on
+  a Mac in one call and 28.4 s in fifty.
+- Every anniversary day, here and in `festivals`, carries `dayRule`: whether the tithi was
+  `KSHAYA` or `VRIDDHI`, the window read, the clause that chose the day and its source.
+- `AnniversaryKind::Event` keeps any event by the tithi at a stated window, sunrise by
+  default. It is a convention, `anniversary.event`, since no text rules on it (C911).
+- A caller's rules are held to limits, each refused as `LIMIT` by its field: 4,096 rules a
+  request, 128 bytes a key, 32 guards a rule and 16 predicates a guard.
+- `month_of` and `pair` no longer walk the days for each occurrence.
+
 **Festival rules say what they are; India's central holidays ship; Fagu purnima joins.**
 **Numbers:** no day moves. Every shipped pack's `input_hash` moves once, since each
 rule now carries its values.

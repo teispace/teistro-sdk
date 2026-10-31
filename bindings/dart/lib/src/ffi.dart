@@ -1984,10 +1984,6 @@ typedef TsIntlHasNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<f
 typedef TsIntlHasDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>);
 typedef TsIntlInWordsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlInWordsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
-typedef TsIntlTimeNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
-typedef TsIntlTimeDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
-typedef TsIntlDateNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
-typedef TsIntlDateDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlTransliterateNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlTransliterateDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlEntityNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
@@ -2014,8 +2010,8 @@ typedef TsAlmanacDigestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poi
 typedef TsAlmanacDigestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsAlmanacNextNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacNextDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
-typedef TsAlmanacSentencesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
-typedef TsAlmanacSentencesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacAnniversariesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacAnniversariesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalPackNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalPackDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacChangesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2106,8 +2102,6 @@ final class TeistroLibrary {
         ts_intl_locale = library.lookupFunction<TsIntlLocaleNative, TsIntlLocaleDart>('ts_intl_locale'),
         ts_intl_has = library.lookupFunction<TsIntlHasNative, TsIntlHasDart>('ts_intl_has'),
         ts_intl_in_words = library.lookupFunction<TsIntlInWordsNative, TsIntlInWordsDart>('ts_intl_in_words'),
-        ts_intl_time = library.lookupFunction<TsIntlTimeNative, TsIntlTimeDart>('ts_intl_time'),
-        ts_intl_date = library.lookupFunction<TsIntlDateNative, TsIntlDateDart>('ts_intl_date'),
         ts_intl_transliterate = library.lookupFunction<TsIntlTransliterateNative, TsIntlTransliterateDart>('ts_intl_transliterate'),
         ts_intl_entity = library.lookupFunction<TsIntlEntityNative, TsIntlEntityDart>('ts_intl_entity'),
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
@@ -2121,7 +2115,7 @@ final class TeistroLibrary {
         ts_almanac_festival_calendar = library.lookupFunction<TsAlmanacFestivalCalendarNative, TsAlmanacFestivalCalendarDart>('ts_almanac_festival_calendar'),
         ts_almanac_digest = library.lookupFunction<TsAlmanacDigestNative, TsAlmanacDigestDart>('ts_almanac_digest'),
         ts_almanac_next = library.lookupFunction<TsAlmanacNextNative, TsAlmanacNextDart>('ts_almanac_next'),
-        ts_almanac_sentences = library.lookupFunction<TsAlmanacSentencesNative, TsAlmanacSentencesDart>('ts_almanac_sentences'),
+        ts_almanac_anniversaries = library.lookupFunction<TsAlmanacAnniversariesNative, TsAlmanacAnniversariesDart>('ts_almanac_anniversaries'),
         ts_almanac_festival_pack = library.lookupFunction<TsAlmanacFestivalPackNative, TsAlmanacFestivalPackDart>('ts_almanac_festival_pack'),
         ts_almanac_changes = library.lookupFunction<TsAlmanacChangesNative, TsAlmanacChangesDart>('ts_almanac_changes'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
@@ -2401,31 +2395,6 @@ final class TeistroLibrary {
   /// lack, or a currency the locale names no units for is `UNSUPPORTED`.
   final TsIntlInWordsDart ts_intl_in_words;
 
-  /// A time of day as text and parts, through the locale's pattern and its
-  /// parts of the day (`03-design/intl-engine-and-packs.md`), answered as
-  /// canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
-  /// isDraft, warnings}`, each part `{kind, text}` and the parts joined being
-  /// `text`.
-  ///
-  /// `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
-  /// (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
-  /// out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
-  /// of the time out of range is `INVALID_ARG`, named under `time`; a
-  /// locale not loaded is `UNSUPPORTED`.
-  final TsIntlTimeDart ts_intl_time;
-
-  /// A date as text and parts, in its own calendar, through the locale's
-  /// pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
-  /// answers.
-  ///
-  /// `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
-  /// "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
-  /// context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
-  /// not read or a date its calendar does not hold is `INVALID_ARG`, named
-  /// under `date`; a locale not loaded, a calendar not shipped or one with no
-  /// pattern is `UNSUPPORTED`.
-  final TsIntlDateDart ts_intl_date;
-
   /// Text from one script into another (`deva`, `iast`), as a string lent
   /// until the next call on the context. A pair the build has no table for
   /// is `UNSUPPORTED` naming both scripts; anything the table does not know
@@ -2675,20 +2644,27 @@ final class TeistroLibrary {
   /// a context without an ephemeris `CAPABILITY`.
   final TsAlmanacNextDart ts_almanac_next;
 
-  /// One day's facts as short declarative sentences
-  /// (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
-  /// value is `{locale, draft, sentences, withheld}`, each sentence `{key,
-  /// params, text}`, `draft` true while the locale's templates wait for a
-  /// native reviewer (Q42), and `withheld` the facts a polar day holds
-  /// elsewhere.
+  /// Anniversaries kept by the tithi over a span of years, for many people
+  /// in one call (`03-design/anniversary-span.md`), as canonical JSON
+  /// `{value, provenance}`: `value` is a festival answer whose
+  /// `anniversaries` hold each person's days in the order their tithis
+  /// begin, each `{key, count, kind, origin, monthBy, dayRule, observance}`
+  /// as a festival request's (`festivals_json`), `dayRule` being `{tithi, at,
+  /// clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the
+  /// window read, the clause that chose the day and where it is stated.
+  /// Occurrences no day could judge are in `unjudged`.
   ///
-  /// `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
-  /// altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
-  /// place or offset out of range, is `INVALID_ARG`, named under
-  /// `sentences`; a locale not loaded, or one without the templates, is
-  /// `UNSUPPORTED` on `locale`; a context without an ephemeris is
-  /// `CAPABILITY`; otherwise as the day.
-  final TsAlmanacSentencesDart ts_almanac_sentences;
+  /// `request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg",
+  /// "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`:
+  /// `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when
+  /// left out, the span running from month 1, day 1 of the first year to the
+  /// day before month 1 of the year after the last; `altitudeM` optional;
+  /// `anniversaries` at most 1000, each as a festival request writes one. A
+  /// key it does not read, a place or offset out of range, an anniversary
+  /// its check refuses or a key given twice is `INVALID_ARG`, named under
+  /// `anniversaries`; a `years` out of range `OUT_OF_RANGE`; too many
+  /// anniversaries `LIMIT`; a context without an ephemeris `CAPABILITY`.
+  final TsAlmanacAnniversariesDart ts_almanac_anniversaries;
 
   /// Every rule of a festival pack with what it is
   /// (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
@@ -6217,49 +6193,6 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
-  /// A time of day as text and parts, through the locale's pattern and its
-  /// parts of the day (`03-design/intl-engine-and-packs.md`), answered as
-  /// canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
-  /// isDraft, warnings}`, each part `{kind, text}` and the parts joined being
-  /// `text`.
-  ///
-  /// `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
-  /// (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
-  /// out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
-  /// of the time out of range is `INVALID_ARG`, named under `time`; a
-  /// locale not loaded is `UNSUPPORTED`.
-  String intlTime(String requestJson) {
-    _alive();
-    return pkg_ffi.using((arena) {
-        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
-        final outJson = arena<StringStruct>();
-        final status = _lib.ts_intl_time(_handle, rawrequestJson, outJson);
-        if (status != 0) _fail(status);
-        return _takeString(_lib, outJson);
-    });
-  }
-
-  /// A date as text and parts, in its own calendar, through the locale's
-  /// pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
-  /// answers.
-  ///
-  /// `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
-  /// "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
-  /// context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
-  /// not read or a date its calendar does not hold is `INVALID_ARG`, named
-  /// under `date`; a locale not loaded, a calendar not shipped or one with no
-  /// pattern is `UNSUPPORTED`.
-  String intlDate(String requestJson) {
-    _alive();
-    return pkg_ffi.using((arena) {
-        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
-        final outJson = arena<StringStruct>();
-        final status = _lib.ts_intl_date(_handle, rawrequestJson, outJson);
-        if (status != 0) _fail(status);
-        return _takeString(_lib, outJson);
-    });
-  }
-
   /// Text from one script into another (`deva`, `iast`), as a string lent
   /// until the next call on the context. A pair the build has no table for
   /// is `UNSUPPORTED` naming both scripts; anything the table does not know
@@ -6633,25 +6566,32 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
-  /// One day's facts as short declarative sentences
-  /// (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
-  /// value is `{locale, draft, sentences, withheld}`, each sentence `{key,
-  /// params, text}`, `draft` true while the locale's templates wait for a
-  /// native reviewer (Q42), and `withheld` the facts a polar day holds
-  /// elsewhere.
+  /// Anniversaries kept by the tithi over a span of years, for many people
+  /// in one call (`03-design/anniversary-span.md`), as canonical JSON
+  /// `{value, provenance}`: `value` is a festival answer whose
+  /// `anniversaries` hold each person's days in the order their tithis
+  /// begin, each `{key, count, kind, origin, monthBy, dayRule, observance}`
+  /// as a festival request's (`festivals_json`), `dayRule` being `{tithi, at,
+  /// clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the
+  /// window read, the clause that chose the day and where it is stated.
+  /// Occurrences no day could judge are in `unjudged`.
   ///
-  /// `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
-  /// altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
-  /// place or offset out of range, is `INVALID_ARG`, named under
-  /// `sentences`; a locale not loaded, or one without the templates, is
-  /// `UNSUPPORTED` on `locale`; a context without an ephemeris is
-  /// `CAPABILITY`; otherwise as the day.
-  String almanacSentences(String requestJson) {
+  /// `request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg",
+  /// "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`:
+  /// `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when
+  /// left out, the span running from month 1, day 1 of the first year to the
+  /// day before month 1 of the year after the last; `altitudeM` optional;
+  /// `anniversaries` at most 1000, each as a festival request writes one. A
+  /// key it does not read, a place or offset out of range, an anniversary
+  /// its check refuses or a key given twice is `INVALID_ARG`, named under
+  /// `anniversaries`; a `years` out of range `OUT_OF_RANGE`; too many
+  /// anniversaries `LIMIT`; a context without an ephemeris `CAPABILITY`.
+  String almanacAnniversaries(String requestJson) {
     _alive();
     return pkg_ffi.using((arena) {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
-        final status = _lib.ts_almanac_sentences(_handle, rawrequestJson, outJson);
+        final status = _lib.ts_almanac_anniversaries(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

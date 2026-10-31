@@ -22,7 +22,11 @@ public enum AnniversaryKind implements RequestJson {
     /**
      * A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in the ordinary month (DS, C671).
      */
-    JANMA_TITHI("JANMA_TITHI");
+    JANMA_TITHI("JANMA_TITHI"),
+    /**
+     * Any other event a family keeps by the tithi, a wedding or a founding: the window the request states, sunrise by default, judged by share, in the ordinary month. No text rules on it, so it ships as a convention (`anniversary.event`, C911), read from the janma tithi's.
+     */
+    EVENT("EVENT");
 
     private final String key;
 

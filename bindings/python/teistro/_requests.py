@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     import teistro as _layer
 
 __all__ = [
+    "AnniversariesRequest",
     "AshauchQuery",
     "ChangesRequest",
     "AlmanacDaysRequest",
@@ -49,6 +50,7 @@ __all__ = [
     "CivilAsked",
     "ScaleRequest",
     "ResolveAsked",
+    "Anniversary",
     "AshauchRequest",
     "AshauchTable",
     "AshauchTradition",
@@ -131,6 +133,23 @@ __all__ = [
     "StudyKind",
     "ResearchSubject",
     "CivilTime",
+    "FirstYearAdhika",
+    "InSamsarpa",
+    "JanmaOptions",
+    "AnniversaryKind",
+    "Origin",
+    "OriginInstant",
+    "OriginDate",
+    "OriginLunar",
+    "Window",
+    "WindowSunrise",
+    "WindowSunset",
+    "WindowPart",
+    "WindowPradosha",
+    "WindowNishitha",
+    "WindowNightMuhurta",
+    "WindowDayMuhurta",
+    "WindowMoonrise",
     "AshauchRunning",
     "AshauchEvent",
     "AshauchEventBirth",
@@ -155,18 +174,8 @@ __all__ = [
     "MuhurtaRequestRules",
     "FeedForm",
     "FirstAbdika",
-    "FirstYearAdhika",
     "SapindanaAt",
     "UnaDay",
-    "Window",
-    "WindowSunrise",
-    "WindowSunset",
-    "WindowPart",
-    "WindowPradosha",
-    "WindowNishitha",
-    "WindowNightMuhurta",
-    "WindowDayMuhurta",
-    "WindowMoonrise",
     "PakshiBird",
     "PakshiBirthRule",
     "PakshiClock",
@@ -244,6 +253,9 @@ __all__ = [
     "BookName",
     "NameClause",
     "NumerologyRules",
+    "CalendarDay",
+    "TithiHalf",
+    "DayFifth",
     "AshauchKind",
     "AshauchLength",
     "AshauchLengthBath",
@@ -271,7 +283,6 @@ __all__ = [
     "CriterionLongitude",
     "CriterionArcusVisionis",
     "ActivityRules",
-    "DayFifth",
     "BodyOrb",
     "AspectOrb",
     "Terms",
@@ -509,13 +520,13 @@ __all__ = [
     "Masters",
     "NameReduction",
     "NonLatin",
+    "EraNumber",
     "Upanayana",
     "Interval",
     "FestivalMeta",
     "SubjectTo",
     "SaitRule",
     "EkadashiRule",
-    "Anniversary",
     "FollowingRule",
     "DatedRule",
     "FestivalRule",
@@ -599,13 +610,6 @@ __all__ = [
     "ParanaRule",
     "EkadashiTable",
     "EkadashiVedha",
-    "InSamsarpa",
-    "JanmaOptions",
-    "AnniversaryKind",
-    "Origin",
-    "OriginInstant",
-    "OriginDate",
-    "OriginLunar",
     "DatedRuleCivilDate",
     "DatedRuleCivilWeekday",
     "DatedRuleEaster",
@@ -688,7 +692,6 @@ __all__ = [
     "VyanjuliPast",
     "NakshatraBar",
     "EkadashiKinds",
-    "TithiHalf",
     "SkippedDay",
     "Computus",
     "Predicate",
@@ -707,6 +710,29 @@ __all__ = [
     "DayEdge",
     "Tara",
 ]
+
+
+class AnniversariesRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+
+    anniversaries: Required[Sequence[Anniversary]]
+    """Up to 1000, each key once."""
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+
+    fromYear: Required[int]
+    """The first year, in `calendar`: the span begins on its month 1, day 1."""
+
+    latitudeDeg: Required[float]
+
+    longitudeDeg: Required[float]
+
+    utcOffsetSeconds: Required[int]
+
+    years: Required[int]
+    """1 to 100: the span ends the day before month 1 of the year after."""
 
 
 class AshauchQuery(TypedDict, total=False):
@@ -1382,6 +1408,31 @@ class ResolveAsked(TypedDict, total=False):
     time: Optional[CivilTime]
 
     zone: Required[ZoneSpec]
+
+
+class Anniversary(TypedDict, total=False):
+    """An anniversary a request asks the days of."""
+
+    firstYearAdhika: FirstYearAdhika
+    """The first anniversary's month when it is doubled."""
+
+    inSamsarpa: InSamsarpa
+    """Whether a shraddha of an ordinary month is kept in the samsarpa of its name too; a janma tithi never is."""
+
+    janma: JanmaOptions
+    """A janma tithi's options."""
+
+    key: Required[str]
+    """The consumer's own key, `"GRANDFATHER"`."""
+
+    kind: AnniversaryKind
+    """What it is."""
+
+    origin: Required[Origin]
+    """Where it is counted from."""
+
+    window: Optional[Window]
+    """The rite's time, in place of the kind's (`AnniversaryKind::window`): `{"window": "PART", "part": "MADHYAHNA"}` is DS's madhyahna, the 7th to 9th muhurtas (C662)."""
 
 
 class AshauchRequest(TypedDict, total=False):
@@ -2525,6 +2576,152 @@ class CivilTime(TypedDict, total=False):
     second: Required[int]
 
 
+FirstYearAdhika: TypeAlias = Literal['ADHIKA', 'NIJA']
+"""Which month the first anniversary takes when its month is doubled (C666).
+
+`ADHIKA`: The adhika, the thirteenth month: *Dharmasindhu*, the *Nirnayasindhu* (pp. 25–26) and Kane IV p. 546.
+`NIJA`: The ordinary month: Dhakal's note for Nepal's barkhi (NS p. 25 n. 14), which counts the eleventh day's rite as the first abdika.
+"""
+
+
+InSamsarpa: TypeAlias = Literal['ALSO', 'NIJA']
+"""Whether an ordinary month's anniversary is kept in the *samsarpa* too, the adhika month of its name before a kshaya month (C669).
+
+`ALSO`: In the samsarpa and the nija month both: *Dharmasindhu*'s own inference in its kshaya example ("iti bhāti"), and Dhakal's instruction for Nepal (NS, the introduction's malamasa section).
+`NIJA`: In the nija month alone, as in any other year with an adhika month.
+"""
+
+
+class JanmaOptions(TypedDict, total=False):
+    """*Dharmasindhu*'s two options for a janma tithi, both off by default (C670)."""
+
+    nakshatraTie: bool
+    """When both days' sunrises hold the tithi, the day whose sunrise holds the birth nakshatra."""
+
+    twoMuhurtaFloor: bool
+    """The sunrise tithi only when it lasts two muhurtas past sunrise, else the day before."""
+
+
+AnniversaryKind: TypeAlias = Literal['SHRADDHA', 'EKODDISHTA', 'PARVANA', 'JANMA_TITHI', 'EVENT']
+"""What an anniversary is, which sets the rite's time and how the day is chosen.
+
+`SHRADDHA`: A death's yearly shraddha, an ekoddishta or a parvana by its origin (`OriginFound::is_parvana`, C665). An answer names which.
+`EKODDISHTA`: The ekoddishta, for one person: kutapa to rauhina, the daylight's 8th and 9th muhurtas (NS p. 987, DS p. 265, C662).
+`PARVANA`: The parvana, for the ancestors together: the aparahna (DS p. 266).
+`JANMA_TITHI`: A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in the ordinary month (DS, C671).
+`EVENT`: Any other event a family keeps by the tithi, a wedding or a founding: the window the request states, sunrise by default, judged by share, in the ordinary month. No text rules on it, so it ships as a convention (`anniversary.event`, C911), read from the janma tithi's.
+"""
+
+
+Origin: TypeAlias = "Union[OriginInstant, OriginDate, OriginLunar]"
+"""Where an anniversary is counted from."""
+
+
+class OriginInstant(TypedDict, total=False):
+    """The moment of the death or the birth: the tithi running then, as the Naradiya has it for a death and a parana (NS p. 982, C661). A death before sunrise takes the tithi of that hour, not the civil day's sunrise tithi."""
+
+    by: Required[Literal['INSTANT']]
+
+    at: Required[float]
+    """The moment."""
+
+
+class OriginDate(TypedDict, total=False):
+    """Only the civil date: its sunrise tithi, marked as assumed, with every tithi the date held beside it (C661)."""
+
+    by: Required[Literal['DATE']]
+
+    date: Required[CalendarDay]
+    """The date, as a request writes it."""
+
+
+class OriginLunar(TypedDict, total=False):
+    """The lunar date itself, as a family keeps it."""
+
+    by: Required[Literal['LUNAR']]
+
+    adhika: bool
+    """Whether the month was adhika."""
+
+    at: Optional[float]
+    """The moment, if known, which only counts the years: without it no anniversary has a number, and the first one's adhika policy (C666) cannot apply."""
+
+    half: TithiHalf
+    """The half of the tithi, which names the month in a kshaya lunation (C668); the month given is taken as named already."""
+
+    month: Required[Union[_catalogue.Masa, str]]
+    """The month, amanta."""
+
+    tithi: Required[Union[_catalogue.Tithi, str]]
+    """The tithi."""
+
+
+Window: TypeAlias = "Union[WindowSunrise, WindowSunset, WindowPart, WindowPradosha, WindowNishitha, WindowNightMuhurta, WindowDayMuhurta, WindowMoonrise]"
+"""The time of a rite, on a sunrise day."""
+
+
+class WindowSunrise(TypedDict, total=False):
+    """The instant of sunrise: the tithi a day is named for."""
+
+    window: Required[Literal['SUNRISE']]
+
+
+class WindowSunset(TypedDict, total=False):
+    """The instant of sunset, which begins the evening: Nepal's monthly full-moon fast takes the day whose sunset the full moon holds (`festival-rules.md` §9.6, C200)."""
+
+    window: Required[Literal['SUNSET']]
+
+
+class WindowPart(TypedDict, total=False):
+    """A fifth of the daylight."""
+
+    window: Required[Literal['PART']]
+
+    part: Required[DayFifth]
+    """Which fifth."""
+
+
+class WindowPradosha(TypedDict, total=False):
+    """Three muhurtas after sunset, a muhurta a fifteenth of the night (crux C168)."""
+
+    window: Required[Literal['PRADOSHA']]
+
+
+class WindowNishitha(TypedDict, total=False):
+    """The middle of the night, an instant (C169: p. 49 counts a tithi present there if "even a kala" of it stands at the end of the night's first half)."""
+
+    window: Required[Literal['NISHITHA']]
+
+
+class WindowNightMuhurta(TypedDict, total=False):
+    """A muhurta of the night, a fifteenth of it counted from sunset, 1 to 15: p. 90 calls the eighth niśītha for Shivaratri and weighs a tithi holding it wholly against one holding part of it."""
+
+    window: Required[Literal['NIGHT_MUHURTA']]
+
+    muhurta: Required[int]
+    """Which muhurta, 1 for the first after sunset."""
+
+
+# Muhurtas of the daylight, a fifteenth of it counted from sunrise, `from` to `to` inclusive, 1 to 15: *Dharmasindhu* p. 265 names the 8th kutapa and the 9th rauhina, and purvahna is the first six, the daylight's first two fifths (C602). A fifth is three of them.
+WindowDayMuhurta = TypedDict(
+    "WindowDayMuhurta",
+    {
+        "window": "Required[Literal['DAY_MUHURTA']]",
+        # The first, 1 for the muhurta after sunrise.
+        "from": "Required[int]",
+        # The last, at least `from`.
+        "to": "Required[int]",
+    },
+    total=False,
+)
+
+
+class WindowMoonrise(TypedDict, total=False):
+    """The instant of the first moonrise after the day's sunrise and before the next: *Dharmasindhu* p. 9 keeps the Sankashta chaturthi on the tithi at moonrise (चन्द्रोदयव्यापिनी). A day the Moon does not rise on leaves the occurrence unjudged."""
+
+    window: Required[Literal['MOONRISE']]
+
+
 class AshauchRunning(TypedDict, total=False):
     """A period already running, as the overlap rules read it: the parts of an earlier `Ashauch` they need."""
 
@@ -2842,14 +3039,6 @@ FirstAbdika: TypeAlias = Literal['SECOND_YEAR', 'ELEVENTH_DAY']
 """
 
 
-FirstYearAdhika: TypeAlias = Literal['ADHIKA', 'NIJA']
-"""Which month the first anniversary takes when its month is doubled (C666).
-
-`ADHIKA`: The adhika, the thirteenth month: *Dharmasindhu*, the *Nirnayasindhu* (pp. 25–26) and Kane IV p. 546.
-`NIJA`: The ordinary month: Dhakal's note for Nepal's barkhi (NS p. 25 n. 14), which counts the eleventh day's rite as the first abdika.
-"""
-
-
 SapindanaAt: TypeAlias = Literal['ELEVENTH_DAY', 'TWELFTH_DAY', 'TRAIPAKSHIKA', 'YEAR_END']
 """The day the sapindana is kept on (DS p. 331).
 
@@ -2868,72 +3057,6 @@ UnaDay: TypeAlias = Literal['DAY_BEFORE', 'ONE_TITHI', 'TWO_TITHIS', 'THREE_TITH
 `TWO_TITHIS`: The tithi two short.
 `THREE_TITHIS`: The tithi three short.
 """
-
-
-Window: TypeAlias = "Union[WindowSunrise, WindowSunset, WindowPart, WindowPradosha, WindowNishitha, WindowNightMuhurta, WindowDayMuhurta, WindowMoonrise]"
-"""The time of a rite, on a sunrise day."""
-
-
-class WindowSunrise(TypedDict, total=False):
-    """The instant of sunrise: the tithi a day is named for."""
-
-    window: Required[Literal['SUNRISE']]
-
-
-class WindowSunset(TypedDict, total=False):
-    """The instant of sunset, which begins the evening: Nepal's monthly full-moon fast takes the day whose sunset the full moon holds (`festival-rules.md` §9.6, C200)."""
-
-    window: Required[Literal['SUNSET']]
-
-
-class WindowPart(TypedDict, total=False):
-    """A fifth of the daylight."""
-
-    window: Required[Literal['PART']]
-
-    part: Required[DayFifth]
-    """Which fifth."""
-
-
-class WindowPradosha(TypedDict, total=False):
-    """Three muhurtas after sunset, a muhurta a fifteenth of the night (crux C168)."""
-
-    window: Required[Literal['PRADOSHA']]
-
-
-class WindowNishitha(TypedDict, total=False):
-    """The middle of the night, an instant (C169: p. 49 counts a tithi present there if "even a kala" of it stands at the end of the night's first half)."""
-
-    window: Required[Literal['NISHITHA']]
-
-
-class WindowNightMuhurta(TypedDict, total=False):
-    """A muhurta of the night, a fifteenth of it counted from sunset, 1 to 15: p. 90 calls the eighth niśītha for Shivaratri and weighs a tithi holding it wholly against one holding part of it."""
-
-    window: Required[Literal['NIGHT_MUHURTA']]
-
-    muhurta: Required[int]
-    """Which muhurta, 1 for the first after sunset."""
-
-
-# Muhurtas of the daylight, a fifteenth of it counted from sunrise, `from` to `to` inclusive, 1 to 15: *Dharmasindhu* p. 265 names the 8th kutapa and the 9th rauhina, and purvahna is the first six, the daylight's first two fifths (C602). A fifth is three of them.
-WindowDayMuhurta = TypedDict(
-    "WindowDayMuhurta",
-    {
-        "window": "Required[Literal['DAY_MUHURTA']]",
-        # The first, 1 for the muhurta after sunrise.
-        "from": "Required[int]",
-        # The last, at least `from`.
-        "to": "Required[int]",
-    },
-    total=False,
-)
-
-
-class WindowMoonrise(TypedDict, total=False):
-    """The instant of the first moonrise after the day's sunrise and before the next: *Dharmasindhu* p. 9 keeps the Sankashta chaturthi on the tithi at moonrise (चन्द्रोदयव्यापिनी). A day the Moon does not rise on leaves the occurrence unjudged."""
-
-    window: Required[Literal['MOONRISE']]
 
 
 PakshiBird: TypeAlias = Literal['VULTURE', 'OWL', 'CROW', 'COCK', 'PEACOCK']
@@ -3888,6 +4011,47 @@ class NumerologyRules(TypedDict, total=False):
     """A character outside A to Z."""
 
 
+class CalendarDay(TypedDict, total=False):
+    """A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say."""
+
+    calendar: Required[Union[_catalogue.Calendar, str]]
+    """Its calendar."""
+
+    day: Required[int]
+    """The day, 1-based."""
+
+    era: Optional[EraNumber]
+    """The era, for a calendar that counts several."""
+
+    leap: Optional[Union[_catalogue.Leap, Literal['MONTH', 'DAY', 'MONTH_AND_DAY']]]
+    """A leap month or day, for a calendar that marks one."""
+
+    month: Required[int]
+    """The month, 1-based."""
+
+    year: Required[int]
+    """The astronomical year."""
+
+
+TithiHalf: TypeAlias = Literal['FIRST', 'SECOND']
+"""Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
+
+`FIRST`: The first.
+`SECOND`: The second.
+"""
+
+
+DayFifth: TypeAlias = Literal['PRATAH', 'SANGAVA', 'MADHYAHNA', 'APARAHNA', 'SAYAHNA']
+"""A fifth of the daylight (*Dharmasindhu*, p. 6). Its schema name is `DayFifth`, the chart's daylight or night being the boundary's `DayPart`.
+
+`PRATAH`: The first fifth.
+`SANGAVA`: The second.
+`MADHYAHNA`: The third: midday.
+`APARAHNA`: The fourth: the afternoon.
+`SAYAHNA`: The last.
+"""
+
+
 AshauchKind: TypeAlias = Literal['BIRTH', 'DEATH']
 """Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
 
@@ -4167,17 +4331,6 @@ class ActivityRules(TypedDict, total=False):
 
     unwanted: Sequence[MuhurtaUnwanted]
     """The grahas the rite wants out of houses. Empty where the rules spelt out leave it out."""
-
-
-DayFifth: TypeAlias = Literal['PRATAH', 'SANGAVA', 'MADHYAHNA', 'APARAHNA', 'SAYAHNA']
-"""A fifth of the daylight (*Dharmasindhu*, p. 6). Its schema name is `DayFifth`, the chart's daylight or night being the boundary's `DayPart`.
-
-`PRATAH`: The first fifth.
-`SANGAVA`: The second.
-`MADHYAHNA`: The third: midday.
-`APARAHNA`: The fourth: the afternoon.
-`SAYAHNA`: The last.
-"""
 
 
 class BodyOrb(TypedDict, total=False):
@@ -7025,6 +7178,16 @@ NonLatin: TypeAlias = Literal['REFUSE', 'SKIP']
 """
 
 
+class EraNumber(TypedDict, total=False):
+    """A year in an era, for presentation."""
+
+    era: Required[Union[_catalogue.Era, str]]
+    """The era."""
+
+    year: Required[int]
+    """The year in it, 1-based."""
+
+
 Upanayana: TypeAlias = Literal['DONE', 'NOT_DONE', 'NOT_PERFORMED']
 """Whether the deceased had the upanayana.
 
@@ -7115,31 +7278,6 @@ class EkadashiRule(TypedDict, total=False):
 
     vedha: Required[EkadashiVedha]
     """Where the 10th pierces."""
-
-
-class Anniversary(TypedDict, total=False):
-    """An anniversary a request asks the days of."""
-
-    firstYearAdhika: FirstYearAdhika
-    """The first anniversary's month when it is doubled."""
-
-    inSamsarpa: InSamsarpa
-    """Whether a shraddha of an ordinary month is kept in the samsarpa of its name too; a janma tithi never is."""
-
-    janma: JanmaOptions
-    """A janma tithi's options."""
-
-    key: Required[str]
-    """The consumer's own key, `"GRANDFATHER"`."""
-
-    kind: AnniversaryKind
-    """What it is."""
-
-    origin: Required[Origin]
-    """Where it is counted from."""
-
-    window: Optional[Window]
-    """The rite's time, in place of the kind's (`AnniversaryKind::window`): `{"window": "PART", "part": "MADHYAHNA"}` is DS's madhyahna, the 7th to 9th muhurtas (C662)."""
 
 
 class FollowingRule(TypedDict, total=False):
@@ -8025,77 +8163,6 @@ EkadashiVedha: TypeAlias = Literal['ARUNODAYA', 'SUNRISE']
 """
 
 
-InSamsarpa: TypeAlias = Literal['ALSO', 'NIJA']
-"""Whether an ordinary month's anniversary is kept in the *samsarpa* too, the adhika month of its name before a kshaya month (C669).
-
-`ALSO`: In the samsarpa and the nija month both: *Dharmasindhu*'s own inference in its kshaya example ("iti bhāti"), and Dhakal's instruction for Nepal (NS, the introduction's malamasa section).
-`NIJA`: In the nija month alone, as in any other year with an adhika month.
-"""
-
-
-class JanmaOptions(TypedDict, total=False):
-    """*Dharmasindhu*'s two options for a janma tithi, both off by default (C670)."""
-
-    nakshatraTie: bool
-    """When both days' sunrises hold the tithi, the day whose sunrise holds the birth nakshatra."""
-
-    twoMuhurtaFloor: bool
-    """The sunrise tithi only when it lasts two muhurtas past sunrise, else the day before."""
-
-
-AnniversaryKind: TypeAlias = Literal['SHRADDHA', 'EKODDISHTA', 'PARVANA', 'JANMA_TITHI']
-"""What an anniversary is, which sets the rite's time and how the day is chosen.
-
-`SHRADDHA`: A death's yearly shraddha, an ekoddishta or a parvana by its origin (`OriginFound::is_parvana`, C665). An answer names which.
-`EKODDISHTA`: The ekoddishta, for one person: kutapa to rauhina, the daylight's 8th and 9th muhurtas (NS p. 987, DS p. 265, C662).
-`PARVANA`: The parvana, for the ancestors together: the aparahna (DS p. 266).
-`JANMA_TITHI`: A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in the ordinary month (DS, C671).
-"""
-
-
-Origin: TypeAlias = "Union[OriginInstant, OriginDate, OriginLunar]"
-"""Where an anniversary is counted from."""
-
-
-class OriginInstant(TypedDict, total=False):
-    """The moment of the death or the birth: the tithi running then, as the Naradiya has it for a death and a parana (NS p. 982, C661). A death before sunrise takes the tithi of that hour, not the civil day's sunrise tithi."""
-
-    by: Required[Literal['INSTANT']]
-
-    at: Required[float]
-    """The moment."""
-
-
-class OriginDate(TypedDict, total=False):
-    """Only the civil date: its sunrise tithi, marked as assumed, with every tithi the date held beside it (C661)."""
-
-    by: Required[Literal['DATE']]
-
-    date: Required[CalendarDay]
-    """The date, as a request writes it."""
-
-
-class OriginLunar(TypedDict, total=False):
-    """The lunar date itself, as a family keeps it."""
-
-    by: Required[Literal['LUNAR']]
-
-    adhika: bool
-    """Whether the month was adhika."""
-
-    at: Optional[float]
-    """The moment, if known, which only counts the years: without it no anniversary has a number, and the first one's adhika policy (C666) cannot apply."""
-
-    half: TithiHalf
-    """The half of the tithi, which names the month in a kshaya lunation (C668); the month given is taken as named already."""
-
-    month: Required[Union[_catalogue.Masa, str]]
-    """The month, amanta."""
-
-    tithi: Required[Union[_catalogue.Tithi, str]]
-    """The tithi."""
-
-
 class DatedRuleCivilDate(TypedDict, total=False):
     """A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
 
@@ -8913,14 +8980,6 @@ class EkadashiKinds(TypedDict, total=False):
 
     twelfth: Required[FestivalWhich]
     """The 12th alone in excess."""
-
-
-TithiHalf: TypeAlias = Literal['FIRST', 'SECOND']
-"""Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
-
-`FIRST`: The first.
-`SECOND`: The second.
-"""
 
 
 SkippedDay: TypeAlias = Literal['BEFORE', 'AFTER']

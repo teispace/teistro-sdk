@@ -1888,6 +1888,78 @@ pub unsafe extern "C" fn ts_almanac_sentences(
     })
 }
 
+/// Anniversaries kept by the tithi over a span of years, for many people
+/// in one call (`03-design/anniversary-span.md`), as canonical JSON
+/// `{value, provenance}`: `value` is a festival answer whose
+/// `anniversaries` hold each person's days in the order their tithis
+/// begin, each `{key, count, kind, origin, monthBy, dayRule, observance}`
+/// as a festival request's (`festivals_json`), `dayRule` being `{tithi, at,
+/// clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the
+/// window read, the clause that chose the day and where it is stated.
+/// Occurrences no day could judge are in `unjudged`.
+///
+/// `request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg",
+/// "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`:
+/// `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when
+/// left out, the span running from month 1, day 1 of the first year to the
+/// day before month 1 of the year after the last; `altitudeM` optional;
+/// `anniversaries` at most 1000, each as a festival request writes one. A
+/// key it does not read, a place or offset out of range, an anniversary
+/// its check refuses or a key given twice is `INVALID_ARG`, named under
+/// `anniversaries`; a `years` out of range `OUT_OF_RANGE`; too many
+/// anniversaries `LIMIT`; a context without an ephemeris `CAPABILITY`.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, teistro::Ephemeris::SuryaSiddhanta)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_anniversaries;
+/// use teistro_ffi::string::TsString;
+///
+/// // A grandfather's barkhi, Kartika's bright 10th, over two years.
+/// let asked = c"{\"fromYear\": 2026, \"years\": 2, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700, \"anniversaries\": [{\"key\": \"GRANDFATHER\", \"origin\": {\"by\": \"LUNAR\", \"month\": \"KARTIKA\", \"tithi\": \"SHUKLA_DASHAMI\"}}]}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// assert_eq!(unsafe { ts_almanac_anniversaries(&raw const ctx, asked.as_ptr(), &raw mut out) }, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// let days = answer["value"]["anniversaries"].as_array().ok_or("a list")?;
+/// assert_eq!(days.len(), 2);
+/// assert_eq!(days[0]["key"], "GRANDFATHER");
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_almanac_anniversaries(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::AnniversariesRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().anniversaries_in_full(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 /// Every rule of a festival pack with what it is
 /// (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
 /// each row `{key, form, source, meta, unsourced}`, `form` how its day is

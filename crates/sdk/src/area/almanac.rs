@@ -12,7 +12,7 @@ use teistro_calendar::FixedDay;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::Calendar;
-use teistro_core::envelope::{Convention, Envelope, Hash, content_hash};
+use teistro_core::envelope::{Convention, Envelope, Hash, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
@@ -29,8 +29,9 @@ use teistro_panchanga::ashauch::{Ashauch, AshauchRequest, AshauchTable};
 #[cfg(feature = "signed-packs")]
 use teistro_panchanga::festival::PublishedSet;
 use teistro_panchanga::festival::{
-    DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, InSamsarpa, Observances, Origin,
-    anniversaries, apply_published, dated, ekadashis, following, observances,
+    Anniversary, AnniversaryKind, DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika,
+    InSamsarpa, Observances, Origin, anniversaries, apply_published, dated, ekadashis, following,
+    observances,
 };
 use teistro_panchanga::first_year::{FirstYear, FirstYearSchedule};
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
@@ -76,6 +77,7 @@ impl core::fmt::Debug for AlmanacArea<'_> {
     }
 }
 
+mod anniversaries;
 mod changes;
 mod day_plan;
 mod digest;
@@ -89,6 +91,9 @@ mod reasons;
 mod sait;
 mod sentences;
 
+#[cfg(feature = "schema")]
+pub(crate) use anniversaries::AnniversariesAsked;
+pub use anniversaries::{AnniversariesRequest, MOST_ANNIVERSARIES, MOST_YEARS};
 #[cfg(feature = "schema")]
 pub(crate) use changes::ChangesAsked;
 pub use changes::{ChangesRequest, DayClock};
@@ -412,18 +417,18 @@ impl<'a> AlmanacArea<'a> {
     }
 
     /// Each anniversary's days over the viewed days, its origin found at
-    /// the place and, for a date, in the date's own calendar
-    /// (`03-design/shraddha.md` §3.1).
+    /// the place and, for a date, in the date's own calendar, refused
+    /// under `field[i].origin` (`03-design/shraddha.md` §3.1).
     fn kept_anniversaries(
         self,
         calendar: Calendar,
         offset: UtcOffset,
         place: &Place,
-        request: &FestivalRequest,
+        (list, field): (&[Anniversary], &str),
         viewed: &[FestivalDay],
     ) -> Result<Observances, Error> {
-        let mut asked = Vec::with_capacity(request.anniversaries().len());
-        for (index, anniversary) in request.anniversaries().iter().enumerate() {
+        let mut asked = Vec::with_capacity(list.len());
+        for (index, anniversary) in list.iter().enumerate() {
             let calendar = match &anniversary.origin {
                 Origin::Date { date } => date.calendar,
                 _ => calendar,
@@ -432,7 +437,7 @@ impl<'a> AlmanacArea<'a> {
                 .with_almanac(calendar, offset, |almanac| {
                     almanac.origin(&anniversary.origin, place)
                 })
-                .map_err(|why| why.under(&format!("festivals.anniversaries[{index}].origin")))?;
+                .map_err(|why| why.under(&format!("{field}[{index}].origin")))?;
             asked.push((anniversary.clone(), found));
         }
         // A samsarpa is looked for only when an anniversary would keep a
@@ -521,11 +526,7 @@ impl<'a> AlmanacArea<'a> {
         } = days;
         // The observances read none of a day's printed conventions, so
         // their answer names none, whichever path founded the days.
-        provenance.applied_conventions.retain(|applied| {
-            !PRINTED_CONVENTIONS
-                .iter()
-                .any(|printed| printed.knob == applied.knob)
-        });
+        without_printed(&mut provenance);
         let mut viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
         self.searched(from.calendar, offset, place, request, &mut viewed)?;
         let karmakala = observances(request.rules(), &viewed)?;
@@ -534,7 +535,13 @@ impl<'a> AlmanacArea<'a> {
             .merged(counted)
             .merged(ekadashis(request.ekadashis(), &viewed)?)
             .merged(dated(request.dated(), &viewed)?)
-            .merged(self.kept_anniversaries(from.calendar, offset, place, request, &viewed)?);
+            .merged(self.kept_anniversaries(
+                from.calendar,
+                offset,
+                place,
+                (request.anniversaries(), "festivals.anniversaries"),
+                &viewed,
+            )?);
         // Laid over before the trim, so a day published across the
         // range's edge moves in or out with its occurrence.
         apply_published(
@@ -571,13 +578,10 @@ impl<'a> AlmanacArea<'a> {
             utc_offset_seconds: offset.seconds(),
             request,
         });
-        provenance.applied_conventions.push(Convention {
-            knob: String::from("festival.days"),
-            value: format!("{before}..{}", after.1),
-            reason: String::from(
-                "a tithi beginning the day before the range can fall in it, and an 11th beginning then is pierced or not at an arunodaya in the night before; one at its end is judged against the day after, or two when it holds two sunrises; and a rule counted from another's day reaches as many days as it counts",
-            ),
-        });
+        event_convention(&mut provenance, request.anniversaries());
+        provenance
+            .applied_conventions
+            .push(widened_days(&before, &after.1));
         Ok(Envelope::sealing(found, provenance))
     }
 
@@ -1418,6 +1422,41 @@ struct FestivalInput<'r> {
     place: Place,
     utc_offset_seconds: i32,
     request: &'r FestivalRequest,
+}
+
+/// The convention naming the days a range was widened to.
+fn widened_days(before: &CalendarDate, after: &CalendarDate) -> Convention {
+    Convention {
+        knob: String::from("festival.days"),
+        value: format!("{before}..{after}"),
+        reason: String::from(
+            "a tithi beginning the day before the range can fall in it, and an 11th beginning then is pierced or not at an arunodaya in the night before; one at its end is judged against the day after, or two when it holds two sunrises; and a rule counted from another's day reaches as many days as it counts",
+        ),
+    }
+}
+
+/// Takes out the printed conventions a founded day's provenance names: the
+/// observances read none of them.
+fn without_printed(provenance: &mut Provenance) {
+    provenance.applied_conventions.retain(|applied| {
+        !PRINTED_CONVENTIONS
+            .iter()
+            .any(|printed| printed.knob == applied.knob)
+    });
+}
+
+/// Names the event anniversary's reading when one was asked: no text rules
+/// on it (`03-design/anniversary-span.md` §2.3, C911).
+fn event_convention(provenance: &mut Provenance, asked: &[Anniversary]) {
+    if asked.iter().any(|a| a.kind == AnniversaryKind::Event) {
+        provenance.applied_conventions.push(Convention {
+            knob: String::from("anniversary.event"),
+            value: String::from("SUNRISE_BY_SHARE"),
+            reason: String::from(
+                "no text rules on a family's own event: it is read as a janma tithi is, in the ordinary month, at the window stated (sunrise by default), by Dharmasindhu p. 266's shares",
+            ),
+        });
+    }
 }
 
 /// Each seen eclipse's vedha, read off the almanac's days around its first

@@ -420,6 +420,34 @@ public final class BindingTest {
             }
         });
 
+        // Anniversaries over a span (anniversary-span.md): a barkhi and an
+        // event, each day naming the rule that chose it, a span too long
+        // refused on years.
+        tests.put("anniversaries over a span name the rule of each day", () -> {
+            Map<String, Object> origin = Map.of("by", "LUNAR", "month", "KARTIKA", "tithi", "SHUKLA_DASHAMI");
+            java.util.function.IntFunction<com.teispace.teistro.request.AnniversariesRequest> asked = years ->
+                    com.teispace.teistro.request.AnniversariesRequest.of(Map.of("fromYear", 2026, "years", years,
+                            "latitudeDeg", 27.7172, "longitudeDeg", 85.324, "altitudeM", 1400.0,
+                            "utcOffsetSeconds", 20_700, "anniversaries", List.of(
+                                    Map.of("key", "BARKHI", "origin", origin),
+                                    Map.of("key", "WEDDING", "origin", origin, "kind", "EVENT"))));
+            try (Context committee = teistro.context(ContextOptions.builder().profile("nepali-committee")
+                    .ephemeris(Ephemeris.SURYA_SIDDHANTA).build())) {
+                FestivalAnswer span = committee.almanac().anniversaries(asked.apply(2));
+                same(4, span.anniversaries().size(), "two people over two years");
+                AnniversaryDay barkhi = span.anniversaries().stream().filter(d -> d.key().equals("BARKHI"))
+                        .findFirst().orElseThrow();
+                same("EKODDISHTA", barkhi.kind(), "a barkhi's kind");
+                same("DAY_MUHURTA", barkhi.dayRule().at().window(), "a barkhi's window");
+                check(barkhi.dayRule().source().contains("Dharmasindhu"), "its source");
+                AnniversaryDay wedding = span.anniversaries().stream().filter(d -> d.key().equals("WEDDING"))
+                        .findFirst().orElseThrow();
+                same("SUNRISE", wedding.dayRule().at().window(), "an event's window");
+                check(wedding.dayRule().source().contains("convention"), "an event's convention");
+                same("anniversaries.years", refusal(() -> committee.almanac().anniversaries(asked.apply(101))).field(), "a span too long");
+            }
+        });
+
         // The shared validator corpus (docs/03-design/validator-corpus.md):
         // what idl/validators.json lists as valid makes a quantity and what
         // it lists as invalid is refused, as the Rust newtypes and every

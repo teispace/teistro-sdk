@@ -3245,6 +3245,7 @@ def main() -> None:
         ("almanac.festival_calendar", ctx.almanac.festival_calendar),
         ("almanac.next", ctx.almanac.next),
         ("almanac.sentences", ctx.almanac.sentences),
+        ("almanac.anniversaries", ctx.almanac.anniversaries),
         ("almanac.festivalPack", ctx.almanac.festival_pack),
         ("almanac.day", ctx.almanac.day),
         ("almanac.pakshi", ctx.almanac.pakshi),

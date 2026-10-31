@@ -1072,6 +1072,41 @@ class AnEngine(WithLibrary):
                 )
             self.assertEqual(short.exception.field, "limitDays")
 
+    def test_anniversaries_over_a_span_name_the_rule_of_each_day(self) -> None:
+        """A barkhi and an event over two years at Kathmandu, each day naming
+        the rule that chose it, and a span too long refused on `years`
+        (`03-design/anniversary-span.md`)."""
+        origin: Any = {"by": "LUNAR", "month": "KARTIKA", "tithi": "SHUKLA_DASHAMI"}
+        def asked(years: int) -> Any:
+            return {
+                "fromYear": 2026,
+                "years": years,
+                "latitudeDeg": 27.7172,
+                "longitudeDeg": 85.324,
+                "altitudeM": 1400.0,
+                "utcOffsetSeconds": 20700,
+                "anniversaries": [
+                    {"key": "BARKHI", "origin": origin},
+                    {"key": "WEDDING", "origin": origin, "kind": "EVENT"},
+                ],
+            }
+
+        with self.teistro.context(**nepal_official()) as sky:
+            span = sky.almanac.anniversaries(asked(2))
+            self.assertEqual(len(span.anniversaries), 4)
+            barkhi = next(day for day in span.anniversaries if day.key == "BARKHI")
+            self.assertEqual(barkhi.kind, "EKODDISHTA")
+            self.assertEqual(barkhi.day_rule.at.window, "DAY_MUHURTA")
+            self.assertIn(barkhi.day_rule.tithi, ("ORDINARY", "KSHAYA", "VRIDDHI"))
+            self.assertIn("Dharmasindhu", barkhi.day_rule.source)
+            wedding = next(day for day in span.anniversaries if day.key == "WEDDING")
+            self.assertEqual(wedding.kind, "EVENT")
+            self.assertEqual(wedding.day_rule.at.window, "SUNRISE")
+            self.assertIn("convention", wedding.day_rule.source)
+            with self.assertRaises(TeistroError) as long_span:
+                sky.almanac.anniversaries(asked(101))
+            self.assertEqual(long_span.exception.field, "anniversaries.years")
+
     def test_an_almanac_writes_its_festivals_as_an_icalendar_feed(self) -> None:
         """Dashain 2025 at Kathmandu: one event for each observance and fast
         the festival answer gives, Vijaya Dashami on 2 October, every line

@@ -71,6 +71,7 @@ tighter ceiling would fail on a busy runner rather than on a regression.
 | month grid (42 days) | 60 ms |
 | year of almanac days (366) | 500 ms (the month grid's rate per day) |
 | year of the Nepal pack's festivals | 160 ms (twice the consumer's 80 ms target) |
+| 50 people's anniversaries over 10 years, one call | 900 ms (desktop, gated; scaled by the Android record's ratio, `03-design/anniversary-span.md` §5) |
 | birth chart, Vimshottari to depth 3 | 2 ms (the foundation and its dasha) |
 | widest chart (the parity chart with every dasha a chart gives) | 25 ms |
 | Ashta Koota between two cast charts | 1 ms |
