@@ -23,8 +23,9 @@ use teistro_core::catalogue::{Ayana, Masa, Rashi, Ritu};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::settings::SolarMonthStart;
+use teistro_core::settings::{PolarDayPolicy, SolarMonthStart};
 use teistro_core::time::LocalClock;
+use teistro_time::local_day::standing_arc;
 
 use crate::span::Span;
 
@@ -355,6 +356,10 @@ const RULE_REACH_DAYS: i64 = 2;
 /// shipped calendar gives the day, whose sankrantis are the Surya
 /// Siddhanta's and not the spans'.
 ///
+/// A rule that reads the sankranti's day reads the arc that day has under
+/// `policy`: the sky's, or on a day without one what the policy stands in
+/// for it, the bounds the day's own row prints (crux C930).
+///
 /// ```
 /// # use teistro_astro::delta_t::DeltaTModel;
 /// # use teistro_astro::precession::PrecessionModel;
@@ -385,12 +390,12 @@ const RULE_REACH_DAYS: i64 = 2;
 /// # let sunrise = day.day.sunrise;
 ///
 /// use teistro_calendar::CalendarSystem;
-/// use teistro_core::settings::SolarMonthStart;
+/// use teistro_core::settings::{PolarDayPolicy, SolarMonthStart};
 /// use teistro_panchanga::sky::solar_month;
 ///
 /// // A day with no sankranti is in the month of the Sun's sign.
 /// let fixed = Gregorian.fixed_of(&date(11, 25))?;
-/// let month = solar_month(SolarMonthStart::SankrantiDay, fixed, &day.sun.signs, (&kathmandu, &clock, &model))?;
+/// let month = solar_month(SolarMonthStart::SankrantiDay, fixed, &day.sun.signs, (&kathmandu, &clock, &model, PolarDayPolicy::Undefined))?;
 /// if day.sun.sankranti.is_none() {
 ///     assert_eq!(month, day.sun.sign());
 /// }
@@ -399,13 +404,14 @@ const RULE_REACH_DAYS: i64 = 2;
 ///
 /// # Errors
 ///
-/// A rule's refusal (a sunrise it needs on a day without one), a day
-/// outside the Bikram Sambat table, or a value this build does not know.
+/// A rule's refusal (a sunrise it needs on a day without one, under the
+/// `UNDEFINED` policy, naming `day.polar_day_policy`), a day outside the
+/// Bikram Sambat table, or a value this build does not know.
 pub fn solar_month(
     start: SolarMonthStart,
     date: FixedDay,
     signs: &[Span<Rashi>],
-    (place, clock, model): (&Place, &dyn LocalClock, &dyn SolarModel),
+    (place, clock, model, policy): (&Place, &dyn LocalClock, &dyn SolarModel, PolarDayPolicy),
 ) -> Result<Option<Rashi>, Error> {
     let rule = match start {
         SolarMonthStart::Punyakala => MonthStartRule::Punyakala,
@@ -434,7 +440,8 @@ pub fn solar_month(
             return Ok(false);
         }
         let index = u8::try_from(sign.id()).unwrap_or(0);
-        Ok(rule.month_start(index, sankranti, clock, model, place)? <= date)
+        let arc_of = |day| standing_arc(model, clock, place, day, policy);
+        Ok(rule.month_start_by(index, sankranti, clock, &arc_of)? <= date)
     };
     let mut month = previous(first.member);
     for span in signs {
@@ -483,14 +490,14 @@ mod tests {
         reason = "tests fail by panicking and index their own fixtures"
     )]
 
-    use super::{MoonDay, ayana_of, ritu_of, solar_month, sun_day};
+    use super::{MoonDay, ayana_of, previous, ritu_of, solar_month, sun_day};
     use teistro_calendar::FixedDay;
     use teistro_calendar::solar::{DayArc, DayLight, SolarModel};
     use teistro_core::catalogue::{Ayana, Rashi, Ritu};
     use teistro_core::error::Error;
     use teistro_core::interval::Interval;
     use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-    use teistro_core::settings::SolarMonthStart;
+    use teistro_core::settings::{PolarDayPolicy, SolarMonthStart};
     use teistro_core::time::UtcOffset;
 
     use crate::span::Span;
@@ -640,9 +647,14 @@ mod tests {
             Altitude::literal(0.0),
         );
         let clock = UtcOffset::literal(0, 0, 0);
-        solar_month(start, DAY, &spans, (&place, &clock, &SixToSix))
-            .unwrap()
-            .unwrap()
+        solar_month(
+            start,
+            DAY,
+            &spans,
+            (&place, &clock, &SixToSix, PolarDayPolicy::Undefined),
+        )
+        .unwrap()
+        .unwrap()
     }
 
     /// Nepal's 15 May 2026: a sankranti half an hour after sunrise begins
@@ -706,6 +718,7 @@ mod tests {
                     ),
                     &UtcOffset::literal(5, 45, 0),
                     &SixToSix,
+                    PolarDayPolicy::Undefined,
                 ),
             )
             .unwrap()
@@ -723,10 +736,72 @@ mod tests {
             SolarMonthStart::BikramSambat,
             fixed_from_gregorian(3000, 1, 1),
             &[],
-            (&place, &UtcOffset::literal(5, 45, 0), &SixToSix),
+            (
+                &place,
+                &UtcOffset::literal(5, 45, 0),
+                &SixToSix,
+                PolarDayPolicy::Undefined,
+            ),
         )
         .unwrap_err();
         assert_eq!(error.field(), Some("panchanga.solar_month_start"));
+    }
+
+    /// A sankranti on a day with no sunrise is read against what the
+    /// policy stands in: under `CIVIL_MIDNIGHT` the civil day holds every
+    /// instant of itself, so both ayana rows keep the sankranti's day;
+    /// under `UNDEFINED` the rule refuses and names the policy.
+    #[test]
+    fn a_rule_reads_the_policy_s_arc_on_a_day_without_one() {
+        struct Dark;
+        impl SolarModel for Dark {
+            fn sidereal_sun_deg(&self, _jd_ut: f64) -> Result<f64, Error> {
+                Ok(0.0)
+            }
+            fn day_light(&self, _: FixedDay, _: &Place) -> Result<DayLight, Error> {
+                Ok(DayLight::NeverUp)
+            }
+            fn describe(&self) -> String {
+                String::from("dark")
+            }
+            fn convention(&self) -> teistro_core::settings::SunriseConvention {
+                teistro_core::settings::Sunrise::CentreNoRefraction.into()
+            }
+        }
+        let place = Place::new(
+            Latitude::literal(80.0),
+            Longitude::literal(0.0),
+            Altitude::literal(0.0),
+        );
+        let clock = UtcOffset::literal(0, 0, 0);
+        let asked = |into: Rashi, hours: f64, policy| {
+            let sankranti = at(DAY, hours);
+            let window = Interval::new(at(DAY, 0.0), at(DAY, 24.0)).unwrap();
+            let from = previous(into);
+            let spans: Vec<Span<Rashi>> = [
+                (from, at(DAY, -700.0), sankranti),
+                (into, sankranti, at(DAY, 700.0)),
+            ]
+            .into_iter()
+            .filter_map(|(sign, a, b)| Span::new(sign, Interval::new(a, b).unwrap(), window))
+            .collect();
+            solar_month(
+                SolarMonthStart::Punyakala,
+                DAY,
+                &spans,
+                (&place, &clock, &Dark, policy),
+            )
+        };
+        // Karka at 03:00 and Makara at 20:00: the day's own, each.
+        for (into, hours) in [(Rashi::Cancer, 3.0), (Rashi::Capricorn, 20.0)] {
+            let month = asked(into, hours, PolarDayPolicy::CivilMidnight);
+            assert_eq!(month.unwrap(), Some(into));
+            let refused = asked(into, hours, PolarDayPolicy::Undefined).unwrap_err();
+            assert_eq!(refused.field(), Some("day.polar_day_policy"));
+        }
+        // Nothing to stand on within a season's reach is its own refusal.
+        let lost = asked(Rashi::Cancer, 3.0, PolarDayPolicy::NearestEvent).unwrap_err();
+        assert_eq!(lost.field(), Some("day.polar_day_policy"));
     }
 
     /// A day far from any sankranti is its sign's, whatever the rule, and

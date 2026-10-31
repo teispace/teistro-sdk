@@ -4,7 +4,7 @@
 
 use core::fmt;
 
-use teistro_calendar::solar::{DayLight, SolarModel, civil_day_light};
+use teistro_calendar::solar::{DayArc, DayLight, SolarModel, civil_day_light};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay};
 use teistro_core::catalogue::Vara;
 use teistro_core::error::Error;
@@ -300,6 +300,56 @@ fn no_sunrise_within(day: FixedDay, place: &Place) -> Error {
         "no sunrise within {NEAREST_SEARCH_DAYS} days of {day} at {place}"
     ))
     .with_field("day.polar_day_policy")
+}
+
+/// The arc a civil day has under a policy: the sky's where the Sun rises
+/// and sets, and otherwise what `polar_day_policy` stands in for it, the
+/// sunrise and sunset [`local_day`] gives the same date. A rule that
+/// reads a day's arc reads this one, so it and the day's own row cannot
+/// disagree (`03-design/calendar-bikram-sambat.md` §6).
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+/// use teistro_core::settings::PolarDayPolicy;
+/// use teistro_core::time::UtcOffset;
+/// use teistro_siddhanta::SuryaSiddhanta;
+/// use teistro_time::local_day::{local_midnight, standing_arc};
+///
+/// let tromso = Place::new(Latitude::literal(69.6492), Longitude::literal(18.9553), Altitude::literal(0.0));
+/// let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(1, 0, 0));
+/// let solstice = fixed_from_gregorian(2024, 6, 21);
+/// // Under the midnight sun, CIVIL_MIDNIGHT stands the civil day in.
+/// let arc = standing_arc(&text, &clock, &tromso, solstice, PolarDayPolicy::CivilMidnight)?;
+/// assert_eq!(arc.sunrise, local_midnight(&clock, solstice)?);
+/// // UNDEFINED stands nothing in, and says so.
+/// let refused = standing_arc(&text, &clock, &tromso, solstice, PolarDayPolicy::Undefined).unwrap_err();
+/// assert_eq!(refused.field(), Some("day.polar_day_policy"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// The model's refusal; a day with no arc under `UNDEFINED`, or with no
+/// sunrise within the policy's reach, `UNSUPPORTED` on
+/// `day.polar_day_policy`.
+pub fn standing_arc(
+    model: &dyn SolarModel,
+    clock: &dyn LocalClock,
+    place: &Place,
+    day: FixedDay,
+    policy: PolarDayPolicy,
+) -> Result<DayArc, Error> {
+    let kind = match civil_day_light(model, clock, place, day)? {
+        DayLight::Arc(arc) => return Ok(arc),
+        DayLight::AlwaysUp => PolarKind::Day,
+        DayLight::NeverUp => PolarKind::Night,
+    };
+    let bounds = synthesised(model, clock, place, day, kind, policy)?;
+    Ok(DayArc {
+        sunrise: bounds.sunrise,
+        sunset: bounds.sunset,
+    })
 }
 
 /// The bounds a policy gives a day: sunrise, sunset, next sunrise.
@@ -645,7 +695,6 @@ fn synthesised(
 mod tests {
     #![allow(clippy::panic, clippy::unwrap_used, reason = "tests fail by panicking")]
 
-    use teistro_calendar::solar::DayArc;
     use teistro_calendar::{Gregorian, gregorian};
     use teistro_core::catalogue::Calendar;
     use teistro_core::quantity::{Altitude, Latitude, Longitude};
@@ -654,6 +703,38 @@ mod tests {
 
     use super::*;
     use crate::zones;
+
+    /// A standing arc is the sky's where it has one, and otherwise the
+    /// same sunrise and sunset the day's own row gives under the policy.
+    #[test]
+    fn a_standing_arc_is_the_day_row_s_own() {
+        let text = SuryaSiddhanta::text();
+        let clock = UtcOffset::literal(1, 0, 0);
+        let tromso = Place::new(
+            Latitude::literal(69.6492),
+            Longitude::literal(18.9553),
+            Altitude::literal(0.0),
+        );
+        for (year, month, day) in [(2024, 7, 16), (2024, 1, 5), (2024, 3, 20)] {
+            let date = CalendarDate::defined(Calendar::Gregorian, year, month, day);
+            let fixed = gregorian::fixed_from_gregorian(year, month, day);
+            for policy in [PolarDayPolicy::NearestEvent, PolarDayPolicy::CivilMidnight] {
+                let row = local_day(&text, &Gregorian, &clock, &tromso, &date, policy).unwrap();
+                let arc = standing_arc(&text, &clock, &tromso, fixed, policy).unwrap();
+                assert_eq!((arc.sunrise, arc.sunset), (row.sunrise, row.sunset));
+            }
+        }
+        let refused = standing_arc(
+            &text,
+            &clock,
+            &tromso,
+            gregorian::fixed_from_gregorian(2024, 1, 5),
+            PolarDayPolicy::Undefined,
+        )
+        .unwrap_err();
+        assert_eq!(refused.field(), Some("day.polar_day_policy"));
+        assert!(refused.message.contains("polar night"), "{refused}");
+    }
 
     const KATHMANDU: Place = Place::new(
         Latitude::literal(27.7172),
