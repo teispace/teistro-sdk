@@ -19,7 +19,9 @@ if TYPE_CHECKING:
 
 __all__ = [
     "AshauchQuery",
+    "ChangesRequest",
     "AlmanacDaysRequest",
+    "DigestRequest",
     "PackRequest",
     "FestivalCalendarRequest",
     "FirstYearQuery",
@@ -47,9 +49,18 @@ __all__ = [
     "AshauchRequest",
     "AshauchTable",
     "AshauchTradition",
-    "FestivalRequest",
     "DayAsked",
+    "ChangeKind",
+    "ZoneSpec",
+    "ZoneSpecIana",
+    "ZoneSpecLocalMean",
+    "ZoneSpecFixed",
+    "FestivalRequest",
     "MuhurtaRequest",
+    "FeedAlarm",
+    "SuppliedEvent",
+    "FeedHint",
+    "FeedSelector",
     "FirstYearRequest",
     "NextKind",
     "NativeAsked",
@@ -112,10 +123,6 @@ __all__ = [
     "ResearchEventShuffle",
     "StudyKind",
     "ResearchSubject",
-    "ZoneSpec",
-    "ZoneSpecIana",
-    "ZoneSpecLocalMean",
-    "ZoneSpecFixed",
     "CivilTime",
     "AshauchRunning",
     "AshauchEvent",
@@ -139,6 +146,7 @@ __all__ = [
     "MuhurtaNative",
     "MuhurtaRanking",
     "MuhurtaRequestRules",
+    "FeedForm",
     "FirstAbdika",
     "FirstYearAdhika",
     "SapindanaAt",
@@ -720,6 +728,33 @@ class AshauchQuery(TypedDict, total=False):
     """The offset from UTC the place's civil days run at, in seconds, east positive."""
 
 
+class ChangesRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+    """The calendar the days are written in; Gregorian when left out."""
+
+    first: Required[DayAsked]
+
+    kinds: Sequence[ChangeKind]
+    """The kinds wanted; every kind when left out."""
+
+    last: Optional[DayAsked]
+    """The last day; the first when left out."""
+
+    latitudeDeg: Required[float]
+
+    longitudeDeg: Required[float]
+
+    utcOffsetSeconds: Optional[int]
+    """The clock's offset; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone; or `utcOffsetSeconds`, not both."""
+
+
 class AlmanacDaysRequest(TypedDict, total=False):
     """The request as a binding writes it, the records taken out."""
 
@@ -747,9 +782,35 @@ class AlmanacDaysRequest(TypedDict, total=False):
 
     nepalSambat: bool
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
 
     years: bool
+
+    zone: Optional[ZoneSpec]
+    """The zone, in place of `utcOffsetSeconds`."""
+
+
+class DigestRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+    """The calendar `first` is in, and the digest's dates; Gregorian when left out."""
+
+    days: Optional[int]
+    """How many days, 1 to 366; 60 when left out."""
+
+    festivals: Optional[FestivalRequest]
+    """The festivals to list, as a festival request; none when left out."""
+
+    first: Required[DayAsked]
+
+    latitudeDeg: Required[float]
+
+    longitudeDeg: Required[float]
+
+    utcOffsetSeconds: Required[int]
 
 
 class PackRequest(TypedDict, total=False):
@@ -762,14 +823,29 @@ class PackRequest(TypedDict, total=False):
 class FestivalCalendarRequest(TypedDict, total=False):
     """The request as a binding writes it."""
 
+    alarm: Optional[FeedAlarm]
+    """The alarm on every event no hint or event of its own gives another."""
+
     altitudeM: float
 
     calendar: Optional[Union[_catalogue.Calendar, str]]
+
+    categories: Sequence[str]
+    """The feed's own categories."""
+
+    color: Optional[str]
+    """The feed's colour: a CSS3 colour name, which RFC 7986 requires."""
+
+    events: Sequence[SuppliedEvent]
+    """The caller's own events, merged in."""
 
     festivals: Required[FestivalRequest]
     """The festivals, as a festival request."""
 
     first: Required[DayAsked]
+
+    hints: Sequence[FeedHint]
+    """Categories, a colour and an alarm by what an event is; the first that selects an event gives it its own."""
 
     last: Optional[DayAsked]
 
@@ -778,6 +854,9 @@ class FestivalCalendarRequest(TypedDict, total=False):
     longitudeDeg: Required[float]
 
     name: Optional[str]
+
+    only: Sequence[FeedSelector]
+    """Which events the feed keeps: those any selector selects, every event when left out."""
 
     product: Optional[str]
 
@@ -1314,6 +1393,60 @@ AshauchTradition: TypeAlias = Literal['DHARMASINDHU', 'MITAKSHARA']
 """
 
 
+class DayAsked(TypedDict, total=False):
+    """A civil day as a request names it."""
+
+    day: Required[int]
+
+    month: Required[int]
+
+    year: Required[int]
+
+
+ChangeKind: TypeAlias = Literal['TITHI', 'NAKSHATRA', 'YOGA', 'KARANA', 'MOON_SIGN', 'SUN_SIGN', 'VARA']
+"""What a change point changes. The order is the order two points on one instant stand in.
+
+`TITHI`: The tithi.
+`NAKSHATRA`: The Moon's nakshatra.
+`YOGA`: The nitya yoga.
+`KARANA`: The karana.
+`MOON_SIGN`: The Moon's sign.
+`SUN_SIGN`: The Sun's sign: the sankranti.
+`VARA`: The vara, at sunrise.
+"""
+
+
+ZoneSpec: TypeAlias = "Union[ZoneSpecIana, ZoneSpecLocalMean, ZoneSpecFixed]"
+"""How a zone is given."""
+
+
+class ZoneSpecIana(TypedDict, total=False):
+    """A zone of the database, by its IANA name."""
+
+    kind: Required[Literal['IANA']]
+
+    zone: Required[str]
+    """The name (`Asia/Kathmandu`)."""
+
+
+class ZoneSpecLocalMean(TypedDict, total=False):
+    """Local mean time at a longitude: four minutes a degree."""
+
+    kind: Required[Literal['LOCAL_MEAN']]
+
+    longitude: Required[float]
+    """The longitude, east positive."""
+
+
+class ZoneSpecFixed(TypedDict, total=False):
+    """A fixed offset the consumer states."""
+
+    kind: Required[Literal['FIXED']]
+
+    offset: Required[int]
+    """The offset."""
+
+
 class FestivalRequest(TypedDict, total=False):
     """Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer."""
 
@@ -1325,16 +1458,6 @@ class FestivalRequest(TypedDict, total=False):
 
     rules: Required[FestivalRules]
     """The rules: a pack's name, or a list of names and rules spelt out."""
-
-
-class DayAsked(TypedDict, total=False):
-    """A civil day as a request names it."""
-
-    day: Required[int]
-
-    month: Required[int]
-
-    year: Required[int]
 
 
 class MuhurtaRequest(TypedDict, total=False):
@@ -1355,6 +1478,80 @@ class MuhurtaRequest(TypedDict, total=False):
 
     rules: Required[MuhurtaRequestRules]
     """The rules: an activity the SDK ships the rules of, by name, or rules spelt out."""
+
+
+class FeedAlarm(TypedDict, total=False):
+    """A display alarm as a binding writes it."""
+
+    description: Optional[str]
+    """What the alarm says; the event's summary when left out."""
+
+    triggerMinutes: Required[int]
+    """Minutes from the event's start: negative before it, positive after."""
+
+
+class SuppliedEvent(TypedDict, total=False):
+    """A supplied event as a binding writes it: `day`, or `fromUnixSeconds` and `toUnixSeconds`."""
+
+    alarm: Optional[FeedAlarm]
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+    """The request's calendar when left out."""
+
+    categories: Sequence[str]
+
+    color: Optional[str]
+    """A CSS3 colour name."""
+
+    day: Optional[DayAsked]
+    """A whole day."""
+
+    description: Optional[str]
+
+    fromUnixSeconds: Optional[int]
+    """A span's start, in seconds since 1970."""
+
+    kind: Optional[str]
+
+    summary: Required[str]
+
+    toUnixSeconds: Optional[int]
+    """A span's end, exclusive."""
+
+    tradition: Optional[str]
+
+    uid: Optional[str]
+    """Hashed from the summary, the time and the place when left out."""
+
+
+class FeedHint(TypedDict, total=False):
+    """A hint as a binding writes it."""
+
+    alarm: Optional[FeedAlarm]
+
+    categories: Sequence[str]
+
+    color: Optional[str]
+    """A CSS3 colour name."""
+
+    select: FeedSelector
+    """The events it speaks of; every event when left out."""
+
+
+class FeedSelector(TypedDict, total=False):
+    """What selects an event: a list left empty asks nothing, a list given holds the event's value, and every list given must. `kinds` and `traditions` read a rule's catalogue fields (`03-design/icalendar.md` §6); `rules` holds rule keys, a parana answering to its fast's and a supplied event to its `UID`."""
+
+    forms: Sequence[FeedForm]
+    """How the event came to be."""
+
+    kinds: Sequence[str]
+    """A rule's catalogue kind, or a supplied event's own."""
+
+    rules: Sequence[str]
+    """A rule's key."""
+
+    traditions: Sequence[str]
+    """A rule's tradition, or a supplied event's own."""
 
 
 class FirstYearRequest(TypedDict, total=False):
@@ -2202,37 +2399,6 @@ class ResearchSubject(TypedDict, total=False):
     event: Required[float]
 
 
-ZoneSpec: TypeAlias = "Union[ZoneSpecIana, ZoneSpecLocalMean, ZoneSpecFixed]"
-"""How a zone is given."""
-
-
-class ZoneSpecIana(TypedDict, total=False):
-    """A zone of the database, by its IANA name."""
-
-    kind: Required[Literal['IANA']]
-
-    zone: Required[str]
-    """The name (`Asia/Kathmandu`)."""
-
-
-class ZoneSpecLocalMean(TypedDict, total=False):
-    """Local mean time at a longitude: four minutes a degree."""
-
-    kind: Required[Literal['LOCAL_MEAN']]
-
-    longitude: Required[float]
-    """The longitude, east positive."""
-
-
-class ZoneSpecFixed(TypedDict, total=False):
-    """A fixed offset the consumer states."""
-
-    kind: Required[Literal['FIXED']]
-
-    offset: Required[int]
-    """The offset."""
-
-
 class CivilTime(TypedDict, total=False):
     """A time of day: hours, minutes, seconds and nanoseconds. The second may be 60 for a leap second; whether the day had one is checked when the time is resolved in a zone."""
 
@@ -2540,6 +2706,19 @@ MuhurtaRanking: TypeAlias = Literal['TEXTS', 'BASELINE']
 
 MuhurtaRequestRules: TypeAlias = "Union[Literal['RAMAN_MARRIAGE', 'BASELINE_MARRIAGE', 'RAMAN_NAMAKARANA', 'RAMAN_ANNAPRASANA', 'RAMAN_UPANAYANA', 'RAMAN_GRIHA_PRAVESHA', 'RAMAN_KARNAVEDHA', 'RAMAN_CHUDAKARANA', 'RAMAN_VIDYARAMBHA', 'RAMAN_YATRA', 'RAMAN_TRADE_PURCHASE', 'RAMAN_SELLING', 'RAMAN_NEW_CLOTHES', 'RAMAN_VEHICLE'], ActivityRules]"
 """The rules: an activity the SDK ships the rules of, by name, or rules spelt out."""
+
+
+FeedForm: TypeAlias = Literal['OBSERVANCE', 'EKADASHI', 'DATED', 'ANNIVERSARY', 'ADDED', 'PARANA', 'SUPPLIED']
+"""How a feed's event came to be, which a `FeedSelector` can name.
+
+`OBSERVANCE`: A yearly rule's observance.
+`EKADASHI`: An Ekadashi fast.
+`DATED`: A dated rule's day.
+`ANNIVERSARY`: An anniversary.
+`ADDED`: A day a published set added.
+`PARANA`: The timed window a fast is broken in.
+`SUPPLIED`: An event the caller supplied.
+"""
 
 
 FirstAbdika: TypeAlias = Literal['SECOND_YEAR', 'ELEVENTH_DAY']

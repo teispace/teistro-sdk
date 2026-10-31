@@ -200,6 +200,54 @@ final class AlmanacDaysRequest extends _Request {
   List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, muhurta, nepalSambat, utcOffsetSeconds, years, zone];
 }
 
+/// The request as a binding writes it.
+final class DigestRequest extends _Request {
+  const DigestRequest({
+    this.altitudeM = 0.0,
+    this.calendar,
+    this.days,
+    this.festivals,
+    required this.first,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.utcOffsetSeconds,
+  });
+
+  final double altitudeM;
+
+  /// The calendar `first` is in, and the digest's dates; Gregorian when left out.
+  final Calendar? calendar;
+
+  /// How many days, 1 to 366; 60 when left out.
+  final int? days;
+
+  /// The festivals to list, as a festival request; none when left out.
+  final FestivalRequest? festivals;
+
+  final DayAsked first;
+
+  final double latitudeDeg;
+
+  final double longitudeDeg;
+
+  final int utcOffsetSeconds;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    if (days case final daysValue?) 'days': daysValue,
+    if (festivals case final festivalsValue?) 'festivals': festivalsValue._wire,
+    'first': first._wire,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, calendar, days, festivals, first, latitudeDeg, longitudeDeg, utcOffsetSeconds];
+}
+
 /// [`PackRequest`] as the bindings write it.
 final class PackRequest extends _Request {
   const PackRequest({
@@ -221,28 +269,49 @@ final class PackRequest extends _Request {
 /// The request as a binding writes it.
 final class FestivalCalendarRequest extends _Request {
   const FestivalCalendarRequest({
+    this.alarm,
     this.altitudeM = 0.0,
     this.calendar,
+    this.categories = const [],
+    this.color,
+    this.events = const [],
     required this.festivals,
     required this.first,
+    this.hints = const [],
     this.last,
     required this.latitudeDeg,
     required this.longitudeDeg,
     this.name,
+    this.only = const [],
     this.product,
     this.refreshMinutes,
     required this.stampUnixSeconds,
     required this.utcOffsetSeconds,
   });
 
+  /// The alarm on every event no hint or event of its own gives another.
+  final FeedAlarm? alarm;
+
   final double altitudeM;
 
   final Calendar? calendar;
+
+  /// The feed's own categories.
+  final List<String> categories;
+
+  /// The feed's colour: a CSS3 colour name, which RFC 7986 requires.
+  final String? color;
+
+  /// The caller's own events, merged in.
+  final List<SuppliedEvent> events;
 
   /// The festivals, as a festival request.
   final FestivalRequest festivals;
 
   final DayAsked first;
+
+  /// Categories, a colour and an alarm by what an event is; the first that selects an event gives it its own.
+  final List<FeedHint> hints;
 
   final DayAsked? last;
 
@@ -251,6 +320,9 @@ final class FestivalCalendarRequest extends _Request {
   final double longitudeDeg;
 
   final String? name;
+
+  /// Which events the feed keeps: those any selector selects, every event when left out.
+  final List<FeedSelector> only;
 
   final String? product;
 
@@ -263,14 +335,20 @@ final class FestivalCalendarRequest extends _Request {
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
+    if (alarm case final alarmValue?) 'alarm': alarmValue._wire,
     'altitudeM': altitudeM,
     if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'categories': categories,
+    if (color case final colorValue?) 'color': colorValue,
+    'events': [for (final e0 in events) e0._wire],
     'festivals': festivals._wire,
     'first': first._wire,
+    'hints': [for (final e0 in hints) e0._wire],
     if (last case final lastValue?) 'last': lastValue._wire,
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
     if (name case final nameValue?) 'name': nameValue,
+    'only': [for (final e0 in only) e0._wire],
     if (product case final productValue?) 'product': productValue,
     if (refreshMinutes case final refreshMinutesValue?) 'refreshMinutes': refreshMinutesValue,
     'stampUnixSeconds': stampUnixSeconds,
@@ -278,7 +356,7 @@ final class FestivalCalendarRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, festivals, first, last, latitudeDeg, longitudeDeg, name, product, refreshMinutes, stampUnixSeconds, utcOffsetSeconds];
+  List<Object?> get _fields => [alarm, altitudeM, calendar, categories, color, events, festivals, first, hints, last, latitudeDeg, longitudeDeg, name, only, product, refreshMinutes, stampUnixSeconds, utcOffsetSeconds];
 }
 
 /// The query as a binding writes it.
@@ -1426,6 +1504,160 @@ enum ChangeKind implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// A display alarm as a binding writes it.
+final class FeedAlarm extends _Request {
+  const FeedAlarm({
+    this.description,
+    required this.triggerMinutes,
+  });
+
+  /// What the alarm says; the event's summary when left out.
+  final String? description;
+
+  /// Minutes from the event's start: negative before it, positive after.
+  final int triggerMinutes;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (description case final descriptionValue?) 'description': descriptionValue,
+    'triggerMinutes': triggerMinutes,
+  };
+
+  @override
+  List<Object?> get _fields => [description, triggerMinutes];
+}
+
+/// A supplied event as a binding writes it: `day`, or `fromUnixSeconds` and `toUnixSeconds`.
+final class SuppliedEvent extends _Request {
+  const SuppliedEvent({
+    this.alarm,
+    this.calendar,
+    this.categories = const [],
+    this.color,
+    this.day,
+    this.description,
+    this.fromUnixSeconds,
+    this.kind,
+    required this.summary,
+    this.toUnixSeconds,
+    this.tradition,
+    this.uid,
+  });
+
+  final FeedAlarm? alarm;
+
+  /// The request's calendar when left out.
+  final Calendar? calendar;
+
+  final List<String> categories;
+
+  /// A CSS3 colour name.
+  final String? color;
+
+  /// A whole day.
+  final DayAsked? day;
+
+  final String? description;
+
+  /// A span's start, in seconds since 1970.
+  final int? fromUnixSeconds;
+
+  final String? kind;
+
+  final String summary;
+
+  /// A span's end, exclusive.
+  final int? toUnixSeconds;
+
+  final String? tradition;
+
+  /// Hashed from the summary, the time and the place when left out.
+  final String? uid;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (alarm case final alarmValue?) 'alarm': alarmValue._wire,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'categories': categories,
+    if (color case final colorValue?) 'color': colorValue,
+    if (day case final dayValue?) 'day': dayValue._wire,
+    if (description case final descriptionValue?) 'description': descriptionValue,
+    if (fromUnixSeconds case final fromUnixSecondsValue?) 'fromUnixSeconds': fromUnixSecondsValue,
+    if (kind case final kindValue?) 'kind': kindValue,
+    'summary': summary,
+    if (toUnixSeconds case final toUnixSecondsValue?) 'toUnixSeconds': toUnixSecondsValue,
+    if (tradition case final traditionValue?) 'tradition': traditionValue,
+    if (uid case final uidValue?) 'uid': uidValue,
+  };
+
+  @override
+  List<Object?> get _fields => [alarm, calendar, categories, color, day, description, fromUnixSeconds, kind, summary, toUnixSeconds, tradition, uid];
+}
+
+/// A hint as a binding writes it.
+final class FeedHint extends _Request {
+  const FeedHint({
+    this.alarm,
+    this.categories = const [],
+    this.color,
+    this.select = const FeedSelector(forms: [], kinds: [], traditions: [], rules: []),
+  });
+
+  final FeedAlarm? alarm;
+
+  final List<String> categories;
+
+  /// A CSS3 colour name.
+  final String? color;
+
+  /// The events it speaks of; every event when left out.
+  final FeedSelector select;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (alarm case final alarmValue?) 'alarm': alarmValue._wire,
+    'categories': categories,
+    if (color case final colorValue?) 'color': colorValue,
+    'select': select._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [alarm, categories, color, select];
+}
+
+/// What selects an event: a list left empty asks nothing, a list given holds the event's value, and every list given must. `kinds` and `traditions` read a rule's catalogue fields (`03-design/icalendar.md` §6); `rules` holds rule keys, a parana answering to its fast's and a supplied event to its `UID`.
+final class FeedSelector extends _Request {
+  const FeedSelector({
+    this.forms = const [],
+    this.kinds = const [],
+    this.rules = const [],
+    this.traditions = const [],
+  });
+
+  /// How the event came to be.
+  final List<FeedForm> forms;
+
+  /// A rule's catalogue kind, or a supplied event's own.
+  final List<String> kinds;
+
+  /// A rule's key.
+  final List<String> rules;
+
+  /// A rule's tradition, or a supplied event's own.
+  final List<String> traditions;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'forms': [for (final e0 in forms) e0.key],
+    'kinds': kinds,
+    'rules': rules,
+    'traditions': traditions,
+  };
+
+  @override
+  List<Object?> get _fields => [forms, kinds, rules, traditions];
 }
 
 /// A kind of day a search may ask for without naming a pack, each read by rules the SDK states (`03-design/next-occurrence.md` §2).
@@ -3228,6 +3460,30 @@ final class MuhurtaRequestRulesValue extends MuhurtaRequestRules {
 
   @override
   List<Object?> get _fields => [value];
+}
+
+/// How a feed's event came to be, which a [`FeedSelector`] can name.
+enum FeedForm implements _Keyed {
+  /// A yearly rule's observance.
+  observance('OBSERVANCE'),
+  /// An Ekadashi fast.
+  ekadashi('EKADASHI'),
+  /// A dated rule's day.
+  dated('DATED'),
+  /// An anniversary.
+  anniversary('ANNIVERSARY'),
+  /// A day a published set added.
+  added('ADDED'),
+  /// The timed window a fast is broken in.
+  parana('PARANA'),
+  /// An event the caller supplied.
+  supplied('SUPPLIED');
+
+  const FeedForm(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }
 
 /// When the first abdika is kept (DS p. 330, two views).

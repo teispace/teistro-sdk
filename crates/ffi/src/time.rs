@@ -862,7 +862,7 @@ pub unsafe extern "C" fn ts_time_civil(
 /// # Safety
 ///
 /// `context` must be a live handle; `out_json` valid for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 pub unsafe extern "C" fn ts_time_zone_database(
     context: *const TsContext,
     out_json: *mut crate::string::TsString,
@@ -925,7 +925,7 @@ pub unsafe extern "C" fn ts_time_zone_database(
 /// `context` must be a live handle; `pack`, `signature` and `key` valid
 /// for their lengths' reads; `at_least` NUL-terminated; `out_json` valid
 /// for a write.
-#[unsafe(no_mangle)]
+#[cfg_attr(not(test), unsafe(no_mangle))]
 #[allow(
     clippy::too_many_arguments,
     reason = "three byte ranges cross the C boundary as pointer and length each"

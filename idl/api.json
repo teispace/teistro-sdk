@@ -14446,6 +14446,21 @@
             "example": "{\"rules\":\"DHARMASINDHU\"}",
             "nullable": true
           }
+        },
+        {
+          "name": "zone_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "The zone the days are reckoned on, as JSON, the record\n`ts_time_resolve`'s zone is written as: `{\"kind\": \"IANA\", \"zone\":\n\"Asia/Kathmandu\"}`. Each day is then read on its own offset,\n`utc_offset_seconds` is not read, and the answer's provenance names\nthe zone's offset, source, era and database\n(`03-design/time-and-timezone.md` §3.4). Null for the offset.",
+          "meta": {
+            "example": "{\"kind\":\"IANA\",\"zone\":\"Asia/Kathmandu\"}",
+            "nullable": true
+          }
         }
       ],
       "source": "crates/ffi/src/panchanga.rs"
@@ -15953,6 +15968,162 @@
       "source": "crates/ffi/src/time.rs"
     },
     {
+      "name": "ts_time_zone_database",
+      "doc": "The zone database a context reads, as JSON: `{source, version, zones,\nbundled}` (`03-design/zone-packs.md` §4).",
+      "safety": "`context` must be a live handle; `out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/time.rs"
+    },
+    {
+      "name": "ts_time_load_zones",
+      "doc": "Verifies a signed zone pack and replaces the context's zone database\nwith it, answering the database as `ts_time_zone_database` does.\n`pack` is the file's exact bytes, `signature` the publisher's detached\nEd25519 signature over them (64 bytes) and `key` the publisher's public\nkey (32 bytes), which the caller fixes at its own build: the library\nembeds none. A release older than `at_least`, the newest the caller has\napplied (`\"\"` for any), is refused, so a replayed pack cannot roll a\ncorrection back. A refused pack leaves the context as it was.\n\nA key that is no curve point is `INVALID_ARG` on `key`; a signature\nthat is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;\nbytes that are not a pack, `INVALID_ARG` on the field that is wrong; an\nolder release, `INVALID_ARG` on `version`. A build without\n`signed-packs` answers `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `pack`, `signature` and `key` valid\nfor their lengths' reads; `at_least` NUL-terminated; `out_json` valid\nfor a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "pack",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u8"
+            },
+            "mutable": false
+          },
+          "role": "bytes_in",
+          "meta": {}
+        },
+        {
+          "name": "pack_len",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "role": "length",
+          "meta": {}
+        },
+        {
+          "name": "signature",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u8"
+            },
+            "mutable": false
+          },
+          "role": "bytes_in",
+          "meta": {}
+        },
+        {
+          "name": "signature_len",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "role": "length",
+          "meta": {}
+        },
+        {
+          "name": "key",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "scalar",
+              "scalar": "u8"
+            },
+            "mutable": false
+          },
+          "role": "bytes_in",
+          "meta": {}
+        },
+        {
+          "name": "key_len",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "usize"
+          },
+          "role": "length",
+          "meta": {}
+        },
+        {
+          "name": "at_least",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/time.rs"
+    },
+    {
       "name": "ts_time_convert",
       "doc": "Converts an instant between UT1, TT and UTC under the context's Delta T\nmodel, reporting what was applied. A model that cannot answer for the\ninstant is `OUT_OF_RANGE`.",
       "safety": "`context` must be a live handle; `out_conversion` valid for a read of\nits `struct_size` and a write.",
@@ -17054,6 +17225,57 @@
     {
       "name": "ts_almanac_festival_pack",
       "doc": "Every rule of a festival pack with what it is\n(`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:\neach row `{key, form, source, meta, unsourced}`, `form` how its day is\nfound (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`\nits kind, tradition, communities and regions, `unsourced` the fields no\nsource gives, and a published row's `subjectTo` and `lastYear`.\n\n`request_json` is `{\"pack\"}`, a pack the SDK ships. Nothing is\nreckoned, so a context without an ephemeris answers. A key it does not\nread or a pack it does not ship is `INVALID_ARG`, named under `pack`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "ts_almanac_changes",
+      "doc": "Every instant in a range at which something changes, as sealed JSON\n(`03-design/change-points.md`). `request_json` is the record: `first`,\noptional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,\n`utcOffsetSeconds` or `zone`, and optional `kinds`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -27399,6 +27621,16 @@
         "kind": "OBJECT",
         "fields": [
           {
+            "name": "clock",
+            "doc": "The clock the answer's days were reckoned on, at the first day's noon, when the answer has days; left out otherwise (`docs/03-design/time-and-timezone.md` §3.4).",
+            "ty": {
+              "kind": "RECORD",
+              "name": "ClockReading"
+            },
+            "nullable": true,
+            "null": true
+          },
+          {
             "name": "delta_t_model",
             "doc": "The Delta T model's key.",
             "ty": {
@@ -27544,6 +27776,104 @@
               }
             },
             "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClockReading",
+      "doc": "A clock's offset at an instant and what gave it: what an answer carries so a caller does not resolve its zone again.",
+      "shape": {
+        "kind": "OBJECT",
+        "fields": [
+          {
+            "name": "abbreviation",
+            "doc": "The zone's abbreviation for the row, when the database has one.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": true,
+            "null": true
+          },
+          {
+            "name": "era",
+            "doc": "Which rules produced it.",
+            "ty": {
+              "kind": "RECORD",
+              "name": "ClockEra"
+            },
+            "nullable": false
+          },
+          {
+            "name": "offset",
+            "doc": "The offset.",
+            "ty": {
+              "kind": "INTEGER",
+              "width": {
+                "signed": true,
+                "bits": 32
+              }
+            },
+            "nullable": false
+          },
+          {
+            "name": "source",
+            "doc": "Where it came from.",
+            "ty": {
+              "kind": "RECORD",
+              "name": "ClockSource"
+            },
+            "nullable": false
+          },
+          {
+            "name": "tzdb_version",
+            "doc": "The database's release, `lmt` or `manual`.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClockEra",
+      "doc": "Which rules produced an offset.",
+      "shape": {
+        "kind": "KEYS",
+        "values": [
+          {
+            "key": "CURRENT",
+            "doc": "An offset the zone applies in the database's own year."
+          },
+          {
+            "key": "HISTORICAL",
+            "doc": "An offset from the zone's earlier rules."
+          },
+          {
+            "key": "BEFORE_RULES",
+            "doc": "Before the zone's first rule: the database's local-mean-time stub."
+          }
+        ]
+      }
+    },
+    {
+      "name": "ClockSource",
+      "doc": "Where an offset came from.",
+      "shape": {
+        "kind": "KEYS",
+        "values": [
+          {
+            "key": "IANA",
+            "doc": "The zone database."
+          },
+          {
+            "key": "LOCAL_MEAN",
+            "doc": "Local mean time from the longitude."
+          },
+          {
+            "key": "MANUAL",
+            "doc": "A fixed offset the consumer stated."
           }
         ]
       }

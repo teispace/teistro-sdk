@@ -51,6 +51,7 @@ from ._blob import (
     Poruthams,
     Positions,
     decode_charts,
+    decode_digest,
     decode_intl_render,
     decode_naam,
     decode_panchanga,
@@ -395,6 +396,12 @@ from ._requests import (
     EventConfidence as EventConfidence,
     BirthFacts as BirthFacts,
     FestivalCalendarRequest as FestivalCalendarRequest,
+    FeedForm as FeedForm,
+    DigestRequest as DigestRequest,
+    FeedAlarm as FeedAlarm,
+    FeedHint as FeedHint,
+    FeedSelector as FeedSelector,
+    SuppliedEvent as SuppliedEvent,
     AddAsked as AddAsked,
     BetweenAsked as BetweenAsked,
     NextKind as NextKind,
@@ -791,6 +798,7 @@ from ._requests import (
 from .catalogue import (
     FestivalKind,
     Tradition,
+    DigestSpan,
     Catalogued,
     AgniVasa,
     AshubhaYoga,
@@ -968,6 +976,14 @@ from .catalogue import (
 __all__ = [
     "INTERNAL_CODE",
     "InternalReport",
+    "DigestSpan",
+    "FeedForm",
+    "decode_digest",
+    "DigestRequest",
+    "FeedAlarm",
+    "FeedHint",
+    "FeedSelector",
+    "SuppliedEvent",
     "NEPAL_OFFICIAL_PROFILE",
     "on_internal_error",
     "NepalOfficial",
@@ -3896,6 +3912,12 @@ class AlmanacArea(_Area):
         name: Optional[str] = None,
         product: Optional[str] = None,
         refresh_minutes: Optional[int] = 1440,
+        categories: Optional[Sequence[str]] = None,
+        color: Optional[str] = None,
+        alarm: Optional[FeedAlarm] = None,
+        only: Optional[Sequence[FeedSelector]] = None,
+        hints: Optional[Sequence[FeedHint]] = None,
+        events: Optional[Sequence[SuppliedEvent]] = None,
     ) -> str:
         """**A range's observances as an iCalendar feed** (RFC 5545,
         `03-design/icalendar.md`) a calendar app subscribes to: one
@@ -3905,6 +3927,8 @@ class AlmanacArea(_Area):
         rule, the day and the place. The same request writes the same
         bytes; `stamp_unix_seconds` is now when left out, and
         `refresh_minutes=None` (or zero) writes no refresh interval.
+        `events` merges the caller's own, `only` filters, `hints`, `alarm`,
+        `categories` and `color` say more (`03-design/icalendar.md` §6).
 
         >>> # ics = sdk.almanac.festival_calendar(from_date=..., to_date=..., place=kathmandu,
         >>> #     utc_offset_seconds=20700, festivals={"rules": "NEPAL_PANCHANGA"}, name="Nepal 2026")
@@ -3933,10 +3957,55 @@ class AlmanacArea(_Area):
             asked["name"] = name
         if product is not None:
             asked["product"] = product
+        extras: Dict[str, Any] = {
+            "categories": categories,
+            "color": color,
+            "alarm": alarm,
+            "only": only,
+            "hints": hints,
+            "events": events,
+        }
+        asked.update({key: value for key, value in extras.items() if value is not None})
         feed: str = self._context._through_provider(
             lambda: self._context.inner.almanac_festival_calendar(json.dumps(asked))
         )
         return feed
+
+    def digest(
+        self,
+        *,
+        first: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+        days: Optional[int] = None,
+        festivals: Optional[FestivalRequest] = None,
+    ) -> bytes:
+        """**The N-day digest** (`03-design/digest-format.md`): the days from
+        `first`, 60 unless `days` says, every limb and window, the Moon and
+        the observances, as bytes a process with no engine reads with
+        `bindings/c/digest`, and `decode_digest` reads here. The same request
+        writes the same bytes on every platform.
+
+        >>> # bytes_ = sdk.almanac.digest(first=..., place=kathmandu, utc_offset_seconds=20700)
+        >>> # Path("widget.digest").write_bytes(bytes_)
+        """
+        asked: Dict[str, Any] = {
+            "calendar": first.calendar.key,
+            "first": {"year": first.year, "month": first.month, "day": first.day},
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+        }
+        if days is not None:
+            asked["days"] = days
+        record = _festivals_json(festivals) if festivals is not None else None
+        if record is not None:
+            asked["festivals"] = json.loads(record)
+        digest: bytes = self._context._through_provider(
+            lambda: self._context.inner.almanac_digest(json.dumps(asked))
+        )
+        return digest
 
 
 class MatchingArea(_Area):

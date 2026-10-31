@@ -866,6 +866,7 @@ fn panchanga_request(
         sections: 0,
         muhurta_json,
         festivals_json,
+        zone_json: ptr::null(),
     }
 }
 

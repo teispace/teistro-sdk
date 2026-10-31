@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 73 entry points over 28 structs and 173 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 77 entry points over 28 structs and 174 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 
@@ -88,6 +88,8 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 |---|---|
 | [`ts_time_resolve`](time/ts_time_resolve) | Resolves a civil date-time in a zone to a UTC instant under the context's daylight-saving and unknown-time policies, with the metadata a stored chart keeps. |
 | [`ts_time_civil`](time/ts_time_civil) | The civil date-time of a UTC instant in a zone, in a calendar, with the resolution that applied. |
+| [`ts_time_zone_database`](time/ts_time_zone_database) | The zone database a context reads, as JSON: `{source, version, zones, bundled}` (`03-design/zone-packs.md` §4). |
+| [`ts_time_load_zones`](time/ts_time_load_zones) | Verifies a signed zone pack and replaces the context's zone database with it, answering the database as `ts_time_zone_database` does. |
 | [`ts_time_convert`](time/ts_time_convert) | Converts an instant between UT1, TT and UTC under the context's Delta T model, reporting what was applied. |
 | [`ts_time_delta_t`](time/ts_time_delta_t) | Delta T (TT less UT1) at a UT1 instant under the context's model, with what produced it and its uncertainty where the source has one. |
 
@@ -121,8 +123,10 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 | [`ts_almanac_ashauch`](panchanga/ts_almanac_ashauch) | The period of impurity after a birth or a death at a place (`03-design/ashauch.md`), answered with `{value, provenance}` as canonical JSON. |
 | [`ts_almanac_first_year`](panchanga/ts_almanac_first_year) | A death's first year at a place (`03-design/shraddha.md` §3.3), answered with `{value, provenance}` as canonical JSON. |
 | [`ts_almanac_festival_calendar`](panchanga/ts_almanac_festival_calendar) | A range's observances and Ekadashi fasts at one place as an iCalendar feed (RFC 5545, `03-design/icalendar.md`): one whole-day event each, ordered by day and then rule, its `SUMMARY` the festival's name in the context's locale, its `DESCRIPTION` the rule's source and the answer's provenance, and its `UID` stable for the rule, the day and the place. |
+| [`ts_almanac_digest`](panchanga/ts_almanac_digest) | **The N-day digest** (`03-design/digest-format.md`): the days from `first`, every limb and window, the Moon and the observances, as a `digest` blob a process with no engine reads with `bindings/c/digest`. |
 | [`ts_almanac_next`](panchanga/ts_almanac_next) | The next day a festival rule or a kind of day falls on after an instant at a place, with no year asked (`03-design/next-occurrence.md`), as canonical JSON `{value, provenance}`: `value` is `{day, keys, festivals, from, limitDays, searchedDays}`, the day in the request's calendar, the keys of the rules that fall on it, the festival reckoning's entries for them on that day, the first day searched (the civil day holding the instant, which counts), the limit and the days reckoned, every catalogue member a full key. |
 | [`ts_almanac_festival_pack`](panchanga/ts_almanac_festival_pack) | Every rule of a festival pack with what it is (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`: each row `{key, form, source, meta, unsourced}`, `form` how its day is found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta` its kind, tradition, communities and regions, `unsourced` the fields no source gives, and a published row's `subjectTo` and `lastYear`. |
+| [`ts_almanac_changes`](panchanga/ts_almanac_changes) | Every instant in a range at which something changes, as sealed JSON (`03-design/change-points.md`). |
 
 ### Naam
 

@@ -3643,11 +3643,12 @@ public final class Native {
             JAVA_INT.withName("utc_offset_seconds"),
             JAVA_INT.withName("sections"),
             ADDRESS.withName("muhurta_json"),
-            ADDRESS.withName("festivals_json")
+            ADDRESS.withName("festivals_json"),
+            ADDRESS.withName("zone_json")
         ).withName("ts_panchanga_request");
 
         /** The size the C compiler gives the struct. */
-        public static final long SIZE = 72;
+        public static final long SIZE = 80;
 
         /** The struct's alignment. */
         public static final long ALIGN = 8;
@@ -3847,6 +3848,20 @@ public final class Native {
         /** The handle that reads and writes `festivals_json`: coordinates {@code (MemorySegment, long)}. */
         public static final VarHandle FESTIVALS_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("festivals_json"));
 
+        /**
+         * The offset of `zone_json`. The zone the days are reckoned on, as JSON, the record
+         * `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+         * "Asia/Kathmandu"}`. Each day is then read on its own offset,
+         * `utc_offset_seconds` is not read, and the answer's provenance names
+         * the zone's offset, source, era and database
+         * (`03-design/time-and-timezone.md` §3.4). Null for the offset.
+         * Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
+         */
+        public static final long ZONE_JSON_OFFSET = 72;
+
+        /** The handle that reads and writes `zone_json`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle ZONE_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("zone_json"));
+
     }
 
     /** Every boundary struct's layout by its C name, in the description's order. */
@@ -4014,6 +4029,8 @@ public final class Native {
         "ts_chart_found",
         "ts_time_resolve",
         "ts_time_civil",
+        "ts_time_zone_database",
+        "ts_time_load_zones",
         "ts_time_convert",
         "ts_time_delta_t",
         "ts_intl_load_pack",
@@ -4035,6 +4052,7 @@ public final class Native {
         "ts_almanac_digest",
         "ts_almanac_next",
         "ts_almanac_festival_pack",
+        "ts_almanac_changes",
         "ts_naam_milan",
         "ts_naming_syllables",
         "ts_naming_read",
@@ -4314,6 +4332,30 @@ public final class Native {
      * the resolution that applied.
      */
     public final MethodHandle ts_time_civil;
+
+    /**
+     * The zone database a context reads, as JSON: `{source, version, zones,
+     * bundled}` (`03-design/zone-packs.md` §4).
+     */
+    public final MethodHandle ts_time_zone_database;
+
+    /**
+     * Verifies a signed zone pack and replaces the context's zone database
+     * with it, answering the database as `ts_time_zone_database` does.
+     * `pack` is the file's exact bytes, `signature` the publisher's detached
+     * Ed25519 signature over them (64 bytes) and `key` the publisher's public
+     * key (32 bytes), which the caller fixes at its own build: the library
+     * embeds none. A release older than `at_least`, the newest the caller has
+     * applied (`""` for any), is refused, so a replayed pack cannot roll a
+     * correction back. A refused pack leaves the context as it was.
+     *
+     * A key that is no curve point is `INVALID_ARG` on `key`; a signature
+     * that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+     * bytes that are not a pack, `INVALID_ARG` on the field that is wrong; an
+     * older release, `INVALID_ARG` on `version`. A build without
+     * `signed-packs` answers `CAPABILITY`.
+     */
+    public final MethodHandle ts_time_load_zones;
 
     /**
      * Converts an instant between UT1, TT and UTC under the context's Delta T
@@ -4664,6 +4706,14 @@ public final class Native {
     public final MethodHandle ts_almanac_festival_pack;
 
     /**
+     * Every instant in a range at which something changes, as sealed JSON
+     * (`03-design/change-points.md`). `request_json` is the record: `first`,
+     * optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+     * `utcOffsetSeconds` or `zone`, and optional `kinds`.
+     */
+    public final MethodHandle ts_almanac_changes;
+
+    /**
      * Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two
@@ -5004,6 +5054,8 @@ public final class Native {
         ts_chart_found = linker.downcallHandle(symbols.find("ts_chart_found").orElseThrow(() -> missing("ts_chart_found")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_time_resolve = linker.downcallHandle(symbols.find("ts_time_resolve").orElseThrow(() -> missing("ts_time_resolve")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_time_civil = linker.downcallHandle(symbols.find("ts_time_civil").orElseThrow(() -> missing("ts_time_civil")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_DOUBLE, ADDRESS, JAVA_SHORT, ADDRESS, ADDRESS));
+        ts_time_zone_database = linker.downcallHandle(symbols.find("ts_time_zone_database").orElseThrow(() -> missing("ts_time_zone_database")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
+        ts_time_load_zones = linker.downcallHandle(symbols.find("ts_time_load_zones").orElseThrow(() -> missing("ts_time_load_zones")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_LONG, ADDRESS, JAVA_LONG, ADDRESS, JAVA_LONG, ADDRESS, ADDRESS));
         ts_time_convert = linker.downcallHandle(symbols.find("ts_time_convert").orElseThrow(() -> missing("ts_time_convert")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_DOUBLE, JAVA_INT, JAVA_INT, ADDRESS));
         ts_time_delta_t = linker.downcallHandle(symbols.find("ts_time_delta_t").orElseThrow(() -> missing("ts_time_delta_t")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_DOUBLE, ADDRESS));
         ts_intl_load_pack = linker.downcallHandle(symbols.find("ts_intl_load_pack").orElseThrow(() -> missing("ts_intl_load_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_LONG, ADDRESS));
@@ -5025,6 +5077,7 @@ public final class Native {
         ts_almanac_digest = linker.downcallHandle(symbols.find("ts_almanac_digest").orElseThrow(() -> missing("ts_almanac_digest")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_next = linker.downcallHandle(symbols.find("ts_almanac_next").orElseThrow(() -> missing("ts_almanac_next")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_festival_pack = linker.downcallHandle(symbols.find("ts_almanac_festival_pack").orElseThrow(() -> missing("ts_almanac_festival_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_changes = linker.downcallHandle(symbols.find("ts_almanac_changes").orElseThrow(() -> missing("ts_almanac_changes")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_syllables = linker.downcallHandle(symbols.find("ts_naming_syllables").orElseThrow(() -> missing("ts_naming_syllables")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_read = linker.downcallHandle(symbols.find("ts_naming_read").orElseThrow(() -> missing("ts_naming_read")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

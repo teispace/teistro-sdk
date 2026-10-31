@@ -420,6 +420,7 @@ pub fn records() -> Vec<Record> {
     #[cfg(feature = "chart")]
     all.extend(naming_records());
     all.extend(almanac_records());
+    all.extend(almanac_lookup_records());
     all.extend(time_records());
     all.extend(engine_records());
     all.sort_by_key(|record| record.name);
@@ -485,11 +486,10 @@ fn naming_records() -> [Record; 5] {
     ]
 }
 
-/// The almanac's records every build carries: a range's days with what is
-/// asked beside them, its festivals as a feed, why a published day differs
-/// from the rule's, a digest, a sankalpa's time, an ashauch, and a death's first
-/// year.
-fn almanac_records() -> [Record; 8] {
+/// The almanac's records every build carries over a range or a death: its
+/// change points, an ashauch, a first year, its days with what is asked
+/// beside them, and its festivals as a feed.
+fn almanac_records() -> [Record; 5] {
     [
         Record {
             name: "almanac.changes",
@@ -540,6 +540,13 @@ fn almanac_records() -> [Record; 8] {
             run: festival_calendar,
             schemas: schemas!(crate::area::FestivalCalendarAsked => String),
         },
+    ]
+}
+
+/// The rest of the almanac's records: what a pack holds, a digest, the next
+/// day of a rule, why a published day differs, and a sankalpa's time.
+fn almanac_lookup_records() -> [Record; 5] {
+    [
         Record {
             name: "almanac.festivalPack",
             boundary: "ts_almanac_festival_pack",

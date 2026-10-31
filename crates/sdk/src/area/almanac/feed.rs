@@ -527,13 +527,20 @@ struct Classes {
     tradition: Option<String>,
 }
 
-/// A rule's catalogue fields, the one place the feed reads them.
-///
-/// SR-02 adds them to the rules: this is where they arrive. Until a rule
-/// carries them a selector naming them is refused by
-/// [`refuse_unclassified`] rather than answered with an empty feed.
-fn classes_of(_festivals: &FestivalRequest, _rule: &str) -> Classes {
-    Classes::default()
+/// A rule's catalogue fields, the one place the feed reads them. A rule
+/// that carries none is refused by [`refuse_unclassified`] rather than
+/// answered with an empty feed.
+fn classes_of(festivals: &FestivalRequest, rule: &str) -> Classes {
+    fn short<T: Serialize>(member: T) -> Option<String> {
+        let spelt = serde_json::to_value(member).ok()?;
+        let spelt = spelt.as_str()?;
+        Some(spelt.rsplit('.').next().unwrap_or(spelt).to_owned())
+    }
+    let meta = festivals.meta_of(rule);
+    Classes {
+        kind: meta.and_then(|meta| meta.kind).and_then(short),
+        tradition: meta.and_then(|meta| meta.tradition).and_then(short),
+    }
 }
 
 impl FeedSelector {

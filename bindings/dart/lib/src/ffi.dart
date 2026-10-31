@@ -1885,6 +1885,15 @@ final class PanchangaRequestStruct extends ffi.Struct {
   /// Example: {"rules":"DHARMASINDHU"}. May be null.
   external ffi.Pointer<ffi.Char> festivalsJson;
 
+  /// The zone the days are reckoned on, as JSON, the record
+  /// `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+  /// "Asia/Kathmandu"}`. Each day is then read on its own offset,
+  /// `utc_offset_seconds` is not read, and the answer's provenance names
+  /// the zone's offset, source, era and database
+  /// (`03-design/time-and-timezone.md` §3.4). Null for the offset.
+  /// Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
+  external ffi.Pointer<ffi.Char> zoneJson;
+
 }
 
 typedef TsAbiVersionNative = ffi.Uint32 Function();
@@ -1957,6 +1966,10 @@ typedef TsTimeResolveNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Point
 typedef TsTimeResolveDart = int Function(ffi.Pointer<Context>, ffi.Pointer<CivilDateTimeStruct>, ffi.Pointer<ZoneSpecStruct>, ffi.Pointer<ZoneResolutionStruct>);
 typedef TsTimeCivilNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Double, ffi.Pointer<ZoneSpecStruct>, ffi.Uint16, ffi.Pointer<CivilDateTimeStruct>, ffi.Pointer<ZoneResolutionStruct>);
 typedef TsTimeCivilDart = int Function(ffi.Pointer<Context>, double, ffi.Pointer<ZoneSpecStruct>, int, ffi.Pointer<CivilDateTimeStruct>, ffi.Pointer<ZoneResolutionStruct>);
+typedef TsTimeZoneDatabaseNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
+typedef TsTimeZoneDatabaseDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StringStruct>);
+typedef TsTimeLoadZonesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Pointer<ffi.Uint8>, ffi.Size, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsTimeLoadZonesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Uint8>, int, ffi.Pointer<ffi.Uint8>, int, ffi.Pointer<ffi.Uint8>, int, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsTimeConvertNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Double, ffi.Uint32, ffi.Uint32, ffi.Pointer<TimeConversionStruct>);
 typedef TsTimeConvertDart = int Function(ffi.Pointer<Context>, double, int, int, ffi.Pointer<TimeConversionStruct>);
 typedef TsTimeDeltaTNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Double, ffi.Pointer<DeltaTStruct>);
@@ -1999,6 +2012,8 @@ typedef TsAlmanacNextNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Point
 typedef TsAlmanacNextDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalPackNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacFestivalPackDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacChangesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacChangesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNamingSyllablesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2076,6 +2091,8 @@ final class TeistroLibrary {
         ts_chart_found = library.lookupFunction<TsChartFoundNative, TsChartFoundDart>('ts_chart_found'),
         ts_time_resolve = library.lookupFunction<TsTimeResolveNative, TsTimeResolveDart>('ts_time_resolve'),
         ts_time_civil = library.lookupFunction<TsTimeCivilNative, TsTimeCivilDart>('ts_time_civil'),
+        ts_time_zone_database = library.lookupFunction<TsTimeZoneDatabaseNative, TsTimeZoneDatabaseDart>('ts_time_zone_database'),
+        ts_time_load_zones = library.lookupFunction<TsTimeLoadZonesNative, TsTimeLoadZonesDart>('ts_time_load_zones'),
         ts_time_convert = library.lookupFunction<TsTimeConvertNative, TsTimeConvertDart>('ts_time_convert'),
         ts_time_delta_t = library.lookupFunction<TsTimeDeltaTNative, TsTimeDeltaTDart>('ts_time_delta_t'),
         ts_intl_load_pack = library.lookupFunction<TsIntlLoadPackNative, TsIntlLoadPackDart>('ts_intl_load_pack'),
@@ -2097,6 +2114,7 @@ final class TeistroLibrary {
         ts_almanac_digest = library.lookupFunction<TsAlmanacDigestNative, TsAlmanacDigestDart>('ts_almanac_digest'),
         ts_almanac_next = library.lookupFunction<TsAlmanacNextNative, TsAlmanacNextDart>('ts_almanac_next'),
         ts_almanac_festival_pack = library.lookupFunction<TsAlmanacFestivalPackNative, TsAlmanacFestivalPackDart>('ts_almanac_festival_pack'),
+        ts_almanac_changes = library.lookupFunction<TsAlmanacChangesNative, TsAlmanacChangesDart>('ts_almanac_changes'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
         ts_naming_syllables = library.lookupFunction<TsNamingSyllablesNative, TsNamingSyllablesDart>('ts_naming_syllables'),
         ts_naming_read = library.lookupFunction<TsNamingReadNative, TsNamingReadDart>('ts_naming_read'),
@@ -2308,6 +2326,26 @@ final class TeistroLibrary {
   /// The civil date-time of a UTC instant in a zone, in a calendar, with
   /// the resolution that applied.
   final TsTimeCivilDart ts_time_civil;
+
+  /// The zone database a context reads, as JSON: `{source, version, zones,
+  /// bundled}` (`03-design/zone-packs.md` §4).
+  final TsTimeZoneDatabaseDart ts_time_zone_database;
+
+  /// Verifies a signed zone pack and replaces the context's zone database
+  /// with it, answering the database as `ts_time_zone_database` does.
+  /// `pack` is the file's exact bytes, `signature` the publisher's detached
+  /// Ed25519 signature over them (64 bytes) and `key` the publisher's public
+  /// key (32 bytes), which the caller fixes at its own build: the library
+  /// embeds none. A release older than `at_least`, the newest the caller has
+  /// applied (`""` for any), is refused, so a replayed pack cannot roll a
+  /// correction back. A refused pack leaves the context as it was.
+  ///
+  /// A key that is no curve point is `INVALID_ARG` on `key`; a signature
+  /// that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+  /// bytes that are not a pack, `INVALID_ARG` on the field that is wrong; an
+  /// older release, `INVALID_ARG` on `version`. A build without
+  /// `signed-packs` answers `CAPABILITY`.
+  final TsTimeLoadZonesDart ts_time_load_zones;
 
   /// Converts an instant between UT1, TT and UTC under the context's Delta T
   /// model, reporting what was applied. A model that cannot answer for the
@@ -2614,6 +2652,12 @@ final class TeistroLibrary {
   /// reckoned, so a context without an ephemeris answers. A key it does not
   /// read or a pack it does not ship is `INVALID_ARG`, named under `pack`.
   final TsAlmanacFestivalPackDart ts_almanac_festival_pack;
+
+  /// Every instant in a range at which something changes, as sealed JSON
+  /// (`03-design/change-points.md`). `request_json` is the record: `first`,
+  /// optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+  /// `utcOffsetSeconds` or `zone`, and optional `kinds`.
+  final TsAlmanacChangesDart ts_almanac_changes;
 
   /// Matches two names star to star (naam milan) and answers with the
   /// `naam` blob: each name's first syllable in the śatapada cakra, the
@@ -5407,7 +5451,7 @@ final class IntlLoaded {
 /// one day passes a range of one.
 final class PanchangaRequest {
   /// A PanchangaRequest with every field named.
-  const PanchangaRequest({required this.calendar, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, this.muhurtaJson, this.festivalsJson});
+  const PanchangaRequest({required this.calendar, required this.fromYear, required this.fromMonth, required this.fromDay, required this.toMonth, required this.toDay, required this.toYear, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, this.muhurtaJson, this.festivalsJson, this.zoneJson});
 
   /// The calendar the range's dates are written in.
   /// Enum: Calendar. Example: 0.
@@ -5518,8 +5562,17 @@ final class PanchangaRequest {
   /// Example: {"rules":"DHARMASINDHU"}. May be null.
   final String? festivalsJson;
 
+  /// The zone the days are reckoned on, as JSON, the record
+  /// `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+  /// "Asia/Kathmandu"}`. Each day is then read on its own offset,
+  /// `utc_offset_seconds` is not read, and the answer's provenance names
+  /// the zone's offset, source, era and database
+  /// (`03-design/time-and-timezone.md` §3.4). Null for the offset.
+  /// Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
+  final String? zoneJson;
+
   /// This value with the fields given replaced, and the rest kept.
-  PanchangaRequest copyWith({Calendar? calendar, int? fromYear, int? fromMonth, int? fromDay, int? toMonth, int? toDay, int? toYear, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, String? muhurtaJson, String? festivalsJson}) => PanchangaRequest(
+  PanchangaRequest copyWith({Calendar? calendar, int? fromYear, int? fromMonth, int? fromDay, int? toMonth, int? toDay, int? toYear, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, String? muhurtaJson, String? festivalsJson, String? zoneJson}) => PanchangaRequest(
     calendar: calendar ?? this.calendar,
     fromYear: fromYear ?? this.fromYear,
     fromMonth: fromMonth ?? this.fromMonth,
@@ -5534,6 +5587,7 @@ final class PanchangaRequest {
     sections: sections ?? this.sections,
     muhurtaJson: muhurtaJson ?? this.muhurtaJson,
     festivalsJson: festivalsJson ?? this.festivalsJson,
+    zoneJson: zoneJson ?? this.zoneJson,
   );
 
   /// Writes this value into a C struct the call takes by pointer.
@@ -5563,6 +5617,9 @@ final class PanchangaRequest {
     raw.festivalsJson = festivalsJson == null
         ? ffi.nullptr
         : festivalsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.zoneJson = zoneJson == null
+        ? ffi.nullptr
+        : zoneJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -5588,6 +5645,9 @@ final class PanchangaRequest {
         festivalsJson: raw.festivalsJson == ffi.nullptr
             ? null
             : raw.festivalsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        zoneJson: raw.zoneJson == ffi.nullptr
+            ? null
+            : raw.zoneJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 
@@ -5955,6 +6015,49 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_time_civil(_handle, jdUtc, rawzone, calendar.id, outCivil, outResolution);
         if (status != 0) _fail(status);
         return (civil: CivilDateTime.read(outCivil), resolution: ZoneResolution.read(outResolution));
+    });
+  }
+
+  /// The zone database a context reads, as JSON: `{source, version, zones,
+  /// bundled}` (`03-design/zone-packs.md` §4).
+  String timeZoneDatabase() {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_time_zone_database(_handle, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Verifies a signed zone pack and replaces the context's zone database
+  /// with it, answering the database as `ts_time_zone_database` does.
+  /// `pack` is the file's exact bytes, `signature` the publisher's detached
+  /// Ed25519 signature over them (64 bytes) and `key` the publisher's public
+  /// key (32 bytes), which the caller fixes at its own build: the library
+  /// embeds none. A release older than `at_least`, the newest the caller has
+  /// applied (`""` for any), is refused, so a replayed pack cannot roll a
+  /// correction back. A refused pack leaves the context as it was.
+  ///
+  /// A key that is no curve point is `INVALID_ARG` on `key`; a signature
+  /// that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+  /// bytes that are not a pack, `INVALID_ARG` on the field that is wrong; an
+  /// older release, `INVALID_ARG` on `version`. A build without
+  /// `signed-packs` answers `CAPABILITY`.
+  String timeLoadZones(Uint8List pack, Uint8List signature, Uint8List key, String atLeast) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawpack = arena<ffi.Uint8>(pack.length);
+        rawpack.asTypedList(pack.length).setAll(0, pack);
+        final rawsignature = arena<ffi.Uint8>(signature.length);
+        rawsignature.asTypedList(signature.length).setAll(0, signature);
+        final rawkey = arena<ffi.Uint8>(key.length);
+        rawkey.asTypedList(key.length).setAll(0, key);
+        final rawatLeast = atLeast.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_time_load_zones(_handle, rawpack, pack.length, rawsignature, signature.length, rawkey, key.length, rawatLeast, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 
@@ -6454,6 +6557,21 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_almanac_festival_pack(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Every instant in a range at which something changes, as sealed JSON
+  /// (`03-design/change-points.md`). `request_json` is the record: `first`,
+  /// optional `last`, `calendar`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+  /// `utcOffsetSeconds` or `zone`, and optional `kinds`.
+  String almanacChanges(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_changes(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });
