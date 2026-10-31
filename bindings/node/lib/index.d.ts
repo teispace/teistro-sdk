@@ -5872,6 +5872,14 @@ export interface FestivalRequest {
    * (`03-design/festival-metadata.md`).
    */
   readonly only?: import('./requests.js').MetaFilter | null;
+  /**
+   * The days the tabular Hijri calendar is moved toward a sighting, −2 to
+   * 2, for the rules kept on its dates: under 1 a day is read as the table
+   * reads the next, so a month begins a day earlier. A published set's day
+   * still lays over the moved one; none when left out
+   * (`03-design/published-overrides.md` §7).
+   */
+  readonly hijriOffset?: -2 | -1 | 0 | 1 | 2 | null;
 }
 
 /** One change a published day was tried under, or the reason it differs. */

@@ -198,6 +198,7 @@ pub use scale::{Conversion, Scale};
 pub use teistro_astro::DeltaTModel;
 pub use teistro_astro::delta_t::DeltaT;
 pub use teistro_calendar::arithmetic::{DateSpan, Overflow};
+pub use teistro_calendar::hijri::HijriOffset;
 /// What an iCalendar feed's events say (`03-design/icalendar.md`).
 pub mod calendar_feed {
     pub use teistro_calendar::ical::{Alarm, Color, Hints, When};

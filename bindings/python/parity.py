@@ -2937,6 +2937,13 @@ def main() -> None:
                 "civilWeekday": {"calendar": "calendar.GREGORIAN", "month": 10, "weekday": "vara.RAVIVARA", "nth": -1},
             },
         )
+        # A rule kept on the tenth of Rabi II by the tabular Hijri
+        # calendar, asked with the calendar moved a day toward a sighting.
+        own_hijri: DatedRule = {
+            "key": "RABI_II_TENTH",
+            "source": "the tenth of Rabi II",
+            "civilDate": {"calendar": "calendar.HIJRI_TABULAR", "month": 4, "day": 10},
+        }
         own_following: FollowingRule = {
             "key": "TWO_AFTER",
             "source": "two days after Lakshmi puja",
@@ -2948,6 +2955,7 @@ def main() -> None:
             ("amended", {"rules": ["DHARMASINDHU", own_rule]}),
             ("nepal", {"rules": ["NEPAL", own_following]}),
             ("dated", {"rules": ["NEPAL", *own_dated]}),
+            ("hijri", {"rules": [own_hijri], "hijriOffset": 1}),
             ("published", {"rules": "DHARMASINDHU", "published": [PUBLISHED_SET]}),
         )
         # The shipped pack is asked of the lean call, the others of the

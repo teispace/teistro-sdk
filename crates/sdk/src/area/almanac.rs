@@ -10,6 +10,7 @@ use teistro_calendar::CalendarDate;
 #[cfg(feature = "muhurta")]
 use teistro_calendar::CalendarSystem;
 use teistro_calendar::FixedDay;
+use teistro_calendar::hijri::HijriOffset;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::Calendar;
@@ -536,7 +537,7 @@ impl<'a> AlmanacArea<'a> {
         let mut found = karmakala
             .merged(counted)
             .merged(ekadashis(request.ekadashis(), &viewed)?)
-            .merged(dated(request.dated(), &viewed)?)
+            .merged(dated(request.dated(), &viewed, request.hijri_offset())?)
             .merged(self.kept_anniversaries(
                 from.calendar,
                 offset,
@@ -581,6 +582,7 @@ impl<'a> AlmanacArea<'a> {
             request,
         });
         event_convention(&mut provenance, request.anniversaries());
+        hijri_convention(&mut provenance, request.hijri_offset());
         provenance
             .applied_conventions
             .push(widened_days(&before, &after.1));
@@ -1556,6 +1558,20 @@ fn event_convention(provenance: &mut Provenance, asked: &[Anniversary]) {
             value: String::from("SUNRISE_BY_SHARE"),
             reason: String::from(
                 "no text rules on a family's own event: it is read as a janma tithi is, in the ordinary month, at the window stated (sunrise by default), by Dharmasindhu p. 266's shares",
+            ),
+        });
+    }
+}
+
+/// Names a request's move of the tabular Hijri calendar, when it moves
+/// it (`03-design/published-overrides.md` §7).
+fn hijri_convention(provenance: &mut Provenance, offset: HijriOffset) {
+    if !offset.is_none() {
+        provenance.applied_conventions.push(Convention {
+            knob: String::from("festivals.hijriOffset"),
+            value: offset.to_string(),
+            reason: String::from(
+                "the request moved the tabular Hijri calendar toward a sighting: each day of a rule kept on a Hijri date is read as the table reads the day that many days on; a published set's day still lays over it",
             ),
         });
     }

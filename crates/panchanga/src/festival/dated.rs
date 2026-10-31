@@ -17,6 +17,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_calendar::easter::{Computus, easter};
 use teistro_calendar::gregorian::gregorian_from_fixed;
+use teistro_calendar::hijri::HijriOffset;
 use teistro_calendar::tibetan::{self, SkippedDay, TIBETAN_RANGE};
 use teistro_calendar::{CalendarDate, CalendarSystem, FixedDay, shipped};
 use teistro_core::catalogue::{Calendar, Nakshatra, Vara};
@@ -806,13 +807,20 @@ pub struct DatedObservance {
 }
 
 /// The observances each dated rule gives over `days`, in the order of
-/// the days, then of the rules.
+/// the days, then of the rules. A rule on a date of the tabular Hijri
+/// calendar reads each day moved by `hijri` toward a sighting
+/// (`03-design/published-overrides.md` §7), and its `on` is the moved
+/// date; no other calendar moves.
 ///
 /// # Errors
 ///
 /// A rule's own refusal ([`DatedRule::check`]), or a day its calendar
 /// cannot convert.
-pub fn dated(rules: &[DatedRule], days: &[FestivalDay]) -> Result<Observances, Error> {
+pub fn dated(
+    rules: &[DatedRule],
+    days: &[FestivalDay],
+    hijri: HijriOffset,
+) -> Result<Observances, Error> {
     for rule in rules {
         rule.check()?;
     }
@@ -840,8 +848,12 @@ pub fn dated(rules: &[DatedRule], days: &[FestivalDay]) -> Result<Observances, E
                         .then_some(on)
                 }
                 Dated::CivilDate { calendar, .. } | Dated::CivilWeekday { calendar, .. } => {
+                    let on = if calendar == Calendar::HijriTabular {
+                        hijri.read(fixed)?
+                    } else {
+                        system(calendar)?.date_of(fixed)?
+                    };
                     let calendar = system(calendar)?;
-                    let on = calendar.date_of(fixed)?;
                     let length = calendar.month_length(on.year, on.month)?;
                     rule.on.holds(&on, length, day.vara).then_some(on)
                 }

@@ -15602,6 +15602,7 @@ final class FestivalRequest extends _Facade {
     required this.rules,
     this.published = const [],
     this.only,
+    this.hijriOffset,
   });
 
   /// A [FestivalPack], or a list of packs and rules spelt out.
@@ -15635,6 +15636,17 @@ final class FestivalRequest extends _Facade {
   /// ```
   final MetaFilter? only;
 
+  /// The days the tabular Hijri calendar is moved toward a sighting, −2 to
+  /// 2, for the rules kept on its dates: under 1 a day is read as the table
+  /// reads the next, so a month begins a day earlier. A published set's day
+  /// still lays over the moved one; none when null
+  /// (`03-design/published-overrides.md` §7).
+  ///
+  /// ```dart
+  /// const FestivalRequest(rules: <Object>[], hijriOffset: 1);
+  /// ```
+  final int? hijriOffset;
+
   /// Its JSON, as the SDK reads it.
   @override
   Object? get _wire => <String, Object?>{
@@ -15648,6 +15660,7 @@ final class FestivalRequest extends _Facade {
     if (published.isNotEmpty)
       'published': [for (final set in published) _written(set)],
     if (only case final kept?) 'only': _written(kept),
+    if (hijriOffset case final days?) 'hijriOffset': days,
   };
 
   String get _json => jsonEncode(_wire);

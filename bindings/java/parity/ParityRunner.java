@@ -2981,6 +2981,13 @@ public final class ParityRunner {
         packs.put("amended", map("rules", List.<Object>of("DHARMASINDHU", ownRule)));
         packs.put("nepal", map("rules", List.<Object>of("NEPAL", ownFollowing)));
         packs.put("dated", map("rules", List.<Object>of("NEPAL", kartikFirst, lastSunday)));
+        // A rule kept on the tenth of Rabi II by the tabular Hijri calendar,
+        // asked with the calendar moved a day toward a sighting.
+        packs.put("hijri", map("rules", List.<Object>of(map(
+                "key", "RABI_II_TENTH",
+                "source", "the tenth of Rabi II",
+                "civilDate", map("calendar", "calendar.HIJRI_TABULAR", "month", 4, "day", 10))),
+                "hijriOffset", 1));
         // One published set with each action, as every runner asks it: a SET
         // moving Lakshmi puja, a WITHDRAW, an ADD and a SET no occurrence
         // takes.

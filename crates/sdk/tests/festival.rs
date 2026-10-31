@@ -861,3 +861,128 @@ fn a_rule_on_the_suns_entry_reads_as_a_binding_writes_it() {
     .unwrap_err();
     assert_eq!(refused.field(), Some("festivals.rules[0].sunEnters.days"));
 }
+
+/// The days a request with this `hijriOffset` keeps over the turn of
+/// Shawwal 1446 at Delhi, each with its rule and the Hijri date it was
+/// kept on, and the conventions its answer names.
+fn kept_by_hijri(offset: Option<i8>, published: &str) -> (Vec<(String, Day, Day)>, Vec<String>) {
+    let offset = offset.map_or_else(String::new, |days| format!(r#","hijriOffset":{days}"#));
+    let text = format!(
+        r#"{{"rules":[
+            {{"key":"EID_AL_FITR","source":"1 Shawwal","civilDate":{{"calendar":"HIJRI_TABULAR","month":10,"day":1}}}},
+            {{"key":"FIRST_MONDAY","source":"Shawwal's first Monday","civilWeekday":{{"calendar":"HIJRI_TABULAR","month":10,"weekday":"SOMAVARA","nth":1}}}},
+            {{"key":"APRIL_FIRST","source":"1 April","civilDate":{{"calendar":"GREGORIAN","month":4,"day":1}}}}
+        ]{offset}{published}}}"#
+    );
+    let asked = FestivalRequest::from_json(&text).unwrap();
+    let answer = context()
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 3, 27),
+            &CalendarDate::defined(Calendar::Gregorian, 2025, 4, 8),
+            &delhi(),
+            UtcOffset::literal(5, 30, 0),
+            &asked,
+        )
+        .unwrap();
+    let kept = answer
+        .value
+        .dated
+        .into_iter()
+        .map(|kept| {
+            (
+                kept.rule,
+                (kept.day.year, kept.day.month, kept.day.day),
+                (kept.on.year, kept.on.month, kept.on.day),
+            )
+        })
+        .collect();
+    let named = answer
+        .provenance
+        .applied_conventions
+        .into_iter()
+        .filter(|applied| applied.knob == "festivals.hijriOffset")
+        .map(|applied| applied.value)
+        .collect();
+    (kept, named)
+}
+
+#[test]
+fn a_hijri_offset_moves_the_tabular_days_and_says_so() {
+    let day = |rule: &str, on: Day, month: u8, date: u8| (rule.to_owned(), on, (1446, month, date));
+    // The table: 1 Shawwal 1446 is Monday 31 March 2025.
+    let (table, named) = kept_by_hijri(None, "");
+    let april_first = || ("APRIL_FIRST".to_owned(), (2025, 4, 1), (2025, 4, 1));
+    assert_eq!(
+        table,
+        [
+            day("EID_AL_FITR", (2025, 3, 31), 10, 1),
+            day("FIRST_MONDAY", (2025, 3, 31), 10, 1),
+            april_first(),
+        ]
+    );
+    assert!(named.is_empty(), "no offset, none named: {named:?}");
+    // Seen a day early: Shawwal begins on Sunday the 30th, and its first
+    // Monday is its second day; the Gregorian rule stays.
+    let (early, named) = kept_by_hijri(Some(1), "");
+    assert_eq!(
+        early,
+        [
+            day("EID_AL_FITR", (2025, 3, 30), 10, 1),
+            day("FIRST_MONDAY", (2025, 3, 31), 10, 2),
+            april_first(),
+        ]
+    );
+    assert_eq!(named, ["+1 day"]);
+    // A day late: Tuesday 1 April, and the first Monday a week on.
+    let (late, named) = kept_by_hijri(Some(-1), "");
+    assert_eq!(
+        late,
+        [
+            day("EID_AL_FITR", (2025, 4, 1), 10, 1),
+            april_first(),
+            day("FIRST_MONDAY", (2025, 4, 7), 10, 7),
+        ]
+    );
+    assert_eq!(named, ["-1 day"]);
+    // An offset of 0 is the table, named as none.
+    assert_eq!(kept_by_hijri(Some(0), "").1, Vec::<String>::new());
+    // A published day still lays over the moved one.
+    let set = r#","published":[{"format":"teistro.published/1","publisher":"a mosque committee","id":"eid-1446","version":1,
+        "entries":[{"action":"SET","rule":"EID_AL_FITR","day":{"calendar":"GREGORIAN","year":2025,"month":4,"day":2},"source":"notice 1"}]}]"#;
+    let (published, _) = kept_by_hijri(Some(1), set);
+    assert_eq!(
+        published
+            .iter()
+            .find(|kept| kept.0 == "EID_AL_FITR")
+            .map(|kept| kept.1),
+        Some((2025, 4, 2))
+    );
+}
+
+#[test]
+fn a_hijri_offset_past_two_days_is_refused_by_name() {
+    for days in ["3", "-3", "127"] {
+        let refused =
+            FestivalRequest::from_json(&format!(r#"{{"rules":[],"hijriOffset":{days}}}"#))
+                .unwrap_err();
+        assert_eq!(
+            refused.field(),
+            Some("festivals.hijriOffset"),
+            "{days}: {refused:?}"
+        );
+        assert_eq!(refused.status, teistro::Status::OutOfRange, "{days}");
+    }
+    for wrong in ["1.5", "\"1\"", "200"] {
+        let refused =
+            FestivalRequest::from_json(&format!(r#"{{"rules":[],"hijriOffset":{wrong}}}"#))
+                .unwrap_err();
+        assert!(
+            refused
+                .field()
+                .is_some_and(|field| field.starts_with("festivals")),
+            "{wrong}: {refused:?}"
+        );
+    }
+    assert!(teistro::HijriOffset::new(3).is_err());
+}

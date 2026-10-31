@@ -8,6 +8,7 @@
 
 use serde::Serialize;
 use serde_json::Value;
+use teistro_calendar::hijri::HijriOffset;
 use teistro_core::error::Error;
 use teistro_panchanga::festival::{
     Anniversary, Dated, DatedRule, EkadashiRule, FestivalMeta, FestivalRule, FollowingRule,
@@ -235,6 +236,11 @@ pub struct FestivalRequest {
     /// all, as `dated` is (`03-design/festival-metadata.md` §4).
     #[serde(skip_serializing_if = "Option::is_none")]
     only: Option<MetaFilter>,
+    /// The days the tabular Hijri calendar is moved toward a sighting,
+    /// for the rules kept on its dates; left out when none, as `dated` is
+    /// (`03-design/published-overrides.md` §7).
+    #[serde(rename = "hijriOffset", skip_serializing_if = "HijriOffset::is_none")]
+    hijri_offset: HijriOffset,
 }
 
 impl From<FestivalPack> for FestivalRequest {
@@ -304,7 +310,36 @@ impl FestivalRequest {
             published: Vec::new(),
             saits: Vec::new(),
             only: None,
+            hijri_offset: HijriOffset::NONE,
         }
+    }
+
+    /// The same request with the tabular Hijri calendar moved `offset`
+    /// days toward a sighting, for every rule kept on one of its dates
+    /// (`03-design/published-overrides.md` §7). A published set's day
+    /// still lays over the moved one.
+    ///
+    /// ```
+    /// use teistro::{FestivalRequest, HijriOffset};
+    ///
+    /// let asked = FestivalRequest::new(Vec::new()).with_hijri_offset(HijriOffset::new(1)?);
+    /// assert_eq!(asked.hijri_offset().days(), 1);
+    /// let text = r#"{"rules": [], "hijriOffset": 1}"#;
+    /// assert_eq!(FestivalRequest::from_json(text)?, asked);
+    /// let refused = FestivalRequest::from_json(r#"{"rules": [], "hijriOffset": 3}"#).unwrap_err();
+    /// assert_eq!(refused.field(), Some("festivals.hijriOffset"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_hijri_offset(mut self, offset: HijriOffset) -> FestivalRequest {
+        self.hijri_offset = offset;
+        self
+    }
+
+    /// The days the tabular Hijri calendar is moved toward a sighting.
+    #[must_use]
+    pub fn hijri_offset(&self) -> HijriOffset {
+        self.hijri_offset
     }
 
     /// The same request keeping, of its answer, only the rules `only`
@@ -635,6 +670,7 @@ impl FestivalRequest {
             .collect();
         Some(FestivalRequest {
             only: self.only.clone(),
+            hijri_offset: self.hijri_offset,
             rules: self
                 .rules
                 .iter()
@@ -928,6 +964,10 @@ impl FestivalRequest {
         if let Some(only) = asked.only {
             request = request.keeping(only);
         }
+        if let Some(days) = asked.hijri_offset {
+            let offset = HijriOffset::new(days).map_err(|why| why.under(FESTIVALS))?;
+            request = request.with_hijri_offset(offset);
+        }
         request.check().map_err(|why| why.under(FESTIVALS))?;
         Ok(request)
     }
@@ -1024,6 +1064,17 @@ pub(crate) struct Asked {
     /// out.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     only: Option<MetaFilter>,
+    /// The days the tabular Hijri calendar is moved toward a sighting, −2
+    /// to 2, for the rules kept on its dates: under 1 a day is read as the
+    /// table reads the next, so a month begins a day earlier. A published
+    /// set's day still lays over the moved one; none when left out.
+    #[serde(
+        default,
+        rename = "hijriOffset",
+        skip_serializing_if = "Option::is_none"
+    )]
+    #[cfg_attr(feature = "schema", schemars(range(min = -2, max = 2)))]
+    hijri_offset: Option<i8>,
 }
 
 /// The schema of [`Asked::rules`]: a pack's name, or a list of

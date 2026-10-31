@@ -11,6 +11,7 @@
 //! computed, and comes as data. Years are astronomical: before 1 AH is
 //! year 0.
 
+use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{Calendar, Era};
 use teistro_core::error::Error;
 
@@ -121,6 +122,145 @@ pub const fn hijri_from_fixed(fixed: FixedDay) -> (i32, u8, u8) {
     (year, month, day)
 }
 
+/// A reader's move of the tabular calendar toward a sighting: the days
+/// added to the tabular date, −2 to 2
+/// (`03-design/published-overrides.md` §7).
+///
+/// A sighted month begins on the evening the crescent is seen, a day or
+/// two either side of the table. Under +1 a day is read as the table
+/// reads the day after it, so the crescent was seen a day early and the
+/// month's first day comes a day earlier; under −1 a day later.
+///
+/// ```
+/// use teistro_calendar::gregorian::fixed_from_gregorian;
+/// use teistro_calendar::hijri::HijriOffset;
+///
+/// // 31 March 2025 is 1 Shawwal 1446 by the table.
+/// let eid = fixed_from_gregorian(2025, 3, 31);
+/// assert_eq!(HijriOffset::NONE.read(eid)?.day, 1);
+/// // Seen a day early, the 30th is already 1 Shawwal.
+/// let early = HijriOffset::new(1)?;
+/// let on = early.read(fixed_from_gregorian(2025, 3, 30))?;
+/// assert_eq!((on.month, on.day), (10, 1));
+/// // Past two days either way is refused, by name.
+/// let refused = HijriOffset::new(3).unwrap_err();
+/// assert_eq!(refused.field(), Some("hijriOffset"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(try_from = "i8", into = "i8")]
+pub struct HijriOffset(i8);
+
+impl HijriOffset {
+    /// The table as it is.
+    pub const NONE: HijriOffset = HijriOffset(0);
+
+    /// The most days a sighting is moved either way.
+    pub const MOST: i8 = 2;
+
+    /// An offset of `days`.
+    ///
+    /// ```
+    /// use teistro_calendar::hijri::HijriOffset;
+    ///
+    /// assert_eq!(HijriOffset::new(-2)?.days(), -2);
+    /// assert_eq!(HijriOffset::new(-3).unwrap_err().field(), Some("hijriOffset"));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `OUT_OF_RANGE` on `hijriOffset` past [`HijriOffset::MOST`] days
+    /// either way: a larger move is another calendar, which a published
+    /// set states month by month.
+    pub fn new(days: i8) -> Result<HijriOffset, Error> {
+        if (-HijriOffset::MOST..=HijriOffset::MOST).contains(&days) {
+            Ok(HijriOffset(days))
+        } else {
+            Err(out_of_range(format!(
+                "a Hijri offset moves the tabular calendar by at most {} days either way, not {days}",
+                HijriOffset::MOST
+            ))
+            .with_field("hijriOffset")
+            .with_hint("publish a sighted month as a published set's day instead"))
+        }
+    }
+
+    /// The days added to the tabular date.
+    ///
+    /// ```
+    /// use teistro_calendar::hijri::HijriOffset;
+    ///
+    /// assert_eq!(HijriOffset::new(1)?.days(), 1);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn days(self) -> i8 {
+        self.0
+    }
+
+    /// Whether it leaves the table as it is.
+    ///
+    /// ```
+    /// use teistro_calendar::hijri::HijriOffset;
+    ///
+    /// assert!(HijriOffset::NONE.is_none());
+    /// assert!(!HijriOffset::new(-1)?.is_none());
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub const fn is_none(self) -> bool {
+        self.0 == 0
+    }
+
+    /// The Hijri date of a fixed day under this offset: the tabular date
+    /// of the day `days` later.
+    ///
+    /// ```
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    /// use teistro_calendar::hijri::HijriOffset;
+    ///
+    /// // 1 April 2025 is 2 Shawwal 1446 by the table, 1 Shawwal a day late.
+    /// let late = HijriOffset::new(-1)?.read(fixed_from_gregorian(2025, 4, 1))?;
+    /// assert_eq!((late.month, late.day), (10, 1));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// The calendar's refusal of a day past its range.
+    pub fn read(self, fixed: FixedDay) -> Result<CalendarDate, Error> {
+        HijriTabular.date_of(fixed.plus_days(i64::from(self.0)))
+    }
+}
+
+impl TryFrom<i8> for HijriOffset {
+    type Error = Error;
+
+    fn try_from(days: i8) -> Result<HijriOffset, Error> {
+        HijriOffset::new(days)
+    }
+}
+
+impl From<HijriOffset> for i8 {
+    fn from(offset: HijriOffset) -> i8 {
+        offset.0
+    }
+}
+
+impl std::fmt::Display for HijriOffset {
+    /// The days with their sign and unit: `+1 day`, `-2 days`, `0 days`.
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let unit = if self.0.abs() == 1 { "day" } else { "days" };
+        if self.0 > 0 {
+            write!(f, "+{} {unit}", self.0)
+        } else {
+            write!(f, "{} {unit}", self.0)
+        }
+    }
+}
+
 fn check_year(year: i32) -> Result<(), Error> {
     if year < HIJRI_RANGE.0 || year > HIJRI_RANGE.1 {
         return Err(out_of_range(format!(
@@ -226,6 +366,36 @@ mod tests {
             "{}",
             refused.message
         );
+    }
+
+    #[test]
+    fn an_offset_moves_the_table_by_its_days_and_no_further() {
+        // 1 Shawwal 1446 by the table is 31 March 2025.
+        let table = HijriOffset::NONE
+            .read(fixed_from_gregorian(2025, 3, 31))
+            .unwrap();
+        assert_eq!((table.year, table.month, table.day), (1446, 10, 1));
+        for (days, (month, day)) in [(1, (3, 30)), (2, (3, 29)), (-1, (4, 1)), (-2, (4, 2))] {
+            let offset = HijriOffset::new(days).unwrap();
+            let on = offset.read(fixed_from_gregorian(2025, month, day)).unwrap();
+            assert_eq!((on.month, on.day), (10, 1), "{offset}");
+            assert_eq!(i8::from(offset), days);
+        }
+        for days in [3, -3, i8::MAX, i8::MIN] {
+            let refused = HijriOffset::new(days).unwrap_err();
+            assert_eq!(refused.status, teistro_core::error::Status::OutOfRange);
+            assert_eq!(refused.field(), Some("hijriOffset"));
+            assert!(serde_json::from_str::<HijriOffset>(&days.to_string()).is_err());
+        }
+        assert_eq!(
+            serde_json::from_str::<HijriOffset>("-2").unwrap().days(),
+            -2
+        );
+        assert_eq!(
+            [1, -1, 2, -2, 0].map(|d| HijriOffset::new(d).unwrap().to_string()),
+            ["+1 day", "-1 day", "+2 days", "-2 days", "0 days"]
+        );
+        assert!(HijriOffset::default().is_none() && !HijriOffset::new(1).unwrap().is_none());
     }
 
     #[test]
