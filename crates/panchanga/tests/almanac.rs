@@ -569,13 +569,10 @@ fn a_panchaka_is_named_by_the_vara_it_began_on() {
 /// so the name takes the civil date's vara rather than refusing the day.
 #[test]
 fn a_polar_day_names_its_panchaka() {
-    use teistro_core::settings::{PolarDayPolicy, SolarMonthStart};
+    use teistro_core::settings::PolarDayPolicy;
 
     let mut polar = SettingsPatch::default();
     polar.day.polar_day_policy = Some(PolarDayPolicy::NearestEvent);
-    // The default month start needs the sankranti day's sunrise, which a
-    // polar July lacks; the civil day of the sankranti does not.
-    polar.panchanga.solar_month_start = Some(SolarMonthStart::SankrantiDay);
     let tromso = Place::new(
         Latitude::literal(69.6492),
         Longitude::literal(18.9553),
@@ -592,4 +589,54 @@ fn a_polar_day_names_its_panchaka() {
         .collect();
     assert!(!held.is_empty(), "July holds a panchaka");
     assert!(held.iter().any(|d| d.named_panchaka.is_some()));
+}
+
+/// A day of the ayana sankrantis above the polar circle has a season
+/// under the default month start, whatever stands in for its sunrise: the
+/// Karka sankranti falls in the Arctic's midnight sun and the Antarctic's
+/// polar night, the Makara the other way round, and a day that lacks an arc
+/// takes the row's own (C930). Each month's season turns once.
+#[test]
+fn a_polar_sankranti_keeps_its_season_under_every_synthesising_policy() {
+    use teistro_core::catalogue::Ritu;
+    use teistro_core::settings::PolarDayPolicy;
+
+    let places = [(69.6492, 18.9553), (-77.8419, 166.6863)];
+    for policy in [PolarDayPolicy::NearestEvent, PolarDayPolicy::CivilMidnight] {
+        for (latitude, longitude) in places {
+            let mut patch = SettingsPatch::default();
+            patch.day.polar_day_policy = Some(policy);
+            let place = Place::new(
+                Latitude::literal(latitude),
+                Longitude::literal(longitude),
+                Altitude::literal(0.0),
+            );
+            for month in [1, 7] {
+                let days = with_almanac(&patch, |a| {
+                    a.between(&date(2024, month, 10), &date(2024, month, 20), &place)
+                        .unwrap()
+                });
+                let ritus: Vec<Ritu> = days.value.iter().map(|d| d.sun.ritu).collect();
+                let turns = ritus.windows(2).filter(|w| w[0] != w[1]).count();
+                assert_eq!(turns, 1, "{policy:?} at {latitude} in {month}: {ritus:?}");
+            }
+        }
+    }
+}
+
+/// `UNDEFINED` stands nothing in: the day itself is refused, by the day's
+/// own reason, before a month is asked for.
+#[test]
+fn an_undefined_polar_day_is_refused_with_the_policy_named() {
+    use teistro_core::settings::PolarDayPolicy;
+
+    let mut patch = SettingsPatch::default();
+    patch.day.polar_day_policy = Some(PolarDayPolicy::Undefined);
+    let tromso = Place::new(
+        Latitude::literal(69.6492),
+        Longitude::literal(18.9553),
+        Altitude::literal(0.0),
+    );
+    let refused = with_almanac(&patch, |a| a.day(&date(2024, 7, 16), &tromso).unwrap_err());
+    assert_eq!(refused.field(), Some("day.polar_day_policy"));
 }

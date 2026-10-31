@@ -3407,11 +3407,21 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Ok(match settings.panchanga.ritu {
             RituReckoning::Solar => {
                 let fixed = self.calendar.fixed_of(date)?;
+                // Under `NEAREST_EVENT` a polar day's window stands at the
+                // nearest sunrise, weeks off, and its signs are not the
+                // date's (C930). Every other window holds the civil noon.
+                let midnight = teistro_time::local_day::local_midnight(self.clock, fixed)?;
+                let civil = if window.contains(midnight.plus_days(0.5)?) {
+                    None
+                } else {
+                    let day = Interval::new(midnight, midnight.plus_days(1.0)?)?;
+                    Some(Self::signs(longitudes, Body::Sun, day, zodiac)?)
+                };
                 sky::solar_month(
                     settings.panchanga.solar_month_start,
                     fixed,
-                    sun,
-                    (place, self.clock, self.model),
+                    civil.as_deref().unwrap_or(sun),
+                    (place, self.clock, self.model, settings.day.polar_day_policy),
                 )?
                 .map_or_else(|| opening(sun), sky::ritu_of)
             }

@@ -150,8 +150,14 @@ discriminated union on every converted date.
 A day beyond the month's length for that year: `INVALID_ARG` with the
 length. A year outside the table: `OUT_OF_RANGE` with the coverage. A
 divergent date is a state, not an error. A rule that needs a sunrise on
-a day without one: `UNSUPPORTED` naming the day and the place (never at
-Kathmandu). A sankranti search that does not converge: `NOT_CONVERGED`
+a day without one: in the calendar engine, `UNSUPPORTED` naming the day
+and the place (never at Kathmandu). In an almanac's season, the rule reads
+the arc `day.polar_day_policy` stands in, the same bounds the day's row
+prints (`standing_arc`, C930): `CIVIL_MIDNIGHT` keeps a Karka or Makara
+sankranti on its civil day, `NEAREST_EVENT` compares it with the stood-in
+arc, which moves the month start by at most the rule's own one day, and
+`UNDEFINED` refuses on `day.polar_day_policy`. A polar window that does not
+hold the civil noon has its signs searched over the civil date. A sankranti search that does not converge: `NOT_CONVERGED`
 naming the sign and the instant (never seen; every search has a cap).
 
 ## 7. Performance budget
@@ -179,8 +185,8 @@ naming the sign and the instant (never seen; every search has a cap).
 - The rules: each named row places morning, afternoon and evening
   sankrantis as its tradition says (a model whose Sun rises at six and
   sets at eighteen); the clock decides the civil day; a rule needing a
-  sunrise refuses a polar day and the punya-kala rule needs the arc only
-  at the ayana sankrantis.
+  sunrise refuses a polar day unless a policy stands one in, and the
+  punya-kala rule needs the arc only at the ayana sankrantis.
 - The sankranti finder: the Mesha sankranti of 2024 falls on 13 April,
   the next sign a month later, under sixty evaluations.
 - The engine: a year of twelve months of 29 to 32 days, consecutive years
