@@ -3428,6 +3428,8 @@ SR-71 is finished: `Context` is `Send`, and `fork()` and `share()` (`SharedConte
 `Send + Sync`) give a worker a context over the same ephemeris and cache with its own locale,
 at no lock cost to one thread (C1030, `03-design/rust-consumer-surface.md`, "A context across
 threads").
+SR-68 is finished in Teimeris: `teimeris-sys` builds from a plain checkout with no staging step;
+publishing stays held.
 
 ### An almanac app's brief (from 2026-10-20)
 

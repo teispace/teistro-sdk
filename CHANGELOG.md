@@ -62,6 +62,8 @@ section's digest moves; a sankalpa's year carries none.
   books with its own locale; `share()` gives a `SharedContext`, `Send + Sync` and `Clone`, whose
   `context()` makes one per worker. Nothing locks on one thread: a render and a month cost what
   they did (`03-design/rust-consumer-surface.md`, "A context across threads"; C1030).
+- Teimeris builds from a plain checkout (SR-68), so the adapter's path dependency, a clone or a
+  `git` dependency needs no staging step. Publishing stays held.
 
 **A day in sentences; a polar sankranti answers.**
 **Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or
