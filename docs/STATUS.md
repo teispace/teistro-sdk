@@ -3424,6 +3424,10 @@ is `nepali-drik`, the old name an accepted alias that answers the same settings 
 (format 1.1, `clock`) say each day's offset, and the digest takes `zone`. SR-70 is finished:
 `month_number` on the tithi, and `tithiMonthNumber` in every binding. SR-64 is finished: RFC 4647
 lookup with no default, and `intl.lookupLocale`.
+SR-71 is finished: `Context` is `Send`, and `fork()` and `share()` (`SharedContext`,
+`Send + Sync`) give a worker a context over the same ephemeris and cache with its own locale,
+at no lock cost to one thread (C1030, `03-design/rust-consumer-surface.md`, "A context across
+threads").
 
 ### An almanac app's brief (from 2026-10-20)
 

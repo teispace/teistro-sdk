@@ -527,7 +527,7 @@ so the same dispatcher answers HTTP POST: `Mcp-Method`/`Mcp-Name`
 headers checked against the body (`HeaderMismatchError`), `Origin`
 validated, bound to loopback unless told otherwise, and authorization
 left to the host in front of it (the server holds no secret).
-`teistro::Context` is neither `Send` nor `Sync`, so a concurrent HTTP
+`teistro::Context` is `Send` and not `Sync`, so a concurrent HTTP
 transport builds a context per worker thread.
 
 *Built.* `--http ADDRESS` serves `/mcp` from `teistro_mcp::http::serve`

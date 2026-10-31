@@ -48,6 +48,11 @@ crc32fast = "1"
 fixed_decimal = "0.7"
 icu_locale_core = "2"
 icu_plurals = "2"
+# Only for its `sync` feature, which makes ICU4X's data payloads `Arc` rather
+# than `Rc`, so the engine is `Send + Sync` and a context can move between
+# threads (SR-71). Compiled data is a `&'static` reference, so no render
+# touches a reference count either way.
+icu_provider = { version = "2", features = ["sync"] }
 quick-xml = { version = "0.41", optional = true }
 schemars = { version = "1.2", optional = true }
 serde = { version = "1", features = ["derive"] }
@@ -71,3 +76,8 @@ harness = false
 
 [lints]
 workspace = true
+
+[package.metadata.cargo-machete]
+# Each is used where the tool cannot see it.
+# icu_provider: named for its `sync` feature, which `icu_plurals` reads.
+ignored = ["icu_provider"]

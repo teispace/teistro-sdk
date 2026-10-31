@@ -267,7 +267,7 @@ impl Intl {
                 ))
             })?;
             self.plurals
-                .insert(file.tag.clone(), plurals_for(&file.tag)?);
+                .insert(file.tag.clone(), Arc::new(plurals_for(&file.tag)?));
             self.locales.insert(
                 file.tag.clone(),
                 Arc::new(LocaleSource {

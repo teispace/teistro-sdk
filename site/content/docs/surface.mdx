@@ -98,9 +98,12 @@ What that buys, and what it costs:
 - **No result blob.** An operation answers with the crates' own types.
 - **`positions` answers `Completed`**, so a longitude is
   `sky.columns.at(0, 0)?.lon` rather than a decoded column.
-- **A context is neither `Send` nor `Sync`** — one context per worker,
-  which every binding already says and Rust's compiler enforces. The
-  part that decides it is the locale engine, not the ephemeris.
+- **A context is `Send` and not `Sync`** — it moves to a worker and
+  serves one thread at a time, the rule every binding states. A thread
+  that wants its own takes `sdk.fork()`, which shares the settings,
+  ephemeris and its cache; a server keeps `sdk.share()`, a
+  `SharedContext` that is `Send + Sync`, and asks it for a context per
+  request.
 - **The types are stricter in two places, not merely different.** A
   date's `resolution` is a `CalendarResolution` a `match` must cover
   where the other three hand over a string, so a resolution the SDK

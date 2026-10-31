@@ -3,8 +3,6 @@
 
 use core::cell::{Ref, RefCell, RefMut};
 use std::collections::BTreeMap;
-#[cfg(feature = "chart")]
-use std::rc::Rc;
 use std::sync::{Arc, OnceLock};
 
 use serde::Serialize;
@@ -48,45 +46,143 @@ use crate::ephemeris::{self, Ephemeris, no_ephemeris};
 /// two contexts with the same settings hash compute the same numbers and
 /// the hash is a cache key.
 ///
-/// **One context serves one thread, and a worker builds its own** — the
-/// same rule the other three bindings state, and in Rust it is enforced
-/// rather than advised: a `Context` is neither `Send` nor `Sync`.
+/// **A context moves between threads and is used by one at a time**: it
+/// is `Send` and not `Sync`, which is the rule every other binding states
+/// (*one context serves one thread*) with the move it allows made safe. A
+/// thread that wants its own takes a [`Context::fork`] — the same settings,
+/// ephemeris, cache and registrations, at the cost of copying the locale
+/// state — and a server keeps a [`SharedContext`] (`Send + Sync`, cheap to
+/// clone) and asks it for a context per request or per worker
+/// (`03-design/rust-consumer-surface.md`, "A context across threads").
 ///
-/// The reason is worth knowing, because it is not the one a reader would
-/// guess. The ephemeris cannot be it: the port requires `Send + Sync` of
-/// a provider. It is the **locale engine** — `teistro_intl`'s plural
-/// rules hold an `icu_plurals::PluralRules`, whose data payload is
-/// reference-counted with `Rc`. `tests/surface.rs` builds one per worker,
-/// which is the pattern this leaves, and
-/// `03-design/rust-consumer-surface.md` §9 records what it would take to
-/// lift (`icu_provider`'s `sync` feature, which exists).
+/// Not `Sync` on purpose. What a context changes after it is built — the
+/// locale, a runtime pack, a zone pack, a name book — sits in `RefCell`s,
+/// and a lock in their place would be paid on every render of every
+/// single-threaded caller. What is fixed when it is built is shared by
+/// every fork behind an `Arc`, and reading it costs no atomic operation.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// use teistro::{Context, Ephemeris};
+///
+/// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+/// let shared = sdk.share();
+/// let hashes: Vec<String> = (0..2)
+///     .map(|_| {
+///         let shared = shared.clone();
+///         std::thread::spawn(move || shared.context().settings_hash().to_string())
+///     })
+///     .map(|worker| worker.join().unwrap_or_default())
+///     .collect();
+/// assert_eq!(hashes, [sdk.settings_hash().to_string(), sdk.settings_hash().to_string()]);
+/// # }
+/// # Ok::<(), teistro::Error>(())
+/// ```
 pub struct Context {
-    settings: Resolved,
-    provider: Option<Box<dyn EphemerisProvider>>,
+    /// What is fixed when the context is built, shared by its forks.
+    core: Arc<Core>,
     intl: RefCell<Intl>,
-    /// Resolved once from `time.delta_t`, as the boundary resolves it,
-    /// so the two agree on which model a context uses.
-    ///
-    /// Read by `time()`, and by `positions` when it lands.
-    delta_t: DeltaTModel,
-    /// The layouts a chart can be drawn in: the shipped ones and any the
-    /// builder was given, sealed, so nothing changes under a context that
-    /// draws.
-    layouts: Layouts,
     /// The zone database every resolution reads: the embedded one, until a
     /// signed pack replaces it (`03-design/zone-packs.md`).
     zones: RefCell<Zones>,
-    /// The consumer's nakshatra-seeded dasha systems, sealed as the layouts
-    /// are.
-    #[cfg(feature = "chart")]
-    dashas: DashaSystems,
     /// The name books loaded into this context, by their identity: the
     /// one thing a context gains after it is built, and only by
     /// [`NamingArea::load`], which adds and never replaces (the same book
     /// is the same id).
     #[cfg(feature = "chart")]
-    books: RefCell<std::collections::HashMap<BookId, Rc<NameBook>>>,
+    books: RefCell<Books>,
 }
+
+/// The name books a context holds, by their identity.
+#[cfg(feature = "chart")]
+type Books = std::collections::HashMap<BookId, Arc<NameBook>>;
+
+/// What a context fixes when it is built, and every fork of it shares:
+/// read through an `Arc`, which costs a pointer and no atomic operation.
+struct Core {
+    settings: Resolved,
+    /// Behind the context's cache, so its forks share what it remembers.
+    provider: Option<Box<dyn EphemerisProvider>>,
+    /// Resolved once from `time.delta_t`, as the boundary resolves it,
+    /// so the two agree on which model a context uses.
+    delta_t: DeltaTModel,
+    /// The layouts a chart can be drawn in: the shipped ones and any the
+    /// builder was given, sealed, so nothing changes under a context that
+    /// draws.
+    layouts: Layouts,
+    /// The consumer's nakshatra-seeded dasha systems, sealed as the layouts
+    /// are.
+    #[cfg(feature = "chart")]
+    dashas: DashaSystems,
+}
+
+/// What a context may change after it is built, as one value a fork
+/// copies.
+#[derive(Clone)]
+struct State {
+    intl: Intl,
+    zones: Zones,
+    #[cfg(feature = "chart")]
+    books: Books,
+}
+
+/// A context to share between threads: `Send + Sync`, and a clone is two
+/// reference counts.
+///
+/// What [`Context::share`] answers. It holds the context's fixed core and
+/// its locale state **as it was when shared**, and
+/// [`SharedContext::context`] makes a context of them for the thread that
+/// asks: the same settings, ephemeris and cache, and its own locale state
+/// from there on. A locale set or a pack loaded on that context is its own
+/// and reaches no other.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// use teistro::{Context, Ephemeris};
+///
+/// let sdk = Context::builder().locale("ne-Deva-NP").ephemeris([Ephemeris::Builtin]).build()?;
+/// let shared = sdk.share();
+/// let english = shared.context();
+/// english.intl().set_locale("en-Latn")?;
+/// // The change is that context's own.
+/// assert_eq!(shared.context().intl().locale(), "ne-Deva-NP");
+/// assert_eq!(english.intl().locale(), "en-Latn");
+/// # }
+/// # Ok::<(), teistro::Error>(())
+/// ```
+#[derive(Clone)]
+pub struct SharedContext {
+    core: Arc<Core>,
+    state: Arc<State>,
+}
+
+impl SharedContext {
+    /// A context for this thread: the shared core, and a copy of the
+    /// locale state as it was shared.
+    #[must_use]
+    pub fn context(&self) -> Context {
+        Context::of(Arc::clone(&self.core), State::clone(&self.state))
+    }
+}
+
+impl core::fmt::Debug for SharedContext {
+    fn fmt(&self, out: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        out.debug_struct("SharedContext")
+            .field("profile", &self.core.settings.profile.as_str())
+            .field("locale", &self.state.intl.locale())
+            .finish_non_exhaustive()
+    }
+}
+
+// Held at compile time, so a field that would take either away fails the
+// build here rather than in a consumer's: a context moves between threads,
+// and a shared one is shared between them.
+const _: () = {
+    const fn moves<T: Send>() {}
+    const fn shares<T: Send + Sync>() {}
+    moves::<Context>();
+    shares::<SharedContext>();
+};
 
 /// The zone database a context reads, and which it is.
 #[derive(Clone)]
@@ -118,6 +214,7 @@ impl core::fmt::Debug for Context {
             .field(
                 "ephemeris",
                 &self
+                    .core
                     .provider
                     .as_ref()
                     .map(|p| p.capabilities().identity.name.clone()),
@@ -133,16 +230,73 @@ impl Context {
         ContextBuilder::default()
     }
 
+    /// A context over a core and a locale state.
+    fn of(core: Arc<Core>, state: State) -> Context {
+        Context {
+            core,
+            intl: RefCell::new(state.intl),
+            zones: RefCell::new(state.zones),
+            #[cfg(feature = "chart")]
+            books: RefCell::new(state.books),
+        }
+    }
+
+    /// This context's locale state as it stands, copied.
+    fn state(&self) -> State {
+        State {
+            intl: self.intl.borrow().clone(),
+            zones: self.zones.borrow().clone(),
+            #[cfg(feature = "chart")]
+            books: self.books.borrow().clone(),
+        }
+    }
+
+    /// **Another context over this one's core**, for another thread or a
+    /// second locale: the same settings, ephemeris, cache, layouts and
+    /// dasha systems, shared and not copied, and a copy of the locale
+    /// state as it stands — the locale, the packs, the zone database and
+    /// the name books. What either changes from here on is its own.
+    ///
+    /// Far cheaper than building: nothing is resolved, opened or checked
+    /// again, and the ephemeris's cache is the one both read.
+    ///
+    /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
+    /// use teistro::{Context, Ephemeris};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let worker = sdk.fork();
+    /// let hash = std::thread::spawn(move || worker.settings_hash()).join().map_err(|_| "a worker")?;
+    /// assert_eq!(hash, sdk.settings_hash());
+    /// # }
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn fork(&self) -> Context {
+        Context::of(Arc::clone(&self.core), self.state())
+    }
+
+    /// This context **to share between threads**: a [`SharedContext`],
+    /// which a server keeps in its state and asks for a context per
+    /// request or per worker. It holds the locale state as it stands now.
+    #[must_use]
+    pub fn share(&self) -> SharedContext {
+        SharedContext {
+            core: Arc::clone(&self.core),
+            state: Arc::new(self.state()),
+        }
+    }
+
     /// The resolved settings, every knob as this context will use it.
     #[must_use]
     pub fn settings(&self) -> &Settings {
-        &self.settings.settings
+        &self.core.settings.settings
     }
 
     /// The profile the settings were resolved from.
     #[must_use]
     pub fn profile(&self) -> &str {
-        self.settings.profile.as_str()
+        self.core.settings.profile.as_str()
     }
 
     /// The canonical settings document: the JSON the hash is taken of,
@@ -152,7 +306,7 @@ impl Context {
     /// the same bytes — which is what makes the hash a cache key.
     #[must_use]
     pub fn settings_json(&self) -> String {
-        self.settings.settings.canonical_json()
+        self.core.settings.settings.canonical_json()
     }
 
     /// The SHA-256 of the canonical settings document: the
@@ -164,7 +318,7 @@ impl Context {
     /// would be a type with no new one (ADR-0023).
     #[must_use]
     pub fn settings_hash(&self) -> Hash {
-        self.settings.settings.hash()
+        self.core.settings.settings.hash()
     }
 
     /// The zone database this context reads: the embedded one, or the
@@ -200,7 +354,7 @@ impl Context {
     /// one.
     #[must_use]
     pub fn ephemeris(&self) -> Option<&dyn EphemerisProvider> {
-        self.provider.as_deref()
+        self.core.provider.as_deref()
     }
 
     /// The resolved settings **whole**: the knobs, the warnings the
@@ -211,7 +365,7 @@ impl Context {
     /// auditing a resolution want.
     #[must_use]
     pub fn resolved(&self) -> &Resolved {
-        &self.settings
+        &self.core.settings
     }
 
     /// The locale engine itself, for a render.
@@ -291,11 +445,13 @@ impl Context {
     ///
     /// A context with no ephemeris.
     pub fn completion(&self) -> Result<Completion<'_, dyn EphemerisProvider>, Error> {
-        let provider = self.provider.as_deref().ok_or_else(no_ephemeris)?;
-        Ok(
-            Completion::new(provider, self.settings().provider.overrides, self.delta_t)
-                .deriving_speeds(),
+        let provider = self.core.provider.as_deref().ok_or_else(no_ephemeris)?;
+        Ok(Completion::new(
+            provider,
+            self.settings().provider.overrides,
+            self.core.delta_t,
         )
+        .deriving_speeds())
     }
 
     /// The provenance [`Context::positions`] stamps its answer with: this
@@ -329,14 +485,14 @@ impl Context {
     /// applied, and the time scales' tables. One place, so that every
     /// answer names its sources the same way.
     pub(crate) fn stamped(&self, input_hash: Hash, frame: Frame, steps: Vec<String>) -> Provenance {
-        let mut provenance = self.settings.provenance(
+        let mut provenance = self.core.settings.provenance(
             Version::parse(env!("CARGO_PKG_VERSION")).unwrap_or(Version::new(0, 0, 0)),
             input_hash,
         );
-        if let Some(provider) = self.provider.as_deref() {
+        if let Some(provider) = self.core.provider.as_deref() {
             provenance.provider = provider.capabilities().identity.stamp(frame, steps);
         }
-        provenance.time.delta_t_model = self.delta_t.key().to_string();
+        provenance.time.delta_t_model = self.core.delta_t.key().to_string();
         provenance.time.leap_table = teistro_time::leap::version().to_string();
         provenance.time.tzdb_version = self.zones.borrow().provider.version().to_string();
         provenance.packs = self.pack_stamps(provenance.catalogue_version);
@@ -408,19 +564,19 @@ impl Context {
 
     /// The name book loaded under `id`, when one is.
     #[cfg(feature = "chart")]
-    pub(crate) fn book(&self, id: BookId) -> Option<Rc<NameBook>> {
+    pub(crate) fn book(&self, id: BookId) -> Option<Arc<NameBook>> {
         self.books.borrow().get(&id).cloned()
     }
 
     /// Keeps a loaded book under its id; the same book loaded again is
     /// the one already kept.
     #[cfg(feature = "chart")]
-    pub(crate) fn keep_book(&self, book: NameBook) -> Rc<NameBook> {
-        Rc::clone(
+    pub(crate) fn keep_book(&self, book: NameBook) -> Arc<NameBook> {
+        Arc::clone(
             self.books
                 .borrow_mut()
                 .entry(book.id())
-                .or_insert_with(|| Rc::new(book)),
+                .or_insert_with(|| Arc::new(book)),
         )
     }
 
@@ -474,22 +630,22 @@ impl Context {
     /// the "no dead ends" brief's rule.
     #[must_use]
     pub fn delta_t(&self) -> DeltaTModel {
-        self.delta_t
+        self.core.delta_t
     }
 
     /// The layouts this context can draw a chart in: the shipped ones, then
     /// any the builder was given.
     #[must_use]
-    pub const fn layouts(&self) -> &Layouts {
-        &self.layouts
+    pub fn layouts(&self) -> &Layouts {
+        &self.core.layouts
     }
 
     /// The dasha systems a consumer registered with this context, beside the
     /// ones the catalogue has.
     #[cfg(feature = "chart")]
     #[must_use]
-    pub const fn dashas(&self) -> &DashaSystems {
-        &self.dashas
+    pub fn dashas(&self) -> &DashaSystems {
+        &self.core.dashas
     }
 }
 
@@ -741,18 +897,23 @@ impl ContextBuilder {
             dashas.seal();
             dashas
         };
-        Ok(Context {
+        let core = Core {
             settings,
             provider,
-            intl: RefCell::new(intl),
             delta_t,
             layouts,
-            zones: RefCell::new(zones),
             #[cfg(feature = "chart")]
             dashas,
-            #[cfg(feature = "chart")]
-            books: RefCell::default(),
-        })
+        };
+        Ok(Context::of(
+            Arc::new(core),
+            State {
+                intl,
+                zones,
+                #[cfg(feature = "chart")]
+                books: Books::new(),
+            },
+        ))
     }
 }
 

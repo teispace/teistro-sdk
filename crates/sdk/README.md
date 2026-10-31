@@ -49,14 +49,15 @@ consumer writes `const cal = ctx.calendar`.
 **No `dispose`.** `Drop` is the whole of it, and that is the first place
 this surface is smaller than the C one rather than the same size.
 
-**A context is neither `Send` nor `Sync`**, so a worker builds its own —
-the rule every binding states, here enforced by the compiler. The part
-that decides it is not the one you would guess: the port requires
-`Send + Sync` of an ephemeris, and it is the locale engine whose plural
-rules hold an `Rc`-backed icu4x payload. `tests/surface.rs` builds one
-per worker, which is the pattern this leaves; the design page's §9
-records what lifting it would take and why that wants a measurement
-first.
+**A context is `Send` and not `Sync`**: it moves to another thread and
+serves one at a time, the rule every binding states. `sdk.fork()` is
+another context over the same settings, ephemeris and cache, with its
+own locale state, and `sdk.share()` is a `SharedContext` (`Send + Sync`,
+cheap to clone) that a server keeps and asks for a context per request.
+Not `Sync` because what a context may change — the locale, packs, name
+books — is read on every render without a lock, and a lock would cost
+every single-threaded caller. `tests/threads.rs` holds each of these;
+the design page's "A context across threads" says why and what it cost.
 
 ## What is here, and what is next
 
