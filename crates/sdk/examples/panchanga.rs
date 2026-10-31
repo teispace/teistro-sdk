@@ -148,7 +148,7 @@ fn limbs_at(sdk: &Context, instant: f64, weekday: u8) -> Result<Limbs, Error> {
 
 fn main() -> Result<(), Error> {
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("ne-Deva-NP")
         .ephemeris([Ephemeris::Builtin])
         .build()?;

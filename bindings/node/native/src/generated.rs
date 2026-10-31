@@ -1521,7 +1521,7 @@ pub struct ContextOptions {
     /// `TS_CONTEXT_*` flags, or zero.
     /// Example: `0`.
     pub flags: u32,
-    /// The shipped profile's id (`parashari-classical`, `nepali-default`,
+    /// The shipped profile's id (`parashari-classical`, `nepali-drik`,
     /// `nepali-committee`, `surya-siddhanta`, `kp-default`,
     /// `western-tropical-default`, `conformance-baseline`).
     /// Example: `parashari-classical`. May be null.

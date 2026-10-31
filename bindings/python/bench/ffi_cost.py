@@ -93,8 +93,8 @@ def main() -> None:
     one = [2451545.0]
     three = [Body.SUN, Body.MOON, Body.MARS]
     year = [2451545.0 + day for day in range(366)]
-    with teistro.context(profile="nepali-default", test_provider=True) as native, \
-            teistro.context(profile="nepali-default", provider=Fixed()) as hosted:
+    with teistro.context(profile="nepali-drik", test_provider=True) as native, \
+            teistro.context(profile="nepali-drik", provider=Fixed()) as hosted:
         # The hosted provider's answer is what it sent, so a figure is
         # never taken over a call that failed or answered something else.
         answered = hosted.positions(instants=year, bodies=list(BODIES))

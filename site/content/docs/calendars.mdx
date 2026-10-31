@@ -19,7 +19,7 @@ without that is hiding the one thing its reader might need to know.
 A calendar needs no ephemeris, so this context names none:
 
 ```js title="bindings/node/example/calendars.mjs"
-const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP' });
+const ctx = new Context({ profile: 'nepali-drik', locale: 'ne-Deva-NP' });
 const say = messages({
   render: (key, params) => ctx.intl.render(key, params).text,
   entity: (key) => ctx.intl.entity(key),

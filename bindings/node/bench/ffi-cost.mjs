@@ -70,8 +70,8 @@ function time(key, call) {
   );
 }
 
-const native = new Context({ profile: 'nepali-default', testProvider: true });
-const hosted = new Context({ profile: 'nepali-default', provider });
+const native = new Context({ profile: 'nepali-drik', testProvider: true });
+const hosted = new Context({ profile: 'nepali-drik', provider });
 try {
   const call = { instants: [2451545], bodies: [Body.Sun, Body.Moon, Body.Mars] };
   const grid = {

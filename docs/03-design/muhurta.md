@@ -247,7 +247,7 @@ cannot see, makes neither.
   prints: fixed three-hour praharas counted back from the first moment
   seen, twelve hours before a solar eclipse and nine before a lunar one,
   a Moon rising eclipsed included. Three eclipses, as the press reported
-  the committee, establish it, and `nepali-default` (version 4) takes it:
+  the committee, establish it, and `nepali-drik` (version 4) takes it:
 
   | eclipse | first moment seen | no food from | until |
   |---|---|---|---|

@@ -52,7 +52,7 @@ fn every_context_loads_the_packs_and_every_answer_names_them() {
     let bytes = pack();
     let mut server = Server::new(Engine::Builtin).with_pack(bytes).unwrap();
     let loaded = server.packs()[0].clone();
-    for profile in ["nepali-default", "parashari-classical"] {
+    for profile in ["nepali-drik", "parashari-classical"] {
         let answer = call(&mut server, "chart.found", &said(profile));
         let packs = &answer["provenance"]["packs"];
         assert_eq!(
@@ -64,7 +64,7 @@ fn every_context_loads_the_packs_and_every_answer_names_them() {
         assert_eq!(packs[0]["hash"], loaded.sha256);
     }
     let mut bare = Server::new(Engine::Builtin);
-    let answer = call(&mut bare, "chart.found", &said("nepali-default"));
+    let answer = call(&mut bare, "chart.found", &said("nepali-drik"));
     assert_eq!(answer["provenance"]["packs"], json!([]), "{answer}");
 }
 
@@ -78,7 +78,7 @@ fn a_zone_pack_is_read_by_every_context() {
     )];
     let pack = teistro::ZonePack::write("2099a", zones);
     let pack = std::sync::Arc::new(teistro::ZonePack::from_bytes(&pack).unwrap());
-    let asked = json!({ "profile": "nepali-default", "request": {
+    let asked = json!({ "profile": "nepali-drik", "request": {
         "first": { "year": 2026, "month": 11, "day": 1 },
         "latitudeDeg": 27.7, "longitudeDeg": 85.3,
         "zone": { "kind": "IANA", "zone": "Asia/Kathmandu" } } });

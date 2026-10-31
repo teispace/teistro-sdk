@@ -64,7 +64,7 @@ const read = (name) => new Uint8Array(readFileSync(join(fixtures, name)));
 
 /** A context with the analytic test provider; every test builds its own. */
 function context(options = {}) {
-  return new Context({ testProvider: true, profile: 'nepali-default', locale: 'ne-Deva-NP', ...options });
+  return new Context({ testProvider: true, profile: 'nepali-drik', locale: 'ne-Deva-NP', ...options });
 }
 
 /** A Gregorian date as the boundary takes one. */
@@ -90,7 +90,7 @@ test('the addon and the types were generated for the same ABI', () => {
 
 test('a context resolves its settings and reports them', () => {
   const ctx = context();
-  assert.equal(ctx.profile, 'nepali-default');
+  assert.equal(ctx.profile, 'nepali-drik');
   assert.equal(ctx.intl.locale, 'ne-Deva-NP');
   assert.match(ctx.settingsHash, /^[0-9a-f]{64}$/u);
   assert.equal(ctx.settings.frame.zodiac, 'SIDEREAL');
@@ -103,6 +103,11 @@ test('a context resolves its settings and reports them', () => {
 
   // The default profile is the one `defaultProfile()` names.
   assert.equal(new Context({ testProvider: true }).profile, defaultProfile());
+
+  // An older name opens the profile it names, and the answer says the id.
+  const named = context({ profile: 'nepali-default' });
+  assert.equal(named.profile, 'nepali-drik');
+  assert.equal(named.settingsHash, ctx.settingsHash);
 });
 
 test('a pack loads at runtime and lays its record over the one standing', () => {
@@ -375,7 +380,7 @@ test('positions come back in the frame asked for, decoded on first use', () => {
   assert.throws(() => positions.at(2, 0), RangeError);
 
   assert.ok(positions.steps.every((step) => typeof step.name === 'string'));
-  assert.equal(positions.provenance.profile, 'nepali-default');
+  assert.equal(positions.provenance.profile, 'nepali-drik');
   assert.equal(positions.provenance.calculationVersion, 1);
   assert.equal(positions.provenance.settingsHash, ctx.settingsHash);
   assert.equal(
@@ -537,7 +542,7 @@ function jsProvider(over = {}) {
 
 test('an ephemeris written in JavaScript answers the SDK', () => {
   const { calls, provider } = jsProvider();
-  const ctx = new Context({ provider, profile: 'nepali-default' });
+  const ctx = new Context({ provider, profile: 'nepali-drik' });
   const positions = ctx.positions({
     instants: [2451545.0, 2451546.0],
     bodies: [Body.Sun, Body.Moon],
@@ -564,7 +569,7 @@ test('an instant outside its coverage is a cell, and never asked for', () => {
   // and the provider sees only the instants it declared. The Dart and
   // Python bindings hold the same.
   const { calls, provider } = jsProvider({ jdMin: 2451545.0, jdMax: 2451546.0 });
-  const ctx = new Context({ provider, profile: 'nepali-default' });
+  const ctx = new Context({ provider, profile: 'nepali-drik' });
   const positions = ctx.positions({ instants: [2400000.0, 2451545.5], bodies: [Body.Sun] });
   assert.equal(ProviderCodeById.get(positions.at(0, 0).status), ProviderCode.OutOfRange);
   assert.equal(ProviderCodeById.get(positions.at(1, 0).status), ProviderCode.Ok);
@@ -796,7 +801,7 @@ test('a birth with no time is refused, or reported, but never guessed', () => {
   const zone = ianaZone('Asia/Kathmandu');
 
   // No policy: refused by name, with the hint naming the three choices.
-  const strict = new Context({ profile: 'nepali-default', testProvider: true });
+  const strict = new Context({ profile: 'nepali-drik', testProvider: true });
   assert.throws(
     () => strict.time.resolve(whenUnknown(day), zone),
     (error) => {
@@ -812,7 +817,7 @@ test('a birth with no time is refused, or reported, but never guessed', () => {
   // unknown *and* warns, so a stored chart cannot claim a time it never
   // had.
   const noon = new Context({
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     testProvider: true,
     settings: { time: { unknown_time: 'NOON' } },
   });
@@ -824,7 +829,7 @@ test('a birth with no time is refused, or reported, but never guessed', () => {
 
   // A known time on the same date resolves with the time known and no
   // warning: this record sits on the day Nepal moved to +05:45.
-  const known = new Context({ profile: 'nepali-default', testProvider: true });
+  const known = new Context({ profile: 'nepali-drik', testProvider: true });
   const exact = known.time.resolve(at(day, { hour: 0, minute: 20 }), zone);
   assert.equal(exact.timeKnown, true);
   assert.equal(exact.offsetSeconds, 5 * 3600 + 45 * 60);
@@ -1096,7 +1101,7 @@ test('a provider and a named ephemeris together are refused', () => {
 });
 
 test('a context without an ephemeris says so', () => {
-  const bare = new Context({ profile: 'nepali-default' });
+  const bare = new Context({ profile: 'nepali-drik' });
   assert.throws(() => bare.engine);
 });
 
@@ -4829,7 +4834,7 @@ test('a signed pack answers its set or is refused by name', () => {
  * listed.
  */
 test('a published day is explained by the change that gives it', () => {
-  const modern = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const modern = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
   const committee = new Context({ profile: 'nepali-committee', ephemeris: 'SURYA_SIDDHANTA' });
   const days = {
     from: date(Calendar.Gregorian, 2027, 9, 1),
@@ -5384,7 +5389,7 @@ test('a chart carries its prashna', () => {
  */
 test('two reckonings say where they disagree and why', () => {
   const official = new Context(nepalOfficial());
-  const modern = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+  const modern = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
   try {
     const month = {
       from: date('calendar.GREGORIAN', 2025, 11, 1),
@@ -5395,7 +5400,7 @@ test('two reckonings say where they disagree and why', () => {
     };
     const { days, festivals } = official.almanac.disagreements(modern, month);
     assert.equal(days.compared, 30);
-    assert.equal(days.otherProfile, 'nepali-default');
+    assert.equal(days.otherProfile, 'nepali-drik');
     assert.equal(days.otherSettingsHash, modern.settingsHash);
     assert.deepEqual(
       days.days.filter((d) => d.tithi !== null).map((d) => d.date.day),
@@ -5420,7 +5425,7 @@ test('two reckonings say where they disagree and why', () => {
       (error) => error.field === 'disagreements.days',
     );
     assert.throws(() => official.almanac.disagreements({}, month), TypeError);
-    const gone = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+    const gone = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
     gone.dispose();
     assert.throws(() => official.almanac.disagreements(gone, month), /compared with was disposed/u);
   } finally {
@@ -5436,7 +5441,7 @@ test('two reckonings say where they disagree and why', () => {
  * tropical ayana turned at the solstice (`03-design/sankalpa.md`).
  */
 test('an almanac says the time a sankalpa recites', () => {
-  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
   const kathmandu = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
   const ask = (at, ayana) =>
     ctx.almanac.sankalpa({ at, place: kathmandu, utcOffsetSeconds: 20700, ...(ayana ? { ayana } : {}) });
@@ -5480,7 +5485,7 @@ test('an almanac says the time a sankalpa recites', () => {
  * with the first (Manu V.79, `03-design/ashauch.md`).
  */
 test('an almanac says the period of impurity after a death', () => {
-  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
   const kathmandu = { latitude: 27.7172, longitude: 85.324, altitude: 1337 };
   const died = 2461051.677083;
   const ask = (request) => ctx.almanac.ashauch({ place: kathmandu, utcOffsetSeconds: 20700, request });
@@ -5530,7 +5535,7 @@ test('an almanac says the period of impurity after a death', () => {
  * (`03-design/shraddha.md` §3.3).
  */
 test('an almanac says the rites of the first year after a death', () => {
-  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
   const kathmandu = { latitude: 27.7172, longitude: 85.324, altitude: 1337 };
   const died = 2461333.677083;
   const ask = (request) => ctx.almanac.firstYear({ place: kathmandu, utcOffsetSeconds: 20700, request });
@@ -6313,7 +6318,7 @@ test('a provenance carries its answer key, the hash its documented fields give',
  * moon decides (`03-design/india-central-holidays.md`).
  */
 test('a festival pack lists its rules with their values', () => {
-  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-default' });
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
   const { pack, rules } = ctx.almanac.festivalPack('INDIA_CENTRAL');
   assert.equal(pack, 'INDIA_CENTRAL');
   const row = (key) => rules.find((rule) => rule.key === key);

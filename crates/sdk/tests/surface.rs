@@ -26,7 +26,7 @@ use teistro_core::envelope::CalendarResolution;
 /// A context on the profile every binding's quickstart names.
 fn context() -> Context {
     Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("ne-Deva-NP")
         .ephemeris([Ephemeris::Builtin])
         .build()
@@ -103,6 +103,20 @@ fn the_default_profile_needs_no_naming() {
 }
 
 #[test]
+fn an_older_profile_name_answers_as_the_profile_it_names() {
+    let old = Context::builder()
+        .profile("nepali-default")
+        .build()
+        .expect("an alias opens a context");
+    let new = Context::builder()
+        .profile("nepali-drik")
+        .build()
+        .expect("a shipped profile");
+    assert_eq!(old.profile(), "nepali-drik");
+    assert_eq!(old.settings_hash(), new.settings_hash());
+}
+
+#[test]
 fn an_unknown_profile_is_refused_with_the_shipped_ones() {
     let refusal = Context::builder()
         .profile("no-such-profile")
@@ -112,7 +126,7 @@ fn an_unknown_profile_is_refused_with_the_shipped_ones() {
     assert!(
         refusal
             .hint()
-            .is_some_and(|hint| hint.contains("nepali-default")),
+            .is_some_and(|hint| hint.contains("nepali-drik")),
         "{refusal:?}"
     );
 }
@@ -1122,7 +1136,7 @@ fn a_consumer_s_own_layout_is_drawn_and_a_shipped_one_is_not_replaced() {
     let mut odia = teistro::geometry::rows::east_indian();
     odia.key = String::from("ACME_ODIA");
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .layout(odia)
         .build()

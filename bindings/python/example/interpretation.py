@@ -45,7 +45,7 @@ from teistro._ffi import Altitude, Latitude, Longitude, Observer
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="nepali-default",
+        profile="nepali-drik",
         locale="en-Latn",
         ephemeris=Ephemeris.BUILTIN,
     ) as ctx:

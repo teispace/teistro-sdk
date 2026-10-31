@@ -23,7 +23,7 @@ fn main() -> Result<(), Error> {
     // opens is the one that answers, so a real engine first and the
     // built-in behind it is the shape a consumer wants.
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("ne-Deva-NP")
         .ephemeris([Ephemeris::Builtin])
         .build()?;

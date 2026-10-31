@@ -1270,7 +1270,7 @@ public final class ParityRunner {
 
         // ── A context ─────────────────────────────────────────────────────
         try (Context ctx = teistro.context(ContextOptions.builder()
-                .profile("nepali-default").locale("ne-Deva-NP").testProvider(true).build())) {
+                .profile("nepali-drik").locale("ne-Deva-NP").testProvider(true).build())) {
             put("profile", ctx.profile());
             put("locale", ctx.intl().locale());
             put("settings-hash", ctx.settingsHash());
@@ -1398,7 +1398,7 @@ public final class ParityRunner {
             put("provenance-provider-frame", provenance.provider().frame());
 
             // ── The chart the topocentric profile founds ──────────────────
-            // `nepali-default`'s frame is topocentric, as every recorded chart
+            // `nepali-drik`'s frame is topocentric, as every recorded chart
             // in the corpus is; the chart itself is compared.
             Observer place = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
             Chart placed = ctx.chart().found(2451545, place, 20700, ChartOptions.none());
@@ -1476,7 +1476,7 @@ public final class ParityRunner {
             // A signed one-zone pack of an imagined release, so a provenance
             // naming it can only have come from the pack (03-design/zone-packs.md).
             try (Context zoned = teistro.context(ContextOptions.builder()
-                    .profile("nepali-default").ephemeris(Ephemeris.BUILTIN).build())) {
+                    .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
                 java.util.function.Function<ZoneDatabase, String> zonesLine = zones -> zones.source() + " "
                         + zones.version() + " " + zones.zones() + " " + zones.bundled();
                 put("time-zone-database", zonesLine.apply(zoned.time().zoneDatabase()));
@@ -1510,7 +1510,7 @@ public final class ParityRunner {
             // (03-design/amrit-kalam-and-lagnas.md §2) and each graha's share
             // (crux C751).
             try (Context builtin = teistro.context(ContextOptions.builder()
-                    .profile("nepali-default").ephemeris(Ephemeris.BUILTIN).build())) {
+                    .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
                 var lagnaDay = builtin.almanac().day(date(2025, 6, 15), place, 20700, true, true);
                 var tables = new LinkedHashMap<String, List<? extends Span<? extends Catalogued>>>();
                 tables.put("lagnas", lagnaDay.lagnas());
@@ -1532,7 +1532,7 @@ public final class ParityRunner {
             // eclipse seen whole and a partial solar one the place does not see.
             Eclipses eclipses;
             try (Context builtin = teistro.context(ContextOptions.builder()
-                    .profile("nepali-default").ephemeris(Ephemeris.BUILTIN).build())) {
+                    .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
                 eclipses = builtin.almanac().of(date(2025, 9, 1), date(2025, 9, 30), place, 20700,
                         null, null, false, true, false).eclipses().orElseThrow();
             }

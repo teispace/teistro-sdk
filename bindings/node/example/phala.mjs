@@ -61,7 +61,7 @@ function shortened(text) {
   return characters.length > 88 ? `${characters.slice(0, 88).join('')}…` : text;
 }
 
-const ctx = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+const ctx = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
 
 // ── The packs ────────────────────────────────────────────────────────────
 for (const corpus of CORPORA) {

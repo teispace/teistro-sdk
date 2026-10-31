@@ -176,7 +176,7 @@ fn the_claims(said: &Said) {
 
 fn main() -> Result<(), Error> {
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("en-Latn")
         .ephemeris([Ephemeris::Builtin])
         .build()?;

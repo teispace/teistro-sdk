@@ -724,7 +724,7 @@ measured against Nepal before it is called done:
    (`nepal-month-measured.md`: both shipped readings mark the five announced
    spans exactly, and the purnimanta name of an adhika dark fortnight
    was corrected; and Nepal's months measured purnimanta, C183, which
-   `nepali-default` now leads with). The name followed on
+   `nepali-drik` now leads with). The name followed on
    2026-10-01: `sdk.calendar.lunarMonth` says the month with its kind
    (अधिक ज्येष्ठ), matching on the kind's key rather than making it a
    catalogue kind (Q38: nothing must name a month kind apart from its

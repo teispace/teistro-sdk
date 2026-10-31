@@ -122,9 +122,9 @@ public final class FfiCost {
             year[day] = 2451545.0 + day;
         }
         try (Context nativeContext = teistro.context(
-                        ContextOptions.builder().profile("nepali-default").testProvider(true).build());
+                        ContextOptions.builder().profile("nepali-drik").testProvider(true).build());
                 Context hosted = teistro.context(
-                        ContextOptions.builder().profile("nepali-default").provider(new Fixed()).build())) {
+                        ContextOptions.builder().profile("nepali-drik").provider(new Fixed()).build())) {
             // The hosted provider's answer is what it sent, so a figure is
             // never taken over a call that failed or answered something else.
             PositionGrid answered = hosted.positions(year, BODIES);

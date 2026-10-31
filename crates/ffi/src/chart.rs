@@ -6235,7 +6235,7 @@ impl Composed<'_> {
 ///
 /// let place = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
 /// let provenance = Provenance::new(
-///     Version::new(0, 1, 0), 1, 1, "nepali-default",
+///     Version::new(0, 1, 0), 1, 1, "nepali-drik",
 ///     Hash::of(b"settings"), Hash::of(b"input"),
 /// );
 /// // A batch of none is still a blob, its counts saying so.

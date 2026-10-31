@@ -1525,7 +1525,7 @@ public final class Native {
         public static final VarHandle FLAGS = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("flags"));
 
         /**
-         * The offset of `profile`. The shipped profile's id (`parashari-classical`, `nepali-default`,
+         * The offset of `profile`. The shipped profile's id (`parashari-classical`, `nepali-drik`,
          * `nepali-committee`, `surya-siddhanta`, `kp-default`,
          * `western-tropical-default`, `conformance-baseline`).
          * Example: parashari-classical. May be null.

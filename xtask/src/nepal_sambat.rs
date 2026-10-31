@@ -145,7 +145,7 @@ fn gregorian((year, month, day): Day) -> CalendarDate {
 enum Sky {
     /// `nepali-committee`, the committee's own.
     Committee,
-    /// `nepali-default`, the modern sky under Lahiri.
+    /// `nepali-drik`, the modern sky under Lahiri.
     Modern,
 }
 
@@ -153,7 +153,7 @@ impl Sky {
     fn context(self) -> Result<Context, String> {
         let (profile, ephemeris) = match self {
             Sky::Committee => ("nepali-committee", Ephemeris::SuryaSiddhanta),
-            Sky::Modern => ("nepali-default", Ephemeris::Builtin),
+            Sky::Modern => ("nepali-drik", Ephemeris::Builtin),
         };
         Context::builder()
             .profile(profile)
@@ -406,7 +406,7 @@ fn render(rows: &[Row<'_>], turns: &Turns) -> String {
          `ne-Deva-NP` messages `sdk.calendar.nepalSambatMonth` and\n\
          `nepalSambatHalf`: over the committee's own sky (`nepali-committee`, the\n\
          Surya Siddhanta with its bija, C187), which the pass holds to every\n\
-         header, and over the modern sky (`nepali-default`).\n\n\
+         header, and over the modern sky (`nepali-drik`).\n\n\
          | page | first day | printed | committee's sky | modern sky |\n\
          |---|---|---|---|---|\n",
     );

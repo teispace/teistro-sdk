@@ -176,6 +176,18 @@ fn a_tool_in_context_reaches_the_context_its_arguments_name() {
     assert!(!refused, "{answer}");
     assert_eq!(answer["profile"], "parashari-classical");
     assert_eq!(answer["arguments"], json!({ "note": "n" }));
+    // An older name is in the schema's list and opens the profile it names.
+    let accepted = tool["inputSchema"]["properties"]["profile"]["enum"]
+        .as_array()
+        .unwrap();
+    assert!(accepted.contains(&json!("nepali-default")), "{tool}");
+    let (answer, refused) = call(
+        &mut server,
+        "acme.profile",
+        &json!({ "profile": "nepali-default", "note": "n" }),
+    );
+    assert!(!refused, "{answer}");
+    assert_eq!(answer["profile"], "nepali-drik");
     let (refusal, refused) = call(&mut server, "acme.bare", &json!({}));
     assert!(refused);
     assert_eq!(refusal["status"], "INTERNAL", "{refusal}");

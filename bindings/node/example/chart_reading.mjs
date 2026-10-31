@@ -30,7 +30,7 @@
 import { Calendar, ChartLayout, Context, Graha, Point, RashiById, Varga, at, date, ianaZone } from '../lib/index.js';
 
 const ctx = new Context({
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'ne-Deva-NP',
   ephemeris: 'BUILTIN',
 });

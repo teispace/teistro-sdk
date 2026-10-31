@@ -57,7 +57,7 @@ fn asked<T>(section: Option<T>, what: &str) -> Result<T, Error> {
 
 fn main() -> Result<(), Error> {
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("ne-Deva-NP")
         .ephemeris([Ephemeris::Builtin])
         .build()?;

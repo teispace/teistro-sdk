@@ -172,7 +172,7 @@ fn a_refused_construction_owns_its_record_and_frees_it_once() {
     assert_eq!(error.flags, TS_ERROR_OWNED);
     let (_, _, field, hint, _) = read_record(&error);
     assert_eq!(field.as_deref(), Some("profile"));
-    assert!(hint.is_some_and(|h| h.contains("nepali-default")));
+    assert!(hint.is_some_and(|h| h.contains("nepali-drik")));
 
     // Freed, zeroed but for the size, and a second free is a no-op.
     // SAFETY: the record the call wrote.
@@ -238,7 +238,7 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
     assert!(hint.is_some_and(|h| h.contains("ne-Deva-NP")));
     let patched = Ctx::new(
         0,
-        Some("nepali-default"),
+        Some("nepali-drik"),
         Some(r#"{"frame": {"zodiac": "TROPICAL"}}"#),
         Some("ne-Deva-NP"),
     )
@@ -10678,7 +10678,7 @@ fn two_reckonings_compare_as_the_facade_compares_them() {
     )
     .unwrap();
     let modern =
-        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
     let crossed: serde_json::Value =
         serde_json::from_str(&disagreements_json(&official, modern.handle, month).unwrap())
             .unwrap();
@@ -10693,7 +10693,7 @@ fn two_reckonings_compare_as_the_facade_compares_them() {
     let kernel = facade("nepali-committee", teistro::Ephemeris::SuryaSiddhanta)
         .almanac()
         .disagreements_request(
-            &facade("nepali-default", teistro::Ephemeris::Builtin),
+            &facade("nepali-drik", teistro::Ephemeris::Builtin),
             &teistro::DisagreementRequest::from_json(month).unwrap(),
         )
         .unwrap();
@@ -10707,7 +10707,7 @@ fn two_reckonings_compare_as_the_facade_compares_them() {
         serde_json::json!([]),
         "the two reckonings disagree on some day"
     );
-    assert_eq!(crossed["days"]["value"]["otherProfile"], "nepali-default");
+    assert_eq!(crossed["days"]["value"]["otherProfile"], "nepali-drik");
 
     assert_eq!(
         disagreements_json(&official, ptr::null(), month).unwrap_err(),
@@ -10749,11 +10749,11 @@ fn a_sankalpa_crosses_as_the_facade_answers_it() {
     let morning = r#"{"at": 2461055.59375, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
         "altitudeM": 1400, "utcOffsetSeconds": 20700, "ayana": "TROPICAL"}"#;
     let ctx =
-        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
     let crossed: serde_json::Value =
         serde_json::from_str(&sankalpa_json(&ctx, morning).unwrap()).unwrap();
     let kernel = teistro::Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([teistro::Ephemeris::Builtin])
         .build()
         .unwrap()
@@ -10923,7 +10923,7 @@ fn why_a_published_day_differs_crosses_as_the_facade_answers_it() {
             "entries": [{"action": "SET", "rule": "NAVARATRA_ARAMBHA",
                 "day": {"calendar": "GREGORIAN", "year": 2026, "month": 10, "day": 12}, "source": "p. 1"}]}]}}"#;
     let modern =
-        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
     let committee = Ctx::with_ephemeris(
         0,
         TsEphemeris::SuryaSiddhanta,
@@ -11152,11 +11152,11 @@ fn a_first_year_crosses_as_the_facade_answers_it() {
         "utcOffsetSeconds": 20700,
         "request": {"key": "grandfather", "at": 2461333.677083}}"#;
     let ctx =
-        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
     let crossed: serde_json::Value =
         serde_json::from_str(&first_year_json(&ctx, death).unwrap()).unwrap();
     let kernel = teistro::Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([teistro::Ephemeris::Builtin])
         .build()
         .unwrap()
@@ -11201,11 +11201,11 @@ fn an_ashauch_crosses_as_the_facade_answers_it() {
         "request": {"key": "grandfather", "relation": "SAPINDA",
                     "event": {"event": "DEATH", "at": 2461051.677083}}}"#;
     let ctx =
-        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
     let crossed: serde_json::Value =
         serde_json::from_str(&ashauch_json(&ctx, death).unwrap()).unwrap();
     let kernel = teistro::Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([teistro::Ephemeris::Builtin])
         .build()
         .unwrap()

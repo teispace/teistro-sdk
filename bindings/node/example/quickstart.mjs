@@ -19,7 +19,7 @@ import { messages } from '../lib/messages.js';
 console.log(`Teistro ${sdkVersion()}`);
 
 const ctx = new Context({
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'ne-Deva-NP',
   ephemeris: 'BUILTIN',
 });

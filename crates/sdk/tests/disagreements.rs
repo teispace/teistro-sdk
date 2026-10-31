@@ -30,7 +30,7 @@ fn kathmandu() -> Place {
 fn contexts() -> (Context, Context) {
     let official = Context::builder().nepal_official([]).build().unwrap();
     let modern = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()
         .unwrap();
@@ -82,7 +82,7 @@ fn the_days_the_examples_print_are_the_tithi_disagreements() {
         .unwrap()
         .value;
     assert_eq!(found.compared, 30);
-    assert_eq!(found.other_profile, "nepali-default");
+    assert_eq!(found.other_profile, "nepali-drik");
     assert_eq!(found.other_settings_hash, modern.settings_hash());
 
     let tithi: Vec<_> = found

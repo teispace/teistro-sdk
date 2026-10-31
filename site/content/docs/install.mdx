@@ -37,7 +37,7 @@ import {
 } from '@teistro/sdk';
 // …
 const ctx = new Context({
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'ne-Deva-NP',
   ephemeris: 'BUILTIN',
 });
@@ -77,7 +77,7 @@ void main() {
   final teistro = Teistro.open();
   // …
   final ctx = teistro.context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     locale: 'ne-Deva-NP',
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
@@ -114,7 +114,7 @@ binding's:
 import 'package:teistro_flutter/teistro_flutter.dart';
 // …
     final teistro = Teistro.open();
-    final calendar = teistro.context(profile: 'nepali-default').calendar;
+    final calendar = teistro.context(profile: 'nepali-drik').calendar;
 ```
 
 The floors are Android API 24 and iOS 13; a build below either is refused
@@ -147,7 +147,7 @@ def main() -> None:
     teistro = Teistro.open()
     # …
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
+        profile="nepali-drik", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # …
         sky = ctx.positions(instants=[2451545.0], bodies=[Body.SUN, Body.MOON])
@@ -187,7 +187,7 @@ is reused. There is no install step.
 Teistro teistro = Teistro.open();
 // …
 ContextOptions options = ContextOptions.builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("ne-Deva-NP")
         .ephemeris(Ephemeris.BUILTIN)
         .build();

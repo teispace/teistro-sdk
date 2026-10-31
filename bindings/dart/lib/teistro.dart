@@ -1800,7 +1800,7 @@ final class AlmanacArea extends _Area {
   /// ```dart
   /// final official = teistro.nepalOfficial(modern: [teimeris()]);
   /// final modern = teistro.context(
-  ///   profile: 'nepali-default',
+  ///   profile: 'nepali-drik',
   ///   ephemeris: [teimeris()],
   /// );
   /// final found = official.almanac.disagreements(

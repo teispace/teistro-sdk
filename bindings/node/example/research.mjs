@@ -5,7 +5,7 @@
 
 import { Context } from '../lib/index.js';
 
-const ctx = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+const ctx = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
 
 // Forty-eight births at Kathmandu, two months and an hour apart, and the
 // first sixteen called the cases. The labels mean nothing, so a study that

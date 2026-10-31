@@ -100,7 +100,7 @@ and under the default profile it is Sripati's, so the first build read
 the bhava middles off it. The measured page then said equal houses moved
 **no** house saham in any chart: the conformance profile's chalit is
 **Vehlow's**, equal houses centred on the lagna, and so is
-`nepali-default`'s, so under those profiles "the chart's middles" *were*
+`nepali-drik`'s, so under those profiles "the chart's middles" *were*
 equal houses and the source's reading silently was not the default. The
 façade now recomputes the chart's midheaven from its instant and place —
 `teistro_chart::foundation::angles_of`, which needs no ephemeris, the one

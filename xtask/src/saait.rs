@@ -222,7 +222,7 @@ fn kathmandu() -> (Place, UtcOffset) {
 enum Sky {
     /// `nepali-committee`, the committee's own.
     Committee,
-    /// `nepali-default`, the modern sky under Lahiri.
+    /// `nepali-drik`, the modern sky under Lahiri.
     Modern,
 }
 
@@ -245,7 +245,7 @@ impl Sky {
     fn context(self) -> Result<Context, String> {
         let (profile, ephemeris) = match self {
             Sky::Committee => ("nepali-committee", Ephemeris::SuryaSiddhanta),
-            Sky::Modern => ("nepali-default", Ephemeris::Builtin),
+            Sky::Modern => ("nepali-drik", Ephemeris::Builtin),
         };
         Context::builder()
             .profile(profile)
@@ -841,7 +841,7 @@ fn render(m: &Measured<'_>) -> String {
          Nirnayak Samiti printed for them on its VS 2083 muhurta sheet. Each\n\
          printed day is founded at Kathmandu (27.7172° N, 85.324° E, 1400 m) on\n\
          Nepal's clock, over the committee's own sky (`nepali-committee`, the\n\
-         Surya Siddhanta) and the modern one (`nepali-default`), and searched\n\
+         Surya Siddhanta) and the modern one (`nepali-drik`), and searched\n\
          with the rite's shipped rules. A day is **day-clean** when the rite's\n\
          grades of the tithi, nakshatra, yoga, karana, vara and month leave some\n\
          of its daylight unrejected, and **clean** when some window of that\n\

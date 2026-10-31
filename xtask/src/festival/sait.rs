@@ -4,7 +4,7 @@
 //! Each printed sait is the rite's day asked of the `NEPAL_PANCHANGA`
 //! pack at Kathmandu on Nepal's clock, over the committee's own sky
 //! (`nepali-committee`), which the pass holds to the print, and over the
-//! modern sky (`nepali-default`), which it counts beside it. The readings
+//! modern sky (`nepali-drik`), which it counts beside it. The readings
 //! the shipped rules take where no text decides (C745 to C747) are each
 //! measured against the reading they were chosen over, so a rule the
 //! print does not bear out reads `falsified` here.

@@ -15,7 +15,7 @@ import 'package:test/test.dart';
 final Teistro teistro = Teistro.open();
 
 Context context() => teistro.context(
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'ne-Deva-NP',
   testProvider: true,
 );

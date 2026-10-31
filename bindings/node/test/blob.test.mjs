@@ -64,7 +64,7 @@ test('a positions blob decodes into views over its own bytes', () => {
   assert.ok(Array.isArray(steps) && steps.length > 0);
   assert.ok(steps.every((s) => typeof s.name === 'string' && typeof s.implementation === 'string'));
   const provenance = JSON.parse(positions.provenanceJson);
-  assert.equal(provenance.profile, 'nepali-default');
+  assert.equal(provenance.profile, 'nepali-drik');
   assert.equal(provenance.calculation_version, 1);
   assert.equal(provenance.settings_hash.length, 64);
   assert.equal(provenance.provider.frame, 'GEOCENTRIC/OF_DATE/ECLIPTIC/TROPICAL/APPARENT');

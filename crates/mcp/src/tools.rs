@@ -6,7 +6,9 @@ use serde_json::{Map, Value, json};
 use teistro::records::Record;
 use teistro::{Error, Loaded};
 use teistro_core::envelope::canonical_json;
-use teistro_core::settings::{DEFAULT_PROFILE, Profile, SHIPPED_PROFILES, SettingsPatch};
+use teistro_core::settings::{
+    DEFAULT_PROFILE, PROFILE_ALIASES, Profile, SHIPPED_PROFILES, SettingsPatch,
+};
 use teistro_port_ephemeris::native::{NativeFunction, NativeParam, Role};
 
 use crate::{Detail, schemas};
@@ -292,13 +294,19 @@ pub(crate) fn describe(arguments: &Map<String, Value>, added: &Added<'_>) -> Res
     }))
 }
 
-/// The shipped profile `id`: its version, its base and what it sets, or
-/// None where no shipped profile has the id.
+/// The shipped profile `id`: its version, its base, its older names and
+/// what it sets, or None where no shipped profile has the id.
 pub(crate) fn profile(id: &str) -> Option<Result<Value, Error>> {
     let profile = Profile::shipped(id)?;
+    let aliases: Vec<&str> = PROFILE_ALIASES
+        .iter()
+        .filter(|(_, named)| *named == profile.id.as_str())
+        .map(|(alias, _)| *alias)
+        .collect();
     Some(written(&profile.patch).map(|patch| {
         json!({
             "id": profile.id.as_str(),
+            "aliases": aliases,
             "version": profile.version,
             "base": profile.base.as_ref().map(teistro_core::settings::ProfileId::as_str),
             "patch": patch,

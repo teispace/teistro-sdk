@@ -102,9 +102,9 @@ void _time(String key, int Function() call) {
 
 void main() {
   final teistro = Teistro.open();
-  final native = teistro.context(profile: 'nepali-default', testProvider: true);
+  final native = teistro.context(profile: 'nepali-drik', testProvider: true);
   final hosted = teistro.context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     provider: const _Fixed(),
   );
   try {

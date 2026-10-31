@@ -1370,7 +1370,7 @@ function theDisagreements(official: Context, modern: Context): string {
   const moved = fast?.official?.day.day;
   const hash: string | undefined = found.days?.provenance.inputHash ?? found.festivals?.otherSettingsHash;
   // @ts-expect-error the context compared with is a Context, not its options
-  official.almanac.disagreements({ profile: 'nepali-default' }, asked);
+  official.almanac.disagreements({ profile: 'nepali-drik' }, asked);
   return `${tithi} ${change?.minutesFromSunrise} ${moved} ${hash} ${day?.karana?.other.span.to}`;
 }
 void theDisagreements;

@@ -436,7 +436,7 @@ fn settings_of() -> teistro_core::settings::Settings {
 #[test]
 fn every_shipped_profile_founds_a_chart_from_a_place() {
     // Two of the five shipped profiles are topocentric, which is what
-    // `nepali-default` inherited from the baseline engine. Until the
+    // `nepali-drik` inherited from the baseline engine. Until the
     // completion's centre step they could not found a chart at all: the
     // provider was asked for a frame it does not answer, and the refusal
     // reached the consumer as a capability error on a profile the SDK

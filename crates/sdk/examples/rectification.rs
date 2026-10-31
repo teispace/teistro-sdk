@@ -14,7 +14,7 @@
 //! the same sunrise. Founding them one at a time would give the same
 //! numbers and pay the setup for every one of them.
 //!
-//! `nepali-default` is what a Nepali birth record is cast under, and its
+//! `nepali-drik` is what a Nepali birth record is cast under, and its
 //! frame is **topocentric**: the chart is seen from the hill the record
 //! was written on rather than from the centre of the Earth. The
 //! completion does that step itself over any provider
@@ -107,7 +107,7 @@ fn the_table(sdk: &Context, charts: &[teistro::ChartFoundation]) -> Result<(), E
 
 fn main() -> Result<(), Error> {
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("ne-Deva-NP")
         .ephemeris([Ephemeris::Builtin])
         .build()?;

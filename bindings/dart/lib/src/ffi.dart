@@ -600,7 +600,7 @@ final class ContextOptionsStruct extends ffi.Struct {
   @ffi.Uint32()
   external int flags;
 
-  /// The shipped profile's id (`parashari-classical`, `nepali-default`,
+  /// The shipped profile's id (`parashari-classical`, `nepali-drik`,
   /// `nepali-committee`, `surya-siddhanta`, `kp-default`,
   /// `western-tropical-default`, `conformance-baseline`).
   /// Example: parashari-classical. May be null.
@@ -3671,7 +3671,7 @@ final class ContextOptions {
   /// Example: 0.
   final int flags;
 
-  /// The shipped profile's id (`parashari-classical`, `nepali-default`,
+  /// The shipped profile's id (`parashari-classical`, `nepali-drik`,
   /// `nepali-committee`, `surya-siddhanta`, `kp-default`,
   /// `western-tropical-default`, `conformance-baseline`).
   /// Example: parashari-classical. May be null.

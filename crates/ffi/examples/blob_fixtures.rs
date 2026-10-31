@@ -160,7 +160,7 @@ fn main() {
     let dir = Path::new(&dir);
     std::fs::create_dir_all(dir).expect("the fixture directory is creatable");
 
-    let profile = CString::new("nepali-default").expect("a profile id");
+    let profile = CString::new("nepali-drik").expect("a profile id");
     let locale = CString::new("ne-Deva-NP").expect("a locale tag");
     let options = TsContextOptions {
         struct_size: u32::try_from(size_of::<TsContextOptions>()).unwrap_or(0),

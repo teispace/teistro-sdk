@@ -199,7 +199,7 @@ void main() {
   test('a context disposed gives back its native memory', skip: skip, () async {
     await givesBack(() {
       final ctx = teistro.context(
-        profile: 'nepali-default',
+        profile: 'nepali-drik',
         testProvider: true,
       );
       expect(ctx.profile, isNotEmpty);
@@ -217,7 +217,7 @@ void main() {
       }
       await givesBack(collect: collect, () {
         final ctx = teistro.context(
-          profile: 'nepali-default',
+          profile: 'nepali-drik',
           testProvider: true,
         );
         expect(ctx.profile, isNotEmpty);
@@ -227,7 +227,7 @@ void main() {
 
   test('charts and positions give back their answers', skip: skip, () async {
     final ctx = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       locale: 'en-Latn',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );

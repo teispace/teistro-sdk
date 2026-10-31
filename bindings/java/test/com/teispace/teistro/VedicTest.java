@@ -113,7 +113,7 @@ final class VedicTest {
         });
 
         tests.put("a chart carries its Sade Sati, each period whole", () -> {
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 double[] births = {2_447_995.489_583_333_5, 2_451_545.2};
                 java.util.function.BiFunction<Double, SadeSatiRequest, SadeSatiReport> found = (instant, asked) -> {
@@ -174,7 +174,7 @@ final class VedicTest {
             }
         });
         tests.put("a chart is drawn in every shipped layout, each sign and house once a ring, every point on the page", () -> {
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 List<ChartLayout> layouts = java.util.Arrays.stream(ChartLayout.values())
                         .filter(layout -> layout != ChartLayout.UNKNOWN).toList();
@@ -319,7 +319,7 @@ final class VedicTest {
             double birth = 2_451_545.0;
             Map<String, Object> partner = Map.of("instant", birth, "utcOffsetSeconds", 20_700,
                     "place", Map.of("latitude", 27.7172, "longitude", 85.324, "altitude", 1400.0));
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 java.util.function.BiFunction<Double, MatchingRequest, Chart> found = (instant, asked) ->
                         sky.chart().found(instant, KATHMANDU, 20_700,
@@ -407,7 +407,7 @@ final class VedicTest {
 
         tests.put("a birth and each of its years carry the sahams asked for, each with its strength", () -> {
             double instant = 2_447_995.4895833335;
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 java.util.function.Function<Map<String, Object>, Chart> found = varsha ->
                         sky.chart().found(instant, KATHMANDU, 20_700,

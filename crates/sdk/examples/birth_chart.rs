@@ -120,7 +120,7 @@ fn with_no_time(born: &CalendarDate) -> Result<(), Error> {
     let no_time = CivilDateTime::date_only(born.clone());
     for policy in [None, Some("NOON"), Some("MIDNIGHT")] {
         let mut builder = Context::builder()
-            .profile("nepali-default")
+            .profile("nepali-drik")
             .locale("ne-Deva-NP")
             .ephemeris([Ephemeris::Builtin]);
         if let Some(chosen) = policy {
@@ -163,7 +163,7 @@ fn with_no_time(born: &CalendarDate) -> Result<(), Error> {
 
 fn main() -> Result<(), Error> {
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("ne-Deva-NP")
         .ephemeris([Ephemeris::Builtin])
         .build()?;

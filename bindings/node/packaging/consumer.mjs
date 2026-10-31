@@ -37,7 +37,7 @@ assert.equal(buildInfo.sdk, sdkVersion());
 assert.equal(buildInfo.optimised, true, 'a published build is optimised');
 assert.equal(buildInfo.sanitizer, '', 'a published build carries no sanitizer');
 
-const ctx = new Context({ testProvider: true, profile: 'nepali-default', locale: 'ne-Deva-NP' });
+const ctx = new Context({ testProvider: true, profile: 'nepali-drik', locale: 'ne-Deva-NP' });
 
 const bs = ctx.calendar.convert(gregorian(2015, 4, 14), Calendar.BikramSambat);
 console.log(`14 April 2015 is ${bs.year}-${bs.month}-${bs.day} BS`);

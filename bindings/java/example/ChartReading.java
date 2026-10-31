@@ -83,7 +83,7 @@ public final class ChartReading {
     public static void main(String[] args) {
         Teistro teistro = Teistro.open();
         ContextOptions options = ContextOptions.builder()
-                .profile("nepali-default")
+                .profile("nepali-drik")
                 .locale("ne-Deva-NP")
                 .ephemeris(Ephemeris.BUILTIN)
                 .build();

@@ -7672,7 +7672,7 @@ export declare class AlmanacArea {
    *
    * @example
    * const official = new Context(nepalOfficial(teimeris()));
-   * const modern = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const modern = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
    * const { days } = official.almanac.disagreements(modern, {
    *   from: date('calendar.GREGORIAN', 2025, 11, 1),
    *   to: date('calendar.GREGORIAN', 2025, 11, 30),

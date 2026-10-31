@@ -15,7 +15,7 @@ use teistro::{ChartRequest, Context, Ephemeris, Error, RuleRequest, ShippedRules
 
 fn main() -> Result<(), Error> {
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()?;
 

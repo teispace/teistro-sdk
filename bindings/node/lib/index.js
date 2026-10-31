@@ -7731,7 +7731,7 @@ export class AlmanacArea extends Area {
    * envelope.
    *
    * @example
-   * const sdk = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
    * const { value } = sdk.almanac.sankalpa({
    *   at: 2461055.59375, // 2026-01-15 08:00 in Kathmandu
    *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
@@ -7787,7 +7787,7 @@ export class AlmanacArea extends Area {
    * one `ashauchRunning(earlier.value)`.
    *
    * @example
-   * const sdk = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
    * const { value } = sdk.almanac.ashauch({
    *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
    *   utcOffsetSeconds: 20700,
@@ -7854,7 +7854,7 @@ export class AlmanacArea extends Area {
    * the barkhi in the ordinary month.
    *
    * @example
-   * const sdk = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
    * const { value } = sdk.almanac.firstYear({
    *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
    *   utcOffsetSeconds: 20700,
@@ -7920,7 +7920,7 @@ export class AlmanacArea extends Area {
    *
    * @example
    * const official = new Context(nepalOfficial(teimeris()));
-   * const modern = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const modern = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
    * const { days } = official.almanac.disagreements(modern, {
    *   from: date(2025, 11, 1),
    *   to: date(2025, 11, 30),

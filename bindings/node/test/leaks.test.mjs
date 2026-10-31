@@ -146,7 +146,7 @@ async function givesBack(cycle) {
 
 test('a context disposed gives back its native memory', { skip }, async () => {
   await givesBack(() => {
-    const ctx = new Context({ testProvider: true, profile: 'nepali-default' });
+    const ctx = new Context({ testProvider: true, profile: 'nepali-drik' });
     assert.ok(ctx.profile);
     ctx.dispose();
   });
@@ -154,13 +154,13 @@ test('a context disposed gives back its native memory', { skip }, async () => {
 
 test('a context dropped undisposed is given back by its finaliser', { skip }, async () => {
   await givesBack(() => {
-    const ctx = new Context({ testProvider: true, profile: 'nepali-default' });
+    const ctx = new Context({ testProvider: true, profile: 'nepali-drik' });
     assert.ok(ctx.profile);
   });
 });
 
 test('charts and positions give back their answers', { skip }, async () => {
-  const ctx = new Context({ testProvider: true, profile: 'nepali-default', locale: 'en-Latn' });
+  const ctx = new Context({ testProvider: true, profile: 'nepali-drik', locale: 'en-Latn' });
   try {
     await givesBack(() => {
       ctx.chart.found({

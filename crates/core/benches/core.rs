@@ -48,9 +48,9 @@ fn angles(c: &mut Criterion) {
 }
 
 fn settings(c: &mut Criterion) {
-    let profile = Profile::shipped("nepali-default").expect("shipped");
+    let profile = Profile::shipped("nepali-drik").expect("shipped");
     let patch = SettingsPatch::default();
-    c.bench_function("settings: resolve nepali-default", |b| {
+    c.bench_function("settings: resolve nepali-drik", |b| {
         b.iter(|| profile.resolve(black_box(&patch)));
     });
     let resolved = profile.resolve(&patch).expect("coherent");

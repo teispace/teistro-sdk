@@ -26,7 +26,7 @@ void consumerFacts(
   expect(teistro.version, prebuiltVersion, 'the library is this package\'s');
 
   final context = teistro.context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     locale: 'ne-Deva-NP',
     testProvider: true,
   );

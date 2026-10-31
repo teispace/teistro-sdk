@@ -808,7 +808,7 @@ fn the_sources_sahams_reproduce_end_to_end() {
 
 /// A house's saham point is the source's Sripati mid-point whatever
 /// chalit the settings give the chart: the same profile with Vehlow's —
-/// equal houses centred on the lagna, which `nepali-default` and the
+/// equal houses centred on the lagna, which `nepali-drik` and the
 /// conformance profile carry — reads the same sahams unless the chart's
 /// own chalit is asked for. Only the chalit is changed, so any difference
 /// is the chalit's.

@@ -3,7 +3,7 @@
 // Nepal's patro is computed by the Nepali committee from the Surya
 // Siddhanta: the tithi, nakshatra and yoga by the text with the
 // committee's bija, and the sunrise from a modern ephemeris. That is what
-// `nepalOfficial` opens. The modern reckoning, `nepali-default`, reads the
+// `nepalOfficial` opens. The modern reckoning, `nepali-drik`, reads the
 // same day from the modern sky, and the two name a different sunrise
 // tithi on a few days a month.
 //
@@ -36,7 +36,7 @@ void main() {
   final teistro = Teistro.open();
   final official = teistro.nepalOfficial(locale: 'en-Latn');
   final modern = teistro.context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     locale: 'en-Latn',
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );

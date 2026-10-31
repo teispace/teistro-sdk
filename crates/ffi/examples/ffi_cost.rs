@@ -81,7 +81,7 @@ impl EphemerisProvider for Fixed {
 /// A context over the test provider, either the library's own or the same
 /// one behind a vtable.
 fn context(hosted: Option<(&ProviderVtable, *mut core::ffi::c_void)>) -> *mut TsContext {
-    let profile = CString::new("nepali-default").expect("a profile id");
+    let profile = CString::new("nepali-drik").expect("a profile id");
     let options = TsContextOptions {
         struct_size: u32::try_from(size_of::<TsContextOptions>()).unwrap_or(0),
         flags: if hosted.is_some() {

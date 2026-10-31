@@ -7,16 +7,16 @@
 //!   Samiti announces each one's span, and the press prints it in Bikram
 //!   Sambat days. This founds the almanac at Kathmandu on Nepal's clock
 //!   under three readings and holds the days it marks `ADHIKA` to every
-//!   announcement: the shipped `nepali-default` profile over the built-in
+//!   announcement: the shipped `nepali-drik` profile over the built-in
 //!   ephemeris; the `surya-siddhanta` profile over the text's own sky and
-//!   zodiac; and the `nepali-default` profile over the text's sky, a rival
+//!   zodiac; and the `nepali-drik` profile over the text's sky, a rival
 //!   kept to show that the zodiac is the text's or the month moves. One
 //!   announcement gives instants rather than days, and those are set
 //!   beside each sky's new moons.
 //! - **The month's name.** Nepal names a lunar month from full moon to
 //!   full moon: Gai Jatra, the day after Shravana's full moon, is *Bhadra*
 //!   Krishna Pratipada. Festival days the press dated and designated are
-//!   held to the month `nepali-default` leads with, and every adhika day's
+//!   held to the month `nepali-drik` leads with, and every adhika day's
 //!   purnimanta month to its amanta one, since a purnimanta almanac keeps
 //!   an adhika month's name through its dark fortnight.
 //!
@@ -164,8 +164,8 @@ struct Reading {
 
 const READINGS: [Reading; 3] = [
     Reading {
-        name: "`nepali-default` over the built-in ephemeris",
-        profile: "nepali-default",
+        name: "`nepali-drik` over the built-in ephemeris",
+        profile: "nepali-drik",
         ephemeris: || Ephemeris::Builtin,
         shipped: true,
     },
@@ -176,8 +176,8 @@ const READINGS: [Reading; 3] = [
         shipped: true,
     },
     Reading {
-        name: "`nepali-default` over the text's sky",
-        profile: "nepali-default",
+        name: "`nepali-drik` over the text's sky",
+        profile: "nepali-drik",
         ephemeris: || Ephemeris::SuryaSiddhanta,
         shipped: false,
     },
@@ -229,7 +229,7 @@ fn kathmandu() -> Place {
 /// month.
 fn designated() -> Result<Vec<(Masa, Masa)>, String> {
     let context = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()
         .map_err(|e| e.to_string())?;
@@ -529,7 +529,7 @@ fn claims(
     };
     let (led, amanta) = (misnamed(|found| found.0), misnamed(|found| found.1));
     claims.push(Claim::counted(
-        "`nepali-default` leads with the month a Nepali designation names",
+        "`nepali-drik` leads with the month a Nepali designation names",
         led,
         DESIGNATED.len(),
     ));
@@ -543,7 +543,7 @@ fn claims(
     );
     if led != 0 || amanta == 0 {
         problems.push(format!(
-            "`nepali-default` misnames {led} designated days and the amanta month {amanta}; the page expects none and some"
+            "`nepali-drik` misnames {led} designated days and the amanta month {amanta}; the page expects none and some"
         ));
     }
     out.push_str("## 1. The claims\n\n");
@@ -557,8 +557,8 @@ fn designations(out: &mut String, names: &[(Masa, Masa)]) {
         "\n## 4. The month a Nepali designation names\n\n\
          Nepal names a lunar month from full moon to full moon, so a dark\n\
          fortnight carries the next amanta month's name. Each day is founded\n\
-         at Kathmandu under `nepali-default` over the built-in ephemeris.\n\n\
-         | day | designation | source | designated | `nepali-default` leads with | amanta |\n\
+         at Kathmandu under `nepali-drik` over the built-in ephemeris.\n\n\
+         | day | designation | source | designated | `nepali-drik` leads with | amanta |\n\
          |---|---|---|---|---|---|\n",
     );
     for (designated, (led, amanta)) in DESIGNATED.iter().zip(names) {

@@ -682,6 +682,15 @@ fn a_row_for_every_key_of_a_record_names_only_its_keys() {
 }
 
 #[test]
+fn an_opening_stored_under_an_alias_still_resolves() {
+    let opening = Opening {
+        profile: ProfileId::new("nepali-default"),
+        settings: SettingsPatch::default(),
+    };
+    assert_eq!(opening.resolve().unwrap().profile.as_str(), "nepali-drik");
+}
+
+#[test]
 fn an_opening_resolves_only_a_shipped_profile() {
     let opening = Opening {
         profile: ProfileId::new("acme"),

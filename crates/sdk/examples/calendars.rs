@@ -95,7 +95,7 @@ fn main() -> Result<(), Error> {
     // says so rather than leaving a reader to wonder. Everything below
     // computes; only `positions`, `chart` and `almanac` would refuse.
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("ne-Deva-NP")
         .ephemeris([teistro::Ephemeris::None])
         .build()?;

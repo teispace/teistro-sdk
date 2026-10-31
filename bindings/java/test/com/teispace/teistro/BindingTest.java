@@ -109,7 +109,7 @@ public final class BindingTest {
     }
 
     private static Context context(Teistro teistro) {
-        return teistro.context(ContextOptions.builder().profile("nepali-default").testProvider(true).build());
+        return teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true).build());
     }
 
     /**
@@ -137,7 +137,7 @@ public final class BindingTest {
 
         tests.put("a context answers its profile, settings and hash", () -> {
             try (Context sky = context(teistro)) {
-                same("nepali-default", sky.profile(), "profile");
+                same("nepali-drik", sky.profile(), "profile");
                 check(sky.settingsJson().startsWith("{"), "settings are a JSON object");
                 Json.object(sky.settingsJson());
                 same(64, sky.settingsHash().length(), "a SHA-256 in hexadecimal");
@@ -167,6 +167,15 @@ public final class BindingTest {
                 // The second refusal carries the second record, not the first.
                 TeistroException other = refusal(() -> sky.keys().id("rashi.ARIESS"));
                 check(other.hint().contains("ARIES"), "the second record: " + other.hint());
+            }
+        });
+
+        tests.put("an older profile name answers as the profile it names", () -> {
+            try (Context sky = context(teistro);
+                    Context named = teistro.context(ContextOptions.builder().profile("nepali-default").
+                            testProvider(true).build())) {
+                same("nepali-drik", named.profile(), "the id, not the alias");
+                same(sky.settingsHash(), named.settingsHash(), "the same settings");
             }
         });
 
@@ -201,7 +210,7 @@ public final class BindingTest {
                 return;
             }
             Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default").locale("en-Latn")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik").locale("en-Latn")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 BytesInUse.givesBack(inUse.get(), () -> {
                     sky.chart().found(2_451_545.0, kathmandu, 20_700, ChartOptions.builder().build());
@@ -289,7 +298,7 @@ public final class BindingTest {
             } catch (java.io.IOException e) {
                 throw new AssertionError("the overlay pack", e);
             }
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default").locale("en-Latn")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik").locale("en-Latn")
                     .testProvider(true).build())) {
                 String name = sky.intl().entity("graha.SUN").name();
                 byte[] damaged = pack.clone();
@@ -706,7 +715,7 @@ public final class BindingTest {
         });
 
         tests.put("a message renders in the context's locale", () -> {
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .locale("en-Latn").testProvider(true).build())) {
                 IntlRender said = sky.intl().render("sdk.reason.grahaInBhava",
                         Map.of("graha", Map.of("$entity", "graha.JUPITER"), "bhava", 7));
@@ -1385,7 +1394,7 @@ public final class BindingTest {
             // BPHS ch. 32 vv. 18 to 24 as 03-design/jaimini-significators.md §7
             // tabulates them: the table's order, the verse's candidates, a
             // pair's stronger chosen and saying how, each house from its graha.
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
                 List<Signification> significations = List.of(Signification.FATHER, Signification.MOTHER,
@@ -1431,7 +1440,7 @@ public final class BindingTest {
         });
 
         tests.put("every reading a chart was asked for reads back", () -> {
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
                 ChartOptions everything = ChartOptions.builder().state(true).aspects(true).points(true).houses(true)
@@ -1655,7 +1664,7 @@ public final class BindingTest {
         });
 
         tests.put("a child is named by the cakra, and a name book suggested from", () -> {
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 List<PadaSyllable> makara = sky.naming().syllables(
                         SyllablesOf.of(Map.of("of", "RASHI", "rashi", "CAPRICORN")), null);
@@ -1690,7 +1699,7 @@ public final class BindingTest {
         });
 
         tests.put("a stored baseline settings snapshot translates into the contexts it opens", () -> {
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.NONE).build())) {
                 Map<?, ?> translated = (Map<?, ?>) sky.recordedSettings(
                         Map.of("ayanamsaId", 3, "houseSystem", "placidus", "engineVersion", "1.8.0"));
@@ -1715,7 +1724,7 @@ public final class BindingTest {
         });
 
         tests.put("the areas beside the chart answer", () -> {
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
                 NumerologyProfile profile = sky.numerology().profile("Ram Bahadur", java.time.LocalDate.of(1990, 4, 14));
@@ -2385,13 +2394,13 @@ public final class BindingTest {
             CalendarDate last = Civil.date(Calendar.GREGORIAN, 2025, 11, 30);
             var nepal = new com.teispace.teistro.request.FestivalRequest(com.teispace.teistro.request.FestivalRules.NEPAL);
             try (Context official = teistro.context(ContextOptions.builder().nepalOfficial().build());
-                    Context modern = teistro.context(ContextOptions.builder().profile("nepali-default")
+                    Context modern = teistro.context(ContextOptions.builder().profile("nepali-drik")
                             .ephemeris(Ephemeris.BUILTIN).build())) {
                 Disagreements found = official.almanac().disagreements(modern, first, last, kathmandu, 20_700,
                         true, nepal);
                 Disagreements.Days days = found.days();
                 same(30, days.compared(), "every day compared");
-                same("nepali-default", days.otherProfile(), "the other's profile");
+                same("nepali-drik", days.otherProfile(), "the other's profile");
                 same(modern.settingsHash(), days.otherSettingsHash(), "the other's settings hash");
                 same(List.of(1, 2, 9, 10, 11),
                         days.days().stream().filter(d -> d.tithi() != null).map(d -> d.date().day()).toList(),
@@ -2440,7 +2449,7 @@ public final class BindingTest {
             Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
             var sidereal = com.teispace.teistro.request.AyanaReckoning.SIDEREAL;
             var tropical = com.teispace.teistro.request.AyanaReckoning.TROPICAL;
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 SankalpaAnswer found = sky.almanac().sankalpa(2_461_055.593_75, kathmandu, 20_700, null);
                 Sankalpa value = found.value();
@@ -2478,7 +2487,7 @@ public final class BindingTest {
         tests.put("a festival pack lists its rules with their values", () -> {
             // The central holidays' pack says what each rule is, and marks a
             // day the moon decides (03-design/india-central-holidays.md).
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 Map<?, ?> listing = sky.almanac().festivalPack("INDIA_CENTRAL");
                 check("INDIA_CENTRAL".equals(listing.get("pack")), "the pack is named");
@@ -2500,7 +2509,7 @@ public final class BindingTest {
             // three days later, during the first, ends with it.
             Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1337));
             double at = 2_461_051.677_083;
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 AshauchRequest.Builder died = AshauchRequest.builder()
                         .relation(AshauchRelation.SAPINDA)
@@ -2552,7 +2561,7 @@ public final class BindingTest {
             // sapindana's day; under Nepal's readings the first abdika is
             // kept on the eleventh day and the anniversary is the second.
             Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1337));
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default")
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {
                 FirstYearRequest.Builder died = FirstYearRequest.builder().key("GRANDFATHER").at(2_461_333.677_083);
                 FirstYearAnswer found = sky.almanac().firstYear(died.build(), kathmandu, 20_700);

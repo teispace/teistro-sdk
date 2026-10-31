@@ -50,6 +50,16 @@ moves; a festival answer holding no anniversary does not.
   fraction lit, phase angle, waxing, bright limb and parallactic angle as the place sees
   them. A polar day says `ALWAYS_ABOVE` or `ALWAYS_BELOW` (`03-design/day-sky.md`).
 
+**The Nepali drik profile is named for what it is.**
+**Numbers:** none. The settings and their hash do not move; `provenance.profile` and a context's
+`profile` say `nepali-drik` where they said `nepali-default`, and so do the digest's and every
+sealed answer's provenance bytes.
+- `nepali-default` is `nepali-drik`, a modern drik reckoning and not Nepal's official calendar,
+  which is `nepali-committee`. `nepali-default` stays an accepted alias, opening the same
+  profile, in every binding, in a stored opening and in the MCP server, whose
+  `settings.describe` lists a profile's `aliases`. `SHIPPED_PROFILES` lists ids, and
+  `PROFILE_ALIASES` the older names (`03-design/settings-and-profiles.md` §3.2).
+
 **Festival rules say what they are; India's central holidays ship; Fagu purnima joins.**
 **Numbers:** no day moves. Every shipped pack's `input_hash` moves once, since each
 rule now carries its values.

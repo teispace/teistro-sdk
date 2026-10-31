@@ -255,7 +255,7 @@ each has a knob that takes the baseline's value.
 | yoga readings | the baseline's | the texts' | Kemadruma's cancellations, the Nabhasa shapes, Gaja Kesari and Chamara as their texts' clauses read ([`yogas-measured.md`](../03-design/yogas-measured.md)) |
 | muhurta ranking | weighted score | `TEXTS` | the sources' own order, fewest doshas then most favourable clauses (C162) |
 
-`nepali-default` is the profile for a Nepali product. It keeps the
+`nepali-drik` is the profile for a Nepali product. It keeps the
 baseline's topocentric centre, Vehlow chalit and Bikram Sambat. It
 differs from the baseline in its sunrise: `CENTRE_REFRACTION`, the
 convention nearest Nepal's printed daily sunrise (C39). The baseline's
@@ -385,7 +385,7 @@ the baseline's beside it
 1. **Inventory your calls.** List every baseline service you call and
    the settings you persist. Find each in §4 and §5.
 2. **Choose a profile.** `conformance-baseline` for the closest
-   numbers; `nepali-default` or `parashari-classical` with a patch for a
+   numbers; `nepali-drik` or `parashari-classical` with a patch for a
    product. Write the choice down with its patch: it is part of your
    stored provenance.
 3. **Run both side by side.** Open an SDK context next to the baseline

@@ -62,7 +62,7 @@ void main() {
       expect(Implementation.values, contains(step.implementation));
     }
     final provenance = positions.provenance;
-    expect(provenance.profile, 'nepali-default');
+    expect(provenance.profile, 'nepali-drik');
     expect(provenance.calculationVersion, 1);
     expect(provenance.settingsHash.length, 64);
     expect(

@@ -13,7 +13,7 @@ void main() {
   print('Teistro ${teistro.version}');
 
   final ctx = teistro.context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     locale: 'ne-Deva-NP',
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );

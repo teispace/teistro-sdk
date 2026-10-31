@@ -13,7 +13,7 @@ import com.teispace.teistro.Ephemeris;
         Teistro teistro = Teistro.open();
 // …
         ContextOptions options = ContextOptions.builder()
-                .profile("nepali-default")
+                .profile("nepali-drik")
                 .locale("ne-Deva-NP")
                 .ephemeris(Ephemeris.BUILTIN)
                 .build();

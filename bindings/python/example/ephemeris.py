@@ -85,7 +85,7 @@ def stations(speeds: object, day_count: int, stride: int, column: int) -> list[t
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
+        profile="nepali-drik", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # The binding already refuses a library that is not the build it
         # was generated from; `teistro.build` says what it did load -- the
