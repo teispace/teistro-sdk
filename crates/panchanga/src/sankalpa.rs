@@ -147,7 +147,7 @@ pub struct Sankalpa {
     pub next_sunrise: JulianDay<Utc>,
     /// The lunar year the day's sunrise falls in, named by the sixty-year
     /// cycle under `calendars.samvatsara`, with its Vikrama and Shaka
-    /// numbers.
+    /// numbers; its `rulers` are left empty, a sankalpa reciting none.
     pub year: LunarYear,
     /// The half of the year at the day's sunrise.
     pub ayana: Ayana,

@@ -52,6 +52,7 @@ pub mod omen;
 pub mod period;
 pub mod punya;
 pub mod rising;
+pub mod rulers;
 pub mod sankalpa;
 pub mod sky;
 pub mod span;

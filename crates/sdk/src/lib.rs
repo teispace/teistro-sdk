@@ -253,6 +253,9 @@ pub use teistro_time::ghati::GhatiPala;
 // years that ran in it: what `sdk.almanac().years` answers with.
 pub use teistro_calendar::samvatsara::JovianYear;
 pub use teistro_panchanga::year::LunarYear;
+// The year's office-bearers each year carries, and the offices, texts
+// and day rules they are named by.
+pub use teistro_panchanga::rulers;
 // The time a sankalpa recites and how its ayana is reckoned: what
 // `sdk.almanac().sankalpa` answers with and asks.
 pub use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
