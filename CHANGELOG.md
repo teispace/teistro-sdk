@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Muhurta Chintamani's yoga tables, and a day's ganda mula, gandanta and vinchudo.**
+**Numbers:** Dwipushkar no longer fires in Anuradha: a Bhadra tithi on a Sunday, Tuesday or Saturday at
+sunrise in Anuradha read Dwipushkar under `CLASSICAL` and now reads nothing, since no sign boundary cuts
+Anuradha (C1050). Nothing else moves unless asked.
+- `panchanga.muhurta_tables = MUHURTA_CHINTAMANI`: the text's full tables over every star of the day,
+  Amrit Siddhi lost while its tithi runs, Sarvartha Siddhi, Guru and Ravi Pushya (new `MuhurtaYoga`
+  members `GURU_PUSHYA`, `RAVI_PUSHYA`) and the pushkara yogas wherever their tithi and star overlap
+  (`03-design/day-markers.md` §2). `omen::pushkara_of` is the verse's rule, a star a sign boundary cuts.
+- `AlmanacRequest::with_markers`, `"markers": true` in the JSON days request and `TS_PANCHANGA_MARKERS`
+  (128) at the C boundary give each day `markers`, the new kind `DayMarker`: `GANDA_MULA`, `GANDANTA`,
+  `VINCHUDO`, written to the span section `markers` (41) and read by every binding (SR-21, C1051).
+
 **A festival request moves the tabular Hijri calendar a day or two toward a sighting.**
 **Numbers:** none unless asked: a request without `hijriOffset` answers and hashes as before.
 - `hijriOffset` on the festival request (`FestivalRequest::with_hijri_offset`, `HijriOffset`), −2 to 2,

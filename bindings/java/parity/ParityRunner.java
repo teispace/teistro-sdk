@@ -1527,6 +1527,21 @@ public final class ParityRunner {
                 }
             }
 
+            // ── The day's markers ─────────────────────────────────────────
+            // 11 June 2025 at Kathmandu over the built-in sky, the full Moon
+            // passing from Jyeshtha in Scorpio to Mula (03-design/day-markers.md
+            // §3): the members only.
+            try (Context builtin = teistro.context(ContextOptions.builder()
+                    .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
+                var markedDay = builtin.almanac().of(date(2025, 6, 11), date(2025, 6, 11), place, 20700,
+                        null, null, false, false, false, false, false, false, 0, true).at(0);
+                var keys = new java.util.ArrayList<String>();
+                for (var span : markedDay.markers()) {
+                    keys.add(span.member().fullKey());
+                }
+                put("markers", String.join(" ", keys));
+            }
+
             // ── The eclipses ──────────────────────────────────────────────
             // September 2025 at Kathmandu over the built-in sky: a total lunar
             // eclipse seen whole and a partial solar one the place does not see.

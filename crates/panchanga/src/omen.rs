@@ -27,12 +27,13 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::catalogue::{
-    AgniVasa, AshubhaYoga, BhadraVasa, Direction, Graha, Karana, MuhurtaYoga as Kind, Nakshatra,
-    Panchaka, Rashi, ShivaVasa, Tithi, TithiClass, Vara,
+    AgniVasa, AshubhaYoga, BhadraVasa, DayMarker, Direction, Graha, Karana, MuhurtaYoga as Kind,
+    Nakshatra, Panchaka, Rashi, ShivaVasa, Tithi, TithiClass, Vara,
 };
 use teistro_core::envelope::Convention;
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
+use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::settings::{
     AmritKalam, PanchakaStart, Panchanga as PanchangaSettings, ShivaVasaReading, Varjyam,
 };
@@ -684,6 +685,107 @@ pub fn bhadra_vasas(
         .collect()
 }
 
+/// The stars that end at a junction of a water and a fire sign, Revati,
+/// Ashlesha and Jyeshtha, and those that begin at one, Ashwini, Magha and
+/// Mula: together the six ganda mula stars.
+const JUNCTION_ENDS: [Nakshatra; 3] = [Nakshatra::Revati, Nakshatra::Ashlesha, Nakshatra::Jyeshtha];
+const JUNCTION_BEGINS: [Nakshatra; 3] = [Nakshatra::Ashwini, Nakshatra::Magha, Nakshatra::Mula];
+
+/// How far gandanta reaches on each side of a junction, in days: two
+/// ghatis, a ghati a sixtieth of a day (Muhurta Chintamani,
+/// Vivaha-prakarana v. 41).
+pub const GANDANTA_REACH_DAYS: f64 = 2.0 / 60.0;
+
+/// The junction a star touches, if it is one of the six: the instant
+/// its span ends for Revati, Ashlesha and Jyeshtha, begins for Ashwini,
+/// Magha and Mula.
+fn junction(star: &Span<Nakshatra>) -> Option<JulianDay<Utc>> {
+    if JUNCTION_ENDS.contains(&star.member) {
+        Some(star.whole.to)
+    } else if JUNCTION_BEGINS.contains(&star.member) {
+        Some(star.whole.from)
+    } else {
+        None
+    }
+}
+
+/// The day's markers from the Moon alone (`03-design/day-markers.md`
+/// §3), in the order they begin, each over its whole stretch clipped to
+/// `window`:
+///
+/// - [`DayMarker::GandaMula`] over each of the six junction stars the
+///   day held, the whole star as the almanacs mark it (crux C1051);
+/// - [`DayMarker::Gandanta`] over two ghatis each side of each junction
+///   the day's stars touch, one span a junction, so the same span on
+///   each day it reaches (Muhurta Chintamani, Vivaha-prakarana v. 41);
+/// - [`DayMarker::Vinchudo`] over each stretch the Moon is in Scorpio, a
+///   Gujarati printed reading (crux C1051).
+///
+/// ```
+/// use teistro_core::catalogue::{DayMarker, Nakshatra, Rashi};
+/// use teistro_core::interval::Interval;
+/// use teistro_panchanga::omen::{GANDANTA_REACH_DAYS, day_markers};
+/// use teistro_panchanga::span::Span;
+///
+/// // A day from 100.25 to 101.25: Revati until 100.5, then Ashwini, the
+/// // Moon in Pisces then Aries.
+/// let day = Interval::literal(100.25, 101.25);
+/// let stars: Vec<_> = [
+///     Span::new(Nakshatra::Revati, Interval::literal(99.5, 100.5), day),
+///     Span::new(Nakshatra::Ashwini, Interval::literal(100.5, 101.5), day),
+/// ]
+/// .into_iter()
+/// .flatten()
+/// .collect();
+/// let signs: Vec<_> = [
+///     Span::new(Rashi::Pisces, Interval::literal(98.0, 100.5), day),
+///     Span::new(Rashi::Aries, Interval::literal(100.5, 102.8), day),
+/// ]
+/// .into_iter()
+/// .flatten()
+/// .collect();
+/// let markers = day_markers(&stars, &signs, day);
+/// let kinds: Vec<_> = markers.iter().map(|m| m.member).collect();
+/// assert_eq!(kinds, [DayMarker::GandaMula, DayMarker::Gandanta, DayMarker::GandaMula]);
+/// // One gandanta, two ghatis each side of the junction at 100.5.
+/// let gandanta = markers[1].whole;
+/// assert_eq!((gandanta.from.get(), gandanta.to.get()), (100.5 - GANDANTA_REACH_DAYS, 100.5 + GANDANTA_REACH_DAYS));
+/// ```
+#[must_use]
+pub fn day_markers(
+    nakshatras: &[Span<Nakshatra>],
+    moon_signs: &[Span<Rashi>],
+    window: Interval,
+) -> Vec<Span<DayMarker>> {
+    let mut found: Vec<Span<DayMarker>> = nakshatras
+        .iter()
+        .filter(|star| junction(star).is_some())
+        .filter_map(|star| Span::new(DayMarker::GandaMula, star.whole, window))
+        .collect();
+    let mut junctions: Vec<JulianDay<Utc>> = nakshatras.iter().filter_map(junction).collect();
+    junctions.sort_by(|a, b| a.get().total_cmp(&b.get()));
+    // Revati's end and Ashwini's start are one instant when the day holds
+    // both.
+    junctions.dedup_by(|a, b| (a.get() - b.get()).abs() < 1e-9);
+    found.extend(junctions.into_iter().filter_map(|at| {
+        let reach = Interval::new(
+            at.plus_days(-GANDANTA_REACH_DAYS).ok()?,
+            at.plus_days(GANDANTA_REACH_DAYS).ok()?,
+        )
+        .ok()?;
+        Span::new(DayMarker::Gandanta, reach, window)
+    }));
+    found.extend(
+        moon_signs
+            .iter()
+            .filter(|sign| sign.member == Rashi::Scorpio)
+            .filter_map(|sign| Span::new(DayMarker::Vinchudo, sign.whole, window)),
+    );
+    // Stable, so markers beginning together keep the order above.
+    found.sort_by(|a, b| a.whole.from.get().total_cmp(&b.whole.from.get()));
+    found
+}
+
 /// Where Shiva dwells on a tithi, as the almanacs print it: the tithi
 /// *t*, 1 from Shukla Pratipada to 30 at Amavasya, as (2*t* + 5) mod 7,
 /// the member whose `remainder` that is. **A printed convention**: no
@@ -1287,31 +1389,153 @@ const VARA_NAKSHATRA: [Row; 12] = [
     },
 ];
 
-/// The nakshatras of three feet, which a Bhadra tithi on a Sunday,
-/// Tuesday or Saturday makes Tripushkar in.
-const THREE_FOOTED: [Nakshatra; 6] = [
-    Nakshatra::Krittika,
-    Nakshatra::Punarvasu,
-    Nakshatra::UttaraPhalguni,
-    Nakshatra::Vishakha,
-    Nakshatra::UttaraAshadha,
-    Nakshatra::PurvaBhadrapada,
-];
-
-/// The nakshatras of two feet, which the same combination makes
-/// Dwipushkar in. No recorded day carries one, so the rule ships
-/// untested and says so.
-const TWO_FOOTED: [Nakshatra; 4] = [
-    Nakshatra::Mrigashira,
-    Nakshatra::Chitra,
-    Nakshatra::Dhanishtha,
-    Nakshatra::Anuradha,
-];
+/// Which pushkara yoga a nakshatra makes with a Bhadra tithi on a
+/// Sunday, Tuesday or Saturday, if any: Muhurta Chintamani,
+/// Nakshatra-prakarana v. 49 (1954, p. 86), *dvīśāryamājacaraṇāditivahni-
+/// vaiśve* the triple, *vasutakṣacāndre* the double (crux C1050).
+///
+/// The verse's six and three are the nine stars a sign boundary cuts, and
+/// the cut is the rule: a star whose four quarters fall three in one sign
+/// and one in the next (Krittika, Punarvasu, Uttara Phalguni, Vishakha,
+/// Uttara Ashadha, Purva Bhadrapada) makes Tripushkar, and one cut two and
+/// two (Mrigashira, Chitra, Dhanishtha) Dwipushkar. Each star is four of
+/// the zodiac's 108 quarters and a sign nine, so the star counted from
+/// nought begins `4 × id mod 9` quarters into its sign, and a start of six,
+/// seven or eight leaves three, two or one quarter there.
+///
+/// ```
+/// use teistro_core::catalogue::{MuhurtaYoga, Nakshatra};
+/// use teistro_panchanga::omen::pushkara_of;
+///
+/// assert_eq!(pushkara_of(Nakshatra::Vishakha), Some(MuhurtaYoga::Tripushkar));
+/// assert_eq!(pushkara_of(Nakshatra::Chitra), Some(MuhurtaYoga::Dwipushkar));
+/// // Anuradha lies whole in Scorpio, so it makes neither.
+/// assert_eq!(pushkara_of(Nakshatra::Anuradha), None);
+/// ```
+#[must_use]
+pub const fn pushkara_of(nakshatra: Nakshatra) -> Option<Kind> {
+    match (4 * nakshatra.id()) % 9 {
+        6 | 8 => Some(Kind::Tripushkar),
+        7 => Some(Kind::Dwipushkar),
+        _ => None,
+    }
+}
 
 /// The varas a pushkara yoga needs.
 const PUSHKARA_VARAS: [Vara; 3] = [Vara::Ravivara, Vara::Mangalavara, Vara::Shanivara];
 
+/// The table key of Muhurta Chintamani's full tables
+/// (`03-design/day-markers.md` §2).
+pub const MUHURTA_CHINTAMANI: &str = "MUHURTA_CHINTAMANI";
+
+/// Each vara's Amrit Siddhi star and the tithi, by its number in either
+/// paksha, that takes it away: Narada's pairs as the Piyushadhara quotes
+/// them under Muhurta Chintamani, Shubhashubha-prakarana vv. 20–21 (1954,
+/// p. 20), *hastarkṣaṁ sūryavāre …*, and the verses' own exceptions,
+/// *varjayet sarvakāryeṣu hastārkaṁ pañcamītithau …* (crux C1050).
+const AMRIT_SIDDHI_MUHURTA_CHINTAMANI: [(Vara, Nakshatra, u8); 7] = [
+    (Vara::Ravivara, Nakshatra::Hasta, 5),
+    (Vara::Somavara, Nakshatra::Mrigashira, 6),
+    (Vara::Mangalavara, Nakshatra::Ashwini, 7),
+    (Vara::Budhavara, Nakshatra::Anuradha, 8),
+    (Vara::Guruvara, Nakshatra::Pushya, 9),
+    (Vara::Shukravara, Nakshatra::Revati, 10),
+    (Vara::Shanivara, Nakshatra::Rohini, 11),
+];
+
+/// Each vara's Sarvartha Siddhi stars: Muhurta Chintamani,
+/// Shubhashubha-prakarana vv. 28–29 (1954, p. 22), *sūrye'rkamūlottara-
+/// puṣyadāsraṁ …*, which the Piyushadhara says no rule of the Anandadi
+/// yogas generates. Friday's are the printed text's, *śukre'ntya-
+/// bhāgyāśvyaditiśravobham*; the edition's footnote reads Anuradha
+/// (*maitra*) for Purva Phalguni (*bhāgya*), and the 1906 print's gloss
+/// keeps Purva Phalguni (crux C1050).
+const SARVARTHA_SIDDHI_MUHURTA_CHINTAMANI: [(Vara, &[Nakshatra]); 7] = [
+    (
+        Vara::Ravivara,
+        &[
+            Nakshatra::Hasta,
+            Nakshatra::Mula,
+            Nakshatra::UttaraPhalguni,
+            Nakshatra::UttaraAshadha,
+            Nakshatra::UttaraBhadrapada,
+            Nakshatra::Pushya,
+            Nakshatra::Ashwini,
+        ],
+    ),
+    (
+        Vara::Somavara,
+        &[
+            Nakshatra::Shravana,
+            Nakshatra::Rohini,
+            Nakshatra::Mrigashira,
+            Nakshatra::Pushya,
+            Nakshatra::Anuradha,
+        ],
+    ),
+    (
+        Vara::Mangalavara,
+        &[
+            Nakshatra::Ashwini,
+            Nakshatra::UttaraBhadrapada,
+            Nakshatra::Krittika,
+            Nakshatra::Ashlesha,
+        ],
+    ),
+    (
+        Vara::Budhavara,
+        &[
+            Nakshatra::Rohini,
+            Nakshatra::Anuradha,
+            Nakshatra::Hasta,
+            Nakshatra::Krittika,
+            Nakshatra::Mrigashira,
+        ],
+    ),
+    (
+        Vara::Guruvara,
+        &[
+            Nakshatra::Revati,
+            Nakshatra::Anuradha,
+            Nakshatra::Ashwini,
+            Nakshatra::Punarvasu,
+            Nakshatra::Pushya,
+        ],
+    ),
+    (
+        Vara::Shukravara,
+        &[
+            Nakshatra::Revati,
+            Nakshatra::PurvaPhalguni,
+            Nakshatra::Ashwini,
+            Nakshatra::Punarvasu,
+            Nakshatra::Shravana,
+        ],
+    ),
+    (
+        Vara::Shanivara,
+        &[Nakshatra::Shravana, Nakshatra::Rohini, Nakshatra::Swati],
+    ),
+];
+
+/// The vara-and-star yogas named for Pushya: Guru Pushya, Pushya on a
+/// Thursday, which Muhurta Chintamani names (*gurupuṣya*, Shubhashubha-
+/// prakarana vv. 21–22, 1954 p. 20), and Ravi Pushya, Pushya on a Sunday,
+/// one of v. 28's Sunday stars, named so in the almanacs (crux C1050).
+const PUSHYA_YOGAS: [(Vara, Kind); 2] = [
+    (Vara::Guruvara, Kind::GuruPushya),
+    (Vara::Ravivara, Kind::RaviPushya),
+];
+
 /// The muhurta yogas of a day.
+///
+/// Under `CLASSICAL` a vara-and-star yoga is read at the star the day
+/// opens in, which the corpus measured, and a pushkara yoga at the
+/// tithi and star of sunrise. Under `MUHURTA_CHINTAMANI` every yoga holds
+/// while its limbs do inside the vara: each star the day held, the full
+/// tables of vv. 20–29, Amrit Siddhi lost while its tithi runs, Guru and
+/// Ravi Pushya, and a pushkara yoga wherever a Bhadra tithi and its star
+/// overlap (`03-design/day-markers.md` §2).
 ///
 /// ```
 /// # use teistro_core::catalogue::{Nakshatra, Tithi, Vara};
@@ -1326,7 +1550,7 @@ const PUSHKARA_VARAS: [Vara; 3] = [Vara::Ravivara, Vara::Mangalavara, Vara::Shan
 /// #     [star(Nakshatra::Hasta, 99.8, 100.7), star(Nakshatra::Chitra, 100.7, 101.7)].into_iter().flatten().collect();
 /// # let tithis: Vec<_> = Span::new(Tithi::ShuklaSaptami, Interval::literal(100.0, 101.3), day).into_iter().collect();
 ///
-/// use teistro_panchanga::omen::{CLASSICAL, yogas};
+/// use teistro_panchanga::omen::{CLASSICAL, MUHURTA_CHINTAMANI, yogas};
 ///
 /// use teistro_core::catalogue::MuhurtaYoga;
 ///
@@ -1339,6 +1563,14 @@ const PUSHKARA_VARAS: [Vara; 3] = [Vara::Ravivara, Vara::Mangalavara, Vara::Shan
 /// let found = yogas(CLASSICAL, Vara::Ravivara, chitra, &dvitiya)?;
 /// assert_eq!(found.iter().map(|y| y.yoga).collect::<Vec<_>>(), [MuhurtaYoga::Dwipushkar]);
 /// assert_eq!(yogas("ACME", Vara::Ravivara, chitra, &dvitiya).unwrap_err().field(), Some("panchanga.muhurta_tables"));
+/// // Muhurta Chintamani's reads each star of the day: Hasta's two, and in
+/// // two-footed Chitra under the Saptami, a Bhadra tithi, the Dwipushkar
+/// // the classical reading at sunrise misses.
+/// let full = yogas(MUHURTA_CHINTAMANI, Vara::Ravivara, &nakshatras, &tithis)?;
+/// assert_eq!(
+///     full.iter().map(|y| y.yoga).collect::<Vec<_>>(),
+///     [MuhurtaYoga::AmritSiddhi, MuhurtaYoga::SarvarthaSiddhi, MuhurtaYoga::Dwipushkar]
+/// );
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
 ///
@@ -1352,9 +1584,12 @@ pub fn yogas(
     nakshatras: &[Span<Nakshatra>],
     tithis: &[Span<Tithi>],
 ) -> Result<Vec<MuhurtaYoga>, Error> {
+    if tables.eq_ignore_ascii_case(MUHURTA_CHINTAMANI) {
+        return Ok(muhurta_chintamani(vara, nakshatras, tithis));
+    }
     if !tables.eq_ignore_ascii_case(CLASSICAL) {
         return Err(Error::unsupported(format!(
-            "no muhurta yoga table `{tables}`; the SDK ships `{CLASSICAL}`"
+            "no muhurta yoga table `{tables}`; the SDK ships `{CLASSICAL}` and `{MUHURTA_CHINTAMANI}`"
         ))
         .with_field("panchanga.muhurta_tables"));
     }
@@ -1375,42 +1610,107 @@ pub fn yogas(
             },
         })
         .collect();
-    found.extend(pushkara(vara, at_sunrise, tithis));
+    if let Some(tithi) = tithis.first() {
+        found.extend(pushkara(vara, at_sunrise, tithi));
+    }
     Ok(found)
 }
 
-/// Dwipushkar and Tripushkar: a Bhadra tithi on a Sunday, Tuesday or
-/// Saturday in a two- or three-footed nakshatra.
-fn pushkara(vara: Vara, at_sunrise: &Span<Nakshatra>, tithis: &[Span<Tithi>]) -> Vec<MuhurtaYoga> {
-    if !PUSHKARA_VARAS.contains(&vara) {
-        return Vec::new();
+/// Dwipushkar or Tripushkar: a Bhadra tithi on a Sunday, Tuesday or
+/// Saturday in a star a sign boundary cuts ([`pushkara_of`]), while both
+/// hold.
+fn pushkara(vara: Vara, star: &Span<Nakshatra>, tithi: &Span<Tithi>) -> Option<MuhurtaYoga> {
+    if !PUSHKARA_VARAS.contains(&vara) || tithi.member.attributes().class != TithiClass::Bhadra {
+        return None;
     }
-    let Some(tithi) = tithis.first() else {
-        return Vec::new();
-    };
-    if tithi.member.attributes().class != TithiClass::Bhadra {
-        return Vec::new();
-    }
-    let yoga = if THREE_FOOTED.contains(&at_sunrise.member) {
-        Kind::Tripushkar
-    } else if TWO_FOOTED.contains(&at_sunrise.member) {
-        Kind::Dwipushkar
-    } else {
-        return Vec::new();
-    };
-    // It holds while both the tithi and the nakshatra do.
-    let Some(at) = tithi.inside.clipped_to(at_sunrise.inside) else {
-        return Vec::new();
-    };
-    vec![MuhurtaYoga {
+    let yoga = pushkara_of(star.member)?;
+    Some(MuhurtaYoga {
         yoga,
-        at,
+        at: tithi.inside.clipped_to(star.inside)?,
         because: YogaCause::VaraTithiNakshatra {
             vara,
             tithi: tithi.member,
-            nakshatra: at_sunrise.member,
+            nakshatra: star.member,
         },
-    }]
+    })
+}
+
+/// The yogas of Muhurta Chintamani's tables over every star and tithi
+/// of the day, in the order they begin.
+fn muhurta_chintamani(
+    vara: Vara,
+    nakshatras: &[Span<Nakshatra>],
+    tithis: &[Span<Tithi>],
+) -> Vec<MuhurtaYoga> {
+    let mut found = Vec::new();
+    for star in nakshatras {
+        let because = YogaCause::VaraNakshatra {
+            vara,
+            nakshatra: star.member,
+        };
+        let held = |yoga, at| MuhurtaYoga { yoga, at, because };
+        for (_, _, losing) in AMRIT_SIDDHI_MUHURTA_CHINTAMANI
+            .iter()
+            .filter(|(v, n, _)| *v == vara && *n == star.member)
+        {
+            let lost: Vec<Interval> = tithis
+                .iter()
+                .filter(|tithi| tithi.member.attributes().number == *losing)
+                .map(|tithi| tithi.inside)
+                .collect();
+            found.extend(
+                without(star.inside, &lost)
+                    .into_iter()
+                    .map(|at| held(Kind::AmritSiddhi, at)),
+            );
+        }
+        let sarvartha = SARVARTHA_SIDDHI_MUHURTA_CHINTAMANI
+            .iter()
+            .any(|(v, stars)| *v == vara && stars.contains(&star.member));
+        if sarvartha {
+            found.push(held(Kind::SarvarthaSiddhi, star.inside));
+        }
+        if star.member == Nakshatra::Pushya {
+            found.extend(
+                PUSHYA_YOGAS
+                    .iter()
+                    .filter(|(v, _)| *v == vara)
+                    .map(|(_, yoga)| held(*yoga, star.inside)),
+            );
+        }
+        found.extend(
+            tithis
+                .iter()
+                .filter_map(|tithi| pushkara(vara, star, tithi)),
+        );
+    }
+    // Stable, so one star's yogas keep the tables' order.
+    found.sort_by(|a, b| a.at.from.get().total_cmp(&b.at.from.get()));
+    found
+}
+
+/// `whole` less every interval of `cut`: the pieces left, in order, each
+/// of some length.
+fn without(whole: Interval, cut: &[Interval]) -> Vec<Interval> {
+    let mut left = vec![whole];
+    for gap in cut {
+        left = left
+            .into_iter()
+            .flat_map(|piece| {
+                if piece.overlaps(*gap) {
+                    [
+                        Interval::new(piece.from, gap.from).ok(),
+                        Interval::new(gap.to, piece.to).ok(),
+                    ]
+                } else {
+                    [Some(piece), None]
+                }
+            })
+            .flatten()
+            .filter(|piece| !piece.is_empty())
+            .collect();
+    }
+    left
 }
 
 #[cfg(test)]
@@ -2143,5 +2443,220 @@ mod tests {
                 "{knob}"
             );
         }
+    }
+
+    /// A day of the given stars and tithis, each `(member, from, to)`, in a
+    /// window from 100.25 to 101.25.
+    fn spans<T: Copy>(rows: &[(T, f64, f64)]) -> Vec<Span<T>> {
+        let day = Interval::literal(100.25, 101.25);
+        rows.iter()
+            .filter_map(|(member, from, to)| Span::new(*member, Interval::literal(*from, *to), day))
+            .collect()
+    }
+
+    /// Each star is four padas and each sign nine, so the padas a sign
+    /// boundary leaves a star on either side say how many feet it has in
+    /// its first sign: the generator `pushkara_of` encodes is checked
+    /// here against that count, star by star.
+    #[test]
+    fn pushkara_is_the_star_a_sign_boundary_cuts() {
+        use super::pushkara_of;
+        for star in &Nakshatra::ALL {
+            let first = 4 * star.id();
+            let feet_before_boundary = (0..4).take_while(|p| (first + p) / 9 == first / 9).count();
+            let expected = match feet_before_boundary {
+                1 | 3 => Some(Kind::Tripushkar),
+                2 => Some(Kind::Dwipushkar),
+                _ => None,
+            };
+            assert_eq!(pushkara_of(*star), expected, "{star:?}");
+        }
+        let two: Vec<_> = Nakshatra::ALL
+            .iter()
+            .filter(|n| pushkara_of(**n) == Some(Kind::Dwipushkar))
+            .copied()
+            .collect();
+        assert_eq!(
+            two,
+            [
+                Nakshatra::Mrigashira,
+                Nakshatra::Chitra,
+                Nakshatra::Dhanishtha
+            ]
+        );
+        assert_eq!(
+            Nakshatra::ALL
+                .iter()
+                .filter(|n| pushkara_of(**n) == Some(Kind::Tripushkar))
+                .count(),
+            6
+        );
+        assert_eq!(pushkara_of(Nakshatra::Anuradha), None, "whole in Scorpio");
+    }
+
+    #[test]
+    fn without_leaves_the_pieces_a_cut_does_not_touch() {
+        use super::without;
+        let whole = Interval::literal(10.0, 20.0);
+        assert_eq!(without(whole, &[]), [whole]);
+        assert_eq!(
+            without(whole, &[Interval::literal(12.0, 14.0)]),
+            [Interval::literal(10.0, 12.0), Interval::literal(14.0, 20.0)]
+        );
+        // A cut over an end, one over all of it, one outside it.
+        assert_eq!(
+            without(whole, &[Interval::literal(5.0, 11.0)]),
+            [Interval::literal(11.0, 20.0)]
+        );
+        assert_eq!(without(whole, &[Interval::literal(0.0, 30.0)]).len(), 0);
+        assert_eq!(without(whole, &[Interval::literal(20.0, 25.0)]), [whole]);
+        // Two cuts.
+        assert_eq!(
+            without(
+                whole,
+                &[Interval::literal(12.0, 13.0), Interval::literal(15.0, 16.0)]
+            ),
+            [
+                Interval::literal(10.0, 12.0),
+                Interval::literal(13.0, 15.0),
+                Interval::literal(16.0, 20.0)
+            ]
+        );
+    }
+
+    /// A Thursday in Pushya: Muhurta Chintamani's tables give Amrit
+    /// Siddhi, Sarvartha Siddhi and Guru Pushya over the star, and its
+    /// Amrit Siddhi is lost while a Navami runs (vv. 20-22).
+    #[test]
+    fn muhurta_chintamani_reads_every_star_and_loses_amrit_siddhi_in_its_tithi() {
+        use super::MUHURTA_CHINTAMANI;
+        let stars = spans(&[
+            (Nakshatra::Punarvasu, 99.9, 100.5),
+            (Nakshatra::Pushya, 100.5, 101.6),
+        ]);
+        let tithis = spans(&[
+            (Tithi::ShuklaAshtami, 99.8, 100.8),
+            (Tithi::ShuklaNavami, 100.8, 101.0),
+            (Tithi::ShuklaDashami, 101.0, 102.0),
+        ]);
+        let found = yogas(MUHURTA_CHINTAMANI, Vara::Guruvara, &stars, &tithis).unwrap();
+        let of = |kind| -> Vec<Interval> {
+            found
+                .iter()
+                .filter(|y| y.yoga == kind)
+                .map(|y| y.at)
+                .collect()
+        };
+        // Punarvasu, the day's first star, is Thursday's Sarvartha star too:
+        // the classical reading at sunrise would stop there.
+        assert_eq!(
+            of(Kind::SarvarthaSiddhi),
+            [
+                Interval::literal(100.25, 100.5),
+                Interval::literal(100.5, 101.25)
+            ]
+        );
+        assert_eq!(of(Kind::GuruPushya), [Interval::literal(100.5, 101.25)]);
+        assert_eq!(
+            of(Kind::AmritSiddhi),
+            [
+                Interval::literal(100.5, 100.8),
+                Interval::literal(101.0, 101.25)
+            ],
+            "lost while the Navami runs"
+        );
+        assert!(of(Kind::RaviPushya).is_empty(), "not a Sunday");
+        // The same sky on a Sunday: Ravi Pushya and Sunday's Sarvartha star.
+        let sunday = yogas(MUHURTA_CHINTAMANI, Vara::Ravivara, &stars, &tithis).unwrap();
+        let kinds: Vec<_> = sunday.iter().map(|y| y.yoga).collect();
+        assert_eq!(kinds, [Kind::SarvarthaSiddhi, Kind::RaviPushya]);
+        // In order of beginning.
+        assert!(
+            found
+                .windows(2)
+                .all(|w| w[0].at.from.get() <= w[1].at.from.get())
+        );
+    }
+
+    /// A pushkara yoga under Muhurta Chintamani's tables holds wherever a
+    /// Bhadra tithi and its star overlap, not only at sunrise.
+    #[test]
+    fn muhurta_chintamani_finds_a_pushkara_after_sunrise() {
+        use super::MUHURTA_CHINTAMANI;
+        let stars = spans(&[
+            (Nakshatra::Magha, 100.0, 100.6),
+            (Nakshatra::Chitra, 100.6, 101.7),
+        ]);
+        let tithis = spans(&[
+            (Tithi::ShuklaPratipada, 100.0, 100.9),
+            (Tithi::ShuklaDvitiya, 100.9, 101.9),
+        ]);
+        let classical = yogas(CLASSICAL, Vara::Mangalavara, &stars, &tithis).unwrap();
+        assert!(classical.is_empty(), "{classical:?}");
+        let found = yogas(MUHURTA_CHINTAMANI, Vara::Mangalavara, &stars, &tithis).unwrap();
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert_eq!(found[0].yoga, Kind::Dwipushkar);
+        assert_eq!(found[0].at, Interval::literal(100.9, 101.25));
+        let error = yogas("NONE", Vara::Mangalavara, &stars, &tithis).unwrap_err();
+        assert!(error.message.contains(MUHURTA_CHINTAMANI), "{error}");
+    }
+
+    /// Gandanta is one span a junction, the same span from either side of
+    /// it, and ganda mula and vinchudo follow their stars and sign.
+    #[test]
+    fn day_markers_follow_the_junctions_and_scorpio() {
+        use super::{GANDANTA_REACH_DAYS, day_markers};
+        use teistro_core::catalogue::DayMarker;
+        let day = Interval::literal(100.25, 101.25);
+        // A day that holds Revati's end and Ashwini's start, and one that
+        // holds only Ashwini, the junction at its sunrise's edge.
+        let both = spans(&[
+            (Nakshatra::Revati, 99.5, 100.5),
+            (Nakshatra::Ashwini, 100.5, 101.5),
+        ]);
+        let after = spans(&[(Nakshatra::Ashwini, 100.5, 101.5)]);
+        let gandanta = |markers: &[Span<DayMarker>]| -> Vec<Interval> {
+            markers
+                .iter()
+                .filter(|m| m.member == DayMarker::Gandanta)
+                .map(|m| m.whole)
+                .collect()
+        };
+        let expected = Interval::literal(100.5 - GANDANTA_REACH_DAYS, 100.5 + GANDANTA_REACH_DAYS);
+        assert_eq!(gandanta(&day_markers(&both, &[], day)), [expected]);
+        assert_eq!(gandanta(&day_markers(&after, &[], day)), [expected]);
+        // Ashlesha into Magha and Jyeshtha into Mula; Bharani touches none.
+        let others = spans(&[
+            (Nakshatra::Ashlesha, 99.9, 100.4),
+            (Nakshatra::Magha, 100.4, 101.0),
+            (Nakshatra::PurvaPhalguni, 101.0, 102.0),
+        ]);
+        let found = day_markers(&others, &[], day);
+        assert_eq!(
+            found
+                .iter()
+                .filter(|m| m.member == DayMarker::GandaMula)
+                .count(),
+            2
+        );
+        assert_eq!(gandanta(&found).len(), 1);
+        assert_eq!(
+            day_markers(&spans(&[(Nakshatra::Bharani, 99.0, 102.0)]), &[], day).len(),
+            0
+        );
+        // Vinchudo is the Moon's time in Scorpio and nothing else.
+        let signs = spans(&[(Rashi::Libra, 99.0, 100.7), (Rashi::Scorpio, 100.7, 103.0)]);
+        let vinchudo: Vec<_> = day_markers(&[], &signs, day)
+            .into_iter()
+            .map(|m| (m.member, m.whole, m.inside))
+            .collect();
+        assert_eq!(
+            vinchudo,
+            [(
+                DayMarker::Vinchudo,
+                Interval::literal(100.7, 103.0),
+                Interval::literal(100.7, 101.25)
+            )]
+        );
     }
 }

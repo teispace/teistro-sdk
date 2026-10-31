@@ -2395,6 +2395,17 @@ geo.dispose();
   }
 }
 
+// ── The day's markers ──────────────────────────────────────────────────
+// 11 June 2025 at Kathmandu over the built-in sky, the full Moon passing
+// from Jyeshtha in Scorpio to Mula (`03-design/day-markers.md` §3): the
+// members only.
+{
+  const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
+  const day = sky.almanac.of({ from: gregorian(2025, 6, 11), to: gregorian(2025, 6, 11), place, utcOffsetSeconds: 20700, markers: true }).at(0);
+  put('markers', day.markers.map((span) => span.member).join(' '));
+  sky.dispose();
+}
+
 // ── The eclipses ───────────────────────────────────────────────────────
 // September 2025 at Kathmandu over the built-in sky, which the test
 // provider cannot complete: a total lunar eclipse seen whole and a

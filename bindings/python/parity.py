@@ -3156,6 +3156,20 @@ def main() -> None:
                 ),
             )
 
+    # ── The day's markers ─────────────────────────────────────────────
+    # 11 June 2025 at Kathmandu over the built-in sky, the full Moon
+    # passing from Jyeshtha in Scorpio to Mula
+    # (`03-design/day-markers.md` §3): the members only.
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as builtin:
+        marked_day = builtin.almanac.of(
+            from_date=date(Calendar.GREGORIAN, 2025, 6, 11),
+            to_date=date(Calendar.GREGORIAN, 2025, 6, 11),
+            place=place,
+            utc_offset_seconds=20700,
+            markers=True,
+        ).at(0)
+        put("markers", " ".join(s.member.full_key for s in marked_day.markers))
+
     def eclipse_moment(m: Optional[EclipseMoment]) -> str:
         return "-" if m is None else f"{number(m.at)}@{number(m.altitude_deg)}"
 

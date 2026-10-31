@@ -167,13 +167,45 @@ public final class AlmanacArea {
             com.teispace.teistro.request.FestivalRequest festivals,
             boolean years, boolean eclipses, boolean nepalSambat, boolean lagnas, boolean homaAhuti,
             boolean sky, int skyStepMinutes) {
+        return of(fromDate, toDate, place, utcOffsetSeconds, muhurta, festivals, years, eclipses, nepalSambat, lagnas,
+                homaAhuti, sky, skyStepMinutes, false);
+    }
+
+    /**
+     * {@link #of(CalendarDate, CalendarDate, Observer, int, com.teispace.teistro.request.MuhurtaRequest,
+     * com.teispace.teistro.request.FestivalRequest, boolean, boolean, boolean, boolean, boolean, boolean, int)} and,
+     * when {@code markers} asks, each day's ganda mula, gandanta and vinchudo, as {@link AlmanacDay#markers()}
+     * ({@code 03-design/day-markers.md} §3).
+     *
+     * @param fromDate the first day; its calendar is the range's
+     * @param toDate the last day
+     * @param place where
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param muhurta a muhurta search over the same days, or null
+     * @param festivals festival rules to reckon over the same days, or null
+     * @param years whether to answer the lunar years the days fall in
+     * @param eclipses whether to answer the eclipses of the days
+     * @param nepalSambat whether to answer each day's Nepal Sambat date
+     * @param lagnas whether to give each day its lagna table
+     * @param homaAhuti whether to give each day its homa ahuti
+     * @param sky whether to answer each day's sky
+     * @param skyStepMinutes the step of its paths, 1 to 240, zero for ten
+     * @param markers whether to give each day its markers
+     * @return the almanac
+     */
+    public Almanac of(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.MuhurtaRequest muhurta,
+            com.teispace.teistro.request.FestivalRequest festivals,
+            boolean years, boolean eclipses, boolean nepalSambat, boolean lagnas, boolean homaAhuti,
+            boolean sky, int skyStepMinutes, boolean markers) {
         return asked(fromDate, toDate, place, utcOffsetSeconds, null, muhurta, festivals,
                 (years ? Native.TS_PANCHANGA_YEARS : 0)
                         | (eclipses ? Native.TS_PANCHANGA_ECLIPSES : 0)
                         | (nepalSambat ? Native.TS_PANCHANGA_NEPAL_SAMBAT : 0)
                         | (lagnas ? Native.TS_PANCHANGA_LAGNAS : 0)
                         | (homaAhuti ? Native.TS_PANCHANGA_HOMA_AHUTI : 0)
-                        | (sky ? Native.TS_PANCHANGA_SKY : 0),
+                        | (sky ? Native.TS_PANCHANGA_SKY : 0)
+                        | (markers ? Native.TS_PANCHANGA_MARKERS : 0),
                 skyStepMinutes);
     }
 

@@ -563,6 +563,7 @@ fn panchanga_counts_section(id: u32) -> SectionSchema {
             count("bhadra_vasa", "bhadra_vasa"),
             count("shiva_vasa", "shiva_vasa"),
             count("named_panchaka", "named_panchaka"),
+            count("markers", "markers"),
         ],
     )
 }
@@ -867,6 +868,7 @@ pub fn panchanga() -> BlobSchema {
                 "sky",
                 "UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for.",
             ),
+            span_section(41, "markers", "The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.", "The marker.", "DayMarker"),
         ],
     }
 }

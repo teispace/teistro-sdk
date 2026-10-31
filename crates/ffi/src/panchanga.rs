@@ -298,7 +298,9 @@ pub struct TsPanchangaRequest {
     /// lagna table, in the `lagnas` span section;
     /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
     /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
-    /// in the `sky` section, at `sky_step_minutes`.
+    /// in the `sky` section, at `sky_step_minutes`;
+    /// `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
+    /// vinchudo, in the `markers` span section.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -493,6 +495,23 @@ pub const TS_PANCHANGA_HOMA_AHUTI: u32 = 32;
 /// ```
 pub const TS_PANCHANGA_SKY: u32 = 64;
 
+/// `TS_PANCHANGA_MARKERS`, the bit a caller sets in a panchanga request's
+/// `sections` for each day's markers from the Moon alone, in the
+/// `markers` span section: ganda mula, gandanta and vinchudo
+/// (`03-design/day-markers.md` §3). A request that does not set it pays
+/// nothing.
+///
+/// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_MARKERS, TS_PANCHANGA_SKY};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_MARKERS, 1 << 7);
+/// assert_eq!((TS_PANCHANGA_MARKERS | TS_PANCHANGA_SKY) & TS_PANCHANGA_MARKERS, TS_PANCHANGA_MARKERS);
+/// ```
+pub const TS_PANCHANGA_MARKERS: u32 = 128;
+
 /// A day's own values, in the order `days` declares them.
 #[must_use]
 fn day_row(day: &Panchanga, stated: Option<&ClockReading>) -> Vec<FixedValue> {
@@ -558,6 +577,7 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         day.bhadra_vasa().len(),
         day.shiva_vasa.len(),
         usize::from(day.named_panchaka.is_some()),
+        day.markers.len(),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -824,6 +844,7 @@ struct RaggedRows {
     bhadra_vasa: Vec<Vec<FixedValue>>,
     shiva_vasa: Vec<Vec<FixedValue>>,
     named_panchaka: Vec<Vec<FixedValue>>,
+    markers: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -866,6 +887,7 @@ impl RaggedRows {
                 |day| day.named_panchaka.into_iter().collect(),
                 |m| m.id(),
             )?,
+            markers: span_rows(days, |day| &day.markers, |m| m.id())?,
         })
     }
 }
@@ -1006,6 +1028,7 @@ pub fn encode(
         writer.rows("shiva_vasa", &ragged.shiva_vasa)?;
         writer.rows("named_panchaka", &ragged.named_panchaka)?;
         writer.bytes("sky", beside.sky.as_bytes())?;
+        writer.rows("markers", &ragged.markers)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -1175,6 +1198,9 @@ pub unsafe extern "C" fn ts_panchanga_days(
         }
         if asked.sections & TS_PANCHANGA_HOMA_AHUTI == TS_PANCHANGA_HOMA_AHUTI {
             beside = beside.with_homa_ahuti();
+        }
+        if asked.sections & TS_PANCHANGA_MARKERS == TS_PANCHANGA_MARKERS {
+            beside = beside.with_markers();
         }
         beside = with_sky(beside, asked.sections, asked.sky_step_minutes)?;
         if asked.sections & TS_PANCHANGA_WITHOUT_DAYS == TS_PANCHANGA_WITHOUT_DAYS {

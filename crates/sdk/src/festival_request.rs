@@ -239,7 +239,7 @@ pub struct FestivalRequest {
     /// The days the tabular Hijri calendar is moved toward a sighting,
     /// for the rules kept on its dates; left out when none, as `dated` is
     /// (`03-design/published-overrides.md` §7).
-    #[serde(rename = "hijriOffset", skip_serializing_if = "HijriOffset::is_none")]
+    #[serde(rename = "hijriOffset", skip_serializing_if = "no_offset")]
     hijri_offset: HijriOffset,
 }
 
@@ -1138,6 +1138,16 @@ impl schemars::JsonSchema for FestivalRuleItem {
             "anyOf": options,
         })
     }
+}
+
+/// Whether a request leaves the Hijri table where it is, for serde, which
+/// hands the field by reference.
+#[expect(
+    clippy::trivially_copy_pass_by_ref,
+    reason = "serde's skip_serializing_if passes the field by reference"
+)]
+fn no_offset(offset: &HijriOffset) -> bool {
+    offset.is_none()
 }
 
 #[cfg(test)]
