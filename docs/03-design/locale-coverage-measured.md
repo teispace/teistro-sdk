@@ -16,6 +16,8 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 `hi-Deva-IN` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
 
+`ne-Deva-NP` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.day`.
+
 `sa-Deva` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
 
 ## By kind
