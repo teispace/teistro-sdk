@@ -3,10 +3,15 @@
 
 fn main() {
     const SOURCE: &str = "../bindings/c/digest/teistro_digest.c";
+    const SIZES: &str = "src/digest_sizes.c";
     println!("cargo:rerun-if-changed={SOURCE}");
+    println!("cargo:rerun-if-changed={SIZES}");
     println!("cargo:rerun-if-changed=../bindings/c/digest/teistro_digest.h");
     let mut build = cc::Build::new();
-    build.file(SOURCE).include("../bindings/c/digest");
+    build
+        .file(SOURCE)
+        .file(SIZES)
+        .include("../bindings/c/digest");
     if std::env::var_os("CARGO_CFG_FUZZING").is_some() {
         // Apple's clang writes an ASan its own runtime alone answers, and
         // rustc links LLVM's: on a Mac the C is covered and not sanitized,
