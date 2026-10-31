@@ -26,7 +26,7 @@ A native library is loaded, not downloaded, so only the wasm modules are held to
 | module | module | gzipped | budget, gzipped | left | glue | glue, gzipped |
 |---|--:|--:|--:|--:|--:|--:|
 | `full` | 13 567 513 | 3 203 623 | 3 230 000 | 0.8% | 108 006 | 21 889 |
-| `panchanga` | 5 711 970 | 1 672 957 | 1 670 000 | -0.2% | 108 006 | 21 889 |
+| `panchanga` | 5 711 970 | 1 672 957 | 1 710 000 | 2.2% | 108 006 | 21 889 |
 
 ## Bundled
 
@@ -85,3 +85,4 @@ A wasm module's budget is held both ways by `cargo xtask check-wasm`: over it fa
 | 2026-10-30 | `41086557270` | `panchanga` | 5 246 875 | 1 549 489 | date arithmetic, amounts in words, next occurrence, bhadra vasa and the named panchaka and Shiva vasa conventions cross the boundary |
 | 2026-10-31 | `41192176586` | `full` | 13 401 486 | 3 160 454 | the festival feed and digest, signed zone packs, the clock on every date and the iCalendar export cross the boundary and grow the library and module |
 | 2026-10-31 | `41192176586` | `panchanga` | 5 529 808 | 1 627 496 | the festival feed and digest, signed zone packs, the clock on every date and the iCalendar export cross the boundary and grow the library and module |
+| 2026-10-31 | `41204073755` | `panchanga` | 5 711 970 | 1 672 957 | The day plan, the anniversaries, the day in sentences and the sky of the day (the 2026-11-01 batch) went into the panchanga module, which grew past the budget it was measured under. |
