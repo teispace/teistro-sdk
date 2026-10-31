@@ -1,0 +1,70 @@
+kind: gowri
+number: 80
+version: 1
+doc: "The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark."
+attributes: { lord: key:graha, auspicious: bool }
+members:
+  - key: UTHI
+    id: 0
+    doc: "Uthi (udyogam), the Sun's: effort, and the eighth a Sunday's daylight opens with"
+    attributes: { lord: SUN, auspicious: true }
+    sources:
+      - text: "Tamil almanacs"
+        ref: "Gowri panchangam, the Sun's eighth; the walk from the vara's lord (crux C1052)"
+    mark: T
+  - key: AMIRTHAM
+    id: 1
+    doc: "Amirtham, the Moon's: nectar"
+    attributes: { lord: MOON, auspicious: true }
+    sources:
+      - text: "Tamil almanacs"
+        ref: "Gowri panchangam, the Moon's eighth (crux C1052)"
+    mark: T
+  - key: ROGAM
+    id: 2
+    doc: "Rogam, Mars's: illness"
+    attributes: { lord: MARS, auspicious: false }
+    sources:
+      - text: "Tamil almanacs"
+        ref: "Gowri panchangam, Mars's eighth (crux C1052)"
+    mark: T
+  - key: LAABAM
+    id: 3
+    doc: "Laabam, Mercury's: gain"
+    attributes: { lord: MERCURY, auspicious: true }
+    sources:
+      - text: "Tamil almanacs"
+        ref: "Gowri panchangam, Mercury's eighth (crux C1052)"
+    mark: T
+  - key: DHANAM
+    id: 4
+    doc: "Dhanam, Jupiter's: wealth"
+    attributes: { lord: JUPITER, auspicious: true }
+    sources:
+      - text: "Tamil almanacs"
+        ref: "Gowri panchangam, Jupiter's eighth (crux C1052)"
+    mark: T
+  - key: SUGAM
+    id: 5
+    doc: "Sugam, Venus's: ease"
+    attributes: { lord: VENUS, auspicious: true }
+    sources:
+      - text: "Tamil almanacs"
+        ref: "Gowri panchangam, Venus's eighth (crux C1052)"
+    mark: T
+  - key: SORAM
+    id: 6
+    doc: "Soram, Saturn's: theft"
+    attributes: { lord: SATURN, auspicious: false }
+    sources:
+      - text: "Tamil almanacs"
+        ref: "Gowri panchangam, Saturn's eighth (crux C1052)"
+    mark: T
+  - key: VISHAM
+    id: 7
+    doc: "Visham, Rahu's: poison, the daylight's eighth that is rahu kaala"
+    attributes: { lord: RAHU, auspicious: false }
+    sources:
+      - text: "Tamil almanacs"
+        ref: "Gowri panchangam, Rahu's eighth, the rahu kaala eighth by day (crux C1052)"
+    mark: T

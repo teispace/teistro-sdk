@@ -564,6 +564,7 @@ fn panchanga_counts_section(id: u32) -> SectionSchema {
             count("shiva_vasa", "shiva_vasa"),
             count("named_panchaka", "named_panchaka"),
             count("markers", "markers"),
+            count("gowri", "gowri"),
         ],
     )
 }
@@ -653,6 +654,29 @@ fn panchanga_choghadiya_section(id: u32) -> SectionSchema {
                 ColumnDef::new("choghadiya", Scalar::U16, "Which choghadiya.")
                     .of_enum("Choghadiya"),
                 ColumnDef::new("lord", Scalar::U16, "The graha that rules it.").of_enum("Graha"),
+            ];
+            fields.extend(interval_columns("from", "to", "it"));
+            fields.push(ColumnDef::new(
+                "daytime",
+                Scalar::U8,
+                "1 when it is one of the eight of the daylight, 0 for one of the night.",
+            ));
+            fields
+        },
+    )
+}
+
+/// The `gowri` section: the Gowri panchangam, when asked.
+#[must_use]
+fn panchanga_gowri_section(id: u32) -> SectionSchema {
+    SectionSchema::columns(
+        id,
+        "gowri",
+        "The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none.",
+        {
+            let mut fields = vec![
+                ColumnDef::new("gowri", Scalar::U16, "Which Gowri, which carries its lord.")
+                    .of_enum("Gowri"),
             ];
             fields.extend(interval_columns("from", "to", "it"));
             fields.push(ColumnDef::new(
@@ -869,6 +893,7 @@ pub fn panchanga() -> BlobSchema {
                 "UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for.",
             ),
             span_section(41, "markers", "The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.", "The marker.", "DayMarker"),
+            panchanga_gowri_section(42),
         ],
     }
 }

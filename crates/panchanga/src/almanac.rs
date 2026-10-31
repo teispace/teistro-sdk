@@ -167,6 +167,14 @@ pub struct Panchanga {
     /// nothing; and left out of the day's document when empty.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub markers: Vec<Span<DayMarker>>,
+    /// The day's Gowri panchangam: eight Gowri of the daylight and eight
+    /// of the night ([`Panchanga::divide_gowri`],
+    /// `03-design/gowri-panchangam.md`), a printed reading (crux C1052).
+    /// **Empty unless asked for** (the façade's
+    /// `AlmanacRequest::with_gowri`), and left out of the day's document
+    /// when empty.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub gowri: Vec<period::GowriPart>,
     /// Where Shiva dwells, one span for each tithi the day held, under
     /// `panchanga.shiva_vasa`: **a printed convention** with no text
     /// behind it, which the answer's provenance names
@@ -732,6 +740,57 @@ impl Panchanga {
     /// ```
     pub fn mark(&mut self) {
         self.markers = omen::day_markers(&self.limbs.nakshatra, &self.moon.signs, self.window);
+    }
+
+    /// Fills [`Panchanga::gowri`]: the day's eight Gowri of the daylight
+    /// and eight of the night ([`period::gowri`],
+    /// `03-design/gowri-panchangam.md`), a printed reading (crux C1052).
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// # // Wednesday 25 November 2026.
+    /// # let mut day = almanac.day(&date(11, 25), &kathmandu)?.value;
+    /// use teistro_core::catalogue::{Gowri, Kaala};
+    ///
+    /// assert!(day.gowri.is_empty(), "not asked for");
+    /// day.divide_gowri()?;
+    /// assert_eq!(day.gowri.len(), 16);
+    /// // Visham by day is the rahu kaala.
+    /// let rahu = day.kaalas.iter().find(|k| k.kaala == Kaala::RahuKaala).ok_or("rahu kaala")?;
+    /// assert!(day.gowri.iter().any(|g| g.is_daytime && g.gowri == Gowri::Visham && g.at == rahu.at));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A day whose sunset precedes its sunrise, which a built day never is.
+    pub fn divide_gowri(&mut self) -> Result<(), Error> {
+        let daylight = Interval::new(self.day.sunrise, self.day.sunset)?;
+        let night = Interval::new(self.day.sunset, self.day.next_sunrise)?;
+        self.gowri = period::gowri(daylight, night, self.day.vara);
+        Ok(())
     }
 
     /// The directions Rahu walks over the daylight, an eighth of sunrise
@@ -3041,6 +3100,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 punya_kala,
                 homa_ahuti: Vec::new(),
                 markers: Vec::new(),
+                gowri: Vec::new(),
                 named_panchaka,
                 clock: Some(self.clock.reading(window.from))
                     .filter(|clock| clock.source != ZoneSource::Manual),

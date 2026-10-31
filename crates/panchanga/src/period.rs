@@ -18,7 +18,7 @@
 //! SDK already has.
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::{Choghadiya, Graha, Kaala, Vara};
+use teistro_core::catalogue::{Choghadiya, Gowri, Graha, Kaala, Vara};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Utc};
@@ -545,6 +545,125 @@ pub fn is_inauspicious(kaalas: &[Kaalas], instant: JulianDay<Utc>) -> bool {
     kaalas.iter().any(|kaala| kaala.at.contains(instant))
 }
 
+/// One of a day's sixteen Gowri (`03-design/gowri-panchangam.md`): an
+/// eighth of the daylight or of the night and the Gowri that names it.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+/// use teistro_core::catalogue::{Gowri, Graha};
+/// use teistro_panchanga::period::gowri;
+///
+/// // A Sunday's daylight opens with the Sun's Uthi.
+/// let parts = gowri(daylight, night, Vara::Ravivara);
+/// assert_eq!(parts[0].gowri, Gowri::Uthi);
+/// assert_eq!(parts[0].gowri.attributes().lord, Graha::Sun);
+/// assert!(parts[0].is_daytime && !parts[8].is_daytime);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct GowriPart {
+    /// Which Gowri, which carries its lord and whether it is auspicious.
+    pub gowri: Gowri,
+    /// When it runs.
+    pub at: Interval,
+    /// Whether it is one of the eight of the daylight.
+    pub is_daytime: bool,
+}
+
+/// The Gowri a graha gives its name to.
+///
+/// ```
+/// use teistro_core::catalogue::{Gowri, Graha};
+/// use teistro_panchanga::period::gowri_of;
+///
+/// assert_eq!(gowri_of(Graha::Rahu), Some(Gowri::Visham));
+/// assert_eq!(gowri_of(Graha::Ketu), None);
+/// ```
+#[must_use]
+pub fn gowri_of(lord: Graha) -> Option<Gowri> {
+    Gowri::ALL
+        .iter()
+        .copied()
+        .find(|gowri| gowri.attributes().lord == lord)
+}
+
+/// The sixteen Gowri of a day (`03-design/gowri-panchangam.md` §2): eight
+/// of the daylight walking the weekday lords from the vara's own, Rahu in
+/// the rahu kaala eighth, then eight of the night from the lord four
+/// weekdays on, Rahu after the graha he followed by day. **A printed
+/// reading** with no text read behind it (crux C1052).
+///
+/// A half with no arc contributes none.
+///
+/// ```
+/// # use teistro_core::catalogue::Vara;
+/// # use teistro_core::interval::Interval;
+/// #
+/// # // A Sunday's daylight of twelve hours, 6 a.m. to 6 p.m. on day 100.
+/// # let daylight = Interval::literal(100.25, 100.75);
+/// # let night = Interval::literal(100.75, 101.25);
+/// use teistro_core::catalogue::Gowri;
+/// use teistro_panchanga::period::gowri;
+///
+/// let parts = gowri(daylight, night, Vara::Ravivara);
+/// assert_eq!(parts.len(), 16);
+/// // Sunday's rahu kaala is the daylight's last eighth.
+/// assert_eq!(parts[7].gowri, Gowri::Visham);
+/// assert_eq!(parts[7].at, Interval::literal(100.75 - 0.5 / 8.0, 100.75));
+/// ```
+#[must_use]
+pub fn gowri(daylight: Interval, night: Interval, vara: Vara) -> Vec<GowriPart> {
+    // Rahu's eighth by day, counted from one: never the first, so the
+    // graha before it is the vara's lord walked that many less two.
+    let eighth = Kaala::RahuKaala
+        .attributes()
+        .eighth_by_vara
+        .get(usize::from(vara.attributes().weekday))
+        .copied()
+        .unwrap_or(8);
+    let follows = walk(vara, eighth.saturating_sub(2));
+    let mut parts = Vec::with_capacity(16);
+    parts.extend(gowri_half(daylight, vara, follows, true));
+    parts.extend(gowri_half(
+        night,
+        walk_vara(vara, NIGHT_START),
+        follows,
+        false,
+    ));
+    parts
+}
+
+/// One half's eight Gowri: the seven weekday lords from `from`'s, and
+/// Rahu after `follows`.
+fn gowri_half(arc: Interval, from: Vara, follows: Graha, is_daytime: bool) -> Vec<GowriPart> {
+    if arc.is_empty() {
+        return Vec::new();
+    }
+    let mut lords = Vec::with_capacity(8);
+    for step in 0..7 {
+        let lord = walk(from, step);
+        lords.push(lord);
+        if lord == follows {
+            lords.push(Graha::Rahu);
+        }
+    }
+    arc.divided(EIGHTHS)
+        .zip(lords)
+        .filter_map(|(at, lord)| {
+            Some(GowriPart {
+                gowri: gowri_of(lord)?,
+                at,
+                is_daytime,
+            })
+        })
+        .collect()
+}
+
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
@@ -826,5 +945,75 @@ mod tests {
         assert_eq!(found.len(), 1);
         assert_eq!(found[0].number, 7);
         assert!(!found[0].is_daytime);
+    }
+
+    /// The printed rows the rule was checked on (`gowri-panchangam.md`
+    /// §2), day then night, for every vara.
+    #[test]
+    fn gowri_gives_the_printed_rows_and_visham_in_rahu_kaala() {
+        use super::gowri;
+        use teistro_core::catalogue::Gowri::{
+            Amirtham as A, Dhanam as D, Laabam as L, Rogam as R, Soram as So, Sugam as Su,
+            Uthi as U, Visham as V,
+        };
+        let rows = [
+            (
+                Vara::Ravivara,
+                [U, A, R, L, D, Su, So, V],
+                [D, Su, So, V, U, A, R, L],
+            ),
+            (
+                Vara::Somavara,
+                [A, V, R, L, D, Su, So, U],
+                [Su, So, U, A, V, R, L, D],
+            ),
+            (
+                Vara::Mangalavara,
+                [R, L, D, Su, So, U, V, A],
+                [So, U, V, A, R, L, D, Su],
+            ),
+            (
+                Vara::Budhavara,
+                [L, D, Su, So, V, U, A, R],
+                [U, A, R, L, D, Su, So, V],
+            ),
+            (
+                Vara::Guruvara,
+                [D, Su, So, U, A, V, R, L],
+                [A, V, R, L, D, Su, So, U],
+            ),
+            (
+                Vara::Shukravara,
+                [Su, So, U, V, A, R, L, D],
+                [R, L, D, Su, So, U, V, A],
+            ),
+            (
+                Vara::Shanivara,
+                [So, U, V, A, R, L, D, Su],
+                [L, D, Su, So, U, V, A, R],
+            ),
+        ];
+        for (vara, by_day, by_night) in rows {
+            let parts = gowri(daylight(), night(), vara);
+            let names: Vec<_> = parts.iter().map(|part| part.gowri).collect();
+            assert_eq!(names[..8], by_day, "{vara:?} by day");
+            assert_eq!(names[8..], by_night, "{vara:?} by night");
+            // Visham by day is rahu kaala, to the instant.
+            let rahu = kaalas(daylight(), vara)
+                .into_iter()
+                .find(|k| k.kaala == Kaala::RahuKaala)
+                .unwrap();
+            let visham = parts.iter().find(|p| p.is_daytime && p.gowri == V).unwrap();
+            assert_eq!(visham.at, rahu.at, "{vara:?}");
+            assert!(parts[..8].iter().all(|p| p.is_daytime));
+            assert!(parts[8..].iter().all(|p| !p.is_daytime));
+        }
+        // A polar half gives none.
+        let none = Interval::literal(100.25, 100.25);
+        assert_eq!(gowri(none, night(), Vara::Ravivara).len(), 8);
+        assert_eq!(gowri(none, none, Vara::Ravivara).len(), 0);
+        // Every graha but Ketu names one.
+        assert_eq!(super::gowri_of(Graha::Ketu), None);
+        assert_eq!(super::gowri_of(Graha::Moon), Some(A));
     }
 }

@@ -644,6 +644,11 @@ impl<'a> AlmanacArea<'a> {
         if request.markers && request.days == Days::Handed {
             days.value.iter_mut().for_each(Panchanga::mark);
         }
+        if request.gowri && request.days == Days::Handed {
+            for day in &mut days.value {
+                day.divide_gowri()?;
+            }
+        }
         let festivals = request
             .festivals
             .as_ref()
@@ -1168,6 +1173,7 @@ pub struct AlmanacRequest {
     lagnas: bool,
     homa_ahuti: bool,
     markers: bool,
+    gowri: bool,
     sky: Option<SkyStep>,
     days: Days,
 }
@@ -1278,6 +1284,23 @@ impl AlmanacRequest {
         self
     }
 
+    /// With each day's Gowri panchangam ([`Panchanga::gowri`],
+    /// `03-design/gowri-panchangam.md`): eight Gowri of the daylight and
+    /// eight of the night, a printed reading (crux C1052). Asked so that a
+    /// day's answer grows only for a caller who wants it.
+    ///
+    /// ```
+    /// use teistro::AlmanacRequest;
+    ///
+    /// assert!(AlmanacRequest::new().with_gowri().gowri());
+    /// assert!(!AlmanacRequest::new().gowri());
+    /// ```
+    #[must_use]
+    pub fn with_gowri(mut self) -> AlmanacRequest {
+        self.gowri = true;
+        self
+    }
+
     /// With each day's sky ([`AlmanacAnswer::sky`],
     /// `03-design/day-sky.md`): the paths of the Sun and the Moon over the
     /// day's window at `step`, their rises, transits and sets as exact
@@ -1382,6 +1405,12 @@ impl AlmanacRequest {
     #[must_use]
     pub fn markers(&self) -> bool {
         self.markers
+    }
+
+    /// Whether the days' Gowri panchangam was asked.
+    #[must_use]
+    pub fn gowri(&self) -> bool {
+        self.gowri
     }
 
     /// The step of the days' sky, when it was asked.

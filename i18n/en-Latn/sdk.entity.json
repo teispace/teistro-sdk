@@ -4542,5 +4542,47 @@
       "prose": "Vinchudo",
       "iast": "Vīñchuḍo"
     }
+  },
+  "gowri": {
+    "UTHI": {
+      "name": "Uthi",
+      "prose": "Uthi",
+      "iast": "Udyogam"
+    },
+    "AMIRTHAM": {
+      "name": "Amirtham",
+      "prose": "Amirtham",
+      "iast": "Amṛtam"
+    },
+    "ROGAM": {
+      "name": "Rogam",
+      "prose": "Rogam",
+      "iast": "Rogam"
+    },
+    "LAABAM": {
+      "name": "Laabam",
+      "prose": "Laabam",
+      "iast": "Lābham"
+    },
+    "DHANAM": {
+      "name": "Dhanam",
+      "prose": "Dhanam",
+      "iast": "Dhanam"
+    },
+    "SUGAM": {
+      "name": "Sugam",
+      "prose": "Sugam",
+      "iast": "Sukham"
+    },
+    "SORAM": {
+      "name": "Soram",
+      "prose": "Soram",
+      "iast": "Cōram"
+    },
+    "VISHAM": {
+      "name": "Visham",
+      "prose": "Visham",
+      "iast": "Viṣam"
+    }
   }
 }
