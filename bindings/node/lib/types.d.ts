@@ -1669,6 +1669,15 @@ export interface PanchangaRequest {
    */
   readonly calendar: Calendar;
   /**
+   * The step of the sky's track in minutes when `sections` asks for
+   * `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+   * was a reserved field every caller wrote zero to.
+   * @unit min
+   * @range [0,240]
+   * @example 0
+   */
+  readonly skyStepMinutes: number;
+  /**
    * The first day's astronomical year.
    * @example 2026
    */
@@ -1742,7 +1751,8 @@ export interface PanchangaRequest {
    * only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
    * lagna table, in the `lagnas` span section;
    * `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-   * `homa_ahuti` span section.
+   * `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+   * in the `sky` section, at `sky_step_minutes`.
    * Zero for the days alone, which is what every
    * caller compiled against an earlier header passes, since this was a
    * reserved field it wrote zero to.

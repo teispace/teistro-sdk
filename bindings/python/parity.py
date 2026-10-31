@@ -3023,6 +3023,25 @@ def main() -> None:
             listed(f"{d.year}:{d.month}:{d.kind.key}:{d.paksha.full_key}" for d in nepal_sambat.value),
         )
 
+        # The day's sky over two days, at an hour's step.
+        day_skies = geo.almanac.of(
+            from_date=date(Calendar.GREGORIAN, 2024, 10, 30),
+            to_date=date(Calendar.GREGORIAN, 2024, 10, 31),
+            place=place,
+            utc_offset_seconds=20700,
+            sky=True,
+            sky_step_minutes=60,
+        ).sky
+        assert day_skies is not None
+        put("day-sky-hash", day_skies.provenance.content_hash)
+        put(
+            "day-sky",
+            listed(
+                f"{d.sun.state}:{len(d.sun.track)}:{d.moon.state}:{len(d.moon.track)}"
+                for d in day_skies.value
+            ),
+        )
+
         put_rashifal(geo, place)
         put_pakshi(geo)
         put_research(geo)

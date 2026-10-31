@@ -137,12 +137,44 @@ public final class AlmanacArea {
             com.teispace.teistro.request.MuhurtaRequest muhurta,
             com.teispace.teistro.request.FestivalRequest festivals,
             boolean years, boolean eclipses, boolean nepalSambat, boolean lagnas, boolean homaAhuti) {
-        return asked(fromDate, toDate, place, utcOffsetSeconds, muhurta, festivals,
+        return of(fromDate, toDate, place, utcOffsetSeconds, muhurta, festivals, years, eclipses, nepalSambat, lagnas,
+                homaAhuti, false, 0);
+    }
+
+    /**
+     * {@link #of(CalendarDate, CalendarDate, Observer, int, com.teispace.teistro.request.MuhurtaRequest,
+     * com.teispace.teistro.request.FestivalRequest, boolean, boolean, boolean, boolean, boolean)} and,
+     * when {@code sky} asks, each day's sky, as {@link Almanac#sky()}: the Sun's and the Moon's paths, rises,
+     * transits and sets, and the Moon's lit shape ({@code 03-design/day-sky.md}).
+     *
+     * @param fromDate the first day; its calendar is the range's
+     * @param toDate the last day
+     * @param place where
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param muhurta a muhurta search over the same days, or null
+     * @param festivals festival rules to reckon over the same days, or null
+     * @param years whether to answer the lunar years the days fall in
+     * @param eclipses whether to answer the eclipses of the days
+     * @param nepalSambat whether to answer each day's Nepal Sambat date
+     * @param lagnas whether to give each day its lagna table
+     * @param homaAhuti whether to give each day its homa ahuti
+     * @param sky whether to answer each day's sky
+     * @param skyStepMinutes the step of its paths, 1 to 240, zero for ten
+     * @return the almanac
+     */
+    public Almanac of(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.MuhurtaRequest muhurta,
+            com.teispace.teistro.request.FestivalRequest festivals,
+            boolean years, boolean eclipses, boolean nepalSambat, boolean lagnas, boolean homaAhuti,
+            boolean sky, int skyStepMinutes) {
+        return asked(fromDate, toDate, place, utcOffsetSeconds, null, muhurta, festivals,
                 (years ? Native.TS_PANCHANGA_YEARS : 0)
                         | (eclipses ? Native.TS_PANCHANGA_ECLIPSES : 0)
                         | (nepalSambat ? Native.TS_PANCHANGA_NEPAL_SAMBAT : 0)
                         | (lagnas ? Native.TS_PANCHANGA_LAGNAS : 0)
-                        | (homaAhuti ? Native.TS_PANCHANGA_HOMA_AHUTI : 0));
+                        | (homaAhuti ? Native.TS_PANCHANGA_HOMA_AHUTI : 0)
+                        | (sky ? Native.TS_PANCHANGA_SKY : 0),
+                skyStepMinutes);
     }
 
     /**
@@ -208,7 +240,7 @@ public final class AlmanacArea {
      * @return the days
      */
     public Almanac inZone(CalendarDate fromDate, CalendarDate toDate, Observer place, ZoneSpec zone) {
-        return asked(fromDate, toDate, place, 0, zoneJson(zone), null, null, 0);
+        return asked(fromDate, toDate, place, 0, zoneJson(zone), null, null, 0, 0);
     }
 
     /** A zone as the record the boundary reads beside a range. */
@@ -258,14 +290,15 @@ public final class AlmanacArea {
     private Almanac asked(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
             com.teispace.teistro.request.MuhurtaRequest muhurta,
             com.teispace.teistro.request.FestivalRequest festivals, long sections) {
-        return asked(fromDate, toDate, place, utcOffsetSeconds, null, muhurta, festivals, sections);
+        return asked(fromDate, toDate, place, utcOffsetSeconds, null, muhurta, festivals, sections, 0);
     }
 
     private Almanac asked(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
             String zoneJson, com.teispace.teistro.request.MuhurtaRequest muhurta,
-            com.teispace.teistro.request.FestivalRequest festivals, long sections) {
+            com.teispace.teistro.request.FestivalRequest festivals, long sections, int skyStepMinutes) {
         PanchangaRequest request = new PanchangaRequest(
                 fromDate.calendar(),
+                skyStepMinutes,
                 fromDate.year(),
                 fromDate.month(),
                 fromDate.day(),

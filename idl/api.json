@@ -209,6 +209,13 @@
       "ty": "u32",
       "value": 32,
       "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "TS_PANCHANGA_SKY",
+      "doc": "`TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's\n`sections` for each day's sky, in the `sky` section: the paths of the\nSun and the Moon at `sky_step_minutes`, their rises, transits and sets\nas exact points, and the Moon's lit shape from the place\n(`03-design/day-sky.md`). A request that does not set it pays nothing.",
+      "ty": "u32",
+      "value": 64,
+      "source": "crates/ffi/src/panchanga.rs"
     }
   ],
   "enums": [
@@ -14276,13 +14283,17 @@
           }
         },
         {
-          "name": "reserved",
+          "name": "sky_step_minutes",
           "ty": {
             "kind": "scalar",
             "scalar": "u16"
           },
-          "doc": "Reserved; write zero.",
-          "meta": {}
+          "doc": "The step of the sky's track in minutes when `sections` asks for\n`TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It\nwas a reserved field every caller wrote zero to.",
+          "meta": {
+            "unit": "min",
+            "range": "[0,240]",
+            "example": "0"
+          }
         },
         {
           "name": "from_year",
@@ -14412,7 +14423,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the\ndays with the place's view of each, in the `eclipses` section;\n`TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in\nthe `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no\nday, only what else is asked, festivals alone then founded as\nonly what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's\nlagna table, in the `lagnas` span section;\n`TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the\n`homa_ahuti` span section.\nZero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
+          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the\ndays with the place's view of each, in the `eclipses` section;\n`TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in\nthe `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no\nday, only what else is asked, festivals alone then founded as\nonly what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's\nlagna table, in the `lagnas` span section;\n`TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the\n`homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,\nin the `sky` section, at `sky_step_minutes`.\nZero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -26441,6 +26452,13 @@
               "doc": "And vipalas, 0 to 59."
             }
           ]
+        },
+        {
+          "id": 40,
+          "name": "sky",
+          "doc": "UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for.",
+          "kind": "bytes",
+          "fields": []
         }
       ]
     },

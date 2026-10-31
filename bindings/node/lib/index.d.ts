@@ -5660,6 +5660,8 @@ export declare class Almanac extends Decoded<DecodedAlmanac> {
   readonly eclipses: Eclipses | null;
   /** Each day's Nepal Sambat date, when the request asked for them with `nepalSambat: true`, or `null`. */
   readonly nepalSambat: NepalSambatDates | null;
+  /** Each day's sky, when the request asked for it with `sky: true`, or `null` (`03-design/day-sky.md`). */
+  readonly sky: DaySkies | null;
   /** Everything that reproduces this result (ADR-0020). */
   readonly provenance: Provenance;
   /** The provenance envelope as the canonical JSON the library stamped: the bytes to store beside the result, byte-identical in every binding. */
@@ -5831,6 +5833,10 @@ export interface AlmanacRequest {
   readonly lagnas?: boolean;
   /** Whether to give each day its homa ahuti, as `AlmanacDay.homaAhuti`; `false` by default, which costs nothing. */
   readonly homaAhuti?: boolean;
+  /** Whether to answer each day's sky, as `Almanac.sky`; `false` by default, which costs nothing. */
+  readonly sky?: boolean;
+  /** The step of the sky's paths in minutes, 1 to 240, ten when left out. */
+  readonly skyStepMinutes?: number;
   /** `false` to leave the days out and answer only what is asked beside them; festivals alone are then founded as only what their rules read, which is what `AlmanacArea.festivals` asks. `true` by default. */
   readonly days?: boolean;
 }
@@ -6465,6 +6471,69 @@ export interface NepalSambatDates {
   readonly value: readonly NepalSambatDate[];
   /** The days' own provenance, and the hash of `value`. */
   readonly provenance: Provenance;
+}
+
+/**
+ * Each day's sky (`03-design/day-sky.md`), in the days' order, frozen to
+ * its leaves.
+ */
+export interface DaySkies {
+  /** One record a day. */
+  readonly value: readonly DaySky[];
+  /** The days' own provenance with the window's reading named, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** The sky of one day at one place. */
+export interface DaySky {
+  /** The window's start, Julian day, UT1 read as UTC. */
+  readonly from: number;
+  /** The window's end; an event here is the next window's. */
+  readonly to: number;
+  /** The step asked, minutes. */
+  readonly stepMinutes: number;
+  /** The Sun. */
+  readonly sun: BodySky;
+  /** The Moon. */
+  readonly moon: BodySky;
+}
+
+/** One body's day. */
+export interface BodySky {
+  /** How the window stood to the horizon: a polar day holds no crossing. */
+  readonly state: 'CROSSES' | 'ALWAYS_ABOVE' | 'ALWAYS_BELOW';
+  /** Every step's reading and every exact event, in time order. */
+  readonly track: readonly SkyPoint[];
+}
+
+/** A point on a track. */
+export interface SkyPoint {
+  /** The instant, Julian day, UT1 read as UTC. */
+  readonly at: number;
+  /** A step's reading or an exact event. */
+  readonly kind: 'SAMPLE' | 'RISE' | 'TRANSIT' | 'SET';
+  /** The airless topocentric altitude of the centre, degrees. */
+  readonly altitudeDeg: number;
+  /** The altitude with the standard atmosphere's refraction, degrees; the airless altitude where the body stays below the horizon. */
+  readonly refractedAltitudeDeg: number;
+  /** The topocentric azimuth, degrees in `[0, 360)`, from north through east. */
+  readonly azimuthDeg: number;
+  /** The Moon's shape at the instant, on the Moon's track only. */
+  readonly moon?: MoonShape;
+}
+
+/** The Moon's lit shape at an instant, seen from the place. Turn the bright limb from the zenith by `brightLimbDeg - parallacticAngleDeg` to draw it. */
+export interface MoonShape {
+  /** The fraction of the disc lit, 0 to 1, from the place. */
+  readonly illuminatedFraction: number;
+  /** The angle at the Moon between the place and the Sun, degrees: 0 at full, 180 at new. */
+  readonly phaseAngleDeg: number;
+  /** Whether the Moon is growing, the Earth's-centre sign of her elongation, which agrees with the paksha. */
+  readonly waxing: boolean;
+  /** The position angle of the bright limb's midpoint, degrees in `[0, 360)`, from the disc's north point through the east. */
+  readonly brightLimbDeg: number;
+  /** The position angle of the zenith, degrees in `(-180, 180]`, from the disc's north point through the east. */
+  readonly parallacticAngleDeg: number;
 }
 
 /** A day's Nepal Sambat date: the committee's "ने.सं. ११४६ (कछलाथ्व)". */
@@ -7511,7 +7580,7 @@ export declare class AlmanacArea {
    * its day can change.
    */
   festivals(
-    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'days'> & {
+    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'sky' | 'skyStepMinutes' | 'days'> & {
       readonly festivals: FestivalRequest;
     },
   ): FestivalAnswer;

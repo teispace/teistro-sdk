@@ -302,6 +302,13 @@ PANCHANGA_LAGNAS: Final = 16
 # not set it pays nothing.
 PANCHANGA_HOMA_AHUTI: Final = 32
 
+# `TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's
+# `sections` for each day's sky, in the `sky` section: the paths of the
+# Sun and the Moon at `sky_step_minutes`, their rises, transits and sets
+# as exact points, and the Moon's lit shape from the place
+# (`03-design/day-sky.md`). A request that does not set it pays nothing.
+PANCHANGA_SKY: Final = 64
+
 # The ABI and the SDK version these declarations were generated from. A
 # library that answers otherwise is refused when it is opened.
 GENERATED_ABI_VERSION: Final = 1
@@ -948,7 +955,7 @@ class _PanchangaRequestStruct(ctypes.Structure):
     _fields_ = [
         ("struct_size", ctypes.c_uint32),
         ("calendar", ctypes.c_uint16),
-        ("reserved", ctypes.c_uint16),
+        ("sky_step_minutes", ctypes.c_uint16),
         ("from_year", ctypes.c_int32),
         ("from_month", ctypes.c_uint8),
         ("from_day", ctypes.c_uint8),
@@ -3722,6 +3729,13 @@ class PanchangaRequest:
     Enum: Calendar. Example: 0.
     """
 
+    sky_step_minutes: int
+    """The step of the sky's track in minutes when `sections` asks for
+    `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+    was a reserved field every caller wrote zero to.
+    Unit: min. Range: [0,240]. Example: 0.
+    """
+
     from_year: int
     """The first day's astronomical year.
     Example: 2026.
@@ -3784,7 +3798,8 @@ class PanchangaRequest:
     only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
     lagna table, in the `lagnas` span section;
     `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-    `homa_ahuti` span section.
+    `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+    in the `sky` section, at `sky_step_minutes`.
     Zero for the days alone, which is what every
     caller compiled against an earlier header passes, since this was a
     reserved field it wrote zero to.
@@ -3859,6 +3874,7 @@ class PanchangaRequest:
         """
         raw.struct_size = ctypes.sizeof(_PanchangaRequestStruct)
         raw.calendar = _c_value(self.calendar)
+        raw.sky_step_minutes = _c_value(self.sky_step_minutes)
         raw.from_year = _c_value(self.from_year)
         raw.from_month = _c_value(self.from_month)
         raw.from_day = _c_value(self.from_day)
@@ -3896,6 +3912,7 @@ class PanchangaRequest:
         """The value the library wrote into a C struct."""
         return cls(
             calendar=Calendar(raw.calendar),
+            sky_step_minutes=raw.sky_step_minutes,
             from_year=raw.from_year,
             from_month=raw.from_month,
             from_day=raw.from_day,

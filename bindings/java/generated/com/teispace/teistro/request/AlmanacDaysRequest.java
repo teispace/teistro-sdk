@@ -23,11 +23,13 @@ import java.util.Objects;
  * @param longitudeDeg The {@code longitudeDeg} field.
  * @param muhurta A muhurta search to run over an almanac's days (`03-design/muhurta-at-the-boundary.md`): the rules, by an activity's name or spelt out, and how the windows are ranked, how many are kept, how asta is seen and where a journey goes. Null leaves the SDK's default.
  * @param nepalSambat The {@code nepalSambat} field. Null leaves the SDK's default.
+ * @param sky The {@code sky} field. Null leaves the SDK's default.
+ * @param skyStepMinutes The sky's step, minutes; ten when left out. Null leaves the SDK's default.
  * @param utcOffsetSeconds The {@code utcOffsetSeconds} field. Null leaves the SDK's default.
  * @param years The {@code years} field. Null leaves the SDK's default.
  * @param zone The zone, in place of `utcOffsetSeconds`. Null leaves the SDK's default.
  */
-public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Boolean eclipses, FestivalRequest festivals, DayAsked first, Boolean homaAhuti, Boolean lagnas, DayAsked last, double latitudeDeg, double longitudeDeg, MuhurtaRequest muhurta, Boolean nepalSambat, Integer utcOffsetSeconds, Boolean years, ZoneSpec zone) implements RequestJson {
+public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Boolean eclipses, FestivalRequest festivals, DayAsked first, Boolean homaAhuti, Boolean lagnas, DayAsked last, double latitudeDeg, double longitudeDeg, MuhurtaRequest muhurta, Boolean nepalSambat, Boolean sky, Integer skyStepMinutes, Integer utcOffsetSeconds, Boolean years, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -37,6 +39,9 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
      */
     public AlmanacDaysRequest {
         Objects.requireNonNull(first, "`AlmanacDaysRequest.first` is required");
+        if (skyStepMinutes != null) {
+            Read.range(skyStepMinutes, "AlmanacDaysRequest.skyStepMinutes", 0L, 65535L);
+        }
     }
 
     /**
@@ -48,7 +53,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
      * @param longitudeDeg The {@code longitudeDeg} field.
      */
     public AlmanacDaysRequest(DayAsked first, double latitudeDeg, double longitudeDeg) {
-        this(null, null, null, null, first, null, null, null, latitudeDeg, longitudeDeg, null, null, null, null, null);
+        this(null, null, null, null, first, null, null, null, latitudeDeg, longitudeDeg, null, null, null, null, null, null, null);
     }
 
     /**
@@ -75,6 +80,8 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         private Double longitudeDeg;
         private MuhurtaRequest muhurta;
         private Boolean nepalSambat;
+        private Boolean sky;
+        private Integer skyStepMinutes;
         private Integer utcOffsetSeconds;
         private Boolean years;
         private ZoneSpec zone;
@@ -214,6 +221,28 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         }
 
         /**
+         * Sets {@code sky}.
+         *
+         * @param sky The {@code sky} field. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder sky(boolean sky) {
+            this.sky = sky;
+            return this;
+        }
+
+        /**
+         * Sets {@code skyStepMinutes}.
+         *
+         * @param skyStepMinutes The sky's step, minutes; ten when left out. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder skyStepMinutes(int skyStepMinutes) {
+            this.skyStepMinutes = skyStepMinutes;
+            return this;
+        }
+
+        /**
          * Sets {@code utcOffsetSeconds}.
          *
          * @param utcOffsetSeconds The {@code utcOffsetSeconds} field. Null leaves the SDK's default.
@@ -253,7 +282,7 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
          * @throws NullPointerException naming a required field left unset
          */
         public AlmanacDaysRequest build() {
-            return new AlmanacDaysRequest(altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, Objects.requireNonNull(latitudeDeg, "`AlmanacDaysRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`AlmanacDaysRequest.longitudeDeg` is required"), muhurta, nepalSambat, utcOffsetSeconds, years, zone);
+            return new AlmanacDaysRequest(altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, Objects.requireNonNull(latitudeDeg, "`AlmanacDaysRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`AlmanacDaysRequest.longitudeDeg` is required"), muhurta, nepalSambat, sky, skyStepMinutes, utcOffsetSeconds, years, zone);
         }
     }
 
@@ -279,6 +308,8 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
             Read.number(Read.required(json.get("longitudeDeg"), "AlmanacDaysRequest.longitudeDeg"), "AlmanacDaysRequest.longitudeDeg"),
             Read.orNull(json.get("muhurta"), present -> MuhurtaRequest.of(present)),
             Read.orNull(json.get("nepalSambat"), present -> Read.bool(present, "AlmanacDaysRequest.nepalSambat")),
+            Read.orNull(json.get("sky"), present -> Read.bool(present, "AlmanacDaysRequest.sky")),
+            Read.orNull(json.get("skyStepMinutes"), present -> Read.int32(present, "AlmanacDaysRequest.skyStepMinutes")),
             Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "AlmanacDaysRequest.utcOffsetSeconds")),
             Read.orNull(json.get("years"), present -> Read.bool(present, "AlmanacDaysRequest.years")),
             Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
@@ -316,6 +347,12 @@ public record AlmanacDaysRequest(Double altitudeM, com.teispace.teistro.Calendar
         }
         if (nepalSambat != null) {
             json.put("nepalSambat", nepalSambat);
+        }
+        if (sky != null) {
+            json.put("sky", sky);
+        }
+        if (skyStepMinutes != null) {
+            json.put("skyStepMinutes", skyStepMinutes);
         }
         if (utcOffsetSeconds != null) {
             json.put("utcOffsetSeconds", utcOffsetSeconds);

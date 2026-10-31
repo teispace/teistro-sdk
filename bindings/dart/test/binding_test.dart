@@ -3259,6 +3259,27 @@ void _engineTests() {
       nepalSambat: nepalSambat,
     );
     expect(days().nepalSambat, isNull);
+    expect(days().sky, isNull);
+    final sky =
+        ctx.almanac
+            .of(
+              from: gregorian(2025, 10, 20),
+              to: gregorian(2025, 10, 23),
+              place: place,
+              utcOffsetSeconds: 20700,
+              sky: true,
+              skyStepMinutes: 60,
+            )
+            .sky!;
+    expect(sky.value, hasLength(4));
+    final today = sky.value.first;
+    expect(today.stepMinutes, 60);
+    expect(today.sun.state, 'CROSSES');
+    final noon = today.sun.track.where((point) => point.kind == 'TRANSIT');
+    expect(noon, hasLength(1));
+    expect(noon.first.altitudeDeg, inInclusiveRange(40, 70));
+    expect(today.moon.track.every((point) => point.moon != null), isTrue);
+    expect(today.sun.track.every((point) => point.moon == null), isTrue);
     final almanac = days(nepalSambat: true);
     final answer = almanac.nepalSambat!;
     expect(answer.value, hasLength(almanac.length));

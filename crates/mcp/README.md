@@ -71,8 +71,8 @@ documents as `charts` and each table with a row a chart.
 
 `almanac.days` takes a range of days: `first` and optional `last`, the
 place and clock, and beside them a `muhurta` search, a `festivals`
-reckoning, and `true` flags for the lunar `years`, the `eclipses` and
-each day's `nepalSambat` date. It answers every day's panchanga, the
+reckoning, `true` flags for the lunar `years`, the `eclipses` and each
+day's `nepalSambat` date, and `sky` with its `skyStepMinutes`. It answers every day's panchanga, the
 days' own hashes, and each section asked as its own
 `{value, provenance}`.
 

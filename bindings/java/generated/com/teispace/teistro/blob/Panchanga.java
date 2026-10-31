@@ -60,6 +60,7 @@ public final class Panchanga {
     private final BhadraVasa bhadraVasa;
     private final ShivaVasa shivaVasa;
     private final NamedPanchaka namedPanchaka;
+    private final String sky;
 
     private Panchanga(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -108,6 +109,7 @@ public final class Panchanga {
         this.bhadraVasa = new BhadraVasa(blob, 37, "bhadra_vasa");
         this.shivaVasa = new ShivaVasa(blob, 38, "shiva_vasa");
         this.namedPanchaka = new NamedPanchaka(blob, 39, "named_panchaka");
+        this.sky = blob.text(40, "sky");
     }
 
     /**
@@ -519,6 +521,15 @@ public final class Panchanga {
      */
     public NamedPanchaka namedPanchaka() {
         return namedPanchaka;
+    }
+
+    /**
+     * UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for.
+     *
+     * @return the sky
+     */
+    public String sky() {
+        return sky;
     }
 
 

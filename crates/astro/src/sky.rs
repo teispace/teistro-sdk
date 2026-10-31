@@ -52,7 +52,7 @@ pub fn obliquity(tt: JulianDay<Tt>) -> Obliquity {
 /// The obliquity record and the two radian values it was built from, the
 /// mean obliquity and the nutation in longitude, which apparent sidereal
 /// time reads too.
-fn obliquity_parts(tt: JulianDay<Tt>) -> (Obliquity, f64, f64) {
+pub(crate) fn obliquity_parts(tt: JulianDay<Tt>) -> (Obliquity, f64, f64) {
     let (date1, date2) = tt.split();
     let mean = iau::obl06(date1, date2);
     let nutation = iau::nut00b(date1, date2);
@@ -219,7 +219,11 @@ pub struct Observer {
 /// ```
 #[must_use]
 pub fn observer(place: Place, ut1: JulianDay<Ut1>, tt: JulianDay<Tt>) -> Observer {
-    let theta = greenwich_sidereal_time_deg(ut1, tt) * DEG2RAD;
+    observer_at(place, greenwich_sidereal_time_deg(ut1, tt) * DEG2RAD)
+}
+
+/// [`observer`] at a Greenwich sidereal angle already reckoned, radians.
+pub(crate) fn observer_at(place: Place, theta: f64) -> Observer {
     let pv = iau::earth::pvtob(
         place.longitude.get() * DEG2RAD,
         place.latitude.get() * DEG2RAD,

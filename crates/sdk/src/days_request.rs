@@ -6,6 +6,7 @@
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use teistro_astro::day_sky::SkyStep;
 use teistro_calendar::CalendarDate;
 use teistro_core::catalogue::Calendar;
 use teistro_core::error::Error;
@@ -48,7 +49,7 @@ pub struct DaysRequest {
 impl DaysRequest {
     /// What a JSON days request is, for a caller choosing it by name (the
     /// agent server's `almanac.days`).
-    pub const DESCRIPTION: &'static str = "`request` is a range of days: `first` and optional `last` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out), `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each day then read on its own offset and carrying its `clock`; and beside the days, optionally, a `muhurta` search and a `festivals` reckoning, each the record its area reads, and `true` flags for the lunar `years`, the `eclipses` and each day's `nepalSambat` date. The answer's `days` are every day's panchanga, and each section asked is its own `{value, provenance}`.";
+    pub const DESCRIPTION: &'static str = "`request` is a range of days: `first` and optional `last` as `{year, month, day}` in `calendar` (a catalogue key, Gregorian when left out), `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each day then read on its own offset and carrying its `clock`; and beside the days, optionally, a `muhurta` search and a `festivals` reckoning, each the record its area reads, and `true` flags for the lunar `years`, the `eclipses` and each day's `nepalSambat` date, and `sky` each day's paths of the Sun and the Moon with their rises, transits and sets and the Moon's lit shape, at `skyStepMinutes` (1 to 240, 10 when left out). The answer's `days` are every day's panchanga, and each section asked is its own `{value, provenance}`.";
 
     /// The request a binding writes for a range of days, read and checked;
     /// a refusal names the field as written, a record's from the record's
@@ -85,6 +86,18 @@ impl DaysRequest {
             if asked {
                 beside = add(beside);
             }
+        }
+        match (asked.sky, asked.sky_step_minutes) {
+            (true, step) => {
+                beside = beside.with_sky(step.map_or(Ok(SkyStep::default()), SkyStep::of_minutes)?);
+            }
+            (false, Some(_)) => {
+                return Err(
+                    Error::invalid_arg("a sky step asks for no sky without `sky`")
+                        .with_field("skyStepMinutes"),
+                );
+            }
+            (false, None) => {}
         }
         Ok(DaysRequest {
             first: asked.first.in_calendar(calendar),
@@ -178,4 +191,9 @@ pub(crate) struct Asked {
     lagnas: bool,
     #[serde(default)]
     homa_ahuti: bool,
+    #[serde(default)]
+    sky: bool,
+    /// The sky's step, minutes; ten when left out.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    sky_step_minutes: Option<u16>,
 }

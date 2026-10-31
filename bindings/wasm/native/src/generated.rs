@@ -3626,6 +3626,11 @@ pub struct PanchangaRequest {
     /// The calendar the range's dates are written in.
     /// Enum: Calendar. Example: `0`.
     pub calendar: String,
+    /// The step of the sky's track in minutes when `sections` asks for
+    /// `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+    /// was a reserved field every caller wrote zero to.
+    /// Unit: min. Range: `[0,240]`. Example: `0`.
+    pub sky_step_minutes: u32,
     /// The first day's astronomical year.
     /// Example: `2026`.
     pub from_year: i32,
@@ -3667,7 +3672,8 @@ pub struct PanchangaRequest {
     /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
     /// lagna table, in the `lagnas` span section;
     /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-    /// `homa_ahuti` span section.
+    /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+    /// in the `sky` section, at `sky_step_minutes`.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -3735,6 +3741,7 @@ pub struct PanchangaRequest {
 /// pointers point into, alive for as long as this value is.
 pub struct HeldPanchangaRequest {
     calendar: u16,
+    sky_step_minutes: u16,
     from_year: i32,
     from_month: u8,
     from_day: u8,
@@ -3757,7 +3764,7 @@ impl HeldPanchangaRequest {
         ffi::panchanga::TsPanchangaRequest {
             struct_size: core::mem::size_of::<ffi::panchanga::TsPanchangaRequest>() as u32,
             calendar: self.calendar,
-            reserved: Default::default(),
+            sky_step_minutes: self.sky_step_minutes,
             from_year: self.from_year,
             from_month: self.from_month,
             from_day: self.from_day,
@@ -3787,6 +3794,7 @@ impl PanchangaRequest {
     pub fn read(&self) -> Result<HeldPanchangaRequest> {
         Ok(HeldPanchangaRequest {
             calendar: calendar_from_str(&self.calendar)?,
+            sky_step_minutes: self.sky_step_minutes as u16,
             from_year: self.from_year as i32,
             from_month: self.from_month as u8,
             from_day: self.from_day as u8,
@@ -3825,6 +3833,7 @@ impl PanchangaRequest {
     pub unsafe fn write(raw: &ffi::panchanga::TsPanchangaRequest) -> Self {
         PanchangaRequest {
             calendar: calendar_to_str(raw.calendar),
+            sky_step_minutes: raw.sky_step_minutes as _,
             from_year: raw.from_year as _,
             from_month: raw.from_month as _,
             from_day: raw.from_day as _,

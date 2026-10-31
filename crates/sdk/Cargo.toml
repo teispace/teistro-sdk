@@ -259,6 +259,10 @@ name = "punya_kala"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "day_sky"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "homa_ahuti"
 required-features = ["builtin-ephemeris"]
 

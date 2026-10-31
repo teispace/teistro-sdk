@@ -121,6 +121,11 @@ export interface AlmanacDaysRequest {
   readonly longitudeDeg: number;
   readonly muhurta?: MuhurtaRequest;
   readonly nepalSambat?: boolean;
+  readonly sky?: boolean;
+  /**
+   * The sky's step, minutes; ten when left out.
+   */
+  readonly skyStepMinutes?: number | null;
   readonly utcOffsetSeconds?: number | null;
   readonly years?: boolean;
   /**

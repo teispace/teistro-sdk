@@ -222,7 +222,7 @@ fn days(ctx: &Ctx, field: Option<&str>, value: f64) -> Result<(), Record> {
         TsPanchangaRequest {
             struct_size: 0,
             calendar: Calendar::Gregorian.id(),
-            reserved: 0,
+            sky_step_minutes: 0,
             from_year: 2026,
             from_month: 10,
             from_day: 23,
@@ -242,6 +242,7 @@ fn days(ctx: &Ctx, field: Option<&str>, value: f64) -> Result<(), Record> {
     );
     match field {
         None => {}
+        Some("sky_step_minutes") => asked.sky_step_minutes = value as u16,
         Some("from_month") => asked.from_month = value as u8,
         Some("from_day") => asked.from_day = value as u8,
         Some("to_month") => asked.to_month = value as u8,

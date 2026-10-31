@@ -189,6 +189,8 @@ final class AlmanacDaysRequest extends _Request {
     required this.longitudeDeg,
     this.muhurta,
     this.nepalSambat = false,
+    this.sky = false,
+    this.skyStepMinutes,
     this.utcOffsetSeconds,
     this.years = false,
     this.zone,
@@ -218,6 +220,11 @@ final class AlmanacDaysRequest extends _Request {
 
   final bool nepalSambat;
 
+  final bool sky;
+
+  /// The sky's step, minutes; ten when left out.
+  final int? skyStepMinutes;
+
   final int? utcOffsetSeconds;
 
   final bool years;
@@ -239,13 +246,15 @@ final class AlmanacDaysRequest extends _Request {
     'longitudeDeg': longitudeDeg,
     if (muhurta case final muhurtaValue?) 'muhurta': muhurtaValue._wire,
     'nepalSambat': nepalSambat,
+    'sky': sky,
+    if (skyStepMinutes case final skyStepMinutesValue?) 'skyStepMinutes': skyStepMinutesValue,
     if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
     'years': years,
     if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, muhurta, nepalSambat, utcOffsetSeconds, years, zone];
+  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, muhurta, nepalSambat, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
 }
 
 /// The request as a binding writes it.

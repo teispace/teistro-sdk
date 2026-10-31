@@ -814,6 +814,11 @@ class AlmanacDaysRequest(TypedDict, total=False):
 
     nepalSambat: bool
 
+    sky: bool
+
+    skyStepMinutes: Optional[int]
+    """The sky's step, minutes; ten when left out."""
+
     utcOffsetSeconds: Optional[int]
 
     years: bool

@@ -41,6 +41,15 @@ moves; a festival answer holding no anniversary does not.
   request, 128 bytes a key, 32 guards a rule and 16 predicates a guard.
 - `month_of` and `pair` no longer walk the days for each occurrence.
 
+**A day's sky, on request (SR-63).**
+**Numbers:** no day moves, and a request that does not ask pays nothing.
+- `AlmanacRequest::with_sky`, `TS_PANCHANGA_SKY` with `sky_step_minutes` (the request's
+  reserved field, so its size is unchanged) and `sky` in every binding and in
+  `almanac.days` answer the Sun's and the Moon's paths at a stated step, their rises,
+  transits and sets as exact points with their altitudes, and on the Moon's path her
+  fraction lit, phase angle, waxing, bright limb and parallactic angle as the place sees
+  them. A polar day says `ALWAYS_ABOVE` or `ALWAYS_BELOW` (`03-design/day-sky.md`).
+
 **Festival rules say what they are; India's central holidays ship; Fagu purnima joins.**
 **Numbers:** no day moves. Every shipped pack's `input_hash` moves once, since each
 rule now carries its values.

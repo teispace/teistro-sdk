@@ -338,13 +338,7 @@ impl Phenomena {
             },
             |leg| (leg.vector(), HeliocentricLeg::Provider),
         );
-        let phase = has_phase.then(|| {
-            let angle_deg = angle_deg(&geometry.body.vector(), &from_sun);
-            Phase {
-                angle_deg,
-                illuminated_fraction: f64::midpoint(1.0, math::cos(angle_deg * DEG2RAD)),
-            }
-        });
+        let phase = has_phase.then(|| phase_of(&geometry.body.vector(), &from_sun));
         let magnitude = magnitude(body, geometry, phase, &from_sun, tt);
         Ok(Phenomena {
             body,
@@ -358,6 +352,86 @@ impl Phenomena {
 }
 
 /// The angle between two vectors, degrees, clamped against rounding.
+/// The phase of a body seen along `from_observer`, lit along `from_sun`:
+/// both vectors end at the body, so the angle between them is the angle
+/// at the body between the observer and the Sun.
+///
+/// What [`Phenomena`] reads from the Earth's centre, for any observer
+/// (`03-design/day-sky.md` §2).
+///
+/// ```
+/// use teistro_astro::phenomena::phase_of;
+///
+/// // Meeus, example 48.a: the Moon of 1992 April 12, 0h TD, with the Sun
+/// // 149 971 520 km and the Moon 368 410 km off, 110.79° apart.
+/// let (moon, sun) = (368_410.0, 149_971_520.0);
+/// let elongation = 110.792_9_f64.to_radians();
+/// let body = [moon * elongation.cos(), moon * elongation.sin(), 0.0];
+/// let phase = phase_of(&body, &[body[0] - sun, body[1], 0.0]);
+/// assert!((phase.illuminated_fraction - 0.6786).abs() < 5e-4);
+/// ```
+#[must_use]
+pub fn phase_of(from_observer: &Vector3, from_sun: &Vector3) -> Phase {
+    let angle_deg = angle_deg(from_observer, from_sun);
+    Phase {
+        angle_deg,
+        illuminated_fraction: f64::midpoint(1.0, math::cos(angle_deg * DEG2RAD)),
+    }
+}
+
+/// The position angle of a body's bright limb, degrees in `[0, 360)`: the
+/// midpoint of the lit edge, from the north point of the disc through the
+/// east (Meeus, *Astronomical Algorithms*, eq. 48.5).
+///
+/// ```
+/// use teistro_astro::phenomena::bright_limb_deg;
+///
+/// // Meeus, example 48.a: the Moon of 1992 April 12, χ = 285.0°.
+/// let limb = bright_limb_deg((134.6885, 13.7684), (20.6579, 8.6964));
+/// assert!((limb - 285.0).abs() < 0.05);
+/// ```
+#[must_use]
+pub fn bright_limb_deg(
+    (body_ra_deg, body_dec_deg): (f64, f64),
+    (sun_ra_deg, sun_dec_deg): (f64, f64),
+) -> f64 {
+    let (sin_gap, cos_gap) = math::sin_cos((sun_ra_deg - body_ra_deg) * DEG2RAD);
+    let (sin_dec, cos_dec) = math::sin_cos(body_dec_deg * DEG2RAD);
+    let (sin_sun, cos_sun) = math::sin_cos(sun_dec_deg * DEG2RAD);
+    normalise_deg(
+        math::atan2(
+            cos_sun * sin_gap,
+            sin_sun * cos_dec - cos_sun * sin_dec * cos_gap,
+        ) * RAD2DEG,
+    )
+}
+
+/// The parallactic angle, degrees in `(-180, 180]`: the position angle of
+/// the zenith on a body's disc, from the north point through the east,
+/// negative before transit (Meeus, eq. 14.1, with `tan φ` multiplied
+/// through so that a pole needs no case).
+///
+/// ```
+/// use teistro_astro::phenomena::parallactic_angle_deg;
+///
+/// // On the meridian, south of the zenith, north on the disc is up.
+/// assert_eq!(parallactic_angle_deg(0.0, 10.0, 45.0), 0.0);
+/// // West of the meridian the zenith lies east of north on the disc.
+/// assert!(parallactic_angle_deg(30.0, 10.0, 45.0) > 0.0);
+/// // At the pole every hour angle is the same altitude, and the formula holds.
+/// assert!(parallactic_angle_deg(30.0, 10.0, 90.0).abs() < 1e-9);
+/// ```
+#[must_use]
+pub fn parallactic_angle_deg(hour_angle_deg: f64, dec_deg: f64, latitude_deg: f64) -> f64 {
+    let (sin_h, cos_h) = math::sin_cos(hour_angle_deg * DEG2RAD);
+    let (sin_dec, cos_dec) = math::sin_cos(dec_deg * DEG2RAD);
+    let (sin_phi, cos_phi) = math::sin_cos(latitude_deg * DEG2RAD);
+    math::atan2(
+        cos_phi * sin_h,
+        sin_phi * cos_dec - cos_phi * sin_dec * cos_h,
+    ) * RAD2DEG
+}
+
 fn angle_deg(a: &Vector3, b: &Vector3) -> f64 {
     let (ma, mb) = (pm(a), pm(b));
     if ma == 0.0 || mb == 0.0 {

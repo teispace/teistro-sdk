@@ -155,7 +155,7 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
         TsPanchangaRequest {
             struct_size: 0,
             calendar: Calendar::Gregorian.id(),
-            reserved: 0,
+            sky_step_minutes: 0,
             from_year: 2026,
             from_month: 11,
             from_day: 20,

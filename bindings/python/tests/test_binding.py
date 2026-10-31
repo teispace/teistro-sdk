@@ -4650,6 +4650,18 @@ class AnEngine(WithLibrary):
             answer = almanac.nepal_sambat
             assert answer is not None
             self.assertIsInstance(answer, NepalSambatDates)
+            # Beside the days, as a flag with its step.
+            self.assertIsNone(ctx.almanac.of(**days).sky)
+            sky = ctx.almanac.of(**days, sky=True, sky_step_minutes=60).sky
+            assert sky is not None
+            self.assertEqual(len(sky.value), len(almanac))
+            today = sky.value[0]
+            self.assertEqual((today.step_minutes, today.sun.state), (60, "CROSSES"))
+            noon = [point for point in today.sun.track if point.kind == "TRANSIT"]
+            self.assertEqual(len(noon), 1)
+            self.assertTrue(40 < noon[0].altitude_deg < 70)
+            self.assertTrue(all(point.moon is not None for point in today.moon.track))
+            self.assertTrue(all(point.moon is None for point in today.sun.track))
             self.assertEqual(len(answer.value), len(almanac))
             self.assertEqual(
                 [(d.year, d.month, d.kind, d.paksha) for d in answer.value],

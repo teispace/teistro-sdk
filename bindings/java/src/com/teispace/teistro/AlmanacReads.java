@@ -572,6 +572,30 @@ final class AlmanacReads {
         }), provenance(envelope));
     }
 
+    /** The {@code sky} section: one record a day, with the provenance beside them. */
+    static DaySkies skyAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        return new DaySkies(Reads.each(envelope, "value", raw -> {
+            Map<?, ?> d = Reads.object(raw);
+            return new DaySky(Reads.number(d, "from"), Reads.number(d, "to"), Reads.integer(d, "stepMinutes"),
+                    bodySky(Reads.object(d, "sun")), bodySky(Reads.object(d, "moon")));
+        }), provenance(envelope));
+    }
+
+    private static BodySky bodySky(Map<?, ?> body) {
+        return new BodySky(Reads.string(body, "state"), Reads.each(body, "track", raw -> {
+            Map<?, ?> p = Reads.object(raw);
+            return new SkyPoint(Reads.number(p, "at"), Reads.string(p, "kind"), Reads.number(p, "altitudeDeg"),
+                    Reads.number(p, "refractedAltitudeDeg"), Reads.number(p, "azimuthDeg"),
+                    p.get("moon") == null ? null : moonShape(Reads.object(p, "moon")));
+        }));
+    }
+
+    private static MoonShape moonShape(Map<?, ?> m) {
+        return new MoonShape(Reads.number(m, "illuminatedFraction"), Reads.number(m, "phaseAngleDeg"),
+                Reads.flag(m, "waxing"), Reads.number(m, "brightLimbDeg"), Reads.number(m, "parallacticAngleDeg"));
+    }
+
     private static EclipseMoment moment(Object raw) {
         Map<?, ?> m = Reads.object(raw);
         return new EclipseMoment(Reads.number(m, "at"), Reads.number(m, "altitudeDeg"));

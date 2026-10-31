@@ -9153,6 +9153,7 @@ final class Panchanga {
     required this.bhadraVasa,
     required this.shivaVasa,
     required this.namedPanchaka,
+    required this.sky,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -9287,6 +9288,9 @@ final class Panchanga {
   /// The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`.
   final PanchangaNamedPanchaka namedPanchaka;
 
+  /// UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for.
+  final String sky;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -9333,6 +9337,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atBhadraVasa = blob.section(37, 'bhadra_vasa');
   final atShivaVasa = blob.section(38, 'shiva_vasa');
   final atNamedPanchaka = blob.section(39, 'named_panchaka');
+  final atSky = blob.section(40, 'sky');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -9720,6 +9725,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       endsVipala: blob.column(atNamedPanchaka, 8, 1, Uint8List.sublistView),
       length: atNamedPanchaka.count,
     ),
+    sky: blob.text(atSky, 'sky'),
   );
 }
 
