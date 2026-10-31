@@ -836,8 +836,10 @@ test('every catalogue enum has a complete id table', () => {
   // eighteen; 1478 since the day's markers' `TsDayMarker`, three, and the
   // Gowri panchangam's `TsGowri`, eight, each with its member of `TsKind`,
   // and `TsMuhurtaYoga`'s Ravi and Guru Pushya; 1486 since a vrata's
-  // `TsFastKind`, seven, with its member of `TsKind`.
-  assert.equal(entries, 1486, 'every member of every enum is in a table');
+  // `TsFastKind`, seven, with its member of `TsKind`; 1506 since the
+  // year's rulers' `TsYearOffice`, nine, `TsRulerText`, three, and
+  // `TsRulerDayRule`, five, with their three members of `TsKind`.
+  assert.equal(entries, 1506, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -4184,7 +4186,10 @@ test('an almanac carries the lunar years it was asked for', () => {
   assert.ok(Object.isFrozen(value[1].jovian[0]), 'frozen to its leaves');
   // Thursday 19 March 2026 opened VS 2083: Jupiter is raja (`03-design/year-rulers.md`).
   const [raja] = value[1].rulers;
-  assert.deepEqual([raja.office, raja.readings[0].rule, raja.readings[0].lord], ['RAJA', 'SUNRISE', 'graha.JUPITER']);
+  assert.deepEqual(
+    [raja.office, raja.readings[0].rule, raja.readings[0].lord],
+    ['year_office.RAJA', 'ruler_day_rule.SUNRISE', 'graha.JUPITER'],
+  );
   assert.equal(typeof provenance.contentHash, 'string');
   for (let k = 0; k < plain.length; k += 1) {
     assert.equal(almanac.at(k).provenance.contentHash, plain.at(k).provenance.contentHash);

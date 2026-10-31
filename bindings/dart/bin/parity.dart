@@ -3321,8 +3321,8 @@ void main() {
       'years-$k-rulers',
       listed([
         for (final ruler in year.rulers)
-          '${ruler.office}:${number(ruler.event)}:'
-              '${[for (final r in ruler.readings) '${r.rule}=${r.lord.fullKey}'].join(',')}',
+          '${ruler.office.fullKey}:${number(ruler.event)}:'
+              '${[for (final r in ruler.readings) '${r.rule.fullKey}=${r.lord.fullKey}'].join(',')}',
       ]),
     );
   }

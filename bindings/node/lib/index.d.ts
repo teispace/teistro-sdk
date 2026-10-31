@@ -127,6 +127,9 @@ import type {
   BlackoutKind,
   LunarEclipseKind,
   SolarEclipseKind,
+  YearOffice,
+  RulerText,
+  RulerDayRule,
   Varna,
   Yoni,
   Gana,
@@ -6522,20 +6525,11 @@ export interface LunarYear {
 /** One office of the year and who holds it (`03-design/year-rulers.md`). */
 export interface YearRuler {
   /** The office. */
-  readonly office:
-    | 'RAJA'
-    | 'MANTRI'
-    | 'SENADHIPATI'
-    | 'SASYADHIPATI'
-    | 'DHANYADHIPATI'
-    | 'ARGHADHIPATI'
-    | 'MEGHADHIPATI'
-    | 'RASADHIPATI'
-    | 'NIRASADHIPATI';
+  readonly office: YearOffice;
   /** The new moon that opened the year for the raja, the Sun's ingress for the rest, a UTC Julian day. */
   readonly event: number;
   /** The texts that name the office. */
-  readonly texts: readonly ('JYOTIRNIBANDHA' | 'NARADA_SAMHITA' | 'NAVANAYAKA')[];
+  readonly texts: readonly RulerText[];
   /** Its weekday and lord under each rule its texts give, the plainest first. */
   readonly readings: readonly RulerReading[];
 }
@@ -6543,7 +6537,7 @@ export interface YearRuler {
 /** An office's weekday and its lord under one rule. */
 export interface RulerReading {
   /** The rule: `SUNRISE`, `NEW_MOON` or `GARGA` for the raja, `DAYLIGHT` or `VARA` for an ingress. */
-  readonly rule: 'SUNRISE' | 'NEW_MOON' | 'GARGA' | 'DAYLIGHT' | 'VARA';
+  readonly rule: RulerDayRule;
   /** The weekday the rule reads. */
   readonly vara: Vara;
   /** Its lord, who holds the office. */

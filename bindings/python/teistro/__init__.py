@@ -997,6 +997,8 @@ from .catalogue import (
     PointFamily,
     Rising,
     Ritu,
+    RulerDayRule,
+    RulerText,
     Samvatsara,
     Sex,
     BlackoutKind,
@@ -1008,6 +1010,7 @@ from .catalogue import (
     Tatwa,
     TithiClass,
     Varna,
+    YearOffice,
     Yoni,
 )
 
@@ -2087,6 +2090,9 @@ __all__ = [
     "TithiClass",
     "Vara",
     "Varna",
+    "YearOffice",
+    "RulerText",
+    "RulerDayRule",
     "Yoga",
     "Yoni",
 ]
@@ -10160,7 +10166,7 @@ class JovianYear:
 class RulerReading:
     """An office's weekday and its lord under one rule."""
 
-    rule: Literal["SUNRISE", "NEW_MOON", "GARGA", "DAYLIGHT", "VARA"]
+    rule: RulerDayRule
     """The rule: `SUNRISE`, `NEW_MOON` or `GARGA` for the raja, `DAYLIGHT`
     or `VARA` for an ingress."""
 
@@ -10179,24 +10185,14 @@ class YearRuler:
     """One office of the year and who holds it
     (`03-design/year-rulers.md`)."""
 
-    office: Literal[
-        "RAJA",
-        "MANTRI",
-        "SENADHIPATI",
-        "SASYADHIPATI",
-        "DHANYADHIPATI",
-        "ARGHADHIPATI",
-        "MEGHADHIPATI",
-        "RASADHIPATI",
-        "NIRASADHIPATI",
-    ]
+    office: YearOffice
     """The office."""
 
     event: float
     """The new moon that opened the year for the raja, the Sun's ingress
     for the rest, a UTC Julian day."""
 
-    texts: Tuple[Literal["JYOTIRNIBANDHA", "NARADA_SAMHITA", "NAVANAYAKA"], ...]
+    texts: Tuple[RulerText, ...]
     """The texts that name the office."""
 
     readings: Tuple[RulerReading, ...]
@@ -16766,14 +16762,17 @@ def _lunar_year(raw: Mapping[str, Any]) -> LunarYear:
 
     def reading(one: Mapping[str, Any]) -> RulerReading:
         return RulerReading(
-            rule=one["rule"], vara=_member(Vara, one["vara"]), lord=_member(Graha, one["lord"]), day=one["day"]
+            rule=_member(RulerDayRule, one["rule"]),
+            vara=_member(Vara, one["vara"]),
+            lord=_member(Graha, one["lord"]),
+            day=one["day"],
         )
 
     def ruler(one: Mapping[str, Any]) -> YearRuler:
         return YearRuler(
-            office=one["office"],
+            office=_member(YearOffice, one["office"]),
             event=one["event"],
-            texts=tuple(one["texts"]),
+            texts=tuple(_member(RulerText, t) for t in one["texts"]),
             readings=tuple(reading(r) for r in one["readings"]),
         )
 

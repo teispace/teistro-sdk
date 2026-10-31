@@ -6973,11 +6973,13 @@ fn lunar_years(report: &mut Report, geo: &Context, place: &Place, offset: UtcOff
                 let readings: Vec<String> = ruler
                     .readings
                     .iter()
-                    .map(|reading| format!("{}={}", tag(&reading.rule), reading.lord.full_key()))
+                    .map(|reading| {
+                        format!("{}={}", reading.rule.full_key(), reading.lord.full_key())
+                    })
                     .collect();
                 format!(
                     "{}:{}:{}",
-                    tag(&ruler.office),
+                    ruler.office.full_key(),
                     number(ruler.event.get()),
                     readings.join(",")
                 )

@@ -264,6 +264,65 @@ Four rules kept members off:
 resolves once a locale names it. No source names the layouts in Nepali,
 so §4's list carries all six.
 
+## 4d. The year's rulers (2026-11-01)
+
+The year's offices, the texts that name them and the rules each office's
+day is read under (`year-rulers.md`) became catalogue kinds 82 to 84,
+`year_office`, `ruler_text` and `ruler_day_rule`, so a reader can print
+*Rasesha* where the answer carries `year_office.RASADHIPATI`. The
+catalogue keys keep the texts' own titles of office (`RASADHIPATI`); the
+names are the shorter forms the printed almanacs use.
+
+**Nepali.** The offices are spelled as a patro printed in Nepal prints
+them: the *Himal Panchanga* for VS 2082, p. 2, "श्रीसम्वत् २०८२ सालको
+वर्षव्यवस्था", read off its page images (the scan has no text layer),
+which seats the year's ten office-bearers (*daśādhikārī*) as "राजापदमा
+सूर्य, मन्त्रीपदमा चन्द्र, सस्येशपदमा गुरु, रसेशपदमा शुक्र, नीरसेशपदमा
+बुध, मेघेशपदमा सूर्य, धान्येशपदमा मङ्गल", then the lords of fruit, wealth
+and forts, which the texts read here do not make. Its raja and mantri for
+VS 2082, the Sun and the Moon, are the ones the southern nine print for
+that year (`year-rulers.md` §3). The texts and rules carry the texts' own words, read off
+the pages:
+
+| member | Nepali | where |
+|---|---|---|
+| `RAJA`, `MANTRI`, `SASYADHIPATI`, `DHANYADHIPATI`, `MEGHADHIPATI`, `RASADHIPATI`, `NIRASADHIPATI` | राजा, मन्त्री, सस्येश, धान्येश, मेघेश, रसेश, नीरसेश | *Himal Panchanga* VS 2082 p. 2 |
+| `JYOTIRNIBANDHA` | ज्योतिर्निबन्ध | the running head of the Anandashrama edition, p. 29 |
+| `NARADA_SAMHITA` | नारदसंहिता | Ram Janma Mishra's edition (Kashi Sanskrit Series 40), its introduction |
+| `SUNRISE` | उदयकालिक | *Jyotirnibandha* p. 29 v. 2, "रवेरुदयकालिकः"; the committee heads every page's planet table "उदयकालिक" |
+| `NEW_MOON` | दर्शप्रतिपत्सन्धि | *Jyotirnibandha* p. 29 v. 1, "दर्शप्रतिपत्सन्धौ" |
+| `GARGA` | गर्ग | *Jyotirnibandha* p. 29 v. 6, "गर्गः" |
+| `VARA` | वार | *Jyotirnibandha* p. 29 vv. 1, 3, 9, "यो वारः" |
+
+**English** is the same term romanised, as the request named them
+(*raja*, *mantri*, *sasyesha*, *dhanyesha*, *meghesha*, *rasesha*,
+*nirasesha*), with the IAST; the rules are English words (*Sunrise*,
+*New moon*, *Garga*, *Weekday*). Offices and rules are common nouns, so
+their `prose` is lower case.
+
+**Hindi** takes the words of the Vimala Hindi commentary in Mishra's
+*Narada Samhita*: राजा, मन्त्री, रसेश and धान्येश (its introduction, on
+ch. 2), सस्येश (2.2) and निरसेश (2.3, with
+the short *i* it prints). It names no lord of the clouds, whom that text
+lacks, so Hindi falls back for him.
+
+**Sanskrit** takes *Jyotirnibandha* p. 29's own words: राजा (v. 2), मन्त्री
+(v. 10's *nṛpa-mantri*), मेघाधिप (v. 8), रसाधिप and धान्याधिप (v. 9), and
+*Narada Samhita*'s सस्येश (2.2); the two titles and the four rules as in
+Nepali. Its lord of dry goods is left out, since the scan of 2.3 is not
+legible at that word.
+
+**Left unnamed**, in every locale, and listed in `xtask/src/intl.rs`:
+`SENADHIPATI` and `ARGHADHIPATI`, which the patro printed in Nepal does not
+seat and only the southern nine print, in Telugu and Kannada scripts;
+`NAVANAYAKA`, for the same reason; and `DAYLIGHT`, because the texts' word
+for an ingress's day (*dina*, *ahan*) is the very word its two readings
+part on (C1072), so naming one reading by it would choose. The Hindi
+commentary's सेनापति is *Narada Samhita*'s gloss on the mantri, not the
+southern commander, so it is not borrowed. No `draft` mark is needed:
+every name shipped is printed, and a mark is per namespace, so it would
+have drafted every name in `sdk.entity`.
+
 ## 5. What this does not settle
 
 - **Names for the listed members.** Each needs a rank-1 or rank-2

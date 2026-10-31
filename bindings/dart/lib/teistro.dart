@@ -17661,7 +17661,7 @@ final class RulerReading extends _Value {
 
   /// The rule: `SUNRISE`, `NEW_MOON` or `GARGA` for the raja, `DAYLIGHT`
   /// or `VARA` for an ingress.
-  final String rule;
+  final RulerDayRule rule;
 
   /// The weekday the rule reads.
   final Vara vara;
@@ -17688,7 +17688,7 @@ final class YearRuler extends _Value {
   /// The office: `RAJA`, `MANTRI`, `SENADHIPATI`, `SASYADHIPATI`,
   /// `DHANYADHIPATI`, `ARGHADHIPATI`, `MEGHADHIPATI`, `RASADHIPATI` or
   /// `NIRASADHIPATI`.
-  final String office;
+  final YearOffice office;
 
   /// The new moon that opened the year for the raja, the Sun's ingress for
   /// the rest, a UTC Julian day.
@@ -17696,7 +17696,7 @@ final class YearRuler extends _Value {
 
   /// The texts that name the office: `JYOTIRNIBANDHA`, `NARADA_SAMHITA`,
   /// `NAVANAYAKA`.
-  final List<String> texts;
+  final List<RulerText> texts;
 
   /// Its weekday and lord under each rule its texts give, the plainest
   /// first.
@@ -18080,16 +18080,17 @@ LunarYear _lunarYear(Map<String, Object?> raw) {
     to: jd(raw['to']),
   );
   RulerReading reading(Map<String, Object?> raw) => RulerReading(
-    rule: raw['rule']! as String,
+    rule: _key(raw['rule'], RulerDayRule.byKey, RulerDayRule.unknown),
     vara: _key(raw['vara'], Vara.byKey, Vara.unknown),
     lord: _key(raw['lord'], Graha.byKey, Graha.unknown),
     day: jd(raw['day']),
   );
   YearRuler ruler(Map<String, Object?> raw) => YearRuler(
-    office: raw['office']! as String,
+    office: _key(raw['office'], YearOffice.byKey, YearOffice.unknown),
     event: jd(raw['event']),
     texts: List.unmodifiable([
-      for (final text in raw['texts']! as List<Object?>) text! as String,
+      for (final text in raw['texts']! as List<Object?>)
+        _key(text, RulerText.byKey, RulerText.unknown),
     ]),
     readings: List.unmodifiable([
       for (final item in raw['readings']! as List<Object?>)

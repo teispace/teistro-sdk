@@ -4619,5 +4619,76 @@
       "name": "Jalahara",
       "prose": "water only"
     }
+  },
+  "year_office": {
+    "RAJA": {
+      "name": "Raja",
+      "prose": "raja",
+      "iast": "Rājā"
+    },
+    "MANTRI": {
+      "name": "Mantri",
+      "prose": "mantri",
+      "iast": "Mantrī"
+    },
+    "SASYADHIPATI": {
+      "name": "Sasyesha",
+      "prose": "sasyesha",
+      "iast": "Sasyeśa"
+    },
+    "DHANYADHIPATI": {
+      "name": "Dhanyesha",
+      "prose": "dhanyesha",
+      "iast": "Dhānyeśa"
+    },
+    "MEGHADHIPATI": {
+      "name": "Meghesha",
+      "prose": "meghesha",
+      "iast": "Megheśa"
+    },
+    "RASADHIPATI": {
+      "name": "Rasesha",
+      "prose": "rasesha",
+      "iast": "Raseśa"
+    },
+    "NIRASADHIPATI": {
+      "name": "Nirasesha",
+      "prose": "nirasesha",
+      "iast": "Nīraseśa"
+    }
+  },
+  "ruler_text": {
+    "JYOTIRNIBANDHA": {
+      "name": "Jyotirnibandha",
+      "prose": "Jyotirnibandha",
+      "iast": "Jyotirnibandha"
+    },
+    "NARADA_SAMHITA": {
+      "name": "Narada Samhita",
+      "prose": "Narada Samhita",
+      "iast": "Nāradasaṃhitā"
+    }
+  },
+  "ruler_day_rule": {
+    "SUNRISE": {
+      "name": "Sunrise",
+      "prose": "sunrise",
+      "iast": "Udayakālika"
+    },
+    "NEW_MOON": {
+      "name": "New moon",
+      "prose": "new moon",
+      "iast": "Darśapratipatsandhi"
+    },
+    "GARGA": {
+      "name": "Garga",
+      "prose": "Garga",
+      "iast": "Garga"
+    },
+    "VARA": {
+      "name": "Weekday",
+      "prose": "weekday",
+      "iast": "Vāra"
+    }
   }
 }

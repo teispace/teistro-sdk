@@ -115,11 +115,13 @@ from teistro.catalogue import (
     PolarDayPolicy,
     PolarKind,
     Ritu,
+    RulerDayRule,
     SolarEclipseKind,
     Sunrise,
     Sunrises,
     Tithi,
     Vara,
+    YearOffice,
 )
 from tests.support import LOCALE, PROFILE, WithLibrary, fixture
 
@@ -4708,7 +4710,10 @@ class AnEngine(WithLibrary):
             # Thursday 19 March 2026 opened VS 2083: Jupiter is raja
             # (`03-design/year-rulers.md`).
             raja = years[1].rulers[0]
-            self.assertEqual((raja.office, raja.readings[0].rule, raja.lord), ("RAJA", "SUNRISE", Graha.JUPITER))
+            self.assertEqual(
+                (raja.office, raja.readings[0].rule, raja.lord),
+                (YearOffice.RAJA, RulerDayRule.SUNRISE, Graha.JUPITER),
+            )
             with self.assertRaises(dataclasses.FrozenInstanceError):
                 years[0].vikrama = 0  # type: ignore[misc]
             self.assertTrue(answer.provenance.content_hash)

@@ -3968,6 +3968,14 @@ pub mod sdk {
         pub mod ritu {
         }
 
+        /// The `ruler_day_rule` group.
+        pub mod ruler_day_rule {
+        }
+
+        /// The `ruler_text` group.
+        pub mod ruler_text {
+        }
+
         /// The `samvatsara` group.
         pub mod samvatsara {
         }
@@ -4006,6 +4014,10 @@ pub mod sdk {
 
         /// The `varna` group.
         pub mod varna {
+        }
+
+        /// The `year_office` group.
+        pub mod year_office {
         }
 
         /// The `yoga` group.

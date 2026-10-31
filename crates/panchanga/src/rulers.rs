@@ -48,10 +48,14 @@ const PRATIPADA_REACH_DAYS: f64 = 2.0;
 /// degrees.
 const SAME_LINE_DEG: f64 = 1e-6;
 
-/// One of the year's offices.
+pub use teistro_core::catalogue::{RulerDayRule, RulerText, YearOffice};
+
+/// What each office is made by and who names it: the catalogue's
+/// [`YearOffice`] keys the office, and this page's tables give its event,
+/// its texts and the rules its day is read under.
 ///
 /// ```
-/// use teistro_panchanga::rulers::{YearOffice, RulerText};
+/// use teistro_panchanga::rulers::{Office, RulerText, YearOffice};
 ///
 /// // The lord of the crops is the weekday's lord at Karka's ingress, and
 /// // every text names him.
@@ -61,63 +65,46 @@ const SAME_LINE_DEG: f64 = 1e-6;
 /// assert_eq!(YearOffice::Raja.ingress_deg(), None);
 /// assert_eq!(YearOffice::Senadhipati.texts(), &[RulerText::Navanayaka]);
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum YearOffice {
-    /// The king, the year's lord (*abdapa*, *varṣeśa*): the lord of
-    /// Chaitra Shukla Pratipada's weekday.
-    Raja,
-    /// The minister (*mantrī*; *bhūpati* in *Narada Samhita*): Mesha's
-    /// ingress.
-    Mantri,
-    /// The commander (*senādhipati*): Simha's ingress.
-    Senadhipati,
-    /// The lord of the crops (*sasyādhipa*), *Jyotirnibandha*'s first
-    /// lord of grain (*agradhānyeśa*): Karka's ingress.
-    Sasyadhipati,
-    /// The lord of grain (*dhānyādhipa*), *Jyotirnibandha*'s later lord
-    /// of grain (*paścimadhānyeśa*): Dhanu's ingress.
-    Dhanyadhipati,
-    /// The lord of prices (*arghādhipati*): Mithuna's ingress.
-    Arghadhipati,
-    /// The lord of the clouds (*meghādhipa*): the Sun's entry into Ardra.
-    Meghadhipati,
-    /// The lord of juices (*rasādhipa*): Tula's ingress.
-    Rasadhipati,
-    /// The lord of dry goods (*nīrasapati*): Makara's ingress.
-    Nirasadhipati,
-}
-
-impl YearOffice {
-    /// Every office, in the order a southern panchanga prints them.
-    pub const ALL: [YearOffice; 9] = [
-        YearOffice::Raja,
-        YearOffice::Mantri,
-        YearOffice::Senadhipati,
-        YearOffice::Sasyadhipati,
-        YearOffice::Dhanyadhipati,
-        YearOffice::Arghadhipati,
-        YearOffice::Meghadhipati,
-        YearOffice::Rasadhipati,
-        YearOffice::Nirasadhipati,
-    ];
-
+pub trait Office: Copy {
     /// The Sun's sidereal longitude whose crossing makes the office,
     /// degrees, or `None` for the raja, whose day is the year's first.
     /// Ardra begins at the end of the fifth nakshatra, 66°40′.
     ///
     /// ```
-    /// use teistro_panchanga::rulers::YearOffice;
+    /// use teistro_panchanga::rulers::{Office, YearOffice};
     ///
     /// assert_eq!(YearOffice::Nirasadhipati.ingress_deg(), Some(270.0));
     /// let ardra = YearOffice::Meghadhipati.ingress_deg().unwrap_or_default();
     /// assert!((ardra - 66.0 - 2.0 / 3.0).abs() < 1e-12);
     /// ```
-    #[must_use]
-    pub fn ingress_deg(self) -> Option<f64> {
+    fn ingress_deg(self) -> Option<f64>;
+
+    /// The texts that name the office, in [`RulerText`]'s order.
+    ///
+    /// ```
+    /// use teistro_panchanga::rulers::{Office, RulerText, YearOffice};
+    ///
+    /// // *Jyotirnibandha* has no lord of dry goods, *Narada Samhita* no lord of the clouds.
+    /// assert!(!YearOffice::Nirasadhipati.texts().contains(&RulerText::Jyotirnibandha));
+    /// assert!(!YearOffice::Meghadhipati.texts().contains(&RulerText::NaradaSamhita));
+    /// ```
+    fn texts(self) -> &'static [RulerText];
+
+    /// The rules an office's weekday is read under, the first being the
+    /// one the texts' own words read most plainly (C1072).
+    ///
+    /// ```
+    /// use teistro_panchanga::rulers::{Office, RulerDayRule, YearOffice};
+    ///
+    /// assert_eq!(YearOffice::Raja.rules()[0], RulerDayRule::Sunrise);
+    /// assert_eq!(YearOffice::Mantri.rules(), &[RulerDayRule::Daylight, RulerDayRule::Vara]);
+    /// ```
+    fn rules(self) -> &'static [RulerDayRule];
+}
+
+impl Office for YearOffice {
+    fn ingress_deg(self) -> Option<f64> {
         match self {
-            YearOffice::Raja => None,
             YearOffice::Mantri => Some(0.0),
             YearOffice::Arghadhipati => Some(60.0),
             YearOffice::Meghadhipati => Some(5.0 * 360.0 / 27.0),
@@ -126,20 +113,11 @@ impl YearOffice {
             YearOffice::Rasadhipati => Some(180.0),
             YearOffice::Dhanyadhipati => Some(240.0),
             YearOffice::Nirasadhipati => Some(270.0),
+            _ => None,
         }
     }
 
-    /// The texts that name the office, as [`RulerText`] lists them.
-    ///
-    /// ```
-    /// use teistro_panchanga::rulers::{RulerText, YearOffice};
-    ///
-    /// // *Jyotirnibandha* has no lord of dry goods, *Narada Samhita* no lord of the clouds.
-    /// assert!(!YearOffice::Nirasadhipati.texts().contains(&RulerText::Jyotirnibandha));
-    /// assert!(!YearOffice::Meghadhipati.texts().contains(&RulerText::NaradaSamhita));
-    /// ```
-    #[must_use]
-    pub fn texts(self) -> &'static [RulerText] {
+    fn texts(self) -> &'static [RulerText] {
         use RulerText::{Jyotirnibandha, NaradaSamhita, Navanayaka};
         match self {
             YearOffice::Raja
@@ -148,21 +126,11 @@ impl YearOffice {
             | YearOffice::Rasadhipati => &[Jyotirnibandha, NaradaSamhita, Navanayaka],
             YearOffice::Meghadhipati | YearOffice::Dhanyadhipati => &[Jyotirnibandha, Navanayaka],
             YearOffice::Nirasadhipati => &[NaradaSamhita, Navanayaka],
-            YearOffice::Senadhipati | YearOffice::Arghadhipati => &[Navanayaka],
+            _ => &[Navanayaka],
         }
     }
 
-    /// The rules an office's weekday is read under, the first being the
-    /// one the texts' own words read most plainly (C1072).
-    ///
-    /// ```
-    /// use teistro_panchanga::rulers::{RulerDayRule, YearOffice};
-    ///
-    /// assert_eq!(YearOffice::Raja.rules()[0], RulerDayRule::Sunrise);
-    /// assert_eq!(YearOffice::Mantri.rules(), &[RulerDayRule::Daylight, RulerDayRule::Vara]);
-    /// ```
-    #[must_use]
-    pub fn rules(self) -> &'static [RulerDayRule] {
+    fn rules(self) -> &'static [RulerDayRule] {
         match self {
             YearOffice::Raja => &[
                 RulerDayRule::Sunrise,
@@ -172,60 +140,6 @@ impl YearOffice {
             _ => &[RulerDayRule::Daylight, RulerDayRule::Vara],
         }
     }
-}
-
-/// A text, or a body of practice, that names the year's offices.
-///
-/// ```
-/// use teistro_panchanga::rulers::RulerText;
-///
-/// assert_eq!(serde_json::to_string(&RulerText::NaradaSamhita).unwrap(), r#""NARADA_SAMHITA""#);
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum RulerText {
-    /// *Jyotirnibandha* p. 29 vv. 7–10, quoting *Jyotiṣaphalodaya*: the
-    /// raja, the mantri and the lords of the crops, the clouds, juices
-    /// and grain.
-    Jyotirnibandha,
-    /// *Narada Samhita* ch. 2 vv. 1–3: the raja, the mantri and the lords
-    /// of the crops, juices and dry goods.
-    NaradaSamhita,
-    /// The nine (*navanāyaka*) of the southern panchangas, which add the
-    /// commander and the lord of prices; no verse read (C1071).
-    Navanayaka,
-}
-
-/// Which day an event's weekday is read from.
-///
-/// ```
-/// use teistro_panchanga::rulers::RulerDayRule;
-///
-/// assert_eq!(serde_json::to_string(&RulerDayRule::NewMoon).unwrap(), r#""NEW_MOON""#);
-/// ```
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
-#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum RulerDayRule {
-    /// The raja: the weekday at the sunrise that Chaitra Shukla
-    /// Pratipada runs at; of two such sunrises the earlier, and when the
-    /// pratipada runs at none, the earlier day, the one it began in
-    /// (*Jyotirnibandha* vv. 2–4, "many say"; *Narada Samhita* 2.1).
-    Sunrise,
-    /// The raja: the weekday holding the new moon itself, "the junction
-    /// of the new moon and the pratipada" (*Jyotirnibandha* v. 1, from
-    /// *Ratnāvalī*).
-    NewMoon,
-    /// The raja: the day of the new moon if it falls before that day's
-    /// midday, else the next (*Jyotirnibandha* v. 6, Garga).
-    Garga,
-    /// An ingress: the day whose daylight holds it, and for one at night
-    /// the day that begins at the next sunrise, "the day (*ahan*) of the
-    /// entry" read as the daylight. The printed southern panchangas.
-    Daylight,
-    /// An ingress: the weekday, sunrise to sunrise, holding its instant.
-    Vara,
 }
 
 /// An office's weekday and its lord under one rule.
@@ -260,7 +174,7 @@ pub struct RulerReading {
 ///
 /// ```
 /// use teistro_core::quantity::JulianDay;
-/// use teistro_panchanga::rulers::{YearOffice, YearRuler};
+/// use teistro_panchanga::rulers::{Office, YearOffice, YearRuler};
 ///
 /// // An office with no reading has no lord to name.
 /// let event = JulianDay::literal(2_461_118.9);
@@ -278,7 +192,7 @@ pub struct YearRuler {
     pub event: JulianDay<Utc>,
     /// The texts that name the office.
     pub texts: Vec<RulerText>,
-    /// Its weekday and lord under each rule [`YearOffice::rules`] gives, in
+    /// Its weekday and lord under each rule [`Office::rules`] gives, in
     /// that order.
     pub readings: Vec<RulerReading>,
 }
@@ -344,13 +258,14 @@ pub fn read(
 ) -> RulerReading {
     let midday = f64::midpoint(holding.sunrise.get(), holding.sunset.get());
     let next = match rule {
-        RulerDayRule::NewMoon | RulerDayRule::Vara => false,
         // The pratipada runs at the next sunrise unless it ended first.
         RulerDayRule::Sunrise => {
             pratipada_ends.is_none_or(|ends| ends.get() >= holding.next_sunrise.get())
         }
         RulerDayRule::Garga => event.get() >= midday,
         RulerDayRule::Daylight => event.get() >= holding.sunset.get(),
+        // `NEW_MOON` and `VARA` read the day holding the event.
+        _ => false,
     };
     let (vara, day) = if next {
         (following(holding.vara), holding.next_sunrise)

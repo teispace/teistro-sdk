@@ -1564,6 +1564,56 @@ public final class Messages {
         }
     }
 
+    /** A `ruler_day_rule` as a message names it: the full catalogue key. */
+    public enum RulerDayRuleKey {
+        /** `ruler_day_rule.SUNRISE`. */
+        SUNRISE("ruler_day_rule.SUNRISE"),
+        /** `ruler_day_rule.NEW_MOON`. */
+        NEW_MOON("ruler_day_rule.NEW_MOON"),
+        /** `ruler_day_rule.GARGA`. */
+        GARGA("ruler_day_rule.GARGA"),
+        /** `ruler_day_rule.VARA`. */
+        VARA("ruler_day_rule.VARA");
+
+        private final String value;
+
+        RulerDayRuleKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `ruler_text` as a message names it: the full catalogue key. */
+    public enum RulerTextKey {
+        /** `ruler_text.JYOTIRNIBANDHA`. */
+        JYOTIRNIBANDHA("ruler_text.JYOTIRNIBANDHA"),
+        /** `ruler_text.NARADA_SAMHITA`. */
+        NARADA_SAMHITA("ruler_text.NARADA_SAMHITA");
+
+        private final String value;
+
+        RulerTextKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `samvatsara` as a message names it: the full catalogue key. */
     public enum SamvatsaraKey {
         /** `samvatsara.PRABHAVA`. */
@@ -2112,6 +2162,39 @@ public final class Messages {
         private final String value;
 
         VarnaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `year_office` as a message names it: the full catalogue key. */
+    public enum YearOfficeKey {
+        /** `year_office.RAJA`. */
+        RAJA("year_office.RAJA"),
+        /** `year_office.MANTRI`. */
+        MANTRI("year_office.MANTRI"),
+        /** `year_office.SASYADHIPATI`. */
+        SASYADHIPATI("year_office.SASYADHIPATI"),
+        /** `year_office.DHANYADHIPATI`. */
+        DHANYADHIPATI("year_office.DHANYADHIPATI"),
+        /** `year_office.MEGHADHIPATI`. */
+        MEGHADHIPATI("year_office.MEGHADHIPATI"),
+        /** `year_office.RASADHIPATI`. */
+        RASADHIPATI("year_office.RASADHIPATI"),
+        /** `year_office.NIRASADHIPATI`. */
+        NIRASADHIPATI("year_office.NIRASADHIPATI");
+
+        private final String value;
+
+        YearOfficeKey(String value) {
             this.value = value;
         }
 
@@ -11604,6 +11687,98 @@ public final class Messages {
 
 
             /**
+             * The messages under `ruler_day_rule`.
+             *
+             * @return the group
+             */
+            public SdkEntityRulerDayRule rulerDayRule() {
+                return new SdkEntityRulerDayRule(r);
+            }
+
+            /** The messages under `SdkEntityRulerDayRule`, each rendered by its own key. */
+            public static final class SdkEntityRulerDayRule {
+                private final Renderer r;
+
+                SdkEntityRulerDayRule(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `ruler_day_rule.GARGA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms garga() {
+                    return r.entity("ruler_day_rule.GARGA");
+                }
+
+                /**
+                 * The forms of `ruler_day_rule.NEW_MOON` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms newMoon() {
+                    return r.entity("ruler_day_rule.NEW_MOON");
+                }
+
+                /**
+                 * The forms of `ruler_day_rule.SUNRISE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sunrise() {
+                    return r.entity("ruler_day_rule.SUNRISE");
+                }
+
+                /**
+                 * The forms of `ruler_day_rule.VARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vara() {
+                    return r.entity("ruler_day_rule.VARA");
+                }
+            }
+
+
+            /**
+             * The messages under `ruler_text`.
+             *
+             * @return the group
+             */
+            public SdkEntityRulerText rulerText() {
+                return new SdkEntityRulerText(r);
+            }
+
+            /** The messages under `SdkEntityRulerText`, each rendered by its own key. */
+            public static final class SdkEntityRulerText {
+                private final Renderer r;
+
+                SdkEntityRulerText(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `ruler_text.JYOTIRNIBANDHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms jyotirnibandha() {
+                    return r.entity("ruler_text.JYOTIRNIBANDHA");
+                }
+
+                /**
+                 * The forms of `ruler_text.NARADA_SAMHITA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms naradaSamhita() {
+                    return r.entity("ruler_text.NARADA_SAMHITA");
+                }
+            }
+
+
+            /**
              * The messages under `samvatsara`.
              *
              * @return the group
@@ -13265,6 +13440,88 @@ public final class Messages {
                  */
                 public EntityForms vaishya() {
                     return r.entity("varna.VAISHYA");
+                }
+            }
+
+
+            /**
+             * The messages under `year_office`.
+             *
+             * @return the group
+             */
+            public SdkEntityYearOffice yearOffice() {
+                return new SdkEntityYearOffice(r);
+            }
+
+            /** The messages under `SdkEntityYearOffice`, each rendered by its own key. */
+            public static final class SdkEntityYearOffice {
+                private final Renderer r;
+
+                SdkEntityYearOffice(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `year_office.DHANYADHIPATI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dhanyadhipati() {
+                    return r.entity("year_office.DHANYADHIPATI");
+                }
+
+                /**
+                 * The forms of `year_office.MANTRI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mantri() {
+                    return r.entity("year_office.MANTRI");
+                }
+
+                /**
+                 * The forms of `year_office.MEGHADHIPATI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms meghadhipati() {
+                    return r.entity("year_office.MEGHADHIPATI");
+                }
+
+                /**
+                 * The forms of `year_office.NIRASADHIPATI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nirasadhipati() {
+                    return r.entity("year_office.NIRASADHIPATI");
+                }
+
+                /**
+                 * The forms of `year_office.RAJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms raja() {
+                    return r.entity("year_office.RAJA");
+                }
+
+                /**
+                 * The forms of `year_office.RASADHIPATI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rasadhipati() {
+                    return r.entity("year_office.RASADHIPATI");
+                }
+
+                /**
+                 * The forms of `year_office.SASYADHIPATI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sasyadhipati() {
+                    return r.entity("year_office.SASYADHIPATI");
                 }
             }
 
