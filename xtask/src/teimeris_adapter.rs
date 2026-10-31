@@ -9,8 +9,15 @@
 //! machine without the checkout skips this gate, which a strict run
 //! refuses.
 //!
-//! Three steps, each a failure of its own:
+//! Every Cargo run in the adapter passes `--locked`, so its `Cargo.lock`,
+//! which is committed, is held to what the SDK's crates now ask for: a
+//! crate gaining a dependency fails here instead of leaving the lock
+//! rewritten in whichever tree a gate ran. `cargo xtask
+//! relock-teimeris-adapter` writes it again.
 //!
+//! Four steps, each a failure of its own:
+//!
+//! 0. the lock is current;
 //! 1. the adapter's tests, in release as its timing tests expect;
 //! 2. its kit binary: the eighteen checks under the published bounds and
 //!    the façade's two chart checks, the report written to
@@ -26,7 +33,7 @@ use crate::binding::{cargo, step};
 use crate::platform::Platform;
 use crate::skip::skip;
 
-const ADAPTER: &str = "adapters/ephemeris-teimeris/rust";
+pub(crate) const ADAPTER: &str = "adapters/ephemeris-teimeris/rust";
 const KIT: &str = "teistro-ephemeris-teimeris-kit";
 const REPORT: &str = "target/teimeris-kit";
 /// The adapter's library stem, as Cargo names the `cdylib`.
@@ -48,10 +55,20 @@ pub(crate) fn check(root: &Path) -> i32 {
     }
     let dir = root.join(ADAPTER);
     let release = |args: &[&str]| {
-        let mut command = Command::new(cargo());
-        command.args(args).current_dir(&dir);
+        let mut command = cargo_in(root);
+        command.args(args);
         command
     };
+    if step(
+        release(&["metadata", "--quiet", "--format-version", "1"])
+            .stdout(std::process::Stdio::null()),
+        "the adapter's Cargo.lock is what the SDK's crates ask for",
+        "the adapter's Cargo.lock is stale: run `cargo xtask relock-teimeris-adapter` and commit it",
+    )
+    .is_err()
+    {
+        return 1;
+    }
     let mut failed = 0;
     if step(
         &mut release(&["test", "--quiet", "--release"]),
@@ -108,6 +125,44 @@ pub(crate) fn check(root: &Path) -> i32 {
         }
     }
     failed
+}
+
+/// Cargo in the adapter, held to its committed lock and building into its
+/// own `target/`, where [`library`] reads the plugin, whatever
+/// `CARGO_TARGET_DIR` a caller's shell names.
+pub(crate) fn cargo_in(root: &Path) -> Command {
+    let dir = root.join(ADAPTER);
+    let mut command = Command::new(cargo());
+    command
+        .arg("--locked")
+        .env("CARGO_TARGET_DIR", dir.join("target"))
+        .current_dir(dir);
+    command
+}
+
+/// `cargo xtask relock-teimeris-adapter`: the adapter's `Cargo.lock`
+/// resolved again against the SDK's crates, keeping every version it
+/// already pins.
+pub(crate) fn relock(root: &Path) -> i32 {
+    if !teimeris(root)
+        .join("bindings/rust/teimeris/Cargo.toml")
+        .is_file()
+    {
+        println!(
+            "FAIL  no Teimeris checkout at {}: the lock cannot be resolved",
+            teimeris(root).display()
+        );
+        return 1;
+    }
+    let outcome = step(
+        Command::new(cargo())
+            .args(["metadata", "--quiet", "--format-version", "1"])
+            .stdout(std::process::Stdio::null())
+            .current_dir(root.join(ADAPTER)),
+        &format!("{ADAPTER}/Cargo.lock resolved"),
+        "the adapter did not resolve",
+    );
+    i32::from(outcome.is_err())
 }
 
 /// Where the adapter's `Cargo.toml` reaches Teimeris: beside the SDK.

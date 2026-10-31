@@ -90,6 +90,7 @@ use crate::binding::{FIXTURES, blob_fixtures, cargo, pinned_npm_tool, present, s
 use crate::platform::NPM_WASM;
 use crate::sbom;
 use crate::sizes::{self, Allowed, Artefact, Row};
+use crate::teimeris_adapter;
 
 /// The crate the module is built from, and the file Cargo names it.
 const PACKAGE: &str = "teistro-wasm";
@@ -1076,8 +1077,6 @@ pub(crate) fn check(root: &Path) -> i32 {
 
 /// The Teimeris adapter's npm package, where the web provider lives.
 const TEIMERIS_NODE: &str = "adapters/ephemeris-teimeris/node";
-/// The adapter's Rust crate, whose day-hash binary is the native answer.
-const TEIMERIS_RUST: &str = "adapters/ephemeris-teimeris/rust";
 
 /// A Teimeris checkout's part, from its variable or the checkout beside
 /// this one, which is where the adapter's Rust crate takes the engine from.
@@ -1116,11 +1115,10 @@ fn teimeris_web(root: &Path, staged: &Path) -> Result<(), ()> {
         "the Teimeris web provider refuses what it must and adds a range",
         "the Teimeris web provider's tests did not pass",
     )?;
-    let native = Command::new(cargo())
+    let native = teimeris_adapter::cargo_in(root)
         .args(["run", "--quiet", "--release", "--features", "app-speed"])
         .args(["--bin", "teistro-ephemeris-teimeris-day-hash"])
         .env("TM_EMBED_TIER", "MODERN")
-        .current_dir(root.join(TEIMERIS_RUST))
         .output();
     let web = Command::new("node")
         .arg("test/web-day-hash.mjs")
