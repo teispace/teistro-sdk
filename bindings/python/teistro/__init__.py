@@ -1527,6 +1527,8 @@ __all__ = [
     "SolarEclipseView",
     "LunarYear",
     "JovianYear",
+    "YearRuler",
+    "RulerReading",
     "NepalSambatDates",
     "DaySkies",
     "DaySky",
@@ -9957,6 +9959,59 @@ class JovianYear:
 
 
 @dataclass(frozen=True)
+class RulerReading:
+    """An office's weekday and its lord under one rule."""
+
+    rule: Literal["SUNRISE", "NEW_MOON", "GARGA", "DAYLIGHT", "VARA"]
+    """The rule: `SUNRISE`, `NEW_MOON` or `GARGA` for the raja, `DAYLIGHT`
+    or `VARA` for an ingress."""
+
+    vara: Vara
+    """The weekday the rule reads."""
+
+    lord: Graha
+    """Its lord, who holds the office."""
+
+    day: float
+    """The sunrise that opened that weekday, a UTC Julian day."""
+
+
+@dataclass(frozen=True)
+class YearRuler:
+    """One office of the year and who holds it
+    (`03-design/year-rulers.md`)."""
+
+    office: Literal[
+        "RAJA",
+        "MANTRI",
+        "SENADHIPATI",
+        "SASYADHIPATI",
+        "DHANYADHIPATI",
+        "ARGHADHIPATI",
+        "MEGHADHIPATI",
+        "RASADHIPATI",
+        "NIRASADHIPATI",
+    ]
+    """The office."""
+
+    event: float
+    """The new moon that opened the year for the raja, the Sun's ingress
+    for the rest, a UTC Julian day."""
+
+    texts: Tuple[Literal["JYOTIRNIBANDHA", "NARADA_SAMHITA", "NAVANAYAKA"], ...]
+    """The texts that name the office."""
+
+    readings: Tuple[RulerReading, ...]
+    """Its weekday and lord under each rule its texts give, the plainest
+    first."""
+
+    @property
+    def lord(self) -> Graha:
+        """The lord under the first rule, the plainest reading."""
+        return self.readings[0].lord
+
+
+@dataclass(frozen=True)
 class LunarYear:
     """One lunar year: the name it carries, its numbers and bounds, and the
     Jovian years that ran in it (`03-design/calendar-indian-lunisolar.md`
@@ -9993,6 +10048,10 @@ class LunarYear:
     lupta: Optional[Samvatsara]
     """The Jovian year that began and ended inside this one and so names no
     year, or `None`."""
+
+    rulers: Tuple[YearRuler, ...]
+    """The year's office-bearers, the raja first, each read under every
+    rule its texts give (`03-design/year-rulers.md`)."""
 
 
 @dataclass(frozen=True)
@@ -16308,6 +16367,19 @@ def _lunar_year(raw: Mapping[str, Any]) -> LunarYear:
             member=_member(Samvatsara, one["member"]), count=one["count"], from_=one["from"], to=one["to"]
         )
 
+    def reading(one: Mapping[str, Any]) -> RulerReading:
+        return RulerReading(
+            rule=one["rule"], vara=_member(Vara, one["vara"]), lord=_member(Graha, one["lord"]), day=one["day"]
+        )
+
+    def ruler(one: Mapping[str, Any]) -> YearRuler:
+        return YearRuler(
+            office=one["office"],
+            event=one["event"],
+            texts=tuple(one["texts"]),
+            readings=tuple(reading(r) for r in one["readings"]),
+        )
+
     lupta = raw["lupta"]
     return LunarYear(
         samvatsara=_member(Samvatsara, raw["samvatsara"]),
@@ -16320,6 +16392,7 @@ def _lunar_year(raw: Mapping[str, Any]) -> LunarYear:
         ended=raw["ended"],
         jovian=tuple(jovian(j) for j in raw["jovian"]),
         lupta=None if lupta is None else _member(Samvatsara, lupta),
+        rulers=tuple(ruler(r) for r in raw["rulers"]),
     )
 
 

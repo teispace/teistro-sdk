@@ -3317,6 +3317,14 @@ void main() {
           '${jovian.member.fullKey}:${jovian.count}:${number(jovian.from)}',
       ]),
     );
+    put(
+      'years-$k-rulers',
+      listed([
+        for (final ruler in year.rulers)
+          '${ruler.office}:${number(ruler.event)}:'
+              '${[for (final r in ruler.readings) '${r.rule}=${r.lord.fullKey}'].join(',')}',
+      ]),
+    );
   }
 
   // ── The Nepal Sambat dates ─────────────────────────────────────────

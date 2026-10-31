@@ -3014,6 +3014,13 @@ def main() -> None:
                 f"years-{k}-jovian",
                 listed(f"{j.member.full_key}:{j.count}:{number(j.from_)}" for j in year.jovian),
             )
+            put(
+                f"years-{k}-rulers",
+                listed(
+                    f"{r.office}:{number(r.event)}:" + ",".join(f"{d.rule}={d.lord.full_key}" for d in r.readings)
+                    for r in year.rulers
+                ),
+            )
 
         # The Nepal Sambat dates over 2024-10-30..11-03, which holds
         # Kartika's new moon, where the year turns.

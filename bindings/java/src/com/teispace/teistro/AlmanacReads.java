@@ -451,7 +451,22 @@ final class AlmanacReads {
                     return new JovianYear(member(j, "member", "Samvatsara", Samvatsara::byKey),
                             Reads.integer(j, "count"), Reads.number(j, "from"), Reads.number(j, "to"));
                 }),
-                lupta == null ? null : Reads.member(Samvatsara.byKey(Reads.string(lupta)), "Samvatsara", lupta));
+                lupta == null ? null : Reads.member(Samvatsara.byKey(Reads.string(lupta)), "Samvatsara", lupta),
+                Reads.each(y, "rulers", AlmanacReads::yearRuler));
+    }
+
+    /** One office of a year as a JSON answer writes it. */
+    private static YearRuler yearRuler(Object raw) {
+        Map<?, ?> r = Reads.object(raw);
+        return new YearRuler(
+                Reads.string(r, "office"),
+                Reads.number(r, "event"),
+                Reads.each(r, "texts", Reads::string),
+                Reads.each(r, "readings", one -> {
+                    Map<?, ?> d = Reads.object(one);
+                    return new RulerReading(Reads.string(d, "rule"), member(d, "vara", "Vara", Vara::byKey),
+                            member(d, "lord", "Graha", Graha::byKey), Reads.number(d, "day"));
+                }));
     }
 
     /** {@code ts_almanac_sankalpa}'s answer: the time recited, its members resolved, with the provenance beside it. */

@@ -2040,6 +2040,15 @@ for (const [name, rules, published, hijriOffset] of [
       `years-${k}-jovian`,
       listed(year.jovian.map((jovian) => `${jovian.member}:${jovian.count}:${number(jovian.from)}`)),
     );
+    put(
+      `years-${k}-rulers`,
+      listed(
+        year.rulers.map(
+          (ruler) =>
+            `${ruler.office}:${number(ruler.event)}:${ruler.readings.map((reading) => `${reading.rule}=${reading.lord}`).join(',')}`,
+        ),
+      ),
+    );
   });
 }
 
