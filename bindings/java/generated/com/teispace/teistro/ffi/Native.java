@@ -4052,6 +4052,8 @@ public final class Native {
         "ts_intl_locale",
         "ts_intl_has",
         "ts_intl_in_words",
+        "ts_intl_time",
+        "ts_intl_date",
         "ts_intl_transliterate",
         "ts_intl_entity",
         "ts_intl_render",
@@ -4065,6 +4067,7 @@ public final class Native {
         "ts_almanac_festival_calendar",
         "ts_almanac_digest",
         "ts_almanac_next",
+        "ts_almanac_sentences",
         "ts_almanac_anniversaries",
         "ts_almanac_festival_pack",
         "ts_almanac_changes",
@@ -4443,6 +4446,35 @@ public final class Native {
     public final MethodHandle ts_intl_in_words;
 
     /**
+     * A time of day as text and parts, through the locale's pattern and its
+     * parts of the day (`03-design/intl-engine-and-packs.md`), answered as
+     * canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
+     * isDraft, warnings}`, each part `{kind, text}` and the parts joined being
+     * `text`.
+     *
+     * `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
+     * (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
+     * out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
+     * of the time out of range is `INVALID_ARG`, named under `time`; a
+     * locale not loaded is `UNSUPPORTED`.
+     */
+    public final MethodHandle ts_intl_time;
+
+    /**
+     * A date as text and parts, in its own calendar, through the locale's
+     * pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
+     * answers.
+     *
+     * `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
+     * "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
+     * context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
+     * not read or a date its calendar does not hold is `INVALID_ARG`, named
+     * under `date`; a locale not loaded, a calendar not shipped or one with no
+     * pattern is `UNSUPPORTED`.
+     */
+    public final MethodHandle ts_intl_date;
+
+    /**
      * Text from one script into another (`deva`, `iast`), as a string lent
      * until the next call on the context. A pair the build has no table for
      * is `UNSUPPORTED` naming both scripts; anything the table does not know
@@ -4716,6 +4748,23 @@ public final class Native {
      * a context without an ephemeris `CAPABILITY`.
      */
     public final MethodHandle ts_almanac_next;
+
+    /**
+     * One day's facts as short declarative sentences
+     * (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+     * value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+     * params, text}`, `draft` true while the locale's templates wait for a
+     * native reviewer (Q42), and `withheld` the facts a polar day holds
+     * elsewhere.
+     *
+     * `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+     * altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+     * place or offset out of range, is `INVALID_ARG`, named under
+     * `sentences`; a locale not loaded, or one without the templates, is
+     * `UNSUPPORTED` on `locale`; a context without an ephemeris is
+     * `CAPABILITY`; otherwise as the day.
+     */
+    public final MethodHandle ts_almanac_sentences;
 
     /**
      * Anniversaries kept by the tithi over a span of years, for many people
@@ -5114,6 +5163,8 @@ public final class Native {
         ts_intl_locale = linker.downcallHandle(symbols.find("ts_intl_locale").orElseThrow(() -> missing("ts_intl_locale")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_intl_has = linker.downcallHandle(symbols.find("ts_intl_has").orElseThrow(() -> missing("ts_intl_has")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_in_words = linker.downcallHandle(symbols.find("ts_intl_in_words").orElseThrow(() -> missing("ts_intl_in_words")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_intl_time = linker.downcallHandle(symbols.find("ts_intl_time").orElseThrow(() -> missing("ts_intl_time")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_intl_date = linker.downcallHandle(symbols.find("ts_intl_date").orElseThrow(() -> missing("ts_intl_date")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_transliterate = linker.downcallHandle(symbols.find("ts_intl_transliterate").orElseThrow(() -> missing("ts_intl_transliterate")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_entity = linker.downcallHandle(symbols.find("ts_intl_entity").orElseThrow(() -> missing("ts_intl_entity")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_render = linker.downcallHandle(symbols.find("ts_intl_render").orElseThrow(() -> missing("ts_intl_render")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
@@ -5127,6 +5178,7 @@ public final class Native {
         ts_almanac_festival_calendar = linker.downcallHandle(symbols.find("ts_almanac_festival_calendar").orElseThrow(() -> missing("ts_almanac_festival_calendar")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_digest = linker.downcallHandle(symbols.find("ts_almanac_digest").orElseThrow(() -> missing("ts_almanac_digest")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_next = linker.downcallHandle(symbols.find("ts_almanac_next").orElseThrow(() -> missing("ts_almanac_next")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_sentences = linker.downcallHandle(symbols.find("ts_almanac_sentences").orElseThrow(() -> missing("ts_almanac_sentences")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_anniversaries = linker.downcallHandle(symbols.find("ts_almanac_anniversaries").orElseThrow(() -> missing("ts_almanac_anniversaries")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_festival_pack = linker.downcallHandle(symbols.find("ts_almanac_festival_pack").orElseThrow(() -> missing("ts_almanac_festival_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_changes = linker.downcallHandle(symbols.find("ts_almanac_changes").orElseThrow(() -> missing("ts_almanac_changes")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

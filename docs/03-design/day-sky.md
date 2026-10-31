@@ -1,5 +1,7 @@
 # The day's sky
 
+Status: `built`, 2026-10-31.
+
 SR-63 (`consumers/addendum-3.md` §11). What a Today screen draws: the paths of
 the Sun and the Moon over the day at the place, their rises, transits and sets
 on those paths, and the Moon's lit shape as it stands in that sky. Asked by a

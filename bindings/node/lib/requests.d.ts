@@ -3824,36 +3824,6 @@ export interface NumerologyRules {
 }
 
 /**
- * A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
- */
-export interface CalendarDay {
-  /**
-   * Its calendar.
-   */
-  readonly calendar: Member<catalogue.Calendar>;
-  /**
-   * The day, 1-based.
-   */
-  readonly day: number;
-  /**
-   * The era, for a calendar that counts several.
-   */
-  readonly era?: EraNumber | null;
-  /**
-   * A leap month or day, for a calendar that marks one.
-   */
-  readonly leap?: catalogue.Leap | null;
-  /**
-   * The month, 1-based.
-   */
-  readonly month: number;
-  /**
-   * The astronomical year.
-   */
-  readonly year: number;
-}
-
-/**
  * Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
  *
  * `FIRST`: The first.
@@ -6391,20 +6361,6 @@ export type NameReduction = 'BY_WORD' | 'WHOLE';
  * `SKIP`: Left out of every sum: the baseline engine's.
  */
 export type NonLatin = 'REFUSE' | 'SKIP';
-
-/**
- * A year in an era, for presentation.
- */
-export interface EraNumber {
-  /**
-   * The era.
-   */
-  readonly era: Member<catalogue.Era>;
-  /**
-   * The year in it, 1-based.
-   */
-  readonly year: number;
-}
 
 /**
  * Whether the deceased had the upanayana.

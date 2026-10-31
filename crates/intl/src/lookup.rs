@@ -106,6 +106,7 @@ pub(crate) fn lookup<'a>(range: &str, loaded: &[&'a str]) -> Result<&'a str, Mis
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     use super::{Missed, lookup};
 

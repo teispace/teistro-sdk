@@ -253,7 +253,6 @@ __all__ = [
     "BookName",
     "NameClause",
     "NumerologyRules",
-    "CalendarDay",
     "TithiHalf",
     "DayFifth",
     "AshauchKind",
@@ -520,7 +519,6 @@ __all__ = [
     "Masters",
     "NameReduction",
     "NonLatin",
-    "EraNumber",
     "Upanayana",
     "Interval",
     "FestivalMeta",
@@ -4020,28 +4018,6 @@ class NumerologyRules(TypedDict, total=False):
     """A character outside A to Z."""
 
 
-class CalendarDay(TypedDict, total=False):
-    """A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say."""
-
-    calendar: Required[Union[_catalogue.Calendar, str]]
-    """Its calendar."""
-
-    day: Required[int]
-    """The day, 1-based."""
-
-    era: Optional[EraNumber]
-    """The era, for a calendar that counts several."""
-
-    leap: Optional[Union[_catalogue.Leap, Literal['MONTH', 'DAY', 'MONTH_AND_DAY']]]
-    """A leap month or day, for a calendar that marks one."""
-
-    month: Required[int]
-    """The month, 1-based."""
-
-    year: Required[int]
-    """The astronomical year."""
-
-
 TithiHalf: TypeAlias = Literal['FIRST', 'SECOND']
 """Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
 
@@ -7185,16 +7161,6 @@ NonLatin: TypeAlias = Literal['REFUSE', 'SKIP']
 `REFUSE`: Refused, naming the character and its place: both tables are of Latin letters, and a guess at another script's would be invented.
 `SKIP`: Left out of every sum: the baseline engine's.
 """
-
-
-class EraNumber(TypedDict, total=False):
-    """A year in an era, for presentation."""
-
-    era: Required[Union[_catalogue.Era, str]]
-    """The era."""
-
-    year: Required[int]
-    """The year in it, 1-based."""
 
 
 Upanayana: TypeAlias = Literal['DONE', 'NOT_DONE', 'NOT_PERFORMED']
