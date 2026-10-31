@@ -167,4 +167,5 @@ composed sentence, so there is no oracle for the words: the tests hold what can 
 held. Every sentence of a day renders in each language with no fallback and no
 warning; a slot is the answer's own value; each ending reads as §2 says; each
 locale's refusal has its status and field; and a polar place is answered and
-refused as §4 says, at Tromso and through each binding.
+refused as §4 says, at Tromso and McMurdo in Rust. Each binding is tested on a
+day's first sentence in English and Nepali and on a refusal, not on a polar day.

@@ -40,7 +40,7 @@ const SHAPE_BOUND_DEG: f64 = 0.01;
 
 fn context() -> Context {
     Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()
         .unwrap()
