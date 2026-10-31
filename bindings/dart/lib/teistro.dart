@@ -1427,7 +1427,7 @@ final class AlmanacArea extends _Area {
     skyStepMinutes,
   );
 
-  /// [of] on a zone's clock: each day on the offset of its own noon, and
+  /// [of] on a zone's clock: each day on its own offset, and
   /// the provenance names the zone's offset, source and era at the first
   /// day (`03-design/time-and-timezone.md` §3.4). A range crossing a clock
   /// change is refused on `zone` when a section is asked beside the days,
@@ -1919,7 +1919,8 @@ final class AlmanacArea extends _Area {
   Uint8List digest({
     required CalendarDate from,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     int? days,
     FestivalRequest? festivals,
   }) {
@@ -1930,7 +1931,8 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      if (utcOffsetSeconds != null) 'utcOffsetSeconds': utcOffsetSeconds,
+      if (zone != null) 'zone': jsonDecode(_zoneJson(zone)),
       if (festivals != null) 'festivals': jsonDecode(festivals._json),
     });
     return _context._guarded(() => _context._inner.almanacDigest(asked));
@@ -29709,6 +29711,11 @@ final class AlmanacDay {
   /// season of the sidereal solar month the day belongs to, its first day
   /// placed by `panchanga.solar_month_start` (`03-design/ritu-measured.md`).
   Ritu get ritu => Ritu.byId(batch.decoded.days.ritu[index]);
+
+  /// The clock the day was read on, in seconds east of UTC: a zone's offset
+  /// at the day's opening, which moves across a clock change, or the offset
+  /// the caller stated.
+  int get utcOffsetSeconds => batch.decoded.days.utcOffsetSeconds[index];
 
   /// The direction not to travel in, which is the vara's.
   Direction get dishaShool =>

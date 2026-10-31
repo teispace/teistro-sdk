@@ -489,6 +489,7 @@ void main() {
         latitudeDeg: 1.5,
         longitudeDeg: 1.5,
         utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });

@@ -5697,6 +5697,8 @@ export declare class AlmanacDay {
    * placed by `panchanga.solar_month_start`.
    */
   readonly ritu: Ritu | 'unknown';
+  /** The clock the day was read on, in seconds east of UTC: a zone's offset at the day's opening, or the offset stated. */
+  readonly utcOffsetSeconds: number;
   /** The direction not to travel in. */
   readonly dishaShool: Direction | 'unknown';
   /** When the Sun entered a new sign inside the day, or `null`. */
@@ -7957,8 +7959,10 @@ export interface DigestOptions {
   readonly days?: number;
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /** The zone, each day on its own offset; or `utcOffsetSeconds`, not both. */
+  readonly zone?: ZoneSpec;
   /** The festivals to list; none when left out. */
   readonly festivals?: FestivalRequest;
 }

@@ -18,9 +18,10 @@ import java.util.Objects;
  * @param first A civil day as a request names it.
  * @param latitudeDeg The {@code latitudeDeg} field.
  * @param longitudeDeg The {@code longitudeDeg} field.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The clock's offset; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone, each day on its own offset; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record DigestRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Long days, FestivalRequest festivals, DayAsked first, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) implements RequestJson {
+public record DigestRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, Long days, FestivalRequest festivals, DayAsked first, double latitudeDeg, double longitudeDeg, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -42,10 +43,9 @@ public record DigestRequest(Double altitudeM, com.teispace.teistro.Calendar cale
      * @param first A civil day as a request names it.
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
-    public DigestRequest(DayAsked first, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
-        this(null, null, null, null, first, latitudeDeg, longitudeDeg, utcOffsetSeconds);
+    public DigestRequest(DayAsked first, double latitudeDeg, double longitudeDeg) {
+        this(null, null, null, null, first, latitudeDeg, longitudeDeg, null, null);
     }
 
     /**
@@ -68,6 +68,7 @@ public record DigestRequest(Double altitudeM, com.teispace.teistro.Calendar cale
         private Double latitudeDeg;
         private Double longitudeDeg;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -151,11 +152,22 @@ public record DigestRequest(Double altitudeM, com.teispace.teistro.Calendar cale
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The clock's offset; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone, each day on its own offset; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -166,7 +178,7 @@ public record DigestRequest(Double altitudeM, com.teispace.teistro.Calendar cale
          * @throws NullPointerException naming a required field left unset
          */
         public DigestRequest build() {
-            return new DigestRequest(altitudeM, calendar, days, festivals, first, Objects.requireNonNull(latitudeDeg, "`DigestRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`DigestRequest.longitudeDeg` is required"), Objects.requireNonNull(utcOffsetSeconds, "`DigestRequest.utcOffsetSeconds` is required"));
+            return new DigestRequest(altitudeM, calendar, days, festivals, first, Objects.requireNonNull(latitudeDeg, "`DigestRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`DigestRequest.longitudeDeg` is required"), utcOffsetSeconds, zone);
         }
     }
 
@@ -187,7 +199,8 @@ public record DigestRequest(Double altitudeM, com.teispace.teistro.Calendar cale
             DayAsked.of(Read.required(json.get("first"), "DigestRequest.first")),
             Read.number(Read.required(json.get("latitudeDeg"), "DigestRequest.latitudeDeg"), "DigestRequest.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "DigestRequest.longitudeDeg"), "DigestRequest.longitudeDeg"),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "DigestRequest.utcOffsetSeconds"), "DigestRequest.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "DigestRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -208,7 +221,12 @@ public record DigestRequest(Double altitudeM, com.teispace.teistro.Calendar cale
         json.put("first", first.toJson());
         json.put("latitudeDeg", latitudeDeg);
         json.put("longitudeDeg", longitudeDeg);
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

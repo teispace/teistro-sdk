@@ -8075,6 +8075,9 @@ class PanchangaDays:
     moon_window_to: memoryview[float]
     """When the window the Moon's rises and sets were looked for in ends, as a Julian day (UTC)."""
 
+    utc_offset_seconds: memoryview[int]
+    """The clock the day was read on, in seconds east of UTC: a zone's offset at the day's opening, which changes across a clock change, or the offset the caller stated."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9364,6 +9367,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             moon_window_to=blob.column(
                 at_days, 20, 8, at_days.count
             ).cast("d"),
+            utc_offset_seconds=blob.column(
+                at_days, 21, 4, at_days.count
+            ).cast("i"),
             length=at_days.count,
         ),
         counts=PanchangaCounts(
@@ -10497,6 +10503,21 @@ class DigestNames:
 
 
 @dataclass(frozen=True)
+class DigestClock:
+    """The `clock` section of a Digest blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1.
+    """
+
+    utc_offset_seconds: memoryview[int]
+    """The offset at the day's opening, east positive."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Digest:
     """A decoded Digest blob.
 
@@ -10513,10 +10534,10 @@ class Digest:
     """How many days the digest holds, the rows of `days`."""
 
     base_unix_seconds: int
-    """The first day's local midnight in seconds since 1970, which every time counts from."""
+    """The first day's local midnight on that day's offset, in seconds since 1970, which every time counts from."""
 
     utc_offset_seconds: int
-    """The offset the civil days run at, east positive."""
+    """The first day's offset, east positive; `clock` has each day's."""
 
     calendar: int
     """The calendar `days` dates are read in."""
@@ -10551,6 +10572,9 @@ class Digest:
     provenance_json: str
     """UTF-8 JSON, canonical: the days' provenance, its `content_hash` theirs."""
 
+    clock: DigestClock
+    """One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1."""
+
     seal: str
     """SHA-256 of every byte before this section, which ends the digest, in 64 lowercase hexadecimal digits."""
 
@@ -10571,6 +10595,7 @@ def decode_digest(raw: bytes) -> Digest:
     at_text = blob.section(6, "text")
     at_locale = blob.section(7, "locale")
     at_provenance_json = blob.section(8, "provenance_json")
+    at_clock = blob.section(10, "clock")
     at_seal = blob.section(9, "seal")
     return Digest(
         format_major=int(blob.fixed(at_summary, 0, "I")),
@@ -10631,6 +10656,12 @@ def decode_digest(raw: bytes) -> Digest:
         text=blob.text(at_text, "text"),
         locale=blob.text(at_locale, "locale"),
         provenance_json=blob.text(at_provenance_json, "provenance_json"),
+        clock=DigestClock(
+            utc_offset_seconds=blob.column(
+                at_clock, 0, 4, at_clock.count
+            ).cast("i"),
+            length=at_clock.count,
+        ),
         seal=blob.text(at_seal, "seal"),
     )
 

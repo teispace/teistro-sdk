@@ -194,6 +194,15 @@ change reads each day on that day's offset.
 | `tzdb_version` | the database's release; `lmt` or `manual` otherwise |
 | `abbreviation` | the zone's abbreviation for the row, when it has one |
 
+**Each day says its own clock.** `Panchanga.clock` is the reading at the day's
+opening for a day asked by zone. At the boundary it crosses as the `days`
+column `utc_offset_seconds`, which every binding's day answers as
+`utcOffsetSeconds` (`utc_offset_seconds` in Python), so a range across a change
+shows each day's offset: New York reads −04:00 on 31 October 2026 and −05:00 on
+1 November. A day asked by a bare offset says that offset. The digest holds
+the same figure in its `clock` section, and takes `zone` too
+(`digest-format.md`, SR-73, C1010).
+
 The stamp is in the one provenance the almanac builds, so a festival answer, a
 sankalpa, an ashauch and a next occurrence all carry it without a line each.
 Asked by a bare offset it says `MANUAL`, which is what a caller's stated

@@ -111,6 +111,7 @@ fn dump(bytes: &[u8]) -> String {
     let (year, month, day, vara, state) =
         (of("year"), of("month"), of("day"), of("vara"), of("state"));
     let (fixed, sunrise, sunset) = (of("fixed_day"), of("sunrise"), of("sunset"));
+    let clock = column("clock", "utc_offset_seconds");
     let (moonrise, moonset, phase, lunar) = (
         of("moonrise"),
         of("moonset"),
@@ -120,13 +121,14 @@ fn dump(bytes: &[u8]) -> String {
     for index in 0..year.len() {
         let _ = writeln!(
             out,
-            "day {}-{}-{} vara {} state {} fixed {} sun {} {} moon {} {} phase {} month{}",
+            "day {}-{}-{} vara {} state {} fixed {} offset {} sun {} {} moon {} {} phase {} month{}",
             year[index],
             month[index],
             day[index],
             vara[index],
             state[index],
             fixed[index],
+            clock[index],
             sunrise[index],
             sunset[index],
             moonrise[index],
@@ -241,8 +243,10 @@ fn main() {
 
     charts_panchanga_and_names(context, dir);
 
+    // A week across New York's clock change, so the C reader's dump meets
+    // two offsets.
     let week = CString::new(
-        r#"{"first": {"year": 2025, "month": 10, "day": 1}, "days": 7, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700, "festivals": {"rules": "NEPAL"}}"#,
+        r#"{"first": {"year": 2025, "month": 10, "day": 30}, "days": 7, "latitudeDeg": 40.7128, "longitudeDeg": -74.006, "altitudeM": 10, "zone": {"kind": "IANA", "zone": "America/New_York"}, "festivals": {"rules": "NEPAL"}}"#,
     )
     .expect("a request");
     // SAFETY: a live handle, a NUL-terminated request and a valid slot.

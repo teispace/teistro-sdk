@@ -7706,6 +7706,7 @@ final class PanchangaDays {
     required this.brahmaTo,
     required this.moonWindowFrom,
     required this.moonWindowTo,
+    required this.utcOffsetSeconds,
     required this.length,
   });
 
@@ -7771,6 +7772,9 @@ final class PanchangaDays {
 
   /// When the window the Moon's rises and sets were looked for in ends, as a Julian day (UTC).
   final Float64List moonWindowTo;
+
+  /// The clock the day was read on, in seconds east of UTC: a zone's offset at the day's opening, which changes across a clock change, or the offset the caller stated.
+  final Int32List utcOffsetSeconds;
 
   /// The number of rows every column holds.
   final int length;
@@ -9367,6 +9371,7 @@ Panchanga decodePanchanga(Uint8List bytes) {
       brahmaTo: blob.column(atDays, 18, 8, Float64List.sublistView),
       moonWindowFrom: blob.column(atDays, 19, 8, Float64List.sublistView),
       moonWindowTo: blob.column(atDays, 20, 8, Float64List.sublistView),
+      utcOffsetSeconds: blob.column(atDays, 21, 4, Int32List.sublistView),
       length: atDays.count,
     ),
     counts: PanchangaCounts(
@@ -10045,6 +10050,23 @@ final class DigestNames {
   final int length;
 }
 
+/// The `clock` section of a Digest blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1.
+final class DigestClock {
+  const DigestClock({
+    required this.utcOffsetSeconds,
+    required this.length,
+  });
+
+  /// The offset at the day's opening, east positive.
+  final Int32List utcOffsetSeconds;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Digest blob.
 ///
 /// A range of days for a process that cannot run the engine (`03-design/digest-format.md`): every limb and window of each day, its Moon and its observances, every time whole seconds from the first day's local midnight, every name interned once, sealed by SHA-256.
@@ -10066,6 +10088,7 @@ final class Digest {
     required this.text,
     required this.locale,
     required this.provenanceJson,
+    required this.clock,
     required this.seal,
   });
 
@@ -10078,10 +10101,10 @@ final class Digest {
   /// How many days the digest holds, the rows of `days`.
   final int dayCount;
 
-  /// The first day's local midnight in seconds since 1970, which every time counts from.
+  /// The first day's local midnight on that day's offset, in seconds since 1970, which every time counts from.
   final int baseUnixSeconds;
 
-  /// The offset the civil days run at, east positive.
+  /// The first day's offset, east positive; `clock` has each day's.
   final int utcOffsetSeconds;
 
   /// The calendar `days` dates are read in.
@@ -10117,6 +10140,9 @@ final class Digest {
   /// UTF-8 JSON, canonical: the days' provenance, its `content_hash` theirs.
   final String provenanceJson;
 
+  /// One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1.
+  final DigestClock clock;
+
   /// SHA-256 of every byte before this section, which ends the digest, in 64 lowercase hexadecimal digits.
   final String seal;
 
@@ -10135,6 +10161,7 @@ Digest decodeDigest(Uint8List bytes) {
   final atText = blob.section(6, 'text');
   final atLocale = blob.section(7, 'locale');
   final atProvenanceJson = blob.section(8, 'provenance_json');
+  final atClock = blob.section(10, 'clock');
   final atSeal = blob.section(9, 'seal');
   return Digest(
     formatMajor: blob.data.getUint32(atSummary.offset + 0, Endian.little),
@@ -10187,6 +10214,10 @@ Digest decodeDigest(Uint8List bytes) {
     text: blob.text(atText, 'text'),
     locale: blob.text(atLocale, 'locale'),
     provenanceJson: blob.text(atProvenanceJson, 'provenance_json'),
+    clock: DigestClock(
+      utcOffsetSeconds: blob.column(atClock, 0, 4, Int32List.sublistView),
+      length: atClock.count,
+    ),
     seal: blob.text(atSeal, 'seal'),
   );
 }

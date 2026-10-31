@@ -12,8 +12,8 @@
 use teistro::catalogue::Calendar;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro::{
-    CalendarDate, Context, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DigestRequest, DigestSpan,
-    FestivalPack, FestivalRequest, Hash, Status, UtcOffset, digest_schema,
+    CalendarDate, Context, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DayClock, DigestRequest, DigestSpan,
+    FestivalPack, FestivalRequest, Hash, Status, UtcOffset, ZoneSpec, digest_schema,
 };
 use teistro_idl::blob::{Reader, ScalarValue};
 
@@ -22,7 +22,7 @@ const SIXTY_DAYS_BYTES: usize = 200 * 1024;
 
 /// The sections of the week `a_digest_is_the_same_bytes_on_every_platform`
 /// writes, hashed.
-const PINNED: &str = "d6f1e154429c5e17c2d059cef48571d964715db0be132b0e7e4a897e6975f1bc";
+const PINNED: &str = "3d64b337209fb8186faeed9ea4469d51048f52983c362fcab237afbe64d4947d";
 
 fn hex(bytes: &[u8]) -> String {
     use std::fmt::Write as _;
@@ -49,7 +49,7 @@ fn asked(days: u32) -> DigestRequest {
         first: CalendarDate::defined(Calendar::Gregorian, 2025, 9, 20),
         days,
         place: kathmandu(),
-        offset: UtcOffset::literal(5, 45, 0),
+        clock: DayClock::Offset(UtcOffset::literal(5, 45, 0)),
         festivals: Some(FestivalRequest::from(FestivalPack::NepalPanchanga)),
     }
 }
@@ -77,7 +77,12 @@ fn the_days_read_back_as_the_panchanga_they_came_from() {
     let last = CalendarDate::defined(Calendar::Gregorian, 2025, 9, 29);
     let days = sdk
         .almanac()
-        .of(&request.first, &last, &request.place, request.offset)
+        .of(
+            &request.first,
+            &last,
+            &request.place,
+            UtcOffset::literal(5, 45, 0),
+        )
         .unwrap()
         .value;
     let base = int(&reader.field("summary", "base_unix_seconds").unwrap());
@@ -184,6 +189,7 @@ fn a_digest_is_the_same_bytes_on_every_platform() {
         "names",
         "text",
         "locale",
+        "clock",
     ] {
         let entry = reader.entry(section).unwrap();
         read.extend_from_slice(&answer.value[entry.offset..entry.offset + entry.length]);
@@ -269,11 +275,98 @@ fn a_polar_day_says_so() {
             Longitude::literal(15.6),
             Altitude::literal(0.0),
         ),
-        offset: UtcOffset::literal(1, 0, 0),
+        clock: DayClock::Offset(UtcOffset::literal(1, 0, 0)),
         festivals: None,
     };
     let answer = sdk.almanac().digest(&request).unwrap();
     let schema = digest_schema();
     let reader = Reader::parse(&answer.value, &schema).unwrap();
     assert_eq!(ints(&reader, "days", "state"), [2]);
+}
+
+#[test]
+fn a_zone_writes_each_day_on_its_own_offset() {
+    let sdk = sdk();
+    let new_york = Place::new(
+        Latitude::literal(40.7128),
+        Longitude::literal(-74.006),
+        Altitude::literal(10.0),
+    );
+    let on = |clock: DayClock| DigestRequest {
+        first: CalendarDate::defined(Calendar::Gregorian, 2026, 10, 31),
+        days: 3,
+        place: new_york,
+        clock,
+        festivals: None,
+    };
+    let zoned = sdk
+        .almanac()
+        .digest(&on(DayClock::Zone(ZoneSpec::iana("America/New_York"))))
+        .unwrap();
+    let schema = digest_schema();
+    let reader = Reader::parse(&zoned.value, &schema).unwrap();
+    assert_eq!(
+        ints(&reader, "clock", "utc_offset_seconds"),
+        [-14_400, -18_000, -18_000]
+    );
+    // The summary and the base are the first day's.
+    assert_eq!(
+        int(&reader.field("summary", "utc_offset_seconds").unwrap()),
+        -14_400
+    );
+    assert_eq!(
+        int(&reader.field("summary", "base_unix_seconds").unwrap()),
+        // 2026-10-31 is 20,757 days from 1970-01-01.
+        20_757 * 86_400 + 14_400
+    );
+    assert_eq!(int(&reader.field("summary", "format_minor").unwrap()), 1);
+    assert_eq!(
+        zoned.provenance.time.clock.unwrap().offset.seconds(),
+        -14_400
+    );
+
+    // A stated offset is every day's.
+    let stated = sdk
+        .almanac()
+        .digest(&on(DayClock::Offset(UtcOffset::literal(-4, 0, 0))))
+        .unwrap();
+    let reader = Reader::parse(&stated.value, &schema).unwrap();
+    assert_eq!(
+        ints(&reader, "clock", "utc_offset_seconds"),
+        [-14_400, -14_400, -14_400]
+    );
+
+    // A zone the database does not have is the zone's own refusal.
+    let unknown = sdk
+        .almanac()
+        .digest(&on(DayClock::Zone(ZoneSpec::iana("America/Nowhere"))))
+        .unwrap_err();
+    assert_eq!(unknown.field(), Some("zone"));
+}
+
+#[test]
+fn a_request_names_one_clock() {
+    let text = |clock: &str| {
+        format!(
+            r#"{{"first": {{"year": 2026, "month": 1, "day": 1}}, "latitudeDeg": 27.7, "longitudeDeg": 85.3{clock}}}"#
+        )
+    };
+    let both =
+        text(r#", "utcOffsetSeconds": 20700, "zone": {"kind": "IANA", "zone": "Asia/Kathmandu"}"#);
+    assert_eq!(
+        DigestRequest::from_json(&both).unwrap_err().field(),
+        Some("digest.zone")
+    );
+    assert_eq!(
+        DigestRequest::from_json(&text("")).unwrap_err().field(),
+        Some("digest.utcOffsetSeconds")
+    );
+    let asked = DigestRequest::from_json(&text(
+        r#", "zone": {"kind": "IANA", "zone": "Asia/Kathmandu"}"#,
+    ))
+    .unwrap();
+    assert_eq!(
+        asked.clock,
+        DayClock::Zone(ZoneSpec::iana("Asia/Kathmandu"))
+    );
 }

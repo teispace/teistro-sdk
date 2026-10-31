@@ -41,7 +41,7 @@ Little-endian, as every blob. Sections, in order:
 
 | id | section | kind | holds |
 |---|---|---|---|
-| 1 | `summary` | fixed | `format_major`, `format_minor`, `day_count`, `base_unix_seconds`, `utc_offset_seconds`, `calendar`, the place |
+| 1 | `summary` | fixed | `format_major`, `format_minor`, `day_count`, `base_unix_seconds`, the first day's `utc_offset_seconds`, `calendar`, the place |
 | 2 | `days` | columns | one row a day: date, vara, polar state, sunrise, sunset, first moonrise and moonset, phase, lunar month, and where its rows are |
 | 3 | `spans` | columns | `kind`, `name`, `from`, `to` |
 | 4 | `observances` | columns | `name`, `flags` |
@@ -49,16 +49,26 @@ Little-endian, as every blob. Sections, in order:
 | 6 | `text` | bytes | UTF-8 |
 | 7 | `locale` | bytes | the tag `names` is in |
 | 8 | `provenance_json` | bytes | the days' provenance, canonical |
+| 10 | `clock` | columns | one row a day, the offset the day was read on (format 1.1) |
 | 9 | `seal` | bytes | SHA-256 of every byte before it, 64 lowercase hexadecimal digits |
 
-`idl/api.json` holds each field's type and meaning, generated from
-`digest_schema()`, so this page does not repeat them.
+The sections are in that order in the bytes. `clock` has the higher id and
+stands before `seal`, since the seal ends the file (§4). `idl/api.json` holds
+each field's type and meaning, generated from `digest_schema()`, so this page
+does not repeat them.
 
 - **Time.** Every time is a signed 32-bit count of whole seconds from
   `base_unix_seconds`, the first day's local midnight. Signed, since the
   tithi running at the first midnight began before it. `i32::MIN` is an
   instant the day lacks. Seconds, since no widget shows less, and four bytes
   against an `f64`'s eight.
+- **The clock.** Times are instants, so they read the same under any offset,
+  and `base_unix_seconds` stands on the first day's. To print a day's times a
+  widget adds that day's offset from `clock`, which a request by `zone` moves
+  across a clock change (SR-73, C1010). It is the offset at the day's opening,
+  as `Panchanga.clock` is, so a day whose clock changes before sunrise reads
+  the new offset. An instant before the change on that day is an hour out when
+  printed this way; a process that must print those holds a zone database.
 - **Span kinds.** `TsDigestSpan` in the IDL: tithi, nakshatra, yoga, karana,
   the three kaalas, choghadiya, hora, Abhijit, Bhadra, Brahma muhurta,
   durmuhurta, varjyam, amrita kalam, panchaka, and the Moon's and the Sun's
@@ -104,6 +114,18 @@ raised when a section is added, which goes before `seal`; a reader finds
 sections by id and skips what it does not know, and the seal still covers
 it. A new `TsDigestSpan` number is a minor version, and a reader shows what
 it does not know by its name.
+
+| format | adds |
+|---|---|
+| 1.0 | the sections of §2 but `clock` |
+| 1.1 | `clock` (SR-73) |
+
+The reader takes both. A 1.0 digest has no `clock`, and each `ts_digest_day`
+then says the summary's offset, which was every day's. A digest of 1.1 or later
+without `clock`, or with a row count other than `day_count`, is
+`TS_DIGEST_E_MALFORMED`. The per-day figure is a section and not a column of
+`days` by the rule above: a reader of 1.0 fixes the shape of `days` and would
+misread a wider one.
 
 The reader reads the version before the seal, so a later format is refused
 as `TS_DIGEST_E_VERSION` rather than as damage, whatever it seals with.
@@ -170,7 +192,8 @@ binding `almanac.digest` answers the bytes, and each binding's generated
 answers `{format, days, size, seal, base64}`, since a tool's answer is text.
 
 The request is `first`, `calendar`, `days` (60 when left out, 1 to 366),
-`latitudeDeg`, `longitudeDeg`, `altitudeM`, `utcOffsetSeconds` and
+`latitudeDeg`, `longitudeDeg`, `altitudeM`, `utcOffsetSeconds` or `zone` (a
+`ZoneSpec`, as `almanac.days` takes it; both or neither is refused) and
 optionally `festivals`, a festival request; none lists no observances.
 
 ## 7. Budgets and acceptance

@@ -193,6 +193,21 @@ class AContext(WithLibrary):
     def tearDown(self) -> None:
         self.ctx.close()
 
+    def test_a_day_says_the_clock_it_was_read_on(self) -> None:
+        place = Observer(latitude_deg=Latitude(40.7128), longitude_deg=Longitude(-74.006), altitude_m=Altitude(10))
+        first = date(Calendar.GREGORIAN, 2026, 10, 31)
+        zone = iana_zone("America/New_York")
+        zoned = self.ctx.almanac.in_zone(from_date=first, to_date=date(Calendar.GREGORIAN, 2026, 11, 2), place=place, zone=zone)
+        self.assertEqual([day.utc_offset_seconds for day in zoned], [-14400, -18000, -18000])
+        stated = self.ctx.almanac.of(from_date=first, to_date=first, place=place, utc_offset_seconds=20700)
+        self.assertEqual([day.utc_offset_seconds for day in stated], [20700])
+        digest = decode_digest(self.ctx.almanac.digest(first=first, place=place, zone=zone, days=3))
+        self.assertEqual(list(digest.clock.utc_offset_seconds), [-14400, -18000, -18000])
+        with self.assertRaises(TeistroError):
+            self.ctx.almanac.digest(first=first, place=place, zone=zone, utc_offset_seconds=0, days=3)
+        with self.assertRaises(TeistroError):
+            self.ctx.almanac.digest(first=first, place=place, days=3)
+
     def test_an_older_profile_name_answers_as_the_profile_it_names(self) -> None:
         with Context(profile="nepali-default", test_provider=True) as ctx:
             self.assertEqual(ctx.profile, "nepali-drik")

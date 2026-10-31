@@ -611,6 +611,11 @@ fn panchanga_days_section(id: u32) -> SectionSchema {
         "moon_window_to",
         "the window the Moon's rises and sets were looked for in",
     ));
+    fields.push(ColumnDef::new(
+        "utc_offset_seconds",
+        Scalar::I32,
+        "The clock the day was read on, in seconds east of UTC: a zone's offset at the day's opening, which changes across a clock change, or the offset the caller stated.",
+    ));
     SectionSchema::columns(
         id,
         "days",

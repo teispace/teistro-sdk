@@ -50,6 +50,15 @@ moves; a festival answer holding no anniversary does not.
   fraction lit, phase angle, waxing, bright limb and parallactic angle as the place sees
   them. A polar day says `ALWAYS_ABOVE` or `ALWAYS_BELOW` (`03-design/day-sky.md`).
 
+**A day says the clock it was read on.**
+**Numbers:** none. The digest's format is 1.1, so its bytes and seal move.
+- Every binding's day answers `utcOffsetSeconds`: a new `days` column in the panchanga blob,
+  the zone's offset at the day's opening, or the offset stated.
+- `almanac.digest` takes `zone` in place of `utcOffsetSeconds`. Format 1.1 adds a `clock`
+  section before the seal, and `ts_digest_day.utc_offset_seconds` reads it. The C reader still
+  opens format 1.0, giving each day the summary's offset. `DigestRequest::offset` is now
+  `clock`, a `DayClock`. C1010.
+
 **The Nepali drik profile is named for what it is.**
 **Numbers:** none. The settings and their hash do not move; `provenance.profile` and a context's
 `profile` say `nepali-drik` where they said `nepali-default`, and so do the digest's and every

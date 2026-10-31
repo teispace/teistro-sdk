@@ -110,6 +110,24 @@ test('a context resolves its settings and reports them', () => {
   assert.equal(named.settingsHash, ctx.settingsHash);
 });
 
+test('a day says the clock it was read on, and a digest keeps it', () => {
+  const ctx = context();
+  const place = { latitude: 40.7128, longitude: -74.006, altitude: 10 };
+  const from = gregorian(2026, 10, 31);
+  const zone = ianaZone('America/New_York');
+  const zoned = ctx.almanac.inZone({ from, to: gregorian(2026, 11, 2), place, zone });
+  assert.deepEqual([...zoned].map((day) => day.utcOffsetSeconds), [-14400, -18000, -18000]);
+  const stated = ctx.almanac.of({ from, to: from, place, utcOffsetSeconds: 20700 });
+  assert.equal(stated.at(0).utcOffsetSeconds, 20700);
+  const digest = decodeDigest(ctx.almanac.digest({ from, days: 3, place, zone }));
+  assert.deepEqual([...digest.clock.utcOffsetSeconds], [-14400, -18000, -18000]);
+  assert.throws(
+    () => ctx.almanac.digest({ from, days: 3, place, zone, utcOffsetSeconds: 0 }),
+    (error) => error.field === 'digest.zone',
+  );
+  assert.throws(() => ctx.almanac.digest({ from, days: 3, place }), TypeError);
+});
+
 test('a pack loads at runtime and lays its record over the one standing', () => {
   // The fixture pack is the base locale's, so this context reads that one:
   // a record is a locale's, and loading into `en-Latn` does not touch what
