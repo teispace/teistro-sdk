@@ -48,12 +48,14 @@ use crate::source::{BASE_LOCALE, Entity, Entry, LocaleSource, Meta, Tree};
 #[derive(
     Clone, Copy, Debug, Default, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize,
 )]
+#[cfg_attr(feature = "words-schema", derive(schemars::JsonSchema))]
 pub struct ClockTime {
     /// 0 to 23.
     pub hour: u8,
     /// 0 to 59.
     pub minute: u8,
-    /// 0 to 60.
+    /// 0 to 60; 0 when left out.
+    #[serde(default)]
     pub second: u8,
 }
 
@@ -400,6 +402,9 @@ pub struct Rendered {
     /// Whether a runtime override supplied the message
     /// ([`Intl::set_override`]).
     pub is_override: bool,
+    /// Whether any text of the render came from a namespace its locale
+    /// marks unreviewed ([`Meta::draft`](crate::source::Meta::draft)).
+    pub is_draft: bool,
     /// Every problem met: a missing parameter, an unknown function, a
     /// missing entity. Rendering continues past each.
     pub warnings: Vec<String>,
@@ -666,6 +671,14 @@ const fn hour12(hour: u8) -> u8 {
         0 => 12,
         h => h,
     }
+}
+
+/// The message of a time style on a clock. A date's `full` has no time
+/// pattern of its own, and shows the seconds as `long` does.
+fn time_key(style: &str, hour12: bool) -> String {
+    let style = if style == "full" { "long" } else { style };
+    let clock = if hour12 { "12" } else { "" };
+    format!("sdk.calendar.time.{style}{clock}")
 }
 
 /// The built-in twelve-hour pattern: `H:MM am`, or `H:MM:SS am`.
@@ -1520,7 +1533,7 @@ impl Intl {
     /// ```
     #[must_use]
     pub fn render(&self, key: &str, params: &Params) -> Rendered {
-        self.render_from(&self.current, key, params, 0)
+        self.render_from(&self.current, key, params, 0, false)
     }
 
     /// Renders a key with parameters in a locale other than the current
@@ -1541,7 +1554,7 @@ impl Intl {
     /// ```
     #[must_use]
     pub fn render_in(&self, tag: &str, key: &str, params: &Params) -> Rendered {
-        self.render_from(tag, key, params, 0)
+        self.render_from(tag, key, params, 0, false)
     }
 
     /// Renders a message given as source, in the current locale, for
@@ -1579,11 +1592,21 @@ impl Intl {
             Some(locale.tag.clone()),
             false,
             false,
+            eval.drew_draft,
             eval.warnings,
         ))
     }
 
-    fn render_from(&self, tag: &str, key: &str, params: &Params, depth: u8) -> Rendered {
+    /// A render; with `fields`, each variable's placeholder is wrapped in
+    /// markup naming it, which `civil` turns into typed parts.
+    pub(crate) fn render_from(
+        &self,
+        tag: &str,
+        key: &str,
+        params: &Params,
+        depth: u8,
+        fields: bool,
+    ) -> Rendered {
         let Some(Resolution {
             locale,
             entry,
@@ -1595,6 +1618,7 @@ impl Intl {
                 None,
                 false,
                 false,
+                false,
                 vec![format!(
                     "missing message `{key}` in {tag} and its fallbacks"
                 )],
@@ -1602,13 +1626,16 @@ impl Intl {
         };
         let is_fallback = locale.tag != tag;
         let mut warnings = Vec::new();
+        let mut is_draft = !is_override && locale.meta.is_draft(key);
         let parts = match entry {
             Entry::Entity(entity) => vec![OutPart::Text(entity.name().to_string())],
             Entry::Message(source) => match self.parsed_message(&locale.tag, key, source) {
                 Ok(message) => {
                     let mut eval = Eval::new(self, locale, tag, params, depth);
+                    eval.fields = fields;
                     let parts = eval.message(&message);
                     warnings.append(&mut eval.warnings);
+                    is_draft |= eval.drew_draft;
                     parts
                 }
                 Err(error) => {
@@ -1622,8 +1649,42 @@ impl Intl {
             Some(locale.tag.clone()),
             is_fallback,
             is_override,
+            is_draft,
             warnings,
         )
+    }
+
+    /// A time of day through the locale's pattern, with its fields marked.
+    pub(crate) fn civil_time(
+        &self,
+        locale: &LocaleSource,
+        tag: &str,
+        time: ClockTime,
+        style: &str,
+        hour12: bool,
+    ) -> (String, Rendered) {
+        let empty = Params::new();
+        let mut eval = Eval::new(self, locale, tag, &empty, 0);
+        let params = eval.time_params(time);
+        let key = time_key(style, hour12);
+        let rendered = self.render_from(tag, &key, &params, 0, true);
+        (key, eval.joined(rendered))
+    }
+
+    /// A date through the locale's pattern, with its fields marked.
+    pub(crate) fn civil_date(
+        &self,
+        locale: &LocaleSource,
+        tag: &str,
+        date: &CalendarDate,
+        style: &str,
+    ) -> (String, Rendered) {
+        let empty = Params::new();
+        let mut eval = Eval::new(self, locale, tag, &empty, 0);
+        let params = eval.date_params(date);
+        let key = format!("sdk.calendar.{}.date.{style}", date.calendar.key());
+        let rendered = self.render_from(tag, &key, &params, 0, true);
+        (key, eval.joined(rendered))
     }
 
     /// The plural categories a locale's rules can produce.
@@ -1743,6 +1804,7 @@ fn rendered(
     resolved_from: Option<String>,
     is_fallback: bool,
     is_override: bool,
+    is_draft: bool,
     warnings: Vec<String>,
 ) -> Rendered {
     let parts = coalesced(parts);
@@ -1752,6 +1814,7 @@ fn rendered(
         resolved_from,
         is_fallback,
         is_override,
+        is_draft,
         warnings,
     }
 }
@@ -1811,6 +1874,19 @@ struct Eval<'a> {
     style: NumberStyle,
     env: BTreeMap<String, Val>,
     warnings: Vec<String>,
+    /// Whether a nested render met a draft namespace.
+    drew_draft: bool,
+    /// Whether a variable's placeholder is wrapped in markup naming it.
+    fields: bool,
+}
+
+/// The markup that names the variable behind a placeholder.
+fn field_mark(kind: MarkupKind, name: &str) -> OutPart {
+    OutPart::Markup {
+        kind,
+        name: name.to_owned(),
+        options: Vec::new(),
+    }
 }
 
 fn text_parts(text: String) -> Vec<OutPart> {
@@ -1834,7 +1910,19 @@ impl<'a> Eval<'a> {
             style: NumberStyle::of(&locale.meta),
             env: BTreeMap::new(),
             warnings: Vec::new(),
+            drew_draft: false,
+            fields: false,
         }
+    }
+
+    /// A render built on what this evaluation read first: its warnings
+    /// come before the render's, and a draft it met counts.
+    fn joined(self, mut rendered: Rendered) -> Rendered {
+        rendered.is_draft |= self.drew_draft;
+        let mut warnings = self.warnings;
+        warnings.append(&mut rendered.warnings);
+        rendered.warnings = warnings;
+        rendered
     }
 
     fn warn(&mut self, message: String) {
@@ -1877,7 +1965,15 @@ impl<'a> Eval<'a> {
                 Part::Text(text) => out.push(OutPart::Text(text.clone())),
                 Part::Expression(expression) => {
                     let value = self.expression(expression);
-                    out.extend(self.parts_of(value));
+                    let parts = self.parts_of(value);
+                    match &expression.operand {
+                        Some(Operand::Variable(name)) if self.fields => {
+                            out.push(field_mark(MarkupKind::Open, name));
+                            out.extend(parts);
+                            out.push(field_mark(MarkupKind::Close, name));
+                        }
+                        _ => out.extend(parts),
+                    }
                 }
                 Part::Markup(markup) => out.push(self.markup(markup)),
             }
@@ -2204,8 +2300,9 @@ impl<'a> Eval<'a> {
         }
         let rendered = self
             .intl
-            .render_from(&self.locale.tag, key, params, self.depth + 1);
+            .render_from(&self.locale.tag, key, params, self.depth + 1, false);
         self.warnings.extend(rendered.warnings);
+        self.drew_draft |= rendered.is_draft;
         Some(rendered.text)
     }
 
@@ -2370,11 +2467,7 @@ impl<'a> Eval<'a> {
 
     fn time_text(&mut self, time: ClockTime, style: &str, hour12: bool) -> String {
         let params = self.time_params(time);
-        let key = if hour12 {
-            format!("sdk.calendar.time.{style}12")
-        } else {
-            format!("sdk.calendar.time.{style}")
-        };
+        let key = time_key(style, hour12);
         let seconds = style != "numeric";
         let meridiem = match params.get("meridiem") {
             Some(Value::Str(text)) => text.clone(),
@@ -2714,10 +2807,15 @@ impl<'a> Eval<'a> {
                 keys: Keys::None,
             };
         }
-        let rendered = self
-            .intl
-            .render_from(&self.locale.tag, &key, self.params, self.depth + 1);
+        let rendered = self.intl.render_from(
+            &self.locale.tag,
+            &key,
+            self.params,
+            self.depth + 1,
+            self.fields,
+        );
         self.warnings.extend(rendered.warnings);
+        self.drew_draft |= rendered.is_draft;
         Formatted {
             value: Some(Value::Str(rendered.text)),
             parts: rendered.parts,

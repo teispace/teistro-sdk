@@ -639,6 +639,12 @@ pub use teistro_intl::words::{
     AmountInWords, InWords, InWordsRequest, WordsAmount, WordsAmountValue, WordsDigits,
     WordsGrouping, WordsRounding, WordsStyle,
 };
+// A date or a time as text and parts: what `intl().time` and
+// `intl().date` take and answer with.
+pub use teistro_intl::ClockTime;
+pub use teistro_intl::civil::{
+    CivilPart, CivilPartKind, CivilText, DateStyle, DateTextRequest, TimeStyle, TimeTextRequest,
+};
 // Making a pack, which is the other half of loading one. `Loaded` is what
 // `load_pack` answers with and was published already; this is what a
 // consumer with locale sources of its own — or with the SDK's readings

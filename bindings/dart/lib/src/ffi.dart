@@ -1984,6 +1984,10 @@ typedef TsIntlHasNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<f
 typedef TsIntlHasDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>);
 typedef TsIntlInWordsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlInWordsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlTimeNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlTimeDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlDateNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlDateDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlTransliterateNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlTransliterateDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlEntityNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
@@ -2102,6 +2106,8 @@ final class TeistroLibrary {
         ts_intl_locale = library.lookupFunction<TsIntlLocaleNative, TsIntlLocaleDart>('ts_intl_locale'),
         ts_intl_has = library.lookupFunction<TsIntlHasNative, TsIntlHasDart>('ts_intl_has'),
         ts_intl_in_words = library.lookupFunction<TsIntlInWordsNative, TsIntlInWordsDart>('ts_intl_in_words'),
+        ts_intl_time = library.lookupFunction<TsIntlTimeNative, TsIntlTimeDart>('ts_intl_time'),
+        ts_intl_date = library.lookupFunction<TsIntlDateNative, TsIntlDateDart>('ts_intl_date'),
         ts_intl_transliterate = library.lookupFunction<TsIntlTransliterateNative, TsIntlTransliterateDart>('ts_intl_transliterate'),
         ts_intl_entity = library.lookupFunction<TsIntlEntityNative, TsIntlEntityDart>('ts_intl_entity'),
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
@@ -2394,6 +2400,31 @@ final class TeistroLibrary {
   /// Sanskrit (not yet reviewed), a grouping or style the language's rules
   /// lack, or a currency the locale names no units for is `UNSUPPORTED`.
   final TsIntlInWordsDart ts_intl_in_words;
+
+  /// A time of day as text and parts, through the locale's pattern and its
+  /// parts of the day (`03-design/intl-engine-and-packs.md`), answered as
+  /// canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
+  /// isDraft, warnings}`, each part `{kind, text}` and the parts joined being
+  /// `text`.
+  ///
+  /// `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
+  /// (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
+  /// out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
+  /// of the time out of range is `INVALID_ARG`, named under `time`; a
+  /// locale not loaded is `UNSUPPORTED`.
+  final TsIntlTimeDart ts_intl_time;
+
+  /// A date as text and parts, in its own calendar, through the locale's
+  /// pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
+  /// answers.
+  ///
+  /// `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
+  /// "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
+  /// context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
+  /// not read or a date its calendar does not hold is `INVALID_ARG`, named
+  /// under `date`; a locale not loaded, a calendar not shipped or one with no
+  /// pattern is `UNSUPPORTED`.
+  final TsIntlDateDart ts_intl_date;
 
   /// Text from one script into another (`deva`, `iast`), as a string lent
   /// until the next call on the context. A pair the build has no table for
@@ -6181,6 +6212,49 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_intl_in_words(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// A time of day as text and parts, through the locale's pattern and its
+  /// parts of the day (`03-design/intl-engine-and-packs.md`), answered as
+  /// canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
+  /// isDraft, warnings}`, each part `{kind, text}` and the parts joined being
+  /// `text`.
+  ///
+  /// `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
+  /// (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
+  /// out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
+  /// of the time out of range is `INVALID_ARG`, named under `time`; a
+  /// locale not loaded is `UNSUPPORTED`.
+  String intlTime(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_intl_time(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// A date as text and parts, in its own calendar, through the locale's
+  /// pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
+  /// answers.
+  ///
+  /// `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
+  /// "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
+  /// context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
+  /// not read or a date its calendar does not hold is `INVALID_ARG`, named
+  /// under `date`; a locale not loaded, a calendar not shipped or one with no
+  /// pattern is `UNSUPPORTED`.
+  String intlDate(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_intl_date(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

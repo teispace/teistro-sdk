@@ -326,20 +326,6 @@ fn written<T: serde::Serialize>(value: &T) -> Result<serde_json::Value, Error> {
 #[must_use]
 pub fn records() -> Vec<Record> {
     let mut all: Vec<Record> = vec![
-        Record {
-            name: "intl.inWords",
-            boundary: "ts_intl_in_words",
-            title: "A number or an amount of money in words and figures",
-            reads: None,
-            run: |context, json| {
-                Answered::plain(
-                    &context
-                        .intl()
-                        .in_words(&crate::InWordsRequest::from_json(json)?)?,
-                )
-            },
-            schemas: schemas!(crate::InWordsRequest => crate::InWords),
-        },
         #[cfg(feature = "chart")]
         Record {
             name: "matching.naam",
@@ -417,6 +403,7 @@ pub fn records() -> Vec<Record> {
             schemas: schemas!(crate::research_request::RequestAsked => crate::research_request::Studied),
         },
     ];
+    all.extend(intl_records());
     #[cfg(feature = "chart")]
     all.extend(naming_records());
     all.extend(almanac_records());
@@ -425,6 +412,54 @@ pub fn records() -> Vec<Record> {
     all.extend(engine_records());
     all.sort_by_key(|record| record.name);
     all
+}
+
+/// The locale engine's records.
+fn intl_records() -> [Record; 3] {
+    [
+        Record {
+            name: "intl.inWords",
+            boundary: "ts_intl_in_words",
+            title: "A number or an amount of money in words and figures",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .intl()
+                        .in_words(&crate::InWordsRequest::from_json(json)?)?,
+                )
+            },
+            schemas: schemas!(crate::InWordsRequest => crate::InWords),
+        },
+        Record {
+            name: "intl.time",
+            boundary: "ts_intl_time",
+            title: "A time of day as text and parts, in the locale's pattern",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .intl()
+                        .time(&crate::TimeTextRequest::from_json(json)?)?,
+                )
+            },
+            schemas: schemas!(crate::TimeTextRequest => crate::CivilText),
+        },
+        Record {
+            name: "intl.date",
+            boundary: "ts_intl_date",
+            title: "A date as text and parts, in the locale's pattern",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .intl()
+                        .date(&crate::DateTextRequest::from_json(json)?)?,
+                )
+            },
+            schemas: schemas!(crate::DateTextRequest => crate::CivilText),
+        },
+    ]
 }
 
 /// The naming of a child's records: the five `NamingArea` operations a

@@ -548,12 +548,7 @@ impl Intl {
 
     fn in_words_unnamed(&self, request: &InWordsRequest) -> Result<InWords, Error> {
         let tag = request.locale.as_deref().unwrap_or(self.locale());
-        let locale = self.locales.get(tag).ok_or_else(|| {
-            let known: Vec<&str> = self.locales.keys().map(String::as_str).collect();
-            Error::unsupported(format!("the locale `{tag}` is not loaded"))
-                .with_field("locale")
-                .with_hint(format!("the locales are {}", known.join(", ")))
-        })?;
+        let locale = self.loaded_locale(tag)?;
         let language = tag.split('-').next().unwrap_or(tag);
         let grouping = request
             .grouping

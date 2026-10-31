@@ -3337,6 +3337,25 @@ test('a child named by the cakra, and a name book suggested from', () => {
   ctx.dispose();
 });
 
+test('a date and a time as text and parts, in the locale\'s pattern', () => {
+  const ctx = context({ locale: 'en-Latn' });
+  const dawn = ctx.intl.time({ at: { hour: 6, minute: 5 }, hour12: true, locale: 'hi-Deva-IN' });
+  assert.ok(Object.isFrozen(dawn) && Object.isFrozen(dawn.parts), 'frozen');
+  assert.equal(dawn.text, 'सुबह ६:०५');
+  assert.deepEqual(dawn.parts[0], { kind: 'DAY_PERIOD', text: 'सुबह' });
+  assert.equal(dawn.parts.map((part) => part.text).join(''), dawn.text);
+  assert.deepEqual([dawn.resolvedFrom, dawn.isFallback, dawn.isDraft], ['hi-Deva-IN', false, true]);
+  assert.equal(ctx.intl.time({ at: { hour: 18, minute: 30 }, hour12: true }).text, '6:30 pm');
+  const day = ctx.intl.date({ at: { calendar: 'calendar.GREGORIAN', year: 2026, month: 10, day: 31 }, style: 'FULL' });
+  assert.equal(day.text, 'Saturday, 31 October 2026');
+  assert.equal(day.isDraft, false);
+  assert.throws(
+    () => ctx.intl.time({ at: { hour: 24, minute: 0 } }),
+    (error) => error instanceof TeistroError && error.field === 'time.at.hour',
+  );
+  ctx.dispose();
+});
+
 test('a number and an amount in words, by CLDR, in every language it has', () => {
   const ctx = context({ locale: 'en-Latn' });
   // 1,234.56 rupees on a cheque in Nepal, with the legal amount's "only".

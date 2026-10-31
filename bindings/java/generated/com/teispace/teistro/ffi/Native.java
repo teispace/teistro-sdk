@@ -4038,6 +4038,8 @@ public final class Native {
         "ts_intl_locale",
         "ts_intl_has",
         "ts_intl_in_words",
+        "ts_intl_time",
+        "ts_intl_date",
         "ts_intl_transliterate",
         "ts_intl_entity",
         "ts_intl_render",
@@ -4416,6 +4418,35 @@ public final class Native {
      * lack, or a currency the locale names no units for is `UNSUPPORTED`.
      */
     public final MethodHandle ts_intl_in_words;
+
+    /**
+     * A time of day as text and parts, through the locale's pattern and its
+     * parts of the day (`03-design/intl-engine-and-packs.md`), answered as
+     * canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
+     * isDraft, warnings}`, each part `{kind, text}` and the parts joined being
+     * `text`.
+     *
+     * `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
+     * (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
+     * out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
+     * of the time out of range is `INVALID_ARG`, named under `time`; a
+     * locale not loaded is `UNSUPPORTED`.
+     */
+    public final MethodHandle ts_intl_time;
+
+    /**
+     * A date as text and parts, in its own calendar, through the locale's
+     * pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
+     * answers.
+     *
+     * `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
+     * "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
+     * context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
+     * not read or a date its calendar does not hold is `INVALID_ARG`, named
+     * under `date`; a locale not loaded, a calendar not shipped or one with no
+     * pattern is `UNSUPPORTED`.
+     */
+    public final MethodHandle ts_intl_date;
 
     /**
      * Text from one script into another (`deva`, `iast`), as a string lent
@@ -5081,6 +5112,8 @@ public final class Native {
         ts_intl_locale = linker.downcallHandle(symbols.find("ts_intl_locale").orElseThrow(() -> missing("ts_intl_locale")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_intl_has = linker.downcallHandle(symbols.find("ts_intl_has").orElseThrow(() -> missing("ts_intl_has")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_in_words = linker.downcallHandle(symbols.find("ts_intl_in_words").orElseThrow(() -> missing("ts_intl_in_words")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_intl_time = linker.downcallHandle(symbols.find("ts_intl_time").orElseThrow(() -> missing("ts_intl_time")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_intl_date = linker.downcallHandle(symbols.find("ts_intl_date").orElseThrow(() -> missing("ts_intl_date")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_transliterate = linker.downcallHandle(symbols.find("ts_intl_transliterate").orElseThrow(() -> missing("ts_intl_transliterate")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_entity = linker.downcallHandle(symbols.find("ts_intl_entity").orElseThrow(() -> missing("ts_intl_entity")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_render = linker.downcallHandle(symbols.find("ts_intl_render").orElseThrow(() -> missing("ts_intl_render")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));

@@ -205,7 +205,9 @@ import type {
   HarmonicRequest,
   HarshaRules,
   HitRequest,
+  DateTextRequest,
   InWordsRequest,
+  TimeTextRequest,
   Interval,
   KootaRules,
   KpRequest,
@@ -2267,6 +2269,32 @@ export interface InWords {
   readonly locale: string;
   /** An amount's parts; `null` for a number. */
   readonly amount: AmountInWords | null;
+}
+
+/** A date or a time as text and parts, as `intl.time` and `intl.date` give it. */
+export interface CivilText {
+  /** The whole. */
+  readonly text: string;
+  /** The parts, in the locale's order; joined, they are `text`. */
+  readonly parts: readonly CivilPart[];
+  /** The locale asked for. */
+  readonly locale: string;
+  /** The locale whose pattern answered. */
+  readonly resolvedFrom: string;
+  /** Whether a fallback locale answered. */
+  readonly isFallback: boolean;
+  /** Whether any of it is text no reviewer has signed off. */
+  readonly isDraft: boolean;
+  /** Every problem met on the way. */
+  readonly warnings: readonly string[];
+}
+
+/** One part of a date or a time. */
+export interface CivilPart {
+  /** What it is. */
+  readonly kind: 'YEAR' | 'MONTH' | 'DAY' | 'WEEKDAY' | 'ERA' | 'HOUR' | 'MINUTE' | 'SECOND' | 'DAY_PERIOD' | 'LITERAL';
+  /** Its text. */
+  readonly text: string;
 }
 
 /** An amount's parts, for an application that composes them its own way. */
@@ -6973,6 +7001,8 @@ export declare class Rendered extends Decoded<IntlRender> {
   readonly isFallback: boolean;
   /** Whether a runtime override answered. */
   readonly isOverride: boolean;
+  /** Whether any of the text is unreviewed, from a namespace its locale marks draft. */
+  readonly isDraft: boolean;
   /**
    * The message in parts, its markup kept: what a rich renderer walks.
    *
@@ -7378,6 +7408,10 @@ export declare class IntlArea {
   entity(key: string): EntityForms;
   /** A number or an amount of money in words and in figures, by CLDR's rules. */
   inWords(request: InWordsRequest): InWords;
+  /** A time of day as text and parts, in the locale's pattern. */
+  time(request: TimeTextRequest): CivilText;
+  /** A date as text and parts, in its own calendar and the locale's pattern. */
+  date(request: DateTextRequest): CivilText;
   /** The typed accessors: every message and every catalogued entity. */
   readonly messages: Messages;
   /** Loads a `.tpack` or `.tbundle` file into the locale engine. */

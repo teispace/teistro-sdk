@@ -23,6 +23,7 @@ public final class IntlRender {
     private final String resolvedFrom;
     private final String warnings;
     private final String parts;
+    private final int isDraft;
 
     private IntlRender(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -34,6 +35,8 @@ public final class IntlRender {
         this.resolvedFrom = blob.text(3, "resolved_from");
         this.warnings = blob.text(4, "warnings");
         this.parts = blob.text(5, "parts");
+        BlobReader.Section reviewSection = blob.fixed(6, "review", 1);
+        this.isDraft = Byte.toUnsignedInt(bytes.get(reviewSection.offset() + 0));
     }
 
     /**
@@ -108,6 +111,15 @@ public final class IntlRender {
      */
     public String parts() {
         return parts;
+    }
+
+    /**
+     * Non-zero when any text came from a namespace its locale marks unreviewed.
+     *
+     * @return the isDraft
+     */
+    public int isDraft() {
+        return isDraft;
     }
 
 }

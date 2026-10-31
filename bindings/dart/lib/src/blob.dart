@@ -325,6 +325,7 @@ final class IntlRender {
     required this.resolvedFrom,
     required this.warnings,
     required this.parts,
+    required this.isDraft,
   });
 
   /// Non-zero when a fallback locale answered.
@@ -348,6 +349,9 @@ final class IntlRender {
   /// UTF-8 JSON: the message's parts, for a rich renderer — `{"type": "text", "value": ...}` or `{"type": "markup", "kind": "open"|"close"|"standalone", "name": ..., "options": {...}}`, adjacent text in one part. **Empty when the message has no markup**, the whole of it being `text`; a reader turns that into the one text part rather than asking for it twice.
   final String parts;
 
+  /// Non-zero when any text came from a namespace its locale marks unreviewed.
+  final int isDraft;
+
 }
 
 /// Decodes a IntlRender blob. The columns are views over `bytes`, so the
@@ -360,6 +364,7 @@ IntlRender decodeIntlRender(Uint8List bytes) {
   final atResolvedFrom = blob.section(3, 'resolved_from');
   final atWarnings = blob.section(4, 'warnings');
   final atParts = blob.section(5, 'parts');
+  final atReview = blob.fixed(6, 'review', 1);
   return IntlRender(
     isFallback: blob.data.getUint8(atFlags.offset + 0),
     isOverride: blob.data.getUint8(atFlags.offset + 8),
@@ -368,6 +373,7 @@ IntlRender decodeIntlRender(Uint8List bytes) {
     resolvedFrom: blob.text(atResolvedFrom, 'resolved_from'),
     warnings: blob.text(atWarnings, 'warnings'),
     parts: blob.text(atParts, 'parts'),
+    isDraft: blob.data.getUint8(atReview.offset + 0),
   );
 }
 

@@ -549,6 +549,26 @@ class TheLocaleEngine(WithLibrary):
                 self.ctx.intl.in_words(request)
             self.assertEqual(refused.exception.field, field)
 
+    def test_a_date_and_a_time_as_text_and_parts(self) -> None:
+        from teistro import CivilText, DateTextRequest, TimeTextRequest
+
+        asked: TimeTextRequest = {"at": {"hour": 6, "minute": 5}, "hour12": True, "locale": "hi-Deva-IN"}
+        dawn: CivilText = self.ctx.intl.time(asked)
+        self.assertEqual(dawn.text, "सुबह ६:०५")
+        self.assertEqual((dawn.parts[0].kind, dawn.parts[0].text), ("DAY_PERIOD", "सुबह"))
+        self.assertEqual("".join(part.text for part in dawn.parts), dawn.text)
+        self.assertTrue(dawn.is_draft)
+        self.assertFalse(dawn.is_fallback)
+        day: DateTextRequest = {
+            "at": {"calendar": "calendar.GREGORIAN", "year": 2026, "month": 10, "day": 31},
+            "style": "FULL",
+            "locale": "en-Latn",
+        }
+        self.assertEqual(self.ctx.intl.date(day).text, "Saturday, 31 October 2026")
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.intl.time({"at": {"hour": 24, "minute": 0}})
+        self.assertEqual(refused.exception.field, "time.at.hour")
+
     def test_transliteration_changes_the_script(self) -> None:
         latin = self.ctx.intl.transliterate("सूर्य")
         self.assertTrue(latin)

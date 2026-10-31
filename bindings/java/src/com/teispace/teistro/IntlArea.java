@@ -156,6 +156,36 @@ public final class IntlArea {
     }
 
     /**
+     * A time of day as text and parts, through the locale's pattern and
+     * parts of the day ({@code 03-design/intl-engine-and-packs.md}).
+     *
+     * @param request the time, and how to write it
+     * @return the text and its parts
+     */
+    public CivilText time(com.teispace.teistro.request.TimeTextRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is a TimeTextRequest", "request");
+        }
+        String json = Json.write(request);
+        return CivilText.read(Json.read(context.locked((lib, raw) -> Calls.intlTime(lib, raw, json))));
+    }
+
+    /**
+     * A date as text and parts, in its own calendar, through the locale's
+     * pattern.
+     *
+     * @param request the date, and how to write it
+     * @return the text and its parts
+     */
+    public CivilText date(com.teispace.teistro.request.DateTextRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is a DateTextRequest", "request");
+        }
+        String json = Json.write(request);
+        return CivilText.read(Json.read(context.locked((lib, raw) -> Calls.intlDate(lib, raw, json))));
+    }
+
+    /**
      * Loads a locale pack's bytes into the engine.
      *
      * @param data the pack

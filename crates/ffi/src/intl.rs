@@ -293,6 +293,115 @@ pub unsafe extern "C" fn ts_intl_in_words(
     })
 }
 
+/// A time of day as text and parts, through the locale's pattern and its
+/// parts of the day (`03-design/intl-engine-and-packs.md`), answered as
+/// canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
+/// isDraft, warnings}`, each part `{kind, text}` and the parts joined being
+/// `text`.
+///
+/// `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
+/// (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
+/// out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
+/// of the time out of range is `INVALID_ARG`, named under `time`; a
+/// locale not loaded is `UNSUPPORTED`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_time;
+/// use teistro_ffi::string::{TsString, ts_string_free};
+///
+/// let request = c"{\"at\": {\"hour\": 6, \"minute\": 5}, \"hour12\": true, \"locale\": \"ne-Deva-NP\"}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_intl_time(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// let bytes = unsafe { core::slice::from_raw_parts(out.data, out.len) };
+/// let answer: serde_json::Value = serde_json::from_slice(bytes)?;
+/// assert_eq!(answer["text"], "बिहान ६:०५");
+/// // SAFETY: a descriptor the library wrote, freed once.
+/// unsafe { ts_string_free(&raw mut out) };
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_intl_time(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked =
+            teistro::TimeTextRequest::from_json(unsafe { text(request_json, "request_json") }?)?;
+        let answer = ctx.intl().time(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
+/// A date as text and parts, in its own calendar, through the locale's
+/// pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
+/// answers.
+///
+/// `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
+/// "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
+/// context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
+/// not read or a date its calendar does not hold is `INVALID_ARG`, named
+/// under `date`; a locale not loaded, a calendar not shipped or one with no
+/// pattern is `UNSUPPORTED`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_date;
+/// use teistro_ffi::string::{TsString, ts_string_free};
+///
+/// let request = c"{\"at\": {\"calendar\": \"calendar.GREGORIAN\", \"year\": 2026, \"month\": 10, \"day\": 31}, \"style\": \"LONG\"}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_intl_date(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// let bytes = unsafe { core::slice::from_raw_parts(out.data, out.len) };
+/// let answer: serde_json::Value = serde_json::from_slice(bytes)?;
+/// assert_eq!(answer["text"], "31 October 2026");
+/// // SAFETY: a descriptor the library wrote, freed once.
+/// unsafe { ts_string_free(&raw mut out) };
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_intl_date(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked =
+            teistro::DateTextRequest::from_json(unsafe { text(request_json, "request_json") }?)?;
+        let answer = ctx.intl().date(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 /// Text from one script into another (`deva`, `iast`), as a string lent
 /// until the next call on the context. A pair the build has no table for
 /// is `UNSUPPORTED` naming both scripts; anything the table does not know
@@ -550,6 +659,7 @@ pub unsafe extern "C" fn ts_intl_render(
                 "parts",
                 teistro_intl::wire::parts_json(&rendered).as_bytes(),
             )?;
+            writer.fixed("review", &[FixedValue::from(u8::from(rendered.is_draft))])?;
             writer.finish()
         })()
         .map_err(|e| Error::internal(format!("the render blob did not encode: {e}")))?;

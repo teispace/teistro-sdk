@@ -297,6 +297,9 @@ class IntlRender:
     parts: str
     """UTF-8 JSON: the message's parts, for a rich renderer — `{"type": "text", "value": ...}` or `{"type": "markup", "kind": "open"|"close"|"standalone", "name": ..., "options": {...}}`, adjacent text in one part. **Empty when the message has no markup**, the whole of it being `text`; a reader turns that into the one text part rather than asking for it twice."""
 
+    is_draft: int
+    """Non-zero when any text came from a namespace its locale marks unreviewed."""
+
 
 def decode_intl_render(raw: bytes) -> IntlRender:
     """Decodes a IntlRender blob.
@@ -311,6 +314,7 @@ def decode_intl_render(raw: bytes) -> IntlRender:
     at_resolved_from = blob.section(3, "resolved_from")
     at_warnings = blob.section(4, "warnings")
     at_parts = blob.section(5, "parts")
+    at_review = blob.fixed_section(6, "review", 1)
     return IntlRender(
         is_fallback=int(blob.fixed(at_flags, 0, "B")),
         is_override=int(blob.fixed(at_flags, 1, "B")),
@@ -319,6 +323,7 @@ def decode_intl_render(raw: bytes) -> IntlRender:
         resolved_from=blob.text(at_resolved_from, "resolved_from"),
         warnings=blob.text(at_warnings, "warnings"),
         parts=blob.text(at_parts, "parts"),
+        is_draft=int(blob.fixed(at_review, 0, "B")),
     )
 
 

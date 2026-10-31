@@ -4236,6 +4236,20 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_intl_in_words.restype = ctypes.c_int32
+        self.ts_intl_time: Any = library.ts_intl_time
+        self.ts_intl_time.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_intl_time.restype = ctypes.c_int32
+        self.ts_intl_date: Any = library.ts_intl_date
+        self.ts_intl_date.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_intl_date.restype = ctypes.c_int32
         self.ts_intl_transliterate: Any = library.ts_intl_transliterate
         self.ts_intl_transliterate.argtypes = [
             ctypes.POINTER(_Context),
@@ -5186,6 +5200,63 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_intl_in_words(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def intl_time(self, request_json: str) -> str:
+        """A time of day as text and parts, through the locale's pattern and its
+        parts of the day (`03-design/intl-engine-and-packs.md`), answered as
+        canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
+        isDraft, warnings}`, each part `{kind, text}` and the parts joined being
+        `text`.
+
+        `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
+        (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
+        out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
+        of the time out of range is `INVALID_ARG`, named under `time`; a
+        locale not loaded is `UNSUPPORTED`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_intl_time(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def intl_date(self, request_json: str) -> str:
+        """A date as text and parts, in its own calendar, through the locale's
+        pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
+        answers.
+
+        `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
+        "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
+        context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
+        not read or a date its calendar does not hold is `INVALID_ARG`, named
+        under `date`; a locale not loaded, a calendar not shipped or one with no
+        pattern is `UNSUPPORTED`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_intl_date(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

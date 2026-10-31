@@ -171,6 +171,10 @@ export interface IntlRender {
    * UTF-8 JSON: the message's parts, for a rich renderer — `{"type": "text", "value": ...}` or `{"type": "markup", "kind": "open"|"close"|"standalone", "name": ..., "options": {...}}`, adjacent text in one part. **Empty when the message has no markup**, the whole of it being `text`; a reader turns that into the one text part rather than asking for it twice.
    */
   readonly parts: string;
+  /**
+   * Non-zero when any text came from a namespace its locale marks unreviewed.
+   */
+  readonly isDraft: number;
 }
 
 /**

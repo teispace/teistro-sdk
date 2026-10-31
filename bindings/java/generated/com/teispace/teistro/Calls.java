@@ -595,6 +595,55 @@ final class Calls {
     }
 
     /**
+     * `ts_intl_time`: A time of day as text and parts, through the locale's pattern and its
+     * parts of the day (`03-design/intl-engine-and-packs.md`), answered as
+     * canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
+     * isDraft, warnings}`, each part `{kind, text}` and the parts joined being
+     * `text`.
+     *
+     * `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
+     * (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
+     * out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
+     * of the time out of range is `INVALID_ARG`, named under `time`; a
+     * locale not loaded is `UNSUPPORTED`.
+     */
+    static String intlTime(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_intl_time.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
+     * `ts_intl_date`: A date as text and parts, in its own calendar, through the locale's
+     * pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
+     * answers.
+     *
+     * `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
+     * "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
+     * context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
+     * not read or a date its calendar does not hold is `INVALID_ARG`, named
+     * under `date`; a locale not loaded, a calendar not shipped or one with no
+     * pattern is `UNSUPPORTED`.
+     */
+    static String intlDate(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_intl_date.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_intl_transliterate`: Text from one script into another (`deva`, `iast`), as a string lent
      * until the next call on the context. A pair the build has no table for
      * is `UNSUPPORTED` naming both scripts; anything the table does not know

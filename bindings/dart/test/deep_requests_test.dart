@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 353 of the examples' 365 members.
+/// The cases compare 355 of the examples' 367 members.
 library;
 
 import 'dart:convert';
@@ -2226,6 +2226,28 @@ void main() {
     );
   });
 
+  test('intl.date: DateTextRequest', () {
+    _holds(
+      'intl.date',
+      path: [],
+      dropping: [],
+      members: 2,
+      written: DateTextRequest(
+        at: CalendarDay(
+          calendar: Calendar.julian,
+          day: 1,
+          era: EraNumber(era: Era.shaka, year: 1),
+          leap: Leap.day,
+          month: 1,
+          year: 1,
+        ),
+        digits: WordsDigits.deva,
+        locale: 'x',
+        style: DateStyle.long,
+      ).toJson(),
+    );
+  });
+
   test('intl.inWords: InWordsRequest', () {
     _holds(
       'intl.inWords',
@@ -2245,6 +2267,22 @@ void main() {
         locale: 'x',
         number: 1,
         style: WordsStyle.verbose,
+      ).toJson(),
+    );
+  });
+
+  test('intl.time: TimeTextRequest', () {
+    _holds(
+      'intl.time',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: TimeTextRequest(
+        at: ClockTime(hour: 1, minute: 1, second: 1),
+        digits: WordsDigits.deva,
+        hour12: true,
+        locale: 'x',
+        style: TimeStyle.long,
       ).toJson(),
     );
   });
