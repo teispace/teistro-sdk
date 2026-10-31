@@ -17304,6 +17304,210 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_almanac_household",
+      "doc": "Several births and deaths and several observers at a place\n(`03-design/ashauch.md` §11), answered with `{value, provenance}` as\ncanonical JSON.\n\n`value` is `{observers}`, each `{key, periods, pureAt}`: `periods` an\nashauch answer for each tie, in the order the news reached that\nobserver, each overlap resolved against those before it, and `pureAt`\nthe instant the last ends.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"table\", \"tradition\", \"household\"}`: `household`\n`{events, observers}`, an event `{key, event}` and an observer `{key,\nties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,\nfireGiver}`. A household that does not hold together, or a key it\ndoes not read, is `INVALID_ARG` named under `household`; a relation\nthe table names no row for is `UNSUPPORTED`; a context without an\nephemeris is `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "ts_almanac_ashauch_kin",
+      "doc": "The ashauch relation and sapinda degree a path in a family gives\n(`03-design/ashauch.md` §10), answered as canonical JSON.\n\nThe answer is `{relation, keeps, degree, withinGirlsReach, clause,\ntable}`: `relation` what `ts_almanac_ashauch` asks with, absent when\nno period is kept; `keeps` `PERIOD`, `BATH` or `NOTHING`; `degree`,\nfor one line, `{observer, person, reach}` counted from the kūṭastha,\nwho is 1.\n\n`request_json` is `{\"table\", \"kin\"}`: `table` the *Dharmasindhu*'s\nwhen left out, every row data; `kin` `{path, observer, personMarried,\nlivingForebears}`, `path` the steps `FATHER`, `MOTHER`, `SON`,\n`DAUGHTER`, `HUSBAND`, `WIFE` from the observer to the person. A path\nthat steps back, or a fact a row turns on and the request leaves out,\nis `INVALID_ARG` named under `kin`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "ts_almanac_ashauch_rite",
+      "doc": "Whether a rite may go on during a period of impurity\n(`03-design/ashauch.md` §12), answered as canonical JSON.\n\nThe answer is `{rite, verdict, beginning, row, clause, table}`:\n`verdict` `GOES_ON`, `IN_PART` or `BARRED`, `beginning` what opens\nthis rite when the texts name it.\n\n`request_json` is `{\"table\", \"rite\"}`: `table` the *Dharmasindhu*'s\nwhen left out, every row data; `rite` `{rite, begun, noOtherWay,\ncalamity, kind}`. A key it does not read is `INVALID_ARG` named under\n`rite`; a rite the table names no row for is `UNSUPPORTED`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "ts_almanac_death_time",
+      "doc": "The death-time check at a place (`03-design/death-time.md`), answered\nwith `{value, provenance}` as canonical JSON.\n\n`value` is `{death, cremation, rites, table}`: `death` and `cremation`\neach `{at, nakshatra, tithi, vara, moon, panchaka, feet, pushkara}`,\n`rites` each `{rite, clause}`. With no cremation given, the cremation\nis taken to fall as the death did.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"at\", \"crematedAt\", \"table\"}`, the instants UTC\nJulian days and `table` the *Dharmasindhu*'s lists when left out. A\ncremation before the death, or a key it does not read, is\n`INVALID_ARG` named under `deathTime`; a context without an ephemeris\nis `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "ts_almanac_first_year",
       "doc": "A death's first year at a place (`03-design/shraddha.md` §3.3),\nanswered with `{value, provenance}` as canonical JSON.\n\n`value` is `{key, origin, dayOne, dayOneBy, eleventhDay, sapindana,\nrites}`: `origin` the death's lunar date, `dayOne` the ashauch's first\nday and `dayOneBy` why, and `rites` each of the *Dharmasindhu*'s\nsixteen, the first abdika and the sapindana as `{rite, place, month,\nyear, adhika, day, form, drawnTo, bars, observance, clause}`, in the\norder of their days: `place` its place among the sixteen, `month` the\nmonth a monthly closes, `year` which yearly shraddha, `form`\n`EKODDISHTA` or `PARVANA`, `drawnTo` the sapindana's day when it is\nfirst done there, and `bars` what the text bars an *ūna* rite's day\nfor.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"request\"}`: `request` `{key, at, night,\nfirstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death\nas a UTC Julian day and every reading the *Dharmasindhu*'s when left\nout. A key it does not read or an empty `key` is `INVALID_ARG` named\nunder `firstYear`; a context without an ephemeris is `CAPABILITY`, and\na polar day `OUT_OF_RANGE`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",

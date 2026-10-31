@@ -243,6 +243,7 @@ fn the_eleventh_day_is_the_ashauchs_under_every_night_rule() {
             nearness: Nearness::SameVillage,
             full_days: None,
             during: Vec::new(),
+            fire_giver: false,
         };
         let ashauch = context()
             .almanac()

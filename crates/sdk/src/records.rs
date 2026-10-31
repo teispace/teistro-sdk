@@ -533,7 +533,7 @@ fn naming_records() -> [Record; 5] {
 /// The almanac's records every build carries over a range or a death: its
 /// change points, an ashauch, a first year, its days with what is asked
 /// beside them, and its festivals as a feed.
-fn almanac_records() -> [Record; 6] {
+fn almanac_records() -> [Record; 10] {
     [
         Record {
             name: "almanac.anniversaries",
@@ -567,6 +567,44 @@ fn almanac_records() -> [Record; 6] {
                 Answered::sealed(context.almanac().ashauch_query(&asked)?)
             },
             schemas: schemas!(crate::ashauch_request::AshauchAsked => crate::ashauch::Ashauch),
+        },
+        Record {
+            name: "almanac.household",
+            boundary: "ts_almanac_household",
+            title: "Several births and deaths and several observers in one request, each observer's overlapping periods resolved",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::HouseholdQuery::from_json(json)?;
+                Answered::sealed(context.almanac().household_query(&asked)?)
+            },
+            schemas: schemas!(crate::ashauch_request::HouseholdAsked => crate::ashauch::HouseholdAnswer),
+        },
+        Record {
+            name: "almanac.ashauchKin",
+            boundary: "ts_almanac_ashauch_kin",
+            title: "The ashauch relation and the sapinda degree a path in a family gives",
+            reads: None,
+            run: |_, json| Answered::plain(&crate::KinQuery::from_json(json)?.answer()?),
+            schemas: schemas!(crate::KinQuery => crate::ashauch::Kin),
+        },
+        Record {
+            name: "almanac.ashauchRite",
+            boundary: "ts_almanac_ashauch_rite",
+            title: "Whether a rite may go on during a period of impurity, and the clause that says so",
+            reads: None,
+            run: |_, json| Answered::plain(&crate::RiteQuery::from_json(json)?.answer()?),
+            schemas: schemas!(crate::RiteQuery => crate::ashauch::RiteAnswer),
+        },
+        Record {
+            name: "almanac.deathTime",
+            boundary: "ts_almanac_death_time",
+            title: "The panchaka, tripada and dvipada nakshatras and pushkara yogas at a death and its cremation, and the rites the texts tie to them",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::DeathTimeQuery::from_json(json)?;
+                Answered::sealed(context.almanac().death_time_query(&asked)?)
+            },
+            schemas: schemas!(crate::ashauch_request::DeathTimeAsked => crate::death_time::DeathTime),
         },
         Record {
             name: "almanac.firstYear",

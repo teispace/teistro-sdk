@@ -5603,6 +5603,91 @@ test('an almanac says the period of impurity after a death', () => {
 });
 
 /**
+ * A household at Kathmandu (`03-design/ashauch.md` §11): a father dies at
+ * 10:00 on 11 January 2026 and the mother at 14:00 on 15 January. The son
+ * keeps the father's end and a pakshini; a sapinda's second period ends
+ * with the first. The relation resolver and the rite answer without a sky
+ * (§§10, 12), and the death-time check reads the Moon (`death-time.md`).
+ */
+test('an almanac says a household, a relation, a rite and the death time', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
+  const kathmandu = { latitude: 27.7172, longitude: 85.324, altitude: 1337 };
+  const father = 2461051.677083;
+  const mother = 2461055.84375;
+  const { value, provenance } = ctx.almanac.household({
+    place: kathmandu,
+    utcOffsetSeconds: 20700,
+    household: {
+      events: [
+        { key: 'father', event: { event: 'DEATH', at: father, deceased: { sex: 'MALE' } } },
+        { key: 'mother', event: { event: 'DEATH', at: mother, deceased: { sex: 'FEMALE' } } },
+      ],
+      observers: [
+        { key: 'son', ties: [{ event: 'father', relation: 'CHILD' }, { event: 'mother', relation: 'CHILD' }] },
+        { key: 'nephew', ties: [{ event: 'father', relation: 'SAPINDA' }, { event: 'mother', relation: 'SAPINDA' }] },
+      ],
+    },
+  });
+  assert.equal(typeof provenance.inputHash, 'string', 'the request is sealed');
+  const [son, nephew] = value.observers;
+  assert.equal(son.periods[1].overlap.overlap, 'MOTHER_AFTER_FATHER');
+  assert.equal(son.pureAt, son.periods[1].end);
+  assert.equal(nephew.periods[1].overlap.overlap, 'ENDS_WITH_EARLIER');
+  assert.equal(nephew.pureAt, nephew.periods[0].end);
+  assert.equal(nephew.periods[0].dayOne.calendar, 'calendar.GREGORIAN', 'its days are dates');
+  assert.ok(Object.isFrozen(son.periods[0].clause), 'frozen to its leaves');
+  assert.throws(
+    () => ctx.almanac.household({
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      household: { events: [], observers: [{ key: 'son', ties: [{ event: 'uncle', relation: 'CHILD' }] }] },
+    }),
+    (error) => error.field === 'household.household.observers[0].ties[0].event',
+  );
+  assert.throws(() => ctx.almanac.household(null), TypeError);
+
+  // A last night's added days cross back in a running period.
+  const first = ctx.almanac.ashauch({
+    place: kathmandu, utcOffsetSeconds: 20700,
+    request: { key: 'first', relation: 'SAPINDA', event: { event: 'DEATH', at: father } },
+  }).value;
+  const lastNight = ctx.almanac.ashauch({
+    place: kathmandu, utcOffsetSeconds: 20700,
+    request: { key: 'second', relation: 'SAPINDA', event: { event: 'DEATH', at: father + 9.55 }, during: [ashauchRunning(first)] },
+  }).value;
+  assert.equal(lastNight.overlap.overlap, 'LAST_NIGHT');
+  assert.equal(lastNight.overlap.from, first.end);
+  assert.deepEqual(
+    [ashauchRunning(lastNight).extendedFrom, ashauchRunning(lastNight).extendedDays],
+    [first.end, lastNight.overlap.days],
+  );
+
+  const kin = ctx.almanac.ashauchKin({ kin: { path: ['FATHER', 'FATHER', 'SON', 'SON'], observer: { sex: 'MALE' } } });
+  assert.equal(kin.relation, 'SAPINDA');
+  assert.equal(kin.keeps, 'PERIOD');
+  assert.equal(kin.degree.observer, 3);
+  assert.ok(Object.isFrozen(kin.degree));
+  assert.throws(
+    () => ctx.almanac.ashauchKin({ kin: { path: ['SON', 'FATHER'], observer: { sex: 'MALE' } } }),
+    (error) => error.field === 'kin.kin.path[1]',
+  );
+  const rite = ctx.almanac.ashauchRite({ rite: { rite: 'MARRIAGE', begun: true, noOtherWay: true } });
+  assert.equal(rite.verdict, 'GOES_ON');
+  assert.equal(ctx.almanac.ashauchRite({ rite: { rite: 'MARRIAGE' } }).verdict, 'BARRED');
+
+  const death = ctx.almanac.deathTime({ place: kathmandu, utcOffsetSeconds: 20700, at: father });
+  assert.equal(death.value.table, 'DHARMASINDHU');
+  assert.ok(death.value.death.nakshatra.startsWith('nakshatra.'));
+  assert.ok(death.value.death.moon.startsWith('rashi.'));
+  assert.equal(death.value.death.panchaka, ['rashi.AQUARIUS', 'rashi.PISCES'].includes(death.value.death.moon));
+  assert.ok(Array.isArray(death.value.rites));
+  assert.throws(
+    () => ctx.almanac.deathTime({ place: kathmandu, utcOffsetSeconds: 20700, at: father, crematedAt: father - 1 }),
+    (error) => error.field === 'deathTime.crematedAt',
+  );
+});
+
+/**
  * A death at 10:00 on 20 October 2026 in Kathmandu: the *Dharmasindhu*'s
  * sixteen in place order, the first monthly first, fifteen of them drawn
  * to the sapindana on the twelfth day; and under Nepal's readings the

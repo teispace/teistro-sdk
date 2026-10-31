@@ -8,5 +8,7 @@ package com.teispace.teistro;
  *     {@code days} more) or {@code MOTHER_AFTER_FATHER} (the father's end and a pakshini)
  * @param earlier the earlier answer's key
  * @param days the days added, for {@code LAST_NIGHT}; null otherwise
+ * @param from for {@code LAST_NIGHT}, the earlier period's own end, a UTC Julian day, where the added
+ *     days begin; null otherwise
  */
-public record AshauchOverlapped(String overlap, String earlier, Integer days) {}
+public record AshauchOverlapped(String overlap, String earlier, Integer days, Double from) {}

@@ -6,8 +6,8 @@
 
 use super::dharmasindhu::{band, days, late, relations as dharmasindhu_relations, row};
 use super::{
-    AshauchKind, AshauchTable, Band, Length, Mark, MotherRites, Nearness, NightRule, Relation,
-    RelationRow, Sex,
+    AshauchKind, AshauchTable, Band, Length, Mark, MotherRites, Nearness, NightRule, Overlap,
+    Relation, RelationRow, Sex,
 };
 
 use AshauchKind::Death;
@@ -71,6 +71,10 @@ impl AshauchTable {
                 son: 20,
                 daughter: 30,
             }),
+            overlap: Overlap {
+                father_keeps_his_own: true,
+                ..texts.overlap
+            },
             ..texts
         }
     }

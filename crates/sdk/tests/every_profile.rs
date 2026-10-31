@@ -154,6 +154,7 @@ fn every_profile_answers_every_almanac_call_or_refuses_by_name() {
                 nearness: Nearness::SameVillage,
                 full_days: None,
                 during: Vec::new(),
+                fire_giver: false,
             };
             let calls = [
                 acted_on("day", almanac.day(&from, place, offset).map(drop)),

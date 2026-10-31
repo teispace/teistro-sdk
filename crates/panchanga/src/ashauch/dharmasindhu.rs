@@ -165,6 +165,7 @@ impl AshauchTable {
             late_abroad: vec![late(45, days(3)), late(180, Pakshini), late(360, days(1))],
             overlap: Overlap {
                 last_night: [2, 3],
+                father_keeps_his_own: false,
                 death_absorbs_longer_birth: false,
             },
             mother_rites: Some(MotherRites {
@@ -177,9 +178,10 @@ impl AshauchTable {
 
 pub(super) fn relations() -> Vec<RelationRow> {
     use Relation::{
-        AcharyasFamily, Adoption, Bandhu, Child, CoWife, Father, MarriedDaughter, MarriedSibling,
-        MaternalGrandfather, MaternalGrandmother, MaternalUncle, Mother, OfAscetic, ParentInLaw,
-        Pupil, Sagotra, Samanodaka, Sapinda, SonInLaw, Spouse, StepChild, Subject,
+        AcharyasFamily, Adoption, Bandhu, Child, CoWife, DaughtersSon, Father, MarriedDaughter,
+        MarriedSibling, MaternalAunt, MaternalGrandfather, MaternalGrandmother, MaternalUncle,
+        MaternalUnclesWife, Mother, OfAscetic, ParentInLaw, PaternalAunt, Pupil, Sagotra,
+        Samanodaka, Sapinda, SistersSon, SonInLaw, Spouse, StepChild, Subject, WifesBrother,
     };
     vec![
         row(Mother, Birth, Full, "Dharmasindhu p. 299: the mother of a birth from the 7th month, the full period, untouchable throughout"),
@@ -235,6 +237,18 @@ pub(super) fn relations() -> Vec<RelationRow> {
         row(Bandhu, Death, Pakshini, "Dharmasindhu p. 302: one of the three bandhus, a pakṣiṇī (one day for one not upanīta)"),
         row(Subject, Death, Sajyotih, "Dharmasindhu p. 303, Manu V.82: the ruler of the land, sajyotiḥ"),
         row(OfAscetic, Death, Bath, "Dharmasindhu p. 303: an ascetic's sapiṇḍas, a bath"),
+        row(MaternalAunt, Death, days(3), "Dharmasindhu p. 302: a mother's sister dying in one's house, three days")
+            .at(ObserversHouse),
+        row(MaternalAunt, Death, Pakshini, "Dharmasindhu p. 302: a mother's sister, to her sister's son or daughter, a pakṣiṇī"),
+        row(PaternalAunt, Death, days(3), "Dharmasindhu p. 302: a father's sister dying in one's house, three days")
+            .at(ObserversHouse),
+        row(PaternalAunt, Death, Pakshini, "Dharmasindhu p. 302: a father's sister, to her brother's son or daughter, a pakṣiṇī"),
+        row(MaternalUnclesWife, Death, Pakshini, "Dharmasindhu p. 301: a maternal uncle's wife, to her husband's sister's son or daughter, a pakṣiṇī"),
+        row(SistersSon, Death, days(3), "Dharmasindhu p. 301: a sister's son after his upanayana, to his maternal uncle and aunt, three days"),
+        row(DaughtersSon, Death, days(3), "Dharmasindhu pp. 301–302: a daughter's son after his upanayana, to his maternal grandparents, three days"),
+        row(WifesBrother, Death, Bath, "Dharmasindhu p. 302: a wife's brother dying in another village, a bath")
+            .at(OtherVillage),
+        row(WifesBrother, Death, days(1), "Dharmasindhu p. 302: a wife's brother after his upanayana, to his sister's husband, one day"),
     ]
 }
 

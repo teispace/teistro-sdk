@@ -17,7 +17,10 @@
 //! ([`AshauchRequest::full_days`]); nothing here asks or stores a caste.
 
 mod dharmasindhu;
+mod household;
+mod kin;
 mod mitakshara;
+mod rite;
 
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
@@ -27,6 +30,15 @@ use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::time::LocalClock;
 
 use crate::festival::FestivalDay;
+
+pub use household::{
+    Household, HouseholdAnswer, HouseholdEvent, HouseholdObserver, HouseholdPeriods, HouseholdTie,
+    MOST_TIES,
+};
+pub use kin::{
+    Kin, KinAsked, KinDegree, KinKeeps, KinObserver, KinRow, KinStep, KinTable, resolve,
+};
+pub use rite::{Rite, RiteAnswer, RiteAsked, RiteBeginning, RiteRow, RiteTable, RiteVerdict, rite};
 
 /// The full period when the request gives none: ten days, for every
 /// family (Aṅgiras in the Mitākṣarā on Yājñavalkya III.22).
@@ -84,6 +96,7 @@ use crate::festival::FestivalDay;
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
@@ -149,6 +162,7 @@ pub const FULL_DAYS: u8 = 10;
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::MOST_DAYS;
@@ -227,6 +241,7 @@ const JOINED: f64 = 1e-6;
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::{DayOneBy, NightRule};
@@ -314,6 +329,7 @@ pub enum NightRule {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::Length;
@@ -438,6 +454,7 @@ impl Length {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::PakshiniNight;
@@ -517,6 +534,7 @@ pub enum PakshiniNight {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::Sex;
@@ -594,6 +612,7 @@ pub enum Sex {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::{Sex, Upanayana};
@@ -682,6 +701,7 @@ pub enum Upanayana {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::{Clause, Sex};
@@ -783,6 +803,7 @@ pub struct Deceased {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::Clause;
@@ -969,6 +990,7 @@ impl AshauchEvent {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
@@ -1043,6 +1065,7 @@ pub enum AshauchKind {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// // A sagotra keeps one night, a samānodaka three.
@@ -1101,6 +1124,18 @@ pub enum Relation {
     Subject,
     /// A sapiṇḍa of an ascetic (*yati*).
     OfAscetic,
+    /// The deceased was the observer's mother's sister.
+    MaternalAunt,
+    /// The deceased was the observer's married father's sister.
+    PaternalAunt,
+    /// The deceased was the observer's maternal uncle's wife.
+    MaternalUnclesWife,
+    /// The deceased was the observer's sister's son (*bhāgineya*).
+    SistersSon,
+    /// The deceased was the observer's daughter's son (*dauhitra*).
+    DaughtersSon,
+    /// The deceased was the observer's wife's brother (*śyālaka*).
+    WifesBrother,
 }
 
 /// Where the death was, to the observer: the rows that turn on it.
@@ -1158,6 +1193,7 @@ pub enum Relation {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// // A married sister dying in one's house is three days, in another
@@ -1382,6 +1418,7 @@ pub struct LossRow {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::Clause;
@@ -1461,6 +1498,7 @@ pub struct LateRow {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::{Overlapped, Running};
@@ -1472,7 +1510,7 @@ pub struct LateRow {
 /// second.key = String::from("second");
 /// second.during = vec![Running::from(&first)];
 /// let found = ashauch(&table, &second, &days, &UtcOffset::UTC)?;
-/// assert_eq!(found.overlap, Some(Overlapped::LastNight { earlier: String::from("first"), days: 3 }));
+/// assert!(matches!(found.overlap, Some(Overlapped::LastNight { days: 3, .. })));
 /// assert_eq!(found.end.get(), 23.0);
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
@@ -1486,6 +1524,11 @@ pub struct Overlap {
     /// in the Mitākṣarā on Yājñavalkya III.20; *Dharmasindhu* pp.
     /// 305–306): `[2, 3]`; `[2, 2]` adds two throughout, `[0, 0]` none.
     pub last_night: [u8; 2],
+    /// Whether a father dying in the mother's period keeps his own full
+    /// period. Off, his ends with hers (*Dharmasindhu* p. 306); on, the
+    /// Mitākṣarā on III.20 and the *Smṛtyarthasāra*, which DS reports.
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub father_keeps_his_own: bool,
     /// Whether a birth known during a shorter death ends with it
     /// ("कश्चित्", *Dharmasindhu* p. 305); "बहवः" say no.
     pub death_absorbs_longer_birth: bool,
@@ -1605,6 +1648,7 @@ pub struct AshauchTable {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::Clause;
@@ -1649,6 +1693,11 @@ pub struct AshauchRequest {
     /// earlier answer ([`Running::from`]): the overlap rules read them.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub during: Vec<Running>,
+    /// Whether the observer lights the pyre. An earlier period takes in
+    /// neither the fire-giver's nor the new mother's (*Dharmasindhu* p.
+    /// 306).
+    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    pub fire_giver: bool,
 }
 
 /// A period already running, as the overlap rules read it: the parts of
@@ -1707,6 +1756,7 @@ pub struct AshauchRequest {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::{Overlapped, Running};
@@ -1743,10 +1793,21 @@ pub struct Running {
     /// Its days, when the length is a count.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub days: Option<u8>,
+    /// Where its last-night days begin, when an overlap added them: those
+    /// days take in less than the period did (*Dharmasindhu* p. 306).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub extended_from: Option<JulianDay<Utc>>,
+    /// The days an overlap added past its own end.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub extended_days: Option<u8>,
 }
 
 impl From<&Ashauch> for Running {
     fn from(found: &Ashauch) -> Running {
+        let extended = match found.overlap {
+            Some(Overlapped::LastNight { from, days, .. }) => Some((from, days)),
+            _ => None,
+        };
         Running {
             key: found.key.clone(),
             kind: found.kind,
@@ -1756,6 +1817,8 @@ impl From<&Ashauch> for Running {
             end: found.end,
             length: found.length,
             days: found.days,
+            extended_from: extended.map(|(from, _)| from),
+            extended_days: extended.map(|(_, days)| days),
         }
     }
 }
@@ -1815,6 +1878,7 @@ impl From<&Ashauch> for Running {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
@@ -1892,6 +1956,7 @@ pub enum DayOneBy {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::{Clause, Sex};
@@ -2019,6 +2084,7 @@ pub enum Clause {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// use teistro_panchanga::ashauch::{Overlapped, Running};
@@ -2031,7 +2097,7 @@ pub enum Clause {
 /// assert!(matches!(found.overlap, Some(Overlapped::LastNight { days: 2, .. })));
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(Clone, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[cfg_attr(feature = "schema", schemars(rename = "AshauchOverlapped"))]
 #[serde(tag = "overlap", rename_all = "SCREAMING_SNAKE_CASE")]
@@ -2048,6 +2114,8 @@ pub enum Overlapped {
         earlier: String,
         /// The days added.
         days: u8,
+        /// The earlier period's own end, where the added days begin.
+        from: JulianDay<Utc>,
     },
     /// A mother's death in the father's period: the father's end and a
     /// pakṣiṇī (the Mitākṣarā on III.20, *Dharmasindhu* p. 306).
@@ -2112,6 +2180,7 @@ pub enum Overlapped {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
@@ -2237,6 +2306,7 @@ impl Ashauch {
     /// #     nearness: Nearness::SameVillage,
     /// #     full_days: None,
     /// #     during: Vec::new(),
+    /// #     fire_giver: false,
     /// # };
     ///
     /// let found = ashauch(&table, &asked(death(10.25), Relation::Child), &days, &UtcOffset::UTC)?;
@@ -2421,6 +2491,7 @@ impl AshauchRequest {
     /// #     nearness: Nearness::SameVillage,
     /// #     full_days: None,
     /// #     during: Vec::new(),
+    /// #     fire_giver: false,
     /// # };
     ///
     /// let mut early = asked(death(10.25), Relation::Child);
@@ -2568,6 +2639,7 @@ impl AshauchRequest {
     /// #     nearness: Nearness::SameVillage,
     /// #     full_days: None,
     /// #     during: Vec::new(),
+    /// #     fire_giver: false,
     /// # };
     ///
     /// let mut request = asked(death(10.25), Relation::Child);
@@ -2636,6 +2708,7 @@ impl AshauchRequest {
     /// #     nearness: Nearness::SameVillage,
     /// #     full_days: None,
     /// #     during: Vec::new(),
+    /// #     fire_giver: false,
     /// # };
     ///
     /// let mut request = asked(death(10.25), Relation::Child);
@@ -2706,6 +2779,7 @@ impl AshauchRequest {
     /// #     nearness: Nearness::SameVillage,
     /// #     full_days: None,
     /// #     during: Vec::new(),
+    /// #     fire_giver: false,
     /// # };
     ///
     /// let mut request = asked(death(10.25), Relation::Child);
@@ -2782,6 +2856,7 @@ impl AshauchRequest {
     /// #     nearness: Nearness::SameVillage,
     /// #     full_days: None,
     /// #     during: Vec::new(),
+    /// #     fire_giver: false,
     /// # };
     ///
     /// // The longest row's days, and the four the rules can add.
@@ -3209,6 +3284,7 @@ fn no_row(table: &AshauchTable, request: &AshauchRequest) -> Error {
 /// #     nearness: Nearness::SameVillage,
 /// #     full_days: None,
 /// #     during: Vec::new(),
+/// #     fire_giver: false,
 /// # };
 ///
 /// // A parent's death by day: ten days from it.
@@ -3413,8 +3489,10 @@ fn overlap(
     found: &mut Ashauch,
     clock: &dyn LocalClock,
 ) -> Result<(), Error> {
-    // The birthing mother's own period is never taken in (DS p. 306).
+    // The birthing mother's own period, and the fire-giver's, are never
+    // taken in (DS p. 306).
     if found.length == Length::Bath
+        || request.fire_giver
         || (found.kind == AshauchKind::Birth && found.relation == Relation::Mother)
     {
         return Ok(());
@@ -3437,9 +3515,21 @@ fn overlap(
             continue;
         }
         let parents = both_deaths && found.relation == Relation::Child;
-        // The father dying in the mother's period keeps his own (the
-        // Mitākṣarā on III.20, DS p. 306).
-        if parents && (earlier.sex, found.sex) == (Some(Sex::Female), Some(Sex::Male)) {
+        // The father dying in the mother's period ends with hers (DS p.
+        // 306), or keeps his own (the Mitākṣarā on III.20).
+        if parents
+            && (earlier.sex, found.sex) == (Some(Sex::Female), Some(Sex::Male))
+            && table.overlap.father_keeps_his_own
+        {
+            continue;
+        }
+        // The added days take in a pakṣiṇī (two added) or three days
+        // (three added), and never a ten-day period (DS p. 306).
+        if earlier
+            .extended_from
+            .is_some_and(|from| known.get() >= from.get())
+            && found.length.half_days(full) > extended_reach(earlier.extended_days)
+        {
             continue;
         }
         // A birth never takes in a death (DS p. 305).
@@ -3457,7 +3547,7 @@ fn overlap(
         {
             continue;
         }
-        let candidate = if let Some(added) = last_night(run, table, earlier, found, known)? {
+        let candidate = if let Some(added) = last_night(run, table, earlier, found, known, full)? {
             let ended = run.holding(earlier.end)?.index;
             let last = run.after(ended, usize::from(added) - 1)?;
             (
@@ -3466,6 +3556,7 @@ fn overlap(
                 Overlapped::LastNight {
                     earlier: earlier.key.clone(),
                     days: added,
+                    from: earlier.end,
                 },
             )
         } else if mother_after_father {
@@ -3502,8 +3593,22 @@ fn overlap(
     Ok(())
 }
 
-/// The days the last-night rule adds, when a new period of the same kind
-/// and count is known in the earlier's last night (DS pp. 305–306, NS p.
+/// The half days an extension of `days` takes in: a pakṣiṇī for two,
+/// three days for three (DS p. 306).
+fn extended_reach(days: Option<u8>) -> u16 {
+    Length::half_days(
+        if days.is_some_and(|days| days > 2) {
+            Length::Days { days: 3 }
+        } else {
+            Length::Pakshini
+        },
+        0,
+    )
+}
+
+/// The days the last-night rule adds, when a new full period of the same
+/// kind is known in an earlier full period's last night (DS p. 306, only
+/// between ten-day periods, three-day ones ending with the first; NS p.
 /// 381: only between equal periods of a kind).
 fn last_night(
     run: &Run<'_>,
@@ -3511,11 +3616,12 @@ fn last_night(
     earlier: &Running,
     found: &Ashauch,
     known: JulianDay<Utc>,
+    full: u8,
 ) -> Result<Option<u8>, Error> {
     let (Some(old), Some(new)) = (earlier.days, found.days) else {
         return Ok(None);
     };
-    if old != new || earlier.kind != found.kind {
+    if old != new || old != full || earlier.kind != found.kind {
         return Ok(None);
     }
     let ended = run.holding(earlier.end)?.index;

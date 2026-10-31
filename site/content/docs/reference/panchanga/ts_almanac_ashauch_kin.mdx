@@ -1,0 +1,40 @@
+---
+title: ts_almanac_ashauch_kin
+description: "The ashauch relation and sapinda degree a path in a family gives (`03-design/ashauch.md` §10), answered as canonical JSON."
+---
+
+The ashauch relation and sapinda degree a path in a family gives (`03-design/ashauch.md` §10), answered as canonical JSON.
+
+The answer is `{relation, keeps, degree, withinGirlsReach, clause, table}`: `relation` what `ts_almanac_ashauch` asks with, absent when no period is kept; `keeps` `PERIOD`, `BATH` or `NOTHING`; `degree`, for one line, `{observer, person, reach}` counted from the kūṭastha, who is 1.
+
+`request_json` is `{"table", "kin"}`: `table` the *Dharmasindhu*'s when left out, every row data; `kin` `{path, observer, personMarried, livingForebears}`, `path` the steps `FATHER`, `MOTHER`, `SON`, `DAUGHTER`, `HUSBAND`, `WIFE` from the observer to the person. A path that steps back, or a fact a row turns on and the request leaves out, is `INVALID_ARG` named under `kin`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_almanac_ashauch_kin(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `almanac.ashauch_kin` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.

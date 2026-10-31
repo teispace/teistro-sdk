@@ -14,13 +14,14 @@ import java.util.Objects;
  * @param abroad Whether the observer was abroad: a fact the family gives, never derived, as the texts' tests differ. Null leaves the SDK's default.
  * @param during The periods already running for this observer, each from an earlier answer (`Running::from`): the overlap rules read them. Null leaves the SDK's default.
  * @param event What happened.
+ * @param fireGiver Whether the observer lights the pyre. An earlier period takes in neither the fire-giver's nor the new mother's (*Dharmasindhu* p. 306). Null leaves the SDK's default.
  * @param fullDays The family's full period, 1 to `MOST_DAYS`; `FULL_DAYS` when left out. Null leaves the SDK's default.
  * @param heardAt When the news reached the observer: the cause is the known event (the Mitākṣarā on Yājñavalkya III.18). The event's own instant when left out. Null leaves the SDK's default.
  * @param key The consumer's own key, which the answer repeats.
  * @param nearness Where the death was, to the observer. Null leaves the SDK's default.
  * @param relation Who the observer is to it.
  */
-public record AshauchRequest(Boolean abroad, List<AshauchRunning> during, AshauchEvent event, Integer fullDays, Double heardAt, String key, Nearness nearness, AshauchRelation relation) implements RequestJson {
+public record AshauchRequest(Boolean abroad, List<AshauchRunning> during, AshauchEvent event, Boolean fireGiver, Integer fullDays, Double heardAt, String key, Nearness nearness, AshauchRelation relation) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -47,7 +48,7 @@ public record AshauchRequest(Boolean abroad, List<AshauchRunning> during, Ashauc
      * @param relation Who the observer is to it.
      */
     public AshauchRequest(AshauchEvent event, String key, AshauchRelation relation) {
-        this(null, null, event, null, null, key, null, relation);
+        this(null, null, event, null, null, null, key, null, relation);
     }
 
     /**
@@ -65,6 +66,7 @@ public record AshauchRequest(Boolean abroad, List<AshauchRunning> during, Ashauc
         private Boolean abroad;
         private List<AshauchRunning> during;
         private AshauchEvent event;
+        private Boolean fireGiver;
         private Integer fullDays;
         private Double heardAt;
         private String key;
@@ -103,6 +105,17 @@ public record AshauchRequest(Boolean abroad, List<AshauchRunning> during, Ashauc
          */
         public Builder event(AshauchEvent event) {
             this.event = event;
+            return this;
+        }
+
+        /**
+         * Sets {@code fireGiver}.
+         *
+         * @param fireGiver Whether the observer lights the pyre. An earlier period takes in neither the fire-giver's nor the new mother's (*Dharmasindhu* p. 306). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder fireGiver(boolean fireGiver) {
+            this.fireGiver = fireGiver;
             return this;
         }
 
@@ -168,7 +181,7 @@ public record AshauchRequest(Boolean abroad, List<AshauchRunning> during, Ashauc
          * @throws NullPointerException naming a required field left unset
          */
         public AshauchRequest build() {
-            return new AshauchRequest(abroad, during, event, fullDays, heardAt, key, nearness, relation);
+            return new AshauchRequest(abroad, during, event, fireGiver, fullDays, heardAt, key, nearness, relation);
         }
     }
 
@@ -185,6 +198,7 @@ public record AshauchRequest(Boolean abroad, List<AshauchRunning> during, Ashauc
             Read.orNull(json.get("abroad"), present -> Read.bool(present, "AshauchRequest.abroad")),
             Read.orNull(json.get("during"), present -> Read.list(present, "AshauchRequest.during", item0 -> AshauchRunning.of(item0))),
             AshauchEvent.of(Read.required(json.get("event"), "AshauchRequest.event")),
+            Read.orNull(json.get("fireGiver"), present -> Read.bool(present, "AshauchRequest.fireGiver")),
             Read.orNull(json.get("fullDays"), present -> Read.int32(present, "AshauchRequest.fullDays")),
             Read.orNull(json.get("heardAt"), present -> Read.number(present, "AshauchRequest.heardAt")),
             Read.text(Read.required(json.get("key"), "AshauchRequest.key"), "AshauchRequest.key"),
@@ -202,6 +216,9 @@ public record AshauchRequest(Boolean abroad, List<AshauchRunning> during, Ashauc
             json.put("during", during.stream().map(item0 -> item0.toJson()).toList());
         }
         json.put("event", event.toJson());
+        if (fireGiver != null) {
+            json.put("fireGiver", fireGiver);
+        }
         if (fullDays != null) {
             json.put("fullDays", fullDays);
         }

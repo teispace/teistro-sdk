@@ -182,6 +182,7 @@ import type {
   AshauchRequest,
   AshauchRunning,
   AshauchSex,
+  AshauchRite,
   AshauchTable,
   AshauchTradition,
   BaselinePeriod,
@@ -281,7 +282,14 @@ import type {
   ChangeKind,
   AnniversariesRequest,
   ChangesRequest,
+  DeathTimeTable,
+  Household,
+  KinKeeps,
+  KinQuery,
   Member,
+  RiteBeginning,
+  RiteQuery,
+  RiteVerdict,
 } from './requests.js';
 
 export * from './catalogue.js';
@@ -7722,6 +7730,57 @@ export declare class AlmanacArea {
    */
   ashauch(query: AshauchQuery): AshauchAnswer;
   /**
+   * **A household's periods of impurity** at a place
+   * (`03-design/ashauch.md` §11): several births and deaths and several
+   * observers in one request, each observer's ties read in the order the
+   * news reached them, each against the ones before it (DS p. 305).
+   *
+   * @example
+   * const { value } = sdk.almanac.household({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
+   *   utcOffsetSeconds: 20700,
+   *   household: {
+   *     events: [{ key: 'grandfather', event: { event: 'DEATH', at: 2461051.677083 } }],
+   *     observers: [{ key: 'son', ties: [{ event: 'grandfather', relation: 'CHILD' }] }],
+   *   },
+   * });
+   * value.observers[0].pureAt;
+   */
+  household(query: HouseholdAsked): HouseholdAnswer;
+  /**
+   * **The ashauch relation a path in a family gives**
+   * (`03-design/ashauch.md` §10), read as the *Dharmasindhu* counts kin
+   * (pp. 299–302). Needs no place or ephemeris.
+   *
+   * @example
+   * sdk.almanac.ashauchKin({ kin: { path: ['FATHER', 'SON'], observer: { sex: 'MALE' } } }).relation; // 'SAPINDA'
+   */
+  ashauchKin(query: KinQuery): Kin;
+  /**
+   * **Whether a rite may go on during a period of impurity**
+   * (`03-design/ashauch.md` §12), from the *Dharmasindhu*'s exceptions
+   * (pp. 309–310) when no table is given. Needs no place or ephemeris.
+   *
+   * @example
+   * sdk.almanac.ashauchRite({ rite: { rite: 'MARRIAGE', begun: true, noOtherWay: true } }).verdict; // 'GOES_ON'
+   */
+  ashauchRite(query: RiteQuery): AshauchRiteAnswer;
+  /**
+   * **The death-time check** at a place (`03-design/death-time.md`): the
+   * panchaka, the nakshatra's feet and any pushkara yoga at the death and
+   * the burning, and the rites the *Dharmasindhu* ties to them (pp.
+   * 334–335). With no `crematedAt` the burning falls as the death did.
+   *
+   * @example
+   * const { value } = sdk.almanac.deathTime({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
+   *   utcOffsetSeconds: 20700,
+   *   at: 2461051.677083,
+   * });
+   * value.death.panchaka;
+   */
+  deathTime(query: DeathTimeAsked): DeathTimeAnswer;
+  /**
    * **A death's first year** at a place (`03-design/shraddha.md` §3.3):
    * the *Dharmasindhu*'s sixteen shraddhas, the sapindana and the first
    * abdika, each on its day. Every reading is the *Dharmasindhu*'s when
@@ -8206,10 +8265,127 @@ export type AshauchClause =
 export type AshauchOverlapped =
   /** It ends with the earlier period, which is no shorter. */
   | { readonly overlap: 'ENDS_WITH_EARLIER'; readonly earlier: string }
-  /** Known in the earlier equal period's last night: its end and `days` more. */
-  | { readonly overlap: 'LAST_NIGHT'; readonly earlier: string; readonly days: number }
+  /** Known in the earlier equal period's last night: its end, `from`, and `days` more. */
+  | { readonly overlap: 'LAST_NIGHT'; readonly earlier: string; readonly days: number; readonly from: number }
   /** A mother's death in the father's period: the father's end and a pakṣiṇī. */
   | { readonly overlap: 'MOTHER_AFTER_FATHER'; readonly earlier: string };
+
+/** A place, a clock, a table and a household, as `almanac.household` reads them. */
+export interface HouseholdAsked {
+  /** Where, in degrees and metres: the place whose sunrises count the days. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The tradition's table, every row data; the *Dharmasindhu*'s when left out. */
+  readonly table?: AshauchTable;
+  /** A table the SDK ships, by its name; never beside `table`. */
+  readonly tradition?: AshauchTradition;
+  /** The events and the observers. */
+  readonly household: Household;
+}
+
+/** One observer's periods, in the order the news reached the observer. */
+export interface HouseholdPeriods {
+  /** The observer's key. */
+  readonly key: string;
+  /** A period for each tie, each overlap resolved against those before it. */
+  readonly periods: readonly Ashauch[];
+  /** When the last ends, a UTC Julian day. */
+  readonly pureAt: number;
+}
+
+/** What `almanac.household` answers, frozen to its leaves. */
+export interface HouseholdAnswer {
+  /** Each observer's periods, in the request's order. */
+  readonly value: { readonly observers: readonly HouseholdPeriods[] };
+  /** What computed it, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** What `almanac.ashauchKin` answers, frozen to its leaves (`03-design/ashauch.md` §10). */
+export interface Kin {
+  /** The relation to ask an ashauch with, when a period is kept. */
+  readonly relation?: AshauchRelation;
+  /** What is kept. */
+  readonly keeps: KinKeeps;
+  /** The degree, when the path is one line, the common forebear first. */
+  readonly degree?: { readonly observer: number; readonly person: number; readonly reach: number };
+  /** For an unmarried daughter of the line, whether the observer stands within the persons her bands name. */
+  readonly withinGirlsReach?: boolean;
+  /** The text and page. */
+  readonly clause: string;
+  /** The table's name. */
+  readonly table: string;
+}
+
+/** What `almanac.ashauchRite` answers, frozen (`03-design/ashauch.md` §12). */
+export interface AshauchRiteAnswer {
+  /** The rite, as asked. */
+  readonly rite: AshauchRite;
+  /** Whether it goes on, in part, or waits. */
+  readonly verdict: RiteVerdict;
+  /** What opens the rite, when the texts name it. */
+  readonly beginning?: RiteBeginning;
+  /** The row's index in the table. */
+  readonly row: number;
+  /** The text and page. */
+  readonly clause: string;
+  /** The table's name. */
+  readonly table: string;
+}
+
+/** A place, a clock and a death, as `almanac.deathTime` reads them. */
+export interface DeathTimeAsked {
+  /** Where, in degrees and metres: the place whose day and sky are read. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The death, a UTC Julian day. */
+  readonly at: number;
+  /** The burning, a UTC Julian day; it falls as the death did when left out. */
+  readonly crematedAt?: number;
+  /** The tradition's lists, every one data; the *Dharmasindhu*'s when left out. */
+  readonly table?: DeathTimeTable;
+}
+
+/** What stood at a death or a burning. */
+export interface DeathInstant {
+  /** The instant, a UTC Julian day. */
+  readonly at: number;
+  /** The nakshatra at it. */
+  readonly nakshatra: Nakshatra;
+  /** The tithi at it. */
+  readonly tithi: Tithi;
+  /** The vara of the sunrise day holding it. */
+  readonly vara: Vara;
+  /** The Moon's sidereal sign at it. */
+  readonly moon: Rashi;
+  /** Whether it is in the panchaka: the Moon in Aquarius or Pisces. */
+  readonly panchaka: boolean;
+  /** Whether the nakshatra straddles a sign so that three or two of its feet fall in one. */
+  readonly feet?: 'TRIPADA' | 'DVIPADA';
+  /** The pushkara yoga, when one holds. */
+  readonly pushkara?: 'TRIPUSHKARA' | 'DVIPUSHKARA';
+}
+
+/** What `almanac.deathTime` answers, frozen to its leaves. */
+export interface DeathTimeAnswer {
+  readonly value: {
+    /** The death's reading. */
+    readonly death: DeathInstant;
+    /** The burning's reading, when its instant was given. */
+    readonly cremation?: DeathInstant;
+    /** The rites owed, each with its clause. */
+    readonly rites: readonly {
+      readonly rite: 'PANCHAKA_FIGURES' | 'CLOSING_SHANTI' | 'PUSHKARA_FIGURES';
+      readonly clause: string;
+    }[];
+    /** The table's name. */
+    readonly table: string;
+  };
+  /** What computed it, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
 
 /** A place, a clock and a request, as `almanac.firstYear` reads them. */
 export interface FirstYearQuery {

@@ -1,0 +1,40 @@
+---
+title: ts_almanac_ashauch_rite
+description: "Whether a rite may go on during a period of impurity (`03-design/ashauch.md` §12), answered as canonical JSON."
+---
+
+Whether a rite may go on during a period of impurity (`03-design/ashauch.md` §12), answered as canonical JSON.
+
+The answer is `{rite, verdict, beginning, row, clause, table}`: `verdict` `GOES_ON`, `IN_PART` or `BARRED`, `beginning` what opens this rite when the texts name it.
+
+`request_json` is `{"table", "rite"}`: `table` the *Dharmasindhu*'s when left out, every row data; `rite` `{rite, begun, noOtherWay, calamity, kind}`. A key it does not read is `INVALID_ARG` named under `rite`; a rite the table names no row for is `UNSUPPORTED`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_almanac_ashauch_rite(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `almanac.ashauch_rite` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.

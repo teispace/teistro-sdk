@@ -80,6 +80,7 @@ fn request(key: &str, event: AshauchEvent) -> AshauchRequest {
         nearness: Nearness::SameVillage,
         full_days: None,
         during: Vec::new(),
+        fire_giver: false,
     }
 }
 
@@ -273,4 +274,90 @@ fn a_query_names_the_mitakshara_by_its_tradition_and_never_beside_a_table() {
     assert_eq!(both.field(), Some("ashauch.tradition"), "{both}");
     let found = context().almanac().ashauch_query(&named).unwrap().value;
     assert_eq!(found["table"], "MITAKSHARA");
+}
+
+/// A household at Kathmandu: a father dies at 10:00 on Sunday 11 January
+/// 2026 and the mother at 14:00 on Thursday 15 January (`ashauch.md`
+/// §11). The son keeps the father's end and a pakṣiṇī (Mit on III.20,
+/// DS p. 306); a sapiṇḍa ends with the first (K5); a cousin who heard of
+/// the father only on the 16th reads the mother's first, by the knowing
+/// (DS p. 305).
+#[test]
+fn a_household_resolves_each_observers_overlaps_in_the_order_they_knew() {
+    let father = npt(1, 11, 10, 0).get();
+    let mother = npt(1, 15, 14, 0).get();
+    let heard = npt(1, 16, 12, 0).get();
+    let asked = teistro::HouseholdQuery::from_json(&format!(
+        r#"{{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337,
+            "utcOffsetSeconds": 20700,
+            "household": {{
+              "events": [
+                {{"key": "father", "event": {{"event": "DEATH", "at": {father}, "deceased": {{"sex": "MALE"}}}}}},
+                {{"key": "mother", "event": {{"event": "DEATH", "at": {mother}, "deceased": {{"sex": "FEMALE"}}}}}}],
+              "observers": [
+                {{"key": "son", "ties": [{{"event": "father", "relation": "CHILD"}}, {{"event": "mother", "relation": "CHILD"}}]}},
+                {{"key": "nephew", "ties": [{{"event": "father", "relation": "SAPINDA"}}, {{"event": "mother", "relation": "SAPINDA"}}]}},
+                {{"key": "cousin", "ties": [{{"event": "father", "relation": "SAPINDA", "heardAt": {heard}}}, {{"event": "mother", "relation": "SAPINDA"}}]}}]}}}}"#
+    ))
+    .unwrap();
+    let sdk = context();
+    let found = sdk.almanac().household_query(&asked).unwrap().value;
+    let observers = found["observers"].as_array().unwrap();
+    let periods = |at: usize| observers[at]["periods"].as_array().unwrap().clone();
+    let son = periods(0);
+    assert_eq!(son[1]["overlap"]["overlap"], "MOTHER_AFTER_FATHER");
+    assert!(son[1]["end"].as_f64().unwrap() > son[0]["end"].as_f64().unwrap() + 1.0);
+    assert_eq!(observers[0]["pureAt"], son[1]["end"]);
+    let nephew = periods(1);
+    assert_eq!(nephew[1]["overlap"]["overlap"], "ENDS_WITH_EARLIER");
+    assert_eq!(nephew[1]["end"], nephew[0]["end"]);
+    assert_eq!(observers[1]["pureAt"], nephew[0]["end"]);
+    // The kernel's chain, asked by hand, is the same.
+    let kernel = answer(&request("father", death(npt(1, 11, 10, 0))));
+    assert_eq!(nephew[0]["end"].as_f64().unwrap(), kernel.end.get());
+    let cousin = periods(2);
+    assert_eq!(cousin[0]["key"], "mother", "the news read first");
+    assert_eq!(cousin[1]["key"], "father");
+    assert_eq!(cousin[1]["clause"]["clause"], "REMAINDER");
+
+    let refused = teistro::HouseholdQuery::from_json(
+        r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+            "household": {"events": [],
+              "observers": [{"key": "son", "ties": [{"event": "uncle", "relation": "CHILD"}]}]}}"#,
+    )
+    .unwrap_err();
+    assert_eq!(
+        refused.field(),
+        Some("household.household.observers[0].ties[0].event"),
+        "{refused}"
+    );
+}
+
+/// The relation resolver and the rite, as a binding asks them
+/// (`ashauch.md` §§10, 12): no place and no ephemeris.
+#[test]
+fn a_path_and_a_rite_answer_without_a_sky_and_name_a_refusal() {
+    let kin = |text: &str| teistro::KinQuery::from_json(text).and_then(|asked| asked.answer());
+    let cousin = kin(
+        r#"{"kin": {"path": ["FATHER", "FATHER", "SON", "SON"], "observer": {"sex": "MALE"}}}"#,
+    )
+    .unwrap();
+    assert_eq!(cousin.relation, Some(Relation::Sapinda));
+    assert_eq!(cousin.degree.map(|degree| degree.observer), Some(3));
+    let back =
+        kin(r#"{"kin": {"path": ["SON", "FATHER"], "observer": {"sex": "MALE"}}}"#).unwrap_err();
+    assert_eq!(back.field(), Some("kin.kin.path[1]"), "{back}");
+    let unknown =
+        kin(r#"{"kin": {"path": ["FATHER"], "observer": {"sex": "MALE"}}, "x": 1}"#).unwrap_err();
+    assert_eq!(unknown.status, teistro::Status::InvalidArg);
+
+    let rite = |text: &str| teistro::RiteQuery::from_json(text).and_then(|asked| asked.answer());
+    let wedding =
+        rite(r#"{"rite": {"rite": "MARRIAGE", "begun": true, "noOtherWay": true}}"#).unwrap();
+    assert_eq!(wedding.verdict, teistro::ashauch::RiteVerdict::GoesOn);
+    assert!(wedding.clause.contains("p. 309"), "{}", wedding.clause);
+    let waits = rite(r#"{"rite": {"rite": "MARRIAGE"}}"#).unwrap();
+    assert_eq!(waits.verdict, teistro::ashauch::RiteVerdict::Barred);
+    let refused = rite(r#"{"rite": {"rite": "CORONATION"}}"#).unwrap_err();
+    assert_eq!(refused.status, teistro::Status::InvalidArg);
 }

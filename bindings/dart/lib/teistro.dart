@@ -1766,6 +1766,121 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **A household's periods of impurity** at a place
+  /// (`03-design/ashauch.md` §11): several births and deaths and several
+  /// observers in one request. Each observer's ties name an event by its
+  /// key and the observer's relation to it; they are read in the order the
+  /// news reached that observer, each against the ones before it (DS p.
+  /// 305: the news, not the event, decides). [table] is the tradition's
+  /// table, the *Dharmasindhu*'s when null; [tradition] names a table the
+  /// SDK ships instead, never beside [table].
+  ///
+  /// ```dart
+  /// final found = sdk.almanac.household(
+  ///   household: Household(
+  ///     events: [HouseholdEvent(key: 'grandfather', event: AshauchEventDeath(at: 2461051.677083))],
+  ///     observers: [HouseholdObserver(key: 'son', ties: [HouseholdTie(event: 'grandfather', relation: AshauchRelation.child)])],
+  ///   ),
+  ///   place: kathmandu, utcOffsetSeconds: 20700,
+  /// );
+  /// final pure = found.value.observers.first.pureAt;
+  /// ```
+  HouseholdAnswer household({
+    required Household household,
+    required Observer place,
+    required int utcOffsetSeconds,
+    AshauchTable? table,
+    AshauchTradition? tradition,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      if (table != null) 'table': table._wire,
+      if (tradition != null) 'tradition': tradition.key,
+      'household': household._wire,
+    });
+    return _household(
+      _context._guarded(() => _context._inner.almanacHousehold(asked)),
+    );
+  }
+
+  /// **The ashauch relation a path in a family gives**
+  /// (`03-design/ashauch.md` §10): the steps from the observer to the one
+  /// who died or was born, read as the *Dharmasindhu* counts kin (pp.
+  /// 299–302): the relation to ask [ashauch] with, what is kept, the
+  /// line's degree counted from the common forebear, who is first, and
+  /// the clause. Needs no place or ephemeris; a path that steps back is
+  /// refused as `kin.kin.path[n]`.
+  ///
+  /// ```dart
+  /// final kin = sdk.almanac.ashauchKin(const KinQuery(
+  ///   kin: KinAsked(path: [KinStep.father, KinStep.son], observer: KinObserver(sex: AshauchSex.male)),
+  /// ));
+  /// final relation = kin.relation; // AshauchRelation.sapinda
+  /// ```
+  Kin ashauchKin(KinQuery query) {
+    final asked = jsonEncode(query._wire);
+    return _kin(
+      _context._guarded(() => _context._inner.almanacAshauchKin(asked)),
+    );
+  }
+
+  /// **Whether a rite may go on during a period of impurity**
+  /// (`03-design/ashauch.md` §12): goes on, goes on in part, or waits,
+  /// what opens the rite and the clause, from the *Dharmasindhu*'s
+  /// exceptions (pp. 309–310) when the query names no table. Needs no
+  /// place or ephemeris.
+  ///
+  /// ```dart
+  /// final answer = sdk.almanac.ashauchRite(const RiteQuery(
+  ///   rite: AshauchRiteAsked(rite: AshauchRite.marriage, begun: true, noOtherWay: true),
+  /// ));
+  /// final verdict = answer.verdict; // RiteVerdict.goesOn
+  /// ```
+  AshauchRiteAnswer ashauchRite(RiteQuery query) {
+    final asked = jsonEncode(query._wire);
+    return _ashauchRite(
+      _context._guarded(() => _context._inner.almanacAshauchRite(asked)),
+    );
+  }
+
+  /// **The death-time check** at a place (`03-design/death-time.md`): at
+  /// the death and at the burning, the nakshatra, the tithi, the vara and
+  /// the Moon's sign, whether it is the panchaka, the nakshatra's feet and
+  /// any pushkara yoga; and the rites the *Dharmasindhu* ties to them (pp.
+  /// 334–335), each with its clause. With no [crematedAt] the burning is
+  /// taken to fall as the death did; one before the death is refused as
+  /// `deathTime.crematedAt`.
+  ///
+  /// ```dart
+  /// final found = sdk.almanac.deathTime(
+  ///   at: 2461051.677083, place: kathmandu, utcOffsetSeconds: 20700,
+  /// );
+  /// final panchaka = found.value.death.panchaka;
+  /// ```
+  DeathTimeAnswer deathTime({
+    required double at,
+    required Observer place,
+    required int utcOffsetSeconds,
+    double? crematedAt,
+    DeathTimeTable? table,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      'at': at,
+      if (crematedAt != null) 'crematedAt': crematedAt,
+      if (table != null) 'table': table._wire,
+    });
+    return _deathTime(
+      _context._guarded(() => _context._inner.almanacDeathTime(asked)),
+    );
+  }
+
   /// **A death's first year** at a place (`03-design/shraddha.md` §3.3):
   /// the *Dharmasindhu*'s sixteen shraddhas, the first abdika and the
   /// sapindana, each on its day. Every day is the festival evaluator's, and
@@ -18321,6 +18436,7 @@ final class AshauchOverlapped extends _Value {
     required this.overlap,
     required this.earlier,
     this.days,
+    this.from,
   });
 
   /// The tag: `ENDS_WITH_EARLIER` (it ends with the earlier period, which
@@ -18335,8 +18451,12 @@ final class AshauchOverlapped extends _Value {
   /// The days added, for `LAST_NIGHT`.
   final int? days;
 
+  /// For `LAST_NIGHT`: the earlier period's own end, a UTC Julian day,
+  /// where the added days begin.
+  final double? from;
+
   @override
-  List<Object?> get _fields => [overlap, earlier, days];
+  List<Object?> get _fields => [overlap, earlier, days, from];
 }
 
 /// The period of impurity after a birth or a death (`03-design/ashauch.md`),
@@ -18418,6 +18538,10 @@ final class Ashauch extends _Value {
     end: end,
     length: length,
     days: days,
+    // The days a last night added take in less than the period did
+    // (DS p. 306).
+    extendedFrom: overlap?.overlap == 'LAST_NIGHT' ? overlap?.from : null,
+    extendedDays: overlap?.overlap == 'LAST_NIGHT' ? overlap?.days : null,
   );
 
   @override
@@ -18455,44 +18579,393 @@ final class AshauchAnswer {
 /// provenance beside it.
 AshauchAnswer _ashauch(String json) {
   final envelope = jsonDecode(json) as Map<String, Object?>;
-  final raw = envelope['value']! as Map<String, Object?>;
+  return AshauchAnswer(
+    value: _ashauchValue(envelope['value']! as Map<String, Object?>),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
+}
+
+/// One period as the SDK writes it.
+Ashauch _ashauchValue(Map<String, Object?> raw) {
   final clause = raw['clause']! as Map<String, Object?>;
   final overlap = raw['overlap'] as Map<String, Object?>?;
   double jd(Object? raw) => (raw! as num).toDouble();
-  return AshauchAnswer(
-    value: Ashauch(
-      key: raw['key']! as String,
-      kind: _keyedIn(AshauchKind.values, raw['kind']),
-      relation: _keyedIn(AshauchRelation.values, raw['relation']),
-      sex: raw['sex'] == null ? null : _keyedIn(AshauchSex.values, raw['sex']),
-      start: jd(raw['start']),
-      dayOne: _serdeDate(raw['dayOne']! as Map<String, Object?>),
-      dayOneBy: _dayOneBy(raw['dayOneBy']! as Map<String, Object?>),
-      end: jd(raw['end']),
-      lastDay:
-          raw['lastDay'] == null
-              ? null
-              : _serdeDate(raw['lastDay']! as Map<String, Object?>),
-      length: AshauchLength._read(raw['length']! as Map<String, Object?>),
-      days: raw['days'] as int?,
-      // The clause's fields are spelt as Rust names them: no rename reaches
-      // inside a variant, so `within_days` keeps its underscore.
-      clause: AshauchClause(
-        clause: clause['clause']! as String,
-        row: clause['row'] as int?,
-        said: clause['said'] as String?,
-        withinDays: clause['within_days'] as int?,
-        abroad: clause['abroad'] as bool?,
-      ),
-      overlap:
-          overlap == null
-              ? null
-              : AshauchOverlapped(
-                overlap: overlap['overlap']! as String,
-                earlier: overlap['earlier']! as String,
-                days: overlap['days'] as int?,
-              ),
-      ritesFrom: raw['ritesFrom'] == null ? null : jd(raw['ritesFrom']),
+  return Ashauch(
+    key: raw['key']! as String,
+    kind: _keyedIn(AshauchKind.values, raw['kind']),
+    relation: _keyedIn(AshauchRelation.values, raw['relation']),
+    sex: raw['sex'] == null ? null : _keyedIn(AshauchSex.values, raw['sex']),
+    start: jd(raw['start']),
+    dayOne: _serdeDate(raw['dayOne']! as Map<String, Object?>),
+    dayOneBy: _dayOneBy(raw['dayOneBy']! as Map<String, Object?>),
+    end: jd(raw['end']),
+    lastDay:
+        raw['lastDay'] == null
+            ? null
+            : _serdeDate(raw['lastDay']! as Map<String, Object?>),
+    length: AshauchLength._read(raw['length']! as Map<String, Object?>),
+    days: raw['days'] as int?,
+    // The clause's fields are spelt as Rust names them: no rename reaches
+    // inside a variant, so `within_days` keeps its underscore.
+    clause: AshauchClause(
+      clause: clause['clause']! as String,
+      row: clause['row'] as int?,
+      said: clause['said'] as String?,
+      withinDays: clause['within_days'] as int?,
+      abroad: clause['abroad'] as bool?,
+    ),
+    overlap:
+        overlap == null
+            ? null
+            : AshauchOverlapped(
+              overlap: overlap['overlap']! as String,
+              earlier: overlap['earlier']! as String,
+              days: overlap['days'] as int?,
+              from: overlap['from'] == null ? null : jd(overlap['from']),
+            ),
+    ritesFrom: raw['ritesFrom'] == null ? null : jd(raw['ritesFrom']),
+    table: raw['table']! as String,
+  );
+}
+
+/// One observer's periods in a household (`03-design/ashauch.md` §11),
+/// in the order the news reached the observer.
+final class HouseholdPeriods extends _Value {
+  const HouseholdPeriods({
+    required this.key,
+    required this.periods,
+    required this.pureAt,
+  });
+
+  /// The observer's key.
+  final String key;
+
+  /// A period for each tie, each overlap resolved against those before it.
+  final List<Ashauch> periods;
+
+  /// When the last ends, a UTC Julian day.
+  final double pureAt;
+
+  @override
+  List<Object?> get _fields => [key, periods, pureAt];
+}
+
+/// A household's periods: each observer's.
+final class HouseholdAshauch extends _Value {
+  const HouseholdAshauch({required this.observers});
+
+  /// Each observer, in the request's order.
+  final List<HouseholdPeriods> observers;
+
+  @override
+  List<Object?> get _fields => [observers];
+}
+
+/// What `almanac.household` answers.
+final class HouseholdAnswer {
+  const HouseholdAnswer({required this.value, required this.provenance});
+
+  /// Each observer's periods.
+  final HouseholdAshauch value;
+
+  /// What computed it, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// `ts_almanac_household`'s answer, with the provenance beside it.
+HouseholdAnswer _household(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final value = envelope['value']! as Map<String, Object?>;
+  return HouseholdAnswer(
+    value: HouseholdAshauch(
+      observers: List.unmodifiable([
+        for (final raw
+            in (value['observers']! as List<Object?>)
+                .cast<Map<String, Object?>>())
+          HouseholdPeriods(
+            key: raw['key']! as String,
+            periods: List.unmodifiable([
+              for (final period in raw['periods']! as List<Object?>)
+                _ashauchValue(period! as Map<String, Object?>),
+            ]),
+            pureAt: (raw['pureAt']! as num).toDouble(),
+          ),
+      ]),
+    ),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
+}
+
+/// The degree of a line counted out, the common forebear first
+/// (*Dharmasindhu* p. 299).
+final class KinDegree extends _Value {
+  const KinDegree({
+    required this.observer,
+    required this.person,
+    required this.reach,
+  });
+
+  /// The observer's number from the common forebear, who is 1.
+  final int observer;
+
+  /// The person's number.
+  final int person;
+
+  /// The last person who is a sapinda here, the living forebears added.
+  final int reach;
+
+  @override
+  List<Object?> get _fields => [observer, person, reach];
+}
+
+/// What `almanac.ashauchKin` answers (`03-design/ashauch.md` §10).
+final class Kin extends _Value {
+  const Kin({
+    this.relation,
+    required this.keeps,
+    this.degree,
+    this.withinGirlsReach,
+    required this.clause,
+    required this.table,
+  });
+
+  /// The relation to ask an ashauch with, when a period is kept.
+  final AshauchRelation? relation;
+
+  /// What is kept.
+  final KinKeeps keeps;
+
+  /// The degree, when the path is one line.
+  final KinDegree? degree;
+
+  /// For an unmarried daughter of the line, whether the observer stands
+  /// within the persons her bands name.
+  final bool? withinGirlsReach;
+
+  /// The text and page.
+  final String clause;
+
+  /// The table's name.
+  final String table;
+
+  @override
+  List<Object?> get _fields => [
+    relation,
+    keeps,
+    degree,
+    withinGirlsReach,
+    clause,
+    table,
+  ];
+}
+
+/// `ts_almanac_ashauch_kin`'s answer.
+Kin _kin(String json) {
+  final raw = jsonDecode(json) as Map<String, Object?>;
+  final degree = raw['degree'] as Map<String, Object?>?;
+  return Kin(
+    relation:
+        raw['relation'] == null
+            ? null
+            : _keyedIn(AshauchRelation.values, raw['relation']),
+    keeps: _keyedIn(KinKeeps.values, raw['keeps']),
+    degree:
+        degree == null
+            ? null
+            : KinDegree(
+              observer: degree['observer']! as int,
+              person: degree['person']! as int,
+              reach: degree['reach']! as int,
+            ),
+    withinGirlsReach: raw['withinGirlsReach'] as bool?,
+    clause: raw['clause']! as String,
+    table: raw['table']! as String,
+  );
+}
+
+/// What `almanac.ashauchRite` answers (`03-design/ashauch.md` §12).
+final class AshauchRiteAnswer extends _Value {
+  const AshauchRiteAnswer({
+    required this.rite,
+    required this.verdict,
+    this.beginning,
+    required this.row,
+    required this.clause,
+    required this.table,
+  });
+
+  /// The rite, as asked.
+  final AshauchRite rite;
+
+  /// Whether it goes on, in part, or waits.
+  final RiteVerdict verdict;
+
+  /// What opens the rite, when the texts name it.
+  final RiteBeginning? beginning;
+
+  /// The row's index in the table.
+  final int row;
+
+  /// The text and page.
+  final String clause;
+
+  /// The table's name.
+  final String table;
+
+  @override
+  List<Object?> get _fields => [rite, verdict, beginning, row, clause, table];
+}
+
+/// `ts_almanac_ashauch_rite`'s answer.
+AshauchRiteAnswer _ashauchRite(String json) {
+  final raw = jsonDecode(json) as Map<String, Object?>;
+  return AshauchRiteAnswer(
+    rite: _keyedIn(AshauchRite.values, raw['rite']),
+    verdict: _keyedIn(RiteVerdict.values, raw['verdict']),
+    beginning:
+        raw['beginning'] == null
+            ? null
+            : _keyedIn(RiteBeginning.values, raw['beginning']),
+    row: raw['row']! as int,
+    clause: raw['clause']! as String,
+    table: raw['table']! as String,
+  );
+}
+
+/// What stood at a death or a burning (`03-design/death-time.md`).
+final class DeathInstant extends _Value {
+  const DeathInstant({
+    required this.at,
+    required this.nakshatra,
+    required this.tithi,
+    required this.vara,
+    required this.moon,
+    required this.panchaka,
+    this.feet,
+    this.pushkara,
+  });
+
+  /// The instant, a UTC Julian day.
+  final double at;
+
+  /// The nakshatra at it.
+  final Nakshatra nakshatra;
+
+  /// The tithi at it.
+  final Tithi tithi;
+
+  /// The vara of the sunrise day holding it.
+  final Vara vara;
+
+  /// The Moon's sidereal sign at it.
+  final Rashi moon;
+
+  /// Whether it is in the panchaka: the Moon in Aquarius or Pisces.
+  final bool panchaka;
+
+  /// `TRIPADA` or `DVIPADA`, when the nakshatra straddles a sign so.
+  final String? feet;
+
+  /// `TRIPUSHKARA` or `DVIPUSHKARA`, when one holds.
+  final String? pushkara;
+
+  @override
+  List<Object?> get _fields => [
+    at,
+    nakshatra,
+    tithi,
+    vara,
+    moon,
+    panchaka,
+    feet,
+    pushkara,
+  ];
+}
+
+/// A rite the texts tie to the readings, with its clause.
+final class DeathRite extends _Value {
+  const DeathRite({required this.rite, required this.clause});
+
+  /// `PANCHAKA_FIGURES`, `CLOSING_SHANTI` or `PUSHKARA_FIGURES`.
+  final String rite;
+
+  /// The text and page.
+  final String clause;
+
+  @override
+  List<Object?> get _fields => [rite, clause];
+}
+
+/// The death-time check: the readings and the rites owed.
+final class DeathTime extends _Value {
+  const DeathTime({
+    required this.death,
+    this.cremation,
+    required this.rites,
+    required this.table,
+  });
+
+  /// The death's reading.
+  final DeathInstant death;
+
+  /// The burning's reading, when its instant was given.
+  final DeathInstant? cremation;
+
+  /// The rites owed; with no burning given, it is taken to fall as the
+  /// death did.
+  final List<DeathRite> rites;
+
+  /// The table's name.
+  final String table;
+
+  @override
+  List<Object?> get _fields => [death, cremation, rites, table];
+}
+
+/// What `almanac.deathTime` answers.
+final class DeathTimeAnswer {
+  const DeathTimeAnswer({required this.value, required this.provenance});
+
+  /// The readings and the rites.
+  final DeathTime value;
+
+  /// What computed it, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// One reading of the death-time check, its members written in full.
+DeathInstant _deathInstant(Map<String, Object?> raw) => DeathInstant(
+  at: (raw['at']! as num).toDouble(),
+  nakshatra: _key(raw['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+  tithi: _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
+  vara: _key(raw['vara'], Vara.byKey, Vara.unknown),
+  moon: _key(raw['moon'], Rashi.byKey, Rashi.unknown),
+  panchaka: raw['panchaka']! as bool,
+  feet: raw['feet'] as String?,
+  pushkara: raw['pushkara'] as String?,
+);
+
+/// `ts_almanac_death_time`'s answer, with the provenance beside it.
+DeathTimeAnswer _deathTime(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final raw = envelope['value']! as Map<String, Object?>;
+  final cremation = raw['cremation'] as Map<String, Object?>?;
+  return DeathTimeAnswer(
+    value: DeathTime(
+      death: _deathInstant(raw['death']! as Map<String, Object?>),
+      cremation: cremation == null ? null : _deathInstant(cremation),
+      rites: List.unmodifiable([
+        for (final rite
+            in (raw['rites']! as List<Object?>).cast<Map<String, Object?>>())
+          DeathRite(
+            rite: rite['rite']! as String,
+            clause: rite['clause']! as String,
+          ),
+      ]),
       table: raw['table']! as String,
     ),
     provenance: Provenance.fromJson(

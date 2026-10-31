@@ -13,6 +13,8 @@ import java.util.Objects;
  *
  * @param days Its days, when the length is a count. Null leaves the SDK's default.
  * @param end When it ends.
+ * @param extendedDays The days an overlap added past its own end. Null leaves the SDK's default.
+ * @param extendedFrom Where its last-night days begin, when an overlap added them: those days take in less than the period did (*Dharmasindhu* p. 306). Null leaves the SDK's default.
  * @param key The earlier answer's key, which an overlap names.
  * @param kind A birth's or a death's.
  * @param length Its length.
@@ -20,7 +22,7 @@ import java.util.Objects;
  * @param sex The deceased's sex, or the child's. Null leaves the SDK's default.
  * @param start When it began.
  */
-public record AshauchRunning(Integer days, double end, String key, AshauchKind kind, AshauchLength length, AshauchRelation relation, AshauchSex sex, double start) implements RequestJson {
+public record AshauchRunning(Integer days, double end, Integer extendedDays, Double extendedFrom, String key, AshauchKind kind, AshauchLength length, AshauchRelation relation, AshauchSex sex, double start) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -31,6 +33,9 @@ public record AshauchRunning(Integer days, double end, String key, AshauchKind k
     public AshauchRunning {
         if (days != null) {
             Read.range(days, "AshauchRunning.days", 0L, 255L);
+        }
+        if (extendedDays != null) {
+            Read.range(extendedDays, "AshauchRunning.extendedDays", 0L, 255L);
         }
         Objects.requireNonNull(key, "`AshauchRunning.key` is required");
         Objects.requireNonNull(kind, "`AshauchRunning.kind` is required");
@@ -50,7 +55,7 @@ public record AshauchRunning(Integer days, double end, String key, AshauchKind k
      * @param start When it began.
      */
     public AshauchRunning(double end, String key, AshauchKind kind, AshauchLength length, AshauchRelation relation, double start) {
-        this(null, end, key, kind, length, relation, null, start);
+        this(null, end, null, null, key, kind, length, relation, null, start);
     }
 
     /**
@@ -67,6 +72,8 @@ public record AshauchRunning(Integer days, double end, String key, AshauchKind k
     public static final class Builder {
         private Integer days;
         private Double end;
+        private Integer extendedDays;
+        private Double extendedFrom;
         private String key;
         private AshauchKind kind;
         private AshauchLength length;
@@ -95,6 +102,28 @@ public record AshauchRunning(Integer days, double end, String key, AshauchKind k
          */
         public Builder end(double end) {
             this.end = end;
+            return this;
+        }
+
+        /**
+         * Sets {@code extendedDays}.
+         *
+         * @param extendedDays The days an overlap added past its own end. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder extendedDays(int extendedDays) {
+            this.extendedDays = extendedDays;
+            return this;
+        }
+
+        /**
+         * Sets {@code extendedFrom}.
+         *
+         * @param extendedFrom Where its last-night days begin, when an overlap added them: those days take in less than the period did (*Dharmasindhu* p. 306). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder extendedFrom(double extendedFrom) {
+            this.extendedFrom = extendedFrom;
             return this;
         }
 
@@ -171,7 +200,7 @@ public record AshauchRunning(Integer days, double end, String key, AshauchKind k
          * @throws NullPointerException naming a required field left unset
          */
         public AshauchRunning build() {
-            return new AshauchRunning(days, Objects.requireNonNull(end, "`AshauchRunning.end` is required"), key, kind, length, relation, sex, Objects.requireNonNull(start, "`AshauchRunning.start` is required"));
+            return new AshauchRunning(days, Objects.requireNonNull(end, "`AshauchRunning.end` is required"), extendedDays, extendedFrom, key, kind, length, relation, sex, Objects.requireNonNull(start, "`AshauchRunning.start` is required"));
         }
     }
 
@@ -187,6 +216,8 @@ public record AshauchRunning(Integer days, double end, String key, AshauchKind k
         return new AshauchRunning(
             Read.orNull(json.get("days"), present -> Read.int32(present, "AshauchRunning.days")),
             Read.number(Read.required(json.get("end"), "AshauchRunning.end"), "AshauchRunning.end"),
+            Read.orNull(json.get("extendedDays"), present -> Read.int32(present, "AshauchRunning.extendedDays")),
+            Read.orNull(json.get("extendedFrom"), present -> Read.number(present, "AshauchRunning.extendedFrom")),
             Read.text(Read.required(json.get("key"), "AshauchRunning.key"), "AshauchRunning.key"),
             Read.member(Read.required(json.get("kind"), "AshauchRunning.kind"), "AshauchRunning.kind", AshauchKind::byKey),
             AshauchLength.of(Read.required(json.get("length"), "AshauchRunning.length")),
@@ -202,6 +233,12 @@ public record AshauchRunning(Integer days, double end, String key, AshauchKind k
             json.put("days", days);
         }
         json.put("end", end);
+        if (extendedDays != null) {
+            json.put("extendedDays", extendedDays);
+        }
+        if (extendedFrom != null) {
+            json.put("extendedFrom", extendedFrom);
+        }
         json.put("key", key);
         json.put("kind", kind.toJson());
         json.put("length", length.toJson());

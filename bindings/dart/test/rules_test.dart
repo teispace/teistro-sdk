@@ -287,6 +287,10 @@ const Set<String> _handShaped = {
 /// inferred, so a record added to the examples asks for its class here.
 const Map<String, Type> _records = {
   'almanac.ashauch': AshauchQuery,
+  'almanac.ashauchKin': KinQuery,
+  'almanac.ashauchRite': RiteQuery,
+  'almanac.deathTime': DeathTimeQuery,
+  'almanac.household': HouseholdQuery,
   'almanac.changes': ChangesRequest,
   'almanac.days': AlmanacDaysRequest,
   'almanac.digest': DigestRequest,
