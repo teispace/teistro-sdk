@@ -4048,6 +4048,7 @@ public final class Native {
         "ts_time_delta_t",
         "ts_intl_load_pack",
         "ts_intl_set_locale",
+        "ts_intl_lookup_locale",
         "ts_intl_locale",
         "ts_intl_has",
         "ts_intl_in_words",
@@ -4398,6 +4399,17 @@ public final class Native {
      * `UNSUPPORTED` naming the loaded locales.
      */
     public final MethodHandle ts_intl_set_locale;
+
+    /**
+     * The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+     * call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+     * `ts_intl_set_locale` selects the same one.
+     *
+     * # Errors
+     *
+     * `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+     */
+    public final MethodHandle ts_intl_lookup_locale;
 
     /**
      * The locale every render resolves from, lent until the next call on the
@@ -5098,6 +5110,7 @@ public final class Native {
         ts_time_delta_t = linker.downcallHandle(symbols.find("ts_time_delta_t").orElseThrow(() -> missing("ts_time_delta_t")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_DOUBLE, ADDRESS));
         ts_intl_load_pack = linker.downcallHandle(symbols.find("ts_intl_load_pack").orElseThrow(() -> missing("ts_intl_load_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_LONG, ADDRESS));
         ts_intl_set_locale = linker.downcallHandle(symbols.find("ts_intl_set_locale").orElseThrow(() -> missing("ts_intl_set_locale")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
+        ts_intl_lookup_locale = linker.downcallHandle(symbols.find("ts_intl_lookup_locale").orElseThrow(() -> missing("ts_intl_lookup_locale")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_locale = linker.downcallHandle(symbols.find("ts_intl_locale").orElseThrow(() -> missing("ts_intl_locale")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS));
         ts_intl_has = linker.downcallHandle(symbols.find("ts_intl_has").orElseThrow(() -> missing("ts_intl_has")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_in_words = linker.downcallHandle(symbols.find("ts_intl_in_words").orElseThrow(() -> missing("ts_intl_in_words")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

@@ -7482,8 +7482,10 @@ export interface ZoneDatabase {
 
 /** `sdk.intl` — the locale, its messages and the scripts they are in. */
 export declare class IntlArea {
-  /** The locale every render resolves from. */
+  /** The locale every render resolves from. Set a short tag and the loaded locale it means is chosen, by RFC 4647 lookup: read this to see which. */
   locale: string;
+  /** The loaded locale a tag means, by RFC 4647 lookup, changing nothing: `ne` is `ne-Deva-NP`. */
+  lookupLocale(tag: string): string;
   /** Renders a message of the current locale with its parameters. */
   render(key: string, params?: Record<string, unknown>): Rendered;
   /** Whether the current locale or its fallbacks have a message. */

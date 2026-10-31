@@ -535,6 +535,27 @@ final class Calls {
     }
 
     /**
+     * `ts_intl_lookup_locale`: The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+     * call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+     * `ts_intl_set_locale` selects the same one.
+     *
+     * # Errors
+     *
+     * `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+     */
+    static String intlLookupLocale(Native lib, MemorySegment context, String locale) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment localeRaw = Boundary.cString(arena, Objects.requireNonNull(locale, "locale"));
+            MemorySegment outLocale = arena.allocate(Native.TsStr.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_intl_lookup_locale.invokeExact(context, localeRaw, outLocale));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return Boundary.borrowed(outLocale);
+        }
+    }
+
+    /**
      * `ts_intl_locale`: The locale every render resolves from, lent until the next call on the
      * context.
      */

@@ -50,6 +50,14 @@ moves; a festival answer holding no anniversary does not.
   fraction lit, phase angle, waxing, bright limb and parallactic angle as the place sees
   them. A polar day says `ALWAYS_ABOVE` or `ALWAYS_BELOW` (`03-design/day-sky.md`).
 
+**A short locale tag finds the locale it means.**
+**Numbers:** none.
+- `set_locale` and a context's `locale` choose by RFC 4647 lookup, `ne` finding `ne-Deva-NP`, and
+  `intl.locale` names the one chosen; `intl.lookupLocale`, `ts_intl_lookup_locale` at the boundary,
+  answers it and changes nothing. Rust's and Java's `set_locale` return it. A tag nothing loaded
+  answers is still refused: there is no default, and `hi-Latn` does not become Devanagari (SR-64,
+  C1011).
+
 **A tithi says its number in the month.**
 **Numbers:** none. The `tithi` catalogue kind is version 2.
 - `month_number`, 1 to 30, joins the tithi's attributes beside `number`, 1 to 15 in the

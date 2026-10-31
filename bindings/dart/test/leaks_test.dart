@@ -198,10 +198,7 @@ void main() {
 
   test('a context disposed gives back its native memory', skip: skip, () async {
     await givesBack(() {
-      final ctx = teistro.context(
-        profile: 'nepali-drik',
-        testProvider: true,
-      );
+      final ctx = teistro.context(profile: 'nepali-drik', testProvider: true);
       expect(ctx.profile, isNotEmpty);
       ctx.dispose();
     });
@@ -216,10 +213,7 @@ void main() {
         fail("the VM's service did not start, so nothing can collect");
       }
       await givesBack(collect: collect, () {
-        final ctx = teistro.context(
-          profile: 'nepali-drik',
-          testProvider: true,
-        );
+        final ctx = teistro.context(profile: 'nepali-drik', testProvider: true);
         expect(ctx.profile, isNotEmpty);
       });
     },

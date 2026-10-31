@@ -59,6 +59,23 @@ void main() {
     );
   });
 
+  test('a short tag finds the locale it means, and says which', () {
+    final ctx = context(locale: 'ne');
+    expect(ctx.intl.locale, 'ne-Deva-NP');
+    expect(ctx.intl.lookupLocale('sa'), 'sa-Deva');
+    expect(ctx.intl.locale, 'ne-Deva-NP');
+    ctx.intl.locale = 'hi';
+    expect(ctx.intl.locale, 'hi-Deva-IN');
+    for (final tag in ['de', 'hi-Latn']) {
+      expect(
+        () => ctx.intl.lookupLocale(tag),
+        throwsA(isA<TeistroException>()),
+      );
+      expect(() => ctx.intl.locale = tag, throwsA(isA<TeistroException>()));
+    }
+    expect(ctx.intl.locale, 'hi-Deva-IN');
+  });
+
   test('a tithi says its number in the month', () {
     expect(tithiMonthNumber(Tithi.shuklaPratipada), 1);
     expect(tithiMonthNumber(Tithi.purnima), 15);
@@ -81,10 +98,11 @@ void main() {
       place: place,
       zone: zone,
     );
-    expect(
-      zoned.each.map((day) => day.utcOffsetSeconds).toList(),
-      [-14400, -18000, -18000],
-    );
+    expect(zoned.each.map((day) => day.utcOffsetSeconds).toList(), [
+      -14400,
+      -18000,
+      -18000,
+    ]);
     final digest = decodeDigest(
       ctx.almanac.digest(from: from, days: 3, place: place, zone: zone),
     );

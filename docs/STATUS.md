@@ -3422,7 +3422,8 @@ formatter. SR-73 is done in PR #423 and SR-70 mostly was already. SR-66 is done:
 is `nepali-drik`, the old name an accepted alias that answers the same settings and says the new id
 (`03-design/settings-and-profiles.md` §3.2). SR-73 is finished: every binding's day and the digest
 (format 1.1, `clock`) say each day's offset, and the digest takes `zone`. SR-70 is finished:
-`month_number` on the tithi, and `tithiMonthNumber` in every binding.
+`month_number` on the tithi, and `tithiMonthNumber` in every binding. SR-64 is finished: RFC 4647
+lookup with no default, and `intl.lookupLocale`.
 
 ### An almanac app's brief (from 2026-10-20)
 

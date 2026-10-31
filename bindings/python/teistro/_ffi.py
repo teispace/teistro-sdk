@@ -4233,6 +4233,13 @@ class TeistroLibrary:
             ctypes.c_char_p,
         ]
         self.ts_intl_set_locale.restype = ctypes.c_int32
+        self.ts_intl_lookup_locale: Any = library.ts_intl_lookup_locale
+        self.ts_intl_lookup_locale.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StrStruct),
+        ]
+        self.ts_intl_lookup_locale.restype = ctypes.c_int32
         self.ts_intl_locale: Any = library.ts_intl_locale
         self.ts_intl_locale.argtypes = [
             ctypes.POINTER(_Context),
@@ -5145,6 +5152,31 @@ class TeistroContext:
                 self._raise(status)
             owned.clear()
             return None
+
+    def intl_lookup_locale(self, locale: str) -> str:
+        """The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+        call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+        `ts_intl_set_locale` selects the same one.
+
+        # Errors
+
+        `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _locale = locale.encode("utf-8")
+            owned.append(_locale)
+            _out_locale = _StrStruct()
+            status = Status(self._lib.ts_intl_lookup_locale(
+                self._raw,
+                _locale,
+                ctypes.byref(_out_locale),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            locale = _lent_string(_out_locale)
+            return locale
 
     def intl_locale(self) -> str:
         """The locale every render resolves from, lent until the next call on the

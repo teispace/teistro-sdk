@@ -163,7 +163,8 @@ pub(crate) fn scope_properties() -> Map<String, Value> {
             },
             "locale": {
                 "type": "string",
-                "description": "The locale a message renders in, as a BCP 47 tag.",
+                "description": "The locale a message renders in, as a BCP 47 tag; a short tag \
+                                such as `ne` finds the loaded locale it means.",
             },
     });
     properties.as_object().cloned().unwrap_or_default()

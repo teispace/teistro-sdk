@@ -52,6 +52,7 @@ pub mod civil;
 pub mod cli;
 pub mod derive;
 pub mod generate;
+mod lookup;
 pub mod mf2;
 pub mod migrate;
 pub mod pack;

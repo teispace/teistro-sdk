@@ -705,18 +705,9 @@ impl ContextBuilder {
         let zones = Zones::of(self.zones);
         intl.set_time_zones(Arc::clone(&zones.provider));
         if let Some(tag) = &self.locale {
-            intl.set_locale(tag).map_err(|e| {
-                // The same refusal the boundary gives, because a
-                // consumer who mistyped a tag wants the same sentence in
-                // whichever language they mistyped it in.
-                let known: Vec<&str> = intl.locales().map(|l| l.tag.as_str()).collect();
-                Error::unsupported(e.to_string())
-                    .with_field("locale")
-                    .with_hint(format!(
-                        "`{tag}` is not loaded; the locales are {}",
-                        known.join(", ")
-                    ))
-            })?;
+            intl.set_locale(tag)
+                .map(drop)
+                .map_err(|e| crate::area::intl::refused_locale(&intl, tag, &e.to_string()))?;
         }
 
         let delta_t = DeltaTModel::from_knob(settings.settings.time.delta_t).unwrap_or_default();

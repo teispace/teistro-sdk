@@ -96,6 +96,7 @@ Widest first. Read through the boundary's own helpers, because a body that names
 | `ts_intl_in_words` | `intl` | 1 | `teistro-core` |
 | `ts_intl_load_pack` | `intl` | 1 | `teistro-core` |
 | `ts_intl_locale` | `intl` | 1 | `teistro-core` |
+| `ts_intl_lookup_locale` | `intl` | 1 | `teistro-core` |
 | `ts_intl_set_locale` | `intl` | 1 | `teistro-core` |
 | `ts_key_name` | `key` | 1 | `teistro-core` |
 | `ts_key_parse` | `key` | 1 | `teistro-core` |

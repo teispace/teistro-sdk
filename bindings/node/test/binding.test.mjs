@@ -50,6 +50,7 @@ import {
   sdkVersion,
   unpackFrame,
   decodeDigest,
+  tithiMonthNumber,
 } from '../lib/index.js';
 import * as catalogue from '../lib/catalogue.js';
 
@@ -108,6 +109,20 @@ test('a context resolves its settings and reports them', () => {
   const named = context({ profile: 'nepali-default' });
   assert.equal(named.profile, 'nepali-drik');
   assert.equal(named.settingsHash, ctx.settingsHash);
+});
+
+test('a short tag finds the locale it means, and says which', () => {
+  const ctx = context({ locale: 'ne' });
+  assert.equal(ctx.intl.locale, 'ne-Deva-NP');
+  assert.equal(ctx.intl.lookupLocale('sa'), 'sa-Deva');
+  assert.equal(ctx.intl.locale, 'ne-Deva-NP', 'a lookup changes nothing');
+  ctx.intl.locale = 'hi';
+  assert.equal(ctx.intl.locale, 'hi-Deva-IN');
+  for (const tag of ['de', 'hi-Latn']) {
+    assert.throws(() => ctx.intl.lookupLocale(tag), (error) => error.field === 'locale');
+    assert.throws(() => { ctx.intl.locale = tag; }, (error) => error.field === 'locale');
+  }
+  assert.equal(ctx.intl.locale, 'hi-Deva-IN', 'a refused tag leaves the locale');
 });
 
 test('a tithi says its number in the month', () => {

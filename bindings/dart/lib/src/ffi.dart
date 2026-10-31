@@ -1982,6 +1982,8 @@ typedef TsIntlLoadPackNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poin
 typedef TsIntlLoadPackDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Uint8>, int, ffi.Pointer<IntlLoadedStruct>);
 typedef TsIntlSetLocaleNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>);
 typedef TsIntlSetLocaleDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>);
+typedef TsIntlLookupLocaleNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
+typedef TsIntlLookupLocaleDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlLocaleNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<StrStruct>);
 typedef TsIntlLocaleDart = int Function(ffi.Pointer<Context>, ffi.Pointer<StrStruct>);
 typedef TsIntlHasNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Uint8>);
@@ -2103,6 +2105,7 @@ final class TeistroLibrary {
         ts_time_delta_t = library.lookupFunction<TsTimeDeltaTNative, TsTimeDeltaTDart>('ts_time_delta_t'),
         ts_intl_load_pack = library.lookupFunction<TsIntlLoadPackNative, TsIntlLoadPackDart>('ts_intl_load_pack'),
         ts_intl_set_locale = library.lookupFunction<TsIntlSetLocaleNative, TsIntlSetLocaleDart>('ts_intl_set_locale'),
+        ts_intl_lookup_locale = library.lookupFunction<TsIntlLookupLocaleNative, TsIntlLookupLocaleDart>('ts_intl_lookup_locale'),
         ts_intl_locale = library.lookupFunction<TsIntlLocaleNative, TsIntlLocaleDart>('ts_intl_locale'),
         ts_intl_has = library.lookupFunction<TsIntlHasNative, TsIntlHasDart>('ts_intl_has'),
         ts_intl_in_words = library.lookupFunction<TsIntlInWordsNative, TsIntlInWordsDart>('ts_intl_in_words'),
@@ -2373,6 +2376,15 @@ final class TeistroLibrary {
   /// Selects the locale every render resolves from; an unknown one is
   /// `UNSUPPORTED` naming the loaded locales.
   final TsIntlSetLocaleDart ts_intl_set_locale;
+
+  /// The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+  /// call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+  /// `ts_intl_set_locale` selects the same one.
+  ///
+  /// # Errors
+  ///
+  /// `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+  final TsIntlLookupLocaleDart ts_intl_lookup_locale;
 
   /// The locale every render resolves from, lent until the next call on the
   /// context.
@@ -6153,6 +6165,24 @@ final class TeistroContext implements ffi.Finalizable {
         final rawlocale = locale.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final status = _lib.ts_intl_set_locale(_handle, rawlocale);
         if (status != 0) _fail(status);
+    });
+  }
+
+  /// The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+  /// call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+  /// `ts_intl_set_locale` selects the same one.
+  ///
+  /// # Errors
+  ///
+  /// `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+  String intlLookupLocale(String locale) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawlocale = locale.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outLocale = arena<StrStruct>();
+        final status = _lib.ts_intl_lookup_locale(_handle, rawlocale, outLocale);
+        if (status != 0) _fail(status);
+        return _takeStr(outLocale);
     });
   }
 

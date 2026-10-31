@@ -9907,6 +9907,19 @@ ts_status ts_intl_load_pack(const ts_context * context, const uint8_t * bytes, s
 ts_status ts_intl_set_locale(const ts_context * context, const char * locale);
 
 /**
+ * The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+ * call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+ * `ts_intl_set_locale` selects the same one.
+ *
+ * # Errors
+ *
+ * `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+ * Safety: `context` must be a live handle; `locale` a NUL-terminated string;
+ * `out_locale` valid for a write.
+ */
+ts_status ts_intl_lookup_locale(const ts_context * context, const char * locale, ts_str * out_locale);
+
+/**
  * The locale every render resolves from, lent until the next call on the
  * context.
  * Safety: `context` must be a live handle; `out_locale` valid for a write.

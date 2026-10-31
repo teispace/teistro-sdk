@@ -1283,7 +1283,40 @@ impl Intl {
         Intl::new(tree.locales.clone())
     }
 
-    /// Selects the locale every render resolves from. Explicit and
+    /// The loaded locale `tag` means: RFC 4647 lookup, so `ne` finds
+    /// `ne-Deva-NP` and `en-Latn-GB` finds `en-Latn`. Nothing is selected.
+    /// There is no default: a tag that means nothing loaded is refused, and
+    /// never answered by another language
+    /// (`03-design/intl-engine-and-packs.md`, "Choosing a locale").
+    ///
+    /// ```
+    /// # use teistro_intl::source::Tree;
+    /// # use teistro_intl::{Intl, sdk_root};
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    /// # let intl = Intl::from_tree(&tree)?;
+    ///
+    /// assert_eq!(intl.lookup_locale("sa")?, "sa-Deva");
+    /// assert!(intl.lookup_locale("hi-Latn").is_err());
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A tag no loaded locale answers, or one several answer with nothing to
+    /// settle which, naming them.
+    pub fn lookup_locale(&self, tag: &str) -> Result<&str, IntlError> {
+        let loaded: Vec<&str> = self.locales.keys().map(String::as_str).collect();
+        crate::lookup::lookup(tag, &loaded).map_err(|missed| match missed {
+            crate::lookup::Missed::Unknown => IntlError(format!("unknown locale {tag}")),
+            crate::lookup::Missed::Ambiguous(tags) => {
+                IntlError(format!("locale {tag} could be any of {}", tags.join(", ")))
+            }
+        })
+    }
+
+    /// Selects the locale every render resolves from, by
+    /// [`Intl::lookup_locale`], and answers the one chosen. Explicit and
     /// deterministic: the engine never reads the environment.
     ///
     /// ```
@@ -1295,6 +1328,9 @@ impl Intl {
     ///
     /// intl.set_locale("sa-Deva")?;
     /// assert_eq!(intl.locale(), "sa-Deva");
+    /// // A short tag selects the locale it means, and says which.
+    /// assert_eq!(intl.set_locale("ne")?, "ne-Deva-NP");
+    /// intl.set_locale("sa-Deva")?;
     /// // An unknown locale leaves the current one.
     /// assert!(intl.set_locale("de-Latn-DE").is_err());
     /// assert_eq!(intl.locale(), "sa-Deva");
@@ -1303,13 +1339,11 @@ impl Intl {
     ///
     /// # Errors
     ///
-    /// An unknown locale.
-    pub fn set_locale(&mut self, tag: &str) -> Result<(), IntlError> {
-        if !self.locales.contains_key(tag) {
-            return Err(IntlError(format!("unknown locale {tag}")));
-        }
-        self.current = tag.to_string();
-        Ok(())
+    /// As [`Intl::lookup_locale`].
+    pub fn set_locale(&mut self, tag: &str) -> Result<&str, IntlError> {
+        let chosen = self.lookup_locale(tag)?.to_string();
+        self.current = chosen;
+        Ok(&self.current)
     }
 
     /// The current locale.
