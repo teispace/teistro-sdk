@@ -334,6 +334,38 @@ the current locale then its declared fallbacks; every result says which
 locale answered. Messages are parsed once per key and cached. The
 measurements are in §10.
 
+**Choosing a locale** (SR-64, C1011). `set_locale`, a context's `locale`
+option and `lookup_locale`, which changes nothing, take any BCP 47 tag and
+choose a loaded locale by RFC 4647 §3.4 lookup: the range is truncated from
+the end, compared without regard to case, until it meets a tag. RFC 4647
+assumes short tags and the SDK's are long, so `ne` would never equal
+`ne-Deva-NP`. At each length a tag the range is a prefix of therefore counts,
+as §3.3.1's basic filtering reads it.
+
+| asked | chosen |
+|---|---|
+| `ne`, `ne-NP`, `ne-Deva` | `ne-Deva-NP` |
+| `en`, `en-US`, `en-Latn-GB` | `en-Latn` |
+| `hi`, `hi-IN` | `hi-Deva-IN` |
+| `sa`, `sa-IN` | `sa-Deva` |
+| `sa-Latn-IN` | `sa-Latn` |
+| `hi-Latn`, `en-Deva` | refused: a stated script is not truncated away |
+| `de`, `*`, `ne_NP` | refused |
+
+Three rules hold it to the rest of the engine. **There is no default**, the
+lookup's last step: a tag that means nothing loaded is refused as before and
+never answers in another language. **The answer names the locale chosen**:
+`intl.locale` reads it back, and `set_locale` returns it in Rust and Java.
+**It selects a locale and no more.** A short tag gives the same locale as the
+long one, with the same completeness: `hi` is `hi-Deva-IN` at `base`, its
+missing keys following its declared fallback and saying so in `is_fallback`,
+and a call that refuses `hi-Deva-IN` refuses `hi`. Review status (Q42) and
+strict completeness are the locale's, untouched here.
+
+Where several tags answer, CLDR's `likelySubtags` for the shipped languages
+settle it: `sa` is Devanagari. A language with no such row, or two tags in the
+likely script, is refused with both named, and never settled by sort order.
+
 The runtime API (`runtime`): `load_pack(&bytes)` takes a `.tpack` or a
 `.tbundle` after construction, adding a locale (its metadata from the
 file, its plural rules from ICU4X) or a namespace, or replacing entries

@@ -4597,6 +4597,31 @@ impl Context {
         Ok(())
     }
 
+    /// The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+    /// call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+    /// `ts_intl_set_locale` selects the same one.
+    ///
+    /// # Errors
+    ///
+    /// `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+    #[napi]
+    pub fn intl_lookup_locale(&self, env: Env, locale: String) -> Result<String> {
+        let locale =
+            std::ffi::CString::new(locale).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_locale = ffi::string::TsStr {
+            data: ptr::null(),
+            len: 0,
+        };
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::intl::ts_intl_lookup_locale(self.handle, locale.as_ptr(), &raw mut out_locale)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(unsafe { lent_text(out_locale.data) }.unwrap_or_default())
+    }
+
     /// The locale every render resolves from, lent until the next call on the
     /// context.
     #[napi]

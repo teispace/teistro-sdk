@@ -37,13 +37,27 @@ public final class IntlArea {
     /**
      * Renders messages in another locale from now on.
      *
-     * @param tag the locale's tag ({@code ne-Deva-NP})
+     * @param tag the locale's tag ({@code ne-Deva-NP}), or a shorter one
+     *     ({@code ne}), which RFC 4647 lookup takes to the loaded locale it
+     *     means
+     * @return the locale chosen
      */
-    public void setLocale(String tag) {
+    public String setLocale(String tag) {
         context.locked((lib, raw) -> {
             Calls.intlSetLocale(lib, raw, tag);
             return null;
         });
+        return locale();
+    }
+
+    /**
+     * The loaded locale a tag means, by RFC 4647 lookup, changing nothing.
+     *
+     * @param tag the tag ({@code ne})
+     * @return the locale it means ({@code ne-Deva-NP})
+     */
+    public String lookupLocale(String tag) {
+        return context.locked((lib, raw) -> Calls.intlLookupLocale(lib, raw, tag));
     }
 
     /**

@@ -7,7 +7,7 @@ use teistro_intl::civil::{CivilText, DateTextRequest, TimeTextRequest};
 use teistro_intl::source::Entity;
 use teistro_intl::translit::{Script, transliterate};
 use teistro_intl::words::{InWords, InWordsRequest};
-use teistro_intl::{Loaded, Params, Rendered, TypedMessage};
+use teistro_intl::{Intl, Loaded, Params, Rendered, TypedMessage};
 
 use crate::context::Context;
 
@@ -29,6 +29,18 @@ pub struct IntlArea<'a> {
     context: &'a Context,
 }
 
+/// The refusal of a locale tag, the same from the builder and from a change:
+/// a consumer who mistyped a tag wants the same sentence wherever they did.
+pub(crate) fn refused_locale(engine: &Intl, tag: &str, why: &str) -> Error {
+    let known: Vec<&str> = engine.locales().map(|l| l.tag.as_str()).collect();
+    Error::unsupported(why)
+        .with_field("locale")
+        .with_hint(format!(
+            "`{tag}` is not loaded; the locales are {}",
+            known.join(", ")
+        ))
+}
+
 impl<'a> IntlArea<'a> {
     pub(crate) fn of(context: &'a Context) -> IntlArea<'a> {
         IntlArea { context }
@@ -46,23 +58,43 @@ impl<'a> IntlArea<'a> {
         self.context.locale_engine().locale().to_owned()
     }
 
-    /// Changes the locale every render resolves from.
+    /// The loaded locale `tag` means, by RFC 4647 lookup: `ne` is
+    /// `ne-Deva-NP`. Nothing changes.
+    ///
+    /// ```
+    /// use teistro::Context;
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// assert_eq!(sdk.intl().lookup_locale("hi")?, "hi-Deva-IN");
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
     ///
     /// # Errors
     ///
-    /// A locale the embedded bundles and the loaded packs do not carry,
-    /// with the ones they do as the hint.
-    pub fn set_locale(self, tag: &str) -> Result<(), Error> {
+    /// As [`IntlArea::set_locale`].
+    pub fn lookup_locale(self, tag: &str) -> Result<String, Error> {
+        let engine = self.context.locale_engine();
+        engine
+            .lookup_locale(tag)
+            .map(str::to_owned)
+            .map_err(|e| refused_locale(&engine, tag, &e.to_string()))
+    }
+
+    /// Changes the locale every render resolves from, by RFC 4647 lookup,
+    /// and answers the one chosen, which may be longer than `tag`: `ne`
+    /// selects `ne-Deva-NP`.
+    ///
+    /// # Errors
+    ///
+    /// A tag the embedded bundles and the loaded packs do not answer, or
+    /// several answer with nothing to settle which, with the locales they
+    /// carry as the hint. Nothing falls back to a default.
+    pub fn set_locale(self, tag: &str) -> Result<String, Error> {
         let mut engine = self.context.locale_engine_mut();
-        engine.set_locale(tag).map_err(|e| {
-            let known: Vec<&str> = engine.locales().map(|l| l.tag.as_str()).collect();
-            Error::unsupported(e.to_string())
-                .with_field("locale")
-                .with_hint(format!(
-                    "`{tag}` is not loaded; the locales are {}",
-                    known.join(", ")
-                ))
-        })
+        engine
+            .set_locale(tag)
+            .map(str::to_owned)
+            .map_err(|e| refused_locale(&engine, tag, &e.to_string()))
     }
 
     /// Whether the locale carries a message.

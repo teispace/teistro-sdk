@@ -2956,12 +2956,19 @@ class IntlArea(_Area):
 
     @property
     def locale(self) -> str:
-        """The locale tag messages are rendered in."""
+        """The locale tag messages are rendered in. Set a short tag and the
+        loaded locale it means is chosen, by RFC 4647 lookup: read this to
+        see which."""
         return self._context.inner.intl_locale()
 
     @locale.setter
     def locale(self, tag: str) -> None:
         self._context.inner.intl_set_locale(tag)
+
+    def lookup_locale(self, tag: str) -> str:
+        """The loaded locale a tag means, by RFC 4647 lookup, changing nothing:
+        `ne` is `ne-Deva-NP`. A tag nothing loaded answers is refused."""
+        return self._context.inner.intl_lookup_locale(tag)
 
     def render(self, key: str, params: Optional[Mapping[str, object]] = None) -> IntlRender:
         """A message rendered in the context's locale."""

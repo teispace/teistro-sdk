@@ -2868,9 +2868,23 @@ function zoneJson(zone) {
 export class IntlArea extends Area {
   #messages = null;
 
-  /** The locale every render resolves from. */
+  /**
+   * The locale every render resolves from. Set a short tag and the loaded
+   * locale it means is chosen, by RFC 4647 lookup: read this to see which.
+   */
   get locale() {
     return run(this, (inner) => inner.intlLocale());
+  }
+
+  /**
+   * The loaded locale a tag means, by RFC 4647 lookup, changing nothing:
+   * `ne` is `ne-Deva-NP`. A tag nothing loaded answers throws, on `locale`.
+   *
+   * @param {string} tag
+   * @returns {string}
+   */
+  lookupLocale(tag) {
+    return run(this, (inner) => inner.intlLookupLocale(tag));
   }
 
   set locale(tag) {

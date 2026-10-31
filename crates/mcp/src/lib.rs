@@ -1421,7 +1421,7 @@ impl Server {
                 // The locale after the packs, since a pack may bring it.
                 let context = self.own.building(builder)?;
                 if !locale.is_empty() {
-                    context.intl().set_locale(locale.as_str())?;
+                    let _chosen = context.intl().set_locale(locale.as_str())?;
                 }
                 entry.insert(context)
             }

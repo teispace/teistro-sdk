@@ -170,6 +170,17 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a short tag finds the locale it means, and says which", () -> {
+            try (Context sky = context(teistro)) {
+                same("sa-Deva", sky.intl().lookupLocale("sa"), "a lookup");
+                same("ne-Deva-NP", sky.intl().locale(), "a lookup changes nothing");
+                same("hi-Deva-IN", sky.intl().setLocale("hi"), "the locale chosen");
+                refusal(() -> sky.intl().lookupLocale("hi-Latn"));
+                refusal(() -> sky.intl().setLocale("de"));
+                same("hi-Deva-IN", sky.intl().locale(), "a refused tag leaves the locale");
+            }
+        });
+
         tests.put("a tithi says its number in the month", () -> {
             same(1, AlmanacDay.tithiMonthNumber(Tithi.SHUKLA_PRATIPADA), "the first");
             same(15, AlmanacDay.tithiMonthNumber(Tithi.PURNIMA), "the full moon");
@@ -193,7 +204,8 @@ public final class BindingTest {
                         "the stated offset");
                 byte[] digest = sky.almanac().digest(com.teispace.teistro.request.DigestRequest.builder()
                         .first(new com.teispace.teistro.request.DayAsked(31, 10, 2026)).days(3)
-                        .latitudeDeg(40.7128).longitudeDeg(-74.006).zone(zone).build());
+                        .latitudeDeg(40.7128).longitudeDeg(-74.006)
+                        .zone(new com.teispace.teistro.request.ZoneSpecIana("America/New_York")).build());
                 same(-18_000, com.teispace.teistro.blob.Digest.decode(digest).clock().utcOffsetSeconds(2),
                         "the digest keeps each day's");
             }

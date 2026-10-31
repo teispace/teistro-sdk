@@ -194,6 +194,20 @@ class AContext(WithLibrary):
     def tearDown(self) -> None:
         self.ctx.close()
 
+    def test_a_short_tag_finds_the_locale_it_means(self) -> None:
+        with self.teistro.context(locale="ne", test_provider=True) as ctx:
+            self.assertEqual(ctx.intl.locale, "ne-Deva-NP")
+            self.assertEqual(ctx.intl.lookup_locale("sa"), "sa-Deva")
+            self.assertEqual(ctx.intl.locale, "ne-Deva-NP")
+            ctx.intl.locale = "hi"
+            self.assertEqual(ctx.intl.locale, "hi-Deva-IN")
+            for tag in ("de", "hi-Latn"):
+                with self.assertRaises(TeistroError):
+                    ctx.intl.lookup_locale(tag)
+                with self.assertRaises(TeistroError):
+                    ctx.intl.locale = tag
+            self.assertEqual(ctx.intl.locale, "hi-Deva-IN")
+
     def test_a_tithi_says_its_number_in_the_month(self) -> None:
         self.assertEqual(tithi_month_number(Tithi.SHUKLA_PRATIPADA), 1)
         self.assertEqual(tithi_month_number(Tithi.PURNIMA), 15)
@@ -216,7 +230,7 @@ class AContext(WithLibrary):
             self.ctx.almanac.digest(first=first, place=place, days=3)
 
     def test_an_older_profile_name_answers_as_the_profile_it_names(self) -> None:
-        with Context(profile="nepali-default", test_provider=True) as ctx:
+        with self.teistro.context(profile="nepali-default", test_provider=True) as ctx:
             self.assertEqual(ctx.profile, "nepali-drik")
             self.assertEqual(ctx.settings_hash, self.ctx.settings_hash)
 

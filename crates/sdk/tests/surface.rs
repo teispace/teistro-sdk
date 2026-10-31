@@ -103,6 +103,35 @@ fn the_default_profile_needs_no_naming() {
 }
 
 #[test]
+fn a_short_locale_finds_the_loaded_one_and_refuses_otherwise() {
+    let sdk = Context::builder()
+        .locale("ne")
+        .build()
+        .expect("`ne` is loaded");
+    assert_eq!(sdk.intl().locale(), "ne-Deva-NP");
+    assert_eq!(sdk.intl().set_locale("en-GB").expect("en"), "en-Latn");
+    assert_eq!(sdk.intl().locale(), "en-Latn");
+    // Nothing falls back: a language not loaded and a script not loaded
+    // are refused, with the locale left where it was.
+    for tag in ["de", "hi-Latn", "*"] {
+        let refused = sdk.intl().set_locale(tag).expect_err("no such locale");
+        assert_eq!(refused.field(), Some("locale"));
+        let looked = sdk.intl().lookup_locale(tag).expect_err("no such locale");
+        assert_eq!(looked.field(), Some("locale"));
+    }
+    assert_eq!(sdk.intl().locale(), "en-Latn");
+    let refused = Context::builder()
+        .locale("de")
+        .build()
+        .expect_err("not loaded");
+    assert_eq!(refused.field(), Some("locale"));
+    // A base-completeness locale keeps its own name, so a call that refuses
+    // it by name refuses a short tag too.
+    assert_eq!(sdk.intl().set_locale("hi").expect("hi"), "hi-Deva-IN");
+    assert_eq!(sdk.intl().set_locale("sa").expect("sa"), "sa-Deva");
+}
+
+#[test]
 fn an_older_profile_name_answers_as_the_profile_it_names() {
     let old = Context::builder()
         .profile("nepali-default")

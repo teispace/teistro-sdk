@@ -148,7 +148,59 @@ pub unsafe extern "C" fn ts_intl_set_locale(
         let tag = unsafe { text(locale, "locale") }?;
         let mut intl = ctx.intl_mut();
         intl.set_locale(tag)
+            .map(drop)
             .map_err(|e| unknown_locale(&intl, tag, &e.to_string()))
+    })
+}
+
+/// The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+/// call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+/// `ts_intl_set_locale` selects the same one.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Test)?;
+/// # fn lent(out: teistro_ffi::string::TsStr) -> String {
+/// #     // SAFETY: the library lent `len` bytes of UTF-8 at `data`.
+/// #     String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data.cast::<u8>(), out.len) }).into_owned()
+/// # }
+/// # let mut out = teistro_ffi::string::TsStr { data: core::ptr::null(), len: 0 };
+/// use teistro_core::Status;
+/// use teistro_ffi::intl::ts_intl_lookup_locale;
+///
+/// // SAFETY: a live context, a NUL-terminated tag and a writable slot.
+/// assert_eq!(unsafe { ts_intl_lookup_locale(&raw const ctx, c"sa".as_ptr(), &raw mut out) }, Status::Ok);
+/// assert_eq!(lent(out), "sa-Deva");
+/// // SAFETY: as above.
+/// assert_ne!(unsafe { ts_intl_lookup_locale(&raw const ctx, c"hi-Latn".as_ptr(), &raw mut out) }, Status::Ok);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Errors
+///
+/// `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+///
+/// # Safety
+///
+/// `context` must be a live handle; `locale` a NUL-terminated string;
+/// `out_locale` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_intl_lookup_locale(
+    context: *const TsContext,
+    locale: *const c_char,
+    out_locale: *mut TsStr,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let tag = unsafe { text(locale, "locale") }?;
+        let intl = ctx.intl();
+        let chosen = intl
+            .lookup_locale(tag)
+            .map_err(|e| unknown_locale(&intl, tag, &e.to_string()))?;
+        let lent = ctx.lend(chosen);
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_locale, "out_locale", lent) }
     })
 }
 

@@ -904,10 +904,15 @@ String _zoneJson(ZoneSpec zone) => jsonEncode(switch (zone.kind) {
 final class IntlArea extends _Area {
   IntlArea._(super.context);
 
-  /// The locale every render resolves from.
+  /// The locale every render resolves from. Set a short tag and the loaded
+  /// locale it means is chosen, by RFC 4647 lookup: read this to see which.
   String get locale => _context._inner.intlLocale();
 
   set locale(String tag) => _context._inner.intlSetLocale(tag);
+
+  /// The loaded locale a tag means, by RFC 4647 lookup, changing nothing:
+  /// `ne` is `ne-Deva-NP`. A tag nothing loaded answers throws.
+  String lookupLocale(String tag) => _context._inner.intlLookupLocale(tag);
 
   /// Renders a message of the current locale with its parameters.
   IntlRender render(String key, [Map<String, Object?>? params]) =>

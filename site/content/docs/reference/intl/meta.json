@@ -1,4 +1,4 @@
 {
   "title": "Locale engine",
-  "pages": ["ts_intl_load_pack", "ts_intl_set_locale", "ts_intl_locale", "ts_intl_has", "ts_intl_in_words", "ts_intl_time", "ts_intl_date", "ts_intl_transliterate", "ts_intl_entity", "ts_intl_render"]
+  "pages": ["ts_intl_load_pack", "ts_intl_set_locale", "ts_intl_lookup_locale", "ts_intl_locale", "ts_intl_has", "ts_intl_in_words", "ts_intl_transliterate", "ts_intl_entity", "ts_intl_render"]
 }

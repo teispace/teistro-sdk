@@ -25,7 +25,7 @@ mod engine;
 mod frame;
 #[cfg(feature = "chart")]
 mod interpret;
-mod intl;
+pub(crate) mod intl;
 mod keys;
 #[cfg(feature = "chart")]
 mod matching;
