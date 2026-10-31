@@ -83,7 +83,7 @@ every binding, each answer typed in its own language.
 }
 ```
 
-That is 08:00 on 15 January 2026 in Kathmandu under `nepali-default` over
+That is 08:00 on 15 January 2026 in Kathmandu under `nepali-drik` over
 the built-in ephemeris, the morning after Makara sankranti. The boundary writes every catalogue member as its full key
 (`Sankalpa::MEMBERS`, held to serde both ways by the SDK's tests), and the
 answer is sealed over what it wrote. Its input hash covers the instant,

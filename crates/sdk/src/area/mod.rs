@@ -25,7 +25,7 @@ mod engine;
 mod frame;
 #[cfg(feature = "chart")]
 mod interpret;
-mod intl;
+pub(crate) mod intl;
 mod keys;
 #[cfg(feature = "chart")]
 mod matching;
@@ -100,18 +100,22 @@ pub use almanac::{
     FeedSelector, FestivalCalendarRequest, FestivalDays, FestivalDisagreement,
     FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb, SuppliedEvent,
 };
+#[cfg(feature = "schema")]
+pub(crate) use almanac::{AnniversariesAsked, ChangesAsked, NextAsked, SentencesAsked};
+pub use almanac::{
+    AnniversariesRequest, ChangesRequest, DayClock, MOST_ANNIVERSARIES, MOST_YEARS, NextOccurrence,
+    NextRequest, NextTarget,
+};
 pub use almanac::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
 };
-#[cfg(feature = "schema")]
-pub(crate) use almanac::{ChangesAsked, NextAsked};
-pub use almanac::{ChangesRequest, DayClock, NextOccurrence, NextRequest, NextTarget};
 pub use almanac::{
     DIGEST_DEFAULT_DAYS, DIGEST_FLAG_FAST, DIGEST_FLAG_PUBLISHED, DIGEST_FORMAT_MAJOR,
     DIGEST_FORMAT_MINOR, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DIGEST_NO_TIME, DIGEST_SCHEMA,
     DigestRequest, DigestSpan, digest_schema,
 };
+pub use almanac::{DaySentence, DaySentences, SentencesRequest};
 pub use almanac::{PackForm, PackListing, PackRequest, PackRow};
 pub use calendar::CalendarArea;
 #[cfg(feature = "chart")]

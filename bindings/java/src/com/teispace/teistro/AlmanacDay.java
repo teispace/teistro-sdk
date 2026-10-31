@@ -108,6 +108,28 @@ public final class AlmanacDay {
     }
 
     /**
+     * A tithi's number in the lunar month, 1 for Shukla Pratipada to 30 for
+     * Amavasya. A tithi is named by its number in the paksha; this is the
+     * count through the month, the catalogue's id and one.
+     *
+     * @param tithi the tithi
+     * @return 1 to 30
+     */
+    public static int tithiMonthNumber(Tithi tithi) {
+        return tithi.id() + 1;
+    }
+
+    /**
+     * The clock the day was read on: a zone's offset at the day's opening,
+     * which moves across a clock change, or the offset the caller stated.
+     *
+     * @return seconds east of UTC
+     */
+    public int utcOffsetSeconds() {
+        return days().utcOffsetSeconds(index);
+    }
+
+    /**
      * The direction not to travel in, which is the vara's.
      *
      * @return the direction

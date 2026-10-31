@@ -457,7 +457,7 @@ fn distance_section(found: &Findings) -> String {
         "\nThe engine computes **Vehlow** and calls it equal house. They are not the same\n\
          thing: equal houses *start* at the ascendant, Vehlow *centres* on it, and the two\n\
          are fifteen degrees apart. This is the third entry of the deliberate-difference\n\
-         registry made exact — `nepali-default` says `VEHLOW` because that is what the\n\
+         registry made exact — `nepali-drik` says `VEHLOW` because that is what the\n\
          charts it reproduces contain, whatever their label\n\
          (`05-testing/01-golden-vectors.md`).\n\n\
          ## How far apart the methods are\n\n\

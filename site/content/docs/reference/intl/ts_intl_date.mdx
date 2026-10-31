@@ -1,0 +1,38 @@
+---
+title: ts_intl_date
+description: "A date as text and parts, in its own calendar, through the locale's pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time` answers."
+---
+
+A date as text and parts, in its own calendar, through the locale's pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time` answers.
+
+`request_json` is `{"at": {"calendar", "year", "month", "day", "era", "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a date its calendar does not hold is `INVALID_ARG`, named under `date`; a locale not loaded, a calendar not shipped or one with no pattern is `UNSUPPORTED`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_intl_date(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `intl.date` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/intl.rs`.

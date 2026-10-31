@@ -8,7 +8,7 @@ import { Context, MonthKind } from '../lib/index.js';
 import { entityForms, messages } from '../lib/messages.js';
 
 const context = () =>
-  new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP', testProvider: true });
+  new Context({ profile: 'nepali-drik', locale: 'ne-Deva-NP', testProvider: true });
 
 test('a message is spelled by its accessor, never by its key', () => {
   const ctx = context();

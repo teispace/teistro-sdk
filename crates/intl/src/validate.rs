@@ -436,6 +436,7 @@ fn check_locale(findings: &mut Findings, context: &Context<'_>, locale: &LocaleS
         findings.error(&locale.tag, key, "not a key of the base locale");
     }
     let missing: Vec<String> = context.base_keys.difference(&keys).cloned().collect();
+    check_draft(findings, locale, &missing);
     if locale.meta.completeness == Completeness::Strict {
         for key in &missing {
             findings.error(
@@ -615,6 +616,26 @@ fn check_day_periods(findings: &mut Findings, tag: &str, meta: &Meta) {
     seen.dedup();
     if seen.len() != count {
         findings.error(tag, "", "two day periods share a key");
+    }
+}
+
+/// Text no reviewer has read (Q42): in a namespace the locale holds, and
+/// whole, so that a reviewer reads one text and a reader never meets a
+/// draft patched from the base. A strict locale may draft too (C987):
+/// strict promises every key is present, the mark says no one has read
+/// them, and each render carries the mark for a consumer to act on.
+fn check_draft(findings: &mut Findings, locale: &LocaleSource, missing: &[String]) {
+    for namespace in &locale.meta.draft {
+        if !locale.namespaces.contains_key(namespace) {
+            findings.error(
+                &locale.tag,
+                namespace,
+                "drafted, and the locale has no such namespace",
+            );
+        }
+        for key in missing.iter().filter(|key| locale.meta.is_draft(key)) {
+            findings.error(&locale.tag, key, "missing from a drafted namespace");
+        }
     }
 }
 

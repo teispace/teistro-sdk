@@ -24,7 +24,9 @@ enum {
     SECTION_TEXT = 6,
     SECTION_LOCALE = 7,
     SECTION_PROVENANCE = 8,
-    SECTION_SEAL = 9
+    SECTION_SEAL = 9,
+    /* Format 1.1; sits before the seal, which ends the file. */
+    SECTION_CLOCK = 10
 };
 
 /* Field indices of the summary, the schema's. */
@@ -58,6 +60,9 @@ static const uint8_t OBSERVANCE_WIDTHS[OBSERVANCE_COLUMNS] = {2, 1};
 
 enum { NAME_KEY_AT, NAME_KEY_LENGTH, NAME_TEXT_AT, NAME_TEXT_LENGTH, NAME_COLUMNS };
 static const uint8_t NAME_WIDTHS[NAME_COLUMNS] = {4, 2, 4, 2};
+
+enum { CLOCK_OFFSET, CLOCK_COLUMNS };
+static const uint8_t CLOCK_WIDTHS[CLOCK_COLUMNS] = {4};
 
 static uint16_t read_u16(const uint8_t *at) {
     return (uint16_t)((uint16_t)at[0] | (uint16_t)((uint16_t)at[1] << 8));
@@ -324,6 +329,19 @@ ts_digest_status ts_digest_open(ts_digest *digest, const void *bytes, size_t len
         !columns_fit(&digest->names, NAME_WIDTHS, NAME_COLUMNS)) {
         return TS_DIGEST_E_MALFORMED;
     }
+    /* Format 1.0 has no clock section, and every later format must. */
+    if (section_of(data, entries, SECTION_CLOCK, &digest->clock)) {
+        if (digest->clock.count != digest->day_count ||
+            !columns_fit(&digest->clock, CLOCK_WIDTHS, CLOCK_COLUMNS)) {
+            return TS_DIGEST_E_MALFORMED;
+        }
+    } else if (digest->format_minor == 0u) {
+        digest->clock.start = NULL;
+        digest->clock.length = 0u;
+        digest->clock.count = 0u;
+    } else {
+        return TS_DIGEST_E_MALFORMED;
+    }
     return TS_DIGEST_OK;
 }
 
@@ -355,6 +373,10 @@ ts_digest_status ts_digest_day_at(const ts_digest *digest, uint32_t index, ts_di
     day->observance_first = read_u32(DAY_COLUMN(DAY_OBSERVANCE_FIRST));
     day->observance_count = read_u16(DAY_COLUMN(DAY_OBSERVANCE_COUNT));
 #undef DAY_COLUMN
+    day->utc_offset_seconds =
+        digest->clock.start != NULL
+            ? read_i32(column(&digest->clock, CLOCK_OFFSET, CLOCK_WIDTHS[CLOCK_OFFSET]) + at * 4u)
+            : digest->utc_offset_seconds;
     if ((uint64_t)day->span_first + day->span_count > digest->spans.count ||
         (uint64_t)day->observance_first + day->observance_count > digest->observances.count) {
         return TS_DIGEST_E_MALFORMED;

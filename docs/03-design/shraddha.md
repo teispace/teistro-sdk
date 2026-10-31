@@ -78,7 +78,7 @@ consumer's brief (2026-10-20) asks for kutapa to rauhina as the default.
 दिनद्वये तद्व्याप्तौ तदस्पर्शे वांशतः समव्याप्तौ वा पूर्वा । विषमव्याप्तौ त्वधिका
 ग्राह्या". Madhava's variant (DS p. 266, NS p. 988): with the aparahna
 wholly or equally covered on both days, the earlier if the *following*
-tithi is kshaya, the later if it is vriddhi. DS p. 266 adds that the rule
+tithi is kshaya, the later if it is vriddhi or neither (C912). DS p. 266 adds that the rule
 holds "for the yearly, the monthly and the once-done mahalaya", and that
 a yearly shraddha missed by day may be done in the night's first watch.
 
@@ -351,6 +351,9 @@ building the answer around `YEAR_END` or `TWELFTH_DAY` and its own date);
 the daily *udakumbha* and lamp; a kshaya lunation inside the year, which
 the count treats as one lunation, one monthly (DS gives no case).
 
+`anniversary-span.md` takes these rules over a span of years for many
+people in one call, names the clause on each day and adds the `EVENT` kind.
+
 ## 4. Forks
 
 | # | fork | proposed default | the other readings |
@@ -358,7 +361,7 @@ the count treats as one lunation, one monthly (DS gives no case).
 | C661 | the origin's tithi | **the tithi at the instant** of death or birth (NS, Naradiya); with only a date, the civil day's sunrise tithi, flagged `assumed_sunrise`, and both candidates returned when the day holds a tithi change | the sunrise tithi always, which the consumer's measurement puts 32% wrong at a random hour |
 | C662 | the ekoddishta's window | **maintainer**: proposed kutapa to rauhina, muhurtas 8–9 (NS; the addendum) | DS's madhyahna, muhurtas 7–9 (= the third fifth); the consumer's measurement: the two differ on 1.7% of occurrences |
 | C663 | neither day covered, and a tie | **the earlier** for both (DS p. 266; NS) | the Gaudas' later day when neither (NS records and refuses it); *kharva-darpa* (DS's "others") |
-| C664 | parvana when both days are wholly or equally covered | **the earlier** (DS p. 266, NS's main rule) | Madhava's: earlier if the following tithi is kshaya, later if vriddhi (DS p. 266); Karshnajini's: the tithi at sunset (NS) |
+| C664 | parvana when both days are wholly or equally covered | **the earlier** (DS p. 266, NS's main rule) | Madhava's: earlier if the following tithi is kshaya, later otherwise, vriddhi or neither (DS p. 266, C912); Karshnajini's: the tithi at sunset (NS) |
 | C665 | which anniversaries are parvana | **ekoddishta** for a barkhi, **parvana** for a death on the new moon or in the pitri paksha, an ascetic's, and Sora Shraddha itself (Shankha in NS; Dhakal for Nepal), as the request's `kind`, defaulted from the origin and overridable | parvana for all yearly shraddhas "by custom" (NS p. 983) |
 | C666 | an ordinary origin, the first anniversary in a year whose month is adhika | **maintainer**: the texts (DS, NS, Kane) put it in the adhika month; Dhakal for Nepal's barkhi puts it in the ordinary month. Proposed: `ADHIKA` (the texts), with `NIJA` (Dhakal) offered and named, and a Nepal preset choosing `NIJA` | both months (Vrddha-Vasishtha, Marichi in NS) |
 | C667 | an origin in an adhika month | **the ordinary month, and the adhika when that month is adhika again**; the dark half as the same amanta lunation's dark half (Dhakal n. 63; Kane–Bhrgu) | Hemadri's *sauram mānam* read literally as a solar month, which can point a month away; recorded, not offered |

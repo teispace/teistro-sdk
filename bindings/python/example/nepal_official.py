@@ -3,7 +3,7 @@
 Nepal's patro is computed by the Nepali committee from the Surya
 Siddhanta: the tithi, nakshatra and yoga by the text with the committee's
 bija, and the sunrise from a modern ephemeris. That is what
-``nepal_official`` opens. The modern reckoning, ``nepali-default``, reads
+``nepal_official`` opens. The modern reckoning, ``nepali-drik``, reads
 the same day from the modern sky, and the two name a different sunrise
 tithi on a few days a month.
 
@@ -54,7 +54,7 @@ def main() -> None:
         altitude_m=Altitude(1400),
     )
     with teistro.context(**nepal_official(), locale="en-Latn") as official, teistro.context(
-        profile="nepali-default", locale="en-Latn", ephemeris=Ephemeris.BUILTIN
+        profile="nepali-drik", locale="en-Latn", ephemeris=Ephemeris.BUILTIN
     ) as modern:
 
         def name(key: str) -> str:

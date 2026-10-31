@@ -18,7 +18,7 @@ const isolates = 4;
 /// day's sunrise and the chart's longitudes, graha by graha.
 List<double> asked() {
   final ctx = Teistro.open().context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     locale: 'ne-Deva-NP',
     testProvider: true,
   );

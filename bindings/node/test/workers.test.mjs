@@ -18,7 +18,7 @@ const asked = `
   const date = (day) => ({ calendar: Calendar.Gregorian, year: 2024, eraYear: 0, month: 6, day,
     resolution: Resolution.Defined, computedMonth: 0, computedDay: 0 });
   const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
-  const ctx = new Context({ testProvider: true, profile: 'nepali-default', locale: 'ne-Deva-NP' });
+  const ctx = new Context({ testProvider: true, profile: 'nepali-drik', locale: 'ne-Deva-NP' });
   const week = ctx.almanac.of({ from: date(17), to: date(23), place, utcOffsetSeconds: 20700 });
   const days = Array.from({ length: week.length }, (_, i) => [week.at(i).day.sunrise, week.at(i).kaalas.length]);
   const chart = ctx.chart.found({ instant: 2451545.25, place, utcOffsetSeconds: 20700 });

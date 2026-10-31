@@ -334,6 +334,38 @@ the current locale then its declared fallbacks; every result says which
 locale answered. Messages are parsed once per key and cached. The
 measurements are in §10.
 
+**Choosing a locale** (SR-64, C1011). `set_locale`, a context's `locale`
+option and `lookup_locale`, which changes nothing, take any BCP 47 tag and
+choose a loaded locale by RFC 4647 §3.4 lookup: the range is truncated from
+the end, compared without regard to case, until it meets a tag. RFC 4647
+assumes short tags and the SDK's are long, so `ne` would never equal
+`ne-Deva-NP`. At each length a tag the range is a prefix of therefore counts,
+as §3.3.1's basic filtering reads it.
+
+| asked | chosen |
+|---|---|
+| `ne`, `ne-NP`, `ne-Deva` | `ne-Deva-NP` |
+| `en`, `en-US`, `en-Latn-GB` | `en-Latn` |
+| `hi`, `hi-IN` | `hi-Deva-IN` |
+| `sa`, `sa-IN` | `sa-Deva` |
+| `sa-Latn-IN` | `sa-Latn` |
+| `hi-Latn`, `en-Deva` | refused: a stated script is not truncated away |
+| `de`, `*`, `ne_NP` | refused |
+
+Three rules hold it to the rest of the engine. **There is no default**, the
+lookup's last step: a tag that means nothing loaded is refused as before and
+never answers in another language. **The answer names the locale chosen**:
+`intl.locale` reads it back, and `set_locale` returns it in Rust and Java.
+**It selects a locale and no more.** A short tag gives the same locale as the
+long one, with the same completeness: `hi` is `hi-Deva-IN` at `base`, its
+missing keys following its declared fallback and saying so in `is_fallback`,
+and a call that refuses `hi-Deva-IN` refuses `hi`. Review status (Q42) and
+strict completeness are the locale's, untouched here.
+
+Where several tags answer, CLDR's `likelySubtags` for the shipped languages
+settle it: `sa` is Devanagari. A language with no such row, or two tags in the
+likely script, is refused with both named, and never settled by sort order.
+
 The runtime API (`runtime`): `load_pack(&bytes)` takes a `.tpack` or a
 `.tbundle` after construction, adding a locale (its metadata from the
 file, its plural rules from ICU4X) or a namespace, or replacing entries
@@ -391,6 +423,120 @@ tag reads perfectly as text and tells a renderer nothing, so the loss is
 invisible in exactly the place a reviewer looks. Both halves are there
 now, and the measured page checks the same rule a second way, off a
 rendered plan rather than off the sources.
+
+### A date or a time as text and parts (SR-76)
+
+`:time` and `:date` render inside a message, and until now nothing else
+reached them, so an application showing one sunrise wrote a message for
+it. `sdk.intl().time` and `sdk.intl().date` are those functions as calls:
+the records `intl.time` and `intl.date`, the boundary's `ts_intl_time`
+and `ts_intl_date`, and each binding's `intl.time` and `intl.date` with
+their generated request types.
+
+```
+intl.time  {at: {hour, minute, second?}, style?, hour12?, locale?, digits?}
+intl.date  {at: <CalendarDay>, style?, locale?, digits?}
+answer     {text, parts: [{kind, text}], locale, resolvedFrom,
+            isFallback, isDraft, warnings}
+```
+
+**They read the patterns a message reads.** `style` is `NUMERIC`, or
+`LONG` (time, date) or `FULL` (date), and chooses
+`sdk.calendar.time.<style>` or `sdk.calendar.<CALENDAR>.date.<style>`;
+`hour12` chooses `<style>12`, off by default as it is for `:time`, since
+CLDR's preferred clock differs by region (`h` for India, `H` for Nepal)
+and a default read from the locale would change what `:time` says. So a
+locale override or a loaded pack reaches both paths. `digits` (`LATN`,
+`DEVA`) overrides the locale's numbering system, as it does for
+`inWords`, and `locale` is a loaded tag, the engine's when left out.
+
+**The parts come from the pattern, not from the text.** An application
+laying the day-part beside the figures must not have to split a string
+whose order is the locale's (`6:05 am`, `सुबह ६:०५`). The render is run
+with the variable behind each placeholder marked, so `{$dayPeriod}` is
+`DAY_PERIOD` wherever a locale writes it, following a `:msg` link
+(`JULIAN` to `GREGORIAN`); what the pattern spells itself is `LITERAL`.
+The kinds are `YEAR`, `MONTH`, `DAY`, `WEEKDAY`, `ERA`, `HOUR`, `MINUTE`,
+`SECOND`, `DAY_PERIOD` and `LITERAL`, and the parts joined are `text`,
+always. This is `Intl.DateTimeFormat.prototype.formatToParts`'s shape,
+which an application's developers already know. An ISO week's `MONTH` is
+the week, as `CalendarDate.month` is.
+
+**Refusals.** Named under `time` or `date`: an hour, minute or second out
+of range or a date its calendar does not hold is `INVALID_ARG`; a locale
+not loaded, a calendar that is not shipped, or a calendar with no pattern
+(the four regional solar ones today) is `UNSUPPORTED`. A call has no
+stand-in to give: the built-in default of `:date` exists so that a
+sentence survives, and an answer with typed parts has nothing to warn in.
+
+### Text not yet reviewed (SR-75, Q42)
+
+Q42 decided that drafts stay behind a `draft` status a strict locale
+refuses, and nothing had built it: `ne-Deva-NP`'s text carries no status
+of any kind, only `completeness: strict`, which says every key is present
+and not that a person has read it. The consumer's answer of 2026-10-31
+lets Hindi and Sanskrit `sdk.calendar` ship ahead of Q42's reviewer, so
+the status is built here.
+
+`_meta.json` names the namespaces: `"draft": ["sdk.calendar"]`. It is per
+namespace and not per string (C985): a reviewer signs a file, a string's
+mark would have no owner, and xliff's unit state is an exchange format
+the engine does not read at run time.
+
+**A reader sees it.** The metadata travels in a pack or bundle, so the
+mark does too; `Rendered.is_draft` and the answers' `isDraft` are true
+when any text of a render came from a draft namespace, however deep
+(`time_params` reads the day-part words through a key of their own, a
+`:msg` link another). An override is the consumer's own text and is not a
+draft. A pack laid over a namespace carries its own mark across when it
+brings metadata, so a reviewer's pack clears a draft without an SDK
+release. `report()` lists each locale's drafts. `is_draft` crosses the
+render blob as a section of its own, so a reader of the older blob is
+unaffected.
+
+**`check-intl` holds it** (`validate::check_draft`): an entry must name a
+namespace the locale has, and a drafted namespace must carry
+every key of the base's, so a draft is a whole text to review and not a
+patchwork of three sources. The mark comes off only with the reviewer
+named in `QUESTIONS.md` Q42: `crates/intl/tests/draft.rs` pins it, and
+the two files appear on `locale-coverage-measured.md`.
+
+**A strict locale may draft (C987).** Q42's words are a status "that a
+strict locale refuses". Built literally, the Nepali day sentences (SR-13)
+would ship with no mark at all, since `ne-Deva-NP` is strict, which says
+less than the truth. Strict and draft answer different questions: strict
+that every key is present, so no reader meets a fallback; draft that no
+one has read them. A strict locale therefore drafts a namespace it holds
+whole (`ne-Deva-NP` drafts `sdk.day`), and every render says so, for the
+consumer to show, hide or refuse. The consumer's answer to SR-75, to ship
+marked rather than wait, reads the same way; the addendum asks them to
+confirm it for Nepali.
+
+**`sa-Latn` carries no `sdk.calendar`.** It is derived for names; a
+transliterated Sanskrit date for a Latin reader is a design of its own,
+and a derived locale says it inherits no draft by dropping the field.
+
+**Sources.** `hi` and `sa` follow CLDR 48 (rank 1) for the Gregorian
+months, the weekdays, the date order (`d MMMM y`, `EEEE, d MMMM y`) and
+Hindi's parts of the day (`सुबह`, `दोपहर`, `शाम`, `रात`, whose hours are the
+default division, `dayPeriods.xml`). Where CLDR is wrong or silent the
+draft departs from it and says so:
+
+- CLDR's `sa` writes ASCII colons for the visarga (`गुरुवासर:`, `जनवरी:`);
+  the draft writes `ः`, and its short months are the bare stems.
+- CLDR gives `hi` no Hindi word for am and pm (`am`, `pm`). The draft
+  writes `पूर्वाह्न` and `अपराह्न`, as `hi` dictionaries spell them. Sanskrit
+  writes `पूर्वाह्णे` and `अपराह्णे` (C986): *Aṣṭādhyāyī* 8.4.7 *ahno
+  'dantāt* gives ṇ after a final-*a* first member with r, against CLDR
+  `sa`'s `पूर्वाह्न`.
+- CLDR's `hi` Hijri months are garbled (`शावन`, `जुम्डा प्रथम`) and its
+  Indian national month is `अश्विन`. The draft writes the usual forms and
+  `आश्विन`, and the national month `भाद्र` as the calendar's own name.
+- Sanskrit has no plural rule in CLDR and three numbers, so a duration
+  matches 1 and 2 exactly (`१ दिनम्`, `२ दिने`, `३ दिनानि`).
+
+Every string is a draft for the consumer's reviewer; the ones least
+certain are listed in the hand-back and in `consumers/addendum-3.md`.
 
 ## 7. Validation
 

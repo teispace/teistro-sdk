@@ -5,7 +5,7 @@ package com.teispace.teistro;
  * object is the library's default profile over no ephemeris.
  *
  * @param profile the shipped profile's id ({@code parashari-classical},
- *     {@code nepali-default} …), or null for the library's default
+ *     {@code nepali-drik} …), or null for the library's default
  * @param settingsJson a JSON settings patch over the profile, or null
  * @param locale the locale every render resolves from, or null
  * @param layoutsJson chart layouts of the caller's own, as JSON, or null

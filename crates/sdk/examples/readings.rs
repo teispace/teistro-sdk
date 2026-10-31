@@ -72,7 +72,7 @@ fn packs_of(corpus: &str) -> Result<Vec<PathBuf>, Error> {
 
 fn main() -> Result<(), Error> {
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()?;
 

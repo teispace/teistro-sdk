@@ -247,7 +247,7 @@ span, and [`nepal-month-measured.md`](nepal-month-measured.md) holds the almanac
 at Kathmandu to five announcements, BS 2072 to 2083, one of them given
 as instants.
 
-Both shipped readings mark exactly the announced days: `nepali-default`
+Both shipped readings mark exactly the announced days: `nepali-drik`
 over the built-in ephemeris, and `surya-siddhanta` over the text's own
 sky and zodiac. So the drik-against-text question of §8 does not arise
 for the month's span in these years, and a Nepali consumer gets the
@@ -273,7 +273,7 @@ Mahashivaratri is फाल्गुन कृष्ण चतुर्दशी
 The page's §4 holds six dated designations to the month the profile
 leads with, and one of them, a worked example written against the solar
 month, rules out reading the names as Bikram Sambat months. So
-`nepali-default` leads with the purnimanta month from its version 2.
+`nepali-drik` leads with the purnimanta month from its version 2.
 Only the lead moves: every rule that decides a festival or a muhurta
 reads the amanta month by name, and both are carried on every day. The month is said
 with its kind by one message, `sdk.calendar.lunarMonth`, which matches on

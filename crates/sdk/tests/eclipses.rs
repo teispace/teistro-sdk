@@ -53,7 +53,7 @@ fn year(sdk: &Context) -> Result<Envelope<EclipsesHere>, teistro::Error> {
 
 #[test]
 fn kathmandu_saw_one_of_2025s_four_eclipses() {
-    let found = year(&context("nepali-default", None)).unwrap().value;
+    let found = year(&context("nepali-drik", None)).unwrap().value;
     // Two total lunar eclipses, March's and September's, and two partial
     // solar ones, March's over the North Atlantic and September's over
     // the South Pacific.
@@ -86,7 +86,7 @@ fn kathmandu_saw_one_of_2025s_four_eclipses() {
 
 #[test]
 fn the_answer_says_its_window_and_the_knob_moves_the_shadow() {
-    let danjon = year(&context("nepali-default", None)).unwrap();
+    let danjon = year(&context("nepali-drik", None)).unwrap();
     assert!(
         danjon
             .provenance
@@ -95,7 +95,7 @@ fn the_answer_says_its_window_and_the_knob_moves_the_shadow() {
             .any(|c| c.knob == "eclipse.window")
     );
     let chauvenet = year(&context(
-        "nepali-default",
+        "nepali-drik",
         Some(r#"{"panchanga": {"eclipse_shadow": "CHAUVENET"}}"#),
     ))
     .unwrap();
@@ -121,7 +121,7 @@ fn the_committees_sky_refuses_with_the_crux_it_waits_on() {
 
 #[test]
 fn the_eclipses_asked_beside_the_days_are_the_eclipses() {
-    let sdk = context("nepali-default", None);
+    let sdk = context("nepali-drik", None);
     let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2025, month, day);
     let (from, to) = (date(9, 1), date(9, 30));
     let clock = UtcOffset::literal(5, 45, 0);
@@ -180,7 +180,7 @@ fn the_eclipses_name_their_kinds_where_their_table_says() {
         Longitude::literal(-0.13),
         Altitude::literal(20.0),
     );
-    let found = context("nepali-default", None)
+    let found = context("nepali-drik", None)
         .almanac()
         .eclipses(
             &CalendarDate::defined(Calendar::Gregorian, 2025, 3, 1),
@@ -222,14 +222,14 @@ fn the_eclipses_name_their_kinds_where_their_table_says() {
 }
 
 /// Each eclipse the place sees carries its vedha, the sutak, as the
-/// muhurta search bars it (`muhurta.md` §4.1.1): under `nepali-default`
+/// muhurta search bars it (`muhurta.md` §4.1.1): under `nepali-drik`
 /// the committee's fixed hours, so 2025-09-07's no food from 13:11 to
 /// 01:41 on Nepal's clock, printed to the minute; and none for an eclipse
 /// the place does not see.
 #[test]
 fn a_seen_eclipse_carries_its_sutak() {
     const MINUTES: f64 = 3.0 / 1440.0;
-    let found = year(&context("nepali-default", None)).unwrap().value;
+    let found = year(&context("nepali-drik", None)).unwrap().value;
     assert_eq!(found.lunar[0].vedha, None, "March's was not seen");
     let vedha = found.lunar[1].vedha.unwrap();
     assert!(
@@ -244,7 +244,7 @@ fn a_seen_eclipse_carries_its_sutak() {
     // The text's praharas open it earlier or later, never at the same
     // instant as the fixed hours, and close it alike.
     let text = year(&context(
-        "nepali-default",
+        "nepali-drik",
         Some(r#"{"panchanga": {"eclipse_vedha": "DHARMASINDHU"}}"#),
     ))
     .unwrap()

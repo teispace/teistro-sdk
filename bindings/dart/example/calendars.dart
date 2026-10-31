@@ -53,7 +53,7 @@ String described(CalendarDate day) {
 
 void main() {
   final teistro = Teistro.open();
-  final ctx = teistro.context(profile: 'nepali-default', locale: 'ne-Deva-NP');
+  final ctx = teistro.context(profile: 'nepali-drik', locale: 'ne-Deva-NP');
   const year = 2082;
 
   // ── A whole year, with its Gregorian spans ─────────────────────────

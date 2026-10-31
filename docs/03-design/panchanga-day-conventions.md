@@ -77,8 +77,9 @@ once.
 The tithi's number is the other place two conventions meet. The corpus
 counts one to thirty through the lunar month; the SDK's catalogue gives
 each member a number within its paksha, one to fifteen, which is how a
-tithi is named. Both are right and they are not the same field, so a
-harness that compares them without saying which is comparing nothing.
+tithi is named, and `month_number`, one to thirty, the corpus's count.
+Both are right and they are not the same field, so a harness that
+compares them without saying which is comparing nothing.
 
 The karana is the limb that is not a cycle. Sixty karanas make a lunar
 month: Kimstughna opens it, Shakuni, Chatushpada and Naga close it, and

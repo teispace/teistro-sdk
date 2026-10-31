@@ -256,9 +256,37 @@ pub struct Meta {
         skip_serializing_if = "is_default_day_periods"
     )]
     pub day_periods: Vec<DayPeriod>,
+    /// The namespaces no reviewer has signed off, each shipped so that a
+    /// reader can see it: a render from one says `is_draft`
+    /// (`03-design/intl-engine-and-packs.md`, QUESTIONS.md Q42). A strict
+    /// locale may name none.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub draft: Vec<String>,
 }
 
 impl Meta {
+    /// Whether a key lies in a namespace this locale marks unreviewed.
+    ///
+    /// ```
+    /// # use teistro_intl::sdk_root;
+    /// # use teistro_intl::source::Tree;
+    /// #
+    /// # let tree = Tree::load(&sdk_root())?;
+    ///
+    /// let hindi = &tree.locales["hi-Deva-IN"].meta;
+    /// assert!(hindi.is_draft("sdk.calendar.time.numeric"));
+    /// assert!(!hindi.is_draft("sdk.entity.graha.SUN"));
+    /// assert!(!hindi.is_draft("sdk.calendarish"));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn is_draft(&self, key: &str) -> bool {
+        self.draft.iter().any(|namespace| {
+            key.strip_prefix(namespace.as_str())
+                .is_some_and(|rest| rest.is_empty() || rest.starts_with('.'))
+        })
+    }
+
     /// The key of the part of the day an hour falls in.
     ///
     /// The parts are in order and the last wraps, so an hour before the
@@ -1362,6 +1390,7 @@ mod tests {
             term_style: None,
             list_patterns: BTreeMap::new(),
             day_periods: default_day_periods(),
+            draft: Vec::new(),
         };
         // The default division, over the whole day, with the last part
         // wrapping past midnight.

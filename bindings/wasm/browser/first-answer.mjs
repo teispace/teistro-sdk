@@ -6,7 +6,7 @@
  * @returns {object} a date in Bikram Sambat
  */
 export function firstAnswer(sdk) {
-  const ctx = new sdk.Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const ctx = new sdk.Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
   try {
     return ctx.calendar.convert(
       {

@@ -271,6 +271,11 @@ fn settings_describe_answers_the_profiles_and_the_patch_schema() {
         .map(|profile| profile["id"].as_str().unwrap())
         .collect();
     assert_eq!(ids, teistro::settings::SHIPPED_PROFILES);
+    let drik = &described["profiles"][0];
+    assert_eq!(
+        (&drik["id"], &drik["aliases"]),
+        (&json!("nepali-drik"), &json!(["nepali-default"]))
+    );
     let schema = &described["settings"];
     assert!(schema["$schema"].as_str().unwrap().contains("2020-12"));
     assert!(schema["properties"]["frame"].is_object(), "{schema}");
@@ -313,13 +318,27 @@ fn a_days_request_answers_its_days_and_each_section_sealed_as_the_boundary_seals
     let value = &result["structuredContent"]["value"];
     assert_eq!(value["days"].as_array().unwrap().len(), 3);
     assert_eq!(value["dayHashes"].as_array().unwrap().len(), 3);
-    for section in ["muhurta", "festivals", "years", "eclipses", "nepalSambat"] {
+    for section in [
+        "muhurta",
+        "festivals",
+        "years",
+        "eclipses",
+        "nepalSambat",
+        "sky",
+    ] {
         let hash = &value[section]["provenance"]["content_hash"];
         assert!(hash.is_string(), "{section}: {hash}");
     }
     // A section not asked is left out rather than answered empty.
     let mut plain = request.clone();
-    for asked in ["muhurta", "festivals", "years", "eclipses", "nepalSambat"] {
+    for asked in [
+        "muhurta",
+        "festivals",
+        "years",
+        "eclipses",
+        "nepalSambat",
+        "sky",
+    ] {
         plain.as_object_mut().unwrap().remove(asked);
     }
     let result = call(&mut server, name, &json!({"request": plain}));

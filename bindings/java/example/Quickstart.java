@@ -37,7 +37,7 @@ public final class Quickstart {
         System.out.println("Teistro " + teistro.sdkVersion());
 
         ContextOptions options = ContextOptions.builder()
-                .profile("nepali-default")
+                .profile("nepali-drik")
                 .locale("ne-Deva-NP")
                 .ephemeris(Ephemeris.BUILTIN)
                 .build();

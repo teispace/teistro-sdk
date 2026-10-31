@@ -137,12 +137,44 @@ public final class AlmanacArea {
             com.teispace.teistro.request.MuhurtaRequest muhurta,
             com.teispace.teistro.request.FestivalRequest festivals,
             boolean years, boolean eclipses, boolean nepalSambat, boolean lagnas, boolean homaAhuti) {
-        return asked(fromDate, toDate, place, utcOffsetSeconds, muhurta, festivals,
+        return of(fromDate, toDate, place, utcOffsetSeconds, muhurta, festivals, years, eclipses, nepalSambat, lagnas,
+                homaAhuti, false, 0);
+    }
+
+    /**
+     * {@link #of(CalendarDate, CalendarDate, Observer, int, com.teispace.teistro.request.MuhurtaRequest,
+     * com.teispace.teistro.request.FestivalRequest, boolean, boolean, boolean, boolean, boolean)} and,
+     * when {@code sky} asks, each day's sky, as {@link Almanac#sky()}: the Sun's and the Moon's paths, rises,
+     * transits and sets, and the Moon's lit shape ({@code 03-design/day-sky.md}).
+     *
+     * @param fromDate the first day; its calendar is the range's
+     * @param toDate the last day
+     * @param place where
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param muhurta a muhurta search over the same days, or null
+     * @param festivals festival rules to reckon over the same days, or null
+     * @param years whether to answer the lunar years the days fall in
+     * @param eclipses whether to answer the eclipses of the days
+     * @param nepalSambat whether to answer each day's Nepal Sambat date
+     * @param lagnas whether to give each day its lagna table
+     * @param homaAhuti whether to give each day its homa ahuti
+     * @param sky whether to answer each day's sky
+     * @param skyStepMinutes the step of its paths, 1 to 240, zero for ten
+     * @return the almanac
+     */
+    public Almanac of(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.MuhurtaRequest muhurta,
+            com.teispace.teistro.request.FestivalRequest festivals,
+            boolean years, boolean eclipses, boolean nepalSambat, boolean lagnas, boolean homaAhuti,
+            boolean sky, int skyStepMinutes) {
+        return asked(fromDate, toDate, place, utcOffsetSeconds, null, muhurta, festivals,
                 (years ? Native.TS_PANCHANGA_YEARS : 0)
                         | (eclipses ? Native.TS_PANCHANGA_ECLIPSES : 0)
                         | (nepalSambat ? Native.TS_PANCHANGA_NEPAL_SAMBAT : 0)
                         | (lagnas ? Native.TS_PANCHANGA_LAGNAS : 0)
-                        | (homaAhuti ? Native.TS_PANCHANGA_HOMA_AHUTI : 0));
+                        | (homaAhuti ? Native.TS_PANCHANGA_HOMA_AHUTI : 0)
+                        | (sky ? Native.TS_PANCHANGA_SKY : 0),
+                skyStepMinutes);
     }
 
     /**
@@ -208,7 +240,7 @@ public final class AlmanacArea {
      * @return the days
      */
     public Almanac inZone(CalendarDate fromDate, CalendarDate toDate, Observer place, ZoneSpec zone) {
-        return asked(fromDate, toDate, place, 0, zoneJson(zone), null, null, 0);
+        return asked(fromDate, toDate, place, 0, zoneJson(zone), null, null, 0, 0);
     }
 
     /** A zone as the record the boundary reads beside a range. */
@@ -258,14 +290,15 @@ public final class AlmanacArea {
     private Almanac asked(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
             com.teispace.teistro.request.MuhurtaRequest muhurta,
             com.teispace.teistro.request.FestivalRequest festivals, long sections) {
-        return asked(fromDate, toDate, place, utcOffsetSeconds, null, muhurta, festivals, sections);
+        return asked(fromDate, toDate, place, utcOffsetSeconds, null, muhurta, festivals, sections, 0);
     }
 
     private Almanac asked(CalendarDate fromDate, CalendarDate toDate, Observer place, int utcOffsetSeconds,
             String zoneJson, com.teispace.teistro.request.MuhurtaRequest muhurta,
-            com.teispace.teistro.request.FestivalRequest festivals, long sections) {
+            com.teispace.teistro.request.FestivalRequest festivals, long sections, int skyStepMinutes) {
         PanchangaRequest request = new PanchangaRequest(
                 fromDate.calendar(),
+                skyStepMinutes,
                 fromDate.year(),
                 fromDate.month(),
                 fromDate.day(),
@@ -770,6 +803,31 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>Anniversaries kept by the tithi over a span of years</b>, for many people in one call
+     * ({@code 03-design/anniversary-span.md}). The span's days are founded once, and every
+     * person's are read from them. Each day's {@code dayRule} says whether its tithi was
+     * {@code KSHAYA} or {@code VRIDDHI}, the window read, the clause and its source.
+     *
+     * <pre>{@code
+     * AnniversariesRequest asked = AnniversariesRequest.of(Map.of("fromYear", 2026, "years", 10,
+     *         "latitudeDeg", 27.7172, "longitudeDeg", 85.324, "utcOffsetSeconds", 20_700,
+     *         "anniversaries", List.of(Map.of("key", "GRANDFATHER",
+     *                 "origin", Map.of("by", "LUNAR", "month", "KARTIKA", "tithi", "SHUKLA_DASHAMI")))));
+     * FestivalAnswer span = sdk.almanac().anniversaries(asked);
+     * System.out.println(span.anniversaries().get(0).dayRule().clause());
+     * }</pre>
+     *
+     * @param request the span in {@code calendar}, the place, and at most 1000 anniversaries
+     * @return the festival answer, its anniversaries holding each person's days
+     * @throws TeistroException {@code OUT_OF_RANGE} naming {@code years}, {@code LIMIT} naming
+     *     {@code anniversaries}
+     */
+    public FestivalAnswer anniversaries(com.teispace.teistro.request.AnniversariesRequest request) {
+        String json = Json.write(request);
+        return AlmanacReads.festivalsAnswer(context.locked((lib, raw) -> Calls.almanacAnniversaries(lib, raw, json)));
+    }
+
+    /**
      * <b>The next day a rule or a kind of day falls on</b> after an instant at a place, with no year
      * asked ({@code 03-design/next-occurrence.md}). The civil day holding the instant counts. Give a
      * {@code kind}, {@code EKADASHI}, {@code PURNIMA}, {@code AMAVASYA} or {@code SANKRANTI}, read by
@@ -831,5 +889,59 @@ public final class AlmanacArea {
                 Reads.serdeDate(Reads.field(value, "from")),
                 Reads.integer(value, "limitDays"),
                 Reads.integer(value, "searchedDays"));
+    }
+
+    /**
+     * <b>A day in sentences</b> ({@code 03-design/day-in-sentences.md}): one date's facts as short sentences
+     * from templates, every value from the day's answer.
+     *
+     * <pre>{@code
+     * DaySentences day = sdk.almanac().sentences(date, kathmandu, 20_700, "ne-Deva-NP");
+     * System.out.println(day.sentences().get(0).text());
+     * }</pre>
+     *
+     * @param date the day
+     * @param place where the day is reckoned
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param locale the locale, null for the context's
+     * @return the sentences
+     * @throws TeistroException {@code UNSUPPORTED} naming {@code locale} for a locale without the templates
+     */
+    public DaySentences sentences(CalendarDate date, Observer place, int utcOffsetSeconds, String locale) {
+        if (date == null) {
+            throw Reads.invalid("date is a CalendarDate", "date");
+        }
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        Map<String, Object> day = new java.util.LinkedHashMap<>();
+        day.put("year", date.year());
+        day.put("month", date.month());
+        day.put("day", date.day());
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("calendar", date.calendar().key());
+        asked.put("date", day);
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (locale != null) {
+            asked.put("locale", locale);
+        }
+        String json = Json.write(asked);
+        Map<?, ?> envelope =
+                Reads.object(Json.read(context.locked((lib, raw) -> Calls.almanacSentences(lib, raw, json))));
+        Map<?, ?> value = Reads.object(envelope, "value");
+        return new DaySentences(
+                Reads.string(value, "locale"),
+                Reads.flag(value, "draft"),
+                Reads.each(value, "sentences", row -> {
+                    Map<?, ?> sentence = Reads.object(row);
+                    return new DaySentences.Sentence(
+                            Reads.string(sentence, "key"),
+                            Reads.object(sentence, "params"),
+                            Reads.string(sentence, "text"));
+                }),
+                Reads.each(value, "withheld", Reads::string));
     }
 }

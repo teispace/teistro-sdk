@@ -522,6 +522,7 @@ answering it wrongly.
 |---|---|
 | a polar day under `polar_day_policy = UNDEFINED` | `UNSUPPORTED`, naming the policies that synthesise one |
 | a polar day under any other policy | computed, with the periods of the missing arc absent and `DayState` saying why |
+| a sankranti on a polar day, under the default month start | computed: the rule reads the arc the policy stands in, and the season reads the civil date's signs (C930) |
 | the date is outside the provider's span | `UNSUPPORTED`, naming the span and the provider |
 | a limb boundary the solver cannot bracket | the solver's own error, naming the quantity and the window |
 | a date the civil calendar does not have | the calendar's `NONEXISTENT_DATE`, before anything runs |

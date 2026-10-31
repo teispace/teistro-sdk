@@ -16,7 +16,7 @@ def main() -> None:
     print(f"Teistro {teistro.version}")
 
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
+        profile="nepali-drik", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # 14 April 2015 is 1 Baisakh 2072 BS.
         bs = ctx.calendar.convert(date(Calendar.GREGORIAN, 2015, 4, 14), Calendar.BIKRAM_SAMBAT)

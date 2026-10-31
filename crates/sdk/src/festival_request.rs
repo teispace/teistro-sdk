@@ -719,6 +719,10 @@ impl FestivalRequest {
             .unwrap_or(0)
     }
 
+    /// The most rules of all five lists one request may carry
+    /// (`03-design/anniversary-span.md` §6).
+    pub const MOST_RULES: usize = 4_096;
+
     /// Refuses what no reckoning could answer, naming the field under
     /// `rules`, `ekadashis`, `following`, `dated` or `anniversaries`: a rule
     /// its own `check` refuses, a key given twice across all five, which would answer two
@@ -727,9 +731,24 @@ impl FestivalRequest {
     ///
     /// # Errors
     ///
-    /// `INVALID_ARG` on `rules[i]`, `ekadashis[i]`, `following[i]`,
-    /// `dated[i]` or `anniversaries[i]` and the rule's own field.
+    /// `LIMIT` past [`FestivalRequest::MOST_RULES`], naming `rules`, or a
+    /// rule past [`FestivalRule::MOST_GUARDS`] and its like; `INVALID_ARG`
+    /// on `rules[i]`, `ekadashis[i]`, `following[i]`, `dated[i]` or
+    /// `anniversaries[i]` and the rule's own field.
     pub fn check(&self) -> Result<(), Error> {
+        let carried = self.rules.len()
+            + self.ekadashis.len()
+            + self.following.len()
+            + self.dated.len()
+            + self.anniversaries.len();
+        if carried > FestivalRequest::MOST_RULES {
+            return Err(Error::limit(format!(
+                "a request carries at most {} rules, not {carried}",
+                FestivalRequest::MOST_RULES
+            ))
+            .with_field("rules")
+            .with_hint("send the rest in a second request"));
+        }
         let rules = self.rules.iter().map(|rule| (&rule.key, rule.check()));
         let ekadashis = self.ekadashis.iter().map(|rule| (&rule.key, rule.check()));
         let following = self.following.iter().map(|rule| (&rule.key, rule.check()));

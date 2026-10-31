@@ -608,6 +608,7 @@ dependencies = [
  "teistro-gochar",
  "teistro-hellenistic",
  "teistro-houses",
+ "teistro-idl",
  "teistro-interpret",
  "teistro-intl",
  "teistro-kp",
@@ -772,6 +773,14 @@ dependencies = [
  "teistro-astro",
  "teistro-chart",
  "teistro-core",
+]
+
+[[package]]
+name = "teistro-idl"
+version = "1.0.0-rc.1"
+dependencies = [
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

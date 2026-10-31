@@ -70,7 +70,7 @@ def nakshatra_of(longitude: float) -> tuple[Nakshatra, int]:
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="nepali-default",
+        profile="nepali-drik",
         locale="ne-Deva-NP",
         ephemeris=Ephemeris.BUILTIN,
     ) as ctx:
@@ -169,7 +169,7 @@ def main() -> None:
     for policy in (None, "NOON", "MIDNIGHT"):
         settings = None if policy is None else {"time": {"unknown_time": policy}}
         with teistro.context(
-            profile="nepali-default",
+            profile="nepali-drik",
             locale="ne-Deva-NP",
             ephemeris=Ephemeris.BUILTIN,
             settings=settings,

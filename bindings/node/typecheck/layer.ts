@@ -89,8 +89,12 @@ import type {
   RisingSign,
   NaamRules,
   NumerologyProfile,
+  CivilPart,
+  CivilText,
+  DateTextRequest,
   InWords,
   InWordsRequest,
+  TimeTextRequest,
   NumerologyRules,
   RecordedSettings,
   RashifalAnswer,
@@ -1366,7 +1370,7 @@ function theDisagreements(official: Context, modern: Context): string {
   const moved = fast?.official?.day.day;
   const hash: string | undefined = found.days?.provenance.inputHash ?? found.festivals?.otherSettingsHash;
   // @ts-expect-error the context compared with is a Context, not its options
-  official.almanac.disagreements({ profile: 'nepali-default' }, asked);
+  official.almanac.disagreements({ profile: 'nepali-drik' }, asked);
   return `${tithi} ${change?.minutesFromSunrise} ${moved} ${hash} ${day?.karana?.other.span.to}`;
 }
 void theDisagreements;
@@ -1485,6 +1489,17 @@ function theArithmetic(ctx: Context): string {
     utcOffsetSeconds: 20700,
     kind: 'SANKRANTI',
   });
+  const kept = ctx.almanac.anniversaries({
+    fromYear: 2026,
+    years: 10,
+    latitudeDeg: 0,
+    longitudeDeg: 0,
+    utcOffsetSeconds: 0,
+    anniversaries: [],
+  });
+  void kept.anniversaries[0]?.dayRule.clause;
+  // @ts-expect-error a span names how many years
+  ctx.almanac.anniversaries({ fromYear: 2026, latitudeDeg: 0, longitudeDeg: 0, utcOffsetSeconds: 0, anniversaries: [] });
   // @ts-expect-error a kind is one of four
   ctx.almanac.next({ after: 0, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0, kind: 'HOLI' });
   return `${age.years} ${next.keys.join()} ${next.day.day} ${next.searchedDays}`;
@@ -2229,6 +2244,22 @@ function theWords(ctx: Context): string {
 
 void theWords;
 
+// A time and a date as text and parts.
+function theClock(ctx: Context): string {
+  const asked: TimeTextRequest = { at: { hour: 6, minute: 5 }, style: 'LONG', hour12: true, digits: 'LATN' };
+  const dawn: CivilText = ctx.intl.time(asked);
+  const day: DateTextRequest = {
+    at: { calendar: 'calendar.GREGORIAN', year: 2026, month: 10, day: 31 },
+    style: 'FULL',
+  };
+  // @ts-expect-error a time's style has no `FULL`
+  const misstyled: TimeTextRequest = { at: { hour: 1, minute: 2 }, style: 'FULL' };
+  const part: CivilPart | undefined = dawn.parts[0];
+  return [dawn.text, part?.kind ?? '', ctx.intl.date(day).text, String(misstyled)].join();
+}
+
+void theClock;
+
 // A stored baseline snapshot translated into the contexts to open.
 function theRecordedSettings(ctx: Context): string {
   const translated: RecordedSettings = ctx.recordedSettings({ ayanamsaId: 1, houseSystem: 'placidus' });
@@ -2690,3 +2721,16 @@ const stop: () => void = onInternalError((report: InternalReport) => {
 // @ts-expect-error a report carries no message
 onInternalError((report) => report.message);
 stop();
+// A day in sentences names its template keys and its draft flag.
+import type { DaySentences } from '../lib/index.js';
+function theSentences(ctx: Context): string {
+  const day: DaySentences = ctx.almanac.sentences({
+    date: { year: 2026, month: 3, day: 18 },
+    place: { latitude: 27.7172, longitude: 85.324 },
+    utcOffsetSeconds: 20700,
+  });
+  // @ts-expect-error a date is its three parts
+  ctx.almanac.sentences({ date: 1, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0 });
+  return `${day.locale} ${day.draft} ${day.sentences[0]?.text} ${day.withheld.length}`;
+}
+void theSentences;

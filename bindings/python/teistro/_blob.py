@@ -297,6 +297,9 @@ class IntlRender:
     parts: str
     """UTF-8 JSON: the message's parts, for a rich renderer — `{"type": "text", "value": ...}` or `{"type": "markup", "kind": "open"|"close"|"standalone", "name": ..., "options": {...}}`, adjacent text in one part. **Empty when the message has no markup**, the whole of it being `text`; a reader turns that into the one text part rather than asking for it twice."""
 
+    is_draft: int
+    """Non-zero when any text came from a namespace its locale marks unreviewed."""
+
 
 def decode_intl_render(raw: bytes) -> IntlRender:
     """Decodes a IntlRender blob.
@@ -311,6 +314,7 @@ def decode_intl_render(raw: bytes) -> IntlRender:
     at_resolved_from = blob.section(3, "resolved_from")
     at_warnings = blob.section(4, "warnings")
     at_parts = blob.section(5, "parts")
+    at_review = blob.fixed_section(6, "review", 1)
     return IntlRender(
         is_fallback=int(blob.fixed(at_flags, 0, "B")),
         is_override=int(blob.fixed(at_flags, 1, "B")),
@@ -319,6 +323,7 @@ def decode_intl_render(raw: bytes) -> IntlRender:
         resolved_from=blob.text(at_resolved_from, "resolved_from"),
         warnings=blob.text(at_warnings, "warnings"),
         parts=blob.text(at_parts, "parts"),
+        is_draft=int(blob.fixed(at_review, 0, "B")),
     )
 
 
@@ -8070,6 +8075,9 @@ class PanchangaDays:
     moon_window_to: memoryview[float]
     """When the window the Moon's rises and sets were looked for in ends, as a Julian day (UTC)."""
 
+    utc_offset_seconds: memoryview[int]
+    """The clock the day was read on, in seconds east of UTC: a zone's offset at the day's opening, which changes across a clock change, or the offset the caller stated."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9219,7 +9227,7 @@ class Panchanga:
     """UTF-8 JSON, canonical: the muhurta search `muhurta_json` asked for over these days, as its envelope `{value, provenance}` (`03-design/muhurta-at-the-boundary.md`). `value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut, ranking, unjudged}`: each window `{at, clauses, barredBy, score}`, an interval `{from, to}` in UTC Julian days, every clause `{clause, at, ...}` tagged by its kind with that kind's fields beside the tag, `barredBy` the bars that struck it (a clause's key or a clause), and `score` the baseline's `{value, factors, cappedAt}` under the `BASELINE` ranking, else null; each closed day `{date, by}`, the blackouts that closed it. Every catalogue member is written as its full key (`nakshatra.ROHINI`), and the envelope is sealed over exactly this value. Empty when `muhurta_json` asked for none."""
 
     festivals: str
-    """UTF-8 JSON, canonical: the days the rules `festivals_json` asked for fall on over these days, as the envelope `{value, provenance}` (`03-design/festival-rules.md` §7). `value` is `{observances, ekadashis, unjudged}`, `dated` beside them when a rule kept on a date gave a day, and `anniversaries` when the request named one: each observance `{rule, day, tithi, month, adhika, case, extents, decidedBy, choice, marginSeconds, parana}`, the rule's key, the calendar date it falls on, the occurrence judged `{from, to}` in UTC Julian days (the tithi's, or the nakshatra's for a rule kept on one), its amanta month as a full key and whether that month is adhika, the case between its two days (`EARLIER_ONLY`, `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS`), each day's extent `{day, window, held}`, `decidedBy` `{by: GUARD, index}`, `{by: OTHERWISE}` or, for a rule counted from another's day, `{by: AFTER, rule, days}` (its tithi, case and extents then the counted-from observance's), the choice that decided (`EARLIER`, `LATER` or `BY_YUGMA`, which `day` resolves), and the seconds of time every instant the day was decided from (the two sunrises, the next, the windows the rule and its guards draw) may move, as a different place moves them, before the day can change: 0 for two equal parts; and, for a rule whose fast is broken by a reading (§8.7), each reading answered `{reading, day, from, fromBy, to, toBy}`, the rule's reading as it spells it (`TITHI_END`, `WITHIN`, `SUNRISE`, `AFTER_WINDOW`, `NEXT_TITHI`, `AFTER_RITE` with its `rite` and `remnant`), the day the meal falls on (the day after for most, the fast day for a reading ending on it, the rite's day after a rite), when the meal may begin, what set it (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END`, `YAMAS`, `WINDOW_END`, `RITE`), and when it must be taken by and what set that (absent when the reading sets no end); each Ekadashi fast `{rule, tithi, month, adhika, tithis, days, piercedAt, pierced, excess, choice, day, marginSeconds, parana, mahadvadashi}`, the rule's key, the 11th and its lunar month as full keys, whether that month is adhika, the 10th, the 11th and the 12th as `{from, to}`, the 11th's own day and the next, where the 10th reached into the 11th's day (`SUNRISE`, `ARUNODAYA` or null), whether that counts under the rule's vedha, which of the 11th and the 12th holds the next sunrise (`ELEVENTH`, `TWELFTH`, `BOTH`, `NEITHER`), the choice (`EARLIER` or `LATER`, which `day` resolves unless a mahadvadashi moved it, perhaps to the day after both), and the seconds of time every instant the fast was decided from (the sunsets that give the 11th its own day, that day's sunrise and, under a Vaishnava vedha, its arunodaya, and the two sunrises after) may move before the day can change, and, for a rule with a parana, when the fast is broken (§8.5): `{day, tithi, hariVasaraEnds, kept, barred}`, the day after the fast, the tithi the meal is kept in as a full key, when the 12th's first quarter ends if after that day's sunrise (else null), the window kept `{span, at, fromBy, toBy}` (null when none of the rule's leaves time), `at` the rule's window as it spells it and each edge's clause `WINDOW`, `HARI_VASARA`, `TITHI_START`, `TITHI_END`, `NAKSHATRA` or `JOINED_NAKSHATRA`, and, for a rule whose parana lists `bars` (C700) when one met that day's daylight, `barred` `{bar, span, setAside}`: the bar `{tithi, month, nakshatra, portion}` as the rule spells it (`portion` `{parts, which}`, absent for the whole nakshatra), the Moon's stay in the barred share, and whether the bar was set aside because the share outlasts the tithi the meal is kept in; and, for a rule keeping mahadvadashis (§8.9) when one held, `mahadvadashi` `{kind, held, clause, joined}`: the kind that set the day (`UNMILANI`, `VYANJULI`, `TRISPRISHA`, `PAKSHAVARDHINI`, `JAYA`, `VIJAYA`, `JAYANTI`, `PAPANASHINI`), every kind that held in the rule's order, the verse that defines it, and for the four nakshatra kinds the joined nakshatra `{nakshatra, span}`, a full key and its whole stay; each unjudged occurrence `{rule, tithi, why}`; each dated day `{rule, day, on}`, the rule's key, the day, and the same day in the rule's own calendar (`calendar.BIKRAM_SAMBAT` for a sankranti); each anniversary's day (`03-design/shraddha.md`) `{key, count, kind, origin, monthBy, observance}`, the request's key, which anniversary it is (1 for the first recurrence, a janma tithi's the age turned, absent for a lunar origin given no moment), the kind kept (`EKODDISHTA`, `PARVANA`, `JANMA_TITHI`), the origin as found `{tithi, month, kind, half, nakshatra, at, assumedSunrise, candidates}` (the tithi and amanta month as full keys, the lunation's `NIJA`, `ADHIKA` or `KSHAYA`, the tithi's `FIRST` or `SECOND` half, the nakshatra then as a full key, the moment as a UTC Julian day, whether the tithi is a date's sunrise tithi for want of an hour, and every tithi the date held when more than one), the clause that chose the month (`NIJA`, `FIRST_YEAR_ADHIKA`, `ADHIKA_ORIGIN`, `KSHAYA_JOINED`), and the day as an observance. A date's calendar and era are written as full keys (`calendar.GREGORIAN`), and the envelope is sealed over exactly this value; its provenance names the widened days as `festival.days`. Empty when `festivals_json` asked for none."""
+    """UTF-8 JSON, canonical: the days the rules `festivals_json` asked for fall on over these days, as the envelope `{value, provenance}` (`03-design/festival-rules.md` §7). `value` is `{observances, ekadashis, unjudged}`, `dated` beside them when a rule kept on a date gave a day, and `anniversaries` when the request named one: each observance `{rule, day, tithi, month, adhika, case, extents, decidedBy, choice, marginSeconds, parana}`, the rule's key, the calendar date it falls on, the occurrence judged `{from, to}` in UTC Julian days (the tithi's, or the nakshatra's for a rule kept on one), its amanta month as a full key and whether that month is adhika, the case between its two days (`EARLIER_ONLY`, `LATER_ONLY`, `BOTH`, `NEITHER`, `EQUAL_PARTS`, `UNEQUAL_PARTS`), each day's extent `{day, window, held}`, `decidedBy` `{by: GUARD, index}`, `{by: OTHERWISE}` or, for a rule counted from another's day, `{by: AFTER, rule, days}` (its tithi, case and extents then the counted-from observance's), the choice that decided (`EARLIER`, `LATER` or `BY_YUGMA`, which `day` resolves), and the seconds of time every instant the day was decided from (the two sunrises, the next, the windows the rule and its guards draw) may move, as a different place moves them, before the day can change: 0 for two equal parts; and, for a rule whose fast is broken by a reading (§8.7), each reading answered `{reading, day, from, fromBy, to, toBy}`, the rule's reading as it spells it (`TITHI_END`, `WITHIN`, `SUNRISE`, `AFTER_WINDOW`, `NEXT_TITHI`, `AFTER_RITE` with its `rite` and `remnant`), the day the meal falls on (the day after for most, the fast day for a reading ending on it, the rite's day after a rite), when the meal may begin, what set it (`SUNRISE`, `TITHI_END`, `NAKSHATRA_END`, `YAMAS`, `WINDOW_END`, `RITE`), and when it must be taken by and what set that (absent when the reading sets no end); each Ekadashi fast `{rule, tithi, month, adhika, tithis, days, piercedAt, pierced, excess, choice, day, marginSeconds, parana, mahadvadashi}`, the rule's key, the 11th and its lunar month as full keys, whether that month is adhika, the 10th, the 11th and the 12th as `{from, to}`, the 11th's own day and the next, where the 10th reached into the 11th's day (`SUNRISE`, `ARUNODAYA` or null), whether that counts under the rule's vedha, which of the 11th and the 12th holds the next sunrise (`ELEVENTH`, `TWELFTH`, `BOTH`, `NEITHER`), the choice (`EARLIER` or `LATER`, which `day` resolves unless a mahadvadashi moved it, perhaps to the day after both), and the seconds of time every instant the fast was decided from (the sunsets that give the 11th its own day, that day's sunrise and, under a Vaishnava vedha, its arunodaya, and the two sunrises after) may move before the day can change, and, for a rule with a parana, when the fast is broken (§8.5): `{day, tithi, hariVasaraEnds, kept, barred}`, the day after the fast, the tithi the meal is kept in as a full key, when the 12th's first quarter ends if after that day's sunrise (else null), the window kept `{span, at, fromBy, toBy}` (null when none of the rule's leaves time), `at` the rule's window as it spells it and each edge's clause `WINDOW`, `HARI_VASARA`, `TITHI_START`, `TITHI_END`, `NAKSHATRA` or `JOINED_NAKSHATRA`, and, for a rule whose parana lists `bars` (C700) when one met that day's daylight, `barred` `{bar, span, setAside}`: the bar `{tithi, month, nakshatra, portion}` as the rule spells it (`portion` `{parts, which}`, absent for the whole nakshatra), the Moon's stay in the barred share, and whether the bar was set aside because the share outlasts the tithi the meal is kept in; and, for a rule keeping mahadvadashis (§8.9) when one held, `mahadvadashi` `{kind, held, clause, joined}`: the kind that set the day (`UNMILANI`, `VYANJULI`, `TRISPRISHA`, `PAKSHAVARDHINI`, `JAYA`, `VIJAYA`, `JAYANTI`, `PAPANASHINI`), every kind that held in the rule's order, the verse that defines it, and for the four nakshatra kinds the joined nakshatra `{nakshatra, span}`, a full key and its whole stay; each unjudged occurrence `{rule, tithi, why}`; each dated day `{rule, day, on}`, the rule's key, the day, and the same day in the rule's own calendar (`calendar.BIKRAM_SAMBAT` for a sankranti); each anniversary's day (`03-design/shraddha.md`) `{key, count, kind, origin, monthBy, dayRule, observance}`, the request's key, which anniversary it is (1 for the first recurrence, a janma tithi's the age turned, absent for a lunar origin given no moment), the kind kept (`EKODDISHTA`, `PARVANA`, `JANMA_TITHI`, `EVENT`), the origin as found `{tithi, month, kind, half, nakshatra, at, assumedSunrise, candidates}` (the tithi and amanta month as full keys, the lunation's `NIJA`, `ADHIKA` or `KSHAYA`, the tithi's `FIRST` or `SECOND` half, the nakshatra then as a full key, the moment as a UTC Julian day, whether the tithi is a date's sunrise tithi for want of an hour, and every tithi the date held when more than one), the clause that chose the month (`NIJA`, `FIRST_YEAR_ADHIKA`, `ADHIKA_ORIGIN`, `KSHAYA_JOINED`, `SAMSARPA`), the rule that chose the day `{tithi, at, clause, source}` (the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the window read as a rule spells it, the clause `ONE_DAY`, `BOTH_WHOLE`, `NEITHER`, `EQUAL_PARTS`, `GREATER_SHARE`, `BIRTH_NAKSHATRA` or `TWO_MUHURTA_FLOOR`, and where it is stated), and the day as an observance. A date's calendar and era are written as full keys (`calendar.GREGORIAN`), and the envelope is sealed over exactly this value; its provenance names the widened days as `festival.days`. Empty when `festivals_json` asked for none."""
 
     years: str
     """UTF-8 JSON, canonical: the lunar years these days fall in when `sections` asked for `TS_PANCHANGA_YEARS`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §10). `value` is a list of years in order, each `{samvatsara, count, vikrama, shaka, kali, opened, began, ended, jovian, lupta}`: the name the year carries as a full key (`samvatsara.PRAMADICHA`), the count that named it under `calendars.samvatsara` (`BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA`), its Vikrama, Shaka and Kali numbers (the Kali year elapsed, the Shaka plus 3179), the new moon that opened its first Chaitra, the sunrise of Chaitra Shukla Pratipada that began it and the next year's that ended it, in UTC Julian days; the Jovian years that ran in it, each `{member, count, from, to}` with its member in full, the signs mean Jupiter had crossed since the Kali age began, counted from 0, and its bounds in UTC Julian days; and the Jovian year expunged in it, in full, or null. Consecutive years abut, `ended` to `began`. Empty when `sections` did not ask for them."""
@@ -9272,6 +9280,9 @@ class Panchanga:
     named_panchaka: PanchangaNamedPanchaka
     """The panchaka the day holds, named by the vara it began on, under `panchanga.panchaka_name`: a printed convention, named in the provenance's `applied_conventions` (crux C821): Sunday Roga, Monday Raja, Tuesday Agni, Friday Chora, Saturday Mrityu. `whole` runs from the panchaka's first instant to the Moon's leaving Revati, `inside` is its part in the day. At most one; none on a day without panchaka, for one begun on a Wednesday or a Thursday, and under `NONE`."""
 
+    sky: str
+    """UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -9320,6 +9331,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_bhadra_vasa = blob.section(37, "bhadra_vasa")
     at_shiva_vasa = blob.section(38, "shiva_vasa")
     at_named_panchaka = blob.section(39, "named_panchaka")
+    at_sky = blob.section(40, "sky")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -9355,6 +9367,9 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             moon_window_to=blob.column(
                 at_days, 20, 8, at_days.count
             ).cast("d"),
+            utc_offset_seconds=blob.column(
+                at_days, 21, 4, at_days.count
+            ).cast("i"),
             length=at_days.count,
         ),
         counts=PanchangaCounts(
@@ -10083,6 +10098,7 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             ).cast("B"),
             length=at_named_panchaka.count,
         ),
+        sky=blob.text(at_sky, "sky"),
     )
 
 
@@ -10487,6 +10503,21 @@ class DigestNames:
 
 
 @dataclass(frozen=True)
+class DigestClock:
+    """The `clock` section of a Digest blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1.
+    """
+
+    utc_offset_seconds: memoryview[int]
+    """The offset at the day's opening, east positive."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Digest:
     """A decoded Digest blob.
 
@@ -10503,10 +10534,10 @@ class Digest:
     """How many days the digest holds, the rows of `days`."""
 
     base_unix_seconds: int
-    """The first day's local midnight in seconds since 1970, which every time counts from."""
+    """The first day's local midnight on that day's offset, in seconds since 1970, which every time counts from."""
 
     utc_offset_seconds: int
-    """The offset the civil days run at, east positive."""
+    """The first day's offset, east positive; `clock` has each day's."""
 
     calendar: int
     """The calendar `days` dates are read in."""
@@ -10541,6 +10572,9 @@ class Digest:
     provenance_json: str
     """UTF-8 JSON, canonical: the days' provenance, its `content_hash` theirs."""
 
+    clock: DigestClock
+    """One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1."""
+
     seal: str
     """SHA-256 of every byte before this section, which ends the digest, in 64 lowercase hexadecimal digits."""
 
@@ -10561,6 +10595,7 @@ def decode_digest(raw: bytes) -> Digest:
     at_text = blob.section(6, "text")
     at_locale = blob.section(7, "locale")
     at_provenance_json = blob.section(8, "provenance_json")
+    at_clock = blob.section(10, "clock")
     at_seal = blob.section(9, "seal")
     return Digest(
         format_major=int(blob.fixed(at_summary, 0, "I")),
@@ -10621,6 +10656,12 @@ def decode_digest(raw: bytes) -> Digest:
         text=blob.text(at_text, "text"),
         locale=blob.text(at_locale, "locale"),
         provenance_json=blob.text(at_provenance_json, "provenance_json"),
+        clock=DigestClock(
+            utc_offset_seconds=blob.column(
+                at_clock, 0, 4, at_clock.count
+            ).cast("i"),
+            length=at_clock.count,
+        ),
         seal=blob.text(at_seal, "seal"),
     )
 

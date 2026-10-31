@@ -15,7 +15,7 @@ class TeistroExample extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final teistro = Teistro.open();
-    final calendar = teistro.context(profile: 'nepali-default').calendar;
+    final calendar = teistro.context(profile: 'nepali-drik').calendar;
     final now = DateTime.now();
     final bs = calendar.convert(
       CalendarDate(

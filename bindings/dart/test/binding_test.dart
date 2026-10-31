@@ -24,7 +24,7 @@ Uint8List _readFixture(String name) =>
 
 /// A context with the analytic test provider; every test builds its own.
 Context context({
-  String? profile = 'nepali-default',
+  String? profile = 'nepali-drik',
   Map<String, Object?>? settings,
   String? locale = 'ne-Deva-NP',
   bool testProvider = true,
@@ -59,9 +59,63 @@ void main() {
     );
   });
 
+  test('a short tag finds the locale it means, and says which', () {
+    final ctx = context(locale: 'ne');
+    expect(ctx.intl.locale, 'ne-Deva-NP');
+    expect(ctx.intl.lookupLocale('sa'), 'sa-Deva');
+    expect(ctx.intl.locale, 'ne-Deva-NP');
+    ctx.intl.locale = 'hi';
+    expect(ctx.intl.locale, 'hi-Deva-IN');
+    for (final tag in ['de', 'hi-Latn']) {
+      expect(
+        () => ctx.intl.lookupLocale(tag),
+        throwsA(isA<TeistroException>()),
+      );
+      expect(() => ctx.intl.locale = tag, throwsA(isA<TeistroException>()));
+    }
+    expect(ctx.intl.locale, 'hi-Deva-IN');
+  });
+
+  test('a tithi says its number in the month', () {
+    expect(tithiMonthNumber(Tithi.shuklaPratipada), 1);
+    expect(tithiMonthNumber(Tithi.purnima), 15);
+    expect(tithiMonthNumber(Tithi.krishnaPratipada), 16);
+    expect(tithiMonthNumber(Tithi.amavasya), 30);
+  });
+
+  test('a day says the clock it was read on, and a digest keeps it', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(40.7128),
+      longitudeDeg: Longitude(-74.006),
+      altitudeM: Altitude(10),
+    );
+    final from = gregorian(2026, 10, 31);
+    final zone = ianaZone('America/New_York');
+    final zoned = ctx.almanac.inZone(
+      from: from,
+      to: gregorian(2026, 11, 2),
+      place: place,
+      zone: zone,
+    );
+    expect(zoned.each.map((day) => day.utcOffsetSeconds).toList(), [
+      -14400,
+      -18000,
+      -18000,
+    ]);
+    final digest = decodeDigest(
+      ctx.almanac.digest(from: from, days: 3, place: place, zone: zone),
+    );
+    expect(digest.clock.utcOffsetSeconds.toList(), [-14400, -18000, -18000]);
+    expect(
+      () => ctx.almanac.digest(from: from, days: 3, place: place),
+      throwsA(isA<TeistroException>()),
+    );
+  });
+
   test('a context resolves its settings and reports them', () {
     final ctx = context();
-    expect(ctx.profile, 'nepali-default');
+    expect(ctx.profile, 'nepali-drik');
     expect(ctx.intl.locale, 'ne-Deva-NP');
     expect(ctx.settingsHash, matches(r'^[0-9a-f]{64}$'));
     expect(
@@ -81,6 +135,11 @@ void main() {
       'TROPICAL',
     );
     expect(patched.settingsHash, isNot(ctx.settingsHash));
+
+    // An older name opens the profile it names, and the answer says the id.
+    final named = context(profile: 'nepali-default');
+    expect(named.profile, 'nepali-drik');
+    expect(named.settingsHash, ctx.settingsHash);
 
     // The default profile is the one the library names.
     expect(
@@ -347,9 +406,98 @@ void main() {
     ctx.dispose();
   });
 
+  // Anniversaries over a span (`03-design/anniversary-span.md`): a barkhi
+  // and an event, each day naming the rule that chose it, and a span too
+  // long refused on `years`.
+  test('anniversaries over a span name the rule of each day', () {
+    final ctx = teistro.context(
+      profile: 'nepali-committee',
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    );
+    const origin = OriginLunar(month: Masa.kartika, tithi: Tithi.shuklaDashami);
+    AnniversariesRequest asked({int years = 2}) => AnniversariesRequest(
+      fromYear: 2026,
+      years: years,
+      latitudeDeg: 27.7172,
+      longitudeDeg: 85.324,
+      altitudeM: 1400,
+      utcOffsetSeconds: 20700,
+      calendar: Calendar.gregorian,
+      anniversaries: const [
+        Anniversary(key: 'BARKHI', origin: origin),
+        Anniversary(
+          key: 'WEDDING',
+          origin: origin,
+          kind: AnniversaryKind.event,
+        ),
+      ],
+    );
+    final span = ctx.almanac.anniversaries(asked());
+    expect(span.anniversaries, hasLength(4));
+    final barkhi = span.anniversaries.firstWhere((d) => d.key == 'BARKHI');
+    expect(barkhi.kind, 'EKODDISHTA');
+    expect(barkhi.dayRule.at.window, 'DAY_MUHURTA');
+    expect(barkhi.dayRule.source, contains('Dharmasindhu'));
+    final wedding = span.anniversaries.firstWhere((d) => d.key == 'WEDDING');
+    expect(wedding.dayRule.at.window, 'SUNRISE');
+    expect(wedding.dayRule.source, contains('convention'));
+    expect(
+      () => ctx.almanac.anniversaries(asked(years: 101)),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'anniversaries.years',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   // The next occurrence (`03-design/next-occurrence.md`): Maghe sankranti
   // from 1 January 2026 in the first window, Vijaya Dashami within the
   // default limit, and a search too short refused on `limitDays`.
+  test('a day is said in sentences and Hindi is refused', () {
+    final ctx = teistro.context(
+      profile: 'nepali-committee',
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final day = Calendar.gregorian.date(2026, 3, 18);
+    final en = ctx.almanac.sentences(
+      date: day,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      locale: 'en-Latn',
+    );
+    expect(en.sentences.first.text, 'The day is Wednesday.');
+    expect(en.draft, isFalse);
+    final ne = ctx.almanac.sentences(
+      date: day,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      locale: 'ne-Deva-NP',
+    );
+    expect(ne.sentences.first.text, 'यो दिन बुधबार हो।');
+    expect(ne.draft, isTrue);
+    expect(
+      () => ctx.almanac.sentences(
+        date: day,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+        locale: 'hi-Deva-IN',
+      ),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'locale'),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('the next sankranti and a pack\'s festival are found', () {
     final ctx = teistro.context(
       profile: 'nepali-committee',
@@ -515,7 +663,7 @@ void main() {
     );
     expect(() => positions.at(2, 0), throwsRangeError);
 
-    expect(positions.provenance.profile, 'nepali-default');
+    expect(positions.provenance.profile, 'nepali-drik');
     expect(positions.provenance.calculationVersion, 1);
     expect(positions.provenance.settingsHash, ctx.settingsHash);
     expect(
@@ -1001,7 +1149,7 @@ void _engineTests() {
   // tropical ayana turned at the solstice (`03-design/sankalpa.md`).
   test('an almanac says the time a sankalpa recites', () {
     final sky = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     addTearDown(sky.dispose);
@@ -1062,7 +1210,7 @@ void _engineTests() {
   // moon decides (`03-design/india-central-holidays.md`).
   test('a festival pack lists its rules with their values', () {
     final sky = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     addTearDown(sky.dispose);
@@ -1092,7 +1240,7 @@ void _engineTests() {
   // during the first, ends with it (`03-design/ashauch.md`).
   test('an almanac says the period of impurity after a death', () {
     final sky = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     addTearDown(sky.dispose);
@@ -1176,7 +1324,7 @@ void _engineTests() {
   // the anniversary the second (`03-design/shraddha.md` §3.3).
   test('an almanac says the rites of the first year after a death', () {
     final sky = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     addTearDown(sky.dispose);
@@ -1227,7 +1375,7 @@ void _engineTests() {
     final official = teistro.nepalOfficial();
     addTearDown(official.dispose);
     final modern = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     addTearDown(modern.dispose);
@@ -1248,7 +1396,7 @@ void _engineTests() {
     );
     final days = found.days!;
     expect(days.compared, 30);
-    expect(days.otherProfile, 'nepali-default');
+    expect(days.otherProfile, 'nepali-drik');
     expect(days.otherSettingsHash, modern.settingsHash);
     expect(
       [
@@ -1889,7 +2037,7 @@ void _engineTests() {
     final kerala = row.copyWith(key: 'ACME_KERALA');
     final own = ChartLayout.registered('ACME_KERALA');
     final ctx = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       testProvider: true,
       layouts: [kerala],
     );
@@ -2112,7 +2260,7 @@ void _engineTests() {
     // The built-in ephemeris, whose Mercury turns retrograde in the window:
     // the test provider's planets never stand still.
     final ctx = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     final place = Observer(
@@ -2216,7 +2364,7 @@ void _engineTests() {
   /// eclipse of 29 March 2025, so 2025 holds an eclipse on its luminaries.
   test('a hit list carries varga ingresses, lunar phases and eclipses', () {
     final ctx = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     final place = Observer(
@@ -2291,7 +2439,7 @@ void _engineTests() {
 
   test('a lunar return is the Moon back on her own natal place', () {
     final ctx = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     final paris = Observer(
@@ -2329,7 +2477,7 @@ void _engineTests() {
 
   test('a chart carries its Sade Sati, each period whole', () {
     final ctx = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     final place = Observer(
@@ -3144,7 +3292,7 @@ void _engineTests() {
   // prints it.
   test('an almanac carries each day\'s Nepal Sambat date', () {
     final ctx = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       locale: 'ne-Deva-NP',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
@@ -3161,6 +3309,27 @@ void _engineTests() {
       nepalSambat: nepalSambat,
     );
     expect(days().nepalSambat, isNull);
+    expect(days().sky, isNull);
+    final sky =
+        ctx.almanac
+            .of(
+              from: gregorian(2025, 10, 20),
+              to: gregorian(2025, 10, 23),
+              place: place,
+              utcOffsetSeconds: 20700,
+              sky: true,
+              skyStepMinutes: 60,
+            )
+            .sky!;
+    expect(sky.value, hasLength(4));
+    final today = sky.value.first;
+    expect(today.stepMinutes, 60);
+    expect(today.sun.state, 'CROSSES');
+    final noon = today.sun.track.where((point) => point.kind == 'TRANSIT');
+    expect(noon, hasLength(1));
+    expect(noon.first.altitudeDeg, inInclusiveRange(40, 70));
+    expect(today.moon.track.every((point) => point.moon != null), isTrue);
+    expect(today.sun.track.every((point) => point.moon == null), isTrue);
     final almanac = days(nepalSambat: true);
     final answer = almanac.nepalSambat!;
     expect(answer.value, hasLength(almanac.length));
@@ -3253,7 +3422,7 @@ void _engineTests() {
   test('a day\'s season turns on the first of its solar month', () {
     List<Ritu> seasons([Map<String, Object?>? settings]) {
       final ctx = teistro.context(
-        profile: 'nepali-default',
+        profile: 'nepali-drik',
         settings: settings,
         ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
       );
@@ -3713,7 +3882,7 @@ void _engineTests() {
   // sky, and a day no change gives is the publisher's own.
   test('a published day is explained by the change that gives it', () {
     final modern = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     final committee = teistro.context(
@@ -3877,7 +4046,7 @@ void _engineTests() {
     // printed 09:13, a Pisces navamsa in a Libra lagna
     // (`03-design/festival-sait.md`).
     final ctx = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     addTearDown(ctx.dispose);
@@ -7725,7 +7894,7 @@ void _engineTests() {
     ctx.dispose();
 
     final lahiri = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     expect(
@@ -9277,7 +9446,7 @@ void _engineTests() {
 
   test('a rashifal period is read for each of the twelve signs', () {
     final ctx = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
     final week = RashifalRequest(

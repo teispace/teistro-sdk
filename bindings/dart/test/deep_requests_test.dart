@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 352 of the examples' 364 members.
+/// The cases compare 358 of the examples' 370 members.
 library;
 
 import 'dart:convert';
@@ -26,6 +26,41 @@ import 'package:teistro/teistro.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('almanac.anniversaries: AnniversariesRequest', () {
+    _holds(
+      'almanac.anniversaries',
+      path: [],
+      dropping: [],
+      members: 3,
+      written: AnniversariesRequest(
+        altitudeM: 1.5,
+        anniversaries: [
+          Anniversary(
+            firstYearAdhika: FirstYearAdhika.nija,
+            inSamsarpa: InSamsarpa.nija,
+            janma: JanmaOptions(nakshatraTie: true, twoMuhurtaFloor: true),
+            key: 'x',
+            kind: AnniversaryKind.ekoddishta,
+            origin: OriginLunar(
+              adhika: true,
+              at: 1.5,
+              half: TithiHalf.second,
+              month: Masa.vaishakha,
+              tithi: Tithi.shuklaDvitiya,
+            ),
+            window: WindowDayMuhurta(from: 1, to: 1),
+          ),
+        ],
+        calendar: Calendar.julian,
+        fromYear: 1,
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        utcOffsetSeconds: 1,
+        years: 1,
+      ).toJson(),
+    );
+  });
+
   test('almanac.ashauch at request.event.deceased: Deceased', () {
     _holds(
       'almanac.ashauch',
@@ -111,6 +146,8 @@ void main() {
         latitudeDeg: 1.5,
         longitudeDeg: 1.5,
         nepalSambat: true,
+        sky: true,
+        skyStepMinutes: 1,
         utcOffsetSeconds: 1,
         years: true,
         zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
@@ -452,6 +489,7 @@ void main() {
         latitudeDeg: 1.5,
         longitudeDeg: 1.5,
         utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });
@@ -1478,6 +1516,24 @@ void main() {
     );
   });
 
+  test('almanac.sentences: SentencesRequest', () {
+    _holds(
+      'almanac.sentences',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: SentencesRequest(
+        altitudeM: 1.5,
+        calendar: Calendar.julian,
+        date: DayAsked(day: 1, month: 1, year: 1),
+        latitudeDeg: 1.5,
+        locale: 'x',
+        longitudeDeg: 1.5,
+        utcOffsetSeconds: 1,
+      ).toJson(),
+    );
+  });
+
   test('calendar.add: AddAsked', () {
     _holds(
       'calendar.add',
@@ -2208,6 +2264,28 @@ void main() {
     );
   });
 
+  test('intl.date: DateTextRequest', () {
+    _holds(
+      'intl.date',
+      path: [],
+      dropping: [],
+      members: 2,
+      written: DateTextRequest(
+        at: CalendarDay(
+          calendar: Calendar.julian,
+          day: 1,
+          era: EraNumber(era: Era.shaka, year: 1),
+          leap: Leap.day,
+          month: 1,
+          year: 1,
+        ),
+        digits: WordsDigits.deva,
+        locale: 'x',
+        style: DateStyle.long,
+      ).toJson(),
+    );
+  });
+
   test('intl.inWords: InWordsRequest', () {
     _holds(
       'intl.inWords',
@@ -2227,6 +2305,22 @@ void main() {
         locale: 'x',
         number: 1,
         style: WordsStyle.verbose,
+      ).toJson(),
+    );
+  });
+
+  test('intl.time: TimeTextRequest', () {
+    _holds(
+      'intl.time',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: TimeTextRequest(
+        at: ClockTime(hour: 1, minute: 1, second: 1),
+        digits: WordsDigits.deva,
+        hour12: true,
+        locale: 'x',
+        style: TimeStyle.long,
       ).toJson(),
     );
   });

@@ -506,7 +506,7 @@ hand_schema!(Hash, "Hash", {
 /// ```
 /// # use teistro_core::envelope::{Hash, Provenance, Version};
 /// # let provenance = Provenance::new(
-/// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+/// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
 /// #     Hash::of(b"settings"), Hash::of(b"input"),
 /// # );
 /// assert!(provenance.provider.name.is_empty());
@@ -679,7 +679,7 @@ pub struct Deviation {
 /// ```
 /// # use teistro_core::envelope::{Hash, Provenance, Version};
 /// # let mut provenance = Provenance::new(
-/// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+/// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
 /// #     Hash::of(b"settings"), Hash::of(b"input"),
 /// # );
 /// provenance.convention("frame.ayanamsha", "LAHIRI", "the profile's default");
@@ -744,7 +744,7 @@ pub struct Fallback {
 /// ```
 /// # use teistro_core::envelope::{Hash, Provenance, Version};
 /// # let mut provenance = Provenance::new(
-/// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+/// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
 /// #     Hash::of(b"settings"), Hash::of(b"input"),
 /// # );
 /// provenance.warn("DEPRECATED_KEY", Some("warning.deprecated"), vec![("key".into(), "OLD".into())]);
@@ -773,10 +773,10 @@ pub struct Warning {
 /// ```
 /// # use teistro_core::envelope::{Hash, Provenance, Version};
 /// # let provenance = Provenance::new(
-/// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+/// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
 /// #     Hash::of(b"settings"), Hash::of(b"input"),
 /// # );
-/// assert_eq!(provenance.profile, "nepali-default");
+/// assert_eq!(provenance.profile, "nepali-drik");
 /// let json = serde_json::to_value(&provenance).unwrap();
 /// assert_eq!(json["confidence"], "VERIFIED");
 /// assert_eq!(json["answer_key"], provenance.answer_key().to_string());
@@ -915,7 +915,7 @@ impl Provenance {
     /// ```
     /// # use teistro_core::envelope::{Hash, Provenance, Version};
     /// # let provenance = Provenance::new(
-    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
     /// #     Hash::of(b"settings"), Hash::of(b"input"),
     /// # );
     /// assert_eq!(provenance.content_hash, Hash::of(&[]));
@@ -956,7 +956,7 @@ impl Provenance {
     /// ```
     /// # use teistro_core::envelope::{Hash, Provenance, Version};
     /// # let provenance = Provenance::new(
-    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
     /// #     Hash::of(b"settings"), Hash::of(b"input"),
     /// # );
     /// let (input, settings, version) = provenance.cache_key();
@@ -988,7 +988,7 @@ impl Provenance {
     /// ```
     /// # use teistro_core::envelope::{Hash, Provenance, Version};
     /// # let provenance = Provenance::new(
-    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
     /// #     Hash::of(b"settings"), Hash::of(b"input"),
     /// # );
     /// let mut newer_data = provenance.clone();
@@ -1032,7 +1032,7 @@ impl Provenance {
     /// ```
     /// # use teistro_core::envelope::{Hash, Provenance, Version};
     /// # let mut provenance = Provenance::new(
-    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
     /// #     Hash::of(b"settings"), Hash::of(b"input"),
     /// # );
     /// provenance.convention("time.delta_t", "ESPENAK_MEEUS", "outside the table");
@@ -1051,7 +1051,7 @@ impl Provenance {
     /// ```
     /// # use teistro_core::envelope::{Hash, Provenance, Version};
     /// # let mut provenance = Provenance::new(
-    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
     /// #     Hash::of(b"settings"), Hash::of(b"input"),
     /// # );
     /// provenance.warn("DEEP_TIME", None, Vec::new());
@@ -1071,7 +1071,7 @@ impl Provenance {
 /// ```
 /// # use teistro_core::envelope::{Hash, Provenance, Version};
 /// # let provenance = Provenance::new(
-/// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+/// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
 /// #     Hash::of(b"settings"), Hash::of(b"input"),
 /// # );
 /// use teistro_core::envelope::Envelope;
@@ -1095,7 +1095,7 @@ impl<T> Envelope<T> {
     /// ```
     /// # use teistro_core::envelope::{Hash, Provenance, Version};
     /// # let provenance = Provenance::new(
-    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
     /// #     Hash::of(b"settings"), Hash::of(b"input"),
     /// # );
     /// use teistro_core::envelope::Envelope;
@@ -1135,7 +1135,7 @@ impl<T> Envelope<T> {
     /// ```
     /// # use teistro_core::envelope::{Hash, Provenance, Version};
     /// # let provenance = Provenance::new(
-    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
     /// #     Hash::of(b"settings"), Hash::of(b"input"),
     /// # );
     /// use teistro_core::envelope::{Envelope, content_hash};
@@ -1165,7 +1165,7 @@ impl<T> Envelope<T> {
     /// ```
     /// # use teistro_core::envelope::{Hash, Provenance, Version};
     /// # let provenance = Provenance::new(
-    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
     /// #     Hash::of(b"settings"), Hash::of(b"input"),
     /// # );
     /// use teistro_core::envelope::{Envelope, content_hash};
@@ -1196,7 +1196,7 @@ impl<T> Envelope<T> {
     /// ```
     /// # use teistro_core::envelope::{Hash, Provenance, Version};
     /// # let provenance = Provenance::new(
-    /// #     Version::new(0, 1, 0), 1, 1, "nepali-default",
+    /// #     Version::new(0, 1, 0), 1, 1, "nepali-drik",
     /// #     Hash::of(b"settings"), Hash::of(b"input"),
     /// # );
     /// use teistro_core::envelope::Envelope;
@@ -1324,7 +1324,7 @@ mod tests {
         assert_eq!(Version::parse("1.2"), None);
         assert_eq!(Version::parse("1.2.3.4"), None);
         let mut provenance =
-            Provenance::new(Version::new(0, 1, 0), 1, 1, "nepali-default", hash, hash);
+            Provenance::new(Version::new(0, 1, 0), 1, 1, "nepali-drik", hash, hash);
         provenance.convention(
             "polar_policy",
             "FALLBACK_WHOLE_SIGN",
@@ -1430,7 +1430,7 @@ mod tests {
             Version::new(0, 1, 0),
             1,
             1,
-            "nepali-default",
+            "nepali-drik",
             Hash::of(b"settings"),
             Hash::of(b"input"),
         )

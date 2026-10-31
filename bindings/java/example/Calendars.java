@@ -81,7 +81,7 @@ public final class Calendars {
     public static void main(String[] args) {
         Teistro teistro = Teistro.open();
         ContextOptions options = ContextOptions.builder()
-                .profile("nepali-default")
+                .profile("nepali-drik")
                 .locale("ne-Deva-NP")
                 .build();
         try (Context ctx = teistro.context(options)) {

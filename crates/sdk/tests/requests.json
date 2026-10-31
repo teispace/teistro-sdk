@@ -50,7 +50,8 @@
       },
       "years": true,
       "eclipses": true,
-      "nepalSambat": true
+      "nepalSambat": true,
+      "sky": true
     }
   },
   {
@@ -264,6 +265,30 @@
     }
   },
   {
+    "record": "intl.time",
+    "request": {
+      "at": {
+        "hour": 6,
+        "minute": 5
+      },
+      "hour12": true,
+      "locale": "ne-Deva-NP"
+    }
+  },
+  {
+    "record": "intl.date",
+    "request": {
+      "at": {
+        "calendar": "calendar.GREGORIAN",
+        "year": 2026,
+        "month": 10,
+        "day": 31
+      },
+      "style": "FULL",
+      "locale": "hi-Deva-IN"
+    }
+  },
+  {
     "record": "almanac.digest",
     "request": {
       "first": {
@@ -333,6 +358,42 @@
     }
   },
   {
+    "record": "almanac.anniversaries",
+    "request": {
+      "fromYear": 2026,
+      "years": 10,
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "calendar": "BIKRAM_SAMBAT",
+      "anniversaries": [
+        {
+          "key": "GRANDFATHER",
+          "origin": {
+            "by": "LUNAR",
+            "month": "KARTIKA",
+            "tithi": "SHUKLA_DASHAMI"
+          }
+        },
+        {
+          "key": "WEDDING",
+          "origin": {
+            "by": "LUNAR",
+            "month": "MARGASHIRSHA",
+            "tithi": "SHUKLA_PANCHAMI"
+          },
+          "kind": "EVENT",
+          "window": {
+            "window": "DAY_MUHURTA",
+            "from": 8,
+            "to": 9
+          }
+        }
+      ]
+    }
+  },
+  {
     "record": "almanac.next",
     "request": {
       "after": 2461042.0,
@@ -345,6 +406,21 @@
         "rules": "NEPAL_PANCHANGA"
       },
       "limitDays": 400
+    }
+  },
+  {
+    "record": "almanac.sentences",
+    "request": {
+      "date": {
+        "year": 2026,
+        "month": 3,
+        "day": 18
+      },
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "locale": "ne-Deva-NP"
     }
   },
   {

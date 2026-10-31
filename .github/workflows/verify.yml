@@ -65,6 +65,15 @@ jobs:
           - os: windows-11-arm
             platform: win32-arm64
     steps:
+      # The linux-x64 row builds every binding, the wasm package and the
+      # coverage build in one target directory, and on 2026-10-31 ran the
+      # runner's 14 GB out at the last step. The image's Android SDK,
+      # .NET, GHC and CodeQL are never read here and free about 25 GB.
+      - name: Room on the disk for the row that builds everything
+        if: matrix.platform == 'linux-x64'
+        run: |
+          sudo rm -rf /usr/local/lib/android /usr/share/dotnet /opt/ghc /usr/local/.ghcup /opt/hostedtoolcache/CodeQL
+          df -h /
       - uses: actions/checkout@v5
         with:
           submodules: recursive

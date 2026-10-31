@@ -15,7 +15,7 @@ use teistro::{AlmanacRequest, CalendarDate, Context, Ephemeris, LunarYear, UtcOf
 
 fn context(patch: Option<&str>) -> Context {
     let builder = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin]);
     match patch {
         Some(json) => builder.settings_json(json),

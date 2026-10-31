@@ -60,9 +60,9 @@ static int dump(const ts_digest *digest) {
         if (ts_digest_day_at(digest, i, &day) != TS_DIGEST_OK) {
             return 1;
         }
-        printf("day %d-%u-%u vara %u state %u fixed %d sun %d %d moon %d %d phase %u month", (int)day.year,
+        printf("day %d-%u-%u vara %u state %u fixed %d offset %d sun %d %d moon %d %d phase %u month", (int)day.year,
                (unsigned)day.month, (unsigned)day.day, (unsigned)day.vara, (unsigned)day.state,
-               (int)day.fixed_day, (int)day.sunrise, (int)day.sunset, (int)day.moonrise,
+               (int)day.fixed_day, (int)day.utc_offset_seconds, (int)day.sunrise, (int)day.sunset, (int)day.moonrise,
                (int)day.moonset, (unsigned)day.moon_phase);
         name(digest, day.lunar_month);
         printf("\n");
@@ -170,7 +170,42 @@ static int refuse(const unsigned char *good, size_t length) {
     FRESH(); put_u32(bytes + entry_of(bytes, 2) + 12, 0xFFFFu);
     reseal(bytes, length);
     failed |= expect("more days than rows", ts_digest_open(&digest, bytes, length), TS_DIGEST_E_MALFORMED);
+    FRESH(); bytes[entry_of(bytes, 10)] = 30;
+    reseal(bytes, length);
+    failed |= expect("format 1.1 with no clock", ts_digest_open(&digest, bytes, length), TS_DIGEST_E_MALFORMED);
+    FRESH(); put_u32(bytes + entry_of(bytes, 10) + 12, 2);
+    reseal(bytes, length);
+    failed |= expect("a clock short of the days", ts_digest_open(&digest, bytes, length), TS_DIGEST_E_MALFORMED);
+    /* Format 1.0: no clock section, so a day reads the summary's offset. */
+    FRESH(); bytes[entry_of(bytes, 10)] = 30;
+    offset = bytes[entry_of(bytes, 1) + 4] | (unsigned)bytes[entry_of(bytes, 1) + 5] << 8;
+    bytes[offset + 8u] = 0;
+    reseal(bytes, length);
+    failed |= expect("format 1.0", ts_digest_open(&digest, bytes, length), TS_DIGEST_OK);
+    if (digest.clock.start != NULL) {
+        failed = 1;
+    } else {
+        ts_digest_day last;
+        failed |= expect("format 1.0's last day", ts_digest_day_at(&digest, digest.day_count - 1, &last), TS_DIGEST_OK);
+        if (last.utc_offset_seconds != digest.utc_offset_seconds) {
+            printf("FAIL  format 1.0's offset: %d\n", (int)last.utc_offset_seconds);
+            failed = 1;
+        }
+    }
     failed |= expect("good", ts_digest_open(&digest, good, length), TS_DIGEST_OK);
+    {
+        /* The fixture crosses a clock change, so a day's offset is its own. */
+        ts_digest_day first;
+        ts_digest_day last;
+        failed |= expect("first day", ts_digest_day_at(&digest, 0, &first), TS_DIGEST_OK);
+        failed |= expect("last day", ts_digest_day_at(&digest, digest.day_count - 1, &last), TS_DIGEST_OK);
+        if (first.utc_offset_seconds != digest.utc_offset_seconds ||
+            last.utc_offset_seconds == first.utc_offset_seconds) {
+            printf("FAIL  a day's own offset: %d, %d\n", (int)first.utc_offset_seconds,
+                   (int)last.utc_offset_seconds);
+            failed = 1;
+        }
+    }
     failed |= expect("day past the end", ts_digest_day_at(&digest, digest.day_count, &day), TS_DIGEST_E_RANGE);
     failed |= expect("null day", ts_digest_day_at(NULL, 0, &day), TS_DIGEST_E_ARG);
     failed |= expect("day 0", ts_digest_day_at(&digest, 0, &day), TS_DIGEST_OK);

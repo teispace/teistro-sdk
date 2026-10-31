@@ -12,10 +12,10 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 |---|---|---|
 | a boundary module a consumer reaches is reached from one area | **holds** | 0 of 15 disagree; so no operation can be looked for under two names |
 | every area holds an operation that reaches the boundary | **holds** | 0 of 12 disagree |
-| no operation's name repeats its own area's | **holds** | 0 of 67 disagree; which is what the namespace is for |
+| no operation's name repeats its own area's | **holds** | 0 of 72 disagree; which is what the namespace is for |
 | every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 22 disagree; unreached: `blob`, `lib`, `provider`, `string` |
-| an entry point's name already carries its own module | falsified | 18 of 77 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_published_reasons`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_almanac_digest`, `ts_almanac_next`, `ts_almanac_festival_pack`, `ts_almanac_changes`, `ts_context_new_with_provider` |
-| every operation the layer declares is listed by every parity runner | falsified | 12 of 299 disagree; unlisted: `(root).recorded_settings by parity.mjs`, `intl.in_words by parity.mjs`, `almanac.festival_pack by parity.mjs`, `(root).recorded_settings by parity.dart`, `intl.in_words by parity.dart`, `almanac.festival_pack by parity.dart`, `(root).recorded_settings by parity.py`, `intl.in_words by parity.py`, `almanac.festival_pack by parity.py`, `(root).recorded_settings by parity.rs`, `intl.in_words by parity.rs`, `almanac.festival_pack by parity.rs` |
+| an entry point's name already carries its own module | falsified | 20 of 82 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_published_reasons`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_almanac_digest`, `ts_almanac_next`, `ts_almanac_sentences`, `ts_almanac_anniversaries`, `ts_almanac_festival_pack`, `ts_almanac_changes`, `ts_context_new_with_provider` |
+| every operation the layer declares is listed by every parity runner | falsified | 24 of 319 disagree; unlisted: `(root).recorded_settings by parity.mjs`, `intl.lookup_locale by parity.mjs`, `intl.in_words by parity.mjs`, `intl.time by parity.mjs`, `intl.date by parity.mjs`, `almanac.festival_pack by parity.mjs`, `(root).recorded_settings by parity.dart`, `intl.lookup_locale by parity.dart`, `intl.in_words by parity.dart`, `intl.time by parity.dart`, `intl.date by parity.dart`, `almanac.festival_pack by parity.dart`, `(root).recorded_settings by parity.py`, `intl.lookup_locale by parity.py`, `intl.in_words by parity.py`, `intl.time by parity.py`, `intl.date by parity.py`, `almanac.festival_pack by parity.py`, `(root).recorded_settings by parity.rs`, `intl.lookup_locale by parity.rs`, `intl.in_words by parity.rs`, `intl.time by parity.rs`, `intl.date by parity.rs`, `almanac.festival_pack by parity.rs` |
 | every area the layer wires is named by the site's guide, and no other | falsified | 1 of 12 disagree; not on the page: `naming` |
 
 **No operation spells its own area.** Several did on the flat surface — `convertTime`, because `convert` was taken by the calendar, is the one to remember — and each gave the word back when the namespace took it; [`surface-areas.md`](surface-areas.md) lists them. This row is the one that decays quietly as operations are added, which is why it is gated.
@@ -28,11 +28,11 @@ The unreached modules are `blob`, `lib`, `provider`, `string`. 4 of them are the
 
 1 is an exception **declared in [`surface-areas.md`](surface-areas.md)** and still counted here for the same reason: `ts_context_new_with_provider`. It belongs to `context`'s family by the name a consumer calls and to `provider`'s by what it depends on, and the name that should read well is the one a consumer calls.
 
-The remaining 11 are not accounted for: `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_published_reasons`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_almanac_digest`, `ts_almanac_next`, `ts_almanac_festival_pack`, `ts_almanac_changes`.
+The remaining 13 are not accounted for: `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_published_reasons`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_almanac_digest`, `ts_almanac_next`, `ts_almanac_sentences`, `ts_almanac_anniversaries`, `ts_almanac_festival_pack`, `ts_almanac_changes`.
 
 ## The areas the layer wires
 
-**12 areas over 67 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
+**12 areas over 72 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
 
 ### The root — `Context`
 
@@ -77,10 +77,13 @@ The remaining 11 are not accounted for: `ts_error_free`, `ts_almanac_disagreemen
 | operation | reaches |
 |---|---|
 | `locale` | `ts_intl_locale` (intl), `ts_intl_set_locale` (intl) |
+| `lookupLocale` | `ts_intl_lookup_locale` (intl) |
 | `render` | `ts_intl_render` (intl) |
 | `has` | `ts_intl_has` (intl) |
 | `transliterate` | `ts_intl_transliterate` (intl) |
 | `inWords` | `ts_intl_in_words` (intl) |
+| `time` | `ts_intl_time` (intl) |
+| `date` | `ts_intl_date` (intl) |
 | `entity` | `ts_intl_entity` (intl) |
 | `messages` | — |
 | `loadPack` | `ts_intl_load_pack` (intl) |
@@ -127,7 +130,9 @@ The remaining 11 are not accounted for: `ts_error_free`, `ts_almanac_disagreemen
 | `publishedReasons` | `ts_almanac_published_reasons` (panchanga) |
 | `festivalCalendar` | `ts_almanac_festival_calendar` (panchanga) |
 | `digest` | `ts_almanac_digest` (panchanga) |
+| `anniversaries` | `ts_almanac_anniversaries` (panchanga) |
 | `next` | `ts_almanac_next` (panchanga) |
+| `sentences` | `ts_almanac_sentences` (panchanga) |
 | `changes` | `ts_almanac_changes` (panchanga) |
 | `festivalPack` | `ts_almanac_festival_pack` (panchanga) |
 
@@ -184,14 +189,14 @@ The remaining 11 are not accounted for: `ts_error_free`, `ts_almanac_disagreemen
 | `context` | 7 | `(root)` |
 | `ephemeris` | 2 | `engine` |
 | `frame` | 3 | `(root)`, `frame` |
-| `intl` | 8 | `intl` |
+| `intl` | 11 | `intl` |
 | `key` | 2 | `keys` |
 | `lib` | 6 | — |
 | `naam` | 1 | `matching` |
 | `naming` | 6 | `naming` |
 | `numerology` | 1 | `numerology` |
 | `pakshi` | 1 | `almanac` |
-| `panchanga` | 11 | `almanac` |
+| `panchanga` | 13 | `almanac` |
 | `positions` | 1 | `(root)` |
 | `provider` | 3 | — |
 | `published` | 1 | `almanac` |

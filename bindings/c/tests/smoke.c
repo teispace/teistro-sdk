@@ -312,7 +312,7 @@ int main(void) {
     memset(&options, 0, sizeof options);
     options.struct_size = sizeof options;
     options.flags = TS_CONTEXT_TEST_PROVIDER;
-    options.profile = "nepali-default";
+    options.profile = "nepali-drik";
     options.locale = "ne-Deva-NP";
     memset(&error, 0, sizeof error);
     error.struct_size = sizeof error;

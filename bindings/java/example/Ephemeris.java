@@ -135,7 +135,7 @@ public final class Ephemeris {
         // This class is called `Ephemeris`, so the SDK's enum of the same
         // name is spelled in full.
         ContextOptions options = ContextOptions.builder()
-                .profile("nepali-default")
+                .profile("nepali-drik")
                 .locale("ne-Deva-NP")
                 .ephemeris(com.teispace.teistro.Ephemeris.BUILTIN)
                 .build();

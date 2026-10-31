@@ -46,7 +46,7 @@ const double padaDeg = nakshatraDeg / 4.0;
 void main() {
   final teistro = Teistro.open();
   final ctx = teistro.context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     locale: 'ne-Deva-NP',
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
@@ -146,7 +146,7 @@ void main() {
   final noTime = birthDay.whenUnknown;
   for (final policy in [null, 'NOON', 'MIDNIGHT']) {
     final scoped = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       locale: 'ne-Deva-NP',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
       settings:

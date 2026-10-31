@@ -75,7 +75,7 @@ public final class Interpretation {
     public static void main(String[] args) {
         Teistro teistro = Teistro.open();
         ContextOptions options = ContextOptions.builder()
-                .profile("nepali-default")
+                .profile("nepali-drik")
                 .locale("en-Latn")
                 .ephemeris(Ephemeris.BUILTIN)
                 .build();

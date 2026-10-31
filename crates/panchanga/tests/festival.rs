@@ -23,11 +23,11 @@ use teistro_core::quantity::JulianDay;
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
     AddedDay, AnniversaryDay, AnniversaryKind, Case, Choice, Dated, DatedObservance, DatedRule,
-    DayPart, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule, FollowingRule, Guard, Half,
-    InAdhika, MonthClause, MoonArcs, Moonrise, NakshatraBar, Observances, Occurs, OriginFound,
-    ParanaBarred, Predicate, Published, PublishedStatus, Sait, SaitCandidate, SunEntry, Unjudged,
-    Unplaced, VrataEdge, VrataParana, VrataParanaTime, Which, Window, dated, ekadashis, following,
-    observances, yugma,
+    DayClause, DayPart, DayRule, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule,
+    FollowingRule, Guard, Half, InAdhika, MonthClause, MoonArcs, Moonrise, NakshatraBar,
+    Observances, Occurs, OriginFound, ParanaBarred, Predicate, Published, PublishedStatus, Sait,
+    SaitCandidate, SunEntry, TithiShape, Unjudged, Unplaced, VrataEdge, VrataParana,
+    VrataParanaTime, Which, Window, dated, ekadashis, following, observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -1778,7 +1778,7 @@ fn every_reading(parana: &mut Vec<VrataParanaTime>, era: Option<EraNumber>) {
 }
 
 /// The string paths of a festival answer that name no catalogue member.
-const NOT_MEMBERS: [&str; 65] = [
+const NOT_MEMBERS: [&str; 69] = [
     "observances.rule",
     "observances.decidedBy.rule",
     "observances.day.resolution.kind",
@@ -1809,6 +1809,10 @@ const NOT_MEMBERS: [&str; 65] = [
     "dated.day.resolution.kind",
     "dated.on.resolution.kind",
     "anniversaries.key",
+    "anniversaries.dayRule.at.window",
+    "anniversaries.dayRule.clause",
+    "anniversaries.dayRule.source",
+    "anniversaries.dayRule.tithi",
     "anniversaries.kind",
     "anniversaries.monthBy",
     "anniversaries.origin.kind",
@@ -1978,6 +1982,12 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
             )
         },
         month_by: MonthClause::Nija,
+        day_rule: DayRule {
+            tithi: TithiShape::Vriddhi,
+            at: Window::Sunrise,
+            clause: DayClause::BothWhole,
+            source: "a test".to_owned(),
+        },
         observance,
     });
     // A published set's marks, its added day and its unplaced entry.

@@ -6,7 +6,7 @@ package com.teispace.teistro;
 import java.util.Optional;
 
 /**
- * The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI &lt;&lt; 16) | member`.
+ * The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI &lt;&lt; 16) | member`.
  */
 public enum Tithi implements Catalogued {
     /**

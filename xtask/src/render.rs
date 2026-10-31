@@ -55,7 +55,7 @@ fn outputs() -> Result<Vec<Output>, String> {
     let mut outputs = Vec::new();
     for (locale, look, theme) in looks() {
         let sdk = Context::builder()
-            .profile("nepali-default")
+            .profile("nepali-drik")
             .locale(locale)
             .ephemeris([Ephemeris::Builtin])
             .build()

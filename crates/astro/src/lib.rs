@@ -52,6 +52,7 @@
 
 pub mod ayanamsha;
 pub mod completion;
+pub mod day_sky;
 pub mod delta_t;
 pub mod eclipse;
 pub mod events;

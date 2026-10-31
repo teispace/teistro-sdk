@@ -40,14 +40,14 @@ EVERY_MINUTES = 10
 
 def main() -> None:
     teistro = Teistro.open()
-    # `nepali-default` is what a Nepali birth record is cast under, and
+    # `nepali-drik` is what a Nepali birth record is cast under, and
     # its frame is **topocentric**: the chart is seen from the hill the
     # record was written on rather than from the centre of the Earth. The
     # completion does that step itself over any provider
     # (`03-design/topocentric-measured.md`), so the analytic one below is
     # enough, and the steps printed at the end name it.
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
+        profile="nepali-drik", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # The record: a Bikram Sambat date, a place, and an hour nobody
         # is sure of. Everything below narrows the last of those.

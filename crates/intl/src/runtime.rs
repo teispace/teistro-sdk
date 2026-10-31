@@ -86,6 +86,8 @@ pub struct LocaleReport {
     /// Base keys present (through an entry or an override) against base
     /// keys, when the base locale is loaded.
     pub coverage: Option<(usize, usize)>,
+    /// The namespaces no reviewer has signed off.
+    pub draft: Vec<String>,
 }
 
 /// What the engine holds: the current locale, every locale with its
@@ -254,6 +256,9 @@ impl Intl {
     /// locale not yet loaded; a locale ICU4X has no plural rules for.
     pub fn load_pack(&mut self, bytes: &[u8]) -> Result<Loaded, IntlError> {
         let file = read_file(bytes)?;
+        // What the file says of its own review: a reviewer's pack lifts a
+        // draft, and a pack with no metadata says nothing.
+        let drafts = file.meta.as_ref().map(|meta| meta.draft.clone());
         if !self.locales.contains_key(&file.tag) {
             let meta = file.meta.ok_or_else(|| {
                 IntlError(format!(
@@ -292,6 +297,11 @@ impl Intl {
                 }
             }
             names.push(name);
+        }
+        if let Some(drafts) = drafts {
+            locale.meta.draft.retain(|name| !names.contains(name));
+            let carried = drafts.into_iter().filter(|name| names.contains(name));
+            locale.meta.draft.extend(carried);
         }
         self.forget_parsed(&file.tag, None);
         let loaded = Loaded {
@@ -515,6 +525,7 @@ impl Intl {
                     entries: locale.namespaces.values().map(|ns| ns.entries.len()).sum(),
                     overrides: overrides.map_or(0, BTreeMap::len),
                     coverage,
+                    draft: locale.meta.draft.clone(),
                 }
             })
             .collect();

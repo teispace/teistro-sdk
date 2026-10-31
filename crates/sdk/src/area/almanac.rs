@@ -3,6 +3,7 @@
 
 use serde::Serialize;
 use teistro_astro::Completion;
+use teistro_astro::day_sky::{DaySky, SkyStep, day_sky};
 use teistro_astro::eclipse::{Eclipses, EclipsesHere, ShadowRule};
 use teistro_astro::precession::PrecessionModel;
 use teistro_calendar::CalendarDate;
@@ -12,7 +13,7 @@ use teistro_calendar::FixedDay;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_chart::foundation::Founder;
 use teistro_core::catalogue::Calendar;
-use teistro_core::envelope::{Convention, Envelope, Hash, content_hash};
+use teistro_core::envelope::{Convention, Envelope, Hash, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
@@ -29,8 +30,9 @@ use teistro_panchanga::ashauch::{Ashauch, AshauchRequest, AshauchTable};
 #[cfg(feature = "signed-packs")]
 use teistro_panchanga::festival::PublishedSet;
 use teistro_panchanga::festival::{
-    DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika, InSamsarpa, Observances, Origin,
-    anniversaries, apply_published, dated, ekadashis, following, observances,
+    Anniversary, AnniversaryKind, DatedRule, EkadashiRule, FestivalDay, FestivalRule, InAdhika,
+    InSamsarpa, Observances, Origin, anniversaries, apply_published, dated, ekadashis, following,
+    observances,
 };
 use teistro_panchanga::first_year::{FirstYear, FirstYearSchedule};
 use teistro_panchanga::nepal_sambat::NepalSambatDate;
@@ -38,6 +40,7 @@ use teistro_panchanga::omen::PRINTED_CONVENTIONS;
 use teistro_panchanga::sankalpa::{AyanaReckoning, Sankalpa};
 use teistro_panchanga::span::Span;
 use teistro_panchanga::year::LunarYear;
+use teistro_time::DayState;
 
 use teistro_port_ephemeris::{EphemerisProvider, Horizon};
 use teistro_time::ZoneSpec;
@@ -76,7 +79,9 @@ impl core::fmt::Debug for AlmanacArea<'_> {
     }
 }
 
+mod anniversaries;
 mod changes;
+mod day_plan;
 mod digest;
 mod disagreement;
 mod feed;
@@ -86,7 +91,11 @@ mod next;
 mod pack;
 mod reasons;
 mod sait;
+mod sentences;
 
+#[cfg(feature = "schema")]
+pub(crate) use anniversaries::AnniversariesAsked;
+pub use anniversaries::{AnniversariesRequest, MOST_ANNIVERSARIES, MOST_YEARS};
 #[cfg(feature = "schema")]
 pub(crate) use changes::ChangesAsked;
 pub use changes::{ChangesRequest, DayClock};
@@ -118,6 +127,9 @@ pub use reasons::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
 };
+#[cfg(feature = "schema")]
+pub(crate) use sentences::SentencesAsked;
+pub use sentences::{DaySentence, DaySentences, SentencesRequest};
 
 impl<'a> AlmanacArea<'a> {
     pub(crate) fn of_context(context: &'a Context) -> AlmanacArea<'a> {
@@ -407,18 +419,18 @@ impl<'a> AlmanacArea<'a> {
     }
 
     /// Each anniversary's days over the viewed days, its origin found at
-    /// the place and, for a date, in the date's own calendar
-    /// (`03-design/shraddha.md` §3.1).
+    /// the place and, for a date, in the date's own calendar, refused
+    /// under `field[i].origin` (`03-design/shraddha.md` §3.1).
     fn kept_anniversaries(
         self,
         calendar: Calendar,
         offset: UtcOffset,
         place: &Place,
-        request: &FestivalRequest,
+        (list, field): (&[Anniversary], &str),
         viewed: &[FestivalDay],
     ) -> Result<Observances, Error> {
-        let mut asked = Vec::with_capacity(request.anniversaries().len());
-        for (index, anniversary) in request.anniversaries().iter().enumerate() {
+        let mut asked = Vec::with_capacity(list.len());
+        for (index, anniversary) in list.iter().enumerate() {
             let calendar = match &anniversary.origin {
                 Origin::Date { date } => date.calendar,
                 _ => calendar,
@@ -427,7 +439,7 @@ impl<'a> AlmanacArea<'a> {
                 .with_almanac(calendar, offset, |almanac| {
                     almanac.origin(&anniversary.origin, place)
                 })
-                .map_err(|why| why.under(&format!("festivals.anniversaries[{index}].origin")))?;
+                .map_err(|why| why.under(&format!("{field}[{index}].origin")))?;
             asked.push((anniversary.clone(), found));
         }
         // A samsarpa is looked for only when an anniversary would keep a
@@ -516,11 +528,7 @@ impl<'a> AlmanacArea<'a> {
         } = days;
         // The observances read none of a day's printed conventions, so
         // their answer names none, whichever path founded the days.
-        provenance.applied_conventions.retain(|applied| {
-            !PRINTED_CONVENTIONS
-                .iter()
-                .any(|printed| printed.knob == applied.knob)
-        });
+        without_printed(&mut provenance);
         let mut viewed: Vec<FestivalDay> = earlier.into_iter().chain(range).chain(later).collect();
         self.searched(from.calendar, offset, place, request, &mut viewed)?;
         let karmakala = observances(request.rules(), &viewed)?;
@@ -529,7 +537,13 @@ impl<'a> AlmanacArea<'a> {
             .merged(counted)
             .merged(ekadashis(request.ekadashis(), &viewed)?)
             .merged(dated(request.dated(), &viewed)?)
-            .merged(self.kept_anniversaries(from.calendar, offset, place, request, &viewed)?);
+            .merged(self.kept_anniversaries(
+                from.calendar,
+                offset,
+                place,
+                (request.anniversaries(), "festivals.anniversaries"),
+                &viewed,
+            )?);
         // Laid over before the trim, so a day published across the
         // range's edge moves in or out with its occurrence.
         apply_published(
@@ -566,13 +580,10 @@ impl<'a> AlmanacArea<'a> {
             utc_offset_seconds: offset.seconds(),
             request,
         });
-        provenance.applied_conventions.push(Convention {
-            knob: String::from("festival.days"),
-            value: format!("{before}..{}", after.1),
-            reason: String::from(
-                "a tithi beginning the day before the range can fall in it, and an 11th beginning then is pierced or not at an arunodaya in the night before; one at its end is judged against the day after, or two when it holds two sunrises; and a rule counted from another's day reaches as many days as it counts",
-            ),
-        });
+        event_convention(&mut provenance, request.anniversaries());
+        provenance
+            .applied_conventions
+            .push(widened_days(&before, &after.1));
         Ok(Envelope::sealing(found, provenance))
     }
 
@@ -600,7 +611,11 @@ impl<'a> AlmanacArea<'a> {
         let searched = request.muhurta.is_some();
         #[cfg(not(feature = "muhurta"))]
         let searched = false;
-        if request.days == Days::Omitted && !searched && !request.nepal_sambat {
+        if request.days == Days::Omitted
+            && !searched
+            && !request.nepal_sambat
+            && request.sky.is_none()
+        {
             return self.beside_no_days(from, to, place, offset, request);
         }
         #[cfg(feature = "muhurta")]
@@ -654,6 +669,10 @@ impl<'a> AlmanacArea<'a> {
                 days.provenance.clone(),
             )
         });
+        let sky = request
+            .sky
+            .map(|step| self.sky_of(&days, place, offset, step))
+            .transpose()?;
         let (days, day_hashes) = if request.days == Days::Omitted {
             (Envelope::sealing(Vec::new(), days.provenance), Vec::new())
         } else {
@@ -668,7 +687,55 @@ impl<'a> AlmanacArea<'a> {
             years,
             eclipses,
             nepal_sambat,
+            sky,
         })
+    }
+
+    /// Each day's sky (`03-design/day-sky.md`), over its window, sealed
+    /// under the days' provenance with the window's reading named. The
+    /// rises and sets are found under the horizon the day's own are.
+    fn sky_of(
+        self,
+        days: &Envelope<Vec<Panchanga>>,
+        place: &Place,
+        offset: UtcOffset,
+        step: SkyStep,
+    ) -> Result<Envelope<Vec<DaySky>>, Error> {
+        let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
+        let settings = self.context.settings();
+        let delta_t = self.context.delta_t();
+        let source = Completion::new(provider, settings.provider.overrides, delta_t);
+        let horizon = Horizon::from_convention(settings.day.sunrise);
+        let skies = days
+            .value
+            .iter()
+            .map(|day| {
+                let window = if day.day.state == DayState::Normal {
+                    day.window
+                } else {
+                    let calendar = system_of(day.day.date.calendar)?;
+                    let midnight = local_midnight(&offset, calendar.fixed_of(&day.day.date)?)?;
+                    Interval::new(midnight, JulianDay::try_new(midnight.get() + 1.0)?)?
+                };
+                day_sky(
+                    &source,
+                    *place,
+                    horizon,
+                    delta_t,
+                    (window.from.relabel(), window.to.relabel()),
+                    step,
+                )
+            })
+            .collect::<Result<Vec<DaySky>, Error>>()?;
+        let mut provenance = days.provenance.clone();
+        provenance.applied_conventions.push(Convention {
+            knob: String::from("sky.window"),
+            value: format!("{} minutes", step.minutes()),
+            reason: String::from(
+                "a day's sky runs over the day's window, or over the civil day on a polar day, whose synthesised window lies at another date; UT1 read as UTC",
+            ),
+        });
+        Ok(Envelope::sealing(skies, provenance))
     }
 
     /// Each day's lagna table, laid into the day: the signs rising over
@@ -748,6 +815,7 @@ impl<'a> AlmanacArea<'a> {
             years,
             eclipses,
             nepal_sambat: None,
+            sky: None,
         })
     }
 
@@ -763,7 +831,7 @@ impl<'a> AlmanacArea<'a> {
     /// use teistro::catalogue::{Calendar, Samvatsara};
     /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
     ///
-    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
     /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
     /// let day = CalendarDate::defined(Calendar::Gregorian, 2021, 6, 1);
     /// let years = sdk.almanac().years(&day, &day, &kathmandu, UtcOffset::literal(5, 45, 0))?;
@@ -807,7 +875,7 @@ impl<'a> AlmanacArea<'a> {
     /// use teistro::catalogue::Calendar;
     /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
     ///
-    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
     /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
     /// let (from, to) = (
     ///     CalendarDate::defined(Calendar::Gregorian, 2025, 1, 1),
@@ -891,7 +959,7 @@ impl<'a> AlmanacArea<'a> {
     /// use teistro::{AyanaReckoning, Context, UtcOffset};
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     ///
-    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
     /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
     /// // 2026-01-15 08:00 Nepal time, 02:15 UTC.
     /// let at = JulianDay::try_new(2_461_055.593_75)?;
@@ -932,7 +1000,7 @@ impl<'a> AlmanacArea<'a> {
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     /// use teistro::{Context, UtcOffset};
     ///
-    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
     /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1337.0)?);
     /// // A grandfather's death at 10:00 Nepal time on 11 January 2026.
     /// let request = AshauchRequest {
@@ -981,7 +1049,7 @@ impl<'a> AlmanacArea<'a> {
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     /// use teistro::{Context, UtcOffset};
     ///
-    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
     /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1337.0)?);
     /// // A grandfather's death at 10:00 Nepal time on 11 January 2026, read as Nepal reads it.
     /// let asked = FirstYear::nepal("GRANDFATHER", JulianDay::try_new(2_461_051.677_083)?);
@@ -1094,6 +1162,7 @@ pub struct AlmanacRequest {
     nepal_sambat: bool,
     lagnas: bool,
     homa_ahuti: bool,
+    sky: Option<SkyStep>,
     days: Days,
 }
 
@@ -1186,6 +1255,30 @@ impl AlmanacRequest {
         self
     }
 
+    /// With each day's sky ([`AlmanacAnswer::sky`],
+    /// `03-design/day-sky.md`): the paths of the Sun and the Moon over the
+    /// day's window at `step`, their rises, transits and sets as exact
+    /// points on them with their altitudes, and on every point of the
+    /// Moon's path her lit shape as the place sees it. A polar day says
+    /// `ALWAYS_ABOVE` or `ALWAYS_BELOW`. Only a request that asks pays for
+    /// it, and the days themselves are unchanged by it. Without days
+    /// handed out the days are still founded, and the sky answered.
+    ///
+    /// ```
+    /// use teistro::AlmanacRequest;
+    /// use teistro::day_sky::SkyStep;
+    ///
+    /// assert_eq!(AlmanacRequest::new().sky(), None);
+    /// let asked = AlmanacRequest::new().with_sky(SkyStep::of_minutes(30)?);
+    /// assert_eq!(asked.sky(), Some(SkyStep::of_minutes(30)?));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_sky(mut self, step: SkyStep) -> AlmanacRequest {
+        self.sky = Some(step);
+        self
+    }
+
     /// **Without the days**: what is asked beside them, and the days
     /// themselves left out of the answer, which holds none. Festivals
     /// alone are then founded as only what their rules read
@@ -1228,6 +1321,7 @@ impl AlmanacRequest {
             && !self.years
             && !self.eclipses
             && !self.lagnas
+            && self.sky.is_none()
             && self.days == Days::Handed
     }
 
@@ -1260,6 +1354,12 @@ impl AlmanacRequest {
     pub fn homa_ahuti(&self) -> bool {
         self.homa_ahuti
     }
+
+    /// The step of the days' sky, when it was asked.
+    #[must_use]
+    pub fn sky(&self) -> Option<SkyStep> {
+        self.sky
+    }
 }
 
 /// The days of a range and what was asked beside them: what
@@ -1284,6 +1384,9 @@ pub struct AlmanacAnswer {
     /// asked: read off the days themselves, so sealed under their
     /// provenance.
     pub nepal_sambat: Option<Envelope<Vec<NepalSambatDate>>>,
+    /// Each day's sky, in the days' order, when it was asked: under the
+    /// days' provenance, with the window's reading named.
+    pub sky: Option<Envelope<Vec<DaySky>>>,
 }
 
 /// What was asked beside a range's days, each section written as a
@@ -1310,6 +1413,9 @@ pub struct AlmanacSections {
     /// Each day's Nepal Sambat date.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub nepal_sambat: Option<Envelope<serde_json::Value>>,
+    /// Each day's sky.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sky: Option<Envelope<serde_json::Value>>,
 }
 
 impl AlmanacAnswer {
@@ -1332,6 +1438,11 @@ impl AlmanacAnswer {
             eclipses: sealed(self.eclipses.as_ref(), EclipsesHere::in_full)?,
             nepal_sambat: sealed(self.nepal_sambat.as_ref(), |dates| {
                 NepalSambatDate::in_full(dates)
+            })?,
+            sky: sealed(self.sky.as_ref(), |skies| {
+                serde_json::to_value(skies).map_err(|error| {
+                    Error::internal(format!("a day's sky did not serialise: {error}"))
+                })
             })?,
         })
     }
@@ -1413,6 +1524,41 @@ struct FestivalInput<'r> {
     place: Place,
     utc_offset_seconds: i32,
     request: &'r FestivalRequest,
+}
+
+/// The convention naming the days a range was widened to.
+fn widened_days(before: &CalendarDate, after: &CalendarDate) -> Convention {
+    Convention {
+        knob: String::from("festival.days"),
+        value: format!("{before}..{after}"),
+        reason: String::from(
+            "a tithi beginning the day before the range can fall in it, and an 11th beginning then is pierced or not at an arunodaya in the night before; one at its end is judged against the day after, or two when it holds two sunrises; and a rule counted from another's day reaches as many days as it counts",
+        ),
+    }
+}
+
+/// Takes out the printed conventions a founded day's provenance names: the
+/// observances read none of them.
+fn without_printed(provenance: &mut Provenance) {
+    provenance.applied_conventions.retain(|applied| {
+        !PRINTED_CONVENTIONS
+            .iter()
+            .any(|printed| printed.knob == applied.knob)
+    });
+}
+
+/// Names the event anniversary's reading when one was asked: no text rules
+/// on it (`03-design/anniversary-span.md` §2.3, C911).
+fn event_convention(provenance: &mut Provenance, asked: &[Anniversary]) {
+    if asked.iter().any(|a| a.kind == AnniversaryKind::Event) {
+        provenance.applied_conventions.push(Convention {
+            knob: String::from("anniversary.event"),
+            value: String::from("SUNRISE_BY_SHARE"),
+            reason: String::from(
+                "no text rules on a family's own event: it is read as a janma tithi is, in the ordinary month, at the window stated (sunrise by default), by Dharmasindhu p. 266's shares",
+            ),
+        });
+    }
 }
 
 /// Each seen eclipse's vedha, read off the almanac's days around its first

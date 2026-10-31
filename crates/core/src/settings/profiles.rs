@@ -38,9 +38,9 @@ use crate::quantity::Depth;
 /// ```
 /// use teistro_core::settings::ProfileId;
 ///
-/// let id: ProfileId = serde_json::from_str(r#""nepali-default""#).unwrap();
-/// assert_eq!(id, ProfileId::new("nepali-default"));
-/// assert_eq!(id.to_string(), "nepali-default");
+/// let id: ProfileId = serde_json::from_str(r#""nepali-drik""#).unwrap();
+/// assert_eq!(id, ProfileId::new("nepali-drik"));
+/// assert_eq!(id.to_string(), "nepali-drik");
 /// ```
 #[derive(
     Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
@@ -139,7 +139,7 @@ pub const DEFAULT_PROFILE: &str = "parashari-classical";
 /// }
 /// ```
 pub const SHIPPED_PROFILES: [&str; 7] = [
-    "nepali-default",
+    "nepali-drik",
     "nepali-committee",
     "parashari-classical",
     "surya-siddhanta",
@@ -147,6 +147,22 @@ pub const SHIPPED_PROFILES: [&str; 7] = [
     "western-tropical-default",
     "conformance-baseline",
 ];
+
+/// The names a shipped profile answers to beside its id, each `(alias, id)`.
+///
+/// An alias opens exactly the profile it names: the same settings, so the
+/// same hash, and the answer's `provenance.profile` and a context's
+/// `profile()` say the id and never the alias. The name a stored document
+/// or an older caller holds keeps working; nothing writes it back.
+///
+/// ```
+/// use teistro_core::settings::{PROFILE_ALIASES, Profile};
+///
+/// for (alias, id) in PROFILE_ALIASES {
+///     assert_eq!(Profile::shipped(alias), Profile::shipped(id));
+/// }
+/// ```
+pub const PROFILE_ALIASES: [(&str, &str); 1] = [("nepali-default", "nepali-drik")];
 
 const BASELINE: Source = Source::new("baseline-engine", "persisted chart settings");
 
@@ -417,7 +433,7 @@ fn strength() -> Strength {
     }
 }
 
-fn nepali_default() -> Profile {
+fn nepali_drik() -> Profile {
     let mut patch = SettingsPatch::default();
     patch.frame.centre = Some(Centre::Topocentric);
     patch.houses.chalit_system = Some(HouseSystem::Vehlow);
@@ -435,7 +451,7 @@ fn nepali_default() -> Profile {
             .collect(),
     );
     Profile {
-        id: ProfileId::new("nepali-default"),
+        id: ProfileId::new("nepali-drik"),
         // 2: the lunar month leads purnimanta, as Nepal names it.
         // 3: the season follows the civil calendar's solar months.
         // 4: an eclipse's vedha is the committee's fixed hours.
@@ -486,7 +502,7 @@ fn nepali_default() -> Profile {
 }
 
 /// Nepal's national panchanga as its committee computes it: Nepal's
-/// civil practice (`nepali-default`) over the Surya Siddhanta with the
+/// civil practice (`nepali-drik`) over the Surya Siddhanta with the
 /// committee's bija, in the text's own zodiac.
 ///
 /// The committee requires its panchanga makers to compute by the Surya
@@ -529,7 +545,7 @@ fn nepali_committee() -> Profile {
     Profile {
         id: ProfileId::new("nepali-committee"),
         version: 5,
-        base: Some(ProfileId::new("nepali-default")),
+        base: Some(ProfileId::new("nepali-drik")),
         patch,
         sources: vec![
             Citation::new(
@@ -572,7 +588,7 @@ fn nepali_committee() -> Profile {
 ///
 /// It patches the root rather than another profile, which is what makes
 /// "nothing of one country's practice in it" true rather than stated: on
-/// `nepali-default` it inherited that engine's topocentric centre,
+/// `nepali-drik` it inherited that engine's topocentric centre,
 /// Nepal's civil calendar and its synthesised polar days, none of which
 /// is in any text. Everything not patched here comes from [`root`],
 /// which is cited knob by knob.
@@ -584,7 +600,8 @@ fn parashari_classical() -> Profile {
     patch.state.combustion_orbs = Some(String::from("SURYA_SIDDHANTA"));
     Profile {
         id: ProfileId::new("parashari-classical"),
-        // 2: the base moved from `nepali-default` to the root, so the
+        // 2: the base moved from `nepali-default`, as `nepali-drik` was then
+        // called, to the root, so the
         // centre became geocentric, the civil calendar Gregorian, the
         // eras the three pan-Indic ones and a polar day undefined
         // (ADR-0024).
@@ -921,18 +938,23 @@ fn conformance_sources() -> Vec<Citation> {
 }
 
 impl Profile {
-    /// A shipped profile by id.
+    /// A shipped profile by id, or by one of its [`PROFILE_ALIASES`].
     ///
     /// ```
     /// use teistro_core::settings::Profile;
     ///
     /// assert_eq!(Profile::shipped("kp-default").map(|p| p.id.to_string()), Some(String::from("kp-default")));
+    /// assert_eq!(Profile::shipped("nepali-default").map(|p| p.id.to_string()), Some(String::from("nepali-drik")));
     /// assert!(Profile::shipped("kp").is_none());
     /// ```
     #[must_use]
     pub fn shipped(id: &str) -> Option<Profile> {
+        let id = PROFILE_ALIASES
+            .iter()
+            .find_map(|(alias, named)| (*alias == id).then_some(*named))
+            .unwrap_or(id);
         match id {
-            "nepali-default" => Some(nepali_default()),
+            "nepali-drik" => Some(nepali_drik()),
             "nepali-committee" => Some(nepali_committee()),
             "parashari-classical" => Some(parashari_classical()),
             "surya-siddhanta" => Some(surya_siddhanta()),
@@ -949,7 +971,7 @@ impl Profile {
     /// ```
     /// use teistro_core::settings::{Node, Profile, SettingsPatch, SunriseConvention};
     ///
-    /// let profile = Profile::shipped("nepali-default").unwrap();
+    /// let profile = Profile::shipped("nepali-drik").unwrap();
     /// let mut patch = SettingsPatch::default();
     /// // The patch is applied last, over the profile.
     /// patch.frame.node = Some(Node::Mean);

@@ -3816,6 +3816,223 @@ public final class Messages {
 
 
         /**
+         * The messages under `day`.
+         *
+         * @return the group
+         */
+        public SdkDay day() {
+            return new SdkDay(r);
+        }
+
+        /** The messages under `SdkDay`, each rendered by its own key. */
+        public static final class SdkDay {
+            private final Renderer r;
+
+            SdkDay(Renderer r) {
+                this.r = r;
+            }
+
+            /**
+             * `sdk.day.abhijit`
+             *
+             * @param from `from`
+             * @param to `to`
+             * @return the text
+             */
+            public String abhijit(TimeValue from, TimeValue to) {
+                return r.render("sdk.day.abhijit", Map.ofEntries(Map.entry("from", Map.of("$time", from.json())), Map.entry("to", Map.of("$time", to.json()))));
+            }
+
+            /**
+             * `sdk.day.ayana`
+             *
+             * @param ayana `ayana`
+             * @return the text
+             */
+            public String ayana(AyanaKey ayana) {
+                return r.render("sdk.day.ayana", Map.ofEntries(Map.entry("ayana", Map.of("$entity", ayana.value()))));
+            }
+
+            /**
+             * `sdk.day.kaala`
+             *
+             * @param from `from`
+             * @param kaala `kaala`
+             * @param to `to`
+             * @return the text
+             */
+            public String kaala(TimeValue from, KaalaKey kaala, TimeValue to) {
+                return r.render("sdk.day.kaala", Map.ofEntries(Map.entry("from", Map.of("$time", from.json())), Map.entry("kaala", Map.of("$entity", kaala.value())), Map.entry("to", Map.of("$time", to.json()))));
+            }
+
+            /**
+             * `sdk.day.karana`
+             *
+             * @param ends `ends`
+             * @param karana `karana`
+             * @param until `until`
+             * @return the text
+             */
+            public String karana(String ends, KaranaKey karana, TimeValue until) {
+                return r.render("sdk.day.karana", Map.ofEntries(Map.entry("ends", ends), Map.entry("karana", Map.of("$entity", karana.value())), Map.entry("until", Map.of("$time", until.json()))));
+            }
+
+            /**
+             * `sdk.day.month`
+             *
+             * @param kind `kind`
+             * @param masa `masa`
+             * @return the text
+             */
+            public String month(String kind, MasaKey masa) {
+                return r.render("sdk.day.month", Map.ofEntries(Map.entry("kind", kind), Map.entry("masa", Map.of("$entity", masa.value()))));
+            }
+
+            /**
+             * `sdk.day.moonSign`
+             *
+             * @param ends `ends`
+             * @param rashi `rashi`
+             * @param until `until`
+             * @return the text
+             */
+            public String moonSign(String ends, RashiKey rashi, TimeValue until) {
+                return r.render("sdk.day.moonSign", Map.ofEntries(Map.entry("ends", ends), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("until", Map.of("$time", until.json()))));
+            }
+
+            /**
+             * `sdk.day.moonrise`
+             *
+             * @param at `at`
+             * @param when `when`
+             * @return the text
+             */
+            public String moonrise(TimeValue at, String when) {
+                return r.render("sdk.day.moonrise", Map.ofEntries(Map.entry("at", Map.of("$time", at.json())), Map.entry("when", when)));
+            }
+
+            /**
+             * `sdk.day.moonset`
+             *
+             * @param at `at`
+             * @param when `when`
+             * @return the text
+             */
+            public String moonset(TimeValue at, String when) {
+                return r.render("sdk.day.moonset", Map.ofEntries(Map.entry("at", Map.of("$time", at.json())), Map.entry("when", when)));
+            }
+
+            /**
+             * `sdk.day.nakshatra`
+             *
+             * @param ends `ends`
+             * @param nakshatra `nakshatra`
+             * @param until `until`
+             * @return the text
+             */
+            public String nakshatra(String ends, NakshatraKey nakshatra, TimeValue until) {
+                return r.render("sdk.day.nakshatra", Map.ofEntries(Map.entry("ends", ends), Map.entry("nakshatra", Map.of("$entity", nakshatra.value())), Map.entry("until", Map.of("$time", until.json()))));
+            }
+
+            /**
+             * `sdk.day.ritu`
+             *
+             * @param ritu `ritu`
+             * @return the text
+             */
+            public String ritu(RituKey ritu) {
+                return r.render("sdk.day.ritu", Map.ofEntries(Map.entry("ritu", Map.of("$entity", ritu.value()))));
+            }
+
+            /**
+             * `sdk.day.sankranti`
+             *
+             * @param at `at`
+             * @param rashi `rashi`
+             * @param when `when`
+             * @return the text
+             */
+            public String sankranti(TimeValue at, RashiKey rashi, String when) {
+                return r.render("sdk.day.sankranti", Map.ofEntries(Map.entry("at", Map.of("$time", at.json())), Map.entry("rashi", Map.of("$entity", rashi.value())), Map.entry("when", when)));
+            }
+
+            /**
+             * `sdk.day.sun`
+             *
+             * @param rise `rise`
+             * @param set `set`
+             * @return the text
+             */
+            public String sun(TimeValue rise, TimeValue set) {
+                return r.render("sdk.day.sun", Map.ofEntries(Map.entry("rise", Map.of("$time", rise.json())), Map.entry("set", Map.of("$time", set.json()))));
+            }
+
+            /**
+             * `sdk.day.sunDown`
+             *
+             * @return the text
+             */
+            public String sunDown() {
+                return r.render("sdk.day.sunDown", Map.of());
+            }
+
+            /**
+             * `sdk.day.sunSign`
+             *
+             * @param rashi `rashi`
+             * @return the text
+             */
+            public String sunSign(RashiKey rashi) {
+                return r.render("sdk.day.sunSign", Map.ofEntries(Map.entry("rashi", Map.of("$entity", rashi.value()))));
+            }
+
+            /**
+             * `sdk.day.sunUp`
+             *
+             * @return the text
+             */
+            public String sunUp() {
+                return r.render("sdk.day.sunUp", Map.of());
+            }
+
+            /**
+             * `sdk.day.tithi`
+             *
+             * @param ends `ends`
+             * @param paksha `paksha`
+             * @param tithi `tithi`
+             * @param until `until`
+             * @return the text
+             */
+            public String tithi(String ends, PakshaKey paksha, TithiKey tithi, TimeValue until) {
+                return r.render("sdk.day.tithi", Map.ofEntries(Map.entry("ends", ends), Map.entry("paksha", Map.of("$entity", paksha.value())), Map.entry("tithi", Map.of("$entity", tithi.value())), Map.entry("until", Map.of("$time", until.json()))));
+            }
+
+            /**
+             * `sdk.day.vara`
+             *
+             * @param vara `vara`
+             * @return the text
+             */
+            public String vara(VaraKey vara) {
+                return r.render("sdk.day.vara", Map.ofEntries(Map.entry("vara", Map.of("$entity", vara.value()))));
+            }
+
+            /**
+             * `sdk.day.yoga`
+             *
+             * @param ends `ends`
+             * @param until `until`
+             * @param yoga `yoga`
+             * @return the text
+             */
+            public String yoga(String ends, TimeValue until, YogaKey yoga) {
+                return r.render("sdk.day.yoga", Map.ofEntries(Map.entry("ends", ends), Map.entry("until", Map.of("$time", until.json())), Map.entry("yoga", Map.of("$entity", yoga.value()))));
+            }
+        }
+
+
+        /**
          * The messages under `entity`.
          *
          * @return the group

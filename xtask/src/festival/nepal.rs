@@ -8,7 +8,7 @@
 //! days it counts from another's among them, is found at Kathmandu on Nepal's
 //! clock twice: over the committee's own sky (`nepali-committee`, the Surya
 //! Siddhanta with its bija, C187), which the pass holds to the print, and
-//! over the modern sky (`nepali-default`), which it counts beside it. Every
+//! over the modern sky (`nepali-drik`), which it counts beside it. Every
 //! parting under the committee's sky must carry its cause, and the cause is
 //! checked against the observance found.
 
@@ -228,7 +228,7 @@ pub(super) fn gregorian((year, month, day): Day) -> CalendarDate {
 pub(super) enum Sky {
     /// `nepali-committee`, the committee's own.
     Committee,
-    /// `nepali-default`, the modern sky under Lahiri.
+    /// `nepali-drik`, the modern sky under Lahiri.
     Modern,
 }
 
@@ -236,7 +236,7 @@ impl Sky {
     pub(super) fn context(self) -> Result<Context, String> {
         let (profile, ephemeris) = match self {
             Sky::Committee => ("nepali-committee", Ephemeris::SuryaSiddhanta),
-            Sky::Modern => ("nepali-default", Ephemeris::Builtin),
+            Sky::Modern => ("nepali-drik", Ephemeris::Builtin),
         };
         Context::builder()
             .profile(profile)
@@ -442,7 +442,7 @@ pub(super) fn render(out: &mut String, rows: &[Row]) {
          and the Terai counted from the Holika day, §9.4): the text's rules over\n\
          the committee's own sky (`nepali-committee`, the Surya Siddhanta with its\n\
          bija, C187), each parting named with its cause; the same over the modern\n\
-         sky (`nepali-default`); every rule read as the day whose sunrise holds\n\
+         sky (`nepali-drik`); every rule read as the day whose sunrise holds\n\
          its tithi, C197's rival; and the `NEPAL` pack, the text for a rite of the\n\
          night and the tithi at sunrise for one of the daylight (§9.5), which the\n\
          pass holds to every printed day.\n\n",

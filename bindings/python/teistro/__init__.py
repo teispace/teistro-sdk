@@ -78,6 +78,7 @@ from ._ffi import (
     PANCHANGA_HOMA_AHUTI,
     PANCHANGA_LAGNAS,
     PANCHANGA_NEPAL_SAMBAT,
+    PANCHANGA_SKY,
     PANCHANGA_WITHOUT_DAYS,
     PANCHANGA_YEARS,
     GENERATED_ABI_VERSION,
@@ -149,6 +150,7 @@ from ._requests import (
     AfterCycle as AfterCycle,
     AlmanacDaysRequest as AlmanacDaysRequest,
     ChangeKind as ChangeKind,
+    AnniversariesRequest as AnniversariesRequest,
     ChangesRequest as ChangesRequest,
     MahadvadashiKind as MahadvadashiKind,
     MuhurtaRequest as MuhurtaRequest,
@@ -398,6 +400,7 @@ from ._requests import (
     FestivalCalendarRequest as FestivalCalendarRequest,
     FeedForm as FeedForm,
     DigestRequest as DigestRequest,
+    SentencesRequest as SentencesRequest,
     FeedAlarm as FeedAlarm,
     FeedHint as FeedHint,
     FeedSelector as FeedSelector,
@@ -423,7 +426,12 @@ from ._requests import (
     HarmonicRequest as HarmonicRequest,
     HarshaRules as HarshaRules,
     HitRequest as HitRequest,
+    ClockTime as ClockTime,
+    DateStyle as DateStyle,
+    DateTextRequest as DateTextRequest,
+    TimeStyle as TimeStyle,
     InWordsRequest as InWordsRequest,
+    TimeTextRequest as TimeTextRequest,
     WordsAmount as WordsAmount,
     WordsAmountValue as WordsAmountValue,
     WordsDigits as WordsDigits,
@@ -974,12 +982,14 @@ from .catalogue import (
 )
 
 __all__ = [
+    "tithi_month_number",
     "INTERNAL_CODE",
     "InternalReport",
     "DigestSpan",
     "FeedForm",
     "decode_digest",
     "DigestRequest",
+    "SentencesRequest",
     "FeedAlarm",
     "FeedHint",
     "FeedSelector",
@@ -1051,6 +1061,8 @@ __all__ = [
     "ChangePoint",
     "ChangePoints",
     "NextOccurrence",
+    "DaySentence",
+    "DaySentences",
     "ZoneDatabase",
     "Status",
     "Teistro",
@@ -1146,13 +1158,20 @@ __all__ = [
     "ChosenBy",
     "Signification",
     # A number or an amount in words.
+    "ClockTime",
+    "DateStyle",
+    "DateTextRequest",
+    "TimeStyle",
     "InWordsRequest",
+    "TimeTextRequest",
     "WordsAmount",
     "WordsAmountValue",
     "WordsDigits",
     "WordsGrouping",
     "WordsRounding",
     "WordsStyle",
+    "CivilPart",
+    "CivilText",
     "InWords",
     "AmountInWords",
     # The transit hit list, and its names.
@@ -1410,6 +1429,7 @@ __all__ = [
     "Tradition",
     "DatedObservance",
     "AnniversaryDay",
+    "AnniversaryDayRule",
     "AnniversaryOrigin",
     "FestivalAnswer",
     "FestivalSait",
@@ -1500,6 +1520,11 @@ __all__ = [
     "LunarYear",
     "JovianYear",
     "NepalSambatDates",
+    "DaySkies",
+    "DaySky",
+    "BodySky",
+    "SkyPoint",
+    "MoonShape",
     "NepalSambatDate",
     "TaraReading",
     "ClosedDay",
@@ -2931,12 +2956,19 @@ class IntlArea(_Area):
 
     @property
     def locale(self) -> str:
-        """The locale tag messages are rendered in."""
+        """The locale tag messages are rendered in. Set a short tag and the
+        loaded locale it means is chosen, by RFC 4647 lookup: read this to
+        see which."""
         return self._context.inner.intl_locale()
 
     @locale.setter
     def locale(self, tag: str) -> None:
         self._context.inner.intl_set_locale(tag)
+
+    def lookup_locale(self, tag: str) -> str:
+        """The loaded locale a tag means, by RFC 4647 lookup, changing nothing:
+        `ne` is `ne-Deva-NP`. A tag nothing loaded answers is refused."""
+        return self._context.inner.intl_lookup_locale(tag)
 
     def render(self, key: str, params: Optional[Mapping[str, object]] = None) -> IntlRender:
         """A message rendered in the context's locale."""
@@ -2963,6 +2995,24 @@ class IntlArea(_Area):
         'एक हजार दुई सय चौँतिस रुपैयाँ र छपन्न पैसा मात्र'
         """
         return InWords._of(json.loads(self._context.inner.intl_in_words(json.dumps(request))))
+
+    def time(self, request: TimeTextRequest) -> "CivilText":
+        """A time of day as text and parts, through the locale's pattern
+        and parts of the day (`03-design/intl-engine-and-packs.md`).
+
+        >>> sdk.intl.time({"at": {"hour": 6, "minute": 5}, "hour12": True, "locale": "ne-Deva-NP"}).text
+        'बिहान ६:०५'
+        """
+        return CivilText._of(json.loads(self._context.inner.intl_time(json.dumps(request))))
+
+    def date(self, request: DateTextRequest) -> "CivilText":
+        """A date as text and parts, in its own calendar, through the
+        locale's pattern.
+
+        >>> sdk.intl.date({"at": {"calendar": "calendar.GREGORIAN", "year": 2026, "month": 10, "day": 31}, "style": "LONG"}).text
+        '31 October 2026'
+        """
+        return CivilText._of(json.loads(self._context.inner.intl_date(json.dumps(request))))
 
     def transliterate(self, text: str, source: str = "Deva", into: str = "Latn") -> str:
         """Text from one script into another."""
@@ -3366,6 +3416,8 @@ class AlmanacArea(_Area):
         nepal_sambat: bool = False,
         lagnas: bool = False,
         homa_ahuti: bool = False,
+        sky: bool = False,
+        sky_step_minutes: int = 0,
         days: bool = True,
     ) -> Almanac:
         """The almanac of every day in a range, at one place.
@@ -3385,6 +3437,8 @@ class AlmanacArea(_Area):
         lagna table, as `AlmanacDay.lagnas`: every sign rising from sunrise
         to the next sunrise, from the ascendant `panchanga.lagna_table`
         names, some four hundred ascendants a day, so only on asking.
+        `sky=True` answers each day's sky, as `Almanac.sky`, at
+        `sky_step_minutes`, 1 to 240, ten when left at zero.
         `homa_ahuti=True` gives each day its homa ahuti, as
         `AlmanacDay.homa_ahuti`: the Sun's stars cost a search a day does
         not otherwise make, so only on asking. `days=False` leaves the days
@@ -3406,7 +3460,9 @@ class AlmanacArea(_Area):
             | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
             | (PANCHANGA_LAGNAS if lagnas else 0)
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
+            | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
+            sky_step_minutes,
         )
 
     def in_zone(
@@ -3423,9 +3479,11 @@ class AlmanacArea(_Area):
         nepal_sambat: bool = False,
         lagnas: bool = False,
         homa_ahuti: bool = False,
+        sky: bool = False,
+        sky_step_minutes: int = 0,
         days: bool = True,
     ) -> Almanac:
-        """`of` on a zone's clock: each day on the offset of its own noon, and
+        """`of` on a zone's clock: each day on its own offset, and
         the provenance names the zone's offset, source and era at the first
         day (`03-design/time-and-timezone.md` §3.4). A range crossing a
         clock change is refused on `zone` when a section is asked beside the
@@ -3443,7 +3501,9 @@ class AlmanacArea(_Area):
             | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
             | (PANCHANGA_LAGNAS if lagnas else 0)
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
+            | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
+            sky_step_minutes,
         )
 
     def _range(
@@ -3456,9 +3516,11 @@ class AlmanacArea(_Area):
         muhurta: Optional[MuhurtaRequest],
         festivals: Optional[FestivalRequest],
         sections: int,
+        sky_step_minutes: int,
     ) -> Almanac:
         request = PanchangaRequest(
             calendar=from_date.calendar,
+            sky_step_minutes=sky_step_minutes,
             from_year=from_date.year,
             from_month=from_date.month,
             from_day=from_date.day,
@@ -3722,7 +3784,7 @@ class AlmanacArea(_Area):
         comparing nothing is refused as `disagreements.days`.
 
         >>> # official = Context(**nepal_official(teimeris()))
-        >>> # modern = Context(profile="nepali-default", ephemeris=teimeris())
+        >>> # modern = Context(profile="nepali-drik", ephemeris=teimeris())
         >>> # found = official.almanac.disagreements(modern, from_date=..., place=kathmandu,
         >>> #     utc_offset_seconds=20700, festivals={"rules": "NEPAL"})
         """
@@ -3753,6 +3815,42 @@ class AlmanacArea(_Area):
             lambda: other._through_provider(lambda: self._context.inner.almanac_disagreements(theirs, json.dumps(asked)))
         )
         return _disagreements_answer(answered)
+
+    def sentences(
+        self,
+        *,
+        date: CalendarDate,
+        place: Observer,
+        utc_offset_seconds: int,
+        locale: Optional[str] = None,
+    ) -> "DaySentences":
+        """**A day in sentences** (`03-design/day-in-sentences.md`): one
+        date's facts as short sentences from templates, every value from
+        the day's answer. A locale without the templates raises
+        `UNSUPPORTED` on `locale`.
+
+        >>> # day = ctx.almanac.sentences(date=day, place=kathmandu,
+        >>> #     utc_offset_seconds=20700, locale="ne-Deva-NP")
+        >>> # day.sentences[0].text
+        """
+        asked: Dict[str, Any] = {
+            "calendar": date.calendar.key,
+            "date": {"year": date.year, "month": date.month, "day": date.day},
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "utcOffsetSeconds": utc_offset_seconds,
+        }
+        if locale is not None:
+            asked["locale"] = locale
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_sentences(json.dumps(asked)))
+        value = json.loads(answered)["value"]
+        return DaySentences(
+            locale=value["locale"],
+            draft=value["draft"],
+            sentences=tuple(DaySentence(key=s["key"], params=s["params"], text=s["text"]) for s in value["sentences"]),
+            withheld=tuple(value["withheld"]),
+        )
 
     def next(
         self,
@@ -3806,6 +3904,25 @@ class AlmanacArea(_Area):
             from_date=_serde_date(value["from"]),
             limit_days=int(value["limitDays"]),
             searched_days=int(value["searchedDays"]),
+        )
+
+    def anniversaries(self, request: AnniversariesRequest) -> "FestivalAnswer":
+        """**Anniversaries kept by the tithi over a span of years**, for many
+        people in one call (`03-design/anniversary-span.md`). The span's days
+        are founded once, and every person's are read from them. `years` is
+        1 to 100, counted in `calendar`; `anniversaries`, at most 1000, are
+        each as a festival request writes one. Each day's `day_rule` says
+        whether its tithi was `KSHAYA` or `VRIDDHI`, the window read, the
+        clause that chose the day and its source.
+
+        >>> # span = ctx.almanac.anniversaries({"fromYear": 2026, "years": 10,
+        >>> #     "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+        >>> #     "anniversaries": [{"key": "GRANDFATHER", "origin": {
+        >>> #         "by": "LUNAR", "month": "KARTIKA", "tithi": "SHUKLA_DASHAMI"}}]})
+        >>> # span.anniversaries[0].day_rule.clause
+        """
+        return _festivals_answer(
+            self._context._through_provider(lambda: self._context.inner.almanac_anniversaries(json.dumps(_written(request))))
         )
 
     def festival_pack(self, pack: str) -> Mapping[str, Any]:
@@ -3976,7 +4093,8 @@ class AlmanacArea(_Area):
         *,
         first: CalendarDate,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         days: Optional[int] = None,
         festivals: Optional[FestivalRequest] = None,
     ) -> bytes:
@@ -3984,7 +4102,8 @@ class AlmanacArea(_Area):
         `first`, 60 unless `days` says, every limb and window, the Moon and
         the observances, as bytes a process with no engine reads with
         `bindings/c/digest`, and `decode_digest` reads here. The same request
-        writes the same bytes on every platform.
+        writes the same bytes on every platform. It is asked on
+        `utc_offset_seconds` or a `zone`, each day then on its own offset.
 
         >>> # bytes_ = sdk.almanac.digest(first=..., place=kathmandu, utc_offset_seconds=20700)
         >>> # Path("widget.digest").write_bytes(bytes_)
@@ -3995,8 +4114,11 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
         }
+        if utc_offset_seconds is not None:
+            asked["utcOffsetSeconds"] = utc_offset_seconds
+        if zone is not None:
+            asked["zone"] = json.loads(_zone_json(zone))
         if days is not None:
             asked["days"] = days
         record = _festivals_json(festivals) if festivals is not None else None
@@ -8117,6 +8239,57 @@ class AmountInWords:
 
 
 @dataclass(frozen=True)
+class CivilPart:
+    """One part of a date or a time."""
+
+    kind: str
+    """What it is: `YEAR`, `MONTH`, `DAY`, `WEEKDAY`, `ERA`, `HOUR`, `MINUTE`,
+    `SECOND`, `DAY_PERIOD` or `LITERAL`."""
+
+    text: str
+    """Its text."""
+
+
+@dataclass(frozen=True)
+class CivilText:
+    """A date or a time as text and parts, as `intl.time` and `intl.date`
+    give it."""
+
+    text: str
+    """The whole."""
+
+    parts: Tuple[CivilPart, ...]
+    """The parts, in the locale's order; joined, they are `text`."""
+
+    locale: str
+    """The locale asked for."""
+
+    resolved_from: str
+    """The locale whose pattern answered."""
+
+    is_fallback: bool
+    """Whether a fallback locale answered."""
+
+    is_draft: bool
+    """Whether any of it is text no reviewer has signed off."""
+
+    warnings: Tuple[str, ...]
+    """Every problem met on the way."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "CivilText":
+        return CivilText(
+            text=raw["text"],
+            parts=tuple(CivilPart(kind=part["kind"], text=part["text"]) for part in raw["parts"]),
+            locale=raw["locale"],
+            resolved_from=raw["resolvedFrom"],
+            is_fallback=raw["isFallback"],
+            is_draft=raw["isDraft"],
+            warnings=tuple(raw["warnings"]),
+        )
+
+
+@dataclass(frozen=True)
 class InWords:
     """A number or an amount in words and in figures, as `intl.in_words`
     gives it."""
@@ -9314,6 +9487,29 @@ class AnniversaryOrigin:
 
 
 @dataclass(frozen=True)
+class AnniversaryDayRule:
+    """The rule applied to an anniversary's day
+    (`03-design/anniversary-span.md`).
+
+    >>> # span.anniversaries[0].day_rule.tithi
+    """
+
+    tithi: Literal["ORDINARY", "KSHAYA", "VRIDDHI"]
+    """How the tithi stood: one sunrise, none or two (C910)."""
+
+    at: FestivalWindow
+    """The rite's time it was read at."""
+
+    clause: Literal[
+        "ONE_DAY", "BOTH_WHOLE", "NEITHER", "EQUAL_PARTS", "GREATER_SHARE", "BIRTH_NAKSHATRA", "TWO_MUHURTA_FLOOR"
+    ]
+    """The clause that chose the day."""
+
+    source: str
+    """Where the clause is stated, or the convention's name."""
+
+
+@dataclass(frozen=True)
 class AnniversaryDay:
     """An anniversary's day: a yearly shraddha, a barkhi or a janma tithi
     (`03-design/shraddha.md`).
@@ -9327,10 +9523,13 @@ class AnniversaryDay:
     """Which anniversary: 1 for the first recurrence after the origin, a
     janma tithi's the age turned; None for a lunar origin given no moment."""
 
-    kind: Literal["EKODDISHTA", "PARVANA", "JANMA_TITHI"]
+    kind: Literal["EKODDISHTA", "PARVANA", "JANMA_TITHI", "EVENT"]
     origin: AnniversaryOrigin
     month_by: Literal["NIJA", "FIRST_YEAR_ADHIKA", "ADHIKA_ORIGIN", "KSHAYA_JOINED", "SAMSARPA"]
     """The clause that chose the month (C666, C667, C669)."""
+
+    day_rule: AnniversaryDayRule
+    """The rule that chose the day (`03-design/anniversary-span.md`)."""
 
     observance: FestivalObservance
     """The day as the festival evaluator judged it."""
@@ -9402,6 +9601,37 @@ class ChangePoints:
 
     provenance: Provenance
     """What computed it, and the clock it was asked on."""
+
+
+@dataclass(frozen=True)
+class DaySentence:
+    """One sentence of `almanac.sentences`."""
+
+    key: str
+    """The template, as `sdk.day.tithi`."""
+
+    params: Mapping[str, Any]
+    """Its slots, as `intl.render` takes them."""
+
+    text: str
+    """The sentence."""
+
+
+@dataclass(frozen=True)
+class DaySentences:
+    """A day said in a locale (`03-design/day-in-sentences.md`)."""
+
+    locale: str
+    """The locale the sentences are in."""
+
+    draft: bool
+    """Whether its templates still wait for a native reviewer (Q42)."""
+
+    sentences: Tuple[DaySentence, ...]
+    """The sentences, in the order a printed day runs."""
+
+    withheld: Tuple[str, ...]
+    """The facts a polar day holds elsewhere and so does not say here."""
 
 
 @dataclass(frozen=True)
@@ -10100,6 +10330,100 @@ class NepalSambatDates:
     value: Tuple[NepalSambatDate, ...]
     provenance: Provenance
     """The days' own provenance, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
+class MoonShape:
+    """The Moon's lit shape at an instant, seen from the place
+    (`03-design/day-sky.md`). Turn the bright limb from the zenith by
+    `bright_limb_deg - parallactic_angle_deg` to draw it."""
+
+    illuminated_fraction: float
+    """The fraction of the disc lit, 0 to 1, from the place."""
+
+    phase_angle_deg: float
+    """The angle at the Moon between the place and the Sun, degrees: 0 at
+    full, 180 at new."""
+
+    waxing: bool
+    """Whether the Moon is growing, the Earth's-centre sign of her
+    elongation, which agrees with the paksha."""
+
+    bright_limb_deg: float
+    """The position angle of the bright limb's midpoint, degrees in
+    `[0, 360)`, from the disc's north point through the east."""
+
+    parallactic_angle_deg: float
+    """The position angle of the zenith, degrees in `(-180, 180]`, from the
+    disc's north point through the east."""
+
+
+@dataclass(frozen=True)
+class SkyPoint:
+    """A point on a body's track: a step's reading or an exact event."""
+
+    at: float
+    """The instant, Julian day, UT1 read as UTC."""
+
+    kind: str
+    """`SAMPLE`, `RISE`, `TRANSIT` or `SET`."""
+
+    altitude_deg: float
+    """The airless topocentric altitude of the centre, degrees."""
+
+    refracted_altitude_deg: float
+    """The altitude with the standard atmosphere's refraction, degrees; the
+    airless altitude where the body stays below the horizon."""
+
+    azimuth_deg: float
+    """The topocentric azimuth, degrees in `[0, 360)`, from north through
+    east."""
+
+    moon: Optional[MoonShape]
+    """The Moon's shape at the instant, on the Moon's track only."""
+
+
+@dataclass(frozen=True)
+class BodySky:
+    """One body's day."""
+
+    state: str
+    """`CROSSES`, or on a day with no rise or set `ALWAYS_ABOVE` or
+    `ALWAYS_BELOW`."""
+
+    track: Tuple[SkyPoint, ...]
+    """Every step's reading and every exact event, in time order."""
+
+
+@dataclass(frozen=True)
+class DaySky:
+    """The sky of one day at one place (`03-design/day-sky.md`)."""
+
+    start: float
+    """The window's start, Julian day, UT1 read as UTC."""
+
+    end: float
+    """The window's end; an event here is the next window's."""
+
+    step_minutes: int
+    """The step asked, minutes."""
+
+    sun: BodySky
+    moon: BodySky
+
+
+@dataclass(frozen=True)
+class DaySkies:
+    """Each day's sky, in the days' order.
+
+    >>> # almanac = ctx.almanac.of(..., sky=True, sky_step_minutes=10)
+    >>> # noon = [p for p in almanac.sky.value[0].sun.track if p.kind == "TRANSIT"]
+    """
+
+    value: Tuple[DaySky, ...]
+    provenance: Provenance
+    """The days' own provenance with the window's reading named, and the
+    hash of `value`."""
 
 
 @dataclass(frozen=True)
@@ -15741,6 +16065,12 @@ def _anniversary_day(raw: Mapping[str, Any]) -> AnniversaryDay:
         kind=raw["kind"],
         origin=_anniversary_origin(raw["origin"]),
         month_by=raw["monthBy"],
+        day_rule=AnniversaryDayRule(
+            tithi=raw["dayRule"]["tithi"],
+            at=_festival_window(raw["dayRule"]["at"]),
+            clause=raw["dayRule"]["clause"],
+            source=raw["dayRule"]["source"],
+        ),
         observance=_festival_observance(raw["observance"]),
     )
 
@@ -16044,6 +16374,49 @@ def _nepal_sambat_answer(text: str) -> NepalSambatDates:
                 month=raw["month"],
                 kind=_member(MonthKind, raw["kind"]),
                 paksha=_member(Paksha, raw["paksha"]),
+            )
+            for raw in envelope["value"]
+        ),
+        provenance=decode_provenance(envelope["provenance"]),
+    )
+
+
+def _sky_answer(text: str) -> DaySkies:
+    """The `sky` section: one frozen record a day, with the provenance
+    beside them."""
+    envelope = json.loads(text)
+
+    def shape(raw: Mapping[str, Any]) -> MoonShape:
+        return MoonShape(
+            illuminated_fraction=raw["illuminatedFraction"],
+            phase_angle_deg=raw["phaseAngleDeg"],
+            waxing=raw["waxing"],
+            bright_limb_deg=raw["brightLimbDeg"],
+            parallactic_angle_deg=raw["parallacticAngleDeg"],
+        )
+
+    def point(raw: Mapping[str, Any]) -> SkyPoint:
+        moon = raw.get("moon")
+        return SkyPoint(
+            at=raw["at"],
+            kind=raw["kind"],
+            altitude_deg=raw["altitudeDeg"],
+            refracted_altitude_deg=raw["refractedAltitudeDeg"],
+            azimuth_deg=raw["azimuthDeg"],
+            moon=None if moon is None else shape(moon),
+        )
+
+    def body(raw: Mapping[str, Any]) -> BodySky:
+        return BodySky(state=raw["state"], track=tuple(point(item) for item in raw["track"]))
+
+    return DaySkies(
+        value=tuple(
+            DaySky(
+                start=raw["from"],
+                end=raw["to"],
+                step_minutes=raw["stepMinutes"],
+                sun=body(raw["sun"]),
+                moon=body(raw["moon"]),
             )
             for raw in envelope["value"]
         ),
@@ -19595,6 +19968,13 @@ class AlmanacDay:
         return Ritu(self.batch.decoded.days.ritu[self.index])
 
     @property
+    def utc_offset_seconds(self) -> int:
+        """The clock the day was read on, in seconds east of UTC: a zone's
+        offset at the day's opening, which moves across a clock change, or
+        the offset the caller stated."""
+        return self.batch.decoded.days.utc_offset_seconds[self.index]
+
+    @property
     def disha_shool(self) -> Direction:
         """The direction not to travel in, which is the vara's."""
         return Direction(self.batch.decoded.days.disha_shool[self.index])
@@ -20051,6 +20431,13 @@ class Almanac:
         return _nepal_sambat_answer(text) if text else None
 
     @property
+    def sky(self) -> Optional[DaySkies]:
+        """Each day's sky, or `None` when `sky=True` was not asked
+        (`03-design/day-sky.md`)."""
+        text = self.decoded.sky
+        return _sky_answer(text) if text else None
+
+    @property
     def provenance_json(self) -> str:
         """The provenance envelope as the canonical JSON the library
         stamped: the bytes to store beside the result, byte-identical in
@@ -20207,6 +20594,13 @@ def when_unknown(day: CalendarDate) -> CivilDateTime:
         date=day,
         time=CivilTime(hour=0, minute=0, second=0, has_time=False, nanos=0),
     )
+
+
+def tithi_month_number(tithi: Tithi) -> int:
+    """A tithi's number in the lunar month, 1 for Shukla Pratipada to 30 for
+    Amavasya. A tithi is named by its number in the paksha; this is the count
+    through the month, the catalogue's id and one."""
+    return tithi.id + 1
 
 
 def iana_zone(name: str) -> ZoneSpec:

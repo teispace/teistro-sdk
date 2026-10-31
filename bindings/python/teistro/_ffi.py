@@ -302,6 +302,13 @@ PANCHANGA_LAGNAS: Final = 16
 # not set it pays nothing.
 PANCHANGA_HOMA_AHUTI: Final = 32
 
+# `TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's
+# `sections` for each day's sky, in the `sky` section: the paths of the
+# Sun and the Moon at `sky_step_minutes`, their rises, transits and sets
+# as exact points, and the Moon's lit shape from the place
+# (`03-design/day-sky.md`). A request that does not set it pays nothing.
+PANCHANGA_SKY: Final = 64
+
 # The ABI and the SDK version these declarations were generated from. A
 # library that answers otherwise is refused when it is opened.
 GENERATED_ABI_VERSION: Final = 1
@@ -948,7 +955,7 @@ class _PanchangaRequestStruct(ctypes.Structure):
     _fields_ = [
         ("struct_size", ctypes.c_uint32),
         ("calendar", ctypes.c_uint16),
-        ("reserved", ctypes.c_uint16),
+        ("sky_step_minutes", ctypes.c_uint16),
         ("from_year", ctypes.c_int32),
         ("from_month", ctypes.c_uint8),
         ("from_day", ctypes.c_uint8),
@@ -1909,7 +1916,7 @@ class ContextOptions:
     """
 
     profile: Optional[str] = None
-    """The shipped profile's id (`parashari-classical`, `nepali-default`,
+    """The shipped profile's id (`parashari-classical`, `nepali-drik`,
     `nepali-committee`, `surya-siddhanta`, `kp-default`,
     `western-tropical-default`, `conformance-baseline`).
     Example: parashari-classical. May be null.
@@ -3722,6 +3729,13 @@ class PanchangaRequest:
     Enum: Calendar. Example: 0.
     """
 
+    sky_step_minutes: int
+    """The step of the sky's track in minutes when `sections` asks for
+    `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+    was a reserved field every caller wrote zero to.
+    Unit: min. Range: [0,240]. Example: 0.
+    """
+
     from_year: int
     """The first day's astronomical year.
     Example: 2026.
@@ -3784,7 +3798,8 @@ class PanchangaRequest:
     only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
     lagna table, in the `lagnas` span section;
     `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-    `homa_ahuti` span section.
+    `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+    in the `sky` section, at `sky_step_minutes`.
     Zero for the days alone, which is what every
     caller compiled against an earlier header passes, since this was a
     reserved field it wrote zero to.
@@ -3859,6 +3874,7 @@ class PanchangaRequest:
         """
         raw.struct_size = ctypes.sizeof(_PanchangaRequestStruct)
         raw.calendar = _c_value(self.calendar)
+        raw.sky_step_minutes = _c_value(self.sky_step_minutes)
         raw.from_year = _c_value(self.from_year)
         raw.from_month = _c_value(self.from_month)
         raw.from_day = _c_value(self.from_day)
@@ -3896,6 +3912,7 @@ class PanchangaRequest:
         """The value the library wrote into a C struct."""
         return cls(
             calendar=Calendar(raw.calendar),
+            sky_step_minutes=raw.sky_step_minutes,
             from_year=raw.from_year,
             from_month=raw.from_month,
             from_day=raw.from_day,
@@ -4216,6 +4233,13 @@ class TeistroLibrary:
             ctypes.c_char_p,
         ]
         self.ts_intl_set_locale.restype = ctypes.c_int32
+        self.ts_intl_lookup_locale: Any = library.ts_intl_lookup_locale
+        self.ts_intl_lookup_locale.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StrStruct),
+        ]
+        self.ts_intl_lookup_locale.restype = ctypes.c_int32
         self.ts_intl_locale: Any = library.ts_intl_locale
         self.ts_intl_locale.argtypes = [
             ctypes.POINTER(_Context),
@@ -4236,6 +4260,20 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_intl_in_words.restype = ctypes.c_int32
+        self.ts_intl_time: Any = library.ts_intl_time
+        self.ts_intl_time.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_intl_time.restype = ctypes.c_int32
+        self.ts_intl_date: Any = library.ts_intl_date
+        self.ts_intl_date.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_intl_date.restype = ctypes.c_int32
         self.ts_intl_transliterate: Any = library.ts_intl_transliterate
         self.ts_intl_transliterate.argtypes = [
             ctypes.POINTER(_Context),
@@ -4332,6 +4370,20 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_next.restype = ctypes.c_int32
+        self.ts_almanac_sentences: Any = library.ts_almanac_sentences
+        self.ts_almanac_sentences.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_sentences.restype = ctypes.c_int32
+        self.ts_almanac_anniversaries: Any = library.ts_almanac_anniversaries
+        self.ts_almanac_anniversaries.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_anniversaries.restype = ctypes.c_int32
         self.ts_almanac_festival_pack: Any = library.ts_almanac_festival_pack
         self.ts_almanac_festival_pack.argtypes = [
             ctypes.POINTER(_Context),
@@ -5122,6 +5174,31 @@ class TeistroContext:
             owned.clear()
             return None
 
+    def intl_lookup_locale(self, locale: str) -> str:
+        """The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+        call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+        `ts_intl_set_locale` selects the same one.
+
+        # Errors
+
+        `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _locale = locale.encode("utf-8")
+            owned.append(_locale)
+            _out_locale = _StrStruct()
+            status = Status(self._lib.ts_intl_lookup_locale(
+                self._raw,
+                _locale,
+                ctypes.byref(_out_locale),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            locale = _lent_string(_out_locale)
+            return locale
+
     def intl_locale(self) -> str:
         """The locale every render resolves from, lent until the next call on the
         context.
@@ -5179,6 +5256,63 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_intl_in_words(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def intl_time(self, request_json: str) -> str:
+        """A time of day as text and parts, through the locale's pattern and its
+        parts of the day (`03-design/intl-engine-and-packs.md`), answered as
+        canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
+        isDraft, warnings}`, each part `{kind, text}` and the parts joined being
+        `text`.
+
+        `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
+        (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
+        out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
+        of the time out of range is `INVALID_ARG`, named under `time`; a
+        locale not loaded is `UNSUPPORTED`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_intl_time(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def intl_date(self, request_json: str) -> str:
+        """A date as text and parts, in its own calendar, through the locale's
+        pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
+        answers.
+
+        `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
+        "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
+        context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
+        not read or a date its calendar does not hold is `INVALID_ARG`, named
+        under `date`; a locale not loaded, a calendar not shipped or one with no
+        pattern is `UNSUPPORTED`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_intl_date(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),
@@ -5645,6 +5779,75 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_almanac_next(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_sentences(self, request_json: str) -> str:
+        """One day's facts as short declarative sentences
+        (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+        value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+        params, text}`, `draft` true while the locale's templates wait for a
+        native reviewer (Q42), and `withheld` the facts a polar day holds
+        elsewhere.
+
+        `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+        altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+        place or offset out of range, is `INVALID_ARG`, named under
+        `sentences`; a locale not loaded, or one without the templates, is
+        `UNSUPPORTED` on `locale`; a context without an ephemeris is
+        `CAPABILITY`; otherwise as the day.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_sentences(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_anniversaries(self, request_json: str) -> str:
+        """Anniversaries kept by the tithi over a span of years, for many people
+        in one call (`03-design/anniversary-span.md`), as canonical JSON
+        `{value, provenance}`: `value` is a festival answer whose
+        `anniversaries` hold each person's days in the order their tithis
+        begin, each `{key, count, kind, origin, monthBy, dayRule, observance}`
+        as a festival request's (`festivals_json`), `dayRule` being `{tithi, at,
+        clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the
+        window read, the clause that chose the day and where it is stated.
+        Occurrences no day could judge are in `unjudged`.
+
+        `request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg",
+        "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`:
+        `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when
+        left out, the span running from month 1, day 1 of the first year to the
+        day before month 1 of the year after the last; `altitudeM` optional;
+        `anniversaries` at most 1000, each as a festival request writes one. A
+        key it does not read, a place or offset out of range, an anniversary
+        its check refuses or a key given twice is `INVALID_ARG`, named under
+        `anniversaries`; a `years` out of range `OUT_OF_RANGE`; too many
+        anniversaries `LIMIT`; a context without an ephemeris `CAPABILITY`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_anniversaries(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

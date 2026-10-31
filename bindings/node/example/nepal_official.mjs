@@ -3,7 +3,7 @@
 // Nepal's patro is computed by the Nepali committee from the Surya
 // Siddhanta: the tithi, nakshatra and yoga by the text with the
 // committee's bija, and the sunrise from a modern ephemeris. That is what
-// `nepalOfficial` opens. The modern reckoning, `nepali-default`, reads the
+// `nepalOfficial` opens. The modern reckoning, `nepali-drik`, reads the
 // same day from the modern sky, and the two name a different sunrise
 // tithi on a few days a month.
 //
@@ -25,7 +25,7 @@ import { Calendar, Context, date, nepalOfficial } from '../lib/index.js';
 const OFFSET_SECONDS = 20700;
 
 const official = new Context({ ...nepalOfficial(), locale: 'en-Latn' });
-const modern = new Context({ profile: 'nepali-default', locale: 'en-Latn', ephemeris: 'BUILTIN' });
+const modern = new Context({ profile: 'nepali-drik', locale: 'en-Latn', ephemeris: 'BUILTIN' });
 
 const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
 

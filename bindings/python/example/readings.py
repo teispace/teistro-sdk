@@ -57,7 +57,7 @@ def first_sentence(text: str) -> str:
 
 def main() -> None:
     teistro = Teistro.open()
-    with teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
         # ── The pack ─────────────────────────────────────────────────
         # One pack a locale, because a Nepali application wants Nepali and
         # its fallback and not four languages' worth of prose.

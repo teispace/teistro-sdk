@@ -38,6 +38,7 @@ public final class Almanac extends AbstractList<AlmanacDay> {
     private final Supplier<Optional<LunarYears>> years;
     private final Supplier<Optional<Eclipses>> eclipses;
     private final Supplier<Optional<NepalSambatDates>> nepalSambat;
+    private final Supplier<Optional<DaySkies>> sky;
 
     /**
      * An almanac over a decoded panchanga blob.
@@ -86,6 +87,7 @@ public final class Almanac extends AbstractList<AlmanacDay> {
         this.years = Lazy.of(() -> present(decoded.years()).map(AlmanacReads::yearsAnswer));
         this.eclipses = Lazy.of(() -> present(decoded.eclipses()).map(AlmanacReads::eclipsesAnswer));
         this.nepalSambat = Lazy.of(() -> present(decoded.nepalSambat()).map(AlmanacReads::nepalSambatAnswer));
+        this.sky = Lazy.of(() -> present(decoded.sky()).map(AlmanacReads::skyAnswer));
     }
 
     private static Optional<String> present(String text) {
@@ -253,6 +255,16 @@ public final class Almanac extends AbstractList<AlmanacDay> {
      */
     public Optional<NepalSambatDates> nepalSambat() {
         return nepalSambat.get();
+    }
+
+    /**
+     * Each day's sky, or empty when {@code sky} was not asked
+     * ({@code 03-design/day-sky.md}).
+     *
+     * @return the skies, if asked
+     */
+    public Optional<DaySkies> sky() {
+        return sky.get();
     }
 
     /**

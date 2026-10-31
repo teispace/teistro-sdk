@@ -1521,7 +1521,7 @@ pub struct ContextOptions {
     /// `TS_CONTEXT_*` flags, or zero.
     /// Example: `0`.
     pub flags: u32,
-    /// The shipped profile's id (`parashari-classical`, `nepali-default`,
+    /// The shipped profile's id (`parashari-classical`, `nepali-drik`,
     /// `nepali-committee`, `surya-siddhanta`, `kp-default`,
     /// `western-tropical-default`, `conformance-baseline`).
     /// Example: `parashari-classical`. May be null.
@@ -3538,6 +3538,11 @@ pub struct PanchangaRequest {
     /// The calendar the range's dates are written in.
     /// Enum: Calendar. Example: `0`.
     pub calendar: String,
+    /// The step of the sky's track in minutes when `sections` asks for
+    /// `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+    /// was a reserved field every caller wrote zero to.
+    /// Unit: min. Range: `[0,240]`. Example: `0`.
+    pub sky_step_minutes: u32,
     /// The first day's astronomical year.
     /// Example: `2026`.
     pub from_year: i32,
@@ -3579,7 +3584,8 @@ pub struct PanchangaRequest {
     /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
     /// lagna table, in the `lagnas` span section;
     /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-    /// `homa_ahuti` span section.
+    /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+    /// in the `sky` section, at `sky_step_minutes`.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -3644,6 +3650,7 @@ pub struct PanchangaRequest {
 /// pointers point into, alive for as long as this value is.
 pub struct HeldPanchangaRequest {
     calendar: u16,
+    sky_step_minutes: u16,
     from_year: i32,
     from_month: u8,
     from_day: u8,
@@ -3666,7 +3673,7 @@ impl HeldPanchangaRequest {
         ffi::panchanga::TsPanchangaRequest {
             struct_size: core::mem::size_of::<ffi::panchanga::TsPanchangaRequest>() as u32,
             calendar: self.calendar,
-            reserved: Default::default(),
+            sky_step_minutes: self.sky_step_minutes,
             from_year: self.from_year,
             from_month: self.from_month,
             from_day: self.from_day,
@@ -3696,6 +3703,7 @@ impl PanchangaRequest {
     pub fn read(&self) -> Result<HeldPanchangaRequest> {
         Ok(HeldPanchangaRequest {
             calendar: calendar_from_str(&self.calendar)?,
+            sky_step_minutes: self.sky_step_minutes as u16,
             from_year: self.from_year as i32,
             from_month: self.from_month as u8,
             from_day: self.from_day as u8,
@@ -3734,6 +3742,7 @@ impl PanchangaRequest {
     pub unsafe fn write(raw: &ffi::panchanga::TsPanchangaRequest) -> Self {
         PanchangaRequest {
             calendar: calendar_to_str(raw.calendar),
+            sky_step_minutes: raw.sky_step_minutes as _,
             from_year: raw.from_year as _,
             from_month: raw.from_month as _,
             from_day: raw.from_day as _,
@@ -4588,6 +4597,31 @@ impl Context {
         Ok(())
     }
 
+    /// The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+    /// call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+    /// `ts_intl_set_locale` selects the same one.
+    ///
+    /// # Errors
+    ///
+    /// `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+    #[napi]
+    pub fn intl_lookup_locale(&self, env: Env, locale: String) -> Result<String> {
+        let locale =
+            std::ffi::CString::new(locale).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_locale = ffi::string::TsStr {
+            data: ptr::null(),
+            len: 0,
+        };
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::intl::ts_intl_lookup_locale(self.handle, locale.as_ptr(), &raw mut out_locale)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(unsafe { lent_text(out_locale.data) }.unwrap_or_default())
+    }
+
     /// The locale every render resolves from, lent until the next call on the
     /// context.
     #[napi]
@@ -4642,6 +4676,57 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::intl::ts_intl_in_words(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// A time of day as text and parts, through the locale's pattern and its
+    /// parts of the day (`03-design/intl-engine-and-packs.md`), answered as
+    /// canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
+    /// isDraft, warnings}`, each part `{kind, text}` and the parts joined being
+    /// `text`.
+    ///
+    /// `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
+    /// (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
+    /// out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
+    /// of the time out of range is `INVALID_ARG`, named under `time`; a
+    /// locale not loaded is `UNSUPPORTED`.
+    #[napi]
+    pub fn intl_time(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::intl::ts_intl_time(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// A date as text and parts, in its own calendar, through the locale's
+    /// pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
+    /// answers.
+    ///
+    /// `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
+    /// "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
+    /// context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
+    /// not read or a date its calendar does not hold is `INVALID_ARG`, named
+    /// under `date`; a locale not loaded, a calendar not shipped or one with no
+    /// pattern is `UNSUPPORTED`.
+    #[napi]
+    pub fn intl_date(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::intl::ts_intl_date(self.handle, request_json.as_ptr(), &raw mut out_json)
         };
         self.leave()?;
         self.check(&env, status)?;
@@ -5129,6 +5214,77 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::panchanga::ts_almanac_next(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// One day's facts as short declarative sentences
+    /// (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+    /// value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+    /// params, text}`, `draft` true while the locale's templates wait for a
+    /// native reviewer (Q42), and `withheld` the facts a polar day holds
+    /// elsewhere.
+    ///
+    /// `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+    /// altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+    /// place or offset out of range, is `INVALID_ARG`, named under
+    /// `sentences`; a locale not loaded, or one without the templates, is
+    /// `UNSUPPORTED` on `locale`; a context without an ephemeris is
+    /// `CAPABILITY`; otherwise as the day.
+    #[napi]
+    pub fn almanac_sentences(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_sentences(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// Anniversaries kept by the tithi over a span of years, for many people
+    /// in one call (`03-design/anniversary-span.md`), as canonical JSON
+    /// `{value, provenance}`: `value` is a festival answer whose
+    /// `anniversaries` hold each person's days in the order their tithis
+    /// begin, each `{key, count, kind, origin, monthBy, dayRule, observance}`
+    /// as a festival request's (`festivals_json`), `dayRule` being `{tithi, at,
+    /// clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the
+    /// window read, the clause that chose the day and where it is stated.
+    /// Occurrences no day could judge are in `unjudged`.
+    ///
+    /// `request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg",
+    /// "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`:
+    /// `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when
+    /// left out, the span running from month 1, day 1 of the first year to the
+    /// day before month 1 of the year after the last; `altitudeM` optional;
+    /// `anniversaries` at most 1000, each as a festival request writes one. A
+    /// key it does not read, a place or offset out of range, an anniversary
+    /// its check refuses or a key given twice is `INVALID_ARG`, named under
+    /// `anniversaries`; a `years` out of range `OUT_OF_RANGE`; too many
+    /// anniversaries `LIMIT`; a context without an ephemeris `CAPABILITY`.
+    #[napi]
+    pub fn almanac_anniversaries(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_anniversaries(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
         };
         self.leave()?;
         self.check(&env, status)?;

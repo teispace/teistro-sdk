@@ -37,13 +37,27 @@ public final class IntlArea {
     /**
      * Renders messages in another locale from now on.
      *
-     * @param tag the locale's tag ({@code ne-Deva-NP})
+     * @param tag the locale's tag ({@code ne-Deva-NP}), or a shorter one
+     *     ({@code ne}), which RFC 4647 lookup takes to the loaded locale it
+     *     means
+     * @return the locale chosen
      */
-    public void setLocale(String tag) {
+    public String setLocale(String tag) {
         context.locked((lib, raw) -> {
             Calls.intlSetLocale(lib, raw, tag);
             return null;
         });
+        return locale();
+    }
+
+    /**
+     * The loaded locale a tag means, by RFC 4647 lookup, changing nothing.
+     *
+     * @param tag the tag ({@code ne})
+     * @return the locale it means ({@code ne-Deva-NP})
+     */
+    public String lookupLocale(String tag) {
+        return context.locked((lib, raw) -> Calls.intlLookupLocale(lib, raw, tag));
     }
 
     /**
@@ -153,6 +167,36 @@ public final class IntlArea {
         }
         String json = Json.write(request);
         return InWords.read(Json.read(context.locked((lib, raw) -> Calls.intlInWords(lib, raw, json))));
+    }
+
+    /**
+     * A time of day as text and parts, through the locale's pattern and
+     * parts of the day ({@code 03-design/intl-engine-and-packs.md}).
+     *
+     * @param request the time, and how to write it
+     * @return the text and its parts
+     */
+    public CivilText time(com.teispace.teistro.request.TimeTextRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is a TimeTextRequest", "request");
+        }
+        String json = Json.write(request);
+        return CivilText.read(Json.read(context.locked((lib, raw) -> Calls.intlTime(lib, raw, json))));
+    }
+
+    /**
+     * A date as text and parts, in its own calendar, through the locale's
+     * pattern.
+     *
+     * @param request the date, and how to write it
+     * @return the text and its parts
+     */
+    public CivilText date(com.teispace.teistro.request.DateTextRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is a DateTextRequest", "request");
+        }
+        String json = Json.write(request);
+        return CivilText.read(Json.read(context.locked((lib, raw) -> Calls.intlDate(lib, raw, json))));
     }
 
     /**

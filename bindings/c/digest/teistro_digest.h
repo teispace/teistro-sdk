@@ -101,6 +101,7 @@ typedef struct ts_digest {
     uint32_t format_minor;
     uint32_t day_count;
     int64_t base_unix_seconds;
+    /* The first day's offset; a day's own is in ts_digest_day. */
     int32_t utc_offset_seconds;
     uint32_t calendar;
     double latitude_deg;
@@ -113,6 +114,8 @@ typedef struct ts_digest {
     ts_digest_section text;
     ts_digest_section locale;
     ts_digest_section provenance;
+    /* Each day's offset; start is null in a format 1.0 digest. */
+    ts_digest_section clock;
 } ts_digest;
 
 /* One day. Every time is whole seconds from base_unix_seconds. */
@@ -138,6 +141,9 @@ typedef struct ts_digest_day {
     uint32_t span_count;
     uint32_t observance_first;
     uint32_t observance_count;
+    /* The offset the day was read on, seconds east of UTC, at its opening.
+       A format 1.0 digest has only the first day's, given for every day. */
+    int32_t utc_offset_seconds;
 } ts_digest_day;
 
 /* A span of a day. */

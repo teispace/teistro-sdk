@@ -233,6 +233,10 @@ export function decodeIntlRender(bytes) {
     const at = section(blob, 5, 'parts');
     out.parts = text(blob, at, 'parts');
   }
+  {
+    const at = fixed(blob, 6, 'review', 1);
+    out.isDraft = READERS.u8(blob.dv, at.offset + 0);
+  }
   return out;
 }
 
@@ -2019,6 +2023,7 @@ export function decodePanchanga(bytes) {
       brahmaTo: column(blob, at, 18, 'f64', at.count),
       moonWindowFrom: column(blob, at, 19, 'f64', at.count),
       moonWindowTo: column(blob, at, 20, 'f64', at.count),
+      utcOffsetSeconds: column(blob, at, 21, 'i32', at.count),
       length: at.count,
     };
   }
@@ -2489,6 +2494,10 @@ export function decodePanchanga(bytes) {
       length: at.count,
     };
   }
+  {
+    const at = section(blob, 40, 'sky');
+    out.sky = text(blob, at, 'sky');
+  }
   return out;
 }
 
@@ -2681,6 +2690,13 @@ export function decodeDigest(bytes) {
   {
     const at = section(blob, 8, 'provenance_json');
     out.provenanceJson = text(blob, at, 'provenance_json');
+  }
+  {
+    const at = section(blob, 10, 'clock');
+    out.clock = {
+      utcOffsetSeconds: column(blob, at, 0, 'i32', at.count),
+      length: at.count,
+    };
   }
   {
     const at = section(blob, 9, 'seal');

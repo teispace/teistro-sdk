@@ -74,7 +74,7 @@ import {
 } from '@teistro/sdk';
 // …
 const ctx = new Context({
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'ne-Deva-NP',
   ephemeris: 'BUILTIN',
 });

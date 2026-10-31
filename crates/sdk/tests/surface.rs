@@ -26,7 +26,7 @@ use teistro_core::envelope::CalendarResolution;
 /// A context on the profile every binding's quickstart names.
 fn context() -> Context {
     Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("ne-Deva-NP")
         .ephemeris([Ephemeris::Builtin])
         .build()
@@ -103,6 +103,49 @@ fn the_default_profile_needs_no_naming() {
 }
 
 #[test]
+fn a_short_locale_finds_the_loaded_one_and_refuses_otherwise() {
+    let sdk = Context::builder()
+        .locale("ne")
+        .build()
+        .expect("`ne` is loaded");
+    assert_eq!(sdk.intl().locale(), "ne-Deva-NP");
+    assert_eq!(sdk.intl().set_locale("en-GB").expect("en"), "en-Latn");
+    assert_eq!(sdk.intl().locale(), "en-Latn");
+    // Nothing falls back: a language not loaded and a script not loaded
+    // are refused, with the locale left where it was.
+    for tag in ["de", "hi-Latn", "*"] {
+        let refused = sdk.intl().set_locale(tag).expect_err("no such locale");
+        assert_eq!(refused.field(), Some("locale"));
+        let looked = sdk.intl().lookup_locale(tag).expect_err("no such locale");
+        assert_eq!(looked.field(), Some("locale"));
+    }
+    assert_eq!(sdk.intl().locale(), "en-Latn");
+    let refused = Context::builder()
+        .locale("de")
+        .build()
+        .expect_err("not loaded");
+    assert_eq!(refused.field(), Some("locale"));
+    // A base-completeness locale keeps its own name, so a call that refuses
+    // it by name refuses a short tag too.
+    assert_eq!(sdk.intl().set_locale("hi").expect("hi"), "hi-Deva-IN");
+    assert_eq!(sdk.intl().set_locale("sa").expect("sa"), "sa-Deva");
+}
+
+#[test]
+fn an_older_profile_name_answers_as_the_profile_it_names() {
+    let old = Context::builder()
+        .profile("nepali-default")
+        .build()
+        .expect("an alias opens a context");
+    let new = Context::builder()
+        .profile("nepali-drik")
+        .build()
+        .expect("a shipped profile");
+    assert_eq!(old.profile(), "nepali-drik");
+    assert_eq!(old.settings_hash(), new.settings_hash());
+}
+
+#[test]
 fn an_unknown_profile_is_refused_with_the_shipped_ones() {
     let refusal = Context::builder()
         .profile("no-such-profile")
@@ -112,7 +155,7 @@ fn an_unknown_profile_is_refused_with_the_shipped_ones() {
     assert!(
         refusal
             .hint()
-            .is_some_and(|hint| hint.contains("nepali-default")),
+            .is_some_and(|hint| hint.contains("nepali-drik")),
         "{refusal:?}"
     );
 }
@@ -1122,7 +1165,7 @@ fn a_consumer_s_own_layout_is_drawn_and_a_shipped_one_is_not_replaced() {
     let mut odia = teistro::geometry::rows::east_indian();
     odia.key = String::from("ACME_ODIA");
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .layout(odia)
         .build()

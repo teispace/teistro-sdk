@@ -10,6 +10,7 @@ import java.util.function.Function;
 /** Each record entry point's request type, by the entry point's name. */
 public final class Requests {
     private static final Map<String, Function<Object, RequestJson>> READERS = Map.ofEntries(
+            Map.entry("almanac.anniversaries", AnniversariesRequest::of),
             Map.entry("almanac.ashauch", AshauchQuery::of),
             Map.entry("almanac.changes", ChangesRequest::of),
             Map.entry("almanac.days", AlmanacDaysRequest::of),
@@ -21,12 +22,15 @@ public final class Requests {
             Map.entry("almanac.pakshi", PakshiRequest::of),
             Map.entry("almanac.publishedReasons", PublishedReasonsRequest::of),
             Map.entry("almanac.sankalpa", SankalpaRequest::of),
+            Map.entry("almanac.sentences", SentencesRequest::of),
             Map.entry("calendar.add", AddAsked::of),
             Map.entry("calendar.between", BetweenAsked::of),
             Map.entry("calendar.convert", CalendarAsked::of),
             Map.entry("chart.found", ChartFoundRequest::of),
             Map.entry("chart.rashifal", BatchAsked::of),
+            Map.entry("intl.date", DateTextRequest::of),
             Map.entry("intl.inWords", InWordsRequest::of),
+            Map.entry("intl.time", TimeTextRequest::of),
             Map.entry("matching.naam", NaamRequest::of),
             Map.entry("naming.check", NamingCheckRequest::of),
             Map.entry("naming.of", NamingOfRequest::of),

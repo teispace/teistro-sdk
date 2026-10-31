@@ -130,7 +130,7 @@ carries an instruction that nothing has ever asked for.
 
 | profile | placement | chalit | overrides |
 |---|---|---|---|
-| `nepali-default` | `WHOLE_SIGN` | `VEHLOW` | `kp` to `PLACIDUS` |
+| `nepali-drik` | `WHOLE_SIGN` | `VEHLOW` | `kp` to `PLACIDUS` |
 | `nepali-committee` | `WHOLE_SIGN` | `VEHLOW` | `kp` to `PLACIDUS` |
 | `parashari-classical` | `WHOLE_SIGN` | `SRIPATI` | `kp` to `PLACIDUS` |
 | `surya-siddhanta` | `WHOLE_SIGN` | `SRIPATI` | `kp` to `PLACIDUS` |

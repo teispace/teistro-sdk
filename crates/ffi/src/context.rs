@@ -92,7 +92,7 @@ impl TsEphemeris {
 /// let options = TsContextOptions {
 ///     struct_size: u32::try_from(size_of::<TsContextOptions>())?,
 ///     flags: 0,
-///     profile: c"nepali-default".as_ptr(),
+///     profile: c"nepali-drik".as_ptr(),
 ///     settings_json: core::ptr::null(),
 ///     locale: core::ptr::null(),
 ///     layouts_json: core::ptr::null(),
@@ -110,7 +110,7 @@ pub struct TsContextOptions {
     /// `TS_CONTEXT_*` flags, or zero.
     /// `api: example=0`
     pub flags: u32,
-    /// The shipped profile's id (`parashari-classical`, `nepali-default`,
+    /// The shipped profile's id (`parashari-classical`, `nepali-drik`,
     /// `nepali-committee`, `surya-siddhanta`, `kp-default`,
     /// `western-tropical-default`, `conformance-baseline`).
     /// `api: nullable example=parashari-classical`
@@ -223,8 +223,8 @@ c_struct!(TsContextOptions, TsError);
 /// ```
 /// use teistro_ffi::context::{OptionTexts, TsContext};
 ///
-/// let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Test)?;
-/// assert_eq!(ctx.profile(), "nepali-default");
+/// let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Test)?;
+/// assert_eq!(ctx.profile(), "nepali-drik");
 /// assert!(ctx.provider().is_some());
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
@@ -1076,7 +1076,7 @@ pub unsafe extern "C" fn ts_context_last_error(
 /// ```
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
-/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Test)?;
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Test)?;
 /// # fn lent(out: teistro_ffi::string::TsStr) -> String {
 /// #     // SAFETY: the library lent `len` bytes of UTF-8 at `data`.
 /// #     String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data.cast::<u8>(), out.len) }).into_owned()
@@ -1087,7 +1087,7 @@ pub unsafe extern "C" fn ts_context_last_error(
 ///
 /// // SAFETY: a live context and a writable slot.
 /// assert_eq!(unsafe { ts_context_profile(&raw const ctx, &raw mut out) }, Status::Ok);
-/// assert_eq!(lent(out), "nepali-default");
+/// assert_eq!(lent(out), "nepali-drik");
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
 ///

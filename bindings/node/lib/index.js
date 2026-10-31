@@ -45,6 +45,7 @@ import {
   PANCHANGA_HOMA_AHUTI,
   PANCHANGA_LAGNAS,
   PANCHANGA_NEPAL_SAMBAT,
+  PANCHANGA_SKY,
   PANCHANGA_WITHOUT_DAYS,
   PANCHANGA_YEARS,
   CalendarById,
@@ -1893,6 +1894,7 @@ export class Almanac extends Stamped {
   #years = undefined;
   #eclipses = undefined;
   #nepalSambat = undefined;
+  #sky = undefined;
 
   constructor(bytes) {
     super(bytes, decodePanchanga);
@@ -1993,6 +1995,21 @@ export class Almanac extends Stamped {
   get nepalSambat() {
     if (this.#nepalSambat === undefined) this.#nepalSambat = envelopeFrom(this.decoded.nepalSambat);
     return this.#nepalSambat;
+  }
+
+  /**
+   * Each day's sky (`03-design/day-sky.md`), or `null` when the request
+   * did not ask with `sky: true`: `{ value, provenance }`, `value` one
+   * record a day holding `from`, `to`, `stepMinutes`, `sun` and `moon`,
+   * each a `state` and a `track` of points in time order. A point's `kind`
+   * is `'SAMPLE'`, `'RISE'`, `'TRANSIT'` or `'SET'`; a Moon's point carries
+   * her lit shape in `moon`. Parsed once, and frozen to its leaves.
+   *
+   * @returns {object|null}
+   */
+  get sky() {
+    if (this.#sky === undefined) this.#sky = envelopeFrom(this.decoded.sky);
+    return this.#sky;
   }
 
 
@@ -2109,6 +2126,15 @@ export class AlmanacDay {
    */
   get ritu() {
     return RituById.get(this.#batch.decoded.days.ritu[this.#index]) ?? 'unknown';
+  }
+
+  /**
+   * The clock the day was read on, in seconds east of UTC: a zone's offset
+   * at the day's opening, which moves across a clock change, or the offset
+   * the caller stated.
+   */
+  get utcOffsetSeconds() {
+    return this.#batch.decoded.days.utcOffsetSeconds[this.#index];
   }
 
   /** The direction not to travel in, which is the vara's. */
@@ -2494,6 +2520,11 @@ export class Rendered extends Decoded {
     return this.decoded.isOverride === 1;
   }
 
+  /** Whether any of the text is unreviewed, from a namespace its locale marks draft. */
+  get isDraft() {
+    return this.decoded.isDraft === 1;
+  }
+
   /**
    * The message in parts, its markup kept: what a rich renderer walks.
    *
@@ -2808,6 +2839,21 @@ export class TimeArea extends Area {
   }
 }
 
+/**
+ * A tithi's number in the lunar month, 1 for Shukla Pratipada to 30 for
+ * Amavasya. A tithi is named by its number in the paksha; this is the count
+ * through the month, the catalogue's id and one.
+ *
+ * @param {string} tithi a member of `Tithi`
+ * @returns {number} 1 to 30
+ */
+export function tithiMonthNumber(tithi) {
+  for (const [id, key] of TithiById) {
+    if (key === tithi) return id + 1;
+  }
+  throw new TypeError(`tithi: expected a member of Tithi, not ${String(tithi)}`);
+}
+
 /** A zone as the record the boundary reads beside a range. */
 function zoneJson(zone) {
   if (typeof zone !== 'object' || zone === null) {
@@ -2822,9 +2868,23 @@ function zoneJson(zone) {
 export class IntlArea extends Area {
   #messages = null;
 
-  /** The locale every render resolves from. */
+  /**
+   * The locale every render resolves from. Set a short tag and the loaded
+   * locale it means is chosen, by RFC 4647 lookup: read this to see which.
+   */
   get locale() {
     return run(this, (inner) => inner.intlLocale());
+  }
+
+  /**
+   * The loaded locale a tag means, by RFC 4647 lookup, changing nothing:
+   * `ne` is `ne-Deva-NP`. A tag nothing loaded answers throws, on `locale`.
+   *
+   * @param {string} tag
+   * @returns {string}
+   */
+  lookupLocale(tag) {
+    return run(this, (inner) => inner.intlLookupLocale(tag));
   }
 
   set locale(tag) {
@@ -2865,6 +2925,30 @@ export class IntlArea extends Area {
    */
   inWords(request) {
     return deepFreeze(JSON.parse(run(this, (inner) => inner.intlInWords(JSON.stringify(request)))));
+  }
+
+  /**
+   * A time of day as text and parts, through the locale's pattern and
+   * parts of the day (`03-design/intl-engine-and-packs.md`).
+   *
+   * ```js
+   * sdk.intl.time({ at: { hour: 6, minute: 5 }, hour12: true, locale: 'ne-Deva-NP' }).text;
+   * ```
+   */
+  time(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.intlTime(JSON.stringify(request)))));
+  }
+
+  /**
+   * A date as text and parts, in its own calendar, through the locale's
+   * pattern.
+   *
+   * ```js
+   * sdk.intl.date({ at: { calendar: 'calendar.GREGORIAN', year: 2026, month: 10, day: 31 }, style: 'LONG' }).text;
+   * ```
+   */
+  date(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.intlDate(JSON.stringify(request)))));
   }
 
   /**
@@ -7490,6 +7574,11 @@ export class AlmanacArea extends Area {
    * @param {boolean} [request.lagnas] whether to give each day its lagna
    *   table, as `AlmanacDay.lagnas`: some four hundred ascendants a day,
    *   so only on asking
+   * @param {boolean} [request.sky] whether to answer each day's sky, as
+   *   `Almanac.sky`: the Sun's and the Moon's paths, rises, transits and
+   *   sets, and the Moon's lit shape; `false` by default, which costs nothing
+   * @param {number} [request.skyStepMinutes] the step of those paths, 1 to
+   *   240, ten when left out
    * @param {boolean} [request.homaAhuti] whether to give each day its
    *   homa ahuti, as `AlmanacDay.homaAhuti`: the Sun's stars cost a
    *   search a day does not otherwise make, so only on asking
@@ -7505,7 +7594,7 @@ export class AlmanacArea extends Area {
 
   /**
    * `of` on a zone's clock: `zone` in place of `utcOffsetSeconds`, each day
-   * on the offset of its own noon, and the provenance names the zone's
+   * on its own offset, and the provenance names the zone's
    * offset, source and era at the first day
    * (`03-design/time-and-timezone.md` §3.4). A range crossing a clock
    * change is refused on `zone` when a section is asked beside the days,
@@ -7536,6 +7625,7 @@ export class AlmanacArea extends Area {
         longitudeDeg: finite(place.longitude, 'place.longitude'),
         altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
         utcOffsetSeconds,
+        skyStepMinutes: request.skyStepMinutes ?? 0,
         zoneJson: zone,
         muhurtaJson: recordJson(request.muhurta, 'muhurta', "a muhurta request record, e.g. { rules: 'RAMAN_MARRIAGE' }"),
         festivalsJson: recordJson(request.festivals, 'festivals', "a festivals request record, e.g. { rules: 'DHARMASINDHU' }"),
@@ -7545,6 +7635,7 @@ export class AlmanacArea extends Area {
           (request.nepalSambat === true ? PANCHANGA_NEPAL_SAMBAT : 0) |
           (request.lagnas === true ? PANCHANGA_LAGNAS : 0) |
           (request.homaAhuti === true ? PANCHANGA_HOMA_AHUTI : 0) |
+          (request.sky === true ? PANCHANGA_SKY : 0) |
           (request.days === false ? PANCHANGA_WITHOUT_DAYS : 0),
       }),
     );
@@ -7567,7 +7658,7 @@ export class AlmanacArea extends Area {
     if (request?.festivals == null) {
       throw new TypeError("festivals: expected a festivals request record, e.g. { rules: 'NEPAL' }");
     }
-    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, days: false }).festivals;
+    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, sky: false, skyStepMinutes: undefined, days: false }).festivals;
   }
 
   /**
@@ -7678,7 +7769,7 @@ export class AlmanacArea extends Area {
    * envelope.
    *
    * @example
-   * const sdk = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
    * const { value } = sdk.almanac.sankalpa({
    *   at: 2461055.59375, // 2026-01-15 08:00 in Kathmandu
    *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
@@ -7734,7 +7825,7 @@ export class AlmanacArea extends Area {
    * one `ashauchRunning(earlier.value)`.
    *
    * @example
-   * const sdk = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
    * const { value } = sdk.almanac.ashauch({
    *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
    *   utcOffsetSeconds: 20700,
@@ -7801,7 +7892,7 @@ export class AlmanacArea extends Area {
    * the barkhi in the ordinary month.
    *
    * @example
-   * const sdk = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const sdk = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
    * const { value } = sdk.almanac.firstYear({
    *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1337 },
    *   utcOffsetSeconds: 20700,
@@ -7867,7 +7958,7 @@ export class AlmanacArea extends Area {
    *
    * @example
    * const official = new Context(nepalOfficial(teimeris()));
-   * const modern = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const modern = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
    * const { days } = official.almanac.disagreements(modern, {
    *   from: date(2025, 11, 1),
    *   to: date(2025, 11, 30),
@@ -8088,7 +8179,7 @@ export class AlmanacArea extends Area {
     if (typeof request !== 'object' || request === null || Array.isArray(request)) {
       throw new TypeError('digest: expected a request, e.g. { from, place, utcOffsetSeconds }');
     }
-    const { from: given, place: where, utcOffsetSeconds, festivals, days } = request;
+    const { from: given, place: where, utcOffsetSeconds, zone, festivals, days } = request;
     const day = (at, what) => ({
       year: finite(at?.year, `${what}.year`),
       month: finite(at?.month, `${what}.month`),
@@ -8101,13 +8192,46 @@ export class AlmanacArea extends Area {
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
     };
+    if (zone !== undefined) asked.zone = JSON.parse(zoneJson(zone));
+    if (utcOffsetSeconds !== undefined || zone === undefined) {
+      asked.utcOffsetSeconds = finite(utcOffsetSeconds, 'utcOffsetSeconds');
+    }
     if (from.calendar !== undefined) asked.calendar = from.calendar;
     if (days !== undefined) asked.days = finite(days, 'days');
     const record = recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }");
     if (record !== undefined) asked.festivals = JSON.parse(record);
     return run(this, (inner) => inner.almanacDigest(JSON.stringify(asked)));
+  }
+
+  /**
+   * **Anniversaries kept by the tithi over a span of years**, for many
+   * people in one call (`03-design/anniversary-span.md`). The span's days
+   * are founded once, and every person's are read from them. Each day
+   * names the rule that chose it: `dayRule` says whether the tithi was
+   * `KSHAYA` or `VRIDDHI`, the window read, the clause and its source.
+   *
+   * @example
+   * const span = sdk.almanac.anniversaries({
+   *   fromYear: 2026,
+   *   years: 10,
+   *   latitudeDeg: 27.7172,
+   *   longitudeDeg: 85.324,
+   *   altitudeM: 1400,
+   *   utcOffsetSeconds: 20700,
+   *   anniversaries: [
+   *     { key: 'GRANDFATHER', origin: { by: 'LUNAR', month: 'KARTIKA', tithi: 'SHUKLA_DASHAMI' } },
+   *   ],
+   * });
+   * // span.anniversaries[0].observance.day, span.anniversaries[0].dayRule.clause
+   *
+   * @param {object} request an `AnniversariesRequest`: `fromYear`, `years`
+   *   (1 to 100), `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+   *   `utcOffsetSeconds`, `calendar`, and at most 1000 `anniversaries`
+   * @returns {object} the festival answer, its `anniversaries` holding each person's days
+   */
+  anniversaries(request) {
+    return festivalsFrom(run(this, (inner) => inner.almanacAnniversaries(JSON.stringify(request))));
   }
 
   /**
@@ -8169,6 +8293,50 @@ export class AlmanacArea extends Area {
       searchedDays: value.searchedDays,
       provenance: found.provenance,
     });
+  }
+
+  /**
+   * **A day in sentences** (`03-design/day-in-sentences.md`): one date's
+   * facts as short sentences from templates, every value from the day's
+   * answer. A locale without the templates is refused on `locale`.
+   *
+   * @example
+   * const day = sdk.almanac.sentences({
+   *   date: { year: 2026, month: 3, day: 18 },
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   *   locale: 'ne-Deva-NP',
+   * });
+   * // day.sentences[0].text, day.draft, day.withheld
+   *
+   * @param {object} request
+   * @param {{year: number, month: number, day: number}} request.date the day
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {string} [request.calendar] the date's calendar; Gregorian when left out
+   * @param {string} [request.locale] the locale; the context's when left out
+   * @returns {object} `{ locale, draft, sentences, withheld }`
+   */
+  sentences(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('sentences: expected a request, e.g. { date, place, utcOffsetSeconds }');
+    }
+    const { date, place: where, utcOffsetSeconds, ...rest } = request;
+    const place = where ?? {};
+    const asked = {
+      ...rest,
+      date: {
+        year: finite(date?.year, 'date.year'),
+        month: finite(date?.month, 'date.month'),
+        day: finite(date?.day, 'date.day'),
+      },
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    };
+    const { value } = JSON.parse(run(this, (inner) => inner.almanacSentences(JSON.stringify(asked))));
+    return deepFreeze(value);
   }
 
   /**

@@ -1270,7 +1270,7 @@ public final class ParityRunner {
 
         // ── A context ─────────────────────────────────────────────────────
         try (Context ctx = teistro.context(ContextOptions.builder()
-                .profile("nepali-default").locale("ne-Deva-NP").testProvider(true).build())) {
+                .profile("nepali-drik").locale("ne-Deva-NP").testProvider(true).build())) {
             put("profile", ctx.profile());
             put("locale", ctx.intl().locale());
             put("settings-hash", ctx.settingsHash());
@@ -1398,7 +1398,7 @@ public final class ParityRunner {
             put("provenance-provider-frame", provenance.provider().frame());
 
             // ── The chart the topocentric profile founds ──────────────────
-            // `nepali-default`'s frame is topocentric, as every recorded chart
+            // `nepali-drik`'s frame is topocentric, as every recorded chart
             // in the corpus is; the chart itself is compared.
             Observer place = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
             Chart placed = ctx.chart().found(2451545, place, 20700, ChartOptions.none());
@@ -1476,7 +1476,7 @@ public final class ParityRunner {
             // A signed one-zone pack of an imagined release, so a provenance
             // naming it can only have come from the pack (03-design/zone-packs.md).
             try (Context zoned = teistro.context(ContextOptions.builder()
-                    .profile("nepali-default").ephemeris(Ephemeris.BUILTIN).build())) {
+                    .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
                 java.util.function.Function<ZoneDatabase, String> zonesLine = zones -> zones.source() + " "
                         + zones.version() + " " + zones.zones() + " " + zones.bundled();
                 put("time-zone-database", zonesLine.apply(zoned.time().zoneDatabase()));
@@ -1510,7 +1510,7 @@ public final class ParityRunner {
             // (03-design/amrit-kalam-and-lagnas.md §2) and each graha's share
             // (crux C751).
             try (Context builtin = teistro.context(ContextOptions.builder()
-                    .profile("nepali-default").ephemeris(Ephemeris.BUILTIN).build())) {
+                    .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
                 var lagnaDay = builtin.almanac().day(date(2025, 6, 15), place, 20700, true, true);
                 var tables = new LinkedHashMap<String, List<? extends Span<? extends Catalogued>>>();
                 tables.put("lagnas", lagnaDay.lagnas());
@@ -1532,7 +1532,7 @@ public final class ParityRunner {
             // eclipse seen whole and a partial solar one the place does not see.
             Eclipses eclipses;
             try (Context builtin = teistro.context(ContextOptions.builder()
-                    .profile("nepali-default").ephemeris(Ephemeris.BUILTIN).build())) {
+                    .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
                 eclipses = builtin.almanac().of(date(2025, 9, 1), date(2025, 9, 30), place, 20700,
                         null, null, false, true, false).eclipses().orElseThrow();
             }
@@ -1619,6 +1619,11 @@ public final class ParityRunner {
             surface("almanac.festival_calendar", () -> ctx.almanac().festivalCalendar(day, day, place, 0, null));
             surface("almanac.festivalPack", () -> ctx.almanac().festivalPack("NEPAL"));
             surface("almanac.next", () -> ctx.almanac().next(0, place, 0, "PURNIMA", null, null, null, null));
+            surface("almanac.sentences", () -> ctx.almanac().sentences(day, place, 0, null));
+            surface("almanac.anniversaries", () -> ctx.almanac().anniversaries(
+                    com.teispace.teistro.request.AnniversariesRequest.of(java.util.Map.of("fromYear", 2026, "years", 0,
+                            "latitudeDeg", 0.0, "longitudeDeg", 0.0, "utcOffsetSeconds", 0,
+                            "anniversaries", java.util.List.of()))));
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
             surface("almanac.sankalpa", () -> ctx.almanac().sankalpa(0, place, 0, null));
@@ -3034,6 +3039,13 @@ public final class ParityRunner {
         put("nepal-sambat-hash", nepalSambat.provenance().contentHash());
         put("nepal-sambat", orNone(join(" ", nepalSambat.value(),
                 one -> one.year() + ":" + one.month() + ":" + one.kind().key() + ":" + one.paksha().fullKey())));
+
+        // The day's sky over two days, at an hour's step.
+        DaySkies sky = geo.almanac().of(date(2024, 10, 30), date(2024, 10, 31), place, 20700,
+                null, null, false, false, false, false, false, true, 60).sky().orElseThrow();
+        put("day-sky-hash", sky.provenance().contentHash());
+        put("day-sky", orNone(join(" ", sky.value(), one -> one.sun().state() + ":" + one.sun().track().size() + ":"
+                + one.moon().state() + ":" + one.moon().track().size())));
     }
 
     /**

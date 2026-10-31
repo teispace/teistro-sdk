@@ -15,7 +15,7 @@ the season is read from and `panchanga.solar_month_start` the rule.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| the Bikram Sambat calendar's months (`BIKRAM_SAMBAT`, `nepali-default`'s): the seasons Nepal printed | **holds** | 0 of 341 disagree |
+| the Bikram Sambat calendar's months (`BIKRAM_SAMBAT`, `nepali-drik`'s): the seasons Nepal printed | **holds** | 0 of 341 disagree |
 | the punya-kala over the modern Sun (`PUNYAKALA`, the root's): the seasons Nepal printed | falsified | 2 of 341 disagree; a rival |
 | the civil day of the modern sankranti (`SANKRANTI_DAY`): the seasons Nepal printed | falsified | 2 of 341 disagree; a rival |
 | the civil day after it (`FOLLOWING_DAY`): the seasons Nepal printed | falsified | 4 of 341 disagree; a rival |
@@ -38,7 +38,7 @@ holds them in `xtask/src/ritu.rs`, a month a row. 73 VASANTA, 97 GRISHMA, 87 VAR
 
 | reading | days it misses |
 |---|---|
-| the Bikram Sambat calendar's months (`BIKRAM_SAMBAT`, `nepali-default`'s) | none |
+| the Bikram Sambat calendar's months (`BIKRAM_SAMBAT`, `nepali-drik`'s) | none |
 | the punya-kala over the modern Sun (`PUNYAKALA`, the root's) | 2025-11-16 (HEMANTA), 2026-07-16 (VARSHA) |
 | the civil day of the modern sankranti (`SANKRANTI_DAY`) | 2025-11-16 (HEMANTA), 2026-07-16 (VARSHA) |
 | the civil day after it (`FOLLOWING_DAY`) | 2025-05-15 (VASANTA), 2026-03-15 (SHISHIRA), 2026-05-15 (VASANTA), 2026-09-17 (VARSHA) |
@@ -84,7 +84,7 @@ over the modern Sun, 5 miss a recorded day, and the Sun's
 sign as the day opens misses the months whose sankranti fell after
 dawn; a rule that names every recorded season still misses the
 calendar's season changes in §5, so it agrees with these months by
-coincidence and not by rule. So `nepali-default` reads the shipped
+coincidence and not by rule. So `nepali-drik` reads the shipped
 Bikram Sambat calendar, and the root, which has no civil calendar
 of Nepal's, places the modern sankranti by the punya-kala, the
 Dharmasindhu's rule the calendar itself follows

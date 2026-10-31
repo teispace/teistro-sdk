@@ -37,7 +37,7 @@ public final class Research {
     public static void main(String[] args) {
         Teistro teistro = Teistro.open();
         ContextOptions options = ContextOptions.builder()
-                .profile("nepali-default")
+                .profile("nepali-drik")
                 .ephemeris(Ephemeris.BUILTIN)
                 .build();
         try (Context ctx = teistro.context(options)) {

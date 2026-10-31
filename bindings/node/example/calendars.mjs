@@ -51,7 +51,7 @@ const described = (day) =>
   `${day.era ? ` ${day.era.split('.').at(-1)} ${day.eraYear}` : ''}` +
   ` [${day.resolution}]`;
 
-const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP' });
+const ctx = new Context({ profile: 'nepali-drik', locale: 'ne-Deva-NP' });
 const say = messages({
   render: (key, params) => ctx.intl.render(key, params).text,
   entity: (key) => ctx.intl.entity(key),

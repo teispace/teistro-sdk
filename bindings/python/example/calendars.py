@@ -61,7 +61,7 @@ def described(ctx: Context, day: CalendarDate) -> str:
 
 def main() -> None:
     teistro = Teistro.open()
-    with teistro.context(profile="nepali-default", locale="ne-Deva-NP") as ctx:
+    with teistro.context(profile="nepali-drik", locale="ne-Deva-NP") as ctx:
         year = 2082
 
         # ── A whole year, with its Gregorian spans ────────────────────

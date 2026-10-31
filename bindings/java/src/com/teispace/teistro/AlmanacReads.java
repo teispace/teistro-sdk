@@ -149,7 +149,17 @@ final class AlmanacReads {
                 Reads.string(a, "kind"),
                 origin(o),
                 Reads.string(a, "monthBy"),
+                dayRule(Reads.object(a, "dayRule")),
                 observance(Reads.field(a, "observance")));
+    }
+
+    /** The rule that chose an anniversary's day. */
+    private static AnniversaryDay.DayRule dayRule(Map<?, ?> r) {
+        return new AnniversaryDay.DayRule(
+                Reads.string(r, "tithi"),
+                festivalWindow(Reads.object(r, "at")),
+                Reads.string(r, "clause"),
+                Reads.string(r, "source"));
     }
 
     /** An anniversary's origin as found, as an anniversary and a first year write it. */
@@ -560,6 +570,30 @@ final class AlmanacReads {
             return new NepalSambatDate(Reads.integer(d, "year"), Reads.integer(d, "month"),
                     member(d, "kind", "MonthKind", MonthKind::byKey), member(d, "paksha", "Paksha", Paksha::byKey));
         }), provenance(envelope));
+    }
+
+    /** The {@code sky} section: one record a day, with the provenance beside them. */
+    static DaySkies skyAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        return new DaySkies(Reads.each(envelope, "value", raw -> {
+            Map<?, ?> d = Reads.object(raw);
+            return new DaySky(Reads.number(d, "from"), Reads.number(d, "to"), Reads.integer(d, "stepMinutes"),
+                    bodySky(Reads.object(d, "sun")), bodySky(Reads.object(d, "moon")));
+        }), provenance(envelope));
+    }
+
+    private static BodySky bodySky(Map<?, ?> body) {
+        return new BodySky(Reads.string(body, "state"), Reads.each(body, "track", raw -> {
+            Map<?, ?> p = Reads.object(raw);
+            return new SkyPoint(Reads.number(p, "at"), Reads.string(p, "kind"), Reads.number(p, "altitudeDeg"),
+                    Reads.number(p, "refractedAltitudeDeg"), Reads.number(p, "azimuthDeg"),
+                    p.get("moon") == null ? null : moonShape(Reads.object(p, "moon")));
+        }));
+    }
+
+    private static MoonShape moonShape(Map<?, ?> m) {
+        return new MoonShape(Reads.number(m, "illuminatedFraction"), Reads.number(m, "phaseAngleDeg"),
+                Reads.flag(m, "waxing"), Reads.number(m, "brightLimbDeg"), Reads.number(m, "parallacticAngleDeg"));
     }
 
     private static EclipseMoment moment(Object raw) {

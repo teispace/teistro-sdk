@@ -326,20 +326,6 @@ fn written<T: serde::Serialize>(value: &T) -> Result<serde_json::Value, Error> {
 #[must_use]
 pub fn records() -> Vec<Record> {
     let mut all: Vec<Record> = vec![
-        Record {
-            name: "intl.inWords",
-            boundary: "ts_intl_in_words",
-            title: "A number or an amount of money in words and figures",
-            reads: None,
-            run: |context, json| {
-                Answered::plain(
-                    &context
-                        .intl()
-                        .in_words(&crate::InWordsRequest::from_json(json)?)?,
-                )
-            },
-            schemas: schemas!(crate::InWordsRequest => crate::InWords),
-        },
         #[cfg(feature = "chart")]
         Record {
             name: "matching.naam",
@@ -417,6 +403,7 @@ pub fn records() -> Vec<Record> {
             schemas: schemas!(crate::research_request::RequestAsked => crate::research_request::Studied),
         },
     ];
+    all.extend(intl_records());
     #[cfg(feature = "chart")]
     all.extend(naming_records());
     all.extend(almanac_records());
@@ -425,6 +412,54 @@ pub fn records() -> Vec<Record> {
     all.extend(engine_records());
     all.sort_by_key(|record| record.name);
     all
+}
+
+/// The locale engine's records.
+fn intl_records() -> [Record; 3] {
+    [
+        Record {
+            name: "intl.inWords",
+            boundary: "ts_intl_in_words",
+            title: "A number or an amount of money in words and figures",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .intl()
+                        .in_words(&crate::InWordsRequest::from_json(json)?)?,
+                )
+            },
+            schemas: schemas!(crate::InWordsRequest => crate::InWords),
+        },
+        Record {
+            name: "intl.time",
+            boundary: "ts_intl_time",
+            title: "A time of day as text and parts, in the locale's pattern",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .intl()
+                        .time(&crate::TimeTextRequest::from_json(json)?)?,
+                )
+            },
+            schemas: schemas!(crate::TimeTextRequest => crate::CivilText),
+        },
+        Record {
+            name: "intl.date",
+            boundary: "ts_intl_date",
+            title: "A date as text and parts, in the locale's pattern",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .intl()
+                        .date(&crate::DateTextRequest::from_json(json)?)?,
+                )
+            },
+            schemas: schemas!(crate::DateTextRequest => crate::CivilText),
+        },
+    ]
 }
 
 /// The naming of a child's records: the five `NamingArea` operations a
@@ -489,8 +524,19 @@ fn naming_records() -> [Record; 5] {
 /// The almanac's records every build carries over a range or a death: its
 /// change points, an ashauch, a first year, its days with what is asked
 /// beside them, and its festivals as a feed.
-fn almanac_records() -> [Record; 5] {
+fn almanac_records() -> [Record; 6] {
     [
+        Record {
+            name: "almanac.anniversaries",
+            boundary: "ts_almanac_anniversaries",
+            title: "Anniversaries kept by the tithi over a span of years, for many people in one call, each day naming the rule that chose it",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::AnniversariesRequest::from_json(json)?;
+                Answered::sealed(context.almanac().anniversaries_in_full(&asked)?)
+            },
+            schemas: schemas!(crate::area::AnniversariesAsked => teistro_panchanga::festival::Observances),
+        },
         Record {
             name: "almanac.changes",
             boundary: "ts_almanac_changes",
@@ -545,7 +591,7 @@ fn almanac_records() -> [Record; 5] {
 
 /// The rest of the almanac's records: what a pack holds, a digest, the next
 /// day of a rule, why a published day differs, and a sankalpa's time.
-fn almanac_lookup_records() -> [Record; 5] {
+fn almanac_lookup_records() -> [Record; 6] {
     [
         Record {
             name: "almanac.festivalPack",
@@ -576,6 +622,17 @@ fn almanac_lookup_records() -> [Record; 5] {
                 Answered::sealed(context.almanac().next_in_full(&asked)?)
             },
             schemas: schemas!(crate::area::NextAsked => crate::NextOccurrence),
+        },
+        Record {
+            name: "almanac.sentences",
+            boundary: "ts_almanac_sentences",
+            title: "One day's facts as short declarative sentences, every value taken from the day's answer, in a locale that carries the templates",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::SentencesRequest::from_json(json)?;
+                Answered::sealed(context.almanac().sentences(&asked)?)
+            },
+            schemas: schemas!(crate::area::SentencesAsked => crate::DaySentences),
         },
         Record {
             name: "almanac.publishedReasons",

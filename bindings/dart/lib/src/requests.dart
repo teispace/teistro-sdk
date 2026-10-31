@@ -24,6 +24,54 @@ abstract base class _Request extends _Value {
   Object? toJson() => _wire;
 }
 
+/// The request as a binding writes it.
+final class AnniversariesRequest extends _Request {
+  const AnniversariesRequest({
+    this.altitudeM = 0.0,
+    required this.anniversaries,
+    this.calendar,
+    required this.fromYear,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.utcOffsetSeconds,
+    required this.years,
+  });
+
+  final double altitudeM;
+
+  /// Up to 1000, each key once.
+  final List<Anniversary> anniversaries;
+
+  final Calendar? calendar;
+
+  /// The first year, in `calendar`: the span begins on its month 1, day 1.
+  final int fromYear;
+
+  final double latitudeDeg;
+
+  final double longitudeDeg;
+
+  final int utcOffsetSeconds;
+
+  /// 1 to 100: the span ends the day before month 1 of the year after.
+  final int years;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'anniversaries': [for (final e0 in anniversaries) e0._wire],
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'fromYear': fromYear,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'utcOffsetSeconds': utcOffsetSeconds,
+    'years': years,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, anniversaries, calendar, fromYear, latitudeDeg, longitudeDeg, utcOffsetSeconds, years];
+}
+
 /// The query as a binding writes it.
 final class AshauchQuery extends _Request {
   const AshauchQuery({
@@ -141,6 +189,8 @@ final class AlmanacDaysRequest extends _Request {
     required this.longitudeDeg,
     this.muhurta,
     this.nepalSambat = false,
+    this.sky = false,
+    this.skyStepMinutes,
     this.utcOffsetSeconds,
     this.years = false,
     this.zone,
@@ -170,6 +220,11 @@ final class AlmanacDaysRequest extends _Request {
 
   final bool nepalSambat;
 
+  final bool sky;
+
+  /// The sky's step, minutes; ten when left out.
+  final int? skyStepMinutes;
+
   final int? utcOffsetSeconds;
 
   final bool years;
@@ -191,13 +246,15 @@ final class AlmanacDaysRequest extends _Request {
     'longitudeDeg': longitudeDeg,
     if (muhurta case final muhurtaValue?) 'muhurta': muhurtaValue._wire,
     'nepalSambat': nepalSambat,
+    'sky': sky,
+    if (skyStepMinutes case final skyStepMinutesValue?) 'skyStepMinutes': skyStepMinutesValue,
     if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
     'years': years,
     if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, muhurta, nepalSambat, utcOffsetSeconds, years, zone];
+  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, muhurta, nepalSambat, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
 }
 
 /// The request as a binding writes it.
@@ -210,7 +267,8 @@ final class DigestRequest extends _Request {
     required this.first,
     required this.latitudeDeg,
     required this.longitudeDeg,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   final double altitudeM;
@@ -230,7 +288,11 @@ final class DigestRequest extends _Request {
 
   final double longitudeDeg;
 
-  final int utcOffsetSeconds;
+  /// The clock's offset; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone, each day on its own offset; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -241,11 +303,12 @@ final class DigestRequest extends _Request {
     'first': first._wire,
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, days, festivals, first, latitudeDeg, longitudeDeg, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, calendar, days, festivals, first, latitudeDeg, longitudeDeg, utcOffsetSeconds, zone];
 }
 
 /// [`PackRequest`] as the bindings write it.
@@ -597,6 +660,49 @@ final class SankalpaRequest extends _Request {
   List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, longitudeDeg, utcOffsetSeconds];
 }
 
+/// The request as a binding writes it.
+final class SentencesRequest extends _Request {
+  const SentencesRequest({
+    this.altitudeM = 0.0,
+    this.calendar,
+    required this.date,
+    required this.latitudeDeg,
+    this.locale,
+    required this.longitudeDeg,
+    required this.utcOffsetSeconds,
+  });
+
+  final double altitudeM;
+
+  /// The calendar `date` is in; Gregorian when left out.
+  final Calendar? calendar;
+
+  final DayAsked date;
+
+  final double latitudeDeg;
+
+  /// The locale to say the day in; the context's when left out.
+  final String? locale;
+
+  final double longitudeDeg;
+
+  final int utcOffsetSeconds;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'date': date._wire,
+    'latitudeDeg': latitudeDeg,
+    if (locale case final localeValue?) 'locale': localeValue,
+    'longitudeDeg': longitudeDeg,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, calendar, date, latitudeDeg, locale, longitudeDeg, utcOffsetSeconds];
+}
+
 /// An add request as a binding writes it.
 final class AddAsked extends _Request {
   const AddAsked({
@@ -942,6 +1048,39 @@ final class BatchAsked extends _Request {
   List<Object?> get _fields => [baseline, periods];
 }
 
+/// What a caller asks to be written: a date in any calendar, and how.
+final class DateTextRequest extends _Request {
+  const DateTextRequest({
+    required this.at,
+    this.digits,
+    this.locale,
+    this.style = DateStyle.numeric,
+  });
+
+  /// The date, in its own calendar.
+  final CalendarDay at;
+
+  /// The digits; the locale's numbering system when left out.
+  final WordsDigits? digits;
+
+  /// The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out.
+  final String? locale;
+
+  /// How much of it.
+  final DateStyle style;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'at': at._wire,
+    if (digits case final digitsValue?) 'digits': digitsValue.key,
+    if (locale case final localeValue?) 'locale': localeValue,
+    'style': style.key,
+  };
+
+  @override
+  List<Object?> get _fields => [at, digits, locale, style];
+}
+
 /// What a caller asks to be written in words: a number or an amount, and how.
 final class InWordsRequest extends _Request {
   const InWordsRequest({
@@ -983,6 +1122,44 @@ final class InWordsRequest extends _Request {
 
   @override
   List<Object?> get _fields => [amount, digits, grouping, locale, number, style];
+}
+
+/// What a caller asks to be written: a time of day, and how.
+final class TimeTextRequest extends _Request {
+  const TimeTextRequest({
+    required this.at,
+    this.digits,
+    this.hour12 = false,
+    this.locale,
+    this.style = TimeStyle.numeric,
+  });
+
+  /// The time of day.
+  final ClockTime at;
+
+  /// The digits; the locale's numbering system when left out.
+  final WordsDigits? digits;
+
+  /// The locale's twelve-hour pattern, which writes the part of the day its readers expect; the twenty-four-hour one when left out.
+  final bool hour12;
+
+  /// The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out.
+  final String? locale;
+
+  /// How much of it.
+  final TimeStyle style;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'at': at._wire,
+    if (digits case final digitsValue?) 'digits': digitsValue.key,
+    'hour12': hour12,
+    if (locale case final localeValue?) 'locale': localeValue,
+    'style': style.key,
+  };
+
+  @override
+  List<Object?> get _fields => [at, digits, hour12, locale, style];
 }
 
 /// Two names to match star to star, and the readings they are matched under. Naam milan needs no chart, so this is the whole request.
@@ -1325,6 +1502,54 @@ final class ResolveAsked extends _Request {
 
   @override
   List<Object?> get _fields => [calendar, date, time, zone];
+}
+
+/// An anniversary a request asks the days of.
+final class Anniversary extends _Request {
+  const Anniversary({
+    this.firstYearAdhika = FirstYearAdhika.adhika,
+    this.inSamsarpa = InSamsarpa.also,
+    this.janma,
+    required this.key,
+    this.kind = AnniversaryKind.shraddha,
+    required this.origin,
+    this.window,
+  });
+
+  /// The first anniversary's month when it is doubled.
+  final FirstYearAdhika firstYearAdhika;
+
+  /// Whether a shraddha of an ordinary month is kept in the samsarpa of its name too; a janma tithi never is.
+  final InSamsarpa inSamsarpa;
+
+  /// A janma tithi's options.
+  final JanmaOptions? janma;
+
+  /// The consumer's own key, `"GRANDFATHER"`.
+  final String key;
+
+  /// What it is.
+  final AnniversaryKind kind;
+
+  /// Where it is counted from.
+  final Origin origin;
+
+  /// The rite's time, in place of the kind's ([`AnniversaryKind::window`]): `{"window": "PART", "part": "MADHYAHNA"}` is DS's madhyahna, the 7th to 9th muhurtas (C662).
+  final Window? window;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'firstYearAdhika': firstYearAdhika.key,
+    'inSamsarpa': inSamsarpa.key,
+    if (janma case final janmaValue?) 'janma': janmaValue._wire,
+    'key': key,
+    'kind': kind.key,
+    'origin': origin._wire,
+    if (window case final windowValue?) 'window': windowValue._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [firstYearAdhika, inSamsarpa, janma, key, kind, origin, window];
 }
 
 /// One request: one event, one observer.
@@ -2293,6 +2518,79 @@ final class PeriodAsked extends _Request {
   List<Object?> get _fields => [altitudeM, calendar, events, first, last, latitudeDeg, longitudeDeg, snapshot, spells, utcOffsetSeconds];
 }
 
+/// A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
+final class CalendarDay extends _Request {
+  const CalendarDay({
+    required this.calendar,
+    required this.day,
+    this.era,
+    this.leap,
+    required this.month,
+    required this.year,
+  });
+
+  /// Its calendar.
+  final Calendar calendar;
+
+  /// The day, 1-based.
+  final int day;
+
+  /// The era, for a calendar that counts several.
+  final EraNumber? era;
+
+  /// A leap month or day, for a calendar that marks one.
+  final Leap? leap;
+
+  /// The month, 1-based.
+  final int month;
+
+  /// The astronomical year.
+  final int year;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'calendar': calendar.key,
+    'day': day,
+    if (era case final eraValue?) 'era': eraValue._wire,
+    if (leap case final leapValue?) 'leap': leapValue.key,
+    'month': month,
+    'year': year,
+  };
+
+  @override
+  List<Object?> get _fields => [calendar, day, era, leap, month, year];
+}
+
+/// The digits a figure is written in.
+enum WordsDigits implements _Keyed {
+  /// `0123456789`.
+  latn('LATN'),
+  /// `०१२३४५६७८९`.
+  deva('DEVA');
+
+  const WordsDigits(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// How much of a date is written.
+enum DateStyle implements _Keyed {
+  /// In figures.
+  numeric('NUMERIC'),
+  /// With the month's name.
+  long('LONG'),
+  /// With the weekday's name too.
+  full('FULL');
+
+  const DateStyle(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// An amount of a currency.
 final class WordsAmount extends _Request {
   const WordsAmount({
@@ -2331,20 +2629,6 @@ final class WordsAmount extends _Request {
   List<Object?> get _fields => [currency, minorDigits, only, rounding, value];
 }
 
-/// The digits a figure is written in.
-enum WordsDigits implements _Keyed {
-  /// `0123456789`.
-  latn('LATN'),
-  /// `०१२३४५६७८९`.
-  deva('DEVA');
-
-  const WordsDigits(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
 /// How digits are grouped, and so which scale words a number is counted in.
 enum WordsGrouping implements _Keyed {
   /// Every two digits past the thousands: lakh, crore, arab, kharab; `12,34,567`.
@@ -2367,6 +2651,48 @@ enum WordsStyle implements _Keyed {
   verbose('VERBOSE');
 
   const WordsStyle(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// A time of day, for `:time` and `:datetime`.
+final class ClockTime extends _Request {
+  const ClockTime({
+    required this.hour,
+    required this.minute,
+    this.second = 0,
+  });
+
+  /// 0 to 23.
+  final int hour;
+
+  /// 0 to 59.
+  final int minute;
+
+  /// 0 to 60; 0 when left out.
+  final int second;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'hour': hour,
+    'minute': minute,
+    'second': second,
+  };
+
+  @override
+  List<Object?> get _fields => [hour, minute, second];
+}
+
+/// How much of a time of day is written.
+enum TimeStyle implements _Keyed {
+  /// Hours and minutes.
+  numeric('NUMERIC'),
+  /// Hours, minutes and seconds.
+  long('LONG');
+
+  const TimeStyle(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -2679,6 +3005,291 @@ enum StudyKind implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// Which month the first anniversary takes when its month is doubled (C666).
+enum FirstYearAdhika implements _Keyed {
+  /// The adhika, the thirteenth month: *Dharmasindhu*, the *Nirnayasindhu* (pp. 25–26) and Kane IV p. 546.
+  adhika('ADHIKA'),
+  /// The ordinary month: Dhakal's note for Nepal's barkhi (NS p. 25 n. 14), which counts the eleventh day's rite as the first abdika.
+  nija('NIJA');
+
+  const FirstYearAdhika(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Whether an ordinary month's anniversary is kept in the *samsarpa* too, the adhika month of its name before a kshaya month (C669).
+enum InSamsarpa implements _Keyed {
+  /// In the samsarpa and the nija month both: *Dharmasindhu*'s own inference in its kshaya example ("iti bhāti"), and Dhakal's instruction for Nepal (NS, the introduction's malamasa section).
+  also('ALSO'),
+  /// In the nija month alone, as in any other year with an adhika month.
+  nija('NIJA');
+
+  const InSamsarpa(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// *Dharmasindhu*'s two options for a janma tithi, both off by default (C670).
+final class JanmaOptions extends _Request {
+  const JanmaOptions({
+    this.nakshatraTie = false,
+    this.twoMuhurtaFloor = false,
+  });
+
+  /// When both days' sunrises hold the tithi, the day whose sunrise holds the birth nakshatra.
+  final bool nakshatraTie;
+
+  /// The sunrise tithi only when it lasts two muhurtas past sunrise, else the day before.
+  final bool twoMuhurtaFloor;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'nakshatraTie': nakshatraTie,
+    'twoMuhurtaFloor': twoMuhurtaFloor,
+  };
+
+  @override
+  List<Object?> get _fields => [nakshatraTie, twoMuhurtaFloor];
+}
+
+/// What an anniversary is, which sets the rite's time and how the day is chosen.
+enum AnniversaryKind implements _Keyed {
+  /// A death's yearly shraddha, an ekoddishta or a parvana by its origin ([`OriginFound::is_parvana`], C665). An answer names which.
+  shraddha('SHRADDHA'),
+  /// The ekoddishta, for one person: kutapa to rauhina, the daylight's 8th and 9th muhurtas (NS p. 987, DS p. 265, C662).
+  ekoddishta('EKODDISHTA'),
+  /// The parvana, for the ancestors together: the aparahna (DS p. 266).
+  parvana('PARVANA'),
+  /// A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in the ordinary month (DS, C671).
+  janmaTithi('JANMA_TITHI'),
+  /// Any other event a family keeps by the tithi, a wedding or a founding: the window the request states, sunrise by default, judged by share, in the ordinary month. No text rules on it, so it ships as a convention (`anniversary.event`, C911), read from the janma tithi's.
+  event('EVENT');
+
+  const AnniversaryKind(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Where an anniversary is counted from.
+sealed class Origin extends _Request {
+  const Origin();
+}
+
+/// The moment of the death or the birth: the tithi running then, as the Naradiya has it for a death and a parana (NS p. 982, C661). A death before sunrise takes the tithi of that hour, not the civil day's sunrise tithi.
+final class OriginInstant extends Origin {
+  const OriginInstant({
+    required this.at,
+  });
+
+  /// The moment.
+  final double at;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'by': 'INSTANT',
+    'at': at,
+  };
+
+  @override
+  List<Object?> get _fields => [at];
+}
+
+/// Only the civil date: its sunrise tithi, marked as assumed, with every tithi the date held beside it (C661).
+final class OriginDate extends Origin {
+  const OriginDate({
+    required this.date,
+  });
+
+  /// The date, as a request writes it.
+  final CalendarDay date;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'by': 'DATE',
+    'date': date._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [date];
+}
+
+/// The lunar date itself, as a family keeps it.
+final class OriginLunar extends Origin {
+  const OriginLunar({
+    this.adhika = false,
+    this.at,
+    this.half = TithiHalf.first,
+    required this.month,
+    required this.tithi,
+  });
+
+  /// Whether the month was adhika.
+  final bool adhika;
+
+  /// The moment, if known, which only counts the years: without it no anniversary has a number, and the first one's adhika policy (C666) cannot apply.
+  final double? at;
+
+  /// The half of the tithi, which names the month in a kshaya lunation (C668); the month given is taken as named already.
+  final TithiHalf half;
+
+  /// The month, amanta.
+  final Masa month;
+
+  /// The tithi.
+  final Tithi tithi;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'by': 'LUNAR',
+    'adhika': adhika,
+    if (at case final atValue?) 'at': atValue,
+    'half': half.key,
+    'month': month.key,
+    'tithi': tithi.key,
+  };
+
+  @override
+  List<Object?> get _fields => [adhika, at, half, month, tithi];
+}
+
+/// The time of a rite, on a sunrise day.
+sealed class Window extends _Request {
+  const Window();
+}
+
+/// The instant of sunrise: the tithi a day is named for.
+final class WindowSunrise extends Window {
+  const WindowSunrise();
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'SUNRISE',
+  };
+
+  @override
+  List<Object?> get _fields => [];
+}
+
+/// The instant of sunset, which begins the evening: Nepal's monthly full-moon fast takes the day whose sunset the full moon holds (`festival-rules.md` §9.6, C200).
+final class WindowSunset extends Window {
+  const WindowSunset();
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'SUNSET',
+  };
+
+  @override
+  List<Object?> get _fields => [];
+}
+
+/// A fifth of the daylight.
+final class WindowPart extends Window {
+  const WindowPart({
+    required this.part,
+  });
+
+  /// Which fifth.
+  final DayFifth part;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'PART',
+    'part': part.key,
+  };
+
+  @override
+  List<Object?> get _fields => [part];
+}
+
+/// Three muhurtas after sunset, a muhurta a fifteenth of the night (crux C168).
+final class WindowPradosha extends Window {
+  const WindowPradosha();
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'PRADOSHA',
+  };
+
+  @override
+  List<Object?> get _fields => [];
+}
+
+/// The middle of the night, an instant (C169: p. 49 counts a tithi present there if "even a kala" of it stands at the end of the night's first half).
+final class WindowNishitha extends Window {
+  const WindowNishitha();
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'NISHITHA',
+  };
+
+  @override
+  List<Object?> get _fields => [];
+}
+
+/// A muhurta of the night, a fifteenth of it counted from sunset, 1 to 15: p. 90 calls the eighth niśītha for Shivaratri and weighs a tithi holding it wholly against one holding part of it.
+final class WindowNightMuhurta extends Window {
+  const WindowNightMuhurta({
+    required this.muhurta,
+  });
+
+  /// Which muhurta, 1 for the first after sunset.
+  final int muhurta;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'NIGHT_MUHURTA',
+    'muhurta': muhurta,
+  };
+
+  @override
+  List<Object?> get _fields => [muhurta];
+}
+
+/// Muhurtas of the daylight, a fifteenth of it counted from sunrise, `from` to `to` inclusive, 1 to 15: *Dharmasindhu* p. 265 names the 8th kutapa and the 9th rauhina, and purvahna is the first six, the daylight's first two fifths (C602). A fifth is three of them.
+final class WindowDayMuhurta extends Window {
+  const WindowDayMuhurta({
+    required this.from,
+    required this.to,
+  });
+
+  /// The first, 1 for the muhurta after sunrise.
+  final int from;
+
+  /// The last, at least `from`.
+  final int to;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'DAY_MUHURTA',
+    'from': from,
+    'to': to,
+  };
+
+  @override
+  List<Object?> get _fields => [from, to];
+}
+
+/// The instant of the first moonrise after the day's sunrise and before the next: *Dharmasindhu* p. 9 keeps the Sankashta chaturthi on the tithi at moonrise (चन्द्रोदयव्यापिनी). A day the Moon does not rise on leaves the occurrence unjudged.
+final class WindowMoonrise extends Window {
+  const WindowMoonrise();
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'window': 'MOONRISE',
+  };
+
+  @override
+  List<Object?> get _fields => [];
 }
 
 /// A period already running, as the overlap rules read it: the parts of an earlier [`Ashauch`] they need.
@@ -3500,20 +4111,6 @@ enum FirstAbdika implements _Keyed {
   final String key;
 }
 
-/// Which month the first anniversary takes when its month is doubled (C666).
-enum FirstYearAdhika implements _Keyed {
-  /// The adhika, the thirteenth month: *Dharmasindhu*, the *Nirnayasindhu* (pp. 25–26) and Kane IV p. 546.
-  adhika('ADHIKA'),
-  /// The ordinary month: Dhakal's note for Nepal's barkhi (NS p. 25 n. 14), which counts the eleventh day's rite as the first abdika.
-  nija('NIJA');
-
-  const FirstYearAdhika(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
 /// The day the sapindana is kept on (DS p. 331).
 enum SapindanaAt implements _Keyed {
   /// The eleventh day.
@@ -3548,138 +4145,6 @@ enum UnaDay implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
-}
-
-/// The time of a rite, on a sunrise day.
-sealed class Window extends _Request {
-  const Window();
-}
-
-/// The instant of sunrise: the tithi a day is named for.
-final class WindowSunrise extends Window {
-  const WindowSunrise();
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'window': 'SUNRISE',
-  };
-
-  @override
-  List<Object?> get _fields => [];
-}
-
-/// The instant of sunset, which begins the evening: Nepal's monthly full-moon fast takes the day whose sunset the full moon holds (`festival-rules.md` §9.6, C200).
-final class WindowSunset extends Window {
-  const WindowSunset();
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'window': 'SUNSET',
-  };
-
-  @override
-  List<Object?> get _fields => [];
-}
-
-/// A fifth of the daylight.
-final class WindowPart extends Window {
-  const WindowPart({
-    required this.part,
-  });
-
-  /// Which fifth.
-  final DayFifth part;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'window': 'PART',
-    'part': part.key,
-  };
-
-  @override
-  List<Object?> get _fields => [part];
-}
-
-/// Three muhurtas after sunset, a muhurta a fifteenth of the night (crux C168).
-final class WindowPradosha extends Window {
-  const WindowPradosha();
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'window': 'PRADOSHA',
-  };
-
-  @override
-  List<Object?> get _fields => [];
-}
-
-/// The middle of the night, an instant (C169: p. 49 counts a tithi present there if "even a kala" of it stands at the end of the night's first half).
-final class WindowNishitha extends Window {
-  const WindowNishitha();
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'window': 'NISHITHA',
-  };
-
-  @override
-  List<Object?> get _fields => [];
-}
-
-/// A muhurta of the night, a fifteenth of it counted from sunset, 1 to 15: p. 90 calls the eighth niśītha for Shivaratri and weighs a tithi holding it wholly against one holding part of it.
-final class WindowNightMuhurta extends Window {
-  const WindowNightMuhurta({
-    required this.muhurta,
-  });
-
-  /// Which muhurta, 1 for the first after sunset.
-  final int muhurta;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'window': 'NIGHT_MUHURTA',
-    'muhurta': muhurta,
-  };
-
-  @override
-  List<Object?> get _fields => [muhurta];
-}
-
-/// Muhurtas of the daylight, a fifteenth of it counted from sunrise, `from` to `to` inclusive, 1 to 15: *Dharmasindhu* p. 265 names the 8th kutapa and the 9th rauhina, and purvahna is the first six, the daylight's first two fifths (C602). A fifth is three of them.
-final class WindowDayMuhurta extends Window {
-  const WindowDayMuhurta({
-    required this.from,
-    required this.to,
-  });
-
-  /// The first, 1 for the muhurta after sunrise.
-  final int from;
-
-  /// The last, at least `from`.
-  final int to;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'window': 'DAY_MUHURTA',
-    'from': from,
-    'to': to,
-  };
-
-  @override
-  List<Object?> get _fields => [from, to];
-}
-
-/// The instant of the first moonrise after the day's sunrise and before the next: *Dharmasindhu* p. 9 keeps the Sankashta chaturthi on the tithi at moonrise (चन्द्रोदयव्यापिनी). A day the Moon does not rise on leaves the occurrence unjudged.
-final class WindowMoonrise extends Window {
-  const WindowMoonrise();
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'window': 'MOONRISE',
-  };
-
-  @override
-  List<Object?> get _fields => [];
 }
 
 /// The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
@@ -4752,6 +5217,29 @@ final class SnapshotClock extends Snapshot {
   List<Object?> get _fields => [hour, minute];
 }
 
+/// A year in an era, for presentation.
+final class EraNumber extends _Request {
+  const EraNumber({
+    required this.era,
+    required this.year,
+  });
+
+  /// The era.
+  final Era era;
+
+  /// The year in it, 1-based.
+  final int year;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'era': era.key,
+    'year': year,
+  };
+
+  @override
+  List<Object?> get _fields => [era, year];
+}
+
 /// How a decimal with more digits than the currency's minor unit is brought to it.
 enum WordsRounding implements _Keyed {
   /// Half a minor unit or more goes up, less is dropped: India's banking rule (RBI DBOD.Dir.BC.70/13.01.01/2006-07), and the convention for NPR (C805).
@@ -4919,6 +5407,40 @@ enum NameClause implements _Keyed {
   noFinalLOrR('NO_FINAL_L_OR_R');
 
   const NameClause(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
+enum TithiHalf implements _Keyed {
+  /// The first.
+  first('FIRST'),
+  /// The second.
+  second('SECOND');
+
+  const TithiHalf(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// A fifth of the daylight (*Dharmasindhu*, p. 6). Its schema name is `DayFifth`, the chart's daylight or night being the boundary's `DayPart`.
+enum DayFifth implements _Keyed {
+  /// The first fifth.
+  pratah('PRATAH'),
+  /// The second.
+  sangava('SANGAVA'),
+  /// The third: midday.
+  madhyahna('MADHYAHNA'),
+  /// The fourth: the afternoon.
+  aparahna('APARAHNA'),
+  /// The last.
+  sayahna('SAYAHNA');
+
+  const DayFifth(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -5535,26 +6057,6 @@ final class ActivityRules extends _Request {
 
   @override
   List<Object?> get _fields => [bars, baseline, day, heeds, hours, lagnas, months, padas, shool, unjudged, unwanted];
-}
-
-/// A fifth of the daylight (*Dharmasindhu*, p. 6). Its schema name is `DayFifth`, the chart's daylight or night being the boundary's `DayPart`.
-enum DayFifth implements _Keyed {
-  /// The first fifth.
-  pratah('PRATAH'),
-  /// The second.
-  sangava('SANGAVA'),
-  /// The third: midday.
-  madhyahna('MADHYAHNA'),
-  /// The fourth: the afternoon.
-  aparahna('APARAHNA'),
-  /// The last.
-  sayahna('SAYAHNA');
-
-  const DayFifth(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
 }
 
 /// One body's orb, for the moieties.
@@ -8722,49 +9224,6 @@ enum Upanayana implements _Keyed {
   final String key;
 }
 
-/// A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
-final class CalendarDay extends _Request {
-  const CalendarDay({
-    required this.calendar,
-    required this.day,
-    this.era,
-    this.leap,
-    required this.month,
-    required this.year,
-  });
-
-  /// Its calendar.
-  final Calendar calendar;
-
-  /// The day, 1-based.
-  final int day;
-
-  /// The era, for a calendar that counts several.
-  final EraNumber? era;
-
-  /// A leap month or day, for a calendar that marks one.
-  final Leap? leap;
-
-  /// The month, 1-based.
-  final int month;
-
-  /// The astronomical year.
-  final int year;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'calendar': calendar.key,
-    'day': day,
-    if (era case final eraValue?) 'era': eraValue._wire,
-    if (leap case final leapValue?) 'leap': leapValue.key,
-    'month': month,
-    'year': year,
-  };
-
-  @override
-  List<Object?> get _fields => [calendar, day, era, leap, month, year];
-}
-
 /// What a rule's festival is, as far as a source says.
 final class FestivalMeta extends _Request {
   const FestivalMeta({
@@ -8899,54 +9358,6 @@ final class EkadashiRule extends _Request {
 
   @override
   List<Object?> get _fields => [key, mahadvadashi, meta, parana, source, table, vedha];
-}
-
-/// An anniversary a request asks the days of.
-final class Anniversary extends _Request {
-  const Anniversary({
-    this.firstYearAdhika = FirstYearAdhika.adhika,
-    this.inSamsarpa = InSamsarpa.also,
-    this.janma,
-    required this.key,
-    this.kind = AnniversaryKind.shraddha,
-    required this.origin,
-    this.window,
-  });
-
-  /// The first anniversary's month when it is doubled.
-  final FirstYearAdhika firstYearAdhika;
-
-  /// Whether a shraddha of an ordinary month is kept in the samsarpa of its name too; a janma tithi never is.
-  final InSamsarpa inSamsarpa;
-
-  /// A janma tithi's options.
-  final JanmaOptions? janma;
-
-  /// The consumer's own key, `"GRANDFATHER"`.
-  final String key;
-
-  /// What it is.
-  final AnniversaryKind kind;
-
-  /// Where it is counted from.
-  final Origin origin;
-
-  /// The rite's time, in place of the kind's ([`AnniversaryKind::window`]): `{"window": "PART", "part": "MADHYAHNA"}` is DS's madhyahna, the 7th to 9th muhurtas (C662).
-  final Window? window;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'firstYearAdhika': firstYearAdhika.key,
-    'inSamsarpa': inSamsarpa.key,
-    if (janma case final janmaValue?) 'janma': janmaValue._wire,
-    'key': key,
-    'kind': kind.key,
-    'origin': origin._wire,
-    if (window case final windowValue?) 'window': windowValue._wire,
-  };
-
-  @override
-  List<Object?> get _fields => [firstYearAdhika, inSamsarpa, janma, key, kind, origin, window];
 }
 
 /// An observance on the day a number of civil days after another rule's.
@@ -10796,29 +11207,6 @@ enum SubDegree implements _Keyed {
   final String key;
 }
 
-/// A year in an era, for presentation.
-final class EraNumber extends _Request {
-  const EraNumber({
-    required this.era,
-    required this.year,
-  });
-
-  /// The era.
-  final Era era;
-
-  /// The year in it, 1-based.
-  final int year;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'era': era.key,
-    'year': year,
-  };
-
-  @override
-  List<Object?> get _fields => [era, year];
-}
-
 /// Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).
 enum SaitChoice implements _Keyed {
   /// The first.
@@ -10985,143 +11373,6 @@ enum EkadashiVedha implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
-}
-
-/// Whether an ordinary month's anniversary is kept in the *samsarpa* too, the adhika month of its name before a kshaya month (C669).
-enum InSamsarpa implements _Keyed {
-  /// In the samsarpa and the nija month both: *Dharmasindhu*'s own inference in its kshaya example ("iti bhāti"), and Dhakal's instruction for Nepal (NS, the introduction's malamasa section).
-  also('ALSO'),
-  /// In the nija month alone, as in any other year with an adhika month.
-  nija('NIJA');
-
-  const InSamsarpa(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// *Dharmasindhu*'s two options for a janma tithi, both off by default (C670).
-final class JanmaOptions extends _Request {
-  const JanmaOptions({
-    this.nakshatraTie = false,
-    this.twoMuhurtaFloor = false,
-  });
-
-  /// When both days' sunrises hold the tithi, the day whose sunrise holds the birth nakshatra.
-  final bool nakshatraTie;
-
-  /// The sunrise tithi only when it lasts two muhurtas past sunrise, else the day before.
-  final bool twoMuhurtaFloor;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'nakshatraTie': nakshatraTie,
-    'twoMuhurtaFloor': twoMuhurtaFloor,
-  };
-
-  @override
-  List<Object?> get _fields => [nakshatraTie, twoMuhurtaFloor];
-}
-
-/// What an anniversary is, which sets the rite's time and how the day is chosen.
-enum AnniversaryKind implements _Keyed {
-  /// A death's yearly shraddha, an ekoddishta or a parvana by its origin ([`OriginFound::is_parvana`], C665). An answer names which.
-  shraddha('SHRADDHA'),
-  /// The ekoddishta, for one person: kutapa to rauhina, the daylight's 8th and 9th muhurtas (NS p. 987, DS p. 265, C662).
-  ekoddishta('EKODDISHTA'),
-  /// The parvana, for the ancestors together: the aparahna (DS p. 266).
-  parvana('PARVANA'),
-  /// A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in the ordinary month (DS, C671).
-  janmaTithi('JANMA_TITHI');
-
-  const AnniversaryKind(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// Where an anniversary is counted from.
-sealed class Origin extends _Request {
-  const Origin();
-}
-
-/// The moment of the death or the birth: the tithi running then, as the Naradiya has it for a death and a parana (NS p. 982, C661). A death before sunrise takes the tithi of that hour, not the civil day's sunrise tithi.
-final class OriginInstant extends Origin {
-  const OriginInstant({
-    required this.at,
-  });
-
-  /// The moment.
-  final double at;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'by': 'INSTANT',
-    'at': at,
-  };
-
-  @override
-  List<Object?> get _fields => [at];
-}
-
-/// Only the civil date: its sunrise tithi, marked as assumed, with every tithi the date held beside it (C661).
-final class OriginDate extends Origin {
-  const OriginDate({
-    required this.date,
-  });
-
-  /// The date, as a request writes it.
-  final CalendarDay date;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'by': 'DATE',
-    'date': date._wire,
-  };
-
-  @override
-  List<Object?> get _fields => [date];
-}
-
-/// The lunar date itself, as a family keeps it.
-final class OriginLunar extends Origin {
-  const OriginLunar({
-    this.adhika = false,
-    this.at,
-    this.half = TithiHalf.first,
-    required this.month,
-    required this.tithi,
-  });
-
-  /// Whether the month was adhika.
-  final bool adhika;
-
-  /// The moment, if known, which only counts the years: without it no anniversary has a number, and the first one's adhika policy (C666) cannot apply.
-  final double? at;
-
-  /// The half of the tithi, which names the month in a kshaya lunation (C668); the month given is taken as named already.
-  final TithiHalf half;
-
-  /// The month, amanta.
-  final Masa month;
-
-  /// The tithi.
-  final Tithi tithi;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'by': 'LUNAR',
-    'adhika': adhika,
-    if (at case final atValue?) 'at': atValue,
-    'half': half.key,
-    'month': month.key,
-    'tithi': tithi.key,
-  };
-
-  @override
-  List<Object?> get _fields => [adhika, at, half, month, tithi];
 }
 
 /// A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
@@ -12113,20 +12364,6 @@ final class EkadashiKinds extends _Request {
 
   @override
   List<Object?> get _fields => [both, eleventh, neither, twelfth];
-}
-
-/// Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
-enum TithiHalf implements _Keyed {
-  /// The first.
-  first('FIRST'),
-  /// The second.
-  second('SECOND');
-
-  const TithiHalf(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
 }
 
 /// Which neighbour keeps an observance whose date's number is skipped.

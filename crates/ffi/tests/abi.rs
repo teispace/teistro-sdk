@@ -46,7 +46,8 @@ use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
 use teistro_ffi::panchanga::{
     TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_HOMA_AHUTI, TS_PANCHANGA_LAGNAS, TS_PANCHANGA_NEPAL_SAMBAT,
-    TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
+    TS_PANCHANGA_SKY, TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_YEARS, TsPanchangaRequest,
+    ts_panchanga_days,
 };
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
@@ -171,7 +172,7 @@ fn a_refused_construction_owns_its_record_and_frees_it_once() {
     assert_eq!(error.flags, TS_ERROR_OWNED);
     let (_, _, field, hint, _) = read_record(&error);
     assert_eq!(field.as_deref(), Some("profile"));
-    assert!(hint.is_some_and(|h| h.contains("nepali-default")));
+    assert!(hint.is_some_and(|h| h.contains("nepali-drik")));
 
     // Freed, zeroed but for the size, and a second free is a no-op.
     // SAFETY: the record the call wrote.
@@ -237,7 +238,7 @@ fn a_context_refuses_what_it_cannot_build_and_says_why() {
     assert!(hint.is_some_and(|h| h.contains("ne-Deva-NP")));
     let patched = Ctx::new(
         0,
-        Some("nepali-default"),
+        Some("nepali-drik"),
         Some(r#"{"frame": {"zodiac": "TROPICAL"}}"#),
         Some("ne-Deva-NP"),
     )
@@ -5660,9 +5661,21 @@ fn panchanga_asked(
 fn panchanga_asked_in(
     ctx: &Ctx,
     year: i32,
+    range: ((u8, u8), (u8, u8)),
+    records: (Option<&str>, Option<&str>),
+    sections: u32,
+) -> Result<Vec<u8>, Record> {
+    panchanga_stepped(ctx, year, range, records, sections, 0)
+}
+
+/// [`panchanga_asked_in`] with the sky's step.
+fn panchanga_stepped(
+    ctx: &Ctx,
+    year: i32,
     ((from_month, from_day), (to_month, to_day)): ((u8, u8), (u8, u8)),
     (muhurta, festivals): (Option<&str>, Option<&str>),
     sections: u32,
+    sky_step_minutes: u16,
 ) -> Result<Vec<u8>, Record> {
     let muhurta = muhurta.map(|text| CString::new(text).unwrap());
     let festivals = festivals.map(|text| CString::new(text).unwrap());
@@ -5670,7 +5683,7 @@ fn panchanga_asked_in(
         TsPanchangaRequest {
             struct_size: 0,
             calendar: Calendar::Gregorian.id(),
-            reserved: 0,
+            sky_step_minutes,
             from_year: year,
             from_month,
             from_day,
@@ -6148,7 +6161,7 @@ fn a_panchanga_request_in_no_calendar_is_refused_by_its_field() {
         TsPanchangaRequest {
             struct_size: 0,
             calendar: 0xFFFF,
-            reserved: 0,
+            sky_step_minutes: 0,
             from_year: 2026,
             from_month: 1,
             from_day: 1,
@@ -6177,6 +6190,52 @@ fn a_panchanga_request_in_no_calendar_is_refused_by_its_field() {
 /// (`calendar-indian-lunisolar.md` §11): asked by its own bit, one per
 /// day in the days' order, its paksha written in full, sealed over what
 /// it holds, and the year turning at Kachhala's first day.
+#[test]
+fn a_panchanga_request_answers_each_days_sky_at_its_step() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let range = ((10, 20), (10, 21));
+    let asked = |sections, step| panchanga_stepped(&ctx, 2025, range, (None, None), sections, step);
+    let schema = schemas::panchanga();
+    let (with, without) = (asked(TS_PANCHANGA_SKY, 60).unwrap(), asked(0, 0).unwrap());
+    let (with, without) = (
+        Reader::parse(&with, &schema).unwrap(),
+        Reader::parse(&without, &schema).unwrap(),
+    );
+    assert_eq!(
+        with.text("content_hashes").unwrap(),
+        without.text("content_hashes").unwrap()
+    );
+    assert_eq!(without.text("sky").unwrap(), "");
+    let envelope: serde_json::Value = serde_json::from_str(with.text("sky").unwrap()).unwrap();
+    let provenance: teistro::Provenance =
+        serde_json::from_value(envelope["provenance"].clone()).unwrap();
+    assert_eq!(
+        provenance.content_hash,
+        teistro::content_hash(&envelope["value"])
+    );
+    let days = envelope["value"].as_array().unwrap();
+    assert_eq!(days.len(), 2);
+    assert_eq!(days[0]["stepMinutes"], 60);
+    assert_eq!(days[0]["sun"]["state"], "CROSSES");
+    assert!(days[0]["moon"]["track"][0]["moon"]["illuminatedFraction"].is_f64());
+
+    // Zero is the default's ten minutes, in the same field.
+    let ten = asked(TS_PANCHANGA_SKY, 0).unwrap();
+    let ten = Reader::parse(&ten, &schema).unwrap();
+    let ten: serde_json::Value = serde_json::from_str(ten.text("sky").unwrap()).unwrap();
+    assert_eq!(ten["value"][0]["stepMinutes"], 10);
+
+    // A step past the most, and a step with nothing to step, say so.
+    assert_eq!(
+        asked(TS_PANCHANGA_SKY, 241).unwrap_err().2.as_deref(),
+        Some("sky_step_minutes")
+    );
+    assert_eq!(
+        asked(0, 60).unwrap_err().2.as_deref(),
+        Some("sky_step_minutes")
+    );
+}
+
 #[test]
 fn a_panchanga_request_answers_each_days_nepal_sambat_date() {
     let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
@@ -10619,7 +10678,7 @@ fn two_reckonings_compare_as_the_facade_compares_them() {
     )
     .unwrap();
     let modern =
-        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
     let crossed: serde_json::Value =
         serde_json::from_str(&disagreements_json(&official, modern.handle, month).unwrap())
             .unwrap();
@@ -10634,7 +10693,7 @@ fn two_reckonings_compare_as_the_facade_compares_them() {
     let kernel = facade("nepali-committee", teistro::Ephemeris::SuryaSiddhanta)
         .almanac()
         .disagreements_request(
-            &facade("nepali-default", teistro::Ephemeris::Builtin),
+            &facade("nepali-drik", teistro::Ephemeris::Builtin),
             &teistro::DisagreementRequest::from_json(month).unwrap(),
         )
         .unwrap();
@@ -10648,7 +10707,7 @@ fn two_reckonings_compare_as_the_facade_compares_them() {
         serde_json::json!([]),
         "the two reckonings disagree on some day"
     );
-    assert_eq!(crossed["days"]["value"]["otherProfile"], "nepali-default");
+    assert_eq!(crossed["days"]["value"]["otherProfile"], "nepali-drik");
 
     assert_eq!(
         disagreements_json(&official, ptr::null(), month).unwrap_err(),
@@ -10690,11 +10749,11 @@ fn a_sankalpa_crosses_as_the_facade_answers_it() {
     let morning = r#"{"at": 2461055.59375, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
         "altitudeM": 1400, "utcOffsetSeconds": 20700, "ayana": "TROPICAL"}"#;
     let ctx =
-        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
     let crossed: serde_json::Value =
         serde_json::from_str(&sankalpa_json(&ctx, morning).unwrap()).unwrap();
     let kernel = teistro::Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([teistro::Ephemeris::Builtin])
         .build()
         .unwrap()
@@ -10864,7 +10923,7 @@ fn why_a_published_day_differs_crosses_as_the_facade_answers_it() {
             "entries": [{"action": "SET", "rule": "NAVARATRA_ARAMBHA",
                 "day": {"calendar": "GREGORIAN", "year": 2026, "month": 10, "day": 12}, "source": "p. 1"}]}]}}"#;
     let modern =
-        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
     let committee = Ctx::with_ephemeris(
         0,
         TsEphemeris::SuryaSiddhanta,
@@ -11093,11 +11152,11 @@ fn a_first_year_crosses_as_the_facade_answers_it() {
         "utcOffsetSeconds": 20700,
         "request": {"key": "grandfather", "at": 2461333.677083}}"#;
     let ctx =
-        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
     let crossed: serde_json::Value =
         serde_json::from_str(&first_year_json(&ctx, death).unwrap()).unwrap();
     let kernel = teistro::Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([teistro::Ephemeris::Builtin])
         .build()
         .unwrap()
@@ -11142,11 +11201,11 @@ fn an_ashauch_crosses_as_the_facade_answers_it() {
         "request": {"key": "grandfather", "relation": "SAPINDA",
                     "event": {"event": "DEATH", "at": 2461051.677083}}}"#;
     let ctx =
-        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-default"), None, None).unwrap();
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
     let crossed: serde_json::Value =
         serde_json::from_str(&ashauch_json(&ctx, death).unwrap()).unwrap();
     let kernel = teistro::Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([teistro::Ephemeris::Builtin])
         .build()
         .unwrap()

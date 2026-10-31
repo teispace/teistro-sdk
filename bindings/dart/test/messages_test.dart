@@ -8,7 +8,7 @@ import 'package:test/test.dart';
 final Teistro teistro = Teistro.open();
 
 Context context() => teistro.context(
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'ne-Deva-NP',
   testProvider: true,
 );
@@ -192,6 +192,22 @@ void main() {
         ),
       ),
     );
+  });
+
+  test('a date and a time as text and parts', () {
+    final ctx = context();
+    addTearDown(ctx.dispose);
+    final dawn = ctx.intl.time(
+      const TimeTextRequest(
+        at: ClockTime(hour: 6, minute: 5),
+        hour12: true,
+        locale: 'hi-Deva-IN',
+      ),
+    );
+    expect(dawn.text, 'सुबह ६:०५');
+    expect(dawn.parts.first.kind, 'DAY_PERIOD');
+    expect(dawn.parts.map((part) => part.text).join(), dawn.text);
+    expect(dawn.isDraft, isTrue);
   });
 
   test('the accessors are a tree over any renderer', () {

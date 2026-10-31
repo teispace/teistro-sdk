@@ -201,7 +201,7 @@ struct Reading {
     /// The column head in the table of changes, for the readings that
     /// differ only in the day a month begins on.
     head: Option<&'static str>,
-    /// The settings patch over `nepali-default`, JSON.
+    /// The settings patch over `nepali-drik`, JSON.
     patch: Option<&'static str>,
     take: Take,
     shipped: bool,
@@ -210,7 +210,7 @@ struct Reading {
 
 const READINGS: [Reading; 10] = [
     Reading {
-        name: "the Bikram Sambat calendar's months (`BIKRAM_SAMBAT`, `nepali-default`'s)",
+        name: "the Bikram Sambat calendar's months (`BIKRAM_SAMBAT`, `nepali-drik`'s)",
         head: Some("BIKRAM_SAMBAT"),
         patch: None,
         take: Take::Ritu,
@@ -324,7 +324,7 @@ fn kathmandu() -> (Place, UtcOffset) {
 
 fn context(patch: Option<&str>) -> Result<Context, String> {
     let builder = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin]);
     match patch {
         Some(json) => builder.settings_json(json),
@@ -805,7 +805,7 @@ fn page() -> Result<String, String> {
          sign as the day opens misses the months whose sankranti fell after\n\
          dawn; a rule that names every recorded season still misses the\n\
          calendar's season changes in §5, so it agrees with these months by\n\
-         coincidence and not by rule. So `nepali-default` reads the shipped\n\
+         coincidence and not by rule. So `nepali-drik` reads the shipped\n\
          Bikram Sambat calendar, and the root, which has no civil calendar\n\
          of Nepal's, places the modern sankranti by the punya-kala, the\n\
          Dharmasindhu's rule the calendar itself follows\n\

@@ -81,7 +81,7 @@ function stations(speeds, dayCount, stride, column) {
 }
 
 const ctx = new Context({
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'ne-Deva-NP',
   ephemeris: 'BUILTIN',
 });

@@ -189,6 +189,15 @@ export declare const PANCHANGA_LAGNAS: 16;
 export declare const PANCHANGA_HOMA_AHUTI: 32;
 
 /**
+ * `TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's
+ * `sections` for each day's sky, in the `sky` section: the paths of the
+ * Sun and the Moon at `sky_step_minutes`, their rises, transits and sets
+ * as exact points, and the Moon's lit shape from the place
+ * (`03-design/day-sky.md`). A request that does not set it pays nothing.
+ */
+export declare const PANCHANGA_SKY: 64;
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 export type Kind =
@@ -281,7 +290,7 @@ export declare const Kind: {
    */
   readonly Nakshatra: 'nakshatra';
   /**
-   * The thirty tithis of the lunar month.
+   * The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30.
    */
   readonly Tithi: 'tithi';
   /**
@@ -872,7 +881,7 @@ export declare const Nakshatra: {
 export declare const NakshatraById: ReadonlyMap<number, Nakshatra>;
 
 /**
- * The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
+ * The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
  */
 export type Tithi =
   | 'tithi.SHUKLA_PRATIPADA'

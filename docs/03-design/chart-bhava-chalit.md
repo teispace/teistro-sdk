@@ -47,7 +47,7 @@ itself `equal-house` (55). That label is wrong, and the geometry says so:
 The engine computes **Vehlow** and calls it equal house. They are not the same
 thing: equal houses *start* at the ascendant, Vehlow *centres* on it, and the two
 are fifteen degrees apart. This is the third entry of the deliberate-difference
-registry made exact — `nepali-default` says `VEHLOW` because that is what the
+registry made exact — `nepali-drik` says `VEHLOW` because that is what the
 charts it reproduces contain, whatever their label
 (`05-testing/01-golden-vectors.md`).
 

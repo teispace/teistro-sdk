@@ -177,6 +177,15 @@ extern "C" {
 #define TS_PANCHANGA_HOMA_AHUTI ((uint32_t)32)
 
 /**
+ * `TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's
+ * `sections` for each day's sky, in the `sky` section: the paths of the
+ * Sun and the Moon at `sky_step_minutes`, their rises, transits and sets
+ * as exact points, and the Moon's lit shape from the place
+ * (`03-design/day-sky.md`). A request that does not set it pays nothing.
+ */
+#define TS_PANCHANGA_SKY ((uint32_t)64)
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 typedef enum ts_kind {
@@ -193,7 +202,7 @@ typedef enum ts_kind {
      */
     TS_KIND_NAKSHATRA = 3,
     /**
-     * The thirty tithis of the lunar month.
+     * The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30.
      */
     TS_KIND_TITHI = 4,
     /**
@@ -703,7 +712,7 @@ typedef enum ts_nakshatra {
 } ts_nakshatra;
 
 /**
- * The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
+ * The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
  */
 typedef enum ts_tithi {
     /**
@@ -8130,7 +8139,7 @@ struct ts_context_options {
      */
     uint32_t flags;
     /**
-     * The shipped profile's id (`parashari-classical`, `nepali-default`,
+     * The shipped profile's id (`parashari-classical`, `nepali-drik`,
      * `nepali-committee`, `surya-siddhanta`, `kp-default`,
      * `western-tropical-default`, `conformance-baseline`).
      * Example: parashari-classical. May be null.
@@ -9388,9 +9397,12 @@ struct ts_panchanga_request {
      */
     uint16_t calendar;
     /**
-     * Reserved; write zero.
+     * The step of the sky's track in minutes when `sections` asks for
+     * `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+     * was a reserved field every caller wrote zero to.
+     * Unit: min. Range: [0,240]. Example: 0.
      */
-    uint16_t reserved;
+    uint16_t sky_step_minutes;
     /**
      * The first day's astronomical year.
      * Example: 2026.
@@ -9453,7 +9465,8 @@ struct ts_panchanga_request {
      * only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
      * lagna table, in the `lagnas` span section;
      * `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-     * `homa_ahuti` span section.
+     * `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+     * in the `sky` section, at `sky_step_minutes`.
      * Zero for the days alone, which is what every
      * caller compiled against an earlier header passes, since this was a
      * reserved field it wrote zero to.
@@ -9894,6 +9907,19 @@ ts_status ts_intl_load_pack(const ts_context * context, const uint8_t * bytes, s
 ts_status ts_intl_set_locale(const ts_context * context, const char * locale);
 
 /**
+ * The loaded locale a tag means, by RFC 4647 lookup, lent until the next
+ * call on the context: `ne` is `ne-Deva-NP`. Nothing changes, and
+ * `ts_intl_set_locale` selects the same one.
+ *
+ * # Errors
+ *
+ * `UNSUPPORTED` naming the loaded locales, as `ts_intl_set_locale`.
+ * Safety: `context` must be a live handle; `locale` a NUL-terminated string;
+ * `out_locale` valid for a write.
+ */
+ts_status ts_intl_lookup_locale(const ts_context * context, const char * locale, ts_str * out_locale);
+
+/**
  * The locale every render resolves from, lent until the next call on the
  * context.
  * Safety: `context` must be a live handle; `out_locale` valid for a write.
@@ -9928,6 +9954,39 @@ ts_status ts_intl_has(const ts_context * context, const char * key, uint8_t * ou
  * `out_json` valid for a write.
  */
 ts_status ts_intl_in_words(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * A time of day as text and parts, through the locale's pattern and its
+ * parts of the day (`03-design/intl-engine-and-packs.md`), answered as
+ * canonical JSON: `{text, parts, locale, resolvedFrom, isFallback,
+ * isDraft, warnings}`, each part `{kind, text}` and the parts joined being
+ * `text`.
+ *
+ * `request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"`
+ * (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left
+ * out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part
+ * of the time out of range is `INVALID_ARG`, named under `time`; a
+ * locale not loaded is `UNSUPPORTED`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_intl_time(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * A date as text and parts, in its own calendar, through the locale's
+ * pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time`
+ * answers.
+ *
+ * `request_json` is `{"at": {"calendar", "year", "month", "day", "era",
+ * "leap"}}`, with `"style"` (`NUMERIC`, `LONG`, `FULL`), `"locale"` (the
+ * context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does
+ * not read or a date its calendar does not hold is `INVALID_ARG`, named
+ * under `date`; a locale not loaded, a calendar not shipped or one with no
+ * pattern is `UNSUPPORTED`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_intl_date(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
  * Text from one script into another (`deva`, `iast`), as a string lent
@@ -10235,6 +10294,51 @@ ts_status ts_almanac_digest(const ts_context * context, const char * request_jso
  * `out_json` valid for a write.
  */
 ts_status ts_almanac_next(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * One day's facts as short declarative sentences
+ * (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+ * value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+ * params, text}`, `draft` true while the locale's templates wait for a
+ * native reviewer (Q42), and `withheld` the facts a polar day holds
+ * elsewhere.
+ *
+ * `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+ * altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+ * place or offset out of range, is `INVALID_ARG`, named under
+ * `sentences`; a locale not loaded, or one without the templates, is
+ * `UNSUPPORTED` on `locale`; a context without an ephemeris is
+ * `CAPABILITY`; otherwise as the day.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_almanac_sentences(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * Anniversaries kept by the tithi over a span of years, for many people
+ * in one call (`03-design/anniversary-span.md`), as canonical JSON
+ * `{value, provenance}`: `value` is a festival answer whose
+ * `anniversaries` hold each person's days in the order their tithis
+ * begin, each `{key, count, kind, origin, monthBy, dayRule, observance}`
+ * as a festival request's (`festivals_json`), `dayRule` being `{tithi, at,
+ * clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the
+ * window read, the clause that chose the day and where it is stated.
+ * Occurrences no day could judge are in `unjudged`.
+ *
+ * `request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg",
+ * "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`:
+ * `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when
+ * left out, the span running from month 1, day 1 of the first year to the
+ * day before month 1 of the year after the last; `altitudeM` optional;
+ * `anniversaries` at most 1000, each as a festival request writes one. A
+ * key it does not read, a place or offset out of range, an anniversary
+ * its check refuses or a key given twice is `INVALID_ARG`, named under
+ * `anniversaries`; a `years` out of range `OUT_OF_RANGE`; too many
+ * anniversaries `LIMIT`; a context without an ephemeris `CAPABILITY`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_almanac_anniversaries(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
  * Every rule of a festival pack with what it is

@@ -28,6 +28,7 @@
 
 use core::ffi::c_char;
 
+use teistro::day_sky::SkyStep;
 use teistro_calendar::CalendarDate;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::Calendar;
@@ -36,7 +37,7 @@ use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro_core::settings::LunarMonth;
-use teistro_core::time::UtcOffset;
+use teistro_core::time::{ClockReading, UtcOffset};
 use teistro_idl::blob::{FixedValue, Writer};
 use teistro_panchanga::almanac::Panchanga;
 use teistro_panchanga::omen::YogaCause;
@@ -223,7 +224,7 @@ impl From<Sunrises> for TsSunrises {
 /// let request = TsPanchangaRequest {
 ///     struct_size: u32::try_from(size_of::<TsPanchangaRequest>())?,
 ///     calendar: 0,
-///     reserved: 0,
+///     sky_step_minutes: 0,
 ///     from_year: 2026,
 ///     from_month: 9,
 ///     from_day: 1,
@@ -250,8 +251,11 @@ pub struct TsPanchangaRequest {
     /// The calendar the range's dates are written in.
     /// `api: enum=Calendar example=0`
     pub calendar: u16,
-    /// Reserved; write zero.
-    pub reserved: u16,
+    /// The step of the sky's track in minutes when `sections` asks for
+    /// `TS_PANCHANGA_SKY`, 1 to 240; zero for ten, and zero otherwise. It
+    /// was a reserved field every caller wrote zero to.
+    /// `api: unit=min range=[0,240] example=0`
+    pub sky_step_minutes: u16,
     /// The first day's astronomical year.
     /// `api: example=2026`
     pub from_year: i32,
@@ -293,7 +297,8 @@ pub struct TsPanchangaRequest {
     /// only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's
     /// lagna table, in the `lagnas` span section;
     /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
-    /// `homa_ahuti` span section.
+    /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
+    /// in the `sky` section, at `sky_step_minutes`.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -471,9 +476,26 @@ pub const TS_PANCHANGA_LAGNAS: u32 = 16;
 /// ```
 pub const TS_PANCHANGA_HOMA_AHUTI: u32 = 32;
 
+/// `TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's
+/// `sections` for each day's sky, in the `sky` section: the paths of the
+/// Sun and the Moon at `sky_step_minutes`, their rises, transits and sets
+/// as exact points, and the Moon's lit shape from the place
+/// (`03-design/day-sky.md`). A request that does not set it pays nothing.
+///
+/// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_HOMA_AHUTI, TS_PANCHANGA_SKY};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_SKY, 1 << 6);
+/// assert_eq!((TS_PANCHANGA_SKY | TS_PANCHANGA_HOMA_AHUTI) & TS_PANCHANGA_SKY, TS_PANCHANGA_SKY);
+/// ```
+pub const TS_PANCHANGA_SKY: u32 = 64;
+
 /// A day's own values, in the order `days` declares them.
 #[must_use]
-fn day_row(day: &Panchanga) -> Vec<FixedValue> {
+fn day_row(day: &Panchanga, stated: Option<&ClockReading>) -> Vec<FixedValue> {
     let mut row = interval(day.window);
     row.extend([
         u64::from(day.month.month.id()).into(),
@@ -498,6 +520,9 @@ fn day_row(day: &Panchanga) -> Vec<FixedValue> {
     ]);
     row.extend(interval(day.muhurtas.brahma.unwrap_or(EMPTY)));
     row.extend(interval(day.moon.window));
+    // The clock a zone stamped on the day, or the offset the answer states.
+    let clock = day.clock.as_ref().or(stated);
+    row.push(i64::from(clock.map_or(0, |clock| clock.offset.seconds())).into());
     row
 }
 
@@ -867,6 +892,8 @@ pub struct Beside<'a> {
     pub eclipses: &'a str,
     /// The `nepal_sambat` section.
     pub nepal_sambat: &'a str,
+    /// The `sky` section.
+    pub sky: &'a str,
 }
 
 /// A batch of almanacs as the blob its schema describes.
@@ -883,7 +910,7 @@ pub struct Beside<'a> {
 ///
 /// let place = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
 /// let provenance = Provenance::new(
-///     Version::new(0, 1, 0), 1, 1, "nepali-default",
+///     Version::new(0, 1, 0), 1, 1, "nepali-drik",
 ///     Hash::of(b"settings"), Hash::of(b"input"),
 /// );
 /// // A batch of no days is still a blob, its counts saying so.
@@ -917,7 +944,8 @@ pub fn encode(
     let model = first.map_or("", |day| day.day.model.as_str());
 
     let ragged = RaggedRows::of(days)?;
-    let day_rows: Vec<Vec<FixedValue>> = days.iter().map(day_row).collect();
+    let stated = provenance.time.clock.as_ref();
+    let day_rows: Vec<Vec<FixedValue>> = days.iter().map(|day| day_row(day, stated)).collect();
     let count_rows: Vec<Vec<FixedValue>> = days.iter().map(count_row).collect();
     let local_days: Vec<Vec<FixedValue>> = days
         .iter()
@@ -977,6 +1005,7 @@ pub fn encode(
         writer.rows("bhadra_vasa", &ragged.bhadra_vasa)?;
         writer.rows("shiva_vasa", &ragged.shiva_vasa)?;
         writer.rows("named_panchaka", &ragged.named_panchaka)?;
+        writer.bytes("sky", beside.sky.as_bytes())?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -985,6 +1014,29 @@ pub fn encode(
             format!("the panchanga blob could not be written: {error}"),
         )
     })
+}
+
+/// `beside` with the sky `sections` asks for, at `step` minutes, zero for
+/// the default; a step with no sky asked is refused rather than ignored.
+fn with_sky(
+    beside: teistro::AlmanacRequest,
+    sections: u32,
+    step: u16,
+) -> Result<teistro::AlmanacRequest, Error> {
+    if sections & TS_PANCHANGA_SKY == TS_PANCHANGA_SKY {
+        let step = match step {
+            0 => SkyStep::default(),
+            minutes => SkyStep::of_minutes(minutes)?,
+        };
+        Ok(beside.with_sky(step))
+    } else if step == 0 {
+        Ok(beside)
+    } else {
+        Err(
+            Error::invalid_arg("a sky step asks for no sky without `TS_PANCHANGA_SKY`")
+                .with_field("sky_step_minutes"),
+        )
+    }
 }
 
 /// Founds the almanac of every day in a range at one place and answers
@@ -1027,7 +1079,7 @@ pub fn encode(
 /// // A week of September 2026 at Kathmandu.
 /// let request = TsPanchangaRequest {
 ///     struct_size: u32::try_from(size_of::<TsPanchangaRequest>())?,
-///     calendar: 0, reserved: 0,
+///     calendar: 0, sky_step_minutes: 0,
 ///     from_year: 2026, from_month: 9, from_day: 1,
 ///     to_month: 9, to_day: 7, to_year: 2026,
 ///     latitude_deg: 27.7172, longitude_deg: 85.324, altitude_m: 1400.0,
@@ -1124,6 +1176,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
         if asked.sections & TS_PANCHANGA_HOMA_AHUTI == TS_PANCHANGA_HOMA_AHUTI {
             beside = beside.with_homa_ahuti();
         }
+        beside = with_sky(beside, asked.sections, asked.sky_step_minutes)?;
         if asked.sections & TS_PANCHANGA_WITHOUT_DAYS == TS_PANCHANGA_WITHOUT_DAYS {
             beside = beside.without_days();
         }
@@ -1163,6 +1216,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
                 years: &json(&sections.years),
                 eclipses: &json(&sections.eclipses),
                 nepal_sambat: &json(&sections.nepal_sambat),
+                sky: &json(&sections.sky),
             },
         )?;
         // SAFETY: the entry point's contract.
@@ -1207,7 +1261,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let official = TsContext::build_chain(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, vec![teistro::Ephemeris::SuryaSiddhanta, teistro::Ephemeris::Builtin])?;
-/// # let modern = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # let modern = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
 /// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
 /// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
 /// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
@@ -1295,7 +1349,7 @@ pub unsafe extern "C" fn ts_almanac_disagreements(
 /// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
-/// # let modern = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # let modern = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
 /// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
 /// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
 /// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
@@ -1380,7 +1434,7 @@ pub unsafe extern "C" fn ts_almanac_published_reasons(
 /// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
-/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
 /// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
 /// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
 /// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
@@ -1459,7 +1513,7 @@ pub unsafe extern "C" fn ts_almanac_sankalpa(
 /// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
-/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
 /// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
 /// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
 /// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
@@ -1532,7 +1586,7 @@ pub unsafe extern "C" fn ts_almanac_ashauch(
 /// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
-/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
 /// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
 /// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
 /// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
@@ -1820,6 +1874,140 @@ pub unsafe extern "C" fn ts_almanac_next(
             crate::support::text(request_json, "request_json")
         }?)?;
         let answer = ctx.sdk().almanac().next_in_full(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
+/// One day's facts as short declarative sentences
+/// (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+/// value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+/// params, text}`, `draft` true while the locale's templates wait for a
+/// native reviewer (Q42), and `withheld` the facts a polar day holds
+/// elsewhere.
+///
+/// `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+/// altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+/// place or offset out of range, is `INVALID_ARG`, named under
+/// `sentences`; a locale not loaded, or one without the templates, is
+/// `UNSUPPORTED` on `locale`; a context without an ephemeris is
+/// `CAPABILITY`; otherwise as the day.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, teistro::Ephemeris::SuryaSiddhanta)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_sentences;
+/// use teistro_ffi::string::TsString;
+///
+/// let asked = c"{\"date\": {\"year\": 2026, \"month\": 3, \"day\": 18}, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"utcOffsetSeconds\": 20700}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// assert_eq!(unsafe { ts_almanac_sentences(&raw const ctx, asked.as_ptr(), &raw mut out) }, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// assert_eq!(answer["value"]["sentences"][0]["key"], "sdk.day.vara");
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_almanac_sentences(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::SentencesRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().sentences(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
+/// Anniversaries kept by the tithi over a span of years, for many people
+/// in one call (`03-design/anniversary-span.md`), as canonical JSON
+/// `{value, provenance}`: `value` is a festival answer whose
+/// `anniversaries` hold each person's days in the order their tithis
+/// begin, each `{key, count, kind, origin, monthBy, dayRule, observance}`
+/// as a festival request's (`festivals_json`), `dayRule` being `{tithi, at,
+/// clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the
+/// window read, the clause that chose the day and where it is stated.
+/// Occurrences no day could judge are in `unjudged`.
+///
+/// `request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg",
+/// "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`:
+/// `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when
+/// left out, the span running from month 1, day 1 of the first year to the
+/// day before month 1 of the year after the last; `altitudeM` optional;
+/// `anniversaries` at most 1000, each as a festival request writes one. A
+/// key it does not read, a place or offset out of range, an anniversary
+/// its check refuses or a key given twice is `INVALID_ARG`, named under
+/// `anniversaries`; a `years` out of range `OUT_OF_RANGE`; too many
+/// anniversaries `LIMIT`; a context without an ephemeris `CAPABILITY`.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, teistro::Ephemeris::SuryaSiddhanta)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_anniversaries;
+/// use teistro_ffi::string::TsString;
+///
+/// // A grandfather's barkhi, Kartika's bright 10th, over two years.
+/// let asked = c"{\"fromYear\": 2026, \"years\": 2, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700, \"anniversaries\": [{\"key\": \"GRANDFATHER\", \"origin\": {\"by\": \"LUNAR\", \"month\": \"KARTIKA\", \"tithi\": \"SHUKLA_DASHAMI\"}}]}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// assert_eq!(unsafe { ts_almanac_anniversaries(&raw const ctx, asked.as_ptr(), &raw mut out) }, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// let days = answer["value"]["anniversaries"].as_array().ok_or("a list")?;
+/// assert_eq!(days.len(), 2);
+/// assert_eq!(days[0]["key"], "GRANDFATHER");
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_almanac_anniversaries(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::AnniversariesRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().anniversaries_in_full(&asked)?;
         let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_json, "out_json", json) }

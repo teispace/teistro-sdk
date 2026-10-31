@@ -25,7 +25,7 @@ fn ghatasthapana_2025_is_elected_where_the_committee_printed_it() {
     let day = CalendarDate::defined(Calendar::Gregorian, 2025, 9, 22);
     for (profile, ephemeris) in [
         ("nepali-committee", Ephemeris::SuryaSiddhanta),
-        ("nepali-default", Ephemeris::Builtin),
+        ("nepali-drik", Ephemeris::Builtin),
     ] {
         let sdk = Context::builder()
             .profile(profile)

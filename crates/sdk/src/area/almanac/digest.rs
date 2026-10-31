@@ -23,12 +23,12 @@ use teistro_idl::model::{BlobSchema, ColumnDef, Scalar, SectionSchema};
 use teistro_panchanga::Panchanga;
 use teistro_panchanga::Span;
 use teistro_panchanga::festival::{Observances, PublishedStatus};
-use teistro_time::{DayState, PolarKind};
+use teistro_time::{DayState, PolarKind, ZoneSpec};
 
-use super::AlmanacArea;
 use super::feed::{FeedForm, kept_days};
+use super::{AlmanacArea, DayClock};
 use crate::area::system_of;
-use crate::asked::{DayAsked, offset_of, place_of};
+use crate::asked::{DayAsked, place_of};
 use crate::festival_request::FestivalRequest;
 
 /// The field a digest request's refusals are named under.
@@ -45,8 +45,9 @@ pub const DIGEST_SCHEMA: &str = DIGEST;
 /// reader of the last would misread, never for a section added at the end.
 pub const DIGEST_FORMAT_MAJOR: u32 = 1;
 
-/// The format's minor version, raised when a section is added.
-pub const DIGEST_FORMAT_MINOR: u32 = 0;
+/// The format's minor version, raised when a section is added: 1 added
+/// `clock`, each day's own offset.
+pub const DIGEST_FORMAT_MINOR: u32 = 1;
 
 /// The days a digest holds when the request does not say.
 pub const DIGEST_DEFAULT_DAYS: u32 = 60;
@@ -137,8 +138,8 @@ pub fn digest_schema() -> BlobSchema {
                 ColumnDef::new("format_major", Scalar::U32, "The format's major version; a reader refuses another."),
                 ColumnDef::new("format_minor", Scalar::U32, "The format's minor version; a reader skips what it does not know."),
                 ColumnDef::new("day_count", Scalar::U32, "How many days the digest holds, the rows of `days`."),
-                ColumnDef::new("base_unix_seconds", Scalar::I64, "The first day's local midnight in seconds since 1970, which every time counts from."),
-                ColumnDef::new("utc_offset_seconds", Scalar::I32, "The offset the civil days run at, east positive."),
+                ColumnDef::new("base_unix_seconds", Scalar::I64, "The first day's local midnight on that day's offset, in seconds since 1970, which every time counts from."),
+                ColumnDef::new("utc_offset_seconds", Scalar::I32, "The first day's offset, east positive; `clock` has each day's."),
                 ColumnDef::new("calendar", Scalar::U16, "The calendar `days` dates are read in.").of_enum("Calendar"),
                 ColumnDef::new("latitude_deg", Scalar::F64, "The place's latitude, degrees north."),
                 ColumnDef::new("longitude_deg", Scalar::F64, "The place's longitude, degrees east."),
@@ -181,6 +182,9 @@ pub fn digest_schema() -> BlobSchema {
             SectionSchema::bytes(6, "text", "UTF-8 text: the keys and names, with nothing between them."),
             SectionSchema::bytes(7, "locale", "UTF-8 text: the BCP 47 tag `names` is in."),
             SectionSchema::bytes(8, "provenance_json", "UTF-8 JSON, canonical: the days' provenance, its `content_hash` theirs."),
+            SectionSchema::columns(10, "clock", "One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1.", vec![
+                ColumnDef::new("utc_offset_seconds", Scalar::I32, "The offset at the day's opening, east positive."),
+            ]),
             SectionSchema::bytes(9, "seal", "SHA-256 of every byte before this section, which ends the digest, in 64 lowercase hexadecimal digits."),
         ],
     }
@@ -206,8 +210,8 @@ pub struct DigestRequest {
     pub days: u32,
     /// The place.
     pub place: Place,
-    /// The offset the civil days run at.
-    pub offset: UtcOffset,
+    /// The clock the civil days run on.
+    pub clock: DayClock,
     /// The festivals to list; none lists none.
     pub festivals: Option<FestivalRequest>,
 }
@@ -230,7 +234,12 @@ pub(crate) struct DigestAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The clock's offset; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone, each day on its own offset; or `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The festivals to list, as a festival request; none when left out.
     #[serde(default)]
     #[cfg_attr(
@@ -244,7 +253,8 @@ impl DigestRequest {
     /// The record a binding sends, as JSON: `first` as `{"year", "month",
     /// "day"}` in `calendar` (Gregorian when left out), `days` (60 when
     /// left out), `latitudeDeg`, `longitudeDeg`, `altitudeM`,
-    /// `utcOffsetSeconds` and optionally `festivals`, a festival request.
+    /// `utcOffsetSeconds` or `zone`, and optionally `festivals`, a festival
+    /// request.
     ///
     /// ```
     /// use teistro::DigestRequest;
@@ -257,8 +267,8 @@ impl DigestRequest {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a place or offset out
-    /// of range, or a festival request its own reader refuses, each named
-    /// under `digest`.
+    /// of range, both or neither of `utcOffsetSeconds` and `zone`, or a
+    /// festival request its own reader refuses, each named under `digest`.
     pub fn from_json(text: &str) -> Result<DigestRequest, Error> {
         let asked: DigestAsked = teistro_core::strict::read(text, DIGEST)?;
         asked.request().map_err(|why| why.under(DIGEST))
@@ -272,7 +282,7 @@ impl DigestAsked {
             first: self.first.in_calendar(calendar),
             days: self.days.unwrap_or(DIGEST_DEFAULT_DAYS),
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             festivals: self
                 .festivals
                 .map(|festivals| FestivalRequest::from_json(&festivals.to_string()))
@@ -330,13 +340,21 @@ struct Spans {
     to: Vec<i32>,
 }
 
-/// The clock of a digest: seconds from its base.
+/// The clock of a digest: seconds from its base, and the offset of a day
+/// that carries no clock of its own.
 #[derive(Clone, Copy)]
 struct Clock {
     base_unix_seconds: i64,
+    stated: UtcOffset,
 }
 
 impl Clock {
+    /// The offset a day was read on: its own, asked by zone, or the one
+    /// the caller stated.
+    fn offset_of(self, day: &Panchanga) -> UtcOffset {
+        day.clock.as_ref().map_or(self.stated, |clock| clock.offset)
+    }
+
     fn seconds(self, at: JulianDay<Utc>) -> Result<i32, Error> {
         let seconds = (at.get() - JulianDay::<Utc>::UNIX_EPOCH.get()) * 86_400.0;
         #[allow(
@@ -529,6 +547,7 @@ struct DayColumns {
     moonrise: Vec<i32>,
     moonset: Vec<i32>,
     moon_phase: Vec<u16>,
+    utc_offset_seconds: Vec<i32>,
     lunar_month: Vec<u16>,
     span_first: Vec<u32>,
     span_count: Vec<u16>,
@@ -567,7 +586,7 @@ impl AlmanacArea<'_> {
     ///
     /// As [`AlmanacArea::of`] and [`AlmanacArea::festivals`];
     /// `OUT_OF_RANGE`, on `days`, for a count outside 1 to
-    /// [`DIGEST_MAX_DAYS`].
+    /// [`DIGEST_MAX_DAYS`]; as [`AlmanacArea::in_zone`] for a zone.
     pub fn digest(self, asked: &DigestRequest) -> Result<Envelope<Vec<u8>>, Error> {
         if !(1..=DIGEST_MAX_DAYS).contains(&asked.days) {
             return Err(Error::new(
@@ -582,16 +601,40 @@ impl AlmanacArea<'_> {
         let system = system_of(asked.first.calendar)?;
         let first = system.fixed_of(&asked.first)?;
         let last = system.date_of(first.plus_days(i64::from(asked.days) - 1))?;
-        let days = self.of(&asked.first, &last, &asked.place, asked.offset)?;
+        match &asked.clock {
+            DayClock::Offset(offset) => self.digest_on(asked, &last, *offset),
+            DayClock::Zone(zone) => {
+                let clock = zone.clock(self.context.zones())?;
+                let offset = Self::steady_offset(&asked.first, &last, &clock, true)?;
+                self.on(&clock).digest_on(asked, &last, offset)
+            }
+        }
+    }
+
+    /// The digest through `last`, on this area's clock or else `offset`.
+    fn digest_on(
+        self,
+        asked: &DigestRequest,
+        last: &CalendarDate,
+        offset: UtcOffset,
+    ) -> Result<Envelope<Vec<u8>>, Error> {
+        let first = system_of(asked.first.calendar)?.fixed_of(&asked.first)?;
+        let days = self.of(&asked.first, last, &asked.place, offset)?;
         let observed = match &asked.festivals {
             Some(festivals) => {
-                let answer =
-                    self.festivals(&asked.first, &last, &asked.place, asked.offset, festivals)?;
+                let answer = self.festivals(&asked.first, last, &asked.place, offset, festivals)?;
                 observances(self, &answer.value, first.get(), i64::from(asked.days))?
             }
             None => Vec::new(),
         };
-        let bytes = self.written(asked, first.get(), &days.value, &days.provenance, &observed)?;
+        let written = Written {
+            first: first.get(),
+            stated: offset,
+            days: &days.value,
+            provenance: &days.provenance,
+            observed: &observed,
+        };
+        let bytes = self.written(asked, &written)?;
         let provenance = Provenance {
             content_hash: Hash::of(&bytes),
             ..days.provenance
@@ -604,21 +647,30 @@ impl AlmanacArea<'_> {
 
     /// The bytes: the rows gathered, the schema's sections written and the
     /// seal set over what precedes it.
-    fn written(
-        self,
-        asked: &DigestRequest,
-        first: i64,
-        days: &[Panchanga],
-        provenance: &Provenance,
-        observed: &[Observed],
-    ) -> Result<Vec<u8>, Error> {
+    fn written(self, asked: &DigestRequest, from: &Written<'_>) -> Result<Vec<u8>, Error> {
+        let Written {
+            first,
+            stated,
+            days,
+            provenance,
+            observed,
+        } = *from;
+        let first_offset = days
+            .first()
+            .and_then(|day| day.clock.as_ref())
+            .map_or(stated, |clock| clock.offset);
         let base_unix_seconds =
-            (first - UNIX_EPOCH_DAY) * 86_400 - i64::from(asked.offset.seconds());
-        let gathered = self.gathered(Clock { base_unix_seconds }, first, days, observed)?;
+            (first - UNIX_EPOCH_DAY) * 86_400 - i64::from(first_offset.seconds());
+        let clock = Clock {
+            base_unix_seconds,
+            stated,
+        };
+        let gathered = self.gathered(clock, first, days, observed)?;
         let locale = self.context.locale_engine().locale().to_owned();
         let meta = Meta {
             asked,
             base_unix_seconds,
+            first_offset,
             locale: &locale,
             provenance,
         };
@@ -716,14 +768,26 @@ impl DayColumns {
         self.moonrise.push(first_of(&day.moon.rises)?);
         self.moonset.push(first_of(&day.moon.sets)?);
         self.moon_phase.push(moon_phase(day));
+        self.utc_offset_seconds.push(clock.offset_of(day).seconds());
         Ok(())
     }
+}
+
+/// What [`AlmanacArea::written`] writes from.
+#[derive(Clone, Copy)]
+struct Written<'a> {
+    first: i64,
+    stated: UtcOffset,
+    days: &'a [Panchanga],
+    provenance: &'a Provenance,
+    observed: &'a [Observed],
 }
 
 /// What the header sections say.
 struct Meta<'a> {
     asked: &'a DigestRequest,
     base_unix_seconds: i64,
+    first_offset: UtcOffset,
     locale: &'a str,
     provenance: &'a Provenance,
 }
@@ -758,7 +822,7 @@ fn encode(
             FixedValue::from(DIGEST_FORMAT_MINOR),
             FixedValue::from(u64::try_from(columns.year.len()).unwrap_or(u64::MAX)),
             FixedValue::from(meta.base_unix_seconds),
-            FixedValue::from(i64::from(asked.offset.seconds())),
+            FixedValue::from(i64::from(meta.first_offset.seconds())),
             FixedValue::from(u64::from(asked.first.calendar.id())),
             FixedValue::from(asked.place.latitude.get()),
             FixedValue::from(asked.place.longitude.get()),
@@ -820,6 +884,11 @@ fn encode(
     writer.bytes(
         "provenance_json",
         canonical_json(meta.provenance).as_bytes(),
+    )?;
+    writer.columns(
+        "clock",
+        columns.utc_offset_seconds.len(),
+        &[ColumnData::I32(&columns.utc_offset_seconds)],
     )?;
     writer.bytes("seal", &[0; SEAL_LEN])
 }

@@ -8,7 +8,7 @@ beyond marriage, and his marriage, against the days the Nepal Panchanga
 Nirnayak Samiti printed for them on its VS 2083 muhurta sheet. Each
 printed day is founded at Kathmandu (27.7172° N, 85.324° E, 1400 m) on
 Nepal's clock, over the committee's own sky (`nepali-committee`, the
-Surya Siddhanta) and the modern one (`nepali-default`), and searched
+Surya Siddhanta) and the modern one (`nepali-drik`), and searched
 with the rite's shipped rules. A day is **day-clean** when the rite's
 grades of the tithi, nakshatra, yoga, karana, vara and month leave some
 of its daylight unrejected, and **clean** when some window of that

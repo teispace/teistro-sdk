@@ -122,7 +122,7 @@ Nepal's clock, beside four readings of each observance (Holi in the hills
 and the Terai counted from the Holika day, §9.4): the text's rules over
 the committee's own sky (`nepali-committee`, the Surya Siddhanta with its
 bija, C187), each parting named with its cause; the same over the modern
-sky (`nepali-default`); every rule read as the day whose sunrise holds
+sky (`nepali-drik`); every rule read as the day whose sunrise holds
 its tithi, C197's rival; and the `NEPAL` pack, the text for a rite of the
 night and the tithi at sunrise for one of the daylight (§9.5), which the
 pass holds to every printed day.
@@ -227,7 +227,7 @@ The days the committee printed for VS 2082 and 2083 that the
 `NEPAL_PANCHANGA` pack adds to `NEPAL` (`festival-rules.md` §10), at
 Kathmandu on Nepal's clock, beside the day the pack gives over the
 committee's own sky (`nepali-committee`), each parting named with its
-cause, and over the modern sky (`nepali-default`). Each rule is fitted:
+cause, and over the modern sky (`nepali-drik`). Each rule is fitted:
 its window and table were chosen to give these days, so the agreement
 measures the fit and not a text (C600).
 

@@ -22,7 +22,7 @@ pub enum Kind {
     Rashi = 2,
     /// The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299).
     Nakshatra = 3,
-    /// The thirty tithis of the lunar month.
+    /// The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30.
     Tithi = 4,
     /// The eleven karanas: seven movable, four fixed.
     Karana = 5,

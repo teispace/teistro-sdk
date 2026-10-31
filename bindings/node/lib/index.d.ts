@@ -205,7 +205,9 @@ import type {
   HarmonicRequest,
   HarshaRules,
   HitRequest,
+  DateTextRequest,
   InWordsRequest,
+  TimeTextRequest,
   Interval,
   KootaRules,
   KpRequest,
@@ -275,6 +277,7 @@ import type {
   WesternAspectRequest,
   YogaRules,
   ChangeKind,
+  AnniversariesRequest,
   ChangesRequest,
 } from './requests.js';
 
@@ -2267,6 +2270,32 @@ export interface InWords {
   readonly locale: string;
   /** An amount's parts; `null` for a number. */
   readonly amount: AmountInWords | null;
+}
+
+/** A date or a time as text and parts, as `intl.time` and `intl.date` give it. */
+export interface CivilText {
+  /** The whole. */
+  readonly text: string;
+  /** The parts, in the locale's order; joined, they are `text`. */
+  readonly parts: readonly CivilPart[];
+  /** The locale asked for. */
+  readonly locale: string;
+  /** The locale whose pattern answered. */
+  readonly resolvedFrom: string;
+  /** Whether a fallback locale answered. */
+  readonly isFallback: boolean;
+  /** Whether any of it is text no reviewer has signed off. */
+  readonly isDraft: boolean;
+  /** Every problem met on the way. */
+  readonly warnings: readonly string[];
+}
+
+/** One part of a date or a time. */
+export interface CivilPart {
+  /** What it is. */
+  readonly kind: 'YEAR' | 'MONTH' | 'DAY' | 'WEEKDAY' | 'ERA' | 'HOUR' | 'MINUTE' | 'SECOND' | 'DAY_PERIOD' | 'LITERAL';
+  /** Its text. */
+  readonly text: string;
 }
 
 /** An amount's parts, for an application that composes them its own way. */
@@ -5631,6 +5660,8 @@ export declare class Almanac extends Decoded<DecodedAlmanac> {
   readonly eclipses: Eclipses | null;
   /** Each day's Nepal Sambat date, when the request asked for them with `nepalSambat: true`, or `null`. */
   readonly nepalSambat: NepalSambatDates | null;
+  /** Each day's sky, when the request asked for it with `sky: true`, or `null` (`03-design/day-sky.md`). */
+  readonly sky: DaySkies | null;
   /** Everything that reproduces this result (ADR-0020). */
   readonly provenance: Provenance;
   /** The provenance envelope as the canonical JSON the library stamped: the bytes to store beside the result, byte-identical in every binding. */
@@ -5666,6 +5697,8 @@ export declare class AlmanacDay {
    * placed by `panchanga.solar_month_start`.
    */
   readonly ritu: Ritu | 'unknown';
+  /** The clock the day was read on, in seconds east of UTC: a zone's offset at the day's opening, or the offset stated. */
+  readonly utcOffsetSeconds: number;
   /** The direction not to travel in. */
   readonly dishaShool: Direction | 'unknown';
   /** When the Sun entered a new sign inside the day, or `null`. */
@@ -5802,6 +5835,10 @@ export interface AlmanacRequest {
   readonly lagnas?: boolean;
   /** Whether to give each day its homa ahuti, as `AlmanacDay.homaAhuti`; `false` by default, which costs nothing. */
   readonly homaAhuti?: boolean;
+  /** Whether to answer each day's sky, as `Almanac.sky`; `false` by default, which costs nothing. */
+  readonly sky?: boolean;
+  /** The step of the sky's paths in minutes, 1 to 240, ten when left out. */
+  readonly skyStepMinutes?: number;
   /** `false` to leave the days out and answer only what is asked beside them; festivals alone are then founded as only what their rules read, which is what `AlmanacArea.festivals` asks. `true` by default. */
   readonly days?: boolean;
 }
@@ -5882,7 +5919,7 @@ export interface AnniversaryDay {
   readonly key: string;
   /** Which anniversary: 1 for the first recurrence after the origin, a janma tithi's the age turned; absent for a lunar origin given no moment. */
   readonly count?: number;
-  readonly kind: 'EKODDISHTA' | 'PARVANA' | 'JANMA_TITHI';
+  readonly kind: 'EKODDISHTA' | 'PARVANA' | 'JANMA_TITHI' | 'EVENT';
   /** The origin as found: the tithi, the amanta month it names, that lunation's kind and the tithi's half. */
   readonly origin: {
     readonly tithi: Tithi;
@@ -5899,7 +5936,21 @@ export interface AnniversaryDay {
   };
   /** The clause that chose the month (C666, C667, C669). */
   readonly monthBy: 'NIJA' | 'FIRST_YEAR_ADHIKA' | 'ADHIKA_ORIGIN' | 'KSHAYA_JOINED' | 'SAMSARPA';
+  /** The rule that chose the day (`03-design/anniversary-span.md`). */
+  readonly dayRule: AnniversaryDayRule;
   readonly observance: FestivalObservance;
+}
+
+/** The rule applied to an anniversary's day. */
+export interface AnniversaryDayRule {
+  /** How the tithi stood: one sunrise, none or two (C910). */
+  readonly tithi: 'ORDINARY' | 'KSHAYA' | 'VRIDDHI';
+  /** The rite's time it was read at, as a rule spells a window. */
+  readonly at: { readonly window: string; readonly [field: string]: unknown };
+  /** The clause that chose the day. */
+  readonly clause: 'ONE_DAY' | 'BOTH_WHOLE' | 'NEITHER' | 'EQUAL_PARTS' | 'GREATER_SHARE' | 'BIRTH_NAKSHATRA' | 'TWO_MUHURTA_FLOOR';
+  /** Where the clause is stated, or the convention's name. */
+  readonly source: string;
 }
 
 /**
@@ -6422,6 +6473,69 @@ export interface NepalSambatDates {
   readonly value: readonly NepalSambatDate[];
   /** The days' own provenance, and the hash of `value`. */
   readonly provenance: Provenance;
+}
+
+/**
+ * Each day's sky (`03-design/day-sky.md`), in the days' order, frozen to
+ * its leaves.
+ */
+export interface DaySkies {
+  /** One record a day. */
+  readonly value: readonly DaySky[];
+  /** The days' own provenance with the window's reading named, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** The sky of one day at one place. */
+export interface DaySky {
+  /** The window's start, Julian day, UT1 read as UTC. */
+  readonly from: number;
+  /** The window's end; an event here is the next window's. */
+  readonly to: number;
+  /** The step asked, minutes. */
+  readonly stepMinutes: number;
+  /** The Sun. */
+  readonly sun: BodySky;
+  /** The Moon. */
+  readonly moon: BodySky;
+}
+
+/** One body's day. */
+export interface BodySky {
+  /** How the window stood to the horizon: a polar day holds no crossing. */
+  readonly state: 'CROSSES' | 'ALWAYS_ABOVE' | 'ALWAYS_BELOW';
+  /** Every step's reading and every exact event, in time order. */
+  readonly track: readonly SkyPoint[];
+}
+
+/** A point on a track. */
+export interface SkyPoint {
+  /** The instant, Julian day, UT1 read as UTC. */
+  readonly at: number;
+  /** A step's reading or an exact event. */
+  readonly kind: 'SAMPLE' | 'RISE' | 'TRANSIT' | 'SET';
+  /** The airless topocentric altitude of the centre, degrees. */
+  readonly altitudeDeg: number;
+  /** The altitude with the standard atmosphere's refraction, degrees; the airless altitude where the body stays below the horizon. */
+  readonly refractedAltitudeDeg: number;
+  /** The topocentric azimuth, degrees in `[0, 360)`, from north through east. */
+  readonly azimuthDeg: number;
+  /** The Moon's shape at the instant, on the Moon's track only. */
+  readonly moon?: MoonShape;
+}
+
+/** The Moon's lit shape at an instant, seen from the place. Turn the bright limb from the zenith by `brightLimbDeg - parallacticAngleDeg` to draw it. */
+export interface MoonShape {
+  /** The fraction of the disc lit, 0 to 1, from the place. */
+  readonly illuminatedFraction: number;
+  /** The angle at the Moon between the place and the Sun, degrees: 0 at full, 180 at new. */
+  readonly phaseAngleDeg: number;
+  /** Whether the Moon is growing, the Earth's-centre sign of her elongation, which agrees with the paksha. */
+  readonly waxing: boolean;
+  /** The position angle of the bright limb's midpoint, degrees in `[0, 360)`, from the disc's north point through the east. */
+  readonly brightLimbDeg: number;
+  /** The position angle of the zenith, degrees in `(-180, 180]`, from the disc's north point through the east. */
+  readonly parallacticAngleDeg: number;
 }
 
 /** A day's Nepal Sambat date: the committee's "ने.सं. ११४६ (कछलाथ्व)". */
@@ -6973,6 +7087,8 @@ export declare class Rendered extends Decoded<IntlRender> {
   readonly isFallback: boolean;
   /** Whether a runtime override answered. */
   readonly isOverride: boolean;
+  /** Whether any of the text is unreviewed, from a namespace its locale marks draft. */
+  readonly isDraft: boolean;
   /**
    * The message in parts, its markup kept: what a rich renderer walks.
    *
@@ -7366,8 +7482,10 @@ export interface ZoneDatabase {
 
 /** `sdk.intl` — the locale, its messages and the scripts they are in. */
 export declare class IntlArea {
-  /** The locale every render resolves from. */
+  /** The locale every render resolves from. Set a short tag and the loaded locale it means is chosen, by RFC 4647 lookup: read this to see which. */
   locale: string;
+  /** The loaded locale a tag means, by RFC 4647 lookup, changing nothing: `ne` is `ne-Deva-NP`. */
+  lookupLocale(tag: string): string;
   /** Renders a message of the current locale with its parameters. */
   render(key: string, params?: Record<string, unknown>): Rendered;
   /** Whether the current locale or its fallbacks have a message. */
@@ -7378,6 +7496,10 @@ export declare class IntlArea {
   entity(key: string): EntityForms;
   /** A number or an amount of money in words and in figures, by CLDR's rules. */
   inWords(request: InWordsRequest): InWords;
+  /** A time of day as text and parts, in the locale's pattern. */
+  time(request: TimeTextRequest): CivilText;
+  /** A date as text and parts, in its own calendar and the locale's pattern. */
+  date(request: DateTextRequest): CivilText;
   /** The typed accessors: every message and every catalogued entity. */
   readonly messages: Messages;
   /** Loads a `.tpack` or `.tbundle` file into the locale engine. */
@@ -7462,7 +7584,7 @@ export declare class AlmanacArea {
    * its day can change.
    */
   festivals(
-    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'days'> & {
+    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'sky' | 'skyStepMinutes' | 'days'> & {
       readonly festivals: FestivalRequest;
     },
   ): FestivalAnswer;
@@ -7554,7 +7676,7 @@ export declare class AlmanacArea {
    *
    * @example
    * const official = new Context(nepalOfficial(teimeris()));
-   * const modern = new Context({ profile: 'nepali-default', ephemeris: teimeris() });
+   * const modern = new Context({ profile: 'nepali-drik', ephemeris: teimeris() });
    * const { days } = official.almanac.disagreements(modern, {
    *   from: date('calendar.GREGORIAN', 2025, 11, 1),
    *   to: date('calendar.GREGORIAN', 2025, 11, 30),
@@ -7627,6 +7749,32 @@ export declare class AlmanacArea {
    * });
    */
   next(request: NextRequest): NextOccurrence;
+
+  /**
+   * Anniversaries kept by the tithi over a span of years, for many people
+   * in one call (`03-design/anniversary-span.md`); each day names the rule
+   * that chose it in `dayRule`.
+   *
+   * @example
+   * const span = sdk.almanac.anniversaries({
+   *   fromYear: 2026, years: 10, latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700,
+   *   anniversaries: [{ key: 'GRANDFATHER', origin: { by: 'LUNAR', month: 'KARTIKA', tithi: 'SHUKLA_DASHAMI' } }],
+   * });
+   */
+  anniversaries(request: AnniversariesRequest): FestivalAnswer;
+  /**
+   * **A day in sentences** (`03-design/day-in-sentences.md`): one date's facts
+   * as short sentences from templates, every value from the day's answer. A
+   * locale without the templates is refused on `locale`.
+   *
+   * @example
+   * const day = sdk.almanac.sentences({
+   *   date: { year: 2026, month: 3, day: 18 },
+   *   place: { latitude: 27.7172, longitude: 85.324 },
+   *   utcOffsetSeconds: 20700,
+   * });
+   */
+  sentences(request: DaySentencesAsked): DaySentences;
   /**
    * Every instant in a range at which something changes, sorted, as one
    * list (`03-design/change-points.md`).
@@ -7673,6 +7821,42 @@ export interface FestivalPackRow {
   readonly subjectTo?: string;
   /** For a published row, the last year with a day. */
   readonly lastYear?: number;
+}
+
+/** What `almanac.sentences` says, where and in which locale. */
+export interface DaySentencesAsked {
+  /** The day. */
+  readonly date: { readonly year: number; readonly month: number; readonly day: number };
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive. */
+  readonly utcOffsetSeconds: number;
+  /** The date's calendar; Gregorian when left out. */
+  readonly calendar?: Calendar;
+  /** The locale; the context's when left out. */
+  readonly locale?: string;
+}
+
+/** A day said in a locale, frozen. */
+export interface DaySentences {
+  /** The locale the sentences are in. */
+  readonly locale: string;
+  /** Whether its templates still wait for a native reviewer (Q42). */
+  readonly draft: boolean;
+  /** The sentences, in the order a printed day runs. */
+  readonly sentences: readonly DaySentence[];
+  /** The facts a polar day holds elsewhere and so does not say here. */
+  readonly withheld: readonly string[];
+}
+
+/** One sentence of `almanac.sentences`. */
+export interface DaySentence {
+  /** The template, as `sdk.day.tithi`. */
+  readonly key: string;
+  /** Its slots, as `intl.render` takes them. */
+  readonly params: Readonly<Record<string, unknown>>;
+  /** The sentence. */
+  readonly text: string;
 }
 
 /** What `almanac.next` looks for, and where and how far. */
@@ -7769,6 +7953,9 @@ export interface FestivalCalendarRequest {
   readonly events?: readonly SuppliedEvent[];
 }
 
+/** A tithi's number in the lunar month, 1 for Shukla Pratipada to 30 for Amavasya. */
+export function tithiMonthNumber(tithi: Tithi): number;
+
 /** A range of days, as `almanac.digest` writes them. */
 export interface DigestOptions {
   /** The first day, and the calendar the digest's dates are in. */
@@ -7777,8 +7964,10 @@ export interface DigestOptions {
   readonly days?: number;
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /** The zone, each day on its own offset; or `utcOffsetSeconds`, not both. */
+  readonly zone?: ZoneSpec;
   /** The festivals to list; none when left out. */
   readonly festivals?: FestivalRequest;
 }

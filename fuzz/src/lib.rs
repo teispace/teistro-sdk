@@ -34,8 +34,8 @@ use teistro_ffi::numerology::ts_numerology_profile;
 use teistro_ffi::pakshi::ts_pakshi;
 use teistro_ffi::panchanga::{
     TsPanchangaRequest, ts_almanac_ashauch, ts_almanac_digest, ts_almanac_disagreements,
-    ts_almanac_festival_calendar,
-    ts_almanac_first_year, ts_almanac_published_reasons, ts_almanac_sankalpa, ts_panchanga_days,
+    ts_almanac_festival_calendar, ts_almanac_first_year, ts_almanac_published_reasons,
+    ts_almanac_sankalpa, ts_panchanga_days,
 };
 use teistro_ffi::published::ts_published_verify;
 use teistro_ffi::rashifal::ts_rashifal;
@@ -662,6 +662,7 @@ mod reader {
         pub(super) span_count: u32,
         pub(super) observance_first: u32,
         pub(super) observance_count: u32,
+        pub(super) utc_offset_seconds: i32,
     }
 
     /// `ts_digest_span`.
@@ -692,8 +693,11 @@ mod reader {
     }
 
     unsafe extern "C" {
-        pub(super) fn ts_digest_open(digest: *mut Digest, bytes: *const c_void, length: usize)
-        -> c_int;
+        pub(super) fn ts_digest_open(
+            digest: *mut Digest,
+            bytes: *const c_void,
+            length: usize,
+        ) -> c_int;
         pub(super) fn ts_digest_day_at(digest: *const Digest, index: u32, day: *mut Day) -> c_int;
         pub(super) fn ts_digest_span_at(
             digest: *const Digest,
@@ -707,8 +711,22 @@ mod reader {
             index: u32,
             observance: *mut Observance,
         ) -> c_int;
-        pub(super) fn ts_digest_name_at(digest: *const Digest, index: u16, name: *mut Name) -> c_int;
+        pub(super) fn ts_digest_name_at(
+            digest: *const Digest,
+            index: u16,
+            name: *mut Name,
+        ) -> c_int;
         pub(super) fn ts_digest_seal(bytes: *const c_void, length: usize, out: *mut c_char);
+    }
+
+    // `digest_sizes.c`: what the C compiler makes of each struct above.
+    #[cfg(test)]
+    unsafe extern "C" {
+        pub(super) fn ts_fuzz_sizeof_digest() -> usize;
+        pub(super) fn ts_fuzz_sizeof_day() -> usize;
+        pub(super) fn ts_fuzz_sizeof_span() -> usize;
+        pub(super) fn ts_fuzz_sizeof_observance() -> usize;
+        pub(super) fn ts_fuzz_sizeof_name() -> usize;
     }
 }
 
@@ -750,7 +768,12 @@ pub fn digest(data: &[u8]) {
                     std::slice::from_raw_parts(name.text.cast::<u8>(), name.text_length as usize),
                 ]
             };
-            std::hint::black_box(parts.iter().map(|part| part.iter().map(|b| u32::from(*b)).sum::<u32>()).sum::<u32>());
+            std::hint::black_box(
+                parts
+                    .iter()
+                    .map(|part| part.iter().map(|b| u32::from(*b)).sum::<u32>())
+                    .sum::<u32>(),
+            );
         }
     };
     for index in 0..400 {
@@ -763,7 +786,10 @@ pub fn digest(data: &[u8]) {
         for at in 0..day.span_count {
             let mut span = Span::default();
             // SAFETY: an open digest, a day it wrote and a slot.
-            if unsafe { reader::ts_digest_span_at(&raw const digest, &raw const day, at, &raw mut span) } != 0 {
+            if unsafe {
+                reader::ts_digest_span_at(&raw const digest, &raw const day, at, &raw mut span)
+            } != 0
+            {
                 break;
             }
             read(span.name);
@@ -772,7 +798,12 @@ pub fn digest(data: &[u8]) {
             let mut observance = Observance::default();
             // SAFETY: an open digest, a day it wrote and a slot.
             if unsafe {
-                reader::ts_digest_observance_at(&raw const digest, &raw const day, at, &raw mut observance)
+                reader::ts_digest_observance_at(
+                    &raw const digest,
+                    &raw const day,
+                    at,
+                    &raw mut observance,
+                )
             } != 0
             {
                 break;
@@ -852,7 +883,7 @@ fn panchanga_request(
     TsPanchangaRequest {
         struct_size: size::<TsPanchangaRequest>(),
         calendar: Calendar::Gregorian.id(),
-        reserved: 0,
+        sky_step_minutes: 0,
         from_year: 2026,
         from_month: 11,
         from_day: 20,
@@ -1170,6 +1201,34 @@ mod tests {
     use std::sync::Mutex;
 
     use super::*;
+
+    /// Every Rust mirror of a digest reader struct is the size the C
+    /// compiler gives it, and `Digest`'s bytes hold a `ts_digest`: a field
+    /// the header gains and the mirror misses is a write past the harness's
+    /// own struct, which the fuzzer reports as the reader's crash.
+    #[test]
+    fn the_digest_mirrors_are_the_c_structs() {
+        use std::mem::size_of;
+        // SAFETY: each reports a `sizeof` and touches nothing.
+        let c = unsafe {
+            [
+                reader::ts_fuzz_sizeof_day(),
+                reader::ts_fuzz_sizeof_span(),
+                reader::ts_fuzz_sizeof_observance(),
+                reader::ts_fuzz_sizeof_name(),
+            ]
+        };
+        let rust = [
+            size_of::<reader::Day>(),
+            size_of::<reader::Span>(),
+            size_of::<reader::Observance>(),
+            size_of::<reader::Name>(),
+        ];
+        assert_eq!(rust, c, "day, span, observance, name");
+        // SAFETY: as above.
+        let digest = unsafe { reader::ts_fuzz_sizeof_digest() };
+        assert!(size_of::<reader::Digest>() >= digest, "{digest}");
+    }
 
     /// The tests run on threads and a context is one caller's, so the two
     /// that write into [`messages`] take turns, as the fuzzer's one thread

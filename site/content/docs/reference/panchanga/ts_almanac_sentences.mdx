@@ -1,0 +1,73 @@
+---
+title: ts_almanac_sentences
+description: "One day's facts as short declarative sentences (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose value is `{locale, draft, sentences, withheld}`, each sentence `{key, params, text}`, `draft` true while the locale's templates wait for a native reviewer (Q42), and `withheld` the facts a polar day holds elsewhere."
+---
+
+One day's facts as short declarative sentences (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose value is `{locale, draft, sentences, withheld}`, each sentence `{key, params, text}`, `draft` true while the locale's templates wait for a native reviewer (Q42), and `withheld` the facts a polar day holds elsewhere.
+
+`request_json` is `{date, calendar?, latitudeDeg, longitudeDeg, altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a place or offset out of range, is `INVALID_ARG`, named under `sentences`; a locale not loaded, or one without the templates, is `UNSUPPORTED` on `locale`; a context without an ephemeris is `CAPABILITY`; otherwise as the day.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.sentences
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.sentences
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.sentences
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().sentences
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().sentences
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_almanac_sentences(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `almanac.sentences` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/panchanga.rs`.

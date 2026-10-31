@@ -21,7 +21,7 @@
 //! use teistro::{CalendarDate, Context, Ephemeris};
 //!
 //! let sdk = Context::builder()
-//!     .profile("nepali-default")
+//!     .profile("nepali-drik")
 //!     .locale("ne-Deva-NP")
 //!     .ephemeris([Ephemeris::Builtin])
 //!     .build()?;
@@ -71,18 +71,22 @@ pub use area::{
     FestivalDisagreement, FestivalDisagreements, FrameArea, IntlArea, KeysArea, LimbChange,
     LimbDisagreement, ReckonedLimb, SuppliedEvent, TimeArea, ZoneDatabase, ZoneDatabaseSource,
 };
+pub use area::{
+    AnniversariesRequest, ChangesRequest, DayClock, MOST_ANNIVERSARIES, MOST_YEARS, NextOccurrence,
+    NextRequest, NextTarget,
+};
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, NamingArea, Plans};
 pub use area::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
 };
-pub use area::{ChangesRequest, DayClock, NextOccurrence, NextRequest, NextTarget};
 pub use area::{
     DIGEST_DEFAULT_DAYS, DIGEST_FLAG_FAST, DIGEST_FLAG_PUBLISHED, DIGEST_FORMAT_MAJOR,
     DIGEST_FORMAT_MINOR, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DIGEST_NO_TIME, DIGEST_SCHEMA,
     DigestRequest, DigestSpan, digest_schema,
 };
+pub use area::{DaySentence, DaySentences, SentencesRequest};
 pub use area::{PackForm, PackListing, PackRequest, PackRow};
 pub use teistro_panchanga::festival::NextKind;
 #[cfg(feature = "western")]
@@ -261,6 +265,9 @@ pub use teistro_panchanga::first_year;
 // A day's Nepal Sambat date, which `Panchanga::nepal_sambat` reads and
 // `AlmanacRequest::with_nepal_sambat` answers beside the days.
 pub use teistro_panchanga::nepal_sambat::NepalSambatDate;
+// A day's sky, which `AlmanacRequest::with_sky` asks and
+// `AlmanacAnswer::sky` answers (`03-design/day-sky.md`).
+pub use teistro_astro::day_sky;
 // What a reading answers with, and the sections it holds: the document
 // is `teistro-serial`'s, and an operation that answers one must let a
 // consumer name it and every section of it.
@@ -637,6 +644,12 @@ pub use teistro_intl::{Intl, Loaded, Params, Rendered, TypedMessage, Value, para
 pub use teistro_intl::words::{
     AmountInWords, InWords, InWordsRequest, WordsAmount, WordsAmountValue, WordsDigits,
     WordsGrouping, WordsRounding, WordsStyle,
+};
+// A date or a time as text and parts: what `intl().time` and
+// `intl().date` take and answer with.
+pub use teistro_intl::ClockTime;
+pub use teistro_intl::civil::{
+    CivilPart, CivilPartKind, CivilText, DateStyle, DateTextRequest, TimeStyle, TimeTextRequest,
 };
 // Making a pack, which is the other half of loading one. `Loaded` is what
 // `load_pack` answers with and was published already; this is what a

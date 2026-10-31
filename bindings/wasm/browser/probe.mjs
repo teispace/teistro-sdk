@@ -52,7 +52,7 @@ export async function lazyProbe(lazy) {
   const calendar = await lazy.loadCalendar();
   if (calendar !== (await lazy.loadCalendar())) throw new Error('the calendar loaded twice');
   const answers = (sdk) => {
-    const ctx = new sdk.Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+    const ctx = new sdk.Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
     try {
       const day = {
         calendar: sdk.Calendar.Gregorian,

@@ -836,9 +836,10 @@ fn limbs(days: &[Day]) -> String {
          The tithi's number is the other place two conventions meet. The\n\
          corpus counts one to thirty through the lunar month; the SDK's\n\
          catalogue gives each member a number within its paksha, one to\n\
-         fifteen, which is how a tithi is named. Both are right and they are\n\
-         not the same field, so a harness that compares them without saying\n\
-         which is comparing nothing.\n\n\
+         fifteen, which is how a tithi is named, and `month_number`, one to\n\
+         thirty, the corpus's count. Both are right and they are not the same\n\
+         field, so a harness that compares them without saying which is\n\
+         comparing nothing.\n\n\
          The karana is the limb that is not a cycle. Sixty karanas make a lunar\n\
          month: Kimstughna opens it, Shakuni, Chatushpada and Naga close it, and\n\
          the seven movable ones repeat through everything between, so the\n\

@@ -194,6 +194,15 @@ change reads each day on that day's offset.
 | `tzdb_version` | the database's release; `lmt` or `manual` otherwise |
 | `abbreviation` | the zone's abbreviation for the row, when it has one |
 
+**Each day says its own clock.** `Panchanga.clock` is the reading at the day's
+opening for a day asked by zone. At the boundary it crosses as the `days`
+column `utc_offset_seconds`, which every binding's day answers as
+`utcOffsetSeconds` (`utc_offset_seconds` in Python), so a range across a change
+shows each day's offset: New York reads −04:00 on 31 October 2026 and −05:00 on
+1 November. A day asked by a bare offset says that offset. The digest holds
+the same figure in its `clock` section, and takes `zone` too
+(`digest-format.md`, SR-73, C1010).
+
 The stamp is in the one provenance the almanac builds, so a festival answer, a
 sankalpa, an ashauch and a next occurrence all carry it without a line each.
 Asked by a bare offset it says `MANUAL`, which is what a caller's stated
@@ -374,7 +383,7 @@ vipala) and the zone-source labels.
 2. The ghati-pala rounding at the sunrise boundary is pinned by the
    baseline's fixtures when the harness runs; floor on a tenth-of-a-
    millisecond grid is the working rule.
-3. The `polar_day_policy` default for `nepali-default` is `NEAREST_EVENT`
+3. The `polar_day_policy` default for `nepali-drik` is `NEAREST_EVENT`
    to match the baseline's behaviour; the maintainer confirms.
 4. Stephenson, Morrison and Hohenkerk (2016): the spline coefficients to
    cite (C32); until then the knob value is refused as unsourced.

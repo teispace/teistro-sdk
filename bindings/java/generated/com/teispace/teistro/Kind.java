@@ -25,7 +25,7 @@ public enum Kind implements Member {
     NAKSHATRA(3, "nakshatra"),
 
     /**
-     * The thirty tithis of the lunar month.
+     * The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30.
      */
     TITHI(4, "tithi"),
 

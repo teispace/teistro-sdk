@@ -1802,6 +1802,47 @@ final class MessagesSdkCondition {
       _r.render('sdk.condition.wakefulness', {'graha': {r'$entity': graha.key}, 'wakefulness': {r'$entity': wakefulness.key}});
 }
 
+final class MessagesSdkDay {
+  const MessagesSdkDay(this._r);
+
+  final Renderer _r;
+
+  String abhijit({required TimeValue from, required TimeValue to}) =>
+      _r.render('sdk.day.abhijit', {'from': {r'$time': from.json}, 'to': {r'$time': to.json}});
+  String ayana({required AyanaKey ayana}) =>
+      _r.render('sdk.day.ayana', {'ayana': {r'$entity': ayana.key}});
+  String kaala({required TimeValue from, required KaalaKey kaala, required TimeValue to}) =>
+      _r.render('sdk.day.kaala', {'from': {r'$time': from.json}, 'kaala': {r'$entity': kaala.key}, 'to': {r'$time': to.json}});
+  String karana({required String ends, required KaranaKey karana, required TimeValue until}) =>
+      _r.render('sdk.day.karana', {'ends': ends, 'karana': {r'$entity': karana.key}, 'until': {r'$time': until.json}});
+  String month({required String kind, required MasaKey masa}) =>
+      _r.render('sdk.day.month', {'kind': kind, 'masa': {r'$entity': masa.key}});
+  String moonSign({required String ends, required RashiKey rashi, required TimeValue until}) =>
+      _r.render('sdk.day.moonSign', {'ends': ends, 'rashi': {r'$entity': rashi.key}, 'until': {r'$time': until.json}});
+  String moonrise({required TimeValue at, required String when}) =>
+      _r.render('sdk.day.moonrise', {'at': {r'$time': at.json}, 'when': when});
+  String moonset({required TimeValue at, required String when}) =>
+      _r.render('sdk.day.moonset', {'at': {r'$time': at.json}, 'when': when});
+  String nakshatra({required String ends, required NakshatraKey nakshatra, required TimeValue until}) =>
+      _r.render('sdk.day.nakshatra', {'ends': ends, 'nakshatra': {r'$entity': nakshatra.key}, 'until': {r'$time': until.json}});
+  String ritu({required RituKey ritu}) =>
+      _r.render('sdk.day.ritu', {'ritu': {r'$entity': ritu.key}});
+  String sankranti({required TimeValue at, required RashiKey rashi, required String when}) =>
+      _r.render('sdk.day.sankranti', {'at': {r'$time': at.json}, 'rashi': {r'$entity': rashi.key}, 'when': when});
+  String sun({required TimeValue rise, required TimeValue set}) =>
+      _r.render('sdk.day.sun', {'rise': {r'$time': rise.json}, 'set': {r'$time': set.json}});
+  String sunDown() => _r.render('sdk.day.sunDown');
+  String sunSign({required RashiKey rashi}) =>
+      _r.render('sdk.day.sunSign', {'rashi': {r'$entity': rashi.key}});
+  String sunUp() => _r.render('sdk.day.sunUp');
+  String tithi({required String ends, required PakshaKey paksha, required TithiKey tithi, required TimeValue until}) =>
+      _r.render('sdk.day.tithi', {'ends': ends, 'paksha': {r'$entity': paksha.key}, 'tithi': {r'$entity': tithi.key}, 'until': {r'$time': until.json}});
+  String vara({required VaraKey vara}) =>
+      _r.render('sdk.day.vara', {'vara': {r'$entity': vara.key}});
+  String yoga({required String ends, required TimeValue until, required YogaKey yoga}) =>
+      _r.render('sdk.day.yoga', {'ends': ends, 'until': {r'$time': until.json}, 'yoga': {r'$entity': yoga.key}});
+}
+
 final class MessagesSdkEntityAgniVasa {
   const MessagesSdkEntityAgniVasa(this._r);
 
@@ -3361,6 +3402,7 @@ final class MessagesSdk {
   MessagesSdkAspect get aspect => MessagesSdkAspect(_r);
   MessagesSdkCalendar get calendar => MessagesSdkCalendar(_r);
   MessagesSdkCondition get condition => MessagesSdkCondition(_r);
+  MessagesSdkDay get day => MessagesSdkDay(_r);
   MessagesSdkEntity get entity => MessagesSdkEntity(_r);
   MessagesSdkKaraka get karaka => MessagesSdkKaraka(_r);
   MessagesSdkNaming get naming => MessagesSdkNaming(_r);

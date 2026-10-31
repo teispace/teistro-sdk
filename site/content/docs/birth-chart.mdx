@@ -13,7 +13,7 @@ wants is asked for by name and computed in the same crossing.
 
 ```js title="bindings/node/example/birth_chart.mjs"
 const ctx = new Context({
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'ne-Deva-NP',
   ephemeris: 'BUILTIN',
 });
@@ -150,7 +150,7 @@ call is refused with a hint naming the choices:
 const noTime = whenUnknown(birthDay);
 for (const policy of [undefined, 'NOON', 'MIDNIGHT']) {
   const scoped = new Context({
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     locale: 'ne-Deva-NP',
     ephemeris: 'BUILTIN',
     settings: policy ? { time: { unknown_time: policy } } : undefined,

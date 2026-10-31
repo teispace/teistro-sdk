@@ -412,7 +412,7 @@ is what someone has to read. The parser decides which, so a message
 rewritten from one into the other moves this list by itself. `en-Latn`
 is left out: it is the base and its words are the source.
 
-**`ne-Deva-NP`** — 121 messages to read, 42 that render a value and
+**`ne-Deva-NP`** — 139 messages to read, 42 that render a value and
 need no reading.
 
 | namespace | messages with words of their own |
@@ -421,6 +421,7 @@ need no reading.
 | `sdk.aspect` | 2 |
 | `sdk.calendar` | 51 |
 | `sdk.condition` | 11 |
+| `sdk.day` | 18 |
 | `sdk.karaka` | 2 |
 | `sdk.naming` | 7 |
 | `sdk.reading` | 5 |
@@ -448,10 +449,10 @@ repository by hand.
 
 | locale | units | left to translate |
 |---|---:|---:|
-| `hi-Deva-IN` | 2684 | 943 |
-| `ne-Deva-NP` | 2684 | 8 |
-| `sa-Deva` | 2684 | 1316 |
-| `sa-Latn` | 2684 | 1316 |
+| `hi-Deva-IN` | 2702 | 894 |
+| `ne-Deva-NP` | 2702 | 8 |
+| `sa-Deva` | 2702 | 1266 |
+| `sa-Latn` | 2702 | 1334 |
 
 ```console
 $ teistro-intl export xliff --locale hi-Deva-IN --out hi-Deva-IN.xlf

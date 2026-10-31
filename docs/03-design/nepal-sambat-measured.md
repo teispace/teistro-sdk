@@ -15,7 +15,7 @@ the page's first day at Kathmandu on Nepal's clock, said through the
 `ne-Deva-NP` messages `sdk.calendar.nepalSambatMonth` and
 `nepalSambatHalf`: over the committee's own sky (`nepali-committee`, the
 Surya Siddhanta with its bija, C187), which the pass holds to every
-header, and over the modern sky (`nepali-default`).
+header, and over the modern sky (`nepali-drik`).
 
 | page | first day | printed | committee's sky | modern sky |
 |---|---|---|---|---|

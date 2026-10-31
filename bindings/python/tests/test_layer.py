@@ -82,7 +82,7 @@ class ArgumentsOfTheWrongShape(WithLibrary):
     def test_what_is_compared_with_is_another_context(self) -> None:
         november = date(Calendar.GREGORIAN, 2025, 11, 1)
         day: Dict[str, Any] = {"from_date": november, "place": KATHMANDU, "utc_offset_seconds": 20700}
-        self.refused(lambda: self.ctx.almanac.disagreements("nepali-default", **day), "other")  # type: ignore[arg-type]
+        self.refused(lambda: self.ctx.almanac.disagreements("nepali-drik", **day), "other")  # type: ignore[arg-type]
         self.refused(
             lambda: self.ctx.almanac.published_reasons(**day, festivals={"rules": "NEPAL"}, sky="nepali-committee"),  # type: ignore[arg-type]
             "sky",

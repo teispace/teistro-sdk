@@ -95,6 +95,9 @@ final class SweepTest {
         if (type == String.class) {
             return "x";
         }
+        if (type == com.teispace.teistro.messages.Messages.TimeValue.class) {
+            return new com.teispace.teistro.messages.Messages.TimeValue(6, 5, 0);
+        }
         if (type == List.class) {
             return List.of("x");
         }
@@ -314,7 +317,7 @@ final class SweepTest {
      */
     static void add(Map<String, BindingTest.Test> tests, Teistro teistro) {
         tests.put("every message accessor reaches a key the locale renders, without a warning", () -> {
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default").testProvider(true)
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true)
                     .build())) {
                 for (String locale : List.of("en-Latn", "ne-Deva-NP")) {
                     sky.intl().setLocale(locale);
@@ -355,7 +358,7 @@ final class SweepTest {
         tests.put("every catalogue member reads back by its id and key, and is the library's packed key", () -> {
             int enums = 0;
             int members = 0;
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default").testProvider(true)
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true)
                     .build())) {
                 for (Class<?> type : moduleClasses()) {
                     if (!type.isEnum() || !Member.class.isAssignableFrom(type)) {

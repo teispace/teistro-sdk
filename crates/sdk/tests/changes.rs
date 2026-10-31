@@ -20,7 +20,7 @@ use teistro::{
 
 fn context() -> Context {
     Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()
         .expect("a context")
@@ -186,9 +186,9 @@ fn the_record_reads_one_clock() {
 fn a_zone_reads_each_day_on_its_own_offset_across_a_change() {
     let sdk = context();
     let zone = ZoneSpec::iana("America/New_York");
-    // New York's clocks go back at 02:00 on 1 November 2026. A day is on
-    // the offset of its noon, so that day already reads standard time,
-    // which is the clock its sunrise and sunset are printed on.
+    // New York's clocks go back at 02:00 on 1 November 2026. That day's
+    // opening and its noon both fall after the change, so it already reads
+    // standard time (C1010), the clock its sunrise and sunset are printed on.
     let answer = sdk
         .almanac()
         .in_zone(

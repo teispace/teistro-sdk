@@ -173,6 +173,50 @@ impl MonthStartRule {
         model: &dyn SolarModel,
         place: &Place,
     ) -> Result<FixedDay, Error> {
+        self.month_start_by(sign, sankranti, clock, &|day| {
+            arc_of(model, clock, day, place)
+        })
+    }
+
+    /// [`MonthStartRule::month_start`] with the day's arc read through
+    /// `arc_of`, for a caller holding a stand-in for the arc the sky did
+    /// not give: the almanac reads a polar day's through
+    /// `day.polar_day_policy` (`03-design/calendar-bikram-sambat.md` §6).
+    ///
+    /// `arc_of` is asked only by a rule that needs an arc, of the
+    /// sankranti's civil day.
+    ///
+    /// ```
+    /// # use teistro_calendar::bikram_sambat::engine::KATHMANDU;
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_siddhanta::SuryaSiddhanta;
+    /// # let (text, clock) = (SuryaSiddhanta::text(), UtcOffset::literal(5, 45, 0));
+    /// use teistro_calendar::gregorian::fixed_from_gregorian;
+    /// use teistro_calendar::solar::{DayArc, find_sankranti};
+    /// use teistro_calendar::MonthStartRule;
+    /// use teistro_core::quantity::{JulianDay, Utc};
+    ///
+    /// let makara = find_sankranti(&text, MonthStartRule::MAKARA, JulianDay::<Utc>::try_new(2_460_310.5)?)?.instant;
+    /// // An arc that sets after the sankranti holds it on its own day.
+    /// let late = |_| Ok(DayArc { sunrise: makara, sunset: JulianDay::<Utc>::try_new(makara.get() + 0.5)? });
+    /// let day = MonthStartRule::BeforeSunset.month_start_by(MonthStartRule::MAKARA, makara, &clock, &late)?;
+    /// assert_eq!(day, fixed_from_gregorian(2024, 1, 15));
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// Whatever `arc_of` refuses.
+    pub fn month_start_by<F>(
+        self,
+        sign: u8,
+        sankranti: JulianDay<Utc>,
+        clock: &dyn LocalClock,
+        arc_of: &F,
+    ) -> Result<FixedDay, Error>
+    where
+        F: Fn(FixedDay) -> Result<DayArc, Error> + ?Sized,
+    {
         let (day, _) = local_day(clock, sankranti);
         Ok(match self {
             MonthStartRule::SankrantiDay => day,
@@ -184,10 +228,10 @@ impl MonthStartRule {
                     MonthStartRule::MAKARA => MonthStartRule::BeforeSunset,
                     _ => MonthStartRule::SankrantiDay,
                 };
-                return row.month_start(sign, sankranti, clock, model, place);
+                return row.month_start_by(sign, sankranti, clock, arc_of);
             }
             MonthStartRule::SunriseToSunrise => {
-                let arc = arc_of(model, clock, day, place)?;
+                let arc = arc_of(day)?;
                 if sankranti.get() < arc.sunrise.get() {
                     day.plus_days(-1)
                 } else {
@@ -195,7 +239,7 @@ impl MonthStartRule {
                 }
             }
             MonthStartRule::BeforeSunset => {
-                let arc = arc_of(model, clock, day, place)?;
+                let arc = arc_of(day)?;
                 if sankranti.get() < arc.sunset.get() {
                     day
                 } else {
@@ -203,7 +247,7 @@ impl MonthStartRule {
                 }
             }
             MonthStartRule::BeforeAparahna => {
-                let arc = arc_of(model, clock, day, place)?;
+                let arc = arc_of(day)?;
                 if sankranti.get() < arc.at_fraction(0.6) {
                     day
                 } else {

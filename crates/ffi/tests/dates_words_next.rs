@@ -22,8 +22,8 @@ use teistro_ffi::TS_CONTEXT_TEST_PROVIDER;
 use teistro_ffi::calendar::{
     TsCalendarDate, TsDateSpan, TsOverflow, ts_calendar_add, ts_calendar_between,
 };
-use teistro_ffi::intl::ts_intl_in_words;
-use teistro_ffi::panchanga::ts_almanac_next;
+use teistro_ffi::intl::{ts_intl_date, ts_intl_in_words, ts_intl_time};
+use teistro_ffi::panchanga::{ts_almanac_anniversaries, ts_almanac_next, ts_almanac_sentences};
 use teistro_ffi::string::TsString;
 
 mod common;
@@ -262,6 +262,57 @@ fn an_amount_is_spelt_and_a_bad_request_is_refused() {
     }
 }
 
+/// **A time and a date as text and parts**, and each refusal.
+#[test]
+fn a_time_and_a_date_are_written_and_a_bad_request_is_refused() {
+    let ctx = Ctx::defaults();
+    let (status, answer) = json_call(
+        &ctx,
+        ts_intl_time,
+        &serde_json::json!({ "at": { "hour": 6, "minute": 5 }, "hour12": true, "locale": "hi-Deva-IN" }),
+    );
+    assert_eq!(status, Status::Ok);
+    let answer = answer.unwrap();
+    assert_eq!(answer["text"], "सुबह ६:०५");
+    assert_eq!(answer["parts"][0]["kind"], "DAY_PERIOD");
+    assert_eq!(answer["isDraft"], true);
+
+    let (status, day) = json_call(
+        &ctx,
+        ts_intl_date,
+        &serde_json::json!({ "at": { "calendar": "calendar.GREGORIAN", "year": 2026, "month": 10, "day": 31 }, "style": "LONG", "locale": "en-Latn" }),
+    );
+    assert_eq!(status, Status::Ok);
+    assert_eq!(day.unwrap()["text"], "31 October 2026");
+
+    for (request, status) in [
+        (serde_json::json!({}), Status::InvalidArg),
+        (
+            serde_json::json!({ "at": { "hour": 24, "minute": 0 } }),
+            Status::InvalidArg,
+        ),
+        (
+            serde_json::json!({ "at": { "hour": 1, "minute": 0 }, "locale": "xx" }),
+            Status::Unsupported,
+        ),
+    ] {
+        refused(&ctx, &json_call(&ctx, ts_intl_time, &request), status, "");
+    }
+    for (request, status) in [
+        (serde_json::json!({}), Status::InvalidArg),
+        (
+            serde_json::json!({ "at": { "calendar": "calendar.GREGORIAN", "year": 2026, "month": 2, "day": 30 } }),
+            Status::InvalidArg,
+        ),
+        (
+            serde_json::json!({ "at": { "calendar": "calendar.TAMIL_SOLAR", "year": 2026, "month": 1, "day": 1 } }),
+            Status::Unsupported,
+        ),
+    ] {
+        refused(&ctx, &json_call(&ctx, ts_intl_date, &request), status, "");
+    }
+}
+
 fn kathmandu() -> Value {
     serde_json::json!({ "after": 2_461_042.0, "latitudeDeg": 27.7172,
                         "longitudeDeg": 85.324, "utcOffsetSeconds": 20_700 })
@@ -339,6 +390,97 @@ fn a_next_request_is_refused_as_its_contract_says() {
     let request = asking(&serde_json::json!({ "kind": "PURNIMA" }));
     assert_eq!(
         json_call(&bare, ts_almanac_next, &request).0,
+        Status::Capability
+    );
+}
+
+/// **A day in sentences** across the boundary: a day answers in English
+/// and Nepali, and each refusal its contract names has its status and field.
+#[test]
+fn a_day_is_said_across_the_boundary_and_refused_as_its_contract_says() {
+    let ctx = test_ctx();
+    let asked = |locale: &str| {
+        serde_json::json!({
+            "date": {"year": 2026, "month": 3, "day": 18},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+            "utcOffsetSeconds": 20700, "locale": locale,
+        })
+    };
+    let (status, answer) = json_call(&ctx, ts_almanac_sentences, &asked("ne-Deva-NP"));
+    assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
+    let value = &answer.unwrap()["value"];
+    assert_eq!(value["draft"], true);
+    assert_eq!(value["sentences"][0]["key"], "sdk.day.vara");
+
+    let hindi = json_call(&ctx, ts_almanac_sentences, &asked("hi-Deva-IN"));
+    refused(&ctx, &hindi, Status::Unsupported, "locale");
+    let wrong = json_call(&ctx, ts_almanac_sentences, &serde_json::json!({"date": 1}));
+    refused(&ctx, &wrong, Status::InvalidArg, "sentences");
+}
+
+fn anniversaries(extra: &Value) -> Value {
+    let mut request = serde_json::json!({
+        "fromYear": 2026, "years": 2, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+        "utcOffsetSeconds": 20_700, "anniversaries": [{
+            "key": "BARKHI",
+            "origin": { "by": "LUNAR", "month": "KARTIKA", "tithi": "SHUKLA_DASHAMI" },
+        }],
+    });
+    for (key, value) in extra.as_object().unwrap() {
+        request[key] = value.clone();
+    }
+    request
+}
+
+/// **Anniversaries over a span** on the test sky: the answer is the
+/// festival answer, each day naming its rule, and each refusal its contract
+/// names is named by its field.
+#[test]
+fn anniversaries_over_a_span_cross_the_boundary() {
+    let ctx = test_ctx();
+    let (status, answer) = json_call(
+        &ctx,
+        ts_almanac_anniversaries,
+        &anniversaries(&serde_json::json!({})),
+    );
+    assert_eq!(status, Status::Ok, "{:?}", ctx.last_error());
+    let answer = answer.unwrap();
+    let days = answer["value"]["anniversaries"].as_array().unwrap();
+    assert!(!days.is_empty(), "{answer}");
+    assert_eq!(days[0]["key"], "BARKHI");
+    assert!(days[0]["dayRule"]["clause"].is_string(), "{answer}");
+    let origin = serde_json::json!({ "by": "LUNAR", "month": "KARTIKA", "tithi": "PURNIMA" });
+    let many: Vec<Value> = (0..=teistro::MOST_ANNIVERSARIES)
+        .map(|at| serde_json::json!({ "key": format!("K{at}"), "origin": origin }))
+        .collect();
+    for (extra, status, field) in [
+        (
+            serde_json::json!({ "years": 0 }),
+            Status::OutOfRange,
+            "anniversaries.years",
+        ),
+        (
+            serde_json::json!({ "anniversaries": many }),
+            Status::Limit,
+            "anniversaries.anniversaries",
+        ),
+        (
+            serde_json::json!({ "unknown": 1 }),
+            Status::InvalidArg,
+            "anniversaries",
+        ),
+    ] {
+        let got = json_call(&ctx, ts_almanac_anniversaries, &anniversaries(&extra));
+        refused(&ctx, &got, status, field);
+    }
+    let bare = Ctx::defaults();
+    assert_eq!(
+        json_call(
+            &bare,
+            ts_almanac_anniversaries,
+            &anniversaries(&serde_json::json!({}))
+        )
+        .0,
         Status::Capability
     );
 }

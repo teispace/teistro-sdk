@@ -46,7 +46,7 @@ from teistro import (
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="nepali-default", ephemeris=Ephemeris.BUILTIN
+        profile="nepali-drik", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         birth_day = date(Calendar.GREGORIAN, 1990, 4, 14)
         when = ctx.time.resolve(

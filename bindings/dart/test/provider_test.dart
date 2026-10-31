@@ -67,7 +67,7 @@ final class StraightLine extends EphemerisProvider {
 void main() {
   test('an ephemeris written in Dart answers the SDK', () {
     final provider = StraightLine();
-    final ctx = teistro.context(profile: 'nepali-default', provider: provider);
+    final ctx = teistro.context(profile: 'nepali-drik', provider: provider);
     addTearDown(ctx.dispose);
 
     final positions = ctx.positions(

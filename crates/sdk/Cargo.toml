@@ -191,6 +191,14 @@ name = "next"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "sentences"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "anniversaries"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "published"
 required-features = ["builtin-ephemeris"]
 
@@ -248,6 +256,10 @@ required-features = ["builtin-ephemeris"]
 
 [[test]]
 name = "punya_kala"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "day_sky"
 required-features = ["builtin-ephemeris"]
 
 [[test]]

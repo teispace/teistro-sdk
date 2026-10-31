@@ -27,7 +27,7 @@ FIXTURES = Path(os.environ.get("TEISTRO_FIXTURES", "../../target/tsrb"))
 #: The profile and locale every test uses, which is the one the parity
 #: report and the Dart and Node tests use, so the four exercise the same
 #: settings.
-PROFILE = "nepali-default"
+PROFILE = "nepali-drik"
 LOCALE = "ne-Deva-NP"
 
 

@@ -12,6 +12,80 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A day in sentences; a polar sankranti answers.**
+**Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or
+`CIVIL_MIDNIGHT` that the default month start refused now answers, and a `NEAREST_EVENT`
+day's season is read from its civil date (C930). No other day moves.
+- `almanac.sentences`, in every binding and over MCP: one day's facts as short sentences
+  from templates, every value taken from the answer, in `en-Latn` and `ne-Deva-NP`
+  (`draft` until Q42's reviewer signs). A locale without the templates is `UNSUPPORTED`
+  on `locale`, and a fallback does not answer for it (`03-design/day-in-sentences.md`).
+
+**A date or a time as text and parts; Hindi and Sanskrit calendar text, marked unreviewed.**
+**Numbers:** none. Text moves: `hi-Deva-IN` and `sa-Deva` now answer `sdk.calendar` keys that fell back to English.
+- `intl.time` and `intl.date` in every binding and MCP (`ts_intl_time`, `ts_intl_date`): the locale's pattern and parts of the day, as text and typed parts (SR-76).
+- Hindi and Sanskrit `sdk.calendar` ship as drafts (SR-75), named in `_meta.json`'s new `draft`; a render says `isDraft`, `check-intl` refuses a draft that is not a whole namespace, and the render blob gains a `review` section.
+- `:datetime style=full` writes its time through `long` instead of warning and using the built-in pattern.
+- A strict locale may draft a namespace it holds whole (C987): `ne-Deva-NP` drafts `sdk.day`, and
+  `almanac.sentences`' `draft` now reads the pack's own mark, so a reviewer's pack clears it.
+- Dart's `almanac.anniversaries` takes the generated `AnniversariesRequest`, as Node, Python and Java do,
+  in place of named parameters with untyped anniversaries.
+
+**Anniversaries over a span of years, for many people in one call.**
+**Numbers:** no day moves. An anniversary's sealed answer gains `dayRule`, so its digest
+moves; a festival answer holding no anniversary does not.
+- `almanac.anniversaries` answers 1 to 100 years for up to 1,000 people at one place, the
+  span's days founded once (`03-design/anniversary-span.md`). Fifty people over ten years take 706 ms on
+  a Mac in one call and 28.4 s in fifty.
+- Every anniversary day, here and in `festivals`, carries `dayRule`: whether the tithi was
+  `KSHAYA` or `VRIDDHI`, the window read, the clause that chose the day and its source.
+- `AnniversaryKind::Event` keeps any event by the tithi at a stated window, sunrise by
+  default. It is a convention, `anniversary.event`, since no text rules on it (C911).
+- A caller's rules are held to limits, each refused as `LIMIT` by its field: 4,096 rules a
+  request, 128 bytes a key, 32 guards a rule and 16 predicates a guard.
+- `month_of` and `pair` no longer walk the days for each occurrence.
+
+**A day's sky, on request (SR-63).**
+**Numbers:** no day moves, and a request that does not ask pays nothing.
+- `AlmanacRequest::with_sky`, `TS_PANCHANGA_SKY` with `sky_step_minutes` (the request's
+  reserved field, so its size is unchanged) and `sky` in every binding and in
+  `almanac.days` answer the Sun's and the Moon's paths at a stated step, their rises,
+  transits and sets as exact points with their altitudes, and on the Moon's path her
+  fraction lit, phase angle, waxing, bright limb and parallactic angle as the place sees
+  them. A polar day says `ALWAYS_ABOVE` or `ALWAYS_BELOW` (`03-design/day-sky.md`).
+
+**A short locale tag finds the locale it means.**
+**Numbers:** none.
+- `set_locale` and a context's `locale` choose by RFC 4647 lookup, `ne` finding `ne-Deva-NP`, and
+  `intl.locale` names the one chosen; `intl.lookupLocale`, `ts_intl_lookup_locale` at the boundary,
+  answers it and changes nothing. Rust's and Java's `set_locale` return it. A tag nothing loaded
+  answers is still refused: there is no default, and `hi-Latn` does not become Devanagari (SR-64,
+  C1011).
+
+**A tithi says its number in the month.**
+**Numbers:** none. The `tithi` catalogue kind is version 2.
+- `month_number`, 1 to 30, joins the tithi's attributes beside `number`, 1 to 15 in the
+  paksha, and every binding has `tithiMonthNumber` (SR-70).
+
+**A day says the clock it was read on.**
+**Numbers:** none. The digest's format is 1.1, so its bytes and seal move.
+- Every binding's day answers `utcOffsetSeconds`: a new `days` column in the panchanga blob,
+  the zone's offset at the day's opening, or the offset stated.
+- `almanac.digest` takes `zone` in place of `utcOffsetSeconds`. Format 1.1 adds a `clock`
+  section before the seal, and `ts_digest_day.utc_offset_seconds` reads it. The C reader still
+  opens format 1.0, giving each day the summary's offset. `DigestRequest::offset` is now
+  `clock`, a `DayClock`. C1010.
+
+**The Nepali drik profile is named for what it is.**
+**Numbers:** none. The settings and their hash do not move; `provenance.profile` and a context's
+`profile` say `nepali-drik` where they said `nepali-default`, and so do the digest's and every
+sealed answer's provenance bytes.
+- `nepali-default` is `nepali-drik`, a modern drik reckoning and not Nepal's official calendar,
+  which is `nepali-committee`. `nepali-default` stays an accepted alias, opening the same
+  profile, in every binding, in a stored opening and in the MCP server, whose
+  `settings.describe` lists a profile's `aliases`. `SHIPPED_PROFILES` lists ids, and
+  `PROFILE_ALIASES` the older names (`03-design/settings-and-profiles.md` §3.2).
+
 **Festival rules say what they are; India's central holidays ship; Fagu purnima joins.**
 **Numbers:** no day moves. Every shipped pack's `input_hash` moves once, since each
 rule now carries its values.

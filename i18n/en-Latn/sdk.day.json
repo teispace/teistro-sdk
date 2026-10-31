@@ -1,0 +1,20 @@
+{
+  "vara": "The day is {$vara :entity kind=vara}.",
+  "tithi": ".input {$ends :string} .match $ends sameDay {{The tithi is {$tithi :entity kind=tithi} of {$paksha :entity kind=paksha} until {$until :time}.}} nextDay {{The tithi is {$tithi :entity kind=tithi} of {$paksha :entity kind=paksha} until {$until :time} the next day.}} allDay {{The tithi is {$tithi :entity kind=tithi} of {$paksha :entity kind=paksha} all day.}} * {{The tithi is {$tithi :entity kind=tithi} of {$paksha :entity kind=paksha} for the rest of the day.}}",
+  "nakshatra": ".input {$ends :string} .match $ends sameDay {{The nakshatra is {$nakshatra :entity kind=nakshatra} until {$until :time}.}} nextDay {{The nakshatra is {$nakshatra :entity kind=nakshatra} until {$until :time} the next day.}} allDay {{The nakshatra is {$nakshatra :entity kind=nakshatra} all day.}} * {{The nakshatra is {$nakshatra :entity kind=nakshatra} for the rest of the day.}}",
+  "yoga": ".input {$ends :string} .match $ends sameDay {{The yoga is {$yoga :entity kind=yoga} until {$until :time}.}} nextDay {{The yoga is {$yoga :entity kind=yoga} until {$until :time} the next day.}} allDay {{The yoga is {$yoga :entity kind=yoga} all day.}} * {{The yoga is {$yoga :entity kind=yoga} for the rest of the day.}}",
+  "karana": ".input {$ends :string} .match $ends sameDay {{The karana is {$karana :entity kind=karana} until {$until :time}.}} nextDay {{The karana is {$karana :entity kind=karana} until {$until :time} the next day.}} allDay {{The karana is {$karana :entity kind=karana} all day.}} * {{The karana is {$karana :entity kind=karana} for the rest of the day.}}",
+  "sun": "The Sun rises at {$rise :time} and sets at {$set :time}.",
+  "sunUp": "The Sun stays above the horizon all day.",
+  "sunDown": "The Sun stays below the horizon all day.",
+  "sunSign": "The Sun stands in {$rashi :entity kind=rashi}.",
+  "sankranti": ".input {$when :string} .match $when nextDay {{The Sun enters {$rashi :entity kind=rashi} at {$at :time} the next day.}} * {{The Sun enters {$rashi :entity kind=rashi} at {$at :time}.}}",
+  "moonSign": ".input {$ends :string} .match $ends sameDay {{The Moon stands in {$rashi :entity kind=rashi} until {$until :time}.}} nextDay {{The Moon stands in {$rashi :entity kind=rashi} until {$until :time} the next day.}} allDay {{The Moon stands in {$rashi :entity kind=rashi} all day.}} * {{The Moon stands in {$rashi :entity kind=rashi} for the rest of the day.}}",
+  "moonrise": ".input {$when :string} .match $when nextDay {{The Moon rises at {$at :time} the next day.}} * {{The Moon rises at {$at :time}.}}",
+  "moonset": ".input {$when :string} .match $when nextDay {{The Moon sets at {$at :time} the next day.}} * {{The Moon sets at {$at :time}.}}",
+  "month": ".input {$kind :string} .match $kind adhika {{The lunar month is adhika {$masa :entity kind=masa}.}} * {{The lunar month is {$masa :entity kind=masa}.}}",
+  "ritu": "The season is {$ritu :entity kind=ritu}.",
+  "ayana": "The ayana is {$ayana :entity kind=ayana}.",
+  "kaala": "{$kaala :entity kind=kaala} runs from {$from :time} to {$to :time}.",
+  "abhijit": "Abhijit muhurta runs from {$from :time} to {$to :time}."
+}

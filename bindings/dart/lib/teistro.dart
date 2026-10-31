@@ -904,10 +904,15 @@ String _zoneJson(ZoneSpec zone) => jsonEncode(switch (zone.kind) {
 final class IntlArea extends _Area {
   IntlArea._(super.context);
 
-  /// The locale every render resolves from.
+  /// The locale every render resolves from. Set a short tag and the loaded
+  /// locale it means is chosen, by RFC 4647 lookup: read this to see which.
   String get locale => _context._inner.intlLocale();
 
   set locale(String tag) => _context._inner.intlSetLocale(tag);
+
+  /// The loaded locale a tag means, by RFC 4647 lookup, changing nothing:
+  /// `ne` is `ne-Deva-NP`. A tag nothing loaded answers throws.
+  String lookupLocale(String tag) => _context._inner.intlLookupLocale(tag);
 
   /// Renders a message of the current locale with its parameters.
   IntlRender render(String key, [Map<String, Object?>? params]) =>
@@ -943,6 +948,27 @@ final class IntlArea extends _Area {
   /// ```
   InWords inWords(InWordsRequest request) => InWords._of(
     jsonDecode(_context._inner.intlInWords(jsonEncode(request._wire)))
+        as Map<String, Object?>,
+  );
+
+  /// A time of day as text and parts, through the locale's pattern and
+  /// parts of the day.
+  ///
+  /// ```dart
+  /// final dawn = sdk.intl.time(const TimeTextRequest(
+  ///   at: ClockTime(hour: 6, minute: 5),
+  ///   hour12: true,
+  /// ));
+  /// ```
+  CivilText time(TimeTextRequest request) => CivilText._of(
+    jsonDecode(_context._inner.intlTime(jsonEncode(request._wire)))
+        as Map<String, Object?>,
+  );
+
+  /// A date as text and parts, in its own calendar, through the locale's
+  /// pattern.
+  CivilText date(DateTextRequest request) => CivilText._of(
+    jsonDecode(_context._inner.intlDate(jsonEncode(request._wire)))
         as Map<String, Object?>,
   );
 
@@ -1385,6 +1411,8 @@ final class AlmanacArea extends _Area {
     bool nepalSambat = false,
     bool lagnas = false,
     bool homaAhuti = false,
+    bool sky = false,
+    int skyStepMinutes = 0,
     bool days = true,
   }) => _range(
     from,
@@ -1399,10 +1427,12 @@ final class AlmanacArea extends _Area {
         (nepalSambat ? panchangaNepalSambat : 0) |
         (lagnas ? panchangaLagnas : 0) |
         (homaAhuti ? panchangaHomaAhuti : 0) |
+        (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
+    skyStepMinutes,
   );
 
-  /// [of] on a zone's clock: each day on the offset of its own noon, and
+  /// [of] on a zone's clock: each day on its own offset, and
   /// the provenance names the zone's offset, source and era at the first
   /// day (`03-design/time-and-timezone.md` §3.4). A range crossing a clock
   /// change is refused on `zone` when a section is asked beside the days,
@@ -1419,6 +1449,8 @@ final class AlmanacArea extends _Area {
     bool nepalSambat = false,
     bool lagnas = false,
     bool homaAhuti = false,
+    bool sky = false,
+    int skyStepMinutes = 0,
     bool days = true,
   }) => _range(
     from,
@@ -1433,7 +1465,9 @@ final class AlmanacArea extends _Area {
         (nepalSambat ? panchangaNepalSambat : 0) |
         (lagnas ? panchangaLagnas : 0) |
         (homaAhuti ? panchangaHomaAhuti : 0) |
+        (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
+    skyStepMinutes,
   );
 
   Almanac _range(
@@ -1445,12 +1479,14 @@ final class AlmanacArea extends _Area {
     MuhurtaRequest? muhurta,
     FestivalRequest? festivals,
     int sections,
+    int skyStepMinutes,
   ) => Almanac(
     decodePanchanga(
       _context._guarded(
         () => _context._inner.panchangaDays(
           PanchangaRequest(
             calendar: from.calendar,
+            skyStepMinutes: skyStepMinutes,
             fromYear: from.year,
             fromMonth: from.month,
             fromDay: from.day,
@@ -1769,7 +1805,7 @@ final class AlmanacArea extends _Area {
   /// ```dart
   /// final official = teistro.nepalOfficial(modern: [teimeris()]);
   /// final modern = teistro.context(
-  ///   profile: 'nepali-default',
+  ///   profile: 'nepali-drik',
   ///   ephemeris: [teimeris()],
   /// );
   /// final found = official.almanac.disagreements(
@@ -1888,7 +1924,8 @@ final class AlmanacArea extends _Area {
   Uint8List digest({
     required CalendarDate from,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     int? days,
     FestivalRequest? festivals,
   }) {
@@ -1899,7 +1936,8 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      if (utcOffsetSeconds != null) 'utcOffsetSeconds': utcOffsetSeconds,
+      if (zone != null) 'zone': jsonDecode(_zoneJson(zone)),
       if (festivals != null) 'festivals': jsonDecode(festivals._json),
     });
     return _context._guarded(() => _context._inner.almanacDigest(asked));
@@ -1937,6 +1975,90 @@ final class AlmanacArea extends _Area {
             ),
           )
           as Map<String, Object?>;
+
+  /// **A day in sentences** (`03-design/day-in-sentences.md`): one date's
+  /// facts as short sentences from templates, every value from the day's
+  /// answer. A locale without the templates is refused on `locale`.
+  ///
+  /// ```dart
+  /// final day = sdk.almanac.sentences(
+  ///   date: Calendar.gregorian.date(2026, 3, 18), place: kathmandu,
+  ///   utcOffsetSeconds: 20700, locale: 'ne-Deva-NP',
+  /// );
+  /// print(day.sentences.first.text);
+  /// ```
+  DaySentences sentences({
+    required CalendarDate date,
+    required Observer place,
+    required int utcOffsetSeconds,
+    String? locale,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'calendar': date.calendar.key,
+      'date': _dayParts(date),
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'utcOffsetSeconds': utcOffsetSeconds,
+      if (locale != null) 'locale': locale,
+    });
+    final envelope =
+        jsonDecode(
+              _context._guarded(() => _context._inner.almanacSentences(asked)),
+            )
+            as Map<String, Object?>;
+    final value = envelope['value']! as Map<String, Object?>;
+    return DaySentences(
+      locale: value['locale']! as String,
+      draft: value['draft']! as bool,
+      sentences: [
+        for (final row
+            in (value['sentences']! as List<Object?>)
+                .cast<Map<String, Object?>>())
+          DaySentence(
+            key: row['key']! as String,
+            params: row['params']! as Map<String, Object?>,
+            text: row['text']! as String,
+          ),
+      ],
+      withheld: (value['withheld']! as List<Object?>).cast<String>(),
+    );
+  }
+
+  /// **Anniversaries kept by the tithi over a span of years**, for many
+  /// people in one call (`03-design/anniversary-span.md`). The span's days
+  /// are founded once, and every person's are read from them. The request
+  /// is the generated [AnniversariesRequest]: `years` is 1 to 100, counted
+  /// in its `calendar`, and its anniversaries, at most 1000, are typed as a
+  /// festival request's. Each day's `dayRule` says whether its tithi was
+  /// `KSHAYA` or `VRIDDHI`, the window read, the clause that chose the day
+  /// and its source.
+  ///
+  /// ```dart
+  /// final span = sdk.almanac.anniversaries(
+  ///   const AnniversariesRequest(
+  ///     fromYear: 2026,
+  ///     years: 10,
+  ///     latitudeDeg: 27.7172,
+  ///     longitudeDeg: 85.324,
+  ///     utcOffsetSeconds: 20700,
+  ///     anniversaries: [
+  ///       Anniversary(
+  ///         key: 'GRANDFATHER',
+  ///         origin: OriginLunar(month: Masa.kartika, tithi: Tithi.shuklaDashami),
+  ///       ),
+  ///     ],
+  ///   ),
+  /// );
+  /// print(span.anniversaries.first.dayRule.clause);
+  /// ```
+  FestivalAnswer anniversaries(AnniversariesRequest request) {
+    return _festivalAnswer(
+      _context._guarded(
+        () => _context._inner.almanacAnniversaries(jsonEncode(request)),
+      ),
+    );
+  }
 
   NextOccurrence next({
     required double after,
@@ -2056,6 +2178,46 @@ final class ChangePoints {
 
   /// What computed it, and the clock it was asked on.
   final Provenance provenance;
+}
+
+/// One sentence of [AlmanacArea.sentences].
+final class DaySentence {
+  const DaySentence({
+    required this.key,
+    required this.params,
+    required this.text,
+  });
+
+  /// The template, as `sdk.day.tithi`.
+  final String key;
+
+  /// Its slots, as `intl.render` takes them.
+  final Map<String, Object?> params;
+
+  /// The sentence.
+  final String text;
+}
+
+/// A day said in a locale (`03-design/day-in-sentences.md`).
+final class DaySentences {
+  const DaySentences({
+    required this.locale,
+    required this.draft,
+    required this.sentences,
+    required this.withheld,
+  });
+
+  /// The locale the sentences are in.
+  final String locale;
+
+  /// Whether its templates still wait for a native reviewer (Q42).
+  final bool draft;
+
+  /// The sentences, in the order a printed day runs.
+  final List<DaySentence> sentences;
+
+  /// The facts a polar day holds elsewhere and so does not say here.
+  final List<String> withheld;
 }
 
 /// The next day [AlmanacArea.next] found (`03-design/next-occurrence.md`).
@@ -2857,6 +3019,11 @@ extension CivilDateTimes on CalendarDate {
 
 /// A zone of the embedded database, by its IANA name
 /// (`Asia/Kathmandu`).
+/// A tithi's number in the lunar month, 1 for Shukla Pratipada to 30 for
+/// Amavasya. A tithi is named by its number in the paksha; this is the count
+/// through the month, the catalogue's id and one.
+int tithiMonthNumber(Tithi tithi) => tithi.id + 1;
+
 ZoneSpec ianaZone(String name) => ZoneSpec(
   kind: ZoneKind.iana,
   offsetSeconds: 0,
@@ -2996,6 +3163,10 @@ extension RenderedMessage on IntlRender {
 
   /// Whether a runtime override answered.
   bool get override => isOverride != 0;
+
+  /// Whether any of the text is unreviewed, from a namespace its locale
+  /// marks draft.
+  bool get draft => isDraft != 0;
 
   /// The locale whose message answered, null when none had it.
   String? get from => resolvedFrom.isEmpty ? null : resolvedFrom;
@@ -11043,6 +11214,86 @@ final class NumerologyProfile extends _Value {
   ];
 }
 
+/// A date or a time as text and parts, as `intl.time` and `intl.date`
+/// give it.
+final class CivilText extends _Value {
+  const CivilText({
+    required this.text,
+    required this.parts,
+    required this.locale,
+    required this.resolvedFrom,
+    required this.isFallback,
+    required this.isDraft,
+    required this.warnings,
+  });
+
+  /// The whole.
+  final String text;
+
+  /// The parts, in the locale's order; joined, they are [text].
+  final List<CivilPart> parts;
+
+  /// The locale asked for.
+  final String locale;
+
+  /// The locale whose pattern answered.
+  final String resolvedFrom;
+
+  /// Whether a fallback locale answered.
+  final bool isFallback;
+
+  /// Whether any of it is text no reviewer has signed off.
+  final bool isDraft;
+
+  /// Every problem met on the way.
+  final List<String> warnings;
+
+  static CivilText _of(Map<String, Object?> raw) => CivilText(
+    text: raw['text']! as String,
+    parts: List.unmodifiable(
+      (raw['parts']! as List<Object?>).cast<Map<String, Object?>>().map(
+        (part) => CivilPart(
+          kind: part['kind']! as String,
+          text: part['text']! as String,
+        ),
+      ),
+    ),
+    locale: raw['locale']! as String,
+    resolvedFrom: raw['resolvedFrom']! as String,
+    isFallback: raw['isFallback']! as bool,
+    isDraft: raw['isDraft']! as bool,
+    warnings: List.unmodifiable(
+      (raw['warnings']! as List<Object?>).cast<String>(),
+    ),
+  );
+
+  @override
+  List<Object?> get _fields => [
+    text,
+    parts,
+    locale,
+    resolvedFrom,
+    isFallback,
+    isDraft,
+    warnings,
+  ];
+}
+
+/// One part of a date or a time.
+final class CivilPart extends _Value {
+  const CivilPart({required this.kind, required this.text});
+
+  /// What it is: `YEAR`, `MONTH`, `DAY`, `WEEKDAY`, `ERA`, `HOUR`, `MINUTE`,
+  /// `SECOND`, `DAY_PERIOD` or `LITERAL`.
+  final String kind;
+
+  /// Its text.
+  final String text;
+
+  @override
+  List<Object?> get _fields => [kind, text];
+}
+
 /// A number or an amount in words and in figures, as `intl.inWords`
 /// gives it.
 final class InWords extends _Value {
@@ -16089,6 +16340,7 @@ final class AnniversaryDay extends _Value {
     required this.kind,
     required this.origin,
     required this.monthBy,
+    required this.dayRule,
     required this.observance,
   });
 
@@ -16099,7 +16351,7 @@ final class AnniversaryDay extends _Value {
   /// janma tithi's the age turned; null for a lunar origin given no moment.
   final int? count;
 
-  /// `EKODDISHTA`, `PARVANA` or `JANMA_TITHI`.
+  /// `EKODDISHTA`, `PARVANA`, `JANMA_TITHI` or `EVENT`.
   final String kind;
   final AnniversaryOrigin origin;
 
@@ -16107,11 +16359,51 @@ final class AnniversaryDay extends _Value {
   /// `ADHIKA_ORIGIN`, `KSHAYA_JOINED` or `SAMSARPA` (C666, C667, C669).
   final String monthBy;
 
+  /// The rule that chose the day (`03-design/anniversary-span.md`).
+  final AnniversaryDayRule dayRule;
+
   /// The day as the festival evaluator judged it.
   final FestivalObservance observance;
 
   @override
-  List<Object?> get _fields => [key, count, kind, origin, monthBy, observance];
+  List<Object?> get _fields => [
+    key,
+    count,
+    kind,
+    origin,
+    monthBy,
+    dayRule,
+    observance,
+  ];
+}
+
+/// The rule applied to an anniversary's day
+/// (`03-design/anniversary-span.md`).
+final class AnniversaryDayRule extends _Value {
+  const AnniversaryDayRule({
+    required this.tithi,
+    required this.at,
+    required this.clause,
+    required this.source,
+  });
+
+  /// How the tithi stood: `ORDINARY`, `KSHAYA` or `VRIDDHI`, one sunrise,
+  /// none or two (C910).
+  final String tithi;
+
+  /// The rite's time it was read at.
+  final FestivalWindow at;
+
+  /// The clause that chose the day: `ONE_DAY`, `BOTH_WHOLE`, `NEITHER`,
+  /// `EQUAL_PARTS`, `GREATER_SHARE`, `BIRTH_NAKSHATRA` or
+  /// `TWO_MUHURTA_FLOOR`.
+  final String clause;
+
+  /// Where the clause is stated, or the convention's name.
+  final String source;
+
+  @override
+  List<Object?> get _fields => [tithi, at, clause, source];
 }
 
 /// An Ekadashi fast: the day a rule gives the 11th, by its vedha and the
@@ -17026,8 +17318,18 @@ AnniversaryDay _anniversaryDay(Map<String, Object?> raw) => AnniversaryDay(
   kind: raw['kind']! as String,
   origin: _anniversaryOrigin(_festivalAt(raw['origin'])),
   monthBy: raw['monthBy']! as String,
+  dayRule: _anniversaryDayRule(_festivalAt(raw['dayRule'])),
   observance: _festivalObservance(_festivalAt(raw['observance'])),
 );
+
+/// The rule that chose an anniversary's day, as a festival answer writes it.
+AnniversaryDayRule _anniversaryDayRule(Map<String, Object?> raw) =>
+    AnniversaryDayRule(
+      tithi: raw['tithi']! as String,
+      at: _festivalWindow(_festivalAt(raw['at'])),
+      clause: raw['clause']! as String,
+      source: raw['source']! as String,
+    );
 
 /// An origin as found, as an anniversary's day and a first year write it.
 AnniversaryOrigin _anniversaryOrigin(Map<String, Object?> origin) {
@@ -17234,6 +17536,178 @@ NepalSambatDates _nepalSambat(String json) {
     value: List.unmodifiable([
       for (final item in envelope['value']! as List<Object?>)
         date(item! as Map<String, Object?>),
+    ]),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
+}
+
+/// The Moon's lit shape at an instant, seen from the place
+/// (`03-design/day-sky.md`). Turn the bright limb from the zenith by
+/// `brightLimbDeg - parallacticAngleDeg` to draw it.
+final class MoonShape {
+  const MoonShape({
+    required this.illuminatedFraction,
+    required this.phaseAngleDeg,
+    required this.waxing,
+    required this.brightLimbDeg,
+    required this.parallacticAngleDeg,
+  });
+
+  /// The fraction of the disc lit, 0 to 1, from the place.
+  final double illuminatedFraction;
+
+  /// The angle at the Moon between the place and the Sun, degrees: 0 at
+  /// full, 180 at new.
+  final double phaseAngleDeg;
+
+  /// Whether the Moon is growing, the Earth's-centre sign of her
+  /// elongation, which agrees with the paksha.
+  final bool waxing;
+
+  /// The position angle of the bright limb's midpoint, degrees in
+  /// `[0, 360)`, from the disc's north point through the east.
+  final double brightLimbDeg;
+
+  /// The position angle of the zenith, degrees in `(-180, 180]`, from the
+  /// disc's north point through the east.
+  final double parallacticAngleDeg;
+}
+
+/// A point on a body's track: a step's reading or an exact event.
+final class SkyPoint {
+  const SkyPoint({
+    required this.at,
+    required this.kind,
+    required this.altitudeDeg,
+    required this.refractedAltitudeDeg,
+    required this.azimuthDeg,
+    required this.moon,
+  });
+
+  /// The instant, Julian day, UT1 read as UTC.
+  final double at;
+
+  /// `SAMPLE`, `RISE`, `TRANSIT` or `SET`.
+  final String kind;
+
+  /// The airless topocentric altitude of the centre, degrees.
+  final double altitudeDeg;
+
+  /// The altitude with the standard atmosphere's refraction, degrees; the
+  /// airless altitude where the body stays below the horizon.
+  final double refractedAltitudeDeg;
+
+  /// The topocentric azimuth, degrees in `[0, 360)`, from north through
+  /// east.
+  final double azimuthDeg;
+
+  /// The Moon's shape at the instant, on the Moon's track only.
+  final MoonShape? moon;
+}
+
+/// One body's day.
+final class BodySky {
+  const BodySky({required this.state, required this.track});
+
+  /// `CROSSES`, or on a day with no rise or set `ALWAYS_ABOVE` or
+  /// `ALWAYS_BELOW`.
+  final String state;
+
+  /// Every step's reading and every exact event, in time order.
+  final List<SkyPoint> track;
+}
+
+/// The sky of one day at one place (`03-design/day-sky.md`).
+final class DaySky {
+  const DaySky({
+    required this.from,
+    required this.to,
+    required this.stepMinutes,
+    required this.sun,
+    required this.moon,
+  });
+
+  /// The window's start, Julian day, UT1 read as UTC.
+  final double from;
+
+  /// The window's end; an event here is the next window's.
+  final double to;
+
+  /// The step asked, minutes.
+  final int stepMinutes;
+
+  /// The Sun.
+  final BodySky sun;
+
+  /// The Moon.
+  final BodySky moon;
+}
+
+/// Each day's sky, in the days' order.
+///
+/// ```dart
+/// final almanac = sdk.almanac.of(
+///     from: from, to: to, place: place, utcOffsetSeconds: 20700,
+///     sky: true, skyStepMinutes: 10);
+/// final noon = almanac.sky?.value.first.sun.track
+///     .where((point) => point.kind == 'TRANSIT');
+/// ```
+final class DaySkies {
+  const DaySkies({required this.value, required this.provenance});
+
+  /// One record a day, in the days' order.
+  final List<DaySky> value;
+
+  /// The days' own provenance with the window's reading named, and the
+  /// hash of [value].
+  final Provenance provenance;
+}
+
+/// The `sky` section: one record a day, with the provenance beside them.
+DaySkies _daySkies(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  double number(Object? value) => (value! as num).toDouble();
+  MoonShape shape(Map<String, Object?> raw) => MoonShape(
+    illuminatedFraction: number(raw['illuminatedFraction']),
+    phaseAngleDeg: number(raw['phaseAngleDeg']),
+    waxing: raw['waxing']! as bool,
+    brightLimbDeg: number(raw['brightLimbDeg']),
+    parallacticAngleDeg: number(raw['parallacticAngleDeg']),
+  );
+  SkyPoint point(Map<String, Object?> raw) {
+    final moon = raw['moon'] as Map<String, Object?>?;
+    return SkyPoint(
+      at: number(raw['at']),
+      kind: raw['kind']! as String,
+      altitudeDeg: number(raw['altitudeDeg']),
+      refractedAltitudeDeg: number(raw['refractedAltitudeDeg']),
+      azimuthDeg: number(raw['azimuthDeg']),
+      moon: moon == null ? null : shape(moon),
+    );
+  }
+
+  BodySky body(Map<String, Object?> raw) => BodySky(
+    state: raw['state']! as String,
+    track: List.unmodifiable([
+      for (final item in raw['track']! as List<Object?>)
+        point(item! as Map<String, Object?>),
+    ]),
+  );
+  return DaySkies(
+    value: List.unmodifiable([
+      for (final item in envelope['value']! as List<Object?>)
+        () {
+          final raw = item! as Map<String, Object?>;
+          return DaySky(
+            from: number(raw['from']),
+            to: number(raw['to']),
+            stepMinutes: raw['stepMinutes']! as int,
+            sun: body(raw['sun']! as Map<String, Object?>),
+            moon: body(raw['moon']! as Map<String, Object?>),
+          );
+        }(),
     ]),
     provenance: Provenance.fromJson(
       envelope['provenance']! as Map<String, Object?>,
@@ -29123,6 +29597,11 @@ final class Almanac {
   late final NepalSambatDates? nepalSambat =
       decoded.nepalSambat.isEmpty ? null : _nepalSambat(decoded.nepalSambat);
 
+  /// Each day's sky, or null when the request did not ask with `sky: true`
+  /// (`03-design/day-sky.md`).
+  late final DaySkies? sky =
+      decoded.sky.isEmpty ? null : _daySkies(decoded.sky);
+
   /// One day of the batch, by index.
   AlmanacDay at(int index) {
     if (index < 0 || index >= length) {
@@ -29231,6 +29710,11 @@ final class AlmanacDay {
   /// season of the sidereal solar month the day belongs to, its first day
   /// placed by `panchanga.solar_month_start` (`03-design/ritu-measured.md`).
   Ritu get ritu => Ritu.byId(batch.decoded.days.ritu[index]);
+
+  /// The clock the day was read on, in seconds east of UTC: a zone's offset
+  /// at the day's opening, which moves across a clock change, or the offset
+  /// the caller stated.
+  int get utcOffsetSeconds => batch.decoded.days.utcOffsetSeconds[index];
 
   /// The direction not to travel in, which is the vara's.
   Direction get dishaShool =>

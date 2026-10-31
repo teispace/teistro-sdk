@@ -1168,6 +1168,7 @@ fn days_in(
     last: FixedDay,
     from: &CalendarDate,
     to: &CalendarDate,
+    most: usize,
 ) -> Result<usize, Error> {
     let days = first.days_until(last);
     if days < 0 {
@@ -1177,10 +1178,10 @@ fn days_in(
         .with_field("to"));
     }
     let count = usize::try_from(days).unwrap_or(0) + 1;
-    if count > MOST_DAYS {
+    if count > most {
         return Err(Error::new(
             Status::OutOfRange,
-            format!("a range holds at most {MOST_DAYS} days, not {count}"),
+            format!("a range holds at most {most} days, not {count}"),
         )
         .with_field("to"));
     }
@@ -1193,6 +1194,12 @@ fn days_in(
 /// different shape, and the refusal names the limit rather than running
 /// for a minute.
 pub const MOST_DAYS: usize = 366;
+
+/// The most days one span of festival days may hold: a century of
+/// anniversaries, and the lunation and days around it its edges read
+/// (`03-design/anniversary-span.md` §3). Only [`Almanac::festival_span`]
+/// reads this far.
+pub const MOST_SPAN_DAYS: usize = 36_600;
 
 /// The almanac over a provider, a solar model for the day's arcs, a
 /// calendar and a clock.
@@ -1529,6 +1536,73 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         place: &Place,
     ) -> Result<Envelope<Vec<FestivalDay>>, Error> {
         self.run(from, to, place, Moon::Unread, Self::festival_value)
+    }
+
+    /// As [`Almanac::festival_days`], up to [`MOST_SPAN_DAYS`]: one run of
+    /// days, founded a range at a time. A range's rounds step every day at
+    /// once, and a provider's segment cache is sized to a year of them; one
+    /// round over a decade thrashes it, 37 s against 1.3 s on the built-in
+    /// ephemeris (`03-design/anniversary-span.md` §5). The provenance is the
+    /// first range's.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |year, month, day| CalendarDate::defined(Calendar::Gregorian, year, month, day);
+    /// // Two years, past a range's limit of 366 days.
+    /// let days = almanac.festival_span(&date(2026, 1, 1), &date(2027, 12, 31), &kathmandu)?.value;
+    /// assert_eq!(days.len(), 730);
+    /// assert!(days.windows(2).all(|pair| pair[0].sunrise.get() < pair[1].sunrise.get()));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Almanac::festival_days`], the range's limit being
+    /// [`MOST_SPAN_DAYS`].
+    pub fn festival_span(
+        &self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+    ) -> Result<Envelope<Vec<FestivalDay>>, Error> {
+        let (first, last) = (self.calendar.fixed_of(from)?, self.calendar.fixed_of(to)?);
+        let count = days_in(first, last, from, to, MOST_SPAN_DAYS)?;
+        let mut days = Vec::with_capacity(count);
+        let mut provenance = None;
+        for start in (0..count).step_by(MOST_DAYS) {
+            let end = (start + MOST_DAYS).min(count) - 1;
+            let at = |step: usize| {
+                self.calendar
+                    .date_of(first.plus_days(i64::try_from(step).unwrap_or(0)))
+            };
+            let range = self.festival_days(&at(start)?, &at(end)?, place)?;
+            provenance.get_or_insert(range.provenance);
+            days.extend(range.value);
+        }
+        let Some(provenance) = provenance else {
+            return Err(Error::internal("a span of days answered no day"));
+        };
+        Ok(Envelope::new(days, provenance))
     }
 
     /// Every instant in a range at which a limb, the Moon's or the Sun's
@@ -2016,7 +2090,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         value: impl Fn(&Self, &CalendarDate, &Place, &mut Memo) -> Result<(T, Frame), Error>,
     ) -> Result<Envelope<Vec<T>>, Error> {
         let (first, last) = (self.calendar.fixed_of(from)?, self.calendar.fixed_of(to)?);
-        let count = days_in(first, last, from, to)?;
+        let count = days_in(first, last, from, to, MOST_DAYS)?;
         let mut values = Vec::with_capacity(count);
         // The frame is the first day's: the batch asks the provider for
         // one frame, so one is what the stamp names -- and it comes back
@@ -2613,7 +2687,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         place: &Place,
     ) -> Result<Envelope<Vec<LunarYear>>, Error> {
         let (first, last) = (self.calendar.fixed_of(from)?, self.calendar.fixed_of(to)?);
-        days_in(first, last, from, to)?;
+        days_in(first, last, from, to, MOST_DAYS)?;
         let start = local_midnight(self.clock, first)?;
         let end = local_midnight(self.clock, last.plus_days(1))?;
         let completion = Completion::new(
@@ -3407,11 +3481,21 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         Ok(match settings.panchanga.ritu {
             RituReckoning::Solar => {
                 let fixed = self.calendar.fixed_of(date)?;
+                // Under `NEAREST_EVENT` a polar day's window stands at the
+                // nearest sunrise, weeks off, and its signs are not the
+                // date's (C930). Every other window holds the civil noon.
+                let midnight = teistro_time::local_day::local_midnight(self.clock, fixed)?;
+                let civil = if window.contains(midnight.plus_days(0.5)?) {
+                    None
+                } else {
+                    let day = Interval::new(midnight, midnight.plus_days(1.0)?)?;
+                    Some(Self::signs(longitudes, Body::Sun, day, zodiac)?)
+                };
                 sky::solar_month(
                     settings.panchanga.solar_month_start,
                     fixed,
-                    sun,
-                    (place, self.clock, self.model),
+                    civil.as_deref().unwrap_or(sun),
+                    (place, self.clock, self.model, settings.day.polar_day_policy),
                 )?
                 .map_or_else(|| opening(sun), sky::ritu_of)
             }

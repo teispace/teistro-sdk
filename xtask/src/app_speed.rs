@@ -104,7 +104,12 @@ struct Request {
     target: Option<f64>,
 }
 
-const REQUESTS: [Request; 11] = [
+/// Requests the desktop record alone is held to: a device's record is taken
+/// by hand on a device, and a row must not fail until the next one is
+/// (`03-design/anniversary-span.md` §5).
+const DESKTOP_ONLY: [&str; 1] = ["anniversaries"];
+
+const REQUESTS: [Request; 12] = [
     Request {
         key: "open",
         asks: "a context opened, the engine with it",
@@ -169,6 +174,12 @@ const REQUESTS: [Request; 11] = [
         key: "rectify",
         asks: "a day-long window rectified at the default one-minute seed",
         budget: Some(1000.0),
+        target: None,
+    },
+    Request {
+        key: "anniversaries",
+        asks: "50 people's anniversaries over 10 years in one call; the desktop record alone",
+        budget: Some(900.0),
         target: None,
     },
 ];
@@ -280,6 +291,9 @@ fn breaches(records: &[(String, Record)]) -> Vec<String> {
             let Some(budget) = request.budget else {
                 continue;
             };
+            if DESKTOP_ONLY.contains(&request.key) && !name.starts_with("desktop-") {
+                continue;
+            }
             for setup in GATED {
                 match record.timing(setup, request.key) {
                     Some(t) if t.median_ms > CEILING * budget => found.push(format!(
@@ -578,6 +592,24 @@ mod tests {
             0,
             "the built-in is not held to the native budget"
         );
+    }
+
+    #[test]
+    fn a_desktop_row_holds_the_desktop_record_alone() {
+        let named = |name: &str| {
+            let lines = breaches(&[(name.to_owned(), record("drik-teimeris", "day", 1.0))]);
+            lines
+                .iter()
+                .filter(|l| l.contains("`anniversaries`"))
+                .count()
+        };
+        assert_eq!(named("android-arm64-android-emulator"), 0);
+        assert_eq!(named("desktop-Darwin-arm64"), 2, "one for each gated setup");
+        let over = breaches(&[(
+            String::from("desktop-Darwin-arm64"),
+            record("drik-teimeris", "anniversaries", 1801.0),
+        )]);
+        assert!(over.iter().any(|l| l.contains("past")), "{over:?}");
     }
 
     #[test]

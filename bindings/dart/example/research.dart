@@ -8,7 +8,7 @@ import 'package:teistro/teistro.dart';
 void main() {
   final teistro = Teistro.open();
   final ctx = teistro.context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
 

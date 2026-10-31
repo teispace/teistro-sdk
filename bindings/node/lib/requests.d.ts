@@ -19,6 +19,29 @@ export type Bare<Full> = Full extends `${string}.${infer Key}` ? Key : never;
 export type Member<Full> = Full | Bare<Full>;
 
 /**
+ * The request as a binding writes it.
+ */
+export interface AnniversariesRequest {
+  readonly altitudeM?: number;
+  /**
+   * Up to 1000, each key once.
+   */
+  readonly anniversaries: readonly Anniversary[];
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  /**
+   * The first year, in `calendar`: the span begins on its month 1, day 1.
+   */
+  readonly fromYear: number;
+  readonly latitudeDeg: number;
+  readonly longitudeDeg: number;
+  readonly utcOffsetSeconds: number;
+  /**
+   * 1 to 100: the span ends the day before month 1 of the year after.
+   */
+  readonly years: number;
+}
+
+/**
  * The query as a binding writes it.
  */
 export interface AshauchQuery {
@@ -98,6 +121,11 @@ export interface AlmanacDaysRequest {
   readonly longitudeDeg: number;
   readonly muhurta?: MuhurtaRequest;
   readonly nepalSambat?: boolean;
+  readonly sky?: boolean;
+  /**
+   * The sky's step, minutes; ten when left out.
+   */
+  readonly skyStepMinutes?: number | null;
   readonly utcOffsetSeconds?: number | null;
   readonly years?: boolean;
   /**
@@ -126,7 +154,14 @@ export interface DigestRequest {
   readonly first: DayAsked;
   readonly latitudeDeg: number;
   readonly longitudeDeg: number;
-  readonly utcOffsetSeconds: number;
+  /**
+   * The clock's offset; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone, each day on its own offset; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -308,6 +343,25 @@ export interface SankalpaRequest {
 }
 
 /**
+ * The request as a binding writes it.
+ */
+export interface SentencesRequest {
+  readonly altitudeM?: number;
+  /**
+   * The calendar `date` is in; Gregorian when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  readonly date: DayAsked;
+  readonly latitudeDeg: number;
+  /**
+   * The locale to say the day in; the context's when left out.
+   */
+  readonly locale?: string | null;
+  readonly longitudeDeg: number;
+  readonly utcOffsetSeconds: number;
+}
+
+/**
  * An add request as a binding writes it.
  */
 export interface AddAsked {
@@ -408,6 +462,28 @@ export interface BatchAsked {
 }
 
 /**
+ * What a caller asks to be written: a date in any calendar, and how.
+ */
+export interface DateTextRequest {
+  /**
+   * The date, in its own calendar.
+   */
+  readonly at: CalendarDay;
+  /**
+   * The digits; the locale's numbering system when left out.
+   */
+  readonly digits?: WordsDigits | null;
+  /**
+   * The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out.
+   */
+  readonly locale?: string | null;
+  /**
+   * How much of it.
+   */
+  readonly style?: DateStyle;
+}
+
+/**
  * What a caller asks to be written in words: a number or an amount, and how.
  */
 export interface InWordsRequest {
@@ -435,6 +511,32 @@ export interface InWordsRequest {
    * The rule set.
    */
   readonly style?: WordsStyle;
+}
+
+/**
+ * What a caller asks to be written: a time of day, and how.
+ */
+export interface TimeTextRequest {
+  /**
+   * The time of day.
+   */
+  readonly at: ClockTime;
+  /**
+   * The digits; the locale's numbering system when left out.
+   */
+  readonly digits?: WordsDigits | null;
+  /**
+   * The locale's twelve-hour pattern, which writes the part of the day its readers expect; the twenty-four-hour one when left out.
+   */
+  readonly hour12?: boolean;
+  /**
+   * The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out.
+   */
+  readonly locale?: string | null;
+  /**
+   * How much of it.
+   */
+  readonly style?: TimeStyle;
 }
 
 /**
@@ -614,6 +716,40 @@ export interface ResolveAsked {
   readonly date: DayAsked;
   readonly time?: CivilTime | null;
   readonly zone: ZoneSpec;
+}
+
+/**
+ * An anniversary a request asks the days of.
+ */
+export interface Anniversary {
+  /**
+   * The first anniversary's month when it is doubled.
+   */
+  readonly firstYearAdhika?: FirstYearAdhika;
+  /**
+   * Whether a shraddha of an ordinary month is kept in the samsarpa of its name too; a janma tithi never is.
+   */
+  readonly inSamsarpa?: InSamsarpa;
+  /**
+   * A janma tithi's options.
+   */
+  readonly janma?: JanmaOptions;
+  /**
+   * The consumer's own key, `"GRANDFATHER"`.
+   */
+  readonly key: string;
+  /**
+   * What it is.
+   */
+  readonly kind?: AnniversaryKind;
+  /**
+   * Where it is counted from.
+   */
+  readonly origin: Origin;
+  /**
+   * The rite's time, in place of the kind's ([`AnniversaryKind::window`]): `{"window": "PART", "part": "MADHYAHNA"}` is DS's madhyahna, the 7th to 9th muhurtas (C662).
+   */
+  readonly window?: Window | null;
 }
 
 /**
@@ -1627,6 +1763,53 @@ export interface PeriodAsked {
 }
 
 /**
+ * A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
+ */
+export interface CalendarDay {
+  /**
+   * Its calendar.
+   */
+  readonly calendar: Member<catalogue.Calendar>;
+  /**
+   * The day, 1-based.
+   */
+  readonly day: number;
+  /**
+   * The era, for a calendar that counts several.
+   */
+  readonly era?: EraNumber | null;
+  /**
+   * A leap month or day, for a calendar that marks one.
+   */
+  readonly leap?: catalogue.Leap | null;
+  /**
+   * The month, 1-based.
+   */
+  readonly month: number;
+  /**
+   * The astronomical year.
+   */
+  readonly year: number;
+}
+
+/**
+ * The digits a figure is written in.
+ *
+ * `LATN`: `0123456789`.
+ * `DEVA`: `०१२३४५६७८९`.
+ */
+export type WordsDigits = 'LATN' | 'DEVA';
+
+/**
+ * How much of a date is written.
+ *
+ * `NUMERIC`: In figures.
+ * `LONG`: With the month's name.
+ * `FULL`: With the weekday's name too.
+ */
+export type DateStyle = 'NUMERIC' | 'LONG' | 'FULL';
+
+/**
  * An amount of a currency.
  */
 export interface WordsAmount {
@@ -1653,14 +1836,6 @@ export interface WordsAmount {
 }
 
 /**
- * The digits a figure is written in.
- *
- * `LATN`: `0123456789`.
- * `DEVA`: `०१२३४५६७८९`.
- */
-export type WordsDigits = 'LATN' | 'DEVA';
-
-/**
  * How digits are grouped, and so which scale words a number is counted in.
  *
  * `INDIAN`: Every two digits past the thousands: lakh, crore, arab, kharab; `12,34,567`.
@@ -1675,6 +1850,32 @@ export type WordsGrouping = 'INDIAN' | 'INTERNATIONAL';
  * `VERBOSE`: `spellout-cardinal-verbose`: "one hundred and five". English only.
  */
 export type WordsStyle = 'PLAIN' | 'VERBOSE';
+
+/**
+ * A time of day, for `:time` and `:datetime`.
+ */
+export interface ClockTime {
+  /**
+   * 0 to 23.
+   */
+  readonly hour: number;
+  /**
+   * 0 to 59.
+   */
+  readonly minute: number;
+  /**
+   * 0 to 60; 0 when left out.
+   */
+  readonly second?: number;
+}
+
+/**
+ * How much of a time of day is written.
+ *
+ * `NUMERIC`: Hours and minutes.
+ * `LONG`: Hours, minutes and seconds.
+ */
+export type TimeStyle = 'NUMERIC' | 'LONG';
 
 /**
  * The readings two names are matched under.
@@ -1900,6 +2101,178 @@ export interface CivilTime {
    */
   readonly nanos?: number;
   readonly second: number;
+}
+
+/**
+ * Which month the first anniversary takes when its month is doubled (C666).
+ *
+ * `ADHIKA`: The adhika, the thirteenth month: *Dharmasindhu*, the *Nirnayasindhu* (pp. 25–26) and Kane IV p. 546.
+ * `NIJA`: The ordinary month: Dhakal's note for Nepal's barkhi (NS p. 25 n. 14), which counts the eleventh day's rite as the first abdika.
+ */
+export type FirstYearAdhika = 'ADHIKA' | 'NIJA';
+
+/**
+ * Whether an ordinary month's anniversary is kept in the *samsarpa* too, the adhika month of its name before a kshaya month (C669).
+ *
+ * `ALSO`: In the samsarpa and the nija month both: *Dharmasindhu*'s own inference in its kshaya example ("iti bhāti"), and Dhakal's instruction for Nepal (NS, the introduction's malamasa section).
+ * `NIJA`: In the nija month alone, as in any other year with an adhika month.
+ */
+export type InSamsarpa = 'ALSO' | 'NIJA';
+
+/**
+ * *Dharmasindhu*'s two options for a janma tithi, both off by default (C670).
+ */
+export interface JanmaOptions {
+  /**
+   * When both days' sunrises hold the tithi, the day whose sunrise holds the birth nakshatra.
+   */
+  readonly nakshatraTie?: boolean;
+  /**
+   * The sunrise tithi only when it lasts two muhurtas past sunrise, else the day before.
+   */
+  readonly twoMuhurtaFloor?: boolean;
+}
+
+/**
+ * What an anniversary is, which sets the rite's time and how the day is chosen.
+ *
+ * `SHRADDHA`: A death's yearly shraddha, an ekoddishta or a parvana by its origin ([`OriginFound::is_parvana`], C665). An answer names which.
+ * `EKODDISHTA`: The ekoddishta, for one person: kutapa to rauhina, the daylight's 8th and 9th muhurtas (NS p. 987, DS p. 265, C662).
+ * `PARVANA`: The parvana, for the ancestors together: the aparahna (DS p. 266).
+ * `JANMA_TITHI`: A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in the ordinary month (DS, C671).
+ * `EVENT`: Any other event a family keeps by the tithi, a wedding or a founding: the window the request states, sunrise by default, judged by share, in the ordinary month. No text rules on it, so it ships as a convention (`anniversary.event`, C911), read from the janma tithi's.
+ */
+export type AnniversaryKind = 'SHRADDHA' | 'EKODDISHTA' | 'PARVANA' | 'JANMA_TITHI' | 'EVENT';
+
+/**
+ * Where an anniversary is counted from.
+ */
+export type Origin = OriginInstant | OriginDate | OriginLunar;
+
+/**
+ * The moment of the death or the birth: the tithi running then, as the Naradiya has it for a death and a parana (NS p. 982, C661). A death before sunrise takes the tithi of that hour, not the civil day's sunrise tithi.
+ */
+export interface OriginInstant {
+  readonly by: 'INSTANT';
+  /**
+   * The moment.
+   */
+  readonly at: number;
+}
+
+/**
+ * Only the civil date: its sunrise tithi, marked as assumed, with every tithi the date held beside it (C661).
+ */
+export interface OriginDate {
+  readonly by: 'DATE';
+  /**
+   * The date, as a request writes it.
+   */
+  readonly date: CalendarDay;
+}
+
+/**
+ * The lunar date itself, as a family keeps it.
+ */
+export interface OriginLunar {
+  readonly by: 'LUNAR';
+  /**
+   * Whether the month was adhika.
+   */
+  readonly adhika?: boolean;
+  /**
+   * The moment, if known, which only counts the years: without it no anniversary has a number, and the first one's adhika policy (C666) cannot apply.
+   */
+  readonly at?: number | null;
+  /**
+   * The half of the tithi, which names the month in a kshaya lunation (C668); the month given is taken as named already.
+   */
+  readonly half?: TithiHalf;
+  /**
+   * The month, amanta.
+   */
+  readonly month: Member<catalogue.Masa>;
+  /**
+   * The tithi.
+   */
+  readonly tithi: Member<catalogue.Tithi>;
+}
+
+/**
+ * The time of a rite, on a sunrise day.
+ */
+export type Window = WindowSunrise | WindowSunset | WindowPart | WindowPradosha | WindowNishitha | WindowNightMuhurta | WindowDayMuhurta | WindowMoonrise;
+
+/**
+ * The instant of sunrise: the tithi a day is named for.
+ */
+export interface WindowSunrise {
+  readonly window: 'SUNRISE';
+}
+
+/**
+ * The instant of sunset, which begins the evening: Nepal's monthly full-moon fast takes the day whose sunset the full moon holds (`festival-rules.md` §9.6, C200).
+ */
+export interface WindowSunset {
+  readonly window: 'SUNSET';
+}
+
+/**
+ * A fifth of the daylight.
+ */
+export interface WindowPart {
+  readonly window: 'PART';
+  /**
+   * Which fifth.
+   */
+  readonly part: DayFifth;
+}
+
+/**
+ * Three muhurtas after sunset, a muhurta a fifteenth of the night (crux C168).
+ */
+export interface WindowPradosha {
+  readonly window: 'PRADOSHA';
+}
+
+/**
+ * The middle of the night, an instant (C169: p. 49 counts a tithi present there if "even a kala" of it stands at the end of the night's first half).
+ */
+export interface WindowNishitha {
+  readonly window: 'NISHITHA';
+}
+
+/**
+ * A muhurta of the night, a fifteenth of it counted from sunset, 1 to 15: p. 90 calls the eighth niśītha for Shivaratri and weighs a tithi holding it wholly against one holding part of it.
+ */
+export interface WindowNightMuhurta {
+  readonly window: 'NIGHT_MUHURTA';
+  /**
+   * Which muhurta, 1 for the first after sunset.
+   */
+  readonly muhurta: number;
+}
+
+/**
+ * Muhurtas of the daylight, a fifteenth of it counted from sunrise, `from` to `to` inclusive, 1 to 15: *Dharmasindhu* p. 265 names the 8th kutapa and the 9th rauhina, and purvahna is the first six, the daylight's first two fifths (C602). A fifth is three of them.
+ */
+export interface WindowDayMuhurta {
+  readonly window: 'DAY_MUHURTA';
+  /**
+   * The first, 1 for the muhurta after sunrise.
+   */
+  readonly from: number;
+  /**
+   * The last, at least `from`.
+   */
+  readonly to: number;
+}
+
+/**
+ * The instant of the first moonrise after the day's sunrise and before the next: *Dharmasindhu* p. 9 keeps the Sankashta chaturthi on the tithi at moonrise (चन्द्रोदयव्यापिनी). A day the Moon does not rise on leaves the occurrence unjudged.
+ */
+export interface WindowMoonrise {
+  readonly window: 'MOONRISE';
 }
 
 /**
@@ -2300,14 +2673,6 @@ export type FeedForm = 'OBSERVANCE' | 'EKADASHI' | 'DATED' | 'ANNIVERSARY' | 'AD
 export type FirstAbdika = 'SECOND_YEAR' | 'ELEVENTH_DAY';
 
 /**
- * Which month the first anniversary takes when its month is doubled (C666).
- *
- * `ADHIKA`: The adhika, the thirteenth month: *Dharmasindhu*, the *Nirnayasindhu* (pp. 25–26) and Kane IV p. 546.
- * `NIJA`: The ordinary month: Dhakal's note for Nepal's barkhi (NS p. 25 n. 14), which counts the eleventh day's rite as the first abdika.
- */
-export type FirstYearAdhika = 'ADHIKA' | 'NIJA';
-
-/**
  * The day the sapindana is kept on (DS p. 331).
  *
  * `ELEVENTH_DAY`: The eleventh day.
@@ -2326,83 +2691,6 @@ export type SapindanaAt = 'ELEVENTH_DAY' | 'TWELFTH_DAY' | 'TRAIPAKSHIKA' | 'YEA
  * `THREE_TITHIS`: The tithi three short.
  */
 export type UnaDay = 'DAY_BEFORE' | 'ONE_TITHI' | 'TWO_TITHIS' | 'THREE_TITHIS';
-
-/**
- * The time of a rite, on a sunrise day.
- */
-export type Window = WindowSunrise | WindowSunset | WindowPart | WindowPradosha | WindowNishitha | WindowNightMuhurta | WindowDayMuhurta | WindowMoonrise;
-
-/**
- * The instant of sunrise: the tithi a day is named for.
- */
-export interface WindowSunrise {
-  readonly window: 'SUNRISE';
-}
-
-/**
- * The instant of sunset, which begins the evening: Nepal's monthly full-moon fast takes the day whose sunset the full moon holds (`festival-rules.md` §9.6, C200).
- */
-export interface WindowSunset {
-  readonly window: 'SUNSET';
-}
-
-/**
- * A fifth of the daylight.
- */
-export interface WindowPart {
-  readonly window: 'PART';
-  /**
-   * Which fifth.
-   */
-  readonly part: DayFifth;
-}
-
-/**
- * Three muhurtas after sunset, a muhurta a fifteenth of the night (crux C168).
- */
-export interface WindowPradosha {
-  readonly window: 'PRADOSHA';
-}
-
-/**
- * The middle of the night, an instant (C169: p. 49 counts a tithi present there if "even a kala" of it stands at the end of the night's first half).
- */
-export interface WindowNishitha {
-  readonly window: 'NISHITHA';
-}
-
-/**
- * A muhurta of the night, a fifteenth of it counted from sunset, 1 to 15: p. 90 calls the eighth niśītha for Shivaratri and weighs a tithi holding it wholly against one holding part of it.
- */
-export interface WindowNightMuhurta {
-  readonly window: 'NIGHT_MUHURTA';
-  /**
-   * Which muhurta, 1 for the first after sunset.
-   */
-  readonly muhurta: number;
-}
-
-/**
- * Muhurtas of the daylight, a fifteenth of it counted from sunrise, `from` to `to` inclusive, 1 to 15: *Dharmasindhu* p. 265 names the 8th kutapa and the 9th rauhina, and purvahna is the first six, the daylight's first two fifths (C602). A fifth is three of them.
- */
-export interface WindowDayMuhurta {
-  readonly window: 'DAY_MUHURTA';
-  /**
-   * The first, 1 for the muhurta after sunrise.
-   */
-  readonly from: number;
-  /**
-   * The last, at least `from`.
-   */
-  readonly to: number;
-}
-
-/**
- * The instant of the first moonrise after the day's sunrise and before the next: *Dharmasindhu* p. 9 keeps the Sankashta chaturthi on the tithi at moonrise (चन्द्रोदयव्यापिनी). A day the Moon does not rise on leaves the occurrence unjudged.
- */
-export interface WindowMoonrise {
-  readonly window: 'MOONRISE';
-}
 
 /**
  * The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
@@ -3403,6 +3691,20 @@ export interface SnapshotClock {
 }
 
 /**
+ * A year in an era, for presentation.
+ */
+export interface EraNumber {
+  /**
+   * The era.
+   */
+  readonly era: Member<catalogue.Era>;
+  /**
+   * The year in it, 1-based.
+   */
+  readonly year: number;
+}
+
+/**
  * How a decimal with more digits than the currency's minor unit is brought to it.
  *
  * `HALF_UP`: Half a minor unit or more goes up, less is dropped: India's banking rule (RBI DBOD.Dir.BC.70/13.01.01/2006-07), and the convention for NPR (C805).
@@ -3520,6 +3822,25 @@ export interface NumerologyRules {
    */
   readonly nonLatin?: NonLatin;
 }
+
+/**
+ * Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
+ *
+ * `FIRST`: The first.
+ * `SECOND`: The second.
+ */
+export type TithiHalf = 'FIRST' | 'SECOND';
+
+/**
+ * A fifth of the daylight (*Dharmasindhu*, p. 6). Its schema name is `DayFifth`, the chart's daylight or night being the boundary's `DayPart`.
+ *
+ * `PRATAH`: The first fifth.
+ * `SANGAVA`: The second.
+ * `MADHYAHNA`: The third: midday.
+ * `APARAHNA`: The fourth: the afternoon.
+ * `SAYAHNA`: The last.
+ */
+export type DayFifth = 'PRATAH' | 'SANGAVA' | 'MADHYAHNA' | 'APARAHNA' | 'SAYAHNA';
 
 /**
  * Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
@@ -3871,17 +4192,6 @@ export interface ActivityRules {
    */
   readonly unwanted?: readonly MuhurtaUnwanted[];
 }
-
-/**
- * A fifth of the daylight (*Dharmasindhu*, p. 6). Its schema name is `DayFifth`, the chart's daylight or night being the boundary's `DayPart`.
- *
- * `PRATAH`: The first fifth.
- * `SANGAVA`: The second.
- * `MADHYAHNA`: The third: midday.
- * `APARAHNA`: The fourth: the afternoon.
- * `SAYAHNA`: The last.
- */
-export type DayFifth = 'PRATAH' | 'SANGAVA' | 'MADHYAHNA' | 'APARAHNA' | 'SAYAHNA';
 
 /**
  * One body's orb, for the moieties.
@@ -6062,36 +6372,6 @@ export type NonLatin = 'REFUSE' | 'SKIP';
 export type Upanayana = 'DONE' | 'NOT_DONE' | 'NOT_PERFORMED';
 
 /**
- * A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
- */
-export interface CalendarDay {
-  /**
-   * Its calendar.
-   */
-  readonly calendar: Member<catalogue.Calendar>;
-  /**
-   * The day, 1-based.
-   */
-  readonly day: number;
-  /**
-   * The era, for a calendar that counts several.
-   */
-  readonly era?: EraNumber | null;
-  /**
-   * A leap month or day, for a calendar that marks one.
-   */
-  readonly leap?: catalogue.Leap | null;
-  /**
-   * The month, 1-based.
-   */
-  readonly month: number;
-  /**
-   * The astronomical year.
-   */
-  readonly year: number;
-}
-
-/**
  * A half-open interval of time, `[from, to)`.
  */
 export interface Interval {
@@ -6196,40 +6476,6 @@ export interface EkadashiRule {
    * Where the 10th pierces.
    */
   readonly vedha: EkadashiVedha;
-}
-
-/**
- * An anniversary a request asks the days of.
- */
-export interface Anniversary {
-  /**
-   * The first anniversary's month when it is doubled.
-   */
-  readonly firstYearAdhika?: FirstYearAdhika;
-  /**
-   * Whether a shraddha of an ordinary month is kept in the samsarpa of its name too; a janma tithi never is.
-   */
-  readonly inSamsarpa?: InSamsarpa;
-  /**
-   * A janma tithi's options.
-   */
-  readonly janma?: JanmaOptions;
-  /**
-   * The consumer's own key, `"GRANDFATHER"`.
-   */
-  readonly key: string;
-  /**
-   * What it is.
-   */
-  readonly kind?: AnniversaryKind;
-  /**
-   * Where it is counted from.
-   */
-  readonly origin: Origin;
-  /**
-   * The rite's time, in place of the kind's ([`AnniversaryKind::window`]): `{"window": "PART", "part": "MADHYAHNA"}` is DS's madhyahna, the 7th to 9th muhurtas (C662).
-   */
-  readonly window?: Window | null;
 }
 
 /**
@@ -7153,20 +7399,6 @@ export type LifeClass = 'balarishta' | 'yogarishta' | 'short' | 'medium' | 'long
 export type SubDegree = 'POORNA' | 'ISHRAFA' | 'NONE';
 
 /**
- * A year in an era, for presentation.
- */
-export interface EraNumber {
-  /**
-   * The era.
-   */
-  readonly era: Member<catalogue.Era>;
-  /**
-   * The year in it, 1-based.
-   */
-  readonly year: number;
-}
-
-/**
  * Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).
  *
  * `EARLIEST`: The first.
@@ -7271,92 +7503,6 @@ export interface EkadashiTable {
  * `SUNRISE`: At sunrise: the 10th standing "a pala past the sixty-ghati sunrise". The Smartas'. Pierced at sunrise is pierced at arunodaya too.
  */
 export type EkadashiVedha = 'ARUNODAYA' | 'SUNRISE';
-
-/**
- * Whether an ordinary month's anniversary is kept in the *samsarpa* too, the adhika month of its name before a kshaya month (C669).
- *
- * `ALSO`: In the samsarpa and the nija month both: *Dharmasindhu*'s own inference in its kshaya example ("iti bhāti"), and Dhakal's instruction for Nepal (NS, the introduction's malamasa section).
- * `NIJA`: In the nija month alone, as in any other year with an adhika month.
- */
-export type InSamsarpa = 'ALSO' | 'NIJA';
-
-/**
- * *Dharmasindhu*'s two options for a janma tithi, both off by default (C670).
- */
-export interface JanmaOptions {
-  /**
-   * When both days' sunrises hold the tithi, the day whose sunrise holds the birth nakshatra.
-   */
-  readonly nakshatraTie?: boolean;
-  /**
-   * The sunrise tithi only when it lasts two muhurtas past sunrise, else the day before.
-   */
-  readonly twoMuhurtaFloor?: boolean;
-}
-
-/**
- * What an anniversary is, which sets the rite's time and how the day is chosen.
- *
- * `SHRADDHA`: A death's yearly shraddha, an ekoddishta or a parvana by its origin ([`OriginFound::is_parvana`], C665). An answer names which.
- * `EKODDISHTA`: The ekoddishta, for one person: kutapa to rauhina, the daylight's 8th and 9th muhurtas (NS p. 987, DS p. 265, C662).
- * `PARVANA`: The parvana, for the ancestors together: the aparahna (DS p. 266).
- * `JANMA_TITHI`: A birthday by the tithi: the sunrise tithi (NS p. 531, C670), in the ordinary month (DS, C671).
- */
-export type AnniversaryKind = 'SHRADDHA' | 'EKODDISHTA' | 'PARVANA' | 'JANMA_TITHI';
-
-/**
- * Where an anniversary is counted from.
- */
-export type Origin = OriginInstant | OriginDate | OriginLunar;
-
-/**
- * The moment of the death or the birth: the tithi running then, as the Naradiya has it for a death and a parana (NS p. 982, C661). A death before sunrise takes the tithi of that hour, not the civil day's sunrise tithi.
- */
-export interface OriginInstant {
-  readonly by: 'INSTANT';
-  /**
-   * The moment.
-   */
-  readonly at: number;
-}
-
-/**
- * Only the civil date: its sunrise tithi, marked as assumed, with every tithi the date held beside it (C661).
- */
-export interface OriginDate {
-  readonly by: 'DATE';
-  /**
-   * The date, as a request writes it.
-   */
-  readonly date: CalendarDay;
-}
-
-/**
- * The lunar date itself, as a family keeps it.
- */
-export interface OriginLunar {
-  readonly by: 'LUNAR';
-  /**
-   * Whether the month was adhika.
-   */
-  readonly adhika?: boolean;
-  /**
-   * The moment, if known, which only counts the years: without it no anniversary has a number, and the first one's adhika policy (C666) cannot apply.
-   */
-  readonly at?: number | null;
-  /**
-   * The half of the tithi, which names the month in a kshaya lunation (C668); the month given is taken as named already.
-   */
-  readonly half?: TithiHalf;
-  /**
-   * The month, amanta.
-   */
-  readonly month: Member<catalogue.Masa>;
-  /**
-   * The tithi.
-   */
-  readonly tithi: Member<catalogue.Tithi>;
-}
 
 /**
  * A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
@@ -8368,14 +8514,6 @@ export interface EkadashiKinds {
    */
   readonly twelfth: FestivalWhich;
 }
-
-/**
- * Which half of a tithi: the first or the second of its two karanas, an equal arc of the Moon's gain on the Sun each.
- *
- * `FIRST`: The first.
- * `SECOND`: The second.
- */
-export type TithiHalf = 'FIRST' | 'SECOND';
 
 /**
  * Which neighbour keeps an observance whose date's number is skipped.
