@@ -244,6 +244,14 @@ class DashaSystemKey(enum.StrEnum):
     SUDARSHANA_CHAKRA = "dasha_system.SUDARSHANA_CHAKRA"
 
 
+class DayMarkerKey(enum.StrEnum):
+    """A `day_marker` as a message names it: the full catalogue key."""
+
+    GANDA_MULA = "day_marker.GANDA_MULA"
+    GANDANTA = "day_marker.GANDANTA"
+    VINCHUDO = "day_marker.VINCHUDO"
+
+
 class DeityKey(enum.StrEnum):
     """A `deity` as a message names it: the full catalogue key."""
 
@@ -705,6 +713,19 @@ class GanaKey(enum.StrEnum):
     RAKSHASA = "gana.RAKSHASA"
 
 
+class GowriKey(enum.StrEnum):
+    """A `gowri` as a message names it: the full catalogue key."""
+
+    UTHI = "gowri.UTHI"
+    AMIRTHAM = "gowri.AMIRTHAM"
+    ROGAM = "gowri.ROGAM"
+    LAABAM = "gowri.LAABAM"
+    DHANAM = "gowri.DHANAM"
+    SUGAM = "gowri.SUGAM"
+    SORAM = "gowri.SORAM"
+    VISHAM = "gowri.VISHAM"
+
+
 class GrahaKey(enum.StrEnum):
     """A `graha` as a message names it: the full catalogue key."""
 
@@ -802,6 +823,8 @@ class MuhurtaYogaKey(enum.StrEnum):
     SIDDHA = "muhurta_yoga.SIDDHA"
     DWIPUSHKAR = "muhurta_yoga.DWIPUSHKAR"
     TRIPUSHKAR = "muhurta_yoga.TRIPUSHKAR"
+    RAVI_PUSHYA = "muhurta_yoga.RAVI_PUSHYA"
+    GURU_PUSHYA = "muhurta_yoga.GURU_PUSHYA"
 
 
 class NadiKey(enum.StrEnum):
@@ -2084,6 +2107,11 @@ class MessagesSdkEntity:
         return MessagesSdkEntityDashaSystem(self._r)
 
     @property
+    def day_marker(self) -> MessagesSdkEntityDayMarker:
+        """The messages under `day_marker`."""
+        return MessagesSdkEntityDayMarker(self._r)
+
+    @property
     def deity(self) -> MessagesSdkEntityDeity:
         """The messages under `deity`."""
         return MessagesSdkEntityDeity(self._r)
@@ -2117,6 +2145,11 @@ class MessagesSdkEntity:
     def gana(self) -> MessagesSdkEntityGana:
         """The messages under `gana`."""
         return MessagesSdkEntityGana(self._r)
+
+    @property
+    def gowri(self) -> MessagesSdkEntityGowri:
+        """The messages under `gowri`."""
+        return MessagesSdkEntityGowri(self._r)
 
     @property
     def graha(self) -> MessagesSdkEntityGraha:
@@ -3875,6 +3908,16 @@ class MessagesSdkEntityMuhurtaYoga:
         return self._r.entity("muhurta_yoga.DWIPUSHKAR")
 
     @property
+    def guru_pushya(self) -> EntityForms:
+        """The forms of `muhurta_yoga.GURU_PUSHYA` in the current locale."""
+        return self._r.entity("muhurta_yoga.GURU_PUSHYA")
+
+    @property
+    def ravi_pushya(self) -> EntityForms:
+        """The forms of `muhurta_yoga.RAVI_PUSHYA` in the current locale."""
+        return self._r.entity("muhurta_yoga.RAVI_PUSHYA")
+
+    @property
     def sarvartha_siddhi(self) -> EntityForms:
         """The forms of `muhurta_yoga.SARVARTHA_SIDDHI` in the current locale."""
         return self._r.entity("muhurta_yoga.SARVARTHA_SIDDHI")
@@ -4231,6 +4274,54 @@ class MessagesSdkEntityGraha:
     def venus(self) -> EntityForms:
         """The forms of `graha.VENUS` in the current locale."""
         return self._r.entity("graha.VENUS")
+
+
+class MessagesSdkEntityGowri:
+    """The messages under `MessagesSdkEntityGowri`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def amirtham(self) -> EntityForms:
+        """The forms of `gowri.AMIRTHAM` in the current locale."""
+        return self._r.entity("gowri.AMIRTHAM")
+
+    @property
+    def dhanam(self) -> EntityForms:
+        """The forms of `gowri.DHANAM` in the current locale."""
+        return self._r.entity("gowri.DHANAM")
+
+    @property
+    def laabam(self) -> EntityForms:
+        """The forms of `gowri.LAABAM` in the current locale."""
+        return self._r.entity("gowri.LAABAM")
+
+    @property
+    def rogam(self) -> EntityForms:
+        """The forms of `gowri.ROGAM` in the current locale."""
+        return self._r.entity("gowri.ROGAM")
+
+    @property
+    def soram(self) -> EntityForms:
+        """The forms of `gowri.SORAM` in the current locale."""
+        return self._r.entity("gowri.SORAM")
+
+    @property
+    def sugam(self) -> EntityForms:
+        """The forms of `gowri.SUGAM` in the current locale."""
+        return self._r.entity("gowri.SUGAM")
+
+    @property
+    def uthi(self) -> EntityForms:
+        """The forms of `gowri.UTHI` in the current locale."""
+        return self._r.entity("gowri.UTHI")
+
+    @property
+    def visham(self) -> EntityForms:
+        """The forms of `gowri.VISHAM` in the current locale."""
+        return self._r.entity("gowri.VISHAM")
 
 
 class MessagesSdkEntityGana:
@@ -6417,6 +6508,29 @@ class MessagesSdkEntityDeity:
     def yama(self) -> EntityForms:
         """The forms of `deity.YAMA` in the current locale."""
         return self._r.entity("deity.YAMA")
+
+
+class MessagesSdkEntityDayMarker:
+    """The messages under `MessagesSdkEntityDayMarker`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def gandanta(self) -> EntityForms:
+        """The forms of `day_marker.GANDANTA` in the current locale."""
+        return self._r.entity("day_marker.GANDANTA")
+
+    @property
+    def ganda_mula(self) -> EntityForms:
+        """The forms of `day_marker.GANDA_MULA` in the current locale."""
+        return self._r.entity("day_marker.GANDA_MULA")
+
+    @property
+    def vinchudo(self) -> EntityForms:
+        """The forms of `day_marker.VINCHUDO` in the current locale."""
+        return self._r.entity("day_marker.VINCHUDO")
 
 
 class MessagesSdkEntityDashaSystem:

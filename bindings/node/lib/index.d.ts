@@ -281,6 +281,7 @@ import type {
   ChangeKind,
   AnniversariesRequest,
   ChangesRequest,
+  Member,
 } from './requests.js';
 
 export * from './catalogue.js';
@@ -7702,6 +7703,18 @@ export declare class AlmanacArea {
    */
   firstYear(query: FirstYearQuery): FirstYearAnswer;
   /**
+   * **The navatara chakra** of a birth star (`03-design/navatara-chakra.md`):
+   * the 27 stars in the order the count from the birth star reaches them,
+   * each with its count, tara, round and special star. It reads no sky.
+   * The star is its full key or its bare one; one that is not a key is
+   * refused as `navatara.birth`.
+   *
+   * @example
+   * const chakra = ctx.almanac.navatara('nakshatra.ASHWINI');
+   * chakra[9]; // { nakshatra: 'nakshatra.MAGHA', count: 10, tara: 'JANMA', cycle: 2, special: 'KARMA' }
+   */
+  navatara(birth: Member<Nakshatra>): readonly NavataraRow[];
+  /**
    * **Where this context's reckoning and another's disagree**, and why
    * (`03-design/setup-disagreements.md`): the days on which some limb's
    * member at sunrise differs, with the instant the two members meet
@@ -8191,6 +8204,27 @@ export type RiteForm = 'EKODDISHTA' | 'PARVANA';
 export type UnaBar = 'NANDA' | 'FRIDAY' | 'CHATURDASHI' | 'KRITTIKA';
 
 /** What `almanac.firstYear` answers, frozen to its leaves. */
+/**
+ * A star the navatara chakra names besides its tara, by its count from
+ * the birth star: the 1st, 10th, 16th, 18th, 23rd and 25th (*Muhurta
+ * Chintamani*, Nakshatra-prakarana v. 43).
+ */
+export type SpecialStar = 'JANMA' | 'KARMA' | 'SANGHATIKA' | 'SAMUDAYA' | 'VAINASHIKA' | 'MANASA';
+
+/** A star of the navatara chakra (`03-design/navatara-chakra.md`). */
+export interface NavataraRow {
+  /** The star. */
+  readonly nakshatra: Nakshatra;
+  /** Its count from the birth star, 1 (the birth star itself) to 27. */
+  readonly count: number;
+  /** The count reduced by nine. */
+  readonly tara: Tara;
+  /** Which round of nine the count is in, 1 (janma) to 3 (trijanma). */
+  readonly cycle: number;
+  /** The special star the count names, or `null`. */
+  readonly special: SpecialStar | null;
+}
+
 export interface FirstYearAnswer {
   /** The schedule. */
   readonly value: FirstYearSchedule;

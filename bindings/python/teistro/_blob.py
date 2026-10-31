@@ -8171,6 +8171,12 @@ class PanchangaCounts:
     named_panchaka: memoryview[int]
     """How many rows of `named_panchaka` belong to this day."""
 
+    markers: memoryview[int]
+    """How many rows of `markers` belong to this day."""
+
+    gowri: memoryview[int]
+    """How many rows of `gowri` belong to this day."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -9142,6 +9148,69 @@ class PanchangaNamedPanchaka:
 
 
 @dataclass(frozen=True)
+class PanchangaMarkers:
+    """The `markers` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.
+    """
+
+    member: memoryview[int]
+    """The marker."""
+
+    whole_from: memoryview[float]
+    """When the member itself began, as a Julian day (UTC), whether or not that is inside the day."""
+
+    whole_to: memoryview[float]
+    """When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."""
+
+    inside_from: memoryview[float]
+    """Where the part inside the day begins: what an almanac row prints."""
+
+    inside_to: memoryview[float]
+    """Where the part inside the day ends."""
+
+    sunrises: memoryview[int]
+    """Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none)."""
+
+    ends_ghati: memoryview[int]
+    """When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."""
+
+    ends_pala: memoryview[int]
+    """And palas, 0 to 59."""
+
+    ends_vipala: memoryview[int]
+    """And vipalas, 0 to 59."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class PanchangaGowri:
+    """The `gowri` section of a Panchanga blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none.
+    """
+
+    gowri: memoryview[int]
+    """Which Gowri, which carries its lord."""
+
+    from_: memoryview[float]
+    """When it begins, as a Julian day (UTC)."""
+
+    to: memoryview[float]
+    """When it ends, as a Julian day (UTC)."""
+
+    daytime: memoryview[int]
+    """1 when it is one of the eight of the daylight, 0 for one of the night."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
 class Panchanga:
     """A decoded Panchanga blob.
 
@@ -9283,6 +9352,12 @@ class Panchanga:
     sky: str
     """UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for."""
 
+    markers: PanchangaMarkers
+    """The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin."""
+
+    gowri: PanchangaGowri
+    """The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none."""
+
 
 def decode_panchanga(raw: bytes) -> Panchanga:
     """Decodes a Panchanga blob.
@@ -9332,6 +9407,8 @@ def decode_panchanga(raw: bytes) -> Panchanga:
     at_shiva_vasa = blob.section(38, "shiva_vasa")
     at_named_panchaka = blob.section(39, "named_panchaka")
     at_sky = blob.section(40, "sky")
+    at_markers = blob.section(41, "markers")
+    at_gowri = blob.section(42, "gowri")
     return Panchanga(
         day_count=int(blob.fixed(at_summary, 0, "I")),
         latitude_deg=blob.fixed(at_summary, 1, "d"),
@@ -9424,6 +9501,8 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             named_panchaka=blob.column(
                 at_counts, 26, 4, at_counts.count
             ).cast("I"),
+            markers=blob.column(at_counts, 27, 4, at_counts.count).cast("I"),
+            gowri=blob.column(at_counts, 28, 4, at_counts.count).cast("I"),
             length=at_counts.count,
         ),
         day=Day(
@@ -10099,6 +10178,37 @@ def decode_panchanga(raw: bytes) -> Panchanga:
             length=at_named_panchaka.count,
         ),
         sky=blob.text(at_sky, "sky"),
+        markers=PanchangaMarkers(
+            member=blob.column(at_markers, 0, 2, at_markers.count).cast("H"),
+            whole_from=blob.column(
+                at_markers, 1, 8, at_markers.count
+            ).cast("d"),
+            whole_to=blob.column(at_markers, 2, 8, at_markers.count).cast("d"),
+            inside_from=blob.column(
+                at_markers, 3, 8, at_markers.count
+            ).cast("d"),
+            inside_to=blob.column(
+                at_markers, 4, 8, at_markers.count
+            ).cast("d"),
+            sunrises=blob.column(at_markers, 5, 1, at_markers.count).cast("B"),
+            ends_ghati=blob.column(
+                at_markers, 6, 1, at_markers.count
+            ).cast("B"),
+            ends_pala=blob.column(
+                at_markers, 7, 1, at_markers.count
+            ).cast("B"),
+            ends_vipala=blob.column(
+                at_markers, 8, 1, at_markers.count
+            ).cast("B"),
+            length=at_markers.count,
+        ),
+        gowri=PanchangaGowri(
+            gowri=blob.column(at_gowri, 0, 2, at_gowri.count).cast("H"),
+            from_=blob.column(at_gowri, 1, 8, at_gowri.count).cast("d"),
+            to=blob.column(at_gowri, 2, 8, at_gowri.count).cast("d"),
+            daytime=blob.column(at_gowri, 3, 1, at_gowri.count).cast("B"),
+            length=at_gowri.count,
+        ),
     )
 
 

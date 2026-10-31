@@ -272,6 +272,16 @@ enum DashaSystemKey {
   final String key;
 }
 
+enum DayMarkerKey {
+  gandaMula('day_marker.GANDA_MULA'),
+  gandanta('day_marker.GANDANTA'),
+  vinchudo('day_marker.VINCHUDO');
+
+  const DayMarkerKey(this.key);
+
+  final String key;
+}
+
 enum DeityKey {
   ashwiniKumara('deity.ASHWINI_KUMARA'),
   yama('deity.YAMA'),
@@ -747,6 +757,21 @@ enum GanaKey {
   final String key;
 }
 
+enum GowriKey {
+  uthi('gowri.UTHI'),
+  amirtham('gowri.AMIRTHAM'),
+  rogam('gowri.ROGAM'),
+  laabam('gowri.LAABAM'),
+  dhanam('gowri.DHANAM'),
+  sugam('gowri.SUGAM'),
+  soram('gowri.SORAM'),
+  visham('gowri.VISHAM');
+
+  const GowriKey(this.key);
+
+  final String key;
+}
+
 enum GrahaKey {
   sun('graha.SUN'),
   moon('graha.MOON'),
@@ -853,7 +878,9 @@ enum MuhurtaYogaKey {
   sarvarthaSiddhi('muhurta_yoga.SARVARTHA_SIDDHI'),
   siddha('muhurta_yoga.SIDDHA'),
   dwipushkar('muhurta_yoga.DWIPUSHKAR'),
-  tripushkar('muhurta_yoga.TRIPUSHKAR');
+  tripushkar('muhurta_yoga.TRIPUSHKAR'),
+  raviPushya('muhurta_yoga.RAVI_PUSHYA'),
+  guruPushya('muhurta_yoga.GURU_PUSHYA');
 
   const MuhurtaYogaKey(this.key);
 
@@ -2098,6 +2125,16 @@ final class MessagesSdkEntityDashaSystem {
   EntityForms get yogini => _r.entity('dasha_system.YOGINI');
 }
 
+final class MessagesSdkEntityDayMarker {
+  const MessagesSdkEntityDayMarker(this._r);
+
+  final Renderer _r;
+
+  EntityForms get gandanta => _r.entity('day_marker.GANDANTA');
+  EntityForms get gandaMula => _r.entity('day_marker.GANDA_MULA');
+  EntityForms get vinchudo => _r.entity('day_marker.VINCHUDO');
+}
+
 final class MessagesSdkEntityDeity {
   const MessagesSdkEntityDeity(this._r);
 
@@ -2573,6 +2610,21 @@ final class MessagesSdkEntityGana {
   EntityForms get rakshasa => _r.entity('gana.RAKSHASA');
 }
 
+final class MessagesSdkEntityGowri {
+  const MessagesSdkEntityGowri(this._r);
+
+  final Renderer _r;
+
+  EntityForms get amirtham => _r.entity('gowri.AMIRTHAM');
+  EntityForms get dhanam => _r.entity('gowri.DHANAM');
+  EntityForms get laabam => _r.entity('gowri.LAABAM');
+  EntityForms get rogam => _r.entity('gowri.ROGAM');
+  EntityForms get soram => _r.entity('gowri.SORAM');
+  EntityForms get sugam => _r.entity('gowri.SUGAM');
+  EntityForms get uthi => _r.entity('gowri.UTHI');
+  EntityForms get visham => _r.entity('gowri.VISHAM');
+}
+
 final class MessagesSdkEntityGraha {
   const MessagesSdkEntityGraha(this._r);
 
@@ -2681,6 +2733,8 @@ final class MessagesSdkEntityMuhurtaYoga {
 
   EntityForms get amritSiddhi => _r.entity('muhurta_yoga.AMRIT_SIDDHI');
   EntityForms get dwipushkar => _r.entity('muhurta_yoga.DWIPUSHKAR');
+  EntityForms get guruPushya => _r.entity('muhurta_yoga.GURU_PUSHYA');
+  EntityForms get raviPushya => _r.entity('muhurta_yoga.RAVI_PUSHYA');
   EntityForms get sarvarthaSiddhi => _r.entity('muhurta_yoga.SARVARTHA_SIDDHI');
   EntityForms get siddha => _r.entity('muhurta_yoga.SIDDHA');
   EntityForms get tripushkar => _r.entity('muhurta_yoga.TRIPUSHKAR');
@@ -3139,6 +3193,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityCharaKaraka get charaKaraka => MessagesSdkEntityCharaKaraka(_r);
   MessagesSdkEntityChoghadiya get choghadiya => MessagesSdkEntityChoghadiya(_r);
   MessagesSdkEntityDashaSystem get dashaSystem => MessagesSdkEntityDashaSystem(_r);
+  MessagesSdkEntityDayMarker get dayMarker => MessagesSdkEntityDayMarker(_r);
   MessagesSdkEntityDeity get deity => MessagesSdkEntityDeity(_r);
   MessagesSdkEntityDignity get dignity => MessagesSdkEntityDignity(_r);
   MessagesSdkEntityDirection get direction => MessagesSdkEntityDirection(_r);
@@ -3146,6 +3201,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityFestival get festival => MessagesSdkEntityFestival(_r);
   MessagesSdkEntityFestivalKind get festivalKind => MessagesSdkEntityFestivalKind(_r);
   MessagesSdkEntityGana get gana => MessagesSdkEntityGana(_r);
+  MessagesSdkEntityGowri get gowri => MessagesSdkEntityGowri(_r);
   MessagesSdkEntityGraha get graha => MessagesSdkEntityGraha(_r);
   MessagesSdkEntityHouseSystem get houseSystem => MessagesSdkEntityHouseSystem(_r);
   MessagesSdkEntityKaala get kaala => MessagesSdkEntityKaala(_r);

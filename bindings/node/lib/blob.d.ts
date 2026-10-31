@@ -6279,6 +6279,14 @@ export interface PanchangaCounts {
    * How many rows of `named_panchaka` belong to this day.
    */
   readonly namedPanchaka: Uint32Array;
+  /**
+   * How many rows of `markers` belong to this day.
+   */
+  readonly markers: Uint32Array;
+  /**
+   * How many rows of `gowri` belong to this day.
+   */
+  readonly gowri: Uint32Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7489,6 +7497,83 @@ export interface PanchangaNamedPanchaka {
 }
 
 /**
+ * The `markers` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.
+ */
+export interface PanchangaMarkers {
+  /**
+   * The marker.
+   * The values are `DayMarker` ids.
+   */
+  readonly member: Uint16Array;
+  /**
+   * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeFrom: Float64Array;
+  /**
+   * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+   */
+  readonly wholeTo: Float64Array;
+  /**
+   * Where the part inside the day begins: what an almanac row prints.
+   */
+  readonly insideFrom: Float64Array;
+  /**
+   * Where the part inside the day ends.
+   */
+  readonly insideTo: Float64Array;
+  /**
+   * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+   * The values are `Sunrises` ids.
+   */
+  readonly sunrises: Uint8Array;
+  /**
+   * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+   */
+  readonly endsGhati: Uint8Array;
+  /**
+   * And palas, 0 to 59.
+   */
+  readonly endsPala: Uint8Array;
+  /**
+   * And vipalas, 0 to 59.
+   */
+  readonly endsVipala: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
+ * The `gowri` section of a Panchanga blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none.
+ */
+export interface PanchangaGowri {
+  /**
+   * Which Gowri, which carries its lord.
+   * The values are `Gowri` ids.
+   */
+  readonly gowri: Uint16Array;
+  /**
+   * When it begins, as a Julian day (UTC).
+   */
+  readonly from: Float64Array;
+  /**
+   * When it ends, as a Julian day (UTC).
+   */
+  readonly to: Float64Array;
+  /**
+   * 1 when it is one of the eight of the daylight, 0 for one of the night.
+   */
+  readonly daytime: Uint8Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * A decoded Panchanga blob.
  *
  * A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -7676,6 +7761,14 @@ export interface Panchanga {
    * UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for.
    */
   readonly sky: string;
+  /**
+   * The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.
+   */
+  readonly markers: PanchangaMarkers;
+  /**
+   * The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none.
+   */
+  readonly gowri: PanchangaGowri;
 }
 
 /**

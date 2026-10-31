@@ -2407,6 +2407,16 @@ geo.dispose();
   sky.dispose();
 }
 
+// ── The navatara chakra ────────────────────────────────────────────────
+// Ashwini's, every row `star:tara:round:special` (`03-design/navatara-chakra.md`).
+put(
+  'navatara',
+  ctx.almanac
+    .navatara('nakshatra.ASHWINI')
+    .map((row) => `${row.nakshatra}:${row.tara}:${row.cycle}:${row.special ?? '-'}`)
+    .join(' '),
+);
+
 // ── The eclipses ───────────────────────────────────────────────────────
 // September 2025 at Kathmandu over the built-in sky, which the test
 // provider cannot complete: a total lunar eclipse seen whole and a
@@ -2522,6 +2532,7 @@ for (const [path, member] of [
   ['almanac.sankalpa', shape.almanac.sankalpa],
   ['almanac.ashauch', shape.almanac.ashauch],
   ['almanac.first_year', shape.almanac.firstYear],
+  ['almanac.navatara', shape.almanac.navatara],
   ['almanac.published_reasons', shape.almanac.publishedReasons],
   ['almanac.published_from_signed', shape.almanac.publishedFromSigned],
   ['almanac.changes', shape.almanac.changes],

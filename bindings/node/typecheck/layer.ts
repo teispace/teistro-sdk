@@ -128,6 +128,9 @@ import type {
   Charts,
   Context,
   ContextInit,
+  NavataraRow,
+  SpecialStar,
+  Tara,
   DashaPeriod,
   EphemerisProvider,
   Eclipses,
@@ -287,6 +290,7 @@ import type {
   Signification,
   Vara,
   Tithi,
+  Nakshatra,
 } from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
 import { ashauchRunning, decodeProvenance, returnsRequest } from '../lib/index.js';
@@ -1449,6 +1453,18 @@ function theFirstYear(ctx: Context): string {
   return `${rite?.day.year} ${place} ${drawn?.day} ${tithi} ${by} ${value.eleventhDay.day} ${answer.provenance.inputHash}`;
 }
 void theFirstYear;
+
+// The navatara chakra: the rows typed, the special star a key or null.
+function theNavatara(ctx: Context): string {
+  const chakra: readonly NavataraRow[] = ctx.almanac.navatara('nakshatra.ASHWINI');
+  const star: Nakshatra | undefined = ctx.almanac.navatara('ASHWINI')[0]?.nakshatra;
+  const karma: SpecialStar | null | undefined = chakra[9]?.special;
+  const tara: Tara | undefined = chakra[21]?.tara;
+  // @ts-expect-error the birth star is a nakshatra key
+  ctx.almanac.navatara('ABHIJIT');
+  return `${karma} ${tara} ${star} ${chakra[0]?.cycle}`;
+}
+void theNavatara;
 
 // A Tibetan year's names by their catalogue types.
 function theTibetanYear(ctx: Context): string {

@@ -11,11 +11,12 @@ import java.util.Objects;
 /**
  * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
  *
+ * @param hijriOffset The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out. Null leaves the SDK's default.
  * @param only What the answer keeps, by the rules' `meta`; every rule when left out. Null leaves the SDK's default.
  * @param published The published sets laid over the answer, a later one's entry replacing an earlier one's for the same occurrence. Null leaves the SDK's default.
  * @param rules The rules: a pack's name, or a list of names and rules spelt out.
  */
-public record FestivalRequest(MetaFilter only, List<PublishedSet> published, FestivalRules rules) implements RequestJson {
+public record FestivalRequest(Integer hijriOffset, MetaFilter only, List<PublishedSet> published, FestivalRules rules) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -24,6 +25,9 @@ public record FestivalRequest(MetaFilter only, List<PublishedSet> published, Fes
      * @throws NullPointerException naming the required field that is missing
      */
     public FestivalRequest {
+        if (hijriOffset != null) {
+            Read.range(hijriOffset, "FestivalRequest.hijriOffset", -128L, 127L);
+        }
         published = published == null ? null : List.copyOf(published);
         Objects.requireNonNull(rules, "`FestivalRequest.rules` is required");
     }
@@ -35,7 +39,7 @@ public record FestivalRequest(MetaFilter only, List<PublishedSet> published, Fes
      * @param rules The rules: a pack's name, or a list of names and rules spelt out.
      */
     public FestivalRequest(FestivalRules rules) {
-        this(null, null, rules);
+        this(null, null, null, rules);
     }
 
     /**
@@ -50,11 +54,23 @@ public record FestivalRequest(MetaFilter only, List<PublishedSet> published, Fes
 
     /** Builds a {@link FestivalRequest} a field at a time. */
     public static final class Builder {
+        private Integer hijriOffset;
         private MetaFilter only;
         private List<PublishedSet> published;
         private FestivalRules rules;
 
         private Builder() {}
+
+        /**
+         * Sets {@code hijriOffset}.
+         *
+         * @param hijriOffset The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder hijriOffset(int hijriOffset) {
+            this.hijriOffset = hijriOffset;
+            return this;
+        }
 
         /**
          * Sets {@code only}.
@@ -96,7 +112,7 @@ public record FestivalRequest(MetaFilter only, List<PublishedSet> published, Fes
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalRequest build() {
-            return new FestivalRequest(only, published, rules);
+            return new FestivalRequest(hijriOffset, only, published, rules);
         }
     }
 
@@ -110,6 +126,7 @@ public record FestivalRequest(MetaFilter only, List<PublishedSet> published, Fes
     public static FestivalRequest of(Object raw) {
         Map<String, Object> json = Read.object(raw, "FestivalRequest");
         return new FestivalRequest(
+            Read.orNull(json.get("hijriOffset"), present -> Read.int32(present, "FestivalRequest.hijriOffset")),
             Read.orNull(json.get("only"), present -> MetaFilter.of(present)),
             Read.orNull(json.get("published"), present -> Read.list(present, "FestivalRequest.published", item0 -> PublishedSet.of(item0))),
             FestivalRules.of(Read.required(json.get("rules"), "FestivalRequest.rules")));
@@ -118,6 +135,9 @@ public record FestivalRequest(MetaFilter only, List<PublishedSet> published, Fes
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        if (hijriOffset != null) {
+            json.put("hijriOffset", hijriOffset);
+        }
         if (only != null) {
             json.put("only", only.toJson());
         }

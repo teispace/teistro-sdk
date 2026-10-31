@@ -1,0 +1,78 @@
+---
+title: ts_navatara
+description: "The navatara chakra of a birth star: the 27 stars in the order the count from the birth star reaches them, each `{\"nakshatra\", \"count\", \"tara\", \"cycle\", \"special\"}`, `cycle` the round of nine (1 janma, 2 anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani* names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`, `VAINASHIKA`, `MANASA`) or null (C1053)."
+---
+
+The navatara chakra of a birth star: the 27 stars in the order the count from the birth star reaches them, each `{"nakshatra", "count", "tara", "cycle", "special"}`, `cycle` the round of nine (1 janma, 2 anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani* names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`, `VAINASHIKA`, `MANASA`) or null (C1053).
+
+`request_json` is `{"birth"}`, a nakshatra key. A key the record does not read, or a star that is not a nakshatra key, is `INVALID_ARG`, named under `navatara`.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.almanac.firstYear
+ctx.almanac.navatara
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.almanac.first_year
+ctx.almanac.navatara
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.almanac.firstYear
+ctx.almanac.navatara
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.almanac().firstYear
+ctx.almanac().navatara
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.almanac().first_year
+sdk.almanac().navatara
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_navatara(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `almanac.first_year` and `almanac.navatara` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/navatara.rs`.

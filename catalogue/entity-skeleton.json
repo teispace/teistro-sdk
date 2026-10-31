@@ -985,7 +985,9 @@
     "SARVARTHA_SIDDHI": {},
     "SIDDHA": {},
     "DWIPUSHKAR": {},
-    "TRIPUSHKAR": {}
+    "TRIPUSHKAR": {},
+    "RAVI_PUSHYA": {},
+    "GURU_PUSHYA": {}
   },
   "chart_layout": {
     "NORTH_INDIAN": {},
@@ -1116,5 +1118,20 @@
     "SIKH": {},
     "ISLAMIC": {},
     "CHRISTIAN": {}
+  },
+  "day_marker": {
+    "GANDA_MULA": {},
+    "GANDANTA": {},
+    "VINCHUDO": {}
+  },
+  "gowri": {
+    "UTHI": {},
+    "AMIRTHAM": {},
+    "ROGAM": {},
+    "LAABAM": {},
+    "DHANAM": {},
+    "SUGAM": {},
+    "SORAM": {},
+    "VISHAM": {}
   }
 }

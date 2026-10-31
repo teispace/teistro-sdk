@@ -833,8 +833,10 @@ test('every catalogue enum has a complete id table', () => {
   // 1433 since Bhadra's `TsBhadraVasa`, three, and the Shiva vasa's
   // `TsShivaVasa`, seven, each with its member of `TsKind`, after date
   // arithmetic's `TsOverflow`, three; 1463 since the digest's `TsDigestSpan`,
-  // eighteen.
-  assert.equal(entries, 1463, 'every member of every enum is in a table');
+  // eighteen; 1478 since the day's markers' `TsDayMarker`, three, and the
+  // Gowri panchangam's `TsGowri`, eight, each with its member of `TsKind`,
+  // and `TsMuhurtaYoga`'s Ravi and Guru Pushya.
+  assert.equal(entries, 1478, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -3466,6 +3468,35 @@ test('a name and a birth date read under numerology without a chart', () => {
     (error) => error instanceof TeistroError && error.field === 'numerology.rules',
   );
   assert.throws(() => ctx.numerology.profile('Rama', { year: 1990, month: 1, day: 1 }, 7), TypeError);
+  ctx.dispose();
+});
+
+test('a birth star reads into its navatara chakra without a sky', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'NONE' });
+  const chakra = ctx.almanac.navatara('nakshatra.ASHWINI');
+  assert.ok(Object.isFrozen(chakra) && Object.isFrozen(chakra[0]), 'frozen');
+  assert.equal(chakra.length, 27);
+  assert.deepEqual(ctx.almanac.navatara('ASHWINI'), chakra, 'a bare key reads as the full one');
+  // Raman, Muhurtha ch. III: from Ashwini, Shravana is the 22nd, Kshema.
+  const shravana = chakra.find((row) => row.nakshatra === 'nakshatra.SHRAVANA');
+  assert.deepEqual([shravana.count, shravana.tara, shravana.cycle, shravana.special], [22, 'KSHEMA', 3, null]);
+  // Muhurta Chintamani, Nakshatra-prakarana v. 43: the special stars' counts.
+  assert.deepEqual(
+    chakra.filter((row) => row.special !== null).map((row) => [row.count, row.nakshatra, row.special]),
+    [
+      [1, 'nakshatra.ASHWINI', 'JANMA'],
+      [10, 'nakshatra.MAGHA', 'KARMA'],
+      [16, 'nakshatra.VISHAKHA', 'SANGHATIKA'],
+      [18, 'nakshatra.JYESHTHA', 'SAMUDAYA'],
+      [23, 'nakshatra.DHANISHTHA', 'VAINASHIKA'],
+      [25, 'nakshatra.PURVA_BHADRAPADA', 'MANASA'],
+    ],
+  );
+  assert.throws(
+    () => ctx.almanac.navatara('ABHIJIT'),
+    (error) => error instanceof TeistroError && error.field === 'navatara.birth',
+  );
+  assert.throws(() => ctx.almanac.navatara(1), TypeError);
   ctx.dispose();
 });
 

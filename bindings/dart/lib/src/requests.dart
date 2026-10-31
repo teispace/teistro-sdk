@@ -182,11 +182,13 @@ final class AlmanacDaysRequest extends _Request {
     this.eclipses = false,
     this.festivals,
     required this.first,
+    this.gowri = false,
     this.homaAhuti = false,
     this.lagnas = false,
     this.last,
     required this.latitudeDeg,
     required this.longitudeDeg,
+    this.markers = false,
     this.muhurta,
     this.nepalSambat = false,
     this.sky = false,
@@ -206,6 +208,8 @@ final class AlmanacDaysRequest extends _Request {
 
   final DayAsked first;
 
+  final bool gowri;
+
   final bool homaAhuti;
 
   final bool lagnas;
@@ -215,6 +219,8 @@ final class AlmanacDaysRequest extends _Request {
   final double latitudeDeg;
 
   final double longitudeDeg;
+
+  final bool markers;
 
   final MuhurtaRequest? muhurta;
 
@@ -239,11 +245,13 @@ final class AlmanacDaysRequest extends _Request {
     'eclipses': eclipses,
     if (festivals case final festivalsValue?) 'festivals': festivalsValue._wire,
     'first': first._wire,
+    'gowri': gowri,
     'homaAhuti': homaAhuti,
     'lagnas': lagnas,
     if (last case final lastValue?) 'last': lastValue._wire,
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
+    'markers': markers,
     if (muhurta case final muhurtaValue?) 'muhurta': muhurtaValue._wire,
     'nepalSambat': nepalSambat,
     'sky': sky,
@@ -254,7 +262,7 @@ final class AlmanacDaysRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, muhurta, nepalSambat, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
+  List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
 }
 
 /// The request as a binding writes it.
@@ -458,6 +466,24 @@ final class FirstYearQuery extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg, request, utcOffsetSeconds];
+}
+
+/// A birth star, whose navatara chakra is asked. The chakra reads no sky, so this is the whole request.
+final class NavataraRequest extends _Request {
+  const NavataraRequest({
+    required this.birth,
+  });
+
+  /// The birth star, the Moon's nakshatra at birth.
+  final Nakshatra birth;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'birth': birth.key,
+  };
+
+  @override
+  List<Object?> get _fields => [birth];
 }
 
 /// The request as a binding writes it.

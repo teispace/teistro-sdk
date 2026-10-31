@@ -251,6 +251,12 @@
     }
   },
   {
+    "record": "almanac.navatara",
+    "request": {
+      "birth": "ASHWINI"
+    }
+  },
+  {
     "record": "intl.inWords",
     "request": {
       "amount": {

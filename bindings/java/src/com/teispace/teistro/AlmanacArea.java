@@ -583,6 +583,32 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>The navatara chakra</b> of a birth star
+     * ({@code 03-design/navatara-chakra.md}): the 27 stars in the order the
+     * count from the birth star reaches them, each with its count, tara,
+     * round of nine (1 janma, 2 anujanma, 3 trijanma) and the special star
+     * <i>Muhurta Chintamani</i> names at that count, or null. It reads no sky.
+     *
+     * <pre>{@code
+     * List<NavataraRow> chakra = sky.almanac().navatara(Nakshatra.ASHWINI);
+     * SpecialStar karma = chakra.get(9).special(); // Magha, the 10th
+     * }</pre>
+     *
+     * @param birth the birth star
+     * @return the 27 rows
+     * @throws TeistroException naming {@code birth} when it is null
+     */
+    public List<NavataraRow> navatara(Nakshatra birth) {
+        if (birth == null) {
+            throw Reads.invalid("birth is a Nakshatra, such as Nakshatra.ASHWINI", "birth");
+        }
+        String json = Json.write(Map.of("birth", birth.key()));
+        return Reads.array(Json.read(context.locked((lib, raw) -> Calls.navatara(lib, raw, json)))).stream()
+                .map(NavataraRow::read)
+                .toList();
+    }
+
+    /**
      * <b>A death's first year</b> at a place ({@code 03-design/shraddha.md} §3.3): the
      * <i>Dharmasindhu</i>'s sixteen shraddhas, the first abdika and the sapindana, each on its day. The
      * eleventh day is the ashauch's day one plus ten, and every day kept on a tithi is the festival

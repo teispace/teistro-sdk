@@ -122,6 +122,8 @@ mod muhurta_request;
 mod naam_request;
 #[cfg(feature = "chart")]
 mod naming_request;
+#[cfg(feature = "muhurta")]
+mod navatara_request;
 #[cfg(feature = "numerology")]
 mod numerology_request;
 #[cfg(feature = "pakshi")]
@@ -362,6 +364,9 @@ pub use crate::engine_request::{EngineCall, ManifestRequest};
 // (`03-design/mcp-server.md`, step 3).
 #[cfg(feature = "muhurta")]
 pub use crate::muhurta_request::{Activity, MuhurtaRequest};
+// The navatara chakra of a birth star (`03-design/navatara-chakra.md`).
+#[cfg(feature = "muhurta")]
+pub use crate::navatara_request::NavataraRequest;
 pub use crate::time_request::{
     AddRequest, BetweenRequest, CalendarReading, CalendarRequest, CivilReading, CivilRequest,
     ResolveRequest, ScaleRequest,

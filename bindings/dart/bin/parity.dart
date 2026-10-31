@@ -3772,6 +3772,16 @@ void main() {
     [for (final s in markedDay.markers) s.member.fullKey].join(' '),
   );
   put('gowri', [for (final p in markedDay.gowri) p.gowri.fullKey].join(' '));
+  // Ashwini's navatara chakra, every row `star:tara:round:special`
+  // (`03-design/navatara-chakra.md`).
+  put(
+    'navatara',
+    [
+      for (final row in ctx.almanac.navatara(Nakshatra.ashwini))
+        '${row.nakshatra.fullKey}:${row.tara.key}:${row.cycle}:'
+            '${row.special?.key ?? '-'}',
+    ].join(' '),
+  );
   final eclipses =
       builtin.almanac
           .of(
@@ -3930,6 +3940,7 @@ void main() {
     ('almanac.sankalpa', ctx.almanac.sankalpa),
     ('almanac.ashauch', ctx.almanac.ashauch),
     ('almanac.first_year', ctx.almanac.firstYear),
+    ('almanac.navatara', ctx.almanac.navatara),
     ('almanac.published_reasons', ctx.almanac.publishedReasons),
     ('almanac.published_from_signed', ctx.almanac.publishedFromSigned),
     ('almanac.changes', ctx.almanac.changes),
