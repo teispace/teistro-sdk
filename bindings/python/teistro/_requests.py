@@ -35,7 +35,9 @@ __all__ = [
     "CalendarAsked",
     "ChartFoundRequest",
     "BatchAsked",
+    "DateTextRequest",
     "InWordsRequest",
+    "TimeTextRequest",
     "NaamRequest",
     "NamingCheckRequest",
     "NamingOfRequest",
@@ -102,10 +104,14 @@ __all__ = [
     "HouseRequest",
     "BaselinePeriod",
     "PeriodAsked",
-    "WordsAmount",
+    "CalendarDay",
     "WordsDigits",
+    "DateStyle",
+    "WordsAmount",
     "WordsGrouping",
     "WordsStyle",
+    "ClockTime",
+    "TimeStyle",
     "NaamRules",
     "Birth",
     "NamingRules",
@@ -228,6 +234,7 @@ __all__ = [
     "Snapshot",
     "SnapshotSunrise",
     "SnapshotClock",
+    "EraNumber",
     "WordsRounding",
     "WordsAmountValue",
     "NameRules",
@@ -503,7 +510,6 @@ __all__ = [
     "NameReduction",
     "NonLatin",
     "Upanayana",
-    "CalendarDay",
     "Interval",
     "FestivalMeta",
     "SubjectTo",
@@ -586,7 +592,6 @@ __all__ = [
     "Unit",
     "LifeClass",
     "SubDegree",
-    "EraNumber",
     "SaitChoice",
     "SaitRising",
     "SaitWindowRule",
@@ -1165,6 +1170,22 @@ class BatchAsked(TypedDict, total=False):
     periods: Required[Sequence[PeriodAsked]]
 
 
+class DateTextRequest(TypedDict, total=False):
+    """What a caller asks to be written: a date in any calendar, and how."""
+
+    at: Required[CalendarDay]
+    """The date, in its own calendar."""
+
+    digits: Optional[WordsDigits]
+    """The digits; the locale's numbering system when left out."""
+
+    locale: Optional[str]
+    """The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out."""
+
+    style: DateStyle
+    """How much of it."""
+
+
 class InWordsRequest(TypedDict, total=False):
     """What a caller asks to be written in words: a number or an amount, and how."""
 
@@ -1185,6 +1206,25 @@ class InWordsRequest(TypedDict, total=False):
 
     style: WordsStyle
     """The rule set."""
+
+
+class TimeTextRequest(TypedDict, total=False):
+    """What a caller asks to be written: a time of day, and how."""
+
+    at: Required[ClockTime]
+    """The time of day."""
+
+    digits: Optional[WordsDigits]
+    """The digits; the locale's numbering system when left out."""
+
+    hour12: bool
+    """The locale's twelve-hour pattern, which writes the part of the day its readers expect; the twenty-four-hour one when left out."""
+
+    locale: Optional[str]
+    """The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out."""
+
+    style: TimeStyle
+    """How much of it."""
 
 
 class NaamRequest(TypedDict, total=False):
@@ -2199,6 +2239,45 @@ class PeriodAsked(TypedDict, total=False):
     utcOffsetSeconds: Required[int]
 
 
+class CalendarDay(TypedDict, total=False):
+    """A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say."""
+
+    calendar: Required[Union[_catalogue.Calendar, str]]
+    """Its calendar."""
+
+    day: Required[int]
+    """The day, 1-based."""
+
+    era: Optional[EraNumber]
+    """The era, for a calendar that counts several."""
+
+    leap: Optional[Union[_catalogue.Leap, Literal['MONTH', 'DAY', 'MONTH_AND_DAY']]]
+    """A leap month or day, for a calendar that marks one."""
+
+    month: Required[int]
+    """The month, 1-based."""
+
+    year: Required[int]
+    """The astronomical year."""
+
+
+WordsDigits: TypeAlias = Literal['LATN', 'DEVA']
+"""The digits a figure is written in.
+
+`LATN`: `0123456789`.
+`DEVA`: `०१२३४५६७८९`.
+"""
+
+
+DateStyle: TypeAlias = Literal['NUMERIC', 'LONG', 'FULL']
+"""How much of a date is written.
+
+`NUMERIC`: In figures.
+`LONG`: With the month's name.
+`FULL`: With the weekday's name too.
+"""
+
+
 class WordsAmount(TypedDict, total=False):
     """An amount of a currency."""
 
@@ -2218,14 +2297,6 @@ class WordsAmount(TypedDict, total=False):
     """The value."""
 
 
-WordsDigits: TypeAlias = Literal['LATN', 'DEVA']
-"""The digits a figure is written in.
-
-`LATN`: `0123456789`.
-`DEVA`: `०१२३४५६७८९`.
-"""
-
-
 WordsGrouping: TypeAlias = Literal['INDIAN', 'INTERNATIONAL']
 """How digits are grouped, and so which scale words a number is counted in.
 
@@ -2239,6 +2310,27 @@ WordsStyle: TypeAlias = Literal['PLAIN', 'VERBOSE']
 
 `PLAIN`: `spellout-cardinal`: "one hundred five".
 `VERBOSE`: `spellout-cardinal-verbose`: "one hundred and five". English only.
+"""
+
+
+class ClockTime(TypedDict, total=False):
+    """A time of day, for `:time` and `:datetime`."""
+
+    hour: Required[int]
+    """0 to 23."""
+
+    minute: Required[int]
+    """0 to 59."""
+
+    second: int
+    """0 to 60; 0 when left out."""
+
+
+TimeStyle: TypeAlias = Literal['NUMERIC', 'LONG']
+"""How much of a time of day is written.
+
+`NUMERIC`: Hours and minutes.
+`LONG`: Hours, minutes and seconds.
 """
 
 
@@ -3674,6 +3766,16 @@ class SnapshotClock(TypedDict, total=False):
 
     minute: Required[int]
     """The minute, 0 to 59."""
+
+
+class EraNumber(TypedDict, total=False):
+    """A year in an era, for presentation."""
+
+    era: Required[Union[_catalogue.Era, str]]
+    """The era."""
+
+    year: Required[int]
+    """The year in it, 1-based."""
 
 
 WordsRounding: TypeAlias = Literal['HALF_UP', 'HALF_EVEN', 'EXACT']
@@ -6932,28 +7034,6 @@ Upanayana: TypeAlias = Literal['DONE', 'NOT_DONE', 'NOT_PERFORMED']
 """
 
 
-class CalendarDay(TypedDict, total=False):
-    """A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say."""
-
-    calendar: Required[Union[_catalogue.Calendar, str]]
-    """Its calendar."""
-
-    day: Required[int]
-    """The day, 1-based."""
-
-    era: Optional[EraNumber]
-    """The era, for a calendar that counts several."""
-
-    leap: Optional[Union[_catalogue.Leap, Literal['MONTH', 'DAY', 'MONTH_AND_DAY']]]
-    """A leap month or day, for a calendar that marks one."""
-
-    month: Required[int]
-    """The month, 1-based."""
-
-    year: Required[int]
-    """The astronomical year."""
-
-
 # A half-open interval of time, `[from, to)`.
 Interval = TypedDict(
     "Interval",
@@ -7862,16 +7942,6 @@ SubDegree: TypeAlias = Literal['POORNA', 'ISHRAFA', 'NONE']
 `ISHRAFA`: **Ishrafa**: the chapter's prose, where anything past is drawing away however near. What this module shipped before Table X-3 was read.
 `NONE`: **Nothing**: the table at its narrowest, where Poorna only ever narrows Vartamana and the band belongs to no yoga. Carried because it is a defensible reading of the printed words, though it leaves those 934 pairs saying nothing at all.
 """
-
-
-class EraNumber(TypedDict, total=False):
-    """A year in an era, for presentation."""
-
-    era: Required[Union[_catalogue.Era, str]]
-    """The era."""
-
-    year: Required[int]
-    """The year in it, 1-based."""
 
 
 SaitChoice: TypeAlias = Literal['EARLIEST', 'LATEST']

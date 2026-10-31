@@ -262,6 +262,12 @@ public final class BindingTest {
                 TeistroException sanskrit = refusal(() -> sky.intl().inWords(
                         com.teispace.teistro.request.InWordsRequest.builder().number(1L).locale("sa-Deva").build()));
                 same("inWords.locale", sanskrit.field(), "Sanskrit is unreviewed");
+                CivilText dawn = sky.intl().time(com.teispace.teistro.request.TimeTextRequest.builder()
+                        .at(com.teispace.teistro.request.ClockTime.builder().hour(6).minute(5).build())
+                        .hour12(true).locale("hi-Deva-IN").build());
+                same("सुबह ६:०५", dawn.text(), "the locale's clock");
+                same("DAY_PERIOD", dawn.parts().get(0).kind(), "the day's part is typed");
+                check(dawn.isDraft(), "Hindi's calendar text says it is unreviewed");
             }
         });
 

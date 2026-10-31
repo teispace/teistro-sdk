@@ -946,6 +946,27 @@ final class IntlArea extends _Area {
         as Map<String, Object?>,
   );
 
+  /// A time of day as text and parts, through the locale's pattern and
+  /// parts of the day.
+  ///
+  /// ```dart
+  /// final dawn = sdk.intl.time(const TimeTextRequest(
+  ///   at: ClockTime(hour: 6, minute: 5),
+  ///   hour12: true,
+  /// ));
+  /// ```
+  CivilText time(TimeTextRequest request) => CivilText._of(
+    jsonDecode(_context._inner.intlTime(jsonEncode(request._wire)))
+        as Map<String, Object?>,
+  );
+
+  /// A date as text and parts, in its own calendar, through the locale's
+  /// pattern.
+  CivilText date(DateTextRequest request) => CivilText._of(
+    jsonDecode(_context._inner.intlDate(jsonEncode(request._wire)))
+        as Map<String, Object?>,
+  );
+
   /// An entity's forms in the current locale or its fallbacks: its name,
   /// its prose form, its transliteration, and the glyph and gender the
   /// locale gives it.
@@ -3085,6 +3106,10 @@ extension RenderedMessage on IntlRender {
 
   /// Whether a runtime override answered.
   bool get override => isOverride != 0;
+
+  /// Whether any of the text is unreviewed, from a namespace its locale
+  /// marks draft.
+  bool get draft => isDraft != 0;
 
   /// The locale whose message answered, null when none had it.
   String? get from => resolvedFrom.isEmpty ? null : resolvedFrom;
@@ -11130,6 +11155,86 @@ final class NumerologyProfile extends _Value {
     chaldeanBirth,
     baseline,
   ];
+}
+
+/// A date or a time as text and parts, as `intl.time` and `intl.date`
+/// give it.
+final class CivilText extends _Value {
+  const CivilText({
+    required this.text,
+    required this.parts,
+    required this.locale,
+    required this.resolvedFrom,
+    required this.isFallback,
+    required this.isDraft,
+    required this.warnings,
+  });
+
+  /// The whole.
+  final String text;
+
+  /// The parts, in the locale's order; joined, they are [text].
+  final List<CivilPart> parts;
+
+  /// The locale asked for.
+  final String locale;
+
+  /// The locale whose pattern answered.
+  final String resolvedFrom;
+
+  /// Whether a fallback locale answered.
+  final bool isFallback;
+
+  /// Whether any of it is text no reviewer has signed off.
+  final bool isDraft;
+
+  /// Every problem met on the way.
+  final List<String> warnings;
+
+  static CivilText _of(Map<String, Object?> raw) => CivilText(
+    text: raw['text']! as String,
+    parts: List.unmodifiable(
+      (raw['parts']! as List<Object?>).cast<Map<String, Object?>>().map(
+        (part) => CivilPart(
+          kind: part['kind']! as String,
+          text: part['text']! as String,
+        ),
+      ),
+    ),
+    locale: raw['locale']! as String,
+    resolvedFrom: raw['resolvedFrom']! as String,
+    isFallback: raw['isFallback']! as bool,
+    isDraft: raw['isDraft']! as bool,
+    warnings: List.unmodifiable(
+      (raw['warnings']! as List<Object?>).cast<String>(),
+    ),
+  );
+
+  @override
+  List<Object?> get _fields => [
+    text,
+    parts,
+    locale,
+    resolvedFrom,
+    isFallback,
+    isDraft,
+    warnings,
+  ];
+}
+
+/// One part of a date or a time.
+final class CivilPart extends _Value {
+  const CivilPart({required this.kind, required this.text});
+
+  /// What it is: `YEAR`, `MONTH`, `DAY`, `WEEKDAY`, `ERA`, `HOUR`, `MINUTE`,
+  /// `SECOND`, `DAY_PERIOD` or `LITERAL`.
+  final String kind;
+
+  /// Its text.
+  final String text;
+
+  @override
+  List<Object?> get _fields => [kind, text];
 }
 
 /// A number or an amount in words and in figures, as `intl.inWords`

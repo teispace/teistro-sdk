@@ -1,0 +1,38 @@
+---
+title: ts_intl_time
+description: "A time of day as text and parts, through the locale's pattern and its parts of the day (`03-design/intl-engine-and-packs.md`), answered as canonical JSON: `{text, parts, locale, resolvedFrom, isFallback, isDraft, warnings}`, each part `{kind, text}` and the parts joined being `text`."
+---
+
+A time of day as text and parts, through the locale's pattern and its parts of the day (`03-design/intl-engine-and-packs.md`), answered as canonical JSON: `{text, parts, locale, resolvedFrom, isFallback, isDraft, warnings}`, each part `{kind, text}` and the parts joined being `text`.
+
+`request_json` is `{"at": {"hour", "minute", "second"}}`, with `"style"` (`NUMERIC`, `LONG`), `"hour12"`, `"locale"` (the context's when left out) and `"digits"` (`LATN`, `DEVA`). A key it does not read or a part of the time out of range is `INVALID_ARG`, named under `time`; a locale not loaded is `UNSUPPORTED`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_intl_time(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `intl.time` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/intl.rs`.

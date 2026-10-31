@@ -985,6 +985,39 @@ final class BatchAsked extends _Request {
   List<Object?> get _fields => [baseline, periods];
 }
 
+/// What a caller asks to be written: a date in any calendar, and how.
+final class DateTextRequest extends _Request {
+  const DateTextRequest({
+    required this.at,
+    this.digits,
+    this.locale,
+    this.style = DateStyle.numeric,
+  });
+
+  /// The date, in its own calendar.
+  final CalendarDay at;
+
+  /// The digits; the locale's numbering system when left out.
+  final WordsDigits? digits;
+
+  /// The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out.
+  final String? locale;
+
+  /// How much of it.
+  final DateStyle style;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'at': at._wire,
+    if (digits case final digitsValue?) 'digits': digitsValue.key,
+    if (locale case final localeValue?) 'locale': localeValue,
+    'style': style.key,
+  };
+
+  @override
+  List<Object?> get _fields => [at, digits, locale, style];
+}
+
 /// What a caller asks to be written in words: a number or an amount, and how.
 final class InWordsRequest extends _Request {
   const InWordsRequest({
@@ -1026,6 +1059,44 @@ final class InWordsRequest extends _Request {
 
   @override
   List<Object?> get _fields => [amount, digits, grouping, locale, number, style];
+}
+
+/// What a caller asks to be written: a time of day, and how.
+final class TimeTextRequest extends _Request {
+  const TimeTextRequest({
+    required this.at,
+    this.digits,
+    this.hour12 = false,
+    this.locale,
+    this.style = TimeStyle.numeric,
+  });
+
+  /// The time of day.
+  final ClockTime at;
+
+  /// The digits; the locale's numbering system when left out.
+  final WordsDigits? digits;
+
+  /// The locale's twelve-hour pattern, which writes the part of the day its readers expect; the twenty-four-hour one when left out.
+  final bool hour12;
+
+  /// The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out.
+  final String? locale;
+
+  /// How much of it.
+  final TimeStyle style;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'at': at._wire,
+    if (digits case final digitsValue?) 'digits': digitsValue.key,
+    'hour12': hour12,
+    if (locale case final localeValue?) 'locale': localeValue,
+    'style': style.key,
+  };
+
+  @override
+  List<Object?> get _fields => [at, digits, hour12, locale, style];
 }
 
 /// Two names to match star to star, and the readings they are matched under. Naam milan needs no chart, so this is the whole request.
@@ -2336,6 +2407,79 @@ final class PeriodAsked extends _Request {
   List<Object?> get _fields => [altitudeM, calendar, events, first, last, latitudeDeg, longitudeDeg, snapshot, spells, utcOffsetSeconds];
 }
 
+/// A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
+final class CalendarDay extends _Request {
+  const CalendarDay({
+    required this.calendar,
+    required this.day,
+    this.era,
+    this.leap,
+    required this.month,
+    required this.year,
+  });
+
+  /// Its calendar.
+  final Calendar calendar;
+
+  /// The day, 1-based.
+  final int day;
+
+  /// The era, for a calendar that counts several.
+  final EraNumber? era;
+
+  /// A leap month or day, for a calendar that marks one.
+  final Leap? leap;
+
+  /// The month, 1-based.
+  final int month;
+
+  /// The astronomical year.
+  final int year;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'calendar': calendar.key,
+    'day': day,
+    if (era case final eraValue?) 'era': eraValue._wire,
+    if (leap case final leapValue?) 'leap': leapValue.key,
+    'month': month,
+    'year': year,
+  };
+
+  @override
+  List<Object?> get _fields => [calendar, day, era, leap, month, year];
+}
+
+/// The digits a figure is written in.
+enum WordsDigits implements _Keyed {
+  /// `0123456789`.
+  latn('LATN'),
+  /// `०१२३४५६७८९`.
+  deva('DEVA');
+
+  const WordsDigits(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// How much of a date is written.
+enum DateStyle implements _Keyed {
+  /// In figures.
+  numeric('NUMERIC'),
+  /// With the month's name.
+  long('LONG'),
+  /// With the weekday's name too.
+  full('FULL');
+
+  const DateStyle(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// An amount of a currency.
 final class WordsAmount extends _Request {
   const WordsAmount({
@@ -2374,20 +2518,6 @@ final class WordsAmount extends _Request {
   List<Object?> get _fields => [currency, minorDigits, only, rounding, value];
 }
 
-/// The digits a figure is written in.
-enum WordsDigits implements _Keyed {
-  /// `0123456789`.
-  latn('LATN'),
-  /// `०१२३४५६७८९`.
-  deva('DEVA');
-
-  const WordsDigits(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
 /// How digits are grouped, and so which scale words a number is counted in.
 enum WordsGrouping implements _Keyed {
   /// Every two digits past the thousands: lakh, crore, arab, kharab; `12,34,567`.
@@ -2410,6 +2540,48 @@ enum WordsStyle implements _Keyed {
   verbose('VERBOSE');
 
   const WordsStyle(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// A time of day, for `:time` and `:datetime`.
+final class ClockTime extends _Request {
+  const ClockTime({
+    required this.hour,
+    required this.minute,
+    this.second = 0,
+  });
+
+  /// 0 to 23.
+  final int hour;
+
+  /// 0 to 59.
+  final int minute;
+
+  /// 0 to 60; 0 when left out.
+  final int second;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'hour': hour,
+    'minute': minute,
+    'second': second,
+  };
+
+  @override
+  List<Object?> get _fields => [hour, minute, second];
+}
+
+/// How much of a time of day is written.
+enum TimeStyle implements _Keyed {
+  /// Hours and minutes.
+  numeric('NUMERIC'),
+  /// Hours, minutes and seconds.
+  long('LONG');
+
+  const TimeStyle(this.key);
 
   /// The key the wire spells it with.
   @override
@@ -4793,6 +4965,29 @@ final class SnapshotClock extends Snapshot {
 
   @override
   List<Object?> get _fields => [hour, minute];
+}
+
+/// A year in an era, for presentation.
+final class EraNumber extends _Request {
+  const EraNumber({
+    required this.era,
+    required this.year,
+  });
+
+  /// The era.
+  final Era era;
+
+  /// The year in it, 1-based.
+  final int year;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'era': era.key,
+    'year': year,
+  };
+
+  @override
+  List<Object?> get _fields => [era, year];
 }
 
 /// How a decimal with more digits than the currency's minor unit is brought to it.
@@ -8765,49 +8960,6 @@ enum Upanayana implements _Keyed {
   final String key;
 }
 
-/// A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
-final class CalendarDay extends _Request {
-  const CalendarDay({
-    required this.calendar,
-    required this.day,
-    this.era,
-    this.leap,
-    required this.month,
-    required this.year,
-  });
-
-  /// Its calendar.
-  final Calendar calendar;
-
-  /// The day, 1-based.
-  final int day;
-
-  /// The era, for a calendar that counts several.
-  final EraNumber? era;
-
-  /// A leap month or day, for a calendar that marks one.
-  final Leap? leap;
-
-  /// The month, 1-based.
-  final int month;
-
-  /// The astronomical year.
-  final int year;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'calendar': calendar.key,
-    'day': day,
-    if (era case final eraValue?) 'era': eraValue._wire,
-    if (leap case final leapValue?) 'leap': leapValue.key,
-    'month': month,
-    'year': year,
-  };
-
-  @override
-  List<Object?> get _fields => [calendar, day, era, leap, month, year];
-}
-
 /// What a rule's festival is, as far as a source says.
 final class FestivalMeta extends _Request {
   const FestivalMeta({
@@ -10837,29 +10989,6 @@ enum SubDegree implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
-}
-
-/// A year in an era, for presentation.
-final class EraNumber extends _Request {
-  const EraNumber({
-    required this.era,
-    required this.year,
-  });
-
-  /// The era.
-  final Era era;
-
-  /// The year in it, 1-based.
-  final int year;
-
-  @override
-  Map<String, Object?> get _wire => <String, Object?>{
-    'era': era.key,
-    'year': year,
-  };
-
-  @override
-  List<Object?> get _fields => [era, year];
 }
 
 /// Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).

@@ -3512,6 +3512,25 @@
     }
   },
   {
+    "record": "intl.date",
+    "request": {
+      "at": {
+        "calendar": "calendar.JULIAN",
+        "day": 1,
+        "era": {
+          "era": "era.SHAKA",
+          "year": 1
+        },
+        "leap": "DAY",
+        "month": 1,
+        "year": 1
+      },
+      "digits": "DEVA",
+      "locale": "x",
+      "style": "LONG"
+    }
+  },
+  {
     "record": "intl.inWords",
     "request": {
       "amount": {
@@ -3528,6 +3547,20 @@
       "locale": "x",
       "number": 1,
       "style": "VERBOSE"
+    }
+  },
+  {
+    "record": "intl.time",
+    "request": {
+      "at": {
+        "hour": 1,
+        "minute": 1,
+        "second": 1
+      },
+      "digits": "DEVA",
+      "hour12": true,
+      "locale": "x",
+      "style": "LONG"
     }
   },
   {

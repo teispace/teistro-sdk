@@ -194,6 +194,22 @@ void main() {
     );
   });
 
+  test('a date and a time as text and parts', () {
+    final ctx = context();
+    addTearDown(ctx.dispose);
+    final dawn = ctx.intl.time(
+      const TimeTextRequest(
+        at: ClockTime(hour: 6, minute: 5),
+        hour12: true,
+        locale: 'hi-Deva-IN',
+      ),
+    );
+    expect(dawn.text, 'सुबह ६:०५');
+    expect(dawn.parts.first.kind, 'DAY_PERIOD');
+    expect(dawn.parts.map((part) => part.text).join(), dawn.text);
+    expect(dawn.isDraft, isTrue);
+  });
+
   test('the accessors are a tree over any renderer', () {
     final asked = <(String, Map<String, Object?>)>[];
     final tree = intl.Messages(_Recording(asked));

@@ -427,6 +427,28 @@ export interface BatchAsked {
 }
 
 /**
+ * What a caller asks to be written: a date in any calendar, and how.
+ */
+export interface DateTextRequest {
+  /**
+   * The date, in its own calendar.
+   */
+  readonly at: CalendarDay;
+  /**
+   * The digits; the locale's numbering system when left out.
+   */
+  readonly digits?: WordsDigits | null;
+  /**
+   * The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out.
+   */
+  readonly locale?: string | null;
+  /**
+   * How much of it.
+   */
+  readonly style?: DateStyle;
+}
+
+/**
  * What a caller asks to be written in words: a number or an amount, and how.
  */
 export interface InWordsRequest {
@@ -454,6 +476,32 @@ export interface InWordsRequest {
    * The rule set.
    */
   readonly style?: WordsStyle;
+}
+
+/**
+ * What a caller asks to be written: a time of day, and how.
+ */
+export interface TimeTextRequest {
+  /**
+   * The time of day.
+   */
+  readonly at: ClockTime;
+  /**
+   * The digits; the locale's numbering system when left out.
+   */
+  readonly digits?: WordsDigits | null;
+  /**
+   * The locale's twelve-hour pattern, which writes the part of the day its readers expect; the twenty-four-hour one when left out.
+   */
+  readonly hour12?: boolean;
+  /**
+   * The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out.
+   */
+  readonly locale?: string | null;
+  /**
+   * How much of it.
+   */
+  readonly style?: TimeStyle;
 }
 
 /**
@@ -1646,6 +1694,53 @@ export interface PeriodAsked {
 }
 
 /**
+ * A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
+ */
+export interface CalendarDay {
+  /**
+   * Its calendar.
+   */
+  readonly calendar: Member<catalogue.Calendar>;
+  /**
+   * The day, 1-based.
+   */
+  readonly day: number;
+  /**
+   * The era, for a calendar that counts several.
+   */
+  readonly era?: EraNumber | null;
+  /**
+   * A leap month or day, for a calendar that marks one.
+   */
+  readonly leap?: catalogue.Leap | null;
+  /**
+   * The month, 1-based.
+   */
+  readonly month: number;
+  /**
+   * The astronomical year.
+   */
+  readonly year: number;
+}
+
+/**
+ * The digits a figure is written in.
+ *
+ * `LATN`: `0123456789`.
+ * `DEVA`: `०१२३४५६७८९`.
+ */
+export type WordsDigits = 'LATN' | 'DEVA';
+
+/**
+ * How much of a date is written.
+ *
+ * `NUMERIC`: In figures.
+ * `LONG`: With the month's name.
+ * `FULL`: With the weekday's name too.
+ */
+export type DateStyle = 'NUMERIC' | 'LONG' | 'FULL';
+
+/**
  * An amount of a currency.
  */
 export interface WordsAmount {
@@ -1672,14 +1767,6 @@ export interface WordsAmount {
 }
 
 /**
- * The digits a figure is written in.
- *
- * `LATN`: `0123456789`.
- * `DEVA`: `०१२३४५६७८९`.
- */
-export type WordsDigits = 'LATN' | 'DEVA';
-
-/**
  * How digits are grouped, and so which scale words a number is counted in.
  *
  * `INDIAN`: Every two digits past the thousands: lakh, crore, arab, kharab; `12,34,567`.
@@ -1694,6 +1781,32 @@ export type WordsGrouping = 'INDIAN' | 'INTERNATIONAL';
  * `VERBOSE`: `spellout-cardinal-verbose`: "one hundred and five". English only.
  */
 export type WordsStyle = 'PLAIN' | 'VERBOSE';
+
+/**
+ * A time of day, for `:time` and `:datetime`.
+ */
+export interface ClockTime {
+  /**
+   * 0 to 23.
+   */
+  readonly hour: number;
+  /**
+   * 0 to 59.
+   */
+  readonly minute: number;
+  /**
+   * 0 to 60; 0 when left out.
+   */
+  readonly second?: number;
+}
+
+/**
+ * How much of a time of day is written.
+ *
+ * `NUMERIC`: Hours and minutes.
+ * `LONG`: Hours, minutes and seconds.
+ */
+export type TimeStyle = 'NUMERIC' | 'LONG';
 
 /**
  * The readings two names are matched under.
@@ -3419,6 +3532,20 @@ export interface SnapshotClock {
    * The minute, 0 to 59.
    */
   readonly minute: number;
+}
+
+/**
+ * A year in an era, for presentation.
+ */
+export interface EraNumber {
+  /**
+   * The era.
+   */
+  readonly era: Member<catalogue.Era>;
+  /**
+   * The year in it, 1-based.
+   */
+  readonly year: number;
 }
 
 /**
@@ -6081,36 +6208,6 @@ export type NonLatin = 'REFUSE' | 'SKIP';
 export type Upanayana = 'DONE' | 'NOT_DONE' | 'NOT_PERFORMED';
 
 /**
- * A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
- */
-export interface CalendarDay {
-  /**
-   * Its calendar.
-   */
-  readonly calendar: Member<catalogue.Calendar>;
-  /**
-   * The day, 1-based.
-   */
-  readonly day: number;
-  /**
-   * The era, for a calendar that counts several.
-   */
-  readonly era?: EraNumber | null;
-  /**
-   * A leap month or day, for a calendar that marks one.
-   */
-  readonly leap?: catalogue.Leap | null;
-  /**
-   * The month, 1-based.
-   */
-  readonly month: number;
-  /**
-   * The astronomical year.
-   */
-  readonly year: number;
-}
-
-/**
  * A half-open interval of time, `[from, to)`.
  */
 export interface Interval {
@@ -7170,20 +7267,6 @@ export type LifeClass = 'balarishta' | 'yogarishta' | 'short' | 'medium' | 'long
  * `NONE`: **Nothing**: the table at its narrowest, where Poorna only ever narrows Vartamana and the band belongs to no yoga. Carried because it is a defensible reading of the printed words, though it leaves those 934 pairs saying nothing at all.
  */
 export type SubDegree = 'POORNA' | 'ISHRAFA' | 'NONE';
-
-/**
- * A year in an era, for presentation.
- */
-export interface EraNumber {
-  /**
-   * The era.
-   */
-  readonly era: Member<catalogue.Era>;
-  /**
-   * The year in it, 1-based.
-   */
-  readonly year: number;
-}
 
 /**
  * Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).

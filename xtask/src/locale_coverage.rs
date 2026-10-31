@@ -37,6 +37,8 @@ struct Coverage {
     kinds: BTreeMap<String, (usize, usize)>,
     /// Base messages translated.
     messages: usize,
+    /// The namespaces no reviewer has signed off.
+    draft: Vec<String>,
 }
 
 impl Coverage {
@@ -86,6 +88,7 @@ fn coverage(tree: &Tree) -> (Vec<Coverage>, usize, usize) {
         .map(|locale| Coverage {
             tag: locale.tag.clone(),
             completeness: locale.meta.completeness,
+            draft: locale.meta.draft.clone(),
             kinds: members
                 .iter()
                 .map(|(kind, keys)| {
@@ -153,9 +156,24 @@ fn page(tree: &Tree) -> String {
     }
     let _ = writeln!(
         out,
-        "\n{total} members of {} kinds, {base} messages.\n\n## By kind\n",
+        "\n{total} members of {} kinds, {base} messages.\n",
         locales.first().map_or(0, |locale| locale.kinds.len())
     );
+    // A count says a text is there, and not that anyone has read it.
+    for locale in locales.iter().filter(|locale| !locale.draft.is_empty()) {
+        let _ = writeln!(
+            out,
+            "`{}` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): {}.\n",
+            locale.tag,
+            locale
+                .draft
+                .iter()
+                .map(|namespace| format!("`{namespace}`"))
+                .collect::<Vec<_>>()
+                .join(", ")
+        );
+    }
+    let _ = writeln!(out, "## By kind\n");
     let mut header = String::from("| kind | members |");
     let mut rule = String::from("|---|---:|");
     for locale in &locales {

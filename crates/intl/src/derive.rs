@@ -151,6 +151,8 @@ pub fn derive(
         object.insert(String::from("locale"), json!(to));
         object.insert(String::from("numberingSystem"), json!("latn"));
         object.insert(String::from("grouping"), json!([3]));
+        // Derived for names alone: the source's drafts are not here.
+        object.remove("draft");
         if let Some(Json::Object(patterns)) = object.get_mut("listPatterns") {
             for pattern in patterns.values_mut() {
                 if let Json::Object(parts) = pattern {

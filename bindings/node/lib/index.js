@@ -2494,6 +2494,11 @@ export class Rendered extends Decoded {
     return this.decoded.isOverride === 1;
   }
 
+  /** Whether any of the text is unreviewed, from a namespace its locale marks draft. */
+  get isDraft() {
+    return this.decoded.isDraft === 1;
+  }
+
   /**
    * The message in parts, its markup kept: what a rich renderer walks.
    *
@@ -2865,6 +2870,30 @@ export class IntlArea extends Area {
    */
   inWords(request) {
     return deepFreeze(JSON.parse(run(this, (inner) => inner.intlInWords(JSON.stringify(request)))));
+  }
+
+  /**
+   * A time of day as text and parts, through the locale's pattern and
+   * parts of the day (`03-design/intl-engine-and-packs.md`).
+   *
+   * ```js
+   * sdk.intl.time({ at: { hour: 6, minute: 5 }, hour12: true, locale: 'ne-Deva-NP' }).text;
+   * ```
+   */
+  time(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.intlTime(JSON.stringify(request)))));
+  }
+
+  /**
+   * A date as text and parts, in its own calendar, through the locale's
+   * pattern.
+   *
+   * ```js
+   * sdk.intl.date({ at: { calendar: 'calendar.GREGORIAN', year: 2026, month: 10, day: 31 }, style: 'LONG' }).text;
+   * ```
+   */
+  date(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.intlDate(JSON.stringify(request)))));
   }
 
   /**

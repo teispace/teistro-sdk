@@ -47,6 +47,7 @@
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 
 pub mod analysis;
+pub mod civil;
 #[cfg(feature = "cli")]
 pub mod cli;
 pub mod derive;

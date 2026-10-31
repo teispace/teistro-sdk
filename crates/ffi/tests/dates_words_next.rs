@@ -22,7 +22,7 @@ use teistro_ffi::TS_CONTEXT_TEST_PROVIDER;
 use teistro_ffi::calendar::{
     TsCalendarDate, TsDateSpan, TsOverflow, ts_calendar_add, ts_calendar_between,
 };
-use teistro_ffi::intl::ts_intl_in_words;
+use teistro_ffi::intl::{ts_intl_date, ts_intl_in_words, ts_intl_time};
 use teistro_ffi::panchanga::{ts_almanac_next, ts_almanac_sentences};
 use teistro_ffi::string::TsString;
 
@@ -259,6 +259,57 @@ fn an_amount_is_spelt_and_a_bad_request_is_refused() {
             status,
             "",
         );
+    }
+}
+
+/// **A time and a date as text and parts**, and each refusal.
+#[test]
+fn a_time_and_a_date_are_written_and_a_bad_request_is_refused() {
+    let ctx = Ctx::defaults();
+    let (status, answer) = json_call(
+        &ctx,
+        ts_intl_time,
+        &serde_json::json!({ "at": { "hour": 6, "minute": 5 }, "hour12": true, "locale": "hi-Deva-IN" }),
+    );
+    assert_eq!(status, Status::Ok);
+    let answer = answer.unwrap();
+    assert_eq!(answer["text"], "सुबह ६:०५");
+    assert_eq!(answer["parts"][0]["kind"], "DAY_PERIOD");
+    assert_eq!(answer["isDraft"], true);
+
+    let (status, day) = json_call(
+        &ctx,
+        ts_intl_date,
+        &serde_json::json!({ "at": { "calendar": "calendar.GREGORIAN", "year": 2026, "month": 10, "day": 31 }, "style": "LONG", "locale": "en-Latn" }),
+    );
+    assert_eq!(status, Status::Ok);
+    assert_eq!(day.unwrap()["text"], "31 October 2026");
+
+    for (request, status) in [
+        (serde_json::json!({}), Status::InvalidArg),
+        (
+            serde_json::json!({ "at": { "hour": 24, "minute": 0 } }),
+            Status::InvalidArg,
+        ),
+        (
+            serde_json::json!({ "at": { "hour": 1, "minute": 0 }, "locale": "xx" }),
+            Status::Unsupported,
+        ),
+    ] {
+        refused(&ctx, &json_call(&ctx, ts_intl_time, &request), status, "");
+    }
+    for (request, status) in [
+        (serde_json::json!({}), Status::InvalidArg),
+        (
+            serde_json::json!({ "at": { "calendar": "calendar.GREGORIAN", "year": 2026, "month": 2, "day": 30 } }),
+            Status::InvalidArg,
+        ),
+        (
+            serde_json::json!({ "at": { "calendar": "calendar.TAMIL_SOLAR", "year": 2026, "month": 1, "day": 1 } }),
+            Status::Unsupported,
+        ),
+    ] {
+        refused(&ctx, &json_call(&ctx, ts_intl_date, &request), status, "");
     }
 }
 

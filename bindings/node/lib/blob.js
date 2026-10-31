@@ -233,6 +233,10 @@ export function decodeIntlRender(bytes) {
     const at = section(blob, 5, 'parts');
     out.parts = text(blob, at, 'parts');
   }
+  {
+    const at = fixed(blob, 6, 'review', 1);
+    out.isDraft = READERS.u8(blob.dv, at.offset + 0);
+  }
   return out;
 }
 

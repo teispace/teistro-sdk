@@ -424,7 +424,12 @@ from ._requests import (
     HarmonicRequest as HarmonicRequest,
     HarshaRules as HarshaRules,
     HitRequest as HitRequest,
+    ClockTime as ClockTime,
+    DateStyle as DateStyle,
+    DateTextRequest as DateTextRequest,
+    TimeStyle as TimeStyle,
     InWordsRequest as InWordsRequest,
+    TimeTextRequest as TimeTextRequest,
     WordsAmount as WordsAmount,
     WordsAmountValue as WordsAmountValue,
     WordsDigits as WordsDigits,
@@ -1150,13 +1155,20 @@ __all__ = [
     "ChosenBy",
     "Signification",
     # A number or an amount in words.
+    "ClockTime",
+    "DateStyle",
+    "DateTextRequest",
+    "TimeStyle",
     "InWordsRequest",
+    "TimeTextRequest",
     "WordsAmount",
     "WordsAmountValue",
     "WordsDigits",
     "WordsGrouping",
     "WordsRounding",
     "WordsStyle",
+    "CivilPart",
+    "CivilText",
     "InWords",
     "AmountInWords",
     # The transit hit list, and its names.
@@ -2967,6 +2979,24 @@ class IntlArea(_Area):
         'एक हजार दुई सय चौँतिस रुपैयाँ र छपन्न पैसा मात्र'
         """
         return InWords._of(json.loads(self._context.inner.intl_in_words(json.dumps(request))))
+
+    def time(self, request: TimeTextRequest) -> "CivilText":
+        """A time of day as text and parts, through the locale's pattern
+        and parts of the day (`03-design/intl-engine-and-packs.md`).
+
+        >>> sdk.intl.time({"at": {"hour": 6, "minute": 5}, "hour12": True, "locale": "ne-Deva-NP"}).text
+        'बिहान ६:०५'
+        """
+        return CivilText._of(json.loads(self._context.inner.intl_time(json.dumps(request))))
+
+    def date(self, request: DateTextRequest) -> "CivilText":
+        """A date as text and parts, in its own calendar, through the
+        locale's pattern.
+
+        >>> sdk.intl.date({"at": {"calendar": "calendar.GREGORIAN", "year": 2026, "month": 10, "day": 31}, "style": "LONG"}).text
+        '31 October 2026'
+        """
+        return CivilText._of(json.loads(self._context.inner.intl_date(json.dumps(request))))
 
     def transliterate(self, text: str, source: str = "Deva", into: str = "Latn") -> str:
         """Text from one script into another."""
@@ -8154,6 +8184,57 @@ class AmountInWords:
 
     rounded: bool
     """Whether a decimal lost digits to the rounding."""
+
+
+@dataclass(frozen=True)
+class CivilPart:
+    """One part of a date or a time."""
+
+    kind: str
+    """What it is: `YEAR`, `MONTH`, `DAY`, `WEEKDAY`, `ERA`, `HOUR`, `MINUTE`,
+    `SECOND`, `DAY_PERIOD` or `LITERAL`."""
+
+    text: str
+    """Its text."""
+
+
+@dataclass(frozen=True)
+class CivilText:
+    """A date or a time as text and parts, as `intl.time` and `intl.date`
+    give it."""
+
+    text: str
+    """The whole."""
+
+    parts: Tuple[CivilPart, ...]
+    """The parts, in the locale's order; joined, they are `text`."""
+
+    locale: str
+    """The locale asked for."""
+
+    resolved_from: str
+    """The locale whose pattern answered."""
+
+    is_fallback: bool
+    """Whether a fallback locale answered."""
+
+    is_draft: bool
+    """Whether any of it is text no reviewer has signed off."""
+
+    warnings: Tuple[str, ...]
+    """Every problem met on the way."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "CivilText":
+        return CivilText(
+            text=raw["text"],
+            parts=tuple(CivilPart(kind=part["kind"], text=part["text"]) for part in raw["parts"]),
+            locale=raw["locale"],
+            resolved_from=raw["resolvedFrom"],
+            is_fallback=raw["isFallback"],
+            is_draft=raw["isDraft"],
+            warnings=tuple(raw["warnings"]),
+        )
 
 
 @dataclass(frozen=True)

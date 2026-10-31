@@ -3,6 +3,7 @@
 
 use teistro_core::Status;
 use teistro_core::error::Error;
+use teistro_intl::civil::{CivilText, DateTextRequest, TimeTextRequest};
 use teistro_intl::source::Entity;
 use teistro_intl::translit::{Script, transliterate};
 use teistro_intl::words::{InWords, InWordsRequest};
@@ -142,6 +143,53 @@ impl<'a> IntlArea<'a> {
     /// As [`teistro_intl::Intl::in_words`], named under `inWords`.
     pub fn in_words(self, request: &InWordsRequest) -> Result<InWords, Error> {
         self.context.locale_engine().in_words(request)
+    }
+
+    /// A time of day as text and parts, through the locale's pattern and
+    /// parts of the day: in the request's locale, or this area's when it
+    /// names none (`03-design/intl-engine-and-packs.md`).
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let asked = teistro::TimeTextRequest::from_json(
+    ///     r#"{"at": {"hour": 18, "minute": 30}, "hour12": true, "locale": "hi-Deva-IN"}"#,
+    /// )?;
+    /// let dusk = sdk.intl().time(&asked)?;
+    /// assert_eq!(dusk.text, "शाम ६:३०");
+    /// assert!(dusk.is_draft);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`teistro_intl::Intl::time`], named under `time`.
+    pub fn time(self, request: &TimeTextRequest) -> Result<CivilText, Error> {
+        self.context.locale_engine().time(request)
+    }
+
+    /// A date as text and parts, in its own calendar: in the request's
+    /// locale, or this area's when it names none.
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let asked = teistro::DateTextRequest::from_json(
+    ///     r#"{"at": {"calendar": "calendar.GREGORIAN", "year": 2026, "month": 10, "day": 31}, "style": "LONG"}"#,
+    /// )?;
+    /// assert_eq!(sdk.intl().date(&asked)?.text, "31 October 2026");
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`teistro_intl::Intl::date`], named under `date`.
+    pub fn date(self, request: &DateTextRequest) -> Result<CivilText, Error> {
+        self.context.locale_engine().date(request)
     }
 
     /// A locale pack loaded at run time, whose locales join the embedded

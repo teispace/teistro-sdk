@@ -89,8 +89,12 @@ import type {
   RisingSign,
   NaamRules,
   NumerologyProfile,
+  CivilPart,
+  CivilText,
+  DateTextRequest,
   InWords,
   InWordsRequest,
+  TimeTextRequest,
   NumerologyRules,
   RecordedSettings,
   RashifalAnswer,
@@ -2228,6 +2232,22 @@ function theWords(ctx: Context): string {
 }
 
 void theWords;
+
+// A time and a date as text and parts.
+function theClock(ctx: Context): string {
+  const asked: TimeTextRequest = { at: { hour: 6, minute: 5 }, style: 'LONG', hour12: true, digits: 'LATN' };
+  const dawn: CivilText = ctx.intl.time(asked);
+  const day: DateTextRequest = {
+    at: { calendar: 'calendar.GREGORIAN', year: 2026, month: 10, day: 31 },
+    style: 'FULL',
+  };
+  // @ts-expect-error a time's style has no `FULL`
+  const misstyled: TimeTextRequest = { at: { hour: 1, minute: 2 }, style: 'FULL' };
+  const part: CivilPart | undefined = dawn.parts[0];
+  return [dawn.text, part?.kind ?? '', ctx.intl.date(day).text, String(misstyled)].join();
+}
+
+void theClock;
 
 // A stored baseline snapshot translated into the contexts to open.
 function theRecordedSettings(ctx: Context): string {

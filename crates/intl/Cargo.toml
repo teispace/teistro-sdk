@@ -29,7 +29,7 @@ xliff = ["dep:quick-xml"]
 # `schema`: the crate carries no type of the chart document, which is what
 # that feature promises (`docs/03-design/document-schema.md` §7) and the
 # `serialised-type-describes-itself` lint holds every `Serialize` type to.
-words-schema = ["dep:schemars", "teistro-core/schema"]
+words-schema = ["dep:schemars", "teistro-core/schema", "teistro-calendar/schema"]
 
 [[bin]]
 name = "teistro-intl"
