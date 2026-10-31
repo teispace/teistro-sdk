@@ -69,7 +69,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_CHOGHADIYA` | 58 | The seven choghadiya: the eighths of the daylight and of the night, each named for the graha that rules it. |
 | `TS_KIND_KAALA` | 59 | The three inauspicious eighths of the daylight, each taking a different eighth on each day of the week. |
 | `TS_KIND_PANCHAKA` | 60 | The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159). |
-| `TS_KIND_MUHURTA_YOGA` | 61 | The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). |
+| `TS_KIND_MUHURTA_YOGA` | 61 | The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2). |
 | `TS_KIND_CHART_LAYOUT` | 62 | The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more. |
 | `TS_KIND_VAISESHIKAMSA` | 63 | The names a graha earns by the count of good vargas it holds in a scheme of divisions: the shadvarga and saptavarga ladder from two, the dashavarga's and the shodashavarga's. |
 | `TS_KIND_AVASTHA_CHESHTA` | 64 | The three sub-states of a Sayanadi state, a remainder of three. |
@@ -84,6 +84,8 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_SHIVA_VASA` | 76 | Where Shiva dwells on a tithi, the Shiva vasa an almanac prints before a rudri: a convention, printed with no text read behind it, chosen by `panchanga.shiva_vasa` (`03-design/printed-conventions.md`, crux C750). The tithi t from Shukla Pratipada as 1 to Amavasya as 30, (2t + 5) mod 7 names the member by its `remainder`. |
 | `TS_KIND_FESTIVAL_KIND` | 77 | What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850). |
 | `TS_KIND_TRADITION` | 78 | The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850). |
+| `TS_KIND_DAY_MARKER` | 79 | A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051). |
+| `TS_KIND_GOWRI` | 80 | The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark. |
 
 ## ts_graha
 
@@ -1289,15 +1291,17 @@ The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's ti
 
 ## ts_muhurta_yoga
 
-The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
+The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
 
 | member | value | what it is |
 |---|---|---|
 | `TS_MUHURTA_YOGA_AMRIT_SIDDHI` | 0 | Amrit Siddhi yoga: one vara and nakshatra pair each |
 | `TS_MUHURTA_YOGA_SARVARTHA_SIDDHI` | 1 | Sarvartha Siddhi yoga: a set of nakshatras per vara |
 | `TS_MUHURTA_YOGA_SIDDHA` | 2 | Siddha yoga |
-| `TS_MUHURTA_YOGA_DWIPUSHKAR` | 3 | Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings |
+| `TS_MUHURTA_YOGA_DWIPUSHKAR` | 3 | Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in Mrigashira, Chitra or Dhanishtha, the stars a sign boundary cuts two quarters and two, which doubles what the day brings |
 | `TS_MUHURTA_YOGA_TRIPUSHKAR` | 4 | Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings |
+| `TS_MUHURTA_YOGA_RAVI_PUSHYA` | 5 | Ravi Pushya yoga: Pushya on a Sunday, one of Muhurta Chintamani's Sunday Sarvartha Siddhi stars, named so in the almanacs |
+| `TS_MUHURTA_YOGA_GURU_PUSHYA` | 6 | Guru Pushya yoga: Pushya on a Thursday, Thursday's Amrit Siddhi, barred only for a marriage |
 
 ## ts_chart_layout
 
@@ -1498,6 +1502,31 @@ The religion a festival rule belongs to, read from a named source by `03-design/
 | `TS_TRADITION_SIKH` | 3 | Sikh |
 | `TS_TRADITION_ISLAMIC` | 4 | Islamic |
 | `TS_TRADITION_CHRISTIAN` | 5 | Christian |
+
+## ts_day_marker
+
+A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051). Members are the catalogue's ids; the full key id is `(TS_KIND_DAY_MARKER << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DAY_MARKER_GANDA_MULA` | 0 | Ganda mula: the Moon in Ashwini, Ashlesha, Magha, Jyeshtha, Mula or Revati, the six stars on either side of the three junctions of water and fire signs, each the whole star as the almanacs mark it |
+| `TS_DAY_MARKER_GANDANTA` | 1 | Nakshatra gandanta: the last two ghatis of Revati, Ashlesha and Jyeshtha and the first two of Ashwini, Magha and Mula, a ghati twenty-four minutes |
+| `TS_DAY_MARKER_VINCHUDO` | 2 | Vinchudo: the Moon in Scorpio, from its entry in Vishakha's last quarter to its leaving Jyeshtha, which the Gujarati almanacs print against a journey south and other rites |
+
+## ts_gowri
+
+The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark. Members are the catalogue's ids; the full key id is `(TS_KIND_GOWRI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_GOWRI_UTHI` | 0 | Uthi (udyogam), the Sun's: effort, and the eighth a Sunday's daylight opens with |
+| `TS_GOWRI_AMIRTHAM` | 1 | Amirtham, the Moon's: nectar |
+| `TS_GOWRI_ROGAM` | 2 | Rogam, Mars's: illness |
+| `TS_GOWRI_LAABAM` | 3 | Laabam, Mercury's: gain |
+| `TS_GOWRI_DHANAM` | 4 | Dhanam, Jupiter's: wealth |
+| `TS_GOWRI_SUGAM` | 5 | Sugam, Venus's: ease |
+| `TS_GOWRI_SORAM` | 6 | Soram, Saturn's: theft |
+| `TS_GOWRI_VISHAM` | 7 | Visham, Rahu's: poison, the daylight's eighth that is rahu kaala |
 
 ## ts_status
 

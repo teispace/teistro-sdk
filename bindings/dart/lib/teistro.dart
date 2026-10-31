@@ -1802,6 +1802,29 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **The navatara chakra** of [birth] (`03-design/navatara-chakra.md`):
+  /// the 27 stars in the order the count from the birth star reaches them,
+  /// each with its count, tara, round of nine (1 janma, 2 anujanma, 3
+  /// trijanma) and the special star *Muhurta Chintamani* names at that
+  /// count, or null. It reads no sky.
+  ///
+  /// ```dart
+  /// final chakra = sdk.almanac.navatara(Nakshatra.ashwini);
+  /// chakra[9].special; // SpecialStar.karma: Magha, the 10th
+  /// ```
+  List<NavataraRow> navatara(Nakshatra birth) => List.unmodifiable([
+    for (final row
+        in jsonDecode(
+              _context._guarded(
+                () => _context._inner.navatara(
+                  jsonEncode(<String, Object?>{'birth': birth.key}),
+                ),
+              ),
+            )
+            as List<Object?>)
+      NavataraRow._of(row! as Map<String, Object?>),
+  ]);
+
   /// **Where this context's reckoning and [other]'s disagree**, and why
   /// (`03-design/setup-disagreements.md`): the official day an app shows
   /// beside the modern one. [Disagreements.days] holds only the days on
@@ -11222,6 +11245,74 @@ final class NumerologyProfile extends _Value {
     chaldeanBirth,
     baseline,
   ];
+}
+
+/// A star the navatara chakra names besides its tara, by its count from
+/// the birth star (*Muhurta Chintamani*, Nakshatra-prakarana v. 43).
+enum SpecialStar implements _Keyed {
+  /// The 1st, the birth star itself.
+  janma('JANMA'),
+
+  /// The 10th.
+  karma('KARMA'),
+
+  /// The 16th.
+  sanghatika('SANGHATIKA'),
+
+  /// The 18th.
+  samudaya('SAMUDAYA'),
+
+  /// The 23rd.
+  vainashika('VAINASHIKA'),
+
+  /// The 25th.
+  manasa('MANASA');
+
+  const SpecialStar(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// A star of the navatara chakra (`03-design/navatara-chakra.md`).
+final class NavataraRow extends _Value {
+  const NavataraRow({
+    required this.nakshatra,
+    required this.count,
+    required this.tara,
+    required this.cycle,
+    required this.special,
+  });
+
+  /// The star.
+  final Nakshatra nakshatra;
+
+  /// Its count from the birth star, 1 (the birth star itself) to 27.
+  final int count;
+
+  /// The count reduced by nine.
+  final Tara tara;
+
+  /// Which round of nine the count is in, 1 (janma) to 3 (trijanma).
+  final int cycle;
+
+  /// The special star the count names, or null.
+  final SpecialStar? special;
+
+  static NavataraRow _of(Map<String, Object?> raw) => NavataraRow(
+    nakshatra: _key(raw['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+    count: raw['count']! as int,
+    tara: _keyed(Tara.values, raw['tara']),
+    cycle: raw['cycle']! as int,
+    special:
+        raw['special'] == null
+            ? null
+            : _keyed(SpecialStar.values, raw['special']),
+  );
+
+  @override
+  List<Object?> get _fields => [nakshatra, count, tara, cycle, special];
 }
 
 /// A date or a time as text and parts, as `intl.time` and `intl.date`

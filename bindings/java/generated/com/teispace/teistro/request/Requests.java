@@ -18,6 +18,7 @@ public final class Requests {
             Map.entry("almanac.festivalPack", PackRequest::of),
             Map.entry("almanac.festival_calendar", FestivalCalendarRequest::of),
             Map.entry("almanac.firstYear", FirstYearQuery::of),
+            Map.entry("almanac.navatara", NavataraRequest::of),
             Map.entry("almanac.next", NextRequest::of),
             Map.entry("almanac.pakshi", PakshiRequest::of),
             Map.entry("almanac.publishedReasons", PublishedReasonsRequest::of),

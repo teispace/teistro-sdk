@@ -351,6 +351,11 @@ export function messages(r) {
           yogardha: () => r.entity('dasha_system.YOGARDHA'),
           yogini: () => r.entity('dasha_system.YOGINI'),
         },
+        dayMarker: {
+          gandanta: () => r.entity('day_marker.GANDANTA'),
+          gandaMula: () => r.entity('day_marker.GANDA_MULA'),
+          vinchudo: () => r.entity('day_marker.VINCHUDO'),
+        },
         deity: {
           aditi: () => r.entity('deity.ADITI'),
           agni: () => r.entity('deity.AGNI'),
@@ -791,6 +796,16 @@ export function messages(r) {
           manushya: () => r.entity('gana.MANUSHYA'),
           rakshasa: () => r.entity('gana.RAKSHASA'),
         },
+        gowri: {
+          amirtham: () => r.entity('gowri.AMIRTHAM'),
+          dhanam: () => r.entity('gowri.DHANAM'),
+          laabam: () => r.entity('gowri.LAABAM'),
+          rogam: () => r.entity('gowri.ROGAM'),
+          soram: () => r.entity('gowri.SORAM'),
+          sugam: () => r.entity('gowri.SUGAM'),
+          uthi: () => r.entity('gowri.UTHI'),
+          visham: () => r.entity('gowri.VISHAM'),
+        },
         graha: {
           jupiter: () => r.entity('graha.JUPITER'),
           ketu: () => r.entity('graha.KETU'),
@@ -865,6 +880,8 @@ export function messages(r) {
         muhurtaYoga: {
           amritSiddhi: () => r.entity('muhurta_yoga.AMRIT_SIDDHI'),
           dwipushkar: () => r.entity('muhurta_yoga.DWIPUSHKAR'),
+          guruPushya: () => r.entity('muhurta_yoga.GURU_PUSHYA'),
+          raviPushya: () => r.entity('muhurta_yoga.RAVI_PUSHYA'),
           sarvarthaSiddhi: () => r.entity('muhurta_yoga.SARVARTHA_SIDDHI'),
           siddha: () => r.entity('muhurta_yoga.SIDDHA'),
           tripushkar: () => r.entity('muhurta_yoga.TRIPUSHKAR'),

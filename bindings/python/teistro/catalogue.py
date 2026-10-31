@@ -253,7 +253,7 @@ class Kind(Member):
     """The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159)."""
 
     muhurta_yoga = 61
-    """The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8)."""
+    """The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2)."""
 
     chart_layout = 62
     """The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more."""
@@ -296,6 +296,12 @@ class Kind(Member):
 
     tradition = 78
     """The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850)."""
+
+    day_marker = 79
+    """A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051)."""
+
+    gowri = 80
+    """The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark."""
 
 
 class Graha(Catalogued):
@@ -3209,7 +3215,7 @@ class Panchaka(Catalogued):
 
 
 class MuhurtaYoga(Catalogued):
-    """The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`."""
+    """The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`."""
 
     AMRIT_SIDDHI = 0
     """Amrit Siddhi yoga: one vara and nakshatra pair each"""
@@ -3221,10 +3227,16 @@ class MuhurtaYoga(Catalogued):
     """Siddha yoga"""
 
     DWIPUSHKAR = 3
-    """Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings"""
+    """Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in Mrigashira, Chitra or Dhanishtha, the stars a sign boundary cuts two quarters and two, which doubles what the day brings"""
 
     TRIPUSHKAR = 4
     """Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings"""
+
+    RAVI_PUSHYA = 5
+    """Ravi Pushya yoga: Pushya on a Sunday, one of Muhurta Chintamani's Sunday Sarvartha Siddhi stars, named so in the almanacs"""
+
+    GURU_PUSHYA = 6
+    """Guru Pushya yoga: Pushya on a Thursday, Thursday's Amrit Siddhi, barred only for a marriage"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -3657,6 +3669,57 @@ class Tradition(Catalogued):
 
     CHRISTIAN = 5
     """Christian"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class DayMarker(Catalogued):
+    """A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051). Members are the catalogue's ids; the full key id is `(TS_KIND_DAY_MARKER << 16) | member`."""
+
+    GANDA_MULA = 0
+    """Ganda mula: the Moon in Ashwini, Ashlesha, Magha, Jyeshtha, Mula or Revati, the six stars on either side of the three junctions of water and fire signs, each the whole star as the almanacs mark it"""
+
+    GANDANTA = 1
+    """Nakshatra gandanta: the last two ghatis of Revati, Ashlesha and Jyeshtha and the first two of Ashwini, Magha and Mula, a ghati twenty-four minutes"""
+
+    VINCHUDO = 2
+    """Vinchudo: the Moon in Scorpio, from its entry in Vishakha's last quarter to its leaving Jyeshtha, which the Gujarati almanacs print against a journey south and other rites"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class Gowri(Catalogued):
+    """The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark. Members are the catalogue's ids; the full key id is `(TS_KIND_GOWRI << 16) | member`."""
+
+    UTHI = 0
+    """Uthi (udyogam), the Sun's: effort, and the eighth a Sunday's daylight opens with"""
+
+    AMIRTHAM = 1
+    """Amirtham, the Moon's: nectar"""
+
+    ROGAM = 2
+    """Rogam, Mars's: illness"""
+
+    LAABAM = 3
+    """Laabam, Mercury's: gain"""
+
+    DHANAM = 4
+    """Dhanam, Jupiter's: wealth"""
+
+    SUGAM = 5
+    """Sugam, Venus's: ease"""
+
+    SORAM = 6
+    """Soram, Saturn's: theft"""
+
+    VISHAM = 7
+    """Visham, Rahu's: poison, the daylight's eighth that is rahu kaala"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -5926,6 +5989,8 @@ _KEYS: dict[str, dict[int, str]] = {
         76: "shiva_vasa",
         77: "festival_kind",
         78: "tradition",
+        79: "day_marker",
+        80: "gowri",
     },
     "Graha": {
         0: "SUN",
@@ -6903,6 +6968,8 @@ _KEYS: dict[str, dict[int, str]] = {
         2: "SIDDHA",
         3: "DWIPUSHKAR",
         4: "TRIPUSHKAR",
+        5: "RAVI_PUSHYA",
+        6: "GURU_PUSHYA",
         -1: "UNKNOWN",
     },
     "ChartLayout": {
@@ -7047,6 +7114,23 @@ _KEYS: dict[str, dict[int, str]] = {
         3: "SIKH",
         4: "ISLAMIC",
         5: "CHRISTIAN",
+        -1: "UNKNOWN",
+    },
+    "DayMarker": {
+        0: "GANDA_MULA",
+        1: "GANDANTA",
+        2: "VINCHUDO",
+        -1: "UNKNOWN",
+    },
+    "Gowri": {
+        0: "UTHI",
+        1: "AMIRTHAM",
+        2: "ROGAM",
+        3: "LAABAM",
+        4: "DHANAM",
+        5: "SUGAM",
+        6: "SORAM",
+        7: "VISHAM",
         -1: "UNKNOWN",
     },
     "Status": {
@@ -7812,4 +7896,6 @@ _KINDS: dict[str, str] = {
     "ShivaVasa": "shiva_vasa",
     "FestivalKind": "festival_kind",
     "Tradition": "tradition",
+    "DayMarker": "day_marker",
+    "Gowri": "gowri",
 }

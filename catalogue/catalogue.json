@@ -19790,8 +19790,8 @@
     {
       "kind": "muhurta_yoga",
       "number": 61,
-      "version": 1,
-      "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).",
+      "version": 2,
+      "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2).",
       "types": {},
       "attributes": {
         "auspicious": "bool"
@@ -19811,6 +19811,10 @@
             {
               "text": "baseline-engine",
               "ref": "panchanga_day.muhurta_yogas.amrit_siddhi"
+            },
+            {
+              "text": "Muhurta Chintamani with the Piyushadhara (1954)",
+              "ref": "Shubhashubha-prakarana vv. 20–21, p. 20: Narada's pairs, हस्तर्क्षं सूर्यवारे …, and the tithi that takes each away"
             }
           ],
           "mark": "T",
@@ -19830,6 +19834,10 @@
             {
               "text": "baseline-engine",
               "ref": "panchanga_day.muhurta_yogas.sarvartha_siddhi"
+            },
+            {
+              "text": "Muhurta Chintamani with the Piyushadhara (1954)",
+              "ref": "Shubhashubha-prakarana vv. 28–29, p. 22: सूर्येऽर्कमूलोत्तरपुष्यदास्रं … सर्वार्थसिद्ध्यै कथितानि पूर्वैः"
             }
           ],
           "mark": "T",
@@ -19857,7 +19865,7 @@
         {
           "key": "DWIPUSHKAR",
           "id": 3,
-          "doc": "Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings",
+          "doc": "Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in Mrigashira, Chitra or Dhanishtha, the stars a sign boundary cuts two quarters and two, which doubles what the day brings",
           "glyph": null,
           "aliases": [],
           "deprecated": false,
@@ -19868,6 +19876,10 @@
             {
               "text": "baseline-engine",
               "ref": "panchanga_day.muhurta_yogas.dwipushkar; no recorded day carries one"
+            },
+            {
+              "text": "Muhurta Chintamani with the Piyushadhara (1954)",
+              "ref": "Nakshatra-prakarana v. 49, p. 86: द्विगुणकृद्वसुतक्षचान्द्रे"
             }
           ],
           "mark": "T",
@@ -19887,6 +19899,48 @@
             {
               "text": "baseline-engine",
               "ref": "panchanga_day.muhurta_yogas.tripushkar, measured: the classical rule reproduces the corpus's one instance with no false positives"
+            },
+            {
+              "text": "Muhurta Chintamani with the Piyushadhara (1954)",
+              "ref": "Nakshatra-prakarana v. 49, p. 86: भद्रातिथी रविजभूतनयार्कवारे द्वीशार्यमाजचरणादितिवह्निवैश्वे"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RAVI_PUSHYA",
+          "id": 5,
+          "doc": "Ravi Pushya yoga: Pushya on a Sunday, one of Muhurta Chintamani's Sunday Sarvartha Siddhi stars, named so in the almanacs",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "Muhurta Chintamani with the Piyushadhara (1954)",
+              "ref": "Shubhashubha-prakarana v. 28, p. 22: सूर्येऽर्कमूलोत्तरपुष्यदास्रं; the name is the almanacs' (crux C1050)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "GURU_PUSHYA",
+          "id": 6,
+          "doc": "Guru Pushya yoga: Pushya on a Thursday, Thursday's Amrit Siddhi, barred only for a marriage",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "Muhurta Chintamani with the Piyushadhara (1954)",
+              "ref": "Shubhashubha-prakarana vv. 21–22, p. 20: नवम्यां गुरुपुष्यं …, गुरौ पुष्यं विवर्जयेत् in a marriage"
             }
           ],
           "mark": "V",
@@ -21929,6 +21983,252 @@
             }
           ],
           "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "day_marker",
+      "number": 79,
+      "version": 1,
+      "doc": "A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051).",
+      "types": {},
+      "attributes": {
+        "printed": "bool"
+      },
+      "members": [
+        {
+          "key": "GANDA_MULA",
+          "id": 0,
+          "doc": "Ganda mula: the Moon in Ashwini, Ashlesha, Magha, Jyeshtha, Mula or Revati, the six stars on either side of the three junctions of water and fire signs, each the whole star as the almanacs mark it",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "printed": true
+          },
+          "sources": [
+            {
+              "text": "Muhurta Chintamani (1906)",
+              "ref": "Vivaha-prakarana v. 41: ज्येष्ठापौष्णभसार्पभान्त्यघटिकायुग्मं च मूलाश्विनीपित्र्यादौ घटिकाद्वयं, the junctions; the whole star is the almanacs' (crux C1051)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "GANDANTA",
+          "id": 1,
+          "doc": "Nakshatra gandanta: the last two ghatis of Revati, Ashlesha and Jyeshtha and the first two of Ashwini, Magha and Mula, a ghati twenty-four minutes",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "printed": false
+          },
+          "sources": [
+            {
+              "text": "Muhurta Chintamani (1906)",
+              "ref": "Vivaha-prakarana v. 41: ज्येष्ठापौष्णभसार्पभान्त्यघटिकायुग्मं च मूलाश्विनीपित्र्यादौ घटिकाद्वयं"
+            },
+            {
+              "text": "BPHS",
+              "ref": "ch. 92 v. 3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "VINCHUDO",
+          "id": 2,
+          "doc": "Vinchudo: the Moon in Scorpio, from its entry in Vishakha's last quarter to its leaving Jyeshtha, which the Gujarati almanacs print against a journey south and other rites",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "printed": true
+          },
+          "sources": [
+            {
+              "text": "Gujarati almanacs",
+              "ref": "printed as વીંછુડો; no text read gives it (crux C1051)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "gowri",
+      "number": 80,
+      "version": 1,
+      "doc": "The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.",
+      "types": {},
+      "attributes": {
+        "lord": "key:graha",
+        "auspicious": "bool"
+      },
+      "members": [
+        {
+          "key": "UTHI",
+          "id": 0,
+          "doc": "Uthi (udyogam), the Sun's: effort, and the eighth a Sunday's daylight opens with",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "SUN",
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "Tamil almanacs",
+              "ref": "Gowri panchangam, the Sun's eighth; the walk from the vara's lord (crux C1052)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "AMIRTHAM",
+          "id": 1,
+          "doc": "Amirtham, the Moon's: nectar",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "MOON",
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "Tamil almanacs",
+              "ref": "Gowri panchangam, the Moon's eighth (crux C1052)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "ROGAM",
+          "id": 2,
+          "doc": "Rogam, Mars's: illness",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "MARS",
+            "auspicious": false
+          },
+          "sources": [
+            {
+              "text": "Tamil almanacs",
+              "ref": "Gowri panchangam, Mars's eighth (crux C1052)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "LAABAM",
+          "id": 3,
+          "doc": "Laabam, Mercury's: gain",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "MERCURY",
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "Tamil almanacs",
+              "ref": "Gowri panchangam, Mercury's eighth (crux C1052)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "DHANAM",
+          "id": 4,
+          "doc": "Dhanam, Jupiter's: wealth",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "JUPITER",
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "Tamil almanacs",
+              "ref": "Gowri panchangam, Jupiter's eighth (crux C1052)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SUGAM",
+          "id": 5,
+          "doc": "Sugam, Venus's: ease",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "VENUS",
+            "auspicious": true
+          },
+          "sources": [
+            {
+              "text": "Tamil almanacs",
+              "ref": "Gowri panchangam, Venus's eighth (crux C1052)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SORAM",
+          "id": 6,
+          "doc": "Soram, Saturn's: theft",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "SATURN",
+            "auspicious": false
+          },
+          "sources": [
+            {
+              "text": "Tamil almanacs",
+              "ref": "Gowri panchangam, Saturn's eighth (crux C1052)"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "VISHAM",
+          "id": 7,
+          "doc": "Visham, Rahu's: poison, the daylight's eighth that is rahu kaala",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": {
+            "lord": "RAHU",
+            "auspicious": false
+          },
+          "sources": [
+            {
+              "text": "Tamil almanacs",
+              "ref": "Gowri panchangam, Rahu's eighth, the rahu kaala eighth by day (crux C1052)"
+            }
+          ],
+          "mark": "T",
           "unverified": []
         }
       ]

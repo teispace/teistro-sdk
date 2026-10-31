@@ -198,6 +198,24 @@ export declare const PANCHANGA_HOMA_AHUTI: 32;
 export declare const PANCHANGA_SKY: 64;
 
 /**
+ * `TS_PANCHANGA_MARKERS`, the bit a caller sets in a panchanga request's
+ * `sections` for each day's markers from the Moon alone, in the
+ * `markers` span section: ganda mula, gandanta and vinchudo
+ * (`03-design/day-markers.md` §3). A request that does not set it pays
+ * nothing.
+ */
+export declare const PANCHANGA_MARKERS: 128;
+
+/**
+ * `TS_PANCHANGA_GOWRI`, the bit a caller sets in a panchanga request's
+ * `sections` for each day's Gowri panchangam, in the `gowri` section:
+ * eight Gowri of the daylight and eight of the night, a printed reading
+ * (`03-design/gowri-panchangam.md`, crux C1052). A request that does not
+ * set it pays nothing.
+ */
+export declare const PANCHANGA_GOWRI: 256;
+
+/**
  * A kind: a family of entities sharing one key type. The number is the high half of every packed key id.
  */
 export type Kind =
@@ -273,7 +291,9 @@ export type Kind =
   | 'bhadra_vasa'
   | 'shiva_vasa'
   | 'festival_kind'
-  | 'tradition';
+  | 'tradition'
+  | 'day_marker'
+  | 'gowri';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -510,7 +530,7 @@ export declare const Kind: {
    */
   readonly Panchaka: 'panchaka';
   /**
-   * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
+   * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2).
    */
   readonly MuhurtaYoga: 'muhurta_yoga';
   /**
@@ -569,6 +589,14 @@ export declare const Kind: {
    * The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).
    */
   readonly Tradition: 'tradition';
+  /**
+   * A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051).
+   */
+  readonly DayMarker: 'day_marker';
+  /**
+   * The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.
+   */
+  readonly Gowri: 'gowri';
 };
 
 /**
@@ -5382,9 +5410,17 @@ export declare const Panchaka: {
 export declare const PanchakaById: ReadonlyMap<number, Panchaka>;
 
 /**
- * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
+ * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
  */
-export type MuhurtaYoga = 'muhurta_yoga.AMRIT_SIDDHI' | 'muhurta_yoga.SARVARTHA_SIDDHI' | 'muhurta_yoga.SIDDHA' | 'muhurta_yoga.DWIPUSHKAR' | 'muhurta_yoga.TRIPUSHKAR' | 'unknown';
+export type MuhurtaYoga =
+  | 'muhurta_yoga.AMRIT_SIDDHI'
+  | 'muhurta_yoga.SARVARTHA_SIDDHI'
+  | 'muhurta_yoga.SIDDHA'
+  | 'muhurta_yoga.DWIPUSHKAR'
+  | 'muhurta_yoga.TRIPUSHKAR'
+  | 'muhurta_yoga.RAVI_PUSHYA'
+  | 'muhurta_yoga.GURU_PUSHYA'
+  | 'unknown';
 
 /** Every MuhurtaYoga by name; the values are the strings the union accepts. */
 export declare const MuhurtaYoga: {
@@ -5401,13 +5437,21 @@ export declare const MuhurtaYoga: {
    */
   readonly Siddha: 'muhurta_yoga.SIDDHA';
   /**
-   * Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings
+   * Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in Mrigashira, Chitra or Dhanishtha, the stars a sign boundary cuts two quarters and two, which doubles what the day brings
    */
   readonly Dwipushkar: 'muhurta_yoga.DWIPUSHKAR';
   /**
    * Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings
    */
   readonly Tripushkar: 'muhurta_yoga.TRIPUSHKAR';
+  /**
+   * Ravi Pushya yoga: Pushya on a Sunday, one of Muhurta Chintamani's Sunday Sarvartha Siddhi stars, named so in the almanacs
+   */
+  readonly RaviPushya: 'muhurta_yoga.RAVI_PUSHYA';
+  /**
+   * Guru Pushya yoga: Pushya on a Thursday, Thursday's Amrit Siddhi, barred only for a marriage
+   */
+  readonly GuruPushya: 'muhurta_yoga.GURU_PUSHYA';
 };
 
 /**
@@ -6112,6 +6156,89 @@ export declare const Tradition: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const TraditionById: ReadonlyMap<number, Tradition>;
+
+/**
+ * A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051). Members are the catalogue's ids; the full key id is `(TS_KIND_DAY_MARKER << 16) | member`.
+ */
+export type DayMarker = 'day_marker.GANDA_MULA' | 'day_marker.GANDANTA' | 'day_marker.VINCHUDO' | 'unknown';
+
+/** Every DayMarker by name; the values are the strings the union accepts. */
+export declare const DayMarker: {
+  /**
+   * Ganda mula: the Moon in Ashwini, Ashlesha, Magha, Jyeshtha, Mula or Revati, the six stars on either side of the three junctions of water and fire signs, each the whole star as the almanacs mark it
+   */
+  readonly GandaMula: 'day_marker.GANDA_MULA';
+  /**
+   * Nakshatra gandanta: the last two ghatis of Revati, Ashlesha and Jyeshtha and the first two of Ashwini, Magha and Mula, a ghati twenty-four minutes
+   */
+  readonly Gandanta: 'day_marker.GANDANTA';
+  /**
+   * Vinchudo: the Moon in Scorpio, from its entry in Vishakha's last quarter to its leaving Jyeshtha, which the Gujarati almanacs print against a journey south and other rites
+   */
+  readonly Vinchudo: 'day_marker.VINCHUDO';
+};
+
+/**
+ * Every DayMarker by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DayMarkerById: ReadonlyMap<number, DayMarker>;
+
+/**
+ * The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark. Members are the catalogue's ids; the full key id is `(TS_KIND_GOWRI << 16) | member`.
+ */
+export type Gowri =
+  | 'gowri.UTHI'
+  | 'gowri.AMIRTHAM'
+  | 'gowri.ROGAM'
+  | 'gowri.LAABAM'
+  | 'gowri.DHANAM'
+  | 'gowri.SUGAM'
+  | 'gowri.SORAM'
+  | 'gowri.VISHAM'
+  | 'unknown';
+
+/** Every Gowri by name; the values are the strings the union accepts. */
+export declare const Gowri: {
+  /**
+   * Uthi (udyogam), the Sun's: effort, and the eighth a Sunday's daylight opens with
+   */
+  readonly Uthi: 'gowri.UTHI';
+  /**
+   * Amirtham, the Moon's: nectar
+   */
+  readonly Amirtham: 'gowri.AMIRTHAM';
+  /**
+   * Rogam, Mars's: illness
+   */
+  readonly Rogam: 'gowri.ROGAM';
+  /**
+   * Laabam, Mercury's: gain
+   */
+  readonly Laabam: 'gowri.LAABAM';
+  /**
+   * Dhanam, Jupiter's: wealth
+   */
+  readonly Dhanam: 'gowri.DHANAM';
+  /**
+   * Sugam, Venus's: ease
+   */
+  readonly Sugam: 'gowri.SUGAM';
+  /**
+   * Soram, Saturn's: theft
+   */
+  readonly Soram: 'gowri.SORAM';
+  /**
+   * Visham, Rahu's: poison, the daylight's eighth that is rahu kaala
+   */
+  readonly Visham: 'gowri.VISHAM';
+};
+
+/**
+ * Every Gowri by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const GowriById: ReadonlyMap<number, Gowri>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

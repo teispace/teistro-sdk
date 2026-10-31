@@ -32,7 +32,7 @@
 
 use std::collections::BTreeMap;
 
-use teistro::catalogue::{Calendar, ChartKind, ChartLayout, DashaSystem, Graha, Varga};
+use teistro::catalogue::{Calendar, ChartKind, ChartLayout, DashaSystem, Graha, Nakshatra, Varga};
 use teistro::eclipse::{LocalMoment, LunarHere, SolarHere, Visible};
 use teistro::settings::SunriseConvention;
 use teistro::{
@@ -824,6 +824,7 @@ fn the_surface(report: &mut Report) {
         ("almanac.sankalpa", "present"),
         ("almanac.ashauch", "present"),
         ("almanac.first_year", "present"),
+        ("almanac.navatara", "present"),
         ("almanac.published_reasons", "present"),
         ("almanac.published_from_signed", "present"),
         ("calendar.tibetan_year", "present"),
@@ -7472,6 +7473,31 @@ fn markers(report: &mut Report, place: &Place, offset: UtcOffset) {
     );
 }
 
+/// Ashwini's navatara chakra, every row `star:tara:round:special`, the
+/// special star `-` where the count names none
+/// (`03-design/navatara-chakra.md`).
+fn navatara(report: &mut Report, sdk: &Context) {
+    put(
+        report,
+        "navatara",
+        sdk.almanac()
+            .navatara(Nakshatra::Ashwini)
+            .iter()
+            .map(|row| {
+                format!(
+                    "{}:{}:{}:{}",
+                    row.nakshatra.full_key(),
+                    tag(&row.tara),
+                    row.cycle,
+                    row.special
+                        .map_or_else(|| String::from("-"), |star| tag(&star))
+                )
+            })
+            .collect::<Vec<_>>()
+            .join(" "),
+    );
+}
+
 /// The eclipses a panchanga request carries, as the report prints them.
 ///
 /// September 2025 at Kathmandu over the built-in sky, which the test
@@ -8205,6 +8231,7 @@ fn main() {
     eclipses(&mut report, &place, offset);
     lagnas(&mut report, &place, offset);
     markers(&mut report, &place, offset);
+    navatara(&mut report, &geo);
     the_lilith(&mut report, &place, offset);
     the_zones(&mut report, &place, offset);
 

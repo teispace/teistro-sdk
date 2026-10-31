@@ -202,6 +202,24 @@ public final class Native {
      */
     public static final int TS_PANCHANGA_SKY = 64;
 
+    /**
+     * `TS_PANCHANGA_MARKERS`, the bit a caller sets in a panchanga request's
+     * `sections` for each day's markers from the Moon alone, in the
+     * `markers` span section: ganda mula, gandanta and vinchudo
+     * (`03-design/day-markers.md` §3). A request that does not set it pays
+     * nothing.
+     */
+    public static final int TS_PANCHANGA_MARKERS = 128;
+
+    /**
+     * `TS_PANCHANGA_GOWRI`, the bit a caller sets in a panchanga request's
+     * `sections` for each day's Gowri panchangam, in the `gowri` section:
+     * eight Gowri of the daylight and eight of the night, a printed reading
+     * (`03-design/gowri-panchangam.md`, crux C1052). A request that does not
+     * set it pays nothing.
+     */
+    public static final int TS_PANCHANGA_GOWRI = 256;
+
     /** The ABI these declarations were generated from; a library that answers otherwise is refused. */
     public static final int GENERATED_ABI_VERSION = 1;
 
@@ -3793,7 +3811,10 @@ public final class Native {
          * lagna table, in the `lagnas` span section;
          * `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
          * `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
-         * in the `sky` section, at `sky_step_minutes`.
+         * in the `sky` section, at `sky_step_minutes`;
+         * `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
+         * vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
+         * each day's Gowri panchangam, in the `gowri` section.
          * Zero for the days alone, which is what every
          * caller compiled against an earlier header passes, since this was a
          * reserved field it wrote zero to.
@@ -4078,6 +4099,7 @@ public final class Native {
         "ts_naming_of",
         "ts_naming_load",
         "ts_naming_suggest",
+        "ts_navatara",
         "ts_numerology_profile",
         "ts_pakshi",
         "ts_rashifal",
@@ -4918,6 +4940,20 @@ public final class Native {
     public final MethodHandle ts_naming_suggest;
 
     /**
+     * The navatara chakra of a birth star: the 27 stars in the order the
+     * count from the birth star reaches them, each `{"nakshatra", "count",
+     * "tara", "cycle", "special"}`, `cycle` the round of nine (1 janma, 2
+     * anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani*
+     * names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`,
+     * `VAINASHIKA`, `MANASA`) or null (C1053).
+     *
+     * `request_json` is `{"birth"}`, a nakshatra key. A key the record does
+     * not read, or a star that is not a nakshatra key, is `INVALID_ARG`,
+     * named under `navatara`.
+     */
+    public final MethodHandle ts_navatara;
+
+    /**
      * Reads a name and a birth date under numerology's two systems and
      * answers with the profile as canonical JSON: the name under each
      * system, word by word with every reduction step, Balliett's birth
@@ -5189,6 +5225,7 @@ public final class Native {
         ts_naming_of = linker.downcallHandle(symbols.find("ts_naming_of").orElseThrow(() -> missing("ts_naming_of")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_load = linker.downcallHandle(symbols.find("ts_naming_load").orElseThrow(() -> missing("ts_naming_load")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_suggest = linker.downcallHandle(symbols.find("ts_naming_suggest").orElseThrow(() -> missing("ts_naming_suggest")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_navatara = linker.downcallHandle(symbols.find("ts_navatara").orElseThrow(() -> missing("ts_navatara")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_numerology_profile = linker.downcallHandle(symbols.find("ts_numerology_profile").orElseThrow(() -> missing("ts_numerology_profile")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_pakshi = linker.downcallHandle(symbols.find("ts_pakshi").orElseThrow(() -> missing("ts_pakshi")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_rashifal = linker.downcallHandle(symbols.find("ts_rashifal").orElseThrow(() -> missing("ts_rashifal")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

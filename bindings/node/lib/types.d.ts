@@ -1752,7 +1752,10 @@ export interface PanchangaRequest {
    * lagna table, in the `lagnas` span section;
    * `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
    * `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
-   * in the `sky` section, at `sky_step_minutes`.
+   * in the `sky` section, at `sky_step_minutes`;
+   * `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
+   * vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
+   * each day's Gowri panchangam, in the `gowri` section.
    * Zero for the days alone, which is what every
    * caller compiled against an earlier header passes, since this was a
    * reserved field it wrote zero to.

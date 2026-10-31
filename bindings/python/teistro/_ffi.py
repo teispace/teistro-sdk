@@ -63,6 +63,7 @@ from .catalogue import (
     DashaFamily,
     DashaPhase,
     DashaSystem,
+    DayMarker,
     DayPart,
     DayState,
     Degeneracy,
@@ -87,6 +88,7 @@ from .catalogue import (
     GhatiReckoning,
     GocharFrom,
     GocharVerdict,
+    Gowri,
     Graha,
     Guna,
     HarshaGrade,
@@ -308,6 +310,20 @@ PANCHANGA_HOMA_AHUTI: Final = 32
 # as exact points, and the Moon's lit shape from the place
 # (`03-design/day-sky.md`). A request that does not set it pays nothing.
 PANCHANGA_SKY: Final = 64
+
+# `TS_PANCHANGA_MARKERS`, the bit a caller sets in a panchanga request's
+# `sections` for each day's markers from the Moon alone, in the
+# `markers` span section: ganda mula, gandanta and vinchudo
+# (`03-design/day-markers.md` §3). A request that does not set it pays
+# nothing.
+PANCHANGA_MARKERS: Final = 128
+
+# `TS_PANCHANGA_GOWRI`, the bit a caller sets in a panchanga request's
+# `sections` for each day's Gowri panchangam, in the `gowri` section:
+# eight Gowri of the daylight and eight of the night, a printed reading
+# (`03-design/gowri-panchangam.md`, crux C1052). A request that does not
+# set it pays nothing.
+PANCHANGA_GOWRI: Final = 256
 
 # The ABI and the SDK version these declarations were generated from. A
 # library that answers otherwise is refused when it is opened.
@@ -3799,7 +3815,10 @@ class PanchangaRequest:
     lagna table, in the `lagnas` span section;
     `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
     `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
-    in the `sky` section, at `sky_step_minutes`.
+    in the `sky` section, at `sky_step_minutes`;
+    `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
+    vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
+    each day's Gowri panchangam, in the `gowri` section.
     Zero for the days alone, which is what every
     caller compiled against an earlier header passes, since this was a
     reserved field it wrote zero to.
@@ -4447,6 +4466,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_naming_suggest.restype = ctypes.c_int32
+        self.ts_navatara: Any = library.ts_navatara
+        self.ts_navatara.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_navatara.restype = ctypes.c_int32
         self.ts_numerology_profile: Any = library.ts_numerology_profile
         self.ts_numerology_profile.argtypes = [
             ctypes.POINTER(_Context),
@@ -6101,6 +6127,34 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_naming_suggest(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def navatara(self, request_json: str) -> str:
+        """The navatara chakra of a birth star: the 27 stars in the order the
+        count from the birth star reaches them, each `{"nakshatra", "count",
+        "tara", "cycle", "special"}`, `cycle` the round of nine (1 janma, 2
+        anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani*
+        names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`,
+        `VAINASHIKA`, `MANASA`) or null (C1053).
+
+        `request_json` is `{"birth"}`, a nakshatra key. A key the record does
+        not read, or a star that is not a nakshatra key, is `INVALID_ARG`,
+        named under `navatara`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_navatara(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

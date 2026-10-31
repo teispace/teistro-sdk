@@ -12,6 +12,14 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The navatara chakra.**
+**Numbers:** none: a new answer, and nothing it reads moves.
+- `AlmanacArea::navatara(birth)`, the record `almanac.navatara` (`NavataraRequest`, an agent server tool),
+  `ts_navatara` at the C boundary (the `muhurta` family) and `almanac.navatara` in every binding: a birth
+  star's 27 stars in the count's order, each with its tara and round of nine, and the six special stars
+  *Muhurta Chintamani* names at the 1st, 10th, 16th, 18th, 23rd and 25th, the new `SpecialStar`
+  (SR-44, `03-design/navatara-chakra.md`, C1053).
+
 **The Gowri panchangam.**
 **Numbers:** none unless asked: a day without `gowri` answers and hashes as before.
 - `AlmanacRequest::with_gowri`, `"gowri": true` in the JSON days request and `TS_PANCHANGA_GOWRI` (256)

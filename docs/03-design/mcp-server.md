@@ -117,6 +117,7 @@ the protocol's own failures.
 | `almanac.firstYear` | the first year's shraddhas after a death | built since (`shraddha.md` §3.3) |
 | `almanac.publishedReasons` | why a published day is the day it is | built since (`published-overrides.md`) |
 | `almanac.sankalpa` | the time a sankalpa recites at an instant and a place | built since (`sankalpa.md`) |
+| `almanac.navatara` | `NavataraRequest`: a birth star, whose navatara chakra is answered | built since (`navatara-chakra.md`) |
 | `naming.syllables`, `naming.read`, `naming.check`, `naming.of`, `naming.suggest` | the naming requests: a pada's syllables, names read and checked, a birth's names, a book's suggestions (a book carried whole: an MCP context keeps no loaded book, so `naming.load` is no tool) | built since (`namakarana.md` §10) |
 
 Step 2 needed the chart's composition in the façade. Until it was built,

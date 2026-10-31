@@ -3673,7 +3673,10 @@ pub struct PanchangaRequest {
     /// lagna table, in the `lagnas` span section;
     /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
     /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
-    /// in the `sky` section, at `sky_step_minutes`.
+    /// in the `sky` section, at `sky_step_minutes`;
+    /// `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
+    /// vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
+    /// each day's Gowri panchangam, in the `gowri` section.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -5528,6 +5531,31 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::naming::ts_naming_suggest(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// The navatara chakra of a birth star: the 27 stars in the order the
+    /// count from the birth star reaches them, each `{"nakshatra", "count",
+    /// "tara", "cycle", "special"}`, `cycle` the round of nine (1 janma, 2
+    /// anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani*
+    /// names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`,
+    /// `VAINASHIKA`, `MANASA`) or null (C1053).
+    ///
+    /// `request_json` is `{"birth"}`, a nakshatra key. A key the record does
+    /// not read, or a star that is not a nakshatra key, is `INVALID_ARG`,
+    /// named under `navatara`.
+    #[wasm_bindgen(js_name = navatara)]
+    pub fn navatara(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::navatara::ts_navatara(self.handle, request_json.as_ptr(), &raw mut out_json)
         };
         self.leave()?;
         self.check(status)?;

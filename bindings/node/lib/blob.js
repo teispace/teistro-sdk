@@ -2057,6 +2057,8 @@ export function decodePanchanga(bytes) {
       bhadraVasa: column(blob, at, 24, 'u32', at.count),
       shivaVasa: column(blob, at, 25, 'u32', at.count),
       namedPanchaka: column(blob, at, 26, 'u32', at.count),
+      markers: column(blob, at, 27, 'u32', at.count),
+      gowri: column(blob, at, 28, 'u32', at.count),
       length: at.count,
     };
   }
@@ -2497,6 +2499,31 @@ export function decodePanchanga(bytes) {
   {
     const at = section(blob, 40, 'sky');
     out.sky = text(blob, at, 'sky');
+  }
+  {
+    const at = section(blob, 41, 'markers');
+    out.markers = {
+      member: column(blob, at, 0, 'u16', at.count),
+      wholeFrom: column(blob, at, 1, 'f64', at.count),
+      wholeTo: column(blob, at, 2, 'f64', at.count),
+      insideFrom: column(blob, at, 3, 'f64', at.count),
+      insideTo: column(blob, at, 4, 'f64', at.count),
+      sunrises: column(blob, at, 5, 'u8', at.count),
+      endsGhati: column(blob, at, 6, 'u8', at.count),
+      endsPala: column(blob, at, 7, 'u8', at.count),
+      endsVipala: column(blob, at, 8, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 42, 'gowri');
+    out.gowri = {
+      gowri: column(blob, at, 0, 'u16', at.count),
+      from: column(blob, at, 1, 'f64', at.count),
+      to: column(blob, at, 2, 'f64', at.count),
+      daytime: column(blob, at, 3, 'u8', at.count),
+      length: at.count,
+    };
   }
   return out;
 }

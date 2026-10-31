@@ -50,4 +50,4 @@ pub use instant::Sky;
 pub use judge::{Judgement, Ranking};
 pub use search::{Answer, Request, Season, Sources, search};
 pub use sources::ProviderSources;
-pub use tara::{ChandraBala, Tara, TaraReading};
+pub use tara::{ChandraBala, NavataraRow, SpecialStar, Tara, TaraReading};

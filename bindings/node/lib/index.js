@@ -7984,6 +7984,28 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **The navatara chakra** of a birth star (`03-design/navatara-chakra.md`):
+   * the 27 stars in the order the count from the birth star reaches them,
+   * each `{ nakshatra, count, tara, cycle, special }`, `cycle` the round of
+   * nine (1 janma, 2 anujanma, 3 trijanma) and `special` the star *Muhurta
+   * Chintamani* names at that count, or `null`. It reads no sky.
+   *
+   * @example
+   * const chakra = ctx.almanac.navatara('nakshatra.ASHWINI');
+   * chakra[9]; // { nakshatra: 'nakshatra.MAGHA', count: 10, tara: 'JANMA', cycle: 2, special: 'KARMA' }
+   *
+   * @param {string} birth the birth star, its full key or its bare one
+   * @returns {readonly object[]}
+   */
+  navatara(birth) {
+    if (typeof birth !== 'string') {
+      throw new TypeError("navatara: expected a nakshatra key, e.g. 'nakshatra.ASHWINI'");
+    }
+    const rows = JSON.parse(run(this, (inner) => inner.navatara(JSON.stringify({ birth }))));
+    return deepFreeze(rows.map((row) => ({ ...row, nakshatra: `nakshatra.${row.nakshatra}` })));
+  }
+
+  /**
    * **Where this context's reckoning and another's disagree**, and why
    * (`03-design/setup-disagreements.md`): the official day an app shows
    * beside the modern one. `days` holds only the days on which some

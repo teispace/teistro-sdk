@@ -188,6 +188,10 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
         let entry = teistro_ffi::numerology::ts_numerology_profile;
         assert_eq!(json(&ctx, entry, numerology), Status::Ok);
     });
+    holds_nothing("a navatara chakra", || {
+        let entry = teistro_ffi::navatara::ts_navatara;
+        assert_eq!(json(&ctx, entry, r#"{"birth": "MAGHA"}"#), Status::Ok);
+    });
     let pakshi = r#"{"first": {"year": 1984, "month": 10, "day": 30},
         "latitudeDeg": 13.0827, "longitudeDeg": 80.2707, "altitudeM": 6,
         "utcOffsetSeconds": 19800, "native": {"bird": "COCK"}}"#;
@@ -209,7 +213,8 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
             Status::Ok
         );
     });
-    let entries: [JsonEntry; 10] = [
+    let entries: [JsonEntry; 11] = [
+        teistro_ffi::navatara::ts_navatara,
         teistro_ffi::numerology::ts_numerology_profile,
         teistro_ffi::pakshi::ts_pakshi,
         teistro_ffi::rashifal::ts_rashifal,

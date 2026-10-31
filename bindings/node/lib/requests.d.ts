@@ -114,11 +114,13 @@ export interface AlmanacDaysRequest {
   readonly eclipses?: boolean;
   readonly festivals?: FestivalRequest;
   readonly first: DayAsked;
+  readonly gowri?: boolean;
   readonly homaAhuti?: boolean;
   readonly lagnas?: boolean;
   readonly last?: DayAsked | null;
   readonly latitudeDeg: number;
   readonly longitudeDeg: number;
+  readonly markers?: boolean;
   readonly muhurta?: MuhurtaRequest;
   readonly nepalSambat?: boolean;
   readonly sky?: boolean;
@@ -246,6 +248,16 @@ export interface FirstYearQuery {
    * The offset from UTC the place's civil days run at, in seconds, east positive.
    */
   readonly utcOffsetSeconds: number;
+}
+
+/**
+ * A birth star, whose navatara chakra is asked. The chakra reads no sky, so this is the whole request.
+ */
+export interface NavataraRequest {
+  /**
+   * The birth star, the Moon's nakshatra at birth.
+   */
+  readonly birth: Member<catalogue.Nakshatra>;
 }
 
 /**
@@ -908,6 +920,10 @@ export interface ZoneSpecFixed {
  * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
  */
 export interface FestivalRequest {
+  /**
+   * The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out.
+   */
+  readonly hijriOffset?: number | null;
   /**
    * What the answer keeps, by the rules' `meta`; every rule when left out.
    */

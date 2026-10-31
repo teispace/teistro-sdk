@@ -6,17 +6,15 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 429 of 515 | 83.3% | 181 of 181 | 100.0% |
-| `hi-Deva-IN` | base | 332 of 515 | 64.5% | 74 of 181 | 40.9% |
-| `ne-Deva-NP` | strict | 429 of 515 | 83.3% | 181 of 181 | 100.0% |
-| `sa-Deva` | base | 332 of 515 | 64.5% | 68 of 181 | 37.6% |
-| `sa-Latn` | base | 332 of 515 | 64.5% | 0 of 181 | 0.0% |
+| `en-Latn` | strict | 442 of 528 | 83.7% | 181 of 181 | 100.0% |
+| `hi-Deva-IN` | base | 332 of 528 | 62.9% | 74 of 181 | 40.9% |
+| `ne-Deva-NP` | strict | 442 of 528 | 83.7% | 181 of 181 | 100.0% |
+| `sa-Deva` | base | 332 of 528 | 62.9% | 68 of 181 | 37.6% |
+| `sa-Latn` | base | 332 of 528 | 62.9% | 0 of 181 | 0.0% |
 
-515 members of 40 kinds, 181 messages.
+528 members of 42 kinds, 181 messages.
 
 `hi-Deva-IN` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
-
-`ne-Deva-NP` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.day`.
 
 `sa-Deva` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
 
@@ -36,16 +34,18 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `chart_kind` | 7 | 0 | 0 | 0 | 0 | 0 |
 | `choghadiya` | 7 | 7 | 7 | 7 | 7 | 7 |
 | `dasha_system` | 45 | 29 | 18 | 29 | 18 | 18 |
+| `day_marker` | 3 | 3 | 0 | 3 | 0 | 0 |
 | `dignity` | 11 | 11 | 11 | 11 | 11 | 11 |
 | `direction` | 8 | 8 | 8 | 8 | 8 | 8 |
 | `era` | 10 | 9 | 0 | 9 | 0 | 0 |
 | `gana` | 3 | 3 | 3 | 3 | 3 | 3 |
+| `gowri` | 8 | 8 | 0 | 8 | 0 | 0 |
 | `graha` | 12 | 9 | 9 | 9 | 9 | 9 |
 | `house_system` | 22 | 22 | 22 | 22 | 22 | 22 |
 | `kaala` | 3 | 3 | 3 | 3 | 3 | 3 |
 | `karana` | 11 | 11 | 11 | 11 | 11 | 11 |
 | `masa` | 12 | 12 | 12 | 12 | 12 | 12 |
-| `muhurta_yoga` | 5 | 5 | 5 | 5 | 5 | 5 |
+| `muhurta_yoga` | 7 | 7 | 5 | 7 | 5 | 5 |
 | `nadi` | 3 | 3 | 3 | 3 | 3 | 3 |
 | `nakshatra` | 27 | 27 | 27 | 27 | 27 | 27 |
 | `nature` | 3 | 2 | 0 | 2 | 0 | 0 |
