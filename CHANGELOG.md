@@ -64,6 +64,8 @@ section's digest moves; a sankalpa's year carries none.
   they did (`03-design/rust-consumer-surface.md`, "A context across threads"; C1030).
 - Teimeris builds from a plain checkout (SR-68), so the adapter's path dependency, a clone or a
   `git` dependency needs no staging step. Publishing stays held.
+- The Teimeris Flutter example's lock is the one pub writes (SR-72): a fresh submodule update is
+  clean, and `pub get` no longer rewrites a pre-release SDK floor.
 
 **A day in sentences; a polar sankranti answers.**
 **Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or

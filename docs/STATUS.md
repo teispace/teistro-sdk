@@ -3430,6 +3430,8 @@ at no lock cost to one thread (C1030, `03-design/rust-consumer-surface.md`, "A c
 threads").
 SR-68 is finished in Teimeris: `teimeris-sys` builds from a plain checkout with no staging step;
 publishing stays held.
+SR-72 is finished: the Flutter example's lock had a pre-release SDK floor that pub rewrote, and
+is now the one it writes.
 
 ### An almanac app's brief (from 2026-10-20)
 
