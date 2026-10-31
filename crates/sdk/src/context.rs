@@ -27,7 +27,9 @@ use teistro_matching::{BookId, NameBook};
 use teistro_port_ephemeris::{
     Astronomy, CachingProvider, EphemerisProvider, Frame, PositionRequest,
 };
-use teistro_time::EmbeddedTzdb;
+use teistro_time::{EmbeddedTzdb, TimeZoneProvider, ZonePack};
+
+use crate::area::{ZoneDatabase, ZoneDatabaseSource};
 
 use crate::BUNDLES;
 #[cfg(feature = "numerology")]
@@ -71,6 +73,9 @@ pub struct Context {
     /// builder was given, sealed, so nothing changes under a context that
     /// draws.
     layouts: Layouts,
+    /// The zone database every resolution reads: the embedded one, until a
+    /// signed pack replaces it (`03-design/zone-packs.md`).
+    zones: RefCell<Zones>,
     /// The consumer's nakshatra-seeded dasha systems, sealed as the layouts
     /// are.
     #[cfg(feature = "chart")]
@@ -81,6 +86,28 @@ pub struct Context {
     /// is the same id).
     #[cfg(feature = "chart")]
     books: RefCell<std::collections::HashMap<BookId, Rc<NameBook>>>,
+}
+
+/// The zone database a context reads, and which it is.
+#[derive(Clone)]
+struct Zones {
+    provider: Arc<dyn TimeZoneProvider>,
+    source: ZoneDatabaseSource,
+}
+
+impl Zones {
+    fn of(pack: Option<Arc<ZonePack>>) -> Zones {
+        match pack {
+            Some(pack) => Zones {
+                provider: pack,
+                source: ZoneDatabaseSource::Pack,
+            },
+            None => Zones {
+                provider: Arc::new(EmbeddedTzdb::shared()),
+                source: ZoneDatabaseSource::Embedded,
+            },
+        }
+    }
 }
 
 impl core::fmt::Debug for Context {
@@ -138,6 +165,35 @@ impl Context {
     #[must_use]
     pub fn settings_hash(&self) -> Hash {
         self.settings.settings.hash()
+    }
+
+    /// The zone database this context reads: the embedded one, or the
+    /// pack that replaced it.
+    #[must_use]
+    pub fn zones(&self) -> Arc<dyn TimeZoneProvider> {
+        Arc::clone(&self.zones.borrow().provider)
+    }
+
+    /// Which database this context reads, for `sdk.time`.
+    pub(crate) fn zone_database(&self) -> ZoneDatabase {
+        let zones = self.zones.borrow();
+        ZoneDatabase {
+            source: zones.source,
+            version: zones.provider.version().to_string(),
+            zones: zones.provider.zones().len(),
+            bundled: EmbeddedTzdb::bundled_version().to_string(),
+        }
+    }
+
+    /// Replaces the zone database, for every answer from here on: a
+    /// message's `timeZone` reads the one a resolution reads.
+    #[cfg(feature = "signed-packs")]
+    pub(crate) fn install_zones(&self, pack: ZonePack) {
+        let zones = Zones::of(Some(Arc::new(pack)));
+        self.intl
+            .borrow_mut()
+            .set_time_zones(Arc::clone(&zones.provider));
+        *self.zones.borrow_mut() = zones;
     }
 
     /// The ephemeris this context computes positions with, when it has
@@ -282,7 +338,7 @@ impl Context {
         }
         provenance.time.delta_t_model = self.delta_t.key().to_string();
         provenance.time.leap_table = teistro_time::leap::version().to_string();
-        provenance.time.tzdb_version = EmbeddedTzdb::bundled_version().to_string();
+        provenance.time.tzdb_version = self.zones.borrow().provider.version().to_string();
         provenance.packs = self.pack_stamps(provenance.catalogue_version);
         provenance
     }
@@ -456,6 +512,7 @@ pub struct ContextBuilder {
     chain: Option<Vec<Ephemeris>>,
     wrap: Option<Wrap>,
     layouts: Vec<Layout>,
+    zones: Option<Arc<ZonePack>>,
     #[cfg(feature = "chart")]
     dashas: Vec<DashaDefinition>,
 }
@@ -499,6 +556,26 @@ impl ContextBuilder {
     #[must_use]
     pub fn dasha_system(mut self, definition: impl Into<DashaDefinition>) -> ContextBuilder {
         self.dashas.push(definition.into());
+        self
+    }
+
+    /// A zone pack this context reads in place of the embedded database
+    /// (`03-design/zone-packs.md`). Shared, so a worker's context takes the
+    /// pack one thread verified and read.
+    ///
+    /// ```
+    /// use std::sync::Arc;
+    /// use teistro::{Context, ZonePack};
+    ///
+    /// let utc = jiff_tzdb::get("UTC").ok_or("a zone")?.1;
+    /// let pack = Arc::new(ZonePack::from_bytes(&ZonePack::write("2026f", [("UTC", utc)]))?);
+    /// let sdk = Context::builder().zones(pack).build()?;
+    /// assert_eq!(sdk.time().zone_database().version, "2026f");
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn zones(mut self, pack: Arc<ZonePack>) -> ContextBuilder {
+        self.zones = Some(pack);
         self
     }
 
@@ -625,7 +702,8 @@ impl ContextBuilder {
             .map_err(|e| Error::internal(format!("the locale engine did not start: {e}")))?;
         // A message's `timeZone` reads an instant in a zone through the
         // same database the context's own zone resolutions use.
-        intl.set_time_zones(std::sync::Arc::new(EmbeddedTzdb::shared()));
+        let zones = Zones::of(self.zones);
+        intl.set_time_zones(Arc::clone(&zones.provider));
         if let Some(tag) = &self.locale {
             intl.set_locale(tag).map_err(|e| {
                 // The same refusal the boundary gives, because a
@@ -678,6 +756,7 @@ impl ContextBuilder {
             intl: RefCell::new(intl),
             delta_t,
             layouts,
+            zones: RefCell::new(zones),
             #[cfg(feature = "chart")]
             dashas,
             #[cfg(feature = "chart")]

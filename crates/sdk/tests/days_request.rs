@@ -6,6 +6,7 @@
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
+    clippy::panic,
     reason = "tests fail by panicking"
 )]
 
@@ -15,6 +16,14 @@ use teistro::{
     AlmanacRequest, CalendarDate, Context, DaysRequest, Ephemeris, FestivalPack, FestivalRequest,
     UtcOffset, content_hash,
 };
+
+/// The offset a request names.
+fn offset_of(days: &teistro::DaysRequest) -> UtcOffset {
+    match &days.clock {
+        teistro::DayClock::Offset(offset) => *offset,
+        teistro::DayClock::Zone(zone) => panic!("asked on {zone}"),
+    }
+}
 
 fn context() -> Context {
     Context::builder()
@@ -49,7 +58,10 @@ fn a_json_days_request_is_the_request_it_spells() {
         CalendarDate::defined(Calendar::BikramSambat, 2083, 6, 26)
     );
     assert_eq!(read.place, place);
-    assert_eq!(read.offset, UtcOffset::try_from_seconds(20700).unwrap());
+    assert_eq!(
+        read.clock,
+        teistro::DayClock::Offset(UtcOffset::try_from_seconds(20700).unwrap())
+    );
     let built = AlmanacRequest::new()
         .with_festivals(FestivalRequest::new(Vec::new()).with_pack(FestivalPack::Dharmasindhu))
         .with_years()
@@ -109,7 +121,7 @@ fn each_section_is_sealed_over_the_value_a_binding_reads() {
             &days.first,
             &days.last,
             &days.place,
-            days.offset,
+            offset_of(&days),
             &days.beside,
         )
         .unwrap();
@@ -141,7 +153,7 @@ fn each_section_is_sealed_over_the_value_a_binding_reads() {
                 &days.first,
                 &days.last,
                 &days.place,
-                days.offset,
+                offset_of(&days),
                 &AlmanacRequest::new()
             )
             .unwrap()

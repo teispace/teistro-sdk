@@ -411,6 +411,7 @@ mod western_houses;
 mod wheel;
 mod yogas;
 mod zip;
+mod zone_pack;
 
 use std::env;
 use std::fs;
@@ -676,6 +677,7 @@ fn pass_with_arguments(command: &str, args: &[String]) -> Option<i32> {
             args.get(1).map(String::as_str),
         )),
         "cofiring-probe" => Some(cofiring::probe(args)),
+        "zone-pack" => Some(zone_pack::run(args)),
         "conformance" | "check-conformance" => {
             Some(conformance::recorded(&repo_root(), command, args))
         }
@@ -854,7 +856,7 @@ fn usage() -> i32 {
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-asan [node|python] | check-wasm | \
          check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
-         check-versions | measure-mobile [ROW...] | measure-ffi-cost | measure-micro | measure-ab | app-speed-device ROW | \
+         check-versions | zone-pack --from DIR --version V --out FILE | measure-mobile [ROW...] | measure-ffi-cost | measure-micro | measure-ab | app-speed-device ROW | \
          conformance --from DIR | check-conformance --from DIR | \
          check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | coverage --bindings DIR | check-coverage [--from FILE] [--bindings DIR] | check-doc-examples | mutants --from DIR | mutants --matrix | check-mutants [--from DIR] | check-abi [--against REF] | check-site | check-guides | check-teimeris-adapter | check-properties | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \

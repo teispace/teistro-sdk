@@ -329,6 +329,7 @@ pub fn stamp(delta_t: &DeltaT, basis: &TimeBasis, tzdb_version: &str) -> TimeSta
         tzdb_version: tzdb_version.to_string(),
         time_basis_applied: basis.describe(),
         uncertainty_seconds: delta_t.uncertainty_seconds,
+        clock: None,
     }
 }
 

@@ -5684,6 +5684,7 @@ fn panchanga_asked_in(
             sections,
             muhurta_json: muhurta.as_ref().map_or(ptr::null(), |text| text.as_ptr()),
             festivals_json: festivals.as_ref().map_or(ptr::null(), |text| text.as_ptr()),
+            zone_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );
@@ -6161,6 +6162,7 @@ fn a_panchanga_request_in_no_calendar_is_refused_by_its_field() {
             sections: 0,
             muhurta_json: ptr::null(),
             festivals_json: ptr::null(),
+            zone_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );

@@ -3,7 +3,8 @@
 
 use std::sync::OnceLock;
 
-use crate::zone::embedded::{EmbeddedTzdb, ZoneClock};
+use crate::zone::ZoneClock;
+use crate::zone::embedded::EmbeddedTzdb;
 
 static NEPAL: OnceLock<ZoneClock> = OnceLock::new();
 

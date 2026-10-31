@@ -290,32 +290,7 @@ impl PublishedSet {
         key: &[u8],
         at_least: u32,
     ) -> Result<PublishedSet, Error> {
-        let key = <[u8; ed25519_dalek::PUBLIC_KEY_LENGTH]>::try_from(key)
-            .ok()
-            .and_then(|bytes| ed25519_dalek::VerifyingKey::from_bytes(&bytes).ok())
-            .ok_or_else(|| {
-                Error::invalid_arg(format!(
-                    "the publisher's key is {} bytes of an Ed25519 point",
-                    ed25519_dalek::PUBLIC_KEY_LENGTH
-                ))
-                .with_field("key")
-            })?;
-        let signature = <[u8; ed25519_dalek::SIGNATURE_LENGTH]>::try_from(signature)
-            .map(|bytes| ed25519_dalek::Signature::from_bytes(&bytes))
-            .map_err(|_| {
-                Error::invalid_arg(format!(
-                    "a detached Ed25519 signature is {} bytes, not {}",
-                    ed25519_dalek::SIGNATURE_LENGTH,
-                    signature.len()
-                ))
-                .with_field("signature")
-            })?;
-        key.verify_strict(pack, &signature).map_err(|_| {
-            Error::invalid_arg(
-                "the signature does not verify: the pack was altered, or signed by another key",
-            )
-            .with_field("signature")
-        })?;
+        teistro_core::signed::verify(pack, signature, key)?;
         let text = core::str::from_utf8(pack).map_err(|e| {
             Error::invalid_arg(format!("a pack is UTF-8 JSON: {e}")).with_field("pack")
         })?;

@@ -20,6 +20,9 @@ publish = false
 # so `cargo xtask gen document-schema` can describe it
 # (`docs/03-design/document-schema.md`).
 schema = ["dep:schemars"]
+# The check every signed pack passes: a detached Ed25519 signature over the
+# exact bytes, against a key the caller supplies (`signed` in the source).
+signed-packs = ["dep:ed25519-dalek"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
@@ -53,6 +56,10 @@ sha2 = "0.11"
 # Linux, Windows and wasm32, and a byte-identical document cannot.
 libm = "0.2"
 schemars = { version = "1.2", optional = true }
+# Verification only: no precomputed tables (they speed signing and key
+# generation, not one verification) and nothing to zeroize, since the SDK
+# holds no secret.
+ed25519-dalek = { version = "3", default-features = false, optional = true }
 
 # Miri cannot run inline assembly, which libm's `sqrt`, `fma` and `rint`
 # use on x86_64 and aarch64; its soft versions are correctly rounded too,

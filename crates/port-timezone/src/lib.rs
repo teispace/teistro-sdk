@@ -243,6 +243,33 @@ impl<P: TimeZoneProvider + ?Sized> TimeZoneProvider for &P {
     }
 }
 
+/// A shared database answers as the database does.
+impl<P: TimeZoneProvider + ?Sized> TimeZoneProvider for std::sync::Arc<P> {
+    fn version(&self) -> &str {
+        (**self).version()
+    }
+
+    fn has_zone(&self, zone: &str) -> bool {
+        (**self).has_zone(zone)
+    }
+
+    fn zones(&self) -> Vec<String> {
+        (**self).zones()
+    }
+
+    fn offset_at(&self, zone: &str, instant: JulianDay<Utc>) -> Result<OffsetInfo, Error> {
+        (**self).offset_at(zone, instant)
+    }
+
+    fn candidates(&self, zone: &str, local: LocalSeconds) -> Result<LocalCandidates, Error> {
+        (**self).candidates(zone, local)
+    }
+
+    fn current_offsets(&self, zone: &str) -> Result<Vec<UtcOffset>, Error> {
+        (**self).current_offsets(zone)
+    }
+}
+
 /// The error a provider raises for a zone it does not know, with the
 /// nearest names it does know as the hint.
 ///

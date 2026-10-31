@@ -74,6 +74,8 @@ pub mod quantity;
 pub mod ratio;
 pub mod registry;
 pub mod settings;
+#[cfg(feature = "signed-packs")]
+pub mod signed;
 pub mod strict;
 pub mod time;
 

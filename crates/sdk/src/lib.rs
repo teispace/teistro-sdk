@@ -69,7 +69,7 @@ pub use area::{
     DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement, EngineArea,
     FeedOptions, FestivalCalendarRequest, FestivalDays, FestivalDisagreement,
     FestivalDisagreements, FrameArea, IntlArea, KeysArea, LimbChange, LimbDisagreement,
-    ReckonedLimb, TimeArea,
+    ReckonedLimb, TimeArea, ZoneDatabase, ZoneDatabaseSource,
 };
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, NamingArea, Plans};
@@ -77,7 +77,7 @@ pub use area::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
 };
-pub use area::{NextOccurrence, NextRequest, NextTarget};
+pub use area::{ChangesRequest, DayClock, NextOccurrence, NextRequest, NextTarget};
 pub use area::{PackForm, PackListing, PackRequest, PackRow};
 pub use teistro_panchanga::festival::NextKind;
 #[cfg(feature = "western")]
@@ -282,6 +282,8 @@ pub use teistro_vargas::chart::{Axis, VargaChart};
 // chart placed in one (`03-design/chart-geometry.md`).
 pub use teistro_geometry as geometry;
 pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
+pub use teistro_panchanga::change::{ChangeKind, ChangePoint, ChangePoints};
+pub use teistro_time::{ZONE_PACK_FORMAT, ZonePack};
 // The first-party renderer: a drawing as SVG, themed as data
 // (`03-design/render-svg.md`). Not behind a feature: it is pure Rust with
 // no dependency the façade lacks, and a consumer who never calls it has
@@ -656,7 +658,8 @@ pub use teistro_port_ephemeris::{
 // consumer reading either names its type from here rather than from the
 // time crate underneath.
 pub use teistro_time::{
-    CivilDateTime, CivilTime, DayState, LocalDay, PolarKind, Resolved, ZoneResolution, ZoneSpec,
+    CivilDateTime, CivilTime, ClockReading, DayState, LocalDay, PolarKind, Resolved, ZoneEra,
+    ZoneResolution, ZoneSource, ZoneSpec,
 };
 
 /// The Julian day at the UTC midnight that begins a fixed day.

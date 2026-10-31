@@ -3598,6 +3598,65 @@ void main() {
   // The osculating apogee of two charts over the built-in sky, which the
   // test provider cannot place: every column moves, and a wrong stride
   // shows (`03-design/lilith.md`).
+  // A signed one-zone pack of an imagined release, so a provenance naming
+  // it can only have come from the pack (`03-design/zone-packs.md`).
+  final zoned = teistro.context(
+    profile: 'nepali-default',
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+  );
+  Uint8List unhex(String text) => Uint8List.fromList([
+    for (var at = 0; at < text.length; at += 2)
+      int.parse(text.substring(at, at + 2), radix: 16),
+  ]);
+  String zonesLine(ZoneDatabase zones) =>
+      '${zones.source} ${zones.version} ${zones.zones} ${zones.bundled}';
+  put('time-zone-database', zonesLine(zoned.time.zoneDatabase()));
+  final loaded = zoned.time.loadZones(
+    Uint8List.fromList(
+      utf8.encode(
+        r'{"format":"teistro.zones/1","version":"2099a","zones":{"Asia/Kathmandu":"VFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAVFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAAABD/////ofJ9hAAAAAAeGDCoAQIAAE/8AAAAAE1YAAQAAFDcAApMTVQAKzA1MzAAKzA1NDUACjwrMDU0NT4tNTo0NQo="},"links":{"Asia/Katmandu":"Asia/Kathmandu"}}',
+      ),
+    ),
+    unhex(
+      '73a4a729d2d30fdf174da7411bf20d8ff297231d816d0004b7435b6e7b70449d2e128616f7fb7cdcb2d6d0aecab2e1a287f806da782520c99bfe770dd0b9b406',
+    ),
+    unhex('ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c'),
+    atLeast: '2099a',
+  );
+  put('time-zone-pack', zonesLine(loaded));
+  final november = Calendar.gregorian.date(2026, 11, 1);
+  final clock =
+      zoned.almanac
+          .inZone(
+            from: november,
+            to: november,
+            place: place,
+            zone: ianaZone('Asia/Kathmandu'),
+          )
+          .provenance
+          .time
+          .clock!;
+  put(
+    'almanac-in-zone',
+    '${clock.offset} ${clock.abbreviation} ${clock.tzdbVersion}',
+  );
+  final changes = zoned.almanac.changes(
+    ChangesRequest(
+      first: const DayAsked(year: 2026, month: 11, day: 1),
+      last: const DayAsked(year: 2026, month: 11, day: 2),
+      latitudeDeg: place.latitudeDeg,
+      longitudeDeg: place.longitudeDeg,
+      altitudeM: place.altitudeM,
+      utcOffsetSeconds: 20700,
+    ),
+  );
+  final point = changes.points.first;
+  put(
+    'almanac-changes',
+    '${changes.points.length} ${point.kind.key} ${point.from} ${point.to}',
+  );
+  zoned.dispose();
+
   final western = teistro.context(
     profile: 'western-tropical-default',
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
@@ -3809,6 +3868,10 @@ void main() {
     ('almanac.first_year', ctx.almanac.firstYear),
     ('almanac.published_reasons', ctx.almanac.publishedReasons),
     ('almanac.published_from_signed', ctx.almanac.publishedFromSigned),
+    ('almanac.changes', ctx.almanac.changes),
+    ('almanac.in_zone', ctx.almanac.inZone),
+    ('time.load_zones', ctx.time.loadZones),
+    ('time.zone_database', ctx.time.zoneDatabase),
     ('research.counts', ctx.research.counts),
     ('research.compare', ctx.research.compare),
     ('research.expected', ctx.research.expected),

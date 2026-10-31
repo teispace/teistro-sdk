@@ -1,20 +1,60 @@
 //! `sdk.time`: civil times to instants and back, the time scales, and
 //! ΔT.
 
+use serde::Serialize;
 use teistro_astro::delta_t::{DeltaT, delta_t};
 use teistro_core::catalogue::Calendar;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Tt, Ut1, Utc};
+#[cfg(feature = "signed-packs")]
+use teistro_time::ZonePack;
 use teistro_time::scale::{
     tt_from_utc, tt_of, ut1_from_tt, ut1_from_utc, utc_from_tt, utc_from_ut1,
 };
 use teistro_time::{
-    CivilDateTime, EmbeddedTzdb, Policy, Resolved, ZoneResolution, ZoneSpec, civil_of_with, resolve,
+    CivilDateTime, Policy, Resolved, ZoneResolution, ZoneSpec, civil_of_with, resolve,
 };
 
 use crate::area::system_of;
 use crate::context::Context;
 use crate::scale::{Conversion, Scale};
+
+/// Where a context's zones come from.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ZoneDatabaseSource {
+    /// The database compiled into the SDK.
+    Embedded,
+    /// A pack loaded into this context.
+    Pack,
+}
+
+/// The zone database a context reads (`03-design/zone-packs.md` §4).
+///
+/// ```
+/// use teistro::{Context, ZoneDatabaseSource};
+///
+/// let sdk = Context::builder().build()?;
+/// let database = sdk.time().zone_database();
+/// assert_eq!(database.source, ZoneDatabaseSource::Embedded);
+/// assert_eq!(database.version, database.bundled);
+/// # Ok::<(), teistro::Error>(())
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct ZoneDatabase {
+    /// Where it comes from.
+    pub source: ZoneDatabaseSource,
+    /// Its release (`2026f`), as every answer's provenance names it.
+    pub version: String,
+    /// How many names it holds, links included.
+    pub zones: usize,
+    /// The release compiled into this SDK: the fallback, and the floor an
+    /// app that never wants to go below its build passes as `at_least`.
+    pub bundled: String,
+}
 
 /// `sdk.time`: a civil time to an instant with the zone metadata a
 /// stored chart keeps, an instant back to a civil time, a conversion
@@ -50,7 +90,7 @@ impl<'a> TimeArea<'a> {
     /// database does not have.
     pub fn resolve(self, civil: &CivilDateTime, zone: &ZoneSpec) -> Result<Resolved, Error> {
         let policy = Policy::of(self.context.settings());
-        resolve(civil, zone, &policy, EmbeddedTzdb::shared())
+        resolve(civil, zone, &policy, &*self.context.zones())
     }
 
     /// An instant as the civil clock in a zone reads it, in a calendar.
@@ -65,7 +105,57 @@ impl<'a> TimeArea<'a> {
         zone: &ZoneSpec,
         calendar: Calendar,
     ) -> Result<(CivilDateTime, ZoneResolution), Error> {
-        civil_of_with(system_of(calendar)?, instant, zone, EmbeddedTzdb::shared())
+        civil_of_with(system_of(calendar)?, instant, zone, &*self.context.zones())
+    }
+
+    /// The zone database this context reads.
+    ///
+    /// ```
+    /// use teistro::Context;
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// assert!(sdk.time().zone_database().zones > 300);
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[must_use]
+    pub fn zone_database(self) -> ZoneDatabase {
+        self.context.zone_database()
+    }
+
+    /// Replaces this context's zone database with a signed pack's, as
+    /// [`ZonePack::from_signed`] reads it (`03-design/zone-packs.md`): the
+    /// caller fixes the publisher's key at its own build, and `at_least` is
+    /// the newest release it has applied, `""` for any. A refused pack
+    /// leaves the context as it was; a stored chart replays from its
+    /// resolution whatever is loaded.
+    ///
+    /// ```
+    /// use teistro::Context;
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// // A key whose y-coordinate, 2, has no curve point is refused before
+    /// // any signature is checked.
+    /// let mut key = [0_u8; 32];
+    /// key[0] = 2;
+    /// let refused = sdk.time().load_zones(b"{}", &[0; 64], &key, "").unwrap_err();
+    /// assert_eq!(refused.field(), Some("key"));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`ZonePack::from_signed`].
+    #[cfg(feature = "signed-packs")]
+    pub fn load_zones(
+        self,
+        pack: &[u8],
+        signature: &[u8],
+        key: &[u8],
+        at_least: &str,
+    ) -> Result<ZoneDatabase, Error> {
+        self.context
+            .install_zones(ZonePack::from_signed(pack, signature, key, at_least)?);
+        Ok(self.context.zone_database())
     }
 
     /// An instant from one scale into another, **and what was applied**.

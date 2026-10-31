@@ -53,6 +53,36 @@ export interface AshauchQuery {
 }
 
 /**
+ * The request as a binding writes it.
+ */
+export interface ChangesRequest {
+  readonly altitudeM?: number;
+  /**
+   * The calendar the days are written in; Gregorian when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  readonly first: DayAsked;
+  /**
+   * The kinds wanted; every kind when left out.
+   */
+  readonly kinds?: readonly ChangeKind[];
+  /**
+   * The last day; the first when left out.
+   */
+  readonly last?: DayAsked | null;
+  readonly latitudeDeg: number;
+  readonly longitudeDeg: number;
+  /**
+   * The clock's offset; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
+}
+
+/**
  * The request as a binding writes it, the records taken out.
  */
 export interface AlmanacDaysRequest {
@@ -68,8 +98,12 @@ export interface AlmanacDaysRequest {
   readonly longitudeDeg: number;
   readonly muhurta?: MuhurtaRequest;
   readonly nepalSambat?: boolean;
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
   readonly years?: boolean;
+  /**
+   * The zone, in place of `utcOffsetSeconds`.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -628,6 +662,66 @@ export interface AshauchTable {
 export type AshauchTradition = 'DHARMASINDHU' | 'MITAKSHARA';
 
 /**
+ * A civil day as a request names it.
+ */
+export interface DayAsked {
+  readonly day: number;
+  readonly month: number;
+  readonly year: number;
+}
+
+/**
+ * What a change point changes. The order is the order two points on one instant stand in.
+ *
+ * `TITHI`: The tithi.
+ * `NAKSHATRA`: The Moon's nakshatra.
+ * `YOGA`: The nitya yoga.
+ * `KARANA`: The karana.
+ * `MOON_SIGN`: The Moon's sign.
+ * `SUN_SIGN`: The Sun's sign: the sankranti.
+ * `VARA`: The vara, at sunrise.
+ */
+export type ChangeKind = 'TITHI' | 'NAKSHATRA' | 'YOGA' | 'KARANA' | 'MOON_SIGN' | 'SUN_SIGN' | 'VARA';
+
+/**
+ * How a zone is given.
+ */
+export type ZoneSpec = ZoneSpecIana | ZoneSpecLocalMean | ZoneSpecFixed;
+
+/**
+ * A zone of the database, by its IANA name.
+ */
+export interface ZoneSpecIana {
+  readonly kind: 'IANA';
+  /**
+   * The name (`Asia/Kathmandu`).
+   */
+  readonly zone: string;
+}
+
+/**
+ * Local mean time at a longitude: four minutes a degree.
+ */
+export interface ZoneSpecLocalMean {
+  readonly kind: 'LOCAL_MEAN';
+  /**
+   * The longitude, east positive.
+   */
+  readonly longitude: number;
+}
+
+/**
+ * A fixed offset the consumer states.
+ */
+export interface ZoneSpecFixed {
+  readonly kind: 'FIXED';
+  /**
+   * The offset.
+   */
+  readonly offset: number;
+}
+
+/**
  * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
  */
 export interface FestivalRequest {
@@ -643,15 +737,6 @@ export interface FestivalRequest {
    * The rules: a pack's name, or a list of names and rules spelt out.
    */
   readonly rules: FestivalRules;
-}
-
-/**
- * A civil day as a request names it.
- */
-export interface DayAsked {
-  readonly day: number;
-  readonly month: number;
-  readonly year: number;
 }
 
 /**
@@ -1667,44 +1752,6 @@ export type StudyKind = 'COUNTS' | 'COMPARE' | 'EXPECTED' | 'TIMED';
 export interface ResearchSubject {
   readonly birth: BirthAsked;
   readonly event: number;
-}
-
-/**
- * How a zone is given.
- */
-export type ZoneSpec = ZoneSpecIana | ZoneSpecLocalMean | ZoneSpecFixed;
-
-/**
- * A zone of the database, by its IANA name.
- */
-export interface ZoneSpecIana {
-  readonly kind: 'IANA';
-  /**
-   * The name (`Asia/Kathmandu`).
-   */
-  readonly zone: string;
-}
-
-/**
- * Local mean time at a longitude: four minutes a degree.
- */
-export interface ZoneSpecLocalMean {
-  readonly kind: 'LOCAL_MEAN';
-  /**
-   * The longitude, east positive.
-   */
-  readonly longitude: number;
-}
-
-/**
- * A fixed offset the consumer states.
- */
-export interface ZoneSpecFixed {
-  readonly kind: 'FIXED';
-  /**
-   * The offset.
-   */
-  readonly offset: number;
 }
 
 /**

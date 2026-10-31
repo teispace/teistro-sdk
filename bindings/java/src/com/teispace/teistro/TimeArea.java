@@ -54,4 +54,37 @@ public final class TimeArea {
     public DeltaT deltaT(double jdUt1) {
         return context.locked((lib, raw) -> Calls.timeDeltaT(lib, raw, jdUt1));
     }
+
+    /**
+     * The zone database this context reads ({@code 03-design/zone-packs.md}
+     * §4): the release every answer's provenance names, and whether it came
+     * from a signed pack or the build.
+     *
+     * @return the database
+     */
+    public ZoneDatabase zoneDatabase() {
+        return ZoneDatabase.of(context.locked(Calls::timeZoneDatabase));
+    }
+
+    /**
+     * Replaces this context's zone database with a signed pack, for every
+     * answer after this one. A release under {@code atLeast}, the newest the
+     * app has applied, is refused, so a replayed pack cannot roll the rules
+     * back.
+     *
+     * @param pack the pack's exact bytes
+     * @param signature the publisher's detached Ed25519 signature over them, 64 bytes
+     * @param key the publisher's public key, 32 bytes, which the app fixes at its own build
+     * @param atLeast the newest release applied; empty takes any
+     * @return the database now read
+     * @throws TeistroException {@code INVALID_ARG} naming {@code key}, {@code signature},
+     *     {@code version}, {@code at_least} or {@code pack}; the database stays as it was
+     */
+    public ZoneDatabase loadZones(byte[] pack, byte[] signature, byte[] key, String atLeast) {
+        byte[] bytes = pack.clone();
+        byte[] signed = signature.clone();
+        byte[] publisher = key.clone();
+        return ZoneDatabase.of(context.locked(
+                (lib, raw) -> Calls.timeLoadZones(lib, raw, bytes, signed, publisher, atLeast)));
+    }
 }

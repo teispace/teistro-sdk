@@ -68,6 +68,34 @@ fn every_context_loads_the_packs_and_every_answer_names_them() {
     assert_eq!(answer["provenance"]["packs"], json!([]), "{answer}");
 }
 
+/// **A zone pack reaches every context the server builds**: a range asked
+/// by zone names the pack's release, and a server without one the build's.
+#[test]
+fn a_zone_pack_is_read_by_every_context() {
+    let zones = [(
+        "Asia/Kathmandu",
+        jiff_tzdb::get("Asia/Kathmandu").unwrap().1,
+    )];
+    let pack = teistro::ZonePack::write("2099a", zones);
+    let pack = std::sync::Arc::new(teistro::ZonePack::from_bytes(&pack).unwrap());
+    let asked = json!({ "profile": "nepali-default", "request": {
+        "first": { "year": 2026, "month": 11, "day": 1 },
+        "latitudeDeg": 27.7, "longitudeDeg": 85.3,
+        "zone": { "kind": "IANA", "zone": "Asia/Kathmandu" } } });
+    let mut server = Server::new(Engine::Builtin).with_zones(pack);
+    let answer = call(&mut server, "almanac.changes", &asked);
+    assert_eq!(
+        answer["provenance"]["time"]["tzdb_version"], "2099a",
+        "{answer}"
+    );
+    let mut bare = Server::new(Engine::Builtin);
+    let answer = call(&mut bare, "almanac.changes", &asked);
+    assert_ne!(
+        answer["provenance"]["time"]["tzdb_version"], "2099a",
+        "{answer}"
+    );
+}
+
 /// A model can tell what the operator loaded: `settings.describe` lists
 /// each pack's locale, namespaces, entries and digest.
 #[test]

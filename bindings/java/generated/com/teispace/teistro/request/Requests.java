@@ -11,6 +11,7 @@ import java.util.function.Function;
 public final class Requests {
     private static final Map<String, Function<Object, RequestJson>> READERS = Map.ofEntries(
             Map.entry("almanac.ashauch", AshauchQuery::of),
+            Map.entry("almanac.changes", ChangesRequest::of),
             Map.entry("almanac.days", AlmanacDaysRequest::of),
             Map.entry("almanac.festivalPack", PackRequest::of),
             Map.entry("almanac.festival_calendar", FestivalCalendarRequest::of),

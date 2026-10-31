@@ -135,6 +135,7 @@ export function decodeProviderStamp(json) {
 /** A `TimeStamp` from its JSON. */
 export function decodeTimeStamp(json) {
   return {
+    clock: json.clock == null ? null : decodeClockReading(json.clock),
     deltaTModel: json.delta_t_model,
     deltaTSeconds: json.delta_t_seconds,
     leapTable: json.leap_table,
@@ -167,4 +168,31 @@ export function decodeMonthDay(json) {
     day: json.day,
     month: json.month,
   };
+}
+
+/** A `ClockReading` from its JSON. */
+export function decodeClockReading(json) {
+  return {
+    abbreviation: json.abbreviation == null ? null : json.abbreviation,
+    era: decodeClockEra(json.era),
+    offset: json.offset,
+    source: decodeClockSource(json.source),
+    tzdbVersion: json.tzdb_version,
+  };
+}
+
+const CLOCK_ERA_KEYS = new Set(['CURRENT', 'HISTORICAL', 'BEFORE_RULES']);
+
+/** A `ClockEra` from its JSON: the key itself. */
+export function decodeClockEra(json) {
+  if (!CLOCK_ERA_KEYS.has(json)) throw new TypeError(`not a ClockEra: ${json}`);
+  return json;
+}
+
+const CLOCK_SOURCE_KEYS = new Set(['IANA', 'LOCAL_MEAN', 'MANUAL']);
+
+/** A `ClockSource` from its JSON: the key itself. */
+export function decodeClockSource(json) {
+  if (!CLOCK_SOURCE_KEYS.has(json)) throw new TypeError(`not a ClockSource: ${json}`);
+  return json;
 }

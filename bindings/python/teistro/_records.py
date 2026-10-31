@@ -46,6 +46,12 @@ __all__ = [
     "decode_implementation",
     "MonthDay",
     "decode_month_day",
+    "ClockReading",
+    "decode_clock_reading",
+    "ClockEra",
+    "decode_clock_era",
+    "ClockSource",
+    "decode_clock_source",
 ]
 
 
@@ -396,6 +402,9 @@ def decode_provider_stamp(raw: Mapping[str, Any]) -> ProviderStamp:
 class TimeStamp:
     """What the time layer applied."""
 
+    clock: ClockReading | None
+    """The clock the answer's days were reckoned on, at the first day's noon, when the answer has days; left out otherwise (`docs/03-design/time-and-timezone.md` §3.4)."""
+
     delta_t_model: str
     """The Delta T model's key."""
 
@@ -418,6 +427,7 @@ class TimeStamp:
 def decode_time_stamp(raw: Mapping[str, Any]) -> TimeStamp:
     """A `TimeStamp` from its JSON."""
     return TimeStamp(
+        clock=None if raw.get("clock") is None else decode_clock_reading(raw["clock"]),
         delta_t_model=raw["delta_t_model"],
         delta_t_seconds=float(raw["delta_t_seconds"]),
         leap_table=raw["leap_table"],
@@ -485,3 +495,70 @@ def decode_month_day(raw: Mapping[str, Any]) -> MonthDay:
         day=raw["day"],
         month=raw["month"],
     )
+
+
+@dataclass(frozen=True)
+class ClockReading:
+    """A clock's offset at an instant and what gave it: what an answer carries so a caller does not resolve its zone again."""
+
+    abbreviation: str | None
+    """The zone's abbreviation for the row, when the database has one."""
+
+    era: ClockEra
+    """Which rules produced it."""
+
+    offset: int
+    """The offset."""
+
+    source: ClockSource
+    """Where it came from."""
+
+    tzdb_version: str
+    """The database's release, `lmt` or `manual`."""
+
+
+def decode_clock_reading(raw: Mapping[str, Any]) -> ClockReading:
+    """A `ClockReading` from its JSON."""
+    return ClockReading(
+        abbreviation=None if raw.get("abbreviation") is None else raw["abbreviation"],
+        era=decode_clock_era(raw["era"]),
+        offset=raw["offset"],
+        source=decode_clock_source(raw["source"]),
+        tzdb_version=raw["tzdb_version"],
+    )
+
+
+ClockEra = Literal["CURRENT", "HISTORICAL", "BEFORE_RULES"]
+"""Which rules produced an offset.
+
+`CURRENT`: An offset the zone applies in the database's own year.
+`HISTORICAL`: An offset from the zone's earlier rules.
+`BEFORE_RULES`: Before the zone's first rule: the database's local-mean-time stub.
+"""
+
+_CLOCK_ERA_KEYS = frozenset(("CURRENT", "HISTORICAL", "BEFORE_RULES",))
+
+
+def decode_clock_era(raw: Any) -> ClockEra:
+    """A `ClockEra` from its JSON: the key itself, refused if the SDK does not write it."""
+    if raw not in _CLOCK_ERA_KEYS:
+        raise ValueError(f"not a ClockEra: {raw!r}")
+    return raw  # type: ignore[no-any-return]
+
+
+ClockSource = Literal["IANA", "LOCAL_MEAN", "MANUAL"]
+"""Where an offset came from.
+
+`IANA`: The zone database.
+`LOCAL_MEAN`: Local mean time from the longitude.
+`MANUAL`: A fixed offset the consumer stated.
+"""
+
+_CLOCK_SOURCE_KEYS = frozenset(("IANA", "LOCAL_MEAN", "MANUAL",))
+
+
+def decode_clock_source(raw: Any) -> ClockSource:
+    """A `ClockSource` from its JSON: the key itself, refused if the SDK does not write it."""
+    if raw not in _CLOCK_SOURCE_KEYS:
+        raise ValueError(f"not a ClockSource: {raw!r}")
+    return raw  # type: ignore[no-any-return]

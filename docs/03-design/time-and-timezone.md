@@ -170,6 +170,47 @@ instant one vipala later is 0-0-1; the baseline engine's rounding is
 confirmed against its fixtures before the rule is pinned (open
 question 2).
 
+### 3.4 The clock on an answer (SR-10)
+
+An answer's instants are UTC, and its days are civil days on a clock. Until
+SR-10 a caller named the clock by its seconds, so it resolved a zone first and
+read the offset back from its own variable. Two things changed.
+
+**A day answer can be asked by zone.** `almanac.days` and `almanac.changes`
+take `zone` (a `ZoneSpec`, as `time.resolve` does) in place of
+`utcOffsetSeconds`, and giving both is refused. Rust's `AlmanacArea::in_zone`
+is the same call. The zone becomes a `LocalClock` over the context's database
+(`ZoneSpec::clock`), so a pack's rules apply and a range across a clock
+change reads each day on that day's offset.
+
+**Every sealed almanac answer says its clock.** The almanac stamps
+`provenance.time.clock`, a `ClockReading`:
+
+| field | what it is |
+|---|---|
+| `offset` | the offset, at the first day's noon |
+| `source` | `IANA`, `LOCAL_MEAN` or `MANUAL`, as `ZoneSource` |
+| `era` | `CURRENT`, `HISTORICAL` or `BEFORE_RULES`, as `ZoneEra` |
+| `tzdb_version` | the database's release; `lmt` or `manual` otherwise |
+| `abbreviation` | the zone's abbreviation for the row, when it has one |
+
+The stamp is in the one provenance the almanac builds, so a festival answer, a
+sankalpa, an ashauch and a next occurrence all carry it without a line each.
+Asked by a bare offset it says `MANUAL`, which is what a caller's stated
+offset is.
+
+**A day of a zone says its own.** One stamp cannot speak for a range across a
+clock change, so a `Panchanga` asked by zone or local mean time also carries
+`clock`, the same record read at that day's opening. A day asked by a bare
+offset leaves `clock` out: the provenance says the only thing it could, and
+its document, hash included, is byte for byte what it was. The binary day
+blob (`ts_panchanga_days`) takes an offset and has its stamp, so nothing about
+it changed.
+
+A date with no clock has nothing to say: `calendar.convert`, `add` and
+`between` are arithmetic on dates. `time.resolve` and `time.civil` answered
+all of this already. Charts stay as they are until SR-10's P1 part.
+
 ## 4. Algorithms
 
 **Zone resolution.** For `Iana`, ask the provider for the offsets at
@@ -243,7 +284,8 @@ hora::Reckoning)`; `delta_t(jd_ut1, DeltaTModel)`, `tt_from_ut1`,
 `ut1_from_tt`, `ut1_from_utc`, `utc_from_ut1`, `ut1_from_utc_with` and
 `utc_from_ut1_with` (over a provider's DUT1), `tt_from_utc`,
 `utc_from_tt` and `stamp` for the envelope; `EmbeddedTzdb::shared()` as the default provider and
-`EmbeddedTzdb::clock(name)` for a zone as a `LocalClock`; `zones::nepal()`.
+`EmbeddedTzdb::clock(name)` for a zone as a `LocalClock`; `zones::nepal()`;
+`ZonePack` for a database read from a signed pack (`zone-packs.md`).
 The port (`crates/port-timezone`): `TimeZoneProvider` with `version`,
 `has_zone`, `zones`, `offset_at`, `candidates` and `current_offsets`.
 C ABI:

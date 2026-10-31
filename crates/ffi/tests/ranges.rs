@@ -236,6 +236,7 @@ fn days(ctx: &Ctx, field: Option<&str>, value: f64) -> Result<(), Record> {
             sections: 0,
             muhurta_json: ptr::null(),
             festivals_json: ptr::null(),
+            zone_json: ptr::null(),
         },
         |r, s| r.struct_size = s,
     );

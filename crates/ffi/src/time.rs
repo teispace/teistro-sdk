@@ -19,8 +19,8 @@ use teistro_time::scale::{
     tt_from_utc, tt_of, ut1_from_tt, ut1_from_utc, utc_from_tt, utc_from_ut1,
 };
 use teistro_time::{
-    Chosen, CivilDateTime, CivilTime, DstOutcome, EmbeddedTzdb, Policy, Warning, ZoneEra,
-    ZoneResolution, ZoneSource, ZoneSpec, civil_of_with, resolve,
+    Chosen, CivilDateTime, CivilTime, DstOutcome, Policy, Warning, ZoneEra, ZoneResolution,
+    ZoneSource, ZoneSpec, civil_of_with, resolve,
 };
 
 use crate::calendar::{TsCalendarDate, system_of};
@@ -769,7 +769,7 @@ pub unsafe extern "C" fn ts_time_resolve(
             )
         };
         let policy = Policy::of(ctx.settings());
-        let resolved = resolve(&civil, &zone, &policy, EmbeddedTzdb::shared())?;
+        let resolved = resolve(&civil, &zone, &policy, &*ctx.sdk().zones())?;
         let out = TsZoneResolution::of(ctx, &resolved.zone, resolved.instant);
         // SAFETY: the entry point's contract.
         unsafe { write_out(out_resolution, "out_resolution", out) }
@@ -832,13 +832,150 @@ pub unsafe extern "C" fn ts_time_civil(
         let instant =
             JulianDay::<Utc>::try_new(jd_utc).map_err(|e| Error::from(e).with_field("jd_utc"))?;
         let (civil, resolution) =
-            civil_of_with(system_of(calendar)?, instant, &zone, EmbeddedTzdb::shared())?;
+            civil_of_with(system_of(calendar)?, instant, &zone, &*ctx.sdk().zones())?;
         let out = TsZoneResolution::of(ctx, &resolution, instant);
         // SAFETY: the entry point's contract.
         unsafe {
             write_out(out_civil, "out_civil", TsCivilDateTime::of(&civil))?;
             write_out(out_resolution, "out_resolution", out)
         }
+    })
+}
+
+/// The zone database a context reads, as JSON: `{source, version, zones,
+/// bundled}` (`03-design/zone-packs.md` §4).
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::string::TsString;
+/// use teistro_ffi::time::ts_time_zone_database;
+///
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context and a writable slot.
+/// assert_eq!(unsafe { ts_time_zone_database(&raw const ctx, &raw mut out) }, Status::Ok);
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `out_json` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_time_zone_database(
+    context: *const TsContext,
+    out_json: *mut crate::string::TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        let json = crate::string::TsString::from_string(teistro_core::envelope::canonical_json(
+            &ctx.sdk().time().zone_database(),
+        ));
+        // SAFETY: the entry point's contract.
+        unsafe { crate::support::write_plain(out_json, "out_json", json) }
+    })
+}
+
+/// Verifies a signed zone pack and replaces the context's zone database
+/// with it, answering the database as `ts_time_zone_database` does.
+/// `pack` is the file's exact bytes, `signature` the publisher's detached
+/// Ed25519 signature over them (64 bytes) and `key` the publisher's public
+/// key (32 bytes), which the caller fixes at its own build: the library
+/// embeds none. A release older than `at_least`, the newest the caller has
+/// applied (`""` for any), is refused, so a replayed pack cannot roll a
+/// correction back. A refused pack leaves the context as it was.
+///
+/// A key that is no curve point is `INVALID_ARG` on `key`; a signature
+/// that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`;
+/// bytes that are not a pack, `INVALID_ARG` on the field that is wrong; an
+/// older release, `INVALID_ARG` on `version`. A build without
+/// `signed-packs` answers `CAPABILITY`.
+///
+/// ```
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::string::TsString;
+/// use teistro_ffi::time::ts_time_load_zones;
+///
+/// // A key with no curve point is refused, and nothing is read; a build
+/// // without `signed-packs` refuses the call itself.
+/// let (pack, signature) = (b"{}", [0_u8; 64]);
+/// let mut key = [0_u8; 32];
+/// key[0] = 2;
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, readable bytes and a writable slot.
+/// let status = unsafe {
+///     ts_time_load_zones(
+///         &raw const ctx,
+///         pack.as_ptr(), pack.len(),
+///         signature.as_ptr(), signature.len(),
+///         key.as_ptr(), key.len(),
+///         c"".as_ptr(),
+///         &raw mut out,
+///     )
+/// };
+/// assert!(matches!(status, Status::InvalidArg | Status::Capability));
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `pack`, `signature` and `key` valid
+/// for their lengths' reads; `at_least` NUL-terminated; `out_json` valid
+/// for a write.
+#[unsafe(no_mangle)]
+#[allow(
+    clippy::too_many_arguments,
+    reason = "three byte ranges cross the C boundary as pointer and length each"
+)]
+pub unsafe extern "C" fn ts_time_load_zones(
+    context: *const TsContext,
+    pack: *const u8,
+    pack_len: usize,
+    signature: *const u8,
+    signature_len: usize,
+    key: *const u8,
+    key_len: usize,
+    at_least: *const core::ffi::c_char,
+    out_json: *mut crate::string::TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        crate::family::in_family!(
+            "signed-packs",
+            [
+                ctx,
+                pack,
+                pack_len,
+                signature,
+                signature_len,
+                key,
+                key_len,
+                at_least,
+                out_json
+            ],
+            {
+                // SAFETY: the entry point's contract.
+                let pack = unsafe { crate::support::bytes(pack, pack_len, "pack") }?;
+                // SAFETY: the entry point's contract.
+                let signature =
+                    unsafe { crate::support::bytes(signature, signature_len, "signature") }?;
+                // SAFETY: the entry point's contract.
+                let key = unsafe { crate::support::bytes(key, key_len, "key") }?;
+                // SAFETY: the entry point's contract.
+                let at_least = unsafe { crate::support::text(at_least, "at_least") }?;
+                let database = ctx
+                    .sdk()
+                    .time()
+                    .load_zones(pack, signature, key, at_least)?;
+                let json = crate::string::TsString::from_string(
+                    teistro_core::envelope::canonical_json(&database),
+                );
+                // SAFETY: the entry point's contract.
+                unsafe { crate::support::write_plain(out_json, "out_json", json) }
+            }
+        )
     })
 }
 

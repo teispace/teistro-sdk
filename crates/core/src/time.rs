@@ -232,6 +232,111 @@ pub trait LocalClock: Send + Sync {
     fn local_jd(&self, instant: JulianDay<Utc>) -> f64 {
         instant.get() + self.offset_at(instant).days()
     }
+
+    /// The offset at the instant with the source that gave it, as an
+    /// answer states it (`docs/03-design/time-and-timezone.md` §3.4). A
+    /// clock that says nothing else is one the caller stated.
+    ///
+    /// ```
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::time::{LocalClock, UtcOffset, ZoneSource};
+    ///
+    /// let read = UtcOffset::literal(5, 45, 0).reading(JulianDay::J2000);
+    /// assert_eq!((read.source, read.tzdb_version.as_str()), (ZoneSource::Manual, "manual"));
+    /// ```
+    fn reading(&self, instant: JulianDay<Utc>) -> ClockReading {
+        ClockReading {
+            offset: self.offset_at(instant),
+            source: ZoneSource::Manual,
+            era: ZoneEra::Current,
+            tzdb_version: String::from("manual"),
+            abbreviation: None,
+        }
+    }
+}
+
+/// Where an offset came from.
+///
+/// ```
+/// use teistro_core::time::ZoneSource;
+///
+/// assert_eq!(serde_json::to_string(&ZoneSource::LocalMean).unwrap(), r#""LOCAL_MEAN""#);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ClockSource"))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ZoneSource {
+    /// The zone database.
+    Iana,
+    /// Local mean time from the longitude.
+    LocalMean,
+    /// A fixed offset the consumer stated.
+    Manual,
+}
+
+impl ZoneSource {
+    /// The key it is serialised as: `IANA`, `LOCAL_MEAN`, `MANUAL`.
+    ///
+    /// ```
+    /// use teistro_core::time::ZoneSource;
+    ///
+    /// assert_eq!(ZoneSource::LocalMean.key(), "LOCAL_MEAN");
+    /// ```
+    #[must_use]
+    pub const fn key(self) -> &'static str {
+        match self {
+            ZoneSource::Iana => "IANA",
+            ZoneSource::LocalMean => "LOCAL_MEAN",
+            ZoneSource::Manual => "MANUAL",
+        }
+    }
+}
+
+/// Which rules produced an offset.
+///
+/// ```
+/// use teistro_core::time::ZoneEra;
+///
+/// assert_eq!(serde_json::to_string(&ZoneEra::BeforeRules).unwrap(), r#""BEFORE_RULES""#);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "ClockEra"))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum ZoneEra {
+    /// An offset the zone applies in the database's own year.
+    Current,
+    /// An offset from the zone's earlier rules.
+    Historical,
+    /// Before the zone's first rule: the database's local-mean-time stub.
+    BeforeRules,
+}
+
+/// A clock's offset at an instant and what gave it: what an answer carries
+/// so a caller does not resolve its zone again.
+///
+/// ```
+/// use teistro_core::quantity::{JulianDay, Longitude};
+/// use teistro_core::time::{LocalClock, LocalMeanTime, ZoneSource};
+///
+/// let read = LocalMeanTime::new(Longitude::literal(85.324)).reading(JulianDay::J2000);
+/// assert_eq!((read.offset.seconds(), read.source), (20_478, ZoneSource::LocalMean));
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct ClockReading {
+    /// The offset.
+    pub offset: UtcOffset,
+    /// Where it came from.
+    pub source: ZoneSource,
+    /// Which rules produced it.
+    pub era: ZoneEra,
+    /// The database's release, `lmt` or `manual`.
+    pub tzdb_version: String,
+    /// The zone's abbreviation for the row, when the database has one.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub abbreviation: Option<String>,
 }
 
 impl LocalClock for UtcOffset {
@@ -251,6 +356,10 @@ impl<C: LocalClock + ?Sized> LocalClock for &C {
 
     fn describe(&self) -> String {
         (**self).describe()
+    }
+
+    fn reading(&self, instant: JulianDay<Utc>) -> ClockReading {
+        (**self).reading(instant)
     }
 }
 
@@ -330,6 +439,16 @@ impl LocalClock for LocalMeanTime {
 
     fn describe(&self) -> String {
         format!("LMT {}", self.longitude)
+    }
+
+    fn reading(&self, _instant: JulianDay<Utc>) -> ClockReading {
+        ClockReading {
+            offset: self.offset(),
+            source: ZoneSource::LocalMean,
+            era: ZoneEra::Current,
+            tzdb_version: String::from("lmt"),
+            abbreviation: None,
+        }
     }
 }
 

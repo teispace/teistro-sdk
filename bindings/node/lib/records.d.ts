@@ -334,6 +334,10 @@ export declare function decodeProviderStamp(json: unknown): ProviderStamp;
  */
 export interface TimeStamp {
   /**
+   * The clock the answer's days were reckoned on, at the first day's noon, when the answer has days; left out otherwise (`docs/03-design/time-and-timezone.md` §3.4).
+   */
+  readonly clock: ClockReading | null;
+  /**
    * The Delta T model's key.
    */
   readonly deltaTModel: string;
@@ -419,3 +423,62 @@ export interface MonthDay {
  * A `MonthDay` from its JSON, as a blob carries it or a stored document holds it.
  */
 export declare function decodeMonthDay(json: unknown): MonthDay;
+
+/**
+ * A clock's offset at an instant and what gave it: what an answer carries so a caller does not resolve its zone again.
+ */
+export interface ClockReading {
+  /**
+   * The zone's abbreviation for the row, when the database has one.
+   */
+  readonly abbreviation: string | null;
+  /**
+   * Which rules produced it.
+   */
+  readonly era: ClockEra;
+  /**
+   * The offset.
+   */
+  readonly offset: number;
+  /**
+   * Where it came from.
+   */
+  readonly source: ClockSource;
+  /**
+   * The database's release, `lmt` or `manual`.
+   */
+  readonly tzdbVersion: string;
+}
+
+/**
+ * A `ClockReading` from its JSON, as a blob carries it or a stored document holds it.
+ */
+export declare function decodeClockReading(json: unknown): ClockReading;
+
+/**
+ * Which rules produced an offset.
+ *
+ * `CURRENT`: An offset the zone applies in the database's own year.
+ * `HISTORICAL`: An offset from the zone's earlier rules.
+ * `BEFORE_RULES`: Before the zone's first rule: the database's local-mean-time stub.
+ */
+export type ClockEra = 'CURRENT' | 'HISTORICAL' | 'BEFORE_RULES';
+
+/**
+ * A `ClockEra` from its JSON, as a blob carries it or a stored document holds it.
+ */
+export declare function decodeClockEra(json: unknown): ClockEra;
+
+/**
+ * Where an offset came from.
+ *
+ * `IANA`: The zone database.
+ * `LOCAL_MEAN`: Local mean time from the longitude.
+ * `MANUAL`: A fixed offset the consumer stated.
+ */
+export type ClockSource = 'IANA' | 'LOCAL_MEAN' | 'MANUAL';
+
+/**
+ * A `ClockSource` from its JSON, as a blob carries it or a stored document holds it.
+ */
+export declare function decodeClockSource(json: unknown): ClockSource;

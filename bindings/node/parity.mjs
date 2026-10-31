@@ -13,6 +13,7 @@ import {
   Body,
   Calendar,
   Context,
+  ianaZone,
   Scale,
   abiVersion,
   buildInfo,
@@ -2300,6 +2301,37 @@ geo.dispose();
 // provider cannot place: every column moves, and a wrong stride shows
 // (`03-design/lilith.md`).
 {
+  // A signed one-zone pack of an imagined release, so a provenance naming
+  // it can only have come from the pack (`03-design/zone-packs.md`).
+  const sky = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const hex = (text) => Uint8Array.from(text.match(/../gu).map((pair) => Number.parseInt(pair, 16)));
+  const zonesLine = (zones) => `${zones.source} ${zones.version} ${zones.zones} ${zones.bundled}`;
+  put('time-zone-database', zonesLine(sky.time.zoneDatabase()));
+  const loaded = sky.time.loadZones(
+    new TextEncoder().encode(
+      '{"format":"teistro.zones/1","version":"2099a","zones":{"Asia/Kathmandu":"VFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAVFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAAABD/////ofJ9hAAAAAAeGDCoAQIAAE/8AAAAAE1YAAQAAFDcAApMTVQAKzA1MzAAKzA1NDUACjwrMDU0NT4tNTo0NQo="},"links":{"Asia/Katmandu":"Asia/Kathmandu"}}',
+    ),
+    hex('73a4a729d2d30fdf174da7411bf20d8ff297231d816d0004b7435b6e7b70449d2e128616f7fb7cdcb2d6d0aecab2e1a287f806da782520c99bfe770dd0b9b406'),
+    hex('ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c'),
+    '2099a',
+  );
+  put('time-zone-pack', zonesLine(loaded));
+  const first = gregorian(2026, 11, 1);
+  const { clock } = sky.almanac.inZone({ from: first, to: first, place, zone: ianaZone('Asia/Kathmandu') }).provenance.time;
+  put('almanac-in-zone', `${clock.offset} ${clock.abbreviation} ${clock.tzdbVersion}`);
+  const changes = sky.almanac.changes({
+    first: { year: 2026, month: 11, day: 1 },
+    last: { year: 2026, month: 11, day: 2 },
+    latitudeDeg: place.latitude,
+    longitudeDeg: place.longitude,
+    altitudeM: place.altitude,
+    utcOffsetSeconds: 20700,
+  });
+  const [point] = changes.points;
+  put('almanac-changes', `${changes.points.length} ${point.kind} ${point.from} ${point.to}`);
+  sky.dispose();
+}
+{
   const sky = new Context({ profile: 'western-tropical-default', ephemeris: 'BUILTIN' });
   const held = sky.chart.foundMany({ instants: [2451545.0, 2460676.5], place, utcOffsetSeconds: 20700, lilith: 'OSCULATING' });
   let k = 0;
@@ -2442,6 +2474,10 @@ for (const [path, member] of [
   ['almanac.first_year', shape.almanac.firstYear],
   ['almanac.published_reasons', shape.almanac.publishedReasons],
   ['almanac.published_from_signed', shape.almanac.publishedFromSigned],
+  ['almanac.changes', shape.almanac.changes],
+  ['almanac.in_zone', shape.almanac.inZone],
+  ['time.load_zones', shape.time.loadZones],
+  ['time.zone_database', shape.time.zoneDatabase],
   ['research.counts', shape.research.counts],
   ['research.compare', shape.research.compare],
   ['research.expected', shape.research.expected],

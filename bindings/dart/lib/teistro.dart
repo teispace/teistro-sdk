@@ -830,7 +830,75 @@ final class TimeArea extends _Area {
 
   /// Delta T at a UT1 instant, with what produced it.
   DeltaT deltaT(double jdUt1) => _context._inner.timeDeltaT(jdUt1);
+
+  /// The zone database this context reads (`03-design/zone-packs.md` §4):
+  /// the release every answer's provenance names, and whether it came from
+  /// a signed pack or the build.
+  ZoneDatabase zoneDatabase() =>
+      ZoneDatabase._of(_context._guarded(_context._inner.timeZoneDatabase));
+
+  /// Replaces this context's zone database with a signed pack, for every
+  /// answer after this one. [signature] is the publisher's detached Ed25519
+  /// signature over [pack] (64 bytes), [key] the publisher's public key (32
+  /// bytes), which the app fixes at its own build. A release under
+  /// [atLeast], the newest the app has applied, is refused, so a replayed
+  /// pack cannot roll the rules back.
+  ///
+  /// Throws a [TeistroException] `INVALID_ARG` naming `key`, `signature`,
+  /// `version`, `at_least` or `pack`; the database stays as it was.
+  ZoneDatabase loadZones(
+    Uint8List pack,
+    Uint8List signature,
+    Uint8List key, {
+    String atLeast = '',
+  }) => ZoneDatabase._of(
+    _context._guarded(
+      () => _context._inner.timeLoadZones(pack, signature, key, atLeast),
+    ),
+  );
 }
+
+/// The zone database a context reads (`03-design/zone-packs.md` §4).
+final class ZoneDatabase {
+  const ZoneDatabase({
+    required this.source,
+    required this.version,
+    required this.zones,
+    required this.bundled,
+  });
+
+  factory ZoneDatabase._of(String json) {
+    final raw = jsonDecode(json) as Map<String, Object?>;
+    return ZoneDatabase(
+      source: raw['source']! as String,
+      version: raw['version']! as String,
+      zones: raw['zones']! as int,
+      bundled: raw['bundled']! as String,
+    );
+  }
+
+  /// Where it comes from: `EMBEDDED` or `PACK`.
+  final String source;
+
+  /// Its release (`2026f`), as every answer's provenance names it.
+  final String version;
+
+  /// How many names it holds, links included.
+  final int zones;
+
+  /// The release compiled into this build: the fallback.
+  final String bundled;
+}
+
+/// A zone as the record the boundary reads beside a range.
+String _zoneJson(ZoneSpec zone) => jsonEncode(switch (zone.kind) {
+  ZoneKind.iana => {'kind': 'IANA', 'zone': zone.zone},
+  ZoneKind.fixed => {'kind': 'FIXED', 'offset': zone.offsetSeconds},
+  ZoneKind.localMean => {
+    'kind': 'LOCAL_MEAN',
+    'longitude': zone.longitudeDeg.value,
+  },
+});
 
 /// `sdk.intl` — the locale, its messages and the scripts they are in.
 final class IntlArea extends _Area {
@@ -1318,7 +1386,66 @@ final class AlmanacArea extends _Area {
     bool lagnas = false,
     bool homaAhuti = false,
     bool days = true,
-  }) => Almanac(
+  }) => _range(
+    from,
+    to,
+    place,
+    utcOffsetSeconds,
+    null,
+    muhurta,
+    festivals,
+    (years ? panchangaYears : 0) |
+        (eclipses ? panchangaEclipses : 0) |
+        (nepalSambat ? panchangaNepalSambat : 0) |
+        (lagnas ? panchangaLagnas : 0) |
+        (homaAhuti ? panchangaHomaAhuti : 0) |
+        (days ? 0 : panchangaWithoutDays),
+  );
+
+  /// [of] on a zone's clock: each day on the offset of its own noon, and
+  /// the provenance names the zone's offset, source and era at the first
+  /// day (`03-design/time-and-timezone.md` §3.4). A range crossing a clock
+  /// change is refused on `zone` when a section is asked beside the days,
+  /// since a section reckons on one offset.
+  Almanac inZone({
+    required CalendarDate from,
+    required CalendarDate to,
+    required Observer place,
+    required ZoneSpec zone,
+    MuhurtaRequest? muhurta,
+    FestivalRequest? festivals,
+    bool years = false,
+    bool eclipses = false,
+    bool nepalSambat = false,
+    bool lagnas = false,
+    bool homaAhuti = false,
+    bool days = true,
+  }) => _range(
+    from,
+    to,
+    place,
+    0,
+    _zoneJson(zone),
+    muhurta,
+    festivals,
+    (years ? panchangaYears : 0) |
+        (eclipses ? panchangaEclipses : 0) |
+        (nepalSambat ? panchangaNepalSambat : 0) |
+        (lagnas ? panchangaLagnas : 0) |
+        (homaAhuti ? panchangaHomaAhuti : 0) |
+        (days ? 0 : panchangaWithoutDays),
+  );
+
+  Almanac _range(
+    CalendarDate from,
+    CalendarDate to,
+    Observer place,
+    int utcOffsetSeconds,
+    String? zoneJson,
+    MuhurtaRequest? muhurta,
+    FestivalRequest? festivals,
+    int sections,
+  ) => Almanac(
     decodePanchanga(
       _context._guarded(
         () => _context._inner.panchangaDays(
@@ -1336,13 +1463,8 @@ final class AlmanacArea extends _Area {
             utcOffsetSeconds: utcOffsetSeconds,
             muhurtaJson: muhurta?._json,
             festivalsJson: festivals?._json,
-            sections:
-                (years ? panchangaYears : 0) |
-                (eclipses ? panchangaEclipses : 0) |
-                (nepalSambat ? panchangaNepalSambat : 0) |
-                (lagnas ? panchangaLagnas : 0) |
-                (homaAhuti ? panchangaHomaAhuti : 0) |
-                (days ? 0 : panchangaWithoutDays),
+            zoneJson: zoneJson,
+            sections: sections,
           ),
         ),
       ),
@@ -1811,6 +1933,84 @@ final class AlmanacArea extends _Area {
       searchedDays: value['searchedDays']! as int,
     );
   }
+
+  /// Every instant in a range at which the tithi, nakshatra, yoga, karana,
+  /// the Moon's or Sun's sign or the weekday changes, sorted, as one list
+  /// (`03-design/change-points.md`). The range is asked on
+  /// `utcOffsetSeconds` or a `zone`, and every point is the same instant
+  /// either way.
+  ChangePoints changes(ChangesRequest request) {
+    final envelope =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.almanacChanges(jsonEncode(request)),
+              ),
+            )
+            as Map<String, Object?>;
+    final value = envelope['value']! as Map<String, Object?>;
+    final window = value['window']! as Map<String, Object?>;
+    return ChangePoints(
+      points: List.unmodifiable(
+        (value['points']! as List<Object?>).cast<Map<String, Object?>>().map(
+          (point) => ChangePoint(
+            at: (point['at']! as num).toDouble(),
+            kind: ChangeKind.values.firstWhere(
+              (kind) => kind.key == point['kind'],
+            ),
+            from: point['from']! as String,
+            to: point['to']! as String,
+          ),
+        ),
+      ),
+      window: Interval(
+        from: (window['from']! as num).toDouble(),
+        to: (window['to']! as num).toDouble(),
+      ),
+      provenance: Provenance.fromJson(
+        envelope['provenance']! as Map<String, Object?>,
+      ),
+    );
+  }
+}
+
+/// One instant at which something changes (`03-design/change-points.md`).
+final class ChangePoint {
+  const ChangePoint({
+    required this.at,
+    required this.kind,
+    required this.from,
+    required this.to,
+  });
+
+  /// The instant, as a UTC Julian day.
+  final double at;
+
+  /// What changes.
+  final ChangeKind kind;
+
+  /// The catalogue key of the member that ended.
+  final String from;
+
+  /// The catalogue key of the member that began.
+  final String to;
+}
+
+/// A range's change points, sorted, with the window they were read over.
+final class ChangePoints {
+  const ChangePoints({
+    required this.points,
+    required this.window,
+    required this.provenance,
+  });
+
+  /// Every point at or after the window's start and before its end.
+  final List<ChangePoint> points;
+
+  /// The instants the range covers.
+  final Interval window;
+
+  /// What computed it, and the clock it was asked on.
+  final Provenance provenance;
 }
 
 /// The next day [AlmanacArea.next] found (`03-design/next-occurrence.md`).

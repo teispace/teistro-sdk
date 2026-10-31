@@ -492,6 +492,17 @@ fn naming_records() -> [Record; 5] {
 fn almanac_records() -> [Record; 8] {
     [
         Record {
+            name: "almanac.changes",
+            boundary: "ts_almanac_changes",
+            title: "Every instant in a range at which the tithi, nakshatra, yoga, karana, the Moon's or Sun's sign or the vara changes, one sorted list",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::ChangesRequest::from_json(json)?;
+                Answered::sealed(context.almanac().changes(&asked)?)
+            },
+            schemas: schemas!(crate::area::ChangesAsked => crate::ChangePoints),
+        },
+        Record {
             name: "almanac.ashauch",
             boundary: "ts_almanac_ashauch",
             title: "The period of impurity after a birth or a death, and the clause that set it",
@@ -741,11 +752,10 @@ fn festival_calendar(context: &Context, json: &str) -> Result<Answered, Error> {
 /// days' provenance is the answer's.
 fn days(context: &Context, json: &str) -> Result<Answered, Error> {
     let asked = crate::DaysRequest::from_json(json)?;
-    let answer = context.almanac().asked(
-        &asked.first,
-        &asked.last,
+    let answer = asked.clock.asked_on(
+        context.almanac(),
+        (&asked.first, &asked.last),
         &asked.place,
-        asked.offset,
         &asked.beside,
     )?;
     let value = written(&crate::days_request::DaysWritten {

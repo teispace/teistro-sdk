@@ -32,7 +32,7 @@ use teistro_core::quantity::{JulianDay, Place, Ut1, Utc};
 use teistro_core::settings::{
     Centre, GhatiReckoning, MoonEvents, PanchakaName, Resolved, RituReckoning, Settings,
 };
-use teistro_core::time::LocalClock;
+use teistro_core::time::{ClockReading, LocalClock, ZoneSource};
 use teistro_port_ephemeris::{Body, EphemerisProvider, Frame, Horizon, HorizonEventKind};
 use teistro_time::ghati::{self, GhatiPala};
 use teistro_time::hora::{self, Hora};
@@ -41,6 +41,7 @@ use teistro_time::local_day::{
 };
 
 use crate::ashauch::{self, Ashauch, AshauchRequest, AshauchTable};
+use crate::change::{ChangeDay, ChangePoints};
 use crate::festival::{
     FestivalDay, Half, MoonArc, MoonArcs, Moonrise, Origin, OriginFound, SunEntry,
 };
@@ -175,6 +176,12 @@ pub struct Panchanga {
     /// under `NONE`; left out of the day's document then.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub named_panchaka: Option<Span<Panchaka>>,
+    /// The clock the day was asked on, at the day's opening, for a day
+    /// asked by zone or local mean time. A day asked by a bare offset has
+    /// nothing to add to its answer's provenance, and leaves this out of
+    /// its document (`docs/03-design/time-and-timezone.md` §3.4).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clock: Option<ClockReading>,
 }
 
 impl Panchanga {
@@ -1346,7 +1353,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     /// muhurta yoga or durmuhurta table the SDK does not ship.
     pub fn day(&self, date: &CalendarDate, place: &Place) -> Result<Envelope<Panchanga>, Error> {
         let (value, frame) = self.value(date, place, &mut Memo::default())?;
-        let mut provenance = self.provenance(
+        let mut provenance = self.provenance_from(
             content_hash(&Input {
                 date: date.to_string(),
                 latitude_deg: place.latitude.get(),
@@ -1354,6 +1361,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 altitude_m: place.altitude.get(),
             }),
             frame,
+            self.calendar.fixed_of(date)?,
         );
         provenance
             .applied_conventions
@@ -1521,6 +1529,60 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         place: &Place,
     ) -> Result<Envelope<Vec<FestivalDay>>, Error> {
         self.run(from, to, place, Moon::Unread, Self::festival_value)
+    }
+
+    /// Every instant in a range at which a limb, the Moon's or the Sun's
+    /// sign or the vara changes, one sorted list
+    /// (`docs/03-design/change-points.md`). The range's own walker over its
+    /// shared crossings, reading no rise or set.
+    ///
+    /// ```
+    /// # use teistro_astro::delta_t::DeltaTModel;
+    /// # use teistro_astro::precession::PrecessionModel;
+    /// # use teistro_calendar::solar::drik::DrikSun;
+    /// # use teistro_calendar::{CalendarDate, Gregorian};
+    /// # use teistro_core::catalogue::{Ayanamsha, Calendar};
+    /// # use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro_core::settings::{DEFAULT_PROFILE, OverridePolicy, Profile, SettingsPatch, Sunrise};
+    /// # use teistro_core::time::UtcOffset;
+    /// # use teistro_panchanga::Almanac;
+    /// # use teistro_port_ephemeris::TestProvider;
+    /// #
+    /// # // Kathmandu on the Nepal clock, over the analytic test provider: fixed
+    /// # // elements that need no engine. A real provider reads the real sky.
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// # let provider = TestProvider;
+    /// # let resolved = Profile::shipped(DEFAULT_PROFILE)
+    /// #     .ok_or("a shipped profile")?
+    /// #     .resolve(&SettingsPatch::default())
+    /// #     .map_err(|d| format!("{d:?}"))?;
+    /// # let (delta_t, precession) = (DeltaTModel::TableThenModel, PrecessionModel::Vondrak2011);
+    /// # let model = DrikSun::new(&provider, Ayanamsha::Lahiri, Sunrise::CentreNoRefraction.into(), OverridePolicy::PreferNative, delta_t);
+    /// # let clock = UtcOffset::literal(5, 45, 0);
+    /// # let almanac = Almanac::new(&provider, &resolved, &model, &Gregorian, &clock, precession, delta_t);
+    /// # let date = |month, day| CalendarDate::defined(Calendar::Gregorian, 2026, month, day);
+    /// use teistro_panchanga::change::ChangeKind;
+    ///
+    /// let changes = almanac.changes(&date(11, 25), &date(11, 26), &kathmandu)?.value;
+    /// assert!(changes.points.windows(2).all(|pair| pair[0].at.get() <= pair[1].at.get()));
+    /// // The second day's sunrise turns the vara, once.
+    /// assert_eq!(changes.points.iter().filter(|point| point.kind == ChangeKind::Vara).count(), 1);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Almanac::between`], less the refusals of the parts it does not
+    /// compute.
+    pub fn changes(
+        &self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+    ) -> Result<Envelope<ChangePoints>, Error> {
+        let days = self.run(from, to, place, Moon::Unread, Self::change_value)?;
+        let points = ChangePoints::of(&days.value)?;
+        Ok(Envelope::new(points, days.provenance))
     }
 
     /// Fills each day's first moonrise between its sunrise and the next
@@ -1978,7 +2040,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let Some(frame) = frame else {
             return Err(Error::internal("a range of days answered no day"));
         };
-        let provenance = self.provenance(
+        let provenance = self.provenance_from(
             content_hash(&RangeInput {
                 from: from.to_string(),
                 to: to.to_string(),
@@ -1987,6 +2049,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 altitude_m: place.altitude.get(),
             }),
             frame,
+            first,
         );
         Ok(Envelope::new(values, provenance))
     }
@@ -2294,7 +2357,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             sunrise: day.day.sunrise,
             next_sunrise: day.day.next_sunrise,
         };
-        let provenance = self.provenance(
+        let provenance = self.provenance_at(
             content_hash(&SankalpaInput {
                 at: at.get(),
                 latitude_deg: place.latitude.get(),
@@ -2303,6 +2366,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 ayana,
             }),
             frame,
+            Some(at),
         );
         Ok(Envelope::new(value, provenance))
     }
@@ -2708,6 +2772,60 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         ))
     }
 
+    /// What a day gives a range's change points: as
+    /// [`Almanac::festival_value`], and the two signs from the same
+    /// crossings.
+    fn change_value(
+        &self,
+        date: &CalendarDate,
+        place: &Place,
+        memo: &mut Memo,
+    ) -> Result<(ChangeDay, Frame), Error> {
+        let date = self.calendar.date_of(self.calendar.fixed_of(date)?)?;
+        let fixed = self.calendar.fixed_of(&date)?;
+        let (day, _) = self.local_day_of(&date, fixed, place, memo)?;
+        let window = self.window(&day)?;
+        let completion = Completion::new(
+            self.provider,
+            self.settings().provider.overrides,
+            self.delta_t,
+        );
+        let (frame, zodiac) = self.at_instant(&completion, window.from)?;
+        let mut longitudes = completion.longitudes(frame);
+        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            longitudes = longitudes.with_observer(*place);
+        }
+        let known = memo.crossings(&longitudes, (zodiac, frame), window, fixed)?;
+        let limbs = limb::limbs_with(&longitudes, window, zodiac, known.as_ref())?;
+        // As a day's own: the Moon's signs geocentric, whatever the limbs'
+        // centre, and the range's crossings only where they are that.
+        let geocentric = known
+            .as_ref()
+            .filter(|_| frame.centre != teistro_port_ephemeris::Centre::Topocentric);
+        let moon_signs = limb::signs_known(
+            &completion.longitudes(frame),
+            Body::Moon,
+            window,
+            zodiac,
+            None,
+            geocentric,
+        )?;
+        let sun_signs =
+            limb::signs_known(&longitudes, Body::Sun, window, zodiac, None, known.as_ref())?;
+        memo.known = known.map(|known| (frame, known));
+        Ok((
+            ChangeDay {
+                window,
+                sunrise: day.sunrise,
+                vara: day.vara,
+                limbs,
+                moon_signs,
+                sun_signs,
+            },
+            frame,
+        ))
+    }
+
     fn value(
         &self,
         date: &CalendarDate,
@@ -2795,6 +2913,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 punya_kala,
                 homa_ahuti: Vec::new(),
                 named_panchaka,
+                clock: Some(self.clock.reading(window.from))
+                    .filter(|clock| clock.source != ZoneSource::Manual),
             },
             frame,
         ))
@@ -3347,6 +3467,35 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             .stamp(frame, Vec::new());
         provenance.time.delta_t_model = self.delta_t.key().to_string();
         provenance.time.leap_table = teistro_time::leap::version().to_string();
+        provenance
+    }
+
+    /// The provenance of an answer whose days open on `first`: its clock
+    /// stated at that day's noon, away from any midnight change
+    /// (`docs/03-design/time-and-timezone.md` §3.4).
+    fn provenance_from(&self, input: Hash, frame: Frame, first: FixedDay) -> Provenance {
+        let noon = first
+            .jd_at_midnight()
+            .ok()
+            .and_then(|midnight| JulianDay::try_new(midnight.get() + 0.5).ok());
+        self.provenance_at(input, frame, noon)
+    }
+
+    /// The provenance of an answer, its clock stated at an instant.
+    fn provenance_at(
+        &self,
+        input: Hash,
+        frame: Frame,
+        instant: Option<JulianDay<Utc>>,
+    ) -> Provenance {
+        let mut provenance = self.provenance(input, frame);
+        if let Some(instant) = instant {
+            let clock = self.clock.reading(instant);
+            if clock.source == ZoneSource::Iana {
+                provenance.time.tzdb_version.clone_from(&clock.tzdb_version);
+            }
+            provenance.time.clock = Some(clock);
+        }
         provenance
     }
 }

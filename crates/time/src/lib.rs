@@ -66,13 +66,14 @@ pub use scale::{
     utc_from_ut1,
 };
 pub use teistro_astro::delta_t::{self, DeltaT, DeltaTModel, DeltaTSource, delta_t};
-pub use teistro_core::time::{LocalClock, LocalMeanTime, UtcOffset};
+pub use teistro_core::time::{ClockReading, LocalClock, LocalMeanTime, UtcOffset};
 pub use teistro_port_timezone::{LocalCandidates, LocalSeconds, OffsetInfo, TimeZoneProvider};
-pub use zone::embedded::{EmbeddedTzdb, ZoneClock};
+pub use zone::embedded::EmbeddedTzdb;
+pub use zone::pack::{ZONE_PACK_FORMAT, ZonePack};
 pub use zone::{
-    Chosen, DayContext, DstOutcome, Policy, Resolved, Warning, ZoneEra, ZoneResolution, ZoneSource,
-    ZoneSpec, civil_of, civil_of_with, resolve, resolve_at_place, resolve_at_place_with,
-    resolve_with,
+    Chosen, DayContext, DstOutcome, Policy, ProviderClock, Resolved, Warning, ZoneClock, ZoneEra,
+    ZoneResolution, ZoneSource, ZoneSpec, civil_of, civil_of_with, resolve, resolve_at_place,
+    resolve_at_place_with, resolve_with,
 };
 
 /// The README's examples, run as doctests so that the first page a

@@ -34,6 +34,7 @@ import com.teispace.teistro.ffi.Native;
  * @param sections What to answer beside the days, as a bit set: `TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the `years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the days with the place's view of each, in the `eclipses` section; `TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in the `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no day, only what else is asked, festivals alone then founded as only what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's lagna table, in the `lagnas` span section; `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the `homa_ahuti` span section. Zero for the days alone, which is what every caller compiled against an earlier header passes, since this was a reserved field it wrote zero to.  A bit set here and a named option in every ergonomic layer, as a chart request's `sections` is (`03-design/chart-reading.md` §5). Example: 0.
  * @param muhurtaJson A muhurta search over the same days, as a JSON object: `rules`, the activity's rules spelt out or a shipped set named (`RAMAN_MARRIAGE`, `BASELINE_MARRIAGE`, `RAMAN_NAMAKARANA`, `RAMAN_ANNAPRASANA`, `RAMAN_KARNAVEDHA`, `RAMAN_CHUDAKARANA`, `RAMAN_UPANAYANA`, `RAMAN_VIDYARAMBHA`, `RAMAN_GRIHA_PRAVESHA`, `RAMAN_YATRA`, `RAMAN_TRADE_PURCHASE`, `RAMAN_SELLING`, `RAMAN_NEW_CLOTHES`, `RAMAN_VEHICLE`); and, each optional, `native` (`{star, moonSign}`, whose tarabala and chandrabala are read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7), `most` (50) and `asta`, the criterion Venus's and Jupiter's combustion is seen by, named (`SURYA_SIDDHANTA`, `COMBUSTION_ORB`, `PTOLEMY`) or spelt out. A catalogue member may be written bare or in full. The answer comes back in the `muhurta` section, and the days it was judged on are this blob's own, founded once (`03-design/muhurta-at-the-boundary.md`). Null for none, which costs nothing. Refusals are named from the record every binding calls `muhurta`, as `muhurta.rules`. Example: {"rules":"RAMAN_MARRIAGE"}. May be null.
  * @param festivalsJson The days festival rules fall on over the same days, as a JSON object: `rules`, a shipped pack (`DHARMASINDHU`, `NEPAL`, `NEPAL_PANCHANGA`, `PITRI_PAKSHA`, `GAUDIYA`) or a list whose items name a pack or spell a rule out, a later rule replacing an earlier one with its key; an item with a `vedha` is an Ekadashi rule, one with an `after` a rule counting `days` civil days from that festival rule's day (§9.4), one with a `civilDate` or a `civilWeekday` a rule kept on a date of a calendar, one with a `sunEnters` a rule kept on the civil day the Sun enters a `nakshatra`, or `days` after it, one with an `easter` a rule kept `days` from Easter Sunday by a `GREGORIAN` or `JULIAN` `computus` (`festival-rule-language.md` §3.6), the rest festival rules, each kept on a `tithi` or on a `nakshatra` in a `paksha` (§9.7). A catalogue member may be written bare or in full. The answer comes back in the `festivals` section, over this blob's own days founded once, with the two days before and the two after, and as many more as a rule counts from another's day or the Sun's entry, founded beside them (`03-design/festival-rules.md` §7). Null for none, which costs nothing. Refusals are named from the record every binding calls `festivals`, down to a rule's own field under `festivals.rules`. Example: {"rules":"DHARMASINDHU"}. May be null.
+ * @param zoneJson The zone the days are reckoned on, as JSON, the record `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone": "Asia/Kathmandu"}`. Each day is then read on its own offset, `utc_offset_seconds` is not read, and the answer's provenance names the zone's offset, source, era and database (`03-design/time-and-timezone.md` §3.4). Null for the offset. Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
  */
 @SuppressWarnings("unused")
 public record PanchangaRequest(
@@ -50,7 +51,8 @@ public record PanchangaRequest(
         int utcOffsetSeconds,
         long sections,
         String muhurtaJson,
-        String festivalsJson) {
+        String festivalsJson,
+        String zoneJson) {
     /** The value, checked: what may not be absent is present, and what is mutable is copied. */
     public PanchangaRequest {
         Objects.requireNonNull(calendar, "calendar");
@@ -63,7 +65,7 @@ public record PanchangaRequest(
      * @return a copy with {@code calendar} replaced
      */
     public PanchangaRequest withCalendar(Calendar value) {
-        return new PanchangaRequest(value, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(value, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -73,7 +75,7 @@ public record PanchangaRequest(
      * @return a copy with {@code fromYear} replaced
      */
     public PanchangaRequest withFromYear(int value) {
-        return new PanchangaRequest(calendar, value, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, value, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -83,7 +85,7 @@ public record PanchangaRequest(
      * @return a copy with {@code fromMonth} replaced
      */
     public PanchangaRequest withFromMonth(int value) {
-        return new PanchangaRequest(calendar, fromYear, value, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, value, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -93,7 +95,7 @@ public record PanchangaRequest(
      * @return a copy with {@code fromDay} replaced
      */
     public PanchangaRequest withFromDay(int value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, value, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, value, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -103,7 +105,7 @@ public record PanchangaRequest(
      * @return a copy with {@code toMonth} replaced
      */
     public PanchangaRequest withToMonth(int value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, value, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, value, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -113,7 +115,7 @@ public record PanchangaRequest(
      * @return a copy with {@code toDay} replaced
      */
     public PanchangaRequest withToDay(int value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, value, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, value, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -123,7 +125,7 @@ public record PanchangaRequest(
      * @return a copy with {@code toYear} replaced
      */
     public PanchangaRequest withToYear(int value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, value, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, value, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -133,7 +135,7 @@ public record PanchangaRequest(
      * @return a copy with {@code latitudeDeg} replaced
      */
     public PanchangaRequest withLatitudeDeg(double value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, value, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, value, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -143,7 +145,7 @@ public record PanchangaRequest(
      * @return a copy with {@code longitudeDeg} replaced
      */
     public PanchangaRequest withLongitudeDeg(double value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, value, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, value, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -153,7 +155,7 @@ public record PanchangaRequest(
      * @return a copy with {@code altitudeM} replaced
      */
     public PanchangaRequest withAltitudeM(double value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, value, utcOffsetSeconds, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, value, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -163,7 +165,7 @@ public record PanchangaRequest(
      * @return a copy with {@code utcOffsetSeconds} replaced
      */
     public PanchangaRequest withUtcOffsetSeconds(int value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, value, sections, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, value, sections, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -173,7 +175,7 @@ public record PanchangaRequest(
      * @return a copy with {@code sections} replaced
      */
     public PanchangaRequest withSections(long value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, value, muhurtaJson, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, value, muhurtaJson, festivalsJson, zoneJson);
     }
 
     /**
@@ -183,7 +185,7 @@ public record PanchangaRequest(
      * @return a copy with {@code muhurtaJson} replaced
      */
     public PanchangaRequest withMuhurtaJson(String value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, value, festivalsJson);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, value, festivalsJson, zoneJson);
     }
 
     /**
@@ -193,7 +195,17 @@ public record PanchangaRequest(
      * @return a copy with {@code festivalsJson} replaced
      */
     public PanchangaRequest withFestivalsJson(String value) {
-        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, value);
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, value, zoneJson);
+    }
+
+    /**
+     * This value with another zoneJson.
+     *
+     * @param value the zoneJson
+     * @return a copy with {@code zoneJson} replaced
+     */
+    public PanchangaRequest withZoneJson(String value) {
+        return new PanchangaRequest(calendar, fromYear, fromMonth, fromDay, toMonth, toDay, toYear, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds, sections, muhurtaJson, festivalsJson, value);
     }
 
     /** Writes this value into the C struct at {@code raw}; what it points at is allocated in {@code arena}. */
@@ -213,6 +225,7 @@ public record PanchangaRequest(
         Native.TsPanchangaRequest.SECTIONS.set(raw, 0L, Values.u32("sections", sections));
         Native.TsPanchangaRequest.MUHURTA_JSON.set(raw, 0L, Values.cString(arena, muhurtaJson));
         Native.TsPanchangaRequest.FESTIVALS_JSON.set(raw, 0L, Values.cString(arena, festivalsJson));
+        Native.TsPanchangaRequest.ZONE_JSON.set(raw, 0L, Values.cString(arena, zoneJson));
     }
 
     /** This value as a fresh C struct in {@code arena}, ready to be passed by pointer. */
@@ -238,7 +251,8 @@ public record PanchangaRequest(
             ((int) Native.TsPanchangaRequest.UTC_OFFSET_SECONDS.get(raw, 0L)),
             Integer.toUnsignedLong((int) Native.TsPanchangaRequest.SECTIONS.get(raw, 0L)),
             Values.text((MemorySegment) Native.TsPanchangaRequest.MUHURTA_JSON.get(raw, 0L), true),
-            Values.text((MemorySegment) Native.TsPanchangaRequest.FESTIVALS_JSON.get(raw, 0L), true));
+            Values.text((MemorySegment) Native.TsPanchangaRequest.FESTIVALS_JSON.get(raw, 0L), true),
+            Values.text((MemorySegment) Native.TsPanchangaRequest.ZONE_JSON.get(raw, 0L), true));
     }
 
 }

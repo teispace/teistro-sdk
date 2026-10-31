@@ -578,6 +578,11 @@ pub struct TimeStamp {
     pub time_basis_applied: Option<String>,
     /// Delta T's uncertainty in seconds for deep-time instants.
     pub uncertainty_seconds: Option<f64>,
+    /// The clock the answer's days were reckoned on, at the first day's
+    /// noon, when the answer has days; left out otherwise
+    /// (`docs/03-design/time-and-timezone.md` §3.4).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clock: Option<crate::time::ClockReading>,
 }
 
 /// How a calendar date was resolved (`docs/03-design/calendar-bikram-sambat.md`).

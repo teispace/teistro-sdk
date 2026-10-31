@@ -812,6 +812,8 @@ fn the_surface(report: &mut Report) {
         ("almanac.disagreements", "present"),
         ("almanac.festival_calendar", "present"),
         ("almanac.festivals", "present"),
+        ("almanac.changes", "present"),
+        ("almanac.in_zone", "present"),
         ("almanac.next", "present"),
         ("almanac.festivalPack", "present"),
         ("almanac.of", "present"),
@@ -822,6 +824,8 @@ fn the_surface(report: &mut Report) {
         ("almanac.published_reasons", "present"),
         ("almanac.published_from_signed", "present"),
         ("calendar.tibetan_year", "present"),
+        ("time.load_zones", "present"),
+        ("time.zone_database", "present"),
         ("calendar.add", "present"),
         ("calendar.between", "present"),
         ("calendar.convert", "present"),
@@ -6973,6 +6977,10 @@ const REASONS_ASKED: &str = r#"{"first":{"year":2026,"month":10,"day":10},"last"
 /// (`crates/sdk/tests/signed_pack.rs`): its bytes, signature and key.
 const SIGNED_PACK: &str = r#"{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2083","version":3,"entries":[{"action":"SET","rule":"GHATASTHAPANA","day":{"calendar":"GREGORIAN","year":2026,"month":10,"day":11},"source":"p. 41"}]}"#;
 const SIGNED_SIGNATURE: &str = "cae87f1a99d4869d5ba41086cd6ceba8cdb035fd11225f53e09882e98423e21332fb40c9ad564380fb9abcdf4c21cb2726f80fb692511b9593f0f9e60fbe320e";
+/// A one-zone pack of an imagined release, signed under [`SIGNED_KEY`], so a
+/// provenance naming `2099a` can only have come from the pack.
+const ZONE_PACK: &str = r#"{"format":"teistro.zones/1","version":"2099a","zones":{"Asia/Kathmandu":"VFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAVFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAAABD/////ofJ9hAAAAAAeGDCoAQIAAE/8AAAAAE1YAAQAAFDcAApMTVQAKzA1MzAAKzA1NDUACjwrMDU0NT4tNTo0NQo="},"links":{"Asia/Katmandu":"Asia/Kathmandu"}}"#;
+const ZONE_PACK_SIGNATURE: &str = "73a4a729d2d30fdf174da7411bf20d8ff297231d816d0004b7435b6e7b70449d2e128616f7fb7cdcb2d6d0aecab2e1a287f806da782520c99bfe770dd0b9b406";
 const SIGNED_KEY: &str = "ea4a6c63e29c520abef5507b132ec5f9954776aebebe7b92421eea691446d22c";
 
 /// Hex as bytes, for the pinned vector.
@@ -7195,6 +7203,83 @@ fn lilith_line(lilith: Option<&teistro::LilithPosition>) -> String {
 /// test provider cannot place (`03-design/lilith.md`): the apogee with a
 /// latitude, a distance and a retrograde motion, so every column moves,
 /// and two charts, so a section read with the wrong stride shows.
+fn the_zones(report: &mut Report, place: &Place, offset: UtcOffset) {
+    let sky = Context::builder()
+        .profile("nepali-default")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a context over the built-in sky");
+    let line = |zones: &teistro::ZoneDatabase| {
+        let source = match zones.source {
+            teistro::ZoneDatabaseSource::Embedded => "EMBEDDED",
+            teistro::ZoneDatabaseSource::Pack => "PACK",
+        };
+        format!(
+            "{source} {} {} {}",
+            zones.version, zones.zones, zones.bundled
+        )
+    };
+    put(
+        report,
+        "time-zone-database",
+        line(&sky.time().zone_database()),
+    );
+    let loaded = sky
+        .time()
+        .load_zones(
+            ZONE_PACK.as_bytes(),
+            &unhex(ZONE_PACK_SIGNATURE),
+            &unhex(SIGNED_KEY),
+            "2099a",
+        )
+        .expect("the pinned vector verifies");
+    put(report, "time-zone-pack", line(&loaded));
+    let day = CalendarDate::defined(Calendar::Gregorian, 2026, 11, 1);
+    let zoned = sky
+        .almanac()
+        .in_zone(
+            &day,
+            &day,
+            place,
+            &ZoneSpec::iana("Asia/Kathmandu"),
+            &teistro::AlmanacRequest::new(),
+        )
+        .expect("a day on a zone's clock");
+    let clock = zoned.days.provenance.time.clock.expect("a zone's clock");
+    put(
+        report,
+        "almanac-in-zone",
+        format!(
+            "{} {} {}",
+            clock.offset.seconds(),
+            clock.abbreviation.unwrap_or_default(),
+            clock.tzdb_version
+        ),
+    );
+    let changes = sky
+        .almanac()
+        .changes(&teistro::ChangesRequest {
+            first: day,
+            last: CalendarDate::defined(Calendar::Gregorian, 2026, 11, 2),
+            place: *place,
+            clock: teistro::DayClock::Offset(offset),
+            kinds: Vec::new(),
+        })
+        .expect("the change points");
+    let first = changes.value.points.first().expect("a change in two days");
+    put(
+        report,
+        "almanac-changes",
+        format!(
+            "{} {} {} {}",
+            changes.value.points.len(),
+            wire_key(&first.kind),
+            first.from,
+            first.to
+        ),
+    );
+}
+
 fn the_lilith(report: &mut Report, place: &Place, offset: UtcOffset) {
     let sky = Context::builder()
         .profile("western-tropical-default")
@@ -8014,6 +8099,7 @@ fn main() {
     eclipses(&mut report, &place, offset);
     lagnas(&mut report, &place, offset);
     the_lilith(&mut report, &place, offset);
+    the_zones(&mut report, &place, offset);
 
     for (key, value) in &report {
         println!("{key}\t{value}");

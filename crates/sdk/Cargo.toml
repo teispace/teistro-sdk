@@ -78,7 +78,7 @@ default = ["builtin-standard", "full", "signed-packs"]
 # `PublishedSet::from_signed`. Off, a consumer verifies with its own
 # transport and passes the set. Not a module family, since it turns on no
 # crate of its own, so the default names it beside `full`.
-signed-packs = ["teistro-panchanga/signed-packs"]
+signed-packs = ["teistro-panchanga/signed-packs", "teistro-time/signed-packs"]
 # A module family: a crate, its methods here and its re-exports, left out
 # of a build that does not name it (`03-design/wasm-profiles.md`). A build
 # without a family keeps every other answer; the boundary refuses a call
@@ -161,6 +161,7 @@ builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
 [dev-dependencies]
 # Signs the test packs with a key made in the test; the SDK embeds none.
 ed25519-dalek = { version = "3", default-features = false }
+jiff-tzdb = "0.1"
 teistro-state = { path = "../state" }
 teistro-test-allocator = { path = "../test-allocator" }
 
@@ -215,6 +216,10 @@ required-features = ["builtin-ephemeris"]
 [[test]]
 name = "peak_memory"
 required-features = ["builtin-ephemeris", "chart", "muhurta"]
+
+[[test]]
+name = "changes"
+required-features = ["builtin-ephemeris"]
 
 [[test]]
 name = "days_request"

@@ -89,7 +89,6 @@ pub(crate) use almanac::FestivalCalendarAsked;
 #[cfg(feature = "muhurta")]
 pub use almanac::MuhurtaDays;
 #[cfg(feature = "schema")]
-pub(crate) use almanac::NextAsked;
 pub(crate) use almanac::PackAsked;
 #[cfg(feature = "schema")]
 pub(crate) use almanac::ReasonsAsked;
@@ -103,7 +102,9 @@ pub use almanac::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
 };
-pub use almanac::{NextOccurrence, NextRequest, NextTarget};
+#[cfg(feature = "schema")]
+pub(crate) use almanac::{ChangesAsked, NextAsked};
+pub use almanac::{ChangesRequest, DayClock, NextOccurrence, NextRequest, NextTarget};
 pub use almanac::{PackForm, PackListing, PackRequest, PackRow};
 pub use calendar::CalendarArea;
 #[cfg(feature = "chart")]
@@ -122,4 +123,4 @@ pub use naming::NamingArea;
 pub use numerology::NumerologyArea;
 #[cfg(feature = "research")]
 pub use research::ResearchArea;
-pub use time::TimeArea;
+pub use time::{TimeArea, ZoneDatabase, ZoneDatabaseSource};

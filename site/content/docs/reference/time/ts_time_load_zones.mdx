@@ -1,0 +1,79 @@
+---
+title: ts_time_load_zones
+description: "Verifies a signed zone pack and replaces the context's zone database with it, answering the database as `ts_time_zone_database` does."
+---
+
+Verifies a signed zone pack and replaces the context's zone database with it, answering the database as `ts_time_zone_database` does. `pack` is the file's exact bytes, `signature` the publisher's detached Ed25519 signature over them (64 bytes) and `key` the publisher's public key (32 bytes), which the caller fixes at its own build: the library embeds none. A release older than `at_least`, the newest the caller has applied (`""` for any), is refused, so a replayed pack cannot roll a correction back. A refused pack leaves the context as it was.
+
+A key that is no curve point is `INVALID_ARG` on `key`; a signature that is not 64 bytes or does not verify, `INVALID_ARG` on `signature`; bytes that are not a pack, `INVALID_ARG` on the field that is wrong; an older release, `INVALID_ARG` on `version`. A build without `signed-packs` answers `CAPABILITY`.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.time.loadZones
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.time.load_zones
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.time.loadZones
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.time().loadZones
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.time().load_zones
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_time_load_zones(const ts_context * context, const uint8_t * pack, size_t pack_len, const uint8_t * signature, size_t signature_len, const uint8_t * key, size_t key_len, const char * at_least, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `time.load_zones` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `pack` | `const uint8_t *` | bytes read | — |
+| `pack_len` | `size_t` | a length | — |
+| `signature` | `const uint8_t *` | bytes read | — |
+| `signature_len` | `size_t` | a length | — |
+| `key` | `const uint8_t *` | bytes read | — |
+| `key_len` | `size_t` | a length | — |
+| `at_least` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `pack`, `signature` and `key` valid for their lengths' reads; `at_least` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/time.rs`.
