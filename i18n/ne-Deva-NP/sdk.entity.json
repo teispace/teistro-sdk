@@ -1863,6 +1863,16 @@
       "name": "त्रिपुष्कर",
       "prose": "त्रिपुष्कर",
       "iast": "Tripuṣkara"
+    },
+    "RAVI_PUSHYA": {
+      "name": "रवि पुष्य",
+      "prose": "रवि पुष्य",
+      "iast": "Ravi Puṣya"
+    },
+    "GURU_PUSHYA": {
+      "name": "गुरु पुष्य",
+      "prose": "गुरु पुष्य",
+      "iast": "Guru Puṣya"
     }
   },
   "avastha_deeptadi": {
@@ -4506,6 +4516,23 @@
     "CHRISTIAN": {
       "name": "क्रिस्चियन",
       "prose": "क्रिस्चियन"
+    }
+  },
+  "day_marker": {
+    "GANDA_MULA": {
+      "name": "गण्डमूल",
+      "prose": "गण्डमूल",
+      "iast": "Gaṇḍa Mūla"
+    },
+    "GANDANTA": {
+      "name": "गण्डान्त",
+      "prose": "गण्डान्त",
+      "iast": "Gaṇḍānta"
+    },
+    "VINCHUDO": {
+      "name": "वींछुडो",
+      "prose": "वींछुडो",
+      "iast": "Vīñchuḍo"
     }
   }
 }

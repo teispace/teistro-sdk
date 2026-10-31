@@ -1395,8 +1395,9 @@ final class AlmanacArea extends _Area {
   /// day its lagna table, as [AlmanacDay.lagnas]: some four hundred
   /// ascendants a day, so only on asking. [homaAhuti] gives each day its
   /// homa ahuti, as [AlmanacDay.homaAhuti]: the Sun's stars cost a search
-  /// a day does not otherwise make, so only on asking. [days] `false`
-  /// leaves the days out and answers only what is asked beside them;
+  /// a day does not otherwise make, so only on asking. [markers] gives
+  /// each day its ganda mula, gandanta and vinchudo, as
+  /// [AlmanacDay.markers]. [days] `false` leaves the days out and answers only what is asked beside them;
   /// festivals alone are then founded as only what their rules read, which
   /// is what [festivals] asks.
   Almanac of({
@@ -1411,6 +1412,7 @@ final class AlmanacArea extends _Area {
     bool nepalSambat = false,
     bool lagnas = false,
     bool homaAhuti = false,
+    bool markers = false,
     bool sky = false,
     int skyStepMinutes = 0,
     bool days = true,
@@ -1427,6 +1429,7 @@ final class AlmanacArea extends _Area {
         (nepalSambat ? panchangaNepalSambat : 0) |
         (lagnas ? panchangaLagnas : 0) |
         (homaAhuti ? panchangaHomaAhuti : 0) |
+        (markers ? panchangaMarkers : 0) |
         (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
     skyStepMinutes,
@@ -1449,6 +1452,7 @@ final class AlmanacArea extends _Area {
     bool nepalSambat = false,
     bool lagnas = false,
     bool homaAhuti = false,
+    bool markers = false,
     bool sky = false,
     int skyStepMinutes = 0,
     bool days = true,
@@ -1465,6 +1469,7 @@ final class AlmanacArea extends _Area {
         (nepalSambat ? panchangaNepalSambat : 0) |
         (lagnas ? panchangaLagnas : 0) |
         (homaAhuti ? panchangaHomaAhuti : 0) |
+        (markers ? panchangaMarkers : 0) |
         (sky ? panchangaSky : 0) |
         (days ? 0 : panchangaWithoutDays),
     skyStepMinutes,
@@ -29665,6 +29670,7 @@ final class Almanac {
       'bhadraVasa': counts.bhadraVasa,
       'shivaVasa': counts.shivaVasa,
       'namedPanchaka': counts.namedPanchaka,
+      'markers': counts.markers,
     };
     return columns.map((name, column) {
       final starts = Uint32List(column.length + 1);
@@ -30084,6 +30090,27 @@ final class AlmanacDay {
       c.insideTo,
       (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
       Graha.byId,
+    );
+  }
+
+  /// The day's markers from the Moon alone, when the request asked with
+  /// `markers: true` (`03-design/day-markers.md` §3): `GANDA_MULA` over
+  /// each of the six junction stars, `GANDANTA` over two ghatis each side
+  /// of a junction (Muhurta Chintamani, Vivaha-prakarana v. 41) and
+  /// `VINCHUDO` while the Moon is in Scorpio, in the order they begin;
+  /// ganda mula's whole star and vinchudo are printed readings (crux
+  /// C1051). Empty when not asked for.
+  List<Span<DayMarker>> get markers {
+    final c = batch.decoded.markers;
+    return _spans(
+      'markers',
+      c.member,
+      c.wholeFrom,
+      c.wholeTo,
+      c.insideFrom,
+      c.insideTo,
+      (c.sunrises, c.endsGhati, c.endsPala, c.endsVipala),
+      DayMarker.byId,
     );
   }
 

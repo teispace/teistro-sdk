@@ -407,6 +407,21 @@ public final class AlmanacDay {
     }
 
     /**
+     * The day's markers from the Moon alone, when the request asked for them ({@code 03-design/day-markers.md}
+     * §3): {@code GANDA_MULA} over each of the six junction stars, {@code GANDANTA} over two ghatis each side of a
+     * junction (Muhurta Chintamani, Vivaha-prakarana v. 41) and {@code VINCHUDO} while the Moon is in Scorpio, in
+     * the order they begin; ganda mula's whole star and vinchudo are printed readings (crux C1051). Empty when not
+     * asked for.
+     *
+     * @return the spans
+     */
+    public List<Span<DayMarker>> markers() {
+        Panchanga.Markers c = batch.decoded().markers();
+        return spans("markers", new SpanColumns(c::member, c::wholeFrom, c::wholeTo, c::insideFrom,
+                c::insideTo, c::sunrises, c::endsGhati, c::endsPala, c::endsVipala), DayMarker::of);
+    }
+
+    /**
      * The signs the Moon stood in.
      *
      * @return the spans

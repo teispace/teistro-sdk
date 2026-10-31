@@ -1871,6 +1871,16 @@
       "name": "Tripushkar",
       "prose": "Tripushkar",
       "iast": "Tripuṣkara"
+    },
+    "RAVI_PUSHYA": {
+      "name": "Ravi Pushya",
+      "prose": "Ravi Pushya",
+      "iast": "Ravi Puṣya"
+    },
+    "GURU_PUSHYA": {
+      "name": "Guru Pushya",
+      "prose": "Guru Pushya",
+      "iast": "Guru Puṣya"
     }
   },
   "avastha_deeptadi": {
@@ -4514,6 +4524,23 @@
     "CHRISTIAN": {
       "name": "Christian",
       "prose": "Christian"
+    }
+  },
+  "day_marker": {
+    "GANDA_MULA": {
+      "name": "Ganda Mula",
+      "prose": "Ganda Mula",
+      "iast": "Gaṇḍa Mūla"
+    },
+    "GANDANTA": {
+      "name": "Gandanta",
+      "prose": "Gandanta",
+      "iast": "Gaṇḍānta"
+    },
+    "VINCHUDO": {
+      "name": "Vinchudo",
+      "prose": "Vinchudo",
+      "iast": "Vīñchuḍo"
     }
   }
 }

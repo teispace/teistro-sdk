@@ -77,6 +77,7 @@ from ._ffi import (
     PANCHANGA_ECLIPSES,
     PANCHANGA_HOMA_AHUTI,
     PANCHANGA_LAGNAS,
+    PANCHANGA_MARKERS,
     PANCHANGA_NEPAL_SAMBAT,
     PANCHANGA_SKY,
     PANCHANGA_WITHOUT_DAYS,
@@ -812,6 +813,7 @@ from .catalogue import (
     AshubhaYoga,
     AvasthaCheshta,
     BhadraVasa,
+    DayMarker,
     ShivaVasa,
     Member,
     AvasthaSayanadi,
@@ -1971,6 +1973,7 @@ __all__ = [
     "AgniVasa",
     "AshubhaYoga",
     "BhadraVasa",
+    "DayMarker",
     "ShivaVasa",
     "Direction",
     "Gana",
@@ -3416,6 +3419,7 @@ class AlmanacArea(_Area):
         nepal_sambat: bool = False,
         lagnas: bool = False,
         homa_ahuti: bool = False,
+        markers: bool = False,
         sky: bool = False,
         sky_step_minutes: int = 0,
         days: bool = True,
@@ -3441,8 +3445,9 @@ class AlmanacArea(_Area):
         `sky_step_minutes`, 1 to 240, ten when left at zero.
         `homa_ahuti=True` gives each day its homa ahuti, as
         `AlmanacDay.homa_ahuti`: the Sun's stars cost a search a day does
-        not otherwise make, so only on asking. `days=False` leaves the days
-        out
+        not otherwise make, so only on asking. `markers=True` gives each
+        day its ganda mula, gandanta and vinchudo, as `AlmanacDay.markers`.
+        `days=False` leaves the days out
         and answers only what is asked beside them; festivals alone are
         then founded as only what their rules read, which is what
         `AlmanacArea.festivals` asks.
@@ -3460,6 +3465,7 @@ class AlmanacArea(_Area):
             | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
             | (PANCHANGA_LAGNAS if lagnas else 0)
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
+            | (PANCHANGA_MARKERS if markers else 0)
             | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
             sky_step_minutes,
@@ -3479,6 +3485,7 @@ class AlmanacArea(_Area):
         nepal_sambat: bool = False,
         lagnas: bool = False,
         homa_ahuti: bool = False,
+        markers: bool = False,
         sky: bool = False,
         sky_step_minutes: int = 0,
         days: bool = True,
@@ -3501,6 +3508,7 @@ class AlmanacArea(_Area):
             | (PANCHANGA_NEPAL_SAMBAT if nepal_sambat else 0)
             | (PANCHANGA_LAGNAS if lagnas else 0)
             | (PANCHANGA_HOMA_AHUTI if homa_ahuti else 0)
+            | (PANCHANGA_MARKERS if markers else 0)
             | (PANCHANGA_SKY if sky else 0)
             | (0 if days else PANCHANGA_WITHOUT_DAYS),
             sky_step_minutes,
@@ -20173,6 +20181,19 @@ class AlmanacDay:
         return self._spans("homa_ahuti", self.batch.decoded.homa_ahuti, Graha)
 
     @property
+    def markers(self) -> list[Span[DayMarker]]:
+        """The day's markers from the Moon alone, when `markers=True` asked
+        for them (`03-design/day-markers.md` §3): `GANDA_MULA` over each
+        of the six junction stars, `GANDANTA` over two ghatis each side of
+        a junction (Muhurta Chintamani, Vivaha-prakarana v. 41) and
+        `VINCHUDO` while the Moon is in Scorpio, in the order they begin.
+
+        Ganda mula's whole star and vinchudo are printed readings (crux
+        C1051). Empty when not asked for.
+        """
+        return self._spans("markers", self.batch.decoded.markers, DayMarker)
+
+    @property
     def moon_signs(self) -> list[Span[Rashi]]:
         """The signs the Moon stood in."""
         return self._spans("moon_signs", self.batch.decoded.moon_signs, Rashi)
@@ -20328,6 +20349,7 @@ class Almanac:
             "bhadra_vasa",
             "shiva_vasa",
             "named_panchaka",
+            "markers",
         ):
             column = getattr(counts, name)
             starts = [0] * (len(column) + 1)

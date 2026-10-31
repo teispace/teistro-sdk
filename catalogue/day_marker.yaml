@@ -1,0 +1,32 @@
+kind: day_marker
+number: 79
+version: 1
+doc: "A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051)."
+attributes: { printed: bool }
+members:
+  - key: GANDA_MULA
+    id: 0
+    doc: "Ganda mula: the Moon in Ashwini, Ashlesha, Magha, Jyeshtha, Mula or Revati, the six stars on either side of the three junctions of water and fire signs, each the whole star as the almanacs mark it"
+    attributes: { printed: true }
+    sources:
+      - text: "Muhurta Chintamani (1906)"
+        ref: "Vivaha-prakarana v. 41: ज्येष्ठापौष्णभसार्पभान्त्यघटिकायुग्मं च मूलाश्विनीपित्र्यादौ घटिकाद्वयं, the junctions; the whole star is the almanacs' (crux C1051)"
+    mark: T
+  - key: GANDANTA
+    id: 1
+    doc: "Nakshatra gandanta: the last two ghatis of Revati, Ashlesha and Jyeshtha and the first two of Ashwini, Magha and Mula, a ghati twenty-four minutes"
+    attributes: { printed: false }
+    sources:
+      - text: "Muhurta Chintamani (1906)"
+        ref: "Vivaha-prakarana v. 41: ज्येष्ठापौष्णभसार्पभान्त्यघटिकायुग्मं च मूलाश्विनीपित्र्यादौ घटिकाद्वयं"
+      - text: "BPHS"
+        ref: "ch. 92 v. 3"
+    mark: V
+  - key: VINCHUDO
+    id: 2
+    doc: "Vinchudo: the Moon in Scorpio, from its entry in Vishakha's last quarter to its leaving Jyeshtha, which the Gujarati almanacs print against a journey south and other rites"
+    attributes: { printed: true }
+    sources:
+      - text: "Gujarati almanacs"
+        ref: "printed as વીંછુડો; no text read gives it (crux C1051)"
+    mark: T

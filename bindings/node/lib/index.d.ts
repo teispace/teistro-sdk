@@ -15,6 +15,7 @@ import type {
   AgniVasa,
   AshubhaYoga,
   BhadraVasa,
+  DayMarker,
   ShivaVasa,
   AvasthaDeeptadi,
   AvasthaSayanadi,
@@ -5791,6 +5792,13 @@ export declare class AlmanacDay {
    * C751), one span for each stretch the two stars both held; empty when not asked for.
    */
   readonly homaAhuti: readonly Span<Graha>[];
+  /**
+   * The day's markers from the Moon alone, when the request asked with `markers: true`: `GANDA_MULA` over each of
+   * the six junction stars, `GANDANTA` over two ghatis each side of a junction (Muhurta Chintamani,
+   * Vivaha-prakarana v. 41) and `VINCHUDO` while the Moon is in Scorpio, in the order they begin; ganda mula's whole
+   * star and vinchudo are printed readings (crux C1051). Empty when not asked for.
+   */
+  readonly markers: readonly Span<DayMarker>[];
   /** The signs the Moon stood in. */
   readonly moonSigns: readonly Span<Rashi>[];
   /** The signs the Sun stood in. */
@@ -5835,6 +5843,8 @@ export interface AlmanacRequest {
   readonly lagnas?: boolean;
   /** Whether to give each day its homa ahuti, as `AlmanacDay.homaAhuti`; `false` by default, which costs nothing. */
   readonly homaAhuti?: boolean;
+  /** Whether to give each day its ganda mula, gandanta and vinchudo, as `AlmanacDay.markers`; `false` by default, which costs nothing. */
+  readonly markers?: boolean;
   /** Whether to answer each day's sky, as `Almanac.sky`; `false` by default, which costs nothing. */
   readonly sky?: boolean;
   /** The step of the sky's paths in minutes, 1 to 240, ten when left out. */
@@ -7592,7 +7602,7 @@ export declare class AlmanacArea {
    * its day can change.
    */
   festivals(
-    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'sky' | 'skyStepMinutes' | 'days'> & {
+    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'markers' | 'sky' | 'skyStepMinutes' | 'days'> & {
       readonly festivals: FestivalRequest;
     },
   ): FestivalAnswer;

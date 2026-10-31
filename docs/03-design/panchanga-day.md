@@ -395,13 +395,17 @@ Two things the corpus does settle, and both are design decisions:
 2. **Tripushkar's classical rule holds** — a Bhadra tithi on a Sunday,
    Tuesday or Saturday in a three-footed nakshatra — on the corpus's one
    instance, with no false positives. Dwipushkar never fires, so its rule
-   ships untested and says so.
+   ships untested and says so. Both pushkara rules are now the one
+   generator Muhurta Chintamani's verse implies (a star a sign boundary
+   cuts in two or three; `day-markers.md` §2), which drops the Anuradha
+   the first Dwipushkar row carried (crux C1050).
 
 So the yogas ship as **cited tables with the catalogue's confidence
 marks** (`V` where a rank-1 or rank-2 source states the row, `T` where
 only tradition does), selected by `panchanga.muhurta_tables` the way
-`aspect.drishti_table` selects a drishti table, and they are reported as
-intervals:
+`aspect.drishti_table` selects a drishti table (`CLASSICAL`, or
+`MUHURTA_CHINTAMANI` for the text's full tables over every star of the
+day, `day-markers.md` §2), and they are reported as intervals:
 
 ```rust
 pub struct MuhurtaYoga {
