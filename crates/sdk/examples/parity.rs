@@ -6716,6 +6716,10 @@ const OWN_FOLLOWING: &str =
 /// takes.
 const PUBLISHED_SET: &str = r#"{"format":"teistro.published/1","publisher":"a patro printed in Nepal","id":"np-2081","version":3,"entries":[{"action":"SET","rule":"LAKSHMI_PUJA","day":{"calendar":"GREGORIAN","year":2024,"month":11,"day":2},"source":"p. 1"},{"action":"WITHDRAW","rule":"VIJAYA_DASHAMI","day":{"calendar":"GREGORIAN","year":2024,"month":10,"day":12},"source":"p. 2"},{"action":"ADD","key":"MINE","day":{"calendar":"GREGORIAN","year":2024,"month":10,"day":20},"names":{"en-Latn":"Mine"},"source":"p. 3"},{"action":"SET","rule":"HOLIKA","day":{"calendar":"GREGORIAN","year":2024,"month":10,"day":25},"source":"p. 4"}]}"#;
 
+/// A rule kept on the tenth of Rabi II by the tabular Hijri calendar,
+/// asked with the calendar moved a day toward a sighting: 14 October 2024
+/// by the table, 13 October moved.
+const OWN_HIJRI: &str = r#"{"key":"RABI_II_TENTH","source":"the tenth of Rabi II","civilDate":{"calendar":"calendar.HIJRI_TABULAR","month":4,"day":10}}"#;
 const OWN_DATED: &str = r#"{"key":"KARTIK_FIRST","source":"the first of Kartik","civilDate":{"calendar":"calendar.BIKRAM_SAMBAT","month":7,"day":1}},{"key":"LAST_SUNDAY","source":"October's last Sunday","civilWeekday":{"calendar":"calendar.GREGORIAN","month":10,"weekday":"vara.RAVIVARA","nth":-1}}"#;
 
 /// An Ekadashi fast's parana as one parity column, "-" for none.
@@ -6818,6 +6822,7 @@ fn festivals(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
         ("amended", format!(r#"["DHARMASINDHU",{OWN_RULE}]"#)),
         ("nepal", format!(r#"["NEPAL",{OWN_FOLLOWING}]"#)),
         ("dated", format!(r#"["NEPAL",{OWN_DATED}]"#)),
+        ("hijri", format!(r#"[{OWN_HIJRI}],"hijriOffset":1"#)),
         (
             "published",
             format!(r#""DHARMASINDHU","published":[{PUBLISHED_SET}]"#),

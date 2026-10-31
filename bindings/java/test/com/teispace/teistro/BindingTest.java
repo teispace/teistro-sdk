@@ -1900,7 +1900,7 @@ public final class BindingTest {
                     var set = new com.teispace.teistro.request.PublishedSet(entries, "teistro.published/1", "np-2082",
                             "a patro printed in Nepal", 2);
                     FestivalAnswer answer = sky.almanac().festivals(navamiFrom, navamiTo, kathmandu, 20_700,
-                            new com.teispace.teistro.request.FestivalRequest(null, List.of(set), com.teispace.teistro.request.FestivalRules.DHARMASINDHU));
+                            new com.teispace.teistro.request.FestivalRequest(null, null, List.of(set), com.teispace.teistro.request.FestivalRules.DHARMASINDHU));
                     FestivalObservance moved = answer.observances().stream()
                             .filter(o -> o.rule().equals("MAHA_NAVAMI")).findFirst().orElseThrow();
                     same(new Published("PUBLISHED", "a patro printed in Nepal", "np-2082", 2, "p. 1", navami.day(), null),
@@ -1925,7 +1925,7 @@ public final class BindingTest {
                                     "NO_SUCH_RULE", "p. 1")),
                             "teistro.published/1", "np-2082", "a patro printed in Nepal", 2);
                     TeistroException strayed = refusal(() -> sky.almanac().festivals(navamiFrom, navamiTo, kathmandu,
-                            20_700, new com.teispace.teistro.request.FestivalRequest(null, List.of(stray), com.teispace.teistro.request.FestivalRules.DHARMASINDHU)));
+                            20_700, new com.teispace.teistro.request.FestivalRequest(null, null, List.of(stray), com.teispace.teistro.request.FestivalRules.DHARMASINDHU)));
                     same("festivals.published[0].entries[0].rule", strayed.field(), "a SET naming no carried rule");
                 }
                 // Why a published day differs (published-overrides.md §4): the
@@ -1947,7 +1947,7 @@ public final class BindingTest {
                                     && Math.abs(fixed.applyAsLong(p[0].day()) - fixed.applyAsLong(p[1].day())) <= 3)
                             .findFirst().orElseThrow();
                     java.util.function.Function<CalendarDate, com.teispace.teistro.request.FestivalRequest> published =
-                            d -> new com.teispace.teistro.request.FestivalRequest(null, List.of(
+                            d -> new com.teispace.teistro.request.FestivalRequest(null, null, List.of(
                                     new com.teispace.teistro.request.PublishedSet(List.of(
                                             new com.teispace.teistro.request.PublishedEntrySet(
                                                     new com.teispace.teistro.request.CalendarDay(Calendar.GREGORIAN,
