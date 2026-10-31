@@ -3025,6 +3025,11 @@ extension CivilDateTimes on CalendarDate {
 
 /// A zone of the embedded database, by its IANA name
 /// (`Asia/Kathmandu`).
+/// A tithi's number in the lunar month, 1 for Shukla Pratipada to 30 for
+/// Amavasya. A tithi is named by its number in the paksha; this is the count
+/// through the month, the catalogue's id and one.
+int tithiMonthNumber(Tithi tithi) => tithi.id + 1;
+
 ZoneSpec ianaZone(String name) => ZoneSpec(
   kind: ZoneKind.iana,
   offsetSeconds: 0,

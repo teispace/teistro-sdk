@@ -14,7 +14,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_GRAHA` | 1 | The nine grahas of the Parashari tradition and the three outer planets. |
 | `TS_KIND_RASHI` | 2 | The twelve signs. |
 | `TS_KIND_NAKSHATRA` | 3 | The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299). |
-| `TS_KIND_TITHI` | 4 | The thirty tithis of the lunar month. |
+| `TS_KIND_TITHI` | 4 | The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30. |
 | `TS_KIND_KARANA` | 5 | The eleven karanas: seven movable, four fixed. |
 | `TS_KIND_YOGA` | 6 | The twenty-seven nitya yogas of the Sun and Moon. |
 | `TS_KIND_VARA` | 7 | The seven weekdays with their lords. |
@@ -159,7 +159,7 @@ The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a m
 
 ## ts_tithi
 
-The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
+The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
 
 | member | value | what it is |
 |---|---|---|

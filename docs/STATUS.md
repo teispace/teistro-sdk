@@ -3421,7 +3421,8 @@ sky, conformance days, naming `nepali-drik`, Hindi and Sanskrit calendar text an
 formatter. SR-73 is done in PR #423 and SR-70 mostly was already. SR-66 is done: `nepali-default`
 is `nepali-drik`, the old name an accepted alias that answers the same settings and says the new id
 (`03-design/settings-and-profiles.md` §3.2). SR-73 is finished: every binding's day and the digest
-(format 1.1, `clock`) say each day's offset, and the digest takes `zone`.
+(format 1.1, `clock`) say each day's offset, and the digest takes `zone`. SR-70 is finished:
+`month_number` on the tithi, and `tithiMonthNumber` in every binding.
 
 ### An almanac app's brief (from 2026-10-20)
 

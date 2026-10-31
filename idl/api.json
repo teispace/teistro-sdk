@@ -245,7 +245,7 @@
         {
           "name": "Tithi",
           "value": 4,
-          "doc": "The thirty tithis of the lunar month.",
+          "doc": "The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30.",
           "key": "tithi"
         },
         {
@@ -1000,7 +1000,7 @@
     },
     {
       "name": "Tithi",
-      "doc": "The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.",
+      "doc": "The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.",
       "repr": "u16",
       "kind": "tithi",
       "values": [

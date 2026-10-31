@@ -290,7 +290,7 @@ export declare const Kind: {
    */
   readonly Nakshatra: 'nakshatra';
   /**
-   * The thirty tithis of the lunar month.
+   * The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30.
    */
   readonly Tithi: 'tithi';
   /**
@@ -881,7 +881,7 @@ export declare const Nakshatra: {
 export declare const NakshatraById: ReadonlyMap<number, Nakshatra>;
 
 /**
- * The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
+ * The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
  */
 export type Tithi =
   | 'tithi.SHUKLA_PRATIPADA'

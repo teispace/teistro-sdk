@@ -982,6 +982,7 @@ from .catalogue import (
 )
 
 __all__ = [
+    "tithi_month_number",
     "INTERNAL_CODE",
     "InternalReport",
     "DigestSpan",
@@ -20586,6 +20587,13 @@ def when_unknown(day: CalendarDate) -> CivilDateTime:
         date=day,
         time=CivilTime(hour=0, minute=0, second=0, has_time=False, nanos=0),
     )
+
+
+def tithi_month_number(tithi: Tithi) -> int:
+    """A tithi's number in the lunar month, 1 for Shukla Pratipada to 30 for
+    Amavasya. A tithi is named by its number in the paksha; this is the count
+    through the month, the catalogue's id and one."""
+    return tithi.id + 1
 
 
 def iana_zone(name: str) -> ZoneSpec:

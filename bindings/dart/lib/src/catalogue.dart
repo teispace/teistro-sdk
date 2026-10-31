@@ -167,7 +167,7 @@ enum Kind {
   rashi(2, 'rashi'),
   /// The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299).
   nakshatra(3, 'nakshatra'),
-  /// The thirty tithis of the lunar month.
+  /// The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30.
   tithi(4, 'tithi'),
   /// The eleven karanas: seven movable, four fixed.
   karana(5, 'karana'),
@@ -548,7 +548,7 @@ enum Nakshatra implements KeyOf<Nakshatra> {
   }
 }
 
-/// The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
+/// The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
 enum Tithi implements KeyOf<Tithi> {
   /// Shukla Pratipada
   shuklaPratipada(0, 'SHUKLA_PRATIPADA'),

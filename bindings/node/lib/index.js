@@ -2839,6 +2839,21 @@ export class TimeArea extends Area {
   }
 }
 
+/**
+ * A tithi's number in the lunar month, 1 for Shukla Pratipada to 30 for
+ * Amavasya. A tithi is named by its number in the paksha; this is the count
+ * through the month, the catalogue's id and one.
+ *
+ * @param {string} tithi a member of `Tithi`
+ * @returns {number} 1 to 30
+ */
+export function tithiMonthNumber(tithi) {
+  for (const [id, key] of TithiById) {
+    if (key === tithi) return id + 1;
+  }
+  throw new TypeError(`tithi: expected a member of Tithi, not ${String(tithi)}`);
+}
+
 /** A zone as the record the boundary reads beside a range. */
 function zoneJson(zone) {
   if (typeof zone !== 'object' || zone === null) {

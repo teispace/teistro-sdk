@@ -50,6 +50,11 @@ moves; a festival answer holding no anniversary does not.
   fraction lit, phase angle, waxing, bright limb and parallactic angle as the place sees
   them. A polar day says `ALWAYS_ABOVE` or `ALWAYS_BELOW` (`03-design/day-sky.md`).
 
+**A tithi says its number in the month.**
+**Numbers:** none. The `tithi` catalogue kind is version 2.
+- `month_number`, 1 to 30, joins the tithi's attributes beside `number`, 1 to 15 in the
+  paksha, and every binding has `tithiMonthNumber` (SR-70).
+
 **A day says the clock it was read on.**
 **Numbers:** none. The digest's format is 1.1, so its bytes and seal move.
 - Every binding's day answers `utcOffsetSeconds`: a new `days` column in the panchanga blob,

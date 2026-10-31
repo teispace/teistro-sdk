@@ -59,6 +59,13 @@ void main() {
     );
   });
 
+  test('a tithi says its number in the month', () {
+    expect(tithiMonthNumber(Tithi.shuklaPratipada), 1);
+    expect(tithiMonthNumber(Tithi.purnima), 15);
+    expect(tithiMonthNumber(Tithi.krishnaPratipada), 16);
+    expect(tithiMonthNumber(Tithi.amavasya), 30);
+  });
+
   test('a day says the clock it was read on, and a digest keeps it', () {
     final ctx = context();
     final place = Observer(

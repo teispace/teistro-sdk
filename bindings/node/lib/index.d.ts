@@ -7951,6 +7951,9 @@ export interface FestivalCalendarRequest {
   readonly events?: readonly SuppliedEvent[];
 }
 
+/** A tithi's number in the lunar month, 1 for Shukla Pratipada to 30 for Amavasya. */
+export function tithiMonthNumber(tithi: Tithi): number;
+
 /** A range of days, as `almanac.digest` writes them. */
 export interface DigestOptions {
   /** The first day, and the calendar the digest's dates are in. */

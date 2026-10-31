@@ -52,7 +52,7 @@ diacritics elsewhere):
 | 1 | `graha` | 12 | `SUN`, `MOON`, `MARS`, `MERCURY`, `JUPITER`, `VENUS`, `SATURN`, `RAHU`, `KETU`, `URANUS`, `NEPTUNE`, `PLUTO` | body class, nature, gender, element, guna, varna, direction, exaltation, debilitation, moolatrikona, own signs, natural relationships |
 | 2 | `rashi` | 12 | `ARIES` to `PISCES` | lord, element, modality, parity, rising type |
 | 3 | `nakshatra` | 27 | `ASHWINI` to `REVATI` | Vimshottari lord, deity, gana, nadi, yoni with its sex, varna, element, muhurta nature, four padas with their aksharas; Abhijit is a span of the 28-scheme's table, not a member |
-| 4 | `tithi` | 30 | `SHUKLA_PRATIPADA` to `PURNIMA`, `KRISHNA_PRATIPADA` to `AMAVASYA` | paksha, number, deity, class (nanda, bhadra, jaya, rikta, purna) |
+| 4 | `tithi` | 30 | `SHUKLA_PRATIPADA` to `PURNIMA`, `KRISHNA_PRATIPADA` to `AMAVASYA` | paksha, number in the paksha (1 to 15), number in the month (`month_number`, 1 to 30), deity, class (nanda, bhadra, jaya, rikta, purna) |
 | 5 | `karana` | 11 | `BAVA`, `BALAVA`, `KAULAVA`, `TAITILA`, `GARIJA`, `VANIJA`, `VISHTI`, `SHAKUNI`, `CHATUSHPADA`, `NAGA`, `KIMSTUGHNA` | movable or fixed, deity |
 | 6 | `yoga` | 27 | `VISHKAMBHA` to `VAIDHRITI` | deity, auspiciousness class |
 | 7 | `vara` | 7 | `RAVIVARA` to `SHANIVARA` | lord, weekday number |
