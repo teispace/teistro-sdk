@@ -23,6 +23,8 @@ rule now carries its values.
   Diwali in 2024 (C854 to C856). No rule was moved to meet them.
 - `almanac.festivalPack` lists a pack's rules with their values and `unsourced`, the
   fields no source gives. A festival request's `only` keeps the days a filter admits.
+- Java's generated `FestivalRequest` gains a leading `only` argument, which breaks a
+  positional call. A feed's events now state their kind and tradition in `CATEGORIES`.
 - The pack `INDIA_CENTRAL`: the Government of India's central holidays, held to seven
   years of its memoranda (`03-design/india-central-holidays.md`). Its four days set by
   the moon are carried as printed, marked `subjectTo: MOON_SIGHTING`, and are not
