@@ -439,7 +439,7 @@ export interface ContextOptions {
    */
   readonly flags: number;
   /**
-   * The shipped profile's id (`parashari-classical`, `nepali-default`,
+   * The shipped profile's id (`parashari-classical`, `nepali-drik`,
    * `nepali-committee`, `surya-siddhanta`, `kp-default`,
    * `western-tropical-default`, `conformance-baseline`).
    * @example parashari-classical

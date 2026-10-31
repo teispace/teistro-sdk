@@ -175,7 +175,7 @@ the sunrise is the built-in's, which is how this runs anywhere.
 
 ```js title="bindings/node/example/nepal_official.mjs"
 const official = new Context({ ...nepalOfficial(), locale: 'en-Latn' });
-const modern = new Context({ profile: 'nepali-default', locale: 'en-Latn', ephemeris: 'BUILTIN' });
+const modern = new Context({ profile: 'nepali-drik', locale: 'en-Latn', ephemeris: 'BUILTIN' });
 ```
 
 </Tab>
@@ -183,7 +183,7 @@ const modern = new Context({ profile: 'nepali-default', locale: 'en-Latn', ephem
 
 ```python title="bindings/python/example/nepal_official.py"
 with teistro.context(**nepal_official(), locale="en-Latn") as official, teistro.context(
-    profile="nepali-default", locale="en-Latn", ephemeris=Ephemeris.BUILTIN
+    profile="nepali-drik", locale="en-Latn", ephemeris=Ephemeris.BUILTIN
 ) as modern:
 ```
 
@@ -214,7 +214,7 @@ let official = Context::builder()
 </Tab>
 </Tabs>
 
-The modern reckoning, `nepali-default`, reads the same day from the
+The modern reckoning, `nepali-drik`, reads the same day from the
 modern sky, and the two name another sunrise tithi on a few days a month.
 The reason is always a tithi's end against the sunrise, so each row
 prints both ends:

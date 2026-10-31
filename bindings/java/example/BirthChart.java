@@ -91,7 +91,7 @@ public final class BirthChart {
 
     private static ContextOptions options(String settingsJson) {
         return ContextOptions.builder()
-                .profile("nepali-default")
+                .profile("nepali-drik")
                 .locale("ne-Deva-NP")
                 .ephemeris(Ephemeris.BUILTIN)
                 .settingsJson(settingsJson)

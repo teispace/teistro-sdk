@@ -907,7 +907,7 @@ pub struct Beside<'a> {
 ///
 /// let place = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
 /// let provenance = Provenance::new(
-///     Version::new(0, 1, 0), 1, 1, "nepali-default",
+///     Version::new(0, 1, 0), 1, 1, "nepali-drik",
 ///     Hash::of(b"settings"), Hash::of(b"input"),
 /// );
 /// // A batch of no days is still a blob, its counts saying so.
@@ -1257,7 +1257,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
 /// # let official = TsContext::build_chain(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, vec![teistro::Ephemeris::SuryaSiddhanta, teistro::Ephemeris::Builtin])?;
-/// # let modern = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # let modern = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
 /// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
 /// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
 /// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
@@ -1345,7 +1345,7 @@ pub unsafe extern "C" fn ts_almanac_disagreements(
 /// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
-/// # let modern = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # let modern = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
 /// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
 /// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
 /// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
@@ -1430,7 +1430,7 @@ pub unsafe extern "C" fn ts_almanac_published_reasons(
 /// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
-/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
 /// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
 /// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
 /// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
@@ -1509,7 +1509,7 @@ pub unsafe extern "C" fn ts_almanac_sankalpa(
 /// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
-/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
 /// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
 /// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
 /// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
@@ -1582,7 +1582,7 @@ pub unsafe extern "C" fn ts_almanac_ashauch(
 /// # #[cfg(feature = "builtin-ephemeris")] {
 /// # use teistro_ffi::context::{OptionTexts, TsContext};
 /// #
-/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-drik"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
 /// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
 /// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
 /// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();

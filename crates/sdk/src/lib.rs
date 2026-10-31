@@ -21,7 +21,7 @@
 //! use teistro::{CalendarDate, Context, Ephemeris};
 //!
 //! let sdk = Context::builder()
-//!     .profile("nepali-default")
+//!     .profile("nepali-drik")
 //!     .locale("ne-Deva-NP")
 //!     .ephemeris([Ephemeris::Builtin])
 //!     .build()?;

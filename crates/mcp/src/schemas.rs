@@ -20,7 +20,7 @@ use serde_json::{Map, Value, json};
 use teistro::Error;
 use teistro::records::Record;
 use teistro_core::envelope::Provenance;
-use teistro_core::settings::{DEFAULT_PROFILE, SHIPPED_PROFILES};
+use teistro_core::settings::{DEFAULT_PROFILE, PROFILE_ALIASES, SHIPPED_PROFILES};
 use teistro_idl::emit::without_rust_examples;
 
 use crate::tools::annotations;
@@ -143,12 +143,18 @@ pub(crate) fn input(record: &Record) -> Value {
 /// The arguments naming the context a call computes under, as every tool
 /// reading one states them: `profile`, `settings` and `locale`.
 pub(crate) fn scope_properties() -> Map<String, Value> {
+    let accepted: Vec<&str> = SHIPPED_PROFILES
+        .into_iter()
+        .chain(PROFILE_ALIASES.map(|(alias, _)| alias))
+        .collect();
     let properties = json!({
             "profile": {
                 "type": "string",
-                "enum": SHIPPED_PROFILES,
+                "enum": accepted,
                 "default": DEFAULT_PROFILE,
-                "description": "The shipped profile the settings resolve from.",
+                "description": "The shipped profile the settings resolve from. An older \
+                                name opens the profile it names; `settings.describe` lists \
+                                each profile's aliases.",
             },
             "settings": {
                 "type": "object",

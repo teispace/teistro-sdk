@@ -76,7 +76,7 @@ fn a_kp_chart_is_the_founded_chart_read_by_its_lords() {
 /// says to read it as it is.
 #[test]
 fn a_chart_outside_the_kp_ayanamshas_is_refused_unless_asked_for() {
-    let sdk = context("nepali-default", "{}");
+    let sdk = context("nepali-drik", "{}");
     let chart = chart_at(&sdk, 27.7172);
     let refused = sdk.chart().kp(&chart, &KpRequest::new()).unwrap_err();
     assert_eq!(refused.field(), Some("frame.ayanamsha"));

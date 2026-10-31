@@ -21,7 +21,7 @@ from teistro import (
 
 def main() -> None:
     teistro = Teistro.open()
-    with teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
         # Forty-eight births at Kathmandu, two months and an hour apart, and
         # the first sixteen called the cases. The labels mean nothing, so a
         # study that reads them honestly finds nothing: that is what the

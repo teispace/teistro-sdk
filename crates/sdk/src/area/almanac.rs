@@ -831,7 +831,7 @@ impl<'a> AlmanacArea<'a> {
     /// use teistro::catalogue::{Calendar, Samvatsara};
     /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
     ///
-    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
     /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
     /// let day = CalendarDate::defined(Calendar::Gregorian, 2021, 6, 1);
     /// let years = sdk.almanac().years(&day, &day, &kathmandu, UtcOffset::literal(5, 45, 0))?;
@@ -875,7 +875,7 @@ impl<'a> AlmanacArea<'a> {
     /// use teistro::catalogue::Calendar;
     /// use teistro::quantity::{Altitude, Latitude, Longitude, Place};
     ///
-    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
     /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
     /// let (from, to) = (
     ///     CalendarDate::defined(Calendar::Gregorian, 2025, 1, 1),
@@ -959,7 +959,7 @@ impl<'a> AlmanacArea<'a> {
     /// use teistro::{AyanaReckoning, Context, UtcOffset};
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     ///
-    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
     /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
     /// // 2026-01-15 08:00 Nepal time, 02:15 UTC.
     /// let at = JulianDay::try_new(2_461_055.593_75)?;
@@ -1000,7 +1000,7 @@ impl<'a> AlmanacArea<'a> {
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     /// use teistro::{Context, UtcOffset};
     ///
-    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
     /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1337.0)?);
     /// // A grandfather's death at 10:00 Nepal time on 11 January 2026.
     /// let request = AshauchRequest {
@@ -1049,7 +1049,7 @@ impl<'a> AlmanacArea<'a> {
     /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
     /// use teistro::{Context, UtcOffset};
     ///
-    /// let sdk = Context::builder().profile("nepali-default").build()?;
+    /// let sdk = Context::builder().profile("nepali-drik").build()?;
     /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1337.0)?);
     /// // A grandfather's death at 10:00 Nepal time on 11 January 2026, read as Nepal reads it.
     /// let asked = FirstYear::nepal("GRANDFATHER", JulianDay::try_new(2_461_051.677_083)?);

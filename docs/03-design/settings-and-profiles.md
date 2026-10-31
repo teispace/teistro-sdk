@@ -150,7 +150,7 @@ and the memo's size is the knob `provider.cache_cells` above.
 
 ```rust
 pub struct Profile {
-    pub id: ProfileId,               // `nepali-default`, `kp-default`, ...
+    pub id: ProfileId,               // `nepali-drik`, `kp-default`, ...
     pub version: u16,                // bumps when a default changes (a major release)
     pub base: Option<ProfileId>,     // one level of inheritance
     pub patch: SettingsPatch,        // what this profile sets over its base
@@ -174,13 +174,24 @@ Shipped in v1, each with its sources in the profile file:
 
 | profile | for | the defaults that define it |
 |---|---|---|
-| `nepali-default` | the product's charts: a drik reckoning, **not Nepal's official calendar**, which is `Context::builder().nepal_official(...)` | sidereal, `LAHIRI`, mean node, topocentric, `WHOLE_SIGN` placements, the chalit system the baseline engine measures as (`VEHLOW`; documented as Sripati, measured otherwise, so the profile says what it does), `CENTRE_REFRACTION` sunrise (Nepal's print, C39), `SUNRISE` day boundary, `SPATIAL` balance, seven chara karakas, node aspects `NONE`, `PURNIMANTA` months, the Bikram Sambat civil calendar and solar month start, `NEAREST_EVENT` polar day, the committee's fixed-hours eclipse vedha, eras Vikrama, Shaka, Kali, Nepal Sambat (version 5) |
-| `parashari-classical` **(the default)** | the texts as read | the root with `SRIPATI` chalit (BPHS), `PROPORTIONAL` ghatis, eight chara karakas (Jaimini 1.1.10–18) and `SURYA_SIDDHANTA` orbs where the text gives them; everything else the root's, so geocentric, the Gregorian civil calendar, the three pan-Indic eras and an undefined polar day. It patches the root and not `nepali-default`, which is what makes "nothing of one country's practice" true rather than stated (ADR-0024) |
-| `nepali-committee` | Nepal's national panchanga | `nepali-default` over the Surya Siddhanta with the committee's bija (`frame.siddhanta: SURYA`, `bija: NEPAL_COMMITTEE`, the Moon's apsis four revolutions an age fewer, measured and not cited, C28), the text's own ayanamsha `SURYASIDDHANTA` and a geocentric chart; open the context over `SURYA_SIDDHANTA`. Version 5. Since version 3 it begins the day at a modern sunrise beside the text's sky (`sunrise: MODERN`), the disc's centre with standard refraction (`day.sunrise: CENTRE_REFRACTION`), from the chain's next modern entry or the built-in ephemeris. Nepal's daily print of tithi, nakshatra and yoga ends is this reading's within 1.5 minutes on every recorded day, its sunrise within 1.5 on 320 of 333 days and 1.7 on every one, and every printed vriddhi and kshaya agrees but where the source names Shukla as Shubha (`nepal-day-measured.md`, C39); the committee's five star planets and its node are modern places under Lahiri (C38), taken from the chain's modern entry (`frame.siddhanta.planets`), and its daily lagna table is the sphere's under Lahiri (`panchanga.lagna_table`, C680) |
+| `nepali-drik` (alias `nepali-default`) | charts and days for a place in Nepal on a modern sky: a drik reckoning, **not Nepal's official calendar**, which is `nepali-committee` opened by `Context::builder().nepal_official(...)` | sidereal, `LAHIRI`, mean node, topocentric, `WHOLE_SIGN` placements, the chalit system the baseline engine measures as (`VEHLOW`; documented as Sripati, measured otherwise, so the profile says what it does), `CENTRE_REFRACTION` sunrise (Nepal's print, C39), `SUNRISE` day boundary, `SPATIAL` balance, seven chara karakas, node aspects `NONE`, `PURNIMANTA` months, the Bikram Sambat civil calendar and solar month start, `NEAREST_EVENT` polar day, the committee's fixed-hours eclipse vedha, eras Vikrama, Shaka, Kali, Nepal Sambat (version 5) |
+| `parashari-classical` **(the default)** | the texts as read | the root with `SRIPATI` chalit (BPHS), `PROPORTIONAL` ghatis, eight chara karakas (Jaimini 1.1.10–18) and `SURYA_SIDDHANTA` orbs where the text gives them; everything else the root's, so geocentric, the Gregorian civil calendar, the three pan-Indic eras and an undefined polar day. It patches the root and not `nepali-drik`, which is what makes "nothing of one country's practice" true rather than stated (ADR-0024) |
+| `nepali-committee` | Nepal's national panchanga | `nepali-drik` over the Surya Siddhanta with the committee's bija (`frame.siddhanta: SURYA`, `bija: NEPAL_COMMITTEE`, the Moon's apsis four revolutions an age fewer, measured and not cited, C28), the text's own ayanamsha `SURYASIDDHANTA` and a geocentric chart; open the context over `SURYA_SIDDHANTA`. Version 5. Since version 3 it begins the day at a modern sunrise beside the text's sky (`sunrise: MODERN`), the disc's centre with standard refraction (`day.sunrise: CENTRE_REFRACTION`), from the chain's next modern entry or the built-in ephemeris. Nepal's daily print of tithi, nakshatra and yoga ends is this reading's within 1.5 minutes on every recorded day, its sunrise within 1.5 on 320 of 333 days and 1.7 on every one, and every printed vriddhi and kshaya agrees but where the source names Shukla as Shubha (`nepal-day-measured.md`, C39); the committee's five star planets and its node are modern places under Lahiri (C38), taken from the chain's modern entry (`frame.siddhanta.planets`), and its daily lagna table is the sphere's under Lahiri (`panchanga.lagna_table`, C680) |
 | `surya-siddhanta` | the classical panchangas' astronomy | `parashari-classical` with `frame.siddhanta: SURYA` and the text's own ayanamsha, `SURYASIDDHANTA` (III.9 to 12); open the context over `SURYA_SIDDHANTA`, which the profile asks for and never chooses (ADR-0029), and every part of the chart is the text's (`classical-chart.md`) |
 | `kp-default` | Krishnamurti Paddhati | sidereal, `KRISHNAMURTI`, true node, `PLACIDUS` placements with the cusp as the house start, `kp: PLACIDUS` module override, node aspects `NONE`, Vimshottari at 365.25 |
 | `western-tropical-default` | Western and Hellenistic modules | tropical, `PLACIDUS`, true node, `MIDNIGHT` day boundary and a polar day from `CIVIL_MIDNIGHT` (v2), geocentric apparent positions |
 | `conformance-baseline` | the golden-vector runs | the baseline engine's defaults exactly, including every convention the deliberate-difference registry records, so the fixtures' settings hashes reproduce |
+
+**The alias.** `nepali-default` is the name `nepali-drik` carried until 2026-10-31, and it stays
+accepted everywhere a profile is named: a context's options, a stored document's opening, an MCP
+tool's `profile`. It answers exactly what `nepali-drik` answers: the same settings, the same
+settings hash and the same days. Only the name differs, and that way round: a context's `profile`
+and an answer's `provenance.profile` say `nepali-drik`, so a caller who opened by the alias reads
+the new name back. The old name was misleading: it read as Nepal's calendar, and this is a modern
+drik reckoning that differs from the committee's printed days. A caller who wants the printed
+calendar wants `nepali-committee`, and no alias changes that. `PROFILE_ALIASES` in
+`core/src/settings/profiles.rs` holds the list; `SHIPPED_PROFILES` lists ids only, so an alias is
+not a profile and adds no row here. `settings.describe` lists each profile's aliases.
 
 Spike 1's thirteen fixture profiles are patches over
 `conformance-baseline`, checked in beside the fixtures, and the harness
@@ -304,7 +315,7 @@ catalogue; the SDK renders none itself.
 
 ## 10. Open questions
 
-- `nepali-default`'s node type and chalit system are taken from the
+- `nepali-drik`'s node type and chalit system are taken from the
   baseline engine's measured behaviour; the maintainer confirms both
   before the profile ships (the chalit finding is in the
   deliberate-difference registry).

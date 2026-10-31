@@ -133,7 +133,7 @@ def panchanga_at(ctx: Context, teistro: Teistro, instant: float, weekday: int) -
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
+        profile="nepali-drik", locale="ne-Deva-NP", ephemeris=Ephemeris.BUILTIN
     ) as ctx:
         # Nepali New Year: the first day of Baisakh, BS 2082.
         day = date(Calendar.BIKRAM_SAMBAT, 2082, 1, 1)

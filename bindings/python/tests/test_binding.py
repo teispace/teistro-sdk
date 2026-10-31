@@ -193,6 +193,11 @@ class AContext(WithLibrary):
     def tearDown(self) -> None:
         self.ctx.close()
 
+    def test_an_older_profile_name_answers_as_the_profile_it_names(self) -> None:
+        with Context(profile="nepali-default", test_provider=True) as ctx:
+            self.assertEqual(ctx.profile, "nepali-drik")
+            self.assertEqual(ctx.settings_hash, self.ctx.settings_hash)
+
     def test_it_carries_the_settings_it_was_asked_for(self) -> None:
         self.assertEqual(self.ctx.profile, PROFILE)
         self.assertEqual(self.ctx.intl.locale, LOCALE)
@@ -851,12 +856,12 @@ class AnEngine(WithLibrary):
             "utc_offset_seconds": 20700,
         }
         with self.teistro.context(**nepal_official()) as official, self.teistro.context(
-            profile="nepali-default", ephemeris=Ephemeris.BUILTIN
+            profile="nepali-drik", ephemeris=Ephemeris.BUILTIN
         ) as modern:
             found = official.almanac.disagreements(modern, **month, festivals={"rules": "NEPAL"})
             days = found.days
             assert days is not None
-            self.assertEqual((days.compared, days.other_profile), (30, "nepali-default"))
+            self.assertEqual((days.compared, days.other_profile), (30, "nepali-drik"))
             self.assertEqual(days.other_settings_hash, modern.settings_hash)
             self.assertEqual([d.date.day for d in days.days if d.tithi is not None], [1, 2, 9, 10, 11])
             first = days.days[0].tithi
@@ -905,7 +910,7 @@ class AnEngine(WithLibrary):
         and the tropical ayana turned at the solstice
         (`03-design/sankalpa.md`)."""
         kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
-        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
             found = ctx.almanac.sankalpa(at=2461055.59375, place=kathmandu, utc_offset_seconds=20700)
             value = found.value
             self.assertTrue(found.provenance.input_hash)
@@ -934,7 +939,7 @@ class AnEngine(WithLibrary):
     def test_a_festival_pack_lists_its_rules_with_their_values(self) -> None:
         """The central holidays' pack says what each rule is, and marks a
         day the moon decides (`03-design/india-central-holidays.md`)."""
-        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
             listing = ctx.almanac.festival_pack("INDIA_CENTRAL")
             self.assertEqual(listing["pack"], "INDIA_CENTRAL")
             rows = {row["key"]: row for row in listing["rules"]}
@@ -954,7 +959,7 @@ class AnEngine(WithLibrary):
         kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1337))
         died = 2461051.677083
         grandfather: AshauchRequest = {"key": "grandfather", "relation": "SAPINDA", "event": {"event": "DEATH", "at": died}}
-        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
             found = ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request=grandfather)
             value = found.value
             self.assertTrue(found.provenance.input_hash)
@@ -1001,7 +1006,7 @@ class AnEngine(WithLibrary):
         (`03-design/shraddha.md` §3.3)."""
         kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1337))
         grandfather: FirstYearRequest = {"key": "GRANDFATHER", "at": 2461333.677083}
-        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
             found = ctx.almanac.first_year(place=kathmandu, utc_offset_seconds=20700, request=grandfather)
             value = found.value
             self.assertTrue(found.provenance.input_hash)
@@ -4944,7 +4949,7 @@ class AnEngine(WithLibrary):
             latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)
         )
         day = date(Calendar.GREGORIAN, 2025, 9, 22)
-        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
             answer = ctx.almanac.festivals(
                 from_date=day, to_date=day, place=observer, utc_offset_seconds=20700, festivals={"rules": "NEPAL"}
             )
@@ -5049,7 +5054,7 @@ class AnEngine(WithLibrary):
             "place": kathmandu,
             "utc_offset_seconds": 20700,
         }
-        with self.teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as modern, self.teistro.context(
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as modern, self.teistro.context(
             profile="nepali-committee", ephemeris=Ephemeris.SURYA_SIDDHANTA
         ) as committee:
             ours = modern.almanac.festivals(**days, festivals={"rules": "NEPAL"})

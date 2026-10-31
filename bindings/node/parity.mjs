@@ -95,7 +95,7 @@ put('build-dirty', buildInfo.dirty);
 put('build-target', buildInfo.target);
 
 // ── A context ──────────────────────────────────────────────────────────
-const ctx = new Context({ profile: 'nepali-default', locale: 'ne-Deva-NP', testProvider: true });
+const ctx = new Context({ profile: 'nepali-drik', locale: 'ne-Deva-NP', testProvider: true });
 put('profile', ctx.profile);
 put('locale', ctx.intl.locale);
 put('settings-hash', ctx.settingsHash);
@@ -257,7 +257,7 @@ put('provenance-settings-hash', positions.provenance.settingsHash);
 put('provenance-provider-frame', positions.provenance.provider.frame);
 
 // ── The chart the topocentric profile founds ───────────────────────────
-// The scenario above runs under `nepali-default`, whose frame is
+// The scenario above runs under `nepali-drik`, whose frame is
 // **topocentric** — inherited from the baseline engine, and what every
 // recorded chart in the corpus is. Until the completion's centre step
 // this could not found a chart at all, and the refusal was what the three
@@ -2326,7 +2326,7 @@ geo.dispose();
 {
   // A signed one-zone pack of an imagined release, so a provenance naming
   // it can only have come from the pack (`03-design/zone-packs.md`).
-  const sky = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
   const hex = (text) => Uint8Array.from(text.match(/../gu).map((pair) => Number.parseInt(pair, 16)));
   const zonesLine = (zones) => `${zones.source} ${zones.version} ${zones.zones} ${zones.bundled}`;
   put('time-zone-database', zonesLine(sky.time.zoneDatabase()));
@@ -2367,7 +2367,7 @@ geo.dispose();
 // (`03-design/amrit-kalam-and-lagnas.md` §2) and each graha's share
 // (crux C751).
 {
-  const sky = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
   const day = sky.almanac.day({ date: gregorian(2025, 6, 15), place, utcOffsetSeconds: 20700, lagnas: true, homaAhuti: true });
   const tables = { lagnas: day.lagnas, 'homa-ahuti': day.homaAhuti };
   sky.dispose();
@@ -2388,7 +2388,7 @@ geo.dispose();
 // provider cannot complete: a total lunar eclipse seen whole and a
 // partial solar one the place does not see (`03-design/eclipses.md`).
 {
-  const sky = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
   const { eclipses } = sky.almanac.of({
     from: gregorian(2025, 9, 1),
     to: gregorian(2025, 9, 30),
@@ -2444,7 +2444,7 @@ geo.dispose();
 //
 // Referenced rather than called: a call needs arguments and some of them
 // need an ephemeris, and what is being compared is the shape.
-const shape = new Context({ testProvider: true, profile: 'nepali-default' });
+const shape = new Context({ testProvider: true, profile: 'nepali-drik' });
 for (const [path, member] of [
   ['calendar.date_of', shape.calendar.dateOf],
   ['calendar.fixed_of', shape.calendar.fixedOf],

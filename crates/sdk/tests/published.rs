@@ -564,7 +564,7 @@ fn reasons(
 fn a_published_day_is_explained_by_the_first_change_that_gives_it() {
     use teistro::PublishedCause;
 
-    let modern = context("nepali-default", Ephemeris::Builtin);
+    let modern = context("nepali-drik", Ephemeris::Builtin);
     let committee = context("nepali-committee", Ephemeris::SuryaSiddhanta);
     let (from, to) = autumn();
     let clock = UtcOffset::literal(5, 45, 0);
@@ -662,7 +662,7 @@ fn a_published_day_is_explained_by_the_first_change_that_gives_it() {
 /// and day, and each pack asked with its own rule of that kind.
 #[test]
 fn a_fast_a_following_and_a_dated_day_are_explained_too() {
-    let modern = context("nepali-default", Ephemeris::Builtin);
+    let modern = context("nepali-drik", Ephemeris::Builtin);
     let (from, to) = autumn();
     let plain = FestivalRequest::from(FestivalPack::NepalPanchanga);
     let ours = modern
@@ -716,7 +716,7 @@ fn a_fast_a_following_and_a_dated_day_are_explained_too() {
 
 #[test]
 fn a_binding_s_request_is_explained_in_full() {
-    let modern = context("nepali-default", Ephemeris::Builtin);
+    let modern = context("nepali-drik", Ephemeris::Builtin);
     let committee = context("nepali-committee", Ephemeris::SuryaSiddhanta);
     let asked = teistro::PublishedReasonsRequest::from_json(
         r#"{"first": {"year": 2027, "month": 9, "day": 1}, "last": {"year": 2027, "month": 11, "day": 30},

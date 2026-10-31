@@ -20,7 +20,7 @@ use teistro::{
 
 fn context() -> Context {
     Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()
         .expect("a context")

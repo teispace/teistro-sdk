@@ -31,7 +31,7 @@
 import { Calendar, Context, TeistroError, at, date, ianaZone } from '../lib/index.js';
 
 const ctx = new Context({
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'en-Latn',
   ephemeris: 'BUILTIN',
 });

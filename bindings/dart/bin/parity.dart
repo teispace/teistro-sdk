@@ -1104,7 +1104,7 @@ void main() {
 
   // ── A context ────────────────────────────────────────────────────────
   final ctx = teistro.context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     locale: 'ne-Deva-NP',
     testProvider: true,
   );
@@ -1276,7 +1276,7 @@ void main() {
   put('provenance-provider-frame', positions.provenance.provider.frame);
 
   // ── The chart the topocentric profile founds ─────────────────────────
-  // The scenario above runs under `nepali-default`, whose frame is
+  // The scenario above runs under `nepali-drik`, whose frame is
   // **topocentric** — inherited from the baseline engine, and what every
   // recorded chart in the corpus is. Until the completion's centre step
   // this could not found a chart at all, and the refusal was what the
@@ -3630,7 +3630,7 @@ void main() {
   // A signed one-zone pack of an imagined release, so a provenance naming
   // it can only have come from the pack (`03-design/zone-packs.md`).
   final zoned = teistro.context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
   Uint8List unhex(String text) => Uint8List.fromList([
@@ -3706,7 +3706,7 @@ void main() {
   // provider cannot complete: a total lunar eclipse seen whole and a
   // partial solar one the place does not see (`03-design/eclipses.md`).
   final builtin = teistro.context(
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
   );
   // ── The lagna table and the homa ahuti ───────────────────────────────

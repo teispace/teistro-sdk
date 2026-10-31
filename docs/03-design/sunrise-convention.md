@@ -45,7 +45,7 @@ neither.
   against in a newspaper or an almanac, the default of Drik Panchang and
   of Swiss Ephemeris, and the convention the root already read for the
   eclipse horizon, so the root no longer reads two.
-- **`nepali-default` reads the centre with refraction**
+- **`nepali-drik` reads the centre with refraction**
   (`CENTRE_REFRACTION`), which is Nepal's print to a median 0.4 minutes;
   the centre without refraction it read before stood 2.5 minutes late.
 - **`nepali-committee` keeps the centre with refraction**, measured.

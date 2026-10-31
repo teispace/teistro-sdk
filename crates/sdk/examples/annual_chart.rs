@@ -287,7 +287,7 @@ fn the_readings(birth: &Birth<'_>, years: &[VarshaYear]) -> Result<(), Error> {
 
 fn main() -> Result<(), Error> {
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()?;
     let place = Place::new(

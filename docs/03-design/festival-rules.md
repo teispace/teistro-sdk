@@ -995,7 +995,7 @@ Nepal's clock, against the fifteen days the committee printed for VS
 2082 and 2083. Each is found over the committee's own sky
 (`nepali-committee`, the Surya Siddhanta with its bija, C187), which
 the pass holds to the print, and over the modern sky
-(`nepali-default`), which it counts beside it. A parting under the
+(`nepali-drik`), which it counts beside it. A parting under the
 committee's sky must carry its cause, and the cause is checked against
 the case and guard found.
 

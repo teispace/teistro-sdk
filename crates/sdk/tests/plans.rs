@@ -921,7 +921,7 @@ fn the_other_two_weights_are_said() {
 #[test]
 fn a_phala_asked_for_alone_says_the_day_as_well() {
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()
         .expect("a context");
@@ -982,7 +982,7 @@ fn a_phala_asked_for_alone_says_the_day_as_well() {
 fn an_answer_names_each_pack_that_shaped_it() {
     let read = |pack: Option<&[u8]>| {
         let sdk = Context::builder()
-            .profile("nepali-default")
+            .profile("nepali-drik")
             .ephemeris([Ephemeris::Builtin])
             .build()
             .expect("a context");

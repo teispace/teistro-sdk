@@ -7,7 +7,7 @@
 //! sunrise. This pass founds every recorded day at Kathmandu under the
 //! committee's reading (`nepali-committee` over the Surya Siddhanta), the
 //! same text without its bija, and the modern sky under Lahiri
-//! (`nepali-default` over the built-in), and holds each to the print: the
+//! (`nepali-drik` over the built-in), and holds each to the print: the
 //! ends paired member by member, the flags `span.sunrises` gives, and the
 //! sunrise.
 //!
@@ -227,8 +227,8 @@ const READINGS: [Reading; 4] = [
         sunrise_agrees: false,
     },
     Reading {
-        name: "the modern sky under Lahiri (`nepali-default`)",
-        profile: "nepali-default",
+        name: "the modern sky under Lahiri (`nepali-drik`)",
+        profile: "nepali-drik",
         patch: None,
         ephemeris: || Ephemeris::Builtin,
         shipped: false,

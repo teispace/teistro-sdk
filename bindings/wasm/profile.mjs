@@ -34,7 +34,7 @@ function kept(sdk) {
     computedMonth: 0,
     computedDay: 0,
   });
-  const ctx = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const ctx = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
   try {
     const almanac = ctx.almanac.of({
       from: date(2026, 11, 25),
@@ -65,7 +65,7 @@ function kept(sdk) {
 
 /** One call into the chart area, which every profile leaves out: its refusal. */
 function refused(sdk) {
-  const ctx = new sdk.Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+  const ctx = new sdk.Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
   try {
     ctx.chart.found({ instant: 2451545, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0 });
     return null;

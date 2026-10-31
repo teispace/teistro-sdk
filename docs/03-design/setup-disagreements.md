@@ -7,7 +7,7 @@ measured through the built comparison (`crates/sdk/tests/disagreements.rs`).
 An app in Nepal shows two reckonings of one day. The **official** one is
 the Nepali committee's: `nepali-committee` over the Surya Siddhanta, with
 a modern engine giving the sunrise ([`ContextBuilder::nepal_official`],
-every binding's `nepalOfficial`). The **modern** one is `nepali-default`,
+every binding's `nepalOfficial`). The **modern** one is `nepali-drik`,
 the drik reading, over the same engine. They name the same day's tithi
 differently about one day in ten, and for a festival that decides on
 which day it falls. The app shows the official day and explains the
@@ -44,7 +44,7 @@ and nothing that is only words.
 
 ```rust
 let official = Context::builder().nepal_official([teimeris()]).build()?;
-let modern = Context::builder().profile("nepali-default").ephemeris([teimeris()]).build()?;
+let modern = Context::builder().profile("nepali-drik").ephemeris([teimeris()]).build()?;
 let differ = official.almanac().disagreements(&modern, &from, &to, &place, offset)?;
 for day in &differ.value.days {
     if let Some(tithi) = &day.tithi {
@@ -108,7 +108,7 @@ disagreements between its two days is §5's second item.
 
 Kathmandu, 2020 to 2030, one year per call: the official reckoning
 (`nepal_official`, the built-in ephemeris giving the sunrise) against
-`nepali-default` over the built-in ephemeris. Reproduced by:
+`nepali-drik` over the built-in ephemeris. Reproduced by:
 
 ```text
 cargo test --release -p teistro --test disagreements -- --ignored --nocapture

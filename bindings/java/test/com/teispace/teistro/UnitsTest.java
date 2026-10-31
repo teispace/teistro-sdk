@@ -274,7 +274,7 @@ final class UnitsTest {
         // The test provider ships a two-function manifest, so the engine's own
         // operations run with no real engine present and still take the whole route.
         tests.put("the engine names its own operations and is called by the names it gives them", () -> {
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default").testProvider(true)
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true)
                     .build())) {
                 Engine engine = sky.engine();
                 check(engine.names().contains("tp_echo"), "names: " + engine.names());
@@ -310,7 +310,7 @@ final class UnitsTest {
         });
 
         tests.put("a civil time resolves in a zone, a fixed offset and local mean time, and back", () -> {
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default").build())) {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik").build())) {
                 CivilDateTime civil = new CivilDateTime(Civil.date(Calendar.GREGORIAN, 1986, 1, 1),
                         new CivilTime(0, 20, 0, true, 0));
                 ZoneSpec kathmandu = new ZoneSpec(ZoneKind.IANA, 0, new Longitude(0), "Asia/Kathmandu");
@@ -415,7 +415,7 @@ final class UnitsTest {
 
         tests.put("every message enum's member is a key the library knows", () -> {
             int members = 0;
-            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-default").testProvider(true)
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true)
                     .build())) {
                 for (Class<?> type : Messages.class.getDeclaredClasses()) {
                     if (!type.isEnum() || !type.getSimpleName().endsWith("Key")) {

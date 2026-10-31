@@ -45,7 +45,7 @@ def name(ctx: Context, member: Catalogued) -> str:
 def main() -> None:
     teistro = Teistro.open()
     with teistro.context(
-        profile="nepali-default",
+        profile="nepali-drik",
         locale="ne-Deva-NP",
         ephemeris=Ephemeris.BUILTIN,
     ) as ctx:

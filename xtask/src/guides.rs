@@ -586,7 +586,7 @@ mod tests {
         // A context.\n\
         const ctx = new Context({\n\
         \x20 // the profile\n\
-        \x20 profile: 'nepali-default',\n\
+        \x20 profile: 'nepali-drik',\n\
         });\n\
         console.log(ctx);\n\
         ctx.dispose();\n";
@@ -594,7 +594,7 @@ mod tests {
     #[test]
     fn an_excerpt_is_in_order_and_unbroken_but_for_comments() {
         let whole = lines(
-            "import { Context } from '@teistro/sdk';\n// …\nconst ctx = new Context({\n  profile: 'nepali-default',\n});",
+            "import { Context } from '@teistro/sdk';\n// …\nconst ctx = new Context({\n  profile: 'nepali-drik',\n});",
         );
         assert_eq!(excerpt_of(&whole, NODE, SOURCE, &JS), Ok(()));
         let elided = lines("const ctx = new Context({\n// …\nctx.dispose();");

@@ -271,6 +271,11 @@ fn settings_describe_answers_the_profiles_and_the_patch_schema() {
         .map(|profile| profile["id"].as_str().unwrap())
         .collect();
     assert_eq!(ids, teistro::settings::SHIPPED_PROFILES);
+    let drik = &described["profiles"][0];
+    assert_eq!(
+        (&drik["id"], &drik["aliases"]),
+        (&json!("nepali-drik"), &json!(["nepali-default"]))
+    );
     let schema = &described["settings"];
     assert!(schema["$schema"].as_str().unwrap().contains("2020-12"));
     assert!(schema["properties"]["frame"].is_object(), "{schema}");

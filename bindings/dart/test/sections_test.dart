@@ -32,7 +32,7 @@ void main() {
   late Context ctx;
   setUp(() {
     ctx = teistro.context(
-      profile: 'nepali-default',
+      profile: 'nepali-drik',
       ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
     );
   });

@@ -26,7 +26,7 @@
 
 import { Calendar, Context, DashaSystem, TeistroError, at, date, ianaZone } from '../lib/index.js';
 
-const ctx = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+const ctx = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
 const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
 const birthDay = date(Calendar.Gregorian, 1990, 4, 14);
 const when = ctx.time.resolve(at(birthDay, { hour: 5, minute: 30 }), ianaZone('Asia/Kathmandu'));

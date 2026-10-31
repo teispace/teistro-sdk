@@ -218,7 +218,7 @@ fn kathmandu() -> (Place, UtcOffset) {
 
 fn context(count: SamvatsaraCount) -> Result<Context, String> {
     Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .settings_json(format!(
             r#"{{"calendars": {{"samvatsara": "{}"}}}}"#,
@@ -355,7 +355,7 @@ fn named_years(out: &mut String, problems: &mut Vec<String>) -> Result<Vec<Claim
     out.push_str(
         "\n## 2. The years Nepal named\n\n\
          Each year is the one holding 1 August of its Vikrama year, founded at\n\
-         Kathmandu under `nepali-default`; a mismatch is marked.\n\n\
+         Kathmandu under `nepali-drik`; a mismatch is marked.\n\n\
          | Vikrama | named | source |",
     );
     for rival in &READINGS {
@@ -659,7 +659,7 @@ fn six_centuries(
     let _ = write!(
         out,
         "\n## 4. {} to {}, at Kathmandu\n\n\
-         Every year founded under `nepali-default`. A repeat is a year whose\n\
+         Every year founded under `nepali-drik`. A repeat is a year whose\n\
          running Jovian year already ran at the year before's pratipada; the\n\
          shipped count names it one ahead, and the lead lasts until a year\n\
          whose count rises by two, where the expunged name falls. The longest\n\

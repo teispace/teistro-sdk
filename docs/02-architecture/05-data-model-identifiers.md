@@ -23,7 +23,7 @@ the hash) settle what this page sketches (ADR-0016, ADR-0020, ADR-0023).
 
 A `Settings` value is complete (every knob present) and is built by
 applying overrides to a **profile**. Profiles are named, versioned records
-shipped by the SDK (`nepali-default`, `kp-default`,
+shipped by the SDK (`nepali-drik`, `kp-default`,
 `western-tropical-default`) or defined by consumers. Knobs (initial list,
 superset of the baseline engine's):
 

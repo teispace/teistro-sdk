@@ -3776,7 +3776,7 @@ class AlmanacArea(_Area):
         comparing nothing is refused as `disagreements.days`.
 
         >>> # official = Context(**nepal_official(teimeris()))
-        >>> # modern = Context(profile="nepali-default", ephemeris=teimeris())
+        >>> # modern = Context(profile="nepali-drik", ephemeris=teimeris())
         >>> # found = official.almanac.disagreements(modern, from_date=..., place=kathmandu,
         >>> #     utc_offset_seconds=20700, festivals={"rules": "NEPAL"})
         """

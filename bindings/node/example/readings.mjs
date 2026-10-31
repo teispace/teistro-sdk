@@ -56,7 +56,7 @@ function firstSentence(text) {
   return characters.length > 96 ? `${characters.slice(0, 96).join('')}…` : text;
 }
 
-const ctx = new Context({ profile: 'nepali-default', ephemeris: 'BUILTIN' });
+const ctx = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
 
 // ── The pack ─────────────────────────────────────────────────────────────
 // One pack a locale, because a Nepali application wants Nepali and its

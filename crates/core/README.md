@@ -32,7 +32,7 @@ assert_eq!(mars.attributes().exaltation.map(|e| e.sign), Some(Rashi::Capricorn))
 let longitude = Nas::from_degrees(Degrees::try_new(222.5763).expect("finite"));
 assert_eq!(longitude.sign(), Rashi::Scorpio);
 
-let settings = Profile::shipped("nepali-default")
+let settings = Profile::shipped("nepali-drik")
     .expect("shipped")
     .resolve(&SettingsPatch::default())
     .expect("coherent");

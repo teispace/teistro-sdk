@@ -985,7 +985,7 @@ before that the forty-first session (Phase 1
 closed and its "Now" rewritten for the two phases that follow; GitHub
 Pages enabled, the registries deferred to the release; Q34
 decided and the defect it exposed fixed: the default profile patches the
-root rather than `nepali-default`, so it is the texts as read rather than
+root rather than `nepali-drik`, so it is the texts as read rather than
 those plus one engine's centre and one country's calendar; ADR-0024);
 before that the fortieth session (the
 conformance corpus left this repository for
@@ -3417,8 +3417,10 @@ Nepali text) and Q43 (Teimeris for hosted serving, open). Addendum 4 added
 SR-59 to SR-62, all P1. They are scheduled after the release candidate in four waves
 (`07-roadmap/00-roadmap.md`, "Addendum 3"); P0 comes first.
 Addendum 5 (2026-10-31) adds SR-63 to SR-76 and moves SR-58's sky view to P2: P0 gains the day's
-sky, conformance days, naming `nepali-default`, Hindi and Sanskrit calendar text and a public time
-formatter. SR-73 is done in PR #423 and SR-70 mostly was already.
+sky, conformance days, naming `nepali-drik`, Hindi and Sanskrit calendar text and a public time
+formatter. SR-73 is done in PR #423 and SR-70 mostly was already. SR-66 is done: `nepali-default`
+is `nepali-drik`, the old name an accepted alias that answers the same settings and says the new id
+(`03-design/settings-and-profiles.md` §3.2).
 
 ### An almanac app's brief (from 2026-10-20)
 

@@ -25,7 +25,7 @@ Shukla Pratipada (C180), with a name never naming two years (C184).
 ## 2. The years Nepal named
 
 Each year is the one holding 1 August of its Vikrama year, founded at
-Kathmandu under `nepali-default`; a mismatch is marked.
+Kathmandu under `nepali-drik`; a mismatch is marked.
 
 | Vikrama | named | source | `BARHASPATYA`, shipped | `BARHASPATYA_RUNNING` | `CHANDRAMANA` | the text with Burgess's bija | running at Baishakh 1 | the baseline engine's fixed phase |
 |---|---|---|---|---|---|---|---|---|
@@ -51,7 +51,7 @@ Burgess's on Greenwich's clock, the press's on India's.
 
 ## 4. 1865 to 2455, at Kathmandu
 
-Every year founded under `nepali-default`. A repeat is a year whose
+Every year founded under `nepali-drik`. A repeat is a year whose
 running Jovian year already ran at the year before's pratipada; the
 shipped count names it one ahead, and the lead lasts until a year
 whose count rises by two, where the expunged name falls. The longest

@@ -7,7 +7,7 @@
 //! "vrataparva vivarana" column, from the row's own Gregorian column. The
 //! pack is found over both years at Kathmandu on Nepal's clock, over the
 //! committee's own sky (`nepali-committee`), which the pass holds to the
-//! print, and over the modern sky (`nepali-default`), which it counts beside
+//! print, and over the modern sky (`nepali-drik`), which it counts beside
 //! it. Every parting under the committee's sky carries its cause and the day
 //! the pack gives, which the pass checks both ways.
 
@@ -2002,7 +2002,7 @@ pub(super) fn render(out: &mut String, rows: &[Row]) {
          `NEPAL_PANCHANGA` pack adds to `NEPAL` (`festival-rules.md` §10), at\n\
          Kathmandu on Nepal's clock, beside the day the pack gives over the\n\
          committee's own sky (`nepali-committee`), each parting named with its\n\
-         cause, and over the modern sky (`nepali-default`). Each rule is fitted:\n\
+         cause, and over the modern sky (`nepali-drik`). Each rule is fitted:\n\
          its window and table were chosen to give these days, so the agreement\n\
          measures the fit and not a text (C600).\n\n",
     );

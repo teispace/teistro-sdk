@@ -52,7 +52,7 @@ const nakshatraOf = (longitude) => [
 const two = (value) => String(value).padStart(2, '0');
 
 const ctx = new Context({
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'ne-Deva-NP',
   ephemeris: 'BUILTIN',
 });
@@ -143,7 +143,7 @@ console.log('');
 const noTime = whenUnknown(birthDay);
 for (const policy of [undefined, 'NOON', 'MIDNIGHT']) {
   const scoped = new Context({
-    profile: 'nepali-default',
+    profile: 'nepali-drik',
     locale: 'ne-Deva-NP',
     ephemeris: 'BUILTIN',
     settings: policy ? { time: { unknown_time: policy } } : undefined,

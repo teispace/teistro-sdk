@@ -17,7 +17,7 @@ use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
 fn context(locale: &str) -> Context {
     Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale(locale)
         .ephemeris([Ephemeris::Builtin])
         .build()

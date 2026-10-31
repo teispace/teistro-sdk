@@ -1201,7 +1201,7 @@ def main() -> None:
 
     # ── A context ─────────────────────────────────────────────────────
     ctx = teistro.context(
-        profile="nepali-default", locale="ne-Deva-NP", test_provider=True
+        profile="nepali-drik", locale="ne-Deva-NP", test_provider=True
     )
     put("profile", ctx.profile)
     put("locale", ctx.intl.locale)
@@ -1357,7 +1357,7 @@ def main() -> None:
     put("provenance-provider-frame", sky.provenance.provider.frame)
 
     # ── The chart the topocentric profile founds ──────────────────────
-    # The scenario above runs under `nepali-default`, whose frame is
+    # The scenario above runs under `nepali-drik`, whose frame is
     # **topocentric** — inherited from the baseline engine, and what
     # every recorded chart in the corpus is. Until the completion's
     # centre step this could not found a chart at all, and the refusal
@@ -3067,7 +3067,7 @@ def main() -> None:
     def zones_line(zones: ZoneDatabase) -> str:
         return f"{zones.source} {zones.version} {zones.zones} {zones.bundled}"
 
-    with teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as zoned:
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as zoned:
         put("time-zone-database", zones_line(zoned.time.zone_database()))
         loaded = zoned.time.load_zones(
             '{"format":"teistro.zones/1","version":"2099a","zones":{"Asia/Kathmandu":"VFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAVFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAAABD/////ofJ9hAAAAAAeGDCoAQIAAE/8AAAAAE1YAAQAAFDcAApMTVQAKzA1MzAAKzA1NDUACjwrMDU0NT4tNTo0NQo="},"links":{"Asia/Katmandu":"Asia/Kathmandu"}}'.encode(),
@@ -3105,7 +3105,7 @@ def main() -> None:
     # September 2025 at Kathmandu over the built-in sky, which the test
     # provider cannot complete: a total lunar eclipse seen whole and a
     # partial solar one the place does not see (`03-design/eclipses.md`).
-    with teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as builtin:
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as builtin:
         eclipses = builtin.almanac.of(
             from_date=date(Calendar.GREGORIAN, 2025, 9, 1),
             to_date=date(Calendar.GREGORIAN, 2025, 9, 30),
@@ -3119,7 +3119,7 @@ def main() -> None:
     # 15 June 2025 at Kathmandu over the built-in sky, each sign's span
     # (`03-design/amrit-kalam-and-lagnas.md` §2) and each graha's share
     # (crux C751).
-    with teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as builtin:
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as builtin:
         lagna_day = builtin.almanac.day(
             date=date(Calendar.GREGORIAN, 2025, 6, 15),
             place=place,

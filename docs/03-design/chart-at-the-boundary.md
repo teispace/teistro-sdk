@@ -390,7 +390,7 @@ five rather than describing part of one.
   astro layer ships eleven models. That is a larger question than this
   page: a new knob moves the settings hash of every profile, so it is a
   decision with a Numbers line rather than a tidy-up.
-- **~~A chart cannot be founded under `nepali-default`.~~ Closed
+- **~~A chart cannot be founded under `nepali-drik`.~~ Closed
   2026-09-09: the completion's centre step is built
   ([`topocentric-measured.md`](topocentric-measured.md)), so the
   topocentric profiles found charts over any provider and the
@@ -437,7 +437,7 @@ five rather than describing part of one.
   What settled it: the step turned out to be separable from the rest of
   Phase 3 — it needs the observer's position and the body's geocentric
   one and nothing of the built-in ephemeris — so it was built where it
-  was needed. The rectification examples now run under `nepali-default`,
+  was needed. The rectification examples now run under `nepali-drik`,
   the parity gate compares the chart that profile founds rather than the
   refusal, and `crates/chart/tests/foundation.rs` founds a chart under
   every shipped profile the analytic provider has bodies for.

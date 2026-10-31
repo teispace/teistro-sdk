@@ -949,7 +949,7 @@ fn a_classical_chart(report: &mut Report, place: &Place, offset: UtcOffset) {
 /// The chart the **topocentric** profile founds, as the report prints
 /// it.
 ///
-/// `nepali-default` is topocentric — inherited from the baseline engine,
+/// `nepali-drik` is topocentric — inherited from the baseline engine,
 /// and what every recorded chart in the corpus is. Until the
 /// completion's centre step this could not found a chart at all, and the
 /// refusal was what the bindings compared. Now the chart is, which is
@@ -7257,7 +7257,7 @@ fn lilith_line(lilith: Option<&teistro::LilithPosition>) -> String {
 /// and two charts, so a section read with the wrong stride shows.
 fn the_zones(report: &mut Report, place: &Place, offset: UtcOffset) {
     let sky = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()
         .expect("a context over the built-in sky");
@@ -7364,7 +7364,7 @@ fn the_lilith(report: &mut Report, place: &Place, offset: UtcOffset) {
 /// (crux C751).
 fn lagnas(report: &mut Report, place: &Place, offset: UtcOffset) {
     let sky = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()
         .expect("a context over the built-in sky");
@@ -7426,7 +7426,7 @@ fn lagnas(report: &mut Report, place: &Place, offset: UtcOffset) {
 /// partial solar one the place does not see (`03-design/eclipses.md`).
 fn eclipses(report: &mut Report, place: &Place, offset: UtcOffset) {
     let sky = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .ephemeris([Ephemeris::Builtin])
         .build()
         .expect("a context over the built-in sky");
@@ -8112,7 +8112,7 @@ fn main() {
     // point is that four layers agree, not that they agree with the
     // sky.
     let sdk = Context::builder()
-        .profile("nepali-default")
+        .profile("nepali-drik")
         .locale("ne-Deva-NP")
         .ephemeris([Ephemeris::Test])
         .build()

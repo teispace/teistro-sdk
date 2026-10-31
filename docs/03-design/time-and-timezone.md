@@ -374,7 +374,7 @@ vipala) and the zone-source labels.
 2. The ghati-pala rounding at the sunrise boundary is pinned by the
    baseline's fixtures when the harness runs; floor on a tenth-of-a-
    millisecond grid is the working rule.
-3. The `polar_day_policy` default for `nepali-default` is `NEAREST_EVENT`
+3. The `polar_day_policy` default for `nepali-drik` is `NEAREST_EVENT`
    to match the baseline's behaviour; the maintainer confirms.
 4. Stephenson, Morrison and Hohenkerk (2016): the spline coefficients to
    cite (C32); until then the knob value is refused as unsourced.

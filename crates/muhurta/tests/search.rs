@@ -456,7 +456,7 @@ fn a_sky_that_cannot_see_an_eclipse_leaves_its_kinds_unjudged() {
 }
 
 /// Nepal's committee prints the vedha as fixed three-hour praharas back
-/// from the first moment Nepal sees, and `nepali-default` reads it so
+/// from the first moment Nepal sees, and `nepali-drik` reads it so
 /// (`FIXED_HOURS`). Three eclipses, as the committee gave them (UTC
 /// here, Nepal's clock in the comments):
 ///
@@ -471,7 +471,7 @@ fn a_sky_that_cannot_see_an_eclipse_leaves_its_kinds_unjudged() {
 #[test]
 fn the_nepali_vedha_is_nine_hours_before_a_lunar_eclipse_seen_and_twelve_before_a_solar_one() {
     const MINUTES: f64 = 3.0 / 1440.0;
-    over_under(&Builtin::new(), "nepali-default", |over| {
+    over_under(&Builtin::new(), "nepali-drik", |over| {
         assert_eq!(
             over.settings.panchanga.eclipse_vedha,
             teistro_core::settings::EclipseVedha::FixedHours

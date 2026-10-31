@@ -330,7 +330,7 @@ impl Tool {
     /// .in_context();
     /// let mut server = Server::new(Engine::None).with_tool(tool)?;
     /// assert!(listed(&mut server, "acme.hash")["inputSchema"]["properties"].get("profile").is_some());
-    /// let reply = ask(&mut server, "tools/call", json!({ "name": "acme.hash", "arguments": { "profile": "nepali-default" } }));
+    /// let reply = ask(&mut server, "tools/call", json!({ "name": "acme.hash", "arguments": { "profile": "nepali-drik" } }));
     /// assert!(reply["result"]["structuredContent"]["hash"].is_string(), "{reply}");
     /// # Ok::<(), teistro::Error>(())
     /// ```

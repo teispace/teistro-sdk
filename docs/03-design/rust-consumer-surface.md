@@ -123,7 +123,7 @@ want it.
 
 ```rust
 let sdk = teistro::Context::builder()
-    .profile("nepali-default")
+    .profile("nepali-drik")
     .locale("ne-Deva-NP")
     .ephemeris([Ephemeris::Builtin])
     .build()?;

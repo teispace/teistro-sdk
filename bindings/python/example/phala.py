@@ -62,7 +62,7 @@ def shortened(text: str) -> str:
 
 def main() -> None:
     teistro = Teistro.open()
-    with teistro.context(profile="nepali-default", ephemeris=Ephemeris.BUILTIN) as ctx:
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
         # ── The packs ────────────────────────────────────────────────
         for corpus in CORPORA:
             for file in packs_of(corpus):

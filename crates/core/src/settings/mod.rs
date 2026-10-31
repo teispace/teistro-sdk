@@ -8,7 +8,7 @@
 //! use teistro_core::settings::{Profile, SettingsPatch, knobs::Node};
 //! use teistro_core::catalogue::Ayanamsha;
 //!
-//! let profile = Profile::shipped("nepali-default").expect("shipped");
+//! let profile = Profile::shipped("nepali-drik").expect("shipped");
 //! let mut patch = SettingsPatch::default();
 //! patch.frame.node = Some(Node::True);
 //! patch.frame.ayanamsha = Some(Ayanamsha::Raman.into());
@@ -50,7 +50,7 @@ pub use knobs::{
     SunAyana, Sunrise, SuryaSunrise, Tier, TransitCentre, UnattestedDn, UnknownTime, Varjyam,
     Vimshopaka, YearLength, Yuddha, Zodiac,
 };
-pub use profiles::{DEFAULT_PROFILE, Profile, ProfileId, SHIPPED_PROFILES, root};
+pub use profiles::{DEFAULT_PROFILE, PROFILE_ALIASES, Profile, ProfileId, SHIPPED_PROFILES, root};
 
 /// The settings document's schema version; a later knob appends and an
 /// old document still hashes the same under the old schema.
@@ -1991,13 +1991,30 @@ mod tests {
     }
 
     #[test]
+    fn an_alias_opens_its_profile_and_is_not_a_profile_of_its_own() {
+        for (alias, id) in PROFILE_ALIASES {
+            assert!(SHIPPED_PROFILES.contains(&id), "{alias} names {id}");
+            assert!(!SHIPPED_PROFILES.contains(&alias), "{alias} is an alias");
+            let resolved = shipped(alias)
+                .resolve(&SettingsPatch::default())
+                .unwrap_or_else(|e| panic!("{e}"));
+            let named = shipped(id)
+                .resolve(&SettingsPatch::default())
+                .unwrap_or_else(|e| panic!("{e}"));
+            assert_eq!(resolved.settings.hash(), named.settings.hash());
+            // The answer names the id, never the alias it was asked by.
+            assert_eq!(resolved.profile.as_str(), id);
+        }
+    }
+
+    #[test]
     fn patches_apply_in_order_and_change_the_hash() {
-        let base = shipped("nepali-default")
+        let base = shipped("nepali-drik")
             .resolve(&SettingsPatch::default())
             .unwrap_or_else(|e| panic!("{e}"));
         let mut patch = SettingsPatch::default();
         patch.frame.node = Some(Node::True);
-        let patched = shipped("nepali-default")
+        let patched = shipped("nepali-drik")
             .resolve(&patch)
             .unwrap_or_else(|e| panic!("{e}"));
         assert_ne!(base.settings.hash(), patched.settings.hash());
@@ -2076,7 +2093,7 @@ mod tests {
         });
         patch.frame.nakshatra_scheme = Some(NakshatraScheme::TwentyEight);
         patch.houses.polar_policy = Some(PolarPolicy::Clamp);
-        let error = shipped("nepali-default").resolve(&patch).unwrap_err();
+        let error = shipped("nepali-drik").resolve(&patch).unwrap_err();
         let rules: Vec<&str> = error.items.iter().map(|d| d.rule).collect();
         assert!(rules.contains(&"custom-ayanamsha-finite"), "{rules:?}");
         assert!(rules.contains(&"nakshatra-scheme-dasha"), "{rules:?}");
@@ -2093,11 +2110,11 @@ mod tests {
                 .collect(),
         );
         warned.frame.siddhanta = Some(Siddhanta::surya(SuryaBija::NepalCommittee));
-        let resolved = shipped("nepali-default")
+        let resolved = shipped("nepali-drik")
             .resolve(&warned)
             .unwrap_or_else(|e| panic!("{e}"));
         let rules: Vec<&str> = resolved.warnings.iter().map(|d| d.rule).collect();
-        // nepali-default's refracted sunrise is not the text's either.
+        // nepali-drik's refracted sunrise is not the text's either.
         assert_eq!(
             rules,
             [
@@ -2213,7 +2230,7 @@ mod tests {
         assert!(Settings::from_json(&other).is_err());
         assert!(Settings::from_json("{\"schema\":1}").is_err());
         assert!(
-            shipped("nepali-default")
+            shipped("nepali-drik")
                 .sources
                 .iter()
                 .any(|c| c.knob == "houses.chalit_system")
@@ -2263,7 +2280,7 @@ mod tests {
 
         // The product's charts keep every one of them, cited to the
         // engine whose charts they reproduce.
-        let nepali = shipped("nepali-default");
+        let nepali = shipped("nepali-drik");
         let product = nepali
             .resolve(&SettingsPatch::default())
             .unwrap_or_else(|e| panic!("{e}"));

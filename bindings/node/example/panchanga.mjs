@@ -101,7 +101,7 @@ function panchangaAt(ctx, instant, weekday) {
 const two = (value) => String(value).padStart(2, '0');
 
 const ctx = new Context({
-  profile: 'nepali-default',
+  profile: 'nepali-drik',
   locale: 'ne-Deva-NP',
   ephemeris: 'BUILTIN',
 });
