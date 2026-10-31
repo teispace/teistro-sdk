@@ -149,20 +149,22 @@ cause of two differs from what the addendum read.
 |---|---|---|---|---|
 | SR-63 | P0 | planned | `astro/src/phenomena.rs`, `almanac` | The day's sky: transits with altitudes, a sampled altitude and azimuth track with the exact rises, transits and sets as points, and the Moon's illuminated fraction, phase angle, waxing or waning, bright-limb position angle and parallactic angle. `Phenomena` holds the phase geometry; no day answer carries any of it, and neither a transit nor a parallactic angle exists. |
 | SR-64 | P1 | planned | `intl` | `set_locale` refuses a short tag today, as reported. RFC 4647 lookup, the answer naming the locale used. |
-| SR-65 | P0 | needs a decision | `fixtures/official`, `teistro-conformance` | Days for the published years, as a gate. `fixtures/official` already holds the committee's printed Sun, Moon and tithi rows for measured pages, and the 730-day check is the consumer's. Modern panchangas are cited and never redistributed here, and the corpus is CC0, so whether the days can enter it is the maintainer's call, and a corpus release needs their yes. Until then the gate can run on the consumer's side. |
-| SR-66 | P0 | planned | `03-design/settings-and-profiles.md`, `Context` | Documented now in the profile table: `nepali-default` is a drik reckoning and not the official calendar; `nepal_official` is. Decided: `nepali-drik` becomes its name, and `nepali-default` stays as an alias, since nothing is published yet. The 59 of 730 is the consumer's figure, to be measured with the new name. |
+| SR-65 | P0 | closed for the corpus | the consumer's side | Answered 2026-10-31: published days stay out of the CC0 corpus, and modern panchangas stay cited and never redistributed. The 730-day gate runs on the consumer's side on every build. |
+| SR-66 | P0 | accepted, planned | `03-design/settings-and-profiles.md`, `Context` | Documented in the profile table: this is a drik reckoning and not the official calendar; `nepal_official` is. `nepali-drik` becomes its name and `nepali-default` stays an alias. The 59 of 730 stays the consumer's figure unless the docs measure it. |
 | SR-67 | P1 | planned | Teimeris | `teimeris-sys` on `wasm32-unknown-unknown`, or a documented link to `bindings/wasm` from the adapter. |
-| SR-68 | P1 | partly waits on the maintainer | Teimeris, the adapter | A crate that builds from a plain checkout can be built now. Published crates wait on the maintainer: nothing is published yet. |
-| SR-69 | P1 | waits on the maintainer | release | No `v*` tag is pushed until the maintainer says so. A non-release pin for a commit can be offered in the meantime. |
-| SR-70 | P1 | mostly done | `teistro::catalogue` | Every catalogue enum already has a public `key()` (`Tithi` included, spelling `SHUKLA_PRATIPADA`-style keys) and `key_id()`, reached as `teistro::catalogue`. Planned: a tithi's place in the month, and `Display`. |
-| SR-71 | P1 | planned | `sdk/src/context.rs`; `03-design/rust-consumer-surface.md` §9 | `Context` is neither `Send` nor `Sync`, by a documented rule. The first cause is `icu_plurals`' `Rc`, which `icu_provider`'s `sync` feature lifts; the caches' `RefCell` and `Rc` come after it. Price the lock on a day's path before choosing. |
-| SR-72 | P1 | not reproduced | Teimeris | Clean in the local checkout at `3f169fc`; to be tried from a fresh submodule update. |
-| SR-73 | P1 | done with PR #423 | `almanac.inZone`, `AlmanacArea::in_zone` | Takes a `ZoneSpec`, in every binding, and each day's offset is read at its noon. A `ts_panchanga_days` blob has no per-day clock yet: bindings read it from provenance, at the first day. |
-| SR-74 | P2 | done for teistro | the manifests | `proc-macro2`, `md-5` and `serde_bytes` are in use: `cargo machete` misses a feature, a renamed crate and a `serde(with)` path. Each is now ignored with its reason, as is the spike's `diplomat-runtime`. Teimeris's `swisseph-rs` remains. |
-| SR-75 | P0 | planned, review by the consumer | `i18n/hi-Deva-IN`, `i18n/sa-Deva` | Confirmed: `hi-Deva-IN`'s `sdk.calendar` has 1 of the base's messages and `sa-Deva` has no file. Drafted in the wave; ships on Q42's sign-off, so the P0 date depends on the reviewers. |
+| SR-68 | P1 | partly planned | Teimeris, the adapter | `teimeris-sys` builds from a normal checkout with no staging step. Published crates stay behind the no-publishing rule; the consumer pins by commit, so nothing is blocked. |
+| SR-69 | P1 | closed for now | release | Tags stay behind the no-publishing rule, and the consumer pins by commit. |
+| SR-70 | P1 | planned, the remainder only | `core` catalogue | `key()` withdrawn by the consumer, who now uses it. Left: the tithi's number in the month. |
+| SR-71 | P1 | planned | `sdk/src/context.rs`; `03-design/rust-consumer-surface.md` §9 | `Context` is neither `Send` nor `Sync`, by a documented rule; the first cause is `icu_plurals`' `Rc`, which `icu_provider`'s `sync` feature lifts, and the caches' `RefCell` and `Rc` come after it. The design may not slow single-threaded use. |
+| SR-72 | P1 | planned | Teimeris | Clean in the local checkout at `3f169fc`. Reproduce from a fresh submodule update, and close it if it does not. |
+| SR-73 | P1 | done with PR #423, one addition planned | `almanac.inZone`, `AlmanacArea::in_zone` | Accepted. It takes a `ZoneSpec`, in every binding, and each day's offset is read at its noon. Planned: the offset in the C day blob, which has no per-day clock yet. |
+| SR-74 | P2 | teistro's part withdrawn | Teimeris | `proc-macro2`, `md-5` and `serde_bytes` are in use and are ignored with reasons in the manifests, as is the spike's `diplomat-runtime`. Only Teimeris's `swisseph-rs` remains. |
+| SR-75 | P0 | planned, first | `i18n/hi-Deva-IN`, `i18n/sa-Deva` | Confirmed: `hi-Deva-IN`'s `sdk.calendar` has 1 message of the base's 21 keys and `sa-Deva` has no file. By the consumer's answer it does not wait on Q42: the text is drafted here, ships marked unreviewed, and the consumer verifies it later. |
 | SR-76 | P0 | planned | `intl` | `:time` renders only inside a message, and no `IntlArea` call reaches it. `intl().time` and a date counterpart, returning text and parts. |
 
 **The polar note.** `NEAREST_EVENT`'s span is the intended reading: the day runs from the last
 sunrise to the next, so it can hold many tithis. `03-design/settings-and-profiles.md` now says so,
-and that `CIVIL_MIDNIGHT` is what a calendar shows. A day with no sunrise under the default solar
-month rule is being handled in the same wave.
+and that `CIVIL_MIDNIGHT` is what a calendar shows. The consumer keeps `CIVIL_MIDNIGHT`.
+
+**Order, by the consumer's answer of 2026-10-31.** SR-63, SR-75 and SR-76 unblock its Today screen
+and come first.
