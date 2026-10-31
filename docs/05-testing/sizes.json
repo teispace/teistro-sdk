@@ -305,8 +305,8 @@
     {
       "subject": "panchanga",
       "artefact": "module",
-      "raw": 5650000,
-      "gzip": 1670000
+      "raw": 5830000,
+      "gzip": 1710000
     },
     {
       "subject": "@teistro/compat",
@@ -612,6 +612,15 @@
       "raw": 5529808,
       "gzip": 1627496,
       "why": "the festival feed and digest, signed zone packs, the clock on every date and the iCalendar export cross the boundary and grow the library and module"
+    },
+    {
+      "run": "41204073755",
+      "date": "2026-10-31",
+      "subject": "panchanga",
+      "artefact": "module",
+      "raw": 5711970,
+      "gzip": 1672957,
+      "why": "The day plan, the anniversaries, the day in sentences and the sky of the day (the 2026-11-01 batch) went into the panchanga module, which grew past the budget it was measured under."
     }
   ]
 }
