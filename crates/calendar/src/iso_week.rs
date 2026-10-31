@@ -57,6 +57,10 @@ pub struct IsoWeekDate {
 /// assert_eq!(fixed_from_iso(2024, 1, 1), fixed_from_gregorian(2024, 1, 1));
 /// assert_eq!(fixed_from_iso(2025, 1, 1), fixed_from_gregorian(2024, 12, 30));
 /// ```
+// Inlined wherever the conversions are: release builds split the crate
+// into codegen units, and a split that parts these from their callers cost
+// the benchmarks' `calendar` section +3.7% with no change to them.
+#[inline]
 #[must_use]
 pub const fn fixed_from_iso(week_year: i32, week: u8, weekday: u8) -> FixedDay {
     // The Sunday strictly before 28 December of the previous year, then
@@ -76,6 +80,7 @@ pub const fn fixed_from_iso(week_year: i32, week: u8, weekday: u8) -> FixedDay {
 ///
 /// assert_eq!(iso_from_fixed(fixed_from_gregorian(2024, 12, 31)), IsoWeekDate { week_year: 2025, week: 1, weekday: 2 });
 /// ```
+#[inline]
 #[must_use]
 #[allow(
     clippy::cast_possible_truncation,
@@ -106,6 +111,7 @@ pub const fn iso_from_fixed(fixed: FixedDay) -> IsoWeekDate {
 /// assert!(is_long_year(2020) && is_long_year(2026));
 /// assert!(!is_long_year(2024));
 /// ```
+#[inline]
 #[must_use]
 pub const fn is_long_year(week_year: i32) -> bool {
     let next = fixed_from_iso(week_year + 1, 1, 1).get();

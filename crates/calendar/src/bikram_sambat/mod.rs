@@ -328,6 +328,7 @@ impl BikramSambat {
     /// assert_eq!(bs.year_start(2081), Some(fixed_from_gregorian(2024, 4, 13)));
     /// assert_eq!(bs.year_start(bs.years().1 + 5), None);
     /// ```
+    #[inline]
     #[must_use]
     pub fn year_start(&self, year: i32) -> Option<FixedDay> {
         let index = usize::try_from(year - self.table.first_year).ok()?;
@@ -337,6 +338,8 @@ impl BikramSambat {
         self.year_starts.get(index).copied()
     }
 
+    // Inlined into every conversion, as `iso_week`'s helpers are.
+    #[inline]
     fn row(&self, year: i32) -> Result<&'static [u8; 12], Error> {
         let (first, last) = self.years();
         usize::try_from(year - first)
