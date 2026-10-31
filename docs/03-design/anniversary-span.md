@@ -103,7 +103,7 @@ the one reckoning that may pass `MOST_DAYS`, a range of `MOST_DAYS` at a
 time, and answers with the first range's provenance. It is not one run,
 though the code first was: the built-in chain's segment cache thrashes on a
 decade's lockstep rounds, and a single run took 37.9 s where the ranges take
-4.1 s. A seam test holds that a day and an occurrence across two ranges read
+4.0 s. A seam test holds that a day and an occurrence across two ranges read
 as they do within one. The widening is what a festival range takes for an
 anniversary: 33 days before and 2 after (`festival-rules.md` §4).
 
@@ -138,25 +138,24 @@ their moments) over 10 years at one place:
 
 | request | `drik-teimeris` | `committee-teimeris` |
 |---|---|---|
-| 50 people, one call (`anniversaries`) | 717 | 334 |
-| 1 person, one call (`anniversaries-one`) | 662 | 244 |
-| 50 people, 10 `festivals` calls (`anniversaries-yearly`) | 1,025 | 483 |
+| 50 people, one call (`anniversaries`) | 706 | 267 |
+| 1 person, one call (`anniversaries-one`) | 643 | 236 |
+| 50 people, 10 `festivals` calls (`anniversaries-yearly`) | 971 | 480 |
 | 50 people, 50 calls (`anniversaries-apart`) | 28,443 | 11,580 |
 
 So the founding is nearly all of it: each person past the first adds about
-1.1 ms, and the one call is about forty times cheaper than fifty on drik
-(`28,443 / 717`) and thirty-five on the committee. `anniversaries-apart` runs only when named, since fifty calls take
+1.3 ms, and the one call is about forty times cheaper than fifty on either
+sky. `anniversaries-apart` runs only when named, since fifty calls take
 minutes on the built-in chain, so it is a profile taken for this page and is
-not in the record. `anniversaries-yearly` was taken before the span's days
-were split into ranges, which do not touch that path; the record holds the
-current figure.
+not in the record. The first three rows are the record's.
 
 **The budget (SR-24).** The `anniversaries` row of `app-speed-measured.md`
 holds 900 ms, on the desktop record alone. The application named no figure,
 so the phone figure is this page's choice: a second, one that does not
 interrupt a screen. Divided by the record's ratio of Android to desktop on
-`festivals`, 1.05 for drik and 1.09 for the committee, the larger gives
-900 ms. **That ratio scales almost nothing (C913).** The Android record is
+`festivals`, 1.05 for drik and 1.09 for the committee when the row was set,
+the larger gives 900 ms. The record re-taken for this page reads about 1.0
+for both, which shows how little the ratio holds. **That ratio scales almost nothing (C913).** The Android record is
 an emulator on this same Mac, so the ratio says how close the emulator runs,
 not how a phone does. The row holds a regression on this Mac; it makes no
 claim about a low-end phone, which needs a record of its own.

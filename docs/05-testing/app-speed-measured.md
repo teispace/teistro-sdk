@@ -31,6 +31,7 @@ Android emulator, `sdk_gphone64_arm64` (Android 15, API 35, aarch64), commit `cf
 | widest-chart (the parity chart with every dasha a chart gives) | 25.0 ms | — | 21.7 | 20.8 | 23.1 | within spread |
 | matching (Ashta Koota between two cast charts) | 1.00 ms | — | 0.024 | 0.024 | 0.024 | within spread |
 | rectify (a day-long window rectified at the default one-minute seed) | 1000 ms | — | 34.2 | 23.0 | 46.3 | 1.4× |
+| anniversaries (50 people's anniversaries over 10 years in one call; the desktop record alone) | 900 ms | — | not recorded | not recorded | not recorded | — |
 
 Medians in milliseconds. The spread of every row:
 
@@ -86,79 +87,92 @@ Contexts on threads, the `month` request's grid on each, a context a thread, of 
 
 ## `desktop-Darwin-arm64`
 
-Apple M2 Pro (Darwin 27.0.0, aarch64), commit `cfa50116`, Teimeris 0.1.0, its data built in. Memo: cold: a fresh context every run.
+Apple M2 Pro (Darwin 27.0.0, aarch64), commit `65e48a7f`, Teimeris 0.1.0, its data built in. Memo: cold: a fresh context every run.
 
 | request | budget | target | drik, Teimeris | committee, Surya Siddhanta + Teimeris | drik, built-in | built-in ÷ Teimeris |
 |---|---:|---:|---:|---:|---:|---:|
-| open (a context opened, the engine with it) | — | 3.00 ms | 0.020 | 0.021 | 0.013 | 0.6× |
-| day (one almanac day) | 2.00 ms | 0.500 ms | 1.08 | 0.540 | 2.27 | 2.1× |
-| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 17.2 | 11.1 | 36.5 | 2.1× |
-| year (a year of almanac days) | 500 ms | — | 152 | 101 | 328 | 2.2× |
-| festivals (a year of the Nepal pack's festivals) | 160 ms | 80.0 ms | 55.1 | 22.3 | 126 | 2.3× |
-| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 138 | 106 | 500 | 3.6× |
-| chart (a birth chart with its Vimshottari to depth 3) | 2.00 ms | — | 0.512 | 0.508 | 0.990 | 1.9× |
-| parity-chart (the full parity chart: every section and varga, the baseline's parity-tier dashas to depth 3, every shipped rule) | 10.0 ms | — | 9.71 | 9.09 | 11.3 | 1.2× |
-| widest-chart (the parity chart with every dasha a chart gives) | 25.0 ms | — | 18.1 | 17.5 | 19.7 | 1.1× |
+| open (a context opened, the engine with it) | — | 3.00 ms | 0.023 | 0.022 | 0.013 | 0.6× |
+| day (one almanac day) | 2.00 ms | 0.500 ms | 1.02 | 0.562 | 1.88 | 1.8× |
+| month (a month grid, 42 days in one call) | 60.0 ms | 15.0 ms | 16.9 | 11.1 | 34.9 | 2.1× |
+| year (a year of almanac days) | 500 ms | — | 153 | 101 | 322 | 2.1× |
+| festivals (a year of the Nepal pack's festivals) | 160 ms | 80.0 ms | 58.3 | 25.5 | 129 | 2.2× |
+| muhurta (a 90-day marriage muhurta search) | 200 ms | — | 136 | 106 | 481 | 3.5× |
+| chart (a birth chart with its Vimshottari to depth 3) | 2.00 ms | — | 0.524 | 0.517 | 0.977 | 1.9× |
+| parity-chart (the full parity chart: every section and varga, the baseline's parity-tier dashas to depth 3, every shipped rule) | 10.0 ms | — | 9.14 | 8.52 | 10.7 | 1.2× |
+| widest-chart (the parity chart with every dasha a chart gives) | 25.0 ms | — | 17.4 | 16.9 | 19.2 | 1.1× |
 | matching (Ashta Koota between two cast charts) | 1.00 ms | — | 0.012 | 0.012 | 0.012 | within spread |
-| rectify (a day-long window rectified at the default one-minute seed) | 1000 ms | — | 31.2 | 21.2 | 46.7 | 1.5× |
+| rectify (a day-long window rectified at the default one-minute seed) | 1000 ms | — | 30.9 | 21.5 | 46.9 | 1.5× |
+| anniversaries (50 people's anniversaries over 10 years in one call; the desktop record alone) | 900 ms | — | 706 | 267 | 3962 | 5.6× |
 
 Medians in milliseconds. The spread of every row:
 
 | setup | request | runs | fastest | slowest |
 |---|---|---:|---:|---:|
-| drik-teimeris | open | 21 | 0.019 | 0.044 |
-| drik-teimeris | day | 21 | 1.06 | 1.17 |
-| drik-teimeris | month | 21 | 16.9 | 17.8 |
-| drik-teimeris | year | 21 | 150 | 155 |
-| drik-teimeris | festivals | 21 | 54.5 | 56.6 |
-| drik-teimeris | muhurta | 21 | 136 | 141 |
-| drik-teimeris | chart | 21 | 0.507 | 0.575 |
-| drik-teimeris | parity-chart | 21 | 9.57 | 10.6 |
-| drik-teimeris | widest-chart | 21 | 17.9 | 18.8 |
-| drik-teimeris | matching | 21 | 0.012 | 0.022 |
-| drik-teimeris | rectify | 21 | 30.8 | 33.0 |
-| committee-teimeris | open | 21 | 0.021 | 0.026 |
-| committee-teimeris | day | 21 | 0.531 | 0.583 |
-| committee-teimeris | month | 21 | 11.0 | 11.4 |
-| committee-teimeris | year | 21 | 99.8 | 104 |
-| committee-teimeris | festivals | 21 | 22.2 | 23.5 |
-| committee-teimeris | muhurta | 21 | 104 | 109 |
-| committee-teimeris | chart | 21 | 0.501 | 0.547 |
-| committee-teimeris | parity-chart | 21 | 9.05 | 9.42 |
-| committee-teimeris | widest-chart | 21 | 17.3 | 18.3 |
-| committee-teimeris | matching | 21 | 0.012 | 0.013 |
-| committee-teimeris | rectify | 21 | 21.1 | 21.7 |
-| drik-builtin | open | 21 | 0.013 | 0.015 |
-| drik-builtin | day | 21 | 2.26 | 2.31 |
-| drik-builtin | month | 21 | 36.3 | 37.1 |
-| drik-builtin | year | 13 | 326 | 331 |
-| drik-builtin | festivals | 21 | 125 | 128 |
-| drik-builtin | muhurta | 9 | 497 | 501 |
-| drik-builtin | chart | 21 | 0.975 | 1.05 |
-| drik-builtin | parity-chart | 21 | 11.2 | 11.9 |
-| drik-builtin | widest-chart | 21 | 19.6 | 20.6 |
-| drik-builtin | matching | 21 | 0.012 | 0.016 |
-| drik-builtin | rectify | 21 | 46.4 | 47.8 |
+| drik-teimeris | open | 21 | 0.019 | 0.037 |
+| drik-teimeris | day | 21 | 0.945 | 1.47 |
+| drik-teimeris | month | 21 | 16.6 | 20.0 |
+| drik-teimeris | year | 21 | 150 | 162 |
+| drik-teimeris | festivals | 21 | 56.5 | 60.3 |
+| drik-teimeris | changes | 21 | 50.7 | 53.9 |
+| drik-teimeris | muhurta | 21 | 134 | 139 |
+| drik-teimeris | chart | 21 | 0.508 | 0.648 |
+| drik-teimeris | parity-chart | 21 | 8.91 | 9.89 |
+| drik-teimeris | widest-chart | 21 | 17.2 | 18.3 |
+| drik-teimeris | matching | 21 | 0.012 | 0.020 |
+| drik-teimeris | rectify | 21 | 30.6 | 32.0 |
+| drik-teimeris | anniversaries | 6 | 705 | 712 |
+| drik-teimeris | anniversaries-one | 7 | 637 | 663 |
+| drik-teimeris | anniversaries-yearly | 5 | 963 | 990 |
+| committee-teimeris | open | 21 | 0.021 | 0.029 |
+| committee-teimeris | day | 21 | 0.550 | 0.636 |
+| committee-teimeris | month | 21 | 11.0 | 16.1 |
+| committee-teimeris | year | 21 | 98.9 | 109 |
+| committee-teimeris | festivals | 21 | 24.7 | 27.0 |
+| committee-teimeris | changes | 21 | 21.3 | 23.0 |
+| committee-teimeris | muhurta | 21 | 104 | 110 |
+| committee-teimeris | chart | 21 | 0.499 | 0.595 |
+| committee-teimeris | parity-chart | 21 | 8.45 | 9.49 |
+| committee-teimeris | widest-chart | 21 | 16.7 | 33.0 |
+| committee-teimeris | matching | 21 | 0.012 | 0.014 |
+| committee-teimeris | rectify | 21 | 20.8 | 22.3 |
+| committee-teimeris | anniversaries | 15 | 265 | 273 |
+| committee-teimeris | anniversaries-one | 17 | 232 | 255 |
+| committee-teimeris | anniversaries-yearly | 9 | 474 | 485 |
+| drik-builtin | open | 21 | 0.013 | 0.017 |
+| drik-builtin | day | 21 | 1.85 | 2.10 |
+| drik-builtin | month | 21 | 34.7 | 37.8 |
+| drik-builtin | year | 13 | 320 | 330 |
+| drik-builtin | festivals | 21 | 127 | 150 |
+| drik-builtin | changes | 21 | 111 | 127 |
+| drik-builtin | muhurta | 9 | 478 | 486 |
+| drik-builtin | chart | 21 | 0.961 | 1.05 |
+| drik-builtin | parity-chart | 21 | 10.4 | 11.5 |
+| drik-builtin | widest-chart | 21 | 18.8 | 20.1 |
+| drik-builtin | matching | 21 | 0.012 | 0.013 |
+| drik-builtin | rectify | 21 | 46.4 | 66.8 |
+| drik-builtin | anniversaries | 3 | 3940 | 3968 |
+| drik-builtin | anniversaries-one | 3 | 3164 | 3191 |
+| drik-builtin | anniversaries-yearly | 3 | 8199 | 8313 |
 
 Contexts on threads, the `month` request's grid on each, a context a thread, of the 10 threads this machine offers. **Efficiency** is the throughput over the one thread's times the count (1 is linear); up to 4 threads, and fewer than the machine offers, it is held to 0.75. **Alike** is whether every thread's month hashed as one thread's did.
 
 | setup | threads | median trial, ms | months a second | efficiency | alike |
 |---|---:|---:|---:|---:|---|
-| drik-teimeris | 1 | 35.7 (5 trials of 3 months) | 84.15 | 1.000 | yes |
-| drik-teimeris | 2 | 37.2 (5 trials of 3 months) | 161.12 | 0.957 | yes |
-| drik-teimeris | 4 | 38.2 (5 trials of 3 months) | 314.48 | 0.934 | yes |
-| drik-teimeris | 8 | 51.2 (5 trials of 3 months) | 468.97 | 0.697 | yes |
-| drik-teimeris | 10 | 59.9 (5 trials of 3 months) | 500.44 | 0.595 | yes |
-| committee-teimeris | 1 | 34.3 (5 trials of 3 months) | 87.40 | 1.000 | yes |
-| committee-teimeris | 2 | 36.5 (5 trials of 3 months) | 164.53 | 0.941 | yes |
-| committee-teimeris | 4 | 39.4 (5 trials of 3 months) | 304.61 | 0.871 | yes |
-| committee-teimeris | 8 | 51.8 (5 trials of 3 months) | 462.94 | 0.662 | yes |
-| committee-teimeris | 10 | 58.6 (5 trials of 3 months) | 512.33 | 0.586 | yes |
-| drik-builtin | 1 | 111 (5 trials of 3 months) | 27.05 | 1.000 | yes |
-| drik-builtin | 2 | 113 (5 trials of 3 months) | 52.87 | 0.977 | yes |
-| drik-builtin | 4 | 116 (5 trials of 3 months) | 103.87 | 0.960 | yes |
-| drik-builtin | 8 | 155 (5 trials of 3 months) | 155.23 | 0.717 | yes |
-| drik-builtin | 10 | 182 (5 trials of 3 months) | 165.26 | 0.611 | yes |
+| drik-teimeris | 1 | 35.0 (5 trials of 3 months) | 85.74 | 1.000 | yes |
+| drik-teimeris | 2 | 36.0 (5 trials of 3 months) | 166.83 | 0.973 | yes |
+| drik-teimeris | 4 | 37.5 (5 trials of 3 months) | 319.58 | 0.932 | yes |
+| drik-teimeris | 8 | 48.8 (5 trials of 3 months) | 491.70 | 0.717 | yes |
+| drik-teimeris | 10 | 54.2 (5 trials of 3 months) | 553.85 | 0.646 | yes |
+| committee-teimeris | 1 | 33.8 (5 trials of 3 months) | 88.80 | 1.000 | yes |
+| committee-teimeris | 2 | 35.4 (5 trials of 3 months) | 169.63 | 0.955 | yes |
+| committee-teimeris | 4 | 37.0 (5 trials of 3 months) | 324.25 | 0.913 | yes |
+| committee-teimeris | 8 | 46.8 (5 trials of 3 months) | 513.12 | 0.722 | yes |
+| committee-teimeris | 10 | 57.7 (5 trials of 3 months) | 520.26 | 0.586 | yes |
+| drik-builtin | 1 | 105 (5 trials of 3 months) | 28.59 | 1.000 | yes |
+| drik-builtin | 2 | 107 (5 trials of 3 months) | 56.31 | 0.985 | yes |
+| drik-builtin | 4 | 109 (5 trials of 3 months) | 109.59 | 0.958 | yes |
+| drik-builtin | 8 | 136 (5 trials of 3 months) | 176.14 | 0.770 | yes |
+| drik-builtin | 10 | 156 (5 trials of 3 months) | 191.70 | 0.671 | yes |
 
 ## `ios-sim-arm64-ios-simulator-iphone-18-pro`
 
@@ -177,6 +191,7 @@ iOS simulator, iPhone 18 Pro (iOS 27.0, aarch64), commit `cfa50116`, Teimeris 0.
 | widest-chart (the parity chart with every dasha a chart gives) | 25.0 ms | — | 19.2 | 18.5 | 20.4 | 1.1× |
 | matching (Ashta Koota between two cast charts) | 1.00 ms | — | 0.013 | 0.014 | 0.014 | within spread |
 | rectify (a day-long window rectified at the default one-minute seed) | 1000 ms | — | 30.7 | 21.8 | 43.6 | 1.4× |
+| anniversaries (50 people's anniversaries over 10 years in one call; the desktop record alone) | 900 ms | — | not recorded | not recorded | not recorded | — |
 
 Medians in milliseconds. The spread of every row:
 
