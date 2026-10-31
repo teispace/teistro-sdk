@@ -33,7 +33,9 @@ fn hindi_and_sanskrit_calendar_text_ships_marked() {
     for tag in ["hi-Deva-IN", "sa-Deva"] {
         assert_eq!(tree.locales[tag].meta.draft, ["sdk.calendar"], "{tag}");
     }
-    for tag in ["en-Latn", "ne-Deva-NP", "sa-Latn"] {
+    // The strict locale drafts its day sentences, not its calendar words.
+    assert_eq!(tree.locales["ne-Deva-NP"].meta.draft, ["sdk.day"]);
+    for tag in ["en-Latn", "sa-Latn"] {
         assert!(tree.locales[tag].meta.draft.is_empty(), "{tag}");
     }
     let report = Intl::from_tree(&tree).unwrap().report();

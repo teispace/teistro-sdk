@@ -425,7 +425,11 @@ void main() {
       calendar: Calendar.gregorian,
       anniversaries: const [
         Anniversary(key: 'BARKHI', origin: origin),
-        Anniversary(key: 'WEDDING', origin: origin, kind: AnniversaryKind.event),
+        Anniversary(
+          key: 'WEDDING',
+          origin: origin,
+          kind: AnniversaryKind.event,
+        ),
       ],
     );
     final span = ctx.almanac.anniversaries(asked());
