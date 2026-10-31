@@ -37,3 +37,8 @@ dbg_macro = "warn"
 print_stdout = "warn"
 print_stderr = "warn"
 indexing_slicing = "warn"
+
+[package.metadata.cargo-machete]
+# Each is used where the tool cannot see it.
+# diplomat-runtime: reached by the bridge macro's expansion.
+ignored = ["diplomat-runtime"]
