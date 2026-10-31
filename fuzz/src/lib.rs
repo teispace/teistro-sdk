@@ -25,8 +25,8 @@ use teistro_ffi::context::{
 };
 use teistro_ffi::ephemeris::ts_ephemeris_call;
 use teistro_ffi::intl::{
-    TsIntlLoaded, ts_intl_entity, ts_intl_has, ts_intl_load_pack, ts_intl_render,
-    ts_intl_set_locale, ts_intl_transliterate,
+    TsIntlLoaded, ts_intl_entity, ts_intl_has, ts_intl_lexicon, ts_intl_load_pack, ts_intl_lookup,
+    ts_intl_render, ts_intl_set_locale, ts_intl_transliterate,
 };
 use teistro_ffi::key::ts_key_parse;
 use teistro_ffi::naam::ts_naam_milan;
@@ -217,6 +217,8 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_chart_layout_row key",
     "ts_ephemeris_call",
     "ts_almanac_digest",
+    "ts_intl_lexicon",
+    "ts_intl_lookup",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -470,6 +472,16 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         Seed::Answered,
         r#"{"first":{"year":2025,"month":10,"day":1},"days":3,"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"festivals":{"rules":"NEPAL"}}"#,
     ),
+    (
+        "ts_intl_lexicon",
+        Seed::Answered,
+        r#"{"locale":"ne","kinds":["masa","vara"]}"#,
+    ),
+    (
+        "ts_intl_lookup",
+        Seed::Answered,
+        r#"{"text":"आज एकादशी हो, चन्द्रमा रोहिणीमा छ","kinds":["tithi","nakshatra"]}"#,
+    ),
 ];
 
 /// The corpus file of one seed: its selector byte, counted from the slot's
@@ -630,6 +642,8 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_almanac_published_reasons" => paired_call(ts_almanac_published_reasons, text),
         "ts_chart_layout_row key" => string_call(ts_chart_layout_row, text),
         "ts_ephemeris_call" => ephemeris_call(text),
+        "ts_intl_lexicon" => string_call(ts_intl_lexicon, text),
+        "ts_intl_lookup" => string_call(ts_intl_lookup, text),
         _ => Status::Ok,
     }
 }

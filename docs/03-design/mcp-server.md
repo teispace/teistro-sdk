@@ -119,6 +119,7 @@ the protocol's own failures.
 | `almanac.sankalpa` | the time a sankalpa recites at an instant and a place | built since (`sankalpa.md`) |
 | `almanac.navatara` | `NavataraRequest`: a birth star, whose navatara chakra is answered | built since (`navatara-chakra.md`) |
 | `naming.syllables`, `naming.read`, `naming.check`, `naming.of`, `naming.suggest` | the naming requests: a pada's syllables, names read and checked, a birth's names, a book's suggestions (a book carried whole: an MCP context keeps no loaded book, so `naming.load` is no tool) | built since (`namakarana.md` §10) |
+| `intl.lexicon`, `intl.lookup` | `LexiconRequest`, `LookupRequest`: a locale's names for every catalogue member, and the members a text may name | built since (`lexicon.md` §1) |
 
 Step 2 needed the chart's composition in the façade. Until it was built,
 `ts_chart_found` composed a chart's families inside the boundary crate

@@ -43,6 +43,8 @@ __all__ = [
     "BatchAsked",
     "DateTextRequest",
     "InWordsRequest",
+    "LexiconRequest",
+    "LookupRequest",
     "TimeTextRequest",
     "NaamRequest",
     "NamingCheckRequest",
@@ -1345,6 +1347,29 @@ class InWordsRequest(TypedDict, total=False):
 
     style: WordsStyle
     """The rule set."""
+
+
+class LexiconRequest(TypedDict, total=False):
+    """What a caller asks to be listed: a locale's names for every member, or for some kinds."""
+
+    kinds: Optional[Sequence[str]]
+    """The kinds to list (`tithi`, `nakshatra`); every kind when left out."""
+
+    locale: Optional[str]
+    """The locale, a loaded tag or one that means one (`ne`); the engine's current one when left out."""
+
+
+class LookupRequest(TypedDict, total=False):
+    """What a caller asks to be found: the members a text may name."""
+
+    kinds: Optional[Sequence[str]]
+    """The kinds a match may be of; every kind when left out."""
+
+    locale: Optional[str]
+    """The locale whose chain's names are searched; every loaded locale's when left out, so a Hindi word in a Nepali sentence is found."""
+
+    text: Required[str]
+    """The text."""
 
 
 class TimeTextRequest(TypedDict, total=False):

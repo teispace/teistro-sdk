@@ -3388,6 +3388,26 @@ test('a child named by the cakra, and a name book suggested from', () => {
   ctx.dispose();
 });
 
+test('a locale\'s names, and the members a text may name', () => {
+  const ctx = context({ locale: 'en-Latn' });
+  const months = ctx.intl.lexicon({ locale: 'ne', kinds: ['masa'] });
+  assert.ok(Object.isFrozen(months) && Object.isFrozen(months.entries), 'frozen');
+  assert.equal(months.locale, 'ne-Deva-NP');
+  assert.equal(months.entries.length, 12);
+  assert.deepEqual(months.entries[0].forms[0], { form: 'name', text: 'चैत्र', locale: 'ne-Deva-NP' });
+  const found = ctx.intl.lookup({ text: 'आज एकादशी हो', kinds: ['tithi'] });
+  assert.deepEqual(
+    found.matches[0].candidates.map((candidate) => candidate.key),
+    ['tithi.KRISHNA_EKADASHI', 'tithi.SHUKLA_EKADASHI'],
+  );
+  assert.deepEqual([found.matches[0].start, found.matches[0].end, found.matches[0].text], [3, 9, 'एकादशी']);
+  assert.throws(
+    () => ctx.intl.lookup({ text: 'x', kinds: ['planet'] }),
+    (error) => error instanceof TeistroError && error.field === 'lookup.kinds',
+  );
+  ctx.dispose();
+});
+
 test('a date and a time as text and parts, in the locale\'s pattern', () => {
   const ctx = context({ locale: 'en-Latn' });
   const dawn = ctx.intl.time({ at: { hour: 6, minute: 5 }, hour12: true, locale: 'hi-Deva-IN' });

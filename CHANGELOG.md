@@ -107,6 +107,13 @@ out of any earlier period. No other period moves.
 - An observance kept or broken at moonrise carries `moonrise`, the instant and the place
   (SR-60); `ASHUNYA_SHAYANA` joins `DHARMASINDHU`, kept and broken at moonrise (DS p. 44).
 
+**A locale's names, and the members a text may name.**
+**Numbers:** none.
+- `intl.lexicon` and `intl.lookup` in every binding and MCP (`ts_intl_lexicon`, `ts_intl_lookup`): every
+  catalogue member's names in a locale's chain with romanised forms, and every span of a text that may
+  name a member with every member it may name, matched on one documented fold of spelling and script
+  (A2-3, `03-design/lexicon.md`). Built once per context and locale.
+
 **A day in sentences; a polar sankranti answers.**
 **Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or
 `CIVIL_MIDNIGHT` that the default month start refused now answers, and a `NEAREST_EVENT`

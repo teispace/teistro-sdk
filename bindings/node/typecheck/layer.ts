@@ -91,6 +91,10 @@ import type {
   NumerologyProfile,
   CivilPart,
   CivilText,
+  Lexicon,
+  LexiconRequest,
+  Lookup,
+  LookupRequest,
   DateTextRequest,
   InWords,
   InWordsRequest,
@@ -2281,6 +2285,20 @@ function theClock(ctx: Context): string {
 }
 
 void theClock;
+
+// A locale's names, and the members a text may name.
+function theLexicon(ctx: Context): string {
+  const asked: LexiconRequest = { locale: 'ne', kinds: ['masa'] };
+  const months: Lexicon = ctx.intl.lexicon(asked);
+  const text: LookupRequest = { text: 'आज एकादशी', kinds: ['tithi'] };
+  const found: Lookup = ctx.intl.lookup(text);
+  // @ts-expect-error a lookup reads a text
+  const untexted: LookupRequest = { kinds: ['tithi'] };
+  const first = found.matches[0]?.candidates[0]?.key ?? '';
+  return [months.entries[0]?.forms[0]?.text ?? '', first, String(untexted)].join();
+}
+
+void theLexicon;
 
 // A stored baseline snapshot translated into the contexts to open.
 function theRecordedSettings(ctx: Context): string {

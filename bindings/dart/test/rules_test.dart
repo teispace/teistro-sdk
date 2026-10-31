@@ -311,6 +311,8 @@ const Map<String, Type> _records = {
   'chart.rashifal': BatchAsked,
   'intl.date': DateTextRequest,
   'intl.inWords': InWordsRequest,
+  'intl.lexicon': LexiconRequest,
+  'intl.lookup': LookupRequest,
   'intl.time': TimeTextRequest,
   'matching.naam': NaamRequest,
   'naming.check': NamingCheckRequest,

@@ -1,6 +1,8 @@
 //! The budgets of `docs/03-design/intl-engine-and-packs.md` §10: a render
 //! under 5 µs, a pack lookup under 1 µs, a pack verified under 5 ms per ten
-//! thousand entries, a locale loaded from packs under 1 ms per thousand.
+//! thousand entries, a locale loaded from packs under 1 ms per thousand;
+//! and the lexicon's (`docs/03-design/lexicon.md` §5): built once, then a
+//! lookup or a date read per call.
 #![allow(
     clippy::expect_used,
     clippy::unwrap_used,
@@ -10,6 +12,7 @@
 
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use teistro_core::catalogue::Graha;
+use teistro_intl::lexicon::LookupRequest;
 use teistro_intl::pack::{self, Pack, locales_from_packs};
 use teistro_intl::source::Tree;
 use teistro_intl::{Intl, Value, params, sdk_root};
@@ -73,6 +76,28 @@ fn benches(c: &mut Criterion) {
             b.iter(|| Intl::new(locales_from_packs(black_box(&borrowed)).expect("locales")));
         },
     );
+    lexicon(c, &tree);
+}
+
+/// The lexicon: built from nothing (what the first lookup on a context
+/// pays), then a sentence looked up on a built one.
+fn lexicon(c: &mut Criterion, tree: &Tree) {
+    let sentence = LookupRequest::from_json(
+        r#"{"text": "आज एकादशी हो, चन्द्रमा रोहिणीमा छ र सोमबार हो। Today is Ekadashi and the Moon is in Rohini."}"#,
+    )
+    .expect("a request");
+    c.bench_function("lexicon: build every locale's, then look up", |b| {
+        b.iter_batched(
+            || Intl::from_tree(tree).expect("plural rules"),
+            |fresh| fresh.lookup(black_box(&sentence)).expect("an answer"),
+            criterion::BatchSize::LargeInput,
+        );
+    });
+    let built = Intl::from_tree(tree).expect("plural rules");
+    built.lookup(&sentence).expect("an answer");
+    c.bench_function("lexicon: look up two sentences of 18 words", |b| {
+        b.iter(|| built.lookup(black_box(&sentence)));
+    });
 }
 
 criterion_group!(intl, benches);

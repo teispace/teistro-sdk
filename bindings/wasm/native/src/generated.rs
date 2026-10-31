@@ -4760,6 +4760,60 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// Every catalogue member's names in a locale, romanised forms too
+    /// (`03-design/lexicon.md` §1), answered as canonical JSON: `{locale,
+    /// entries}`, each entry `{key, forms}` and each form `{form, text,
+    /// locale}`, the form `name`, `prose`, `short`, `iast`, any the locale adds,
+    /// or `romanised`, and `locale` the one in the chain that gave it.
+    ///
+    /// `request_json` is `{}`, with `"locale"` (a loaded tag or one that means
+    /// one, `ne`; the context's when left out) and `"kinds"` (`["tithi",
+    /// "nakshatra"]`; every kind when left out). A key it does not read or a
+    /// kind no member's name has is `INVALID_ARG`, named under `lexicon`; a
+    /// locale no loaded one answers is `UNSUPPORTED`. The lexicon is built the
+    /// first time a locale is asked for and kept on the context.
+    #[wasm_bindgen(js_name = intlLexicon)]
+    pub fn intl_lexicon(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::intl::ts_intl_lexicon(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// The catalogue members a text may name (`03-design/lexicon.md` §1.3),
+    /// answered as canonical JSON: `{matches}`, each match `{start, end, text,
+    /// candidates}` in the text's order, `start` and `end` counted in Unicode
+    /// scalar values, and each candidate `{key, via}`, `via` the forms whose
+    /// fold the span's is. A span that may name several members answers every
+    /// one of them.
+    ///
+    /// `request_json` is `{"text"}`, with `"locale"` (whose chain's names are
+    /// searched; every loaded locale's when left out) and `"kinds"` (every kind
+    /// when left out). A key it does not read or a kind no member's name has is
+    /// `INVALID_ARG`, named under `lookup`; a locale no loaded one answers is
+    /// `UNSUPPORTED`.
+    #[wasm_bindgen(js_name = intlLookup)]
+    pub fn intl_lookup(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::intl::ts_intl_lookup(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Text from one script into another (`deva`, `iast`), as a string lent
     /// until the next call on the context. A pair the build has no table for
     /// is `UNSUPPORTED` naming both scripts; anything the table does not know

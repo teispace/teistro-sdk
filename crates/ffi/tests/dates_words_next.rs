@@ -22,7 +22,9 @@ use teistro_ffi::TS_CONTEXT_TEST_PROVIDER;
 use teistro_ffi::calendar::{
     TsCalendarDate, TsDateSpan, TsOverflow, ts_calendar_add, ts_calendar_between,
 };
-use teistro_ffi::intl::{ts_intl_date, ts_intl_in_words, ts_intl_time};
+use teistro_ffi::intl::{
+    ts_intl_date, ts_intl_in_words, ts_intl_lexicon, ts_intl_lookup, ts_intl_time,
+};
 use teistro_ffi::panchanga::{ts_almanac_anniversaries, ts_almanac_next, ts_almanac_sentences};
 use teistro_ffi::string::TsString;
 
@@ -310,6 +312,65 @@ fn a_time_and_a_date_are_written_and_a_bad_request_is_refused() {
         ),
     ] {
         refused(&ctx, &json_call(&ctx, ts_intl_date, &request), status, "");
+    }
+}
+
+/// **A locale's names, and the names a text holds** (A2-3), and each
+/// refusal.
+#[test]
+fn a_lexicon_is_listed_and_a_text_is_looked_up() {
+    let ctx = Ctx::defaults();
+    let (status, answer) = json_call(
+        &ctx,
+        ts_intl_lexicon,
+        &serde_json::json!({ "locale": "hi", "kinds": ["graha"] }),
+    );
+    assert_eq!(status, Status::Ok);
+    let answer = answer.unwrap();
+    assert_eq!(answer["locale"], "hi-Deva-IN");
+    assert_eq!(answer["entries"][0]["key"], "graha.SUN");
+    assert_eq!(answer["entries"][0]["forms"][0]["text"], "सूर्य");
+
+    let (status, found) = json_call(
+        &ctx,
+        ts_intl_lookup,
+        &serde_json::json!({ "text": "चन्द्रमा रोहिणीमा", "kinds": ["nakshatra"] }),
+    );
+    assert_eq!(status, Status::Ok);
+    let found = found.unwrap();
+    assert_eq!(
+        found["matches"][0]["candidates"][0]["key"],
+        "nakshatra.ROHINI"
+    );
+    assert_eq!(found["matches"][0]["start"], 9);
+
+    for (request, status) in [
+        (
+            serde_json::json!({ "kinds": ["planet"] }),
+            Status::InvalidArg,
+        ),
+        (serde_json::json!({ "locale": "xx" }), Status::Unsupported),
+        (serde_json::json!({ "locales": [] }), Status::InvalidArg),
+    ] {
+        refused(
+            &ctx,
+            &json_call(&ctx, ts_intl_lexicon, &request),
+            status,
+            "",
+        );
+    }
+    for (request, status) in [
+        (serde_json::json!({}), Status::InvalidArg),
+        (
+            serde_json::json!({ "text": "x", "kinds": ["planet"] }),
+            Status::InvalidArg,
+        ),
+        (
+            serde_json::json!({ "text": "x", "locale": "xx" }),
+            Status::Unsupported,
+        ),
+    ] {
+        refused(&ctx, &json_call(&ctx, ts_intl_lookup, &request), status, "");
     }
 }
 

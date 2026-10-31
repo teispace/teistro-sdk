@@ -4297,6 +4297,20 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_intl_date.restype = ctypes.c_int32
+        self.ts_intl_lexicon: Any = library.ts_intl_lexicon
+        self.ts_intl_lexicon.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_intl_lexicon.restype = ctypes.c_int32
+        self.ts_intl_lookup: Any = library.ts_intl_lookup
+        self.ts_intl_lookup.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_intl_lookup.restype = ctypes.c_int32
         self.ts_intl_transliterate: Any = library.ts_intl_transliterate
         self.ts_intl_transliterate.argtypes = [
             ctypes.POINTER(_Context),
@@ -5371,6 +5385,66 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_intl_date(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def intl_lexicon(self, request_json: str) -> str:
+        """Every catalogue member's names in a locale, romanised forms too
+        (`03-design/lexicon.md` §1), answered as canonical JSON: `{locale,
+        entries}`, each entry `{key, forms}` and each form `{form, text,
+        locale}`, the form `name`, `prose`, `short`, `iast`, any the locale adds,
+        or `romanised`, and `locale` the one in the chain that gave it.
+
+        `request_json` is `{}`, with `"locale"` (a loaded tag or one that means
+        one, `ne`; the context's when left out) and `"kinds"` (`["tithi",
+        "nakshatra"]`; every kind when left out). A key it does not read or a
+        kind no member's name has is `INVALID_ARG`, named under `lexicon`; a
+        locale no loaded one answers is `UNSUPPORTED`. The lexicon is built the
+        first time a locale is asked for and kept on the context.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_intl_lexicon(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def intl_lookup(self, request_json: str) -> str:
+        """The catalogue members a text may name (`03-design/lexicon.md` §1.3),
+        answered as canonical JSON: `{matches}`, each match `{start, end, text,
+        candidates}` in the text's order, `start` and `end` counted in Unicode
+        scalar values, and each candidate `{key, via}`, `via` the forms whose
+        fold the span's is. A span that may name several members answers every
+        one of them.
+
+        `request_json` is `{"text"}`, with `"locale"` (whose chain's names are
+        searched; every loaded locale's when left out) and `"kinds"` (every kind
+        when left out). A key it does not read or a kind no member's name has is
+        `INVALID_ARG`, named under `lookup`; a locale no loaded one answers is
+        `UNSUPPORTED`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_intl_lookup(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

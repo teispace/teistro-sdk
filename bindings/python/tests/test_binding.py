@@ -612,6 +612,26 @@ class TheLocaleEngine(WithLibrary):
             self.ctx.intl.time({"at": {"hour": 24, "minute": 0}})
         self.assertEqual(refused.exception.field, "time.at.hour")
 
+    def test_a_locales_names_and_the_members_a_text_may_name(self) -> None:
+        from teistro import Lexicon, LexiconRequest, Lookup, LookupRequest
+
+        asked: LexiconRequest = {"locale": "ne", "kinds": ["masa"]}
+        months: Lexicon = self.ctx.intl.lexicon(asked)
+        self.assertEqual(months.locale, "ne-Deva-NP")
+        self.assertEqual(len(months.entries), 12)
+        self.assertEqual((months.entries[0].forms[0].form, months.entries[0].forms[0].text), ("name", "चैत्र"))
+        text: LookupRequest = {"text": "आज एकादशी हो", "kinds": ["tithi"]}
+        found: Lookup = self.ctx.intl.lookup(text)
+        first = found.matches[0]
+        self.assertEqual((first.start, first.end, first.text), (3, 9, "एकादशी"))
+        self.assertEqual(
+            [candidate.key for candidate in first.candidates],
+            ["tithi.KRISHNA_EKADASHI", "tithi.SHUKLA_EKADASHI"],
+        )
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.intl.lookup({"text": "x", "kinds": ["planet"]})
+        self.assertEqual(refused.exception.field, "lookup.kinds")
+
     def test_transliteration_changes_the_script(self) -> None:
         latin = self.ctx.intl.transliterate("सूर्य")
         self.assertTrue(latin)

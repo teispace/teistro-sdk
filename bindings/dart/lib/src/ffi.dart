@@ -1997,6 +1997,10 @@ typedef TsIntlTimeNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<
 typedef TsIntlTimeDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlDateNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlDateDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlLexiconNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlLexiconDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlLookupNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlLookupDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlTransliterateNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlTransliterateDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlEntityNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
@@ -2130,6 +2134,8 @@ final class TeistroLibrary {
         ts_intl_in_words = library.lookupFunction<TsIntlInWordsNative, TsIntlInWordsDart>('ts_intl_in_words'),
         ts_intl_time = library.lookupFunction<TsIntlTimeNative, TsIntlTimeDart>('ts_intl_time'),
         ts_intl_date = library.lookupFunction<TsIntlDateNative, TsIntlDateDart>('ts_intl_date'),
+        ts_intl_lexicon = library.lookupFunction<TsIntlLexiconNative, TsIntlLexiconDart>('ts_intl_lexicon'),
+        ts_intl_lookup = library.lookupFunction<TsIntlLookupNative, TsIntlLookupDart>('ts_intl_lookup'),
         ts_intl_transliterate = library.lookupFunction<TsIntlTransliterateNative, TsIntlTransliterateDart>('ts_intl_transliterate'),
         ts_intl_entity = library.lookupFunction<TsIntlEntityNative, TsIntlEntityDart>('ts_intl_entity'),
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
@@ -2462,6 +2468,34 @@ final class TeistroLibrary {
   /// under `date`; a locale not loaded, a calendar not shipped or one with no
   /// pattern is `UNSUPPORTED`.
   final TsIntlDateDart ts_intl_date;
+
+  /// Every catalogue member's names in a locale, romanised forms too
+  /// (`03-design/lexicon.md` §1), answered as canonical JSON: `{locale,
+  /// entries}`, each entry `{key, forms}` and each form `{form, text,
+  /// locale}`, the form `name`, `prose`, `short`, `iast`, any the locale adds,
+  /// or `romanised`, and `locale` the one in the chain that gave it.
+  ///
+  /// `request_json` is `{}`, with `"locale"` (a loaded tag or one that means
+  /// one, `ne`; the context's when left out) and `"kinds"` (`["tithi",
+  /// "nakshatra"]`; every kind when left out). A key it does not read or a
+  /// kind no member's name has is `INVALID_ARG`, named under `lexicon`; a
+  /// locale no loaded one answers is `UNSUPPORTED`. The lexicon is built the
+  /// first time a locale is asked for and kept on the context.
+  final TsIntlLexiconDart ts_intl_lexicon;
+
+  /// The catalogue members a text may name (`03-design/lexicon.md` §1.3),
+  /// answered as canonical JSON: `{matches}`, each match `{start, end, text,
+  /// candidates}` in the text's order, `start` and `end` counted in Unicode
+  /// scalar values, and each candidate `{key, via}`, `via` the forms whose
+  /// fold the span's is. A span that may name several members answers every
+  /// one of them.
+  ///
+  /// `request_json` is `{"text"}`, with `"locale"` (whose chain's names are
+  /// searched; every loaded locale's when left out) and `"kinds"` (every kind
+  /// when left out). A key it does not read or a kind no member's name has is
+  /// `INVALID_ARG`, named under `lookup`; a locale no loaded one answers is
+  /// `UNSUPPORTED`.
+  final TsIntlLookupDart ts_intl_lookup;
 
   /// Text from one script into another (`deva`, `iast`), as a string lent
   /// until the next call on the context. A pair the build has no table for
@@ -6423,6 +6457,52 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_intl_date(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Every catalogue member's names in a locale, romanised forms too
+  /// (`03-design/lexicon.md` §1), answered as canonical JSON: `{locale,
+  /// entries}`, each entry `{key, forms}` and each form `{form, text,
+  /// locale}`, the form `name`, `prose`, `short`, `iast`, any the locale adds,
+  /// or `romanised`, and `locale` the one in the chain that gave it.
+  ///
+  /// `request_json` is `{}`, with `"locale"` (a loaded tag or one that means
+  /// one, `ne`; the context's when left out) and `"kinds"` (`["tithi",
+  /// "nakshatra"]`; every kind when left out). A key it does not read or a
+  /// kind no member's name has is `INVALID_ARG`, named under `lexicon`; a
+  /// locale no loaded one answers is `UNSUPPORTED`. The lexicon is built the
+  /// first time a locale is asked for and kept on the context.
+  String intlLexicon(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_intl_lexicon(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// The catalogue members a text may name (`03-design/lexicon.md` §1.3),
+  /// answered as canonical JSON: `{matches}`, each match `{start, end, text,
+  /// candidates}` in the text's order, `start` and `end` counted in Unicode
+  /// scalar values, and each candidate `{key, via}`, `via` the forms whose
+  /// fold the span's is. A span that may name several members answers every
+  /// one of them.
+  ///
+  /// `request_json` is `{"text"}`, with `"locale"` (whose chain's names are
+  /// searched; every loaded locale's when left out) and `"kinds"` (every kind
+  /// when left out). A key it does not read or a kind no member's name has is
+  /// `INVALID_ARG`, named under `lookup`; a locale no loaded one answers is
+  /// `UNSUPPORTED`.
+  String intlLookup(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_intl_lookup(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });
