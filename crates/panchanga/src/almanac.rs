@@ -51,6 +51,7 @@ use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
 use crate::period::{self, Durmuhurta, Kaalas, Muhurtas, Part};
 use crate::punya::{self, Arcs, PunyaKala};
+use crate::rulers::{self, YearRuler};
 use crate::sankalpa::{self, AyanaReckoning, Sankalpa};
 use crate::sky::{self, MoonDay, SunDay};
 use crate::span::{self, Span, Sunrises};
@@ -2484,7 +2485,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         let settings = self.settings();
         let (day, frame) = self.holding(at, place)?;
         let year = self
-            .years(&day.day.date, &day.day.date, place)?
+            .lunar_years(&day.day.date, &day.day.date, place, false)?
             .value
             .into_iter()
             .next()
@@ -2799,6 +2800,18 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
         to: &CalendarDate,
         place: &Place,
     ) -> Result<Envelope<Vec<LunarYear>>, Error> {
+        self.lunar_years(from, to, place, true)
+    }
+
+    /// [`Almanac::years`], with each year's office-bearers when `rulers`
+    /// asks for them: a sankalpa reads the year's name and numbers only.
+    fn lunar_years(
+        &self,
+        from: &CalendarDate,
+        to: &CalendarDate,
+        place: &Place,
+        rulers: bool,
+    ) -> Result<Envelope<Vec<LunarYear>>, Error> {
         let (first, last) = (self.calendar.fixed_of(from)?, self.calendar.fixed_of(to)?);
         days_in(first, last, from, to, MOST_DAYS)?;
         let start = local_midnight(self.clock, first)?;
@@ -2862,13 +2875,17 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             let &[(opened, began), (_, ended)] = pair else {
                 continue;
             };
-            years.push(LunarYear::of(
+            let mut year = LunarYear::of(
                 count,
                 opened,
                 began,
                 ended,
                 (named(index)?, named(index + 1)?),
-            )?);
+            )?;
+            if rulers {
+                year.rulers = self.rulers(&completion, place, opened)?;
+            }
+            years.push(year);
         }
         let frame = self.at_instant(&completion, opened)?.0;
         let provenance = self.provenance(
@@ -2898,6 +2915,48 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
             longitudes = longitudes.with_observer(*place);
         }
         crate::year::chaitra_opening(&longitudes, zodiac, at)
+    }
+
+    /// The office-bearers of the year a new moon opened
+    /// (`03-design/year-rulers.md`): each office's event found in this
+    /// almanac's sky, the one that found the opening, and its weekday read
+    /// at the place under every rule the office's texts give.
+    fn rulers(
+        &self,
+        completion: &Completion<'_, P>,
+        place: &Place,
+        opened: JulianDay<Utc>,
+    ) -> Result<Vec<YearRuler>, Error> {
+        let (frame, zodiac) = self.at_instant(completion, opened)?;
+        let mut longitudes = completion.longitudes(frame);
+        if frame.centre == teistro_port_ephemeris::Centre::Topocentric {
+            longitudes = longitudes.with_observer(*place);
+        }
+        let year = rulers::events(&longitudes, zodiac, opened)?;
+        year.offices
+            .into_iter()
+            .map(|(office, event)| {
+                let holding = teistro_chart::day::chart_day(
+                    self.model,
+                    self.calendar,
+                    self.clock,
+                    place,
+                    event,
+                    self.settings().day.polar_day_policy,
+                )?
+                .day;
+                Ok(YearRuler {
+                    office,
+                    event,
+                    texts: office.texts().to_vec(),
+                    readings: office
+                        .rules()
+                        .iter()
+                        .map(|&rule| rulers::read(rule, event, &holding, Some(year.pratipada_ends)))
+                        .collect(),
+                })
+            })
+            .collect()
     }
 
     /// The sunrise that opens the day after a new moon's: the first

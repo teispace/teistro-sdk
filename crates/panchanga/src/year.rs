@@ -25,6 +25,7 @@ use teistro_core::settings::SamvatsaraCount;
 use teistro_port_ephemeris::{Lattice, Quantity};
 
 use crate::limb::{self, Sidereal, Zodiac};
+use crate::rulers::YearRuler;
 
 /// A synodic month, days.
 const SYNODIC_DAYS: f64 = teistro_calendar::lunisolar::SYNODIC_DAYS;
@@ -109,6 +110,12 @@ pub struct LunarYear {
     /// Barhaspatya count expunges; the southern count names every lunar
     /// year in order.
     pub lupta: Option<Samvatsara>,
+    /// The year's office-bearers, the raja first, each read under every
+    /// rule its texts give (`03-design/year-rulers.md`). What
+    /// [`Almanac::years`](crate::Almanac::years) answers; empty on a year
+    /// made by [`LunarYear::of`] alone, which has no sky to read them in,
+    /// and on a sankalpa's, which does not ask.
+    pub rulers: Vec<YearRuler>,
 }
 
 /// The Kali years elapsed when the Shaka era began (Shaka 0), so that
@@ -208,6 +215,7 @@ impl LunarYear {
             ended,
             jovian,
             lupta,
+            rulers: Vec::new(),
         })
     }
 
@@ -257,10 +265,12 @@ impl LunarYear {
     /// Where a year names catalogue members, and of which kind: a dotted
     /// path through each year. What a boundary section writes in full;
     /// the crate's tests hold it to serde, both ways.
-    pub const MEMBERS: [(&'static str, Kind); 3] = [
+    pub const MEMBERS: [(&'static str, Kind); 5] = [
         ("samvatsara", Kind::Samvatsara),
         ("lupta", Kind::Samvatsara),
         ("jovian.member", Kind::Samvatsara),
+        ("rulers.readings.vara", Kind::Vara),
+        ("rulers.readings.lord", Kind::Graha),
     ];
 
     /// Years as JSON, every catalogue member written as its full key
@@ -506,8 +516,10 @@ mod tests {
     use std::collections::BTreeSet;
 
     use serde_json::Value;
+    use teistro_core::catalogue::{Graha, Vara};
 
     use super::*;
+    use crate::rulers::{RulerDayRule, RulerReading, YearOffice};
 
     /// Every dotted path to a string in a JSON value, a list's items
     /// sharing their list's path.
@@ -541,14 +553,27 @@ mod tests {
         let jd = |day: f64| JulianDay::<Utc>::try_new(day).unwrap();
         let began = jd(2_458_935.5);
         let this = JovianYear::at(&Parameters::TEXT, began).unwrap().count;
-        LunarYear::of(
+        let mut year = LunarYear::of(
             SamvatsaraCount::Barhaspatya,
             jd(2_458_934.0),
             began,
             jd(2_459_319.5),
             (this, this + 2),
         )
-        .unwrap()
+        .unwrap();
+        // 25 March 2020 was a Wednesday.
+        year.rulers = vec![YearRuler {
+            office: YearOffice::Raja,
+            event: jd(2_458_934.0),
+            texts: YearOffice::Raja.texts().to_vec(),
+            readings: vec![RulerReading {
+                rule: RulerDayRule::Sunrise,
+                vara: Vara::Budhavara,
+                lord: Graha::Mercury,
+                day: began,
+            }],
+        }];
+        year
     }
 
     /// `LunarYear::MEMBERS` names every catalogue member a year holds and
@@ -556,8 +581,14 @@ mod tests {
     /// not a member, and each listed path is present.
     #[test]
     fn a_year_names_its_catalogue_members_where_its_table_says() {
-        // The knob that named the year, which is a setting's value.
-        const NOT_MEMBERS: [&str; 1] = ["count"];
+        // The knob that named the year, which is a setting's value, and
+        // the rulers' own vocabularies.
+        const NOT_MEMBERS: [&str; 4] = [
+            "count",
+            "rulers.office",
+            "rulers.texts",
+            "rulers.readings.rule",
+        ];
         let year = expunging();
         assert!(year.lupta.is_some());
         let mut found = BTreeSet::new();
@@ -583,6 +614,12 @@ mod tests {
         assert_eq!(full[0]["samvatsara"], "samvatsara.PRAMADICHA");
         assert_eq!(full[0]["lupta"], "samvatsara.ANANDA");
         assert_eq!(full[0]["jovian"][0]["member"], "samvatsara.PRAMADICHA");
+        assert_eq!(full[0]["rulers"][0]["readings"][0]["lord"], "graha.MERCURY");
+        assert_eq!(
+            full[0]["rulers"][0]["readings"][0]["vara"],
+            "vara.BUDHAVARA"
+        );
+        assert_eq!(full[0]["rulers"][0]["office"], "RAJA");
         let back: Vec<LunarYear> = serde_json::from_value(full).unwrap();
         assert_eq!(back, years);
     }

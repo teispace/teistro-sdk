@@ -83,11 +83,14 @@ fn a_morning_rite_reads_its_day_at_sunrise_and_its_limbs_at_the_rite() {
             .unwrap()
             .value;
         let panchanga = sdk.almanac().day(&date, &place, clock).unwrap().value;
-        let year = sdk
+        let mut year = sdk
             .almanac()
             .years(&date, &date, &place, clock)
             .unwrap()
             .value;
+        // A sankalpa recites the year's name and numbers, not its rulers.
+        assert!(sankalpa.year.rulers.is_empty() && !year[0].rulers.is_empty());
+        year[0].rulers.clear();
         assert_eq!(sankalpa.date, panchanga.day.date, "{date}");
         assert_eq!(sankalpa.vara, panchanga.day.vara, "{date}");
         assert_eq!(sankalpa.sunrise, panchanga.day.sunrise, "{date}");

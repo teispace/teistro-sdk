@@ -47,6 +47,15 @@ Anuradha (C1050). Nothing else moves unless asked.
   provenance names it as `festivals.hijriOffset`; past two days either way is `OUT_OF_RANGE` on
   `festivals.hijriOffset` (SR-14, `03-design/published-overrides.md` §7).
 
+**The year's rulers.**
+**Numbers:** none move. Each year `almanac.years` answers gains `rulers`, so the `years`
+section's digest moves; a sankalpa's year carries none.
+- The raja, the mantri and the lords of the crops, grain, prices, clouds, juices, dry goods
+  and the army, each naming its texts (*Jyotirnibandha*, *Narada Samhita*, the southern
+  nine) and read under every rule they give: the raja by sunrise, by the new moon or by
+  Garga's midday, an ingress by its daylight or its weekday (SR-46, C1070–C1072,
+  `03-design/year-rulers.md`). Typed in every binding.
+
 **A day in sentences; a polar sankranti answers.**
 **Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or
 `CIVIL_MIDNIGHT` that the default month start refused now answers, and a `NEAREST_EVENT`
