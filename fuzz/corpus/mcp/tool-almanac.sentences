@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"almanac.sentences","arguments":{"request":{"date":{"year":2026,"month":3,"day":18},"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"locale":"ne-Deva-NP"}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":125}

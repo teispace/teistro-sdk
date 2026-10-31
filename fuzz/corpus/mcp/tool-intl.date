@@ -1,0 +1,1 @@
+{"method":"tools/call","params":{"name":"intl.date","arguments":{"request":{"at":{"calendar":"calendar.GREGORIAN","year":2026,"month":10,"day":31},"style":"FULL","locale":"hi-Deva-IN"}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":119}
