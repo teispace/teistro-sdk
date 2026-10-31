@@ -132,6 +132,20 @@ const int panchangaHomaAhuti = 32;
 /// (`03-design/day-sky.md`). A request that does not set it pays nothing.
 const int panchangaSky = 64;
 
+/// `TS_PANCHANGA_MARKERS`, the bit a caller sets in a panchanga request's
+/// `sections` for each day's markers from the Moon alone, in the
+/// `markers` span section: ganda mula, gandanta and vinchudo
+/// (`03-design/day-markers.md` §3). A request that does not set it pays
+/// nothing.
+const int panchangaMarkers = 128;
+
+/// `TS_PANCHANGA_GOWRI`, the bit a caller sets in a panchanga request's
+/// `sections` for each day's Gowri panchangam, in the `gowri` section:
+/// eight Gowri of the daylight and eight of the night, a printed reading
+/// (`03-design/gowri-panchangam.md`, crux C1052). A request that does not
+/// set it pays nothing.
+const int panchangaGowri = 256;
+
 /// A key of one kind: a member this build catalogues, or one a context
 /// registered at run time.
 abstract interface class KeyOf<K> {
@@ -277,7 +291,7 @@ enum Kind {
   kaala(59, 'kaala'),
   /// The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159).
   panchaka(60, 'panchaka'),
-  /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
+  /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2).
   muhurtaYoga(61, 'muhurta_yoga'),
   /// The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
   chartLayout(62, 'chart_layout'),
@@ -306,7 +320,11 @@ enum Kind {
   /// What a festival rule's day is to its public: the consumer's four kinds (addendum 3, SR-02), each read from a named source by `03-design/festival-metadata.md`, and left unset on a rule no source classes (crux C850).
   festivalKind(77, 'festival_kind'),
   /// The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).
-  tradition(78, 'tradition');
+  tradition(78, 'tradition'),
+  /// A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051).
+  dayMarker(79, 'day_marker'),
+  /// The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.
+  gowri(80, 'gowri');
 
   const Kind(this.id, this.key);
 
@@ -4073,7 +4091,7 @@ enum Panchaka implements KeyOf<Panchaka> {
   }
 }
 
-/// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
+/// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.
 enum MuhurtaYoga implements KeyOf<MuhurtaYoga> {
   /// Amrit Siddhi yoga: one vara and nakshatra pair each
   amritSiddhi(0, 'AMRIT_SIDDHI'),
@@ -4081,10 +4099,14 @@ enum MuhurtaYoga implements KeyOf<MuhurtaYoga> {
   sarvarthaSiddhi(1, 'SARVARTHA_SIDDHI'),
   /// Siddha yoga
   siddha(2, 'SIDDHA'),
-  /// Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings
+  /// Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in Mrigashira, Chitra or Dhanishtha, the stars a sign boundary cuts two quarters and two, which doubles what the day brings
   dwipushkar(3, 'DWIPUSHKAR'),
   /// Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings
   tripushkar(4, 'TRIPUSHKAR'),
+  /// Ravi Pushya yoga: Pushya on a Sunday, one of Muhurta Chintamani's Sunday Sarvartha Siddhi stars, named so in the almanacs
+  raviPushya(5, 'RAVI_PUSHYA'),
+  /// Guru Pushya yoga: Pushya on a Thursday, Thursday's Amrit Siddhi, barred only for a marriage
+  guruPushya(6, 'GURU_PUSHYA'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.
@@ -4834,6 +4856,102 @@ enum Tradition implements KeyOf<Tradition> {
 
   /// The member with a key, or `null` for one this build does not know.
   static Tradition? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051). Members are the catalogue's ids; the full key id is `(TS_KIND_DAY_MARKER << 16) | member`.
+enum DayMarker implements KeyOf<DayMarker> {
+  /// Ganda mula: the Moon in Ashwini, Ashlesha, Magha, Jyeshtha, Mula or Revati, the six stars on either side of the three junctions of water and fire signs, each the whole star as the almanacs mark it
+  gandaMula(0, 'GANDA_MULA'),
+  /// Nakshatra gandanta: the last two ghatis of Revati, Ashlesha and Jyeshtha and the first two of Ashwini, Magha and Mula, a ghati twenty-four minutes
+  gandanta(1, 'GANDANTA'),
+  /// Vinchudo: the Moon in Scorpio, from its entry in Vishakha's last quarter to its leaving Jyeshtha, which the Gujarati almanacs print against a journey south and other rites
+  vinchudo(2, 'VINCHUDO'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const DayMarker(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'day_marker.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<DayMarker> registered(String key) => Registered._('day_marker.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static DayMarker byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => DayMarker.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static DayMarker? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark. Members are the catalogue's ids; the full key id is `(TS_KIND_GOWRI << 16) | member`.
+enum Gowri implements KeyOf<Gowri> {
+  /// Uthi (udyogam), the Sun's: effort, and the eighth a Sunday's daylight opens with
+  uthi(0, 'UTHI'),
+  /// Amirtham, the Moon's: nectar
+  amirtham(1, 'AMIRTHAM'),
+  /// Rogam, Mars's: illness
+  rogam(2, 'ROGAM'),
+  /// Laabam, Mercury's: gain
+  laabam(3, 'LAABAM'),
+  /// Dhanam, Jupiter's: wealth
+  dhanam(4, 'DHANAM'),
+  /// Sugam, Venus's: ease
+  sugam(5, 'SUGAM'),
+  /// Soram, Saturn's: theft
+  soram(6, 'SORAM'),
+  /// Visham, Rahu's: poison, the daylight's eighth that is rahu kaala
+  visham(7, 'VISHAM'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const Gowri(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'gowri.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Gowri> registered(String key) => Registered._('gowri.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static Gowri byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => Gowri.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Gowri? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

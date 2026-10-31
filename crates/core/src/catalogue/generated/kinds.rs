@@ -134,7 +134,7 @@ pub enum Kind {
     Kaala = 59,
     /// The five panchaka. Raman's Muhurtha reads each as a remainder of an instant's tithi, vara, nakshatra and lagna by nine; the recording engine reads each as one of the last five nakshatras (crux C159).
     Panchaka = 60,
-    /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
+    /// The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2).
     MuhurtaYoga = 61,
     /// The layouts a chart is drawn in; each is a cited row in the geometry crate, and a consumer registers more.
     ChartLayout = 62,
@@ -170,9 +170,13 @@ pub enum Kind {
     FestivalKind = 77,
     /// The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).
     Tradition = 78,
+    /// A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051).
+    DayMarker = 79,
+    /// The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.
+    Gowri = 80,
 }
 
-const BY_NAME: [(&str, Kind); 77] = [
+const BY_NAME: [(&str, Kind); 79] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -196,6 +200,7 @@ const BY_NAME: [(&str, Kind); 77] = [
     ("choghadiya", Kind::Choghadiya),
     ("dasha_family", Kind::DashaFamily),
     ("dasha_system", Kind::DashaSystem),
+    ("day_marker", Kind::DayMarker),
     ("degeneracy", Kind::Degeneracy),
     ("deity", Kind::Deity),
     ("dignity", Kind::Dignity),
@@ -206,6 +211,7 @@ const BY_NAME: [(&str, Kind); 77] = [
     ("gana", Kind::Gana),
     ("gender", Kind::Gender),
     ("gochar_bhava", Kind::GocharBhava),
+    ("gowri", Kind::Gowri),
     ("graha", Kind::Graha),
     ("graha_bhava", Kind::GrahaBhava),
     ("guna", Kind::Guna),
@@ -254,7 +260,7 @@ const BY_NAME: [(&str, Kind); 77] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 77] = [
+    pub const ALL: [Kind; 79] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -332,6 +338,8 @@ impl Kind {
         Kind::ShivaVasa,
         Kind::FestivalKind,
         Kind::Tradition,
+        Kind::DayMarker,
+        Kind::Gowri,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -421,6 +429,8 @@ impl Kind {
             Kind::ShivaVasa => "shiva_vasa",
             Kind::FestivalKind => "festival_kind",
             Kind::Tradition => "tradition",
+            Kind::DayMarker => "day_marker",
+            Kind::Gowri => "gowri",
         }
     }
 
@@ -506,7 +516,7 @@ impl Kind {
             Kind::Choghadiya => 7,
             Kind::Kaala => 3,
             Kind::Panchaka => 5,
-            Kind::MuhurtaYoga => 5,
+            Kind::MuhurtaYoga => 7,
             Kind::ChartLayout => 6,
             Kind::Vaiseshikamsa => 30,
             Kind::AvasthaCheshta => 3,
@@ -524,6 +534,8 @@ impl Kind {
             Kind::ShivaVasa => 7,
             Kind::FestivalKind => 4,
             Kind::Tradition => 6,
+            Kind::DayMarker => 3,
+            Kind::Gowri => 8,
         }
     }
 
@@ -628,6 +640,8 @@ impl Kind {
             76 => Some(Kind::ShivaVasa),
             77 => Some(Kind::FestivalKind),
             78 => Some(Kind::Tradition),
+            79 => Some(Kind::DayMarker),
+            80 => Some(Kind::Gowri),
             _ => None,
         }
     }

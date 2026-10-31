@@ -166,6 +166,138 @@ pub fn tara(birth: Nakshatra, day: Nakshatra) -> TaraReading {
     }
 }
 
+/// A star the navatara chakra names besides its tara, by its count from
+/// the birth star (*Muhurta Chintamani*, Nakshatra-prakarana v. 43, with
+/// the names the Piyushadhara quotes from Narada and the Dipika; crux
+/// C1053).
+///
+/// ```
+/// use teistro_muhurta::tara::SpecialStar;
+///
+/// let counts: Vec<u8> = SpecialStar::ALL.iter().map(|star| star.count()).collect();
+/// assert_eq!(counts, [1, 10, 16, 18, 23, 25]);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum SpecialStar {
+    /// The 1st, the birth star itself (*janma*).
+    Janma,
+    /// The 10th (*karma*).
+    Karma,
+    /// The 16th (*sāṅghātika*).
+    Sanghatika,
+    /// The 18th (*samudāya*).
+    Samudaya,
+    /// The 23rd (*vaināśika*).
+    Vainashika,
+    /// The 25th (*mānasa*).
+    Manasa,
+}
+
+impl SpecialStar {
+    /// Every special star, in the order the count reaches them.
+    pub const ALL: [SpecialStar; 6] = [
+        SpecialStar::Janma,
+        SpecialStar::Karma,
+        SpecialStar::Sanghatika,
+        SpecialStar::Samudaya,
+        SpecialStar::Vainashika,
+        SpecialStar::Manasa,
+    ];
+
+    /// Its count from the birth star, 1 to 27.
+    ///
+    /// ```
+    /// use teistro_muhurta::tara::SpecialStar;
+    ///
+    /// assert_eq!(SpecialStar::Vainashika.count(), 23);
+    /// ```
+    #[must_use]
+    pub const fn count(self) -> u8 {
+        match self {
+            SpecialStar::Janma => 1,
+            SpecialStar::Karma => 10,
+            SpecialStar::Sanghatika => 16,
+            SpecialStar::Samudaya => 18,
+            SpecialStar::Vainashika => 23,
+            SpecialStar::Manasa => 25,
+        }
+    }
+
+    /// The special star at a count from the birth star, if one is.
+    ///
+    /// ```
+    /// use teistro_muhurta::tara::SpecialStar;
+    ///
+    /// assert_eq!(SpecialStar::at(18), Some(SpecialStar::Samudaya));
+    /// assert_eq!(SpecialStar::at(19), None);
+    /// ```
+    #[must_use]
+    pub fn at(count: u8) -> Option<SpecialStar> {
+        SpecialStar::ALL
+            .into_iter()
+            .find(|star| star.count() == count)
+    }
+}
+
+/// A star of the navatara chakra: the star, its count from the birth
+/// star with the tara and round that count gives, and the special star it
+/// is, if any.
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_muhurta::tara::{SpecialStar, Tara, navatara};
+///
+/// // Born in Ashwini, Magha is the 10th: the anujanma round's Janma, karma.
+/// let magha = navatara(Nakshatra::Ashwini)[9];
+/// assert_eq!(magha.nakshatra, Nakshatra::Magha);
+/// assert_eq!((magha.tara, magha.cycle, magha.special), (Tara::Janma, 2, Some(SpecialStar::Karma)));
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct NavataraRow {
+    /// The star.
+    pub nakshatra: Nakshatra,
+    /// Its count from the birth star, 1 (the birth star itself) to 27.
+    pub count: u8,
+    /// The count reduced by nine.
+    pub tara: Tara,
+    /// Which round of nine the count is in, 1 (janma) to 3 (trijanma).
+    pub cycle: u8,
+    /// The special star the count names, or none.
+    pub special: Option<SpecialStar>,
+}
+
+/// The navatara chakra of a birth star: every star in the order the count
+/// from the birth star reaches it, each as [`tara`] reads it, with the
+/// special star its count names (`03-design/navatara-chakra.md`).
+///
+/// ```
+/// use teistro_core::catalogue::Nakshatra;
+/// use teistro_muhurta::tara::{Tara, navatara};
+///
+/// // Raman's example (ch. III): born in Ashwini, Shravana is the 22nd, Kshema.
+/// let chakra = navatara(Nakshatra::Ashwini);
+/// let shravana = chakra.iter().find(|row| row.nakshatra == Nakshatra::Shravana);
+/// assert_eq!(shravana.map(|row| (row.count, row.tara)), Some((22, Tara::Kshema)));
+/// ```
+#[must_use]
+pub fn navatara(birth: Nakshatra) -> [NavataraRow; 27] {
+    let mut stars = Nakshatra::ALL;
+    stars.rotate_left(usize::from(birth.id() % 27));
+    stars.map(|nakshatra| {
+        let reading = tara(birth, nakshatra);
+        NavataraRow {
+            nakshatra,
+            count: reading.count,
+            tara: reading.tara,
+            cycle: reading.cycle,
+            special: SpecialStar::at(reading.count),
+        }
+    })
+}
+
 /// The house the day's Moon sign is from the birth Moon sign, 1 to 12.
 ///
 /// ```
@@ -251,7 +383,7 @@ fn count_from(from: u16, to: u16, n: u16) -> u8 {
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
-    use super::{ChandraBala, Tara, chandra_house, tara};
+    use super::{ChandraBala, SpecialStar, Tara, chandra_house, navatara, tara};
     use teistro_core::catalogue::{Nakshatra, Rashi};
 
     #[test]
@@ -308,5 +440,82 @@ mod tests {
         // keeps the 2nd, 4th, 5th and 9th, which the baseline drains.
         assert_eq!(parts, [2, 4, 5, 6, 9]);
         assert_eq!(chandra_house(Rashi::Leo, Rashi::Leo), 1);
+    }
+
+    #[test]
+    fn the_chakra_is_tarabala_over_every_star() {
+        for birth in Nakshatra::ALL {
+            let chakra = navatara(birth);
+            assert_eq!(chakra.first().map(|row| row.nakshatra), Some(birth));
+            let mut seen: Vec<Nakshatra> = chakra.iter().map(|row| row.nakshatra).collect();
+            seen.sort_by_key(|star| star.id());
+            assert_eq!(seen, Nakshatra::ALL, "{birth:?}: each star once");
+            for (step, row) in (1_u8..).zip(chakra) {
+                let reading = tara(birth, row.nakshatra);
+                assert_eq!(row.count, step);
+                assert_eq!((row.tara, row.cycle), (reading.tara, reading.cycle));
+            }
+        }
+    }
+
+    #[test]
+    fn the_special_stars_fall_at_the_verses_counts_from_every_birth() {
+        for birth in Nakshatra::ALL {
+            let named: Vec<(u8, SpecialStar)> = navatara(birth)
+                .iter()
+                .filter_map(|row| row.special.map(|star| (row.count, star)))
+                .collect();
+            assert_eq!(
+                named,
+                [
+                    (1, SpecialStar::Janma),
+                    (10, SpecialStar::Karma),
+                    (16, SpecialStar::Sanghatika),
+                    (18, SpecialStar::Samudaya),
+                    (23, SpecialStar::Vainashika),
+                    (25, SpecialStar::Manasa),
+                ]
+            );
+        }
+        // From Ashwini: Magha, Vishakha, Jyeshtha, Dhanishtha, Purva Bhadrapada.
+        let from_ashwini: Vec<Nakshatra> = navatara(Nakshatra::Ashwini)
+            .iter()
+            .filter(|row| row.special.is_some())
+            .map(|row| row.nakshatra)
+            .collect();
+        assert_eq!(
+            from_ashwini,
+            [
+                Nakshatra::Ashwini,
+                Nakshatra::Magha,
+                Nakshatra::Vishakha,
+                Nakshatra::Jyeshtha,
+                Nakshatra::Dhanishtha,
+                Nakshatra::PurvaBhadrapada,
+            ]
+        );
+    }
+
+    #[test]
+    fn the_rounds_begin_at_the_tenth_and_the_nineteenth() {
+        // Born in Revati, the count wraps through Ashwini.
+        let chakra = navatara(Nakshatra::Revati);
+        assert_eq!(
+            chakra.get(1).map(|row| row.nakshatra),
+            Some(Nakshatra::Ashwini)
+        );
+        let starts: Vec<(u8, Nakshatra)> = chakra
+            .iter()
+            .filter(|row| row.tara == Tara::Janma)
+            .map(|row| (row.cycle, row.nakshatra))
+            .collect();
+        assert_eq!(
+            starts,
+            [
+                (1, Nakshatra::Revati),
+                (2, Nakshatra::Ashlesha),
+                (3, Nakshatra::Jyeshtha)
+            ]
+        );
     }
 }

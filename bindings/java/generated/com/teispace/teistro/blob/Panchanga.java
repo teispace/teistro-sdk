@@ -61,6 +61,8 @@ public final class Panchanga {
     private final ShivaVasa shivaVasa;
     private final NamedPanchaka namedPanchaka;
     private final String sky;
+    private final Markers markers;
+    private final Gowri gowri;
 
     private Panchanga(BlobReader blob) {
         ByteBuffer bytes = blob.bytes();
@@ -110,6 +112,8 @@ public final class Panchanga {
         this.shivaVasa = new ShivaVasa(blob, 38, "shiva_vasa");
         this.namedPanchaka = new NamedPanchaka(blob, 39, "named_panchaka");
         this.sky = blob.text(40, "sky");
+        this.markers = new Markers(blob, 41, "markers");
+        this.gowri = new Gowri(blob, 42, "gowri");
     }
 
     /**
@@ -532,6 +536,24 @@ public final class Panchanga {
         return sky;
     }
 
+    /**
+     * The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.
+     *
+     * @return the markers
+     */
+    public Markers markers() {
+        return markers;
+    }
+
+    /**
+     * The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none.
+     *
+     * @return the gowri
+     */
+    public Gowri gowri() {
+        return gowri;
+    }
+
 
     /**
      * The `days` section of this blob: a getter per column, reading a row from the blob's bytes.
@@ -895,6 +917,8 @@ public final class Panchanga {
         private final int bhadraVasaAt;
         private final int shivaVasaAt;
         private final int namedPanchakaAt;
+        private final int markersAt;
+        private final int gowriAt;
 
         Counts(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -927,6 +951,8 @@ public final class Panchanga {
             this.bhadraVasaAt = blob.column(at, 24, 4);
             this.shivaVasaAt = blob.column(at, 25, 4);
             this.namedPanchakaAt = blob.column(at, 26, 4);
+            this.markersAt = blob.column(at, 27, 4);
+            this.gowriAt = blob.column(at, 28, 4);
         }
 
         /**
@@ -1233,6 +1259,28 @@ public final class Panchanga {
          */
         public long namedPanchaka(int row) {
             return Integer.toUnsignedLong(bytes.getInt(namedPanchakaAt + Objects.checkIndex(row, length) * 4));
+        }
+
+        /**
+         * How many rows of `markers` belong to this day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public long markers(int row) {
+            return Integer.toUnsignedLong(bytes.getInt(markersAt + Objects.checkIndex(row, length) * 4));
+        }
+
+        /**
+         * How many rows of `gowri` belong to this day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public long gowri(int row) {
+            return Integer.toUnsignedLong(bytes.getInt(gowriAt + Objects.checkIndex(row, length) * 4));
         }
     }
 
@@ -4794,6 +4842,231 @@ public final class Panchanga {
          */
         public int endsVipala(int row) {
             return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
+        }
+    }
+
+    /**
+     * The `markers` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.
+     */
+    public static final class Markers {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int memberAt;
+        private final int wholeFromAt;
+        private final int wholeToAt;
+        private final int insideFromAt;
+        private final int insideToAt;
+        private final int sunrisesAt;
+        private final int endsGhatiAt;
+        private final int endsPalaAt;
+        private final int endsVipalaAt;
+
+        Markers(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.memberAt = blob.column(at, 0, 2);
+            this.wholeFromAt = blob.column(at, 1, 8);
+            this.wholeToAt = blob.column(at, 2, 8);
+            this.insideFromAt = blob.column(at, 3, 8);
+            this.insideToAt = blob.column(at, 4, 8);
+            this.sunrisesAt = blob.column(at, 5, 1);
+            this.endsGhatiAt = blob.column(at, 6, 1);
+            this.endsPalaAt = blob.column(at, 7, 1);
+            this.endsVipalaAt = blob.column(at, 8, 1);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The marker.
+         *
+         * The id of a {@code DayMarker}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int member(int row) {
+            return Short.toUnsignedInt(bytes.getShort(memberAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double wholeFrom(int row) {
+            return bytes.getDouble(wholeFromAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double wholeTo(int row) {
+            return bytes.getDouble(wholeToAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Where the part inside the day begins: what an almanac row prints.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double insideFrom(int row) {
+            return bytes.getDouble(insideFromAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Where the part inside the day ends.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double insideTo(int row) {
+            return bytes.getDouble(insideToAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+         *
+         * The id of a {@code Sunrises}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int sunrises(int row) {
+            return Byte.toUnsignedInt(bytes.get(sunrisesAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int endsGhati(int row) {
+            return Byte.toUnsignedInt(bytes.get(endsGhatiAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * And palas, 0 to 59.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int endsPala(int row) {
+            return Byte.toUnsignedInt(bytes.get(endsPalaAt + Objects.checkIndex(row, length) * 1));
+        }
+
+        /**
+         * And vipalas, 0 to 59.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int endsVipala(int row) {
+            return Byte.toUnsignedInt(bytes.get(endsVipalaAt + Objects.checkIndex(row, length) * 1));
+        }
+    }
+
+    /**
+     * The `gowri` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none.
+     */
+    public static final class Gowri {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int gowriAt;
+        private final int fromAt;
+        private final int toAt;
+        private final int daytimeAt;
+
+        Gowri(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.gowriAt = blob.column(at, 0, 2);
+            this.fromAt = blob.column(at, 1, 8);
+            this.toAt = blob.column(at, 2, 8);
+            this.daytimeAt = blob.column(at, 3, 1);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * Which Gowri, which carries its lord.
+         *
+         * The id of a {@code Gowri}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int gowri(int row) {
+            return Short.toUnsignedInt(bytes.getShort(gowriAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * When it begins, as a Julian day (UTC).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double from(int row) {
+            return bytes.getDouble(fromAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * When it ends, as a Julian day (UTC).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public double to(int row) {
+            return bytes.getDouble(toAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * 1 when it is one of the eight of the daylight, 0 for one of the night.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int daytime(int row) {
+            return Byte.toUnsignedInt(bytes.get(daytimeAt + Objects.checkIndex(row, length) * 1));
         }
     }
 }

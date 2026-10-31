@@ -207,6 +207,7 @@
       "calendar": "calendar.JULIAN",
       "eclipses": true,
       "festivals": {
+        "hijriOffset": 1,
         "only": {
           "communities": [
             "x"
@@ -495,6 +496,7 @@
         "month": 1,
         "year": 1
       },
+      "gowri": true,
       "homaAhuti": true,
       "lagnas": true,
       "last": {
@@ -504,6 +506,7 @@
       },
       "latitudeDeg": 1.5,
       "longitudeDeg": 1.5,
+      "markers": true,
       "muhurta": {
         "asta": {
           "kind": "TIME_DEGREES",
@@ -736,6 +739,7 @@
       "calendar": "calendar.JULIAN",
       "days": 1,
       "festivals": {
+        "hijriOffset": 1,
         "only": {
           "communities": [
             "x"
@@ -1078,6 +1082,7 @@
         }
       ],
       "festivals": {
+        "hijriOffset": 1,
         "only": {
           "communities": [
             "x"
@@ -1446,12 +1451,19 @@
     }
   },
   {
+    "record": "almanac.navatara",
+    "request": {
+      "birth": "nakshatra.BHARANI"
+    }
+  },
+  {
     "record": "almanac.next",
     "request": {
       "after": 1.5,
       "altitudeM": 1.5,
       "calendar": "calendar.JULIAN",
       "festivals": {
+        "hijriOffset": 1,
         "only": {
           "communities": [
             "x"
@@ -1780,6 +1792,7 @@
       "altitudeM": 1.5,
       "calendar": "calendar.JULIAN",
       "festivals": {
+        "hijriOffset": 1,
         "only": {
           "communities": [
             "x"

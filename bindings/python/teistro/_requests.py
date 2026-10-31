@@ -26,6 +26,7 @@ __all__ = [
     "PackRequest",
     "FestivalCalendarRequest",
     "FirstYearQuery",
+    "NavataraRequest",
     "NextRequest",
     "PakshiRequest",
     "PublishedReasonsRequest",
@@ -798,6 +799,8 @@ class AlmanacDaysRequest(TypedDict, total=False):
 
     first: Required[DayAsked]
 
+    gowri: bool
+
     homaAhuti: bool
 
     lagnas: bool
@@ -807,6 +810,8 @@ class AlmanacDaysRequest(TypedDict, total=False):
     latitudeDeg: Required[float]
 
     longitudeDeg: Required[float]
+
+    markers: bool
 
     muhurta: MuhurtaRequest
 
@@ -924,6 +929,13 @@ class FirstYearQuery(TypedDict, total=False):
 
     utcOffsetSeconds: Required[int]
     """The offset from UTC the place's civil days run at, in seconds, east positive."""
+
+
+class NavataraRequest(TypedDict, total=False):
+    """A birth star, whose navatara chakra is asked. The chakra reads no sky, so this is the whole request."""
+
+    birth: Required[Union[_catalogue.Nakshatra, str]]
+    """The birth star, the Moon's nakshatra at birth."""
 
 
 class NextRequest(TypedDict, total=False):
@@ -1568,6 +1580,9 @@ class ZoneSpecFixed(TypedDict, total=False):
 
 class FestivalRequest(TypedDict, total=False):
     """Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer."""
+
+    hijriOffset: Optional[int]
+    """The days the tabular Hijri calendar is moved toward a sighting, −2 to 2, for the rules kept on its dates: under 1 a day is read as the table reads the next, so a month begins a day earlier. A published set's day still lays over the moved one; none when left out."""
 
     only: Optional[MetaFilter]
     """What the answer keeps, by the rules' `meta`; every rule when left out."""

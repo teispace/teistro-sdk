@@ -3902,6 +3902,34 @@ class AnEngine(WithLibrary):
                     ctx.matching.naam(bride, groom, rules)
                 self.assertEqual(caught.exception.field, field)
 
+    def test_a_birth_star_reads_into_its_navatara_chakra_without_a_sky(self) -> None:
+        """Raman, *Muhurtha* ch. III: from Ashwini, Shravana is the 22nd,
+        Kshema; *Muhurta Chintamani*, Nakshatra-prakarana v. 43: the
+        special stars' counts (`03-design/navatara-chakra.md`)."""
+        from teistro import NavataraRow
+        from teistro.catalogue import Nakshatra
+
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            chakra = ctx.almanac.navatara(Nakshatra.ASHWINI)
+            self.assertEqual(len(chakra), 27)
+            self.assertEqual(ctx.almanac.navatara("ASHWINI"), chakra, "a key reads as its member")
+            shravana = next(row for row in chakra if row.nakshatra == Nakshatra.SHRAVANA)
+            self.assertEqual(shravana, NavataraRow(Nakshatra.SHRAVANA, 22, "KSHEMA", 3, None))
+            self.assertEqual(
+                [(row.count, row.nakshatra.key, row.special) for row in chakra if row.special is not None],
+                [
+                    (1, "ASHWINI", "JANMA"),
+                    (10, "MAGHA", "KARMA"),
+                    (16, "VISHAKHA", "SANGHATIKA"),
+                    (18, "JYESHTHA", "SAMUDAYA"),
+                    (23, "DHANISHTHA", "VAINASHIKA"),
+                    (25, "PURVA_BHADRAPADA", "MANASA"),
+                ],
+            )
+            with self.assertRaises(TeistroError) as refused:
+                ctx.almanac.navatara("ABHIJIT")
+            self.assertEqual(refused.exception.field, "navatara.birth")
+
     def test_a_name_and_a_birth_date_read_under_numerology_without_a_chart(self) -> None:
         """Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6, born
         17 January 1872 1 + 8 + 9 = 18 = 9; Cheiro p. 70: Henry 18/9 and

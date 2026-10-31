@@ -363,6 +363,15 @@ pub fn records() -> Vec<Record> {
             run: |_, json| Answered::plain(&crate::NumerologyRequest::from_json(json)?.answer()?),
             schemas: schemas!(crate::NumerologyRequest => teistro_numerology::Profile),
         },
+        #[cfg(feature = "muhurta")]
+        Record {
+            name: "almanac.navatara",
+            boundary: "ts_navatara",
+            title: "The navatara chakra of a birth star",
+            reads: None,
+            run: |_, json| Answered::plain(&crate::NavataraRequest::from_json(json)?.answer()),
+            schemas: schemas!(crate::NavataraRequest => Vec<teistro_muhurta::tara::NavataraRow>),
+        },
         #[cfg(feature = "pakshi")]
         Record {
             name: "almanac.pakshi",

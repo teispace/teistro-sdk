@@ -300,7 +300,7 @@ public enum Kind implements Member {
     PANCHAKA(60, "panchaka"),
 
     /**
-     * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).
+     * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2).
      */
     MUHURTA_YOGA(61, "muhurta_yoga"),
 
@@ -372,7 +372,17 @@ public enum Kind implements Member {
     /**
      * The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).
      */
-    TRADITION(78, "tradition");
+    TRADITION(78, "tradition"),
+
+    /**
+     * A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051).
+     */
+    DAY_MARKER(79, "day_marker"),
+
+    /**
+     * The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.
+     */
+    GOWRI(80, "gowri");
 
     private static final Kind[] MEMBERS = values();
 

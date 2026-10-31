@@ -6,7 +6,7 @@ package com.teispace.teistro;
 import java.util.Optional;
 
 /**
- * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA &lt;&lt; 16) | member`.
+ * The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA &lt;&lt; 16) | member`.
  */
 public enum MuhurtaYoga implements Catalogued {
     /**
@@ -25,7 +25,7 @@ public enum MuhurtaYoga implements Catalogued {
     SIDDHA(2, "SIDDHA"),
 
     /**
-     * Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings
+     * Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in Mrigashira, Chitra or Dhanishtha, the stars a sign boundary cuts two quarters and two, which doubles what the day brings
      */
     DWIPUSHKAR(3, "DWIPUSHKAR"),
 
@@ -33,6 +33,16 @@ public enum MuhurtaYoga implements Catalogued {
      * Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings
      */
     TRIPUSHKAR(4, "TRIPUSHKAR"),
+
+    /**
+     * Ravi Pushya yoga: Pushya on a Sunday, one of Muhurta Chintamani's Sunday Sarvartha Siddhi stars, named so in the almanacs
+     */
+    RAVI_PUSHYA(5, "RAVI_PUSHYA"),
+
+    /**
+     * Guru Pushya yoga: Pushya on a Thursday, Thursday's Amrit Siddhi, barred only for a marriage
+     */
+    GURU_PUSHYA(6, "GURU_PUSHYA"),
 
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");

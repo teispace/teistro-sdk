@@ -1088,6 +1088,33 @@ impl<'a> AlmanacArea<'a> {
         Ok(Envelope::sealing(found.value, found.provenance))
     }
 
+    /// The navatara chakra of a birth star (`03-design/navatara-chakra.md`):
+    /// the 27 stars in the order the count from the birth star reaches
+    /// them, each with its count, tara, round of nine and the special star
+    /// *Muhurta Chintamani* names at that count. It reads no sky, so it
+    /// asks nothing of the context.
+    ///
+    /// ```
+    /// use teistro::Context;
+    /// use teistro::catalogue::Nakshatra;
+    /// use teistro::muhurta::tara::{SpecialStar, Tara};
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let chakra = sdk.almanac().navatara(Nakshatra::Ashwini);
+    /// // Magha is the 10th: the anujanma round's Janma, the karma star.
+    /// let magha = chakra.iter().find(|row| row.nakshatra == Nakshatra::Magha);
+    /// assert_eq!(magha.map(|row| (row.tara, row.special)), Some((Tara::Janma, Some(SpecialStar::Karma))));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[cfg(feature = "muhurta")]
+    #[must_use]
+    pub fn navatara(
+        self,
+        birth: teistro_core::catalogue::Nakshatra,
+    ) -> [teistro_muhurta::tara::NavataraRow; 27] {
+        teistro_muhurta::tara::navatara(birth)
+    }
+
     /// A publisher's set read from a signed pack, as
     /// [`PublishedSet::from_signed`] reads it: under the almanac, where
     /// every binding finds it, beside the festivals the set corrects

@@ -3172,6 +3172,16 @@ def main() -> None:
         put("markers", " ".join(s.member.full_key for s in marked_day.markers))
         put("gowri", " ".join(p.gowri.full_key for p in marked_day.gowri))
 
+    # Ashwini's navatara chakra, every row `star:tara:round:special`
+    # (`03-design/navatara-chakra.md`).
+    put(
+        "navatara",
+        " ".join(
+            f"{row.nakshatra.full_key}:{row.tara}:{row.cycle}:{row.special or '-'}"
+            for row in ctx.almanac.navatara("ASHWINI")
+        ),
+    )
+
     def eclipse_moment(m: Optional[EclipseMoment]) -> str:
         return "-" if m is None else f"{number(m.at)}@{number(m.altitude_deg)}"
 
@@ -3295,6 +3305,7 @@ def main() -> None:
         ("almanac.sankalpa", ctx.almanac.sankalpa),
         ("almanac.ashauch", ctx.almanac.ashauch),
         ("almanac.first_year", ctx.almanac.first_year),
+        ("almanac.navatara", ctx.almanac.navatara),
         ("almanac.published_reasons", ctx.almanac.published_reasons),
         ("almanac.published_from_signed", ctx.almanac.published_from_signed),
         ("almanac.changes", ctx.almanac.changes),

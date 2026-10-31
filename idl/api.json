@@ -25,6 +25,7 @@
     "crates/ffi/src/panchanga.rs",
     "crates/ffi/src/naam.rs",
     "crates/ffi/src/naming.rs",
+    "crates/ffi/src/navatara.rs",
     "crates/ffi/src/numerology.rs",
     "crates/ffi/src/pakshi.rs",
     "crates/ffi/src/rashifal.rs",
@@ -215,6 +216,20 @@
       "doc": "`TS_PANCHANGA_SKY`, the bit a caller sets in a panchanga request's\n`sections` for each day's sky, in the `sky` section: the paths of the\nSun and the Moon at `sky_step_minutes`, their rises, transits and sets\nas exact points, and the Moon's lit shape from the place\n(`03-design/day-sky.md`). A request that does not set it pays nothing.",
       "ty": "u32",
       "value": 64,
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "TS_PANCHANGA_MARKERS",
+      "doc": "`TS_PANCHANGA_MARKERS`, the bit a caller sets in a panchanga request's\n`sections` for each day's markers from the Moon alone, in the\n`markers` span section: ganda mula, gandanta and vinchudo\n(`03-design/day-markers.md` §3). A request that does not set it pays\nnothing.",
+      "ty": "u32",
+      "value": 128,
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "TS_PANCHANGA_GOWRI",
+      "doc": "`TS_PANCHANGA_GOWRI`, the bit a caller sets in a panchanga request's\n`sections` for each day's Gowri panchangam, in the `gowri` section:\neight Gowri of the daylight and eight of the night, a printed reading\n(`03-design/gowri-panchangam.md`, crux C1052). A request that does not\nset it pays nothing.",
+      "ty": "u32",
+      "value": 256,
       "source": "crates/ffi/src/panchanga.rs"
     }
   ],
@@ -575,7 +590,7 @@
         {
           "name": "MuhurtaYoga",
           "value": 61,
-          "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8).",
+          "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2).",
           "key": "muhurta_yoga"
         },
         {
@@ -661,6 +676,18 @@
           "value": 78,
           "doc": "The religion a festival rule belongs to, read from a named source by `03-design/festival-metadata.md` and left unset on a rule no source places (crux C850).",
           "key": "tradition"
+        },
+        {
+          "name": "DayMarker",
+          "value": 79,
+          "doc": "A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051).",
+          "key": "day_marker"
+        },
+        {
+          "name": "Gowri",
+          "value": 80,
+          "doc": "The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.",
+          "key": "gowri"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -5965,7 +5992,7 @@
     },
     {
       "name": "MuhurtaYoga",
-      "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, because the corpus cannot derive a seven-by-twenty-seven table from twelve positive days (`03-design/panchanga-day-conventions.md` §8). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.",
+      "doc": "The muhurta yogas a day may carry. The members are attested; the tables that say when each holds are module data with marks of their own, chosen by `panchanga.muhurta_tables`: `CLASSICAL`, the rows the corpus could not contradict (`03-design/panchanga-day-conventions.md` §8), or `MUHURTA_CHINTAMANI`, the text's full tables (`03-design/day-markers.md` §2). Members are the catalogue's ids; the full key id is `(TS_KIND_MUHURTA_YOGA << 16) | member`.",
       "repr": "u16",
       "kind": "muhurta_yoga",
       "values": [
@@ -5990,7 +6017,7 @@
         {
           "name": "Dwipushkar",
           "value": 3,
-          "doc": "Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a two-footed nakshatra, which doubles what the day brings",
+          "doc": "Dwipushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in Mrigashira, Chitra or Dhanishtha, the stars a sign boundary cuts two quarters and two, which doubles what the day brings",
           "key": "DWIPUSHKAR"
         },
         {
@@ -5998,6 +6025,18 @@
           "value": 4,
           "doc": "Tripushkar yoga: a Bhadra tithi on a Sunday, Tuesday or Saturday in a three-footed nakshatra, which triples what the day brings",
           "key": "TRIPUSHKAR"
+        },
+        {
+          "name": "RaviPushya",
+          "value": 5,
+          "doc": "Ravi Pushya yoga: Pushya on a Sunday, one of Muhurta Chintamani's Sunday Sarvartha Siddhi stars, named so in the almanacs",
+          "key": "RAVI_PUSHYA"
+        },
+        {
+          "name": "GuruPushya",
+          "value": 6,
+          "doc": "Guru Pushya yoga: Pushya on a Thursday, Thursday's Amrit Siddhi, barred only for a marriage",
+          "key": "GURU_PUSHYA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -6736,6 +6775,90 @@
           "value": 5,
           "doc": "Christian",
           "key": "CHRISTIAN"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "DayMarker",
+      "doc": "A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051). Members are the catalogue's ids; the full key id is `(TS_KIND_DAY_MARKER << 16) | member`.",
+      "repr": "u16",
+      "kind": "day_marker",
+      "values": [
+        {
+          "name": "GandaMula",
+          "value": 0,
+          "doc": "Ganda mula: the Moon in Ashwini, Ashlesha, Magha, Jyeshtha, Mula or Revati, the six stars on either side of the three junctions of water and fire signs, each the whole star as the almanacs mark it",
+          "key": "GANDA_MULA"
+        },
+        {
+          "name": "Gandanta",
+          "value": 1,
+          "doc": "Nakshatra gandanta: the last two ghatis of Revati, Ashlesha and Jyeshtha and the first two of Ashwini, Magha and Mula, a ghati twenty-four minutes",
+          "key": "GANDANTA"
+        },
+        {
+          "name": "Vinchudo",
+          "value": 2,
+          "doc": "Vinchudo: the Moon in Scorpio, from its entry in Vishakha's last quarter to its leaving Jyeshtha, which the Gujarati almanacs print against a journey south and other rites",
+          "key": "VINCHUDO"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "Gowri",
+      "doc": "The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark. Members are the catalogue's ids; the full key id is `(TS_KIND_GOWRI << 16) | member`.",
+      "repr": "u16",
+      "kind": "gowri",
+      "values": [
+        {
+          "name": "Uthi",
+          "value": 0,
+          "doc": "Uthi (udyogam), the Sun's: effort, and the eighth a Sunday's daylight opens with",
+          "key": "UTHI"
+        },
+        {
+          "name": "Amirtham",
+          "value": 1,
+          "doc": "Amirtham, the Moon's: nectar",
+          "key": "AMIRTHAM"
+        },
+        {
+          "name": "Rogam",
+          "value": 2,
+          "doc": "Rogam, Mars's: illness",
+          "key": "ROGAM"
+        },
+        {
+          "name": "Laabam",
+          "value": 3,
+          "doc": "Laabam, Mercury's: gain",
+          "key": "LAABAM"
+        },
+        {
+          "name": "Dhanam",
+          "value": 4,
+          "doc": "Dhanam, Jupiter's: wealth",
+          "key": "DHANAM"
+        },
+        {
+          "name": "Sugam",
+          "value": 5,
+          "doc": "Sugam, Venus's: ease",
+          "key": "SUGAM"
+        },
+        {
+          "name": "Soram",
+          "value": 6,
+          "doc": "Soram, Saturn's: theft",
+          "key": "SORAM"
+        },
+        {
+          "name": "Visham",
+          "value": 7,
+          "doc": "Visham, Rahu's: poison, the daylight's eighth that is rahu kaala",
+          "key": "VISHAM"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -14423,7 +14546,7 @@
             "kind": "scalar",
             "scalar": "u32"
           },
-          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the\ndays with the place's view of each, in the `eclipses` section;\n`TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in\nthe `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no\nday, only what else is asked, festivals alone then founded as\nonly what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's\nlagna table, in the `lagnas` span section;\n`TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the\n`homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,\nin the `sky` section, at `sky_step_minutes`.\nZero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
+          "doc": "What to answer beside the days, as a bit set:\n`TS_PANCHANGA_YEARS` (1) the lunar years the days fall in, in the\n`years` section; `TS_PANCHANGA_ECLIPSES` (2) the eclipses of the\ndays with the place's view of each, in the `eclipses` section;\n`TS_PANCHANGA_NEPAL_SAMBAT` (4) each day's Nepal Sambat date, in\nthe `nepal_sambat` section; `TS_PANCHANGA_WITHOUT_DAYS` (8) no\nday, only what else is asked, festivals alone then founded as\nonly what their rules read; `TS_PANCHANGA_LAGNAS` (16) each day's\nlagna table, in the `lagnas` span section;\n`TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the\n`homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,\nin the `sky` section, at `sky_step_minutes`;\n`TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and\nvinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)\neach day's Gowri panchangam, in the `gowri` section.\nZero for the days alone, which is what every\ncaller compiled against an earlier header passes, since this was a\nreserved field it wrote zero to.\n\nA bit set here and a named option in every ergonomic layer, as a\nchart request's `sections` is (`03-design/chart-reading.md` §5).",
           "meta": {
             "example": "0"
           }
@@ -17948,6 +18071,57 @@
       },
       "meta": {},
       "source": "crates/ffi/src/naming.rs"
+    },
+    {
+      "name": "ts_navatara",
+      "doc": "The navatara chakra of a birth star: the 27 stars in the order the\ncount from the birth star reaches them, each `{\"nakshatra\", \"count\",\n\"tara\", \"cycle\", \"special\"}`, `cycle` the round of nine (1 janma, 2\nanujanma, 3 trijanma) and `special` the star *Muhurta Chintamani*\nnames at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`,\n`VAINASHIKA`, `MANASA`) or null (C1053).\n\n`request_json` is `{\"birth\"}`, a nakshatra key. A key the record does\nnot read, or a star that is not a nakshatra key, is `INVALID_ARG`,\nnamed under `navatara`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/navatara.rs"
     },
     {
       "name": "ts_numerology_profile",
@@ -25161,6 +25335,16 @@
               "name": "named_panchaka",
               "scalar": "u32",
               "doc": "How many rows of `named_panchaka` belong to this day."
+            },
+            {
+              "name": "markers",
+              "scalar": "u32",
+              "doc": "How many rows of `markers` belong to this day."
+            },
+            {
+              "name": "gowri",
+              "scalar": "u32",
+              "doc": "How many rows of `gowri` belong to this day."
             }
           ]
         },
@@ -26681,6 +26865,90 @@
           "doc": "UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for.",
           "kind": "bytes",
           "fields": []
+        },
+        {
+          "id": 41,
+          "name": "markers",
+          "doc": "The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "member",
+              "scalar": "u16",
+              "doc": "The marker.",
+              "enum": "DayMarker"
+            },
+            {
+              "name": "whole_from",
+              "scalar": "f64",
+              "doc": "When the member itself began, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "whole_to",
+              "scalar": "f64",
+              "doc": "When the member itself ended, as a Julian day (UTC), whether or not that is inside the day."
+            },
+            {
+              "name": "inside_from",
+              "scalar": "f64",
+              "doc": "Where the part inside the day begins: what an almanac row prints."
+            },
+            {
+              "name": "inside_to",
+              "scalar": "f64",
+              "doc": "Where the part inside the day ends."
+            },
+            {
+              "name": "sunrises",
+              "scalar": "u8",
+              "doc": "Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).",
+              "enum": "TsSunrises"
+            },
+            {
+              "name": "ends_ghati",
+              "scalar": "u8",
+              "doc": "When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count."
+            },
+            {
+              "name": "ends_pala",
+              "scalar": "u8",
+              "doc": "And palas, 0 to 59."
+            },
+            {
+              "name": "ends_vipala",
+              "scalar": "u8",
+              "doc": "And vipalas, 0 to 59."
+            }
+          ]
+        },
+        {
+          "id": 42,
+          "name": "gowri",
+          "doc": "The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "gowri",
+              "scalar": "u16",
+              "doc": "Which Gowri, which carries its lord.",
+              "enum": "Gowri"
+            },
+            {
+              "name": "from",
+              "scalar": "f64",
+              "doc": "When it begins, as a Julian day (UTC)."
+            },
+            {
+              "name": "to",
+              "scalar": "f64",
+              "doc": "When it ends, as a Julian day (UTC)."
+            },
+            {
+              "name": "daytime",
+              "scalar": "u8",
+              "doc": "1 when it is one of the eight of the daylight, 0 for one of the night."
+            }
+          ]
         }
       ]
     },

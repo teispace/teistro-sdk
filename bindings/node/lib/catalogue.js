@@ -165,6 +165,24 @@ export const PANCHANGA_HOMA_AHUTI = 32;
  */
 export const PANCHANGA_SKY = 64;
 
+/**
+ * `TS_PANCHANGA_MARKERS`, the bit a caller sets in a panchanga request's
+ * `sections` for each day's markers from the Moon alone, in the
+ * `markers` span section: ganda mula, gandanta and vinchudo
+ * (`03-design/day-markers.md` §3). A request that does not set it pays
+ * nothing.
+ */
+export const PANCHANGA_MARKERS = 128;
+
+/**
+ * `TS_PANCHANGA_GOWRI`, the bit a caller sets in a panchanga request's
+ * `sections` for each day's Gowri panchangam, in the `gowri` section:
+ * eight Gowri of the daylight and eight of the night, a printed reading
+ * (`03-design/gowri-panchangam.md`, crux C1052). A request that does not
+ * set it pays nothing.
+ */
+export const PANCHANGA_GOWRI = 256;
+
 /** A longitude in deg, checked. */
 export function longitude(value) {
   if (typeof value !== 'number' || !Number.isFinite(value)) {
@@ -273,6 +291,8 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   ShivaVasa: 'shiva_vasa',
   FestivalKind: 'festival_kind',
   Tradition: 'tradition',
+  DayMarker: 'day_marker',
+  Gowri: 'gowri',
 });
 
 /**
@@ -353,6 +373,8 @@ export const KindById = /* @__PURE__ */ new Map([
   [76, 'shiva_vasa'],
   [77, 'festival_kind'],
   [78, 'tradition'],
+  [79, 'day_marker'],
+  [80, 'gowri'],
 ]);
 
 /** Every Graha by name. */
@@ -2592,6 +2614,8 @@ export const MuhurtaYoga = /* @__PURE__ */ Object.freeze({
   Siddha: 'muhurta_yoga.SIDDHA',
   Dwipushkar: 'muhurta_yoga.DWIPUSHKAR',
   Tripushkar: 'muhurta_yoga.TRIPUSHKAR',
+  RaviPushya: 'muhurta_yoga.RAVI_PUSHYA',
+  GuruPushya: 'muhurta_yoga.GURU_PUSHYA',
 });
 
 /**
@@ -2604,6 +2628,8 @@ export const MuhurtaYogaById = /* @__PURE__ */ new Map([
   [2, 'muhurta_yoga.SIDDHA'],
   [3, 'muhurta_yoga.DWIPUSHKAR'],
   [4, 'muhurta_yoga.TRIPUSHKAR'],
+  [5, 'muhurta_yoga.RAVI_PUSHYA'],
+  [6, 'muhurta_yoga.GURU_PUSHYA'],
 ]);
 
 /** Every ChartLayout by name. */
@@ -2962,6 +2988,50 @@ export const TraditionById = /* @__PURE__ */ new Map([
   [3, 'tradition.SIKH'],
   [4, 'tradition.ISLAMIC'],
   [5, 'tradition.CHRISTIAN'],
+]);
+
+/** Every DayMarker by name. */
+export const DayMarker = /* @__PURE__ */ Object.freeze({
+  GandaMula: 'day_marker.GANDA_MULA',
+  Gandanta: 'day_marker.GANDANTA',
+  Vinchudo: 'day_marker.VINCHUDO',
+});
+
+/**
+ * Every DayMarker by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DayMarkerById = /* @__PURE__ */ new Map([
+  [0, 'day_marker.GANDA_MULA'],
+  [1, 'day_marker.GANDANTA'],
+  [2, 'day_marker.VINCHUDO'],
+]);
+
+/** Every Gowri by name. */
+export const Gowri = /* @__PURE__ */ Object.freeze({
+  Uthi: 'gowri.UTHI',
+  Amirtham: 'gowri.AMIRTHAM',
+  Rogam: 'gowri.ROGAM',
+  Laabam: 'gowri.LAABAM',
+  Dhanam: 'gowri.DHANAM',
+  Sugam: 'gowri.SUGAM',
+  Soram: 'gowri.SORAM',
+  Visham: 'gowri.VISHAM',
+});
+
+/**
+ * Every Gowri by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const GowriById = /* @__PURE__ */ new Map([
+  [0, 'gowri.UTHI'],
+  [1, 'gowri.AMIRTHAM'],
+  [2, 'gowri.ROGAM'],
+  [3, 'gowri.LAABAM'],
+  [4, 'gowri.DHANAM'],
+  [5, 'gowri.SUGAM'],
+  [6, 'gowri.SORAM'],
+  [7, 'gowri.VISHAM'],
 ]);
 
 /** Every Status by name. */

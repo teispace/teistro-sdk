@@ -3864,6 +3864,10 @@ pub mod sdk {
         pub mod dasha_system {
         }
 
+        /// The `day_marker` group.
+        pub mod day_marker {
+        }
+
         /// The `deity` group.
         pub mod deity {
         }
@@ -3890,6 +3894,10 @@ pub mod sdk {
 
         /// The `gana` group.
         pub mod gana {
+        }
+
+        /// The `gowri` group.
+        pub mod gowri {
         }
 
         /// The `graha` group.

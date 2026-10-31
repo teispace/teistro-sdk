@@ -1764,6 +1764,26 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a birth star reads into its navatara chakra without a sky", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                List<NavataraRow> chakra = sky.almanac().navatara(Nakshatra.ASHWINI);
+                same(27, chakra.size(), "every star once");
+                // Raman, Muhurtha ch. III: from Ashwini, Shravana is the 22nd, Kshema.
+                same(new NavataraRow(Nakshatra.SHRAVANA, 22, com.teispace.teistro.request.Tara.KSHEMA, 3, null),
+                        chakra.get(21), "Raman's example");
+                // Muhurta Chintamani, Nakshatra-prakarana v. 43: the special stars.
+                List<String> special = new ArrayList<>();
+                for (NavataraRow row : chakra) {
+                    if (row.special() != null) {
+                        special.add(row.count() + " " + row.nakshatra().key() + " " + row.special().key());
+                    }
+                }
+                same(List.of("1 ASHWINI JANMA", "10 MAGHA KARMA", "16 VISHAKHA SANGHATIKA", "18 JYESHTHA SAMUDAYA",
+                        "23 DHANISHTHA VAINASHIKA", "25 PURVA_BHADRAPADA MANASA"), special, "the verse's counts");
+                same("birth", refusal(() -> sky.almanac().navatara(null)).field(), "a null star is refused");
+            }
+        });
+
         tests.put("the areas beside the chart answer", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {

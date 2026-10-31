@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 82 entry points over 28 structs and 174 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 83 entry points over 28 structs and 176 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 
@@ -150,6 +150,12 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 | [`ts_naming_load`](naming/ts_naming_load) | Loads a consumer's name book into the context: every name read once into the cakra and indexed by its cell, kept for the context's life under the book's id, the SHA-256 of its canonical JSON, so the same book loaded twice is one book (`03-design/namakarana.md` §3). |
 | [`ts_naming_suggest`](naming/ts_naming_suggest) | The names a book suggests for a birth: those whose first syllable is the birth pada's, or reaches it by a paired letter or the pada's substitute, in the cakra's order and then the book's, each with its clauses under the rules; and every name the book holds that the cakra refused. |
 
+### Navatara
+
+| entry point | what it does |
+|---|---|
+| [`ts_navatara`](navatara/ts_navatara) | The navatara chakra of a birth star: the 27 stars in the order the count from the birth star reaches them, each `{"nakshatra", "count", "tara", "cycle", "special"}`, `cycle` the round of nine (1 janma, 2 anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani* names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`, `VAINASHIKA`, `MANASA`) or null (C1053). |
+
 ### Numerology
 
 | entry point | what it does |
@@ -231,6 +237,7 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 - `crates/ffi/src/panchanga.rs`
 - `crates/ffi/src/naam.rs`
 - `crates/ffi/src/naming.rs`
+- `crates/ffi/src/navatara.rs`
 - `crates/ffi/src/numerology.rs`
 - `crates/ffi/src/pakshi.rs`
 - `crates/ffi/src/rashifal.rs`

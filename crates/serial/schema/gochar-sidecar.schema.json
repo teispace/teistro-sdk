@@ -920,6 +920,54 @@
         }
       ]
     },
+    "DayMarker": {
+      "anyOf": [
+        {
+          "description": "A key of the `day_marker` catalogue, as a document writes it.",
+          "enum": [
+            "GANDA_MULA",
+            "GANDANTA",
+            "VINCHUDO"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `day_marker` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "day_marker.GANDA_MULA",
+            "day_marker.GANDANTA",
+            "day_marker.VINCHUDO"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `day_marker` catalogue, bare or full.",
+      "x-teistro-kind": "day_marker"
+    },
+    "DayMarkerSpan": {
+      "description": "One member of a limb, and when it ran.",
+      "properties": {
+        "inside": {
+          "$ref": "#/$defs/Interval",
+          "description": "The part of it inside the day: what an almanac row prints."
+        },
+        "member": {
+          "$ref": "#/$defs/DayMarker",
+          "description": "Which member ran."
+        },
+        "whole": {
+          "$ref": "#/$defs/Interval",
+          "description": "When the member itself began and ended, whether or not either instant lies inside the day."
+        }
+      },
+      "required": [
+        "member",
+        "whole",
+        "inside"
+      ],
+      "type": "object"
+    },
     "DayPart": {
       "description": "Which part of a day's arc holds an instant.",
       "oneOf": [
@@ -1212,6 +1260,64 @@
           "type": "string"
         }
       ]
+    },
+    "Gowri": {
+      "anyOf": [
+        {
+          "description": "A key of the `gowri` catalogue, as a document writes it.",
+          "enum": [
+            "UTHI",
+            "AMIRTHAM",
+            "ROGAM",
+            "LAABAM",
+            "DHANAM",
+            "SUGAM",
+            "SORAM",
+            "VISHAM"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `gowri` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "gowri.UTHI",
+            "gowri.AMIRTHAM",
+            "gowri.ROGAM",
+            "gowri.LAABAM",
+            "gowri.DHANAM",
+            "gowri.SUGAM",
+            "gowri.SORAM",
+            "gowri.VISHAM"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `gowri` catalogue, bare or full.",
+      "x-teistro-kind": "gowri"
+    },
+    "GowriPart": {
+      "description": "One of a day's sixteen Gowri (`03-design/gowri-panchangam.md`): an eighth of the daylight or of the night and the Gowri that names it.",
+      "properties": {
+        "at": {
+          "$ref": "#/$defs/Interval",
+          "description": "When it runs."
+        },
+        "gowri": {
+          "$ref": "#/$defs/Gowri",
+          "description": "Which Gowri, which carries its lord and whether it is auspicious."
+        },
+        "is_daytime": {
+          "description": "Whether it is one of the eight of the daylight.",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "gowri",
+        "at",
+        "is_daytime"
+      ],
+      "type": "object"
     },
     "Graha": {
       "anyOf": [
@@ -1900,7 +2006,9 @@
             "SARVARTHA_SIDDHI",
             "SIDDHA",
             "DWIPUSHKAR",
-            "TRIPUSHKAR"
+            "TRIPUSHKAR",
+            "RAVI_PUSHYA",
+            "GURU_PUSHYA"
           ],
           "type": "string"
         },
@@ -1911,7 +2019,9 @@
             "muhurta_yoga.SARVARTHA_SIDDHI",
             "muhurta_yoga.SIDDHA",
             "muhurta_yoga.DWIPUSHKAR",
-            "muhurta_yoga.TRIPUSHKAR"
+            "muhurta_yoga.TRIPUSHKAR",
+            "muhurta_yoga.RAVI_PUSHYA",
+            "muhurta_yoga.GURU_PUSHYA"
           ],
           "type": "string",
           "writeOnly": true
@@ -2223,6 +2333,13 @@
           "$ref": "#/$defs/GhatiReckoning",
           "description": "How the day's ghatis are counted, `day.ghati_reckoning` as applied: what `Panchanga::ghati_pala` reads."
         },
+        "gowri": {
+          "description": "The day's Gowri panchangam: eight Gowri of the daylight and eight of the night (`Panchanga::divide_gowri`, `03-design/gowri-panchangam.md`), a printed reading (crux C1052). **Empty unless asked for** (the façade's `AlmanacRequest::with_gowri`), and left out of the day's document when empty.",
+          "items": {
+            "$ref": "#/$defs/GowriPart"
+          },
+          "type": "array"
+        },
         "homa_ahuti": {
           "description": "The day's homa ahuti: the graha whose mouth an oblation falls in, by the Moon's nakshatra counted from the Sun's in threes, one span for each stretch the two stars both held (Muhurta Chintamani, Nakshatra-prakarana v. 35; crux C751). **Empty unless asked for** (the façade's `AlmanacRequest::with_homa_ahuti`), since the Sun's stars cost a search a day does not otherwise make; and left out of the day's document when empty.",
           "items": {
@@ -2254,6 +2371,13 @@
         "limbs": {
           "$ref": "#/$defs/Limbs",
           "description": "The four moving limbs."
+        },
+        "markers": {
+          "description": "The day's markers from the Moon alone, ganda mula, gandanta and vinchudo, in the order they begin (`Panchanga::mark`, `03-design/day-markers.md` §3). **Empty unless asked for** (the façade's `AlmanacRequest::with_markers`), so a day not asked pays nothing; and left out of the day's document when empty.",
+          "items": {
+            "$ref": "#/$defs/DayMarkerSpan"
+          },
+          "type": "array"
         },
         "month": {
           "$ref": "#/$defs/PanchangaLunarMonth",

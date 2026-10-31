@@ -1834,7 +1834,10 @@ final class PanchangaRequestStruct extends ffi.Struct {
   /// lagna table, in the `lagnas` span section;
   /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
   /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
-  /// in the `sky` section, at `sky_step_minutes`.
+  /// in the `sky` section, at `sky_step_minutes`;
+  /// `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
+  /// vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
+  /// each day's Gowri panchangam, in the `gowri` section.
   /// Zero for the days alone, which is what every
   /// caller compiled against an earlier header passes, since this was a
   /// reserved field it wrote zero to.
@@ -2042,6 +2045,8 @@ typedef TsNamingLoadNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointe
 typedef TsNamingLoadDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNamingSuggestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNamingSuggestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNavataraNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsNavataraDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsPakshiNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2141,6 +2146,7 @@ final class TeistroLibrary {
         ts_naming_of = library.lookupFunction<TsNamingOfNative, TsNamingOfDart>('ts_naming_of'),
         ts_naming_load = library.lookupFunction<TsNamingLoadNative, TsNamingLoadDart>('ts_naming_load'),
         ts_naming_suggest = library.lookupFunction<TsNamingSuggestNative, TsNamingSuggestDart>('ts_naming_suggest'),
+        ts_navatara = library.lookupFunction<TsNavataraNative, TsNavataraDart>('ts_navatara'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
         ts_pakshi = library.lookupFunction<TsPakshiNative, TsPakshiDart>('ts_pakshi'),
         ts_rashifal = library.lookupFunction<TsRashifalNative, TsRashifalDart>('ts_rashifal'),
@@ -2839,6 +2845,18 @@ final class TeistroLibrary {
   /// loaded in this context, a pada outside 1 to 4 or a filter clause the
   /// sutra does not report is `INVALID_ARG`, named under `naming`.
   final TsNamingSuggestDart ts_naming_suggest;
+
+  /// The navatara chakra of a birth star: the 27 stars in the order the
+  /// count from the birth star reaches them, each `{"nakshatra", "count",
+  /// "tara", "cycle", "special"}`, `cycle` the round of nine (1 janma, 2
+  /// anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani*
+  /// names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`,
+  /// `VAINASHIKA`, `MANASA`) or null (C1053).
+  ///
+  /// `request_json` is `{"birth"}`, a nakshatra key. A key the record does
+  /// not read, or a star that is not a nakshatra key, is `INVALID_ARG`,
+  /// named under `navatara`.
+  final TsNavataraDart ts_navatara;
 
   /// Reads a name and a birth date under numerology's two systems and
   /// answers with the profile as canonical JSON: the name under each
@@ -5605,7 +5623,10 @@ final class PanchangaRequest {
   /// lagna table, in the `lagnas` span section;
   /// `TS_PANCHANGA_HOMA_AHUTI` (32) each day's homa ahuti, in the
   /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
-  /// in the `sky` section, at `sky_step_minutes`.
+  /// in the `sky` section, at `sky_step_minutes`;
+  /// `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
+  /// vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
+  /// each day's Gowri panchangam, in the `gowri` section.
   /// Zero for the days alone, which is what every
   /// caller compiled against an earlier header passes, since this was a
   /// reserved field it wrote zero to.
@@ -6942,6 +6963,27 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_naming_suggest(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// The navatara chakra of a birth star: the 27 stars in the order the
+  /// count from the birth star reaches them, each `{"nakshatra", "count",
+  /// "tara", "cycle", "special"}`, `cycle` the round of nine (1 janma, 2
+  /// anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani*
+  /// names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`,
+  /// `VAINASHIKA`, `MANASA`) or null (C1053).
+  ///
+  /// `request_json` is `{"birth"}`, a nakshatra key. A key the record does
+  /// not read, or a star that is not a nakshatra key, is `INVALID_ARG`,
+  /// named under `navatara`.
+  String navatara(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_navatara(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

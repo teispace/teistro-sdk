@@ -133,13 +133,13 @@ later. Counting the derives over the layer's own source:
 |---|---|---|
 | `serial` | 6 | 5 |
 | `chart` | 19 | 16 |
-| `panchanga` | 138 | 135 |
+| `panchanga` | 139 | 136 |
 | `vargas` | 11 | 7 |
 | `state` | 12 | 12 |
 | `aspect` | 10 | 8 |
 | `points` | 5 | 5 |
 | `houses` | 5 | 5 |
-| **total** | **206** | **193** |
+| **total** | **207** | **194** |
 
 Each type that serialises without a derived reader, found where its
 derive names `Serialize` and not `Deserialize`, with how it is read
@@ -196,18 +196,18 @@ chart at all. It can now publish one and read it back.
 A schema's `enum` has to spell a member the way the document really
 writes it. Reading every `enum` and `const` in the document's own schema
 — a closed enum's members and a tagged union's tags, from whichever
-crate holds the value — 685 words are written:
+crate holds the value — 698 words are written:
 
 | spelt | words |
 |---|---|
-| as a key, `[A-Z][A-Z0-9_]*` | 685 |
+| as a key, `[A-Z][A-Z0-9_]*` | 698 |
 | otherwise | 0 |
 
 **Every one is a key**, so a consumer reading a document meets one
 spelling of a member everywhere, the spelling a request takes and every
 binding reads back.
 
-The schema says the reader takes 516 more, which no document writes and
+The schema says the reader takes 529 more, which no document writes and
 which it marks `writeOnly`: **every one is a catalogue member's full
 key** (`graha.SUN`), the spelling every binding reads a member back as,
 so a request may hand back what it was given.
@@ -266,7 +266,7 @@ for, and that is where a fixed count of decimals ran out.
 |---|---|---|
 | the schema can be derived from the documents | falsified | 45 of 174 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
-| the layer's types read back, so a round trip can gate the schema | **holds** | 193 types that serialise also derive `Deserialize` |
+| the layer's types read back, so a round trip can gate the schema | **holds** | 194 types that serialise also derive `Deserialize` |
 | every word a document writes is spelt as a key | **holds** | 0 of the schema's words are not |
 | every number the form writes reads back as the same double | **holds** | 0 of 5570 move under a correct parser |
 | this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5570 |

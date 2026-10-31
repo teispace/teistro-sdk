@@ -495,6 +495,7 @@ from ._requests import (
     NamingRules as NamingRules,
     NamingSuggestRequest as NamingSuggestRequest,
     NamingSyllablesRequest as NamingSyllablesRequest,
+    NavataraRequest as NavataraRequest,
     NasalInitial as NasalInitial,
     SuggestFilter as SuggestFilter,
     SyllablesOf as SyllablesOf,
@@ -1369,6 +1370,8 @@ __all__ = [
     "ChaldeanDate",
     "BaselineNumerology",
     "NumerologyProfile",
+    "NavataraRow",
+    "SpecialStar",
     "NamingArea",
     "Birth",
     "Book",
@@ -3778,6 +3781,20 @@ class AlmanacArea(_Area):
         }
         answered = self._context._through_provider(lambda: self._context.inner.almanac_first_year(json.dumps(asked)))
         return _first_year_answer(answered)
+
+    def navatara(self, birth: Union[Nakshatra, str]) -> Tuple["NavataraRow", ...]:
+        """**The navatara chakra** of a birth star
+        (`03-design/navatara-chakra.md`): the 27 stars in the order the
+        count from the birth star reaches them, each with its count, tara,
+        round of nine (1 janma, 2 anujanma, 3 trijanma) and the special
+        star *Muhurta Chintamani* names at that count, or `None`. It reads
+        no sky. A star that is not a key is refused as `navatara.birth`.
+
+        >>> # chakra = ctx.almanac.navatara(Nakshatra.ASHWINI)
+        >>> # chakra[9].special  # "KARMA", Magha the 10th
+        """
+        read = json.loads(self._context.inner.navatara(json.dumps({"birth": _member_key(birth)})))
+        return tuple(NavataraRow._of(row) for row in read)
 
     def disagreements(
         self,
@@ -8346,6 +8363,40 @@ class InWords:
                 minor_unit=amount["minorUnit"],
                 rounded=amount["rounded"],
             ),
+        )
+
+
+SpecialStar = Literal["JANMA", "KARMA", "SANGHATIKA", "SAMUDAYA", "VAINASHIKA", "MANASA"]
+"""A star the navatara chakra names besides its tara, by its count from
+the birth star: the 1st, 10th, 16th, 18th, 23rd and 25th (*Muhurta
+Chintamani*, Nakshatra-prakarana v. 43)."""
+
+
+@dataclass(frozen=True)
+class NavataraRow:
+    """A star of the navatara chakra (`03-design/navatara-chakra.md`)."""
+
+    nakshatra: Nakshatra
+    count: int
+    """Its count from the birth star, 1 (the birth star itself) to 27."""
+
+    tara: Tara
+    """The count reduced by nine."""
+
+    cycle: int
+    """Which round of nine the count is in, 1 (janma) to 3 (trijanma)."""
+
+    special: Optional[SpecialStar]
+    """The special star the count names, or `None`."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "NavataraRow":
+        return NavataraRow(
+            nakshatra=_member(Nakshatra, raw["nakshatra"]),
+            count=raw["count"],
+            tara=raw["tara"],
+            cycle=raw["cycle"],
+            special=raw["special"],
         )
 
 

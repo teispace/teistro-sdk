@@ -769,6 +769,16 @@ public final class ParityRunner {
         return ints("/", reduction.steps());
     }
 
+    /** Ashwini's navatara chakra, every row {@code star:tara:round:special}. */
+    private static void putNavatara(Context ctx) {
+        var rows = new ArrayList<String>();
+        for (var row : ctx.almanac().navatara(Nakshatra.ASHWINI)) {
+            rows.add(row.nakshatra().fullKey() + ":" + row.tara().key() + ":" + row.cycle() + ":"
+                    + (row.special() == null ? "-" : row.special().key()));
+        }
+        put("navatara", String.join(" ", rows));
+    }
+
     /**
      * Two numerology requests, as every runner asks them: Balliett's own
      * example under the sources' readings, and her John Wanamaker under every
@@ -1278,6 +1288,7 @@ public final class ParityRunner {
             putNaam(ctx);
             putNaming(ctx);
             putNumerology(ctx);
+            putNavatara(ctx);
 
             // ── The calendars ─────────────────────────────────────────────
             CalendarDate day = date(2015, 4, 14);
@@ -1649,6 +1660,7 @@ public final class ParityRunner {
             surface("almanac.sankalpa", () -> ctx.almanac().sankalpa(0, place, 0, null));
             surface("almanac.ashauch", () -> ctx.almanac().ashauch(null, place, 0));
             surface("almanac.first_year", () -> ctx.almanac().firstYear(null, place, 0));
+            surface("almanac.navatara", () -> ctx.almanac().navatara(null));
             surface("almanac.published_reasons", () -> ctx.almanac().publishedReasons(day, day, place, 0, null,
                     List.of(), null));
             surface("almanac.changes", () -> ctx.almanac().changes(null));

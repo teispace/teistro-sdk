@@ -6021,6 +6021,52 @@ void _engineTests() {
     },
   );
 
+  test('a birth star reads into its navatara chakra without a sky', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final chakra = ctx.almanac.navatara(Nakshatra.ashwini);
+    expect(chakra, hasLength(27));
+    // Raman, Muhurtha ch. III: from Ashwini, Shravana is the 22nd, Kshema.
+    expect(
+      chakra.firstWhere((row) => row.nakshatra == Nakshatra.shravana),
+      const NavataraRow(
+        nakshatra: Nakshatra.shravana,
+        count: 22,
+        tara: Tara.kshema,
+        cycle: 3,
+        special: null,
+      ),
+    );
+    // Muhurta Chintamani, Nakshatra-prakarana v. 43: the special stars.
+    expect(
+      [
+        for (final row in chakra)
+          if (row.special case final star?)
+            '${row.count} ${row.nakshatra.key} ${star.key}',
+      ],
+      [
+        '1 ASHWINI JANMA',
+        '10 MAGHA KARMA',
+        '16 VISHAKHA SANGHATIKA',
+        '18 JYESHTHA SAMUDAYA',
+        '23 DHANISHTHA VAINASHIKA',
+        '25 PURVA_BHADRAPADA MANASA',
+      ],
+    );
+    expect(
+      () => ctx.almanac.navatara(Nakshatra.unknown),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'navatara.birth',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a name and a birth date read under numerology without a chart', () {
     // Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6; born
     // 17 January 1872, 1 + 8 + 9 = 18 = 9. Cheiro p. 70: Henry 18/9 and

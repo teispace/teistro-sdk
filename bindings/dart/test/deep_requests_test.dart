@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 358 of the examples' 370 members.
+/// The cases compare 362 of the examples' 374 members.
 library;
 
 import 'dart:convert';
@@ -140,11 +140,13 @@ void main() {
         calendar: Calendar.julian,
         eclipses: true,
         first: DayAsked(day: 1, month: 1, year: 1),
+        gowri: true,
         homaAhuti: true,
         lagnas: true,
         last: DayAsked(day: 1, month: 1, year: 1),
         latitudeDeg: 1.5,
         longitudeDeg: 1.5,
+        markers: true,
         nepalSambat: true,
         sky: true,
         skyStepMinutes: 1,
@@ -1013,6 +1015,16 @@ void main() {
       dropping: [],
       members: 0,
       written: WindowDayMuhurta(from: 1, to: 1).toJson(),
+    );
+  });
+
+  test('almanac.navatara: NavataraRequest', () {
+    _holds(
+      'almanac.navatara',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: NavataraRequest(birth: Nakshatra.bharani).toJson(),
     );
   });
 

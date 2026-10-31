@@ -7813,6 +7813,8 @@ final class PanchangaCounts {
     required this.bhadraVasa,
     required this.shivaVasa,
     required this.namedPanchaka,
+    required this.markers,
+    required this.gowri,
     required this.length,
   });
 
@@ -7896,6 +7898,12 @@ final class PanchangaCounts {
 
   /// How many rows of `named_panchaka` belong to this day.
   final Uint32List namedPanchaka;
+
+  /// How many rows of `markers` belong to this day.
+  final Uint32List markers;
+
+  /// How many rows of `gowri` belong to this day.
+  final Uint32List gowri;
 
   /// The number of rows every column holds.
   final int length;
@@ -9108,6 +9116,84 @@ final class PanchangaNamedPanchaka {
   final int length;
 }
 
+/// The `markers` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.
+final class PanchangaMarkers {
+  const PanchangaMarkers({
+    required this.member,
+    required this.wholeFrom,
+    required this.wholeTo,
+    required this.insideFrom,
+    required this.insideTo,
+    required this.sunrises,
+    required this.endsGhati,
+    required this.endsPala,
+    required this.endsVipala,
+    required this.length,
+  });
+
+  /// The marker.
+  final Uint16List member;
+
+  /// When the member itself began, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeFrom;
+
+  /// When the member itself ended, as a Julian day (UTC), whether or not that is inside the day.
+  final Float64List wholeTo;
+
+  /// Where the part inside the day begins: what an almanac row prints.
+  final Float64List insideFrom;
+
+  /// Where the part inside the day ends.
+  final Float64List insideTo;
+
+  /// Which of the day's two sunrises the member was running at: its own, the next day's, both (vriddhi: it names two days) or neither (kshaya: it names none).
+  final Uint8List sunrises;
+
+  /// When the member ended, in ghatis from the day's sunrise under `day.ghati_reckoning`; a member outlasting the day reads as the day's whole count.
+  final Uint8List endsGhati;
+
+  /// And palas, 0 to 59.
+  final Uint8List endsPala;
+
+  /// And vipalas, 0 to 59.
+  final Uint8List endsVipala;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
+/// The `gowri` section of a Panchanga blob: one typed list per column, each a
+/// view over the blob's bytes rather than a copy.
+///
+/// The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none.
+final class PanchangaGowri {
+  const PanchangaGowri({
+    required this.gowri,
+    required this.from,
+    required this.to,
+    required this.daytime,
+    required this.length,
+  });
+
+  /// Which Gowri, which carries its lord.
+  final Uint16List gowri;
+
+  /// When it begins, as a Julian day (UTC).
+  final Float64List from;
+
+  /// When it ends, as a Julian day (UTC).
+  final Float64List to;
+
+  /// 1 when it is one of the eight of the daylight, 0 for one of the night.
+  final Uint8List daytime;
+
+  /// The number of rows every column holds.
+  final int length;
+}
+
 /// A decoded Panchanga blob.
 ///
 /// A batch of daily panchangas at one place: the day, the four moving limbs, the periods, the lunar month, what the Moon and the Sun did, and what the day is said to be. Every per-day list is concatenated across the batch, with `counts` saying how many rows are each day's.
@@ -9158,6 +9244,8 @@ final class Panchanga {
     required this.shivaVasa,
     required this.namedPanchaka,
     required this.sky,
+    required this.markers,
+    required this.gowri,
   });
 
   /// How many days the batch holds, and how many rows the `days`, `counts` and `day` sections each hold.
@@ -9295,6 +9383,12 @@ final class Panchanga {
   /// UTF-8 JSON, canonical: each day's sky when `sections` asked for `TS_PANCHANGA_SKY`, as the envelope `{value, provenance}`, `value` one record a day: the window `from` and `to`, `stepMinutes`, and `sun` and `moon`, each its `state` (`CROSSES`, `ALWAYS_ABOVE` or `ALWAYS_BELOW`) and `track`, its points in time order, a `kind` of `SAMPLE`, `RISE`, `TRANSIT` or `SET` with `at`, `altitudeDeg`, `refractedAltitudeDeg`, `azimuthDeg` from north through east, and on the Moon `moon`, her lit shape from the place (`03-design/day-sky.md`). Empty when not asked for.
   final String sky;
 
+  /// The day's markers from the Moon alone, when `sections` asked for `TS_PANCHANGA_MARKERS` (`day-markers.md` §3): `GANDA_MULA` over each of the six stars at a junction of a water and a fire sign, Ashwini, Ashlesha, Magha, Jyeshtha, Mula and Revati, the whole star as the almanacs mark it (crux C1051); `GANDANTA` over two ghatis each side of each such junction, one span a junction (Muhurta Chintamani, Vivaha-prakarana v. 41); `VINCHUDO` while the Moon is in Scorpio, a Gujarati printed reading (crux C1051). In the order they begin.
+  final PanchangaMarkers markers;
+
+  /// The Gowri panchangam, when `sections` asked for `TS_PANCHANGA_GOWRI` (`gowri-panchangam.md`): eight Gowri of the daylight and eight of the night, each an equal eighth of its arc. By day the weekday lords from the vara's own with Rahu's Visham in the rahu kaala eighth, by night from the lord four weekdays on with Rahu after the graha he followed by day. A printed reading with no text behind it (crux C1052). A half with no arc has none.
+  final PanchangaGowri gowri;
+
 }
 
 /// Decodes a Panchanga blob. The columns are views over `bytes`, so the
@@ -9342,6 +9436,8 @@ Panchanga decodePanchanga(Uint8List bytes) {
   final atShivaVasa = blob.section(38, 'shiva_vasa');
   final atNamedPanchaka = blob.section(39, 'named_panchaka');
   final atSky = blob.section(40, 'sky');
+  final atMarkers = blob.section(41, 'markers');
+  final atGowri = blob.section(42, 'gowri');
   return Panchanga(
     dayCount: blob.data.getUint32(atSummary.offset + 0, Endian.little),
     latitudeDeg: blob.data.getFloat64(atSummary.offset + 8, Endian.little),
@@ -9402,6 +9498,8 @@ Panchanga decodePanchanga(Uint8List bytes) {
       bhadraVasa: blob.column(atCounts, 24, 4, Uint32List.sublistView),
       shivaVasa: blob.column(atCounts, 25, 4, Uint32List.sublistView),
       namedPanchaka: blob.column(atCounts, 26, 4, Uint32List.sublistView),
+      markers: blob.column(atCounts, 27, 4, Uint32List.sublistView),
+      gowri: blob.column(atCounts, 28, 4, Uint32List.sublistView),
       length: atCounts.count,
     ),
     day: Day(
@@ -9731,6 +9829,25 @@ Panchanga decodePanchanga(Uint8List bytes) {
       length: atNamedPanchaka.count,
     ),
     sky: blob.text(atSky, 'sky'),
+    markers: PanchangaMarkers(
+      member: blob.column(atMarkers, 0, 2, Uint16List.sublistView),
+      wholeFrom: blob.column(atMarkers, 1, 8, Float64List.sublistView),
+      wholeTo: blob.column(atMarkers, 2, 8, Float64List.sublistView),
+      insideFrom: blob.column(atMarkers, 3, 8, Float64List.sublistView),
+      insideTo: blob.column(atMarkers, 4, 8, Float64List.sublistView),
+      sunrises: blob.column(atMarkers, 5, 1, Uint8List.sublistView),
+      endsGhati: blob.column(atMarkers, 6, 1, Uint8List.sublistView),
+      endsPala: blob.column(atMarkers, 7, 1, Uint8List.sublistView),
+      endsVipala: blob.column(atMarkers, 8, 1, Uint8List.sublistView),
+      length: atMarkers.count,
+    ),
+    gowri: PanchangaGowri(
+      gowri: blob.column(atGowri, 0, 2, Uint16List.sublistView),
+      from: blob.column(atGowri, 1, 8, Float64List.sublistView),
+      to: blob.column(atGowri, 2, 8, Float64List.sublistView),
+      daytime: blob.column(atGowri, 3, 1, Uint8List.sublistView),
+      length: atGowri.count,
+    ),
   );
 }
 

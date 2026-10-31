@@ -635,6 +635,31 @@ public final class Messages {
         }
     }
 
+    /** A `day_marker` as a message names it: the full catalogue key. */
+    public enum DayMarkerKey {
+        /** `day_marker.GANDA_MULA`. */
+        GANDA_MULA("day_marker.GANDA_MULA"),
+        /** `day_marker.GANDANTA`. */
+        GANDANTA("day_marker.GANDANTA"),
+        /** `day_marker.VINCHUDO`. */
+        VINCHUDO("day_marker.VINCHUDO");
+
+        private final String value;
+
+        DayMarkerKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `deity` as a message names it: the full catalogue key. */
     public enum DeityKey {
         /** `deity.ASHWINI_KUMARA`. */
@@ -860,6 +885,41 @@ public final class Messages {
         private final String value;
 
         GanaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `gowri` as a message names it: the full catalogue key. */
+    public enum GowriKey {
+        /** `gowri.UTHI`. */
+        UTHI("gowri.UTHI"),
+        /** `gowri.AMIRTHAM`. */
+        AMIRTHAM("gowri.AMIRTHAM"),
+        /** `gowri.ROGAM`. */
+        ROGAM("gowri.ROGAM"),
+        /** `gowri.LAABAM`. */
+        LAABAM("gowri.LAABAM"),
+        /** `gowri.DHANAM`. */
+        DHANAM("gowri.DHANAM"),
+        /** `gowri.SUGAM`. */
+        SUGAM("gowri.SUGAM"),
+        /** `gowri.SORAM`. */
+        SORAM("gowri.SORAM"),
+        /** `gowri.VISHAM`. */
+        VISHAM("gowri.VISHAM");
+
+        private final String value;
+
+        GowriKey(String value) {
             this.value = value;
         }
 
@@ -1116,7 +1176,11 @@ public final class Messages {
         /** `muhurta_yoga.DWIPUSHKAR`. */
         DWIPUSHKAR("muhurta_yoga.DWIPUSHKAR"),
         /** `muhurta_yoga.TRIPUSHKAR`. */
-        TRIPUSHKAR("muhurta_yoga.TRIPUSHKAR");
+        TRIPUSHKAR("muhurta_yoga.TRIPUSHKAR"),
+        /** `muhurta_yoga.RAVI_PUSHYA`. */
+        RAVI_PUSHYA("muhurta_yoga.RAVI_PUSHYA"),
+        /** `muhurta_yoga.GURU_PUSHYA`. */
+        GURU_PUSHYA("muhurta_yoga.GURU_PUSHYA");
 
         private final String value;
 
@@ -5685,6 +5749,52 @@ public final class Messages {
 
 
             /**
+             * The messages under `day_marker`.
+             *
+             * @return the group
+             */
+            public SdkEntityDayMarker dayMarker() {
+                return new SdkEntityDayMarker(r);
+            }
+
+            /** The messages under `SdkEntityDayMarker`, each rendered by its own key. */
+            public static final class SdkEntityDayMarker {
+                private final Renderer r;
+
+                SdkEntityDayMarker(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `day_marker.GANDANTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gandanta() {
+                    return r.entity("day_marker.GANDANTA");
+                }
+
+                /**
+                 * The forms of `day_marker.GANDA_MULA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gandaMula() {
+                    return r.entity("day_marker.GANDA_MULA");
+                }
+
+                /**
+                 * The forms of `day_marker.VINCHUDO` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vinchudo() {
+                    return r.entity("day_marker.VINCHUDO");
+                }
+            }
+
+
+            /**
              * The messages under `deity`.
              *
              * @return the group
@@ -9652,6 +9762,97 @@ public final class Messages {
 
 
             /**
+             * The messages under `gowri`.
+             *
+             * @return the group
+             */
+            public SdkEntityGowri gowri() {
+                return new SdkEntityGowri(r);
+            }
+
+            /** The messages under `SdkEntityGowri`, each rendered by its own key. */
+            public static final class SdkEntityGowri {
+                private final Renderer r;
+
+                SdkEntityGowri(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `gowri.AMIRTHAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms amirtham() {
+                    return r.entity("gowri.AMIRTHAM");
+                }
+
+                /**
+                 * The forms of `gowri.DHANAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dhanam() {
+                    return r.entity("gowri.DHANAM");
+                }
+
+                /**
+                 * The forms of `gowri.LAABAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms laabam() {
+                    return r.entity("gowri.LAABAM");
+                }
+
+                /**
+                 * The forms of `gowri.ROGAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rogam() {
+                    return r.entity("gowri.ROGAM");
+                }
+
+                /**
+                 * The forms of `gowri.SORAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms soram() {
+                    return r.entity("gowri.SORAM");
+                }
+
+                /**
+                 * The forms of `gowri.SUGAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sugam() {
+                    return r.entity("gowri.SUGAM");
+                }
+
+                /**
+                 * The forms of `gowri.UTHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms uthi() {
+                    return r.entity("gowri.UTHI");
+                }
+
+                /**
+                 * The forms of `gowri.VISHAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms visham() {
+                    return r.entity("gowri.VISHAM");
+                }
+            }
+
+
+            /**
              * The messages under `graha`.
              *
              * @return the group
@@ -10329,6 +10530,24 @@ public final class Messages {
                  */
                 public EntityForms dwipushkar() {
                     return r.entity("muhurta_yoga.DWIPUSHKAR");
+                }
+
+                /**
+                 * The forms of `muhurta_yoga.GURU_PUSHYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms guruPushya() {
+                    return r.entity("muhurta_yoga.GURU_PUSHYA");
+                }
+
+                /**
+                 * The forms of `muhurta_yoga.RAVI_PUSHYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms raviPushya() {
+                    return r.entity("muhurta_yoga.RAVI_PUSHYA");
                 }
 
                 /**

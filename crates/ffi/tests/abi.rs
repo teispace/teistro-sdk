@@ -9264,6 +9264,55 @@ fn a_name_and_a_date_cross_as_the_kernel_reads_them() {
     }
 }
 
+/// A birth star's navatara chakra crosses as the kernel answers it, the
+/// special stars at the verse's counts, and a refusal is named under
+/// `navatara` (`03-design/navatara-chakra.md`).
+#[cfg(feature = "muhurta")]
+#[test]
+fn a_navatara_chakra_crosses_as_the_kernel_answers_it() {
+    let ctx = Ctx::defaults();
+    let request = r#"{"birth": "ASHWINI"}"#;
+    let crossed = entry_json(teistro_ffi::navatara::ts_navatara, &ctx, request).unwrap();
+    let kernel = teistro::NavataraRequest::from_json(request)
+        .unwrap()
+        .answer();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    let read: Vec<serde_json::Value> = serde_json::from_str(&crossed).unwrap();
+    let special: Vec<(u64, &str, &str)> = read
+        .iter()
+        .filter(|row| !row["special"].is_null())
+        .map(|row| {
+            (
+                row["count"].as_u64().unwrap(),
+                row["nakshatra"].as_str().unwrap(),
+                row["special"].as_str().unwrap(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        special,
+        [
+            (1, "ASHWINI", "JANMA"),
+            (10, "MAGHA", "KARMA"),
+            (16, "VISHAKHA", "SANGHATIKA"),
+            (18, "JYESHTHA", "SAMUDAYA"),
+            (23, "DHANISHTHA", "VAINASHIKA"),
+            (25, "PURVA_BHADRAPADA", "MANASA"),
+        ]
+    );
+    for (request, field) in [
+        (r#"{"birth": "ABHIJIT"}"#, "navatara.birth"),
+        (r#"{"birth": "ASHWINI", "star": "MAGHA"}"#, "navatara.star"),
+    ] {
+        assert_eq!(
+            entry_json(teistro_ffi::navatara::ts_navatara, &ctx, request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}
+
 /// The naming of a child crosses as the façade answers it: each entry's
 /// JSON is the façade's own, a book loaded through the boundary is the
 /// context's for a later suggestion, and every refusal is named under

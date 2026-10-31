@@ -1351,6 +1351,30 @@ final class Calls {
     }
 
     /**
+     * `ts_navatara`: The navatara chakra of a birth star: the 27 stars in the order the
+     * count from the birth star reaches them, each `{"nakshatra", "count",
+     * "tara", "cycle", "special"}`, `cycle` the round of nine (1 janma, 2
+     * anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani*
+     * names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`,
+     * `VAINASHIKA`, `MANASA`) or null (C1053).
+     *
+     * `request_json` is `{"birth"}`, a nakshatra key. A key the record does
+     * not read, or a star that is not a nakshatra key, is `INVALID_ARG`,
+     * named under `navatara`.
+     */
+    static String navatara(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_navatara.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_numerology_profile`: Reads a name and a birth date under numerology's two systems and
      * answers with the profile as canonical JSON: the name under each
      * system, word by word with every reduction step, Balliett's birth
