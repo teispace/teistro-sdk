@@ -11,7 +11,7 @@
 //! allowed. Authorization is left to whatever the operator puts in
 //! front: the server holds no secret.
 //!
-//! A [`teistro::Context`] is neither `Send` nor `Sync`, so each worker
+//! A [`teistro::Context`] is `Send` and not `Sync`, so each worker
 //! thread builds a server of its own and keeps its contexts.
 
 use core::fmt::Write as _;
@@ -53,7 +53,7 @@ const LOOK: Duration = Duration::from_millis(50);
 /// use teistro_mcp::http::MakeServer;
 /// use teistro_mcp::{Detail, Engine, Server};
 ///
-/// // Each worker builds its own: a context is neither `Send` nor `Sync`.
+/// // Each worker builds its own: a context serves one thread at a time.
 /// let make: Arc<MakeServer> = Arc::new(|| Ok(Server::new(Engine::Builtin).with_detail(Detail::Full)));
 /// assert!(make().is_ok());
 /// ```

@@ -1021,7 +1021,8 @@ pub struct Intl {
     /// locale a runtime pack changes is copied for this engine alone
     /// (`Arc::make_mut`).
     pub(crate) locales: BTreeMap<String, Arc<LocaleSource>>,
-    pub(crate) plurals: BTreeMap<String, Plurals>,
+    /// Shared, so a copy of the engine ([`Intl::clone`]) builds none.
+    pub(crate) plurals: BTreeMap<String, Arc<Plurals>>,
     pub(crate) current: String,
     /// Messages parsed once, by locale and key; parsing costs four times a
     /// render, and an entry changes only through the runtime API, which
@@ -1062,6 +1063,30 @@ pub struct Resolution<'a> {
     /// Whether the entry is a runtime override rather than the locale's
     /// own.
     pub is_override: bool,
+}
+
+/// A copy of the engine with its own locale, packs and overrides from here
+/// on, which shares the decoded locales and plural rules it was copied
+/// with: what a context's fork is made of. The parsed messages are copied
+/// as they stand, so a copy does not parse again what its source already
+/// had.
+impl Clone for Intl {
+    fn clone(&self) -> Intl {
+        Intl {
+            locales: self.locales.clone(),
+            plurals: self.plurals.clone(),
+            current: self.current.clone(),
+            parsed: RwLock::new(
+                self.parsed
+                    .read()
+                    .unwrap_or_else(PoisonError::into_inner)
+                    .clone(),
+            ),
+            overrides: self.overrides.clone(),
+            loaded: self.loaded.clone(),
+            zones: self.zones.clone(),
+        }
+    }
 }
 
 impl fmt::Debug for Intl {
@@ -1178,7 +1203,7 @@ impl Intl {
     pub fn shared(locales: BTreeMap<String, Arc<LocaleSource>>) -> Result<Intl, IntlError> {
         let mut plurals = BTreeMap::new();
         for tag in locales.keys() {
-            plurals.insert(tag.clone(), plurals_for(tag)?);
+            plurals.insert(tag.clone(), Arc::new(plurals_for(tag)?));
         }
         let current = locales
             .contains_key(BASE_LOCALE)

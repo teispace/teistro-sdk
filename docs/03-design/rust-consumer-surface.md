@@ -163,6 +163,90 @@ operation whose name is its own area's name is one — the rule
 **No `dispose`.** `Drop` is the whole of it, which is the first place the
 Rust surface is smaller than the C one rather than the same size.
 
+### A context across threads
+
+**Decided: a `Context` is `Send` and not `Sync`; `fork` and a
+`SharedContext` (`Send + Sync`) are how threads share one.** The
+constraint was the consumer's: no lock may slow single-threaded use.
+
+What the research found, field by field, before anything was built:
+
+| State | What it was | Fixed when built? | Now |
+|---|---|---|---|
+| settings, ΔT model, layouts, dasha systems | plain values | yes | `Arc<Core>`, shared by forks |
+| the ephemeris | `Box<dyn EphemerisProvider>` behind `CachingProvider` | yes | in the core: forks share the provider **and its cache** (already `Send + Sync`, a `Mutex` the port has always paid) |
+| the locale engine | `RefCell<Intl>` | no: `set_locale`, packs | per context, copied by a fork |
+| its plural rules | `icu_plurals::PluralRules`, payload `Rc` | per locale | `Arc<Plurals>`, shared; `icu_provider`'s `sync` feature |
+| its parsed messages | `RwLock<HashMap>` | grows | per context, copied as they stand |
+| the zone database | `RefCell<Zones>` | no: a signed pack | per context, copied (an `Arc` inside) |
+| name books | `RefCell<HashMap<_, Rc<NameBook>>>` | no: `naming.load` | per context, `Arc<NameBook>` |
+| `astro`'s segment caches | `thread_local!` | n/a | unchanged: a thread's own, never a context's |
+
+**The `Rc` costs nothing to lift.** The engine builds its plural rules
+from ICU4X's compiled data, whose payload is a `&'static` reference
+(`DataPayloadInner::StaticRef`): no reference count is touched in a
+render, `Rc` or `Arc`. The `sync` feature changes a type, not a path,
+which is why the measurement below shows no difference.
+
+**Why not `Sync`.** Everything a context may change after it is built
+sits in a `RefCell`, read on every render. Making the context `Sync`
+means a lock or an atomic swap on each of those reads, in every
+single-threaded caller, which is the cost the consumer ruled out. So the
+mutable part stays per context and unlocked, and what is fixed is shared:
+
+- **`Context::fork()`** — another context over the same core: the same
+  settings, ephemeris, cache, layouts and dasha systems, shared, and a
+  copy of the locale state (locale, runtime packs, overrides, parsed
+  messages, zone database, name books). What either changes from then on
+  is its own.
+- **`Context::share()` → `SharedContext`** — `Send + Sync + Clone`, the
+  handle a server keeps in its state; `shared.context()` is a context for
+  the thread or request that asks. It holds the locale state *as it was
+  shared*, so a worker's `set_locale` never reaches another worker.
+
+`const _: ()` assertions in `context.rs` hold `Context: Send` and
+`SharedContext: Send + Sync` at compile time, so a field that would take
+either away fails this crate's build, not a consumer's.
+
+**A fork shares its provider, and so its provider's locks.** That is the
+point for a cache, and it is also a limit: the Teimeris adapter keeps one
+engine context behind a mutex (the sidereal mode is context state), and
+`CachingProvider` holds its cells behind one, so forks on many threads
+take turns at the engine. A server that wants positions computed in
+parallel gives each worker a context built with its own provider; one that
+wants the cache shared forks. Both are one line, and the choice is the
+consumer's.
+
+**The bindings.** `Send` and `Sync` are Rust's; the other bindings state
+one context per thread and enforce nothing. A `ts_context_fork` at the
+boundary would give a Java or Python thread pool the shared cache too,
+and it is not in this step: a context opened over a caller's own vtable
+lends its `user_data` only until `ts_context_free`, so a fork of one
+would outlive what it calls, and each binding's host provider would need
+its own reference count first. Recorded as a planned row, not built.
+
+**Measured** (release, M-series, `parashari-classical`, `ne-Deva-NP`, the
+built-in ephemeris). The parent commit and this one were built side by side
+and run in turn, three rounds each, every figure the best of five within a
+round and the table the best across rounds. Another project's build shared
+the machine, so single rounds swung by up to 2.3×; the rounds' best is the
+figure that load inflates least.
+
+| What | Before | After |
+|---|---|---|
+| Build a context | 14.9 µs | 14.9 µs |
+| Render one message (`sdk.reason.grahaInBhava`) | 2,700 ns | 2,344 ns |
+| A month's almanac, warm context | 26.8 ms | 24.5 ms |
+| A month's almanac, fresh context | 26.9 ms | 26.3 ms |
+| `fork()` | | 0.4 µs |
+| `share().context()` | | 0.4 µs |
+| A month's almanac on a fork of a warm context | | 25.8 ms |
+
+Nothing got slower: one thread pays no lock, and the `Arc` is read where the
+fields were before. The render's and the warm month's lower figures are within
+the load's spread and are not claimed as gains. A fork costs a fortieth of a
+build and answers a month as its source does.
+
 ## 5. The ephemeris is linked, not loaded
 
 ADR-0029 gives a Rust consumer the adapters as `rlib`s and says they
@@ -561,7 +645,7 @@ principle:
    the fourth spelling, an area as a borrowing view, and a section on
    what Rust does differently: it composes rather than crosses, so no
    `dispose`, no blob, `positions` answering `Completed`, and a context
-   that is neither `Send` nor `Sync`.
+   that was then neither `Send` nor `Sync` (`Send` since SR-71).
 
    Three things joined that section once the examples had been written,
    because writing them is what found them worth saying. **The types are
@@ -598,24 +682,8 @@ principle:
   context does not need, so the measurement says nothing about it.
 - **`no_std`.** Nothing in this design needs an allocator that the crates
   do not already need, and nothing in it has been measured without one.
-- **Whether a context should be shareable across threads.** It is not,
-  today, and the building found out which part decides that. Not the
-  ephemeris: the port requires `Send + Sync` of a provider. The **locale
-  engine** — `teistro_intl`'s plural rules hold an
-  `icu_plurals::PluralRules` whose data payload is reference-counted with
-  `Rc`, so a `Context` is neither `Send` nor `Sync`.
-
-  Every binding already says *one context serves one thread, and a worker
-  builds its own*, so this is the stated rule enforced rather than a new
-  limit. But it lands differently in Rust, where the obvious shape for a
-  server is one context in an `axum` app state behind a `&`, and `!Send`
-  forbids it — a Rust consumer needs a context per worker or a pool.
-
-  What it would take is known and checked rather than guessed:
-  `icu_provider` has a `sync` feature (`sync = []` in its manifest) which
-  moves those payloads to `Arc`. Enabling it is cross-cutting — it costs
-  atomic reference counts on every render in every binding, and the
-  boundary's `TsContext` is `!Send` for the same reason — so it is a
-  decision with a measurement behind it, not a line in this page. **A
-  falsification pass belongs in front of it**: what a render costs with
-  `Rc` and with `Arc`, over the message set `check-intl` already walks.
+- **Whether a context should be shareable across threads.** Settled
+  (SR-71, C1030): a `Context` is `Send` and not `Sync`, with `fork` and
+  `SharedContext` — §4, "A context across threads". What stays open is
+  the boundary's `ts_context_fork`, and that section says why it is not
+  built yet.

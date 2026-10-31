@@ -807,6 +807,7 @@ dependencies = [
  "fixed_decimal",
  "icu_locale_core",
  "icu_plurals",
+ "icu_provider",
  "serde",
  "serde_json",
  "sha2",

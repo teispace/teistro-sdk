@@ -254,14 +254,9 @@ fn a_chain_that_opens_nothing_names_every_entry_that_failed() {
     assert!(said.contains("second: "), "{said}");
 }
 
-/// A worker builds its own context, which is the pattern a `!Send`
-/// context leaves and the one every other binding states.
-///
-/// Asserted rather than left to a doc comment, because a Rust consumer
-/// putting one in an `axum` app state finds out the hard way otherwise.
-/// The reason is the locale engine and not the ephemeris: the port
-/// requires `Send + Sync` of a provider, while `teistro_intl`'s plural
-/// rules hold an `Rc`-backed icu4x payload.
+/// A worker may still build its own context, the pattern every other
+/// binding states. `tests/threads.rs` holds the cheaper ones a Rust
+/// consumer has: moving a context, a fork, and a `SharedContext`.
 #[test]
 fn a_worker_builds_its_own_context() {
     let answers: Vec<(i32, u8, u8)> = (0..4)
