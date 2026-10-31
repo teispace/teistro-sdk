@@ -4620,6 +4620,10 @@ class AnEngine(WithLibrary):
             self.assertEqual(years[0].ended, years[1].began)
             self.assertLess(years[1].opened, years[1].began)
             self.assertIsInstance(years[1].jovian[0].member, Samvatsara)
+            # Thursday 19 March 2026 opened VS 2083: Jupiter is raja
+            # (`03-design/year-rulers.md`).
+            raja = years[1].rulers[0]
+            self.assertEqual((raja.office, raja.readings[0].rule, raja.lord), ("RAJA", "SUNRISE", Graha.JUPITER))
             with self.assertRaises(dataclasses.FrozenInstanceError):
                 years[0].vikrama = 0  # type: ignore[misc]
             self.assertTrue(answer.provenance.content_hash)

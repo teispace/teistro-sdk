@@ -17491,6 +17491,66 @@ final class JovianYear extends _Value {
   List<Object?> get _fields => [member, count, from, to];
 }
 
+/// An office's weekday and its lord under one rule
+/// (`03-design/year-rulers.md`).
+final class RulerReading extends _Value {
+  const RulerReading({
+    required this.rule,
+    required this.vara,
+    required this.lord,
+    required this.day,
+  });
+
+  /// The rule: `SUNRISE`, `NEW_MOON` or `GARGA` for the raja, `DAYLIGHT`
+  /// or `VARA` for an ingress.
+  final String rule;
+
+  /// The weekday the rule reads.
+  final Vara vara;
+
+  /// Its lord, who holds the office.
+  final Graha lord;
+
+  /// The sunrise that opened that weekday, a UTC Julian day.
+  final double day;
+
+  @override
+  List<Object?> get _fields => [rule, vara, lord, day];
+}
+
+/// One office of the year and who holds it (`03-design/year-rulers.md`).
+final class YearRuler extends _Value {
+  const YearRuler({
+    required this.office,
+    required this.event,
+    required this.texts,
+    required this.readings,
+  });
+
+  /// The office: `RAJA`, `MANTRI`, `SENADHIPATI`, `SASYADHIPATI`,
+  /// `DHANYADHIPATI`, `ARGHADHIPATI`, `MEGHADHIPATI`, `RASADHIPATI` or
+  /// `NIRASADHIPATI`.
+  final String office;
+
+  /// The new moon that opened the year for the raja, the Sun's ingress for
+  /// the rest, a UTC Julian day.
+  final double event;
+
+  /// The texts that name the office: `JYOTIRNIBANDHA`, `NARADA_SAMHITA`,
+  /// `NAVANAYAKA`.
+  final List<String> texts;
+
+  /// Its weekday and lord under each rule its texts give, the plainest
+  /// first.
+  final List<RulerReading> readings;
+
+  /// The lord under the first rule, the plainest reading.
+  Graha get lord => readings.first.lord;
+
+  @override
+  List<Object?> get _fields => [office, event, texts, readings];
+}
+
 /// One lunar year: the name it carries, its numbers and bounds, and the
 /// Jovian years that ran in it (`03-design/calendar-indian-lunisolar.md`
 /// §10).
@@ -17506,6 +17566,7 @@ final class LunarYear extends _Value {
     required this.ended,
     required this.jovian,
     required this.lupta,
+    required this.rulers,
   });
 
   /// The name the year carries under `calendars.samvatsara`.
@@ -17541,6 +17602,10 @@ final class LunarYear extends _Value {
   /// year, or `null`.
   final Samvatsara? lupta;
 
+  /// The year's office-bearers, the raja first, each read under every rule
+  /// its texts give (`03-design/year-rulers.md`).
+  final List<YearRuler> rulers;
+
   @override
   List<Object?> get _fields => [
     samvatsara,
@@ -17553,6 +17618,7 @@ final class LunarYear extends _Value {
     ended,
     jovian,
     lupta,
+    rulers,
   ];
 }
 
@@ -17855,6 +17921,23 @@ LunarYear _lunarYear(Map<String, Object?> raw) {
     from: jd(raw['from']),
     to: jd(raw['to']),
   );
+  RulerReading reading(Map<String, Object?> raw) => RulerReading(
+    rule: raw['rule']! as String,
+    vara: _key(raw['vara'], Vara.byKey, Vara.unknown),
+    lord: _key(raw['lord'], Graha.byKey, Graha.unknown),
+    day: jd(raw['day']),
+  );
+  YearRuler ruler(Map<String, Object?> raw) => YearRuler(
+    office: raw['office']! as String,
+    event: jd(raw['event']),
+    texts: List.unmodifiable([
+      for (final text in raw['texts']! as List<Object?>) text! as String,
+    ]),
+    readings: List.unmodifiable([
+      for (final item in raw['readings']! as List<Object?>)
+        reading(item! as Map<String, Object?>),
+    ]),
+  );
   return LunarYear(
     samvatsara: named(raw['samvatsara']),
     count: raw['count']! as String,
@@ -17869,6 +17952,10 @@ LunarYear _lunarYear(Map<String, Object?> raw) {
         jovian(item! as Map<String, Object?>),
     ]),
     lupta: raw['lupta'] == null ? null : named(raw['lupta']),
+    rulers: List.unmodifiable([
+      for (final item in raw['rulers']! as List<Object?>)
+        ruler(item! as Map<String, Object?>),
+    ]),
   );
 }
 

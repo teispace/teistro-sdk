@@ -6496,6 +6496,41 @@ export interface LunarYear {
   readonly jovian: readonly JovianYear[];
   /** The Jovian year that began and ended inside this one and so names no year, or `null`. */
   readonly lupta: Samvatsara | null;
+  /** The year's office-bearers, the raja first, each read under every rule its texts give (`03-design/year-rulers.md`). */
+  readonly rulers: readonly YearRuler[];
+}
+
+/** One office of the year and who holds it (`03-design/year-rulers.md`). */
+export interface YearRuler {
+  /** The office. */
+  readonly office:
+    | 'RAJA'
+    | 'MANTRI'
+    | 'SENADHIPATI'
+    | 'SASYADHIPATI'
+    | 'DHANYADHIPATI'
+    | 'ARGHADHIPATI'
+    | 'MEGHADHIPATI'
+    | 'RASADHIPATI'
+    | 'NIRASADHIPATI';
+  /** The new moon that opened the year for the raja, the Sun's ingress for the rest, a UTC Julian day. */
+  readonly event: number;
+  /** The texts that name the office. */
+  readonly texts: readonly ('JYOTIRNIBANDHA' | 'NARADA_SAMHITA' | 'NAVANAYAKA')[];
+  /** Its weekday and lord under each rule its texts give, the plainest first. */
+  readonly readings: readonly RulerReading[];
+}
+
+/** An office's weekday and its lord under one rule. */
+export interface RulerReading {
+  /** The rule: `SUNRISE`, `NEW_MOON` or `GARGA` for the raja, `DAYLIGHT` or `VARA` for an ingress. */
+  readonly rule: 'SUNRISE' | 'NEW_MOON' | 'GARGA' | 'DAYLIGHT' | 'VARA';
+  /** The weekday the rule reads. */
+  readonly vara: Vara;
+  /** Its lord, who holds the office. */
+  readonly lord: Graha;
+  /** The sunrise that opened that weekday, a UTC Julian day. */
+  readonly day: number;
 }
 
 /**
