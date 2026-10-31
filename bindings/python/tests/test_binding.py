@@ -89,6 +89,7 @@ from teistro import (
     date,
     fixed_zone,
     iana_zone,
+    tithi_month_number,
     intl,
     local_mean_zone,
     message_parts,
@@ -192,6 +193,12 @@ class AContext(WithLibrary):
 
     def tearDown(self) -> None:
         self.ctx.close()
+
+    def test_a_tithi_says_its_number_in_the_month(self) -> None:
+        self.assertEqual(tithi_month_number(Tithi.SHUKLA_PRATIPADA), 1)
+        self.assertEqual(tithi_month_number(Tithi.PURNIMA), 15)
+        self.assertEqual(tithi_month_number(Tithi.KRISHNA_PRATIPADA), 16)
+        self.assertEqual(tithi_month_number(Tithi.AMAVASYA), 30)
 
     def test_a_day_says_the_clock_it_was_read_on(self) -> None:
         place = Observer(latitude_deg=Latitude(40.7128), longitude_deg=Longitude(-74.006), altitude_m=Altitude(10))

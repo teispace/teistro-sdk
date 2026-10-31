@@ -110,6 +110,14 @@ test('a context resolves its settings and reports them', () => {
   assert.equal(named.settingsHash, ctx.settingsHash);
 });
 
+test('a tithi says its number in the month', () => {
+  assert.equal(tithiMonthNumber(Tithi.ShuklaPratipada), 1);
+  assert.equal(tithiMonthNumber(Tithi.Purnima), 15);
+  assert.equal(tithiMonthNumber(Tithi.KrishnaPratipada), 16);
+  assert.equal(tithiMonthNumber(Tithi.Amavasya), 30);
+  assert.throws(() => tithiMonthNumber('tithi.NO_SUCH'), TypeError);
+});
+
 test('a day says the clock it was read on, and a digest keeps it', () => {
   const ctx = context();
   const place = { latitude: 40.7128, longitude: -74.006, altitude: 10 };

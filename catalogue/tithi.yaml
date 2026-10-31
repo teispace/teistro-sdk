@@ -1,13 +1,13 @@
 kind: tithi
 number: 4
-version: 1
-doc: "The thirty tithis of the lunar month."
-attributes: { paksha: key:paksha, number: u8, deity: key:deity, class: key:tithi_class }
+version: 2
+doc: "The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30."
+attributes: { paksha: key:paksha, number: u8, month_number: u8, deity: key:deity, class: key:tithi_class }
 members:
   - key: SHUKLA_PRATIPADA
     id: 0
     doc: "Shukla Pratipada"
-    attributes: { paksha: SHUKLA, number: 1, deity: BRAHMA, class: NANDA }
+    attributes: { paksha: SHUKLA, number: 1, month_number: 1, deity: BRAHMA, class: NANDA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -15,7 +15,7 @@ members:
   - key: SHUKLA_DVITIYA
     id: 1
     doc: "Shukla Dvitiya"
-    attributes: { paksha: SHUKLA, number: 2, deity: VIDHATA, class: BHADRA }
+    attributes: { paksha: SHUKLA, number: 2, month_number: 2, deity: VIDHATA, class: BHADRA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -23,7 +23,7 @@ members:
   - key: SHUKLA_TRITIYA
     id: 2
     doc: "Shukla Tritiya"
-    attributes: { paksha: SHUKLA, number: 3, deity: VISHNU, class: JAYA }
+    attributes: { paksha: SHUKLA, number: 3, month_number: 3, deity: VISHNU, class: JAYA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -31,7 +31,7 @@ members:
   - key: SHUKLA_CHATURTHI
     id: 3
     doc: "Shukla Chaturthi"
-    attributes: { paksha: SHUKLA, number: 4, deity: YAMA, class: RIKTA }
+    attributes: { paksha: SHUKLA, number: 4, month_number: 4, deity: YAMA, class: RIKTA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -39,7 +39,7 @@ members:
   - key: SHUKLA_PANCHAMI
     id: 4
     doc: "Shukla Panchami"
-    attributes: { paksha: SHUKLA, number: 5, deity: NAGA, class: PURNA }
+    attributes: { paksha: SHUKLA, number: 5, month_number: 5, deity: NAGA, class: PURNA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -47,7 +47,7 @@ members:
   - key: SHUKLA_SHASHTHI
     id: 5
     doc: "Shukla Shashthi"
-    attributes: { paksha: SHUKLA, number: 6, deity: KARTIKEYA, class: NANDA }
+    attributes: { paksha: SHUKLA, number: 6, month_number: 6, deity: KARTIKEYA, class: NANDA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -55,7 +55,7 @@ members:
   - key: SHUKLA_SAPTAMI
     id: 6
     doc: "Shukla Saptami"
-    attributes: { paksha: SHUKLA, number: 7, deity: SURYA, class: BHADRA }
+    attributes: { paksha: SHUKLA, number: 7, month_number: 7, deity: SURYA, class: BHADRA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -63,7 +63,7 @@ members:
   - key: SHUKLA_ASHTAMI
     id: 7
     doc: "Shukla Ashtami"
-    attributes: { paksha: SHUKLA, number: 8, deity: SHIVA, class: JAYA }
+    attributes: { paksha: SHUKLA, number: 8, month_number: 8, deity: SHIVA, class: JAYA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -71,7 +71,7 @@ members:
   - key: SHUKLA_NAVAMI
     id: 8
     doc: "Shukla Navami"
-    attributes: { paksha: SHUKLA, number: 9, deity: DURGA, class: RIKTA }
+    attributes: { paksha: SHUKLA, number: 9, month_number: 9, deity: DURGA, class: RIKTA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -79,7 +79,7 @@ members:
   - key: SHUKLA_DASHAMI
     id: 9
     doc: "Shukla Dashami"
-    attributes: { paksha: SHUKLA, number: 10, deity: YAMA, class: PURNA }
+    attributes: { paksha: SHUKLA, number: 10, month_number: 10, deity: YAMA, class: PURNA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -87,7 +87,7 @@ members:
   - key: SHUKLA_EKADASHI
     id: 10
     doc: "Shukla Ekadashi"
-    attributes: { paksha: SHUKLA, number: 11, deity: VISHNU, class: NANDA }
+    attributes: { paksha: SHUKLA, number: 11, month_number: 11, deity: VISHNU, class: NANDA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -95,7 +95,7 @@ members:
   - key: SHUKLA_DWADASHI
     id: 11
     doc: "Shukla Dwadashi"
-    attributes: { paksha: SHUKLA, number: 12, deity: VISHNU, class: BHADRA }
+    attributes: { paksha: SHUKLA, number: 12, month_number: 12, deity: VISHNU, class: BHADRA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -103,7 +103,7 @@ members:
   - key: SHUKLA_TRAYODASHI
     id: 12
     doc: "Shukla Trayodashi"
-    attributes: { paksha: SHUKLA, number: 13, deity: KAMADEVA, class: JAYA }
+    attributes: { paksha: SHUKLA, number: 13, month_number: 13, deity: KAMADEVA, class: JAYA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -111,7 +111,7 @@ members:
   - key: SHUKLA_CHATURDASHI
     id: 13
     doc: "Shukla Chaturdashi"
-    attributes: { paksha: SHUKLA, number: 14, deity: SHIVA, class: RIKTA }
+    attributes: { paksha: SHUKLA, number: 14, month_number: 14, deity: SHIVA, class: RIKTA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -119,7 +119,7 @@ members:
   - key: PURNIMA
     id: 14
     doc: "Purnima"
-    attributes: { paksha: SHUKLA, number: 15, deity: CHANDRA, class: PURNA }
+    attributes: { paksha: SHUKLA, number: 15, month_number: 15, deity: CHANDRA, class: PURNA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -127,7 +127,7 @@ members:
   - key: KRISHNA_PRATIPADA
     id: 15
     doc: "Krishna Pratipada"
-    attributes: { paksha: KRISHNA, number: 1, deity: BRAHMA, class: NANDA }
+    attributes: { paksha: KRISHNA, number: 1, month_number: 16, deity: BRAHMA, class: NANDA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -135,7 +135,7 @@ members:
   - key: KRISHNA_DVITIYA
     id: 16
     doc: "Krishna Dvitiya"
-    attributes: { paksha: KRISHNA, number: 2, deity: VIDHATA, class: BHADRA }
+    attributes: { paksha: KRISHNA, number: 2, month_number: 17, deity: VIDHATA, class: BHADRA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -143,7 +143,7 @@ members:
   - key: KRISHNA_TRITIYA
     id: 17
     doc: "Krishna Tritiya"
-    attributes: { paksha: KRISHNA, number: 3, deity: VISHNU, class: JAYA }
+    attributes: { paksha: KRISHNA, number: 3, month_number: 18, deity: VISHNU, class: JAYA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -151,7 +151,7 @@ members:
   - key: KRISHNA_CHATURTHI
     id: 18
     doc: "Krishna Chaturthi"
-    attributes: { paksha: KRISHNA, number: 4, deity: YAMA, class: RIKTA }
+    attributes: { paksha: KRISHNA, number: 4, month_number: 19, deity: YAMA, class: RIKTA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -159,7 +159,7 @@ members:
   - key: KRISHNA_PANCHAMI
     id: 19
     doc: "Krishna Panchami"
-    attributes: { paksha: KRISHNA, number: 5, deity: NAGA, class: PURNA }
+    attributes: { paksha: KRISHNA, number: 5, month_number: 20, deity: NAGA, class: PURNA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -167,7 +167,7 @@ members:
   - key: KRISHNA_SHASHTHI
     id: 20
     doc: "Krishna Shashthi"
-    attributes: { paksha: KRISHNA, number: 6, deity: KARTIKEYA, class: NANDA }
+    attributes: { paksha: KRISHNA, number: 6, month_number: 21, deity: KARTIKEYA, class: NANDA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -175,7 +175,7 @@ members:
   - key: KRISHNA_SAPTAMI
     id: 21
     doc: "Krishna Saptami"
-    attributes: { paksha: KRISHNA, number: 7, deity: SURYA, class: BHADRA }
+    attributes: { paksha: KRISHNA, number: 7, month_number: 22, deity: SURYA, class: BHADRA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -183,7 +183,7 @@ members:
   - key: KRISHNA_ASHTAMI
     id: 22
     doc: "Krishna Ashtami"
-    attributes: { paksha: KRISHNA, number: 8, deity: SHIVA, class: JAYA }
+    attributes: { paksha: KRISHNA, number: 8, month_number: 23, deity: SHIVA, class: JAYA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -191,7 +191,7 @@ members:
   - key: KRISHNA_NAVAMI
     id: 23
     doc: "Krishna Navami"
-    attributes: { paksha: KRISHNA, number: 9, deity: DURGA, class: RIKTA }
+    attributes: { paksha: KRISHNA, number: 9, month_number: 24, deity: DURGA, class: RIKTA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -199,7 +199,7 @@ members:
   - key: KRISHNA_DASHAMI
     id: 24
     doc: "Krishna Dashami"
-    attributes: { paksha: KRISHNA, number: 10, deity: YAMA, class: PURNA }
+    attributes: { paksha: KRISHNA, number: 10, month_number: 25, deity: YAMA, class: PURNA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -207,7 +207,7 @@ members:
   - key: KRISHNA_EKADASHI
     id: 25
     doc: "Krishna Ekadashi"
-    attributes: { paksha: KRISHNA, number: 11, deity: VISHNU, class: NANDA }
+    attributes: { paksha: KRISHNA, number: 11, month_number: 26, deity: VISHNU, class: NANDA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -215,7 +215,7 @@ members:
   - key: KRISHNA_DWADASHI
     id: 26
     doc: "Krishna Dwadashi"
-    attributes: { paksha: KRISHNA, number: 12, deity: VISHNU, class: BHADRA }
+    attributes: { paksha: KRISHNA, number: 12, month_number: 27, deity: VISHNU, class: BHADRA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -223,7 +223,7 @@ members:
   - key: KRISHNA_TRAYODASHI
     id: 27
     doc: "Krishna Trayodashi"
-    attributes: { paksha: KRISHNA, number: 13, deity: KAMADEVA, class: JAYA }
+    attributes: { paksha: KRISHNA, number: 13, month_number: 28, deity: KAMADEVA, class: JAYA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -231,7 +231,7 @@ members:
   - key: KRISHNA_CHATURDASHI
     id: 28
     doc: "Krishna Chaturdashi"
-    attributes: { paksha: KRISHNA, number: 14, deity: SHIVA, class: RIKTA }
+    attributes: { paksha: KRISHNA, number: 14, month_number: 29, deity: SHIVA, class: RIKTA }
     sources:
       - text: "baseline-engine"
         ref: "core data"
@@ -239,7 +239,7 @@ members:
   - key: AMAVASYA
     id: 29
     doc: "Amavasya"
-    attributes: { paksha: KRISHNA, number: 15, deity: PITRU, class: PURNA }
+    attributes: { paksha: KRISHNA, number: 15, month_number: 30, deity: PITRU, class: PURNA }
     sources:
       - text: "baseline-engine"
         ref: "core data"

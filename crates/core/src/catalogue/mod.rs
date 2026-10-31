@@ -567,6 +567,7 @@ mod tests {
                 }
             );
             assert_eq!(u16::from(a.number), tithi.id() % 15 + 1);
+            assert_eq!(u16::from(a.month_number), tithi.id() + 1);
         }
     }
 

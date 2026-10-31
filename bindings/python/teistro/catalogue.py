@@ -88,7 +88,7 @@ class Kind(Member):
     """The twenty-seven nakshatras; the 28-scheme with Abhijit is a span table, not a member. Each pada's syllable is spelled as Muhurta Chintamani p. 173 prints it, `akshara` in IAST (C299)."""
 
     tithi = 4
-    """The thirty tithis of the lunar month."""
+    """The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30."""
 
     karana = 5
     """The eleven karanas: seven movable, four fixed."""
@@ -479,7 +479,7 @@ class Nakshatra(Catalogued):
 
 
 class Tithi(Catalogued):
-    """The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`."""
+    """The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`."""
 
     SHUKLA_PRATIPADA = 0
     """Shukla Pratipada"""

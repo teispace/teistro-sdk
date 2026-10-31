@@ -202,7 +202,7 @@ typedef enum ts_kind {
      */
     TS_KIND_NAKSHATRA = 3,
     /**
-     * The thirty tithis of the lunar month.
+     * The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30.
      */
     TS_KIND_TITHI = 4,
     /**
@@ -712,7 +712,7 @@ typedef enum ts_nakshatra {
 } ts_nakshatra;
 
 /**
- * The thirty tithis of the lunar month. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
+ * The thirty tithis of the lunar month: `number` is a tithi's place in its paksha, 1 to 15, `month_number` its place in the month, 1 to 30. Members are the catalogue's ids; the full key id is `(TS_KIND_TITHI << 16) | member`.
  */
 typedef enum ts_tithi {
     /**

@@ -289,8 +289,8 @@ explained rather than a failure or a silent adoption.
     within its paksha, which is how a tithi is named, and carries the
     paksha beside it. Neither is wrong and they are not the same field:
     a harness compares the SDK's `(paksha, number)` with the engine's
-    `number`, never the two numbers. Measured over all 109 recorded
-    tithi spans. Found 2026-09-07 by `cargo xtask panchanga`
+    `number`, never the two numbers, and the engine's field is the SDK's
+    `month_number` (SR-70). Measured over all 109 recorded tithi spans. Found 2026-09-07 by `cargo xtask panchanga`
     (`03-design/panchanga-day-conventions.md`, §2).
 
 20. Vargottama. A body is vargottama when its navamsha sign is the sign

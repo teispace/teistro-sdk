@@ -170,6 +170,13 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a tithi says its number in the month", () -> {
+            same(1, AlmanacDay.tithiMonthNumber(Tithi.SHUKLA_PRATIPADA), "the first");
+            same(15, AlmanacDay.tithiMonthNumber(Tithi.PURNIMA), "the full moon");
+            same(16, AlmanacDay.tithiMonthNumber(Tithi.KRISHNA_PRATIPADA), "the dark half's first");
+            same(30, AlmanacDay.tithiMonthNumber(Tithi.AMAVASYA), "the last");
+        });
+
         tests.put("a day says the clock it was read on, and a digest keeps it", () -> {
             Observer newYork = new Observer(new Longitude(-74.006), new Latitude(40.7128), new Altitude(10));
             CalendarDate first = new CalendarDate(Calendar.GREGORIAN, null, 2026, 0, 10, 31,
