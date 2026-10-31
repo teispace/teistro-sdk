@@ -68,7 +68,11 @@ try {
         const warm = await page(file, { profile });
         answer.chrome[name] = { cold: cold.ms, warm: warm.ms, modules: cold.modules };
       } finally {
-        rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+        // Chrome's helpers can outlive it and keep writing here; a profile
+        // left in the temporary directory fails no measurement.
+        try {
+          rmSync(profile, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+        } catch {}
       }
     }
   }
