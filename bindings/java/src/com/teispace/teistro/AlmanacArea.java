@@ -688,6 +688,49 @@ public final class AlmanacArea {
     }
 
     /**
+     * A feed from the whole request record, for what {@link FeedOptions} does not hold: the caller's own
+     * events, a filter, hints, an alarm, categories and a colour ({@code 03-design/icalendar.md} §6).
+     *
+     * <pre>{@code
+     * String ics = sdk.almanac().festivalCalendar(FestivalCalendarRequest.builder()
+     *         .first(first).latitudeDeg(27.7172).longitudeDeg(85.324).utcOffsetSeconds(20_700)
+     *         .festivals(festivals).stampUnixSeconds(1_767_225_600L).color("gold").build());
+     * }</pre>
+     *
+     * @param asked the request record
+     * @return the feed, CRLF lines
+     */
+    public String festivalCalendar(com.teispace.teistro.request.FestivalCalendarRequest asked) {
+        if (asked == null) {
+            throw Reads.invalid("asked is a FestivalCalendarRequest", "asked");
+        }
+        String json = Json.write(asked.toJson());
+        return context.locked((lib, raw) -> Calls.almanacFestivalCalendar(lib, raw, json));
+    }
+
+    /**
+     * <b>The N-day digest</b> ({@code 03-design/digest-format.md}): the days from {@code first}, every limb
+     * and window, the Moon and the observances, as bytes a process with no engine reads with
+     * {@code bindings/c/digest}, and {@link com.teispace.teistro.blob.Digest#decode(byte[])} reads here. The
+     * same request writes the same bytes on every platform.
+     *
+     * <pre>{@code
+     * byte[] bytes = sdk.almanac().digest(DigestRequest.builder()
+     *         .first(first).latitudeDeg(27.7172).longitudeDeg(85.324).utcOffsetSeconds(20_700).build());
+     * }</pre>
+     *
+     * @param asked the request record
+     * @return the digest's bytes
+     */
+    public byte[] digest(com.teispace.teistro.request.DigestRequest asked) {
+        if (asked == null) {
+            throw Reads.invalid("asked is a DigestRequest", "asked");
+        }
+        String json = Json.write(asked.toJson());
+        return context.locked((lib, raw) -> Calls.almanacDigest(lib, raw, json));
+    }
+
+    /**
      * As {@link #festivalCalendar(CalendarDate, CalendarDate, Observer, int,
      * com.teispace.teistro.request.FestivalRequest, FeedOptions)}, the feed saying of itself what the SDK
      * says: "Festivals", refreshed daily, stamped now.

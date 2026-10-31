@@ -33,7 +33,8 @@ use teistro_ffi::naam::ts_naam_milan;
 use teistro_ffi::numerology::ts_numerology_profile;
 use teistro_ffi::pakshi::ts_pakshi;
 use teistro_ffi::panchanga::{
-    TsPanchangaRequest, ts_almanac_ashauch, ts_almanac_disagreements, ts_almanac_festival_calendar,
+    TsPanchangaRequest, ts_almanac_ashauch, ts_almanac_digest, ts_almanac_disagreements,
+    ts_almanac_festival_calendar,
     ts_almanac_first_year, ts_almanac_published_reasons, ts_almanac_sankalpa, ts_panchanga_days,
 };
 use teistro_ffi::published::ts_published_verify;
@@ -215,6 +216,7 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_almanac_published_reasons",
     "ts_chart_layout_row key",
     "ts_ephemeris_call",
+    "ts_almanac_digest",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -463,6 +465,11 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         Seed::Refused,
         "tp_sum\n{\"values\":[1,2.5]}",
     ),
+    (
+        "ts_almanac_digest",
+        Seed::Answered,
+        r#"{"first":{"year":2025,"month":10,"day":1},"days":3,"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"festivals":{"rules":"NEPAL"}}"#,
+    ),
 ];
 
 /// The corpus file of one seed: its selector byte, counted from the slot's
@@ -611,11 +618,167 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_almanac_ashauch" => string_call(ts_almanac_ashauch, text),
         "ts_almanac_first_year" => string_call(ts_almanac_first_year, text),
         "ts_almanac_festival_calendar" => string_call(ts_almanac_festival_calendar, text),
+        "ts_almanac_digest" => {
+            let mut blob = TsBlob::empty();
+            // SAFETY: a live context, a NUL-terminated string and a valid slot.
+            let status = unsafe { ts_almanac_digest(shared(), text.as_ptr(), &raw mut blob) };
+            // SAFETY: as above.
+            unsafe { ts_blob_free(&raw mut blob) };
+            status
+        }
         "ts_almanac_disagreements" => paired_call(ts_almanac_disagreements, text),
         "ts_almanac_published_reasons" => paired_call(ts_almanac_published_reasons, text),
         "ts_chart_layout_row key" => string_call(ts_chart_layout_row, text),
         "ts_ephemeris_call" => ephemeris_call(text),
         _ => Status::Ok,
+    }
+}
+
+/// The digest's C reader, as a C caller's would run.
+mod reader {
+    use core::ffi::{c_char, c_int, c_void};
+
+    /// `ts_digest`, as bytes this side never reads, with room to spare.
+    #[repr(C, align(8))]
+    pub(super) struct Digest(pub(super) [u8; 512]);
+
+    /// `ts_digest_day`.
+    #[repr(C)]
+    #[derive(Default)]
+    pub(super) struct Day {
+        pub(super) year: i32,
+        pub(super) month: u8,
+        pub(super) day: u8,
+        pub(super) vara: u8,
+        pub(super) state: u8,
+        pub(super) fixed_day: i32,
+        pub(super) sunrise: i32,
+        pub(super) sunset: i32,
+        pub(super) moonrise: i32,
+        pub(super) moonset: i32,
+        pub(super) moon_phase: u16,
+        pub(super) lunar_month: u16,
+        pub(super) span_first: u32,
+        pub(super) span_count: u32,
+        pub(super) observance_first: u32,
+        pub(super) observance_count: u32,
+    }
+
+    /// `ts_digest_span`.
+    #[repr(C)]
+    #[derive(Default)]
+    pub(super) struct Span {
+        pub(super) kind: c_int,
+        pub(super) name: u16,
+        pub(super) from: i32,
+        pub(super) to: i32,
+    }
+
+    /// `ts_digest_observance`.
+    #[repr(C)]
+    #[derive(Default)]
+    pub(super) struct Observance {
+        pub(super) name: u16,
+        pub(super) flags: u8,
+    }
+
+    /// `ts_digest_name`.
+    #[repr(C)]
+    pub(super) struct Name {
+        pub(super) key: *const c_char,
+        pub(super) key_length: u32,
+        pub(super) text: *const c_char,
+        pub(super) text_length: u32,
+    }
+
+    unsafe extern "C" {
+        pub(super) fn ts_digest_open(digest: *mut Digest, bytes: *const c_void, length: usize)
+        -> c_int;
+        pub(super) fn ts_digest_day_at(digest: *const Digest, index: u32, day: *mut Day) -> c_int;
+        pub(super) fn ts_digest_span_at(
+            digest: *const Digest,
+            day: *const Day,
+            index: u32,
+            span: *mut Span,
+        ) -> c_int;
+        pub(super) fn ts_digest_observance_at(
+            digest: *const Digest,
+            day: *const Day,
+            index: u32,
+            observance: *mut Observance,
+        ) -> c_int;
+        pub(super) fn ts_digest_name_at(digest: *const Digest, index: u16, name: *mut Name) -> c_int;
+        pub(super) fn ts_digest_seal(bytes: *const c_void, length: usize, out: *mut c_char);
+    }
+}
+
+/// The digest's C reader over the bytes, the header's length and the seal
+/// made right, as `pack` makes a checksum right: a seal is no
+/// authentication, so every reader behind it must hold with one mended.
+/// Each name's bytes are read, so a pointer out of bounds is a finding.
+pub fn digest(data: &[u8]) {
+    use reader::{Day, Digest, Name, Observance, Span};
+    let mut bytes = data.to_vec();
+    if bytes.len() >= 128 {
+        let length = u32::try_from(bytes.len()).unwrap_or(u32::MAX);
+        bytes[12..16].copy_from_slice(&length.to_le_bytes());
+        let sealed = bytes.len() - 64;
+        // SAFETY: `sealed` bytes to read and 64 to write, apart.
+        unsafe {
+            let (body, seal) = bytes.split_at_mut(sealed);
+            reader::ts_digest_seal(body.as_ptr().cast(), body.len(), seal.as_mut_ptr().cast());
+        }
+    }
+    let mut digest = Digest([0; 512]);
+    // SAFETY: a struct at least as large as `ts_digest` and the bytes.
+    if unsafe { reader::ts_digest_open(&raw mut digest, bytes.as_ptr().cast(), bytes.len()) } != 0 {
+        return;
+    }
+    let read = |index: u16| {
+        let mut name = Name {
+            key: std::ptr::null(),
+            key_length: 0,
+            text: std::ptr::null(),
+            text_length: 0,
+        };
+        // SAFETY: an open digest and a slot.
+        if unsafe { reader::ts_digest_name_at(&raw const digest, index, &raw mut name) } == 0 {
+            // SAFETY: the reader says these bytes are inside what it was given.
+            let parts = unsafe {
+                [
+                    std::slice::from_raw_parts(name.key.cast::<u8>(), name.key_length as usize),
+                    std::slice::from_raw_parts(name.text.cast::<u8>(), name.text_length as usize),
+                ]
+            };
+            std::hint::black_box(parts.iter().map(|part| part.iter().map(|b| u32::from(*b)).sum::<u32>()).sum::<u32>());
+        }
+    };
+    for index in 0..400 {
+        let mut day = Day::default();
+        // SAFETY: an open digest and a slot.
+        if unsafe { reader::ts_digest_day_at(&raw const digest, index, &raw mut day) } != 0 {
+            break;
+        }
+        read(day.lunar_month);
+        for at in 0..day.span_count {
+            let mut span = Span::default();
+            // SAFETY: an open digest, a day it wrote and a slot.
+            if unsafe { reader::ts_digest_span_at(&raw const digest, &raw const day, at, &raw mut span) } != 0 {
+                break;
+            }
+            read(span.name);
+        }
+        for at in 0..day.observance_count {
+            let mut observance = Observance::default();
+            // SAFETY: an open digest, a day it wrote and a slot.
+            if unsafe {
+                reader::ts_digest_observance_at(&raw const digest, &raw const day, at, &raw mut observance)
+            } != 0
+            {
+                break;
+            }
+            read(observance.name);
+        }
     }
 }
 
@@ -1417,6 +1580,11 @@ mod tests {
         let status = unsafe { ts_naam_milan(shared(), names.as_ptr(), &raw mut out) };
         assert_eq!(status, Status::Ok, "ts_naam_milan");
         blobs.push(("naam", written(&mut out)));
+        let asked = c_text(br#"{"first":{"year":2025,"month":10,"day":1},"days":3,"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"festivals":{"rules":"NEPAL"}}"#);
+        // SAFETY: a live context, a NUL-terminated string and a valid slot.
+        let status = unsafe { ts_almanac_digest(shared(), asked.as_ptr(), &raw mut out) };
+        assert_eq!(status, Status::Ok, "ts_almanac_digest");
+        blobs.push(("digest", written(&mut out)));
         let (key, params) = (c_text(MF2_KEY.as_bytes()), c_text(MF2_PARAMS.as_bytes()));
         // SAFETY: a context this crate opened and never frees.
         let held = unsafe { &*messages(true) };

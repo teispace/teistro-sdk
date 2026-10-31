@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         # Held to fuzz/Cargo.toml's targets by `the_long_run_fuzzes_every_target`.
-        target: [json, pack, key, mf2, mcp, published, blob]
+        target: [json, pack, key, mf2, mcp, published, blob, digest]
     steps:
       - uses: actions/checkout@v5
         with:
@@ -35,6 +35,10 @@ jobs:
           workspaces: fuzz
       - name: The target for an hour from the committed corpus
         working-directory: fuzz
+        # The digest's C reader is built with clang's sanitizers; gcc has no
+        # `-fsanitize=fuzzer-no-link`.
+        env:
+          CC: clang
         # The installed cargo-fuzz is a musl build and would build for musl,
         # where a sanitizer cannot link, so the host's triple is named.
         run: |

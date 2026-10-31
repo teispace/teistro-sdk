@@ -1647,6 +1647,112 @@ pub unsafe extern "C" fn ts_almanac_festival_calendar(
     })
 }
 
+/// What a digest's span is (`03-design/digest-format.md`), a number the
+/// `digest` blob's `spans.kind` holds. The numbers are the format's.
+///
+/// ```
+/// use teistro_ffi::panchanga::TsDigestSpan;
+///
+/// assert_eq!(TsDigestSpan::Tithi as u8, teistro::DigestSpan::Tithi as u8);
+/// assert_eq!(TsDigestSpan::SunSign as u8, 18);
+/// ```
+#[repr(u8)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum TsDigestSpan {
+    /// The tithi.
+    Tithi = 1,
+    /// The nakshatra.
+    Nakshatra = 2,
+    /// The nitya yoga.
+    Yoga = 3,
+    /// The karana.
+    Karana = 4,
+    /// Rahu kaala.
+    RahuKaala = 5,
+    /// Yamaghanda.
+    Yamaghanda = 6,
+    /// Gulika kaala.
+    GulikaKaala = 7,
+    /// A choghadiya.
+    Choghadiya = 8,
+    /// A hora, named by its lord.
+    Hora = 9,
+    /// Abhijit muhurta.
+    Abhijit = 10,
+    /// Bhadra, named by where she dwells.
+    Bhadra = 11,
+    /// Brahma muhurta.
+    BrahmaMuhurta = 12,
+    /// A durmuhurta.
+    Durmuhurta = 13,
+    /// The varjyam.
+    Varjyam = 14,
+    /// The amrita kalam.
+    AmritKalam = 15,
+    /// The panchaka.
+    Panchaka = 16,
+    /// The sign the Moon stood in.
+    MoonSign = 17,
+    /// The sign the Sun stood in.
+    SunSign = 18,
+}
+
+/// **The N-day digest** (`03-design/digest-format.md`): the days from
+/// `first`, every limb and window, the Moon and the observances, as a
+/// `digest` blob a process with no engine reads with `bindings/c/digest`.
+/// The same request writes the same bytes on every platform.
+///
+/// `api: blob=digest`
+///
+/// `request_json` is `{"first", "calendar", "days", "latitudeDeg",
+/// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals"}`: `first`
+/// `{year, month, day}` in `calendar` (Gregorian when left out), `days` 1 to
+/// 366 and 60 when left out, `altitudeM` optional and `festivals` an
+/// optional festival request. A key it does not read, a place or offset
+/// out of range or a festival request its reader refuses is `INVALID_ARG`,
+/// named under `digest`; a count out of range `OUT_OF_RANGE` on `days`.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts { profile: Some("nepali-committee"), ..OptionTexts::default() }, teistro::Ephemeris::SuryaSiddhanta)?;
+/// use teistro_core::Status;
+/// use teistro_ffi::blob::{TsBlob, ts_blob_free};
+/// use teistro_ffi::panchanga::ts_almanac_digest;
+///
+/// let week = c"{\"first\": {\"year\": 2026, \"month\": 1, \"day\": 1}, \"days\": 7, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}";
+/// let mut blob = TsBlob::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// assert_eq!(unsafe { ts_almanac_digest(&raw const ctx, week.as_ptr(), &raw mut blob) }, Status::Ok);
+/// assert!(blob.len > 0);
+/// // SAFETY: a descriptor the library wrote, freed once.
+/// unsafe { ts_blob_free(&raw mut blob) };
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_blob` valid for a write.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ts_almanac_digest(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_blob: *mut TsBlob,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::DigestRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let digest = ctx.sdk().almanac().digest(&asked)?;
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_blob, "out_blob", TsBlob::from_vec(digest.value)) }
+    })
+}
+
 /// The next day a festival rule or a kind of day falls on after an
 /// instant at a place, with no year asked (`03-design/next-occurrence.md`),
 /// as canonical JSON `{value, provenance}`: `value` is `{day, keys,
@@ -1901,6 +2007,36 @@ mod tests {
     /// A batch of almanacs crosses, and each day's rows are where its
     /// counts say they are.
     ///
+    #[test]
+    fn a_digest_span_is_the_sdk_s_number() {
+        use super::TsDigestSpan;
+        for (boundary, sdk) in [
+            (TsDigestSpan::Tithi, teistro::DigestSpan::Tithi),
+            (TsDigestSpan::Nakshatra, teistro::DigestSpan::Nakshatra),
+            (TsDigestSpan::Yoga, teistro::DigestSpan::Yoga),
+            (TsDigestSpan::Karana, teistro::DigestSpan::Karana),
+            (TsDigestSpan::RahuKaala, teistro::DigestSpan::RahuKaala),
+            (TsDigestSpan::Yamaghanda, teistro::DigestSpan::Yamaghanda),
+            (TsDigestSpan::GulikaKaala, teistro::DigestSpan::GulikaKaala),
+            (TsDigestSpan::Choghadiya, teistro::DigestSpan::Choghadiya),
+            (TsDigestSpan::Hora, teistro::DigestSpan::Hora),
+            (TsDigestSpan::Abhijit, teistro::DigestSpan::Abhijit),
+            (TsDigestSpan::Bhadra, teistro::DigestSpan::Bhadra),
+            (
+                TsDigestSpan::BrahmaMuhurta,
+                teistro::DigestSpan::BrahmaMuhurta,
+            ),
+            (TsDigestSpan::Durmuhurta, teistro::DigestSpan::Durmuhurta),
+            (TsDigestSpan::Varjyam, teistro::DigestSpan::Varjyam),
+            (TsDigestSpan::AmritKalam, teistro::DigestSpan::AmritKalam),
+            (TsDigestSpan::Panchaka, teistro::DigestSpan::Panchaka),
+            (TsDigestSpan::MoonSign, teistro::DigestSpan::MoonSign),
+            (TsDigestSpan::SunSign, teistro::DigestSpan::SunSign),
+        ] {
+            assert_eq!(boundary as u8, sdk as u8);
+        }
+    }
+
     /// The whole point of the module. A ragged section is only readable
     /// if the counts and the concatenation agree, and nothing else checks
     /// that: a blob whose offsets were off by a day would still parse,

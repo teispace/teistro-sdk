@@ -38,6 +38,14 @@ pub const CHARTS: &str = "charts";
 /// assert_eq!(schemas::schema(PANCHANGA), Some(schemas::panchanga()));
 /// ```
 pub const PANCHANGA: &str = "panchanga";
+/// The digest blob's name, whose schema is the SDK's, which writes it.
+///
+/// ```
+/// use teistro_ffi::schemas::{self, DIGEST};
+///
+/// assert_eq!(schemas::schema(DIGEST), Some(teistro::digest_schema()));
+/// ```
+pub const DIGEST: &str = teistro::DIGEST_SCHEMA;
 /// The naam milan blob's name.
 ///
 /// ```
@@ -63,7 +71,7 @@ pub use charts::{charts, naam};
 /// // In id order, each id its own.
 /// let ids: Vec<u32> = schemas::schemas().iter().map(|schema| schema.id).collect();
 /// assert!(ids.windows(2).all(|pair| pair[0] < pair[1]));
-/// assert_eq!(ids.len(), 5);
+/// assert_eq!(ids.len(), 6);
 /// ```
 #[must_use]
 pub fn schemas() -> Vec<BlobSchema> {
@@ -73,6 +81,7 @@ pub fn schemas() -> Vec<BlobSchema> {
     all.push(panchanga());
     #[cfg(feature = "chart")]
     all.push(naam());
+    all.push(teistro::digest_schema());
     all
 }
 

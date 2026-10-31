@@ -8,29 +8,37 @@
 //! - Every line ends in CRLF, and a line longer than 75 octets is folded
 //!   by CRLF and one space, never inside a UTF-8 sequence: a Devanagari
 //!   name is three octets a character (§3.1).
-//! - TEXT escapes `\`, `;` and `,`, and writes a newline as `\n`
-//!   (§3.3.11).
+//! - TEXT escapes `\`, `;` and `,`, writes a newline as `\n`, and drops
+//!   the control characters the format forbids (§3.3.11).
 //! - An event is a whole day, `DTSTART;VALUE=DATE` and the next day as
 //!   `DTEND`, which is exclusive (§3.6.1), or a span of time in UTC,
 //!   `DTSTART` and `DTEND` as `YYYYMMDDTHHMMSSZ` (§3.3.5's form 2). A
 //!   lunar date does not recur in Gregorian terms, so there is no
 //!   `RRULE`: each occurrence is its own event.
 //! - `DTSTAMP` is the feed's own stamp, which the caller gives.
+//! - An event's `UID` is unique in its feed (§3.8.4.7): a second of the
+//!   same `UID` is refused, not written for a client to merge at will.
+//! - [`Hints`] add `CATEGORIES` (§3.8.1.2), `COLOR` (RFC 7986 §5.9) and a
+//!   `VALARM` (§3.6.6); a feed takes the first two for itself (RFC 7986
+//!   §5.6, §5.9).
 //!
 //! ```
 //! use teistro_calendar::{CalendarSystem, Gregorian};
-//! use teistro_calendar::ical::{write, Event, Feed, When};
+//! use teistro_calendar::ical::{write, Event, Feed, Hints, When};
 //!
 //! let feed = Feed {
 //!     product: "-//Example//Almanac//EN".to_owned(),
 //!     name: "Festivals".to_owned(),
 //!     refresh_minutes: Some(1440),
 //!     stamp_unix_seconds: 1_767_225_600,
+//!     categories: Vec::new(),
+//!     color: None,
 //!     events: vec![Event {
 //!         uid: "a1@example".to_owned(),
 //!         summary: "Vijaya Dashami".to_owned(),
 //!         description: None,
 //!         when: When::Day(Gregorian.to_fixed_ymd(2026, 10, 21)?),
+//!         hints: Hints::default(),
 //!     }],
 //! };
 //! let text = write(&feed)?;
@@ -40,7 +48,12 @@
 //! # Ok::<(), teistro_core::error::Error>(())
 //! ```
 
+mod color;
+
+use std::collections::BTreeSet;
 use std::fmt::Write as _;
+
+pub use color::Color;
 
 use crate::{CalendarSystem, FixedDay, Gregorian};
 use teistro_core::error::{Error, Status};
@@ -56,6 +69,8 @@ use teistro_core::error::{Error, Status};
 ///     name: "Festivals".to_owned(),
 ///     refresh_minutes: Some(1440),
 ///     stamp_unix_seconds: 1_767_225_600,
+///     categories: Vec::new(),
+///     color: None,
 ///     events: Vec::new(),
 /// };
 /// let text = write(&feed)?;
@@ -76,6 +91,11 @@ pub struct Feed {
     pub refresh_minutes: Option<u32>,
     /// Every event's `DTSTAMP`, in seconds since 1970-01-01T00:00:00Z.
     pub stamp_unix_seconds: i64,
+    /// The feed's own `CATEGORIES` (RFC 7986 §5.6); none writes no line.
+    pub categories: Vec<String>,
+    /// The feed's `COLOR` (RFC 7986 §5.9), and as
+    /// `X-APPLE-CALENDAR-COLOR`, which Apple's clients read.
+    pub color: Option<Color>,
     /// The events, written in this order.
     pub events: Vec<Event>,
 }
@@ -83,7 +103,7 @@ pub struct Feed {
 /// One event, a whole day or a span of time.
 ///
 /// ```
-/// use teistro_calendar::ical::{Event, Feed, When, write};
+/// use teistro_calendar::ical::{Event, Feed, Hints, When, write};
 /// use teistro_calendar::{CalendarSystem, Gregorian};
 ///
 /// let event = Event {
@@ -91,8 +111,9 @@ pub struct Feed {
 ///     summary: "Dashain, day 10".to_owned(),
 ///     description: Some("Tika; then the visits".to_owned()),
 ///     when: When::Day(Gregorian.to_fixed_ymd(2026, 10, 21)?),
+///     hints: Hints::default(),
 /// };
-/// let feed = Feed { product: "-//Example//EN".to_owned(), name: "Days".to_owned(), refresh_minutes: None, stamp_unix_seconds: 0, events: vec![event] };
+/// let feed = Feed { product: "-//Example//EN".to_owned(), name: "Days".to_owned(), refresh_minutes: None, stamp_unix_seconds: 0, categories: Vec::new(), color: None, events: vec![event] };
 /// let text = write(&feed)?;
 /// // TEXT escapes commas and semicolons.
 /// assert!(text.contains("SUMMARY:Dashain\\, day 10\r\n"));
@@ -110,23 +131,84 @@ pub struct Event {
     pub description: Option<String>,
     /// When it is.
     pub when: When,
+    /// Its categories, colour and alarm, each optional.
+    pub hints: Hints,
+}
+
+/// What an event may say beyond when it is: `CATEGORIES`, `COLOR` and a
+/// `VALARM`. A client may ignore any of them, so each is a hint.
+///
+/// ```
+/// use teistro_calendar::ical::{Alarm, Color, Event, Feed, Hints, When, write};
+/// use teistro_calendar::{CalendarSystem, Gregorian};
+///
+/// let hints = Hints {
+///     categories: vec!["HOLIDAY".to_owned(), "Sun, Moon".to_owned()],
+///     color: Some(Color::named("gold")?),
+///     alarm: Some(Alarm { trigger_minutes: -60, description: None }),
+/// };
+/// let event = Event {
+///     uid: "u@example".to_owned(),
+///     summary: "Dashain".to_owned(),
+///     description: None,
+///     when: When::Day(Gregorian.to_fixed_ymd(2026, 10, 21)?),
+///     hints,
+/// };
+/// let feed = Feed { product: "-//Example//EN".to_owned(), name: "Days".to_owned(), refresh_minutes: None, stamp_unix_seconds: 0, categories: Vec::new(), color: None, events: vec![event] };
+/// let text = write(&feed)?;
+/// // A comma inside a category is escaped; the one between them is not.
+/// assert!(text.contains("CATEGORIES:HOLIDAY,Sun\\, Moon\r\n"));
+/// assert!(text.contains("COLOR:gold\r\n"));
+/// assert!(text.contains("BEGIN:VALARM\r\nACTION:DISPLAY\r\nTRIGGER:-PT1H\r\nDESCRIPTION:Dashain\r\nEND:VALARM\r\n"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Debug, Default, PartialEq, Eq)]
+pub struct Hints {
+    /// `CATEGORIES`, in this order.
+    pub categories: Vec<String>,
+    /// `COLOR`.
+    pub color: Option<Color>,
+    /// A `VALARM`.
+    pub alarm: Option<Alarm>,
+}
+
+/// A display alarm (§3.6.6), set relative to the event's start.
+///
+/// ```
+/// use teistro_calendar::ical::Alarm;
+///
+/// // 09:00 on a whole day, whose start is the day's first moment.
+/// let morning = Alarm { trigger_minutes: 540, description: Some("Today".to_owned()) };
+/// assert_eq!(morning.trigger_minutes, 540);
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Alarm {
+    /// Minutes from the event's start to the alarm: negative before it,
+    /// positive after.
+    pub trigger_minutes: i32,
+    /// `DESCRIPTION`, which a display alarm requires; the event's
+    /// `SUMMARY` when none.
+    pub description: Option<String>,
 }
 
 /// When an event is.
 ///
 /// ```
-/// use teistro_calendar::ical::{Event, Feed, When, write};
+/// use teistro_calendar::ical::{Event, Feed, Hints, When, write};
 ///
 /// let span = |from_unix_seconds, to_unix_seconds| Feed {
 ///     product: "-//Example//EN".to_owned(),
 ///     name: "Hours".to_owned(),
 ///     refresh_minutes: None,
 ///     stamp_unix_seconds: 0,
+///     categories: Vec::new(),
+///     color: None,
 ///     events: vec![Event {
 ///         uid: "u@example".to_owned(),
 ///         summary: "An hour".to_owned(),
 ///         description: None,
 ///         when: When::Span { from_unix_seconds, to_unix_seconds },
+///         hints: Hints::default(),
 ///     }],
 /// };
 /// let text = write(&span(1_767_225_600, 1_767_229_200))?;
@@ -165,6 +247,8 @@ const UNIX_EPOCH: FixedDay = FixedDay::new(719_163);
 ///     name: "Days".to_owned(),
 ///     refresh_minutes: None,
 ///     stamp_unix_seconds: 0,
+///     categories: Vec::new(),
+///     color: None,
 ///     events: Vec::new(),
 /// };
 /// // The same feed writes the same bytes, every line ended by CRLF.
@@ -180,9 +264,11 @@ const UNIX_EPOCH: FixedDay = FixedDay::new(719_163);
 ///
 /// `OUT_OF_RANGE` for a day, a span's end or a stamp outside the years 1
 /// to 9999, which the format's four-digit year cannot write;
-/// `INVALID_ARG` for a span that does not end after it starts.
+/// `INVALID_ARG` for a span that does not end after it starts, an empty
+/// `UID` or category, or a `UID` two events share.
 pub fn write(feed: &Feed) -> Result<String, Error> {
     let stamp = date_time(feed.stamp_unix_seconds)?;
+    let mut uids = BTreeSet::new();
     let mut out = String::new();
     line(&mut out, "BEGIN:VCALENDAR");
     line(&mut out, "VERSION:2.0");
@@ -199,7 +285,24 @@ pub fn write(feed: &Feed) -> Result<String, Error> {
         );
         line(&mut out, &format!("X-PUBLISHED-TTL:{duration}"));
     }
+    categories(&mut out, &feed.categories)?;
+    if let Some(color) = feed.color {
+        line(&mut out, &format!("COLOR:{}", color.name()));
+        line(&mut out, &format!("X-APPLE-CALENDAR-COLOR:{}", color.hex()));
+    }
     for event in &feed.events {
+        if event.uid.is_empty() {
+            return Err(Error::invalid_arg(format!(
+                "the event {:?} has no UID, which §3.6.1 requires",
+                event.summary
+            )));
+        }
+        if !uids.insert(event.uid.as_str()) {
+            return Err(Error::invalid_arg(format!(
+                "two events have the UID {}, which §3.8.4.7 makes unique",
+                event.uid
+            )));
+        }
         line(&mut out, "BEGIN:VEVENT");
         line(&mut out, &format!("UID:{}", text(&event.uid)));
         line(&mut out, &format!("DTSTAMP:{stamp}"));
@@ -232,7 +335,22 @@ pub fn write(feed: &Feed) -> Result<String, Error> {
         if let Some(description) = &event.description {
             line(&mut out, &format!("DESCRIPTION:{}", text(description)));
         }
+        categories(&mut out, &event.hints.categories)?;
+        if let Some(color) = event.hints.color {
+            line(&mut out, &format!("COLOR:{}", color.name()));
+        }
         line(&mut out, "TRANSP:TRANSPARENT");
+        if let Some(alarm) = &event.hints.alarm {
+            line(&mut out, "BEGIN:VALARM");
+            line(&mut out, "ACTION:DISPLAY");
+            line(
+                &mut out,
+                &format!("TRIGGER:{}", trigger(alarm.trigger_minutes)),
+            );
+            let said = alarm.description.as_ref().unwrap_or(&event.summary);
+            line(&mut out, &format!("DESCRIPTION:{}", text(said)));
+            line(&mut out, "END:VALARM");
+        }
         line(&mut out, "END:VEVENT");
     }
     line(&mut out, "END:VCALENDAR");
@@ -257,7 +375,24 @@ fn line(out: &mut String, content: &str) {
     out.push_str("\r\n");
 }
 
-/// A TEXT value, escaped (§3.3.11).
+/// A `CATEGORIES` line, when there are any: each value escaped, the commas
+/// between them not (§3.8.1.2).
+fn categories(out: &mut String, categories: &[String]) -> Result<(), Error> {
+    if categories.is_empty() {
+        return Ok(());
+    }
+    if categories.iter().any(String::is_empty) {
+        return Err(Error::invalid_arg(
+            "an empty category names nothing a client can show",
+        ));
+    }
+    let values: Vec<String> = categories.iter().map(|value| text(value)).collect();
+    line(out, &format!("CATEGORIES:{}", values.join(",")));
+    Ok(())
+}
+
+/// A TEXT value, escaped (§3.3.11). The format allows no control
+/// character but a tab, so the rest are dropped.
 fn text(value: &str) -> String {
     let mut out = String::with_capacity(value.len());
     for character in value.chars() {
@@ -266,8 +401,9 @@ fn text(value: &str) -> String {
             ';' => out.push_str("\\;"),
             ',' => out.push_str("\\,"),
             '\n' => out.push_str("\\n"),
+            '\t' => out.push('\t'),
             // A CR alone or before a newline says nothing a reader keeps.
-            '\r' => {}
+            control if control.is_ascii_control() => {}
             other => out.push(other),
         }
     }
@@ -319,6 +455,15 @@ fn duration(minutes: u32) -> String {
     }
 }
 
+/// A TRIGGER value: a DURATION from the start, signed; zero is `PT0S`.
+fn trigger(minutes: i32) -> String {
+    if minutes == 0 {
+        return "PT0S".to_owned();
+    }
+    let sign = if minutes < 0 { "-" } else { "" };
+    format!("{sign}{}", duration(minutes.unsigned_abs()))
+}
+
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
@@ -332,6 +477,8 @@ mod tests {
             name: "Festivals".to_owned(),
             refresh_minutes: None,
             stamp_unix_seconds: 0,
+            categories: Vec::new(),
+            color: None,
             events,
         }
     }
@@ -342,6 +489,7 @@ mod tests {
             summary: summary.to_owned(),
             description: None,
             when: When::Day(Gregorian.to_fixed_ymd(2026, 1, 1).unwrap()),
+            hints: Hints::default(),
         }
     }
 
@@ -443,8 +591,63 @@ mod tests {
 
     #[test]
     fn the_same_feed_writes_the_same_bytes() {
-        let asked = feed(vec![event("a"), event("b")]);
+        let mut second = event("b");
+        second.uid = "v@teistro".to_owned();
+        let asked = feed(vec![event("a"), second]);
         assert_eq!(write(&asked).unwrap(), write(&asked).unwrap());
+    }
+
+    #[test]
+    fn a_control_character_is_dropped_and_a_tab_kept() {
+        assert_eq!(text("a\u{7}b\tc\u{7f}"), "ab\tc");
+    }
+
+    #[test]
+    fn hints_are_written_inside_the_event_and_the_alarm_ends_it() {
+        let mut held = event("Dashain");
+        held.hints = Hints {
+            categories: vec!["a,b".to_owned(), "c".to_owned()],
+            color: Some(Color::named("Gold").unwrap()),
+            alarm: Some(Alarm {
+                trigger_minutes: 540,
+                description: Some("Today; rest".to_owned()),
+            }),
+        };
+        let text = write(&feed(vec![held])).unwrap();
+        assert!(text.contains("CATEGORIES:a\\,b,c\r\nCOLOR:gold\r\nTRANSP:TRANSPARENT\r\nBEGIN:VALARM\r\nACTION:DISPLAY\r\nTRIGGER:PT9H\r\nDESCRIPTION:Today\\; rest\r\nEND:VALARM\r\nEND:VEVENT\r\n"));
+    }
+
+    #[test]
+    fn a_trigger_is_signed_and_zero_is_the_start() {
+        assert_eq!(trigger(0), "PT0S");
+        assert_eq!(trigger(-90), "-PT90M");
+        assert_eq!(trigger(-1_440), "-P1D");
+        assert_eq!(trigger(i32::MIN), "-PT2147483648M");
+    }
+
+    #[test]
+    fn a_feed_says_its_categories_and_colour_both_ways() {
+        let mut asked = feed(Vec::new());
+        asked.categories = vec!["Festivals".to_owned()];
+        asked.color = Some(Color::named("navy").unwrap());
+        let text = write(&asked).unwrap();
+        assert!(
+            text.contains(
+                "CATEGORIES:Festivals\r\nCOLOR:navy\r\nX-APPLE-CALENDAR-COLOR:#000080\r\n"
+            )
+        );
+    }
+
+    #[test]
+    fn a_uid_is_unique_and_present_and_a_category_says_something() {
+        let twice = write(&feed(vec![event("a"), event("b")])).unwrap_err();
+        assert_eq!(twice.status, Status::InvalidArg);
+        let mut bare = event("a");
+        bare.uid = String::new();
+        assert!(write(&feed(vec![bare])).is_err());
+        let mut blank = feed(Vec::new());
+        blank.categories = vec![String::new()];
+        assert!(write(&blank).is_err());
     }
 
     #[test]

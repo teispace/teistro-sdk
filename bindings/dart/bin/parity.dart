@@ -935,6 +935,14 @@ void putRites(Context geo) {
     altitudeM: Altitude(1337),
   );
 
+  final digest = geo.almanac.digest(
+    from: Calendar.gregorian.date(2025, 10, 1),
+    days: 7,
+    place: kathmandu,
+    utcOffsetSeconds: 20700,
+    festivals: const FestivalRequest(rules: FestivalPack.nepal),
+  );
+  put('rites-digest-seal', decodeDigest(digest).seal);
   final sankalpa = geo.almanac.sankalpa(
     at: 2461055.59375,
     place: kathmandu,
@@ -3858,6 +3866,7 @@ void main() {
     ('almanac.of', ctx.almanac.of),
     ('almanac.festivals', ctx.almanac.festivals),
     ('almanac.disagreements', ctx.almanac.disagreements),
+    ('almanac.digest', ctx.almanac.digest),
     ('almanac.festival_calendar', ctx.almanac.festivalCalendar),
     ('almanac.next', ctx.almanac.next),
     ('almanac.festivalPack', ctx.almanac.festivalPack),

@@ -5006,6 +5006,33 @@ impl Context {
         Ok(take_string(&mut out_text))
     }
 
+    /// **The N-day digest** (`03-design/digest-format.md`): the days from
+    /// `first`, every limb and window, the Moon and the observances, as a
+    /// `digest` blob a process with no engine reads with `bindings/c/digest`.
+    /// The same request writes the same bytes on every platform.
+    ///
+    /// `request_json` is `{"first", "calendar", "days", "latitudeDeg",
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals"}`: `first`
+    /// `{year, month, day}` in `calendar` (Gregorian when left out), `days` 1 to
+    /// 366 and 60 when left out, `altitudeM` optional and `festivals` an
+    /// optional festival request. A key it does not read, a place or offset
+    /// out of range or a festival request its reader refuses is `INVALID_ARG`,
+    /// named under `digest`; a count out of range `OUT_OF_RANGE` on `days`.
+    #[wasm_bindgen(js_name = almanacDigest)]
+    pub fn almanac_digest(&self, request_json: String) -> Result<Vec<u8>> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_blob = ffi::blob::TsBlob::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_digest(self.handle, request_json.as_ptr(), &raw mut out_blob)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_blob(&mut out_blob))
+    }
+
     /// The next day a festival rule or a kind of day falls on after an
     /// instant at a place, with no year asked (`03-design/next-occurrence.md`),
     /// as canonical JSON `{value, provenance}`: `value` is `{day, keys,

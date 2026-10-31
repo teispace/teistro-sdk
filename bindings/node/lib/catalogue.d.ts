@@ -9807,6 +9807,112 @@ export declare const Sunrises: {
 export declare const SunrisesById: ReadonlyMap<number, Sunrises>;
 
 /**
+ * What a digest's span is (`03-design/digest-format.md`), a number the
+ * `digest` blob's `spans.kind` holds. The numbers are the format's.
+ */
+export type DigestSpan =
+  | 'TITHI'
+  | 'NAKSHATRA'
+  | 'YOGA'
+  | 'KARANA'
+  | 'RAHU_KAALA'
+  | 'YAMAGHANDA'
+  | 'GULIKA_KAALA'
+  | 'CHOGHADIYA'
+  | 'HORA'
+  | 'ABHIJIT'
+  | 'BHADRA'
+  | 'BRAHMA_MUHURTA'
+  | 'DURMUHURTA'
+  | 'VARJYAM'
+  | 'AMRIT_KALAM'
+  | 'PANCHAKA'
+  | 'MOON_SIGN'
+  | 'SUN_SIGN';
+
+/** Every DigestSpan by name; the values are the strings the union accepts. */
+export declare const DigestSpan: {
+  /**
+   * The tithi.
+   */
+  readonly Tithi: 'TITHI';
+  /**
+   * The nakshatra.
+   */
+  readonly Nakshatra: 'NAKSHATRA';
+  /**
+   * The nitya yoga.
+   */
+  readonly Yoga: 'YOGA';
+  /**
+   * The karana.
+   */
+  readonly Karana: 'KARANA';
+  /**
+   * Rahu kaala.
+   */
+  readonly RahuKaala: 'RAHU_KAALA';
+  /**
+   * Yamaghanda.
+   */
+  readonly Yamaghanda: 'YAMAGHANDA';
+  /**
+   * Gulika kaala.
+   */
+  readonly GulikaKaala: 'GULIKA_KAALA';
+  /**
+   * A choghadiya.
+   */
+  readonly Choghadiya: 'CHOGHADIYA';
+  /**
+   * A hora, named by its lord.
+   */
+  readonly Hora: 'HORA';
+  /**
+   * Abhijit muhurta.
+   */
+  readonly Abhijit: 'ABHIJIT';
+  /**
+   * Bhadra, named by where she dwells.
+   */
+  readonly Bhadra: 'BHADRA';
+  /**
+   * Brahma muhurta.
+   */
+  readonly BrahmaMuhurta: 'BRAHMA_MUHURTA';
+  /**
+   * A durmuhurta.
+   */
+  readonly Durmuhurta: 'DURMUHURTA';
+  /**
+   * The varjyam.
+   */
+  readonly Varjyam: 'VARJYAM';
+  /**
+   * The amrita kalam.
+   */
+  readonly AmritKalam: 'AMRIT_KALAM';
+  /**
+   * The panchaka.
+   */
+  readonly Panchaka: 'PANCHAKA';
+  /**
+   * The sign the Moon stood in.
+   */
+  readonly MoonSign: 'MOON_SIGN';
+  /**
+   * The sign the Sun stood in.
+   */
+  readonly SunSign: 'SUN_SIGN';
+};
+
+/**
+ * Every DigestSpan by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DigestSpanById: ReadonlyMap<number, DigestSpan>;
+
+/**
  * Which of the eight letter groups a name begins in, by the animal
  * *Muhurta Chintamani* VI.35 gives it (C295).
  *

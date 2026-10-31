@@ -77,6 +77,7 @@ impl core::fmt::Debug for AlmanacArea<'_> {
 }
 
 mod changes;
+mod digest;
 mod disagreement;
 mod feed;
 #[cfg(feature = "muhurta")]
@@ -89,13 +90,21 @@ mod sait;
 #[cfg(feature = "schema")]
 pub(crate) use changes::ChangesAsked;
 pub use changes::{ChangesRequest, DayClock};
+#[cfg(feature = "schema")]
+pub(crate) use digest::DigestAsked;
+pub use digest::{
+    DIGEST_DEFAULT_DAYS, DIGEST_FLAG_FAST, DIGEST_FLAG_PUBLISHED, DIGEST_FORMAT_MAJOR,
+    DIGEST_FORMAT_MINOR, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DIGEST_NO_TIME, DIGEST_SCHEMA,
+    DigestRequest, DigestSpan, digest_schema,
+};
 pub use disagreement::{
     DayDisagreement, DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement,
     FestivalDisagreement, FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb,
 };
-#[cfg(feature = "schema")]
 pub(crate) use feed::FestivalCalendarAsked;
-pub use feed::{FeedOptions, FestivalCalendarRequest};
+pub use feed::{
+    FeedForm, FeedHint, FeedOptions, FeedSelector, FestivalCalendarRequest, SuppliedEvent,
+};
 #[cfg(feature = "schema")]
 pub(crate) use next::NextAsked;
 pub use next::{NextOccurrence, NextRequest, NextTarget};

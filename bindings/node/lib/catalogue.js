@@ -4938,6 +4938,53 @@ export const SunrisesById = /* @__PURE__ */ new Map([
   [3, 'NEITHER'],
 ]);
 
+/** Every DigestSpan by name. */
+export const DigestSpan = /* @__PURE__ */ Object.freeze({
+  Tithi: 'TITHI',
+  Nakshatra: 'NAKSHATRA',
+  Yoga: 'YOGA',
+  Karana: 'KARANA',
+  RahuKaala: 'RAHU_KAALA',
+  Yamaghanda: 'YAMAGHANDA',
+  GulikaKaala: 'GULIKA_KAALA',
+  Choghadiya: 'CHOGHADIYA',
+  Hora: 'HORA',
+  Abhijit: 'ABHIJIT',
+  Bhadra: 'BHADRA',
+  BrahmaMuhurta: 'BRAHMA_MUHURTA',
+  Durmuhurta: 'DURMUHURTA',
+  Varjyam: 'VARJYAM',
+  AmritKalam: 'AMRIT_KALAM',
+  Panchaka: 'PANCHAKA',
+  MoonSign: 'MOON_SIGN',
+  SunSign: 'SUN_SIGN',
+});
+
+/**
+ * Every DigestSpan by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DigestSpanById = /* @__PURE__ */ new Map([
+  [1, 'TITHI'],
+  [2, 'NAKSHATRA'],
+  [3, 'YOGA'],
+  [4, 'KARANA'],
+  [5, 'RAHU_KAALA'],
+  [6, 'YAMAGHANDA'],
+  [7, 'GULIKA_KAALA'],
+  [8, 'CHOGHADIYA'],
+  [9, 'HORA'],
+  [10, 'ABHIJIT'],
+  [11, 'BHADRA'],
+  [12, 'BRAHMA_MUHURTA'],
+  [13, 'DURMUHURTA'],
+  [14, 'VARJYAM'],
+  [15, 'AMRIT_KALAM'],
+  [16, 'PANCHAKA'],
+  [17, 'MOON_SIGN'],
+  [18, 'SUN_SIGN'],
+]);
+
 /** Every NameVarga by name. */
 export const NameVarga = /* @__PURE__ */ Object.freeze({
   Garuda: 'GARUDA',

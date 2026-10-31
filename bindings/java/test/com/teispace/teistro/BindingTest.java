@@ -584,6 +584,7 @@ public final class BindingTest {
             schemas.put("intl_render.tsrb", IntlRender::decode);
             schemas.put("charts.tsrb", com.teispace.teistro.blob.Charts::decode);
             schemas.put("panchanga.tsrb", com.teispace.teistro.blob.Panchanga::decode);
+            schemas.put("digest.tsrb", com.teispace.teistro.blob.Digest::decode);
             schemas.put("naam.tsrb", com.teispace.teistro.blob.Naam::decode);
             long[] edges = {0, 1, 3, 4, 8, 0x7fffffffL, 0x80000000L, 0xffffffffL, -1};
             for (Map.Entry<String, java.util.function.Consumer<byte[]>> schema : schemas.entrySet()) {
@@ -2555,6 +2556,15 @@ public final class BindingTest {
                         options.withoutRefresh()).contains("REFRESH-INTERVAL"), "no refresh when asked for none");
                 check(sky.almanac().festivalCalendar(first, last, kathmandu, 20_700, panchanga).contains("DTSTAMP:"),
                         "stamped now when left out");
+                var day = new com.teispace.teistro.request.DayAsked(20, 9, 2025);
+                String hinted = sky.almanac().festivalCalendar(com.teispace.teistro.request.FestivalCalendarRequest.builder()
+                        .first(day).latitudeDeg(27.7172).longitudeDeg(85.324).altitudeM(1400).utcOffsetSeconds(20_700)
+                        .festivals(panchanga).stampUnixSeconds(1_767_225_600L).color("gold").build());
+                check(hinted.contains("COLOR:gold\r\n"), "the colour reaches the feed");
+                byte[] digest = sky.almanac().digest(com.teispace.teistro.request.DigestRequest.builder()
+                        .first(day).days(3).latitudeDeg(27.7172).longitudeDeg(85.324).altitudeM(1400)
+                        .utcOffsetSeconds(20_700).festivals(panchanga).build());
+                check(com.teispace.teistro.blob.Digest.decode(digest).dayCount() == 3, "a digest of three days");
             }
         });
 

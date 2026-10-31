@@ -697,10 +697,11 @@
     }
   },
   {
-    "record": "almanac.festival_calendar",
+    "record": "almanac.digest",
     "request": {
       "altitudeM": 1.5,
       "calendar": "calendar.JULIAN",
+      "days": 1,
       "festivals": {
         "only": {
           "communities": [
@@ -990,6 +991,293 @@
         "month": 1,
         "year": 1
       },
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "almanac.festival_calendar",
+    "request": {
+      "alarm": {
+        "description": "x",
+        "triggerMinutes": 1
+      },
+      "altitudeM": 1.5,
+      "calendar": "calendar.JULIAN",
+      "categories": [
+        "x"
+      ],
+      "color": "x",
+      "events": [
+        {
+          "alarm": {
+            "description": "x",
+            "triggerMinutes": 1
+          },
+          "calendar": "calendar.JULIAN",
+          "categories": [
+            "x"
+          ],
+          "color": "x",
+          "day": {
+            "day": 1,
+            "month": 1,
+            "year": 1
+          },
+          "description": "x",
+          "fromUnixSeconds": 1,
+          "kind": "x",
+          "summary": "x",
+          "toUnixSeconds": 1,
+          "tradition": "x",
+          "uid": "x"
+        }
+      ],
+      "festivals": {
+        "published": [
+          {
+            "entries": [
+              {
+                "action": "SET",
+                "adhika": true,
+                "day": {
+                  "calendar": "calendar.JULIAN",
+                  "day": 1,
+                  "era": {
+                    "era": "era.SHAKA",
+                    "year": 1
+                  },
+                  "leap": "DAY",
+                  "month": 1,
+                  "year": 1
+                },
+                "month": "masa.VAISHAKHA",
+                "rule": "x",
+                "source": "x",
+                "window": {
+                  "from": 1.5,
+                  "to": 1.5
+                }
+              }
+            ],
+            "format": "x",
+            "id": "x",
+            "publisher": "x",
+            "version": 1
+          }
+        ],
+        "rules": [
+          {
+            "choose": "LATEST",
+            "rising": {
+              "freeOf": [
+                "graha.MOON"
+              ],
+              "modalities": [
+                "modality.STHIRA"
+              ],
+              "of": "LAGNA"
+            },
+            "rule": "x",
+            "source": "x",
+            "windows": [
+              {
+                "avoid": [
+                  {
+                    "avoid": "NAKSHATRA",
+                    "nakshatra": "nakshatra.BHARANI",
+                    "quarters": 1
+                  }
+                ],
+                "within": {
+                  "window": "DAY_MUHURTA",
+                  "from": 1,
+                  "to": 1
+                }
+              }
+            ]
+          },
+          {
+            "key": "x",
+            "mahadvadashi": {
+              "joining": "OUTLASTS_TWELFTH",
+              "kinds": [
+                "VYANJULI"
+              ],
+              "sampurna": true,
+              "trisprisha": "ARUNODAYA",
+              "vyanjuli": "HALF_MUHURTA"
+            },
+            "parana": {
+              "at": [
+                {
+                  "window": "DAY_MUHURTA",
+                  "from": 1,
+                  "to": 1
+                }
+              ],
+              "bars": [
+                {
+                  "month": "masa.VAISHAKHA",
+                  "nakshatra": "nakshatra.BHARANI",
+                  "portion": {
+                    "parts": 1,
+                    "which": 1
+                  },
+                  "tithi": "tithi.SHUKLA_DVITIYA"
+                }
+              ],
+              "hariVasara": true
+            },
+            "source": "x",
+            "table": {
+              "pierced": {
+                "both": "LATER",
+                "eleventh": "LATER",
+                "neither": "LATER",
+                "twelfth": "LATER"
+              },
+              "pure": {
+                "both": "LATER",
+                "eleventh": "LATER",
+                "neither": "LATER",
+                "twelfth": "LATER"
+              }
+            },
+            "vedha": "SUNRISE"
+          },
+          {
+            "firstYearAdhika": "NIJA",
+            "inSamsarpa": "NIJA",
+            "janma": {
+              "nakshatraTie": true,
+              "twoMuhurtaFloor": true
+            },
+            "key": "x",
+            "kind": "EKODDISHTA",
+            "origin": {
+              "by": "LUNAR",
+              "adhika": true,
+              "at": 1.5,
+              "half": "SECOND",
+              "month": "masa.VAISHAKHA",
+              "tithi": "tithi.SHUKLA_DVITIYA"
+            },
+            "window": {
+              "window": "DAY_MUHURTA",
+              "from": 1,
+              "to": 1
+            }
+          },
+          {
+            "after": "x",
+            "days": 1,
+            "key": "x",
+            "source": "x"
+          },
+          {
+            "civilDate": {
+              "calendar": "calendar.JULIAN",
+              "day": 1,
+              "month": 1,
+              "skipped": "AFTER"
+            },
+            "civilWeekday": {
+              "calendar": "calendar.JULIAN",
+              "month": 1,
+              "nth": 1,
+              "weekday": "vara.SOMAVARA"
+            },
+            "easter": {
+              "computus": "JULIAN",
+              "days": 1
+            },
+            "key": "x",
+            "source": "x",
+            "sunEnters": {
+              "days": 1,
+              "nakshatra": "nakshatra.BHARANI"
+            }
+          },
+          {
+            "at": {
+              "window": "DAY_MUHURTA",
+              "from": 1,
+              "to": 1
+            },
+            "convention": "PURNIMANTA",
+            "dayOfPaksha": 1,
+            "decide": [
+              {
+                "choose": "LATER",
+                "when": [
+                  {
+                    "is": "JOINED",
+                    "at": {
+                      "window": "DAY_MUHURTA",
+                      "from": 1,
+                      "to": 1
+                    },
+                    "day": "LATER",
+                    "nakshatra": "nakshatra.BHARANI",
+                    "portion": {
+                      "parts": 1,
+                      "which": 1
+                    }
+                  }
+                ]
+              }
+            ],
+            "inAdhika": true,
+            "key": "x",
+            "month": "masa.VAISHAKHA",
+            "nakshatra": "nakshatra.BHARANI",
+            "otherwise": "LATER",
+            "paksha": "paksha.KRISHNA",
+            "parana": [
+              {
+                "kind": "TITHI_END",
+                "nakshatra": "nakshatra.BHARANI",
+                "yamas": 1
+              }
+            ],
+            "source": "x",
+            "tithi": "tithi.SHUKLA_DVITIYA"
+          }
+        ]
+      },
+      "first": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "hints": [
+        {
+          "alarm": {
+            "description": "x",
+            "triggerMinutes": 1
+          },
+          "categories": [
+            "x"
+          ],
+          "color": "x",
+          "select": {
+            "forms": [
+              "EKADASHI"
+            ],
+            "kinds": [
+              "x"
+            ],
+            "rules": [
+              "x"
+            ],
+            "traditions": [
+              "x"
+            ]
+          }
+        }
+      ],
       "last": {
         "day": 1,
         "month": 1,
@@ -998,6 +1286,22 @@
       "latitudeDeg": 1.5,
       "longitudeDeg": 1.5,
       "name": "x",
+      "only": [
+        {
+          "forms": [
+            "EKADASHI"
+          ],
+          "kinds": [
+            "x"
+          ],
+          "rules": [
+            "x"
+          ],
+          "traditions": [
+            "x"
+          ]
+        }
+      ],
       "product": "x",
       "refreshMinutes": 1,
       "stampUnixSeconds": 1,

@@ -1615,6 +1615,7 @@ public final class ParityRunner {
             surface("almanac.of", () -> ctx.almanac().of(day, day, place, 0));
             surface("almanac.festivals", () -> ctx.almanac().festivals(day, day, place, 0, null));
             surface("almanac.disagreements", () -> ctx.almanac().disagreements(ctx, day, day, place, 0, true, null));
+            surface("almanac.digest", () -> ctx.almanac().digest(null));
             surface("almanac.festival_calendar", () -> ctx.almanac().festivalCalendar(day, day, place, 0, null));
             surface("almanac.festivalPack", () -> ctx.almanac().festivalPack("NEPAL"));
             surface("almanac.next", () -> ctx.almanac().next(0, place, 0, "PURNIMA", null, null, null, null));
@@ -3045,6 +3046,11 @@ public final class ParityRunner {
     private static void rites(Context geo) {
         Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
         Observer mourners = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1337));
+        byte[] digest = geo.almanac().digest(com.teispace.teistro.request.DigestRequest.builder()
+                .first(new com.teispace.teistro.request.DayAsked(1, 10, 2025)).days(7)
+                .latitudeDeg(27.7172).longitudeDeg(85.324).altitudeM(1400).utcOffsetSeconds(20_700)
+                .festivals(FestivalRequest.of(Json.read("{\"rules\":\"NEPAL\"}"))).build());
+        put("rites-digest-seal", com.teispace.teistro.blob.Digest.decode(digest).seal());
         SankalpaAnswer sankalpa = geo.almanac().sankalpa(2_461_055.593_75, kathmandu, 20_700, AyanaReckoning.TROPICAL);
         put("rites-sankalpa-hash", sankalpa.provenance().contentHash());
         Sankalpa recited = sankalpa.value();

@@ -487,7 +487,7 @@ fn naming_records() -> [Record; 5] {
 
 /// The almanac's records every build carries: a range's days with what is
 /// asked beside them, its festivals as a feed, why a published day differs
-/// from the rule's, a sankalpa's time, an ashauch, and a death's first
+/// from the rule's, a digest, a sankalpa's time, an ashauch, and a death's first
 /// year.
 fn almanac_records() -> [Record; 8] {
     [
@@ -550,6 +550,14 @@ fn almanac_records() -> [Record; 8] {
                 Answered::plain(&context.almanac().festival_pack(&asked))
             },
             schemas: schemas!(crate::area::PackAsked => crate::PackListing),
+        },
+        Record {
+            name: "almanac.digest",
+            boundary: "ts_almanac_digest",
+            title: "A range of days as a compact digest a small process reads with no engine",
+            reads: None,
+            run: digest,
+            schemas: schemas!(crate::area::DigestAsked => DigestWritten),
         },
         Record {
             name: "almanac.next",
@@ -744,6 +752,63 @@ pub fn record(name: &str) -> Option<Record> {
 fn festival_calendar(context: &Context, json: &str) -> Result<Answered, Error> {
     let asked = crate::FestivalCalendarRequest::from_json(json)?;
     Answered::sealed(context.almanac().festival_calendar_request(&asked)?)
+}
+
+/// What a tool answers for a digest, whose bytes a text answer cannot
+/// hold as they are.
+#[derive(serde::Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+struct DigestWritten {
+    /// The format's major version.
+    format: u32,
+    /// How many days it holds.
+    days: u32,
+    /// Its length in bytes.
+    size: usize,
+    /// Its seal: the last 64 bytes, SHA-256 in hexadecimal.
+    seal: String,
+    /// The bytes, as standard Base64.
+    base64: String,
+}
+
+/// `almanac.digest`: the bytes, for a tool, as text
+/// (`03-design/digest-format.md` §6).
+fn digest(context: &Context, json: &str) -> Result<Answered, Error> {
+    let asked = crate::DigestRequest::from_json(json)?;
+    let answer = context.almanac().digest(&asked)?;
+    let seal = answer.value.len().saturating_sub(64);
+    let written = DigestWritten {
+        format: crate::DIGEST_FORMAT_MAJOR,
+        days: asked.days,
+        size: answer.value.len(),
+        seal: String::from_utf8_lossy(answer.value.get(seal..).unwrap_or_default()).into_owned(),
+        base64: base64(&answer.value),
+    };
+    Answered::sealed(Envelope {
+        value: written,
+        provenance: answer.provenance,
+    })
+}
+
+/// Standard Base64 with padding (RFC 4648 §4).
+fn base64(bytes: &[u8]) -> String {
+    const ALPHABET: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+    let mut out = String::with_capacity(bytes.len().div_ceil(3) * 4);
+    for chunk in bytes.chunks(3) {
+        let at = |index: usize| u32::from(chunk.get(index).copied().unwrap_or(0));
+        let triple = (at(0) << 16) | (at(1) << 8) | at(2);
+        for position in 0..4_usize {
+            let sextet = (triple >> (18 - 6 * position)) & 63;
+            let letter = ALPHABET.get(sextet as usize).copied().unwrap_or(b'=');
+            out.push(if position <= chunk.len() {
+                char::from(letter)
+            } else {
+                '='
+            });
+        }
+    }
+    out
 }
 
 /// `almanac.days`: the range's days founded once, with their own hashes

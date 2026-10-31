@@ -10258,6 +10258,122 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "TsDigestSpan",
+      "doc": "What a digest's span is (`03-design/digest-format.md`), a number the\n`digest` blob's `spans.kind` holds. The numbers are the format's.",
+      "repr": "u8",
+      "values": [
+        {
+          "name": "Tithi",
+          "value": 1,
+          "doc": "The tithi.",
+          "key": "TITHI"
+        },
+        {
+          "name": "Nakshatra",
+          "value": 2,
+          "doc": "The nakshatra.",
+          "key": "NAKSHATRA"
+        },
+        {
+          "name": "Yoga",
+          "value": 3,
+          "doc": "The nitya yoga.",
+          "key": "YOGA"
+        },
+        {
+          "name": "Karana",
+          "value": 4,
+          "doc": "The karana.",
+          "key": "KARANA"
+        },
+        {
+          "name": "RahuKaala",
+          "value": 5,
+          "doc": "Rahu kaala.",
+          "key": "RAHU_KAALA"
+        },
+        {
+          "name": "Yamaghanda",
+          "value": 6,
+          "doc": "Yamaghanda.",
+          "key": "YAMAGHANDA"
+        },
+        {
+          "name": "GulikaKaala",
+          "value": 7,
+          "doc": "Gulika kaala.",
+          "key": "GULIKA_KAALA"
+        },
+        {
+          "name": "Choghadiya",
+          "value": 8,
+          "doc": "A choghadiya.",
+          "key": "CHOGHADIYA"
+        },
+        {
+          "name": "Hora",
+          "value": 9,
+          "doc": "A hora, named by its lord.",
+          "key": "HORA"
+        },
+        {
+          "name": "Abhijit",
+          "value": 10,
+          "doc": "Abhijit muhurta.",
+          "key": "ABHIJIT"
+        },
+        {
+          "name": "Bhadra",
+          "value": 11,
+          "doc": "Bhadra, named by where she dwells.",
+          "key": "BHADRA"
+        },
+        {
+          "name": "BrahmaMuhurta",
+          "value": 12,
+          "doc": "Brahma muhurta.",
+          "key": "BRAHMA_MUHURTA"
+        },
+        {
+          "name": "Durmuhurta",
+          "value": 13,
+          "doc": "A durmuhurta.",
+          "key": "DURMUHURTA"
+        },
+        {
+          "name": "Varjyam",
+          "value": 14,
+          "doc": "The varjyam.",
+          "key": "VARJYAM"
+        },
+        {
+          "name": "AmritKalam",
+          "value": 15,
+          "doc": "The amrita kalam.",
+          "key": "AMRIT_KALAM"
+        },
+        {
+          "name": "Panchaka",
+          "value": 16,
+          "doc": "The panchaka.",
+          "key": "PANCHAKA"
+        },
+        {
+          "name": "MoonSign",
+          "value": 17,
+          "doc": "The sign the Moon stood in.",
+          "key": "MOON_SIGN"
+        },
+        {
+          "name": "SunSign",
+          "value": 18,
+          "doc": "The sign the Sun stood in.",
+          "key": "SUN_SIGN"
+        }
+      ],
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "TsNameVarga",
       "doc": "Which of the eight letter groups a name begins in, by the animal\n*Muhurta Chintamani* VI.35 gives it (C295).\n\nMirrors `teistro::matching::NameVarga` through an **exhaustive** match.",
       "repr": "u8",
@@ -16829,6 +16945,59 @@
         "name": "Status"
       },
       "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
+      "name": "ts_almanac_digest",
+      "doc": "**The N-day digest** (`03-design/digest-format.md`): the days from\n`first`, every limb and window, the Moon and the observances, as a\n`digest` blob a process with no engine reads with `bindings/c/digest`.\nThe same request writes the same bytes on every platform.\n\n`request_json` is `{\"first\", \"calendar\", \"days\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\", \"festivals\"}`: `first`\n`{year, month, day}` in `calendar` (Gregorian when left out), `days` 1 to\n366 and 60 when left out, `altitudeM` optional and `festivals` an\noptional festival request. A key it does not read, a place or offset\nout of range or a festival request its reader refuses is `INVALID_ARG`,\nnamed under `digest`; a count out of range `OUT_OF_RANGE` on `days`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_blob` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_blob",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsBlob"
+            },
+            "mutable": true
+          },
+          "role": "blob_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {
+        "blob": "digest"
+      },
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
@@ -26406,6 +26575,258 @@
             }
           ],
           "shape": "porutham_rows"
+        }
+      ]
+    },
+    {
+      "name": "digest",
+      "id": 6,
+      "doc": "A range of days for a process that cannot run the engine (`03-design/digest-format.md`): every limb and window of each day, its Moon and its observances, every time whole seconds from the first day's local midnight, every name interned once, sealed by SHA-256.",
+      "sections": [
+        {
+          "id": 1,
+          "name": "summary",
+          "doc": "The format's version, the range and where it was reckoned.",
+          "kind": "fixed",
+          "fields": [
+            {
+              "name": "format_major",
+              "scalar": "u32",
+              "doc": "The format's major version; a reader refuses another."
+            },
+            {
+              "name": "format_minor",
+              "scalar": "u32",
+              "doc": "The format's minor version; a reader skips what it does not know."
+            },
+            {
+              "name": "day_count",
+              "scalar": "u32",
+              "doc": "How many days the digest holds, the rows of `days`."
+            },
+            {
+              "name": "base_unix_seconds",
+              "scalar": "i64",
+              "doc": "The first day's local midnight in seconds since 1970, which every time counts from."
+            },
+            {
+              "name": "utc_offset_seconds",
+              "scalar": "i32",
+              "doc": "The offset the civil days run at, east positive."
+            },
+            {
+              "name": "calendar",
+              "scalar": "u16",
+              "doc": "The calendar `days` dates are read in.",
+              "enum": "Calendar"
+            },
+            {
+              "name": "latitude_deg",
+              "scalar": "f64",
+              "doc": "The place's latitude, degrees north."
+            },
+            {
+              "name": "longitude_deg",
+              "scalar": "f64",
+              "doc": "The place's longitude, degrees east."
+            },
+            {
+              "name": "altitude_m",
+              "scalar": "f64",
+              "doc": "The place's altitude, metres."
+            }
+          ]
+        },
+        {
+          "id": 2,
+          "name": "days",
+          "doc": "One row a day, in order.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "year",
+              "scalar": "i32",
+              "doc": "The date's year, in `summary.calendar`."
+            },
+            {
+              "name": "month",
+              "scalar": "u8",
+              "doc": "The date's month."
+            },
+            {
+              "name": "day",
+              "scalar": "u8",
+              "doc": "The date's day of the month."
+            },
+            {
+              "name": "vara",
+              "scalar": "u8",
+              "doc": "The vara, 0 for Sunday."
+            },
+            {
+              "name": "state",
+              "scalar": "u8",
+              "doc": "0 an ordinary day, 1 the Sun did not rise, 2 it did not set, when `sunrise` and `sunset` are the policy's."
+            },
+            {
+              "name": "fixed_day",
+              "scalar": "i32",
+              "doc": "The day's fixed number, 1 for 0001-01-01 Gregorian."
+            },
+            {
+              "name": "sunrise",
+              "scalar": "i32",
+              "doc": "seconds from `base_unix_seconds`"
+            },
+            {
+              "name": "sunset",
+              "scalar": "i32",
+              "doc": "seconds from `base_unix_seconds`"
+            },
+            {
+              "name": "moonrise",
+              "scalar": "i32",
+              "doc": "The day's first moonrise, in seconds from `base_unix_seconds`, or `i32::MIN`."
+            },
+            {
+              "name": "moonset",
+              "scalar": "i32",
+              "doc": "The day's first moonset, in seconds from `base_unix_seconds`, or `i32::MIN`."
+            },
+            {
+              "name": "moon_phase",
+              "scalar": "u16",
+              "doc": "Thousandths of a lunation at sunrise, 0 new and 500 full, read from the tithi that held it and how far through it sunrise fell."
+            },
+            {
+              "name": "lunar_month",
+              "scalar": "u16",
+              "doc": "The lunar month's row in `names`."
+            },
+            {
+              "name": "span_first",
+              "scalar": "u32",
+              "doc": "The day's first row in `spans`."
+            },
+            {
+              "name": "span_count",
+              "scalar": "u16",
+              "doc": "The day's rows in `spans`."
+            },
+            {
+              "name": "observance_first",
+              "scalar": "u32",
+              "doc": "The day's first row in `observances`."
+            },
+            {
+              "name": "observance_count",
+              "scalar": "u16",
+              "doc": "The day's rows in `observances`."
+            }
+          ]
+        },
+        {
+          "id": 3,
+          "name": "spans",
+          "doc": "Each day's limbs and windows, by kind and then in the order they run. A limb's span is the whole limb, so one may run past either end of its day.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "kind",
+              "scalar": "u8",
+              "doc": "What the span is.",
+              "enum": "TsDigestSpan"
+            },
+            {
+              "name": "name",
+              "scalar": "u16",
+              "doc": "Its row in `names`, or 65535 when it has no name of its own."
+            },
+            {
+              "name": "from",
+              "scalar": "i32",
+              "doc": "seconds from `base_unix_seconds`"
+            },
+            {
+              "name": "to",
+              "scalar": "i32",
+              "doc": "seconds from `base_unix_seconds`"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "name": "observances",
+          "doc": "Each day's observances, sorted by rule.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "name",
+              "scalar": "u16",
+              "doc": "Its row in `names`."
+            },
+            {
+              "name": "flags",
+              "scalar": "u8",
+              "doc": "Bit 0: a fast. Bit 1: a published set decided the day."
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "name": "names",
+          "doc": "Every name the digest uses, once, in the order first met.",
+          "kind": "columns",
+          "fields": [
+            {
+              "name": "key_at",
+              "scalar": "u32",
+              "doc": "The catalogue or rule key's offset in `text`."
+            },
+            {
+              "name": "key_length",
+              "scalar": "u16",
+              "doc": "Its length in octets."
+            },
+            {
+              "name": "text_at",
+              "scalar": "u32",
+              "doc": "The name's offset in `text`, in the context's locale."
+            },
+            {
+              "name": "text_length",
+              "scalar": "u16",
+              "doc": "Its length in octets."
+            }
+          ]
+        },
+        {
+          "id": 6,
+          "name": "text",
+          "doc": "UTF-8 text: the keys and names, with nothing between them.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 7,
+          "name": "locale",
+          "doc": "UTF-8 text: the BCP 47 tag `names` is in.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 8,
+          "name": "provenance_json",
+          "doc": "UTF-8 JSON, canonical: the days' provenance, its `content_hash` theirs.",
+          "kind": "bytes",
+          "fields": []
+        },
+        {
+          "id": 9,
+          "name": "seal",
+          "doc": "SHA-256 of every byte before this section, which ends the digest, in 64 lowercase hexadecimal digits.",
+          "kind": "bytes",
+          "fields": []
         }
       ]
     }

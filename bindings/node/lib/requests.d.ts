@@ -119,18 +119,65 @@ export interface PackRequest {
 /**
  * The request as a binding writes it.
  */
+export interface DigestRequest {
+  readonly altitudeM?: number;
+  /**
+   * The calendar `first` is in, and the digest's dates; Gregorian when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  /**
+   * How many days, 1 to 366; 60 when left out.
+   */
+  readonly days?: number | null;
+  /**
+   * The festivals to list, as a festival request; none when left out.
+   */
+  readonly festivals?: FestivalRequest | null;
+  readonly first: DayAsked;
+  readonly latitudeDeg: number;
+  readonly longitudeDeg: number;
+  readonly utcOffsetSeconds: number;
+}
+
+/**
+ * The request as a binding writes it.
+ */
 export interface FestivalCalendarRequest {
+  /**
+   * The alarm on every event no hint or event of its own gives another.
+   */
+  readonly alarm?: FeedAlarm | null;
   readonly altitudeM?: number;
   readonly calendar?: Member<catalogue.Calendar> | null;
+  /**
+   * The feed's own categories.
+   */
+  readonly categories?: readonly string[];
+  /**
+   * The feed's colour: a CSS3 colour name, which RFC 7986 requires.
+   */
+  readonly color?: string | null;
+  /**
+   * The caller's own events, merged in.
+   */
+  readonly events?: readonly SuppliedEvent[];
   /**
    * The festivals, as a festival request.
    */
   readonly festivals: FestivalRequest;
   readonly first: DayAsked;
+  /**
+   * Categories, a colour and an alarm by what an event is; the first that selects an event gives it its own.
+   */
+  readonly hints?: readonly FeedHint[];
   readonly last?: DayAsked | null;
   readonly latitudeDeg: number;
   readonly longitudeDeg: number;
   readonly name?: string | null;
+  /**
+   * Which events the feed keeps: those any selector selects, every event when left out.
+   */
+  readonly only?: readonly FeedSelector[];
   readonly product?: string | null;
   /**
    * A day when left out; zero writes none.
@@ -756,6 +803,94 @@ export interface MuhurtaRequest {
    * The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
    */
   readonly rules: MuhurtaRequestRules;
+}
+
+/**
+ * A display alarm as a binding writes it.
+ */
+export interface FeedAlarm {
+  /**
+   * What the alarm says; the event's summary when left out.
+   */
+  readonly description?: string | null;
+  /**
+   * Minutes from the event's start: negative before it, positive after.
+   */
+  readonly triggerMinutes: number;
+}
+
+/**
+ * A supplied event as a binding writes it: `day`, or `fromUnixSeconds` and `toUnixSeconds`.
+ */
+export interface SuppliedEvent {
+  readonly alarm?: FeedAlarm | null;
+  /**
+   * The request's calendar when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  readonly categories?: readonly string[];
+  /**
+   * A CSS3 colour name.
+   */
+  readonly color?: string | null;
+  /**
+   * A whole day.
+   */
+  readonly day?: DayAsked | null;
+  readonly description?: string | null;
+  /**
+   * A span's start, in seconds since 1970.
+   */
+  readonly fromUnixSeconds?: number | null;
+  readonly kind?: string | null;
+  readonly summary: string;
+  /**
+   * A span's end, exclusive.
+   */
+  readonly toUnixSeconds?: number | null;
+  readonly tradition?: string | null;
+  /**
+   * Hashed from the summary, the time and the place when left out.
+   */
+  readonly uid?: string | null;
+}
+
+/**
+ * A hint as a binding writes it.
+ */
+export interface FeedHint {
+  readonly alarm?: FeedAlarm | null;
+  readonly categories?: readonly string[];
+  /**
+   * A CSS3 colour name.
+   */
+  readonly color?: string | null;
+  /**
+   * The events it speaks of; every event when left out.
+   */
+  readonly select?: FeedSelector;
+}
+
+/**
+ * What selects an event: a list left empty asks nothing, a list given holds the event's value, and every list given must. `kinds` and `traditions` read a rule's catalogue fields (`03-design/icalendar.md` §6); `rules` holds rule keys, a parana answering to its fast's and a supplied event to its `UID`.
+ */
+export interface FeedSelector {
+  /**
+   * How the event came to be.
+   */
+  readonly forms?: readonly FeedForm[];
+  /**
+   * A rule's catalogue kind, or a supplied event's own.
+   */
+  readonly kinds?: readonly string[];
+  /**
+   * A rule's key.
+   */
+  readonly rules?: readonly string[];
+  /**
+   * A rule's tradition, or a supplied event's own.
+   */
+  readonly traditions?: readonly string[];
 }
 
 /**
@@ -2142,6 +2277,19 @@ export type MuhurtaRanking = 'TEXTS' | 'BASELINE';
  * The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
  */
 export type MuhurtaRequestRules = 'RAMAN_MARRIAGE' | 'BASELINE_MARRIAGE' | 'RAMAN_NAMAKARANA' | 'RAMAN_ANNAPRASANA' | 'RAMAN_UPANAYANA' | 'RAMAN_GRIHA_PRAVESHA' | 'RAMAN_KARNAVEDHA' | 'RAMAN_CHUDAKARANA' | 'RAMAN_VIDYARAMBHA' | 'RAMAN_YATRA' | 'RAMAN_TRADE_PURCHASE' | 'RAMAN_SELLING' | 'RAMAN_NEW_CLOTHES' | 'RAMAN_VEHICLE' | ActivityRules;
+
+/**
+ * How a feed's event came to be, which a [`FeedSelector`] can name.
+ *
+ * `OBSERVANCE`: A yearly rule's observance.
+ * `EKADASHI`: An Ekadashi fast.
+ * `DATED`: A dated rule's day.
+ * `ANNIVERSARY`: An anniversary.
+ * `ADDED`: A day a published set added.
+ * `PARANA`: The timed window a fast is broken in.
+ * `SUPPLIED`: An event the caller supplied.
+ */
+export type FeedForm = 'OBSERVANCE' | 'EKADASHI' | 'DATED' | 'ANNIVERSARY' | 'ADDED' | 'PARANA' | 'SUPPLIED';
 
 /**
  * When the first abdika is kept (DS p. 330, two views).

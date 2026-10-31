@@ -15,6 +15,7 @@ import unittest
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from teistro import (
+    decode_digest,
     ActivityRules,
     EkadashiRule,
     FestivalRule,
@@ -1049,6 +1050,27 @@ class AnEngine(WithLibrary):
         }
         with self.teistro.context(**nepal_official()) as sky:
             ics = sky.almanac.festival_calendar(**season, stamp_unix_seconds=1767225600, name="Dashain")
+            hinted = sky.almanac.festival_calendar(
+                **season,
+                stamp_unix_seconds=1767225600,
+                color="gold",
+                categories=["Nepal"],
+                alarm={"triggerMinutes": -60},
+                events=[{"uid": "mine@app", "summary": "Mine", "day": {"year": 2025, "month": 10, "day": 5}}],
+            )
+            self.assertIn("COLOR:gold\r\n", hinted)
+            self.assertIn("UID:mine@app\r\n", hinted)
+            self.assertIn("BEGIN:VALARM\r\n", hinted)
+            digest = sky.almanac.digest(
+                first=season["from_date"],
+                place=season["place"],
+                utc_offset_seconds=20700,
+                days=3,
+                festivals=season["festivals"],
+            )
+            self.assertEqual(decode_digest(digest).day_count, 3)
+            with self.assertRaises(TeistroError):
+                sky.almanac.digest(first=season["from_date"], place=season["place"], utc_offset_seconds=20700, days=0)
             self.assertTrue(ics.startswith("BEGIN:VCALENDAR\r\nVERSION:2.0\r\n"))
             self.assertIn("X-WR-CALNAME:Dashain\r\n", ics)
             answer = sky.almanac.festivals(**season)

@@ -2600,3 +2600,92 @@ export function decodeNaam(bytes) {
   return out;
 }
 
+/**
+ * Decodes a Digest blob: A range of days for a process that cannot run the engine (`03-design/digest-format.md`): every limb and window of each day, its Moon and its observances, every time whole seconds from the first day's local midnight, every name interned once, sealed by SHA-256.
+ *
+ * @param {Uint8Array} bytes the blob the library returned
+ */
+export function decodeDigest(bytes) {
+  const blob = open(bytes, 6, 'digest');
+  const out = {};
+  {
+    const at = fixed(blob, 1, 'summary', 9);
+    out.formatMajor = READERS.u32(blob.dv, at.offset + 0);
+    out.formatMinor = READERS.u32(blob.dv, at.offset + 8);
+    out.dayCount = READERS.u32(blob.dv, at.offset + 16);
+    out.baseUnixSeconds = READERS.i64(blob.dv, at.offset + 24);
+    out.utcOffsetSeconds = READERS.i32(blob.dv, at.offset + 32);
+    out.calendar = READERS.u16(blob.dv, at.offset + 40);
+    out.latitudeDeg = READERS.f64(blob.dv, at.offset + 48);
+    out.longitudeDeg = READERS.f64(blob.dv, at.offset + 56);
+    out.altitudeM = READERS.f64(blob.dv, at.offset + 64);
+  }
+  {
+    const at = section(blob, 2, 'days');
+    out.days = {
+      year: column(blob, at, 0, 'i32', at.count),
+      month: column(blob, at, 1, 'u8', at.count),
+      day: column(blob, at, 2, 'u8', at.count),
+      vara: column(blob, at, 3, 'u8', at.count),
+      state: column(blob, at, 4, 'u8', at.count),
+      fixedDay: column(blob, at, 5, 'i32', at.count),
+      sunrise: column(blob, at, 6, 'i32', at.count),
+      sunset: column(blob, at, 7, 'i32', at.count),
+      moonrise: column(blob, at, 8, 'i32', at.count),
+      moonset: column(blob, at, 9, 'i32', at.count),
+      moonPhase: column(blob, at, 10, 'u16', at.count),
+      lunarMonth: column(blob, at, 11, 'u16', at.count),
+      spanFirst: column(blob, at, 12, 'u32', at.count),
+      spanCount: column(blob, at, 13, 'u16', at.count),
+      observanceFirst: column(blob, at, 14, 'u32', at.count),
+      observanceCount: column(blob, at, 15, 'u16', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 3, 'spans');
+    out.spans = {
+      kind: column(blob, at, 0, 'u8', at.count),
+      name: column(blob, at, 1, 'u16', at.count),
+      from: column(blob, at, 2, 'i32', at.count),
+      to: column(blob, at, 3, 'i32', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 4, 'observances');
+    out.observances = {
+      name: column(blob, at, 0, 'u16', at.count),
+      flags: column(blob, at, 1, 'u8', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 5, 'names');
+    out.names = {
+      keyAt: column(blob, at, 0, 'u32', at.count),
+      keyLength: column(blob, at, 1, 'u16', at.count),
+      textAt: column(blob, at, 2, 'u32', at.count),
+      textLength: column(blob, at, 3, 'u16', at.count),
+      length: at.count,
+    };
+  }
+  {
+    const at = section(blob, 6, 'text');
+    out.text = text(blob, at, 'text');
+  }
+  {
+    const at = section(blob, 7, 'locale');
+    out.locale = text(blob, at, 'locale');
+  }
+  {
+    const at = section(blob, 8, 'provenance_json');
+    out.provenanceJson = text(blob, at, 'provenance_json');
+  }
+  {
+    const at = section(blob, 9, 'seal');
+    out.seal = text(blob, at, 'seal');
+  }
+  return out;
+}
+

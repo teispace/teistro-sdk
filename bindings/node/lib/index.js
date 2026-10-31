@@ -172,7 +172,7 @@ import {
   NameVargaById,
   VargaRelationById,
 } from './catalogue.js';
-import { decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
+import { decodeCharts, decodeDigest, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
 import { decodeProvenance, decodeStep } from './records.js';
 
@@ -8021,6 +8021,12 @@ export class AlmanacArea extends Area {
    * @param {string} [request.name] the calendar's name; "Festivals" when left out
    * @param {string} [request.product] the `PRODID`; the SDK's own when left out
    * @param {number} [request.refreshMinutes] how often a subscriber fetches it again; a day when left out, none when zero
+   * @param {readonly string[]} [request.categories] the calendar's own categories
+   * @param {string} [request.color] the calendar's colour, a CSS3 name
+   * @param {object} [request.alarm] `{ triggerMinutes, description }`, on every event nothing else gives one
+   * @param {readonly object[]} [request.only] selectors: the feed keeps what any selects
+   * @param {readonly object[]} [request.hints] a selector with its categories, colour and alarm; the first that selects speaks
+   * @param {readonly object[]} [request.events] the caller's own events, merged in (`03-design/icalendar.md` §6)
    * @returns {string} the feed, CRLF lines
    */
   festivalCalendar(request) {
@@ -8052,6 +8058,56 @@ export class AlmanacArea extends Area {
     const record = recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }");
     if (record !== undefined) asked.festivals = JSON.parse(record);
     return run(this, (inner) => inner.almanacFestivalCalendar(JSON.stringify(asked)));
+  }
+
+  /**
+   * **The N-day digest** (`03-design/digest-format.md`): the days from
+   * `from`, 60 unless `days` says, every limb and window, the Moon and the
+   * observances, as bytes a process with no engine reads with
+   * `bindings/c/digest`, and `decodeDigest` reads here. The same request
+   * writes the same bytes on every platform.
+   *
+   * @example
+   * const bytes = sdk.almanac.digest({
+   *   from: { year: 2026, month: 1, day: 1 },
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   utcOffsetSeconds: 20700,
+   *   festivals: { rules: 'NEPAL' },
+   * });
+   * console.log(decodeDigest(bytes).summary.dayCount); // 60
+   *
+   * @param {object} request
+   * @param {object} request.from the first day, and the calendar the digest's dates are in
+   * @param {number} [request.days] how many, 1 to 366
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC
+   * @param {object} [request.festivals] a festivals request record; none lists no observances
+   * @returns {Uint8Array} the digest
+   */
+  digest(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('digest: expected a request, e.g. { from, place, utcOffsetSeconds }');
+    }
+    const { from: given, place: where, utcOffsetSeconds, festivals, days } = request;
+    const day = (at, what) => ({
+      year: finite(at?.year, `${what}.year`),
+      month: finite(at?.month, `${what}.month`),
+      day: finite(at?.day, `${what}.day`),
+    });
+    const place = where ?? {};
+    const from = given ?? {};
+    const asked = {
+      first: day(from, 'from'),
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    };
+    if (from.calendar !== undefined) asked.calendar = from.calendar;
+    if (days !== undefined) asked.days = finite(days, 'days');
+    const record = recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }");
+    if (record !== undefined) asked.festivals = JSON.parse(record);
+    return run(this, (inner) => inner.almanacDigest(JSON.stringify(asked)));
   }
 
   /**
@@ -8833,7 +8889,7 @@ export const ashauchRunning = (answer) => ({
   ...(answer.days == null ? {} : { days: answer.days }),
 });
 
-export { BlobFormatError, decodeCharts, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
+export { BlobFormatError, decodeCharts, decodeDigest, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 export { entityForms, messages } from './messages.js';
 export { INTERNAL_CODE, onInternalError } from './internal.js';
 export * from './catalogue.js';

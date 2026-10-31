@@ -215,6 +215,7 @@ final _schemas = <(String, Object Function(Uint8List))>[
   ('intl_render.tsrb', decodeIntlRender),
   ('charts.tsrb', decodeCharts),
   ('panchanga.tsrb', decodePanchanga),
+  ('digest.tsrb', decodeDigest),
   ('naam.tsrb', decodeNaam),
 ];
 

@@ -14,6 +14,7 @@ import {
   BlobFormatError,
   decodeCharts,
   decodeIntlRender,
+  decodeDigest,
   decodeNaam,
   decodePanchanga,
   decodePositions,
@@ -108,6 +109,7 @@ const SCHEMAS = [
   ['charts.tsrb', decodeCharts],
   ['panchanga.tsrb', decodePanchanga],
   ['naam.tsrb', decodeNaam],
+  ['digest.tsrb', decodeDigest],
 ];
 
 function* mutants(good) {

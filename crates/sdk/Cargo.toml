@@ -37,6 +37,7 @@ teistro-rectification = { path = "../rectification", optional = true }
 teistro-houses = { path = "../houses" }
 teistro-interpret = { path = "../interpret", optional = true }
 teistro-intl = { path = "../intl", default-features = false }
+teistro-idl = { path = "../idl", default-features = false }
 teistro-panchanga = { path = "../panchanga" }
 teistro-points = { path = "../points" }
 teistro-rules = { path = "../rules", optional = true }
@@ -491,6 +492,10 @@ required-features = ["builtin-ephemeris"]
 
 [[test]]
 name = "festival_calendar"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "digest"
 required-features = ["builtin-ephemeris"]
 
 [[test]]

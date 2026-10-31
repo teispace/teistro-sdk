@@ -8870,6 +8870,73 @@ enum Sunrises {
   }
 }
 
+/// What a digest's span is (`03-design/digest-format.md`), a number the
+/// `digest` blob's `spans.kind` holds. The numbers are the format's.
+enum DigestSpan {
+  /// The tithi.
+  tithi(1, 'TITHI'),
+  /// The nakshatra.
+  nakshatra(2, 'NAKSHATRA'),
+  /// The nitya yoga.
+  yoga(3, 'YOGA'),
+  /// The karana.
+  karana(4, 'KARANA'),
+  /// Rahu kaala.
+  rahuKaala(5, 'RAHU_KAALA'),
+  /// Yamaghanda.
+  yamaghanda(6, 'YAMAGHANDA'),
+  /// Gulika kaala.
+  gulikaKaala(7, 'GULIKA_KAALA'),
+  /// A choghadiya.
+  choghadiya(8, 'CHOGHADIYA'),
+  /// A hora, named by its lord.
+  hora(9, 'HORA'),
+  /// Abhijit muhurta.
+  abhijit(10, 'ABHIJIT'),
+  /// Bhadra, named by where she dwells.
+  bhadra(11, 'BHADRA'),
+  /// Brahma muhurta.
+  brahmaMuhurta(12, 'BRAHMA_MUHURTA'),
+  /// A durmuhurta.
+  durmuhurta(13, 'DURMUHURTA'),
+  /// The varjyam.
+  varjyam(14, 'VARJYAM'),
+  /// The amrita kalam.
+  amritKalam(15, 'AMRIT_KALAM'),
+  /// The panchaka.
+  panchaka(16, 'PANCHAKA'),
+  /// The sign the Moon stood in.
+  moonSign(17, 'MOON_SIGN'),
+  /// The sign the Sun stood in.
+  sunSign(18, 'SUN_SIGN');
+
+  const DigestSpan(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static DigestSpan byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a DigestSpan'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static DigestSpan? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
 /// Which of the eight letter groups a name begins in, by the animal
 /// *Muhurta Chintamani* VI.35 gives it (C295).
 ///

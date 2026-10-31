@@ -237,6 +237,33 @@ fn measured_suite(root: &Path, python: &str) -> Result<Suite, String> {
     })
 }
 
+/// Hands a feed the binding wrote to a parser that is not ours, at its pin
+/// (`03-design/icalendar.md` §6). An install that fails is a failure: this
+/// is the claim the feed holds to RFC 5545.
+fn ical_black_box(root: &Path, python: &str, package: &Path, library: &Path) -> Result<(), ()> {
+    let parser = root.join("target/python-blackbox");
+    step(
+        python_command(python)
+            .args(["-m", "pip", "install", "--disable-pip-version-check"])
+            .args(["--quiet", "--upgrade", "--target"])
+            .arg(&parser)
+            .arg("-r")
+            .arg(root.join(PACKAGE).join("blackbox/requirements.txt")),
+        "",
+        "the feed's parser could not be installed from its pin",
+    )?;
+    let path = std::env::join_paths([package, parser.as_path()]).map_err(|_| ())?;
+    step(
+        python_command(python)
+            .arg("blackbox/ical_feed.py")
+            .env("TEISTRO_LIBRARY", library)
+            .env("PYTHONPATH", path)
+            .current_dir(package),
+        "a feed reads whole in a parser that is not ours",
+        "a parser that is not ours refused the feed",
+    )
+}
+
 pub(crate) fn check(root: &Path) -> i32 {
     let python = interpreter();
     if !present(&python, "--version") {
@@ -272,6 +299,7 @@ pub(crate) fn check(root: &Path) -> i32 {
             )
         })
         .and_then(|()| suite.report(&package))
+        .and_then(|()| ical_black_box(root, &python, &package, &library))
         .and_then(|()| Binding::Python.run(root, &Runtime::of(root)).map(drop));
     if outcome.is_err() {
         return 1;

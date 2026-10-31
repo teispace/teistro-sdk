@@ -96,6 +96,8 @@ fn c_consumer(
     let lib = bundle.join("lib");
     for expected in [
         "include/teistro.h",
+        "digest/teistro_digest.c",
+        "digest/teistro_digest.h",
         "LICENSE",
         "NOTICE",
         "README.md",

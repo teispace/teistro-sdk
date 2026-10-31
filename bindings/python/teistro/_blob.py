@@ -10360,3 +10360,268 @@ def decode_naam(raw: bytes) -> Naam:
     )
 
 
+@dataclass(frozen=True)
+class DigestDays:
+    """The `days` section of a Digest blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    One row a day, in order.
+    """
+
+    year: memoryview[int]
+    """The date's year, in `summary.calendar`."""
+
+    month: memoryview[int]
+    """The date's month."""
+
+    day: memoryview[int]
+    """The date's day of the month."""
+
+    vara: memoryview[int]
+    """The vara, 0 for Sunday."""
+
+    state: memoryview[int]
+    """0 an ordinary day, 1 the Sun did not rise, 2 it did not set, when `sunrise` and `sunset` are the policy's."""
+
+    fixed_day: memoryview[int]
+    """The day's fixed number, 1 for 0001-01-01 Gregorian."""
+
+    sunrise: memoryview[int]
+    """seconds from `base_unix_seconds`"""
+
+    sunset: memoryview[int]
+    """seconds from `base_unix_seconds`"""
+
+    moonrise: memoryview[int]
+    """The day's first moonrise, in seconds from `base_unix_seconds`, or `i32::MIN`."""
+
+    moonset: memoryview[int]
+    """The day's first moonset, in seconds from `base_unix_seconds`, or `i32::MIN`."""
+
+    moon_phase: memoryview[int]
+    """Thousandths of a lunation at sunrise, 0 new and 500 full, read from the tithi that held it and how far through it sunrise fell."""
+
+    lunar_month: memoryview[int]
+    """The lunar month's row in `names`."""
+
+    span_first: memoryview[int]
+    """The day's first row in `spans`."""
+
+    span_count: memoryview[int]
+    """The day's rows in `spans`."""
+
+    observance_first: memoryview[int]
+    """The day's first row in `observances`."""
+
+    observance_count: memoryview[int]
+    """The day's rows in `observances`."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class DigestSpans:
+    """The `spans` section of a Digest blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each day's limbs and windows, by kind and then in the order they run. A limb's span is the whole limb, so one may run past either end of its day.
+    """
+
+    kind: memoryview[int]
+    """What the span is."""
+
+    name: memoryview[int]
+    """Its row in `names`, or 65535 when it has no name of its own."""
+
+    from_: memoryview[int]
+    """seconds from `base_unix_seconds`"""
+
+    to: memoryview[int]
+    """seconds from `base_unix_seconds`"""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class DigestObservances:
+    """The `observances` section of a Digest blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Each day's observances, sorted by rule.
+    """
+
+    name: memoryview[int]
+    """Its row in `names`."""
+
+    flags: memoryview[int]
+    """Bit 0: a fast. Bit 1: a published set decided the day."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class DigestNames:
+    """The `names` section of a Digest blob: one column per field, each a view
+    over the blob's bytes rather than a copy.
+
+    Every name the digest uses, once, in the order first met.
+    """
+
+    key_at: memoryview[int]
+    """The catalogue or rule key's offset in `text`."""
+
+    key_length: memoryview[int]
+    """Its length in octets."""
+
+    text_at: memoryview[int]
+    """The name's offset in `text`, in the context's locale."""
+
+    text_length: memoryview[int]
+    """Its length in octets."""
+
+    length: int
+    """The number of rows every column holds."""
+
+
+@dataclass(frozen=True)
+class Digest:
+    """A decoded Digest blob.
+
+    A range of days for a process that cannot run the engine (`03-design/digest-format.md`): every limb and window of each day, its Moon and its observances, every time whole seconds from the first day's local midnight, every name interned once, sealed by SHA-256.
+    """
+
+    format_major: int
+    """The format's major version; a reader refuses another."""
+
+    format_minor: int
+    """The format's minor version; a reader skips what it does not know."""
+
+    day_count: int
+    """How many days the digest holds, the rows of `days`."""
+
+    base_unix_seconds: int
+    """The first day's local midnight in seconds since 1970, which every time counts from."""
+
+    utc_offset_seconds: int
+    """The offset the civil days run at, east positive."""
+
+    calendar: int
+    """The calendar `days` dates are read in."""
+
+    latitude_deg: float
+    """The place's latitude, degrees north."""
+
+    longitude_deg: float
+    """The place's longitude, degrees east."""
+
+    altitude_m: float
+    """The place's altitude, metres."""
+
+    days: DigestDays
+    """One row a day, in order."""
+
+    spans: DigestSpans
+    """Each day's limbs and windows, by kind and then in the order they run. A limb's span is the whole limb, so one may run past either end of its day."""
+
+    observances: DigestObservances
+    """Each day's observances, sorted by rule."""
+
+    names: DigestNames
+    """Every name the digest uses, once, in the order first met."""
+
+    text: str
+    """UTF-8 text: the keys and names, with nothing between them."""
+
+    locale: str
+    """UTF-8 text: the BCP 47 tag `names` is in."""
+
+    provenance_json: str
+    """UTF-8 JSON, canonical: the days' provenance, its `content_hash` theirs."""
+
+    seal: str
+    """SHA-256 of every byte before this section, which ends the digest, in 64 lowercase hexadecimal digits."""
+
+
+def decode_digest(raw: bytes) -> Digest:
+    """Decodes a Digest blob.
+
+    The columns are views over `raw`, so the buffer must outlive the
+    result; a blob of another layout version or another schema is a
+    `BlobError`.
+    """
+    blob = _Blob(raw, 6, "digest")
+    at_summary = blob.fixed_section(1, "summary", 9)
+    at_days = blob.section(2, "days")
+    at_spans = blob.section(3, "spans")
+    at_observances = blob.section(4, "observances")
+    at_names = blob.section(5, "names")
+    at_text = blob.section(6, "text")
+    at_locale = blob.section(7, "locale")
+    at_provenance_json = blob.section(8, "provenance_json")
+    at_seal = blob.section(9, "seal")
+    return Digest(
+        format_major=int(blob.fixed(at_summary, 0, "I")),
+        format_minor=int(blob.fixed(at_summary, 1, "I")),
+        day_count=int(blob.fixed(at_summary, 2, "I")),
+        base_unix_seconds=int(blob.fixed(at_summary, 3, "q")),
+        utc_offset_seconds=int(blob.fixed(at_summary, 4, "i")),
+        calendar=int(blob.fixed(at_summary, 5, "H")),
+        latitude_deg=blob.fixed(at_summary, 6, "d"),
+        longitude_deg=blob.fixed(at_summary, 7, "d"),
+        altitude_m=blob.fixed(at_summary, 8, "d"),
+        days=DigestDays(
+            year=blob.column(at_days, 0, 4, at_days.count).cast("i"),
+            month=blob.column(at_days, 1, 1, at_days.count).cast("B"),
+            day=blob.column(at_days, 2, 1, at_days.count).cast("B"),
+            vara=blob.column(at_days, 3, 1, at_days.count).cast("B"),
+            state=blob.column(at_days, 4, 1, at_days.count).cast("B"),
+            fixed_day=blob.column(at_days, 5, 4, at_days.count).cast("i"),
+            sunrise=blob.column(at_days, 6, 4, at_days.count).cast("i"),
+            sunset=blob.column(at_days, 7, 4, at_days.count).cast("i"),
+            moonrise=blob.column(at_days, 8, 4, at_days.count).cast("i"),
+            moonset=blob.column(at_days, 9, 4, at_days.count).cast("i"),
+            moon_phase=blob.column(at_days, 10, 2, at_days.count).cast("H"),
+            lunar_month=blob.column(at_days, 11, 2, at_days.count).cast("H"),
+            span_first=blob.column(at_days, 12, 4, at_days.count).cast("I"),
+            span_count=blob.column(at_days, 13, 2, at_days.count).cast("H"),
+            observance_first=blob.column(
+                at_days, 14, 4, at_days.count
+            ).cast("I"),
+            observance_count=blob.column(
+                at_days, 15, 2, at_days.count
+            ).cast("H"),
+            length=at_days.count,
+        ),
+        spans=DigestSpans(
+            kind=blob.column(at_spans, 0, 1, at_spans.count).cast("B"),
+            name=blob.column(at_spans, 1, 2, at_spans.count).cast("H"),
+            from_=blob.column(at_spans, 2, 4, at_spans.count).cast("i"),
+            to=blob.column(at_spans, 3, 4, at_spans.count).cast("i"),
+            length=at_spans.count,
+        ),
+        observances=DigestObservances(
+            name=blob.column(
+                at_observances, 0, 2, at_observances.count
+            ).cast("H"),
+            flags=blob.column(
+                at_observances, 1, 1, at_observances.count
+            ).cast("B"),
+            length=at_observances.count,
+        ),
+        names=DigestNames(
+            key_at=blob.column(at_names, 0, 4, at_names.count).cast("I"),
+            key_length=blob.column(at_names, 1, 2, at_names.count).cast("H"),
+            text_at=blob.column(at_names, 2, 4, at_names.count).cast("I"),
+            text_length=blob.column(at_names, 3, 2, at_names.count).cast("H"),
+            length=at_names.count,
+        ),
+        text=blob.text(at_text, "text"),
+        locale=blob.text(at_locale, "locale"),
+        provenance_json=blob.text(at_provenance_json, "provenance_json"),
+        seal=blob.text(at_seal, "seal"),
+    )
+
+

@@ -15,6 +15,7 @@
     unsafe_code,
     clippy::print_stdout,
     clippy::expect_used,
+    clippy::indexing_slicing,
     reason = "an example that drives the C boundary"
 )]
 
@@ -33,7 +34,7 @@ use teistro_ffi::context::{
 use teistro_ffi::frame::{TsFrame, ts_frame_canonical, ts_frame_pack};
 use teistro_ffi::intl::ts_intl_render;
 use teistro_ffi::naam::ts_naam_milan;
-use teistro_ffi::panchanga::{TsPanchangaRequest, ts_panchanga_days};
+use teistro_ffi::panchanga::{TsPanchangaRequest, ts_almanac_digest, ts_panchanga_days};
 use teistro_ffi::positions::ts_positions;
 use teistro_port_ephemeris::vtable::{ObserverC, PositionRequestC};
 use teistro_port_ephemeris::{Body, TimeScale};
@@ -54,6 +55,102 @@ fn write(dir: &Path, name: &str, bytes: &[u8]) {
     let path = dir.join(name);
     std::fs::write(&path, bytes).expect("the fixture directory is writable");
     println!("{} ({} bytes)", path.display(), bytes.len());
+}
+
+/// Every field of a digest as `bindings/c/tests/digest_read.c` prints
+/// them, through the library's own reader, so the two can be compared.
+fn dump(bytes: &[u8]) -> String {
+    use std::fmt::Write as _;
+    use teistro_idl::blob::{Reader, ScalarValue};
+    let schema = teistro::digest_schema();
+    let reader = Reader::parse(bytes, &schema).expect("the library's digest parses");
+    let column = |section: &str, name: &str| -> Vec<i64> {
+        reader
+            .column(section, name)
+            .expect("the schema's column")
+            .iter()
+            .map(|value: &ScalarValue| value.as_i64())
+            .collect()
+    };
+    let field = |name: &str| reader.field("summary", name).expect("the field").as_i64();
+    let text = reader.bytes("text").expect("the text");
+    let (key_at, key_length) = (column("names", "key_at"), column("names", "key_length"));
+    let (text_at, text_length) = (column("names", "text_at"), column("names", "text_length"));
+    let cut = |at: i64, length: i64| {
+        let at = usize::try_from(at).expect("an offset");
+        let length = usize::try_from(length).expect("a length");
+        String::from_utf8_lossy(text.get(at..at + length).expect("inside the text")).into_owned()
+    };
+    let name = |row: i64| {
+        if row == i64::from(teistro::DIGEST_NO_NAME) {
+            return " -".to_owned();
+        }
+        let row = usize::try_from(row).expect("a row");
+        format!(
+            " {}={}",
+            cut(key_at[row], key_length[row]),
+            cut(text_at[row], text_length[row])
+        )
+    };
+    let mut out = format!(
+        "days {} base {} offset {} calendar {}\n",
+        field("day_count"),
+        field("base_unix_seconds"),
+        field("utc_offset_seconds"),
+        field("calendar"),
+    );
+    let of = |name: &str| column("days", name);
+    let (span_first, span_count) = (of("span_first"), of("span_count"));
+    let (observed_first, observed_count) = (of("observance_first"), of("observance_count"));
+    let (kind, span_name) = (column("spans", "kind"), column("spans", "name"));
+    let (from, to) = (column("spans", "from"), column("spans", "to"));
+    let (observed_name, flags) = (
+        column("observances", "name"),
+        column("observances", "flags"),
+    );
+    let (year, month, day, vara, state) =
+        (of("year"), of("month"), of("day"), of("vara"), of("state"));
+    let (fixed, sunrise, sunset) = (of("fixed_day"), of("sunrise"), of("sunset"));
+    let (moonrise, moonset, phase, lunar) = (
+        of("moonrise"),
+        of("moonset"),
+        of("moon_phase"),
+        of("lunar_month"),
+    );
+    for index in 0..year.len() {
+        let _ = writeln!(
+            out,
+            "day {}-{}-{} vara {} state {} fixed {} sun {} {} moon {} {} phase {} month{}",
+            year[index],
+            month[index],
+            day[index],
+            vara[index],
+            state[index],
+            fixed[index],
+            sunrise[index],
+            sunset[index],
+            moonrise[index],
+            moonset[index],
+            phase[index],
+            name(lunar[index]),
+        );
+        for row in span_first[index]..span_first[index] + span_count[index] {
+            let row = usize::try_from(row).expect("a row");
+            let _ = writeln!(
+                out,
+                "span {} {} {}{}",
+                kind[row],
+                from[row],
+                to[row],
+                name(span_name[row])
+            );
+        }
+        for row in observed_first[index]..observed_first[index] + observed_count[index] {
+            let row = usize::try_from(row).expect("a row");
+            let _ = writeln!(out, "observance {}{}", flags[row], name(observed_name[row]));
+        }
+    }
+    out
 }
 
 fn main() {
@@ -143,6 +240,17 @@ fn main() {
     write(dir, "intl_render.tsrb", &take(&mut blob));
 
     charts_panchanga_and_names(context, dir);
+
+    let week = CString::new(
+        r#"{"first": {"year": 2025, "month": 10, "day": 1}, "days": 7, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700, "festivals": {"rules": "NEPAL"}}"#,
+    )
+    .expect("a request");
+    // SAFETY: a live handle, a NUL-terminated request and a valid slot.
+    let status = unsafe { ts_almanac_digest(context, week.as_ptr(), &raw mut blob) };
+    assert!(status == Status::Ok, "the digest writes");
+    let digest = take(&mut blob);
+    write(dir, "digest.tsrb", &digest);
+    write(dir, "digest.dump", dump(&digest).as_bytes());
 
     write(dir, PACK, &overlay_pack());
 

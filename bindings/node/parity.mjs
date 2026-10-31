@@ -28,6 +28,7 @@ import {
   ChartLayout,
   DashaSystem,
   Varga,
+  decodeDigest,
 } from './lib/index.js';
 
 const report = new Map();
@@ -2053,6 +2054,14 @@ for (const [name, rules, published] of [
 {
   const ymd = (date) => `${date.year}-${date.month}-${date.day}`;
   const kathmandu = { latitude: 27.7172, longitude: 85.324, altitude: 1337 };
+  const digest = geo.almanac.digest({
+    from: { year: 2025, month: 10, day: 1 },
+    days: 7,
+    place: { ...kathmandu, altitude: 1400 },
+    utcOffsetSeconds: 20700,
+    festivals: { rules: 'NEPAL' },
+  });
+  put('rites-digest-seal', decodeDigest(digest).seal);
   const sankalpa = geo.almanac.sankalpa({
     at: 2461055.59375,
     place: { ...kathmandu, altitude: 1400 },
@@ -2464,6 +2473,7 @@ for (const [path, member] of [
   ['almanac.of', shape.almanac.of],
   ['almanac.festivals', shape.almanac.festivals],
   ['almanac.disagreements', shape.almanac.disagreements],
+  ['almanac.digest', shape.almanac.digest],
   ['almanac.festival_calendar', shape.almanac.festivalCalendar],
   ['almanac.next', shape.almanac.next],
   ['almanac.festivalPack', shape.almanac.festivalPack],

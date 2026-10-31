@@ -10914,6 +10914,45 @@ fn why_a_published_day_differs_crosses_as_the_facade_answers_it() {
     );
 }
 
+/// A digest crosses as the façade writes it; a request it cannot keep is
+/// refused and names the field.
+#[test]
+fn a_digest_crosses_byte_for_byte_and_refuses_by_field() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let call = |request: &str| {
+        let request = CString::new(request).unwrap();
+        let mut blob = TsBlob::empty();
+        // SAFETY: a live context, a NUL-terminated request and a valid slot.
+        let status = unsafe {
+            teistro_ffi::panchanga::ts_almanac_digest(ctx.handle, request.as_ptr(), &raw mut blob)
+        };
+        let bytes = if status == Status::Ok {
+            // SAFETY: the library wrote `len` bytes.
+            unsafe { core::slice::from_raw_parts(blob.data, blob.len) }.to_vec()
+        } else {
+            Vec::new()
+        };
+        // SAFETY: a descriptor the library wrote, or the empty one.
+        unsafe { ts_blob_free(&raw mut blob) };
+        (status, bytes)
+    };
+    let week = r#"{"first": {"year": 2025, "month": 10, "day": 1}, "days": 7, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}"#;
+    let (status, bytes) = call(week);
+    assert_eq!(status, Status::Ok);
+    let expected = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .almanac()
+        .digest(&teistro::DigestRequest::from_json(week).unwrap())
+        .unwrap();
+    assert_eq!(bytes, expected.value);
+    let (status, bytes) = call(&week.replace("\"days\": 7", "\"days\": 0"));
+    assert_eq!(status, Status::OutOfRange);
+    assert_eq!(bytes, [] as [u8; 0]);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("days"));
+}
+
 fn festival_calendar_text(ctx: &Ctx, request: &str) -> Result<String, Status> {
     let request = CString::new(request).unwrap();
     let mut text = TsString::empty();

@@ -1,0 +1,2 @@
+# A second parser, read as a black box (`03-design/icalendar.md` §6).
+icalendar==6.1.0

@@ -718,6 +718,7 @@ dependencies = [
  "teistro-gochar",
  "teistro-hellenistic",
  "teistro-houses",
+ "teistro-idl",
  "teistro-interpret",
  "teistro-intl",
  "teistro-kp",
@@ -851,6 +852,7 @@ dependencies = [
 name = "teistro-fuzz"
 version = "0.0.0"
 dependencies = [
+ "cc",
  "crc32fast",
  "ed25519-dalek",
  "libfuzzer-sys",

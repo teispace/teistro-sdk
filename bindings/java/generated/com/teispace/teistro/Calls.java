@@ -896,6 +896,32 @@ final class Calls {
     }
 
     /**
+     * `ts_almanac_digest`: **The N-day digest** (`03-design/digest-format.md`): the days from
+     * `first`, every limb and window, the Moon and the observances, as a
+     * `digest` blob a process with no engine reads with `bindings/c/digest`.
+     * The same request writes the same bytes on every platform.
+     *
+     * `request_json` is `{"first", "calendar", "days", "latitudeDeg",
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals"}`: `first`
+     * `{year, month, day}` in `calendar` (Gregorian when left out), `days` 1 to
+     * 366 and 60 when left out, `altitudeM` optional and `festivals` an
+     * optional festival request. A key it does not read, a place or offset
+     * out of range or a festival request its reader refuses is `INVALID_ARG`,
+     * named under `digest`; a count out of range `OUT_OF_RANGE` on `days`.
+     */
+    static byte[] almanacDigest(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outBlob = arena.allocate(Native.TsBlob.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_digest.invokeExact(context, requestJsonRaw, outBlob));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return taken(lib, outBlob);
+        }
+    }
+
+    /**
      * `ts_almanac_next`: The next day a festival rule or a kind of day falls on after an
      * instant at a place, with no year asked (`03-design/next-occurrence.md`),
      * as canonical JSON `{value, provenance}`: `value` is `{day, keys,

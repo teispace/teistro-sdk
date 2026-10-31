@@ -93,6 +93,15 @@ Every archive's SHA-256 is in `checksums.txt` on the release, in the
 format `sha256sum -c` reads, and `manifest.json` carries the digest of
 each library uncompressed.
 
+## The digest reader
+
+`digest/teistro_digest.{h,c}` reads the file `almanac.digest` writes
+(`docs/03-design/digest-format.md`). It needs no engine, no allocator and
+no libc: compile the one file into a widget, a watch face or a Swift or
+Kotlin target and call `ts_digest_open`. `check-c` holds that it links to
+nothing, reads what the SDK wrote, and refuses a wrong version, a cut and
+a changed bit, each by its own status.
+
 ## The test
 
 `tests/smoke.c` is a consumer that uses nothing but this header and the
