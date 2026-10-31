@@ -2690,3 +2690,16 @@ const stop: () => void = onInternalError((report: InternalReport) => {
 // @ts-expect-error a report carries no message
 onInternalError((report) => report.message);
 stop();
+// A day in sentences names its template keys and its draft flag.
+import type { DaySentences } from '../lib/index.js';
+function theSentences(ctx: Context): string {
+  const day: DaySentences = ctx.almanac.sentences({
+    date: { year: 2026, month: 3, day: 18 },
+    place: { latitude: 27.7172, longitude: 85.324 },
+    utcOffsetSeconds: 20700,
+  });
+  // @ts-expect-error a date is its three parts
+  ctx.almanac.sentences({ date: 1, place: { latitude: 0, longitude: 0 }, utcOffsetSeconds: 0 });
+  return `${day.locale} ${day.draft} ${day.sentences[0]?.text} ${day.withheld.length}`;
+}
+void theSentences;

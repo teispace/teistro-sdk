@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A day in sentences; a polar sankranti answers.**
+**Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or
+`CIVIL_MIDNIGHT` that the default month start refused now answers, and a `NEAREST_EVENT`
+day's season is read from its civil date (C930). No other day moves.
+- `almanac.sentences`, in every binding and over MCP: one day's facts as short sentences
+  from templates, every value taken from the answer, in `en-Latn` and `ne-Deva-NP`
+  (`draft` until Q42's reviewer signs). A locale without the templates is `UNSUPPORTED`
+  on `locale`, and a fallback does not answer for it (`03-design/day-in-sentences.md`).
+
 **Festival rules say what they are; India's central holidays ship; Fagu purnima joins.**
 **Numbers:** no day moves. Every shipped pack's `input_hash` moves once, since each
 rule now carries its values.

@@ -4051,6 +4051,7 @@ public final class Native {
         "ts_almanac_festival_calendar",
         "ts_almanac_digest",
         "ts_almanac_next",
+        "ts_almanac_sentences",
         "ts_almanac_festival_pack",
         "ts_almanac_changes",
         "ts_naam_milan",
@@ -4692,6 +4693,23 @@ public final class Native {
     public final MethodHandle ts_almanac_next;
 
     /**
+     * One day's facts as short declarative sentences
+     * (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+     * value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+     * params, text}`, `draft` true while the locale's templates wait for a
+     * native reviewer (Q42), and `withheld` the facts a polar day holds
+     * elsewhere.
+     *
+     * `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+     * altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+     * place or offset out of range, is `INVALID_ARG`, named under
+     * `sentences`; a locale not loaded, or one without the templates, is
+     * `UNSUPPORTED` on `locale`; a context without an ephemeris is
+     * `CAPABILITY`; otherwise as the day.
+     */
+    public final MethodHandle ts_almanac_sentences;
+
+    /**
      * Every rule of a festival pack with what it is
      * (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
      * each row `{key, form, source, meta, unsourced}`, `form` how its day is
@@ -5076,6 +5094,7 @@ public final class Native {
         ts_almanac_festival_calendar = linker.downcallHandle(symbols.find("ts_almanac_festival_calendar").orElseThrow(() -> missing("ts_almanac_festival_calendar")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_digest = linker.downcallHandle(symbols.find("ts_almanac_digest").orElseThrow(() -> missing("ts_almanac_digest")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_next = linker.downcallHandle(symbols.find("ts_almanac_next").orElseThrow(() -> missing("ts_almanac_next")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_sentences = linker.downcallHandle(symbols.find("ts_almanac_sentences").orElseThrow(() -> missing("ts_almanac_sentences")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_festival_pack = linker.downcallHandle(symbols.find("ts_almanac_festival_pack").orElseThrow(() -> missing("ts_almanac_festival_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_changes = linker.downcallHandle(symbols.find("ts_almanac_changes").orElseThrow(() -> missing("ts_almanac_changes")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

@@ -1348,6 +1348,11 @@ class MessagesSdk:
         return MessagesSdkCondition(self._r)
 
     @property
+    def day(self) -> MessagesSdkDay:
+        """The messages under `day`."""
+        return MessagesSdkDay(self._r)
+
+    @property
     def entity(self) -> MessagesSdkEntity:
         """The messages under `entity`."""
         return MessagesSdkEntity(self._r)
@@ -7282,6 +7287,134 @@ class MessagesSdkEntityAgniVasa:
     def svarga(self) -> EntityForms:
         """The forms of `agni_vasa.SVARGA` in the current locale."""
         return self._r.entity("agni_vasa.SVARGA")
+
+
+class MessagesSdkDay:
+    """The messages under `MessagesSdkDay`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def abhijit(self, *, from_: TimeValue, to: TimeValue) -> str:
+        """`sdk.day.abhijit`"""
+        return self._r.render(
+            "sdk.day.abhijit",
+            {"from": {"$time": from_}, "to": {"$time": to}},
+        )
+
+    def ayana(self, *, ayana: AyanaKey) -> str:
+        """`sdk.day.ayana`"""
+        return self._r.render(
+            "sdk.day.ayana",
+            {"ayana": {"$entity": ayana.value}},
+        )
+
+    def kaala(self, *, from_: TimeValue, kaala: KaalaKey, to: TimeValue) -> str:
+        """`sdk.day.kaala`"""
+        return self._r.render(
+            "sdk.day.kaala",
+            {"from": {"$time": from_}, "kaala": {"$entity": kaala.value}, "to": {"$time": to}},
+        )
+
+    def karana(self, *, ends: str, karana: KaranaKey, until: TimeValue) -> str:
+        """`sdk.day.karana`"""
+        return self._r.render(
+            "sdk.day.karana",
+            {"ends": ends, "karana": {"$entity": karana.value}, "until": {"$time": until}},
+        )
+
+    def month(self, *, kind: str, masa: MasaKey) -> str:
+        """`sdk.day.month`"""
+        return self._r.render(
+            "sdk.day.month",
+            {"kind": kind, "masa": {"$entity": masa.value}},
+        )
+
+    def moon_sign(self, *, ends: str, rashi: RashiKey, until: TimeValue) -> str:
+        """`sdk.day.moonSign`"""
+        return self._r.render(
+            "sdk.day.moonSign",
+            {"ends": ends, "rashi": {"$entity": rashi.value}, "until": {"$time": until}},
+        )
+
+    def moonrise(self, *, at: TimeValue, when: str) -> str:
+        """`sdk.day.moonrise`"""
+        return self._r.render(
+            "sdk.day.moonrise",
+            {"at": {"$time": at}, "when": when},
+        )
+
+    def moonset(self, *, at: TimeValue, when: str) -> str:
+        """`sdk.day.moonset`"""
+        return self._r.render(
+            "sdk.day.moonset",
+            {"at": {"$time": at}, "when": when},
+        )
+
+    def nakshatra(self, *, ends: str, nakshatra: NakshatraKey, until: TimeValue) -> str:
+        """`sdk.day.nakshatra`"""
+        return self._r.render(
+            "sdk.day.nakshatra",
+            {"ends": ends, "nakshatra": {"$entity": nakshatra.value}, "until": {"$time": until}},
+        )
+
+    def ritu(self, *, ritu: RituKey) -> str:
+        """`sdk.day.ritu`"""
+        return self._r.render(
+            "sdk.day.ritu",
+            {"ritu": {"$entity": ritu.value}},
+        )
+
+    def sankranti(self, *, at: TimeValue, rashi: RashiKey, when: str) -> str:
+        """`sdk.day.sankranti`"""
+        return self._r.render(
+            "sdk.day.sankranti",
+            {"at": {"$time": at}, "rashi": {"$entity": rashi.value}, "when": when},
+        )
+
+    def sun(self, *, rise: TimeValue, set: TimeValue) -> str:
+        """`sdk.day.sun`"""
+        return self._r.render(
+            "sdk.day.sun",
+            {"rise": {"$time": rise}, "set": {"$time": set}},
+        )
+
+    def sun_down(self) -> str:
+        """`sdk.day.sunDown`"""
+        return self._r.render("sdk.day.sunDown")
+
+    def sun_sign(self, *, rashi: RashiKey) -> str:
+        """`sdk.day.sunSign`"""
+        return self._r.render(
+            "sdk.day.sunSign",
+            {"rashi": {"$entity": rashi.value}},
+        )
+
+    def sun_up(self) -> str:
+        """`sdk.day.sunUp`"""
+        return self._r.render("sdk.day.sunUp")
+
+    def tithi(self, *, ends: str, paksha: PakshaKey, tithi: TithiKey, until: TimeValue) -> str:
+        """`sdk.day.tithi`"""
+        return self._r.render(
+            "sdk.day.tithi",
+            {"ends": ends, "paksha": {"$entity": paksha.value}, "tithi": {"$entity": tithi.value}, "until": {"$time": until}},
+        )
+
+    def vara(self, *, vara: VaraKey) -> str:
+        """`sdk.day.vara`"""
+        return self._r.render(
+            "sdk.day.vara",
+            {"vara": {"$entity": vara.value}},
+        )
+
+    def yoga(self, *, ends: str, until: TimeValue, yoga: YogaKey) -> str:
+        """`sdk.day.yoga`"""
+        return self._r.render(
+            "sdk.day.yoga",
+            {"ends": ends, "until": {"$time": until}, "yoga": {"$entity": yoga.value}},
+        )
 
 
 class MessagesSdkCondition:

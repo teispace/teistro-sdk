@@ -350,6 +350,47 @@ void main() {
   // The next occurrence (`03-design/next-occurrence.md`): Maghe sankranti
   // from 1 January 2026 in the first window, Vijaya Dashami within the
   // default limit, and a search too short refused on `limitDays`.
+  test('a day is said in sentences and Hindi is refused', () {
+    final ctx = teistro.context(
+      profile: 'nepali-committee',
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    );
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final day = Calendar.gregorian.date(2026, 3, 18);
+    final en = ctx.almanac.sentences(
+      date: day,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      locale: 'en-Latn',
+    );
+    expect(en.sentences.first.text, 'The day is Wednesday.');
+    expect(en.draft, isFalse);
+    final ne = ctx.almanac.sentences(
+      date: day,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+      locale: 'ne-Deva-NP',
+    );
+    expect(ne.sentences.first.text, 'यो दिन बुधबार हो।');
+    expect(ne.draft, isTrue);
+    expect(
+      () => ctx.almanac.sentences(
+        date: day,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+        locale: 'hi-Deva-IN',
+      ),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'locale'),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('the next sankranti and a pack\'s festival are found', () {
     final ctx = teistro.context(
       profile: 'nepali-committee',

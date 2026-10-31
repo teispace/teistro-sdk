@@ -372,6 +372,24 @@ public final class BindingTest {
             }
         });
 
+        // A day in sentences (day-in-sentences.md): English and Nepali say
+        // one day, and Hindi is refused on locale.
+        tests.put("a day is said in sentences and Hindi is refused", () -> {
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            CalendarDate day = Civil.date(Calendar.GREGORIAN, 2026, 3, 18);
+            try (Context committee = teistro.context(ContextOptions.builder().profile("nepali-committee")
+                    .ephemeris(Ephemeris.SURYA_SIDDHANTA).build())) {
+                DaySentences en = committee.almanac().sentences(day, kathmandu, 20_700, "en-Latn");
+                same("The day is Wednesday.", en.sentences().get(0).text(), "the vara");
+                same(false, en.draft(), "English is not a draft");
+                DaySentences ne = committee.almanac().sentences(day, kathmandu, 20_700, "ne-Deva-NP");
+                same("यो दिन बुधबार हो।", ne.sentences().get(0).text(), "the vara in Nepali");
+                same(true, ne.draft(), "Nepali waits on review");
+                same("locale", refusal(() -> committee.almanac().sentences(day, kathmandu, 20_700, "hi-Deva-IN"))
+                        .field(), "no Hindi templates");
+            }
+        });
+
         // The next occurrence (next-occurrence.md): Maghe sankranti from
         // 1 January 2026 in the first window, Vijaya Dashami within the
         // default limit, and a search too short refused on limitDays.

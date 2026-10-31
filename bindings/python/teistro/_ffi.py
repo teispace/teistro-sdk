@@ -4332,6 +4332,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_next.restype = ctypes.c_int32
+        self.ts_almanac_sentences: Any = library.ts_almanac_sentences
+        self.ts_almanac_sentences.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_sentences.restype = ctypes.c_int32
         self.ts_almanac_festival_pack: Any = library.ts_almanac_festival_pack
         self.ts_almanac_festival_pack.argtypes = [
             ctypes.POINTER(_Context),
@@ -5645,6 +5652,37 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_almanac_next(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_sentences(self, request_json: str) -> str:
+        """One day's facts as short declarative sentences
+        (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+        value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+        params, text}`, `draft` true while the locale's templates wait for a
+        native reviewer (Q42), and `withheld` the facts a polar day holds
+        elsewhere.
+
+        `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+        altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+        place or offset out of range, is `INVALID_ARG`, named under
+        `sentences`; a locale not loaded, or one without the templates, is
+        `UNSUPPORTED` on `locale`; a context without an ephemeris is
+        `CAPABILITY`; otherwise as the day.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_sentences(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

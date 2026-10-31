@@ -77,6 +77,7 @@ impl core::fmt::Debug for AlmanacArea<'_> {
 }
 
 mod changes;
+mod day_plan;
 mod digest;
 mod disagreement;
 mod feed;
@@ -86,6 +87,7 @@ mod next;
 mod pack;
 mod reasons;
 mod sait;
+mod sentences;
 
 #[cfg(feature = "schema")]
 pub(crate) use changes::ChangesAsked;
@@ -118,6 +120,9 @@ pub use reasons::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
 };
+#[cfg(feature = "schema")]
+pub(crate) use sentences::SentencesAsked;
+pub use sentences::{DaySentence, DaySentences, SentencesRequest};
 
 impl<'a> AlmanacArea<'a> {
     pub(crate) fn of_context(context: &'a Context) -> AlmanacArea<'a> {

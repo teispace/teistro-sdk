@@ -5144,6 +5144,38 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// One day's facts as short declarative sentences
+    /// (`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose
+    /// value is `{locale, draft, sentences, withheld}`, each sentence `{key,
+    /// params, text}`, `draft` true while the locale's templates wait for a
+    /// native reviewer (Q42), and `withheld` the facts a polar day holds
+    /// elsewhere.
+    ///
+    /// `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
+    /// altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+    /// place or offset out of range, is `INVALID_ARG`, named under
+    /// `sentences`; a locale not loaded, or one without the templates, is
+    /// `UNSUPPORTED` on `locale`; a context without an ephemeris is
+    /// `CAPABILITY`; otherwise as the day.
+    #[wasm_bindgen(js_name = almanacSentences)]
+    pub fn almanac_sentences(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_sentences(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Every rule of a festival pack with what it is
     /// (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
     /// each row `{key, form, source, meta, unsourced}`, `form` how its day is

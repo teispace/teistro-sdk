@@ -545,7 +545,7 @@ fn almanac_records() -> [Record; 5] {
 
 /// The rest of the almanac's records: what a pack holds, a digest, the next
 /// day of a rule, why a published day differs, and a sankalpa's time.
-fn almanac_lookup_records() -> [Record; 5] {
+fn almanac_lookup_records() -> [Record; 6] {
     [
         Record {
             name: "almanac.festivalPack",
@@ -576,6 +576,17 @@ fn almanac_lookup_records() -> [Record; 5] {
                 Answered::sealed(context.almanac().next_in_full(&asked)?)
             },
             schemas: schemas!(crate::area::NextAsked => crate::NextOccurrence),
+        },
+        Record {
+            name: "almanac.sentences",
+            boundary: "ts_almanac_sentences",
+            title: "One day's facts as short declarative sentences, every value taken from the day's answer, in a locale that carries the templates",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::SentencesRequest::from_json(json)?;
+                Answered::sealed(context.almanac().sentences(&asked)?)
+            },
+            schemas: schemas!(crate::area::SentencesAsked => crate::DaySentences),
         },
         Record {
             name: "almanac.publishedReasons",

@@ -3164,6 +3164,644 @@ pub mod sdk {
 
     }
 
+    /// The `day` group.
+    pub mod day {
+        /// The message `sdk.day.abhijit`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Abhijit;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Abhijit {
+        ///     from: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        ///     to: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        /// };
+        /// assert_eq!(Abhijit::KEY, "sdk.day.abhijit");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Abhijit {
+            /// The `from` parameter.
+            pub from: crate::ClockTime,
+            /// The `to` parameter.
+            pub to: crate::ClockTime,
+        }
+
+        impl crate::TypedMessage for Abhijit {
+            const KEY: &'static str = "sdk.day.abhijit";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("from", crate::Value::Time(self.from)),
+                    ("to", crate::Value::Time(self.to)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.ayana`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Ayana;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Ayana { ayana: teistro_core::catalogue::Ayana::ALL[0] };
+        /// assert_eq!(Ayana::KEY, "sdk.day.ayana");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Ayana {
+            /// The `ayana` parameter.
+            pub ayana: teistro_core::catalogue::Ayana,
+        }
+
+        impl crate::TypedMessage for Ayana {
+            const KEY: &'static str = "sdk.day.ayana";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("ayana", crate::Value::catalogued(self.ayana)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.kaala`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Kaala;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Kaala {
+        ///     from: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        ///     kaala: teistro_core::catalogue::Kaala::ALL[0],
+        ///     to: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        /// };
+        /// assert_eq!(Kaala::KEY, "sdk.day.kaala");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Kaala {
+            /// The `from` parameter.
+            pub from: crate::ClockTime,
+            /// The `kaala` parameter.
+            pub kaala: teistro_core::catalogue::Kaala,
+            /// The `to` parameter.
+            pub to: crate::ClockTime,
+        }
+
+        impl crate::TypedMessage for Kaala {
+            const KEY: &'static str = "sdk.day.kaala";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("from", crate::Value::Time(self.from)),
+                    ("kaala", crate::Value::catalogued(self.kaala)),
+                    ("to", crate::Value::Time(self.to)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.karana`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Karana;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Karana {
+        ///     ends: String::from("ends"),
+        ///     karana: teistro_core::catalogue::Karana::ALL[0],
+        ///     until: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        /// };
+        /// assert_eq!(Karana::KEY, "sdk.day.karana");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Karana {
+            /// The `ends` parameter.
+            pub ends: String,
+            /// The `karana` parameter.
+            pub karana: teistro_core::catalogue::Karana,
+            /// The `until` parameter.
+            pub until: crate::ClockTime,
+        }
+
+        impl crate::TypedMessage for Karana {
+            const KEY: &'static str = "sdk.day.karana";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("ends", crate::Value::Str(self.ends.clone())),
+                    ("karana", crate::Value::catalogued(self.karana)),
+                    ("until", crate::Value::Time(self.until)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.month`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Month;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Month {
+        ///     kind: String::from("kind"),
+        ///     masa: teistro_core::catalogue::Masa::ALL[0],
+        /// };
+        /// assert_eq!(Month::KEY, "sdk.day.month");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Month {
+            /// The `kind` parameter.
+            pub kind: String,
+            /// The `masa` parameter.
+            pub masa: teistro_core::catalogue::Masa,
+        }
+
+        impl crate::TypedMessage for Month {
+            const KEY: &'static str = "sdk.day.month";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("kind", crate::Value::Str(self.kind.clone())),
+                    ("masa", crate::Value::catalogued(self.masa)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.moonSign`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::MoonSign;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = MoonSign {
+        ///     ends: String::from("ends"),
+        ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+        ///     until: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        /// };
+        /// assert_eq!(MoonSign::KEY, "sdk.day.moonSign");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct MoonSign {
+            /// The `ends` parameter.
+            pub ends: String,
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+            /// The `until` parameter.
+            pub until: crate::ClockTime,
+        }
+
+        impl crate::TypedMessage for MoonSign {
+            const KEY: &'static str = "sdk.day.moonSign";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("ends", crate::Value::Str(self.ends.clone())),
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                    ("until", crate::Value::Time(self.until)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.moonrise`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Moonrise;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Moonrise {
+        ///     at: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        ///     when: String::from("when"),
+        /// };
+        /// assert_eq!(Moonrise::KEY, "sdk.day.moonrise");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Moonrise {
+            /// The `at` parameter.
+            pub at: crate::ClockTime,
+            /// The `when` parameter.
+            pub when: String,
+        }
+
+        impl crate::TypedMessage for Moonrise {
+            const KEY: &'static str = "sdk.day.moonrise";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("at", crate::Value::Time(self.at)),
+                    ("when", crate::Value::Str(self.when.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.moonset`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Moonset;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Moonset {
+        ///     at: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        ///     when: String::from("when"),
+        /// };
+        /// assert_eq!(Moonset::KEY, "sdk.day.moonset");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Moonset {
+            /// The `at` parameter.
+            pub at: crate::ClockTime,
+            /// The `when` parameter.
+            pub when: String,
+        }
+
+        impl crate::TypedMessage for Moonset {
+            const KEY: &'static str = "sdk.day.moonset";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("at", crate::Value::Time(self.at)),
+                    ("when", crate::Value::Str(self.when.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.nakshatra`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Nakshatra;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Nakshatra {
+        ///     ends: String::from("ends"),
+        ///     nakshatra: teistro_core::catalogue::Nakshatra::ALL[0],
+        ///     until: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        /// };
+        /// assert_eq!(Nakshatra::KEY, "sdk.day.nakshatra");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Nakshatra {
+            /// The `ends` parameter.
+            pub ends: String,
+            /// The `nakshatra` parameter.
+            pub nakshatra: teistro_core::catalogue::Nakshatra,
+            /// The `until` parameter.
+            pub until: crate::ClockTime,
+        }
+
+        impl crate::TypedMessage for Nakshatra {
+            const KEY: &'static str = "sdk.day.nakshatra";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("ends", crate::Value::Str(self.ends.clone())),
+                    ("nakshatra", crate::Value::catalogued(self.nakshatra)),
+                    ("until", crate::Value::Time(self.until)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.ritu`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Ritu;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Ritu { ritu: teistro_core::catalogue::Ritu::ALL[0] };
+        /// assert_eq!(Ritu::KEY, "sdk.day.ritu");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Ritu {
+            /// The `ritu` parameter.
+            pub ritu: teistro_core::catalogue::Ritu,
+        }
+
+        impl crate::TypedMessage for Ritu {
+            const KEY: &'static str = "sdk.day.ritu";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("ritu", crate::Value::catalogued(self.ritu)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.sankranti`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Sankranti;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Sankranti {
+        ///     at: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+        ///     when: String::from("when"),
+        /// };
+        /// assert_eq!(Sankranti::KEY, "sdk.day.sankranti");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Sankranti {
+            /// The `at` parameter.
+            pub at: crate::ClockTime,
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+            /// The `when` parameter.
+            pub when: String,
+        }
+
+        impl crate::TypedMessage for Sankranti {
+            const KEY: &'static str = "sdk.day.sankranti";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("at", crate::Value::Time(self.at)),
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                    ("when", crate::Value::Str(self.when.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.sun`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Sun;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Sun {
+        ///     rise: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        ///     set: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        /// };
+        /// assert_eq!(Sun::KEY, "sdk.day.sun");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Sun {
+            /// The `rise` parameter.
+            pub rise: crate::ClockTime,
+            /// The `set` parameter.
+            pub set: crate::ClockTime,
+        }
+
+        impl crate::TypedMessage for Sun {
+            const KEY: &'static str = "sdk.day.sun";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("rise", crate::Value::Time(self.rise)),
+                    ("set", crate::Value::Time(self.set)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.sunDown`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::SunDown;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = SunDown;
+        /// assert_eq!(SunDown::KEY, "sdk.day.sunDown");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct SunDown;
+
+        impl crate::TypedMessage for SunDown {
+            const KEY: &'static str = "sdk.day.sunDown";
+            fn params(&self) -> crate::Params {
+                crate::Params::new()
+            }
+        }
+
+        /// The message `sdk.day.sunSign`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::SunSign;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = SunSign { rashi: teistro_core::catalogue::Rashi::ALL[0] };
+        /// assert_eq!(SunSign::KEY, "sdk.day.sunSign");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct SunSign {
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+        }
+
+        impl crate::TypedMessage for SunSign {
+            const KEY: &'static str = "sdk.day.sunSign";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.sunUp`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::SunUp;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = SunUp;
+        /// assert_eq!(SunUp::KEY, "sdk.day.sunUp");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct SunUp;
+
+        impl crate::TypedMessage for SunUp {
+            const KEY: &'static str = "sdk.day.sunUp";
+            fn params(&self) -> crate::Params {
+                crate::Params::new()
+            }
+        }
+
+        /// The message `sdk.day.tithi`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Tithi;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Tithi {
+        ///     ends: String::from("ends"),
+        ///     paksha: teistro_core::catalogue::Paksha::ALL[0],
+        ///     tithi: teistro_core::catalogue::Tithi::ALL[0],
+        ///     until: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        /// };
+        /// assert_eq!(Tithi::KEY, "sdk.day.tithi");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Tithi {
+            /// The `ends` parameter.
+            pub ends: String,
+            /// The `paksha` parameter.
+            pub paksha: teistro_core::catalogue::Paksha,
+            /// The `tithi` parameter.
+            pub tithi: teistro_core::catalogue::Tithi,
+            /// The `until` parameter.
+            pub until: crate::ClockTime,
+        }
+
+        impl crate::TypedMessage for Tithi {
+            const KEY: &'static str = "sdk.day.tithi";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("ends", crate::Value::Str(self.ends.clone())),
+                    ("paksha", crate::Value::catalogued(self.paksha)),
+                    ("tithi", crate::Value::catalogued(self.tithi)),
+                    ("until", crate::Value::Time(self.until)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.vara`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Vara;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Vara { vara: teistro_core::catalogue::Vara::ALL[0] };
+        /// assert_eq!(Vara::KEY, "sdk.day.vara");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Vara {
+            /// The `vara` parameter.
+            pub vara: teistro_core::catalogue::Vara,
+        }
+
+        impl crate::TypedMessage for Vara {
+            const KEY: &'static str = "sdk.day.vara";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("vara", crate::Value::catalogued(self.vara)),
+                ])
+            }
+        }
+
+        /// The message `sdk.day.yoga`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::day::Yoga;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Yoga {
+        ///     ends: String::from("ends"),
+        ///     until: teistro_intl::ClockTime { hour: 6, minute: 5, second: 0 },
+        ///     yoga: teistro_core::catalogue::Yoga::ALL[0],
+        /// };
+        /// assert_eq!(Yoga::KEY, "sdk.day.yoga");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Yoga {
+            /// The `ends` parameter.
+            pub ends: String,
+            /// The `until` parameter.
+            pub until: crate::ClockTime,
+            /// The `yoga` parameter.
+            pub yoga: teistro_core::catalogue::Yoga,
+        }
+
+        impl crate::TypedMessage for Yoga {
+            const KEY: &'static str = "sdk.day.yoga";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("ends", crate::Value::Str(self.ends.clone())),
+                    ("until", crate::Value::Time(self.until)),
+                    ("yoga", crate::Value::catalogued(self.yoga)),
+                ])
+            }
+        }
+
+    }
+
     /// The `entity` group.
     pub mod entity {
         /// The `agni_vasa` group.

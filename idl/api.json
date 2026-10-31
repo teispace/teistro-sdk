@@ -17223,6 +17223,57 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_almanac_sentences",
+      "doc": "One day's facts as short declarative sentences\n(`03-design/day-in-sentences.md`), as canonical JSON: an envelope whose\nvalue is `{locale, draft, sentences, withheld}`, each sentence `{key,\nparams, text}`, `draft` true while the locale's templates wait for a\nnative reviewer (Q42), and `withheld` the facts a polar day holds\nelsewhere.\n\n`request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,\naltitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a\nplace or offset out of range, is `INVALID_ARG`, named under\n`sentences`; a locale not loaded, or one without the templates, is\n`UNSUPPORTED` on `locale`; a context without an ephemeris is\n`CAPABILITY`; otherwise as the day.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "ts_almanac_festival_pack",
       "doc": "Every rule of a festival pack with what it is\n(`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:\neach row `{key, form, source, meta, unsourced}`, `form` how its day is\nfound (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`\nits kind, tradition, communities and regions, `unsourced` the fields no\nsource gives, and a published row's `subjectTo` and `lastYear`.\n\n`request_json` is `{\"pack\"}`, a pack the SDK ships. Nothing is\nreckoned, so a context without an ephemeris answers. A key it does not\nread or a pack it does not ship is `INVALID_ARG`, named under `pack`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",

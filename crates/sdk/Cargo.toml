@@ -191,6 +191,10 @@ name = "next"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "sentences"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "published"
 required-features = ["builtin-ephemeris"]
 

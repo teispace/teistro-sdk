@@ -105,13 +105,14 @@ pub use almanac::{
     ReckonedPlace,
 };
 #[cfg(feature = "schema")]
-pub(crate) use almanac::{ChangesAsked, NextAsked};
+pub(crate) use almanac::{ChangesAsked, NextAsked, SentencesAsked};
 pub use almanac::{ChangesRequest, DayClock, NextOccurrence, NextRequest, NextTarget};
 pub use almanac::{
     DIGEST_DEFAULT_DAYS, DIGEST_FLAG_FAST, DIGEST_FLAG_PUBLISHED, DIGEST_FORMAT_MAJOR,
     DIGEST_FORMAT_MINOR, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DIGEST_NO_TIME, DIGEST_SCHEMA,
     DigestRequest, DigestSpan, digest_schema,
 };
+pub use almanac::{DaySentence, DaySentences, SentencesRequest};
 pub use almanac::{PackForm, PackListing, PackRequest, PackRow};
 pub use calendar::CalendarArea;
 #[cfg(feature = "chart")]
