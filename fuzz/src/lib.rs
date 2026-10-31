@@ -852,7 +852,7 @@ fn panchanga_request(
     TsPanchangaRequest {
         struct_size: size::<TsPanchangaRequest>(),
         calendar: Calendar::Gregorian.id(),
-        reserved: 0,
+        sky_step_minutes: 0,
         from_year: 2026,
         from_month: 11,
         from_day: 20,
