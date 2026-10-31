@@ -4534,5 +4534,47 @@
       "prose": "वींछुडो",
       "iast": "Vīñchuḍo"
     }
+  },
+  "gowri": {
+    "UTHI": {
+      "name": "उद्योग",
+      "prose": "उद्योग",
+      "iast": "Udyogam"
+    },
+    "AMIRTHAM": {
+      "name": "अमृत",
+      "prose": "अमृत",
+      "iast": "Amṛtam"
+    },
+    "ROGAM": {
+      "name": "रोग",
+      "prose": "रोग",
+      "iast": "Rogam"
+    },
+    "LAABAM": {
+      "name": "लाभ",
+      "prose": "लाभ",
+      "iast": "Lābham"
+    },
+    "DHANAM": {
+      "name": "धन",
+      "prose": "धन",
+      "iast": "Dhanam"
+    },
+    "SUGAM": {
+      "name": "सुख",
+      "prose": "सुख",
+      "iast": "Sukham"
+    },
+    "SORAM": {
+      "name": "चोर",
+      "prose": "चोर",
+      "iast": "Cōram"
+    },
+    "VISHAM": {
+      "name": "विष",
+      "prose": "विष",
+      "iast": "Viṣam"
+    }
   }
 }

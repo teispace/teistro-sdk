@@ -300,7 +300,8 @@ pub struct TsPanchangaRequest {
     /// `homa_ahuti` span section; `TS_PANCHANGA_SKY` (64) each day's sky,
     /// in the `sky` section, at `sky_step_minutes`;
     /// `TS_PANCHANGA_MARKERS` (128) each day's ganda mula, gandanta and
-    /// vinchudo, in the `markers` span section.
+    /// vinchudo, in the `markers` span section; `TS_PANCHANGA_GOWRI` (256)
+    /// each day's Gowri panchangam, in the `gowri` section.
     /// Zero for the days alone, which is what every
     /// caller compiled against an earlier header passes, since this was a
     /// reserved field it wrote zero to.
@@ -512,6 +513,23 @@ pub const TS_PANCHANGA_SKY: u32 = 64;
 /// ```
 pub const TS_PANCHANGA_MARKERS: u32 = 128;
 
+/// `TS_PANCHANGA_GOWRI`, the bit a caller sets in a panchanga request's
+/// `sections` for each day's Gowri panchangam, in the `gowri` section:
+/// eight Gowri of the daylight and eight of the night, a printed reading
+/// (`03-design/gowri-panchangam.md`, crux C1052). A request that does not
+/// set it pays nothing.
+///
+/// `api: constant`
+///
+/// ```
+/// use teistro_ffi::panchanga::{TS_PANCHANGA_GOWRI, TS_PANCHANGA_MARKERS};
+///
+/// // One bit of a request's `sections`, OR-ed with the others asked for.
+/// assert_eq!(TS_PANCHANGA_GOWRI, 1 << 8);
+/// assert_eq!((TS_PANCHANGA_GOWRI | TS_PANCHANGA_MARKERS) & TS_PANCHANGA_GOWRI, TS_PANCHANGA_GOWRI);
+/// ```
+pub const TS_PANCHANGA_GOWRI: u32 = 256;
+
 /// A day's own values, in the order `days` declares them.
 #[must_use]
 fn day_row(day: &Panchanga, stated: Option<&ClockReading>) -> Vec<FixedValue> {
@@ -578,6 +596,7 @@ fn count_row(day: &Panchanga) -> Vec<FixedValue> {
         day.shiva_vasa.len(),
         usize::from(day.named_panchaka.is_some()),
         day.markers.len(),
+        day.gowri.len(),
     ]
     .into_iter()
     .map(|count| u64::try_from(count).unwrap_or(u64::MAX).into())
@@ -845,6 +864,7 @@ struct RaggedRows {
     shiva_vasa: Vec<Vec<FixedValue>>,
     named_panchaka: Vec<Vec<FixedValue>>,
     markers: Vec<Vec<FixedValue>>,
+    gowri: Vec<Vec<FixedValue>>,
 }
 
 impl RaggedRows {
@@ -888,6 +908,16 @@ impl RaggedRows {
                 |m| m.id(),
             )?,
             markers: span_rows(days, |day| &day.markers, |m| m.id())?,
+            gowri: days
+                .iter()
+                .flat_map(|day| day.gowri.iter())
+                .map(|part| {
+                    let mut row = vec![u64::from(part.gowri.id()).into()];
+                    row.extend(interval(part.at));
+                    row.push(flag(part.is_daytime));
+                    row
+                })
+                .collect(),
         })
     }
 }
@@ -1029,6 +1059,7 @@ pub fn encode(
         writer.rows("named_panchaka", &ragged.named_panchaka)?;
         writer.bytes("sky", beside.sky.as_bytes())?;
         writer.rows("markers", &ragged.markers)?;
+        writer.rows("gowri", &ragged.gowri)?;
         writer.finish()
     };
     write().map_err(|error| {
@@ -1060,6 +1091,40 @@ fn with_sky(
                 .with_field("sky_step_minutes"),
         )
     }
+}
+
+/// `beside` with every section a bit of `sections` asks for, beside the
+/// day's sky, which also reads its step.
+fn with_sections(mut beside: teistro::AlmanacRequest, sections: u32) -> teistro::AlmanacRequest {
+    type Ask = fn(teistro::AlmanacRequest) -> teistro::AlmanacRequest;
+    let asks: [(u32, Ask); 8] = [
+        (TS_PANCHANGA_YEARS, teistro::AlmanacRequest::with_years),
+        (
+            TS_PANCHANGA_ECLIPSES,
+            teistro::AlmanacRequest::with_eclipses,
+        ),
+        (
+            TS_PANCHANGA_NEPAL_SAMBAT,
+            teistro::AlmanacRequest::with_nepal_sambat,
+        ),
+        (TS_PANCHANGA_LAGNAS, teistro::AlmanacRequest::with_lagnas),
+        (
+            TS_PANCHANGA_HOMA_AHUTI,
+            teistro::AlmanacRequest::with_homa_ahuti,
+        ),
+        (TS_PANCHANGA_MARKERS, teistro::AlmanacRequest::with_markers),
+        (TS_PANCHANGA_GOWRI, teistro::AlmanacRequest::with_gowri),
+        (
+            TS_PANCHANGA_WITHOUT_DAYS,
+            teistro::AlmanacRequest::without_days,
+        ),
+    ];
+    for (bit, ask) in asks {
+        if sections & bit == bit {
+            beside = ask(beside);
+        }
+    }
+    beside
 }
 
 /// Founds the almanac of every day in a range at one place and answers
@@ -1184,28 +1249,11 @@ pub unsafe extern "C" fn ts_panchanga_days(
         if let Some(festivals) = festivals {
             beside = beside.with_festivals(festivals);
         }
-        if asked.sections & TS_PANCHANGA_YEARS == TS_PANCHANGA_YEARS {
-            beside = beside.with_years();
-        }
-        if asked.sections & TS_PANCHANGA_ECLIPSES == TS_PANCHANGA_ECLIPSES {
-            beside = beside.with_eclipses();
-        }
-        if asked.sections & TS_PANCHANGA_NEPAL_SAMBAT == TS_PANCHANGA_NEPAL_SAMBAT {
-            beside = beside.with_nepal_sambat();
-        }
-        if asked.sections & TS_PANCHANGA_LAGNAS == TS_PANCHANGA_LAGNAS {
-            beside = beside.with_lagnas();
-        }
-        if asked.sections & TS_PANCHANGA_HOMA_AHUTI == TS_PANCHANGA_HOMA_AHUTI {
-            beside = beside.with_homa_ahuti();
-        }
-        if asked.sections & TS_PANCHANGA_MARKERS == TS_PANCHANGA_MARKERS {
-            beside = beside.with_markers();
-        }
-        beside = with_sky(beside, asked.sections, asked.sky_step_minutes)?;
-        if asked.sections & TS_PANCHANGA_WITHOUT_DAYS == TS_PANCHANGA_WITHOUT_DAYS {
-            beside = beside.without_days();
-        }
+        beside = with_sky(
+            with_sections(beside, asked.sections),
+            asked.sections,
+            asked.sky_step_minutes,
+        )?;
         // The façade founds the days once for everything asked beside them.
         // SAFETY: as above.
         let zone = unsafe { optional_text(asked.zone_json, "zone_json") }?

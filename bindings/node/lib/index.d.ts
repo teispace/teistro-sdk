@@ -16,6 +16,7 @@ import type {
   AshubhaYoga,
   BhadraVasa,
   DayMarker,
+  Gowri,
   ShivaVasa,
   AvasthaDeeptadi,
   AvasthaSayanadi,
@@ -5498,6 +5499,14 @@ export interface KaalaPeriod extends Interval {
 }
 
 /** One choghadiya, of the daylight or of the night. */
+/** One Gowri of the Gowri panchangam, of the daylight or of the night. */
+export interface GowriPeriod extends Interval {
+  /** Which Gowri. */
+  readonly gowri: Gowri | 'unknown';
+  /** Whether it is one of the eight of the daylight. */
+  readonly daytime: boolean;
+}
+
 export interface ChoghadiyaPeriod extends Interval {
   /** Which choghadiya. */
   readonly choghadiya: Choghadiya | 'unknown';
@@ -5807,6 +5816,11 @@ export declare class AlmanacDay {
   readonly kaalas: readonly KaalaPeriod[];
   /** Eight choghadiya of the daylight and eight of the night. */
   readonly choghadiya: readonly ChoghadiyaPeriod[];
+  /**
+   * The Gowri panchangam, when the request asked with `gowri: true`: eight Gowri of the daylight and eight of the
+   * night, each an eighth of its arc, a printed reading (crux C1052). Empty when not asked for.
+   */
+  readonly gowri: readonly GowriPeriod[];
   /** The twenty-four horas, from sunrise. */
   readonly horas: readonly Hora[];
   /** The thirty muhurtas. */
@@ -5845,6 +5859,8 @@ export interface AlmanacRequest {
   readonly homaAhuti?: boolean;
   /** Whether to give each day its ganda mula, gandanta and vinchudo, as `AlmanacDay.markers`; `false` by default, which costs nothing. */
   readonly markers?: boolean;
+  /** Whether to give each day its Gowri panchangam, as `AlmanacDay.gowri`; `false` by default, which costs nothing. */
+  readonly gowri?: boolean;
   /** Whether to answer each day's sky, as `Almanac.sky`; `false` by default, which costs nothing. */
   readonly sky?: boolean;
   /** The step of the sky's paths in minutes, 1 to 240, ten when left out. */
@@ -7602,7 +7618,7 @@ export declare class AlmanacArea {
    * its day can change.
    */
   festivals(
-    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'markers' | 'sky' | 'skyStepMinutes' | 'days'> & {
+    request: Omit<AlmanacRequest, 'festivals' | 'muhurta' | 'nepalSambat' | 'lagnas' | 'homaAhuti' | 'markers' | 'gowri' | 'sky' | 'skyStepMinutes' | 'days'> & {
       readonly festivals: FestivalRequest;
     },
   ): FestivalAnswer;

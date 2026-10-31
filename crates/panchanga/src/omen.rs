@@ -1563,14 +1563,10 @@ const PUSHYA_YOGAS: [(Vara, Kind); 2] = [
 /// let found = yogas(CLASSICAL, Vara::Ravivara, chitra, &dvitiya)?;
 /// assert_eq!(found.iter().map(|y| y.yoga).collect::<Vec<_>>(), [MuhurtaYoga::Dwipushkar]);
 /// assert_eq!(yogas("ACME", Vara::Ravivara, chitra, &dvitiya).unwrap_err().field(), Some("panchanga.muhurta_tables"));
-/// // Muhurta Chintamani's reads each star of the day: Hasta's two, and in
-/// // two-footed Chitra under the Saptami, a Bhadra tithi, the Dwipushkar
-/// // the classical reading at sunrise misses.
+/// // Muhurta Chintamani's reads each star of the day: Hasta's two and
+/// // nothing in Chitra, which is no Sunday star.
 /// let full = yogas(MUHURTA_CHINTAMANI, Vara::Ravivara, &nakshatras, &tithis)?;
-/// assert_eq!(
-///     full.iter().map(|y| y.yoga).collect::<Vec<_>>(),
-///     [MuhurtaYoga::AmritSiddhi, MuhurtaYoga::SarvarthaSiddhi, MuhurtaYoga::Dwipushkar]
-/// );
+/// assert_eq!(full.iter().map(|y| y.yoga).collect::<Vec<_>>(), [MuhurtaYoga::AmritSiddhi, MuhurtaYoga::SarvarthaSiddhi]);
 /// # Ok::<(), teistro_core::error::Error>(())
 /// ```
 ///
@@ -2461,7 +2457,7 @@ mod tests {
     #[test]
     fn pushkara_is_the_star_a_sign_boundary_cuts() {
         use super::pushkara_of;
-        for star in &Nakshatra::ALL {
+        for star in Nakshatra::ALL.iter() {
             let first = 4 * star.id();
             let feet_before_boundary = (0..4).take_while(|p| (first + p) / 9 == first / 9).count();
             let expected = match feet_before_boundary {
@@ -2508,7 +2504,7 @@ mod tests {
             without(whole, &[Interval::literal(5.0, 11.0)]),
             [Interval::literal(11.0, 20.0)]
         );
-        assert_eq!(without(whole, &[Interval::literal(0.0, 30.0)]).len(), 0);
+        assert!(without(whole, &[Interval::literal(0.0, 30.0)]).is_empty());
         assert_eq!(without(whole, &[Interval::literal(20.0, 25.0)]), [whole]);
         // Two cuts.
         assert_eq!(
@@ -2640,10 +2636,7 @@ mod tests {
             2
         );
         assert_eq!(gandanta(&found).len(), 1);
-        assert_eq!(
-            day_markers(&spans(&[(Nakshatra::Bharani, 99.0, 102.0)]), &[], day).len(),
-            0
-        );
+        assert!(day_markers(&spans(&[(Nakshatra::Bharani, 99.0, 102.0)]), &[], day).is_empty());
         // Vinchudo is the Moon's time in Scorpio and nothing else.
         let signs = spans(&[(Rashi::Libra, 99.0, 100.7), (Rashi::Scorpio, 100.7, 103.0)]);
         let vinchudo: Vec<_> = day_markers(&[], &signs, day)

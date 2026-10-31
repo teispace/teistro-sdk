@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Gowri panchangam.**
+**Numbers:** none unless asked: a day without `gowri` answers and hashes as before.
+- `AlmanacRequest::with_gowri`, `"gowri": true` in the JSON days request and `TS_PANCHANGA_GOWRI` (256)
+  give each day `gowri`: eight Gowri of the daylight and eight of the night (the new kind `Gowri`), by the
+  rule the Tamil almanacs' table follows, Visham by day the rahu kaala; the section `gowri` (42), read by
+  every binding (SR-22, `03-design/gowri-panchangam.md`, C1052: a printed reading with no text).
+
 **Muhurta Chintamani's yoga tables, and a day's ganda mula, gandanta and vinchudo.**
 **Numbers:** Dwipushkar no longer fires in Anuradha: a Bhadra tithi on a Sunday, Tuesday or Saturday at
 sunrise in Anuradha read Dwipushkar under `CLASSICAL` and now reads nothing, since no sign boundary cuts

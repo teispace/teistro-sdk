@@ -45,9 +45,9 @@ use teistro_ffi::ephemeris::{ts_ephemeris_call, ts_ephemeris_manifest};
 use teistro_ffi::intl::{ts_intl_has, ts_intl_locale, ts_intl_render, ts_intl_set_locale};
 use teistro_ffi::key::{ts_key_name, ts_key_parse};
 use teistro_ffi::panchanga::{
-    TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_HOMA_AHUTI, TS_PANCHANGA_LAGNAS, TS_PANCHANGA_MARKERS,
-    TS_PANCHANGA_NEPAL_SAMBAT, TS_PANCHANGA_SKY, TS_PANCHANGA_WITHOUT_DAYS, TS_PANCHANGA_YEARS,
-    TsPanchangaRequest, ts_panchanga_days,
+    TS_PANCHANGA_ECLIPSES, TS_PANCHANGA_GOWRI, TS_PANCHANGA_HOMA_AHUTI, TS_PANCHANGA_LAGNAS,
+    TS_PANCHANGA_MARKERS, TS_PANCHANGA_NEPAL_SAMBAT, TS_PANCHANGA_SKY, TS_PANCHANGA_WITHOUT_DAYS,
+    TS_PANCHANGA_YEARS, TsPanchangaRequest, ts_panchanga_days,
 };
 use teistro_ffi::positions::ts_positions;
 use teistro_ffi::provider::{
@@ -6157,6 +6157,14 @@ fn a_panchanga_request_carries_lagnas_and_leaves_out_days_by_their_bits() {
         marked.count("markers").unwrap() >= 3,
         "{:?}",
         marked.count("markers")
+    );
+    assert_eq!(plain.count("gowri"), Some(0));
+    let gowri = asked(TS_PANCHANGA_GOWRI);
+    let gowri = Reader::parse(&gowri, &schema).unwrap();
+    assert_eq!(
+        gowri.count("gowri"),
+        Some(16),
+        "eight by day and eight by night"
     );
     assert_eq!(plain.count("days"), Some(1));
     assert_eq!(without.count("days"), Some(0));

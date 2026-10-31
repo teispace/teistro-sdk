@@ -2401,8 +2401,9 @@ geo.dispose();
 // members only.
 {
   const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
-  const day = sky.almanac.of({ from: gregorian(2025, 6, 11), to: gregorian(2025, 6, 11), place, utcOffsetSeconds: 20700, markers: true }).at(0);
+  const day = sky.almanac.of({ from: gregorian(2025, 6, 11), to: gregorian(2025, 6, 11), place, utcOffsetSeconds: 20700, markers: true, gowri: true }).at(0);
   put('markers', day.markers.map((span) => span.member).join(' '));
+  put('gowri', day.gowri.map((part) => part.gowri).join(' '));
   sky.dispose();
 }
 

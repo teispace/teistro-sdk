@@ -42,6 +42,7 @@ import {
   CHART_VIMSHOPAKA,
   CONTEXT_TEST_PROVIDER,
   PANCHANGA_ECLIPSES,
+  PANCHANGA_GOWRI,
   PANCHANGA_HOMA_AHUTI,
   PANCHANGA_LAGNAS,
   PANCHANGA_MARKERS,
@@ -62,6 +63,7 @@ import {
   DayPartById,
   ChartKindById,
   ChoghadiyaById,
+  GowriById,
   DirectionById,
   AgniVasaById,
   AshubhaYogaById,
@@ -2350,6 +2352,22 @@ export class AlmanacDay {
     return this.#rows('choghadiya', (i) => ({
       choghadiya: ChoghadiyaById.get(c.choghadiya[i]) ?? 'unknown',
       lord: GrahaById.get(c.lord[i]) ?? 'unknown',
+      from: c.from[i],
+      to: c.to[i],
+      daytime: c.daytime[i] === 1,
+    }));
+  }
+
+  /**
+   * The Gowri panchangam, when the request asked with `gowri: true`
+   * (`03-design/gowri-panchangam.md`): eight Gowri of the daylight and
+   * eight of the night, each an eighth of its arc, a printed reading (crux
+   * C1052). Empty when not asked for.
+   */
+  get gowri() {
+    const c = this.#batch.decoded.gowri;
+    return this.#rows('gowri', (i) => ({
+      gowri: GowriById.get(c.gowri[i]) ?? 'unknown',
       from: c.from[i],
       to: c.to[i],
       daytime: c.daytime[i] === 1,
@@ -7599,6 +7617,8 @@ export class AlmanacArea extends Area {
    *   search a day does not otherwise make, so only on asking
    * @param {boolean} [request.markers] whether to give each day its ganda
    *   mula, gandanta and vinchudo, as `AlmanacDay.markers`
+   * @param {boolean} [request.gowri] whether to give each day its Gowri
+   *   panchangam, as `AlmanacDay.gowri`
    * @param {boolean} [request.days] `false` to leave the days out and
    *   answer only what is asked beside them; festivals alone are then
    *   founded as only what their rules read, which is what `festivals`
@@ -7654,6 +7674,7 @@ export class AlmanacArea extends Area {
           (request.homaAhuti === true ? PANCHANGA_HOMA_AHUTI : 0) |
           (request.sky === true ? PANCHANGA_SKY : 0) |
           (request.markers === true ? PANCHANGA_MARKERS : 0) |
+          (request.gowri === true ? PANCHANGA_GOWRI : 0) |
           (request.days === false ? PANCHANGA_WITHOUT_DAYS : 0),
       }),
     );
@@ -7676,7 +7697,7 @@ export class AlmanacArea extends Area {
     if (request?.festivals == null) {
       throw new TypeError("festivals: expected a festivals request record, e.g. { rules: 'NEPAL' }");
     }
-    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, markers: false, sky: false, skyStepMinutes: undefined, days: false }).festivals;
+    return this.of({ ...request, muhurta: undefined, nepalSambat: false, lagnas: false, homaAhuti: false, markers: false, gowri: false, sky: false, skyStepMinutes: undefined, days: false }).festivals;
   }
 
   /**

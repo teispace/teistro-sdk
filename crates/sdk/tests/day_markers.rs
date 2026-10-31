@@ -213,8 +213,7 @@ fn muhurta_chintamani_tables_give_guru_pushya_on_a_thursday_in_pushya() {
             day.omens
                 .yogas
                 .iter()
-                .all(|y| day.window.from.get() <= y.at.from.get()
-                    && y.at.to.get() <= day.window.to.get())
+                .all(|y| day.window.from <= y.at.from && y.at.to <= day.window.to)
         );
     }
     assert!(thursdays >= 1, "half a year holds a Guru Pushya");
