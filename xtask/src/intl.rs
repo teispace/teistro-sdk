@@ -845,6 +845,26 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
             "SNAKE", "TIGER",
         ],
     ),
+    (
+        "year_office",
+        "a patro printed in Nepal names ten office-bearers (Himal Panchanga VS 2082 p. 2) \
+         with neither the commander nor the lord of prices, which only the southern nine \
+         print, in Telugu and Kannada; no Devanagari printing of either has been read",
+        &["SENADHIPATI", "ARGHADHIPATI"],
+    ),
+    (
+        "ruler_text",
+        "the southern nine are a practice printed in Telugu and Kannada, with no verse and \
+         no Devanagari printing of the name read (C1071)",
+        &["NAVANAYAKA"],
+    ),
+    (
+        "ruler_day_rule",
+        "the texts' word for an ingress's day (dina, ahan) is the word the two readings \
+         split on (C1072), so naming the daylight reading by it would choose between them, \
+         and no printed Nepali names the reading",
+        &["DAYLIGHT"],
+    ),
 ];
 
 /// Every catalogue kind, by name, from the catalogue itself.

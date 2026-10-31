@@ -140,6 +140,14 @@ Each year's `rulers` lists the nine offices in the southern order, each
 the boundary, `vara.GURUVARA`, `graha.JUPITER`) and the sunrise that
 opened that weekday. `YearRuler::lord` is the first reading's lord.
 
+The office, the texts and the rule are catalogue kinds (`year_office`,
+`ruler_text`, `ruler_day_rule`), written in full at the boundary
+(`year_office.RAJA`, `ruler_text.NARADA_SAMHITA`, `ruler_day_rule.SUNRISE`),
+so each binding decodes them to its generated enum and a reader names them
+through `intl.entity`; the names and where each spelling comes from are
+`entity-names.md` §4d. The event, texts and rules of each office are the
+`Office` trait's, the tables of §1 and §2.
+
 The rulers ride on the `years` answer and section, which every binding
 reads; a sankalpa's year leaves them empty, since it asks only the name
 and the numbers and the nine ingresses would cost it a search a day.

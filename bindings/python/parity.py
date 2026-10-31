@@ -3017,7 +3017,8 @@ def main() -> None:
             put(
                 f"years-{k}-rulers",
                 listed(
-                    f"{r.office}:{number(r.event)}:" + ",".join(f"{d.rule}={d.lord.full_key}" for d in r.readings)
+                    f"{r.office.full_key}:{number(r.event)}:"
+                    + ",".join(f"{d.rule.full_key}={d.lord.full_key}" for d in r.readings)
                     for r in year.rulers
                 ),
             )

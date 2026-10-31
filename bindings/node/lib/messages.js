@@ -995,6 +995,16 @@ export function messages(r) {
           varsha: () => r.entity('ritu.VARSHA'),
           vasanta: () => r.entity('ritu.VASANTA'),
         },
+        rulerDayRule: {
+          garga: () => r.entity('ruler_day_rule.GARGA'),
+          newMoon: () => r.entity('ruler_day_rule.NEW_MOON'),
+          sunrise: () => r.entity('ruler_day_rule.SUNRISE'),
+          vara: () => r.entity('ruler_day_rule.VARA'),
+        },
+        rulerText: {
+          jyotirnibandha: () => r.entity('ruler_text.JYOTIRNIBANDHA'),
+          naradaSamhita: () => r.entity('ruler_text.NARADA_SAMHITA'),
+        },
         samvatsara: {
           akshaya: () => r.entity('samvatsara.AKSHAYA'),
           ananda: () => r.entity('samvatsara.ANANDA'),
@@ -1178,6 +1188,15 @@ export function messages(r) {
           mleccha: () => r.entity('varna.MLECCHA'),
           shudra: () => r.entity('varna.SHUDRA'),
           vaishya: () => r.entity('varna.VAISHYA'),
+        },
+        yearOffice: {
+          dhanyadhipati: () => r.entity('year_office.DHANYADHIPATI'),
+          mantri: () => r.entity('year_office.MANTRI'),
+          meghadhipati: () => r.entity('year_office.MEGHADHIPATI'),
+          nirasadhipati: () => r.entity('year_office.NIRASADHIPATI'),
+          raja: () => r.entity('year_office.RAJA'),
+          rasadhipati: () => r.entity('year_office.RASADHIPATI'),
+          sasyadhipati: () => r.entity('year_office.SASYADHIPATI'),
         },
         yoga: {
           atiganda: () => r.entity('yoga.ATIGANDA'),

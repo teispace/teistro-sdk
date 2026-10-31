@@ -4611,5 +4611,76 @@
       "name": "जलाहार",
       "prose": "जलाहार"
     }
+  },
+  "year_office": {
+    "RAJA": {
+      "name": "राजा",
+      "prose": "राजा",
+      "iast": "Rājā"
+    },
+    "MANTRI": {
+      "name": "मन्त्री",
+      "prose": "मन्त्री",
+      "iast": "Mantrī"
+    },
+    "SASYADHIPATI": {
+      "name": "सस्येश",
+      "prose": "सस्येश",
+      "iast": "Sasyeśa"
+    },
+    "DHANYADHIPATI": {
+      "name": "धान्येश",
+      "prose": "धान्येश",
+      "iast": "Dhānyeśa"
+    },
+    "MEGHADHIPATI": {
+      "name": "मेघेश",
+      "prose": "मेघेश",
+      "iast": "Megheśa"
+    },
+    "RASADHIPATI": {
+      "name": "रसेश",
+      "prose": "रसेश",
+      "iast": "Raseśa"
+    },
+    "NIRASADHIPATI": {
+      "name": "नीरसेश",
+      "prose": "नीरसेश",
+      "iast": "Nīraseśa"
+    }
+  },
+  "ruler_text": {
+    "JYOTIRNIBANDHA": {
+      "name": "ज्योतिर्निबन्ध",
+      "prose": "ज्योतिर्निबन्ध",
+      "iast": "Jyotirnibandha"
+    },
+    "NARADA_SAMHITA": {
+      "name": "नारदसंहिता",
+      "prose": "नारदसंहिता",
+      "iast": "Nāradasaṃhitā"
+    }
+  },
+  "ruler_day_rule": {
+    "SUNRISE": {
+      "name": "उदयकालिक",
+      "prose": "उदयकालिक",
+      "iast": "Udayakālika"
+    },
+    "NEW_MOON": {
+      "name": "दर्शप्रतिपत्सन्धि",
+      "prose": "दर्शप्रतिपत्सन्धि",
+      "iast": "Darśapratipatsandhi"
+    },
+    "GARGA": {
+      "name": "गर्ग",
+      "prose": "गर्ग",
+      "iast": "Garga"
+    },
+    "VARA": {
+      "name": "वार",
+      "prose": "वार",
+      "iast": "Vāra"
+    }
   }
 }

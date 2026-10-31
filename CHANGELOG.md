@@ -55,6 +55,12 @@ section's digest moves; a sankalpa's year carries none.
   nine) and read under every rule they give: the raja by sunrise, by the new moon or by
   Garga's midday, an ingress by its daylight or its weekday (SR-46, C1070–C1072,
   `03-design/year-rulers.md`). Typed in every binding.
+- The office, its texts and each reading's rule are catalogue kinds 82 to 84
+  (`year_office`, `ruler_text`, `ruler_day_rule`), written in full at the boundary
+  (`year_office.RAJA`) and decoded to each binding's generated enum. `sdk.entity` names
+  seven offices, two texts and four rules in English and Nepali, the Nepali from a patro
+  printed in Nepal or the texts' own words, and Hindi and Sanskrit where a printed source
+  gives them (`03-design/entity-names.md` §4d).
 
 **A context crosses threads.**
 **Numbers:** none.

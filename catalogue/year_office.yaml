@@ -1,0 +1,76 @@
+kind: year_office
+number: 82
+version: 1
+doc: "One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`)."
+members:
+  - key: RAJA
+    id: 0
+    doc: "The king, the year's lord (abdapa, varsheśa): the lord of Chaitra Shukla Pratipada's weekday"
+    sources:
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29, rājādīnāṃ nirṇayaḥ vv. 1-7, 10"
+      - text: "Narada Samhita (Kashi Sanskrit Series 40, 1984)"
+        ref: "2.1"
+    mark: V
+  - key: MANTRI
+    id: 1
+    doc: "The minister (mantrī; bhūpati in Narada Samhita): Mesha's ingress"
+    sources:
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29 vv. 7, 10"
+      - text: "Narada Samhita (Kashi Sanskrit Series 40, 1984)"
+        ref: "2.2"
+    mark: V
+  - key: SENADHIPATI
+    id: 2
+    doc: "The commander (senādhipati): Simha's ingress"
+    sources:
+      - text: "the southern panchangas' nine (navanāyaka)"
+        ref: "`03-design/year-rulers.md` §1, C1071"
+    mark: T
+  - key: SASYADHIPATI
+    id: 3
+    doc: "The lord of the crops (sasyeśa), Jyotirnibandha's first lord of grain: Karka's ingress"
+    sources:
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29 vv. 8, 10"
+      - text: "Narada Samhita (Kashi Sanskrit Series 40, 1984)"
+        ref: "2.2"
+    mark: V
+  - key: DHANYADHIPATI
+    id: 4
+    doc: "The lord of grain (dhānyādhipa), Jyotirnibandha's later lord of grain: Dhanu's ingress"
+    sources:
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29 vv. 9, 10"
+    mark: V
+  - key: ARGHADHIPATI
+    id: 5
+    doc: "The lord of prices (arghādhipati): Mithuna's ingress"
+    sources:
+      - text: "the southern panchangas' nine (navanāyaka)"
+        ref: "`03-design/year-rulers.md` §1, C1071"
+    mark: T
+  - key: MEGHADHIPATI
+    id: 6
+    doc: "The lord of the clouds (meghādhipa): the Sun's entry into Ardra"
+    sources:
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29 vv. 8, 10"
+    mark: V
+  - key: RASADHIPATI
+    id: 7
+    doc: "The lord of juices (rasādhipa): Tula's ingress"
+    sources:
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29 vv. 9, 10"
+      - text: "Narada Samhita (Kashi Sanskrit Series 40, 1984)"
+        ref: "2.3"
+    mark: V
+  - key: NIRASADHIPATI
+    id: 8
+    doc: "The lord of dry goods (nīraseśa): Makara's ingress"
+    sources:
+      - text: "Narada Samhita (Kashi Sanskrit Series 40, 1984)"
+        ref: "2.3"
+    mark: V

@@ -55,7 +55,7 @@ use crate::month::{self, LunarMonth};
 use crate::omen::{self, Omens};
 use crate::period::{self, Durmuhurta, Kaalas, Muhurtas, Part};
 use crate::punya::{self, Arcs, PunyaKala};
-use crate::rulers::{self, YearRuler};
+use crate::rulers::{self, Office, YearRuler};
 use crate::sankalpa::{self, AyanaReckoning, Sankalpa};
 use crate::sky::{self, MoonDay, SunDay};
 use crate::span::{self, Span, Sunrises};

@@ -1046,6 +1046,26 @@ enum RituKey {
   final String key;
 }
 
+enum RulerDayRuleKey {
+  sunrise('ruler_day_rule.SUNRISE'),
+  newMoon('ruler_day_rule.NEW_MOON'),
+  garga('ruler_day_rule.GARGA'),
+  vara('ruler_day_rule.VARA');
+
+  const RulerDayRuleKey(this.key);
+
+  final String key;
+}
+
+enum RulerTextKey {
+  jyotirnibandha('ruler_text.JYOTIRNIBANDHA'),
+  naradaSamhita('ruler_text.NARADA_SAMHITA');
+
+  const RulerTextKey(this.key);
+
+  final String key;
+}
+
 enum SamvatsaraKey {
   prabhava('samvatsara.PRABHAVA'),
   vibhava('samvatsara.VIBHAVA'),
@@ -1295,6 +1315,20 @@ enum VarnaKey {
   mleccha('varna.MLECCHA');
 
   const VarnaKey(this.key);
+
+  final String key;
+}
+
+enum YearOfficeKey {
+  raja('year_office.RAJA'),
+  mantri('year_office.MANTRI'),
+  sasyadhipati('year_office.SASYADHIPATI'),
+  dhanyadhipati('year_office.DHANYADHIPATI'),
+  meghadhipati('year_office.MEGHADHIPATI'),
+  rasadhipati('year_office.RASADHIPATI'),
+  nirasadhipati('year_office.NIRASADHIPATI');
+
+  const YearOfficeKey(this.key);
 
   final String key;
 }
@@ -2914,6 +2948,26 @@ final class MessagesSdkEntityRitu {
   EntityForms get vasanta => _r.entity('ritu.VASANTA');
 }
 
+final class MessagesSdkEntityRulerDayRule {
+  const MessagesSdkEntityRulerDayRule(this._r);
+
+  final Renderer _r;
+
+  EntityForms get garga => _r.entity('ruler_day_rule.GARGA');
+  EntityForms get newMoon => _r.entity('ruler_day_rule.NEW_MOON');
+  EntityForms get sunrise => _r.entity('ruler_day_rule.SUNRISE');
+  EntityForms get vara => _r.entity('ruler_day_rule.VARA');
+}
+
+final class MessagesSdkEntityRulerText {
+  const MessagesSdkEntityRulerText(this._r);
+
+  final Renderer _r;
+
+  EntityForms get jyotirnibandha => _r.entity('ruler_text.JYOTIRNIBANDHA');
+  EntityForms get naradaSamhita => _r.entity('ruler_text.NARADA_SAMHITA');
+}
+
 final class MessagesSdkEntitySamvatsara {
   const MessagesSdkEntitySamvatsara(this._r);
 
@@ -3148,6 +3202,20 @@ final class MessagesSdkEntityVarna {
   EntityForms get vaishya => _r.entity('varna.VAISHYA');
 }
 
+final class MessagesSdkEntityYearOffice {
+  const MessagesSdkEntityYearOffice(this._r);
+
+  final Renderer _r;
+
+  EntityForms get dhanyadhipati => _r.entity('year_office.DHANYADHIPATI');
+  EntityForms get mantri => _r.entity('year_office.MANTRI');
+  EntityForms get meghadhipati => _r.entity('year_office.MEGHADHIPATI');
+  EntityForms get nirasadhipati => _r.entity('year_office.NIRASADHIPATI');
+  EntityForms get raja => _r.entity('year_office.RAJA');
+  EntityForms get rasadhipati => _r.entity('year_office.RASADHIPATI');
+  EntityForms get sasyadhipati => _r.entity('year_office.SASYADHIPATI');
+}
+
 final class MessagesSdkEntityYoga {
   const MessagesSdkEntityYoga(this._r);
 
@@ -3249,6 +3317,8 @@ final class MessagesSdkEntity {
   MessagesSdkEntityRashi get rashi => MessagesSdkEntityRashi(_r);
   MessagesSdkEntityRelationship get relationship => MessagesSdkEntityRelationship(_r);
   MessagesSdkEntityRitu get ritu => MessagesSdkEntityRitu(_r);
+  MessagesSdkEntityRulerDayRule get rulerDayRule => MessagesSdkEntityRulerDayRule(_r);
+  MessagesSdkEntityRulerText get rulerText => MessagesSdkEntityRulerText(_r);
   MessagesSdkEntitySamvatsara get samvatsara => MessagesSdkEntitySamvatsara(_r);
   MessagesSdkEntityShivaVasa get shivaVasa => MessagesSdkEntityShivaVasa(_r);
   MessagesSdkEntitySolarEclipseKind get solarEclipseKind => MessagesSdkEntitySolarEclipseKind(_r);
@@ -3259,6 +3329,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityVara get vara => MessagesSdkEntityVara(_r);
   MessagesSdkEntityVarga get varga => MessagesSdkEntityVarga(_r);
   MessagesSdkEntityVarna get varna => MessagesSdkEntityVarna(_r);
+  MessagesSdkEntityYearOffice get yearOffice => MessagesSdkEntityYearOffice(_r);
   MessagesSdkEntityYoga get yoga => MessagesSdkEntityYoga(_r);
   MessagesSdkEntityYoni get yoni => MessagesSdkEntityYoni(_r);
 }

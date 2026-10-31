@@ -1,0 +1,42 @@
+kind: ruler_day_rule
+number: 84
+version: 1
+doc: "Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072)."
+members:
+  - key: SUNRISE
+    id: 0
+    doc: "The raja: the weekday at the sunrise Chaitra Shukla Pratipada runs at; of two the earlier, and of none the day it began in"
+    sources:
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29 vv. 2-4"
+      - text: "Narada Samhita (Kashi Sanskrit Series 40, 1984)"
+        ref: "2.1"
+    mark: V
+  - key: NEW_MOON
+    id: 1
+    doc: "The raja: the weekday holding the junction of the new moon and the pratipada"
+    sources:
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29 v. 1, from Ratnāvalī"
+    mark: V
+  - key: GARGA
+    id: 2
+    doc: "The raja: the new moon's day if it falls before that day's midday, else the next"
+    sources:
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29 v. 6, Garga"
+    mark: V
+  - key: DAYLIGHT
+    id: 3
+    doc: "An ingress: the day whose daylight holds it, and for one at night the day the next sunrise begins"
+    sources:
+      - text: "the printed southern panchangas"
+        ref: "`03-design/year-rulers.md` §2.2, C1072"
+    mark: T
+  - key: VARA
+    id: 4
+    doc: "An ingress: the weekday, sunrise to sunrise, holding its instant"
+    sources:
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29 vv. 7-9"
+    mark: V

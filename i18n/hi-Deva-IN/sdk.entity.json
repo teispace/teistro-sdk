@@ -2958,5 +2958,44 @@
       "prose": "ग्याल्पो ल्होसार",
       "iast": "Gyalpo Lhosar"
     }
+  },
+  "year_office": {
+    "RAJA": {
+      "name": "राजा",
+      "prose": "राजा",
+      "iast": "Rājā"
+    },
+    "MANTRI": {
+      "name": "मन्त्री",
+      "prose": "मन्त्री",
+      "iast": "Mantrī"
+    },
+    "SASYADHIPATI": {
+      "name": "सस्येश",
+      "prose": "सस्येश",
+      "iast": "Sasyeśa"
+    },
+    "DHANYADHIPATI": {
+      "name": "धान्येश",
+      "prose": "धान्येश",
+      "iast": "Dhānyeśa"
+    },
+    "RASADHIPATI": {
+      "name": "रसेश",
+      "prose": "रसेश",
+      "iast": "Raseśa"
+    },
+    "NIRASADHIPATI": {
+      "name": "निरसेश",
+      "prose": "निरसेश",
+      "iast": "Niraseśa"
+    }
+  },
+  "ruler_text": {
+    "NARADA_SAMHITA": {
+      "name": "नारदसंहिता",
+      "prose": "नारदसंहिता",
+      "iast": "Nāradasaṃhitā"
+    }
   }
 }

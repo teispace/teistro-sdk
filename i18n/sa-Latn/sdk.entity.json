@@ -2341,5 +2341,71 @@
       "prose": "Kālacakra Daśā",
       "iast": "Kālacakra Daśā"
     }
+  },
+  "year_office": {
+    "RAJA": {
+      "name": "Rājā",
+      "prose": "Rājā",
+      "iast": "Rājā"
+    },
+    "MANTRI": {
+      "name": "Mantrī",
+      "prose": "Mantrī",
+      "iast": "Mantrī"
+    },
+    "SASYADHIPATI": {
+      "name": "Sasyeśa",
+      "prose": "Sasyeśa",
+      "iast": "Sasyeśa"
+    },
+    "DHANYADHIPATI": {
+      "name": "Dhānyādhipa",
+      "prose": "Dhānyādhipa",
+      "iast": "Dhānyādhipa"
+    },
+    "MEGHADHIPATI": {
+      "name": "Meghādhipa",
+      "prose": "Meghādhipa",
+      "iast": "Meghādhipa"
+    },
+    "RASADHIPATI": {
+      "name": "Rasādhipa",
+      "prose": "Rasādhipa",
+      "iast": "Rasādhipa"
+    }
+  },
+  "ruler_text": {
+    "JYOTIRNIBANDHA": {
+      "name": "Jyotirnibandha",
+      "prose": "Jyotirnibandha",
+      "iast": "Jyotirnibandha"
+    },
+    "NARADA_SAMHITA": {
+      "name": "Nāradasaṃhitā",
+      "prose": "Nāradasaṃhitā",
+      "iast": "Nāradasaṃhitā"
+    }
+  },
+  "ruler_day_rule": {
+    "SUNRISE": {
+      "name": "Udayakālika",
+      "prose": "Udayakālika",
+      "iast": "Udayakālika"
+    },
+    "NEW_MOON": {
+      "name": "Darśapratipatsandhi",
+      "prose": "Darśapratipatsandhi",
+      "iast": "Darśapratipatsandhi"
+    },
+    "GARGA": {
+      "name": "Garga",
+      "prose": "Garga",
+      "iast": "Garga"
+    },
+    "VARA": {
+      "name": "Vāra",
+      "prose": "Vāra",
+      "iast": "Vāra"
+    }
   }
 }

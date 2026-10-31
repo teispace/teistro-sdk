@@ -373,8 +373,9 @@ mod tests {
         .unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(derived.files.len(), 2);
         assert_eq!(
-            derived.entities, 432,
-            "408 until the 18 dasha systems were named, 426 until the six ritus"
+            derived.entities, 444,
+            "408 until the 18 dasha systems were named, 426 until the six ritus, \
+             432 until the year's six offices, two texts and four rules"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 
@@ -397,9 +398,10 @@ mod tests {
         // The eighteenth is Vimshottari, whose source writes the anusvara
         // `ṁ` where IAST writes `ṃ`. 331 with five of the six ritus: the
         // source writes शरद without the virama the Sanskrit stem śarad
-        // takes, which the shipped overrides restore.
+        // takes, which the shipped overrides restore. 343 with the year's
+        // rulers, each named in the texts' own Sanskrit.
         assert_eq!(
-            derived.agreeing, 331,
+            derived.agreeing, 343,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }

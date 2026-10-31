@@ -15,7 +15,7 @@ import java.util.List;
  * @param readings its weekday and lord under each rule its texts give, the
  *     plainest first
  */
-public record YearRuler(String office, double event, List<String> texts, List<RulerReading> readings) {
+public record YearRuler(YearOffice office, double event, List<RulerText> texts, List<RulerReading> readings) {
     /** Keeps the lists unmodifiable. */
     public YearRuler {
         texts = List.copyOf(texts);

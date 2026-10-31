@@ -11,7 +11,7 @@
 
 use teistro::catalogue::{Calendar, Graha};
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
-use teistro::rulers::{RulerDayRule, RulerText, YearOffice, YearRuler};
+use teistro::rulers::{Office, RulerDayRule, RulerText, YearOffice, YearRuler};
 use teistro::{CalendarDate, Context, Ephemeris, LunarYear, UtcOffset};
 
 fn context() -> Context {
@@ -201,4 +201,45 @@ fn vs_2082_the_sun_raja_and_the_moon_mantri() {
         under(&year, YearOffice::Mantri, RulerDayRule::Vara),
         Graha::Sun
     );
+}
+
+/// The rulers render by name as the year's other words do
+/// (`03-design/entity-names.md` §4d): each office, text and rule the
+/// answer carries is named in Nepali from its printed source, but the
+/// four the strict locales leave unnamed.
+#[test]
+fn the_rulers_are_named_in_nepali() {
+    let sdk = context();
+    sdk.intl().set_locale("ne-Deva-NP").unwrap();
+    let name = |key: &str| {
+        sdk.intl()
+            .entity(key)
+            .ok()
+            .and_then(|entity| entity.form("name").map(str::to_owned))
+    };
+    let year = year_of(&sdk, kathmandu(), (2026, 8, 1));
+    let raja = office(&year, YearOffice::Raja);
+    assert_eq!(name(raja.office.full_key()).as_deref(), Some("राजा"));
+    assert_eq!(
+        name(raja.readings[0].rule.full_key()).as_deref(),
+        Some("उदयकालिक")
+    );
+    assert_eq!(
+        name(RulerText::NaradaSamhita.full_key()).as_deref(),
+        Some("नारदसंहिता")
+    );
+    let unnamed = [
+        YearOffice::Senadhipati.full_key(),
+        YearOffice::Arghadhipati.full_key(),
+        RulerText::Navanayaka.full_key(),
+        RulerDayRule::Daylight.full_key(),
+    ];
+    for ruler in &year.rulers {
+        let keys = std::iter::once(ruler.office.full_key())
+            .chain(ruler.texts.iter().map(|text| text.full_key()))
+            .chain(ruler.readings.iter().map(|reading| reading.rule.full_key()));
+        for key in keys {
+            assert_eq!(name(key).is_some(), !unnamed.contains(&key), "{key}");
+        }
+    }
 }

@@ -474,12 +474,13 @@ final class AlmanacReads {
     private static YearRuler yearRuler(Object raw) {
         Map<?, ?> r = Reads.object(raw);
         return new YearRuler(
-                Reads.string(r, "office"),
+                member(r, "office", "YearOffice", YearOffice::byKey),
                 Reads.number(r, "event"),
-                Reads.each(r, "texts", Reads::string),
+                Reads.each(r, "texts", t -> Reads.member(RulerText.byKey(Reads.string(t)), "RulerText", t)),
                 Reads.each(r, "readings", one -> {
                     Map<?, ?> d = Reads.object(one);
-                    return new RulerReading(Reads.string(d, "rule"), member(d, "vara", "Vara", Vara::byKey),
+                    return new RulerReading(member(d, "rule", "RulerDayRule", RulerDayRule::byKey),
+                            member(d, "vara", "Vara", Vara::byKey),
                             member(d, "lord", "Graha", Graha::byKey), Reads.number(d, "day"));
                 }));
     }

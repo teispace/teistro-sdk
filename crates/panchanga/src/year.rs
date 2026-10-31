@@ -265,10 +265,13 @@ impl LunarYear {
     /// Where a year names catalogue members, and of which kind: a dotted
     /// path through each year. What a boundary section writes in full;
     /// the crate's tests hold it to serde, both ways.
-    pub const MEMBERS: [(&'static str, Kind); 5] = [
+    pub const MEMBERS: [(&'static str, Kind); 8] = [
         ("samvatsara", Kind::Samvatsara),
         ("lupta", Kind::Samvatsara),
         ("jovian.member", Kind::Samvatsara),
+        ("rulers.office", Kind::YearOffice),
+        ("rulers.texts", Kind::RulerText),
+        ("rulers.readings.rule", Kind::RulerDayRule),
         ("rulers.readings.vara", Kind::Vara),
         ("rulers.readings.lord", Kind::Graha),
     ];
@@ -519,7 +522,7 @@ mod tests {
     use teistro_core::catalogue::{Graha, Vara};
 
     use super::*;
-    use crate::rulers::{RulerDayRule, RulerReading, YearOffice};
+    use crate::rulers::{Office, RulerDayRule, RulerReading, YearOffice};
 
     /// Every dotted path to a string in a JSON value, a list's items
     /// sharing their list's path.
@@ -583,12 +586,7 @@ mod tests {
     fn a_year_names_its_catalogue_members_where_its_table_says() {
         // The knob that named the year, which is a setting's value, and
         // the rulers' own vocabularies.
-        const NOT_MEMBERS: [&str; 4] = [
-            "count",
-            "rulers.office",
-            "rulers.texts",
-            "rulers.readings.rule",
-        ];
+        const NOT_MEMBERS: [&str; 1] = ["count"];
         let year = expunging();
         assert!(year.lupta.is_some());
         let mut found = BTreeSet::new();
@@ -619,7 +617,15 @@ mod tests {
             full[0]["rulers"][0]["readings"][0]["vara"],
             "vara.BUDHAVARA"
         );
-        assert_eq!(full[0]["rulers"][0]["office"], "RAJA");
+        assert_eq!(full[0]["rulers"][0]["office"], "year_office.RAJA");
+        assert_eq!(
+            full[0]["rulers"][0]["texts"][0],
+            "ruler_text.JYOTIRNIBANDHA"
+        );
+        assert_eq!(
+            full[0]["rulers"][0]["readings"][0]["rule"],
+            "ruler_day_rule.SUNRISE"
+        );
         let back: Vec<LunarYear> = serde_json::from_value(full).unwrap();
         assert_eq!(back, years);
     }

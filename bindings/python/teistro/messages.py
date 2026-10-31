@@ -966,6 +966,22 @@ class RituKey(enum.StrEnum):
     SHISHIRA = "ritu.SHISHIRA"
 
 
+class RulerDayRuleKey(enum.StrEnum):
+    """A `ruler_day_rule` as a message names it: the full catalogue key."""
+
+    SUNRISE = "ruler_day_rule.SUNRISE"
+    NEW_MOON = "ruler_day_rule.NEW_MOON"
+    GARGA = "ruler_day_rule.GARGA"
+    VARA = "ruler_day_rule.VARA"
+
+
+class RulerTextKey(enum.StrEnum):
+    """A `ruler_text` as a message names it: the full catalogue key."""
+
+    JYOTIRNIBANDHA = "ruler_text.JYOTIRNIBANDHA"
+    NARADA_SAMHITA = "ruler_text.NARADA_SAMHITA"
+
+
 class SamvatsaraKey(enum.StrEnum):
     """A `samvatsara` as a message names it: the full catalogue key."""
 
@@ -1195,6 +1211,18 @@ class VarnaKey(enum.StrEnum):
     VAISHYA = "varna.VAISHYA"
     SHUDRA = "varna.SHUDRA"
     MLECCHA = "varna.MLECCHA"
+
+
+class YearOfficeKey(enum.StrEnum):
+    """A `year_office` as a message names it: the full catalogue key."""
+
+    RAJA = "year_office.RAJA"
+    MANTRI = "year_office.MANTRI"
+    SASYADHIPATI = "year_office.SASYADHIPATI"
+    DHANYADHIPATI = "year_office.DHANYADHIPATI"
+    MEGHADHIPATI = "year_office.MEGHADHIPATI"
+    RASADHIPATI = "year_office.RASADHIPATI"
+    NIRASADHIPATI = "year_office.NIRASADHIPATI"
 
 
 class YogaKey(enum.StrEnum):
@@ -2250,6 +2278,16 @@ class MessagesSdkEntity:
         return MessagesSdkEntityRitu(self._r)
 
     @property
+    def ruler_day_rule(self) -> MessagesSdkEntityRulerDayRule:
+        """The messages under `ruler_day_rule`."""
+        return MessagesSdkEntityRulerDayRule(self._r)
+
+    @property
+    def ruler_text(self) -> MessagesSdkEntityRulerText:
+        """The messages under `ruler_text`."""
+        return MessagesSdkEntityRulerText(self._r)
+
+    @property
     def samvatsara(self) -> MessagesSdkEntitySamvatsara:
         """The messages under `samvatsara`."""
         return MessagesSdkEntitySamvatsara(self._r)
@@ -2298,6 +2336,11 @@ class MessagesSdkEntity:
     def varna(self) -> MessagesSdkEntityVarna:
         """The messages under `varna`."""
         return MessagesSdkEntityVarna(self._r)
+
+    @property
+    def year_office(self) -> MessagesSdkEntityYearOffice:
+        """The messages under `year_office`."""
+        return MessagesSdkEntityYearOffice(self._r)
 
     @property
     def yoga(self) -> MessagesSdkEntityYoga:
@@ -2529,6 +2572,49 @@ class MessagesSdkEntityYoga:
     def vyatipata(self) -> EntityForms:
         """The forms of `yoga.VYATIPATA` in the current locale."""
         return self._r.entity("yoga.VYATIPATA")
+
+
+class MessagesSdkEntityYearOffice:
+    """The messages under `MessagesSdkEntityYearOffice`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def dhanyadhipati(self) -> EntityForms:
+        """The forms of `year_office.DHANYADHIPATI` in the current locale."""
+        return self._r.entity("year_office.DHANYADHIPATI")
+
+    @property
+    def mantri(self) -> EntityForms:
+        """The forms of `year_office.MANTRI` in the current locale."""
+        return self._r.entity("year_office.MANTRI")
+
+    @property
+    def meghadhipati(self) -> EntityForms:
+        """The forms of `year_office.MEGHADHIPATI` in the current locale."""
+        return self._r.entity("year_office.MEGHADHIPATI")
+
+    @property
+    def nirasadhipati(self) -> EntityForms:
+        """The forms of `year_office.NIRASADHIPATI` in the current locale."""
+        return self._r.entity("year_office.NIRASADHIPATI")
+
+    @property
+    def raja(self) -> EntityForms:
+        """The forms of `year_office.RAJA` in the current locale."""
+        return self._r.entity("year_office.RAJA")
+
+    @property
+    def rasadhipati(self) -> EntityForms:
+        """The forms of `year_office.RASADHIPATI` in the current locale."""
+        return self._r.entity("year_office.RASADHIPATI")
+
+    @property
+    def sasyadhipati(self) -> EntityForms:
+        """The forms of `year_office.SASYADHIPATI` in the current locale."""
+        return self._r.entity("year_office.SASYADHIPATI")
 
 
 class MessagesSdkEntityVarna:
@@ -3429,6 +3515,52 @@ class MessagesSdkEntitySamvatsara:
     def yuva(self) -> EntityForms:
         """The forms of `samvatsara.YUVA` in the current locale."""
         return self._r.entity("samvatsara.YUVA")
+
+
+class MessagesSdkEntityRulerText:
+    """The messages under `MessagesSdkEntityRulerText`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def jyotirnibandha(self) -> EntityForms:
+        """The forms of `ruler_text.JYOTIRNIBANDHA` in the current locale."""
+        return self._r.entity("ruler_text.JYOTIRNIBANDHA")
+
+    @property
+    def narada_samhita(self) -> EntityForms:
+        """The forms of `ruler_text.NARADA_SAMHITA` in the current locale."""
+        return self._r.entity("ruler_text.NARADA_SAMHITA")
+
+
+class MessagesSdkEntityRulerDayRule:
+    """The messages under `MessagesSdkEntityRulerDayRule`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def garga(self) -> EntityForms:
+        """The forms of `ruler_day_rule.GARGA` in the current locale."""
+        return self._r.entity("ruler_day_rule.GARGA")
+
+    @property
+    def new_moon(self) -> EntityForms:
+        """The forms of `ruler_day_rule.NEW_MOON` in the current locale."""
+        return self._r.entity("ruler_day_rule.NEW_MOON")
+
+    @property
+    def sunrise(self) -> EntityForms:
+        """The forms of `ruler_day_rule.SUNRISE` in the current locale."""
+        return self._r.entity("ruler_day_rule.SUNRISE")
+
+    @property
+    def vara(self) -> EntityForms:
+        """The forms of `ruler_day_rule.VARA` in the current locale."""
+        return self._r.entity("ruler_day_rule.VARA")
 
 
 class MessagesSdkEntityRitu:

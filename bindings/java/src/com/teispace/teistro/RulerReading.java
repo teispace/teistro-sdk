@@ -9,4 +9,4 @@ package com.teispace.teistro;
  * @param lord its lord, who holds the office
  * @param day the sunrise that opened that weekday, a UTC Julian day
  */
-public record RulerReading(String rule, Vara vara, Graha lord, double day) {}
+public record RulerReading(RulerDayRule rule, Vara vara, Graha lord, double day) {}
