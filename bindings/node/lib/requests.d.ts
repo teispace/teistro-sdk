@@ -154,7 +154,14 @@ export interface DigestRequest {
   readonly first: DayAsked;
   readonly latitudeDeg: number;
   readonly longitudeDeg: number;
-  readonly utcOffsetSeconds: number;
+  /**
+   * The clock's offset; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone, each day on its own offset; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**

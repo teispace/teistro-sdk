@@ -267,7 +267,8 @@ final class DigestRequest extends _Request {
     required this.first,
     required this.latitudeDeg,
     required this.longitudeDeg,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   final double altitudeM;
@@ -287,7 +288,11 @@ final class DigestRequest extends _Request {
 
   final double longitudeDeg;
 
-  final int utcOffsetSeconds;
+  /// The clock's offset; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone, each day on its own offset; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -298,11 +303,12 @@ final class DigestRequest extends _Request {
     'first': first._wire,
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, days, festivals, first, latitudeDeg, longitudeDeg, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, calendar, days, festivals, first, latitudeDeg, longitudeDeg, utcOffsetSeconds, zone];
 }
 
 /// [`PackRequest`] as the bindings write it.

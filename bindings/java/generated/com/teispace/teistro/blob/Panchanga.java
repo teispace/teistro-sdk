@@ -562,6 +562,7 @@ public final class Panchanga {
         private final int brahmaToAt;
         private final int moonWindowFromAt;
         private final int moonWindowToAt;
+        private final int utcOffsetSecondsAt;
 
         Days(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -588,6 +589,7 @@ public final class Panchanga {
             this.brahmaToAt = blob.column(at, 18, 8);
             this.moonWindowFromAt = blob.column(at, 19, 8);
             this.moonWindowToAt = blob.column(at, 20, 8);
+            this.utcOffsetSecondsAt = blob.column(at, 21, 4);
         }
 
         /**
@@ -844,6 +846,17 @@ public final class Panchanga {
          */
         public double moonWindowTo(int row) {
             return bytes.getDouble(moonWindowToAt + Objects.checkIndex(row, length) * 8);
+        }
+
+        /**
+         * The clock the day was read on, in seconds east of UTC: a zone's offset at the day's opening, which changes across a clock change, or the offset the caller stated.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int utcOffsetSeconds(int row) {
+            return bytes.getInt(utcOffsetSecondsAt + Objects.checkIndex(row, length) * 4);
         }
     }
 

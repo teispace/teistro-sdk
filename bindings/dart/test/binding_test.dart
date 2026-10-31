@@ -59,6 +59,35 @@ void main() {
     );
   });
 
+  test('a day says the clock it was read on, and a digest keeps it', () {
+    final ctx = context();
+    final place = Observer(
+      latitudeDeg: Latitude(40.7128),
+      longitudeDeg: Longitude(-74.006),
+      altitudeM: Altitude(10),
+    );
+    final from = gregorian(2026, 10, 31);
+    final zone = ianaZone('America/New_York');
+    final zoned = ctx.almanac.inZone(
+      from: from,
+      to: gregorian(2026, 11, 2),
+      place: place,
+      zone: zone,
+    );
+    expect(
+      zoned.each.map((day) => day.utcOffsetSeconds).toList(),
+      [-14400, -18000, -18000],
+    );
+    final digest = decodeDigest(
+      ctx.almanac.digest(from: from, days: 3, place: place, zone: zone),
+    );
+    expect(digest.clock.utcOffsetSeconds.toList(), [-14400, -18000, -18000]);
+    expect(
+      () => ctx.almanac.digest(from: from, days: 3, place: place),
+      throwsA(isA<TeistroException>()),
+    );
+  });
+
   test('a context resolves its settings and reports them', () {
     final ctx = context();
     expect(ctx.profile, 'nepali-drik');

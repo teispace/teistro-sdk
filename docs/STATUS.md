@@ -3420,7 +3420,8 @@ Addendum 5 (2026-10-31) adds SR-63 to SR-76 and moves SR-58's sky view to P2: P0
 sky, conformance days, naming `nepali-drik`, Hindi and Sanskrit calendar text and a public time
 formatter. SR-73 is done in PR #423 and SR-70 mostly was already. SR-66 is done: `nepali-default`
 is `nepali-drik`, the old name an accepted alias that answers the same settings and says the new id
-(`03-design/settings-and-profiles.md` §3.2).
+(`03-design/settings-and-profiles.md` §3.2). SR-73 is finished: every binding's day and the digest
+(format 1.1, `clock`) say each day's offset, and the digest takes `zone`.
 
 ### An almanac app's brief (from 2026-10-20)
 

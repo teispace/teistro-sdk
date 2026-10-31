@@ -32,6 +32,7 @@ public final class Digest {
     private final String text;
     private final String locale;
     private final String provenanceJson;
+    private final Clock clock;
     private final String seal;
 
     private Digest(BlobReader blob) {
@@ -53,6 +54,7 @@ public final class Digest {
         this.text = blob.text(6, "text");
         this.locale = blob.text(7, "locale");
         this.provenanceJson = blob.text(8, "provenance_json");
+        this.clock = new Clock(blob, 10, "clock");
         this.seal = blob.text(9, "seal");
     }
 
@@ -95,7 +97,7 @@ public final class Digest {
     }
 
     /**
-     * The first day's local midnight in seconds since 1970, which every time counts from.
+     * The first day's local midnight on that day's offset, in seconds since 1970, which every time counts from.
      *
      * @return the baseUnixSeconds
      */
@@ -104,7 +106,7 @@ public final class Digest {
     }
 
     /**
-     * The offset the civil days run at, east positive.
+     * The first day's offset, east positive; `clock` has each day's.
      *
      * @return the utcOffsetSeconds
      */
@@ -211,6 +213,15 @@ public final class Digest {
      */
     public String provenanceJson() {
         return provenanceJson;
+    }
+
+    /**
+     * One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1.
+     *
+     * @return the clock
+     */
+    public Clock clock() {
+        return clock;
     }
 
     /**
@@ -660,6 +671,44 @@ public final class Digest {
          */
         public int textLength(int row) {
             return Short.toUnsignedInt(bytes.getShort(textLengthAt + Objects.checkIndex(row, length) * 2));
+        }
+    }
+
+    /**
+     * The `clock` section of this blob: a getter per column, reading a row from the blob's bytes.
+     *
+     * One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1.
+     */
+    public static final class Clock {
+        private final ByteBuffer bytes;
+        private final int length;
+        private final int utcOffsetSecondsAt;
+
+        Clock(BlobReader blob, int id, String name) {
+            BlobReader.Section at = blob.section(id, name);
+            this.bytes = blob.bytes();
+            this.length = at.count();
+            this.utcOffsetSecondsAt = blob.column(at, 0, 4);
+        }
+
+        /**
+         * The number of rows every column holds.
+         *
+         * @return the row count
+         */
+        public int length() {
+            return length;
+        }
+
+        /**
+         * The offset at the day's opening, east positive.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int utcOffsetSeconds(int row) {
+            return bytes.getInt(utcOffsetSecondsAt + Objects.checkIndex(row, length) * 4);
         }
     }
 }

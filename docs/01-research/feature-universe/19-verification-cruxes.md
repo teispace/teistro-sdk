@@ -768,6 +768,7 @@ or with the baseline engine's value as the documented default.
 | C971 | The Moon's phase: from the place or from the Earth's centre | Parallax moves the fraction lit by up to 0.008 | nothing | rank-3: JPL Horizons' topocentric table | decided: from the place, which is what a screen shows there |
 | C972 | Waxing: which observer | A topocentric sign flips hours from the geocentric one near syzygy, differently by place | nothing | convention | decided: geocentric, so it turns once a lunation and agrees with the paksha; the shape to draw is the topocentric bright limb |
 | C973 | Refraction below the horizon | Sæmundsson's fit turns over near −3°. Horizons keeps adding the horizon's value below it; other engines add nothing | no measurement means anything there | convention | decided: nothing is added where the refracted altitude stays below the horizon |
+| C1010 | Which instant a day's single offset is read at | a day across a clock change has two offsets and one column; `Panchanga.clock` reads the day's opening, `steady_offset` the date's noon, and the row said noon | a widget printing a time before the change on that day, an hour out | a design decision | decided: the day's opening, the one `Panchanga.clock` already holds, so the blob, the digest and the Rust answer agree (`03-design/digest-format.md` §2, SR-73) |
 
 ## How to use this page
 

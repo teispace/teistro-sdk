@@ -37,7 +37,7 @@ use teistro_core::error::{Error, Status};
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{Altitude, Latitude, Longitude, Place};
 use teistro_core::settings::LunarMonth;
-use teistro_core::time::UtcOffset;
+use teistro_core::time::{ClockReading, UtcOffset};
 use teistro_idl::blob::{FixedValue, Writer};
 use teistro_panchanga::almanac::Panchanga;
 use teistro_panchanga::omen::YogaCause;
@@ -495,7 +495,7 @@ pub const TS_PANCHANGA_SKY: u32 = 64;
 
 /// A day's own values, in the order `days` declares them.
 #[must_use]
-fn day_row(day: &Panchanga) -> Vec<FixedValue> {
+fn day_row(day: &Panchanga, stated: Option<&ClockReading>) -> Vec<FixedValue> {
     let mut row = interval(day.window);
     row.extend([
         u64::from(day.month.month.id()).into(),
@@ -520,6 +520,9 @@ fn day_row(day: &Panchanga) -> Vec<FixedValue> {
     ]);
     row.extend(interval(day.muhurtas.brahma.unwrap_or(EMPTY)));
     row.extend(interval(day.moon.window));
+    // The clock a zone stamped on the day, or the offset the answer states.
+    let clock = day.clock.as_ref().or(stated);
+    row.push(i64::from(clock.map_or(0, |clock| clock.offset.seconds())).into());
     row
 }
 
@@ -941,7 +944,8 @@ pub fn encode(
     let model = first.map_or("", |day| day.day.model.as_str());
 
     let ragged = RaggedRows::of(days)?;
-    let day_rows: Vec<Vec<FixedValue>> = days.iter().map(day_row).collect();
+    let stated = provenance.time.clock.as_ref();
+    let day_rows: Vec<Vec<FixedValue>> = days.iter().map(|day| day_row(day, stated)).collect();
     let count_rows: Vec<Vec<FixedValue>> = days.iter().map(count_row).collect();
     let local_days: Vec<Vec<FixedValue>> = days
         .iter()

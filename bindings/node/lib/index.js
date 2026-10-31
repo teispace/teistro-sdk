@@ -2128,6 +2128,15 @@ export class AlmanacDay {
     return RituById.get(this.#batch.decoded.days.ritu[this.#index]) ?? 'unknown';
   }
 
+  /**
+   * The clock the day was read on, in seconds east of UTC: a zone's offset
+   * at the day's opening, which moves across a clock change, or the offset
+   * the caller stated.
+   */
+  get utcOffsetSeconds() {
+    return this.#batch.decoded.days.utcOffsetSeconds[this.#index];
+  }
+
   /** The direction not to travel in, which is the vara's. */
   get dishaShool() {
     return DirectionById.get(this.#batch.decoded.days.dishaShool[this.#index]) ?? 'unknown';
@@ -7556,7 +7565,7 @@ export class AlmanacArea extends Area {
 
   /**
    * `of` on a zone's clock: `zone` in place of `utcOffsetSeconds`, each day
-   * on the offset of its own noon, and the provenance names the zone's
+   * on its own offset, and the provenance names the zone's
    * offset, source and era at the first day
    * (`03-design/time-and-timezone.md` §3.4). A range crossing a clock
    * change is refused on `zone` when a section is asked beside the days,
@@ -8141,7 +8150,7 @@ export class AlmanacArea extends Area {
     if (typeof request !== 'object' || request === null || Array.isArray(request)) {
       throw new TypeError('digest: expected a request, e.g. { from, place, utcOffsetSeconds }');
     }
-    const { from: given, place: where, utcOffsetSeconds, festivals, days } = request;
+    const { from: given, place: where, utcOffsetSeconds, zone, festivals, days } = request;
     const day = (at, what) => ({
       year: finite(at?.year, `${what}.year`),
       month: finite(at?.month, `${what}.month`),
@@ -8154,8 +8163,11 @@ export class AlmanacArea extends Area {
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
     };
+    if (zone !== undefined) asked.zone = JSON.parse(zoneJson(zone));
+    if (utcOffsetSeconds !== undefined || zone === undefined) {
+      asked.utcOffsetSeconds = finite(utcOffsetSeconds, 'utcOffsetSeconds');
+    }
     if (from.calendar !== undefined) asked.calendar = from.calendar;
     if (days !== undefined) asked.days = finite(days, 'days');
     const record = recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }");

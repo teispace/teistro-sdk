@@ -108,6 +108,16 @@ public final class AlmanacDay {
     }
 
     /**
+     * The clock the day was read on: a zone's offset at the day's opening,
+     * which moves across a clock change, or the offset the caller stated.
+     *
+     * @return seconds east of UTC
+     */
+    public int utcOffsetSeconds() {
+        return days().utcOffsetSeconds(index);
+    }
+
+    /**
      * The direction not to travel in, which is the vara's.
      *
      * @return the direction

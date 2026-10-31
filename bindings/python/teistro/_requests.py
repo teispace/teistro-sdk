@@ -847,7 +847,11 @@ class DigestRequest(TypedDict, total=False):
 
     longitudeDeg: Required[float]
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
+    """The clock's offset; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone, each day on its own offset; or `utcOffsetSeconds`, not both."""
 
 
 class PackRequest(TypedDict, total=False):

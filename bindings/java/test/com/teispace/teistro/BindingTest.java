@@ -170,6 +170,28 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a day says the clock it was read on, and a digest keeps it", () -> {
+            Observer newYork = new Observer(new Longitude(-74.006), new Latitude(40.7128), new Altitude(10));
+            CalendarDate first = new CalendarDate(Calendar.GREGORIAN, null, 2026, 0, 10, 31,
+                    Resolution.DEFINED, 0, 0, null);
+            CalendarDate last = new CalendarDate(Calendar.GREGORIAN, null, 2026, 0, 11, 2,
+                    Resolution.DEFINED, 0, 0, null);
+            ZoneSpec zone = Civil.ianaZone("America/New_York");
+            try (Context sky = context(teistro)) {
+                same(List.of(-14_400, -18_000, -18_000),
+                        sky.almanac().inZone(first, last, newYork, zone).stream()
+                                .map(AlmanacDay::utcOffsetSeconds).toList(),
+                        "each day's own offset");
+                same(20_700, sky.almanac().of(first, first, newYork, 20_700).get(0).utcOffsetSeconds(),
+                        "the stated offset");
+                byte[] digest = sky.almanac().digest(com.teispace.teistro.request.DigestRequest.builder()
+                        .first(new com.teispace.teistro.request.DayAsked(31, 10, 2026)).days(3)
+                        .latitudeDeg(40.7128).longitudeDeg(-74.006).zone(zone).build());
+                same(-18_000, com.teispace.teistro.blob.Digest.decode(digest).clock().utcOffsetSeconds(2),
+                        "the digest keeps each day's");
+            }
+        });
+
         tests.put("an older profile name answers as the profile it names", () -> {
             try (Context sky = context(teistro);
                     Context named = teistro.context(ContextOptions.builder().profile("nepali-default").

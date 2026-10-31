@@ -6156,6 +6156,10 @@ export interface PanchangaDays {
    * When the window the Moon's rises and sets were looked for in ends, as a Julian day (UTC).
    */
   readonly moonWindowTo: Float64Array;
+  /**
+   * The clock the day was read on, in seconds east of UTC: a zone's offset at the day's opening, which changes across a clock change, or the offset the caller stated.
+   */
+  readonly utcOffsetSeconds: Int32Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -7904,6 +7908,21 @@ export interface DigestNames {
 }
 
 /**
+ * The `clock` section of a Digest blob: one typed array per column, each a
+ * view over the blob's bytes rather than a copy.
+ *
+ * One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1.
+ */
+export interface DigestClock {
+  /**
+   * The offset at the day's opening, east positive.
+   */
+  readonly utcOffsetSeconds: Int32Array;
+  /** The number of rows every column holds. */
+  readonly length: number;
+}
+
+/**
  * A decoded Digest blob.
  *
  * A range of days for a process that cannot run the engine (`03-design/digest-format.md`): every limb and window of each day, its Moon and its observances, every time whole seconds from the first day's local midnight, every name interned once, sealed by SHA-256.
@@ -7922,11 +7941,11 @@ export interface Digest {
    */
   readonly dayCount: number;
   /**
-   * The first day's local midnight in seconds since 1970, which every time counts from.
+   * The first day's local midnight on that day's offset, in seconds since 1970, which every time counts from.
    */
   readonly baseUnixSeconds: bigint;
   /**
-   * The offset the civil days run at, east positive.
+   * The first day's offset, east positive; `clock` has each day's.
    */
   readonly utcOffsetSeconds: number;
   /**
@@ -7974,6 +7993,10 @@ export interface Digest {
    * UTF-8 JSON, canonical: the days' provenance, its `content_hash` theirs.
    */
   readonly provenanceJson: string;
+  /**
+   * One row a day, in the order of `days`: the clock the day was read on, which a range asked by zone changes across a clock change. Added in format 1.1.
+   */
+  readonly clock: DigestClock;
   /**
    * SHA-256 of every byte before this section, which ends the digest, in 64 lowercase hexadecimal digits.
    */

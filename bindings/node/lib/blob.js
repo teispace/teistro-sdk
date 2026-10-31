@@ -2023,6 +2023,7 @@ export function decodePanchanga(bytes) {
       brahmaTo: column(blob, at, 18, 'f64', at.count),
       moonWindowFrom: column(blob, at, 19, 'f64', at.count),
       moonWindowTo: column(blob, at, 20, 'f64', at.count),
+      utcOffsetSeconds: column(blob, at, 21, 'i32', at.count),
       length: at.count,
     };
   }
@@ -2689,6 +2690,13 @@ export function decodeDigest(bytes) {
   {
     const at = section(blob, 8, 'provenance_json');
     out.provenanceJson = text(blob, at, 'provenance_json');
+  }
+  {
+    const at = section(blob, 10, 'clock');
+    out.clock = {
+      utcOffsetSeconds: column(blob, at, 0, 'i32', at.count),
+      length: at.count,
+    };
   }
   {
     const at = section(blob, 9, 'seal');

@@ -3475,7 +3475,7 @@ class AlmanacArea(_Area):
         sky_step_minutes: int = 0,
         days: bool = True,
     ) -> Almanac:
-        """`of` on a zone's clock: each day on the offset of its own noon, and
+        """`of` on a zone's clock: each day on its own offset, and
         the provenance names the zone's offset, source and era at the first
         day (`03-design/time-and-timezone.md` §3.4). A range crossing a
         clock change is refused on `zone` when a section is asked beside the
@@ -4085,7 +4085,8 @@ class AlmanacArea(_Area):
         *,
         first: CalendarDate,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         days: Optional[int] = None,
         festivals: Optional[FestivalRequest] = None,
     ) -> bytes:
@@ -4093,7 +4094,8 @@ class AlmanacArea(_Area):
         `first`, 60 unless `days` says, every limb and window, the Moon and
         the observances, as bytes a process with no engine reads with
         `bindings/c/digest`, and `decode_digest` reads here. The same request
-        writes the same bytes on every platform.
+        writes the same bytes on every platform. It is asked on
+        `utc_offset_seconds` or a `zone`, each day then on its own offset.
 
         >>> # bytes_ = sdk.almanac.digest(first=..., place=kathmandu, utc_offset_seconds=20700)
         >>> # Path("widget.digest").write_bytes(bytes_)
@@ -4104,8 +4106,11 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
         }
+        if utc_offset_seconds is not None:
+            asked["utcOffsetSeconds"] = utc_offset_seconds
+        if zone is not None:
+            asked["zone"] = json.loads(_zone_json(zone))
         if days is not None:
             asked["days"] = days
         record = _festivals_json(festivals) if festivals is not None else None
@@ -19953,6 +19958,13 @@ class AlmanacDay:
         day placed by `panchanga.solar_month_start`
         (`03-design/ritu-measured.md`)."""
         return Ritu(self.batch.decoded.days.ritu[self.index])
+
+    @property
+    def utc_offset_seconds(self) -> int:
+        """The clock the day was read on, in seconds east of UTC: a zone's
+        offset at the day's opening, which moves across a clock change, or
+        the offset the caller stated."""
+        return self.batch.decoded.days.utc_offset_seconds[self.index]
 
     @property
     def disha_shool(self) -> Direction:
