@@ -66,6 +66,8 @@ section's digest moves; a sankalpa's year carries none.
   `git` dependency needs no staging step. Publishing stays held.
 - The Teimeris Flutter example's lock is the one pub writes (SR-72): a fresh submodule update is
   clean, and `pub get` no longer rewrites a pre-release SDK floor.
+- `teimeris-sys` refuses `wasm32-unknown-unknown` by name (SR-67) and points to `bindings/wasm`,
+  which a browser reaches from JavaScript (C1031).
 
 **A day in sentences; a polar sankranti answers.**
 **Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or

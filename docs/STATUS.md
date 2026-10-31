@@ -3432,6 +3432,8 @@ SR-68 is finished in Teimeris: `teimeris-sys` builds from a plain checkout with 
 publishing stays held.
 SR-72 is finished: the Flutter example's lock had a pre-release SDK floor that pub rewrote, and
 is now the one it writes.
+SR-67 is decided and not built: `teimeris-sys` refuses `wasm32-unknown-unknown` by name, and a
+browser reaches the engine through `bindings/wasm` (C1031).
 
 ### An almanac app's brief (from 2026-10-20)
 
