@@ -12,6 +12,7 @@
 
 use criterion::{Criterion, black_box, criterion_group, criterion_main};
 use teistro_core::catalogue::Graha;
+use teistro_intl::dates::DatesRequest;
 use teistro_intl::lexicon::LookupRequest;
 use teistro_intl::pack::{self, Pack, locales_from_packs};
 use teistro_intl::source::Tree;
@@ -97,6 +98,14 @@ fn lexicon(c: &mut Criterion, tree: &Tree) {
     built.lookup(&sentence).expect("an answer");
     c.bench_function("lexicon: look up two sentences of 18 words", |b| {
         b.iter(|| built.lookup(black_box(&sentence)));
+    });
+    let dated = DatesRequest::from_json(
+        r#"{"text": "बिहे बिसं २०८२ कात्तिक १५ गते, अर्थात् 1 November 2025 मा भयो; अर्को भेट 2082/08/05 मा।"}"#,
+    )
+    .expect("a request");
+    built.dates(&dated).expect("an answer");
+    c.bench_function("dates: read a sentence naming three", |b| {
+        b.iter(|| built.dates(black_box(&dated)));
     });
 }
 
