@@ -34,6 +34,7 @@ public final class Requests {
             Map.entry("chart.found", ChartFoundRequest::of),
             Map.entry("chart.rashifal", BatchAsked::of),
             Map.entry("intl.date", DateTextRequest::of),
+            Map.entry("intl.dates", DatesRequest::of),
             Map.entry("intl.inWords", InWordsRequest::of),
             Map.entry("intl.lexicon", LexiconRequest::of),
             Map.entry("intl.lookup", LookupRequest::of),

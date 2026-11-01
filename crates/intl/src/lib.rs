@@ -21,6 +21,7 @@
 //!   loaded and covered;
 //! - [`lexicon`]: every catalogue member's names in a locale, romanised
 //!   forms too, and the members a text may name;
+//! - [`dates`]: Bikram Sambat and Gregorian dates found in free text;
 //! - [`words`]: numbers and currency amounts in words, by CLDR's
 //!   rule-based number formats, with the Indian grouping;
 //! - [`messages`]: the SDK's own namespaces as typed Rust accessors,
@@ -52,6 +53,7 @@ pub mod analysis;
 pub mod civil;
 #[cfg(feature = "cli")]
 pub mod cli;
+pub mod dates;
 pub mod derive;
 pub mod generate;
 pub mod lexicon;

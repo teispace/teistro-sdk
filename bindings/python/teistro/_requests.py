@@ -42,6 +42,7 @@ __all__ = [
     "ChartFoundRequest",
     "BatchAsked",
     "DateTextRequest",
+    "DatesRequest",
     "InWordsRequest",
     "LexiconRequest",
     "LookupRequest",
@@ -1325,6 +1326,16 @@ class DateTextRequest(TypedDict, total=False):
 
     style: DateStyle
     """How much of it."""
+
+
+class DatesRequest(TypedDict, total=False):
+    """What a caller asks: the dates in a text, in the calendars named."""
+
+    calendars: Optional[Sequence[Union[_catalogue.Calendar, str]]]
+    """The calendars a reading may be in: `calendar.BIKRAM_SAMBAT`, `calendar.GREGORIAN`; both when left out."""
+
+    text: Required[str]
+    """The text."""
 
 
 class InWordsRequest(TypedDict, total=False):

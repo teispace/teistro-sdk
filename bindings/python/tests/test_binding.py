@@ -632,6 +632,30 @@ class TheLocaleEngine(WithLibrary):
             self.ctx.intl.lookup({"text": "x", "kinds": ["planet"]})
         self.assertEqual(refused.exception.field, "lookup.kinds")
 
+    def test_the_dates_a_text_names(self) -> None:
+        from teistro import DatesRequest, FoundDates
+
+        asked: DatesRequest = {"text": "आज २०८२ कात्तिक १५ गते हो"}
+        found: FoundDates = self.ctx.intl.dates(asked)
+        date = found.dates[0]
+        self.assertEqual((date.start, date.text), (3, "२०८२ कात्तिक १५ गते"))
+        reading = date.readings[0]
+        self.assertEqual(
+            (reading.date["calendar"], reading.date["year"], reading.date["month"], reading.date["day"]),
+            ("calendar.BIKRAM_SAMBAT", 2082, 7, 15),
+        )
+        self.assertEqual(reading.order, "YMD")
+        assert reading.gregorian is not None
+        self.assertEqual((reading.gregorian["year"], reading.gregorian["month"], reading.gregorian["day"]), (2025, 11, 1))
+        both = self.ctx.intl.dates({"text": "2025/11/01"})
+        self.assertEqual(
+            [r.date["calendar"] for r in both.dates[0].readings],
+            ["calendar.BIKRAM_SAMBAT", "calendar.GREGORIAN"],
+        )
+        with self.assertRaises(TeistroError) as refused:
+            self.ctx.intl.dates({"text": "x", "calendars": ["calendar.JULIAN"]})
+        self.assertEqual(refused.exception.field, "dates.calendars")
+
     def test_transliteration_changes_the_script(self) -> None:
         latin = self.ctx.intl.transliterate("सूर्य")
         self.assertTrue(latin)

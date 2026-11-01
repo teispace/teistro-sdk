@@ -4,6 +4,7 @@
 use teistro_core::Status;
 use teistro_core::error::Error;
 use teistro_intl::civil::{CivilText, DateTextRequest, TimeTextRequest};
+use teistro_intl::dates::{DatesRequest, FoundDates};
 use teistro_intl::lexicon::{Lexicon, LexiconRequest, Lookup, LookupRequest};
 use teistro_intl::source::Entity;
 use teistro_intl::translit::{Script, transliterate};
@@ -267,6 +268,27 @@ impl<'a> IntlArea<'a> {
     /// As [`teistro_intl::Intl::lookup`], named under `lookup`.
     pub fn lookup(self, request: &LookupRequest) -> Result<Lookup, Error> {
         self.context.locale_engine().lookup(request)
+    }
+
+    /// Every Bikram Sambat and Gregorian date in a text, each span with
+    /// every reading of it (`03-design/lexicon.md` §2).
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let asked = teistro::DatesRequest::from_json(r#"{"text": "२०८२ कात्तिक १५ गते"}"#)?;
+    /// let found = sdk.intl().dates(&asked)?;
+    /// assert_eq!(found.dates[0].readings[0].date.month, 7);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`teistro_intl::Intl::dates`], named under `dates`.
+    pub fn dates(self, request: &DatesRequest) -> Result<FoundDates, Error> {
+        self.context.locale_engine().dates(request)
     }
 
     /// A locale pack loaded at run time, whose locales join the embedded

@@ -313,6 +313,7 @@ const Map<String, Type> _records = {
   'intl.inWords': InWordsRequest,
   'intl.lexicon': LexiconRequest,
   'intl.lookup': LookupRequest,
+  'intl.dates': DatesRequest,
   'intl.time': TimeTextRequest,
   'matching.naam': NaamRequest,
   'naming.check': NamingCheckRequest,

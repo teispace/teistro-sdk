@@ -592,6 +592,20 @@ export interface DateTextRequest {
 }
 
 /**
+ * What a caller asks: the dates in a text, in the calendars named.
+ */
+export interface DatesRequest {
+  /**
+   * The calendars a reading may be in: `calendar.BIKRAM_SAMBAT`, `calendar.GREGORIAN`; both when left out.
+   */
+  readonly calendars?: readonly Member<catalogue.Calendar>[] | null;
+  /**
+   * The text.
+   */
+  readonly text: string;
+}
+
+/**
  * What a caller asks to be written in words: a number or an amount, and how.
  */
 export interface InWordsRequest {

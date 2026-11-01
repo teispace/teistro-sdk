@@ -335,6 +335,13 @@ public final class BindingTest {
                         .text("आज एकादशी हो").kinds(java.util.List.of("tithi")).build());
                 same(2, found.matches().get(0).candidates().size(), "both fortnights' Ekadashi");
                 same(3, found.matches().get(0).start(), "counted in code points");
+                FoundDates dated = sky.intl().dates(com.teispace.teistro.request.DatesRequest.builder()
+                        .text("आज २०८२ कात्तिक १५ गते हो").build());
+                FoundDates.Reading reading = dated.dates().get(0).readings().get(0);
+                same("calendar.BIKRAM_SAMBAT", reading.date().calendar(), "a Bikram Sambat day");
+                same(15, reading.date().day(), "its day");
+                same(1, reading.gregorian().day(), "the Gregorian day it is");
+                same(3, dated.dates().get(0).start(), "counted in code points");
             }
         });
 

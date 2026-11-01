@@ -4077,6 +4077,7 @@ public final class Native {
         "ts_intl_date",
         "ts_intl_lexicon",
         "ts_intl_lookup",
+        "ts_intl_dates",
         "ts_intl_transliterate",
         "ts_intl_entity",
         "ts_intl_render",
@@ -4533,6 +4534,23 @@ public final class Native {
      * `UNSUPPORTED`.
      */
     public final MethodHandle ts_intl_lookup;
+
+    /**
+     * Every Bikram Sambat and Gregorian date a text names
+     * (`03-design/lexicon.md` §2), answered as canonical JSON: `{dates}`, each
+     * found date `{start, end, text, readings}` in the text's order, `start`
+     * and `end` counted in Unicode scalar values, and each reading `{date,
+     * order, gregorian}`: the date in its calendar (`{calendar, year, month,
+     * day, era, leap}`), how its figures were ordered (`YMD`, `DMY` or `MDY`),
+     * and the Gregorian day it is, on a Bikram Sambat reading. A span that may
+     * be read several ways answers every reading.
+     *
+     * `request_json` is `{"text"}`, with `"calendars"` (`["calendar.BIKRAM_SAMBAT",
+     * "calendar.GREGORIAN"]` when left out). A key it does not read is `INVALID_ARG`,
+     * named under `dates`; a calendar other than those two is `UNSUPPORTED`,
+     * named `dates.calendars`.
+     */
+    public final MethodHandle ts_intl_dates;
 
     /**
      * Text from one script into another (`deva`, `iast`), as a string lent
@@ -5315,6 +5333,7 @@ public final class Native {
         ts_intl_date = linker.downcallHandle(symbols.find("ts_intl_date").orElseThrow(() -> missing("ts_intl_date")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_lexicon = linker.downcallHandle(symbols.find("ts_intl_lexicon").orElseThrow(() -> missing("ts_intl_lexicon")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_lookup = linker.downcallHandle(symbols.find("ts_intl_lookup").orElseThrow(() -> missing("ts_intl_lookup")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_intl_dates = linker.downcallHandle(symbols.find("ts_intl_dates").orElseThrow(() -> missing("ts_intl_dates")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_transliterate = linker.downcallHandle(symbols.find("ts_intl_transliterate").orElseThrow(() -> missing("ts_intl_transliterate")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_entity = linker.downcallHandle(symbols.find("ts_intl_entity").orElseThrow(() -> missing("ts_intl_entity")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_intl_render = linker.downcallHandle(symbols.find("ts_intl_render").orElseThrow(() -> missing("ts_intl_render")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));

@@ -717,6 +717,33 @@ final class Calls {
     }
 
     /**
+     * `ts_intl_dates`: Every Bikram Sambat and Gregorian date a text names
+     * (`03-design/lexicon.md` §2), answered as canonical JSON: `{dates}`, each
+     * found date `{start, end, text, readings}` in the text's order, `start`
+     * and `end` counted in Unicode scalar values, and each reading `{date,
+     * order, gregorian}`: the date in its calendar (`{calendar, year, month,
+     * day, era, leap}`), how its figures were ordered (`YMD`, `DMY` or `MDY`),
+     * and the Gregorian day it is, on a Bikram Sambat reading. A span that may
+     * be read several ways answers every reading.
+     *
+     * `request_json` is `{"text"}`, with `"calendars"` (`["calendar.BIKRAM_SAMBAT",
+     * "calendar.GREGORIAN"]` when left out). A key it does not read is `INVALID_ARG`,
+     * named under `dates`; a calendar other than those two is `UNSUPPORTED`,
+     * named `dates.calendars`.
+     */
+    static String intlDates(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_intl_dates.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_intl_transliterate`: Text from one script into another (`deva`, `iast`), as a string lent
      * until the next call on the context. A pair the build has no table for
      * is `UNSUPPORTED` naming both scripts; anything the table does not know

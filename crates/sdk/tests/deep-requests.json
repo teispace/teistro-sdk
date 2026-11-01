@@ -4054,6 +4054,15 @@
     }
   },
   {
+    "record": "intl.dates",
+    "request": {
+      "calendars": [
+        "calendar.JULIAN"
+      ],
+      "text": "x"
+    }
+  },
+  {
     "record": "intl.inWords",
     "request": {
       "amount": {

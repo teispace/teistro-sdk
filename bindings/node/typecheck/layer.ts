@@ -93,6 +93,8 @@ import type {
   CivilText,
   Lexicon,
   LexiconRequest,
+  DatesRequest,
+  FoundDates,
   Lookup,
   LookupRequest,
   DateTextRequest,
@@ -2299,6 +2301,17 @@ function theLexicon(ctx: Context): string {
 }
 
 void theLexicon;
+
+// The dates a text names.
+function theDates(ctx: Context): string {
+  const asked: DatesRequest = { text: '२०८२ कात्तिक १५ गते', calendars: ['calendar.BIKRAM_SAMBAT'] };
+  const found: FoundDates = ctx.intl.dates(asked);
+  // @ts-expect-error a reading's order is one of three
+  const order: 'YDM' = found.dates[0]?.readings[0]?.order ?? 'YMD';
+  return [found.dates[0]?.readings[0]?.gregorian?.year ?? 0, order].join();
+}
+
+void theDates;
 
 // A stored baseline snapshot translated into the contexts to open.
 function theRecordedSettings(ctx: Context): string {

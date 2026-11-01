@@ -2001,6 +2001,8 @@ typedef TsIntlLexiconNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Point
 typedef TsIntlLexiconDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlLookupNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlLookupDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlDatesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsIntlDatesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsIntlTransliterateNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlTransliterateDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
 typedef TsIntlEntityNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StrStruct>);
@@ -2136,6 +2138,7 @@ final class TeistroLibrary {
         ts_intl_date = library.lookupFunction<TsIntlDateNative, TsIntlDateDart>('ts_intl_date'),
         ts_intl_lexicon = library.lookupFunction<TsIntlLexiconNative, TsIntlLexiconDart>('ts_intl_lexicon'),
         ts_intl_lookup = library.lookupFunction<TsIntlLookupNative, TsIntlLookupDart>('ts_intl_lookup'),
+        ts_intl_dates = library.lookupFunction<TsIntlDatesNative, TsIntlDatesDart>('ts_intl_dates'),
         ts_intl_transliterate = library.lookupFunction<TsIntlTransliterateNative, TsIntlTransliterateDart>('ts_intl_transliterate'),
         ts_intl_entity = library.lookupFunction<TsIntlEntityNative, TsIntlEntityDart>('ts_intl_entity'),
         ts_intl_render = library.lookupFunction<TsIntlRenderNative, TsIntlRenderDart>('ts_intl_render'),
@@ -2496,6 +2499,21 @@ final class TeistroLibrary {
   /// `INVALID_ARG`, named under `lookup`; a locale no loaded one answers is
   /// `UNSUPPORTED`.
   final TsIntlLookupDart ts_intl_lookup;
+
+  /// Every Bikram Sambat and Gregorian date a text names
+  /// (`03-design/lexicon.md` §2), answered as canonical JSON: `{dates}`, each
+  /// found date `{start, end, text, readings}` in the text's order, `start`
+  /// and `end` counted in Unicode scalar values, and each reading `{date,
+  /// order, gregorian}`: the date in its calendar (`{calendar, year, month,
+  /// day, era, leap}`), how its figures were ordered (`YMD`, `DMY` or `MDY`),
+  /// and the Gregorian day it is, on a Bikram Sambat reading. A span that may
+  /// be read several ways answers every reading.
+  ///
+  /// `request_json` is `{"text"}`, with `"calendars"` (`["calendar.BIKRAM_SAMBAT",
+  /// "calendar.GREGORIAN"]` when left out). A key it does not read is `INVALID_ARG`,
+  /// named under `dates`; a calendar other than those two is `UNSUPPORTED`,
+  /// named `dates.calendars`.
+  final TsIntlDatesDart ts_intl_dates;
 
   /// Text from one script into another (`deva`, `iast`), as a string lent
   /// until the next call on the context. A pair the build has no table for
@@ -6503,6 +6521,30 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_intl_lookup(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Every Bikram Sambat and Gregorian date a text names
+  /// (`03-design/lexicon.md` §2), answered as canonical JSON: `{dates}`, each
+  /// found date `{start, end, text, readings}` in the text's order, `start`
+  /// and `end` counted in Unicode scalar values, and each reading `{date,
+  /// order, gregorian}`: the date in its calendar (`{calendar, year, month,
+  /// day, era, leap}`), how its figures were ordered (`YMD`, `DMY` or `MDY`),
+  /// and the Gregorian day it is, on a Bikram Sambat reading. A span that may
+  /// be read several ways answers every reading.
+  ///
+  /// `request_json` is `{"text"}`, with `"calendars"` (`["calendar.BIKRAM_SAMBAT",
+  /// "calendar.GREGORIAN"]` when left out). A key it does not read is `INVALID_ARG`,
+  /// named under `dates`; a calendar other than those two is `UNSUPPORTED`,
+  /// named `dates.calendars`.
+  String intlDates(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_intl_dates(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

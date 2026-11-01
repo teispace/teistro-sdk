@@ -424,7 +424,7 @@ pub fn records() -> Vec<Record> {
 }
 
 /// The locale engine's records.
-fn intl_records() -> [Record; 5] {
+fn intl_records() -> [Record; 6] {
     [
         Record {
             name: "intl.inWords",
@@ -495,6 +495,21 @@ fn intl_records() -> [Record; 5] {
                 )
             },
             schemas: schemas!(crate::LookupRequest => crate::Lookup),
+        },
+        Record {
+            name: "intl.dates",
+            boundary: "ts_intl_dates",
+            title: "The Bikram Sambat and Gregorian dates a text names, every reading of each",
+            reads: None,
+            run: |context, json| {
+                Answered::plain(
+                    &context
+                        .intl()
+                        .dates(&crate::DatesRequest::from_json(json)?)?
+                        .in_full()?,
+                )
+            },
+            schemas: schemas!(crate::DatesRequest => crate::FoundDates),
         },
     ]
 }
