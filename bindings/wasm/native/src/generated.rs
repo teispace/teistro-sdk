@@ -4814,6 +4814,34 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// Every Bikram Sambat and Gregorian date a text names
+    /// (`03-design/lexicon.md` §2), answered as canonical JSON: `{dates}`, each
+    /// found date `{start, end, text, readings}` in the text's order, `start`
+    /// and `end` counted in Unicode scalar values, and each reading `{date,
+    /// order, gregorian}`: the date in its calendar (`{calendar, year, month,
+    /// day, era, leap}`), how its figures were ordered (`YMD`, `DMY` or `MDY`),
+    /// and the Gregorian day it is, on a Bikram Sambat reading. A span that may
+    /// be read several ways answers every reading.
+    ///
+    /// `request_json` is `{"text"}`, with `"calendars"` (`["calendar.BIKRAM_SAMBAT",
+    /// "calendar.GREGORIAN"]` when left out). A key it does not read is `INVALID_ARG`,
+    /// named under `dates`; a calendar other than those two is `UNSUPPORTED`,
+    /// named `dates.calendars`.
+    #[wasm_bindgen(js_name = intlDates)]
+    pub fn intl_dates(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::intl::ts_intl_dates(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Text from one script into another (`deva`, `iast`), as a string lent
     /// until the next call on the context. A pair the build has no table for
     /// is `UNSUPPORTED` naming both scripts; anything the table does not know

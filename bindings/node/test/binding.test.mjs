@@ -3408,6 +3408,30 @@ test('a locale\'s names, and the members a text may name', () => {
   ctx.dispose();
 });
 
+test('the dates a text names, every reading of each', () => {
+  const ctx = context({ locale: 'en-Latn' });
+  const found = ctx.intl.dates({ text: 'आज २०८२ कात्तिक १५ गते हो' });
+  assert.ok(Object.isFrozen(found) && Object.isFrozen(found.dates), 'frozen');
+  const [date] = found.dates;
+  assert.deepEqual([date.start, date.text], [3, '२०८२ कात्तिक १५ गते']);
+  const [reading] = date.readings;
+  assert.deepEqual(
+    [reading.date.calendar, reading.date.year, reading.date.month, reading.date.day, reading.order],
+    ['calendar.BIKRAM_SAMBAT', 2082, 7, 15, 'YMD'],
+  );
+  assert.deepEqual([reading.gregorian.year, reading.gregorian.month, reading.gregorian.day], [2025, 11, 1]);
+  const both = ctx.intl.dates({ text: '2025/11/01' });
+  assert.deepEqual(
+    both.dates[0].readings.map((r) => r.date.calendar),
+    ['calendar.BIKRAM_SAMBAT', 'calendar.GREGORIAN'],
+  );
+  assert.throws(
+    () => ctx.intl.dates({ text: 'x', calendars: ['calendar.JULIAN'] }),
+    (error) => error instanceof TeistroError && error.field === 'dates.calendars',
+  );
+  ctx.dispose();
+});
+
 test('a date and a time as text and parts, in the locale\'s pattern', () => {
   const ctx = context({ locale: 'en-Latn' });
   const dawn = ctx.intl.time({ at: { hour: 6, minute: 5 }, hour12: true, locale: 'hi-Deva-IN' });

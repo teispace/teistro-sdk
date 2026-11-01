@@ -1249,6 +1249,29 @@ final class DateTextRequest extends _Request {
   List<Object?> get _fields => [at, digits, locale, style];
 }
 
+/// What a caller asks: the dates in a text, in the calendars named.
+final class DatesRequest extends _Request {
+  const DatesRequest({
+    this.calendars,
+    required this.text,
+  });
+
+  /// The calendars a reading may be in: `calendar.BIKRAM_SAMBAT`, `calendar.GREGORIAN`; both when left out.
+  final List<Calendar>? calendars;
+
+  /// The text.
+  final String text;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (calendars case final calendarsValue?) 'calendars': [for (final e0 in calendarsValue) e0.key],
+    'text': text,
+  };
+
+  @override
+  List<Object?> get _fields => [calendars, text];
+}
+
 /// What a caller asks to be written in words: a number or an amount, and how.
 final class InWordsRequest extends _Request {
   const InWordsRequest({

@@ -214,6 +214,8 @@ import type {
   DateTextRequest,
   LexiconRequest,
   LookupRequest,
+  DatesRequest,
+  CalendarDay,
   InWordsRequest,
   TimeTextRequest,
   Interval,
@@ -2365,6 +2367,34 @@ export interface LookupMatch {
 export interface Lookup {
   /** The spans, in the text's order. */
   readonly matches: readonly LookupMatch[];
+}
+
+/** One way a date in a text may be read. */
+export interface DateReading {
+  /** The date in the calendar it is read in. */
+  readonly date: CalendarDay;
+  /** How its figures were ordered: year, month, day or the reverse. */
+  readonly order: 'YMD' | 'DMY' | 'MDY';
+  /** The Gregorian day it is, on a Bikram Sambat reading; `null` on a Gregorian one. */
+  readonly gregorian: CalendarDay | null;
+}
+
+/** One span of a text that names a date, with every reading of it. */
+export interface FoundDate {
+  /** Where the span begins, counted in Unicode scalar values (code points). */
+  readonly start: number;
+  /** Where it ends, exclusive, in the same count. */
+  readonly end: number;
+  /** The span's text. */
+  readonly text: string;
+  /** Every reading, Bikram Sambat first; more than one is an ambiguity, not a guess. */
+  readonly readings: readonly DateReading[];
+}
+
+/** The dates a text names, as `intl.dates` gives them. */
+export interface FoundDates {
+  /** The spans, in the text's order. */
+  readonly dates: readonly FoundDate[];
 }
 
 /** An amount's parts, for an application that composes them its own way. */
@@ -7641,6 +7671,8 @@ export declare class IntlArea {
   lexicon(request: LexiconRequest): Lexicon;
   /** The catalogue members a text may name, every candidate of each span. */
   lookup(request: LookupRequest): Lookup;
+  /** The Bikram Sambat and Gregorian dates a text names, every reading of each. */
+  dates(request: DatesRequest): FoundDates;
   /** The typed accessors: every message and every catalogued entity. */
   readonly messages: Messages;
   /** Loads a `.tpack` or `.tbundle` file into the locale engine. */

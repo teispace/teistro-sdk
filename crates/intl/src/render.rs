@@ -1032,6 +1032,9 @@ pub struct Intl {
     /// first time it is asked for (`docs/03-design/lexicon.md` §1.4); a
     /// change through the runtime API forgets them all.
     pub(crate) lexicons: RwLock<HashMap<String, Arc<crate::lexicon::Index>>>,
+    /// The month names dates are read by, built the first time a text is
+    /// read for dates, and forgotten with the lexicons.
+    pub(crate) months: RwLock<Option<Arc<crate::dates::Months>>>,
     /// In-memory overrides by locale and full key, consulted before the
     /// locale's own entries ([`Intl::set_override`]).
     pub(crate) overrides: BTreeMap<String, BTreeMap<String, Entry>>,
@@ -1220,6 +1223,7 @@ impl Intl {
             current,
             parsed: RwLock::new(HashMap::new()),
             lexicons: RwLock::new(HashMap::new()),
+            months: RwLock::new(None),
             overrides: BTreeMap::new(),
             loaded: Vec::new(),
             zones: None,
@@ -1515,6 +1519,7 @@ impl Intl {
             .write()
             .unwrap_or_else(PoisonError::into_inner)
             .clear();
+        *self.months.write().unwrap_or_else(PoisonError::into_inner) = None;
         let mut parsed = self.parsed.write().unwrap_or_else(PoisonError::into_inner);
         match key {
             Some(key) => {

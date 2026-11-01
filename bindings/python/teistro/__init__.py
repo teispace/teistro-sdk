@@ -457,6 +457,7 @@ from ._requests import (
     TimeTextRequest as TimeTextRequest,
     LexiconRequest as LexiconRequest,
     LookupRequest as LookupRequest,
+    DatesRequest as DatesRequest,
     WordsAmount as WordsAmount,
     WordsAmountValue as WordsAmountValue,
     WordsDigits as WordsDigits,
@@ -1202,6 +1203,7 @@ __all__ = [
     "TimeTextRequest",
     "LexiconRequest",
     "LookupRequest",
+    "DatesRequest",
     "WordsAmount",
     "WordsAmountValue",
     "WordsDigits",
@@ -1217,6 +1219,10 @@ __all__ = [
     "LookupCandidate",
     "LookupMatch",
     "Lookup",
+    # The dates a text names.
+    "DateReading",
+    "FoundDate",
+    "FoundDates",
     "InWords",
     "AmountInWords",
     # The transit hit list, and its names.
@@ -3122,6 +3128,17 @@ class IntlArea(_Area):
         ['tithi.KRISHNA_EKADASHI', 'tithi.SHUKLA_EKADASHI']
         """
         return Lookup._of(json.loads(self._context.inner.intl_lookup(json.dumps(request))))
+
+    def dates(self, request: DatesRequest) -> "FoundDates":
+        """The Bikram Sambat and Gregorian dates a text names, in
+        Devanagari or Latin digits and any spelling of a month: each span
+        with every reading of it, never a guess. `start` and `end` count
+        code points.
+
+        >>> sdk.intl.dates({"text": "२०८२ कात्तिक १५ गते"}).dates[0].readings[0].gregorian["day"]
+        1
+        """
+        return FoundDates._of(json.loads(self._context.inner.intl_dates(json.dumps(request))))
 
     def transliterate(self, text: str, source: str = "Deva", into: str = "Latn") -> str:
         """Text from one script into another."""
@@ -8612,6 +8629,63 @@ class Lookup:
                     ),
                 )
                 for found in raw["matches"]
+            )
+        )
+
+
+@dataclass(frozen=True)
+class DateReading:
+    """One way a date in a text may be read."""
+
+    date: CalendarDay
+    """The date in the calendar it is read in."""
+
+    order: str
+    """How its figures were ordered: `YMD`, `DMY` or `MDY`."""
+
+    gregorian: Optional[CalendarDay]
+    """The Gregorian day it is, on a Bikram Sambat reading."""
+
+
+@dataclass(frozen=True)
+class FoundDate:
+    """One span of a text that names a date, with every reading of it."""
+
+    start: int
+    """Where the span begins, counted in code points."""
+
+    end: int
+    """Where it ends, exclusive, in the same count."""
+
+    text: str
+    """The span's text."""
+
+    readings: Tuple[DateReading, ...]
+    """Every reading, Bikram Sambat first: more than one is an
+    ambiguity, not a guess."""
+
+
+@dataclass(frozen=True)
+class FoundDates:
+    """The dates a text names, as `intl.dates` gives them."""
+
+    dates: Tuple[FoundDate, ...]
+    """The spans, in the text's order."""
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "FoundDates":
+        return FoundDates(
+            dates=tuple(
+                FoundDate(
+                    start=found["start"],
+                    end=found["end"],
+                    text=found["text"],
+                    readings=tuple(
+                        DateReading(date=reading["date"], order=reading["order"], gregorian=reading["gregorian"])
+                        for reading in found["readings"]
+                    ),
+                )
+                for found in raw["dates"]
             )
         )
 

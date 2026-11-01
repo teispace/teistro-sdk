@@ -671,6 +671,9 @@ pub use teistro_intl::lexicon::{
     Lexicon, LexiconEntry, LexiconForm, LexiconRequest, Lookup, LookupCandidate, LookupMatch,
     LookupRequest,
 };
+// Dates found in a text (`03-design/lexicon.md` §2): what `intl().dates`
+// takes and answers with.
+pub use teistro_intl::dates::{DateOrder, DateReading, DatesRequest, FoundDate, FoundDates};
 // Making a pack, which is the other half of loading one. `Loaded` is what
 // `load_pack` answers with and was published already; this is what a
 // consumer with locale sources of its own — or with the SDK's readings

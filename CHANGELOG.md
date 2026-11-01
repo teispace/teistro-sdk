@@ -107,6 +107,14 @@ out of any earlier period. No other period moves.
 - An observance kept or broken at moonrise carries `moonrise`, the instant and the place
   (SR-60); `ASHUNYA_SHAYANA` joins `DHARMASINDHU`, kept and broken at moonrise (DS p. 44).
 
+**The dates a text names.**
+**Numbers:** none.
+- `intl.dates` in every binding and MCP (`ts_intl_dates`): every Bikram Sambat and Gregorian date in a
+  text in Nepali, English or Hindi, Devanagari or Latin digits, any listed spelling of a month, each span
+  answered with every reading of it and a Bikram Sambat reading with its Gregorian day (SR-61,
+  `03-design/lexicon.md` §2). Figures with no month name or era are read in both calendars; a lunar date
+  (`शुक्ल`, `sudi`) is not read.
+
 **A locale's names, and the members a text may name.**
 **Numbers:** none.
 - `intl.lexicon` and `intl.lookup` in every binding and MCP (`ts_intl_lexicon`, `ts_intl_lookup`): every

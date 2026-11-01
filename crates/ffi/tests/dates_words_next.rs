@@ -23,7 +23,7 @@ use teistro_ffi::calendar::{
     TsCalendarDate, TsDateSpan, TsOverflow, ts_calendar_add, ts_calendar_between,
 };
 use teistro_ffi::intl::{
-    ts_intl_date, ts_intl_in_words, ts_intl_lexicon, ts_intl_lookup, ts_intl_time,
+    ts_intl_date, ts_intl_dates, ts_intl_in_words, ts_intl_lexicon, ts_intl_lookup, ts_intl_time,
 };
 use teistro_ffi::panchanga::{ts_almanac_anniversaries, ts_almanac_next, ts_almanac_sentences};
 use teistro_ffi::string::TsString;
@@ -371,6 +371,71 @@ fn a_lexicon_is_listed_and_a_text_is_looked_up() {
         ),
     ] {
         refused(&ctx, &json_call(&ctx, ts_intl_lookup, &request), status, "");
+    }
+}
+
+/// **The dates a text names** (SR-61): a Bikram Sambat day in Devanagari
+/// with its Gregorian day, figures read in both calendars, and each
+/// refusal.
+#[test]
+fn the_dates_a_text_names_are_found() {
+    let ctx = Ctx::defaults();
+    let (status, found) = json_call(
+        &ctx,
+        ts_intl_dates,
+        &serde_json::json!({ "text": "आज २०८२ कात्तिक १५ गते हो" }),
+    );
+    assert_eq!(status, Status::Ok);
+    let found = found.unwrap();
+    let date = &found["dates"][0];
+    assert_eq!(date["start"], 3);
+    assert_eq!(date["text"], "२०८२ कात्तिक १५ गते");
+    let reading = &date["readings"][0];
+    assert_eq!(reading["date"]["calendar"], "calendar.BIKRAM_SAMBAT");
+    assert_eq!(
+        [
+            &reading["date"]["year"],
+            &reading["date"]["month"],
+            &reading["date"]["day"]
+        ],
+        [2082, 7, 15]
+    );
+    assert_eq!(reading["order"], "YMD");
+    assert_eq!(
+        [
+            &reading["gregorian"]["year"],
+            &reading["gregorian"]["month"],
+            &reading["gregorian"]["day"]
+        ],
+        [2025, 11, 1]
+    );
+
+    // Figures alone are read in both calendars.
+    let (_, both) = json_call(
+        &ctx,
+        ts_intl_dates,
+        &serde_json::json!({ "text": "2025/11/01" }),
+    );
+    let calendars: Vec<&Value> = both.as_ref().unwrap()["dates"][0]["readings"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|r| &r["date"]["calendar"])
+        .collect();
+    assert_eq!(calendars.len(), 2, "{both:?}");
+
+    for (request, status) in [
+        (serde_json::json!({}), Status::InvalidArg),
+        (
+            serde_json::json!({ "text": "x", "calendar": [] }),
+            Status::InvalidArg,
+        ),
+        (
+            serde_json::json!({ "text": "x", "calendars": ["calendar.JULIAN"] }),
+            Status::Unsupported,
+        ),
+    ] {
+        refused(&ctx, &json_call(&ctx, ts_intl_dates, &request), status, "");
     }
 }
 

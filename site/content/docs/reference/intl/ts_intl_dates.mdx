@@ -1,0 +1,38 @@
+---
+title: ts_intl_dates
+description: "Every Bikram Sambat and Gregorian date a text names (`03-design/lexicon.md` §2), answered as canonical JSON: `{dates}`, each found date `{start, end, text, readings}` in the text's order, `start` and `end` counted in Unicode scalar values, and each reading `{date, order, gregorian}`: the date in its calendar (`{calendar, year, month, day, era, leap}`), how its figures were ordered (`YMD`, `DMY` or `MDY`), and the Gregorian day it is, on a Bikram Sambat reading."
+---
+
+Every Bikram Sambat and Gregorian date a text names (`03-design/lexicon.md` §2), answered as canonical JSON: `{dates}`, each found date `{start, end, text, readings}` in the text's order, `start` and `end` counted in Unicode scalar values, and each reading `{date, order, gregorian}`: the date in its calendar (`{calendar, year, month, day, era, leap}`), how its figures were ordered (`YMD`, `DMY` or `MDY`), and the Gregorian day it is, on a Bikram Sambat reading. A span that may be read several ways answers every reading.
+
+`request_json` is `{"text"}`, with `"calendars"` (`["calendar.BIKRAM_SAMBAT", "calendar.GREGORIAN"]` when left out). A key it does not read is `INVALID_ARG`, named under `dates`; a calendar other than those two is `UNSUPPORTED`, named `dates.calendars`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_intl_dates(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `intl.dates` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/intl.rs`.

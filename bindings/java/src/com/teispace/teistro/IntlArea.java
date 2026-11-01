@@ -230,6 +230,22 @@ public final class IntlArea {
     }
 
     /**
+     * The Bikram Sambat and Gregorian dates a text names, in Devanagari or
+     * Latin digits and any spelling of a month: each span with every
+     * reading of it, never a guess.
+     *
+     * @param request the text, and the calendars to read it in
+     * @return the dates found
+     */
+    public FoundDates dates(com.teispace.teistro.request.DatesRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is a DatesRequest", "request");
+        }
+        String json = Json.write(request);
+        return FoundDates.read(Json.read(context.locked((lib, raw) -> Calls.intlDates(lib, raw, json))));
+    }
+
+    /**
      * Loads a locale pack's bytes into the engine.
      *
      * @param data the pack

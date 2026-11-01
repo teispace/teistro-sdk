@@ -309,6 +309,12 @@
     }
   },
   {
+    "record": "intl.dates",
+    "request": {
+      "text": "बिसं २०८२ कात्तिक १५ गते, अर्थात् 1 November 2025"
+    }
+  },
+  {
     "record": "almanac.digest",
     "request": {
       "first": {

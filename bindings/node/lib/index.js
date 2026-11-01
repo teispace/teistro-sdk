@@ -3009,6 +3009,19 @@ export class IntlArea extends Area {
   }
 
   /**
+   * The Bikram Sambat and Gregorian dates a text names, in Devanagari or
+   * Latin digits and any spelling of a month: each span with every reading
+   * of it, never a guess. `start` and `end` count code points.
+   *
+   * ```js
+   * sdk.intl.dates({ text: '२०८२ कात्तिक १५ गते' }).dates[0].readings[0].gregorian; // 2025-11-01
+   * ```
+   */
+  dates(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.intlDates(JSON.stringify(request)))));
+  }
+
+  /**
    * An entity's forms in the current locale or its fallbacks: its name,
    * its prose form, its transliteration, and the glyph and gender the
    * locale gives it.

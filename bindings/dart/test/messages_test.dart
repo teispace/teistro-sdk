@@ -213,6 +213,35 @@ void main() {
     expect([found.matches.single.start, found.matches.single.end], [3, 9]);
   });
 
+  test('the dates a text names, every reading of each', () {
+    final ctx = context();
+    addTearDown(ctx.dispose);
+    final found = ctx.intl.dates(
+      const DatesRequest(text: 'आज २०८२ कात्तिक १५ गते हो'),
+    );
+    final date = found.dates.single;
+    expect([date.start, date.text], [3, '२०८२ कात्तिक १५ गते']);
+    final reading = date.readings.single;
+    expect(
+      [reading.date.calendar, reading.date.year, reading.date.month],
+      ['calendar.BIKRAM_SAMBAT', 2082, 7],
+    );
+    expect(reading.date.day, 15);
+    expect(
+      [
+        reading.gregorian!.year,
+        reading.gregorian!.month,
+        reading.gregorian!.day,
+      ],
+      [2025, 11, 1],
+    );
+    final both = ctx.intl.dates(const DatesRequest(text: '2025/11/01'));
+    expect(both.dates.single.readings.map((r) => r.date.calendar), [
+      'calendar.BIKRAM_SAMBAT',
+      'calendar.GREGORIAN',
+    ]);
+  });
+
   test('a date and a time as text and parts', () {
     final ctx = context();
     addTearDown(ctx.dispose);

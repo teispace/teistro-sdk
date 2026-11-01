@@ -993,6 +993,15 @@ final class IntlArea extends _Area {
         as Map<String, Object?>,
   );
 
+  /// The Bikram Sambat and Gregorian dates a text names, in Devanagari or
+  /// Latin digits and any spelling of a month: each span with every
+  /// reading of it, never a guess. [FoundDate.start] and [FoundDate.end]
+  /// count code points, not UTF-16 units.
+  FoundDates dates(DatesRequest request) => FoundDates._of(
+    jsonDecode(_context._inner.intlDates(jsonEncode(request._wire)))
+        as Map<String, Object?>,
+  );
+
   /// An entity's forms in the current locale or its fallbacks: its name,
   /// its prose form, its transliteration, and the glyph and gender the
   /// locale gives it.
@@ -11660,6 +11669,135 @@ final class Lookup extends _Value {
 
   @override
   List<Object?> get _fields => [matches];
+}
+
+/// A day in a calendar as `intl.dates` reads it.
+final class DayInText extends _Value {
+  const DayInText({
+    required this.calendar,
+    required this.year,
+    required this.month,
+    required this.day,
+    this.era,
+    this.eraYear,
+    this.leap,
+  });
+
+  /// The calendar's key, `calendar.BIKRAM_SAMBAT` or `calendar.GREGORIAN`.
+  final String calendar;
+
+  /// The astronomical year.
+  final int year;
+
+  /// The month, 1-based.
+  final int month;
+
+  /// The day, 1-based.
+  final int day;
+
+  /// The era's key, for a calendar that names one.
+  final String? era;
+
+  /// The year in [era].
+  final int? eraYear;
+
+  /// A leap month or day, for a calendar that marks one.
+  final String? leap;
+
+  static DayInText? _of(Object? raw) {
+    if (raw == null) return null;
+    final day = raw as Map<String, Object?>;
+    final era = day['era'] as Map<String, Object?>?;
+    return DayInText(
+      calendar: day['calendar']! as String,
+      year: day['year']! as int,
+      month: day['month']! as int,
+      day: day['day']! as int,
+      era: era?['era'] as String?,
+      eraYear: era?['year'] as int?,
+      leap: day['leap'] as String?,
+    );
+  }
+
+  @override
+  List<Object?> get _fields => [calendar, year, month, day, era, eraYear, leap];
+}
+
+/// One way a date in a text may be read.
+final class DateReading extends _Value {
+  const DateReading({required this.date, required this.order, this.gregorian});
+
+  /// The date in the calendar it is read in.
+  final DayInText date;
+
+  /// How its figures were ordered: `YMD`, `DMY` or `MDY`.
+  final String order;
+
+  /// The Gregorian day it is, on a Bikram Sambat reading.
+  final DayInText? gregorian;
+
+  @override
+  List<Object?> get _fields => [date, order, gregorian];
+}
+
+/// One span of a text that names a date, with every reading of it.
+final class FoundDate extends _Value {
+  const FoundDate({
+    required this.start,
+    required this.end,
+    required this.text,
+    required this.readings,
+  });
+
+  /// Where the span begins, counted in code points.
+  final int start;
+
+  /// Where it ends, exclusive, in the same count.
+  final int end;
+
+  /// The span's text.
+  final String text;
+
+  /// Every reading, Bikram Sambat first: more than one is an ambiguity,
+  /// not a guess.
+  final List<DateReading> readings;
+
+  @override
+  List<Object?> get _fields => [start, end, text, readings];
+}
+
+/// The dates a text names, as `intl.dates` gives them.
+final class FoundDates extends _Value {
+  const FoundDates({required this.dates});
+
+  /// The spans, in the text's order.
+  final List<FoundDate> dates;
+
+  static FoundDates _of(Map<String, Object?> raw) => FoundDates(
+    dates: List.unmodifiable(
+      (raw['dates']! as List<Object?>).cast<Map<String, Object?>>().map(
+        (found) => FoundDate(
+          start: found['start']! as int,
+          end: found['end']! as int,
+          text: found['text']! as String,
+          readings: List.unmodifiable(
+            (found['readings']! as List<Object?>)
+                .cast<Map<String, Object?>>()
+                .map(
+                  (reading) => DateReading(
+                    date: DayInText._of(reading['date'])!,
+                    order: reading['order']! as String,
+                    gregorian: DayInText._of(reading['gregorian']),
+                  ),
+                ),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  @override
+  List<Object?> get _fields => [dates];
 }
 
 /// One part of a date or a time.

@@ -25,7 +25,7 @@ use teistro_ffi::context::{
 };
 use teistro_ffi::ephemeris::ts_ephemeris_call;
 use teistro_ffi::intl::{
-    TsIntlLoaded, ts_intl_entity, ts_intl_has, ts_intl_lexicon, ts_intl_load_pack, ts_intl_lookup,
+    TsIntlLoaded, ts_intl_dates, ts_intl_entity, ts_intl_has, ts_intl_lexicon, ts_intl_load_pack, ts_intl_lookup,
     ts_intl_render, ts_intl_set_locale, ts_intl_transliterate,
 };
 use teistro_ffi::key::ts_key_parse;
@@ -219,6 +219,7 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_almanac_digest",
     "ts_intl_lexicon",
     "ts_intl_lookup",
+    "ts_intl_dates",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -482,6 +483,11 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         Seed::Answered,
         r#"{"text":"आज एकादशी हो, चन्द्रमा रोहिणीमा छ","kinds":["tithi","nakshatra"]}"#,
     ),
+    (
+        "ts_intl_dates",
+        Seed::Answered,
+        r#"{"text":"बिसं २०८२ कात्तिक १५ गते, 2025-11-01, 21 Nov 2025"}"#,
+    ),
 ];
 
 /// The corpus file of one seed: its selector byte, counted from the slot's
@@ -644,6 +650,7 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_ephemeris_call" => ephemeris_call(text),
         "ts_intl_lexicon" => string_call(ts_intl_lexicon, text),
         "ts_intl_lookup" => string_call(ts_intl_lookup, text),
+        "ts_intl_dates" => string_call(ts_intl_dates, text),
         _ => Status::Ok,
     }
 }

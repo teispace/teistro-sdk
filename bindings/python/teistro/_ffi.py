@@ -4311,6 +4311,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_intl_lookup.restype = ctypes.c_int32
+        self.ts_intl_dates: Any = library.ts_intl_dates
+        self.ts_intl_dates.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_intl_dates.restype = ctypes.c_int32
         self.ts_intl_transliterate: Any = library.ts_intl_transliterate
         self.ts_intl_transliterate.argtypes = [
             ctypes.POINTER(_Context),
@@ -5445,6 +5452,37 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_intl_lookup(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def intl_dates(self, request_json: str) -> str:
+        """Every Bikram Sambat and Gregorian date a text names
+        (`03-design/lexicon.md` §2), answered as canonical JSON: `{dates}`, each
+        found date `{start, end, text, readings}` in the text's order, `start`
+        and `end` counted in Unicode scalar values, and each reading `{date,
+        order, gregorian}`: the date in its calendar (`{calendar, year, month,
+        day, era, leap}`), how its figures were ordered (`YMD`, `DMY` or `MDY`),
+        and the Gregorian day it is, on a Bikram Sambat reading. A span that may
+        be read several ways answers every reading.
+
+        `request_json` is `{"text"}`, with `"calendars"` (`["calendar.BIKRAM_SAMBAT",
+        "calendar.GREGORIAN"]` when left out). A key it does not read is `INVALID_ARG`,
+        named under `dates`; a calendar other than those two is `UNSUPPORTED`,
+        named `dates.calendars`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_intl_dates(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),
