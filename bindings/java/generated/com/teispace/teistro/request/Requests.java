@@ -49,7 +49,8 @@ public final class Requests {
             Map.entry("research.study", ResearchRequest::of),
             Map.entry("time.civil", CivilAsked::of),
             Map.entry("time.convert", ScaleRequest::of),
-            Map.entry("time.resolve", ResolveAsked::of));
+            Map.entry("time.resolve", ResolveAsked::of),
+            Map.entry("verify.claims", ClaimsRequest::of));
 
     private Requests() {}
 

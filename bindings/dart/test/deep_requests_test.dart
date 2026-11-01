@@ -2986,6 +2986,25 @@ void main() {
     );
   });
 
+  test('verify.claims: ClaimsRequest', () {
+    _holds(
+      'verify.claims',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: ClaimsRequest(
+        altitudeM: 1.5,
+        at: 1.5,
+        ayana: AyanaReckoning.tropical,
+        latitudeDeg: 1.5,
+        locale: 'x',
+        longitudeDeg: 1.5,
+        text: 'x',
+        utcOffsetSeconds: 1,
+      ).toJson(),
+    );
+  });
+
 }
 
 /// The deep examples, found by walking up from the directory the suite

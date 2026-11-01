@@ -343,6 +343,14 @@ public final class BindingTest {
                 same(1, reading.gregorian().day(), "the Gregorian day it is");
                 same(3, dated.dates().get(0).start(), "counted in code points");
             }
+            try (Context sankalpa = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true).build())) {
+                ClaimsAnswer checked = sankalpa.verify().claims(com.teispace.teistro.request.ClaimsRequest.builder()
+                        .text("आज एकादशी हो। The Sun is in Capricorn. Is the Moon in Rohini?").at(2461055.59375).latitudeDeg(27.7172).longitudeDeg(85.324)
+                        .altitudeM(1400.0).utcOffsetSeconds(20700).build());
+                same("graha.SUN", checked.claims().get(1).graha(), "the Sun is the subject");
+                check(!checked.claims().get(1).verdict().equals("UNREAD"), "the Sun's sign is judged");
+                same("QUESTION", checked.claims().get(2).reason(), "a question is not judged");
+            }
         });
 
         tests.put("a pack lays its record over the one standing, and a damaged one is refused whole", () -> {

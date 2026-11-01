@@ -1,0 +1,40 @@
+---
+title: ts_verify_claims
+description: "Every claim a text makes of the time, each judged against what `almanac.sankalpa` computes at the instant and the place (`03-design/lexicon.md` §3), answered with `{value, provenance}` as canonical JSON."
+---
+
+Every claim a text makes of the time, each judged against what `almanac.sankalpa` computes at the instant and the place (`03-design/lexicon.md` §3), answered with `{value, provenance}` as canonical JSON.
+
+`value` is `{claims}`, each claim `{start, end, text, kind, graha, claimed, verdict, computed, reason}` in the text's order: the span naming the member (counted in Unicode scalar values), the kind claimed, the graha whose sign or nakshatra it is, every key the span may name, `HELD`, `CONTRADICTED` or `UNREAD`, the key computed on a claim judged, and on one unread why: `QUESTION`, `NEGATED`, `OTHER_TIME`, `NOT_COMPUTED` or `AMBIGUOUS`.
+
+`request_json` is `{"text", "at", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "ayana", "locale"}`: `at` a UTC Julian day, `altitudeM` 0 and `ayana` `SIDEREAL` when left out, and `locale` whose names are searched, every loaded locale's when left out. A key it does not read or an instant, place or offset out of range is `INVALID_ARG`, named under `claims`; a locale no loaded one answers is `UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is `CAPABILITY`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_verify_claims(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `verify.claims` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/verify.rs`.

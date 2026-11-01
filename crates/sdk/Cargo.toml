@@ -251,6 +251,10 @@ name = "sankalpa"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "verify"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "ritu"
 required-features = ["builtin-ephemeris"]
 

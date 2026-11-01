@@ -89,6 +89,7 @@ pub mod schemas;
 pub mod string;
 mod support;
 pub mod time;
+pub mod verify;
 
 use core::ffi::c_char;
 

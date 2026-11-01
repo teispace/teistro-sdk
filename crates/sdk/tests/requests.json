@@ -315,6 +315,17 @@
     }
   },
   {
+    "record": "verify.claims",
+    "request": {
+      "text": "आज एकादशी हो। The Moon is in Rohini. Jupiter is in Gemini.",
+      "at": 2461055.59375,
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700
+    }
+  },
+  {
     "record": "almanac.digest",
     "request": {
       "first": {

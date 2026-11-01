@@ -34,7 +34,9 @@ use crate::BUNDLES;
 use crate::area::NumerologyArea;
 #[cfg(feature = "research")]
 use crate::area::ResearchArea;
-use crate::area::{AlmanacArea, CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea};
+use crate::area::{
+    AlmanacArea, CalendarArea, EngineArea, FrameArea, IntlArea, KeysArea, TimeArea, VerifyArea,
+};
 #[cfg(feature = "chart")]
 use crate::area::{ChartArea, InterpretArea, MatchingArea, NamingArea};
 use crate::ephemeris::{self, Ephemeris, no_ephemeris};
@@ -551,6 +553,14 @@ impl Context {
     #[must_use]
     pub fn almanac(&self) -> AlmanacArea<'_> {
         AlmanacArea::of_context(self)
+    }
+
+    /// What a text claims of the time, each claim held, contradicted or
+    /// unread, against what the almanac computes at an instant and a
+    /// place.
+    #[must_use]
+    pub fn verify(&self) -> VerifyArea<'_> {
+        VerifyArea::of(self)
     }
 
     /// The naming of a child (nāmakaraṇa): the syllables a pada names a

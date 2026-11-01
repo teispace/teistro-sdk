@@ -656,6 +656,32 @@ class TheLocaleEngine(WithLibrary):
             self.ctx.intl.dates({"text": "x", "calendars": ["calendar.JULIAN"]})
         self.assertEqual(refused.exception.field, "dates.calendars")
 
+    def test_what_a_text_claims_is_checked(self) -> None:
+        from teistro import ClaimsAnswer, ClaimsRequest
+
+        sky = self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN)
+        self.addCleanup(sky.close)
+        asked: ClaimsRequest = {
+            "text": "आज एकादशी हो। The Sun is in Capricorn. Is the Moon in Rohini?",
+            "at": 2461055.59375,
+            "latitudeDeg": 27.7172,
+            "longitudeDeg": 85.324,
+            "altitudeM": 1400,
+            "utcOffsetSeconds": 20700,
+        }
+        checked: ClaimsAnswer = sky.verify.claims(asked)
+        claims = checked.value.claims
+        self.assertEqual([c.kind for c in claims], ["tithi", "rashi", "nakshatra"])
+        self.assertNotEqual(claims[0].verdict, "UNREAD")
+        self.assertEqual(claims[1].graha, "graha.SUN")
+        self.assertIn(claims[1].verdict, ("HELD", "CONTRADICTED"))
+        self.assertEqual((claims[2].verdict, claims[2].reason), ("UNREAD", "QUESTION"))
+        far = asked.copy()
+        far["latitudeDeg"] = 97.0
+        with self.assertRaises(TeistroError) as refused:
+            sky.verify.claims(far)
+        self.assertEqual(refused.exception.field, "claims.latitudeDeg")
+
     def test_transliteration_changes_the_script(self) -> None:
         latin = self.ctx.intl.transliterate("सूर्य")
         self.assertTrue(latin)

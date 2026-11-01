@@ -3432,6 +3432,27 @@ test('the dates a text names, every reading of each', () => {
   ctx.dispose();
 });
 
+test('what a text claims of the time, checked against the almanac', () => {
+  const ctx = context();
+  const { value, provenance } = ctx.verify.claims({
+    text: 'आज एकादशी हो। The Sun is in Capricorn. Is the Moon in Rohini?',
+    at: 2461055.59375, latitudeDeg: 27.7172, longitudeDeg: 85.324, altitudeM: 1400, utcOffsetSeconds: 20700,
+  });
+  assert.ok(Object.isFrozen(value.claims), 'frozen');
+  assert.ok(provenance, 'sealed');
+  assert.deepEqual(value.claims.map((c) => c.kind), ['tithi', 'rashi', 'nakshatra']);
+  assert.notEqual(value.claims[0].verdict, 'UNREAD');
+  assert.equal(value.claims[1].graha, 'graha.SUN');
+  assert.ok(['HELD', 'CONTRADICTED'].includes(value.claims[1].verdict), 'judged');
+  assert.equal(value.claims[1].computed.startsWith('rashi.'), true);
+  assert.deepEqual([value.claims[2].verdict, value.claims[2].reason], ['UNREAD', 'QUESTION']);
+  assert.throws(
+    () => ctx.verify.claims({ text: 'x', at: 2461055.59375, latitudeDeg: 97, longitudeDeg: 85.324, utcOffsetSeconds: 20700 }),
+    (error) => error instanceof TeistroError && error.field === 'claims.latitudeDeg',
+  );
+  ctx.dispose();
+});
+
 test('a date and a time as text and parts, in the locale\'s pattern', () => {
   const ctx = context({ locale: 'en-Latn' });
   const dawn = ctx.intl.time({ at: { hour: 6, minute: 5 }, hour12: true, locale: 'hi-Deva-IN' });

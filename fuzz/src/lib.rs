@@ -29,6 +29,7 @@ use teistro_ffi::intl::{
     ts_intl_render, ts_intl_set_locale, ts_intl_transliterate,
 };
 use teistro_ffi::key::ts_key_parse;
+use teistro_ffi::verify::ts_verify_claims;
 use teistro_ffi::naam::ts_naam_milan;
 use teistro_ffi::numerology::ts_numerology_profile;
 use teistro_ffi::pakshi::ts_pakshi;
@@ -220,6 +221,7 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_intl_lexicon",
     "ts_intl_lookup",
     "ts_intl_dates",
+    "ts_verify_claims",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -488,6 +490,11 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         Seed::Answered,
         r#"{"text":"बिसं २०८२ कात्तिक १५ गते, 2025-11-01, 21 Nov 2025"}"#,
     ),
+    (
+        "ts_verify_claims",
+        Seed::Answered,
+        r#"{"text":"आज एकादशी हो। The Moon is in Rohini?","at":2461055.59375,"latitudeDeg":27.7172,"longitudeDeg":85.324,"utcOffsetSeconds":20700}"#,
+    ),
 ];
 
 /// The corpus file of one seed: its selector byte, counted from the slot's
@@ -651,6 +658,7 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_intl_lexicon" => string_call(ts_intl_lexicon, text),
         "ts_intl_lookup" => string_call(ts_intl_lookup, text),
         "ts_intl_dates" => string_call(ts_intl_dates, text),
+        "ts_verify_claims" => string_call(ts_verify_claims, text),
         _ => Status::Ok,
     }
 }

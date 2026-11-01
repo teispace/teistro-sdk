@@ -1746,6 +1746,59 @@ final class ResolveAsked extends _Request {
   List<Object?> get _fields => [calendar, date, time, zone];
 }
 
+/// The request as a binding writes it.
+final class ClaimsRequest extends _Request {
+  const ClaimsRequest({
+    this.altitudeM = 0.0,
+    required this.at,
+    this.ayana = AyanaReckoning.sidereal,
+    required this.latitudeDeg,
+    this.locale,
+    required this.longitudeDeg,
+    required this.text,
+    required this.utcOffsetSeconds,
+  });
+
+  /// The place's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The instant the claims are judged at, a UTC Julian day.
+  final double at;
+
+  /// How the ayana is reckoned: `SIDEREAL`, at Makara and Karka sankranti, when left out.
+  final AyanaReckoning ayana;
+
+  /// The place's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The locale whose names are searched (a BCP 47 tag, by RFC 4647 lookup); every loaded locale's when left out.
+  final String? locale;
+
+  /// The place's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  /// The text whose claims are checked.
+  final String text;
+
+  /// The offset from UTC the place's civil days run at, in seconds, east positive.
+  final int utcOffsetSeconds;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'at': at,
+    'ayana': ayana.key,
+    'latitudeDeg': latitudeDeg,
+    if (locale case final localeValue?) 'locale': localeValue,
+    'longitudeDeg': longitudeDeg,
+    'text': text,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, locale, longitudeDeg, text, utcOffsetSeconds];
+}
+
 /// An anniversary a request asks the days of.
 final class Anniversary extends _Request {
   const Anniversary({
