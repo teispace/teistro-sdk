@@ -76,6 +76,34 @@ export interface AshauchQuery {
 }
 
 /**
+ * A relation path and the table it is read under, as a binding asks it (`03-design/ashauch.md` §10).
+ */
+export interface KinQuery {
+  /**
+   * The path and the facts it reads.
+   */
+  readonly kin: KinAsked;
+  /**
+   * The table, every row data; the *Dharmasindhu*'s when left out.
+   */
+  readonly table?: KinTable | null;
+}
+
+/**
+ * A rite and the table it is read under, as a binding asks it (`03-design/ashauch.md` §12).
+ */
+export interface RiteQuery {
+  /**
+   * The rite and the facts it reads.
+   */
+  readonly rite: AshauchRiteAsked;
+  /**
+   * The table, every row data; the *Dharmasindhu*'s when left out.
+   */
+  readonly table?: AshauchRiteTable | null;
+}
+
+/**
  * The request as a binding writes it.
  */
 export interface ChangesRequest {
@@ -134,6 +162,40 @@ export interface AlmanacDaysRequest {
    * The zone, in place of `utcOffsetSeconds`.
    */
   readonly zone?: ZoneSpec | null;
+}
+
+/**
+ * The query as a binding writes it.
+ */
+export interface DeathTimeQuery {
+  /**
+   * The place's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The death's instant, a UTC Julian day.
+   */
+  readonly at: number;
+  /**
+   * The cremation's instant, a UTC Julian day.
+   */
+  readonly crematedAt?: number | null;
+  /**
+   * The place's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The tradition's lists; the *Dharmasindhu*'s when left out.
+   */
+  readonly table?: DeathTimeTable | null;
+  /**
+   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   */
+  readonly utcOffsetSeconds: number;
 }
 
 /**
@@ -244,6 +306,40 @@ export interface FirstYearQuery {
    * The death, a UTC Julian day, and the readings.
    */
   readonly request: FirstYearRequest;
+  /**
+   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   */
+  readonly utcOffsetSeconds: number;
+}
+
+/**
+ * The query as a binding writes it.
+ */
+export interface HouseholdQuery {
+  /**
+   * The place's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The events and observers.
+   */
+  readonly household: Household;
+  /**
+   * The place's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The tradition's table, every row data; the *Dharmasindhu*'s when left out.
+   */
+  readonly table?: AshauchTable | null;
+  /**
+   * A shipped table by its name, in place of `table`.
+   */
+  readonly tradition?: AshauchTradition | null;
   /**
    * The offset from UTC the place's civil days run at, in seconds, east positive.
    */
@@ -781,6 +877,10 @@ export interface AshauchRequest {
    */
   readonly event: AshauchEvent;
   /**
+   * Whether the observer lights the pyre. An earlier period takes in neither the fire-giver's nor the new mother's (*Dharmasindhu* p. 306).
+   */
+  readonly fireGiver?: boolean;
+  /**
    * The family's full period, 1 to [`MOST_DAYS`]; [`FULL_DAYS`] when left out.
    */
   readonly fullDays?: number | null;
@@ -855,6 +955,122 @@ export interface AshauchTable {
  * `MITAKSHARA`: [`AshauchTable::mitakshara`].
  */
 export type AshauchTradition = 'DHARMASINDHU' | 'MITAKSHARA';
+
+/**
+ * What is asked: the path from the observer to the person the event is of, the one who died or was born.
+ */
+export interface KinAsked {
+  /**
+   * The observer's forebears living, in order from the father: 1 the father, 2 the father and grandfather, 3 the great-grandfather too.
+   */
+  readonly livingForebears?: number;
+  /**
+   * The observer.
+   */
+  readonly observer: KinObserver;
+  /**
+   * The steps, the observer's first.
+   */
+  readonly path: readonly KinStep[];
+  /**
+   * Whether the person at the path's end is married, when a row turns on it: a married daughter has left the line.
+   */
+  readonly personMarried?: boolean | null;
+}
+
+/**
+ * A tradition's reckoning of kin, every row and bound data.
+ */
+export interface KinTable {
+  /**
+   * The clause for a person past the last sagotra.
+   */
+  readonly beyond: string;
+  /**
+   * The last person who keeps a period for an unmarried girl.
+   */
+  readonly girlTo: number;
+  /**
+   * The clause for a line counted out.
+   */
+  readonly line: string;
+  /**
+   * Whether each living forebear adds a person to the sapiṇḍa's reach.
+   */
+  readonly livingExtend: boolean;
+  /**
+   * The table's name, repeated in each answer.
+   */
+  readonly name: string;
+  /**
+   * The clause for a married daughter's natal line.
+   */
+  readonly natal: string;
+  /**
+   * The named paths, the first that fits answering.
+   */
+  readonly rows: readonly KinRow[];
+  /**
+   * The last person who is a sagotra.
+   */
+  readonly sagotraTo: number;
+  /**
+   * The last person who is a samānodaka.
+   */
+  readonly samanodakaTo: number;
+  /**
+   * The last person who is a sapiṇḍa, the kūṭastha first.
+   */
+  readonly sapindaTo: number;
+  /**
+   * The clause for an observer who keeps only a parent's period.
+   */
+  readonly unbound: string;
+  /**
+   * The clause for a path no row names and no line holds.
+   */
+  readonly unnamed: string;
+}
+
+/**
+ * What is asked.
+ */
+export interface AshauchRiteAsked {
+  /**
+   * Whether it has passed what opens it ([`RiteBeginning`]).
+   */
+  readonly begun?: boolean;
+  /**
+   * Whether the land is in calamity: war, plague or famine.
+   */
+  readonly calamity?: boolean;
+  /**
+   * The kind of the period running.
+   */
+  readonly kind?: AshauchKind | null;
+  /**
+   * Whether it cannot be moved: no later time will serve.
+   */
+  readonly noOtherWay?: boolean;
+  /**
+   * The rite.
+   */
+  readonly rite: AshauchRite;
+}
+
+/**
+ * A tradition's *apavāda* rows, the first that fits answering.
+ */
+export interface AshauchRiteTable {
+  /**
+   * The table's name, repeated in each answer.
+   */
+  readonly name: string;
+  /**
+   * The rows.
+   */
+  readonly rows: readonly AshauchRiteRow[];
+}
 
 /**
  * A civil day as a request names it.
@@ -955,6 +1171,40 @@ export interface MuhurtaRequest {
    * The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
    */
   readonly rules: MuhurtaRequestRules;
+}
+
+/**
+ * A tradition's lists, every one data.
+ */
+export interface DeathTimeTable {
+  /**
+   * The dvipada nakshatras.
+   */
+  readonly dvipada: readonly Member<catalogue.Nakshatra>[];
+  /**
+   * The table's name, repeated in each answer.
+   */
+  readonly name: string;
+  /**
+   * The Moon's signs of the panchaka: Aquarius and Pisces, which is the second half of Dhanishtha to the end of Revati.
+   */
+  readonly panchakaSigns: readonly Member<catalogue.Rashi>[];
+  /**
+   * The tithis of the pushkara yogas.
+   */
+  readonly pushkaraTithis: readonly Member<catalogue.Tithi>[];
+  /**
+   * The varas of the pushkara yogas.
+   */
+  readonly pushkaraVaras: readonly Member<catalogue.Vara>[];
+  /**
+   * The tripada nakshatras.
+   */
+  readonly tripada: readonly Member<catalogue.Nakshatra>[];
+  /**
+   * Whether the tithi and vara alone make a dvipushkara, the other reading of *Dharmasindhu* p. 316 and Garga in *Nirṇayasindhu* p. 434 (C953).
+   */
+  readonly twoMakeDvipushkara?: boolean;
 }
 
 /**
@@ -1081,6 +1331,20 @@ export interface FirstYearRequest {
    * The rite's time in place of both forms' (kutapa to rauhina for the ekoddishta, aparahna for the parvana).
    */
   readonly window?: Window | null;
+}
+
+/**
+ * Several events and observers in one request.
+ */
+export interface Household {
+  /**
+   * The events.
+   */
+  readonly events: readonly HouseholdEvent[];
+  /**
+   * The observers.
+   */
+  readonly observers: readonly HouseholdObserver[];
 }
 
 /**
@@ -2304,6 +2568,14 @@ export interface AshauchRunning {
    */
   readonly end: number;
   /**
+   * The days an overlap added past its own end.
+   */
+  readonly extendedDays?: number | null;
+  /**
+   * Where its last-night days begin, when an overlap added them: those days take in less than the period did (*Dharmasindhu* p. 306).
+   */
+  readonly extendedFrom?: number | null;
+  /**
    * The earlier answer's key, which an overlap names.
    */
   readonly key: string;
@@ -2421,8 +2693,14 @@ export type Nearness = 'OBSERVERS_HOUSE' | 'SAME_VILLAGE' | 'OTHER_VILLAGE';
  * `BANDHU`: One of the three *bandhus*: cousins through a father's or mother's sister or a mother's brother.
  * `SUBJECT`: A subject: the deceased was the ruler of the land.
  * `OF_ASCETIC`: A sapiṇḍa of an ascetic (*yati*).
+ * `MATERNAL_AUNT`: The deceased was the observer's mother's sister.
+ * `PATERNAL_AUNT`: The deceased was the observer's married father's sister.
+ * `MATERNAL_UNCLES_WIFE`: The deceased was the observer's maternal uncle's wife.
+ * `SISTERS_SON`: The deceased was the observer's sister's son (*bhāgineya*).
+ * `DAUGHTERS_SON`: The deceased was the observer's daughter's son (*dauhitra*).
+ * `WIFES_BROTHER`: The deceased was the observer's wife's brother (*śyālaka*).
  */
-export type AshauchRelation = 'MOTHER' | 'FATHER' | 'CHILD' | 'SPOUSE' | 'CO_WIFE' | 'STEP_CHILD' | 'SAPINDA' | 'SAMANODAKA' | 'SAGOTRA' | 'MARRIED_DAUGHTER' | 'MARRIED_SIBLING' | 'MATERNAL_GRANDFATHER' | 'MATERNAL_GRANDMOTHER' | 'MATERNAL_UNCLE' | 'SON_IN_LAW' | 'PARENT_IN_LAW' | 'PUPIL' | 'ACHARYAS_FAMILY' | 'ADOPTION' | 'BANDHU' | 'SUBJECT' | 'OF_ASCETIC';
+export type AshauchRelation = 'MOTHER' | 'FATHER' | 'CHILD' | 'SPOUSE' | 'CO_WIFE' | 'STEP_CHILD' | 'SAPINDA' | 'SAMANODAKA' | 'SAGOTRA' | 'MARRIED_DAUGHTER' | 'MARRIED_SIBLING' | 'MATERNAL_GRANDFATHER' | 'MATERNAL_GRANDMOTHER' | 'MATERNAL_UNCLE' | 'SON_IN_LAW' | 'PARENT_IN_LAW' | 'PUPIL' | 'ACHARYAS_FAMILY' | 'ADOPTION' | 'BANDHU' | 'SUBJECT' | 'OF_ASCETIC' | 'MATERNAL_AUNT' | 'PATERNAL_AUNT' | 'MATERNAL_UNCLES_WIFE' | 'SISTERS_SON' | 'DAUGHTERS_SON' | 'WIFES_BROTHER';
 
 /**
  * What a death before a mark takes (*Dharmasindhu* pp. 300–301).
@@ -2531,6 +2809,10 @@ export interface AshauchOverlap {
    */
   readonly deathAbsorbsLongerBirth: boolean;
   /**
+   * Whether a father dying in the mother's period keeps his own full period. Off, his ends with hers (*Dharmasindhu* p. 306); on, the Mitākṣarā on III.20 and the *Smṛtyarthasāra*, which DS reports.
+   */
+  readonly fatherKeepsHisOwn?: boolean;
+  /**
    * The days a period known in an equal period's last night adds past its end, and in that night's last quarter (Gautama and Śātātapa in the Mitākṣarā on Yājñavalkya III.20; *Dharmasindhu* pp. 305–306): `[2, 3]`; `[2, 2]` adds two throughout, `[0, 0]` none.
    */
   readonly lastNight: readonly [number, number];
@@ -2576,6 +2858,142 @@ export interface AshauchRelationRow {
    * Whose.
    */
   readonly relation: AshauchRelation;
+}
+
+/**
+ * The observer's facts the resolver reads.
+ */
+export interface KinObserver {
+  /**
+   * Whether the observer is married, when a row turns on it.
+   */
+  readonly married?: boolean | null;
+  /**
+   * The observer's sex.
+   */
+  readonly sex: AshauchSex;
+  /**
+   * The observer's upanayana. Left out, the observer has had it.
+   */
+  readonly upanayana?: Upanayana | null;
+}
+
+/**
+ * One step of a path from a person to the next.
+ *
+ * `FATHER`: This person's father.
+ * `MOTHER`: This person's mother.
+ * `SON`: This person's son.
+ * `DAUGHTER`: This person's daughter.
+ * `HUSBAND`: This person's husband.
+ * `WIFE`: This person's wife.
+ */
+export type KinStep = 'FATHER' | 'MOTHER' | 'SON' | 'DAUGHTER' | 'HUSBAND' | 'WIFE';
+
+/**
+ * One named path of a [`KinTable`], with its clause.
+ */
+export interface KinRow {
+  /**
+   * The text and page.
+   */
+  readonly clause: string;
+  /**
+   * What is kept.
+   */
+  readonly keeps: KinKeeps;
+  /**
+   * The observer's sex, when the row turns on it.
+   */
+  readonly observer?: AshauchSex | null;
+  /**
+   * Whether the observer is married, when the row turns on it.
+   */
+  readonly observerMarried?: boolean | null;
+  /**
+   * The path, a step through a mother to her child written through the father.
+   */
+  readonly path: readonly KinStep[];
+  /**
+   * Whether the person is married, when the row turns on it.
+   */
+  readonly personMarried?: boolean | null;
+  /**
+   * The relation an ashauch asks for, when the row keeps a period.
+   */
+  readonly relation?: AshauchRelation | null;
+}
+
+/**
+ * Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
+ *
+ * `BIRTH`: *Janana*, *sūtaka*.
+ * `DEATH`: *Mṛta*, *śāva*.
+ */
+export type AshauchKind = 'BIRTH' | 'DEATH';
+
+/**
+ * A rite a table can answer for.
+ *
+ * `MARRIAGE`: A marriage.
+ * `UPANAYANA`: An upanayana.
+ * `CHUDAKARANA`: A cūḍākaraṇa.
+ * `PRATISHTHA`: The installing of an image.
+ * `TANK_DEDICATION`: The dedication of a tank.
+ * `KOTI_HOMA`: A *koṭi-homa*.
+ * `TULAPURUSHA_GIFT`: A *tulāpuruṣa* gift.
+ * `VOW`: A vow taken, such as Ananta's or an Ekadashi.
+ * `PURASHCHARANA`: A *puraścaraṇa* japa under its sankalpa.
+ * `PENANCE`: A penance begun.
+ * `SACRIFICE`: A sacrifice, by the one consecrated for it.
+ * `PRIESTS_OFFICE`: A sacrifice, by a priest engaged for it.
+ * `SHANTI`: A rite to allay disease, danger or the king's anger.
+ * `FOOD_CHARITY`: Food given from a standing charity.
+ * `SHRADDHA`: A shraddha.
+ * `ECLIPSE_RITES`: The bath, shraddha and gift of an eclipse.
+ * `SANKRANTI_BATH`: A sankranti's bath.
+ * `PARTHIVA_WORSHIP`: The worship of an earthen liṅga.
+ * `DAILY_RULES`: The body's daily rules: bathing, sipping, food, touch.
+ * `WORSHIP`: Worship and every other rite, daily, occasional or desired.
+ */
+export type AshauchRite = 'MARRIAGE' | 'UPANAYANA' | 'CHUDAKARANA' | 'PRATISHTHA' | 'TANK_DEDICATION' | 'KOTI_HOMA' | 'TULAPURUSHA_GIFT' | 'VOW' | 'PURASHCHARANA' | 'PENANCE' | 'SACRIFICE' | 'PRIESTS_OFFICE' | 'SHANTI' | 'FOOD_CHARITY' | 'SHRADDHA' | 'ECLIPSE_RITES' | 'SANKRANTI_BATH' | 'PARTHIVA_WORSHIP' | 'DAILY_RULES' | 'WORSHIP';
+
+/**
+ * One row: the facts it needs, and what it answers.
+ */
+export interface AshauchRiteRow {
+  /**
+   * What opens the rite.
+   */
+  readonly beginning?: RiteBeginning | null;
+  /**
+   * Whether the rite must be begun, when the row turns on it.
+   */
+  readonly begun?: boolean | null;
+  /**
+   * Whether the land must be in calamity, when the row turns on it.
+   */
+  readonly calamity?: boolean | null;
+  /**
+   * The text and page.
+   */
+  readonly clause: string;
+  /**
+   * The kind of period, when the row turns on it.
+   */
+  readonly kind?: AshauchKind | null;
+  /**
+   * Whether there must be no other way, when the row turns on it.
+   */
+  readonly noOtherWay?: boolean | null;
+  /**
+   * The rite; any when left out.
+   */
+  readonly rite?: AshauchRite | null;
+  /**
+   * The verdict.
+   */
+  readonly verdict: RiteVerdict;
 }
 
 /**
@@ -2707,6 +3125,34 @@ export type SapindanaAt = 'ELEVENTH_DAY' | 'TWELFTH_DAY' | 'TRAIPAKSHIKA' | 'YEA
  * `THREE_TITHIS`: The tithi three short.
  */
 export type UnaDay = 'DAY_BEFORE' | 'ONE_TITHI' | 'TWO_TITHIS' | 'THREE_TITHIS';
+
+/**
+ * One event of a household, shared by the observers its ties name.
+ */
+export interface HouseholdEvent {
+  /**
+   * The event.
+   */
+  readonly event: AshauchEvent;
+  /**
+   * The caller's name for it, which ties and answers repeat.
+   */
+  readonly key: string;
+}
+
+/**
+ * One observer of a household, and the events that reach them.
+ */
+export interface HouseholdObserver {
+  /**
+   * The caller's name for the observer.
+   */
+  readonly key: string;
+  /**
+   * The events, in any order.
+   */
+  readonly ties: readonly HouseholdTie[];
+}
 
 /**
  * The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
@@ -3859,14 +4305,6 @@ export type TithiHalf = 'FIRST' | 'SECOND';
 export type DayFifth = 'PRATAH' | 'SANGAVA' | 'MADHYAHNA' | 'APARAHNA' | 'SAYAHNA';
 
 /**
- * Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
- *
- * `BIRTH`: *Janana*, *sūtaka*.
- * `DEATH`: *Mṛta*, *śāva*.
- */
-export type AshauchKind = 'BIRTH' | 'DEATH';
-
-/**
  * A span the texts name.
  */
 export type AshauchLength = AshauchLengthBath | AshauchLengthSajyotih | AshauchLengthPakshini | AshauchLengthDays | AshauchLengthFull;
@@ -4017,6 +4455,43 @@ export interface AshauchMarkBetrothal {
 export interface AshauchMarkMarriage {
   readonly mark: 'MARRIAGE';
 }
+
+/**
+ * Whether the deceased had the upanayana.
+ *
+ * `DONE`: Done.
+ * `NOT_DONE`: Not yet done.
+ * `NOT_PERFORMED`: Not a rite of the deceased's community: the band before it runs to marriage, or to the 16th year unmarried (*Dharmasindhu* pp. 300–301).
+ */
+export type Upanayana = 'DONE' | 'NOT_DONE' | 'NOT_PERFORMED';
+
+/**
+ * What the observer keeps.
+ *
+ * `PERIOD`: The period its [`Relation`] has in an ashauch table.
+ * `BATH`: A bath, and no period.
+ * `NOTHING`: Nothing.
+ */
+export type KinKeeps = 'PERIOD' | 'BATH' | 'NOTHING';
+
+/**
+ * What opens a rite, past which it is begun (Laghu-Viṣṇu in *Nirṇayasindhu* p. 384).
+ *
+ * `NANDI_SHRADDHA`: The *nāndīśrāddha*, of a marriage and the like.
+ * `SANKALPA`: The sankalpa, of a vow or a japa.
+ * `VARANA`: The choosing of the priests, of a sacrifice; a priest's own office from his *madhuparka*.
+ * `COOKING`: The cooking, of a shraddha.
+ */
+export type RiteBeginning = 'NANDI_SHRADDHA' | 'SANKALPA' | 'VARANA' | 'COOKING';
+
+/**
+ * The answer's verdict.
+ *
+ * `GOES_ON`: It goes on.
+ * `IN_PART`: Its bodily part goes on; the rest is done by another or after the period, as the clause says.
+ * `BARRED`: It waits for the period's end.
+ */
+export type RiteVerdict = 'GOES_ON' | 'IN_PART' | 'BARRED';
 
 /**
  * One published day.
@@ -4207,6 +4682,40 @@ export interface ActivityRules {
    * The grahas the rite wants out of houses. Empty where the rules spelt out leave it out.
    */
   readonly unwanted?: readonly MuhurtaUnwanted[];
+}
+
+/**
+ * How one observer stands to one event.
+ */
+export interface HouseholdTie {
+  /**
+   * Whether it happened abroad, to this observer.
+   */
+  readonly abroad?: boolean;
+  /**
+   * The event's key.
+   */
+  readonly event: string;
+  /**
+   * Whether this observer lights the pyre.
+   */
+  readonly fireGiver?: boolean;
+  /**
+   * The full period, ten days when left out.
+   */
+  readonly fullDays?: number | null;
+  /**
+   * When the news reached this observer; at the event when left out.
+   */
+  readonly heardAt?: number | null;
+  /**
+   * Where it was, to this observer.
+   */
+  readonly nearness?: Nearness;
+  /**
+   * The observer's relation to it.
+   */
+  readonly relation: AshauchRelation;
 }
 
 /**
@@ -6377,15 +6886,6 @@ export type NameReduction = 'BY_WORD' | 'WHOLE';
  * `SKIP`: Left out of every sum: the baseline engine's.
  */
 export type NonLatin = 'REFUSE' | 'SKIP';
-
-/**
- * Whether the deceased had the upanayana.
- *
- * `DONE`: Done.
- * `NOT_DONE`: Not yet done.
- * `NOT_PERFORMED`: Not a rite of the deceased's community: the band before it runs to marriage, or to the 16th year unmarried (*Dharmasindhu* pp. 300–301).
- */
-export type Upanayana = 'DONE' | 'NOT_DONE' | 'NOT_PERFORMED';
 
 /**
  * A half-open interval of time, `[from, to)`.

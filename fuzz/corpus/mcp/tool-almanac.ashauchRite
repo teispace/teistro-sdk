@@ -1,1 +1,1 @@
-{"method":"tools/call","params":{"name":"almanac.ashauchRite","arguments":{"request":{"rite":{"rite":"MARRIAGE","begun":true,"noOtherWay":true}}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":132}
+{"method":"tools/call","params":{"name":"almanac.ashauchRite","arguments":{"request":{"rite":{"rite":"MARRIAGE","begun":true,"noOtherWay":true}}},"_meta":{"io.modelcontextprotocol/protocolVersion":"2026-07-28","io.modelcontextprotocol/clientCapabilities":{}}},"jsonrpc":"2.0","id":133}

@@ -48,6 +48,8 @@
           {
             "days": 1,
             "end": 1.5,
+            "extendedDays": 1,
+            "extendedFrom": 1.5,
             "key": "x",
             "kind": "DEATH",
             "length": {
@@ -74,6 +76,7 @@
             "upanayana": "NOT_DONE"
           }
         },
+        "fireGiver": true,
         "fullDays": 1,
         "heardAt": 1.5,
         "key": "x",
@@ -145,6 +148,7 @@
         "night": "HALF_NIGHT",
         "overlap": {
           "deathAbsorbsLongerBirth": true,
+          "fatherKeepsHisOwn": true,
           "lastNight": [
             1,
             1
@@ -171,6 +175,76 @@
       },
       "tradition": "MITAKSHARA",
       "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "almanac.ashauchKin",
+    "request": {
+      "kin": {
+        "livingForebears": 1,
+        "observer": {
+          "married": true,
+          "sex": "FEMALE",
+          "upanayana": "NOT_DONE"
+        },
+        "path": [
+          "MOTHER"
+        ],
+        "personMarried": true
+      },
+      "table": {
+        "beyond": "x",
+        "girlTo": 1,
+        "line": "x",
+        "livingExtend": true,
+        "name": "x",
+        "natal": "x",
+        "rows": [
+          {
+            "clause": "x",
+            "keeps": "BATH",
+            "observer": "FEMALE",
+            "observerMarried": true,
+            "path": [
+              "MOTHER"
+            ],
+            "personMarried": true,
+            "relation": "FATHER"
+          }
+        ],
+        "sagotraTo": 1,
+        "samanodakaTo": 1,
+        "sapindaTo": 1,
+        "unbound": "x",
+        "unnamed": "x"
+      }
+    }
+  },
+  {
+    "record": "almanac.ashauchRite",
+    "request": {
+      "rite": {
+        "begun": true,
+        "calamity": true,
+        "kind": "DEATH",
+        "noOtherWay": true,
+        "rite": "UPANAYANA"
+      },
+      "table": {
+        "name": "x",
+        "rows": [
+          {
+            "beginning": "SANKALPA",
+            "begun": true,
+            "calamity": true,
+            "clause": "x",
+            "kind": "DEATH",
+            "noOtherWay": true,
+            "rite": "UPANAYANA",
+            "verdict": "IN_PART"
+          }
+        ]
+      }
     }
   },
   {
@@ -730,6 +804,36 @@
         "kind": "IANA",
         "zone": "x"
       }
+    }
+  },
+  {
+    "record": "almanac.deathTime",
+    "request": {
+      "altitudeM": 1.5,
+      "at": 1.5,
+      "crematedAt": 1.5,
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "table": {
+        "dvipada": [
+          "nakshatra.BHARANI"
+        ],
+        "name": "x",
+        "panchakaSigns": [
+          "rashi.TAURUS"
+        ],
+        "pushkaraTithis": [
+          "tithi.SHUKLA_DVITIYA"
+        ],
+        "pushkaraVaras": [
+          "vara.SOMAVARA"
+        ],
+        "tripada": [
+          "nakshatra.BHARANI"
+        ],
+        "twoMakeDvipushkara": true
+      },
+      "utcOffsetSeconds": 1
     }
   },
   {
@@ -1447,6 +1551,144 @@
           "to": 1
         }
       },
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "almanac.household",
+    "request": {
+      "altitudeM": 1.5,
+      "household": {
+        "events": [
+          {
+            "event": {
+              "event": "DEATH",
+              "ahitagni": true,
+              "at": 1.5,
+              "crematedAt": 1.5,
+              "deceased": {
+                "betrothed": true,
+                "born": 1.5,
+                "buried": true,
+                "chudakarana": true,
+                "married": true,
+                "sex": "FEMALE",
+                "upanayana": "NOT_DONE"
+              }
+            },
+            "key": "x"
+          }
+        ],
+        "observers": [
+          {
+            "key": "x",
+            "ties": [
+              {
+                "abroad": true,
+                "event": "x",
+                "fireGiver": true,
+                "fullDays": 1,
+                "heardAt": 1.5,
+                "nearness": "SAME_VILLAGE",
+                "relation": "FATHER"
+              }
+            ]
+          }
+        ]
+      },
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "table": {
+        "bands": [
+          {
+            "before": {
+              "mark": "DAY",
+              "day": 1
+            },
+            "buried": true,
+            "chudakarana": true,
+            "clause": "x",
+            "parents": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "samanodakas": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "sapindas": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "sex": "FEMALE"
+          }
+        ],
+        "late": [
+          {
+            "length": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "withinDays": 1
+          }
+        ],
+        "lateAbroad": [
+          {
+            "length": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "withinDays": 1
+          }
+        ],
+        "losses": [
+          {
+            "clause": "x",
+            "mother": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "others": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "toMonth": 1
+          }
+        ],
+        "motherRites": {
+          "daughter": 1,
+          "son": 1
+        },
+        "name": "x",
+        "night": "HALF_NIGHT",
+        "overlap": {
+          "deathAbsorbsLongerBirth": true,
+          "fatherKeepsHisOwn": true,
+          "lastNight": [
+            1,
+            1
+          ]
+        },
+        "pakshiniAtNight": "NEXT_NIGHTFALL",
+        "relations": [
+          {
+            "clause": "x",
+            "heardLate": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "kind": "DEATH",
+            "length": {
+              "length": "DAYS",
+              "days": 1
+            },
+            "marriedDaughter": true,
+            "nearness": "SAME_VILLAGE",
+            "relation": "FATHER"
+          }
+        ]
+      },
+      "tradition": "MITAKSHARA",
       "utcOffsetSeconds": 1
     }
   },
