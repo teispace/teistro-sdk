@@ -303,3 +303,18 @@ fn the_lexicon_is_built_once() {
         "built in {built:?}, then {each:?} a lookup"
     );
 }
+
+#[test]
+fn a_copy_answers_as_its_source_did() {
+    let ask = r#"{"text": "आज एकादशी हो", "kinds": ["tithi"]}"#;
+    let fresh = intl();
+    let before = fresh.clone();
+    let source = intl();
+    let answered = keys(&lookup(&source, ask));
+    // A copy made after the source built its lexicon carries it; one made
+    // before builds its own; both answer as the source does.
+    let after = source.clone();
+    assert_eq!(keys(&lookup(&after, ask)), answered);
+    assert_eq!(keys(&lookup(&before, ask)), answered);
+    assert_eq!(keys(&lookup(&fresh, ask)), answered);
+}

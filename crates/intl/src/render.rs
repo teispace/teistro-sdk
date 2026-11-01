@@ -1089,6 +1089,20 @@ impl Clone for Intl {
                     .unwrap_or_else(PoisonError::into_inner)
                     .clone(),
             ),
+            // The copy holds the same names, so what was built from them
+            // stays good until the copy itself changes and forgets it.
+            lexicons: RwLock::new(
+                self.lexicons
+                    .read()
+                    .unwrap_or_else(PoisonError::into_inner)
+                    .clone(),
+            ),
+            months: RwLock::new(
+                self.months
+                    .read()
+                    .unwrap_or_else(PoisonError::into_inner)
+                    .clone(),
+            ),
             overrides: self.overrides.clone(),
             loaded: self.loaded.clone(),
             zones: self.zones.clone(),
