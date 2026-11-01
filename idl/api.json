@@ -26,6 +26,7 @@
     "crates/ffi/src/naam.rs",
     "crates/ffi/src/naming.rs",
     "crates/ffi/src/navatara.rs",
+    "crates/ffi/src/verify.rs",
     "crates/ffi/src/numerology.rs",
     "crates/ffi/src/pakshi.rs",
     "crates/ffi/src/rashifal.rs",
@@ -18683,6 +18684,57 @@
       },
       "meta": {},
       "source": "crates/ffi/src/navatara.rs"
+    },
+    {
+      "name": "ts_verify_claims",
+      "doc": "Every claim a text makes of the time, each judged against what\n`almanac.sankalpa` computes at the instant and the place\n(`03-design/lexicon.md` §3), answered with `{value, provenance}` as\ncanonical JSON.\n\n`value` is `{claims}`, each claim `{start, end, text, kind, graha,\nclaimed, verdict, computed, reason}` in the text's order: the span\nnaming the member (counted in Unicode scalar values), the kind claimed,\nthe graha whose sign or nakshatra it is, every key the span may name,\n`HELD`, `CONTRADICTED` or `UNREAD`, the key computed on a claim judged,\nand on one unread why: `QUESTION`, `NEGATED`, `OTHER_TIME`,\n`NOT_COMPUTED` or `AMBIGUOUS`.\n\n`request_json` is `{\"text\", \"at\", \"latitudeDeg\", \"longitudeDeg\",\n\"altitudeM\", \"utcOffsetSeconds\", \"ayana\", \"locale\"}`: `at` a UTC Julian\nday, `altitudeM` 0 and `ayana` `SIDEREAL` when left out, and `locale`\nwhose names are searched, every loaded locale's when left out. A key it\ndoes not read or an instant, place or offset out of range is\n`INVALID_ARG`, named under `claims`; a locale no loaded one answers is\n`UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is\n`CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/verify.rs"
     },
     {
       "name": "ts_numerology_profile",

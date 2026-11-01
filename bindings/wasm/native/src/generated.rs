@@ -5778,6 +5778,42 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// Every claim a text makes of the time, each judged against what
+    /// `almanac.sankalpa` computes at the instant and the place
+    /// (`03-design/lexicon.md` §3), answered with `{value, provenance}` as
+    /// canonical JSON.
+    ///
+    /// `value` is `{claims}`, each claim `{start, end, text, kind, graha,
+    /// claimed, verdict, computed, reason}` in the text's order: the span
+    /// naming the member (counted in Unicode scalar values), the kind claimed,
+    /// the graha whose sign or nakshatra it is, every key the span may name,
+    /// `HELD`, `CONTRADICTED` or `UNREAD`, the key computed on a claim judged,
+    /// and on one unread why: `QUESTION`, `NEGATED`, `OTHER_TIME`,
+    /// `NOT_COMPUTED` or `AMBIGUOUS`.
+    ///
+    /// `request_json` is `{"text", "at", "latitudeDeg", "longitudeDeg",
+    /// "altitudeM", "utcOffsetSeconds", "ayana", "locale"}`: `at` a UTC Julian
+    /// day, `altitudeM` 0 and `ayana` `SIDEREAL` when left out, and `locale`
+    /// whose names are searched, every loaded locale's when left out. A key it
+    /// does not read or an instant, place or offset out of range is
+    /// `INVALID_ARG`, named under `claims`; a locale no loaded one answers is
+    /// `UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is
+    /// `CAPABILITY`.
+    #[wasm_bindgen(js_name = verifyClaims)]
+    pub fn verify_claims(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::verify::ts_verify_claims(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Reads a name and a birth date under numerology's two systems and
     /// answers with the profile as canonical JSON: the name under each
     /// system, word by word with every reduction step, Balliett's birth

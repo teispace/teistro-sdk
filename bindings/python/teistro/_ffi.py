@@ -4526,6 +4526,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_navatara.restype = ctypes.c_int32
+        self.ts_verify_claims: Any = library.ts_verify_claims
+        self.ts_verify_claims.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_verify_claims.restype = ctypes.c_int32
         self.ts_numerology_profile: Any = library.ts_numerology_profile
         self.ts_numerology_profile.argtypes = [
             ctypes.POINTER(_Context),
@@ -6429,6 +6436,45 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_navatara(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def verify_claims(self, request_json: str) -> str:
+        """Every claim a text makes of the time, each judged against what
+        `almanac.sankalpa` computes at the instant and the place
+        (`03-design/lexicon.md` §3), answered with `{value, provenance}` as
+        canonical JSON.
+
+        `value` is `{claims}`, each claim `{start, end, text, kind, graha,
+        claimed, verdict, computed, reason}` in the text's order: the span
+        naming the member (counted in Unicode scalar values), the kind claimed,
+        the graha whose sign or nakshatra it is, every key the span may name,
+        `HELD`, `CONTRADICTED` or `UNREAD`, the key computed on a claim judged,
+        and on one unread why: `QUESTION`, `NEGATED`, `OTHER_TIME`,
+        `NOT_COMPUTED` or `AMBIGUOUS`.
+
+        `request_json` is `{"text", "at", "latitudeDeg", "longitudeDeg",
+        "altitudeM", "utcOffsetSeconds", "ayana", "locale"}`: `at` a UTC Julian
+        day, `altitudeM` 0 and `ayana` `SIDEREAL` when left out, and `locale`
+        whose names are searched, every loaded locale's when left out. A key it
+        does not read or an instant, place or offset out of range is
+        `INVALID_ARG`, named under `claims`; a locale no loaded one answers is
+        `UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is
+        `CAPABILITY`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_verify_claims(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

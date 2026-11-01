@@ -10,13 +10,13 @@ What this page holds now is **the built thing**: the areas the layer wires, what
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| a boundary module a consumer reaches is reached from one area | **holds** | 0 of 16 disagree; so no operation can be looked for under two names |
-| every area holds an operation that reaches the boundary | **holds** | 0 of 12 disagree |
-| no operation's name repeats its own area's | **holds** | 0 of 77 disagree; which is what the namespace is for |
-| every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 23 disagree; unreached: `blob`, `lib`, `provider`, `string` |
-| an entry point's name already carries its own module | falsified | 24 of 87 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_published_reasons`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_household`, `ts_almanac_ashauch_kin`, `ts_almanac_ashauch_rite`, `ts_almanac_death_time`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_almanac_digest`, `ts_almanac_next`, `ts_almanac_sentences`, `ts_almanac_anniversaries`, `ts_almanac_festival_pack`, `ts_almanac_changes`, `ts_context_new_with_provider` |
-| every operation the layer declares is listed by every parity runner | falsified | 40 of 339 disagree; unlisted: `(root).recorded_settings by parity.mjs`, `intl.lookup_locale by parity.mjs`, `intl.in_words by parity.mjs`, `intl.time by parity.mjs`, `intl.date by parity.mjs`, `almanac.household by parity.mjs`, `almanac.ashauch_kin by parity.mjs`, `almanac.ashauch_rite by parity.mjs`, `almanac.death_time by parity.mjs`, `almanac.festival_pack by parity.mjs`, `(root).recorded_settings by parity.dart`, `intl.lookup_locale by parity.dart`, `intl.in_words by parity.dart`, `intl.time by parity.dart`, `intl.date by parity.dart`, `almanac.household by parity.dart`, `almanac.ashauch_kin by parity.dart`, `almanac.ashauch_rite by parity.dart`, `almanac.death_time by parity.dart`, `almanac.festival_pack by parity.dart`, `(root).recorded_settings by parity.py`, `intl.lookup_locale by parity.py`, `intl.in_words by parity.py`, `intl.time by parity.py`, `intl.date by parity.py`, `almanac.household by parity.py`, `almanac.ashauch_kin by parity.py`, `almanac.ashauch_rite by parity.py`, `almanac.death_time by parity.py`, `almanac.festival_pack by parity.py`, `(root).recorded_settings by parity.rs`, `intl.lookup_locale by parity.rs`, `intl.in_words by parity.rs`, `intl.time by parity.rs`, `intl.date by parity.rs`, `almanac.household by parity.rs`, `almanac.ashauch_kin by parity.rs`, `almanac.ashauch_rite by parity.rs`, `almanac.death_time by parity.rs`, `almanac.festival_pack by parity.rs` |
-| every area the layer wires is named by the site's guide, and no other | falsified | 1 of 12 disagree; not on the page: `naming` |
+| a boundary module a consumer reaches is reached from one area | **holds** | 0 of 17 disagree; so no operation can be looked for under two names |
+| every area holds an operation that reaches the boundary | **holds** | 0 of 13 disagree |
+| no operation's name repeats its own area's | **holds** | 0 of 81 disagree; which is what the namespace is for |
+| every boundary module is reached, or is the caller's memory or the context's life | **holds** | 0 of 24 disagree; unreached: `blob`, `lib`, `provider`, `string` |
+| an entry point's name already carries its own module | falsified | 24 of 91 disagree; the exceptions are `ts_abi_version`, `ts_sdk_version`, `ts_catalogue_version`, `ts_default_profile`, `ts_build_info`, `ts_status_message`, `ts_error_free`, `ts_almanac_disagreements`, `ts_almanac_published_reasons`, `ts_almanac_sankalpa`, `ts_almanac_ashauch`, `ts_almanac_household`, `ts_almanac_ashauch_kin`, `ts_almanac_ashauch_rite`, `ts_almanac_death_time`, `ts_almanac_first_year`, `ts_almanac_festival_calendar`, `ts_almanac_digest`, `ts_almanac_next`, `ts_almanac_sentences`, `ts_almanac_anniversaries`, `ts_almanac_festival_pack`, `ts_almanac_changes`, `ts_context_new_with_provider` |
+| every operation the layer declares is listed by every parity runner | falsified | 56 of 355 disagree; unlisted: `(root).recorded_settings by parity.mjs`, `intl.lookup_locale by parity.mjs`, `intl.in_words by parity.mjs`, `intl.time by parity.mjs`, `intl.date by parity.mjs`, `intl.lexicon by parity.mjs`, `intl.lookup by parity.mjs`, `intl.dates by parity.mjs`, `almanac.household by parity.mjs`, `almanac.ashauch_kin by parity.mjs`, `almanac.ashauch_rite by parity.mjs`, `almanac.death_time by parity.mjs`, `almanac.festival_pack by parity.mjs`, `verify.claims by parity.mjs`, `(root).recorded_settings by parity.dart`, `intl.lookup_locale by parity.dart`, `intl.in_words by parity.dart`, `intl.time by parity.dart`, `intl.date by parity.dart`, `intl.lexicon by parity.dart`, `intl.lookup by parity.dart`, `intl.dates by parity.dart`, `almanac.household by parity.dart`, `almanac.ashauch_kin by parity.dart`, `almanac.ashauch_rite by parity.dart`, `almanac.death_time by parity.dart`, `almanac.festival_pack by parity.dart`, `verify.claims by parity.dart`, `(root).recorded_settings by parity.py`, `intl.lookup_locale by parity.py`, `intl.in_words by parity.py`, `intl.time by parity.py`, `intl.date by parity.py`, `intl.lexicon by parity.py`, `intl.lookup by parity.py`, `intl.dates by parity.py`, `almanac.household by parity.py`, `almanac.ashauch_kin by parity.py`, `almanac.ashauch_rite by parity.py`, `almanac.death_time by parity.py`, `almanac.festival_pack by parity.py`, `verify.claims by parity.py`, `(root).recorded_settings by parity.rs`, `intl.lookup_locale by parity.rs`, `intl.in_words by parity.rs`, `intl.time by parity.rs`, `intl.date by parity.rs`, `intl.lexicon by parity.rs`, `intl.lookup by parity.rs`, `intl.dates by parity.rs`, `almanac.household by parity.rs`, `almanac.ashauch_kin by parity.rs`, `almanac.ashauch_rite by parity.rs`, `almanac.death_time by parity.rs`, `almanac.festival_pack by parity.rs`, `verify.claims by parity.rs` |
+| every area the layer wires is named by the site's guide, and no other | **holds** | 0 of 13 disagree; site/content/docs/surface.mdx names all 13 and nothing else |
 
 **No operation spells its own area.** Several did on the flat surface — `convertTime`, because `convert` was taken by the calendar, is the one to remember — and each gave the word back when the namespace took it; [`surface-areas.md`](surface-areas.md) lists them. This row is the one that decays quietly as operations are added, which is why it is gated.
 
@@ -32,7 +32,7 @@ The remaining 17 are not accounted for: `ts_error_free`, `ts_almanac_disagreemen
 
 ## The areas the layer wires
 
-**12 areas over 77 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
+**13 areas over 81 operations, and a root.** An area is a *value*: built once with the context, frozen, and destructurable, which is what makes the grouping worth having rather than merely tidy.
 
 ### The root — `Context`
 
@@ -84,6 +84,9 @@ The remaining 17 are not accounted for: `ts_error_free`, `ts_almanac_disagreemen
 | `inWords` | `ts_intl_in_words` (intl) |
 | `time` | `ts_intl_time` (intl) |
 | `date` | `ts_intl_date` (intl) |
+| `lexicon` | `ts_intl_lexicon` (intl) |
+| `lookup` | `ts_intl_lookup` (intl) |
+| `dates` | `ts_intl_dates` (intl) |
 | `entity` | `ts_intl_entity` (intl) |
 | `messages` | — |
 | `loadPack` | `ts_intl_load_pack` (intl) |
@@ -164,6 +167,12 @@ The remaining 17 are not accounted for: `ts_error_free`, `ts_almanac_disagreemen
 | `load` | `ts_naming_load` (naming) |
 | `suggest` | `ts_naming_suggest` (naming) |
 
+### `sdk.verify` — `VerifyArea`
+
+| operation | reaches |
+|---|---|
+| `claims` | `ts_verify_claims` (verify) |
+
 ### `sdk.research` — `ResearchArea`
 
 | operation | reaches |
@@ -194,7 +203,7 @@ The remaining 17 are not accounted for: `ts_error_free`, `ts_almanac_disagreemen
 | `context` | 7 | `(root)` |
 | `ephemeris` | 2 | `engine` |
 | `frame` | 3 | `(root)`, `frame` |
-| `intl` | 11 | `intl` |
+| `intl` | 14 | `intl` |
 | `key` | 2 | `keys` |
 | `lib` | 6 | — |
 | `naam` | 1 | `matching` |
@@ -211,6 +220,7 @@ The remaining 17 are not accounted for: `ts_error_free`, `ts_almanac_disagreemen
 | `research` | 1 | `research` |
 | `string` | 1 | — |
 | `time` | 6 | `time` |
+| `verify` | 1 | `verify` |
 
 **Entry points do not measure an area's size to a consumer.** `calendar` has the most of them and `chart`, `positions` and `panchanga` have one each — and those three are the operations the SDK exists for. One entry point serves a whole family there, because a chart request carries what would otherwise have been a dozen calls. An area sized by its entry points would rank the surface almost backwards, which is why the design page sizes none of them.
 
