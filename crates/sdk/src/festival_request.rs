@@ -39,10 +39,15 @@ pub enum FestivalPack {
     /// mahalaya on each death tithi of Bhadrapada's dark half and the
     /// fortnight's own days, each at aparahna.
     PitriPaksha,
-    /// The Gaudiya Vaishnavas' Ekadashi after *Hari Bhakti Vilasa*
-    /// ([`EkadashiRule::hari_bhakti_vilasa`], `festival-rules.md` §8.9):
-    /// the Vaishnava's table and the eight mahadvadashis that name the
-    /// fast or move it onto the 12th's day.
+    /// The Gaudiya Vaishnavas' pack after *Hari Bhakti Vilasa*: the
+    /// Ekadashi ([`EkadashiRule::hari_bhakti_vilasa`], `festival-rules.md`
+    /// §8.9), the Vaishnava's table and the eight mahadvadashis that name
+    /// the fast or move it onto the 12th's day; and the festivals
+    /// ([`FestivalRule::hari_bhakti_vilasa`], §8.10), each read at sunrise
+    /// and left when the tithi before pierces it: Janmashtami, Rama Navami
+    /// and Nrisimha Chaturdashi by the text, Radhashtami and Gaura Purnima
+    /// as a published Gaudiya calendar keeps them. The Smarta's own days
+    /// are [`FestivalPack::Dharmasindhu`]'s.
     Gaudiya,
     /// The Government of India's central holidays for its offices in Delhi
     /// (`03-design/india-central-holidays.md`): the list's days by rule,
@@ -114,7 +119,7 @@ impl FestivalPack {
                 stamped(rules, FestivalMeta::nepal)
             }
             FestivalPack::PitriPaksha => stamped(FestivalRule::pitri_paksha(), by_text),
-            FestivalPack::Gaudiya => Vec::new(),
+            FestivalPack::Gaudiya => stamped(FestivalRule::hari_bhakti_vilasa(), by_text),
             FestivalPack::IndiaCentral => FestivalRule::india_central(),
             FestivalPack::Jain => FestivalRule::jain(),
         }

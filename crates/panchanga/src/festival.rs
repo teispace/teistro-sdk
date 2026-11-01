@@ -34,6 +34,7 @@ mod anniversary;
 mod dated;
 mod ekadashi;
 mod following;
+mod gaudiya;
 mod india_central;
 mod jain;
 mod mahalaya;

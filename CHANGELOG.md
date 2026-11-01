@@ -12,6 +12,21 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**The Gaudiya festivals, and Janmashtami's Vaishnava rule.**
+**Numbers:** `INDIA_CENTRAL`'s `JANMASHTAMI` day moves only in a year the 8th holds no sunrise, or two with
+Rohini at the later midnight only (none of 2021 to 2027); its parana is the text's one reading, the end of
+the 8th and Rohini, where it carried *Dharmasindhu*'s two, and its `meta.fast` is HBV's. Every other pack's
+days are unchanged; `GAUDIYA`'s answer gains the five festivals.
+- The `GAUDIYA` pack gains `JANMASHTAMI_VAISHNAVA`, `RAMA_NAVAMI_VAISHNAVA` and `NRISIMHA_CHATURDASHI` after
+  *Hari Bhakti Vilasa* (14.249–261, 15.358–402), and `RADHASHTAMI_VAISHNAVA` and `GAURA_PURNIMA` as a published
+  Gaudiya calendar keeps them (a convention): each read at sunrise and left when the tithi before pierces it,
+  `FestivalRule::hari_bhakti_vilasa` (SR-17, `03-design/festival-rules.md` §8.10, C1120 to C1123). The
+  Smarta's `JANMASHTAMI` stays `DHARMASINDHU`'s.
+- Their fasts, and `EKADASHI_GAUDIYA`'s (HBV 12.94–98), in `meta.fast`; Gaura Purnima's is broken at moonrise, and Radhashtami's "till noon" is the one meal at
+  midday, `EKABHAKTA`.
+- `INDIA_CENTRAL`'s Janmashtami, which the notices mark Vaishnava, is the text's Vaishnava rule in place of the
+  fitted sunrise rule (C851), and `festival-measured.md` §1 holds the lists' Vaishnava day to it.
+
 **The navatara chakra.**
 **Numbers:** none: a new answer, and nothing it reads moves.
 - `AlmanacArea::navatara(birth)`, the record `almanac.navatara` (`NavataraRequest`, an agent server tool),

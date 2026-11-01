@@ -92,29 +92,30 @@ impl Listed {
 /// F.No.12/2/2023-JCA (the Indian Council of Agricultural Research, a
 /// scan; its Rama Navami row is illegible and left out) and 2027
 /// F.No.12/2/2023-JCA (CSIR). The compulsory Janmashtami is the Vaishnava
-/// day; the restricted list gives a Smarta day beside it in 2021, 2023 and
-/// 2025, and *Dharmasindhu* is a Smarta text, so both are listed.
+/// day, held to the `GAUDIYA` pack's rule after *Hari Bhakti Vilasa*; the
+/// restricted list gives a Smarta day beside it in 2021, 2023 and 2025,
+/// held to *Dharmasindhu*'s, a Smarta text.
 const PUBLISHED: [(i32, &str, Listed, MonthDay); 22] = [
     (2021, "RAMA_NAVAMI", Listed::Compulsory, (4, 21)),
-    (2021, "JANMASHTAMI", Listed::Vaishnava, (8, 30)),
+    (2021, "JANMASHTAMI_VAISHNAVA", Listed::Vaishnava, (8, 30)),
     (2021, "JANMASHTAMI", Listed::Smarta, (8, 30)),
     (2021, "VIJAYA_DASHAMI", Listed::Compulsory, (10, 15)),
     (2021, "LAKSHMI_PUJA", Listed::Compulsory, (11, 4)),
     (2023, "RAMA_NAVAMI", Listed::Compulsory, (3, 30)),
-    (2023, "JANMASHTAMI", Listed::Vaishnava, (9, 7)),
+    (2023, "JANMASHTAMI_VAISHNAVA", Listed::Vaishnava, (9, 7)),
     (2023, "JANMASHTAMI", Listed::Smarta, (9, 6)),
     (2023, "VIJAYA_DASHAMI", Listed::Compulsory, (10, 24)),
     (2023, "LAKSHMI_PUJA", Listed::Compulsory, (11, 12)),
     (2024, "RAMA_NAVAMI", Listed::Compulsory, (4, 17)),
-    (2024, "JANMASHTAMI", Listed::Vaishnava, (8, 26)),
+    (2024, "JANMASHTAMI_VAISHNAVA", Listed::Vaishnava, (8, 26)),
     (2024, "VIJAYA_DASHAMI", Listed::Compulsory, (10, 12)),
     (2024, "LAKSHMI_PUJA", Listed::Compulsory, (10, 31)),
-    (2025, "JANMASHTAMI", Listed::Vaishnava, (8, 16)),
+    (2025, "JANMASHTAMI_VAISHNAVA", Listed::Vaishnava, (8, 16)),
     (2025, "JANMASHTAMI", Listed::Smarta, (8, 15)),
     (2025, "VIJAYA_DASHAMI", Listed::Compulsory, (10, 2)),
     (2025, "LAKSHMI_PUJA", Listed::Compulsory, (10, 20)),
     (2027, "RAMA_NAVAMI", Listed::Compulsory, (4, 15)),
-    (2027, "JANMASHTAMI", Listed::Vaishnava, (8, 25)),
+    (2027, "JANMASHTAMI_VAISHNAVA", Listed::Vaishnava, (8, 25)),
     (2027, "VIJAYA_DASHAMI", Listed::Compulsory, (10, 9)),
     (2027, "LAKSHMI_PUJA", Listed::Compulsory, (10, 29)),
 ];
@@ -122,26 +123,18 @@ const PUBLISHED: [(i32, &str, Listed, MonthDay); 22] = [
 /// Why the shipped rule parts from a published day, per (year, rule,
 /// list). The pass fails on a disagreement with no entry, and on an entry
 /// whose row agrees.
-const PARTS: [(i32, &str, Listed, &str); 4] = [
-    (2023, "JANMASHTAMI", Listed::Vaishnava, VAISHNAVA),
-    (
-        2024,
-        "LAKSHMI_PUJA",
-        Listed::Compulsory,
-        "the new moon lasts more than a ghati past the later day's sunset, which p. 77 calls beyond doubt; the list takes the earlier day, over which the calendars of that year were divided",
-    ),
-    (2025, "JANMASHTAMI", Listed::Vaishnava, VAISHNAVA),
-    (2027, "JANMASHTAMI", Listed::Vaishnava, VAISHNAVA),
-];
-
-/// The cause the Vaishnava Janmashtami rows share.
-const VAISHNAVA: &str = "the Vaishnava day, the later one, whose sunrise the 8th holds; the shipped rule is the Smarta one of p. 49, which takes the earlier day when it alone holds nishitha, and *Dharmasindhu* states no Vaishnava rule for Janmashtami (C175)";
+const PARTS: [(i32, &str, Listed, &str); 1] = [(
+    2024,
+    "LAKSHMI_PUJA",
+    Listed::Compulsory,
+    "the new moon lasts more than a ghati past the later day's sunset, which p. 77 calls beyond doubt; the list takes the earlier day, over which the calendars of that year were divided",
+)];
 
 /// Why no year of the decade reached a guard, per (rule, guard index),
 /// with the crate test that reaches it on synthetic days. The pass fails
 /// on an unreached guard with no entry, on an entry for a guard a year
 /// reached, and on a test the crate does not have.
-const UNREACHED: [(&str, usize, &str, &str); 9] = [
+const UNREACHED: [(&str, usize, &str, &str); 15] = [
     (
         "VIJAYA_DASHAMI",
         1,
@@ -195,6 +188,42 @@ const UNREACHED: [(&str, usize, &str, &str); 9] = [
         1,
         "a_rite_at_moonrise_reads_each_days_first_moonrise",
         "the 4th holding both moonrises, which needs it to outlast the 24 h 50 m between them, and no Ashvina of the decade had",
+    ),
+    (
+        "JANMASHTAMI_VAISHNAVA",
+        0,
+        "vaishnava_janmashtami_leaves_the_eighth_the_seventh_pierces",
+        "the dark 8th holding two sunrises with Rohini joining it at the earlier midnight, a vriddhi no Shravana of the decade had",
+    ),
+    (
+        "JANMASHTAMI_VAISHNAVA",
+        1,
+        "vaishnava_janmashtami_leaves_the_eighth_the_seventh_pierces",
+        "the dark 8th holding two sunrises with Rohini standing at the later midnight alone, a vriddhi no Shravana of the decade had",
+    ),
+    (
+        "JANMASHTAMI_VAISHNAVA",
+        2,
+        "vaishnava_janmashtami_leaves_the_eighth_the_seventh_pierces",
+        "the dark 8th holding two sunrises, a vriddhi no Shravana of the decade had",
+    ),
+    (
+        "NRISIMHA_CHATURDASHI",
+        0,
+        "a_gaudiya_day_is_the_pure_sunrise_the_earlier_of_two",
+        "the bright 14th holding two sunrises, a vriddhi no Vaishakha of the decade had",
+    ),
+    (
+        "RADHASHTAMI_VAISHNAVA",
+        0,
+        "a_gaudiya_day_is_the_pure_sunrise_the_earlier_of_two",
+        "the bright 8th holding two sunrises, a vriddhi no Bhadrapada of the decade had",
+    ),
+    (
+        "GAURA_PURNIMA",
+        0,
+        "a_gaudiya_day_is_the_pure_sunrise_the_earlier_of_two",
+        "the full moon holding two sunrises, a vriddhi no Phalguna of the decade had",
     ),
 ];
 
@@ -362,10 +391,11 @@ fn years_of(request: &FestivalRequest) -> Result<BTreeMap<i32, Observances>, Str
 }
 
 fn page() -> Result<String, String> {
-    // The text's pack and the Gaudiya Ekadashi, which the ISKCON list is
-    // read against too (§3).
-    let request = FestivalRequest::from(FestivalPack::Dharmasindhu)
-        .with_ekadashis(FestivalPack::Gaudiya.ekadashis());
+    // The text's pack and the Gaudiya pack: its Ekadashi, which the ISKCON
+    // list is read against too (§3), and its Janmashtami, which the lists'
+    // Vaishnava day is.
+    let request =
+        FestivalRequest::from(FestivalPack::Dharmasindhu).with_pack(FestivalPack::Gaudiya);
     let rules = request.rules();
     let years = years_of(&request)?;
 
@@ -538,7 +568,8 @@ fn published(out: &mut String, rows: &[Row]) {
         "The days the Government of India listed as holidays for its offices in Delhi,\n\
          read off copies of each year's office memorandum (the pass's source names them).\n\
          Janmashtami is listed twice where the restricted list gives a Smarta day apart\n\
-         from the Vaishnava one; *Dharmasindhu* is a Smarta text.\n\n",
+         from the Vaishnava one: the Smarta day is held to *Dharmasindhu*'s rule and the\n\
+         Vaishnava to the `GAUDIYA` pack's, after *Hari Bhakti Vilasa*.\n\n",
     );
     out.push_str("| year | rule | list | published | found | case | decided by |\n|---:|---|---|---|---|---|---|\n");
     for row in rows {
@@ -594,7 +625,8 @@ fn render(rules: &[FestivalRule], rows: &[Row], cases: &Cases<'_>, decided: &Dec
         "Status: `generated` by `cargo xtask festival`. Do not edit:\n\
          `check-festival` regenerates this page and fails on any difference.\n\n\
          It measures `festival-rules.md` §5.2, §5.3 and §9.3: the shipped rules\n\
-         (`FestivalRule::dharmasindhu()`) through `sdk.almanac().festivals`, over\n\
+         (`FestivalRule::dharmasindhu()`, and the `GAUDIYA` pack's\n\
+         `FestivalRule::hari_bhakti_vilasa()`) through `sdk.almanac().festivals`, over\n\
          the built-in ephemeris at Delhi on India's clock, and at Kathmandu on\n\
          Nepal's (§4).\n\n",
     );

@@ -465,37 +465,131 @@ const ASHUNYA_SHAYANA: [Reading; 3] = [
     ),
 ];
 
+/// The Gaudiya Ekadashi's fast (*Hari Bhakti Vilasa* 12.94–98): the
+/// fast, then what the Bhavishya allows one unable by illness, in its
+/// order, then the Vayu's foods for such a one.
+const EKADASHI_GAUDIYA: [Reading; 7] = [
+    reading(
+        Some(FastKind::Upavasa),
+        false,
+        (None, Some(FastEnd::Parana)),
+        "Hari Bhakti Vilasa 12.94–96: the 11th is not passed over (द्वादशीं न लङ्घयेत्), its fast broken on the 12th",
+    ),
+    reading(
+        Some(FastKind::Nakta),
+        true,
+        (None, Some(FastEnd::Night)),
+        "Hari Bhakti Vilasa 12.94–96: for the child, the old and the sick, a night meal (नक्त), the first of the Bhavishya's three",
+    ),
+    reading(
+        Some(FastKind::Ayachita),
+        true,
+        (None, None),
+        "Hari Bhakti Vilasa 12.95–96, 12.98: for one unable, food unasked (अयाचित)",
+    ),
+    reading(
+        Some(FastKind::Ekabhakta),
+        true,
+        (None, None),
+        "Hari Bhakti Vilasa 12.95–96: for one unable, one meal (एकभक्त)",
+    ),
+    reading(
+        Some(FastKind::Phalahara),
+        true,
+        (None, Some(FastEnd::Parana)),
+        "Hari Bhakti Vilasa 12.97 (Vayu Purana): fruit (फलम्), each food of the list better than the one before it",
+    ),
+    reading(
+        Some(FastKind::Kshirahara),
+        true,
+        (None, Some(FastEnd::Parana)),
+        "Hari Bhakti Vilasa 12.97 (Vayu Purana): milk (क्षीरम्)",
+    ),
+    reading(
+        Some(FastKind::Jalahara),
+        true,
+        (None, Some(FastEnd::Parana)),
+        "Hari Bhakti Vilasa 12.97 (Vayu Purana): water (अम्बु)",
+    ),
+];
+
+/// The Vaishnava's Janmashtami (*Hari Bhakti Vilasa* 15.377, 15.385).
+const JANMASHTAMI_VAISHNAVA: [Reading; 1] = [reading(
+    Some(FastKind::Upavasa),
+    false,
+    (None, Some(FastEnd::Parana)),
+    "Hari Bhakti Vilasa 15.377: a fast is to be kept, never a meal (उपवासः प्रकर्तव्यो न भोक्तव्यं कदाचन); the parana the next day at the end of the tithi or the nakshatra (15.385)",
+)];
+
+/// The Vaishnava's Rama Navami (*Hari Bhakti Vilasa* 14.252, 14.259).
+const RAMA_NAVAMI_VAISHNAVA: [Reading; 1] = [reading(
+    Some(FastKind::Upavasa),
+    false,
+    (Some(FastStart::AfterEkabhakta), Some(FastEnd::Parana)),
+    "Hari Bhakti Vilasa 14.252: the fast on the 9th and the parana on the 10th (उपोषणं नवम्यां वै दशम्यामेव पारणम्); the vow taken on the 8th, which ends in the observer's own meal (14.255–259)",
+)];
+
+/// Nrisimha Chaturdashi (*Hari Bhakti Vilasa* 14.457, 14.462).
+const NRISIMHA_CHATURDASHI: [Reading; 1] = [reading(
+    Some(FastKind::Upavasa),
+    false,
+    (Some(FastStart::AfterEkabhakta), None),
+    "Hari Bhakti Vilasa 14.457: the 14th fasted with care (यत्नतः समुपोषयेत्), the Lord worshipped at evening; the day before, an ekabhakta, as for every vrata (14.462's commentary); the text says no end, and the published calendar's \"till dusk\" is not a text's (C1123)",
+)];
+
+/// Radhashtami, whose fast no text in hand states (C1123).
+const RADHASHTAMI_VAISHNAVA: [Reading; 1] = [reading(
+    Some(FastKind::Ekabhakta),
+    false,
+    (None, None),
+    "a published Gaudiya calendar (VaisnavaCalendar.Info, from GCal 11): \"fast till noon\", read as the day's one meal at midday that ekabhakta names (C1123)",
+)];
+
+/// Gaura Purnima, whose fast no text in hand states (C1123).
+const GAURA_PURNIMA: [Reading; 1] = [reading(
+    None,
+    false,
+    (None, Some(FastEnd::Moonrise)),
+    "a published Gaudiya calendar (VaisnavaCalendar.Info, from GCal 11): \"fast till moonrise\" (C1123)",
+)];
+
 /// Every key the texts in hand give a fast, sorted for the binary search,
 /// with its readings. Nirjala ekadashi waits on a text (C1080), and a key
 /// of a text's pack that names no fast is not here.
-const FASTS: [(&str, &[Reading]); 36] = [
+const FASTS: [(&str, &[Reading]); 42] = [
     ("AJA_EKADASHI", &EKADASHI),
     ("AMALAKI_EKADASHI", &EKADASHI),
     ("APARA_EKADASHI", &EKADASHI),
     ("ASHUNYA_SHAYANA", &ASHUNYA_SHAYANA),
     ("BHIMA_EKADASHI", &EKADASHI),
+    ("EKADASHI_GAUDIYA", &EKADASHI_GAUDIYA),
     ("EKADASHI_SMARTA", &EKADASHI),
     ("EKADASHI_SMARTA_RENUNCIANT", &EKADASHI),
     ("EKADASHI_VAISHNAVA", &EKADASHI),
+    ("GAURA_PURNIMA", &GAURA_PURNIMA),
     ("HARIBODHINI_EKADASHI", &EKADASHI),
     ("HARIPARIVARTINI_EKADASHI", &EKADASHI),
     ("HARISHAYANI_EKADASHI", &EKADASHI),
     ("HARITALIKA", &HARITALIKA),
     ("INDIRA_EKADASHI", &EKADASHI),
     ("JANMASHTAMI", &JANMASHTAMI),
+    ("JANMASHTAMI_VAISHNAVA", &JANMASHTAMI_VAISHNAVA),
     ("KAMADA_EKADASHI", &EKADASHI),
     ("KAMIKA_EKADASHI", &EKADASHI),
     ("MAHA_NAVAMI", &MAHA_NAVAMI),
     ("MOHINI_EKADASHI", &EKADASHI),
     ("MOKSHADA_EKADASHI", &EKADASHI),
+    ("NRISIMHA_CHATURDASHI", &NRISIMHA_CHATURDASHI),
     ("PADMINI_EKADASHI", &EKADASHI),
     ("PAPANKUSHA_EKADASHI", &EKADASHI),
     ("PAPMOCHANI_EKADASHI", &EKADASHI),
     ("PARAMA_EKADASHI", &EKADASHI),
     ("PAUSHA_PUTRADA_EKADASHI", &EKADASHI),
     ("PRADOSHA_VRATA", &PRADOSHA_VRATA),
+    ("RADHASHTAMI_VAISHNAVA", &RADHASHTAMI_VAISHNAVA),
     ("RAMA_EKADASHI", &EKADASHI),
     ("RAMA_NAVAMI", &RAMA_NAVAMI),
+    ("RAMA_NAVAMI_VAISHNAVA", &RAMA_NAVAMI_VAISHNAVA),
     ("SAFALA_EKADASHI", &EKADASHI),
     ("SANKASHTA_CHATURTHI", &SANKASHTA_CHATURTHI),
     ("SHATTILA_EKADASHI", &EKADASHI),
@@ -1051,7 +1145,9 @@ mod tests {
         let mut rules = FestivalRule::dharmasindhu();
         rules.extend(FestivalRule::nepal());
         rules.extend(FestivalRule::nepal_panchanga());
-        let ekadashis = EkadashiRule::dharmasindhu();
+        rules.extend(FestivalRule::hari_bhakti_vilasa());
+        let mut ekadashis = EkadashiRule::dharmasindhu();
+        ekadashis.push(EkadashiRule::hari_bhakti_vilasa());
         for &(key, readings) in &FASTS {
             let rule = rules.iter().find(|rule| rule.key == key);
             let fast = ekadashis.iter().any(|rule| rule.key == key);

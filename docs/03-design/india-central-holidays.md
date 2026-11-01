@@ -47,7 +47,7 @@ at Delhi on India's clock. It reuses the keys of festivals the SDK already ships
 | Dussehra, Diwali, Ram Navami, Maha Shivratri | `VIJAYA_DASHAMI`, `LAKSHMI_PUJA`, `RAMA_NAVAMI`, `SHIVARATRI` | the lunar rule | *Dharmasindhu*, as `DHARMASINDHU` ships them |
 | Buddha Purnima, Mahavir Jayanti, Guru Nanak's birthday | `BUDDHA_JAYANTI`, `MAHAVIR_JAYANTI`, `GURU_NANAK_JAYANTI` | the lunar rule | a printed panchanga, as `NEPAL_PANCHANGA` ships them |
 | Holi | `HOLI` | a day after `HOLIKA` | *Dharmasindhu* p. 95 |
-| Janmashtami | `JANMASHTAMI` | the sunrise rule | fitted: C851 |
+| Janmashtami | `JANMASHTAMI` | the Vaishnava rule, `GAUDIYA`'s `JANMASHTAMI_VAISHNAVA` | *Hari Bhakti Vilasa* 15.358–374 (C851, C175) |
 
 A key of para 3.1 is `optional` in its `meta`, so a reader knows a year's list may
 not hold it. Ram Navami falls in the rules every year and in Delhi's list in five of

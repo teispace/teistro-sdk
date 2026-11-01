@@ -198,13 +198,13 @@ impl FastKind {
     #[must_use]
     pub const fn sources(self) -> &'static [Source] {
         match self {
-            FastKind::Upavasa => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 6", reference: "`03-design/festival-metadata.md` §6" }],
-            FastKind::Ekabhakta => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 6", reference: "`03-design/festival-metadata.md` §6" }],
-            FastKind::Nakta => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) pp. 6-7", reference: "`03-design/festival-metadata.md` §6" }],
-            FastKind::Ayachita => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 6", reference: "`03-design/festival-metadata.md` §6" }],
-            FastKind::Phalahara => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) pp. 18, 52", reference: "`03-design/festival-metadata.md` §6" }],
-            FastKind::Kshirahara => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 18", reference: "`03-design/festival-metadata.md` §6" }],
-            FastKind::Jalahara => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 18", reference: "`03-design/festival-metadata.md` §6" }],
+            FastKind::Upavasa => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 6", reference: "`03-design/festival-metadata.md` §6" }, Source { text: "Hari Bhakti Vilasa (Haridas Shastri's edition, vol. 2) 12.94–96, 14.457, 15.377", reference: "`03-design/festival-metadata.md` §6" }],
+            FastKind::Ekabhakta => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 6", reference: "`03-design/festival-metadata.md` §6" }, Source { text: "Hari Bhakti Vilasa (Haridas Shastri's edition, vol. 2) 12.95–96", reference: "`03-design/festival-metadata.md` §6" }],
+            FastKind::Nakta => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) pp. 6-7", reference: "`03-design/festival-metadata.md` §6" }, Source { text: "Hari Bhakti Vilasa (Haridas Shastri's edition, vol. 2) 12.94–96, 12.98", reference: "`03-design/festival-metadata.md` §6" }],
+            FastKind::Ayachita => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 6", reference: "`03-design/festival-metadata.md` §6" }, Source { text: "Hari Bhakti Vilasa (Haridas Shastri's edition, vol. 2) 12.95–96, 12.98", reference: "`03-design/festival-metadata.md` §6" }],
+            FastKind::Phalahara => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) pp. 18, 52", reference: "`03-design/festival-metadata.md` §6" }, Source { text: "Hari Bhakti Vilasa (Haridas Shastri's edition, vol. 2) 12.97", reference: "`03-design/festival-metadata.md` §6" }],
+            FastKind::Kshirahara => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 18", reference: "`03-design/festival-metadata.md` §6" }, Source { text: "Hari Bhakti Vilasa (Haridas Shastri's edition, vol. 2) 12.97", reference: "`03-design/festival-metadata.md` §6" }],
+            FastKind::Jalahara => &[Source { text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 18", reference: "`03-design/festival-metadata.md` §6" }, Source { text: "Hari Bhakti Vilasa (Haridas Shastri's edition, vol. 2) 12.97", reference: "`03-design/festival-metadata.md` §6" }],
         }
     }
 

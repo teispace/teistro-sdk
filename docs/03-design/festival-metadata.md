@@ -159,11 +159,21 @@ observance's `moonrise` gives the instant and the place it was found for.
 | `PRADOSHA_VRATA` | `NAKTA`, to the night | DS p. 20 |
 | `SANKASHTA_CHATURTHI` | the meal at night; kind and start unsourced | *Nirnayasindhu* (1949 Nirnaya Sagar edition) p. 22; C1081 |
 | `ASHUNYA_SHAYANA` | `NAKTA`, to the moonrise; then `UPAVASA` and `AYACHITA`, ends unsaid | DS p. 44; Hemadri, *Vratakhanda* (Bibliotheca Indica, 1878) ch. 9, pp. 172–173 |
+| `EKADASHI_GAUDIYA` | `UPAVASA`, to the parana; if unable, `NAKTA` to the night, `AYACHITA`, `EKABHAKTA`, then `PHALAHARA`, `KSHIRAHARA` and `JALAHARA` to the parana | HBV 12.94–98 |
+| `JANMASHTAMI_VAISHNAVA` | `UPAVASA`, to the parana | HBV 15.377, 15.385 |
+| `RAMA_NAVAMI_VAISHNAVA` | `UPAVASA` after the 8th's meal, to the parana | HBV 14.252, 14.255–259 |
+| `NRISIMHA_CHATURDASHI` | `UPAVASA` after the day before's ekabhakta; end unsaid | HBV 14.457, 14.462's commentary |
+| `GAURA_PURNIMA` | to the moonrise; kind unsourced | a published Gaudiya calendar (C1123) |
+| `RADHASHTAMI_VAISHNAVA` | `EKABHAKTA`: "till noon" read as the one meal at midday; start and end unsourced | a published Gaudiya calendar (C1123) |
 
 The named ekadashis take DS's Ekadashi because their rule is kept on an 11th,
 which a test checks against the rule rather than the name. `NIRJALA_EKADASHI`
-is left out (C1080), and `EKADASHI_GAUDIYA`, whose source is *Hari Bhakti
-Vilasa*, carries none until that text is read for it. The Karaka chaturthi
+is left out (C1080). `EKADASHI_GAUDIYA` and the `GAUDIYA` pack's festivals
+carry *Hari Bhakti Vilasa*'s (HBV, Haridas Shastri's edition, vol. 2), read
+for SR-17, and Gaura Purnima's and Radhashtami's the published Gaudiya
+calendar's: its "till noon" is read as the one meal at midday that
+`EKABHAKTA` names, and its "till dusk" and "till midnight" no `end` names
+(C1123). The Karaka chaturthi
 carries none: DS p. 76 and NS p. 146 give its day and not its fast (C1081).
 Every other key's `unsourced` names `fast`, which does not say it has none.
 
