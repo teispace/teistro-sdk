@@ -303,6 +303,9 @@ class Kind(Member):
     gowri = 80
     """The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark."""
 
+    fast_kind = 81
+    """How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62)."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3727,6 +3730,36 @@ class Gowri(Catalogued):
     """
 
 
+class FastKind(Catalogued):
+    """How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62). Members are the catalogue's ids; the full key id is `(TS_KIND_FAST_KIND << 16) | member`."""
+
+    UPAVASA = 0
+    """No meal by day or by night (अहोरात्रभोजनाभावः)"""
+
+    EKABHAKTA = 1
+    """One meal, of one grain, once, at midday (मध्याह्ने एकवारमेकान्नभोजनम्)"""
+
+    NAKTA = 2
+    """The one meal at night, in the pradosha, after the three ghatis of dusk (रात्रावेव प्रदोषकाले भोजनम्)"""
+
+    AYACHITA = 3
+    """Only the food that comes that day unasked (याचनां विना तद्दिने लब्धस्यान्नस्य भोजनम्)"""
+
+    PHALAHARA = 4
+    """Fruit only: what one unable to fast keeps instead (फलाहार)"""
+
+    KSHIRAHARA = 5
+    """Milk only: what one unable to fast keeps instead (क्षीरभक्ष)"""
+
+    JALAHARA = 6
+    """Water only: what one unable to fast keeps instead (जलाहार)"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -5991,6 +6024,7 @@ _KEYS: dict[str, dict[int, str]] = {
         78: "tradition",
         79: "day_marker",
         80: "gowri",
+        81: "fast_kind",
     },
     "Graha": {
         0: "SUN",
@@ -7133,6 +7167,16 @@ _KEYS: dict[str, dict[int, str]] = {
         7: "VISHAM",
         -1: "UNKNOWN",
     },
+    "FastKind": {
+        0: "UPAVASA",
+        1: "EKABHAKTA",
+        2: "NAKTA",
+        3: "AYACHITA",
+        4: "PHALAHARA",
+        5: "KSHIRAHARA",
+        6: "JALAHARA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -7898,4 +7942,5 @@ _KINDS: dict[str, str] = {
     "Tradition": "tradition",
     "DayMarker": "day_marker",
     "Gowri": "gowri",
+    "FastKind": "fast_kind",
 }

@@ -174,9 +174,11 @@ pub enum Kind {
     DayMarker = 79,
     /// The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.
     Gowri = 80,
+    /// How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).
+    FastKind = 81,
 }
 
-const BY_NAME: [(&str, Kind); 79] = [
+const BY_NAME: [(&str, Kind); 80] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -206,6 +208,7 @@ const BY_NAME: [(&str, Kind); 79] = [
     ("dignity", Kind::Dignity),
     ("direction", Kind::Direction),
     ("era", Kind::Era),
+    ("fast_kind", Kind::FastKind),
     ("festival", Kind::Festival),
     ("festival_kind", Kind::FestivalKind),
     ("gana", Kind::Gana),
@@ -260,7 +263,7 @@ const BY_NAME: [(&str, Kind); 79] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 79] = [
+    pub const ALL: [Kind; 80] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -340,6 +343,7 @@ impl Kind {
         Kind::Tradition,
         Kind::DayMarker,
         Kind::Gowri,
+        Kind::FastKind,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -431,6 +435,7 @@ impl Kind {
             Kind::Tradition => "tradition",
             Kind::DayMarker => "day_marker",
             Kind::Gowri => "gowri",
+            Kind::FastKind => "fast_kind",
         }
     }
 
@@ -536,6 +541,7 @@ impl Kind {
             Kind::Tradition => 6,
             Kind::DayMarker => 3,
             Kind::Gowri => 8,
+            Kind::FastKind => 7,
         }
     }
 
@@ -642,6 +648,7 @@ impl Kind {
             78 => Some(Kind::Tradition),
             79 => Some(Kind::DayMarker),
             80 => Some(Kind::Gowri),
+            81 => Some(Kind::FastKind),
             _ => None,
         }
     }

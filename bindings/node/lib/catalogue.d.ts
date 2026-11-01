@@ -293,7 +293,8 @@ export type Kind =
   | 'festival_kind'
   | 'tradition'
   | 'day_marker'
-  | 'gowri';
+  | 'gowri'
+  | 'fast_kind';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -597,6 +598,10 @@ export declare const Kind: {
    * The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.
    */
   readonly Gowri: 'gowri';
+  /**
+   * How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).
+   */
+  readonly FastKind: 'fast_kind';
 };
 
 /**
@@ -6239,6 +6244,57 @@ export declare const Gowri: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const GowriById: ReadonlyMap<number, Gowri>;
+
+/**
+ * How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62). Members are the catalogue's ids; the full key id is `(TS_KIND_FAST_KIND << 16) | member`.
+ */
+export type FastKind =
+  | 'fast_kind.UPAVASA'
+  | 'fast_kind.EKABHAKTA'
+  | 'fast_kind.NAKTA'
+  | 'fast_kind.AYACHITA'
+  | 'fast_kind.PHALAHARA'
+  | 'fast_kind.KSHIRAHARA'
+  | 'fast_kind.JALAHARA'
+  | 'unknown';
+
+/** Every FastKind by name; the values are the strings the union accepts. */
+export declare const FastKind: {
+  /**
+   * No meal by day or by night (अहोरात्रभोजनाभावः)
+   */
+  readonly Upavasa: 'fast_kind.UPAVASA';
+  /**
+   * One meal, of one grain, once, at midday (मध्याह्ने एकवारमेकान्नभोजनम्)
+   */
+  readonly Ekabhakta: 'fast_kind.EKABHAKTA';
+  /**
+   * The one meal at night, in the pradosha, after the three ghatis of dusk (रात्रावेव प्रदोषकाले भोजनम्)
+   */
+  readonly Nakta: 'fast_kind.NAKTA';
+  /**
+   * Only the food that comes that day unasked (याचनां विना तद्दिने लब्धस्यान्नस्य भोजनम्)
+   */
+  readonly Ayachita: 'fast_kind.AYACHITA';
+  /**
+   * Fruit only: what one unable to fast keeps instead (फलाहार)
+   */
+  readonly Phalahara: 'fast_kind.PHALAHARA';
+  /**
+   * Milk only: what one unable to fast keeps instead (क्षीरभक्ष)
+   */
+  readonly Kshirahara: 'fast_kind.KSHIRAHARA';
+  /**
+   * Water only: what one unable to fast keeps instead (जलाहार)
+   */
+  readonly Jalahara: 'fast_kind.JALAHARA';
+};
+
+/**
+ * Every FastKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const FastKindById: ReadonlyMap<number, FastKind>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

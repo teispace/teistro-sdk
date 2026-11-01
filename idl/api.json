@@ -688,6 +688,12 @@
           "value": 80,
           "doc": "The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.",
           "key": "gowri"
+        },
+        {
+          "name": "FastKind",
+          "value": 81,
+          "doc": "How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).",
+          "key": "fast_kind"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -6859,6 +6865,57 @@
           "value": 7,
           "doc": "Visham, Rahu's: poison, the daylight's eighth that is rahu kaala",
           "key": "VISHAM"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "FastKind",
+      "doc": "How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62). Members are the catalogue's ids; the full key id is `(TS_KIND_FAST_KIND << 16) | member`.",
+      "repr": "u16",
+      "kind": "fast_kind",
+      "values": [
+        {
+          "name": "Upavasa",
+          "value": 0,
+          "doc": "No meal by day or by night (अहोरात्रभोजनाभावः)",
+          "key": "UPAVASA"
+        },
+        {
+          "name": "Ekabhakta",
+          "value": 1,
+          "doc": "One meal, of one grain, once, at midday (मध्याह्ने एकवारमेकान्नभोजनम्)",
+          "key": "EKABHAKTA"
+        },
+        {
+          "name": "Nakta",
+          "value": 2,
+          "doc": "The one meal at night, in the pradosha, after the three ghatis of dusk (रात्रावेव प्रदोषकाले भोजनम्)",
+          "key": "NAKTA"
+        },
+        {
+          "name": "Ayachita",
+          "value": 3,
+          "doc": "Only the food that comes that day unasked (याचनां विना तद्दिने लब्धस्यान्नस्य भोजनम्)",
+          "key": "AYACHITA"
+        },
+        {
+          "name": "Phalahara",
+          "value": 4,
+          "doc": "Fruit only: what one unable to fast keeps instead (फलाहार)",
+          "key": "PHALAHARA"
+        },
+        {
+          "name": "Kshirahara",
+          "value": 5,
+          "doc": "Milk only: what one unable to fast keeps instead (क्षीरभक्ष)",
+          "key": "KSHIRAHARA"
+        },
+        {
+          "name": "Jalahara",
+          "value": 6,
+          "doc": "Water only: what one unable to fast keeps instead (जलाहार)",
+          "key": "JALAHARA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -17817,7 +17874,7 @@
     },
     {
       "name": "ts_almanac_festival_pack",
-      "doc": "Every rule of a festival pack with what it is\n(`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:\neach row `{key, form, source, meta, unsourced}`, `form` how its day is\nfound (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`\nits kind, tradition, communities and regions, `unsourced` the fields no\nsource gives, and a published row's `subjectTo` and `lastYear`.\n\n`request_json` is `{\"pack\"}`, a pack the SDK ships. Nothing is\nreckoned, so a context without an ephemeris answers. A key it does not\nread or a pack it does not ship is `INVALID_ARG`, named under `pack`.",
+      "doc": "Every rule of a festival pack with what it is\n(`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:\neach row `{key, form, source, meta, unsourced}`, `form` how its day is\nfound (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`\nits kind, tradition, communities, regions and fast (each reading\n`{kind, ifUnable, start, end, source}`), `unsourced` the fields no\nsource gives, and a published row's `subjectTo` and `lastYear`.\n\n`request_json` is `{\"pack\"}`, a pack the SDK ships. Nothing is\nreckoned, so a context without an ephemeris answers. A key it does not\nread or a pack it does not ship is `INVALID_ARG`, named under `pack`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {

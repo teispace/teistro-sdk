@@ -293,6 +293,7 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   Tradition: 'tradition',
   DayMarker: 'day_marker',
   Gowri: 'gowri',
+  FastKind: 'fast_kind',
 });
 
 /**
@@ -375,6 +376,7 @@ export const KindById = /* @__PURE__ */ new Map([
   [78, 'tradition'],
   [79, 'day_marker'],
   [80, 'gowri'],
+  [81, 'fast_kind'],
 ]);
 
 /** Every Graha by name. */
@@ -3032,6 +3034,31 @@ export const GowriById = /* @__PURE__ */ new Map([
   [5, 'gowri.SUGAM'],
   [6, 'gowri.SORAM'],
   [7, 'gowri.VISHAM'],
+]);
+
+/** Every FastKind by name. */
+export const FastKind = /* @__PURE__ */ Object.freeze({
+  Upavasa: 'fast_kind.UPAVASA',
+  Ekabhakta: 'fast_kind.EKABHAKTA',
+  Nakta: 'fast_kind.NAKTA',
+  Ayachita: 'fast_kind.AYACHITA',
+  Phalahara: 'fast_kind.PHALAHARA',
+  Kshirahara: 'fast_kind.KSHIRAHARA',
+  Jalahara: 'fast_kind.JALAHARA',
+});
+
+/**
+ * Every FastKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const FastKindById = /* @__PURE__ */ new Map([
+  [0, 'fast_kind.UPAVASA'],
+  [1, 'fast_kind.EKABHAKTA'],
+  [2, 'fast_kind.NAKTA'],
+  [3, 'fast_kind.AYACHITA'],
+  [4, 'fast_kind.PHALAHARA'],
+  [5, 'fast_kind.KSHIRAHARA'],
+  [6, 'fast_kind.JALAHARA'],
 ]);
 
 /** Every Status by name. */

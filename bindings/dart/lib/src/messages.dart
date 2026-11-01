@@ -481,7 +481,6 @@ enum FestivalKey {
   chandrodaya('festival.CHANDRODAYA'),
   sankashtaChaturthi('festival.SANKASHTA_CHATURTHI'),
   karakaChaturthi('festival.KARAKA_CHATURTHI'),
-  ashunyaShayana('festival.ASHUNYA_SHAYANA'),
   meshaSankranti('festival.MESHA_SANKRANTI'),
   vrishabhaSankranti('festival.VRISHABHA_SANKRANTI'),
   mithunaSankranti('festival.MITHUNA_SANKRANTI'),
@@ -744,7 +743,8 @@ enum FestivalKey {
   gandhiJayanti('festival.GANDHI_JAYANTI'),
   goodFriday('festival.GOOD_FRIDAY'),
   holi('festival.HOLI'),
-  faguPurnima('festival.FAGU_PURNIMA');
+  faguPurnima('festival.FAGU_PURNIMA'),
+  ashunyaShayana('festival.ASHUNYA_SHAYANA');
 
   const FestivalKey(this.key);
 

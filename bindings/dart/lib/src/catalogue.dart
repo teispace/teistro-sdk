@@ -324,7 +324,9 @@ enum Kind {
   /// A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051).
   dayMarker(79, 'day_marker'),
   /// The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.
-  gowri(80, 'gowri');
+  gowri(80, 'gowri'),
+  /// How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).
+  fastKind(81, 'fast_kind');
 
   const Kind(this.id, this.key);
 
@@ -4952,6 +4954,57 @@ enum Gowri implements KeyOf<Gowri> {
 
   /// The member with a key, or `null` for one this build does not know.
   static Gowri? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62). Members are the catalogue's ids; the full key id is `(TS_KIND_FAST_KIND << 16) | member`.
+enum FastKind implements KeyOf<FastKind> {
+  /// No meal by day or by night (अहोरात्रभोजनाभावः)
+  upavasa(0, 'UPAVASA'),
+  /// One meal, of one grain, once, at midday (मध्याह्ने एकवारमेकान्नभोजनम्)
+  ekabhakta(1, 'EKABHAKTA'),
+  /// The one meal at night, in the pradosha, after the three ghatis of dusk (रात्रावेव प्रदोषकाले भोजनम्)
+  nakta(2, 'NAKTA'),
+  /// Only the food that comes that day unasked (याचनां विना तद्दिने लब्धस्यान्नस्य भोजनम्)
+  ayachita(3, 'AYACHITA'),
+  /// Fruit only: what one unable to fast keeps instead (फलाहार)
+  phalahara(4, 'PHALAHARA'),
+  /// Milk only: what one unable to fast keeps instead (क्षीरभक्ष)
+  kshirahara(5, 'KSHIRAHARA'),
+  /// Water only: what one unable to fast keeps instead (जलाहार)
+  jalahara(6, 'JALAHARA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const FastKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'fast_kind.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<FastKind> registered(String key) => Registered._('fast_kind.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static FastKind byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => FastKind.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static FastKind? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

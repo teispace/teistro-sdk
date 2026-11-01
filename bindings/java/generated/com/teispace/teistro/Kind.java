@@ -382,7 +382,12 @@ public enum Kind implements Member {
     /**
      * The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.
      */
-    GOWRI(80, "gowri");
+    GOWRI(80, "gowri"),
+
+    /**
+     * How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).
+     */
+    FAST_KIND(81, "fast_kind");
 
     private static final Kind[] MEMBERS = values();
 
