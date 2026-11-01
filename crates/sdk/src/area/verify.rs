@@ -708,6 +708,7 @@ fn judge(
 }
 
 #[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {
     #![allow(clippy::indexing_slicing, reason = "tests fail by panicking")]
 
