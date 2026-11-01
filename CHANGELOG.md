@@ -158,6 +158,19 @@ dossier's text and hash move by that line; a dossier written under a policy also
   `DROPPED` section, so the hash moves with the policy (SR-40). Two new sections,
   `LONGEVITY` and `MARAKAS`, give a policy something to drop (C1103, C1104).
 
+**The Vira Nirvana Samvat and a Jain festival pack (SR-59).**
+**Numbers:** none move. A lunar year gains a field; the pack and the era are new.
+- `teistro_calendar::vira_nirvana`: the Jain era read off the Kartikadi lunar year, VNS 2552 from
+  22 October 2025. Its epoch (470 years before the Vikrama, or Hemachandra's 410) and its new year
+  (Kartika Shukla Pratipada, or the nirvana day) are a `Reading`; `Panchanga::vira_nirvana` answers
+  a day's year, and the catalogue gains the era `VIRA_NIRVANA`.
+- Every lunar year carries `viraNirvana`, the year its Kartika opens, in every binding and every
+  parity runner.
+- The `JAIN` pack: Mahavir Jayanti, the nirvana and the new year, Paryushana and Samvatsari by both
+  Shvetambara reckonings, Das Lakshana, both Ayambil Olis and the monthly parva tithis, each cited
+  and naming its sect and gaccha as a community; a parva tithi is reckoned by Umasvati's rule.
+  21 of 21 days printed for 2025 and 2026 agree (`03-design/vira-nirvana-and-jain-festivals.md`).
+
 **A day in sentences; a polar sankranti answers.**
 **Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or
 `CIVIL_MIDNIGHT` that the default month start refused now answers, and a `NEAREST_EVENT`

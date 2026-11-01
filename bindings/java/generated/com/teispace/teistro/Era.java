@@ -59,6 +59,11 @@ public enum Era implements Catalogued {
      */
     HIJRI(9, "HIJRI"),
 
+    /**
+     * Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada
+     */
+    VIRA_NIRVANA(10, "VIRA_NIRVANA"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

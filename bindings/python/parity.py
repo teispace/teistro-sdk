@@ -3007,6 +3007,7 @@ def main() -> None:
                         str(year.vikrama),
                         str(year.shaka),
                         str(year.kali),
+                        str(year.vira_nirvana),
                         number(year.opened),
                         number(year.began),
                         number(year.ended),

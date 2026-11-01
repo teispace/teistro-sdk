@@ -4000,6 +4000,7 @@ export type Era =
   | 'era.COMMON_ERA'
   | 'era.BEFORE_COMMON_ERA'
   | 'era.HIJRI'
+  | 'era.VIRA_NIRVANA'
   | 'unknown';
 
 /** Every Era by name; the values are the strings the union accepts. */
@@ -4044,6 +4045,10 @@ export declare const Era: {
    * Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0
    */
   readonly Hijri: 'era.HIJRI';
+  /**
+   * Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada
+   */
+  readonly ViraNirvana: 'era.VIRA_NIRVANA';
 };
 
 /**

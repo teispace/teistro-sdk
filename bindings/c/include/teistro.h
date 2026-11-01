@@ -3121,6 +3121,10 @@ typedef enum ts_era {
      * Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0
      */
     TS_ERA_HIJRI = 9,
+    /**
+     * Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada
+     */
+    TS_ERA_VIRA_NIRVANA = 10,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_ERA_UNKNOWN = -1,
 } ts_era;

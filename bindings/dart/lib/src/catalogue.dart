@@ -2913,6 +2913,8 @@ enum Era implements KeyOf<Era> {
   beforeCommonEra(8, 'BEFORE_COMMON_ERA'),
   /// Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0
   hijri(9, 'HIJRI'),
+  /// Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada
+  viraNirvana(10, 'VIRA_NIRVANA'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

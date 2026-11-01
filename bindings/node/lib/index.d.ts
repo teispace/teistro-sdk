@@ -6102,7 +6102,7 @@ export interface AnniversaryDayRule {
  * the panchanga prints, each rule fitted to the committee's editions and
  * citing its page (§10).
  */
-export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL';
+export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN';
 
 /**
  * An observance kept on a date of a calendar
@@ -6602,6 +6602,8 @@ export interface LunarYear {
   readonly shaka: number;
   /** The Kali year elapsed: the Shaka year plus 3179. */
   readonly kali: number;
+  /** The Vira Nirvana year that opens at this year's Kartika Shukla Pratipada: the Vikrama year plus 470. */
+  readonly viraNirvana: number;
   /** The new moon that opened the year's first Chaitra, a UTC Julian day. */
   readonly opened: number;
   /** The sunrise of Chaitra Shukla Pratipada, where the name is read, a UTC Julian day. */

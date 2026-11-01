@@ -71,6 +71,11 @@ fn the_years_nepal_named_are_named() {
             vikrama + 3044,
             "the Kali year elapsed, VS {vikrama}"
         );
+        assert_eq!(
+            year.vira_nirvana,
+            vikrama + 470,
+            "the Vira Nirvana year its Kartika opens, VS {vikrama}"
+        );
         assert_eq!(year.samvatsara, name, "VS {vikrama}");
         assert_eq!(year.count, SamvatsaraCount::Barhaspatya);
     }

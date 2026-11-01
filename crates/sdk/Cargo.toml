@@ -247,6 +247,10 @@ name = "year_rulers"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "jain"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "sankalpa"
 required-features = ["builtin-ephemeris"]
 

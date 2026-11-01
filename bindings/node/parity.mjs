@@ -2031,6 +2031,7 @@ for (const [name, rules, published, hijriOffset] of [
         year.vikrama,
         year.shaka,
         year.kali,
+        year.viraNirvana,
         number(year.opened),
         number(year.began),
         number(year.ended),

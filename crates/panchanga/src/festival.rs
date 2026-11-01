@@ -35,6 +35,7 @@ mod dated;
 mod ekadashi;
 mod following;
 mod india_central;
+mod jain;
 mod mahalaya;
 mod meta;
 mod nepal_panchanga;

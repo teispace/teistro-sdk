@@ -2594,6 +2594,7 @@ public final class BindingTest {
                 same(Samvatsara.SIDDHARTHI, value.year().samvatsara(), "the year's name");
                 same(2082, value.year().vikrama(), "the Vikrama year");
                 same(5126, value.year().kali(), "the Kali year");
+                same(2552, value.year().viraNirvana(), "the Vira Nirvana year");
                 same(Masa.MAGHA, value.month().month(), "the purnimanta month");
                 same(Masa.PAUSHA, value.month().amanta(), "the amanta month");
                 same(Ritu.SHISHIRA, value.ritu(), "the season");
@@ -2641,6 +2642,15 @@ public final class BindingTest {
                     }
                 }
                 check(fasted, "a vrata says the fast its text gives");
+                // The Jain pack names each rule's sect (SR-59).
+                boolean digambara = false;
+                for (Object row : (List<?>) sky.almanac().festivalPack("JAIN").get("rules")) {
+                    Map<?, ?> rule = (Map<?, ?>) row;
+                    if ("DASA_LAKSHANA".equals(rule.get("key"))) {
+                        digambara = List.of("DIGAMBARA").equals(((Map<?, ?>) rule.get("meta")).get("communities"));
+                    }
+                }
+                check(digambara, "Das Lakshana is the Digambaras'");
                 TeistroException unknown = refusal(() -> sky.almanac().festivalPack("NO_SUCH_PACK"));
                 check("pack.pack".equals(unknown.field()), "the refusal names the field");
             }

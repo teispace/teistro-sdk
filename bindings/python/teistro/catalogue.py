@@ -2377,6 +2377,9 @@ class Era(Catalogued):
     HIJRI = 9
     """Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0"""
 
+    VIRA_NIRVANA = 10
+    """Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -6803,6 +6806,7 @@ _KEYS: dict[str, dict[int, str]] = {
         7: "COMMON_ERA",
         8: "BEFORE_COMMON_ERA",
         9: "HIJRI",
+        10: "VIRA_NIRVANA",
         -1: "UNKNOWN",
     },
     "BodyClass": {
