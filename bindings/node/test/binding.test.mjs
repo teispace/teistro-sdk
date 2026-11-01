@@ -835,8 +835,9 @@ test('every catalogue enum has a complete id table', () => {
   // arithmetic's `TsOverflow`, three; 1463 since the digest's `TsDigestSpan`,
   // eighteen; 1478 since the day's markers' `TsDayMarker`, three, and the
   // Gowri panchangam's `TsGowri`, eight, each with its member of `TsKind`,
-  // and `TsMuhurtaYoga`'s Ravi and Guru Pushya.
-  assert.equal(entries, 1478, 'every member of every enum is in a table');
+  // and `TsMuhurtaYoga`'s Ravi and Guru Pushya; 1486 since a vrata's
+  // `TsFastKind`, seven, with its member of `TsKind`.
+  assert.equal(entries, 1486, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -6485,6 +6486,13 @@ test('a festival pack lists its rules with their values', () => {
   assert.equal(row('EID_AL_FITR').subjectTo, 'MOON_SIGHTING');
   assert.equal(row('HOLI').meta.kind, 'GAZETTED');
   assert.ok(row('JANMASHTAMI').source.includes('C851'));
+  // The fast a text gives (SR-62): Shivaratri's, and the lighter one beside
+  // Janmashtami's for one unable.
+  const text = ctx.almanac.festivalPack('DHARMASINDHU').rules;
+  const [shivaratri] = text.find((rule) => rule.key === 'SHIVARATRI').meta.fast;
+  assert.deepEqual([shivaratri.kind, shivaratri.start, shivaratri.end], ['UPAVASA', 'AFTER_EKABHAKTA', 'PARANA']);
+  const janmashtami = text.find((rule) => rule.key === 'JANMASHTAMI').meta.fast;
+  assert.deepEqual(janmashtami.map((fast) => [fast.kind, fast.ifUnable]), [['UPAVASA', undefined], ['PHALAHARA', true]]);
   assert.throws(() => ctx.almanac.festivalPack(null), TypeError);
   assert.throws(() => ctx.almanac.festivalPack('NO_SUCH_PACK'), (error) => error.field === 'pack.pack');
   ctx.dispose();

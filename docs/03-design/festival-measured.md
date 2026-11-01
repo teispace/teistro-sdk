@@ -76,6 +76,7 @@ one a year did reach.
 | UPAKARMA_SAMAVEDI | EarlierOnly 5, LaterOnly 4, UnequalParts 1 | otherwise: 5, guard 0: 5 |
 | SANKASHTA_CHATURTHI | Both 2, EarlierOnly 57, LaterOnly 23, Neither 9 | otherwise: 32, guard 0: 57, guard 1: 2 |
 | KARAKA_CHATURTHI | EarlierOnly 2, LaterOnly 7, Neither 1 | otherwise: 8, guard 0: 2 |
+| ASHUNYA_SHAYANA | EarlierOnly 2, LaterOnly 2 | otherwise: 2, guard 0: 2 |
 | MAHA_NAVAMI | EarlierOnly 5, LaterOnly 4, UnequalParts 1 | otherwise: 6, guard 0: 4 |
 | DEVI_VISARJAN | LaterOnly 5, UnequalParts 5 | otherwise: 9, guard 0: 1 |
 

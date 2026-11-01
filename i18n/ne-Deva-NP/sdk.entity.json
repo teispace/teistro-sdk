@@ -4379,6 +4379,11 @@
     "FAGU_PURNIMA": {
       "name": "फागु पूर्णिमा",
       "prose": "फागु पूर्णिमा"
+    },
+    "ASHUNYA_SHAYANA": {
+      "name": "अशून्यशयन व्रत",
+      "prose": "अशून्यशयन व्रत",
+      "iast": "Aśūnyaśayanavrata"
     }
   },
   "agni_vasa": {
@@ -4575,6 +4580,36 @@
       "name": "विष",
       "prose": "विष",
       "iast": "Viṣam"
+    }
+  },
+  "fast_kind": {
+    "UPAVASA": {
+      "name": "उपवास",
+      "prose": "उपवास"
+    },
+    "EKABHAKTA": {
+      "name": "एकभक्त",
+      "prose": "एकभक्त"
+    },
+    "NAKTA": {
+      "name": "नक्त",
+      "prose": "नक्त"
+    },
+    "AYACHITA": {
+      "name": "अयाचित",
+      "prose": "अयाचित"
+    },
+    "PHALAHARA": {
+      "name": "फलाहार",
+      "prose": "फलाहार"
+    },
+    "KSHIRAHARA": {
+      "name": "क्षीराहार",
+      "prose": "क्षीराहार"
+    },
+    "JALAHARA": {
+      "name": "जलाहार",
+      "prose": "जलाहार"
     }
   }
 }

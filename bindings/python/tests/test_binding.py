@@ -981,6 +981,12 @@ class AnEngine(WithLibrary):
             rows = {row["key"]: row for row in listing["rules"]}
             self.assertEqual(rows["EID_AL_FITR"]["subjectTo"], "MOON_SIGHTING")
             self.assertEqual(rows["HOLI"]["meta"]["kind"], "GAZETTED")
+            # The fast a text gives (SR-62): Janmashtami's, and the lighter
+            # one beside it for one unable.
+            text = {row["key"]: row for row in ctx.almanac.festival_pack("DHARMASINDHU")["rules"]}
+            fasts = text["JANMASHTAMI"]["meta"]["fast"]
+            self.assertEqual([fast["kind"] for fast in fasts], ["UPAVASA", "PHALAHARA"])
+            self.assertTrue(fasts[1]["ifUnable"])
             with self.assertRaises(TeistroError) as unread:
                 ctx.almanac.festival_pack("NO_SUCH_PACK")
             self.assertEqual(unread.exception.field, "pack.pack")
@@ -4870,6 +4876,14 @@ class AnEngine(WithLibrary):
                     "BALI_PRATIPADA",
                 ],
             )
+            # A rite at moonrise carries the moonrise and its place (SR-60);
+            # a rite of the daylight carries none.
+            sankashta = answer.observances[3]
+            assert sankashta.moonrise is not None
+            self.assertEqual(sankashta.moonrise.place.latitude_deg, 27.7172)
+            risen = sankashta.extents[0 if sankashta.choice == "EARLIER" else 1]
+            self.assertEqual(sankashta.moonrise.at, risen.window.from_jd)
+            self.assertIsNone(answer.observances[1].moonrise)
             dashami = answer.observances[1]
             self.assertEqual((dashami.day.calendar, dashami.day.month), (Calendar.GREGORIAN, 10))
             self.assertEqual(dashami.extents[0].day.calendar, Calendar.GREGORIAN)

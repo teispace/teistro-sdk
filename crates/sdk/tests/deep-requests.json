@@ -317,6 +317,15 @@
                   "communities": [
                     "x"
                   ],
+                  "fast": [
+                    {
+                      "end": "NIGHT",
+                      "ifUnable": true,
+                      "kind": "fast_kind.EKABHAKTA",
+                      "source": "x",
+                      "start": "MORNING"
+                    }
+                  ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
                   "optional": true,
                   "regions": [
@@ -386,6 +395,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -463,6 +481,15 @@
               "communities": [
                 "x"
               ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
+              ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
               "regions": [
@@ -493,6 +520,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -541,6 +577,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -879,6 +924,15 @@
                   "communities": [
                     "x"
                   ],
+                  "fast": [
+                    {
+                      "end": "NIGHT",
+                      "ifUnable": true,
+                      "kind": "fast_kind.EKABHAKTA",
+                      "source": "x",
+                      "start": "MORNING"
+                    }
+                  ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
                   "optional": true,
                   "regions": [
@@ -948,6 +1002,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -1025,6 +1088,15 @@
               "communities": [
                 "x"
               ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
+              ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
               "regions": [
@@ -1055,6 +1127,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -1103,6 +1184,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -1222,6 +1312,15 @@
                   "communities": [
                     "x"
                   ],
+                  "fast": [
+                    {
+                      "end": "NIGHT",
+                      "ifUnable": true,
+                      "kind": "fast_kind.EKABHAKTA",
+                      "source": "x",
+                      "start": "MORNING"
+                    }
+                  ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
                   "optional": true,
                   "regions": [
@@ -1291,6 +1390,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -1368,6 +1476,15 @@
               "communities": [
                 "x"
               ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
+              ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
               "regions": [
@@ -1398,6 +1515,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -1446,6 +1572,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -1741,6 +1876,15 @@
                   "communities": [
                     "x"
                   ],
+                  "fast": [
+                    {
+                      "end": "NIGHT",
+                      "ifUnable": true,
+                      "kind": "fast_kind.EKABHAKTA",
+                      "source": "x",
+                      "start": "MORNING"
+                    }
+                  ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
                   "optional": true,
                   "regions": [
@@ -1810,6 +1954,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -1887,6 +2040,15 @@
               "communities": [
                 "x"
               ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
+              ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
               "regions": [
@@ -1917,6 +2079,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -1965,6 +2136,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -2070,6 +2250,15 @@
                   "communities": [
                     "x"
                   ],
+                  "fast": [
+                    {
+                      "end": "NIGHT",
+                      "ifUnable": true,
+                      "kind": "fast_kind.EKABHAKTA",
+                      "source": "x",
+                      "start": "MORNING"
+                    }
+                  ],
                   "kind": "festival_kind.RELIGIOUS_CULTURAL",
                   "optional": true,
                   "regions": [
@@ -2139,6 +2328,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -2216,6 +2414,15 @@
               "communities": [
                 "x"
               ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
+              ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
               "regions": [
@@ -2246,6 +2453,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,
@@ -2294,6 +2510,15 @@
             "meta": {
               "communities": [
                 "x"
+              ],
+              "fast": [
+                {
+                  "end": "NIGHT",
+                  "ifUnable": true,
+                  "kind": "fast_kind.EKABHAKTA",
+                  "source": "x",
+                  "start": "MORNING"
+                }
               ],
               "kind": "festival_kind.RELIGIOUS_CULTURAL",
               "optional": true,

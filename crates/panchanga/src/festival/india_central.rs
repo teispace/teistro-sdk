@@ -109,7 +109,8 @@ fn gregorian(year: i32, (month, day): (u8, u8)) -> CalendarDay {
 }
 
 /// The values of a rule of the list: `tradition` as the rule's own text
-/// or the notice's name says, in India.
+/// or the notice's name says, in India. The list names no fast; a rule
+/// taken from a text gains that text's with [`FestivalMeta::with_fast`].
 fn listed(tradition: Option<Tradition>, optional: bool) -> FestivalMeta {
     FestivalMeta {
         kind: Some(FestivalKind::Gazetted),
@@ -117,6 +118,7 @@ fn listed(tradition: Option<Tradition>, optional: bool) -> FestivalMeta {
         communities: Vec::new(),
         regions: vec!["IN".to_owned()],
         optional,
+        fast: Vec::new(),
     }
 }
 
@@ -150,7 +152,7 @@ impl FestivalRule {
         .into_iter()
         .filter_map(|(key, optional)| {
             of(key, &text).map(|rule| FestivalRule {
-                meta: listed(hindu, optional),
+                meta: listed(hindu, optional).with_fast(key),
                 ..rule
             })
         });
@@ -173,7 +175,7 @@ impl FestivalRule {
                     "fitted to the notices' Janmashtami, which they mark Vaishnava; no Vaishnava text in hand states it (C175, C851). {}",
                     udaya.source
                 ),
-                meta: listed(hindu, true),
+                meta: listed(hindu, true).with_fast("JANMASHTAMI"),
                 ..udaya
             }
         });

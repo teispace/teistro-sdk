@@ -85,7 +85,8 @@ pub struct PackRow {
     #[serde(default, skip_serializing_if = "FestivalMeta::is_empty")]
     pub meta: FestivalMeta,
     /// The fields of `meta` no source gives, by name: `kind`, `tradition`,
-    /// `communities`, `regions`.
+    /// `communities`, `regions`, `fast`, and `fast.kind`, `fast.start` or
+    /// `fast.end` when no reading of the fast gives it.
     pub unsourced: Vec<String>,
     /// For a published row, what may move its days.
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -199,7 +200,7 @@ impl AlmanacArea<'_> {
     /// let listed = sdk.almanac().festival_pack(&PackRequest { pack: FestivalPack::NepalPanchanga });
     /// let row = listed.rules.iter().find(|row| row.key == "GAI_JATRA").ok_or("listed")?;
     /// assert_eq!(row.meta.communities, ["NEWAR"]);
-    /// assert_eq!(row.unsourced, ["tradition"]);
+    /// assert_eq!(row.unsourced, ["tradition", "fast"]);
     /// # Ok::<(), &str>(())
     /// ```
     #[must_use]

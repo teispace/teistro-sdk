@@ -20,15 +20,15 @@ use teistro_calendar::hijri::HijriOffset;
 use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Era, Masa, Nakshatra, Paksha, Rashi, Tithi, Vara};
 use teistro_core::interval::Interval;
-use teistro_core::quantity::JulianDay;
+use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_panchanga::festival::{
     AddedDay, AnniversaryDay, AnniversaryKind, Case, Choice, Dated, DatedObservance, DatedRule,
     DayClause, DayPart, DayRule, Decided, Edge, EkadashiRule, FestivalDay, FestivalRule,
-    FollowingRule, Guard, Half, InAdhika, MonthClause, MoonArcs, Moonrise, NakshatraBar,
-    Observances, Occurs, OriginFound, ParanaBarred, Predicate, Published, PublishedStatus, Sait,
-    SaitCandidate, SunEntry, TithiShape, Unjudged, Unplaced, VrataEdge, VrataParana,
-    VrataParanaTime, Which, Window, dated, ekadashis, following, observances, yugma,
+    FollowingRule, Guard, Half, InAdhika, MonthClause, MoonArcs, Moonrise, MoonriseAt,
+    NakshatraBar, Observances, Occurs, OriginFound, ParanaBarred, Predicate, Published,
+    PublishedStatus, Sait, SaitCandidate, SunEntry, TithiShape, Unjudged, Unplaced, VrataEdge,
+    VrataParana, VrataParanaTime, Which, Window, dated, ekadashis, following, observances, yugma,
 };
 use teistro_panchanga::month;
 
@@ -632,7 +632,7 @@ fn one_of(
 #[test]
 fn nepal_keeps_the_text_by_night_and_the_sunrise_tithi_by_day() {
     let (mut text, nepal) = (FestivalRule::dharmasindhu(), FestivalRule::nepal());
-    // The text's rules less the two chaturthis at moonrise, which the
+    // The text's rules less the three vratas at moonrise, which the
     // committee does not print, and the Navaratri's close, which
     // `NEPAL_PANCHANGA` keeps by its own print, then the monthly full-moon
     // fast no text states.
@@ -641,7 +641,10 @@ fn nepal_keeps_the_text_by_night_and_the_sunrise_tithi_by_day() {
         .filter(|rule| rule.at == Window::Moonrise)
         .map(|rule| rule.key.clone())
         .collect();
-    assert_eq!(at_moonrise, ["SANKASHTA_CHATURTHI", "KARAKA_CHATURTHI"]);
+    assert_eq!(
+        at_moonrise,
+        ["SANKASHTA_CHATURTHI", "KARAKA_CHATURTHI", "ASHUNYA_SHAYANA"]
+    );
     text.retain(|rule| {
         rule.at != Window::Moonrise
             && !["MAHA_NAVAMI", "DEVI_VISARJAN"].contains(&rule.key.as_str())
@@ -1666,6 +1669,74 @@ fn a_rite_at_moonrise_reads_each_days_first_moonrise() {
     }
 }
 
+/// The place the synthetic moonrises are said to be found at.
+const DELHI: Place = Place::new(
+    Latitude::literal(28.6139),
+    Longitude::literal(77.209),
+    Altitude::literal(216.0),
+);
+
+/// *Dharmasindhu* p. 44's Ashunya-shayana vrata: Ashadha's dark 2nd at
+/// moonrise, the earlier day only when its moonrise alone holds it, the
+/// later when both or neither do; and the moonrise it is broken at, with
+/// its place, on the answer.
+#[test]
+fn the_ashunya_shayana_takes_the_later_day_unless_the_earlier_moonrise_alone_holds_it() {
+    let mut ashunya = FestivalRule::dharmasindhu()
+        .into_iter()
+        .find(|rule| rule.key == "ASHUNYA_SHAYANA")
+        .unwrap();
+    assert!(ashunya.reads_moonrise());
+    let tithis = [
+        (Tithi::KrishnaPratipada, ghati(1, 8.0)),
+        (Tithi::KrishnaDvitiya, ghati(2, 40.0)),
+        (Tithi::KrishnaTritiya, ghati(5, 0.0)),
+    ];
+    let mut days = days_of(&tithis, &[], Masa::Ashadha, MonthKind::Nija);
+    let rise = |day: usize, at: f64| {
+        Moonrise::Rose(MoonriseAt {
+            at: JulianDay::literal(ghati(day, at)),
+            place: DELHI,
+        })
+    };
+    let kept = |rule: &FestivalRule, days: &[FestivalDay]| {
+        let answer = observances(std::slice::from_ref(rule), days).unwrap();
+        let kept = answer.observances.first().unwrap().clone();
+        (kept.day.day - 1, kept.case, kept.moonrise)
+    };
+    // Both, neither and the later alone: the later (दिनद्वये सत्त्वेऽसत्त्वे वा परैव).
+    days[1].moonrise = rise(1, 50.0);
+    days[2].moonrise = rise(2, 30.0);
+    assert_eq!(kept(&ashunya, &days).0, 2);
+    days[1].moonrise = rise(1, 5.0);
+    assert_eq!(kept(&ashunya, &days).0, 2);
+    days[2].moonrise = rise(2, 45.0);
+    assert_eq!(kept(&ashunya, &days).0, 2);
+    // The earlier alone: the earlier, with that day's moonrise and place.
+    days[1].moonrise = rise(1, 50.0);
+    let (day, case, moonrise) = kept(&ashunya, &days);
+    assert_eq!((day, case), (1, Case::EarlierOnly));
+    assert_eq!(
+        moonrise,
+        Some(MoonriseAt {
+            at: JulianDay::literal(ghati(1, 50.0)),
+            place: DELHI
+        })
+    );
+    // A rule kept at sunrise answers no moonrise, unless its fast is
+    // broken at one; then the day the fast falls on carries it.
+    ashunya.at = Window::Sunrise;
+    assert_eq!(kept(&ashunya, &days).2, None);
+    ashunya.meta = teistro_panchanga::festival::FestivalMeta::of_text("ASHUNYA_SHAYANA");
+    assert!(ashunya.breaks_at_moonrise());
+    // The later day's sunrise alone holds the 2nd.
+    let (day, _, moonrise) = kept(&ashunya, &days);
+    assert_eq!(
+        (day, moonrise.map(|seen| seen.at)),
+        (2, Some(JulianDay::literal(ghati(2, 45.0))))
+    );
+}
+
 /// [`a_rite_at_moonrise_reads_each_days_first_moonrise`] for one rule.
 fn at_moonrise(key: &str, month: Masa) {
     let sankashta = FestivalRule::dharmasindhu()
@@ -1684,7 +1755,12 @@ fn at_moonrise(key: &str, month: Masa) {
     // Unsearched, the rule is refused, naming the remedy.
     let why = observances(std::slice::from_ref(&sankashta), &days).unwrap_err();
     assert!(why.to_string().contains("Almanac::moonrises"), "{why}");
-    let rise = |day: usize, at: f64| Moonrise::Rose(JulianDay::literal(ghati(day, at)));
+    let rise = |day: usize, at: f64| {
+        Moonrise::Rose(MoonriseAt {
+            at: JulianDay::literal(ghati(day, at)),
+            place: DELHI,
+        })
+    };
     let kept = |days: &[FestivalDay]| {
         let answer = observances(std::slice::from_ref(&sankashta), days).unwrap();
         assert!(answer.unjudged.is_empty(), "{:?}", answer.unjudged);

@@ -22,7 +22,7 @@ use teistro_calendar::lunisolar::MonthKind;
 use teistro_core::catalogue::{Kind, Masa, Nakshatra, Paksha, Tithi, Vara, write_in_full};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
-use teistro_core::quantity::{JulianDay, Utc};
+use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::settings::LunarMonth as Convention;
 use teistro_time::local_day::{DayState, LocalDay};
 
@@ -55,7 +55,7 @@ pub use ekadashi::{
     ekadashis,
 };
 pub use following::{FollowingRule, following};
-pub use meta::{FestivalMeta, MetaFilter};
+pub use meta::{FastEnd, FastStart, FestivalMeta, MetaFilter, VrataFast};
 pub use next::{
     FIRST_WINDOW_DAYS, KindRules, LIMIT_DAYS, MOST_LIMIT_DAYS, NextKind, limit_days, windows,
 };
@@ -1422,8 +1422,9 @@ impl FestivalRule {
             .collect()
     }
 
-    /// Whether the rule reads a moonrise, at its rite or in a guard: the
-    /// days it is judged over must have theirs searched.
+    /// Whether the rule reads a moonrise, at its rite, in a guard or as
+    /// the end of its fast ([`FastEnd::Moonrise`]): the days it is judged
+    /// over must have theirs searched.
     ///
     /// ```
     /// use teistro_panchanga::festival::FestivalRule;
@@ -1434,6 +1435,12 @@ impl FestivalRule {
     /// ```
     #[must_use]
     pub fn reads_moonrise(&self) -> bool {
+        self.judged_at_moonrise() || self.breaks_at_moonrise()
+    }
+
+    /// Whether the rule's day is decided by a moonrise, at its rite or in
+    /// a guard: a day the Moon does not rise on leaves it unjudged.
+    fn judged_at_moonrise(&self) -> bool {
         self.at == Window::Moonrise
             || self
                 .decide
@@ -1451,6 +1458,27 @@ impl FestivalRule {
                         }
                     )
                 })
+    }
+
+    /// Whether the rule's fast is broken at moonrise
+    /// ([`FastEnd::Moonrise`]), so its answer carries the day's.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::{FestivalMeta, FestivalRule};
+    ///
+    /// let rules = FestivalRule::dharmasindhu();
+    /// let mut ashunya = rules.into_iter().find(|rule| rule.key == "ASHUNYA_SHAYANA").ok_or("shipped")?;
+    /// assert!(!ashunya.breaks_at_moonrise());
+    /// ashunya.meta = FestivalMeta::of_text(&ashunya.key);
+    /// assert!(ashunya.breaks_at_moonrise());
+    /// # Ok::<(), &str>(())
+    /// ```
+    #[must_use]
+    pub fn breaks_at_moonrise(&self) -> bool {
+        self.meta
+            .fast
+            .iter()
+            .any(|fast| fast.end == Some(FastEnd::Moonrise))
     }
 
     /// Refuses a rule that could not be judged: an empty key, a ghati
@@ -2023,10 +2051,33 @@ pub enum Moonrise {
     /// Not searched: no rule read it. A rule reading it over such a day is
     /// refused rather than read as a day the Moon did not rise.
     Unsearched,
-    /// The Moon rose at this instant.
-    Rose(JulianDay<Utc>),
+    /// The Moon rose then, there.
+    Rose(MoonriseAt),
     /// The Moon did not rise between the two sunrises.
     NoRise,
+}
+
+/// A moonrise and the place it was found for (SR-60): what an observance
+/// kept or broken at moonrise is answered with, since the instant moves
+/// with the place.
+///
+/// ```
+/// use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+/// use teistro_panchanga::festival::MoonriseAt;
+///
+/// let delhi = Place::new(Latitude::literal(28.6139), Longitude::literal(77.209), Altitude::literal(216.0));
+/// let seen = MoonriseAt { at: JulianDay::literal(2_460_752.16), place: delhi };
+/// let json = serde_json::to_value(seen)?;
+/// assert_eq!(json["place"]["latitude"], 28.6139);
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct MoonriseAt {
+    /// The instant the Moon rose.
+    pub at: JulianDay<Utc>,
+    /// Where: the place the days were reckoned at.
+    pub place: Place,
 }
 
 impl From<&Panchanga> for FestivalDay {
@@ -2182,7 +2233,7 @@ impl FestivalDay {
                 Ok(Interval::literal(first.from.get(), last.to.get()))
             }
             Window::Moonrise => match self.moonrise {
-                Moonrise::Rose(at) => Ok(Interval::literal(at.get(), at.get())),
+                Moonrise::Rose(seen) => Ok(Interval::literal(seen.at.get(), seen.at.get())),
                 Moonrise::NoRise => Err(Error::internal(format!(
                     "{} has no moonrise, which judging leaves unjudged",
                     self.date
@@ -2504,6 +2555,10 @@ pub struct Observance {
     /// order (§8.7); left out when the rule has none.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub parana: Vec<VrataParanaTime>,
+    /// The day's moonrise and its place, for a rule whose rite is at
+    /// moonrise or whose fast is broken then (SR-60); left out otherwise.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub moonrise: Option<MoonriseAt>,
     /// What a published entry did to it; absent when none touched it,
     /// so the day is the rule's (`03-design/published-overrides.md`).
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -3396,6 +3451,17 @@ fn case_of(earlier: f64, later: f64) -> Case {
     }
 }
 
+/// The kept day's moonrise, for a rule kept at moonrise or whose fast is
+/// broken then (SR-60); none for any other rule.
+fn moonrise_kept(rule: &FestivalRule, kept: &FestivalDay) -> Option<MoonriseAt> {
+    match kept.moonrise {
+        Moonrise::Rose(seen) if rule.at == Window::Moonrise || rule.breaks_at_moonrise() => {
+            Some(seen)
+        }
+        Moonrise::Rose(_) | Moonrise::Unsearched | Moonrise::NoRise => None,
+    }
+}
+
 /// The observance, none when the rule chose [`Choice::None`], or why the
 /// occurrence could not be judged.
 type Judged = Result<Option<Observance>, String>;
@@ -3418,7 +3484,7 @@ fn judge(
             earlier.date, later.date
         )));
     }
-    if rule.reads_moonrise()
+    if rule.judged_at_moonrise()
         && let Some(day) = [earlier, later]
             .into_iter()
             .find(|day| day.moonrise == Moonrise::NoRise)
@@ -3498,6 +3564,7 @@ fn judge(
         choice,
         margin_seconds,
         parana,
+        moonrise: moonrise_kept(rule, kept),
         published: None,
         sait: None,
     })))
@@ -3773,8 +3840,8 @@ impl FestivalRule {
     /// The rules *Dharmasindhu* states with a table this evaluator reads,
     /// each citing its page in the 1888 Nirnaya-sagara edition: the four
     /// of `festival-rules.md` §1, then the seven Nepal's panchanga prints
-    /// (§9), then three schools' upakarma (§9.5, §9.7), then the two
-    /// chaturthis kept at moonrise (`festival-rule-language.md` §3.1),
+    /// (§9), then three schools' upakarma (§9.5, §9.7), then the three
+    /// vratas kept at moonrise (`festival-rule-language.md` §3.1),
     /// then the Navaratri's Mahanavami and visarjana (§8.7).
     ///
     /// ```
@@ -3850,8 +3917,8 @@ impl FestivalRule {
         ]
     }
 
-    /// The text's rules Nepal's national panchanga keeps: all but the two
-    /// chaturthis at moonrise, which it does not print.
+    /// The text's rules Nepal's national panchanga keeps: all but the three
+    /// vratas at moonrise, which it does not print.
     fn printed_in_nepal() -> Vec<FestivalRule> {
         let mut rules = FestivalRule::first_four();
         rules.extend(FestivalRule::nepal_four());
@@ -3864,6 +3931,9 @@ impl FestivalRule {
     /// chaturthi, Ashvina's (*Dharmasindhu* pp. 9, 76): the tithi at
     /// moonrise; the day whose moonrise alone holds it, the earlier,
     /// joined to the 3rd, when both do, and the later when neither does.
+    /// Then the Ashunya-shayana vrata, Ashadha's dark 2nd (p. 44), at
+    /// moonrise too, but the later day when both or neither hold it, and
+    /// broken at moonrise (`festival-rule-language.md` §3.1).
     fn at_moonrise() -> Vec<FestivalRule> {
         let rule = |key: &str, source: &str, month, in_adhika| FestivalRule {
             key: key.to_owned(),
@@ -3894,6 +3964,19 @@ impl FestivalRule {
                 Some(Masa::Ashwina),
                 InAdhika::Nija,
             ),
+            FestivalRule {
+                key: "ASHUNYA_SHAYANA".to_owned(),
+                source: "Dharmasindhu p. 44: Ashadha's dark 2nd, the tithi at moonrise since the puja is then (चन्द्रोदयव्यापिनी तिथिर्ग्राह्या चन्द्रोदये पूजायुक्तेः); the later day when both days hold it or neither does (दिनद्वये सत्त्वेऽसत्त्वे वा परैव); Nirnayasindhu p. 94, after the Nirnayamrita, the same; the vow returns on the next three months' dark 2nds, which are not rules here (C1082)".to_owned(),
+                month: Some(Masa::Ashadha),
+                convention: Convention::Amanta,
+                occurs: Tithi::KrishnaDvitiya.into(),
+                in_adhika: InAdhika::Nija,
+                at: Window::Moonrise,
+                decide: vec![Guard::new([case(Case::EarlierOnly)], Choice::Earlier)],
+                otherwise: Choice::Later,
+                parana: Vec::new(),
+                meta: FestivalMeta::default(),
+            },
         ]
     }
 

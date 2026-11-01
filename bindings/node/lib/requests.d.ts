@@ -6910,6 +6910,10 @@ export interface FestivalMeta {
    */
   readonly communities?: readonly string[];
   /**
+   * The fast kept on its day, one reading for each way a text keeps it, in the text's order (SR-62); empty when no source in hand says, which does not say there is none.
+   */
+  readonly fast?: readonly VrataFast[];
+  /**
    * Its kind; unset when no source classes it.
    */
   readonly kind?: Member<catalogue.FestivalKind> | null;
@@ -7915,6 +7919,32 @@ export type LifeClass = 'balarishta' | 'yogarishta' | 'short' | 'medium' | 'long
 export type SubDegree = 'POORNA' | 'ISHRAFA' | 'NONE';
 
 /**
+ * One way a text keeps a vrata's fast (`03-design/festival-metadata.md` §6): what is eaten, from when, and when the fast is broken, each left unset when the clause does not say.
+ */
+export interface VrataFast {
+  /**
+   * When it is broken; unset when the clause does not say.
+   */
+  readonly end?: FastEnd | null;
+  /**
+   * Whether the text allows it only to one unable to keep the reading before it.
+   */
+  readonly ifUnable?: boolean;
+  /**
+   * How it is kept; unset when the clause names no kind.
+   */
+  readonly kind?: Member<catalogue.FastKind> | null;
+  /**
+   * Where it is stated.
+   */
+  readonly source: string;
+  /**
+   * When it begins; unset when the clause does not say.
+   */
+  readonly start?: FastStart | null;
+}
+
+/**
  * Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).
  *
  * `EARLIEST`: The first.
@@ -8814,6 +8844,23 @@ export type OfficeOrder = 'GLOSS' | 'HIGHEST' | 'LOWEST';
  * `NAVAMSHA_ARC`: The one navāṁśa-arc seven on from the Sun's own, 20° to 23°20′ past the start of the Sun's.
  */
 export type SettingPart = 'NAVAMSHA_SIGN' | 'NAVAMSHA_ARC';
+
+/**
+ * When a vrata's fast is broken: the parana window as a catalogue says it, whose instants an answer gives.
+ *
+ * `PARANA`: On a later day, at the parana (*Dharmasindhu* p. 7: the next day, at the tithi's end): an answer's `parana`, under the readings the rule carries; a rule that carries none leaves it unreckoned.
+ * `NIGHT`: The same night, at the one meal a nakta allows: in the pradosha, after the three ghatis of dusk (*Dharmasindhu* pp. 6–7).
+ * `MOONRISE`: The same night, at moonrise, after the arghya to the Moon (*Dharmasindhu* p. 44): an answer's `moonrise`.
+ */
+export type FastEnd = 'PARANA' | 'NIGHT' | 'MOONRISE';
+
+/**
+ * When a vrata's fast begins.
+ *
+ * `AFTER_EKABHAKTA`: After the one meal at midday of the day before, an ekabhakta (*Dharmasindhu* p. 6): the Ekadashi's 10th (pp. 17–18), Rama Navami's 8th (p. 33), Shivaratri's 13th (p. 90).
+ * `MORNING`: On the fast day's morning, the vow taken after its morning rites (प्रातः कृतनित्यक्रियः, Janmashtami, p. 52).
+ */
+export type FastStart = 'AFTER_EKABHAKTA' | 'MORNING';
 
 /**
  * Which rising sign a [`SaitRising`] reads.

@@ -1,0 +1,54 @@
+kind: fast_kind
+number: 81
+version: 1
+doc: "How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62)."
+members:
+  - key: UPAVASA
+    id: 0
+    doc: "No meal by day or by night (अहोरात्रभोजनाभावः)"
+    sources:
+      - text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 6"
+        ref: "`03-design/festival-metadata.md` §6"
+    mark: V
+  - key: EKABHAKTA
+    id: 1
+    doc: "One meal, of one grain, once, at midday (मध्याह्ने एकवारमेकान्नभोजनम्)"
+    sources:
+      - text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 6"
+        ref: "`03-design/festival-metadata.md` §6"
+    mark: V
+  - key: NAKTA
+    id: 2
+    doc: "The one meal at night, in the pradosha, after the three ghatis of dusk (रात्रावेव प्रदोषकाले भोजनम्)"
+    sources:
+      - text: "Dharmasindhu (1888 Nirnaya-sagara edition) pp. 6-7"
+        ref: "`03-design/festival-metadata.md` §6"
+    mark: V
+  - key: AYACHITA
+    id: 3
+    doc: "Only the food that comes that day unasked (याचनां विना तद्दिने लब्धस्यान्नस्य भोजनम्)"
+    sources:
+      - text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 6"
+        ref: "`03-design/festival-metadata.md` §6"
+    mark: V
+  - key: PHALAHARA
+    id: 4
+    doc: "Fruit only: what one unable to fast keeps instead (फलाहार)"
+    sources:
+      - text: "Dharmasindhu (1888 Nirnaya-sagara edition) pp. 18, 52"
+        ref: "`03-design/festival-metadata.md` §6"
+    mark: V
+  - key: KSHIRAHARA
+    id: 5
+    doc: "Milk only: what one unable to fast keeps instead (क्षीरभक्ष)"
+    sources:
+      - text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 18"
+        ref: "`03-design/festival-metadata.md` §6"
+    mark: V
+  - key: JALAHARA
+    id: 6
+    doc: "Water only: what one unable to fast keeps instead (जलाहार)"
+    sources:
+      - text: "Dharmasindhu (1888 Nirnaya-sagara edition) p. 18"
+        ref: "`03-design/festival-metadata.md` §6"
+    mark: V

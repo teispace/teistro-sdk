@@ -91,6 +91,16 @@ out of any earlier period. No other period moves.
   `extendedDays`, so a chain reads the added days.
 - Every binding and MCP reach the four calls.
 
+**A vrata's fast in the catalogue; the moonrise on the answer.**
+**Numbers:** no day moves. The `input_hash` of a pack holding a fasted key moves (`meta.fast`),
+`DHARMASINDHU`'s answers gain the Ashunya-shayana vrata, and a pack row's `unsourced` gains
+`fast` where no text gives one.
+- `meta.fast` on 36 keys, one reading a clause: kind, start and end, from *Dharmasindhu*, the
+  *Nirnayasindhu* and Hemadri's *Vratakhanda*, with the new catalogue kind `fast_kind` named in
+  `en-Latn` and `ne-Deva-NP` (SR-62, `03-design/festival-metadata.md` §6).
+- An observance kept or broken at moonrise carries `moonrise`, the instant and the place
+  (SR-60); `ASHUNYA_SHAYANA` joins `DHARMASINDHU`, kept and broken at moonrise (DS p. 44).
+
 **A day in sentences; a polar sankranti answers.**
 **Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or
 `CIVIL_MIDNIGHT` that the default month start refused now answers, and a `NEAREST_EVENT`

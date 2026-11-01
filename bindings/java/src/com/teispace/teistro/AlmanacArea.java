@@ -1004,7 +1004,7 @@ public final class AlmanacArea {
     /**
      * Every rule of a festival pack with what it is: {@code {pack, rules}}, each
      * row {@code {key, form, source, meta, unsourced}}, {@code meta} its kind,
-     * tradition, communities and regions and {@code unsourced} the fields no
+     * tradition, communities, regions and fast and {@code unsourced} the fields no
      * source gives ({@code 03-design/festival-metadata.md}).
      *
      * <pre>{@code

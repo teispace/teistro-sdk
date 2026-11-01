@@ -6,9 +6,13 @@
 //! government's holiday notice, the classification's community column, the
 //! text the rule cites), and a field no source gives stays unset, which
 //! [`FestivalMeta::unsourced`] says by name (C850).
+//!
+//! A vrata's fast is one of these fields (SR-62, §6 of the page): how it is
+//! kept, when it begins and when it is broken, as each text in hand says
+//! it, one reading a clause.
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::{FestivalKind, Tradition};
+use teistro_core::catalogue::{FastKind, FestivalKind, Tradition};
 
 /// What a rule's festival is, as far as a source says.
 ///
@@ -20,10 +24,10 @@ use teistro_core::catalogue::{FestivalKind, Tradition};
 /// assert_eq!(gai_jatra.kind, Some(FestivalKind::Gazetted));
 /// assert_eq!(gai_jatra.communities, ["NEWAR"]);
 /// assert_eq!(gai_jatra.regions, ["NP", "KATHMANDU_VALLEY"]);
-/// assert_eq!(gai_jatra.unsourced(), ["tradition"]);
+/// assert_eq!(gai_jatra.unsourced(), ["tradition", "fast"]);
 ///
 /// // A rule of the consumer's own, with nothing sourced, says so of every field.
-/// assert_eq!(FestivalMeta::default().unsourced().len(), 4);
+/// assert_eq!(FestivalMeta::default().unsourced().len(), 5);
 /// assert_eq!(FestivalMeta::nepal("BUDDHA_JAYANTI").tradition, Some(Tradition::Buddhist));
 /// ```
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -50,6 +54,125 @@ pub struct FestivalMeta {
     /// India's para 3.1), so a year's list may not hold it.
     #[serde(default, skip_serializing_if = "core::ops::Not::not")]
     pub optional: bool,
+    /// The fast kept on its day, one reading for each way a text keeps
+    /// it, in the text's order (SR-62); empty when no source in hand
+    /// says, which does not say there is none.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub fast: Vec<VrataFast>,
+}
+
+/// One way a text keeps a vrata's fast (`03-design/festival-metadata.md`
+/// §6): what is eaten, from when, and when the fast is broken, each left
+/// unset when the clause does not say.
+///
+/// ```
+/// use teistro_core::catalogue::FastKind;
+/// use teistro_panchanga::festival::{FastEnd, FastStart, FestivalMeta};
+///
+/// // Dharmasindhu pp. 17-18: the 10th's one meal, no food on the 11th, the
+/// // meal the next day; water, milk, fruit or a night meal for one unable.
+/// let fast = FestivalMeta::nepal("KAMADA_EKADASHI").fast;
+/// assert_eq!(fast[0].kind, Some(FastKind::Upavasa));
+/// assert_eq!((fast[0].start, fast[0].end), (Some(FastStart::AfterEkabhakta), Some(FastEnd::Parana)));
+/// assert!(fast[1..].iter().all(|reading| reading.if_unable));
+/// assert_eq!(fast[4].end, Some(FastEnd::Night));
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct VrataFast {
+    /// How it is kept; unset when the clause names no kind.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kind: Option<FastKind>,
+    /// Whether the text allows it only to one unable to keep the reading
+    /// before it.
+    #[serde(default, skip_serializing_if = "core::ops::Not::not")]
+    pub if_unable: bool,
+    /// When it begins; unset when the clause does not say.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start: Option<FastStart>,
+    /// When it is broken; unset when the clause does not say.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub end: Option<FastEnd>,
+    /// Where it is stated.
+    pub source: String,
+}
+
+/// When a vrata's fast begins.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum FastStart {
+    /// After the one meal at midday of the day before, an ekabhakta
+    /// (*Dharmasindhu* p. 6): the Ekadashi's 10th (pp. 17–18), Rama
+    /// Navami's 8th (p. 33), Shivaratri's 13th (p. 90).
+    AfterEkabhakta,
+    /// On the fast day's morning, the vow taken after its morning rites
+    /// (प्रातः कृतनित्यक्रियः, Janmashtami, p. 52).
+    Morning,
+}
+
+/// When a vrata's fast is broken: the parana window as a catalogue says
+/// it, whose instants an answer gives.
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum FastEnd {
+    /// On a later day, at the parana (*Dharmasindhu* p. 7: the next day,
+    /// at the tithi's end): an answer's `parana`, under the readings the
+    /// rule carries; a rule that carries none leaves it unreckoned.
+    Parana,
+    /// The same night, at the one meal a nakta allows: in the pradosha,
+    /// after the three ghatis of dusk (*Dharmasindhu* pp. 6–7).
+    Night,
+    /// The same night, at moonrise, after the arghya to the Moon
+    /// (*Dharmasindhu* p. 44): an answer's `moonrise`.
+    Moonrise,
+}
+
+/// One reading of [`FASTS`], as the table writes it.
+struct Reading {
+    kind: Option<FastKind>,
+    if_unable: bool,
+    start: Option<FastStart>,
+    end: Option<FastEnd>,
+    source: &'static str,
+}
+
+impl Reading {
+    fn fast(&self) -> VrataFast {
+        VrataFast {
+            kind: self.kind,
+            if_unable: self.if_unable,
+            start: self.start,
+            end: self.end,
+            source: self.source.to_owned(),
+        }
+    }
+}
+
+impl VrataFast {
+    /// The readings the texts in hand give a shipped key, in each text's
+    /// order; empty for a key they do not.
+    ///
+    /// ```
+    /// use teistro_core::catalogue::FastKind;
+    /// use teistro_panchanga::festival::{FastEnd, VrataFast};
+    ///
+    /// let ashunya = VrataFast::of("ASHUNYA_SHAYANA");
+    /// assert_eq!((ashunya[0].kind, ashunya[0].end), (Some(FastKind::Nakta), Some(FastEnd::Moonrise)));
+    /// assert!(VrataFast::of("GAI_JATRA").is_empty());
+    /// ```
+    #[must_use]
+    pub fn of(key: &str) -> Vec<VrataFast> {
+        FASTS
+            .binary_search_by_key(&key, |&(held, _)| held)
+            .ok()
+            .and_then(|at| FASTS.get(at))
+            .map_or_else(Vec::new, |&(_, readings)| {
+                readings.iter().map(Reading::fast).collect()
+            })
+    }
 }
 
 /// One set of values [`NEPAL_KEYS`] rows share.
@@ -69,6 +192,7 @@ impl Group {
             communities: owned(self.communities),
             regions: owned(self.regions),
             optional: false,
+            fast: Vec::new(),
         }
     }
 }
@@ -82,13 +206,28 @@ impl FestivalMeta {
 
     /// The fields no source gives, by their wire names: what a rule says
     /// of itself rather than a blank a reader might take for an answer.
+    /// A fast's part is named under `fast` when no reading gives it.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::FestivalMeta;
+    ///
+    /// // Nirnayasindhu p. 22 says only that the Sankashta's meal is at night.
+    /// let sankashta = FestivalMeta::of_text("SANKASHTA_CHATURTHI");
+    /// assert_eq!(sankashta.unsourced(), ["communities", "regions", "fast.kind", "fast.start"]);
+    /// ```
     #[must_use]
     pub fn unsourced(&self) -> Vec<&'static str> {
+        let none_gives =
+            |given: fn(&VrataFast) -> bool| !self.fast.is_empty() && !self.fast.iter().any(given);
         let blank = [
             ("kind", self.kind.is_none()),
             ("tradition", self.tradition.is_none()),
             ("communities", self.communities.is_empty()),
             ("regions", self.regions.is_empty()),
+            ("fast", self.fast.is_empty()),
+            ("fast.kind", none_gives(|fast| fast.kind.is_some())),
+            ("fast.start", none_gives(|fast| fast.start.is_some())),
+            ("fast.end", none_gives(|fast| fast.end.is_some())),
         ];
         blank
             .into_iter()
@@ -106,6 +245,7 @@ impl FestivalMeta {
             .and_then(|at| NEPAL_KEYS.get(at))
             .and_then(|&(_, group)| NEPAL_GROUPS.get(usize::from(group)))
             .map_or_else(FestivalMeta::default, Group::meta)
+            .with_fast(key)
     }
 
     /// The values of a rule from a Hindu text and from no country's list:
@@ -116,6 +256,21 @@ impl FestivalMeta {
             kind: Some(FestivalKind::ReligiousCultural),
             tradition: Some(Tradition::Hindu),
             ..FestivalMeta::default()
+        }
+    }
+
+    /// [`FestivalMeta::hindu_text`] with the fast the texts give `key`.
+    #[must_use]
+    pub fn of_text(key: &str) -> FestivalMeta {
+        FestivalMeta::hindu_text().with_fast(key)
+    }
+
+    /// These values with the fast the texts give `key` ([`VrataFast::of`]).
+    #[must_use]
+    pub fn with_fast(self, key: &str) -> FestivalMeta {
+        FestivalMeta {
+            fast: VrataFast::of(key),
+            ..self
         }
     }
 }
@@ -169,6 +324,188 @@ impl MetaFilter {
             && one_of(&self.regions, &meta.regions)
     }
 }
+
+/// A reading of the table below.
+const fn reading(
+    kind: Option<FastKind>,
+    if_unable: bool,
+    (start, end): (Option<FastStart>, Option<FastEnd>),
+    source: &'static str,
+) -> Reading {
+    Reading {
+        kind,
+        if_unable,
+        start,
+        end,
+        source,
+    }
+}
+
+/// Every Ekadashi's fast (*Dharmasindhu* pp. 17–18): the vow of the 11th,
+/// then what one unable to keep it may keep instead, in the text's order.
+const EKADASHI: [Reading; 5] = [
+    reading(
+        Some(FastKind::Upavasa),
+        false,
+        (Some(FastStart::AfterEkabhakta), Some(FastEnd::Parana)),
+        "Dharmasindhu pp. 17-18: one meal at midday the day before (मध्याह्ने एकभक्तं कुर्यात्), then the vow of the 11th, no food that day and the meal the next (एकादश्यां निराहारो भूत्वाहमपरेऽहनि भोक्ष्ये)",
+    ),
+    reading(
+        Some(FastKind::Jalahara),
+        true,
+        (Some(FastStart::AfterEkabhakta), Some(FastEnd::Parana)),
+        "Dharmasindhu p. 18: for one unable (अशक्तस्य तु), water only on the 11th (जलाहार)",
+    ),
+    reading(
+        Some(FastKind::Kshirahara),
+        true,
+        (Some(FastStart::AfterEkabhakta), Some(FastEnd::Parana)),
+        "Dharmasindhu p. 18: for one unable, milk only on the 11th (क्षीरभक्ष)",
+    ),
+    reading(
+        Some(FastKind::Phalahara),
+        true,
+        (Some(FastStart::AfterEkabhakta), Some(FastEnd::Parana)),
+        "Dharmasindhu p. 18: for one unable, fruit only on the 11th (फलाहार)",
+    ),
+    reading(
+        Some(FastKind::Nakta),
+        true,
+        (Some(FastStart::AfterEkabhakta), Some(FastEnd::Night)),
+        "Dharmasindhu p. 18: for one unable, a meal at night on the 11th (नक्तभोजी), a nakta's meal being in the pradosha (p. 6)",
+    ),
+];
+
+/// Janmashtami (*Dharmasindhu* p. 52).
+const JANMASHTAMI: [Reading; 2] = [
+    reading(
+        Some(FastKind::Upavasa),
+        false,
+        (Some(FastStart::Morning), Some(FastEnd::Parana)),
+        "Dharmasindhu p. 52: in the morning, after its rites, the vow of a fast on the 8th (उपवासं करिष्यामि कृष्णाष्टम्याम्); the parana on the same page",
+    ),
+    reading(
+        Some(FastKind::Phalahara),
+        true,
+        (Some(FastStart::Morning), Some(FastEnd::Parana)),
+        "Dharmasindhu p. 52: for one unable, fruit (अशक्तौ फलानि भक्षयिष्यामि)",
+    ),
+];
+
+/// Shivaratri (*Dharmasindhu* p. 90).
+const SHIVARATRI: [Reading; 1] = [reading(
+    Some(FastKind::Upavasa),
+    false,
+    (Some(FastStart::AfterEkabhakta), Some(FastEnd::Parana)),
+    "Dharmasindhu p. 90: one meal on the 13th (त्रयोदश्यां कृतैकभक्तः), the vow of the 14th, no food that day and the meal the next (चतुर्दश्यां निराहारो भूत्वा शम्भो परेऽहनि भोक्ष्येऽहम्)",
+)];
+
+/// Rama Navami (*Dharmasindhu* pp. 33–34).
+const RAMA_NAVAMI: [Reading; 1] = [reading(
+    Some(FastKind::Upavasa),
+    false,
+    (Some(FastStart::AfterEkabhakta), Some(FastEnd::Parana)),
+    "Dharmasindhu p. 33: one meal on the 8th as part of the 9th's vow (नवम्या अङ्गभूतेन एकभक्तेन), the fast vowed on the 9th's morning (उपोषणं संकल्प्य); the parana at the 9th's end (p. 34)",
+)];
+
+/// The Navaratri's Mahanavami (*Dharmasindhu* p. 69).
+const MAHA_NAVAMI: [Reading; 1] = [reading(
+    Some(FastKind::Upavasa),
+    false,
+    (None, Some(FastEnd::Parana)),
+    "Dharmasindhu p. 69: the 9th of the puja and the fast (पूजोपोषणादौ); the vow given up after the visarjana (pp. 70-71)",
+)];
+
+/// Haritalika (*Dharmasindhu* p. 55).
+const HARITALIKA: [Reading; 1] = [reading(
+    Some(FastKind::Upavasa),
+    false,
+    (None, None),
+    "Dharmasindhu p. 55: Bhavani and Shiva worshipped, and a fast enjoined on women (उपवासश्च स्त्रीणां नियतः)",
+)];
+
+/// The pradosha vrata (*Dharmasindhu* p. 20).
+const PRADOSHA_VRATA: [Reading; 1] = [reading(
+    Some(FastKind::Nakta),
+    false,
+    (None, Some(FastEnd::Night)),
+    "Dharmasindhu p. 20: Shiva's puja at pradosha and a meal at night (प्रदोषसमये शिवपूजा नक्तभोजनात्मकं प्रदोषव्रतम्)",
+)];
+
+/// The Sankashta chaturthi (*Nirnayasindhu* p. 22), whose kind no text in
+/// hand names (C1081).
+const SANKASHTA_CHATURTHI: [Reading; 1] = [reading(
+    None,
+    false,
+    (None, Some(FastEnd::Night)),
+    "Nirnayasindhu p. 22: on the Sankashta chaturthi the meal is at night (संकष्टचतुर्थ्यां च रात्रौ भोजनम्)",
+)];
+
+/// The Ashunya-shayana vrata (*Dharmasindhu* p. 44; Hemadri's
+/// *Vratakhanda* ch. 9, pp. 172–173): the author's nakta broken at
+/// moonrise, then Hemadri's two other ways, which say no end.
+const ASHUNYA_SHAYANA: [Reading; 3] = [
+    reading(
+        Some(FastKind::Nakta),
+        false,
+        (None, Some(FastEnd::Moonrise)),
+        "Dharmasindhu p. 44: after the puja, an arghya to the Moon and the night meal (चन्द्रायार्घ्यं दत्त्वा नक्तभोजनं कार्यम्); Hemadri, Vratakhanda ch. 9 p. 173: the meal at moonrise (चन्द्रोदये)",
+    ),
+    reading(
+        Some(FastKind::Upavasa),
+        false,
+        (None, None),
+        "Hemadri, Vratakhanda ch. 9 p. 172: kept by a fast, a night meal or food unasked (उपवासेन नक्तेन तथैवायाचितेन च)",
+    ),
+    reading(
+        Some(FastKind::Ayachita),
+        false,
+        (None, None),
+        "Hemadri, Vratakhanda ch. 9 p. 172: kept by a fast, a night meal or food unasked (उपवासेन नक्तेन तथैवायाचितेन च)",
+    ),
+];
+
+/// Every key the texts in hand give a fast, sorted for the binary search,
+/// with its readings. Nirjala ekadashi waits on a text (C1080), and a key
+/// of a text's pack that names no fast is not here.
+const FASTS: [(&str, &[Reading]); 36] = [
+    ("AJA_EKADASHI", &EKADASHI),
+    ("AMALAKI_EKADASHI", &EKADASHI),
+    ("APARA_EKADASHI", &EKADASHI),
+    ("ASHUNYA_SHAYANA", &ASHUNYA_SHAYANA),
+    ("BHIMA_EKADASHI", &EKADASHI),
+    ("EKADASHI_SMARTA", &EKADASHI),
+    ("EKADASHI_SMARTA_RENUNCIANT", &EKADASHI),
+    ("EKADASHI_VAISHNAVA", &EKADASHI),
+    ("HARIBODHINI_EKADASHI", &EKADASHI),
+    ("HARIPARIVARTINI_EKADASHI", &EKADASHI),
+    ("HARISHAYANI_EKADASHI", &EKADASHI),
+    ("HARITALIKA", &HARITALIKA),
+    ("INDIRA_EKADASHI", &EKADASHI),
+    ("JANMASHTAMI", &JANMASHTAMI),
+    ("KAMADA_EKADASHI", &EKADASHI),
+    ("KAMIKA_EKADASHI", &EKADASHI),
+    ("MAHA_NAVAMI", &MAHA_NAVAMI),
+    ("MOHINI_EKADASHI", &EKADASHI),
+    ("MOKSHADA_EKADASHI", &EKADASHI),
+    ("PADMINI_EKADASHI", &EKADASHI),
+    ("PAPANKUSHA_EKADASHI", &EKADASHI),
+    ("PAPMOCHANI_EKADASHI", &EKADASHI),
+    ("PARAMA_EKADASHI", &EKADASHI),
+    ("PAUSHA_PUTRADA_EKADASHI", &EKADASHI),
+    ("PRADOSHA_VRATA", &PRADOSHA_VRATA),
+    ("RAMA_EKADASHI", &EKADASHI),
+    ("RAMA_NAVAMI", &RAMA_NAVAMI),
+    ("SAFALA_EKADASHI", &EKADASHI),
+    ("SANKASHTA_CHATURTHI", &SANKASHTA_CHATURTHI),
+    ("SHATTILA_EKADASHI", &EKADASHI),
+    ("SHIVARATRI", &SHIVARATRI),
+    ("SHRAWAN_PUTRADA_EKADASHI", &EKADASHI),
+    ("UTPATTIKA_EKADASHI", &EKADASHI),
+    ("VARUTHINI_EKADASHI", &EKADASHI),
+    ("VIJAYA_EKADASHI", &EKADASHI),
+    ("YOGINI_EKADASHI", &EKADASHI),
+];
 
 /// The groups of [`NEPAL_KEYS`], whose rows name them by index: each one set
 /// of sourced values, in the order the table reads.
@@ -685,6 +1022,50 @@ mod tests {
                 .iter()
                 .all(|row| usize::from(row.1) < NEPAL_GROUPS.len())
         );
+    }
+
+    #[test]
+    fn the_fasts_are_sorted_for_their_search_and_every_reading_says_something() {
+        assert!(
+            FASTS
+                .windows(2)
+                .all(|pair| matches!(pair, [a, b] if a.0 < b.0))
+        );
+        assert!(FASTS.iter().flat_map(|row| row.1).all(|reading| {
+            !reading.source.is_empty()
+                && (reading.kind.is_some() || reading.start.is_some() || reading.end.is_some())
+        }));
+        // A concession follows the reading it stands in for.
+        assert!(
+            FASTS
+                .iter()
+                .all(|row| row.1.first().is_some_and(|first| !first.if_unable))
+        );
+    }
+
+    #[test]
+    fn every_fast_names_a_shipped_rule_and_the_ekadashis_fall_on_an_eleventh() {
+        use crate::festival::{EkadashiRule, FestivalRule};
+        use teistro_core::catalogue::Tithi;
+
+        let mut rules = FestivalRule::dharmasindhu();
+        rules.extend(FestivalRule::nepal());
+        rules.extend(FestivalRule::nepal_panchanga());
+        let ekadashis = EkadashiRule::dharmasindhu();
+        for &(key, readings) in &FASTS {
+            let rule = rules.iter().find(|rule| rule.key == key);
+            let fast = ekadashis.iter().any(|rule| rule.key == key);
+            assert!(rule.is_some() || fast, "{key} is no shipped rule");
+            let of_ekadashi = readings.first().map(|first| first.source)
+                == EKADASHI.first().map(|first| first.source);
+            if of_ekadashi && !fast {
+                let tithi = rule.and_then(|rule| rule.occurs.tithi());
+                assert!(
+                    matches!(tithi, Some(Tithi::ShuklaEkadashi | Tithi::KrishnaEkadashi)),
+                    "{key} is not kept on an 11th"
+                );
+            }
+        }
     }
 
     #[test]

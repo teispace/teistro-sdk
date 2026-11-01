@@ -846,6 +846,39 @@ public final class Messages {
         }
     }
 
+    /** A `fast_kind` as a message names it: the full catalogue key. */
+    public enum FastKindKey {
+        /** `fast_kind.UPAVASA`. */
+        UPAVASA("fast_kind.UPAVASA"),
+        /** `fast_kind.EKABHAKTA`. */
+        EKABHAKTA("fast_kind.EKABHAKTA"),
+        /** `fast_kind.NAKTA`. */
+        NAKTA("fast_kind.NAKTA"),
+        /** `fast_kind.AYACHITA`. */
+        AYACHITA("fast_kind.AYACHITA"),
+        /** `fast_kind.PHALAHARA`. */
+        PHALAHARA("fast_kind.PHALAHARA"),
+        /** `fast_kind.KSHIRAHARA`. */
+        KSHIRAHARA("fast_kind.KSHIRAHARA"),
+        /** `fast_kind.JALAHARA`. */
+        JALAHARA("fast_kind.JALAHARA");
+
+        private final String value;
+
+        FastKindKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `festival_kind` as a message names it: the full catalogue key. */
     public enum FestivalKindKey {
         /** `festival_kind.GAZETTED`. */
@@ -6366,6 +6399,88 @@ public final class Messages {
 
 
             /**
+             * The messages under `fast_kind`.
+             *
+             * @return the group
+             */
+            public SdkEntityFastKind fastKind() {
+                return new SdkEntityFastKind(r);
+            }
+
+            /** The messages under `SdkEntityFastKind`, each rendered by its own key. */
+            public static final class SdkEntityFastKind {
+                private final Renderer r;
+
+                SdkEntityFastKind(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `fast_kind.AYACHITA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ayachita() {
+                    return r.entity("fast_kind.AYACHITA");
+                }
+
+                /**
+                 * The forms of `fast_kind.EKABHAKTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ekabhakta() {
+                    return r.entity("fast_kind.EKABHAKTA");
+                }
+
+                /**
+                 * The forms of `fast_kind.JALAHARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms jalahara() {
+                    return r.entity("fast_kind.JALAHARA");
+                }
+
+                /**
+                 * The forms of `fast_kind.KSHIRAHARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kshirahara() {
+                    return r.entity("fast_kind.KSHIRAHARA");
+                }
+
+                /**
+                 * The forms of `fast_kind.NAKTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nakta() {
+                    return r.entity("fast_kind.NAKTA");
+                }
+
+                /**
+                 * The forms of `fast_kind.PHALAHARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms phalahara() {
+                    return r.entity("fast_kind.PHALAHARA");
+                }
+
+                /**
+                 * The forms of `fast_kind.UPAVASA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms upavasa() {
+                    return r.entity("fast_kind.UPAVASA");
+                }
+            }
+
+
+            /**
              * The messages under `festival`.
              *
              * @return the group
@@ -6533,6 +6648,15 @@ public final class Messages {
                  */
                 public EntityForms ashtamiShraddha() {
                     return r.entity("festival.ASHTAMI_SHRADDHA");
+                }
+
+                /**
+                 * The forms of `festival.ASHUNYA_SHAYANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ashunyaShayana() {
+                    return r.entity("festival.ASHUNYA_SHAYANA");
                 }
 
                 /**

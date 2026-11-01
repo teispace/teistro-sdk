@@ -643,7 +643,7 @@ fn almanac_lookup_records() -> [Record; 6] {
         Record {
             name: "almanac.festivalPack",
             boundary: "ts_almanac_festival_pack",
-            title: "Every rule of a festival pack with what it is: kind, tradition, communities and regions, and the fields no source gives",
+            title: "Every rule of a festival pack with what it is: kind, tradition, communities, regions and fast, and the fields no source gives",
             reads: None,
             run: |context, json| {
                 let asked = crate::PackRequest::from_json(json)?;

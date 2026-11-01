@@ -47,7 +47,7 @@ use crate::ashauch::{
 use crate::change::{ChangeDay, ChangePoints};
 use crate::death_time::{self, DeathInstant, DeathTime, DeathTimeTable};
 use crate::festival::{
-    FestivalDay, Half, MoonArc, MoonArcs, Moonrise, Origin, OriginFound, SunEntry,
+    FestivalDay, Half, MoonArc, MoonArcs, Moonrise, MoonriseAt, Origin, OriginFound, SunEntry,
 };
 use crate::first_year::{self, FirstYear, FirstYearSchedule};
 use crate::limb::{self, Limbs, RangeCrossings, Zodiac};
@@ -1875,7 +1875,10 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
                 .ok_or_else(|| Error::internal("a moonrise search came apart"))??;
             day.moonrise = match event {
                 Some(event) if event.instant.get() < day.next_sunrise.get() => {
-                    Moonrise::Rose(JulianDay::literal(event.instant.get()))
+                    Moonrise::Rose(MoonriseAt {
+                        at: JulianDay::literal(event.instant.get()),
+                        place: *place,
+                    })
                 }
                 _ => Moonrise::NoRise,
             };
