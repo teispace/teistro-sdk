@@ -307,6 +307,7 @@ const Map<String, Type> _records = {
   'calendar.add': AddAsked,
   'calendar.between': BetweenAsked,
   'calendar.convert': CalendarAsked,
+  'chart.disagreements': ChartDisagreementsRequest,
   'chart.found': ChartFoundRequest,
   'chart.rashifal': BatchAsked,
   'intl.date': DateTextRequest,

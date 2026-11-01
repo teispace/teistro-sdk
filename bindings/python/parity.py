@@ -1883,6 +1883,10 @@ def main() -> None:
                 f"chart-{i}-avakahada-ghata",
                 f"{ghata.chandra.full_key} {ghata.tithi.full_key} {ghata.vara.full_key} {ghata.nakshatra.full_key}",
             )
+            put(
+                f"chart-{i}-avakahada-paya",
+                f"{birth.paya_by_nakshatra.full_key} {birth.paya_by_house.full_key}",
+            )
             fell = chart.moment
             assert fell is not None
             put(
@@ -3299,6 +3303,7 @@ def main() -> None:
         ("chart.found_many", ctx.chart.found_many),
         ("chart.rashifal", ctx.chart.rashifal),
         ("chart.rashifal_many", ctx.chart.rashifal_many),
+        ("chart.disagreements", ctx.chart.disagreements),
         ("almanac.of", ctx.almanac.of),
         ("almanac.festivals", ctx.almanac.festivals),
         ("almanac.disagreements", ctx.almanac.disagreements),

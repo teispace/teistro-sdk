@@ -27,6 +27,7 @@ from teistro import (
     Context,
     nepal_official,
     Altitude,
+    ComparedBirth,
     AshauchRequest,
     FirstYearRequest,
     decode_provenance,
@@ -60,6 +61,7 @@ from teistro import (
     NakshatraBar,
     Observer,
     Plugin,
+    Paya,
     Rashi,
     TithiClass,
     Samvatsara,
@@ -994,6 +996,34 @@ class AnEngine(WithLibrary):
             with self.teistro.context(**nepal_official()) as official:
                 official.almanac.disagreements(modern, **month)
         self.assertIn("closed", str(closed.exception))
+
+    def test_two_charts_say_where_they_disagree(self) -> None:
+        """Two births twelve hours apart under one setting, and one birth
+        under two (`03-design/chart-disagreements.md`): half a day turns the
+        lagna half the circle and moves the Moon a pada at least, and one
+        context compared with itself disagrees on nothing."""
+        place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        birth = ComparedBirth(instant=2447000.25, place=place, utc_offset_seconds=20700)
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as classical, self.teistro.context(
+            profile="kp-default", ephemeris=Ephemeris.BUILTIN
+        ) as kp:
+            twins = classical.chart.disagreements(
+                classical, first=birth, second=dataclasses.replace(birth, instant=2447000.75)
+            )
+            assert twins.lagna is not None and twins.nakshatra is not None
+            self.assertNotEqual(twins.lagna.first.sign, twins.lagna.second.sign)
+            self.assertTrue(0 <= twins.lagna.first.degrees_in_sign < 30)
+            self.assertGreaterEqual(twins.compared, 12)
+            self.assertEqual(twins.other_settings_hash, classical.settings_hash)
+            self.assertIsInstance(twins.provenance.input_hash, str)
+
+            same = classical.chart.disagreements(classical, first=birth)
+            self.assertEqual((same.lagna, same.grahas, same.nakshatra, same.dashas, same.yogas), (None, (), None, (), ()))
+            settings = classical.chart.disagreements(kp, first=birth, at=2461000.5)
+            self.assertEqual((settings.other_profile, settings.at), ("kp-default", 2461000.5))
+            with self.assertRaises(TeistroError) as offset:
+                classical.chart.disagreements(kp, first=dataclasses.replace(birth, utc_offset_seconds=999999))
+            self.assertTrue((offset.exception.field or "").startswith("disagreements.first"))
 
     def test_a_tibetan_year_says_its_names(self) -> None:
         """2026 is the 40th year of the 17th rabjung, Parabhava,
@@ -4308,6 +4338,12 @@ class AnEngine(WithLibrary):
                 counts = (1, 5, 9, 2, 6, 10, 3, 7, 4, 8, 11, 12)
                 self.assertEqual(read.ghata.chandra, Rashi((read.rashi + counts[read.rashi] - 1) % 12))
                 self.assertIsInstance(read.ghata.tithi, TithiClass)
+                # The paya by star is the Vishwavidyalaya Panchang's four
+                # runs (C1106); by house it is read from the lagna (C1105).
+                star = int(read.nakshatra)
+                by_star = "RAJATA" if 5 <= star <= 16 else "SUVARNA" if 17 <= star <= 23 else "LOHA" if 2 <= star <= 4 else "TAMRA"
+                self.assertEqual(read.paya_by_nakshatra.full_key, f"paya.{by_star}")
+                self.assertIsInstance(read.paya_by_house, Paya)
             self.assertGreater(len(padas), 20)
         with self.teistro.context(ephemeris=Ephemeris.BUILTIN, profile="western-tropical-default") as western:
             with self.assertRaises(TeistroError) as caught:

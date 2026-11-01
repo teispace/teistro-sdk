@@ -1794,6 +1794,8 @@ export function decodeCharts(bytes) {
       ghataTithi: column(blob, at, 12, 'u16', at.count),
       ghataVara: column(blob, at, 13, 'u16', at.count),
       ghataNakshatra: column(blob, at, 14, 'u16', at.count),
+      payaByNakshatra: column(blob, at, 15, 'u16', at.count),
+      payaByHouse: column(blob, at, 16, 'u16', at.count),
       length: at.count,
     };
   }

@@ -131,6 +131,33 @@ out of any earlier period. No other period moves.
   name a member with every member it may name, matched on one documented fold of spelling and script
   (A2-3, `03-design/lexicon.md`). Built once per context and locale.
 
+**The birth paya by both methods; the grahas' classical doshas and tattva.**
+**Numbers:** no chart value moves. The avakahada blob section gains two columns
+(`paya_by_nakshatra`, `paya_by_house`), a chart document's `avakahada` two fields, and the
+dossier's `AVAKAHADA` two rows; the catalogue gains kinds 90 (`paya`) and 91 (`tridosha`) and
+`graha` moves to version 2.
+- The avakahada carries the birth paya by the Moon's nakshatra and by the Moon's house
+  counted from the lagna's sign, in every binding and in parity: the *Vishwavidyalaya
+  Panchang* (Darbhanga, 2005–06) for both, and *Sangraha Shiromani* XIII v. 92 for the
+  house verse (SR-32, `03-design/matching.md`, C1105–C1107). Disha and tatwa still wait (C300).
+- `graha` gains `classical_doshas`, `classical_predominant_dosha` and `classical_tattva`
+  from BPHS (1899 Gyan Press, Purvakhanda 2.10 and 2.13–2.20, ch. 3 in the usual numbering):
+  a classical attribution, not health advice, with no invented weights (SR-48,
+  `03-design/graha-classical-attributions.md`, C1108–C1110).
+
+**Two charts say where they differ; a dossier drops what a policy names.**
+**Numbers:** no chart value moves. A dossier's first line is now `# teistro dossier 3`, so every
+dossier's text and hash move by that line; a dossier written under a policy also opens with
+`DROPPED`.
+- `chart.disagreements` in every binding, over MCP (an `other` context) and at the C boundary
+  (`ts_chart_disagreements`): for two settings or two births, the lagna, each graha's sign,
+  the Moon's nakshatra, the running dasha lords and the yogas held on one side only
+  (SR-41, `03-design/chart-disagreements.md`, C1100–C1102).
+- A dossier policy: `drop` names sections to leave out and `dropCategories` names rule
+  categories (`MARANA`, say) to leave out of `RULES`. The dossier says what it dropped in a
+  `DROPPED` section, so the hash moves with the policy (SR-40). Two new sections,
+  `LONGEVITY` and `MARAKAS`, give a policy something to drop (C1103, C1104).
+
 **A day in sentences; a polar sankranti answers.**
 **Numbers:** only polar days move: a day above the polar circle under `NEAREST_EVENT` or
 `CIVIL_MIDNIGHT` that the default month start refused now answers, and a `NEAREST_EVENT`

@@ -198,10 +198,19 @@ pub struct ChartArea<'a> {
     context: &'a Context,
 }
 
+mod disagreement;
 #[cfg(feature = "kp")]
 mod kp;
 #[cfg(feature = "tajika")]
 mod tajika;
+
+#[cfg(feature = "schema")]
+pub(crate) use disagreement::schema as disagreement_schema;
+pub use disagreement::{
+    ChartDisagreementRequest, ChartDisagreements, DashaDisagreement, GrahaDisagreement,
+    LagnaDisagreement, MoonStar, NakshatraDisagreement, RunningLord, SignPlacement,
+    YogaDisagreement,
+};
 
 impl<'a> ChartArea<'a> {
     pub(crate) fn of(context: &'a Context) -> ChartArea<'a> {

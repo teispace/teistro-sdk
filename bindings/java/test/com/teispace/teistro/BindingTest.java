@@ -1550,6 +1550,12 @@ public final class BindingTest {
                     int at = birth.rashi().id();
                     same(Rashi.of((at + counts[at] - 1) % 12), birth.ghata().chandra(),
                             "the ghata Moon, Muhurta Chintamani's count from the Moon's sign (C758)");
+                    int star = birth.nakshatra().id();
+                    Paya byStar = star >= 5 && star <= 16 ? Paya.RAJATA
+                            : star >= 17 && star <= 23 ? Paya.SUVARNA
+                            : star >= 2 && star <= 4 ? Paya.LOHA : Paya.TAMRA;
+                    same(byStar, birth.payaByNakshatra(), "the paya by star, the panchang's four runs (C1106)");
+                    check(birth.payaByHouse() != Paya.UNKNOWN, "the paya by house, read from the lagna (C1105)");
                     check(chart.moment().isPresent(), "the moment");
                     check(chart.shadbala().isPresent(), "the shadbala");
                     check(chart.bhavaBala().isPresent(), "the bhava bala");
@@ -2523,6 +2529,37 @@ public final class BindingTest {
                 // the order the caller names them in.
                 same(found.days().days().size(), modern.almanac().disagreements(official, first, last, kathmandu,
                         20_700, true, null).days().days().size(), "the other way round, the same days");
+            }
+        });
+
+        tests.put("two charts say where they disagree", () -> {
+            // Two births twelve hours apart under one setting, and one birth
+            // under two: half a day turns the lagna half the circle and moves
+            // the Moon a pada at least, and one context compared with itself
+            // disagrees on nothing (`03-design/chart-disagreements.md`).
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            ComparedBirth birth = new ComparedBirth(2_447_000.25, kathmandu, 20_700);
+            try (Context classical = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build());
+                    Context kp = teistro.context(ContextOptions.builder().profile("kp-default")
+                            .ephemeris(Ephemeris.BUILTIN).build())) {
+                ChartDisagreements twins = classical.chart().disagreements(classical, birth,
+                        new ComparedBirth(2_447_000.75, kathmandu, 20_700), null);
+                check(twins.lagna() != null && twins.lagna().first().sign() != twins.lagna().second().sign(),
+                        "half a day turns the lagna");
+                check(twins.nakshatra() != null, "the Moon moves a pada at least");
+                check(twins.compared() >= 12, "compared " + twins.compared());
+                same(classical.settingsHash(), twins.otherSettingsHash(), "the other's settings hash");
+
+                ChartDisagreements alike = classical.chart().disagreements(classical, birth);
+                check(alike.lagna() == null && alike.nakshatra() == null && alike.grahas().isEmpty()
+                        && alike.dashas().isEmpty() && alike.yogas().isEmpty(), "one context agrees with itself");
+                ChartDisagreements settings = classical.chart().disagreements(kp, birth, null, 2_461_000.5);
+                same("kp-default", settings.otherProfile(), "the other's profile");
+                same(2_461_000.5, settings.at(), "the instant compared at");
+                check(refusal(() -> classical.chart().disagreements(kp,
+                        new ComparedBirth(2_447_000.25, kathmandu, 999_999))).field().startsWith("disagreements.first"),
+                        "a birth's refusal is named under its side");
+                same("other", refusal(() -> classical.chart().disagreements(null, birth)).field(), "no other context");
             }
         });
 

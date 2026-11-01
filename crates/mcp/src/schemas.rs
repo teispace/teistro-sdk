@@ -131,6 +131,19 @@ pub(crate) fn input(record: &Record) -> Value {
     let mut properties = Map::new();
     properties.insert(String::from("request"), request);
     properties.extend(scope_properties());
+    if record.compares() {
+        properties.insert(
+            String::from(crate::tools::OTHER),
+            json!({
+                "type": "object",
+                "properties": scope_properties(),
+                "additionalProperties": false,
+                "description": "The context the call's is compared with, by the same three \
+                                arguments; the call's own when left out, which compares two \
+                                charts under one setting.",
+            }),
+        );
+    }
     let schema = json!({
         "type": "object",
         "properties": properties,

@@ -120,6 +120,57 @@ public final class ChartArea {
         return copy;
     }
 
+    /**
+     * <b>Where two charts disagree</b> ({@code 03-design/chart-disagreements.md}): {@code first} founded
+     * under this context, {@code second} (the first's birth again when null) under {@code other}, and only
+     * the facts that differ, each with both sides: the lagna's sign, each graha's sign, the Moon's
+     * nakshatra and pada, each dasha level's running lord at {@code at} (each birth's own when null) and
+     * each rule one side holds and the other does not. Pass this context again as {@code other} to compare
+     * two births under one setting.
+     *
+     * <pre>{@code
+     * ChartDisagreements found = classical.chart().disagreements(kp,
+     *         new ComparedBirth(2_447_000.25, kathmandu, 20_700), null, null);
+     * }</pre>
+     *
+     * @param other the context the second chart is founded under
+     * @param first the first birth
+     * @param second the second, or null for the first's again
+     * @param at the instant the dasha lords are compared at, a UTC Julian day, or null for each birth's own
+     * @return the facts that differ, sealed by the first chart's provenance
+     */
+    public ChartDisagreements disagreements(Context other, ComparedBirth first, ComparedBirth second, Double at) {
+        if (other == null) {
+            throw Reads.invalid("other is the Context compared with this one", "other");
+        }
+        if (first == null) {
+            throw Reads.invalid("first is the birth compared", "first");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("first", first.asked("disagreements.first"));
+        if (second != null) {
+            asked.put("second", second.asked("disagreements.second"));
+        }
+        if (at != null) {
+            asked.put("at", at);
+        }
+        String json = Json.write(asked);
+        return ChartDisagreements.read(context.lockedWith(other,
+                (lib, ours, theirs) -> Calls.chartDisagreements(lib, ours, theirs, json)));
+    }
+
+    /**
+     * As {@link #disagreements(Context, ComparedBirth, ComparedBirth, Double)}, one birth under two
+     * settings, its dasha lords at its own birth.
+     *
+     * @param other the context the second chart is founded under
+     * @param birth the birth
+     * @return the facts that differ
+     */
+    public ChartDisagreements disagreements(Context other, ComparedBirth birth) {
+        return disagreements(other, birth, null, null);
+    }
+
     /** A dasha system's id: a catalogued one's, or the id the context resolved a registered key to. */
     private int[] dashas(List<Object> systems) {
         int[] ids = new int[systems.size()];

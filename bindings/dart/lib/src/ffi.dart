@@ -1967,6 +1967,8 @@ typedef TsCalendarFixedOfJdNative = ffi.Int64 Function(ffi.Double, ffi.Pointer<f
 typedef TsCalendarFixedOfJdDart = int Function(double, ffi.Pointer<ffi.Double>);
 typedef TsChartLayoutRowNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsChartLayoutRowDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsChartDisagreementsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsChartDisagreementsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsChartFoundNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ChartRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsChartFoundDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ChartRequestStruct>, ffi.Pointer<BlobStruct>);
 typedef TsTimeResolveNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<CivilDateTimeStruct>, ffi.Pointer<ZoneSpecStruct>, ffi.Pointer<ZoneResolutionStruct>);
@@ -2123,6 +2125,7 @@ final class TeistroLibrary {
         ts_calendar_jd_of_fixed = library.lookupFunction<TsCalendarJdOfFixedNative, TsCalendarJdOfFixedDart>('ts_calendar_jd_of_fixed'),
         ts_calendar_fixed_of_jd = library.lookupFunction<TsCalendarFixedOfJdNative, TsCalendarFixedOfJdDart>('ts_calendar_fixed_of_jd'),
         ts_chart_layout_row = library.lookupFunction<TsChartLayoutRowNative, TsChartLayoutRowDart>('ts_chart_layout_row'),
+        ts_chart_disagreements = library.lookupFunction<TsChartDisagreementsNative, TsChartDisagreementsDart>('ts_chart_disagreements'),
         ts_chart_found = library.lookupFunction<TsChartFoundNative, TsChartFoundDart>('ts_chart_found'),
         ts_time_resolve = library.lookupFunction<TsTimeResolveNative, TsTimeResolveDart>('ts_time_resolve'),
         ts_time_civil = library.lookupFunction<TsTimeCivilNative, TsTimeCivilDart>('ts_time_civil'),
@@ -2351,6 +2354,37 @@ final class TeistroLibrary {
   /// (`NORTH_INDIAN`) or full (`chart_layout.NORTH_INDIAN`); an unknown one is
   /// `INVALID_ARG` with the keys the context knows as the hint.
   final TsChartLayoutRowDart ts_chart_layout_row;
+
+  /// **Where two charts disagree** (`03-design/chart-disagreements.md`): the
+  /// first chart founded under `context`, the second under `other`, and
+  /// answers with `{value, provenance}` as canonical JSON, sealed by the
+  /// first chart's provenance with the whole request as its input, every
+  /// catalogue member a full key. Pass `context` again as `other` to compare
+  /// two births under one setting.
+  ///
+  /// `value` is `{otherProfile, otherSettingsHash, at, compared, lagna,
+  /// grahas, nakshatra, dashas, yogas}`: `lagna` null unless its sign
+  /// differs, else `{first, second}`, each side `{sign, longitudeDeg,
+  /// degreesInSign}`; `grahas` each graha both place whose sign differs, as
+  /// `{graha, first, second}`; `nakshatra` null unless the Moon's star or
+  /// pada differs, else `{first, second}`, each `{nakshatra, pada,
+  /// longitudeDeg}`; `dashas` each level both carry whose running lord
+  /// differs, `{system, level, first, second}`, each side `{lord, sign,
+  /// interval}` or null; and `yogas` each rule one side holds and the other
+  /// does not, or with another status, `{rule, category, first, second}`.
+  /// `compared` counts the facts read.
+  ///
+  /// `request_json` is `{"first", "second", "at"}`: `first` a chart request
+  /// of one birth (`instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+  /// `utcOffsetSeconds`, and any `dashas` and `rules` record), `second`
+  /// another, optional (the first's birth again), and `at` the UTC Julian
+  /// day the running dasha lords are compared at (each birth's own when left
+  /// out). A side naming no dasha system is read under Vimshottari. A key it
+  /// does not read, a chart request its reader refuses or one of more than
+  /// one birth is `INVALID_ARG`, named under `disagreements`; a null `other`
+  /// is `INVALID_ARG` naming `other`. Either context without an ephemeris is
+  /// `CAPABILITY`.
+  final TsChartDisagreementsDart ts_chart_disagreements;
 
   /// Founds a chart at an instant and a place and answers with its blob:
   /// where every graha stands, in which bhava under both readings, in
@@ -6230,6 +6264,47 @@ final class TeistroContext implements ffi.Finalizable {
         final rawkey = key.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_chart_layout_row(_handle, rawkey, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// **Where two charts disagree** (`03-design/chart-disagreements.md`): the
+  /// first chart founded under `context`, the second under `other`, and
+  /// answers with `{value, provenance}` as canonical JSON, sealed by the
+  /// first chart's provenance with the whole request as its input, every
+  /// catalogue member a full key. Pass `context` again as `other` to compare
+  /// two births under one setting.
+  ///
+  /// `value` is `{otherProfile, otherSettingsHash, at, compared, lagna,
+  /// grahas, nakshatra, dashas, yogas}`: `lagna` null unless its sign
+  /// differs, else `{first, second}`, each side `{sign, longitudeDeg,
+  /// degreesInSign}`; `grahas` each graha both place whose sign differs, as
+  /// `{graha, first, second}`; `nakshatra` null unless the Moon's star or
+  /// pada differs, else `{first, second}`, each `{nakshatra, pada,
+  /// longitudeDeg}`; `dashas` each level both carry whose running lord
+  /// differs, `{system, level, first, second}`, each side `{lord, sign,
+  /// interval}` or null; and `yogas` each rule one side holds and the other
+  /// does not, or with another status, `{rule, category, first, second}`.
+  /// `compared` counts the facts read.
+  ///
+  /// `request_json` is `{"first", "second", "at"}`: `first` a chart request
+  /// of one birth (`instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+  /// `utcOffsetSeconds`, and any `dashas` and `rules` record), `second`
+  /// another, optional (the first's birth again), and `at` the UTC Julian
+  /// day the running dasha lords are compared at (each birth's own when left
+  /// out). A side naming no dasha system is read under Vimshottari. A key it
+  /// does not read, a chart request its reader refuses or one of more than
+  /// one birth is `INVALID_ARG`, named under `disagreements`; a null `other`
+  /// is `INVALID_ARG` naming `other`. Either context without an ephemeris is
+  /// `CAPABILITY`.
+  String chartDisagreements(TeistroContext other, String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        other._alive();
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_chart_disagreements(_handle, other._handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

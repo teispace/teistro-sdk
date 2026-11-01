@@ -962,6 +962,34 @@ final class CalendarAsked extends _Request {
   List<Object?> get _fields => [calendar, date, into];
 }
 
+/// Two charts compared: `first` founded under the call's context, `second` (the first's birth again when left out) under the other's, and `at` the UTC Julian day the running dasha lords are compared at (each birth's own when left out).
+final class ChartDisagreementsRequest extends _Request {
+  const ChartDisagreementsRequest({
+    this.at,
+    required this.first,
+    this.second,
+  });
+
+  /// A UTC Julian day.
+  final double? at;
+
+  /// A chart request of one birth, as `chart.found`'s `request` reads it (`schema.describe` with {"tool": "chart.found"} answers its schema): `instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`, `utcOffsetSeconds`, and any `dashas` and `rules` record compared.
+  final Object? first;
+
+  /// A chart request of one birth, as `chart.found`'s `request` reads it (`schema.describe` with {"tool": "chart.found"} answers its schema): `instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`, `utcOffsetSeconds`, and any `dashas` and `rules` record compared.
+  final Object? second;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (at case final atValue?) 'at': atValue,
+    'first': first,
+    if (second case final secondValue?) 'second': secondValue,
+  };
+
+  @override
+  List<Object?> get _fields => [at, first, second];
+}
+
 /// The request as a binding writes it, the sections and records taken out.
 final class ChartFoundRequest extends _Request {
   const ChartFoundRequest({

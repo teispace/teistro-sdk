@@ -176,6 +176,7 @@ import {
   MatchRoleById,
   NameVargaById,
   VargaRelationById,
+  PayaById,
 } from './catalogue.js';
 import { decodeCharts, decodeDigest, decodeIntlRender, decodeNaam, decodePanchanga, decodePositions } from './blob.js';
 import { entityForms, messages } from './messages.js';
@@ -3113,6 +3114,53 @@ export class ChartArea extends Area {
    */
   layout(key) {
     return JSON.parse(run(this, (inner) => inner.chartLayoutRow(key)));
+  }
+
+  /**
+   * **Where two charts disagree** (`03-design/chart-disagreements.md`):
+   * `first` founded under this context, `second` (the first's birth again
+   * when left out) under `other`, and only the facts that differ, each
+   * with both sides: the lagna's sign, each graha's sign, the Moon's
+   * nakshatra and pada, each dasha level's running lord at `at` (each
+   * birth's own when left out) and each rule one side holds and the other
+   * does not. Pass this context again as `other` to compare two births
+   * under one setting. A side naming no dasha system is read under
+   * Vimshottari; the rules are compared when either side names `rules`.
+   * Sealed by the first chart's provenance, with the other's profile and
+   * settings hash in the record.
+   *
+   * @example
+   * const classical = new Context({ ephemeris: teimeris() });
+   * const kp = new Context({ profile: 'kp-default', ephemeris: teimeris() });
+   * const found = classical.chart.disagreements(kp, {
+   *   first: { instant: 2447000.25, place: { latitude: 27.7172, longitude: 85.324 }, utcOffsetSeconds: 20700 },
+   * });
+   * found.lagna?.second.sign; // 'rashi.…', when the two lagnas differ
+   *
+   * @param {Context} other the context the second chart is founded under
+   * @param {object} request
+   * @param {object} request.first a birth: `instant`, `place`, `utcOffsetSeconds`, and any `kind`, `dashas` and `rules`
+   * @param {object} [request.second] another birth; the first's again when left out
+   * @param {number} [request.at] the instant the dasha lords are compared at, a Julian day (UTC)
+   * @returns {object} the facts that differ, with `compared` and the `provenance`
+   */
+  disagreements(other, request) {
+    const theirs = natives.get(other);
+    if (theirs === undefined) {
+      throw new TypeError('disagreements: expected the Context to compare with, then the request');
+    }
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('disagreements: expected a request, e.g. { first: { instant, place, utcOffsetSeconds } }');
+    }
+    const asked = { first: comparedBirth(request.first, 'first') };
+    if (request.second !== undefined && request.second !== null) {
+      asked.second = comparedBirth(request.second, 'second');
+    }
+    if (request.at !== undefined && request.at !== null) asked.at = finite(request.at, 'at');
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.chartDisagreements(theirs(), JSON.stringify(asked))),
+    );
+    return deepFreeze({ ...value, provenance: decodeProvenance(provenance) });
   }
 
   /**
@@ -7041,6 +7089,8 @@ function avakahadasOf(batch) {
           vara: VaraById.get(c.ghataVara[chart]) ?? 'unknown',
           nakshatra: NakshatraById.get(c.ghataNakshatra[chart]) ?? 'unknown',
         }),
+        payaByNakshatra: PayaById.get(c.payaByNakshatra[chart]) ?? 'unknown',
+        payaByHouse: PayaById.get(c.payaByHouse[chart]) ?? 'unknown',
       });
     });
     AVAKAHADAS.set(batch, decoded);
@@ -8615,6 +8665,37 @@ export class AlmanacArea extends Area {
     }
     return deepFreeze(JSON.parse(run(this, (inner) => inner.almanacFestivalPack(JSON.stringify({ pack })))));
   }
+}
+
+/**
+ * One birth of a chart comparison as the boundary reads it: the chart
+ * request's own fields, the place spelled as every request spells it.
+ * What a comparison does not read is not sent, so a typo is this layer's
+ * refusal rather than a silent default.
+ *
+ * @param {object} side
+ * @param {string} what `first` or `second`, which a refusal names
+ * @returns {object}
+ */
+function comparedBirth(side, what) {
+  if (typeof side !== 'object' || side === null || Array.isArray(side)) {
+    throw new TypeError(`${what}: expected a birth, e.g. { instant, place, utcOffsetSeconds }`);
+  }
+  const place = side.place ?? {};
+  const asked = {
+    instant: finite(side.instant, `${what}.instant`),
+    latitudeDeg: finite(place.latitude, `${what}.place.latitude`),
+    longitudeDeg: finite(place.longitude, `${what}.place.longitude`),
+    altitudeM: finite(place.altitude ?? 0, `${what}.place.altitude`),
+    utcOffsetSeconds: finite(side.utcOffsetSeconds, `${what}.utcOffsetSeconds`),
+  };
+  if (side.kind !== undefined && side.kind !== null) asked.kind = side.kind;
+  if (side.dashas !== undefined && side.dashas !== null) {
+    asked.dashas = catalogueKeys(side.dashas, `${what}.dashas`, 'DashaSystem');
+  }
+  const rules = rulesJson(side.rules);
+  if (rules !== undefined) asked.rules = JSON.parse(rules);
+  return asked;
 }
 
 /**

@@ -39,6 +39,7 @@ __all__ = [
     "AddAsked",
     "BetweenAsked",
     "CalendarAsked",
+    "ChartDisagreementsRequest",
     "ChartFoundRequest",
     "BatchAsked",
     "DateTextRequest",
@@ -1191,6 +1192,19 @@ class CalendarAsked(TypedDict, total=False):
     into: Required[Union[_catalogue.Calendar, str]]
 
 
+class ChartDisagreementsRequest(TypedDict, total=False):
+    """Two charts compared: `first` founded under the call's context, `second` (the first's birth again when left out) under the other's, and `at` the UTC Julian day the running dasha lords are compared at (each birth's own when left out)."""
+
+    at: float
+    """A UTC Julian day."""
+
+    first: Required[Any]
+    """A chart request of one birth, as `chart.found`'s `request` reads it (`schema.describe` with {"tool": "chart.found"} answers its schema): `instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`, `utcOffsetSeconds`, and any `dashas` and `rules` record compared."""
+
+    second: Any
+    """A chart request of one birth, as `chart.found`'s `request` reads it (`schema.describe` with {"tool": "chart.found"} answers its schema): `instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`, `utcOffsetSeconds`, and any `dashas` and `rules` record compared."""
+
+
 class ChartFoundRequest(TypedDict, total=False):
     """The request as a binding writes it, the sections and records taken out."""
 
@@ -2093,6 +2107,12 @@ class DossierRequest(TypedDict, total=False):
 
     dashaDepth: Optional[int]
     """How many levels a dasha timeline is written to, one up; every level computed when left out."""
+
+    drop: Sequence[str]
+    """The sections never written, by key, built in or the reader's own (`LONGEVITY`, `MARAKAS`): a policy, written into the dossier as its `DROPPED` section, so the text, and any hash of it, says what was kept out. A section both named in `sections` and dropped is refused."""
+
+    dropCategories: Sequence[str]
+    """The categories whose rows a section with a category column (`RULES`) never writes, `marana` or `ayur`, each counted in `DROPPED`."""
 
     preset: DossierPreset
     """The sections when `sections` is left out."""

@@ -4690,5 +4690,44 @@
       "prose": "weekday",
       "iast": "Vāra"
     }
+  },
+  "paya": {
+    "SUVARNA": {
+      "name": "Gold",
+      "prose": "Gold",
+      "iast": "Suvarṇa"
+    },
+    "RAJATA": {
+      "name": "Silver",
+      "prose": "Silver",
+      "iast": "Rajata"
+    },
+    "TAMRA": {
+      "name": "Copper",
+      "prose": "Copper",
+      "iast": "Tāmra"
+    },
+    "LOHA": {
+      "name": "Iron",
+      "prose": "Iron",
+      "iast": "Loha"
+    }
+  },
+  "tridosha": {
+    "VATA": {
+      "name": "Vata",
+      "prose": "Vata",
+      "iast": "Vāta"
+    },
+    "PITTA": {
+      "name": "Pitta",
+      "prose": "Pitta",
+      "iast": "Pitta"
+    },
+    "KAPHA": {
+      "name": "Kapha",
+      "prose": "Kapha",
+      "iast": "Kapha"
+    }
   }
 }

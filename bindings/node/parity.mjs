@@ -945,6 +945,7 @@ for (const chart of charts) {
   put(`chart-${i}-avakahada-syllable`, `${syllable.cell} ${syllable.devanagari} ${syllable.iast} ${syllable.varga}`);
   const ghata = birth.ghata;
   put(`chart-${i}-avakahada-ghata`, `${ghata.chandra} ${ghata.tithi} ${ghata.vara} ${ghata.nakshatra}`);
+  put(`chart-${i}-avakahada-paya`, `${birth.payaByNakshatra} ${birth.payaByHouse}`);
   const { rising, eclipse } = chart.moment;
   put(
     `chart-${i}-moment`,
@@ -2527,6 +2528,7 @@ for (const [path, member] of [
   ['chart.found_many', shape.chart.foundMany],
   ['chart.rashifal', shape.chart.rashifal],
   ['chart.rashifal_many', shape.chart.rashifalMany],
+  ['chart.disagreements', shape.chart.disagreements],
   ['almanac.of', shape.almanac.of],
   ['almanac.festivals', shape.almanac.festivals],
   ['almanac.disagreements', shape.almanac.disagreements],

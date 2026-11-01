@@ -843,6 +843,7 @@ fn the_surface(report: &mut Report) {
         ("chart.found_many", "present"),
         ("chart.rashifal", "present"),
         ("chart.rashifal_many", "present"),
+        ("chart.disagreements", "present"),
         ("engine.call", "present"),
         ("engine.call_json", "present"),
         ("engine.manifest", "present"),
@@ -5928,6 +5929,14 @@ fn the_avakahada(report: &mut Report, index: usize, document: &teistro::Document
             ghata.vara.full_key(),
             ghata.nakshatra.full_key()
         ),
+    );
+    let house = read
+        .paya_by_house
+        .map_or_else(|| "-".to_owned(), |paya| paya.full_key().to_owned());
+    put(
+        report,
+        &format!("chart-{index}-avakahada-paya"),
+        format!("{} {house}", read.paya_by_nakshatra.full_key()),
     );
 }
 

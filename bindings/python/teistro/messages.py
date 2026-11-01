@@ -904,6 +904,15 @@ class PanchakaKey(enum.StrEnum):
     ROGA = "panchaka.ROGA"
 
 
+class PayaKey(enum.StrEnum):
+    """A `paya` as a message names it: the full catalogue key."""
+
+    SUVARNA = "paya.SUVARNA"
+    RAJATA = "paya.RAJATA"
+    TAMRA = "paya.TAMRA"
+    LOHA = "paya.LOHA"
+
+
 class PointKey(enum.StrEnum):
     """A `point` as a message names it: the full catalogue key."""
 
@@ -1137,6 +1146,14 @@ class TraditionKey(enum.StrEnum):
     SIKH = "tradition.SIKH"
     ISLAMIC = "tradition.ISLAMIC"
     CHRISTIAN = "tradition.CHRISTIAN"
+
+
+class TridoshaKey(enum.StrEnum):
+    """A `tridosha` as a message names it: the full catalogue key."""
+
+    VATA = "tridosha.VATA"
+    PITTA = "tridosha.PITTA"
+    KAPHA = "tridosha.KAPHA"
 
 
 class VaiseshikamsaKey(enum.StrEnum):
@@ -2258,6 +2275,11 @@ class MessagesSdkEntity:
         return MessagesSdkEntityPanchaka(self._r)
 
     @property
+    def paya(self) -> MessagesSdkEntityPaya:
+        """The messages under `paya`."""
+        return MessagesSdkEntityPaya(self._r)
+
+    @property
     def point(self) -> MessagesSdkEntityPoint:
         """The messages under `point`."""
         return MessagesSdkEntityPoint(self._r)
@@ -2316,6 +2338,11 @@ class MessagesSdkEntity:
     def tradition(self) -> MessagesSdkEntityTradition:
         """The messages under `tradition`."""
         return MessagesSdkEntityTradition(self._r)
+
+    @property
+    def tridosha(self) -> MessagesSdkEntityTridosha:
+        """The messages under `tridosha`."""
+        return MessagesSdkEntityTridosha(self._r)
 
     @property
     def vaiseshikamsa(self) -> MessagesSdkEntityVaiseshikamsa:
@@ -2917,6 +2944,29 @@ class MessagesSdkEntityVaiseshikamsa:
     def vyanjana(self) -> EntityForms:
         """The forms of `vaiseshikamsa.VYANJANA` in the current locale."""
         return self._r.entity("vaiseshikamsa.VYANJANA")
+
+
+class MessagesSdkEntityTridosha:
+    """The messages under `MessagesSdkEntityTridosha`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def kapha(self) -> EntityForms:
+        """The forms of `tridosha.KAPHA` in the current locale."""
+        return self._r.entity("tridosha.KAPHA")
+
+    @property
+    def pitta(self) -> EntityForms:
+        """The forms of `tridosha.PITTA` in the current locale."""
+        return self._r.entity("tridosha.PITTA")
+
+    @property
+    def vata(self) -> EntityForms:
+        """The forms of `tridosha.VATA` in the current locale."""
+        return self._r.entity("tridosha.VATA")
 
 
 class MessagesSdkEntityTradition:
@@ -3803,6 +3853,34 @@ class MessagesSdkEntityPoint:
     def vyatipata(self) -> EntityForms:
         """The forms of `point.VYATIPATA` in the current locale."""
         return self._r.entity("point.VYATIPATA")
+
+
+class MessagesSdkEntityPaya:
+    """The messages under `MessagesSdkEntityPaya`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def loha(self) -> EntityForms:
+        """The forms of `paya.LOHA` in the current locale."""
+        return self._r.entity("paya.LOHA")
+
+    @property
+    def rajata(self) -> EntityForms:
+        """The forms of `paya.RAJATA` in the current locale."""
+        return self._r.entity("paya.RAJATA")
+
+    @property
+    def suvarna(self) -> EntityForms:
+        """The forms of `paya.SUVARNA` in the current locale."""
+        return self._r.entity("paya.SUVARNA")
+
+    @property
+    def tamra(self) -> EntityForms:
+        """The forms of `paya.TAMRA` in the current locale."""
+        return self._r.entity("paya.TAMRA")
 
 
 class MessagesSdkEntityPanchaka:

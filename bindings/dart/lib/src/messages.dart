@@ -976,6 +976,17 @@ enum PanchakaKey {
   final String key;
 }
 
+enum PayaKey {
+  suvarna('paya.SUVARNA'),
+  rajata('paya.RAJATA'),
+  tamra('paya.TAMRA'),
+  loha('paya.LOHA');
+
+  const PayaKey(this.key);
+
+  final String key;
+}
+
 enum PointKey {
   lagna('point.LAGNA'),
   dhuma('point.DHUMA'),
@@ -1233,6 +1244,16 @@ enum TraditionKey {
   christian('tradition.CHRISTIAN');
 
   const TraditionKey(this.key);
+
+  final String key;
+}
+
+enum TridoshaKey {
+  vata('tridosha.VATA'),
+  pitta('tridosha.PITTA'),
+  kapha('tridosha.KAPHA');
+
+  const TridoshaKey(this.key);
 
   final String key;
 }
@@ -2878,6 +2899,17 @@ final class MessagesSdkEntityPanchaka {
   EntityForms get roga => _r.entity('panchaka.ROGA');
 }
 
+final class MessagesSdkEntityPaya {
+  const MessagesSdkEntityPaya(this._r);
+
+  final Renderer _r;
+
+  EntityForms get loha => _r.entity('paya.LOHA');
+  EntityForms get rajata => _r.entity('paya.RAJATA');
+  EntityForms get suvarna => _r.entity('paya.SUVARNA');
+  EntityForms get tamra => _r.entity('paya.TAMRA');
+}
+
 final class MessagesSdkEntityPoint {
   const MessagesSdkEntityPoint(this._r);
 
@@ -3120,6 +3152,16 @@ final class MessagesSdkEntityTradition {
   EntityForms get sikh => _r.entity('tradition.SIKH');
 }
 
+final class MessagesSdkEntityTridosha {
+  const MessagesSdkEntityTridosha(this._r);
+
+  final Renderer _r;
+
+  EntityForms get kapha => _r.entity('tridosha.KAPHA');
+  EntityForms get pitta => _r.entity('tridosha.PITTA');
+  EntityForms get vata => _r.entity('tridosha.VATA');
+}
+
 final class MessagesSdkEntityVaiseshikamsa {
   const MessagesSdkEntityVaiseshikamsa(this._r);
 
@@ -3313,6 +3355,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityNature get nature => MessagesSdkEntityNature(_r);
   MessagesSdkEntityPaksha get paksha => MessagesSdkEntityPaksha(_r);
   MessagesSdkEntityPanchaka get panchaka => MessagesSdkEntityPanchaka(_r);
+  MessagesSdkEntityPaya get paya => MessagesSdkEntityPaya(_r);
   MessagesSdkEntityPoint get point => MessagesSdkEntityPoint(_r);
   MessagesSdkEntityRashi get rashi => MessagesSdkEntityRashi(_r);
   MessagesSdkEntityRelationship get relationship => MessagesSdkEntityRelationship(_r);
@@ -3325,6 +3368,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityTatwa get tatwa => MessagesSdkEntityTatwa(_r);
   MessagesSdkEntityTithi get tithi => MessagesSdkEntityTithi(_r);
   MessagesSdkEntityTradition get tradition => MessagesSdkEntityTradition(_r);
+  MessagesSdkEntityTridosha get tridosha => MessagesSdkEntityTridosha(_r);
   MessagesSdkEntityVaiseshikamsa get vaiseshikamsa => MessagesSdkEntityVaiseshikamsa(_r);
   MessagesSdkEntityVara get vara => MessagesSdkEntityVara(_r);
   MessagesSdkEntityVarga get varga => MessagesSdkEntityVarga(_r);

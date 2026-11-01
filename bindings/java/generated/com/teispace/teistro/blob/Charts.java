@@ -1543,7 +1543,7 @@ public final class Charts {
     }
 
     /**
-     * Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+     * Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods (C1105 to C1107). Vashya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
      *
      * @return the avakahada
      */
@@ -14524,7 +14524,7 @@ public final class Charts {
     /**
      * The `avakahada` section of this blob: a getter per column, reading a row from the blob's bytes.
      *
-     * Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+     * Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods (C1105 to C1107). Vashya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
      */
     public static final class Avakahada {
         private final ByteBuffer bytes;
@@ -14544,6 +14544,8 @@ public final class Charts {
         private final int ghataTithiAt;
         private final int ghataVaraAt;
         private final int ghataNakshatraAt;
+        private final int payaByNakshatraAt;
+        private final int payaByHouseAt;
 
         Avakahada(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -14564,6 +14566,8 @@ public final class Charts {
             this.ghataTithiAt = blob.column(at, 12, 2);
             this.ghataVaraAt = blob.column(at, 13, 2);
             this.ghataNakshatraAt = blob.column(at, 14, 2);
+            this.payaByNakshatraAt = blob.column(at, 15, 2);
+            this.payaByHouseAt = blob.column(at, 16, 2);
         }
 
         /**
@@ -14764,6 +14768,32 @@ public final class Charts {
          */
         public int ghataNakshatra(int row) {
             return Short.toUnsignedInt(bytes.getShort(ghataNakshatraAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The birth paya by the Moon's nakshatra, by the Vishwavidyalaya Panchang (C1106).
+         *
+         * The id of a {@code Paya}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int payaByNakshatra(int row) {
+            return Short.toUnsignedInt(bytes.getShort(payaByNakshatraAt + Objects.checkIndex(row, length) * 2));
+        }
+
+        /**
+         * The birth paya by the Moon's house counted from the lagna's sign, by Sangraha Shiromani XIII v. 92 as the Vishwavidyalaya Panchang applies it (C1105, C1107); a chart's avakahada always reads it.
+         *
+         * The id of a {@code Paya}.
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int payaByHouse(int row) {
+            return Short.toUnsignedInt(bytes.getShort(payaByHouseAt + Objects.checkIndex(row, length) * 2));
         }
     }
 

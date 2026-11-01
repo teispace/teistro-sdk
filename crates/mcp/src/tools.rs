@@ -24,6 +24,10 @@ pub(crate) const ENGINE_PREFIX: &str = "engine.";
 /// The arguments a record tool reads beside its record.
 const ARGUMENTS: [&str; 4] = ["request", "profile", "settings", "locale"];
 
+/// The argument naming the context a comparing record's call is
+/// compared with.
+pub(crate) const OTHER: &str = "other";
+
 /// The arguments naming the context a call computes under.
 pub(crate) const SCOPE: [&str; 3] = ["profile", "settings", "locale"];
 
@@ -356,6 +360,37 @@ impl Arguments {
         Ok((scope, rest))
     }
 
+    /// A comparing record's arguments with `other` split off, read as the
+    /// scope of the context compared with; none where it was not named,
+    /// which compares the call's context with itself. A record that
+    /// compares nothing keeps every argument, and refuses `other` when
+    /// read.
+    pub(crate) fn other(
+        record: Record,
+        arguments: &Map<String, Value>,
+    ) -> Result<(Map<String, Value>, Option<Arguments>), Error> {
+        if !record.compares() {
+            return Ok((arguments.clone(), None));
+        }
+        let mut rest = arguments.clone();
+        let Some(other) = rest.remove(OTHER) else {
+            return Ok((rest, None));
+        };
+        let Value::Object(scope) = other else {
+            return Err(Error::invalid_arg(
+                "`other` is the context compared with, as `{profile, settings, locale}`",
+            )
+            .with_field(format!("arguments.{OTHER}")));
+        };
+        if let Some(key) = scope.keys().find(|key| !SCOPE.contains(&key.as_str())) {
+            return Err(Error::invalid_arg(format!("`{OTHER}` has no `{key}`"))
+                .with_field(format!("arguments.{OTHER}.{key}"))
+                .with_hint(format!("it names {}", SCOPE.join(", "))));
+        }
+        let (scope, _) = Arguments::scope(&scope).map_err(of_other)?;
+        Ok((rest, Some(scope)))
+    }
+
     pub(crate) fn read(arguments: &Map<String, Value>) -> Result<Arguments, Error> {
         if let Some(key) = arguments
             .keys()
@@ -383,6 +418,22 @@ impl Arguments {
             settings: arguments.get("settings").map(canonical_json),
             locale: text(arguments, "locale")?,
         })
+    }
+}
+
+/// A refusal of the context compared with, named under `other`: its
+/// `arguments.profile` is `arguments.other.profile`.
+pub(crate) fn of_other(why: Error) -> Error {
+    let field = why
+        .field()
+        .unwrap_or_default()
+        .trim_start_matches("arguments.")
+        .to_owned();
+    let root = format!("arguments.{OTHER}");
+    if field.is_empty() {
+        why.with_field(root)
+    } else {
+        why.with_field(format!("{root}.{field}"))
     }
 }
 

@@ -18,7 +18,9 @@ use std::sync::OnceLock;
 use teistro_core::Status;
 use teistro_core::catalogue::Calendar;
 use teistro_ffi::blob::{TsBlob, ts_blob_free};
-use teistro_ffi::chart::{TsChartRequest, ts_chart_found, ts_chart_layout_row};
+use teistro_ffi::chart::{
+    TsChartRequest, ts_chart_disagreements, ts_chart_found, ts_chart_layout_row,
+};
 use teistro_ffi::context::{
     TsContext, TsContextOptions, TsEphemeris, TsError, ts_context_free, ts_context_new,
     ts_error_free,
@@ -222,6 +224,7 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_intl_lookup",
     "ts_intl_dates",
     "ts_verify_claims",
+    "ts_chart_disagreements",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -474,6 +477,10 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         "ts_almanac_digest",
         Seed::Answered,
         r#"{"first":{"year":2025,"month":10,"day":1},"days":3,"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700,"festivals":{"rules":"NEPAL"}}"#,
+    ),    (
+        "ts_chart_disagreements",
+        Seed::Answered,
+        r#"{"first":{"instant":2447000.25,"latitudeDeg":27.7172,"longitudeDeg":85.324,"utcOffsetSeconds":20700,"rules":{"shipped":["YOGAS"]}},"at":2460000.5}"#,
     ),
     (
         "ts_intl_lexicon",
@@ -654,6 +661,7 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_almanac_disagreements" => paired_call(ts_almanac_disagreements, text),
         "ts_almanac_published_reasons" => paired_call(ts_almanac_published_reasons, text),
         "ts_chart_layout_row key" => string_call(ts_chart_layout_row, text),
+        "ts_chart_disagreements" => paired_call(ts_chart_disagreements, text),
         "ts_ephemeris_call" => ephemeris_call(text),
         "ts_intl_lexicon" => string_call(ts_intl_lexicon, text),
         "ts_intl_lookup" => string_call(ts_intl_lookup, text),

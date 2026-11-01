@@ -29,6 +29,7 @@ mod kuja;
 mod name;
 mod naming;
 mod native;
+mod paya;
 mod porutham;
 mod role;
 
@@ -54,6 +55,7 @@ pub use naming::{
     birth_syllable, name_check, name_clauses, name_syllable, names_of, read_name, syllables,
 };
 pub use native::Native;
+pub use paya::{house_from_lagna, paya_by_house, paya_by_nakshatra};
 pub use porutham::{
     CHIEF_FIVE, DeerghaBeyond, DhinamRule, LordsFriendship, PORUTHAM, Porutham, PoruthamException,
     PoruthamReading, PoruthamRow, PoruthamRules, Rajju, TwoSignStar, porutham,

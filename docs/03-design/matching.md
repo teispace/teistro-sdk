@@ -387,13 +387,12 @@ spelled in Devanagari as the page prints it and in IAST transliterated
 from that spelling. The transcribed table is held to the rule both ways:
 each printed syllable reads back to its own cell.
 
-**Paya, disha and tatwa are not shipped** (C300). The baseline engine's
-avakahada adds paya (gold, silver, copper or iron), disha and tatwa. None
-of them is given by *Manasagari* (1904), *Muhurta Chintamani* (1954),
-*Svarodaya* (1946) or the Sanskrit quoted in the undated *Brihad
-Avakahada Chakra* scans. The web gives only rank 3 pages, which read paya
-from the Moon's house. They wait on a rank 1 text, as the recommendation
-bands do.
+**Disha and tatwa are not shipped** (C300). The baseline engine's
+avakahada adds paya (gold, silver, copper or iron), disha and tatwa.
+None of them is given by *Manasagari* (1904), *Muhurta Chintamani*
+(1954), *Svarodaya* (1946) or the Sanskrit quoted in the undated *Brihad
+Avakahada Chakra* scans, so disha and tatwa wait on a rank 1 text, as
+the recommendation bands do. Paya is now shipped, below (SR-32).
 
 **The avakahada is the Moon's natives gathered** (C301). What the
 janma-patrika prints is varna, vashya, yoni, gana, nadi, the nakshatra
@@ -422,6 +421,50 @@ engine instead scores a Latin spelling against a table of variants by
 edit distance (100 for exact, 90 for a prefix, then 70 to 89 "similar").
 That would guess the very English spellings C293 refuses, so it is not
 shipped. A matcher of spellings is the application's.
+
+## The birth paya, decided
+
+Status: `decided`, 2026-11-01, from the sources before any code (SR-32).
+
+The application asks for the birth paya by both methods a patrika
+prints: from the Moon's house counted from the lagna, and from the
+Moon's nakshatra.
+
+**The house method.** *Sangraha Shiromani* (XIII v. 92, p. 142 of the
+Chambal Archives scan) gives the verse a patro printed in Nepal also
+prints (the NSU Calendar Patro 2078): counted from the birth lagna,
+houses 1, 6 and 11 are gold, 2, 5 and 9 silver, 3, 7 and 10 copper,
+and 4, 8 and 12 iron. Sangraha Shiromani quotes it "from another text"
+for Saturn's foot. The *Vishwavidyalaya Panchang* of the Kameshwar
+Singh Darbhanga Sanskrit University (2005–06, the section
+स्वर्णादिचरणकजन्मज्ञानम्, leaf 10) applies the same houses to the
+Moon at birth. That application is the one shipped (C1105).
+
+**The nakshatra method.** The same page of the Vishwavidyalaya
+Panchang gives the second method: the twelve stars from Ardra to
+Anuradha are silver, the seven from Jyeshtha to Shatabhisha gold, the
+five from Purva Bhadrapada to Bharani copper, and Krittika, Rohini and
+Mrigashira iron. It closes with the fruits: gold the best, silver
+good, copper middling, iron poor. Other printed groupings (rank 3 web
+pages) differ, and are not shipped (C1106).
+
+**Houses are whole signs from the lagna's sign** (C1107). The verse
+counts the Moon's place from the lagna (जन्मलग्नात्), and a patrika
+counts it by sign. So the house is the Moon's sign counted from the
+lagna's sign, 1 to 12, and no house system is read.
+
+**Both are answered, neither is chosen.** The two methods disagree
+for most births, and the panchang gives both without ranking them. The
+avakahada therefore carries `payaByNakshatra` and `payaByHouse`. The
+nakshatra method needs only the Moon, so a Moon alone (`avakahada(moon)`)
+answers it. The house method needs the lagna, so it is `null` until
+`with_lagna` reads one. A chart's avakahada always has both. The four
+payas are the catalogue kind `paya` (SUVARNA, RAJATA, TAMRA, LOHA),
+named in English and Nepali, each with the panchang's fruit.
+
+**Acceptance** is the panchang's own lists: each of the 27 stars and
+the 12 houses reads back to the paya the page prints for it, and a
+Kathmandu chart whose Moon and lagna are known reads both.
 
 ## The surface
 

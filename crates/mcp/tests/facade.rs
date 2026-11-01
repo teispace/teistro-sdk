@@ -766,3 +766,83 @@ fn schema_describe_answers_the_full_schemas_and_refuses_by_field() {
         );
     }
 }
+
+#[test]
+fn a_comparison_names_the_context_it_is_compared_with() {
+    // `chart.disagreements` reads one more argument than other records:
+    // the context the second chart is founded under, by the same three
+    // arguments (`03-design/chart-disagreements.md` §3).
+    let mut server = Server::new(Engine::Builtin);
+    let birth = json!({"first": {"instant": 2_447_000.25, "latitudeDeg": 27.7172,
+                                 "longitudeDeg": 85.324, "utcOffsetSeconds": 20_700}});
+    let tools = server
+        .handle(&json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {
+            "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {}}}})
+            .to_string())
+        .unwrap();
+    let tools: Value = serde_json::from_str(&tools).unwrap();
+    let input = |name: &str| {
+        tools["result"]["tools"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .find(|tool| tool["name"] == name)
+            .map(|tool| tool["inputSchema"]["properties"].clone())
+            .unwrap()
+    };
+    assert!(input("chart.disagreements")["other"].is_object());
+    assert!(
+        input("chart.found").get("other").is_none(),
+        "only a comparison names another"
+    );
+
+    let kp = call(
+        &mut server,
+        "chart.disagreements",
+        &json!({"request": birth, "other": {"profile": "kp-default"}}),
+    );
+    assert_eq!(kp["isError"], false, "{kp}");
+    assert_eq!(
+        kp["structuredContent"]["value"]["otherProfile"],
+        "kp-default"
+    );
+    let alone = call(
+        &mut server,
+        "chart.disagreements",
+        &json!({"request": birth}),
+    );
+    let value = &alone["structuredContent"]["value"];
+    assert_eq!(value["otherProfile"], teistro::settings::DEFAULT_PROFILE);
+    assert_eq!(
+        value["lagna"],
+        Value::Null,
+        "one context agrees with itself"
+    );
+
+    for (other, field) in [
+        (json!({"profile": 7}), "arguments.other.profile"),
+        (json!({"request": {}}), "arguments.other.request"),
+        (json!("kp-default"), "arguments.other"),
+        (
+            json!({"profile": "no-such-profile"}),
+            "arguments.other.profile",
+        ),
+    ] {
+        let refused = call(
+            &mut server,
+            "chart.disagreements",
+            &json!({"request": birth, "other": other}),
+        );
+        assert_eq!(refused["isError"], true, "{other}");
+        assert_eq!(refused["structuredContent"]["field"], field, "{other}");
+    }
+    let refused = call(
+        &mut server,
+        "chart.found",
+        &json!({"request": {}, "other": {"profile": "kp-default"}}),
+    );
+    assert_eq!(
+        refused["isError"], true,
+        "a record that compares nothing has no `other`"
+    );
+}

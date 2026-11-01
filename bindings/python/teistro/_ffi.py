@@ -129,6 +129,7 @@ from .catalogue import (
     Panchaka,
     Parity,
     Partile,
+    Paya,
     PlaceReading,
     Point,
     PointFamily,
@@ -181,6 +182,7 @@ from .catalogue import (
     Tithi,
     TithiClass,
     Tradition,
+    Tridosha,
     Triplicities,
     Vaiseshikamsa,
     Vara,
@@ -4182,6 +4184,14 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_chart_layout_row.restype = ctypes.c_int32
+        self.ts_chart_disagreements: Any = library.ts_chart_disagreements
+        self.ts_chart_disagreements.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_chart_disagreements.restype = ctypes.c_int32
         self.ts_chart_found: Any = library.ts_chart_found
         self.ts_chart_found.argtypes = [
             ctypes.POINTER(_Context),
@@ -5038,6 +5048,54 @@ class TeistroContext:
             status = Status(self._lib.ts_chart_layout_row(
                 self._raw,
                 _key,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def chart_disagreements(self, other: TeistroContext, request_json: str) -> str:
+        """**Where two charts disagree** (`03-design/chart-disagreements.md`): the
+        first chart founded under `context`, the second under `other`, and
+        answers with `{value, provenance}` as canonical JSON, sealed by the
+        first chart's provenance with the whole request as its input, every
+        catalogue member a full key. Pass `context` again as `other` to compare
+        two births under one setting.
+
+        `value` is `{otherProfile, otherSettingsHash, at, compared, lagna,
+        grahas, nakshatra, dashas, yogas}`: `lagna` null unless its sign
+        differs, else `{first, second}`, each side `{sign, longitudeDeg,
+        degreesInSign}`; `grahas` each graha both place whose sign differs, as
+        `{graha, first, second}`; `nakshatra` null unless the Moon's star or
+        pada differs, else `{first, second}`, each `{nakshatra, pada,
+        longitudeDeg}`; `dashas` each level both carry whose running lord
+        differs, `{system, level, first, second}`, each side `{lord, sign,
+        interval}` or null; and `yogas` each rule one side holds and the other
+        does not, or with another status, `{rule, category, first, second}`.
+        `compared` counts the facts read.
+
+        `request_json` is `{"first", "second", "at"}`: `first` a chart request
+        of one birth (`instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+        `utcOffsetSeconds`, and any `dashas` and `rules` record), `second`
+        another, optional (the first's birth again), and `at` the UTC Julian
+        day the running dasha lords are compared at (each birth's own when left
+        out). A side naming no dasha system is read under Vimshottari. A key it
+        does not read, a chart request its reader refuses or one of more than
+        one birth is `INVALID_ARG`, named under `disagreements`; a null `other`
+        is `INVALID_ARG` naming `other`. Either context without an ephemeris is
+        `CAPABILITY`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_chart_disagreements(
+                self._raw,
+                other._raw,
+                _request_json,
                 ctypes.byref(_out_json),
             ))
             if status != Status.OK:

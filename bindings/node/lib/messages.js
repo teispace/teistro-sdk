@@ -945,6 +945,12 @@ export function messages(r) {
           raja: () => r.entity('panchaka.RAJA'),
           roga: () => r.entity('panchaka.ROGA'),
         },
+        paya: {
+          loha: () => r.entity('paya.LOHA'),
+          rajata: () => r.entity('paya.RAJATA'),
+          suvarna: () => r.entity('paya.SUVARNA'),
+          tamra: () => r.entity('paya.TAMRA'),
+        },
         point: {
           a1: () => r.entity('point.A1'),
           a12: () => r.entity('point.A12'),
@@ -1126,6 +1132,11 @@ export function messages(r) {
           islamic: () => r.entity('tradition.ISLAMIC'),
           jain: () => r.entity('tradition.JAIN'),
           sikh: () => r.entity('tradition.SIKH'),
+        },
+        tridosha: {
+          kapha: () => r.entity('tridosha.KAPHA'),
+          pitta: () => r.entity('tridosha.PITTA'),
+          vata: () => r.entity('tridosha.VATA'),
         },
         vaiseshikamsa: {
           bhedaka: () => r.entity('vaiseshikamsa.BHEDAKA'),

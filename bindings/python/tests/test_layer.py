@@ -22,6 +22,7 @@ from teistro import (
     Body,
     Calendar,
     ChartLayout,
+    ComparedBirth,
     Ephemeris,
     KujaLifts,
     Latitude,
@@ -83,6 +84,8 @@ class ArgumentsOfTheWrongShape(WithLibrary):
         november = date(Calendar.GREGORIAN, 2025, 11, 1)
         day: Dict[str, Any] = {"from_date": november, "place": KATHMANDU, "utc_offset_seconds": 20700}
         self.refused(lambda: self.ctx.almanac.disagreements("nepali-drik", **day), "other")  # type: ignore[arg-type]
+        birth = ComparedBirth(instant=2447000.25, place=KATHMANDU, utc_offset_seconds=20700)
+        self.refused(lambda: self.ctx.chart.disagreements("kp-default", first=birth), "other")  # type: ignore[arg-type]
         self.refused(
             lambda: self.ctx.almanac.published_reasons(**day, festivals={"rules": "NEPAL"}, sky="nepali-committee"),  # type: ignore[arg-type]
             "sky",

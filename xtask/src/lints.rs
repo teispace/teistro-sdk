@@ -1249,6 +1249,10 @@ fn dart_facades_are_declared(root: &Path, outcome: &mut Outcome) {
 /// each with why it stays.
 const KEPT_TWINS: &[(&str, &str)] = &[
     (
+        "ChartDisagreementRequest",
+        "types the two births as `ComparedBirth` (a place, an offset, the dashas and rules compared), which the generated `ChartDisagreementsRequest` leaves as raw JSON",
+    ),
+    (
         "Graded",
         "generic over the member it grades; the generated `GradedRashi`, `GradedTithi` and the rest are its instances, which TypeScript writes `Graded<Rashi>`",
     ),
@@ -3443,11 +3447,15 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
     // longer name it begins (`from_json_in`), which would pass for it.
     let reached = |name: &str| {
         let call = format!("{name}::from_json");
+        // A whole name on both sides: `ChartDisagreementRequest::from_json`
+        // is not a read of `DisagreementRequest`.
+        let part = |c: char| c.is_ascii_alphanumeric() || c == '_';
         through.iter().any(|text| {
             text.match_indices(&call).any(|(at, _)| {
-                !text.get(at + call.len()..).is_some_and(|rest| {
-                    rest.starts_with(|next: char| next.is_ascii_alphanumeric() || next == '_')
-                })
+                !text
+                    .get(at + call.len()..)
+                    .is_some_and(|rest| rest.starts_with(part))
+                    && !text.get(..at).is_some_and(|before| before.ends_with(part))
             })
         })
     };

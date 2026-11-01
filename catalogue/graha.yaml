@@ -1,6 +1,6 @@
 kind: graha
 number: 1
-version: 1
+version: 2
 doc: "The nine grahas of the Parashari tradition and the three outer planets."
 types:
   GrahaDescriptors:
@@ -22,6 +22,9 @@ attributes:
   friends: list<key:graha>
   neutrals: list<key:graha>
   enemies: list<key:graha>
+  classical_doshas: list<key:tridosha>
+  classical_predominant_dosha: option<key:tridosha>
+  classical_tattva: option<key:tatwa>
 members:
   - key: SUN
     id: 0
@@ -43,11 +46,16 @@ members:
       friends: [MOON, MARS, JUPITER]
       neutrals: [MERCURY]
       enemies: [VENUS, SATURN, RAHU, KETU]
+      classical_doshas: [PITTA]
+      classical_predominant_dosha: PITTA
+      classical_tattva: ~
     sources:
       - text: "baseline-engine"
         ref: "core data"
       - text: BPHS
         ref: "3"
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.13: पित्तप्रकृतिको"
     mark: V
   - key: MOON
     id: 1
@@ -69,11 +77,16 @@ members:
       friends: [SUN, MERCURY]
       neutrals: [MARS, JUPITER, VENUS, SATURN]
       enemies: [RAHU, KETU]
+      classical_doshas: [VATA, KAPHA]
+      classical_predominant_dosha: ~
+      classical_tattva: ~
     sources:
       - text: "baseline-engine"
         ref: "core data"
       - text: BPHS
         ref: "3"
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.14: बहुवातकफः (ch. 3 in the usual numbering)"
     mark: V
   - key: MARS
     id: 2
@@ -95,11 +108,16 @@ members:
       friends: [SUN, MOON, JUPITER]
       neutrals: [VENUS, SATURN, KETU]
       enemies: [MERCURY, RAHU]
+      classical_doshas: [PITTA]
+      classical_predominant_dosha: PITTA
+      classical_tattva: AGNI
     sources:
       - text: "baseline-engine"
         ref: "core data"
       - text: BPHS
         ref: "3"
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.10 (tattva), 2.15 (pitta)"
     mark: V
   - key: MERCURY
     id: 3
@@ -121,11 +139,16 @@ members:
       friends: [SUN, VENUS]
       neutrals: [MARS, JUPITER, SATURN, RAHU, KETU]
       enemies: [MOON]
+      classical_doshas: [PITTA, KAPHA, VATA]
+      classical_predominant_dosha: ~
+      classical_tattva: PRITHVI
     sources:
       - text: "baseline-engine"
         ref: "core data"
       - text: BPHS
         ref: "3"
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.10 (tattva), 2.16: पित्तवान् कफवान् … मारुतप्रकृतिः"
     mark: V
   - key: JUPITER
     id: 4
@@ -147,11 +170,16 @@ members:
       friends: [SUN, MOON, MARS]
       neutrals: [SATURN, KETU]
       enemies: [MERCURY, VENUS, RAHU]
+      classical_doshas: [KAPHA]
+      classical_predominant_dosha: KAPHA
+      classical_tattva: AKASHA
     sources:
       - text: "baseline-engine"
         ref: "core data"
       - text: BPHS
         ref: "3"
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.10 (tattva), 2.17: कफप्रकृतिको"
     mark: V
   - key: VENUS
     id: 5
@@ -173,11 +201,16 @@ members:
       friends: [MERCURY, SATURN, RAHU]
       neutrals: [MARS, JUPITER, KETU]
       enemies: [SUN, MOON]
+      classical_doshas: [KAPHA, VATA]
+      classical_predominant_dosha: KAPHA
+      classical_tattva: JALA
     sources:
       - text: "baseline-engine"
         ref: "core data"
       - text: BPHS
         ref: "3"
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.10 (tattva), 2.18: कफाधिक्यानिलात्मा"
     mark: V
   - key: SATURN
     id: 6
@@ -199,11 +232,16 @@ members:
       friends: [MERCURY, VENUS, RAHU]
       neutrals: [JUPITER, KETU]
       enemies: [SUN, MOON, MARS]
+      classical_doshas: [VATA]
+      classical_predominant_dosha: VATA
+      classical_tattva: VAYU
     sources:
       - text: "baseline-engine"
         ref: "core data"
       - text: BPHS
         ref: "3"
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.10 (tattva), 2.19: अनिलात्मकः"
     mark: V
   - key: RAHU
     id: 7
@@ -225,11 +263,16 @@ members:
       friends: [VENUS, SATURN]
       neutrals: [MERCURY, JUPITER]
       enemies: [SUN, MOON, MARS, KETU]
+      classical_doshas: [VATA]
+      classical_predominant_dosha: VATA
+      classical_tattva: ~
     sources:
       - text: "baseline-engine"
         ref: "core data"
       - text: BPHS
         ref: "3"
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.20: वातप्रकृतिको"
     mark: T
     unverified: [exaltation, debilitation, moolatrikona, own, friends, neutrals, enemies]
   - key: KETU
@@ -252,11 +295,16 @@ members:
       friends: [MARS, JUPITER]
       neutrals: [MERCURY, SATURN]
       enemies: [SUN, MOON, VENUS, RAHU]
+      classical_doshas: [VATA]
+      classical_predominant_dosha: VATA
+      classical_tattva: ~
     sources:
       - text: "baseline-engine"
         ref: "core data"
       - text: BPHS
         ref: "3"
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.20: … प्रतिमः शिखी (like Rahu)"
     mark: T
     unverified: [exaltation, debilitation, moolatrikona, own, friends, neutrals, enemies]
   - key: URANUS
@@ -273,6 +321,9 @@ members:
       friends: []
       neutrals: []
       enemies: []
+      classical_doshas: []
+      classical_predominant_dosha: ~
+      classical_tattva: ~
     sources:
       - text: structural
         ref: "the outer planets carry no classical descriptors"
@@ -291,6 +342,9 @@ members:
       friends: []
       neutrals: []
       enemies: []
+      classical_doshas: []
+      classical_predominant_dosha: ~
+      classical_tattva: ~
     sources:
       - text: structural
         ref: "the outer planets carry no classical descriptors"
@@ -309,6 +363,9 @@ members:
       friends: []
       neutrals: []
       enemies: []
+      classical_doshas: []
+      classical_predominant_dosha: ~
+      classical_tattva: ~
     sources:
       - text: structural
         ref: "the outer planets carry no classical descriptors"

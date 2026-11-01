@@ -3952,6 +3952,10 @@ pub mod sdk {
         pub mod panchaka {
         }
 
+        /// The `paya` group.
+        pub mod paya {
+        }
+
         /// The `point` group.
         pub mod point {
         }
@@ -3998,6 +4002,10 @@ pub mod sdk {
 
         /// The `tradition` group.
         pub mod tradition {
+        }
+
+        /// The `tridosha` group.
+        pub mod tridosha {
         }
 
         /// The `vaiseshikamsa` group.

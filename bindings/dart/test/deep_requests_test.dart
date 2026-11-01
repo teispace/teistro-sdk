@@ -2000,6 +2000,20 @@ void main() {
     );
   });
 
+  test('chart.disagreements: ChartDisagreementsRequest', () {
+    _holds(
+      'chart.disagreements',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: ChartDisagreementsRequest(
+        at: 1.5,
+        first: <String, Object?>{'instant': 2447000.25, 'latitudeDeg': 27.7172, 'longitudeDeg': 85.324, 'altitudeM': 1400, 'utcOffsetSeconds': 20700, 'dashas': <Object?>['VIMSHOTTARI'], 'rules': <String, Object?>{'shipped': <Object?>['YOGAS']}},
+        second: <String, Object?>{'instant': 2447000.75, 'latitudeDeg': 27.7172, 'longitudeDeg': 85.324, 'altitudeM': 1400, 'utcOffsetSeconds': 20700},
+      ).toJson(),
+    );
+  });
+
   test('chart.found: ChartFoundRequest', () {
     _holds(
       'chart.found',

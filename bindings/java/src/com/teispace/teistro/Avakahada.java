@@ -2,8 +2,8 @@ package com.teispace.teistro;
 
 /**
  * What a janma-patrika prints of the Moon: its star and pada, the syllable the child is named by,
- * and the readings the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa
- * are not here (C300).
+ * the readings the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods
+ * (C1105 to C1107). Vashya, disha and tatwa are not here (C300).
  *
  * @param nakshatra The Moon's nakshatra.
  * @param pada Its pada, 1 to 4.
@@ -16,6 +16,8 @@ package com.teispace.teistro;
  * @param nadi The nakshatra's nadi.
  * @param syllable The syllable the child is named by.
  * @param ghata The ghata chakra of the Moon's sign: what strikes the native (C758).
+ * @param payaByNakshatra The birth paya by the Moon's nakshatra (C1106).
+ * @param payaByHouse The birth paya by the Moon's house counted from the lagna's sign (C1105, C1107).
  */
 public record Avakahada(
         Nakshatra nakshatra,
@@ -28,5 +30,7 @@ public record Avakahada(
         Gana gana,
         Nadi nadi,
         BirthSyllable syllable,
-        Ghata ghata) {
+        Ghata ghata,
+        Paya payaByNakshatra,
+        Paya payaByHouse) {
 }

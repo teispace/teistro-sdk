@@ -420,3 +420,86 @@ fn a_gochar_record_writes_each_transit_on_the_dossier_clock() {
     let unread = compose(r#"{"sections": ["GOCHAR"]}"#, None).unwrap_err();
     assert_eq!(unread.field(), Some("dossier.sections[0]"));
 }
+
+#[test]
+fn a_policy_drops_what_it_names_and_says_so() {
+    // SR-40: the longevity spans and the marakas are written when the rules
+    // record reads them, and a policy keeps them, and the rows of named
+    // categories, out of the text; the text says what it left out, so its
+    // hash moves with the policy (`03-design/dossier.md`, "A policy").
+    let sdk = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a built context");
+    let instants = [JulianDay::<Utc>::literal(BIRTH)];
+    let compose = |dossier: &str| {
+        let mut records = ChartRecords::default();
+        records.read("dossier", dossier)?;
+        records.read(
+            "rules",
+            r#"{"shipped": ["YOGAS", "DOSHAS", "ARISHTAS", "NABHASAS"], "longevity": true}"#,
+        )?;
+        let records = records.checked()?;
+        sdk.chart()
+            .compose(&instants, &kathmandu(), &records)
+            .map(|composed| composed.dossier.into_iter().next().unwrap())
+    };
+    let whole = compose("{}").unwrap();
+    assert!(whole.starts_with(&format!("# teistro dossier {DOSSIER_FORMAT}\n")));
+    let written = banners(&whole);
+    assert!(
+        written.contains(&"LONGEVITY") && written.contains(&"MARAKAS"),
+        "{written:?}"
+    );
+    assert!(!written.contains(&"DROPPED"), "no policy, no section");
+    assert!(whole.contains("\nPINDAYU|"), "a span a row");
+    let categories = |text: &str| -> Vec<String> {
+        text.split("== RULES ==\n# rule|category|status|grahas|houses|severity|source\n")
+            .nth(1)
+            .map(|rows| {
+                rows.lines()
+                    .take_while(|line| !line.starts_with("== "))
+                    .filter_map(|row| row.split('|').nth(1).map(str::to_owned))
+                    .collect()
+            })
+            .unwrap_or_default()
+    };
+    let marana = categories(&whole)
+        .iter()
+        .filter(|category| *category == "marana")
+        .count();
+
+    let kept =
+        compose(r#"{"drop": ["LONGEVITY", "MARAKAS"], "dropCategories": ["marana", "ayur"]}"#)
+            .unwrap();
+    let written = banners(&kept);
+    assert_eq!(
+        written.get(1),
+        Some(&"DROPPED"),
+        "the policy first, after the legend"
+    );
+    assert!(!written.contains(&"LONGEVITY") && !written.contains(&"MARAKAS"));
+    assert!(kept.contains("\nsection|LONGEVITY|"));
+    assert!(
+        kept.contains(&format!("\ncategory|marana|{marana}\n")),
+        "{kept}"
+    );
+    assert!(
+        categories(&kept)
+            .iter()
+            .all(|category| category != "marana" && category != "ayur")
+    );
+    assert_ne!(
+        whole, kept,
+        "the text, so any hash of it, moves with the policy"
+    );
+    // Another policy is another text.
+    let other = compose(r#"{"drop": ["MARAKAS"]}"#).unwrap();
+    assert_ne!(kept, other);
+    assert!(banners(&other).contains(&"LONGEVITY"));
+
+    let both = compose(r#"{"sections": ["MARAKAS"], "drop": ["MARAKAS"]}"#).unwrap_err();
+    assert_eq!(both.field(), Some("dossier.drop[0]"));
+    let unknown = compose(r#"{"drop": ["DEATH"]}"#).unwrap_err();
+    assert_eq!(unknown.field(), Some("dossier.drop[0]"));
+}

@@ -2433,7 +2433,7 @@ fn chart_avakahada_sections(first: u32) -> [SectionSchema; 2] {
             first,
             "avakahada",
             &format!(
-                "Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). {empty}"
+                "Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods (C1105 to C1107). Vashya, disha and tatwa are not here (C300). {empty}"
             ),
             vec![
                 read("nakshatra", "The Moon's nakshatra.", "Nakshatra"),
@@ -2483,6 +2483,16 @@ fn chart_avakahada_sections(first: u32) -> [SectionSchema; 2] {
                     "ghata_nakshatra",
                     "The nakshatra that strikes the native (v. 30).",
                     "Nakshatra",
+                ),
+                read(
+                    "paya_by_nakshatra",
+                    "The birth paya by the Moon's nakshatra, by the Vishwavidyalaya Panchang (C1106).",
+                    "Paya",
+                ),
+                read(
+                    "paya_by_house",
+                    "The birth paya by the Moon's house counted from the lagna's sign, by Sangraha Shiromani XIII v. 92 as the Vishwavidyalaya Panchang applies it (C1105, C1107); a chart's avakahada always reads it.",
+                    "Paya",
                 ),
             ],
         ),

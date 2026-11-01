@@ -3817,7 +3817,7 @@ class ChartsAvakahada:
     """The `avakahada` section of a Charts blob: one column per field, each a view
     over the blob's bytes rather than a copy.
 
-    Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+    Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods (C1105 to C1107). Vashya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
     """
 
     nakshatra: memoryview[int]
@@ -3864,6 +3864,12 @@ class ChartsAvakahada:
 
     ghata_nakshatra: memoryview[int]
     """The nakshatra that strikes the native (v. 30)."""
+
+    paya_by_nakshatra: memoryview[int]
+    """The birth paya by the Moon's nakshatra, by the Vishwavidyalaya Panchang (C1106)."""
+
+    paya_by_house: memoryview[int]
+    """The birth paya by the Moon's house counted from the lagna's sign, by Sangraha Shiromani XIII v. 92 as the Vishwavidyalaya Panchang applies it (C1105, C1107); a chart's avakahada always reads it."""
 
     length: int
     """The number of rows every column holds."""
@@ -4915,7 +4921,7 @@ class Charts:
     """Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none."""
 
     avakahada: ChartsAvakahada
-    """Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for."""
+    """Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods (C1105 to C1107). Vashya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for."""
 
     avakahada_syllables: str
     """UTF-8 JSON, canonical: an array with one entry per row of `avakahada`, each `[devanagari, iast]`, the birth pada's syllable as *Muhurta Chintamani* p. 173 prints it and its IAST (C299). Empty when the avakahada was not asked for."""
@@ -7769,6 +7775,12 @@ def decode_charts(raw: bytes) -> Charts:
             ).cast("H"),
             ghata_nakshatra=blob.column(
                 at_avakahada, 14, 2, at_avakahada.count
+            ).cast("H"),
+            paya_by_nakshatra=blob.column(
+                at_avakahada, 15, 2, at_avakahada.count
+            ).cast("H"),
+            paya_by_house=blob.column(
+                at_avakahada, 16, 2, at_avakahada.count
             ).cast("H"),
             length=at_avakahada.count,
         ),
