@@ -10011,6 +10011,7 @@ enum NonLatin implements _Keyed {
 final class FestivalMeta extends _Request {
   const FestivalMeta({
     this.communities,
+    this.fast,
     this.kind,
     this.optional,
     this.regions,
@@ -10019,6 +10020,9 @@ final class FestivalMeta extends _Request {
 
   /// The communities that keep it, as open keys (`NEWAR`); empty when no source names one, which does not say it is kept by all.
   final List<String>? communities;
+
+  /// The fast kept on its day, one reading for each way a text keeps it, in the text's order (SR-62); empty when no source in hand says, which does not say there is none.
+  final List<VrataFast>? fast;
 
   /// Its kind; unset when no source classes it.
   final FestivalKind? kind;
@@ -10035,6 +10039,7 @@ final class FestivalMeta extends _Request {
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     if (communities case final communitiesValue?) 'communities': communitiesValue,
+    if (fast case final fastValue?) 'fast': [for (final e0 in fastValue) e0._wire],
     if (kind case final kindValue?) 'kind': kindValue.key,
     if (optional case final optionalValue?) 'optional': optionalValue,
     if (regions case final regionsValue?) 'regions': regionsValue,
@@ -10042,7 +10047,7 @@ final class FestivalMeta extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [communities, kind, optional, regions, tradition];
+  List<Object?> get _fields => [communities, fast, kind, optional, regions, tradition];
 }
 
 /// What may still move a published day.
@@ -11990,6 +11995,44 @@ enum SubDegree implements _Keyed {
   final String key;
 }
 
+/// One way a text keeps a vrata's fast (`03-design/festival-metadata.md` §6): what is eaten, from when, and when the fast is broken, each left unset when the clause does not say.
+final class VrataFast extends _Request {
+  const VrataFast({
+    this.end,
+    this.ifUnable,
+    this.kind,
+    required this.source,
+    this.start,
+  });
+
+  /// When it is broken; unset when the clause does not say.
+  final FastEnd? end;
+
+  /// Whether the text allows it only to one unable to keep the reading before it.
+  final bool? ifUnable;
+
+  /// How it is kept; unset when the clause names no kind.
+  final FastKind? kind;
+
+  /// Where it is stated.
+  final String source;
+
+  /// When it begins; unset when the clause does not say.
+  final FastStart? start;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (end case final endValue?) 'end': endValue.key,
+    if (ifUnable case final ifUnableValue?) 'ifUnable': ifUnableValue,
+    if (kind case final kindValue?) 'kind': kindValue.key,
+    'source': source,
+    if (start case final startValue?) 'start': startValue.key,
+  };
+
+  @override
+  List<Object?> get _fields => [end, ifUnable, kind, source, start];
+}
+
 /// Which candidate is the sait: whole ones are preferred, and among them the earliest or the latest (crux C746).
 enum SaitChoice implements _Keyed {
   /// The first.
@@ -12821,6 +12864,36 @@ enum SettingPart implements _Keyed {
   navamshaArc('NAVAMSHA_ARC');
 
   const SettingPart(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// When a vrata's fast is broken: the parana window as a catalogue says it, whose instants an answer gives.
+enum FastEnd implements _Keyed {
+  /// On a later day, at the parana (*Dharmasindhu* p. 7: the next day, at the tithi's end): an answer's `parana`, under the readings the rule carries; a rule that carries none leaves it unreckoned.
+  parana('PARANA'),
+  /// The same night, at the one meal a nakta allows: in the pradosha, after the three ghatis of dusk (*Dharmasindhu* pp. 6–7).
+  night('NIGHT'),
+  /// The same night, at moonrise, after the arghya to the Moon (*Dharmasindhu* p. 44): an answer's `moonrise`.
+  moonrise('MOONRISE');
+
+  const FastEnd(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// When a vrata's fast begins.
+enum FastStart implements _Keyed {
+  /// After the one meal at midday of the day before, an ekabhakta (*Dharmasindhu* p. 6): the Ekadashi's 10th (pp. 17–18), Rama Navami's 8th (p. 33), Shivaratri's 13th (p. 90).
+  afterEkabhakta('AFTER_EKABHAKTA'),
+  /// On the fast day's morning, the vow taken after its morning rites (प्रातः कृतनित्यक्रियः, Janmashtami, p. 52).
+  morning('MORNING');
+
+  const FastStart(this.key);
 
   /// The key the wire spells it with.
   @override

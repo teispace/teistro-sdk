@@ -73,8 +73,32 @@ day, which sent a 4th held only at the earlier day's moonrise to the
 later; the first clause, the tithi at moonrise, gives it the earlier.
 
 **Built.** `DHARMASINDHU` ships `SANKASHTA_CHATURTHI` (every month, the
-adhika too) and `KARAKA_CHATURTHI` (Ashvina). `NEPAL` and
-`NEPAL_PANCHANGA` leave both out, since the committee prints neither.
+adhika too), `KARAKA_CHATURTHI` (Ashvina) and, since SR-60,
+`ASHUNYA_SHAYANA`: Ashadha's dark 2nd, the tithi at moonrise "since the puja
+is then" (p. 44, ll. 3781–3782: चन्द्रोदयव्यापिनी तिथिर्ग्राह्या चन्द्रोदये
+पूजायुक्तेः), and the later day when both days hold it or neither does
+(दिनद्वये सत्त्वेऽसत्त्वे वा परैव); *Nirnayasindhu* p. 94 says the same after
+the *Nirnayamrita*. Its fast is a nakta broken at moonrise, after the arghya
+to the Moon (p. 44; Hemadri's *Vratakhanda* ch. 9 p. 173, चन्द्रोदये),
+`festival-metadata.md` §6. The vow returns on the next three months' dark
+2nds, which are not rules (C1082). `NEPAL` and `NEPAL_PANCHANGA` leave all
+three out, since the committee prints none.
+
+**The moonrise on the answer.** An observance whose rite is at moonrise, or
+whose fast is broken then (`FastEnd::MOONRISE`), carries `moonrise`: the
+kept day's moonrise and the place it was found for, since the instant moves
+with the place. It is the instant the day was judged by, the day's
+panchanga's first to the bit; over 2025 at Delhi each Sankashti's falls
+3.5 to 4.6 minutes before the time a published list prints beside the
+day, a steady lead of about four minutes across all twelve (C1083).
+
+**Read, not built.** *Nirnayasindhu* p. 115 keeps the Chandra-shashthi,
+Bhadrapada's dark 6th, at moonrise and the earlier day when both hold it,
+saying nothing of neither, and p. 116 the Mahalakshmi vrata's close at
+moonrise unless the later day's moonrise holds it three muhurtas; Hemadri
+(ch. 12) breaks a Margashirsha 8th's vrata after the arghya at moonrise. None
+is a rule yet: the first needs the text's neither-case, the second a share of
+muhurtas at an instant, and the third a name the scan's OCR does not give.
 A day's moonrise is searched only when a rule reads one, in lockstep
 over the range, the search the panchanga makes over a sunrise day, so a
 day's moonrise is its panchanga's first to the bit. Over 2025 at Delhi

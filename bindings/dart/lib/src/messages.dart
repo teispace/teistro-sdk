@@ -365,6 +365,20 @@ enum EraKey {
   final String key;
 }
 
+enum FastKindKey {
+  upavasa('fast_kind.UPAVASA'),
+  ekabhakta('fast_kind.EKABHAKTA'),
+  nakta('fast_kind.NAKTA'),
+  ayachita('fast_kind.AYACHITA'),
+  phalahara('fast_kind.PHALAHARA'),
+  kshirahara('fast_kind.KSHIRAHARA'),
+  jalahara('fast_kind.JALAHARA');
+
+  const FastKindKey(this.key);
+
+  final String key;
+}
+
 enum FestivalKey {
   ramaNavami('festival.RAMA_NAVAMI'),
   janmashtami('festival.JANMASHTAMI'),
@@ -467,6 +481,7 @@ enum FestivalKey {
   chandrodaya('festival.CHANDRODAYA'),
   sankashtaChaturthi('festival.SANKASHTA_CHATURTHI'),
   karakaChaturthi('festival.KARAKA_CHATURTHI'),
+  ashunyaShayana('festival.ASHUNYA_SHAYANA'),
   meshaSankranti('festival.MESHA_SANKRANTI'),
   vrishabhaSankranti('festival.VRISHABHA_SANKRANTI'),
   mithunaSankranti('festival.MITHUNA_SANKRANTI'),
@@ -2218,6 +2233,20 @@ final class MessagesSdkEntityEra {
   EntityForms get vikrama => _r.entity('era.VIKRAMA');
 }
 
+final class MessagesSdkEntityFastKind {
+  const MessagesSdkEntityFastKind(this._r);
+
+  final Renderer _r;
+
+  EntityForms get ayachita => _r.entity('fast_kind.AYACHITA');
+  EntityForms get ekabhakta => _r.entity('fast_kind.EKABHAKTA');
+  EntityForms get jalahara => _r.entity('fast_kind.JALAHARA');
+  EntityForms get kshirahara => _r.entity('fast_kind.KSHIRAHARA');
+  EntityForms get nakta => _r.entity('fast_kind.NAKTA');
+  EntityForms get phalahara => _r.entity('fast_kind.PHALAHARA');
+  EntityForms get upavasa => _r.entity('fast_kind.UPAVASA');
+}
+
 final class MessagesSdkEntityFestival {
   const MessagesSdkEntityFestival(this._r);
 
@@ -2240,6 +2269,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get arjundharaMela => _r.entity('festival.ARJUNDHARA_MELA');
   EntityForms get aryaghatMadhavNarayanMela => _r.entity('festival.ARYAGHAT_MADHAV_NARAYAN_MELA');
   EntityForms get ashtamiShraddha => _r.entity('festival.ASHTAMI_SHRADDHA');
+  EntityForms get ashunyaShayana => _r.entity('festival.ASHUNYA_SHAYANA');
   EntityForms get avidhavaNavami => _r.entity('festival.AVIDHAVA_NAVAMI');
   EntityForms get bahidyoBoyegu => _r.entity('festival.BAHIDYO_BOYEGU');
   EntityForms get baisakhSnanEnds => _r.entity('festival.BAISAKH_SNAN_ENDS');
@@ -3198,6 +3228,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityDignity get dignity => MessagesSdkEntityDignity(_r);
   MessagesSdkEntityDirection get direction => MessagesSdkEntityDirection(_r);
   MessagesSdkEntityEra get era => MessagesSdkEntityEra(_r);
+  MessagesSdkEntityFastKind get fastKind => MessagesSdkEntityFastKind(_r);
   MessagesSdkEntityFestival get festival => MessagesSdkEntityFestival(_r);
   MessagesSdkEntityFestivalKind get festivalKind => MessagesSdkEntityFestivalKind(_r);
   MessagesSdkEntityGana get gana => MessagesSdkEntityGana(_r);

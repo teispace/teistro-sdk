@@ -3884,6 +3884,10 @@ pub mod sdk {
         pub mod era {
         }
 
+        /// The `fast_kind` group.
+        pub mod fast_kind {
+        }
+
         /// The `festival` group.
         pub mod festival {
         }

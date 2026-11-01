@@ -80,6 +80,7 @@ from .catalogue import (
     Ephemeris,
     Equinox,
     Era,
+    FastKind,
     FestivalKind,
     FortuneRule,
     Fruition,
@@ -6046,7 +6047,8 @@ class TeistroContext:
         (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
         each row `{key, form, source, meta, unsourced}`, `form` how its day is
         found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`
-        its kind, tradition, communities and regions, `unsourced` the fields no
+        its kind, tradition, communities, regions and fast (each reading
+        `{kind, ifUnable, start, end, source}`), `unsourced` the fields no
         source gives, and a published row's `subjectTo` and `lastYear`.
 
         `request_json` is `{"pack"}`, a pack the SDK ships. Nothing is

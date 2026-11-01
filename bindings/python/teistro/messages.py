@@ -327,6 +327,18 @@ class EraKey(enum.StrEnum):
     BEFORE_COMMON_ERA = "era.BEFORE_COMMON_ERA"
 
 
+class FastKindKey(enum.StrEnum):
+    """A `fast_kind` as a message names it: the full catalogue key."""
+
+    UPAVASA = "fast_kind.UPAVASA"
+    EKABHAKTA = "fast_kind.EKABHAKTA"
+    NAKTA = "fast_kind.NAKTA"
+    AYACHITA = "fast_kind.AYACHITA"
+    PHALAHARA = "fast_kind.PHALAHARA"
+    KSHIRAHARA = "fast_kind.KSHIRAHARA"
+    JALAHARA = "fast_kind.JALAHARA"
+
+
 class FestivalKey(enum.StrEnum):
     """A `festival` as a message names it: the full catalogue key."""
 
@@ -431,6 +443,7 @@ class FestivalKey(enum.StrEnum):
     CHANDRODAYA = "festival.CHANDRODAYA"
     SANKASHTA_CHATURTHI = "festival.SANKASHTA_CHATURTHI"
     KARAKA_CHATURTHI = "festival.KARAKA_CHATURTHI"
+    ASHUNYA_SHAYANA = "festival.ASHUNYA_SHAYANA"
     MESHA_SANKRANTI = "festival.MESHA_SANKRANTI"
     VRISHABHA_SANKRANTI = "festival.VRISHABHA_SANKRANTI"
     MITHUNA_SANKRANTI = "festival.MITHUNA_SANKRANTI"
@@ -2130,6 +2143,11 @@ class MessagesSdkEntity:
     def era(self) -> MessagesSdkEntityEra:
         """The messages under `era`."""
         return MessagesSdkEntityEra(self._r)
+
+    @property
+    def fast_kind(self) -> MessagesSdkEntityFastKind:
+        """The messages under `fast_kind`."""
+        return MessagesSdkEntityFastKind(self._r)
 
     @property
     def festival(self) -> MessagesSdkEntityFestival:
@@ -4468,6 +4486,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.ASHTAMI_SHRADDHA")
 
     @property
+    def ashunya_shayana(self) -> EntityForms:
+        """The forms of `festival.ASHUNYA_SHAYANA` in the current locale."""
+        return self._r.entity("festival.ASHUNYA_SHAYANA")
+
+    @property
     def avidhava_navami(self) -> EntityForms:
         """The forms of `festival.AVIDHAVA_NAVAMI` in the current locale."""
         return self._r.entity("festival.AVIDHAVA_NAVAMI")
@@ -6201,6 +6224,49 @@ class MessagesSdkEntityFestival:
     def yosin_patan(self) -> EntityForms:
         """The forms of `festival.YOSIN_PATAN` in the current locale."""
         return self._r.entity("festival.YOSIN_PATAN")
+
+
+class MessagesSdkEntityFastKind:
+    """The messages under `MessagesSdkEntityFastKind`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def ayachita(self) -> EntityForms:
+        """The forms of `fast_kind.AYACHITA` in the current locale."""
+        return self._r.entity("fast_kind.AYACHITA")
+
+    @property
+    def ekabhakta(self) -> EntityForms:
+        """The forms of `fast_kind.EKABHAKTA` in the current locale."""
+        return self._r.entity("fast_kind.EKABHAKTA")
+
+    @property
+    def jalahara(self) -> EntityForms:
+        """The forms of `fast_kind.JALAHARA` in the current locale."""
+        return self._r.entity("fast_kind.JALAHARA")
+
+    @property
+    def kshirahara(self) -> EntityForms:
+        """The forms of `fast_kind.KSHIRAHARA` in the current locale."""
+        return self._r.entity("fast_kind.KSHIRAHARA")
+
+    @property
+    def nakta(self) -> EntityForms:
+        """The forms of `fast_kind.NAKTA` in the current locale."""
+        return self._r.entity("fast_kind.NAKTA")
+
+    @property
+    def phalahara(self) -> EntityForms:
+        """The forms of `fast_kind.PHALAHARA` in the current locale."""
+        return self._r.entity("fast_kind.PHALAHARA")
+
+    @property
+    def upavasa(self) -> EntityForms:
+        """The forms of `fast_kind.UPAVASA` in the current locale."""
+        return self._r.entity("fast_kind.UPAVASA")
 
 
 class MessagesSdkEntityEra:

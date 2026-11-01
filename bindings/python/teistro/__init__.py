@@ -697,6 +697,9 @@ from ._requests import (
     FestivalMeta as FestivalMeta,
     FestivalRequest as FestivalRequest,
     MetaFilter as MetaFilter,
+    VrataFast as VrataFast,
+    FastEnd as FastEnd,
+    FastStart as FastStart,
     PackRequest as PackRequest,
     SubjectTo as SubjectTo,
     FestivalRules as FestivalRules,
@@ -829,6 +832,7 @@ from ._requests import (
 )
 from .catalogue import (
     FestivalKind,
+    FastKind,
     Tradition,
     DigestSpan,
     Catalogued,
@@ -1453,6 +1457,10 @@ __all__ = [
     "FestivalMeta",
     "FestivalRequest",
     "MetaFilter",
+    "VrataFast",
+    "FastEnd",
+    "FastStart",
+    "FastKind",
     "PackRequest",
     "SubjectTo",
     "Tradition",
@@ -1462,6 +1470,7 @@ __all__ = [
     "AnniversaryOrigin",
     "FestivalAnswer",
     "FestivalSait",
+    "FestivalMoonrise",
     "FestivalSaitCandidate",
     "Published",
     "PublishedAdded",
@@ -4138,7 +4147,7 @@ class AlmanacArea(_Area):
     def festival_pack(self, pack: str) -> Mapping[str, Any]:
         """Every rule of a festival pack with what it is: ``{pack, rules}``,
         each row ``{key, form, source, meta, unsourced}``, ``meta`` its kind,
-        tradition, communities and regions and ``unsourced`` the fields no
+        tradition, communities, regions and fast and ``unsourced`` the fields no
         source gives (``03-design/festival-metadata.md``).
 
         >>> rows = sdk.almanac.festival_pack("INDIA_CENTRAL")["rules"]  # doctest: +SKIP
@@ -9364,6 +9373,21 @@ class FestivalObservance:
     sait: Optional["FestivalSait"] = None
     """The rite's time on the day, elected by the rule's sait
     (`03-design/festival-sait.md`); None for a rule with none."""
+
+    moonrise: Optional["FestivalMoonrise"] = None
+    """The day's moonrise and its place, for a rule whose rite is at
+    moonrise or whose fast is broken then (SR-60); None otherwise."""
+
+
+@dataclass(frozen=True)
+class FestivalMoonrise:
+    """A moonrise an observance was kept or broken at, and where."""
+
+    at: float
+    """The instant the Moon rose, a Julian day in UTC."""
+
+    place: Observer
+    """The place the days were reckoned at."""
 
 
 @dataclass(frozen=True)
@@ -16379,6 +16403,20 @@ def _festival_observance(raw: Mapping[str, Any]) -> FestivalObservance:
         parana=tuple(_vrata_parana(time) for time in raw.get("parana", ())),
         published=_published(raw),
         sait=_sait(raw["sait"]) if raw.get("sait") is not None else None,
+        moonrise=_festival_moonrise(raw["moonrise"]) if raw.get("moonrise") is not None else None,
+    )
+
+
+def _festival_moonrise(raw: Mapping[str, Any]) -> FestivalMoonrise:
+    """An observance's moonrise as a festival answer writes it."""
+    place = raw["place"]
+    return FestivalMoonrise(
+        at=float(raw["at"]),
+        place=Observer(
+            longitude_deg=Longitude(place["longitude"]),
+            latitude_deg=Latitude(place["latitude"]),
+            altitude_m=Altitude(place["altitude"]),
+        ),
     )
 
 

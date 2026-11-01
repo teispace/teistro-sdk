@@ -373,6 +373,93 @@ fn the_dark_fourth_at_moonrise_is_the_almanacs_sankashta_every_month() {
         })
         .unwrap();
     assert_eq!(bhalachandra.extents[0].window.from, panchanga.moon.rises[0]);
+
+    // The answer carries the moonrise it was kept at, and where (SR-60):
+    // the kept day's own, at Delhi, 3.5 to 4.6 minutes before the time the
+    // list prints beside each day (C1083).
+    let printed = [
+        (21, 13),
+        (21, 43),
+        (21, 22),
+        (22, 5),
+        (22, 44),
+        (22, 12),
+        (21, 59),
+        (21, 4),
+        (20, 11),
+        (20, 18),
+        (20, 4),
+        (20, 0),
+    ];
+    let sankashtas = found
+        .observances
+        .iter()
+        .filter(|observance| observance.rule == "SANKASHTA_CHATURTHI");
+    let mut offs = Vec::new();
+    for (observance, (hour, minute)) in sankashtas.zip(printed) {
+        let seen = observance.moonrise.unwrap();
+        assert_eq!(seen.place, delhi());
+        let kept =
+            &observance.extents[usize::from(observance.choice == teistro::festival::Choice::Later)];
+        assert_eq!(seen.at, kept.window.from, "{}", observance.day);
+        let local = (seen.at.get() + 0.5 + 5.5 / 24.0).rem_euclid(1.0) * 1440.0;
+        offs.push(local - f64::from(hour * 60 + minute));
+    }
+    // One lead through the year: every print 3 to 5 minutes after the
+    // SDK's moonrise, the twelve inside a minute and a half of each other.
+    assert_eq!(offs.len(), 12);
+    assert!(
+        offs.iter().all(|off| (-5.0..-3.0).contains(off)),
+        "{offs:.1?}"
+    );
+    let (low, high) = offs.iter().fold((f64::MAX, f64::MIN), |(low, high), off| {
+        (low.min(*off), high.max(*off))
+    });
+    assert!(high - low < 1.5, "{offs:.1?}");
+}
+
+/// *Dharmasindhu* p. 44's Ashunya-shayana vrata at Delhi in July 2022: the
+/// dark 2nd began on the 14th before its moonrise and ended at 16:39 on the
+/// 15th, before that day's, so the text's moonrise rule keeps the 14th.
+/// A published almanac for North India prints the 15th, the 2nd's sunrise
+/// day, against its own table's tithi end and moonrise (rank 3, C1082): no
+/// printed day agrees with the text yet, so this pins the rule's reading,
+/// not an acceptance value. The answer carries the moonrise it is broken
+/// at, and the pack's listing says the fast: a nakta broken at moonrise,
+/// then Hemadri's other two ways.
+#[test]
+fn the_ashunya_shayana_is_kept_and_broken_at_its_moonrise() {
+    let found = context()
+        .almanac()
+        .festivals(
+            &CalendarDate::defined(Calendar::Gregorian, 2022, 7, 1),
+            &CalendarDate::defined(Calendar::Gregorian, 2022, 7, 31),
+            &delhi(),
+            UtcOffset::literal(5, 30, 0),
+            &FestivalRequest::from(FestivalPack::Dharmasindhu),
+        )
+        .unwrap()
+        .value;
+    let ashunya = found
+        .observances
+        .iter()
+        .find(|observance| observance.rule == "ASHUNYA_SHAYANA")
+        .unwrap();
+    assert_eq!((ashunya.day.month, ashunya.day.day), (7, 14));
+    assert_eq!(ashunya.case, teistro::festival::Case::EarlierOnly);
+    assert!(ashunya.moonrise.is_some_and(|seen| seen.place == delhi()));
+    let row = FestivalPack::Dharmasindhu
+        .listing()
+        .rules
+        .into_iter()
+        .find(|row| row.key == "ASHUNYA_SHAYANA")
+        .unwrap();
+    let ends: Vec<_> = row.meta.fast.iter().map(|fast| fast.end).collect();
+    assert_eq!(
+        ends,
+        [Some(teistro::festival::FastEnd::Moonrise), None, None]
+    );
+    assert_eq!(row.unsourced, ["communities", "regions", "fast.start"]);
 }
 
 #[test]

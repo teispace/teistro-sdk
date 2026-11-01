@@ -306,7 +306,18 @@ final class AlmanacReads {
                 Reads.number(o, "marginSeconds"),
                 o.get("parana") == null ? List.of() : Reads.each(o, "parana", AlmanacReads::vrataParana),
                 published(o),
-                o.get("sait") == null ? null : sait(Reads.object(o, "sait")));
+                o.get("sait") == null ? null : sait(Reads.object(o, "sait")),
+                o.get("moonrise") == null ? null : moonrise(Reads.object(o, "moonrise")));
+    }
+
+    /** An observance's moonrise as a festival answer writes it. */
+    private static FestivalMoonrise moonrise(Map<?, ?> m) {
+        Map<?, ?> place = Reads.object(m, "place");
+        return new FestivalMoonrise(
+                Reads.number(m, "at"),
+                new Observer(new Longitude(Reads.number(place, "longitude")),
+                        new Latitude(Reads.number(place, "latitude")),
+                        new Altitude(Reads.number(place, "altitude"))));
     }
 
     /** A sait as a festival answer writes it. */

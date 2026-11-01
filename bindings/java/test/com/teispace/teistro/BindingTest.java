@@ -1850,6 +1850,19 @@ public final class BindingTest {
                         && f.parana().kept().span().fromJd() < f.parana().kept().span().toJd()
                         && f.parana().kept().at().window().equals("PART")),
                         "each Ekadashi fast says when it is broken");
+                // A vrata kept at moonrise says when and where the Moon rose
+                // (SR-60): the window it was kept in opens there.
+                check(lean.observances().stream().anyMatch(o -> o.rule().equals("SANKASHTA_CHATURTHI")),
+                        "the window holds a Sankashta");
+                check(lean.observances().stream().filter(o -> o.rule().equals("SANKASHTA_CHATURTHI"))
+                        .allMatch(o -> o.moonrise() != null
+                                && o.moonrise().place().latitudeDeg().equals(kathmandu.latitudeDeg())
+                                && o.extents().stream().anyMatch(e -> e.window().fromJd() == o.moonrise().at())),
+                        "a Sankashta carries the moonrise it was kept at");
+                check(lean.observances().stream().filter(o -> !o.rule().equals("SANKASHTA_CHATURTHI")
+                        && !o.rule().equals("KARAKA_CHATURTHI") && !o.rule().equals("ASHUNYA_SHAYANA"))
+                        .allMatch(o -> o.moonrise() == null),
+                        "an observance not kept at moonrise carries none");
                 // A signed pack, with the vector the Rust suite pins
                 // (crates/sdk/tests/signed_pack.rs).
                 {
@@ -2558,6 +2571,16 @@ public final class BindingTest {
                     marked |= "EID_AL_FITR".equals(rule.get("key")) && "MOON_SIGHTING".equals(rule.get("subjectTo"));
                 }
                 check(marked, "a day the moon decides is marked");
+                // The fast a text gives (SR-62): Shivaratri's.
+                boolean fasted = false;
+                for (Object row : (List<?>) sky.almanac().festivalPack("DHARMASINDHU").get("rules")) {
+                    Map<?, ?> rule = (Map<?, ?>) row;
+                    if ("SHIVARATRI".equals(rule.get("key"))) {
+                        Map<?, ?> fast = (Map<?, ?>) ((List<?>) ((Map<?, ?>) rule.get("meta")).get("fast")).get(0);
+                        fasted = "UPAVASA".equals(fast.get("kind")) && "PARANA".equals(fast.get("end"));
+                    }
+                }
+                check(fasted, "a vrata says the fast its text gives");
                 TeistroException unknown = refusal(() -> sky.almanac().festivalPack("NO_SUCH_PACK"));
                 check("pack.pack".equals(unknown.field()), "the refusal names the field");
             }

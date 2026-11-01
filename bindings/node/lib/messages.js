@@ -419,6 +419,15 @@ export function messages(r) {
           shaka: () => r.entity('era.SHAKA'),
           vikrama: () => r.entity('era.VIKRAMA'),
         },
+        fastKind: {
+          ayachita: () => r.entity('fast_kind.AYACHITA'),
+          ekabhakta: () => r.entity('fast_kind.EKABHAKTA'),
+          jalahara: () => r.entity('fast_kind.JALAHARA'),
+          kshirahara: () => r.entity('fast_kind.KSHIRAHARA'),
+          nakta: () => r.entity('fast_kind.NAKTA'),
+          phalahara: () => r.entity('fast_kind.PHALAHARA'),
+          upavasa: () => r.entity('fast_kind.UPAVASA'),
+        },
         festival: {
           achalaSaptami: () => r.entity('festival.ACHALA_SAPTAMI'),
           adukhaNavami: () => r.entity('festival.ADUKHA_NAVAMI'),
@@ -437,6 +446,7 @@ export function messages(r) {
           arjundharaMela: () => r.entity('festival.ARJUNDHARA_MELA'),
           aryaghatMadhavNarayanMela: () => r.entity('festival.ARYAGHAT_MADHAV_NARAYAN_MELA'),
           ashtamiShraddha: () => r.entity('festival.ASHTAMI_SHRADDHA'),
+          ashunyaShayana: () => r.entity('festival.ASHUNYA_SHAYANA'),
           avidhavaNavami: () => r.entity('festival.AVIDHAVA_NAVAMI'),
           bahidyoBoyegu: () => r.entity('festival.BAHIDYO_BOYEGU'),
           baisakhSnanEnds: () => r.entity('festival.BAISAKH_SNAN_ENDS'),

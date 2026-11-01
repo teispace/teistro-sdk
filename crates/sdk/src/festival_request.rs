@@ -62,9 +62,10 @@ fn stamped<T: Stamped>(rules: Vec<T>, of: impl Fn(&str) -> FestivalMeta) -> Vec<
         .collect()
 }
 
-/// A *Dharmasindhu* pack's values, whatever the key.
-fn by_text(_: &str) -> FestivalMeta {
-    FestivalMeta::hindu_text()
+/// A text's pack's values: a Hindu text's, and the fast the texts in hand
+/// give the key.
+fn by_text(key: &str) -> FestivalMeta {
+    FestivalMeta::of_text(key)
 }
 
 impl FestivalPack {

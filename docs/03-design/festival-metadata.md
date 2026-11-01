@@ -1,6 +1,6 @@
 # Festival metadata
 
-Status: `built`, 2026-10-30. SR-02. Crux C850
+Status: `built`, 2026-10-30; the fast (§6, SR-62) 2026-11-01. SR-02. Crux C850
 (`01-research/feature-universe/19-verification-cruxes.md`). The values are
 held to `festival-classification.md`'s tables and to two governments'
 notices by the rows of `crates/panchanga/src/festival/meta.rs`.
@@ -23,6 +23,7 @@ since it has no rule to carry it.
 | `communities` | open keys | `NEWAR`, `THARU`; a consumer's own pack may add others |
 | `regions` | open keys | an ISO 3166 country first, then a part a notice names |
 | `optional` | boolean | a notice leaves the day to each office's choice |
+| `fast` | list of `VrataFast` | the fast kept on the day, one reading a clause (§6) |
 
 Communities and regions are open because a consumer's own rules name their
 own, which a closed list would refuse. A rule the consumer wrote has an empty
@@ -76,7 +77,9 @@ that would be inferring from a name. C850 holds what would close them.
 
 `almanac.festivalPack`, `ts_almanac_festival_pack`, answers every row of a pack:
 its key, form, source, `meta`, and `unsourced`, the fields no source gives by
-name. That list is how a rule "says so": a reader cannot take a blank for an
+name: `kind`, `tradition`, `communities`, `regions`, `fast`, and `fast.kind`,
+`fast.start` or `fast.end` when the fast is known and no reading gives that
+part. That list is how a rule "says so": a reader cannot take a blank for an
 answer. Nothing is reckoned, so a context with no ephemeris answers.
 
 ## 4. Filtering
@@ -106,3 +109,65 @@ bisection, so stamping a pack does not scan.
 Names: `festival_kind` and `tradition` are named in `en-Latn` and `ne-Deva-NP`;
 the Nepali strings await the reviewer of Q42. Communities and regions are keys
 and have no names yet.
+
+## 6. The fast (SR-62)
+
+The consumer asked for "the fast's kind (nirjala, phalahar, ekabhukta), its
+start and its parana window as catalogue fields on every vrata". `meta.fast`
+is a list of readings, one for each way a text in hand keeps the fast, in
+the text's order, so a text that lists ways (Hemadri's "उपवासेन नक्तेन
+तथैवायाचितेन च") is reported as its clauses rather than reduced to one.
+
+| field | type | meaning |
+|---|---|---|
+| `kind` | `fast_kind`, closed | how it is kept; unset when the clause names no kind |
+| `ifUnable` | boolean | the text allows it only to one unable to keep the reading before it |
+| `start` | `AFTER_EKABHAKTA`, `MORNING` | when it begins; unset when the clause does not say |
+| `end` | `PARANA`, `NIGHT`, `MOONRISE` | when it is broken; unset when the clause does not say |
+| `source` | text | the page and the words |
+
+**The kinds** are the texts' own. *Dharmasindhu* (1888 Nirnaya-sagara
+edition) p. 6 defines four observances of the body: `EKABHAKTA`, one meal of
+one grain at midday; `NAKTA`, the one meal at night, in the pradosha after
+the three ghatis of dusk (pp. 6–7); `AYACHITA`, what comes unasked; and
+`UPAVASA`, no meal by day or night (अहोरात्रभोजनाभावः). P. 18 lets one unable
+to keep the Ekadashi take `JALAHARA` (water), `KSHIRAHARA` (milk),
+`PHALAHARA` (fruit) or a night meal instead, and p. 52 fruit at Janmashtami.
+The consumer's "ekabhukta" is `EKABHAKTA` and "phalahar" `PHALAHARA`.
+"Nirjala" has no member: no text in hand says "without water", and DS's
+Ekadashi allows water to the unable (C1080).
+
+**The end** is the parana window as a catalogue can say it; the instants are
+on the answer. `PARANA` is a later day: DS p. 7 breaks every ekabhakta, nakta,
+ayachita and upavasa on the next day at the tithi's end, and a rule's
+`parana` readings (`festival-rules.md` §8.7) or an Ekadashi's `ParanaRule`
+answer the window. A pack that carries no readings, as Nepal's do not (C706),
+leaves it unreckoned while saying the fast (C1084). `NIGHT` is the night meal
+of a nakta. `MOONRISE` is the meal after the arghya to the Moon, and the
+observance's `moonrise` gives the instant and the place it was found for.
+
+**What is sourced** (`crates/panchanga/src/festival/meta.rs`, `FASTS`):
+
+| key | readings | source |
+|---|---|---|
+| every Ekadashi: `EKADASHI_SMARTA`, `EKADASHI_VAISHNAVA`, `EKADASHI_SMARTA_RENUNCIANT` and the 25 named ekadashis `NEPAL_PANCHANGA` prints | `UPAVASA` after the 10th's ekabhakta, to the parana; then, if unable, `JALAHARA`, `KSHIRAHARA`, `PHALAHARA` to the parana, and `NAKTA` to the night | DS pp. 17–18 |
+| `JANMASHTAMI` | `UPAVASA` from the morning, to the parana; if unable, `PHALAHARA` | DS p. 52 |
+| `SHIVARATRI` | `UPAVASA` after the 13th's ekabhakta, to the parana | DS p. 90 |
+| `RAMA_NAVAMI` | `UPAVASA` after the 8th's ekabhakta, to the parana | DS pp. 33–34 |
+| `MAHA_NAVAMI` | `UPAVASA`, to the parana | DS pp. 69–71 |
+| `HARITALIKA` | `UPAVASA`, enjoined on women | DS p. 55 |
+| `PRADOSHA_VRATA` | `NAKTA`, to the night | DS p. 20 |
+| `SANKASHTA_CHATURTHI` | the meal at night; kind and start unsourced | *Nirnayasindhu* (1949 Nirnaya Sagar edition) p. 22; C1081 |
+| `ASHUNYA_SHAYANA` | `NAKTA`, to the moonrise; then `UPAVASA` and `AYACHITA`, ends unsaid | DS p. 44; Hemadri, *Vratakhanda* (Bibliotheca Indica, 1878) ch. 9, pp. 172–173 |
+
+The named ekadashis take DS's Ekadashi because their rule is kept on an 11th,
+which a test checks against the rule rather than the name. `NIRJALA_EKADASHI`
+is left out (C1080), and `EKADASHI_GAUDIYA`, whose source is *Hari Bhakti
+Vilasa*, carries none until that text is read for it. The Karaka chaturthi
+carries none: DS p. 76 and NS p. 146 give its day and not its fast (C1081).
+Every other key's `unsourced` names `fast`, which does not say it has none.
+
+**What moved.** A rule's `meta` gains `fast` only on the keys above, so only
+their packs' `input_hash` moves; `unsourced` gains `fast` on every row
+without one. No day moved.
+

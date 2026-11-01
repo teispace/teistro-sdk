@@ -12,12 +12,13 @@ import java.util.Objects;
  * What a rule's festival is, as far as a source says.
  *
  * @param communities The communities that keep it, as open keys (`NEWAR`); empty when no source names one, which does not say it is kept by all. Null leaves the SDK's default.
+ * @param fast The fast kept on its day, one reading for each way a text keeps it, in the text's order (SR-62); empty when no source in hand says, which does not say there is none. Null leaves the SDK's default.
  * @param kind Its kind; unset when no source classes it. Null leaves the SDK's default.
  * @param optional Whether the notice leaves it to each office's list: one of the occasions three of which are chosen a year (the Government of India's para 3.1), so a year's list may not hold it. Null leaves the SDK's default.
  * @param regions Where it is kept, as open keys: an ISO 3166 country first (`NP`, `IN`), then a part of it a notice names (`KATHMANDU_VALLEY`); empty when no source says. Null leaves the SDK's default.
  * @param tradition Its religion; unset when no source places it. Null leaves the SDK's default.
  */
-public record FestivalMeta(List<String> communities, com.teispace.teistro.FestivalKind kind, Boolean optional, List<String> regions, com.teispace.teistro.Tradition tradition) implements RequestJson {
+public record FestivalMeta(List<String> communities, List<VrataFast> fast, com.teispace.teistro.FestivalKind kind, Boolean optional, List<String> regions, com.teispace.teistro.Tradition tradition) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -27,6 +28,7 @@ public record FestivalMeta(List<String> communities, com.teispace.teistro.Festiv
      */
     public FestivalMeta {
         communities = communities == null ? null : List.copyOf(communities);
+        fast = fast == null ? null : List.copyOf(fast);
         regions = regions == null ? null : List.copyOf(regions);
     }
 
@@ -36,7 +38,7 @@ public record FestivalMeta(List<String> communities, com.teispace.teistro.Festiv
      *
      */
     public FestivalMeta() {
-        this(null, null, null, null, null);
+        this(null, null, null, null, null, null);
     }
 
     /**
@@ -52,6 +54,7 @@ public record FestivalMeta(List<String> communities, com.teispace.teistro.Festiv
     /** Builds a {@link FestivalMeta} a field at a time. */
     public static final class Builder {
         private List<String> communities;
+        private List<VrataFast> fast;
         private com.teispace.teistro.FestivalKind kind;
         private Boolean optional;
         private List<String> regions;
@@ -67,6 +70,17 @@ public record FestivalMeta(List<String> communities, com.teispace.teistro.Festiv
          */
         public Builder communities(List<String> communities) {
             this.communities = communities;
+            return this;
+        }
+
+        /**
+         * Sets {@code fast}.
+         *
+         * @param fast The fast kept on its day, one reading for each way a text keeps it, in the text's order (SR-62); empty when no source in hand says, which does not say there is none. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder fast(List<VrataFast> fast) {
+            this.fast = fast;
             return this;
         }
 
@@ -121,7 +135,7 @@ public record FestivalMeta(List<String> communities, com.teispace.teistro.Festiv
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalMeta build() {
-            return new FestivalMeta(communities, kind, optional, regions, tradition);
+            return new FestivalMeta(communities, fast, kind, optional, regions, tradition);
         }
     }
 
@@ -136,6 +150,7 @@ public record FestivalMeta(List<String> communities, com.teispace.teistro.Festiv
         Map<String, Object> json = Read.object(raw, "FestivalMeta");
         return new FestivalMeta(
             Read.orNull(json.get("communities"), present -> Read.list(present, "FestivalMeta.communities", item0 -> Read.text(item0, "FestivalMeta.communities"))),
+            Read.orNull(json.get("fast"), present -> Read.list(present, "FestivalMeta.fast", item0 -> VrataFast.of(item0))),
             Read.orNull(json.get("kind"), present -> Read.member(present, "FestivalMeta.kind", com.teispace.teistro.FestivalKind::byKey)),
             Read.orNull(json.get("optional"), present -> Read.bool(present, "FestivalMeta.optional")),
             Read.orNull(json.get("regions"), present -> Read.list(present, "FestivalMeta.regions", item0 -> Read.text(item0, "FestivalMeta.regions"))),
@@ -147,6 +162,9 @@ public record FestivalMeta(List<String> communities, com.teispace.teistro.Festiv
         Map<String, Object> json = new LinkedHashMap<>();
         if (communities != null) {
             json.put("communities", communities);
+        }
+        if (fast != null) {
+            json.put("fast", fast.stream().map(item0 -> item0.toJson()).toList());
         }
         if (kind != null) {
             json.put("kind", kind.fullKey());

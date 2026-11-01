@@ -2108,7 +2108,7 @@ final class AlmanacArea extends _Area {
   /// ```
   /// **Every rule of a festival pack with what it is**: `{pack, rules}`, each
   /// row `{key, form, source, meta, unsourced}`, `meta` its kind, tradition,
-  /// communities and regions and `unsourced` the fields no source gives
+  /// communities, regions and fast and `unsourced` the fields no source gives
   /// (`03-design/festival-metadata.md`).
   ///
   /// ```dart
@@ -15954,6 +15954,7 @@ final class FestivalObservance extends _Value {
     this.parana = const [],
     this.published,
     this.sait,
+    this.moonrise,
   });
 
   /// The rule's key.
@@ -16001,6 +16002,10 @@ final class FestivalObservance extends _Value {
   /// (`03-design/festival-sait.md`); null for a rule with none.
   final FestivalSait? sait;
 
+  /// The moonrise the vrata was kept or is broken at, and where (SR-60);
+  /// null for a rule that reads none.
+  final FestivalMoonrise? moonrise;
+
   @override
   List<Object?> get _fields => [
     rule,
@@ -16018,6 +16023,27 @@ final class FestivalObservance extends _Value {
     ...parana,
     published,
     sait,
+    moonrise,
+  ];
+}
+
+/// The moonrise an observance was kept or broken at (SR-60): the instant
+/// moves with the place, so the place it was found for is beside it.
+final class FestivalMoonrise extends _Value {
+  const FestivalMoonrise({required this.at, required this.place});
+
+  /// The instant the Moon rose, a UTC Julian day.
+  final double at;
+
+  /// The place the days were reckoned at.
+  final Observer place;
+
+  @override
+  List<Object?> get _fields => [
+    at,
+    place.longitudeDeg.value,
+    place.latitudeDeg.value,
+    place.altitudeM.value,
   ];
 }
 
@@ -17293,7 +17319,24 @@ FestivalObservance _festivalObservance(Map<String, Object?> raw) =>
         null => null,
         final sait => _sait(_festivalAt(sait)),
       },
+      moonrise: switch (raw['moonrise']) {
+        null => null,
+        final moonrise => _festivalMoonrise(_festivalAt(moonrise)),
+      },
     );
+
+/// A moonrise as a festival answer writes it.
+FestivalMoonrise _festivalMoonrise(Map<String, Object?> raw) {
+  final place = _festivalAt(raw['place']);
+  return FestivalMoonrise(
+    at: (raw['at']! as num).toDouble(),
+    place: Observer(
+      latitudeDeg: Latitude((place['latitude']! as num).toDouble()),
+      longitudeDeg: Longitude((place['longitude']! as num).toDouble()),
+      altitudeM: Altitude((place['altitude']! as num).toDouble()),
+    ),
+  );
+}
 
 /// A sait as a festival answer writes it.
 FestivalSait _sait(Map<String, Object?> raw) {

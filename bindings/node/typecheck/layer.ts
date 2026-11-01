@@ -1503,6 +1503,8 @@ function theArithmetic(ctx: Context): string {
   ctx.calendar.add(someDate, { months: 1 }, 'CLAMP');
   const listing: FestivalPackListing = ctx.almanac.festivalPack('NEPAL');
   void listing.rules[0]?.unsourced;
+  const broken: 'PARANA' | 'NIGHT' | 'MOONRISE' | null | undefined = listing.rules[0]?.meta?.fast?.[0]?.end;
+  void broken;
   const next: NextOccurrence = ctx.almanac.next({
     after: 2461042.0,
     place: { latitude: 27.7172, longitude: 85.324 },

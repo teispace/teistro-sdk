@@ -134,6 +134,7 @@ pub fn following(
                         days: rule.days,
                     },
                     parana: Vec::new(),
+                    moonrise: None,
                     sait: None,
                     ..observance.clone()
                 }),

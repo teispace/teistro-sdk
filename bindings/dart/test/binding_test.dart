@@ -1222,6 +1222,17 @@ void _engineTests() {
         rows.firstWhere((rule) => rule['key'] == key);
     expect(row('EID_AL_FITR')['subjectTo'], 'MOON_SIGHTING');
     expect((row('HOLI')['meta']! as Map<String, Object?>)['kind'], 'GAZETTED');
+    // The fast a text gives (SR-62): Shivaratri's.
+    final text =
+        (sky.almanac.festivalPack('DHARMASINDHU')['rules']! as List<Object?>)
+            .cast<Map<String, Object?>>();
+    final shivaratri = text.firstWhere((rule) => rule['key'] == 'SHIVARATRI');
+    final fast =
+        ((shivaratri['meta']! as Map<String, Object?>)['fast']!
+                    as List<Object?>)
+                .first!
+            as Map<String, Object?>;
+    expect((fast['kind'], fast['end']), ('UPAVASA', 'PARANA'));
     expect(() => sky.almanac.festivalPack('NO_SUCH_PACK'), throwsA(anything));
     expect(FestivalPack.indiaCentral.key, listing['pack']);
     expect(
@@ -3693,6 +3704,32 @@ void _engineTests() {
       expect(kept.at.window, 'PART');
       expect(kept.span.from < kept.span.to, isTrue);
     }
+    // A vrata kept at moonrise says when and where the Moon rose (SR-60):
+    // the window it was kept in opens there.
+    final sankashta =
+        answer.observances
+            .where((o) => o.rule == 'SANKASHTA_CHATURTHI')
+            .toList();
+    expect(sankashta, isNotEmpty);
+    for (final o in sankashta) {
+      final moonrise = o.moonrise!;
+      expect(moonrise.place.latitudeDeg, place.latitudeDeg);
+      expect([
+        o.extents.$1.window.from,
+        o.extents.$2.window.from,
+      ], contains(moonrise.at));
+    }
+    const atMoonrise = {
+      'SANKASHTA_CHATURTHI',
+      'KARAKA_CHATURTHI',
+      'ASHUNYA_SHAYANA',
+    };
+    expect(
+      answer.observances
+          .where((o) => !atMoonrise.contains(o.rule))
+          .every((o) => o.moonrise == null),
+      isTrue,
+    );
     // A vrata's parana (§8.7): Shivaratri 2026, inside the 14th within
     // three yamas, then at its end.
     final night = ctx.almanac.festivals(

@@ -276,6 +276,7 @@ import type {
   TithiRule,
   VarsheshaRules,
   VedhaMotion,
+  VrataFast,
   VrataParana,
   WesternAspectRequest,
   YogaRules,
@@ -6308,6 +6309,16 @@ export interface FestivalObservance {
   readonly published?: Published;
   /** The rite's time on the day, elected by the rule's sait (`03-design/festival-sait.md`); absent for a rule with none. */
   readonly sait?: FestivalSait;
+  /** The moonrise the vrata was kept or is broken at, and where (SR-60); absent for a rule that reads none. */
+  readonly moonrise?: FestivalMoonrise;
+}
+
+/** The moonrise an observance was kept or broken at: the instant moves with the place, so the place it was found for is beside it. */
+export interface FestivalMoonrise {
+  /** The instant the Moon rose, a UTC Julian day. */
+  readonly at: number;
+  /** The place the days were reckoned at. */
+  readonly place: GeoPlace;
 }
 
 /** A festival day's sait: the window it was found in, every candidate there, and the one chosen. */
@@ -7948,13 +7959,15 @@ export interface FestivalPackRow {
   readonly form: string;
   /** Where its day comes from. */
   readonly source: string;
-  /** What it is: `kind`, `tradition`, `communities`, `regions`, `optional`, each left out when unset. */
+  /** What it is: `kind`, `tradition`, `communities`, `regions`, `optional`, `fast`, each left out when unset. */
   readonly meta?: {
     readonly kind?: string;
     readonly tradition?: string;
     readonly communities?: readonly string[];
     readonly regions?: readonly string[];
     readonly optional?: boolean;
+    /** The fast kept, one reading per source in order (SR-62, `03-design/festival-metadata.md` §6). */
+    readonly fast?: readonly VrataFast[];
   };
   /** The fields of `meta` no source gives. */
   readonly unsourced: readonly string[];

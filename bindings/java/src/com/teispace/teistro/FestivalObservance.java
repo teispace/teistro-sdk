@@ -31,11 +31,14 @@ import java.util.List;
  *     touched it, so the day is the rule's
  * @param sait the rite's time on the day, elected by the rule's sait
  *     ({@code 03-design/festival-sait.md}); null for a rule with none
+ * @param moonrise the day's moonrise and its place, for a rule whose rite
+ *     is at moonrise or whose fast is broken then (SR-60); null otherwise
  */
 public record FestivalObservance(
         String rule, CalendarDate day, Interval tithi, Masa month, boolean adhika, String caseHeld,
         List<FestivalExtent> extents, FestivalDecided decidedBy, String choice,
-        double marginSeconds, List<VrataParanaTime> parana, Published published, FestivalSait sait) {
+        double marginSeconds, List<VrataParanaTime> parana, Published published, FestivalSait sait,
+        FestivalMoonrise moonrise) {
     /** Keeps the pair and the readings unmodifiable. */
     public FestivalObservance {
         extents = List.copyOf(extents);
@@ -88,5 +91,31 @@ public record FestivalObservance(
             double marginSeconds, List<VrataParanaTime> parana, Published published) {
         this(rule, day, tithi, month, adhika, caseHeld, extents, decidedBy, choice, marginSeconds, parana,
                 published, null);
+    }
+
+    /**
+     * An observance with no moonrise, as one was written before a rite at
+     * moonrise carried its own.
+     *
+     * @param rule as the record's
+     * @param day as the record's
+     * @param tithi as the record's
+     * @param month as the record's
+     * @param adhika as the record's
+     * @param caseHeld as the record's
+     * @param extents as the record's
+     * @param decidedBy as the record's
+     * @param choice as the record's
+     * @param marginSeconds as the record's
+     * @param parana as the record's
+     * @param published as the record's
+     * @param sait as the record's
+     */
+    public FestivalObservance(
+            String rule, CalendarDate day, Interval tithi, Masa month, boolean adhika, String caseHeld,
+            List<FestivalExtent> extents, FestivalDecided decidedBy, String choice,
+            double marginSeconds, List<VrataParanaTime> parana, Published published, FestivalSait sait) {
+        this(rule, day, tithi, month, adhika, caseHeld, extents, decidedBy, choice, marginSeconds, parana,
+                published, sait, null);
     }
 }

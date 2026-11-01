@@ -4387,6 +4387,11 @@
     "FAGU_PURNIMA": {
       "name": "Fagu Purnima",
       "prose": "Fagu Purnima"
+    },
+    "ASHUNYA_SHAYANA": {
+      "name": "Ashunya Shayana Vrata",
+      "prose": "the Ashunya-shayana vrata",
+      "iast": "Aśūnyaśayanavrata"
     }
   },
   "agni_vasa": {
@@ -4583,6 +4588,36 @@
       "name": "Visham",
       "prose": "Visham",
       "iast": "Viṣam"
+    }
+  },
+  "fast_kind": {
+    "UPAVASA": {
+      "name": "Upavasa",
+      "prose": "a full fast"
+    },
+    "EKABHAKTA": {
+      "name": "Ekabhakta",
+      "prose": "one meal at midday"
+    },
+    "NAKTA": {
+      "name": "Nakta",
+      "prose": "one meal at night"
+    },
+    "AYACHITA": {
+      "name": "Ayachita",
+      "prose": "food come unasked"
+    },
+    "PHALAHARA": {
+      "name": "Phalahara",
+      "prose": "fruit only"
+    },
+    "KSHIRAHARA": {
+      "name": "Kshirahara",
+      "prose": "milk only"
+    },
+    "JALAHARA": {
+      "name": "Jalahara",
+      "prose": "water only"
     }
   }
 }
