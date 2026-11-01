@@ -20,12 +20,16 @@ if TYPE_CHECKING:
 __all__ = [
     "AnniversariesRequest",
     "AshauchQuery",
+    "KinQuery",
+    "RiteQuery",
     "ChangesRequest",
     "AlmanacDaysRequest",
+    "DeathTimeQuery",
     "DigestRequest",
     "PackRequest",
     "FestivalCalendarRequest",
     "FirstYearQuery",
+    "HouseholdQuery",
     "NavataraRequest",
     "NextRequest",
     "PakshiRequest",
@@ -55,6 +59,10 @@ __all__ = [
     "AshauchRequest",
     "AshauchTable",
     "AshauchTradition",
+    "KinAsked",
+    "KinTable",
+    "AshauchRiteAsked",
+    "AshauchRiteTable",
     "DayAsked",
     "ChangeKind",
     "ZoneSpec",
@@ -63,11 +71,13 @@ __all__ = [
     "ZoneSpecFixed",
     "FestivalRequest",
     "MuhurtaRequest",
+    "DeathTimeTable",
     "FeedAlarm",
     "SuppliedEvent",
     "FeedHint",
     "FeedSelector",
     "FirstYearRequest",
+    "Household",
     "NextKind",
     "NativeAsked",
     "PakshiRules",
@@ -166,6 +176,12 @@ __all__ = [
     "AshauchOverlap",
     "PakshiniNight",
     "AshauchRelationRow",
+    "KinObserver",
+    "KinStep",
+    "KinRow",
+    "AshauchKind",
+    "AshauchRite",
+    "AshauchRiteRow",
     "MetaFilter",
     "PublishedSet",
     "FestivalRules",
@@ -177,6 +193,8 @@ __all__ = [
     "FirstAbdika",
     "SapindanaAt",
     "UnaDay",
+    "HouseholdEvent",
+    "HouseholdObserver",
     "PakshiBird",
     "PakshiBirthRule",
     "PakshiClock",
@@ -256,7 +274,6 @@ __all__ = [
     "NumerologyRules",
     "TithiHalf",
     "DayFifth",
-    "AshauchKind",
     "AshauchLength",
     "AshauchLengthBath",
     "AshauchLengthSajyotih",
@@ -273,6 +290,10 @@ __all__ = [
     "AshauchMarkUpanayana",
     "AshauchMarkBetrothal",
     "AshauchMarkMarriage",
+    "Upanayana",
+    "KinKeeps",
+    "RiteBeginning",
+    "RiteVerdict",
     "PublishedEntry",
     "PublishedEntrySet",
     "PublishedEntryAdd",
@@ -283,6 +304,7 @@ __all__ = [
     "CriterionLongitude",
     "CriterionArcusVisionis",
     "ActivityRules",
+    "HouseholdTie",
     "BodyOrb",
     "AspectOrb",
     "Terms",
@@ -520,7 +542,6 @@ __all__ = [
     "Masters",
     "NameReduction",
     "NonLatin",
-    "Upanayana",
     "Interval",
     "FestivalMeta",
     "SubjectTo",
@@ -759,6 +780,26 @@ class AshauchQuery(TypedDict, total=False):
     """The offset from UTC the place's civil days run at, in seconds, east positive."""
 
 
+class KinQuery(TypedDict, total=False):
+    """A relation path and the table it is read under, as a binding asks it (`03-design/ashauch.md` §10)."""
+
+    kin: Required[KinAsked]
+    """The path and the facts it reads."""
+
+    table: Optional[KinTable]
+    """The table, every row data; the *Dharmasindhu*'s when left out."""
+
+
+class RiteQuery(TypedDict, total=False):
+    """A rite and the table it is read under, as a binding asks it (`03-design/ashauch.md` §12)."""
+
+    rite: Required[AshauchRiteAsked]
+    """The rite and the facts it reads."""
+
+    table: Optional[AshauchRiteTable]
+    """The table, every row data; the *Dharmasindhu*'s when left out."""
+
+
 class ChangesRequest(TypedDict, total=False):
     """The request as a binding writes it."""
 
@@ -828,6 +869,31 @@ class AlmanacDaysRequest(TypedDict, total=False):
 
     zone: Optional[ZoneSpec]
     """The zone, in place of `utcOffsetSeconds`."""
+
+
+class DeathTimeQuery(TypedDict, total=False):
+    """The query as a binding writes it."""
+
+    altitudeM: float
+    """The place's height above sea level in metres, 0 when left out."""
+
+    at: Required[float]
+    """The death's instant, a UTC Julian day."""
+
+    crematedAt: Optional[float]
+    """The cremation's instant, a UTC Julian day."""
+
+    latitudeDeg: Required[float]
+    """The place's latitude, degrees north positive."""
+
+    longitudeDeg: Required[float]
+    """The place's longitude, degrees east positive."""
+
+    table: Optional[DeathTimeTable]
+    """The tradition's lists; the *Dharmasindhu*'s when left out."""
+
+    utcOffsetSeconds: Required[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive."""
 
 
 class DigestRequest(TypedDict, total=False):
@@ -926,6 +992,31 @@ class FirstYearQuery(TypedDict, total=False):
 
     request: Required[FirstYearRequest]
     """The death, a UTC Julian day, and the readings."""
+
+    utcOffsetSeconds: Required[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+
+
+class HouseholdQuery(TypedDict, total=False):
+    """The query as a binding writes it."""
+
+    altitudeM: float
+    """The place's height above sea level in metres, 0 when left out."""
+
+    household: Required[Household]
+    """The events and observers."""
+
+    latitudeDeg: Required[float]
+    """The place's latitude, degrees north positive."""
+
+    longitudeDeg: Required[float]
+    """The place's longitude, degrees east positive."""
+
+    table: Optional[AshauchTable]
+    """The tradition's table, every row data; the *Dharmasindhu*'s when left out."""
+
+    tradition: Optional[AshauchTradition]
+    """A shipped table by its name, in place of `table`."""
 
     utcOffsetSeconds: Required[int]
     """The offset from UTC the place's civil days run at, in seconds, east positive."""
@@ -1466,6 +1557,9 @@ class AshauchRequest(TypedDict, total=False):
     event: Required[AshauchEvent]
     """What happened."""
 
+    fireGiver: bool
+    """Whether the observer lights the pyre. An earlier period takes in neither the fire-giver's nor the new mother's (*Dharmasindhu* p. 306)."""
+
     fullDays: Optional[int]
     """The family's full period, 1 to `MOST_DAYS`; `FULL_DAYS` when left out."""
 
@@ -1522,6 +1616,91 @@ AshauchTradition: TypeAlias = Literal['DHARMASINDHU', 'MITAKSHARA']
 `DHARMASINDHU`: `AshauchTable::dharmasindhu`, the default.
 `MITAKSHARA`: `AshauchTable::mitakshara`.
 """
+
+
+class KinAsked(TypedDict, total=False):
+    """What is asked: the path from the observer to the person the event is of, the one who died or was born."""
+
+    livingForebears: int
+    """The observer's forebears living, in order from the father: 1 the father, 2 the father and grandfather, 3 the great-grandfather too."""
+
+    observer: Required[KinObserver]
+    """The observer."""
+
+    path: Required[Sequence[KinStep]]
+    """The steps, the observer's first."""
+
+    personMarried: Optional[bool]
+    """Whether the person at the path's end is married, when a row turns on it: a married daughter has left the line."""
+
+
+class KinTable(TypedDict, total=False):
+    """A tradition's reckoning of kin, every row and bound data."""
+
+    beyond: Required[str]
+    """The clause for a person past the last sagotra."""
+
+    girlTo: Required[int]
+    """The last person who keeps a period for an unmarried girl."""
+
+    line: Required[str]
+    """The clause for a line counted out."""
+
+    livingExtend: Required[bool]
+    """Whether each living forebear adds a person to the sapiṇḍa's reach."""
+
+    name: Required[str]
+    """The table's name, repeated in each answer."""
+
+    natal: Required[str]
+    """The clause for a married daughter's natal line."""
+
+    rows: Required[Sequence[KinRow]]
+    """The named paths, the first that fits answering."""
+
+    sagotraTo: Required[int]
+    """The last person who is a sagotra."""
+
+    samanodakaTo: Required[int]
+    """The last person who is a samānodaka."""
+
+    sapindaTo: Required[int]
+    """The last person who is a sapiṇḍa, the kūṭastha first."""
+
+    unbound: Required[str]
+    """The clause for an observer who keeps only a parent's period."""
+
+    unnamed: Required[str]
+    """The clause for a path no row names and no line holds."""
+
+
+class AshauchRiteAsked(TypedDict, total=False):
+    """What is asked."""
+
+    begun: bool
+    """Whether it has passed what opens it (`RiteBeginning`)."""
+
+    calamity: bool
+    """Whether the land is in calamity: war, plague or famine."""
+
+    kind: Optional[AshauchKind]
+    """The kind of the period running."""
+
+    noOtherWay: bool
+    """Whether it cannot be moved: no later time will serve."""
+
+    rite: Required[AshauchRite]
+    """The rite."""
+
+
+class AshauchRiteTable(TypedDict, total=False):
+    """A tradition's *apavāda* rows, the first that fits answering."""
+
+    name: Required[str]
+    """The table's name, repeated in each answer."""
+
+    rows: Required[Sequence[AshauchRiteRow]]
+    """The rows."""
 
 
 class DayAsked(TypedDict, total=False):
@@ -1612,6 +1791,31 @@ class MuhurtaRequest(TypedDict, total=False):
 
     rules: Required[MuhurtaRequestRules]
     """The rules: an activity the SDK ships the rules of, by name, or rules spelt out."""
+
+
+class DeathTimeTable(TypedDict, total=False):
+    """A tradition's lists, every one data."""
+
+    dvipada: Required[Sequence[Union[_catalogue.Nakshatra, str]]]
+    """The dvipada nakshatras."""
+
+    name: Required[str]
+    """The table's name, repeated in each answer."""
+
+    panchakaSigns: Required[Sequence[Union[_catalogue.Rashi, str]]]
+    """The Moon's signs of the panchaka: Aquarius and Pisces, which is the second half of Dhanishtha to the end of Revati."""
+
+    pushkaraTithis: Required[Sequence[Union[_catalogue.Tithi, str]]]
+    """The tithis of the pushkara yogas."""
+
+    pushkaraVaras: Required[Sequence[Union[_catalogue.Vara, str]]]
+    """The varas of the pushkara yogas."""
+
+    tripada: Required[Sequence[Union[_catalogue.Nakshatra, str]]]
+    """The tripada nakshatras."""
+
+    twoMakeDvipushkara: bool
+    """Whether the tithi and vara alone make a dvipushkara, the other reading of *Dharmasindhu* p. 316 and Garga in *Nirṇayasindhu* p. 434 (C953)."""
 
 
 class FeedAlarm(TypedDict, total=False):
@@ -1714,6 +1918,16 @@ class FirstYearRequest(TypedDict, total=False):
 
     window: Optional[Window]
     """The rite's time in place of both forms' (kutapa to rauhina for the ekoddishta, aparahna for the parvana)."""
+
+
+class Household(TypedDict, total=False):
+    """Several events and observers in one request."""
+
+    events: Required[Sequence[HouseholdEvent]]
+    """The events."""
+
+    observers: Required[Sequence[HouseholdObserver]]
+    """The observers."""
 
 
 NextKind: TypeAlias = Literal['EKADASHI', 'PURNIMA', 'AMAVASYA', 'SANKRANTI']
@@ -2753,6 +2967,12 @@ class AshauchRunning(TypedDict, total=False):
     end: Required[float]
     """When it ends."""
 
+    extendedDays: Optional[int]
+    """The days an overlap added past its own end."""
+
+    extendedFrom: Optional[float]
+    """Where its last-night days begin, when an overlap added them: those days take in less than the period did (*Dharmasindhu* p. 306)."""
+
     key: Required[str]
     """The earlier answer's key, which an overlap names."""
 
@@ -2827,7 +3047,7 @@ Nearness: TypeAlias = Literal['OBSERVERS_HOUSE', 'SAME_VILLAGE', 'OTHER_VILLAGE'
 """
 
 
-AshauchRelation: TypeAlias = Literal['MOTHER', 'FATHER', 'CHILD', 'SPOUSE', 'CO_WIFE', 'STEP_CHILD', 'SAPINDA', 'SAMANODAKA', 'SAGOTRA', 'MARRIED_DAUGHTER', 'MARRIED_SIBLING', 'MATERNAL_GRANDFATHER', 'MATERNAL_GRANDMOTHER', 'MATERNAL_UNCLE', 'SON_IN_LAW', 'PARENT_IN_LAW', 'PUPIL', 'ACHARYAS_FAMILY', 'ADOPTION', 'BANDHU', 'SUBJECT', 'OF_ASCETIC']
+AshauchRelation: TypeAlias = Literal['MOTHER', 'FATHER', 'CHILD', 'SPOUSE', 'CO_WIFE', 'STEP_CHILD', 'SAPINDA', 'SAMANODAKA', 'SAGOTRA', 'MARRIED_DAUGHTER', 'MARRIED_SIBLING', 'MATERNAL_GRANDFATHER', 'MATERNAL_GRANDMOTHER', 'MATERNAL_UNCLE', 'SON_IN_LAW', 'PARENT_IN_LAW', 'PUPIL', 'ACHARYAS_FAMILY', 'ADOPTION', 'BANDHU', 'SUBJECT', 'OF_ASCETIC', 'MATERNAL_AUNT', 'PATERNAL_AUNT', 'MATERNAL_UNCLES_WIFE', 'SISTERS_SON', 'DAUGHTERS_SON', 'WIFES_BROTHER']
 """Who the observer is to the one born or deceased, as the app resolves it.
 
 `MOTHER`: The mother of the born or the deceased.
@@ -2852,6 +3072,12 @@ AshauchRelation: TypeAlias = Literal['MOTHER', 'FATHER', 'CHILD', 'SPOUSE', 'CO_
 `BANDHU`: One of the three *bandhus*: cousins through a father's or mother's sister or a mother's brother.
 `SUBJECT`: A subject: the deceased was the ruler of the land.
 `OF_ASCETIC`: A sapiṇḍa of an ascetic (*yati*).
+`MATERNAL_AUNT`: The deceased was the observer's mother's sister.
+`PATERNAL_AUNT`: The deceased was the observer's married father's sister.
+`MATERNAL_UNCLES_WIFE`: The deceased was the observer's maternal uncle's wife.
+`SISTERS_SON`: The deceased was the observer's sister's son (*bhāgineya*).
+`DAUGHTERS_SON`: The deceased was the observer's daughter's son (*dauhitra*).
+`WIFES_BROTHER`: The deceased was the observer's wife's brother (*śyālaka*).
 """
 
 
@@ -2935,6 +3161,9 @@ class AshauchOverlap(TypedDict, total=False):
     deathAbsorbsLongerBirth: Required[bool]
     """Whether a birth known during a shorter death ends with it ("कश्चित्", *Dharmasindhu* p. 305); "बहवः" say no."""
 
+    fatherKeepsHisOwn: bool
+    """Whether a father dying in the mother's period keeps his own full period. Off, his ends with hers (*Dharmasindhu* p. 306); on, the Mitākṣarā on III.20 and the *Smṛtyarthasāra*, which DS reports."""
+
     lastNight: Required[Sequence[int]]
     """The days a period known in an equal period's last night adds past its end, and in that night's last quarter (Gautama and Śātātapa in the Mitākṣarā on Yājñavalkya III.20; *Dharmasindhu* pp. 305–306): `[2, 3]`; `[2, 2]` adds two throughout, `[0, 0]` none."""
 
@@ -2970,6 +3199,118 @@ class AshauchRelationRow(TypedDict, total=False):
 
     relation: Required[AshauchRelation]
     """Whose."""
+
+
+class KinObserver(TypedDict, total=False):
+    """The observer's facts the resolver reads."""
+
+    married: Optional[bool]
+    """Whether the observer is married, when a row turns on it."""
+
+    sex: Required[AshauchSex]
+    """The observer's sex."""
+
+    upanayana: Optional[Upanayana]
+    """The observer's upanayana. Left out, the observer has had it."""
+
+
+KinStep: TypeAlias = Literal['FATHER', 'MOTHER', 'SON', 'DAUGHTER', 'HUSBAND', 'WIFE']
+"""One step of a path from a person to the next.
+
+`FATHER`: This person's father.
+`MOTHER`: This person's mother.
+`SON`: This person's son.
+`DAUGHTER`: This person's daughter.
+`HUSBAND`: This person's husband.
+`WIFE`: This person's wife.
+"""
+
+
+class KinRow(TypedDict, total=False):
+    """One named path of a `KinTable`, with its clause."""
+
+    clause: Required[str]
+    """The text and page."""
+
+    keeps: Required[KinKeeps]
+    """What is kept."""
+
+    observer: Optional[AshauchSex]
+    """The observer's sex, when the row turns on it."""
+
+    observerMarried: Optional[bool]
+    """Whether the observer is married, when the row turns on it."""
+
+    path: Required[Sequence[KinStep]]
+    """The path, a step through a mother to her child written through the father."""
+
+    personMarried: Optional[bool]
+    """Whether the person is married, when the row turns on it."""
+
+    relation: Optional[AshauchRelation]
+    """The relation an ashauch asks for, when the row keeps a period."""
+
+
+AshauchKind: TypeAlias = Literal['BIRTH', 'DEATH']
+"""Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
+
+`BIRTH`: *Janana*, *sūtaka*.
+`DEATH`: *Mṛta*, *śāva*.
+"""
+
+
+AshauchRite: TypeAlias = Literal['MARRIAGE', 'UPANAYANA', 'CHUDAKARANA', 'PRATISHTHA', 'TANK_DEDICATION', 'KOTI_HOMA', 'TULAPURUSHA_GIFT', 'VOW', 'PURASHCHARANA', 'PENANCE', 'SACRIFICE', 'PRIESTS_OFFICE', 'SHANTI', 'FOOD_CHARITY', 'SHRADDHA', 'ECLIPSE_RITES', 'SANKRANTI_BATH', 'PARTHIVA_WORSHIP', 'DAILY_RULES', 'WORSHIP']
+"""A rite a table can answer for.
+
+`MARRIAGE`: A marriage.
+`UPANAYANA`: An upanayana.
+`CHUDAKARANA`: A cūḍākaraṇa.
+`PRATISHTHA`: The installing of an image.
+`TANK_DEDICATION`: The dedication of a tank.
+`KOTI_HOMA`: A *koṭi-homa*.
+`TULAPURUSHA_GIFT`: A *tulāpuruṣa* gift.
+`VOW`: A vow taken, such as Ananta's or an Ekadashi.
+`PURASHCHARANA`: A *puraścaraṇa* japa under its sankalpa.
+`PENANCE`: A penance begun.
+`SACRIFICE`: A sacrifice, by the one consecrated for it.
+`PRIESTS_OFFICE`: A sacrifice, by a priest engaged for it.
+`SHANTI`: A rite to allay disease, danger or the king's anger.
+`FOOD_CHARITY`: Food given from a standing charity.
+`SHRADDHA`: A shraddha.
+`ECLIPSE_RITES`: The bath, shraddha and gift of an eclipse.
+`SANKRANTI_BATH`: A sankranti's bath.
+`PARTHIVA_WORSHIP`: The worship of an earthen liṅga.
+`DAILY_RULES`: The body's daily rules: bathing, sipping, food, touch.
+`WORSHIP`: Worship and every other rite, daily, occasional or desired.
+"""
+
+
+class AshauchRiteRow(TypedDict, total=False):
+    """One row: the facts it needs, and what it answers."""
+
+    beginning: Optional[RiteBeginning]
+    """What opens the rite."""
+
+    begun: Optional[bool]
+    """Whether the rite must be begun, when the row turns on it."""
+
+    calamity: Optional[bool]
+    """Whether the land must be in calamity, when the row turns on it."""
+
+    clause: Required[str]
+    """The text and page."""
+
+    kind: Optional[AshauchKind]
+    """The kind of period, when the row turns on it."""
+
+    noOtherWay: Optional[bool]
+    """Whether there must be no other way, when the row turns on it."""
+
+    rite: Optional[AshauchRite]
+    """The rite; any when left out."""
+
+    verdict: Required[RiteVerdict]
+    """The verdict."""
 
 
 class MetaFilter(TypedDict, total=False):
@@ -3079,6 +3420,26 @@ UnaDay: TypeAlias = Literal['DAY_BEFORE', 'ONE_TITHI', 'TWO_TITHIS', 'THREE_TITH
 `TWO_TITHIS`: The tithi two short.
 `THREE_TITHIS`: The tithi three short.
 """
+
+
+class HouseholdEvent(TypedDict, total=False):
+    """One event of a household, shared by the observers its ties name."""
+
+    event: Required[AshauchEvent]
+    """The event."""
+
+    key: Required[str]
+    """The caller's name for it, which ties and answers repeat."""
+
+
+class HouseholdObserver(TypedDict, total=False):
+    """One observer of a household, and the events that reach them."""
+
+    key: Required[str]
+    """The caller's name for the observer."""
+
+    ties: Required[Sequence[HouseholdTie]]
+    """The events, in any order."""
 
 
 PakshiBird: TypeAlias = Literal['VULTURE', 'OWL', 'CROW', 'COCK', 'PEACOCK']
@@ -4052,14 +4413,6 @@ DayFifth: TypeAlias = Literal['PRATAH', 'SANGAVA', 'MADHYAHNA', 'APARAHNA', 'SAY
 """
 
 
-AshauchKind: TypeAlias = Literal['BIRTH', 'DEATH']
-"""Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
-
-`BIRTH`: *Janana*, *sūtaka*.
-`DEATH`: *Mṛta*, *śāva*.
-"""
-
-
 AshauchLength: TypeAlias = "Union[AshauchLengthBath, AshauchLengthSajyotih, AshauchLengthPakshini, AshauchLengthDays, AshauchLengthFull]"
 """A span the texts name."""
 
@@ -4183,6 +4536,43 @@ class AshauchMarkMarriage(TypedDict, total=False):
     """Marriage."""
 
     mark: Required[Literal['MARRIAGE']]
+
+
+Upanayana: TypeAlias = Literal['DONE', 'NOT_DONE', 'NOT_PERFORMED']
+"""Whether the deceased had the upanayana.
+
+`DONE`: Done.
+`NOT_DONE`: Not yet done.
+`NOT_PERFORMED`: Not a rite of the deceased's community: the band before it runs to marriage, or to the 16th year unmarried (*Dharmasindhu* pp. 300–301).
+"""
+
+
+KinKeeps: TypeAlias = Literal['PERIOD', 'BATH', 'NOTHING']
+"""What the observer keeps.
+
+`PERIOD`: The period its `Relation` has in an ashauch table.
+`BATH`: A bath, and no period.
+`NOTHING`: Nothing.
+"""
+
+
+RiteBeginning: TypeAlias = Literal['NANDI_SHRADDHA', 'SANKALPA', 'VARANA', 'COOKING']
+"""What opens a rite, past which it is begun (Laghu-Viṣṇu in *Nirṇayasindhu* p. 384).
+
+`NANDI_SHRADDHA`: The *nāndīśrāddha*, of a marriage and the like.
+`SANKALPA`: The sankalpa, of a vow or a japa.
+`VARANA`: The choosing of the priests, of a sacrifice; a priest's own office from his *madhuparka*.
+`COOKING`: The cooking, of a shraddha.
+"""
+
+
+RiteVerdict: TypeAlias = Literal['GOES_ON', 'IN_PART', 'BARRED']
+"""The answer's verdict.
+
+`GOES_ON`: It goes on.
+`IN_PART`: Its bodily part goes on; the rest is done by another or after the period, as the clause says.
+`BARRED`: It waits for the period's end.
+"""
 
 
 PublishedEntry: TypeAlias = "Union[PublishedEntrySet, PublishedEntryAdd, PublishedEntryWithdraw]"
@@ -4331,6 +4721,31 @@ class ActivityRules(TypedDict, total=False):
 
     unwanted: Sequence[MuhurtaUnwanted]
     """The grahas the rite wants out of houses. Empty where the rules spelt out leave it out."""
+
+
+class HouseholdTie(TypedDict, total=False):
+    """How one observer stands to one event."""
+
+    abroad: bool
+    """Whether it happened abroad, to this observer."""
+
+    event: Required[str]
+    """The event's key."""
+
+    fireGiver: bool
+    """Whether this observer lights the pyre."""
+
+    fullDays: Optional[int]
+    """The full period, ten days when left out."""
+
+    heardAt: Optional[float]
+    """When the news reached this observer; at the event when left out."""
+
+    nearness: Nearness
+    """Where it was, to this observer."""
+
+    relation: Required[AshauchRelation]
+    """The observer's relation to it."""
 
 
 class BodyOrb(TypedDict, total=False):
@@ -7175,15 +7590,6 @@ NonLatin: TypeAlias = Literal['REFUSE', 'SKIP']
 
 `REFUSE`: Refused, naming the character and its place: both tables are of Latin letters, and a guess at another script's would be invented.
 `SKIP`: Left out of every sum: the baseline engine's.
-"""
-
-
-Upanayana: TypeAlias = Literal['DONE', 'NOT_DONE', 'NOT_PERFORMED']
-"""Whether the deceased had the upanayana.
-
-`DONE`: Done.
-`NOT_DONE`: Not yet done.
-`NOT_PERFORMED`: Not a rite of the deceased's community: the band before it runs to marriage, or to the 16th year unmarried (*Dharmasindhu* pp. 300–301).
 """
 
 

@@ -944,6 +944,7 @@ dependencies = [
  "fixed_decimal",
  "icu_locale_core",
  "icu_plurals",
+ "icu_provider",
  "schemars",
  "serde",
  "serde_json",

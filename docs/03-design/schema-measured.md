@@ -123,7 +123,7 @@ A null here is a real answer and not a missing one — no war, no
 sankranti that day, no combustion orbs for a body that cannot be combust
 — which is why the field is written rather than skipped.
 
-## 7. The layer reads back, and 13 types do not derive it
+## 7. The layer reads back, and 15 types do not derive it
 
 A schema's most valuable consumer is the SDK itself: a stored document
 is worth validating precisely because something will try to read it
@@ -133,13 +133,13 @@ later. Counting the derives over the layer's own source:
 |---|---|---|
 | `serial` | 6 | 5 |
 | `chart` | 19 | 16 |
-| `panchanga` | 144 | 141 |
+| `panchanga` | 174 | 169 |
 | `vargas` | 11 | 7 |
 | `state` | 12 | 12 |
 | `aspect` | 10 | 8 |
 | `points` | 5 | 5 |
 | `houses` | 5 | 5 |
-| **total** | **212** | **199** |
+| **total** | **242** | **227** |
 
 Each type that serialises without a derived reader, found where its
 derive names `Serialize` and not `Deserialize`, with how it is read
@@ -153,6 +153,8 @@ instead:
 | `chart` | `BatchInput` | private, only hashed |
 | `panchanga` | `SankalpaInput` | private, only hashed |
 | `panchanga` | `AshauchInput` | private, only hashed |
+| `panchanga` | `HouseholdInput` | private, only hashed |
+| `panchanga` | `DeathTimeInput` | private, only hashed |
 | `panchanga` | `FirstYearInput` | private, only hashed |
 | `vargas` | `Map` | read inside its owner |
 | `vargas` | `Spans` | read inside its owner |
@@ -266,7 +268,7 @@ for, and that is where a fixed count of decimals ran out.
 |---|---|---|
 | the schema can be derived from the documents | falsified | 45 of 174 numeric paths are ambiguous |
 | a sample gives a string field its full member list | falsified | a sample proves a member exists, never that one does not |
-| the layer's types read back, so a round trip can gate the schema | **holds** | 199 types that serialise also derive `Deserialize` |
+| the layer's types read back, so a round trip can gate the schema | **holds** | 227 types that serialise also derive `Deserialize` |
 | every word a document writes is spelt as a key | **holds** | 0 of the schema's words are not |
 | every number the form writes reads back as the same double | **holds** | 0 of 5570 move under a correct parser |
 | this build's parser reproduces a stored document's hash | **holds** | it moves 0 of 5570 |

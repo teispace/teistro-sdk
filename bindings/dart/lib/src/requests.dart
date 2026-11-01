@@ -120,6 +120,52 @@ final class AshauchQuery extends _Request {
   List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg, request, table, tradition, utcOffsetSeconds];
 }
 
+/// A relation path and the table it is read under, as a binding asks it (`03-design/ashauch.md` §10).
+final class KinQuery extends _Request {
+  const KinQuery({
+    required this.kin,
+    this.table,
+  });
+
+  /// The path and the facts it reads.
+  final KinAsked kin;
+
+  /// The table, every row data; the *Dharmasindhu*'s when left out.
+  final KinTable? table;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'kin': kin._wire,
+    if (table case final tableValue?) 'table': tableValue._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [kin, table];
+}
+
+/// A rite and the table it is read under, as a binding asks it (`03-design/ashauch.md` §12).
+final class RiteQuery extends _Request {
+  const RiteQuery({
+    required this.rite,
+    this.table,
+  });
+
+  /// The rite and the facts it reads.
+  final AshauchRiteAsked rite;
+
+  /// The table, every row data; the *Dharmasindhu*'s when left out.
+  final AshauchRiteTable? table;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'rite': rite._wire,
+    if (table case final tableValue?) 'table': tableValue._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [rite, table];
+}
+
 /// The request as a binding writes it.
 final class ChangesRequest extends _Request {
   const ChangesRequest({
@@ -263,6 +309,54 @@ final class AlmanacDaysRequest extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, calendar, eclipses, festivals, first, gowri, homaAhuti, lagnas, last, latitudeDeg, longitudeDeg, markers, muhurta, nepalSambat, sky, skyStepMinutes, utcOffsetSeconds, years, zone];
+}
+
+/// The query as a binding writes it.
+final class DeathTimeQuery extends _Request {
+  const DeathTimeQuery({
+    this.altitudeM = 0.0,
+    required this.at,
+    this.crematedAt,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    this.table,
+    required this.utcOffsetSeconds,
+  });
+
+  /// The place's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The death's instant, a UTC Julian day.
+  final double at;
+
+  /// The cremation's instant, a UTC Julian day.
+  final double? crematedAt;
+
+  /// The place's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  /// The tradition's lists; the *Dharmasindhu*'s when left out.
+  final DeathTimeTable? table;
+
+  /// The offset from UTC the place's civil days run at, in seconds, east positive.
+  final int utcOffsetSeconds;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'at': at,
+    if (crematedAt case final crematedAtValue?) 'crematedAt': crematedAtValue,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    if (table case final tableValue?) 'table': tableValue._wire,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, at, crematedAt, latitudeDeg, longitudeDeg, table, utcOffsetSeconds];
 }
 
 /// The request as a binding writes it.
@@ -466,6 +560,54 @@ final class FirstYearQuery extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg, request, utcOffsetSeconds];
+}
+
+/// The query as a binding writes it.
+final class HouseholdQuery extends _Request {
+  const HouseholdQuery({
+    this.altitudeM = 0.0,
+    required this.household,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    this.table,
+    this.tradition,
+    required this.utcOffsetSeconds,
+  });
+
+  /// The place's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The events and observers.
+  final Household household;
+
+  /// The place's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  /// The tradition's table, every row data; the *Dharmasindhu*'s when left out.
+  final AshauchTable? table;
+
+  /// A shipped table by its name, in place of `table`.
+  final AshauchTradition? tradition;
+
+  /// The offset from UTC the place's civil days run at, in seconds, east positive.
+  final int utcOffsetSeconds;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'household': household._wire,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    if (table case final tableValue?) 'table': tableValue._wire,
+    if (tradition case final traditionValue?) 'tradition': traditionValue.key,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, household, latitudeDeg, longitudeDeg, table, tradition, utcOffsetSeconds];
 }
 
 /// A birth star, whose navatara chakra is asked. The chakra reads no sky, so this is the whole request.
@@ -1584,6 +1726,7 @@ final class AshauchRequest extends _Request {
     this.abroad,
     this.during,
     required this.event,
+    this.fireGiver,
     this.fullDays,
     this.heardAt,
     required this.key,
@@ -1599,6 +1742,9 @@ final class AshauchRequest extends _Request {
 
   /// What happened.
   final AshauchEvent event;
+
+  /// Whether the observer lights the pyre. An earlier period takes in neither the fire-giver's nor the new mother's (*Dharmasindhu* p. 306).
+  final bool? fireGiver;
 
   /// The family's full period, 1 to [`MOST_DAYS`]; [`FULL_DAYS`] when left out.
   final int? fullDays;
@@ -1620,6 +1766,7 @@ final class AshauchRequest extends _Request {
     if (abroad case final abroadValue?) 'abroad': abroadValue,
     if (during case final duringValue?) 'during': [for (final e0 in duringValue) e0._wire],
     'event': event._wire,
+    if (fireGiver case final fireGiverValue?) 'fireGiver': fireGiverValue,
     if (fullDays case final fullDaysValue?) 'fullDays': fullDaysValue,
     if (heardAt case final heardAtValue?) 'heardAt': heardAtValue,
     'key': key,
@@ -1628,7 +1775,7 @@ final class AshauchRequest extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [abroad, during, event, fullDays, heardAt, key, nearness, relation];
+  List<Object?> get _fields => [abroad, during, event, fireGiver, fullDays, heardAt, key, nearness, relation];
 }
 
 /// A tradition, as data: every row with its clause and source. A consumer loads one from JSON and changes any row ([`AshauchTable::dharmasindhu`] is the default).
@@ -1708,6 +1855,173 @@ enum AshauchTradition implements _Keyed {
   final String key;
 }
 
+/// What is asked: the path from the observer to the person the event is of, the one who died or was born.
+final class KinAsked extends _Request {
+  const KinAsked({
+    this.livingForebears = 0,
+    required this.observer,
+    required this.path,
+    this.personMarried,
+  });
+
+  /// The observer's forebears living, in order from the father: 1 the father, 2 the father and grandfather, 3 the great-grandfather too.
+  final int livingForebears;
+
+  /// The observer.
+  final KinObserver observer;
+
+  /// The steps, the observer's first.
+  final List<KinStep> path;
+
+  /// Whether the person at the path's end is married, when a row turns on it: a married daughter has left the line.
+  final bool? personMarried;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'livingForebears': livingForebears,
+    'observer': observer._wire,
+    'path': [for (final e0 in path) e0.key],
+    if (personMarried case final personMarriedValue?) 'personMarried': personMarriedValue,
+  };
+
+  @override
+  List<Object?> get _fields => [livingForebears, observer, path, personMarried];
+}
+
+/// A tradition's reckoning of kin, every row and bound data.
+final class KinTable extends _Request {
+  const KinTable({
+    required this.beyond,
+    required this.girlTo,
+    required this.line,
+    required this.livingExtend,
+    required this.name,
+    required this.natal,
+    required this.rows,
+    required this.sagotraTo,
+    required this.samanodakaTo,
+    required this.sapindaTo,
+    required this.unbound,
+    required this.unnamed,
+  });
+
+  /// The clause for a person past the last sagotra.
+  final String beyond;
+
+  /// The last person who keeps a period for an unmarried girl.
+  final int girlTo;
+
+  /// The clause for a line counted out.
+  final String line;
+
+  /// Whether each living forebear adds a person to the sapiṇḍa's reach.
+  final bool livingExtend;
+
+  /// The table's name, repeated in each answer.
+  final String name;
+
+  /// The clause for a married daughter's natal line.
+  final String natal;
+
+  /// The named paths, the first that fits answering.
+  final List<KinRow> rows;
+
+  /// The last person who is a sagotra.
+  final int sagotraTo;
+
+  /// The last person who is a samānodaka.
+  final int samanodakaTo;
+
+  /// The last person who is a sapiṇḍa, the kūṭastha first.
+  final int sapindaTo;
+
+  /// The clause for an observer who keeps only a parent's period.
+  final String unbound;
+
+  /// The clause for a path no row names and no line holds.
+  final String unnamed;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'beyond': beyond,
+    'girlTo': girlTo,
+    'line': line,
+    'livingExtend': livingExtend,
+    'name': name,
+    'natal': natal,
+    'rows': [for (final e0 in rows) e0._wire],
+    'sagotraTo': sagotraTo,
+    'samanodakaTo': samanodakaTo,
+    'sapindaTo': sapindaTo,
+    'unbound': unbound,
+    'unnamed': unnamed,
+  };
+
+  @override
+  List<Object?> get _fields => [beyond, girlTo, line, livingExtend, name, natal, rows, sagotraTo, samanodakaTo, sapindaTo, unbound, unnamed];
+}
+
+/// What is asked.
+final class AshauchRiteAsked extends _Request {
+  const AshauchRiteAsked({
+    this.begun = false,
+    this.calamity = false,
+    this.kind,
+    this.noOtherWay = false,
+    required this.rite,
+  });
+
+  /// Whether it has passed what opens it ([`RiteBeginning`]).
+  final bool begun;
+
+  /// Whether the land is in calamity: war, plague or famine.
+  final bool calamity;
+
+  /// The kind of the period running.
+  final AshauchKind? kind;
+
+  /// Whether it cannot be moved: no later time will serve.
+  final bool noOtherWay;
+
+  /// The rite.
+  final AshauchRite rite;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'begun': begun,
+    'calamity': calamity,
+    if (kind case final kindValue?) 'kind': kindValue.key,
+    'noOtherWay': noOtherWay,
+    'rite': rite.key,
+  };
+
+  @override
+  List<Object?> get _fields => [begun, calamity, kind, noOtherWay, rite];
+}
+
+/// A tradition's *apavāda* rows, the first that fits answering.
+final class AshauchRiteTable extends _Request {
+  const AshauchRiteTable({
+    required this.name,
+    required this.rows,
+  });
+
+  /// The table's name, repeated in each answer.
+  final String name;
+
+  /// The rows.
+  final List<AshauchRiteRow> rows;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'name': name,
+    'rows': [for (final e0 in rows) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [name, rows];
+}
+
 /// A civil day as a request names it.
 final class DayAsked extends _Request {
   const DayAsked({
@@ -1755,6 +2069,54 @@ enum ChangeKind implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// A tradition's lists, every one data.
+final class DeathTimeTable extends _Request {
+  const DeathTimeTable({
+    required this.dvipada,
+    required this.name,
+    required this.panchakaSigns,
+    required this.pushkaraTithis,
+    required this.pushkaraVaras,
+    required this.tripada,
+    this.twoMakeDvipushkara,
+  });
+
+  /// The dvipada nakshatras.
+  final List<Nakshatra> dvipada;
+
+  /// The table's name, repeated in each answer.
+  final String name;
+
+  /// The Moon's signs of the panchaka: Aquarius and Pisces, which is the second half of Dhanishtha to the end of Revati.
+  final List<Rashi> panchakaSigns;
+
+  /// The tithis of the pushkara yogas.
+  final List<Tithi> pushkaraTithis;
+
+  /// The varas of the pushkara yogas.
+  final List<Vara> pushkaraVaras;
+
+  /// The tripada nakshatras.
+  final List<Nakshatra> tripada;
+
+  /// Whether the tithi and vara alone make a dvipushkara, the other reading of *Dharmasindhu* p. 316 and Garga in *Nirṇayasindhu* p. 434 (C953).
+  final bool? twoMakeDvipushkara;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'dvipada': [for (final e0 in dvipada) e0.key],
+    'name': name,
+    'panchakaSigns': [for (final e0 in panchakaSigns) e0.key],
+    'pushkaraTithis': [for (final e0 in pushkaraTithis) e0.key],
+    'pushkaraVaras': [for (final e0 in pushkaraVaras) e0.key],
+    'tripada': [for (final e0 in tripada) e0.key],
+    if (twoMakeDvipushkara case final twoMakeDvipushkaraValue?) 'twoMakeDvipushkara': twoMakeDvipushkaraValue,
+  };
+
+  @override
+  List<Object?> get _fields => [dvipada, name, panchakaSigns, pushkaraTithis, pushkaraVaras, tripada, twoMakeDvipushkara];
 }
 
 /// A display alarm as a binding writes it.
@@ -1909,6 +2271,29 @@ final class FeedSelector extends _Request {
 
   @override
   List<Object?> get _fields => [forms, kinds, rules, traditions];
+}
+
+/// Several events and observers in one request.
+final class Household extends _Request {
+  const Household({
+    required this.events,
+    required this.observers,
+  });
+
+  /// The events.
+  final List<HouseholdEvent> events;
+
+  /// The observers.
+  final List<HouseholdObserver> observers;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'events': [for (final e0 in events) e0._wire],
+    'observers': [for (final e0 in observers) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [events, observers];
 }
 
 /// A kind of day a search may ask for without naming a pack, each read by rules the SDK states (`03-design/next-occurrence.md` §2).
@@ -3323,6 +3708,8 @@ final class AshauchRunning extends _Request {
   const AshauchRunning({
     this.days,
     required this.end,
+    this.extendedDays,
+    this.extendedFrom,
     required this.key,
     required this.kind,
     required this.length,
@@ -3336,6 +3723,12 @@ final class AshauchRunning extends _Request {
 
   /// When it ends.
   final double end;
+
+  /// The days an overlap added past its own end.
+  final int? extendedDays;
+
+  /// Where its last-night days begin, when an overlap added them: those days take in less than the period did (*Dharmasindhu* p. 306).
+  final double? extendedFrom;
 
   /// The earlier answer's key, which an overlap names.
   final String key;
@@ -3359,6 +3752,8 @@ final class AshauchRunning extends _Request {
   Map<String, Object?> get _wire => <String, Object?>{
     if (days case final daysValue?) 'days': daysValue,
     'end': end,
+    if (extendedDays case final extendedDaysValue?) 'extendedDays': extendedDaysValue,
+    if (extendedFrom case final extendedFromValue?) 'extendedFrom': extendedFromValue,
     'key': key,
     'kind': kind.key,
     'length': length._wire,
@@ -3368,7 +3763,7 @@ final class AshauchRunning extends _Request {
   };
 
   @override
-  List<Object?> get _fields => [days, end, key, kind, length, relation, sex, start];
+  List<Object?> get _fields => [days, end, extendedDays, extendedFrom, key, kind, length, relation, sex, start];
 }
 
 /// Where the death was, to the observer: the rows that turn on it.
@@ -3432,7 +3827,19 @@ enum AshauchRelation implements _Keyed {
   /// A subject: the deceased was the ruler of the land.
   subject('SUBJECT'),
   /// A sapiṇḍa of an ascetic (*yati*).
-  ofAscetic('OF_ASCETIC');
+  ofAscetic('OF_ASCETIC'),
+  /// The deceased was the observer's mother's sister.
+  maternalAunt('MATERNAL_AUNT'),
+  /// The deceased was the observer's married father's sister.
+  paternalAunt('PATERNAL_AUNT'),
+  /// The deceased was the observer's maternal uncle's wife.
+  maternalUnclesWife('MATERNAL_UNCLES_WIFE'),
+  /// The deceased was the observer's sister's son (*bhāgineya*).
+  sistersSon('SISTERS_SON'),
+  /// The deceased was the observer's daughter's son (*dauhitra*).
+  daughtersSon('DAUGHTERS_SON'),
+  /// The deceased was the observer's wife's brother (*śyālaka*).
+  wifesBrother('WIFES_BROTHER');
 
   const AshauchRelation(this.key);
 
@@ -3595,11 +4002,15 @@ enum NightRule implements _Keyed {
 final class AshauchOverlap extends _Request {
   const AshauchOverlap({
     required this.deathAbsorbsLongerBirth,
+    this.fatherKeepsHisOwn,
     required this.lastNight,
   });
 
   /// Whether a birth known during a shorter death ends with it ("कश्चित्", *Dharmasindhu* p. 305); "बहवः" say no.
   final bool deathAbsorbsLongerBirth;
+
+  /// Whether a father dying in the mother's period keeps his own full period. Off, his ends with hers (*Dharmasindhu* p. 306); on, the Mitākṣarā on III.20 and the *Smṛtyarthasāra*, which DS reports.
+  final bool? fatherKeepsHisOwn;
 
   /// The days a period known in an equal period's last night adds past its end, and in that night's last quarter (Gautama and Śātātapa in the Mitākṣarā on Yājñavalkya III.20; *Dharmasindhu* pp. 305–306): `[2, 3]`; `[2, 2]` adds two throughout, `[0, 0]` none.
   final List<int> lastNight;
@@ -3607,11 +4018,12 @@ final class AshauchOverlap extends _Request {
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     'deathAbsorbsLongerBirth': deathAbsorbsLongerBirth,
+    if (fatherKeepsHisOwn case final fatherKeepsHisOwnValue?) 'fatherKeepsHisOwn': fatherKeepsHisOwnValue,
     'lastNight': lastNight,
   };
 
   @override
-  List<Object?> get _fields => [deathAbsorbsLongerBirth, lastNight];
+  List<Object?> get _fields => [deathAbsorbsLongerBirth, fatherKeepsHisOwn, lastNight];
 }
 
 /// Where a *pakṣiṇī* begun at night ends (*Dharmasindhu* p. 303).
@@ -3674,6 +4086,221 @@ final class AshauchRelationRow extends _Request {
 
   @override
   List<Object?> get _fields => [clause, heardLate, kind, length, marriedDaughter, nearness, relation];
+}
+
+/// The observer's facts the resolver reads.
+final class KinObserver extends _Request {
+  const KinObserver({
+    this.married,
+    required this.sex,
+    this.upanayana,
+  });
+
+  /// Whether the observer is married, when a row turns on it.
+  final bool? married;
+
+  /// The observer's sex.
+  final AshauchSex sex;
+
+  /// The observer's upanayana. Left out, the observer has had it.
+  final Upanayana? upanayana;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (married case final marriedValue?) 'married': marriedValue,
+    'sex': sex.key,
+    if (upanayana case final upanayanaValue?) 'upanayana': upanayanaValue.key,
+  };
+
+  @override
+  List<Object?> get _fields => [married, sex, upanayana];
+}
+
+/// One step of a path from a person to the next.
+enum KinStep implements _Keyed {
+  /// This person's father.
+  father('FATHER'),
+  /// This person's mother.
+  mother('MOTHER'),
+  /// This person's son.
+  son('SON'),
+  /// This person's daughter.
+  daughter('DAUGHTER'),
+  /// This person's husband.
+  husband('HUSBAND'),
+  /// This person's wife.
+  wife('WIFE');
+
+  const KinStep(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// One named path of a [`KinTable`], with its clause.
+final class KinRow extends _Request {
+  const KinRow({
+    required this.clause,
+    required this.keeps,
+    this.observer,
+    this.observerMarried,
+    required this.path,
+    this.personMarried,
+    this.relation,
+  });
+
+  /// The text and page.
+  final String clause;
+
+  /// What is kept.
+  final KinKeeps keeps;
+
+  /// The observer's sex, when the row turns on it.
+  final AshauchSex? observer;
+
+  /// Whether the observer is married, when the row turns on it.
+  final bool? observerMarried;
+
+  /// The path, a step through a mother to her child written through the father.
+  final List<KinStep> path;
+
+  /// Whether the person is married, when the row turns on it.
+  final bool? personMarried;
+
+  /// The relation an ashauch asks for, when the row keeps a period.
+  final AshauchRelation? relation;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'clause': clause,
+    'keeps': keeps.key,
+    if (observer case final observerValue?) 'observer': observerValue.key,
+    if (observerMarried case final observerMarriedValue?) 'observerMarried': observerMarriedValue,
+    'path': [for (final e0 in path) e0.key],
+    if (personMarried case final personMarriedValue?) 'personMarried': personMarriedValue,
+    if (relation case final relationValue?) 'relation': relationValue.key,
+  };
+
+  @override
+  List<Object?> get _fields => [clause, keeps, observer, observerMarried, path, personMarried, relation];
+}
+
+/// Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
+enum AshauchKind implements _Keyed {
+  /// *Janana*, *sūtaka*.
+  birth('BIRTH'),
+  /// *Mṛta*, *śāva*.
+  death('DEATH');
+
+  const AshauchKind(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// A rite a table can answer for.
+enum AshauchRite implements _Keyed {
+  /// A marriage.
+  marriage('MARRIAGE'),
+  /// An upanayana.
+  upanayana('UPANAYANA'),
+  /// A cūḍākaraṇa.
+  chudakarana('CHUDAKARANA'),
+  /// The installing of an image.
+  pratishtha('PRATISHTHA'),
+  /// The dedication of a tank.
+  tankDedication('TANK_DEDICATION'),
+  /// A *koṭi-homa*.
+  kotiHoma('KOTI_HOMA'),
+  /// A *tulāpuruṣa* gift.
+  tulapurushaGift('TULAPURUSHA_GIFT'),
+  /// A vow taken, such as Ananta's or an Ekadashi.
+  vow('VOW'),
+  /// A *puraścaraṇa* japa under its sankalpa.
+  purashcharana('PURASHCHARANA'),
+  /// A penance begun.
+  penance('PENANCE'),
+  /// A sacrifice, by the one consecrated for it.
+  sacrifice('SACRIFICE'),
+  /// A sacrifice, by a priest engaged for it.
+  priestsOffice('PRIESTS_OFFICE'),
+  /// A rite to allay disease, danger or the king's anger.
+  shanti('SHANTI'),
+  /// Food given from a standing charity.
+  foodCharity('FOOD_CHARITY'),
+  /// A shraddha.
+  shraddha('SHRADDHA'),
+  /// The bath, shraddha and gift of an eclipse.
+  eclipseRites('ECLIPSE_RITES'),
+  /// A sankranti's bath.
+  sankrantiBath('SANKRANTI_BATH'),
+  /// The worship of an earthen liṅga.
+  parthivaWorship('PARTHIVA_WORSHIP'),
+  /// The body's daily rules: bathing, sipping, food, touch.
+  dailyRules('DAILY_RULES'),
+  /// Worship and every other rite, daily, occasional or desired.
+  worship('WORSHIP');
+
+  const AshauchRite(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// One row: the facts it needs, and what it answers.
+final class AshauchRiteRow extends _Request {
+  const AshauchRiteRow({
+    this.beginning,
+    this.begun,
+    this.calamity,
+    required this.clause,
+    this.kind,
+    this.noOtherWay,
+    this.rite,
+    required this.verdict,
+  });
+
+  /// What opens the rite.
+  final RiteBeginning? beginning;
+
+  /// Whether the rite must be begun, when the row turns on it.
+  final bool? begun;
+
+  /// Whether the land must be in calamity, when the row turns on it.
+  final bool? calamity;
+
+  /// The text and page.
+  final String clause;
+
+  /// The kind of period, when the row turns on it.
+  final AshauchKind? kind;
+
+  /// Whether there must be no other way, when the row turns on it.
+  final bool? noOtherWay;
+
+  /// The rite; any when left out.
+  final AshauchRite? rite;
+
+  /// The verdict.
+  final RiteVerdict verdict;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (beginning case final beginningValue?) 'beginning': beginningValue.key,
+    if (begun case final begunValue?) 'begun': begunValue,
+    if (calamity case final calamityValue?) 'calamity': calamityValue,
+    'clause': clause,
+    if (kind case final kindValue?) 'kind': kindValue.key,
+    if (noOtherWay case final noOtherWayValue?) 'noOtherWay': noOtherWayValue,
+    if (rite case final riteValue?) 'rite': riteValue.key,
+    'verdict': verdict.key,
+  };
+
+  @override
+  List<Object?> get _fields => [beginning, begun, calamity, clause, kind, noOtherWay, rite, verdict];
 }
 
 /// What a request keeps of its answer: a rule stands when, of each list given, its meta holds a member. An empty list asks nothing of its field, and a rule with that field unset fails a list that is not.
@@ -4171,6 +4798,52 @@ enum UnaDay implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// One event of a household, shared by the observers its ties name.
+final class HouseholdEvent extends _Request {
+  const HouseholdEvent({
+    required this.event,
+    required this.key,
+  });
+
+  /// The event.
+  final AshauchEvent event;
+
+  /// The caller's name for it, which ties and answers repeat.
+  final String key;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'event': event._wire,
+    'key': key,
+  };
+
+  @override
+  List<Object?> get _fields => [event, key];
+}
+
+/// One observer of a household, and the events that reach them.
+final class HouseholdObserver extends _Request {
+  const HouseholdObserver({
+    required this.key,
+    required this.ties,
+  });
+
+  /// The caller's name for the observer.
+  final String key;
+
+  /// The events, in any order.
+  final List<HouseholdTie> ties;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'key': key,
+    'ties': [for (final e0 in ties) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [key, ties];
 }
 
 /// The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
@@ -5473,20 +6146,6 @@ enum DayFifth implements _Keyed {
   final String key;
 }
 
-/// Whose impurity: a birth's (*sūtaka*, a loss's too) or a death's.
-enum AshauchKind implements _Keyed {
-  /// *Janana*, *sūtaka*.
-  birth('BIRTH'),
-  /// *Mṛta*, *śāva*.
-  death('DEATH');
-
-  const AshauchKind(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
 /// A son or a daughter, which the texts' bands and the mother's further bar read.
 enum AshauchSex implements _Keyed {
   /// Male.
@@ -5661,6 +6320,72 @@ final class AshauchMarkMarriage extends AshauchMark {
 
   @override
   List<Object?> get _fields => [];
+}
+
+/// Whether the deceased had the upanayana.
+enum Upanayana implements _Keyed {
+  /// Done.
+  done('DONE'),
+  /// Not yet done.
+  notDone('NOT_DONE'),
+  /// Not a rite of the deceased's community: the band before it runs to marriage, or to the 16th year unmarried (*Dharmasindhu* pp. 300–301).
+  notPerformed('NOT_PERFORMED');
+
+  const Upanayana(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// What the observer keeps.
+enum KinKeeps implements _Keyed {
+  /// The period its [`Relation`] has in an ashauch table.
+  period('PERIOD'),
+  /// A bath, and no period.
+  bath('BATH'),
+  /// Nothing.
+  nothing('NOTHING');
+
+  const KinKeeps(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// What opens a rite, past which it is begun (Laghu-Viṣṇu in *Nirṇayasindhu* p. 384).
+enum RiteBeginning implements _Keyed {
+  /// The *nāndīśrāddha*, of a marriage and the like.
+  nandiShraddha('NANDI_SHRADDHA'),
+  /// The sankalpa, of a vow or a japa.
+  sankalpa('SANKALPA'),
+  /// The choosing of the priests, of a sacrifice; a priest's own office from his *madhuparka*.
+  varana('VARANA'),
+  /// The cooking, of a shraddha.
+  cooking('COOKING');
+
+  const RiteBeginning(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The answer's verdict.
+enum RiteVerdict implements _Keyed {
+  /// It goes on.
+  goesOn('GOES_ON'),
+  /// Its bodily part goes on; the rest is done by another or after the period, as the clause says.
+  inPart('IN_PART'),
+  /// It waits for the period's end.
+  barred('BARRED');
+
+  const RiteVerdict(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }
 
 /// One published day.
@@ -6083,6 +6808,54 @@ final class ActivityRules extends _Request {
 
   @override
   List<Object?> get _fields => [bars, baseline, day, heeds, hours, lagnas, months, padas, shool, unjudged, unwanted];
+}
+
+/// How one observer stands to one event.
+final class HouseholdTie extends _Request {
+  const HouseholdTie({
+    this.abroad,
+    required this.event,
+    this.fireGiver,
+    this.fullDays,
+    this.heardAt,
+    this.nearness = Nearness.sameVillage,
+    required this.relation,
+  });
+
+  /// Whether it happened abroad, to this observer.
+  final bool? abroad;
+
+  /// The event's key.
+  final String event;
+
+  /// Whether this observer lights the pyre.
+  final bool? fireGiver;
+
+  /// The full period, ten days when left out.
+  final int? fullDays;
+
+  /// When the news reached this observer; at the event when left out.
+  final double? heardAt;
+
+  /// Where it was, to this observer.
+  final Nearness nearness;
+
+  /// The observer's relation to it.
+  final AshauchRelation relation;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (abroad case final abroadValue?) 'abroad': abroadValue,
+    'event': event,
+    if (fireGiver case final fireGiverValue?) 'fireGiver': fireGiverValue,
+    if (fullDays case final fullDaysValue?) 'fullDays': fullDaysValue,
+    if (heardAt case final heardAtValue?) 'heardAt': heardAtValue,
+    'nearness': nearness.key,
+    'relation': relation.key,
+  };
+
+  @override
+  List<Object?> get _fields => [abroad, event, fireGiver, fullDays, heardAt, nearness, relation];
 }
 
 /// One body's orb, for the moieties.
@@ -9228,22 +10001,6 @@ enum NonLatin implements _Keyed {
   skip('SKIP');
 
   const NonLatin(this.key);
-
-  /// The key the wire spells it with.
-  @override
-  final String key;
-}
-
-/// Whether the deceased had the upanayana.
-enum Upanayana implements _Keyed {
-  /// Done.
-  done('DONE'),
-  /// Not yet done.
-  notDone('NOT_DONE'),
-  /// Not a rite of the deceased's community: the band before it runs to marriage, or to the 16th year unmarried (*Dharmasindhu* pp. 300–301).
-  notPerformed('NOT_PERFORMED');
-
-  const Upanayana(this.key);
 
   /// The key the wire spells it with.
   @override

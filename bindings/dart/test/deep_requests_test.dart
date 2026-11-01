@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 359 of the examples' 371 members.
+/// The cases compare 364 of the examples' 376 members.
 library;
 
 import 'dart:convert';
@@ -105,7 +105,89 @@ void main() {
       path: ['table', 'overlap'],
       dropping: [],
       members: 0,
-      written: AshauchOverlap(deathAbsorbsLongerBirth: true, lastNight: [1, 1]).toJson(),
+      written: AshauchOverlap(
+        deathAbsorbsLongerBirth: true,
+        fatherKeepsHisOwn: true,
+        lastNight: [1, 1],
+      ).toJson(),
+    );
+  });
+
+  test('almanac.ashauchKin: KinQuery', () {
+    _holds(
+      'almanac.ashauchKin',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: KinQuery(
+        kin: KinAsked(
+          livingForebears: 1,
+          observer: KinObserver(
+            married: true,
+            sex: AshauchSex.female,
+            upanayana: Upanayana.notDone,
+          ),
+          path: [KinStep.mother],
+          personMarried: true,
+        ),
+        table: KinTable(
+          beyond: 'x',
+          girlTo: 1,
+          line: 'x',
+          livingExtend: true,
+          name: 'x',
+          natal: 'x',
+          rows: [
+            KinRow(
+              clause: 'x',
+              keeps: KinKeeps.bath,
+              observer: AshauchSex.female,
+              observerMarried: true,
+              path: [KinStep.mother],
+              personMarried: true,
+              relation: AshauchRelation.father,
+            ),
+          ],
+          sagotraTo: 1,
+          samanodakaTo: 1,
+          sapindaTo: 1,
+          unbound: 'x',
+          unnamed: 'x',
+        ),
+      ).toJson(),
+    );
+  });
+
+  test('almanac.ashauchRite: RiteQuery', () {
+    _holds(
+      'almanac.ashauchRite',
+      path: [],
+      dropping: [],
+      members: 0,
+      written: RiteQuery(
+        rite: AshauchRiteAsked(
+          begun: true,
+          calamity: true,
+          kind: AshauchKind.death,
+          noOtherWay: true,
+          rite: AshauchRite.upanayana,
+        ),
+        table: AshauchRiteTable(
+          name: 'x',
+          rows: [
+            AshauchRiteRow(
+              beginning: RiteBeginning.sankalpa,
+              begun: true,
+              calamity: true,
+              clause: 'x',
+              kind: AshauchKind.death,
+              noOtherWay: true,
+              rite: AshauchRite.upanayana,
+              verdict: RiteVerdict.inPart,
+            ),
+          ],
+        ),
+      ).toJson(),
     );
   });
 
@@ -474,6 +556,32 @@ void main() {
         unjudged: [<String, Object?>{'what': 'x', 'why': 'x'}],
         unwanted: [MuhurtaUnwanted(bars: true, grahas: [Graha.moon], houses: [1])],
       )).toJson(),
+    );
+  });
+
+  test('almanac.deathTime: DeathTimeQuery', () {
+    _holds(
+      'almanac.deathTime',
+      path: [],
+      dropping: [],
+      members: 5,
+      written: DeathTimeQuery(
+        altitudeM: 1.5,
+        at: 1.5,
+        crematedAt: 1.5,
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        table: DeathTimeTable(
+          dvipada: [Nakshatra.bharani],
+          name: 'x',
+          panchakaSigns: [Rashi.taurus],
+          pushkaraTithis: [Tithi.shuklaDvitiya],
+          pushkaraVaras: [Vara.somavara],
+          tripada: [Nakshatra.bharani],
+          twoMakeDvipushkara: true,
+        ),
+        utcOffsetSeconds: 1,
+      ).toJson(),
     );
   });
 
@@ -1015,6 +1123,81 @@ void main() {
       dropping: [],
       members: 0,
       written: WindowDayMuhurta(from: 1, to: 1).toJson(),
+    );
+  });
+
+  test('almanac.household at household.events[0].event.deceased: Deceased', () {
+    _holds(
+      'almanac.household',
+      path: ['household', 'events', 0, 'event', 'deceased'],
+      dropping: [],
+      members: 0,
+      written: Deceased(
+        betrothed: true,
+        born: 1.5,
+        buried: true,
+        chudakarana: true,
+        married: true,
+        sex: AshauchSex.female,
+        upanayana: Upanayana.notDone,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.household at household.observers[0]: HouseholdObserver', () {
+    _holds(
+      'almanac.household',
+      path: ['household', 'observers', 0],
+      dropping: [],
+      members: 0,
+      written: HouseholdObserver(
+        key: 'x',
+        ties: [
+          HouseholdTie(
+            abroad: true,
+            event: 'x',
+            fireGiver: true,
+            fullDays: 1,
+            heardAt: 1.5,
+            nearness: Nearness.sameVillage,
+            relation: AshauchRelation.father,
+          ),
+        ],
+      ).toJson(),
+    );
+  });
+
+  test('almanac.household at table.bands[0].before: AshauchMark', () {
+    _holds(
+      'almanac.household',
+      path: ['table', 'bands', 0, 'before'],
+      dropping: [],
+      members: 0,
+      written: AshauchMarkDay(day: 1).toJson(),
+    );
+  });
+
+  test('almanac.household at table.motherRites: MotherRites', () {
+    _holds(
+      'almanac.household',
+      path: ['table', 'motherRites'],
+      dropping: [],
+      members: 0,
+      written: MotherRites(daughter: 1, son: 1).toJson(),
+    );
+  });
+
+  test('almanac.household at table.overlap: AshauchOverlap', () {
+    _holds(
+      'almanac.household',
+      path: ['table', 'overlap'],
+      dropping: [],
+      members: 0,
+      written: AshauchOverlap(
+        deathAbsorbsLongerBirth: true,
+        fatherKeepsHisOwn: true,
+        lastNight: [1, 1],
+      ).toJson(),
     );
   });
 
