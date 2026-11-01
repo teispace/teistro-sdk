@@ -702,7 +702,9 @@ final class VedicReads {
                     new BirthSyllable(c.cell(chart), JsonRead.text(syllable.get(0)), JsonRead.text(syllable.get(1)),
                             NameVarga.of(c.varga(chart))),
                     new Ghata(Rashi.of(c.ghataChandra(chart)), TithiClass.of(c.ghataTithi(chart)),
-                            Vara.of(c.ghataVara(chart)), Nakshatra.of(c.ghataNakshatra(chart)))));
+                            Vara.of(c.ghataVara(chart)), Nakshatra.of(c.ghataNakshatra(chart))),
+                    Paya.of(c.payaByNakshatra(chart)),
+                    Paya.of(c.payaByHouse(chart))));
         }
         return List.copyOf(out);
     }

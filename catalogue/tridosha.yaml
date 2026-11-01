@@ -1,0 +1,26 @@
+kind: tridosha
+number: 91
+version: 1
+doc: "The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110)."
+members:
+  - key: VATA
+    id: 0
+    doc: "Vata, the windy humour, as a classical text attributes it to a graha; not a diagnosis"
+    sources:
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.14, 2.16, 2.18–2.20"
+    mark: V
+  - key: PITTA
+    id: 1
+    doc: "Pitta, the bilious humour, as a classical text attributes it to a graha; not a diagnosis"
+    sources:
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.13, 2.15, 2.16"
+    mark: V
+  - key: KAPHA
+    id: 2
+    doc: "Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis"
+    sources:
+      - text: "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)"
+        ref: "Purvakhanda 2.14, 2.16–2.18"
+    mark: V

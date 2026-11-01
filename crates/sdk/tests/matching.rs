@@ -8,7 +8,7 @@
     reason = "tests fail by panicking and compare exact halves"
 )]
 
-use teistro::catalogue::{Graha, Koota};
+use teistro::catalogue::{Graha, Koota, Rashi};
 use teistro::matching::{KujaFrom, ashta_koota, porutham};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::{
@@ -302,7 +302,14 @@ fn a_chart_carries_its_moons_avakahada_and_a_tropical_one_refuses_it() {
             .unwrap()
             .value;
         let read = chart.avakahada.clone().unwrap();
-        assert_eq!(read, teistro::avakahada(moon(&chart)).unwrap());
+        // The paya by house counts the Moon's sign from the lagna's
+        // (C1105, C1107), so the Moon alone answers all but it.
+        let lagna = Rashi::of_longitude(chart.foundation.lagna_deg);
+        assert_eq!(
+            read,
+            teistro::avakahada(moon(&chart)).unwrap().with_lagna(lagna)
+        );
+        assert!(read.paya_by_house.is_some());
         assert_eq!(
             read.syllable,
             teistro::birth_syllable(read.nakshatra, read.pada).unwrap()

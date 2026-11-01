@@ -4682,5 +4682,44 @@
       "prose": "वार",
       "iast": "Vāra"
     }
+  },
+  "paya": {
+    "SUVARNA": {
+      "name": "सुवर्णपाद",
+      "prose": "सुवर्णपाद",
+      "iast": "Suvarṇa"
+    },
+    "RAJATA": {
+      "name": "रजतपाद",
+      "prose": "रजतपाद",
+      "iast": "Rajata"
+    },
+    "TAMRA": {
+      "name": "ताम्रपाद",
+      "prose": "ताम्रपाद",
+      "iast": "Tāmra"
+    },
+    "LOHA": {
+      "name": "लोहपाद",
+      "prose": "लोहपाद",
+      "iast": "Loha"
+    }
+  },
+  "tridosha": {
+    "VATA": {
+      "name": "वात",
+      "prose": "वात",
+      "iast": "Vāta"
+    },
+    "PITTA": {
+      "name": "पित्त",
+      "prose": "पित्त",
+      "iast": "Pitta"
+    },
+    "KAPHA": {
+      "name": "कफ",
+      "prose": "कफ",
+      "iast": "Kapha"
+    }
   }
 }

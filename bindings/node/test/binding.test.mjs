@@ -838,8 +838,10 @@ test('every catalogue enum has a complete id table', () => {
   // and `TsMuhurtaYoga`'s Ravi and Guru Pushya; 1486 since a vrata's
   // `TsFastKind`, seven, with its member of `TsKind`; 1506 since the
   // year's rulers' `TsYearOffice`, nine, `TsRulerText`, three, and
-  // `TsRulerDayRule`, five, with their three members of `TsKind`.
-  assert.equal(entries, 1506, 'every member of every enum is in a table');
+  // `TsRulerDayRule`, five, with their three members of `TsKind`; 1513
+  // since the birth paya's `TsPaya`, four, and the classical doshas'
+  // `TsTridosha`, three, each with its member of `TsKind`.
+  assert.equal(entries, 1513, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -3645,6 +3647,12 @@ test('a chart carries its avakahada, whose syllable names the birth pada', () =>
     const at = SIGNS.indexOf(read.rashi.slice('rashi.'.length));
     assert.equal(read.ghata.chandra, `rashi.${SIGNS[(at + GHATA_COUNTS[at] - 1) % 12]}`);
     assert.ok(Object.isFrozen(read.ghata) && read.ghata.tithi.startsWith('tithi_class.'), read.ghata.tithi);
+    // The paya by star is the Vishwavidyalaya Panchang's four runs (C1106);
+    // by house it is one of the four, read from the lagna (C1105).
+    const star = [...catalogue.NakshatraById].find(([, key]) => key === read.nakshatra)[0];
+    const byStar = star >= 5 && star <= 16 ? 'RAJATA' : star >= 17 && star <= 23 ? 'SUVARNA' : star >= 2 && star <= 4 ? 'LOHA' : 'TAMRA';
+    assert.equal(read.payaByNakshatra, `paya.${byStar}`);
+    assert.ok(read.payaByHouse.startsWith('paya.'), read.payaByHouse);
   }
   assert.ok(padas.size > 20, `${padas.size} padas`);
   const western = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'western-tropical-default' });
@@ -5576,6 +5584,52 @@ test('two reckonings say where they disagree and why', () => {
     assert.throws(() => official.almanac.disagreements(gone, month), /compared with was disposed/u);
   } finally {
     official.dispose();
+  }
+});
+
+/**
+ * Two births twelve hours apart under one setting, and one birth under two
+ * (`03-design/chart-disagreements.md`): half a day turns the lagna half
+ * the circle and moves the Moon by a pada at least, and one context
+ * compared with itself disagrees on nothing.
+ */
+test('two charts say where they disagree', () => {
+  const classical = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'parashari-classical', locale: 'en-Latn' });
+  const kp = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'kp-default', locale: 'en-Latn' });
+  try {
+    const birth = {
+      instant: 2447000.25,
+      place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+      utcOffsetSeconds: 20700,
+    };
+    const twins = classical.chart.disagreements(classical, {
+      first: birth,
+      second: { ...birth, instant: 2447000.75 },
+    });
+    assert.notEqual(twins.lagna, null, 'half a day turns the lagna');
+    assert.notEqual(twins.lagna.first.sign, twins.lagna.second.sign);
+    assert.ok(twins.lagna.first.degreesInSign >= 0 && twins.lagna.first.degreesInSign < 30);
+    assert.notEqual(twins.nakshatra, null, 'the Moon moves a pada at least');
+    assert.ok(twins.compared >= 12, `compared ${twins.compared}`);
+    assert.equal(twins.otherSettingsHash, classical.settingsHash);
+    assert.equal(typeof twins.provenance.inputHash, 'string');
+    assert.ok(Object.isFrozen(twins.lagna.first), 'frozen to its leaves');
+
+    const same = classical.chart.disagreements(classical, { first: birth });
+    assert.deepEqual([same.lagna, same.grahas, same.nakshatra, same.dashas, same.yogas], [null, [], null, [], []]);
+    const settings = classical.chart.disagreements(kp, { first: birth, at: 2461000.5 });
+    assert.equal(settings.otherProfile, 'kp-default');
+    assert.equal(settings.at, 2461000.5);
+
+    assert.throws(() => classical.chart.disagreements({}, { first: birth }), TypeError);
+    assert.throws(() => classical.chart.disagreements(kp, { first: { ...birth, instant: 'noon' } }), TypeError);
+    assert.throws(
+      () => classical.chart.disagreements(kp, { first: { ...birth, utcOffsetSeconds: 999999 } }),
+      (error) => error.field?.startsWith('disagreements.first'),
+    );
+  } finally {
+    classical.dispose();
+    kp.dispose();
   }
 });
 

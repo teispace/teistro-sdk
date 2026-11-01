@@ -119,8 +119,14 @@ pub use almanac::{
 pub use almanac::{DaySentence, DaySentences, SentencesRequest};
 pub use almanac::{PackForm, PackListing, PackRequest, PackRow};
 pub use calendar::CalendarArea;
+#[cfg(all(feature = "chart", feature = "schema"))]
+pub(crate) use chart::disagreement_schema;
 #[cfg(feature = "chart")]
-pub use chart::{ChartArea, Interpreted};
+pub use chart::{
+    ChartArea, ChartDisagreementRequest, ChartDisagreements, DashaDisagreement, GrahaDisagreement,
+    Interpreted, LagnaDisagreement, MoonStar, NakshatraDisagreement, RunningLord, SignPlacement,
+    YogaDisagreement,
+};
 pub use engine::EngineArea;
 pub use frame::FrameArea;
 #[cfg(feature = "chart")]

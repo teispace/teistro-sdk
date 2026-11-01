@@ -55,7 +55,7 @@ them.
 ## The shape
 
 ```text
-# teistro dossier 2
+# teistro dossier 3
 == LEGEND ==
 # Each section opens `== NAME ==`; a `#` line under it names its columns, `|`-separated.
 # `-` is a value the chart does not have. Members are catalogue keys (JUPITER, ARIES).
@@ -74,7 +74,7 @@ SUN|PISCES|28.72|REVATI|4|9|0.98|DIRECT
 …
 ```
 
-- The first line names the format and its **version**, `2`. A change to
+- The first line names the format and its **version**, `3`. A change to
   any byte the format writes — a column, a legend line, a number's
   decimals — raises it, so a store that keys on the text knows its text
   is stale. Version 2 stopped repeating a section's column names in the
@@ -109,7 +109,7 @@ In this order, each present when the document carries it:
 | `JAIMINI` | `jaimini` | the chara karakas, the karakamsha |
 | `POINTS` | `points` | each upagraha and special lagna: sign, degrees |
 | `ASPECTS` | `aspects` | each graha's drishti onto houses |
-| `AVAKAHADA` | `avakahada` | the Moon's star and pada, the naming syllable, the koota readings of one native |
+| `AVAKAHADA` | `avakahada` | the Moon's star and pada, the naming syllable, the koota readings of one native, the birth paya by star and by house (C1105 to C1107) |
 
 After them come the two sections the SDK adds itself. `RULES` writes every
 rule that held on the chart under the request's `rules` record, a row a
@@ -162,6 +162,43 @@ Two presets name section lists, and nothing else:
   holds several people's charts; one legend for the group, so the legend
   can be written on its own (`dossier_legend`).
 
+## A policy
+
+SR-40 asks for a dossier an AI consumer can prove it never sent a part
+of: the longevity spans and the marakas above all, which a prompt about
+a marriage has no business carrying. Two fields of `DossierOptions` are
+the policy:
+
+- `drop`: section keys never written, built in or the reader's own
+  (`LONGEVITY`, `MARAKAS`, `RULES`, `GOCHAR`). A key no section has is
+  refused at `dossier.drop[i]`, and one both named in `sections` and
+  dropped is refused there too, since the two asks contradict.
+- `dropCategories`: rule categories whose rows are never written, in a
+  section that names a category column (`RULES`'s `category`):
+  `marana`, `ayur`, `arishta` and the other categories a pack names.
+  Dropping `LONGEVITY` alone would leave a `RULES` row of category
+  `marana` saying the same thing.
+
+A dossier written under a policy opens, after its legend, with a
+`DROPPED` section: `section|KEY|rows` for each section dropped, with the
+rows it would have written (`-` where the chart does not carry it), and
+`category|key|rows` for each category, with the rows left out across
+every section. So the text says what it left out, and the text, and so
+any hash of it, changes with the policy: a consumer that stores the
+SHA-256 of what it sent can show the policy it was sent under. A
+dossier written under no policy has no `DROPPED`.
+
+`LONGEVITY` (a row a span: the three of BPHS ch. 44 and Jeevasarman's,
+Rasmija with its class of life, the dashas', the wheel of time's, the two
+ashtakavarga spans, the three pairs' and the span the strongest names)
+and `MARAKAS` (a row a graha with its reasons, and whether one is
+prime) are written from a rules reading's `longevity`, so a chart request
+whose `rules` record says `longevity: true` writes them; named without
+it, each is refused with that as the hint. Version 3 of the format
+writes them, where version 2 left a rules reading's longevity out, and
+`AVAKAHADA` gains the birth paya's two rows (`paya_by_nakshatra`,
+`paya_by_house`, SR-32); it moves no other byte.
+
 ## Extending it
 
 A **section** is a trait, `DossierSection`: a key, a banner, its columns
@@ -196,8 +233,8 @@ reads the record, so a model can ask a chart for its own dossier.
 | | |
 |---|---|
 | **decided** | bare catalogue keys, not codes; presets choose sections and never thin them, and a named section the document lacks is refused; one column table writes the header and the legend; date-free unless `at` |
-| **a setting** | `sections`, `preset`, `at`, `dasha_depth`, `utc_offset_seconds` |
-| **not built** | a rules reading's house readings and longevity spans; the Ashtakavarga's transit judgement; a localised legend |
+| **a setting** | `sections`, `preset`, `at`, `dasha_depth`, `utc_offset_seconds`, and the policy, `drop` and `dropCategories` |
+| **not built** | a rules reading's house readings; the Ashtakavarga's transit judgement; a localised legend |
 
 ## What is measured
 

@@ -4718,7 +4718,7 @@ final class ChartsMarriageDoshaRows {
 /// The `avakahada` section of a Charts blob: one typed list per column, each a
 /// view over the blob's bytes rather than a copy.
 ///
-/// Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+/// Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods (C1105 to C1107). Vashya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
 final class ChartsAvakahada {
   const ChartsAvakahada({
     required this.nakshatra,
@@ -4736,6 +4736,8 @@ final class ChartsAvakahada {
     required this.ghataTithi,
     required this.ghataVara,
     required this.ghataNakshatra,
+    required this.payaByNakshatra,
+    required this.payaByHouse,
     required this.length,
   });
 
@@ -4783,6 +4785,12 @@ final class ChartsAvakahada {
 
   /// The nakshatra that strikes the native (v. 30).
   final Uint16List ghataNakshatra;
+
+  /// The birth paya by the Moon's nakshatra, by the Vishwavidyalaya Panchang (C1106).
+  final Uint16List payaByNakshatra;
+
+  /// The birth paya by the Moon's house counted from the lagna's sign, by Sangraha Shiromani XIII v. 92 as the Vishwavidyalaya Panchang applies it (C1105, C1107); a chart's avakahada always reads it.
+  final Uint16List payaByHouse;
 
   /// The number of rows every column holds.
   final int length;
@@ -6147,7 +6155,7 @@ final class Charts {
   /// Every chart's marriage doshas, concatenated in the `cast` section's order and **ragged** by `marriage_doshas.count`, each chart's in the answers' own order: the Ashta Koota's Bhakoot, Nadi, Gana and the lords' enmity, each of the ten that disagrees or agrees by the p. 76 exception, then each side's Kuja dosha, the bride's first. Never a severity (C290). Empty when `matching_json` asked for none.
   final ChartsMarriageDoshaRows marriageDoshaRows;
 
-  /// Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+  /// Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods (C1105 to C1107). Vashya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
   final ChartsAvakahada avakahada;
 
   /// UTF-8 JSON, canonical: an array with one entry per row of `avakahada`, each `[devanagari, iast]`, the birth pada's syllable as *Muhurta Chintamani* p. 173 prints it and its IAST (C299). Empty when the avakahada was not asked for.
@@ -7561,6 +7569,8 @@ Charts decodeCharts(Uint8List bytes) {
       ghataTithi: blob.column(atAvakahada, 12, 2, Uint16List.sublistView),
       ghataVara: blob.column(atAvakahada, 13, 2, Uint16List.sublistView),
       ghataNakshatra: blob.column(atAvakahada, 14, 2, Uint16List.sublistView),
+      payaByNakshatra: blob.column(atAvakahada, 15, 2, Uint16List.sublistView),
+      payaByHouse: blob.column(atAvakahada, 16, 2, Uint16List.sublistView),
       length: atAvakahada.count,
     ),
     avakahadaSyllables: blob.text(atAvakahadaSyllables, 'avakahada_syllables'),

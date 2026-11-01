@@ -14,7 +14,7 @@
 //! # fn main() -> Result<(), teistro_core::error::Error> {
 //! # if false {
 //! let text = dossier(&chart(), &DossierOptions::default(), &[])?;
-//! assert!(text.starts_with("# teistro dossier 2\n"));
+//! assert!(text.starts_with("# teistro dossier 3\n"));
 //! # }
 //! # Ok(())
 //! # }
@@ -34,8 +34,9 @@ use crate::document::Document;
 
 /// The format's version, written on the first line. Raised by any change
 /// to a byte the dossier writes: a column, a legend line, a number's
-/// decimals.
-pub const DOSSIER_FORMAT: u32 = 2;
+/// decimals. Version 3 writes a rules reading's `LONGEVITY` and
+/// `MARAKAS`, which version 2 left out, and a policy's `DROPPED`.
+pub const DOSSIER_FORMAT: u32 = 3;
 
 /// One column of a section: its name in the header line and what it is,
 /// in the legend. The one table both are written from.
@@ -163,6 +164,18 @@ pub trait DossierSection: Sync {
     /// assert!(built_in().iter().all(|section| !section.asked_by().is_empty()));
     /// ```
     fn asked_by(&self) -> &str;
+    /// The column holding a row's category, which a policy drops rows by
+    /// ([`DossierOptions::drop_categories`]); none by default, so no
+    /// built-in section's rows are dropped one by one.
+    ///
+    /// ```
+    /// use teistro_serial::dossier::built_in;
+    ///
+    /// assert!(built_in().iter().all(|section| section.category_column().is_none()));
+    /// ```
+    fn category_column(&self) -> Option<usize> {
+        None
+    }
     /// The rows, each a field a column; `None` when the document does not
     /// carry the section.
     ///
@@ -269,6 +282,17 @@ pub struct DossierOptions {
     /// record.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub utc_offset_seconds: Option<i32>,
+    /// The sections never written, by key, built in or the reader's own
+    /// (`LONGEVITY`, `MARAKAS`): a policy, written into the dossier as its
+    /// `DROPPED` section, so the text, and any hash of it, says what was
+    /// kept out. A section both named in `sections` and dropped is refused.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub drop: Vec<String>,
+    /// The categories whose rows a section with a category column
+    /// (`RULES`) never writes, `marana` or `ayur`, each counted in
+    /// `DROPPED`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub drop_categories: Vec<String>,
 }
 
 impl DossierOptions {
@@ -331,18 +355,28 @@ impl DossierOptions {
     /// assert_eq!(unknown.field(), Some("dossier.sections[0]"));
     /// let own = DossierOptions::from_json(r#"{"sections": ["GRAHAS", "RULES"]}"#, &["RULES"])?;
     /// assert_eq!(own.sections.as_deref().map(<[String]>::len), Some(2));
+    /// // A section dropped is a section, and not one named as well.
+    /// let kept = DossierOptions::from_json(r#"{"drop": ["MARAKAS"], "dropCategories": ["marana"]}"#, &["MARAKAS"])?;
+    /// assert_eq!(kept.drop, ["MARAKAS"]);
+    /// let both = DossierOptions::from_json(r#"{"sections": ["GRAHAS"], "drop": ["GRAHAS"]}"#, &[]).unwrap_err();
+    /// assert_eq!(both.field(), Some("dossier.drop[0]"));
     /// # Ok::<(), teistro_core::error::Error>(())
     /// ```
     ///
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read, a section neither built in nor in `extra`, or what
+    /// read, a section named or dropped that is neither built in nor in
+    /// `extra`, one both named and dropped, an empty category, or what
     /// [`DossierOptions::view`] refuses.
     pub fn from_json(text: &str, extra: &[&str]) -> Result<DossierOptions, Error> {
         let asked: DossierOptions = teistro_core::strict::read(text, DOSSIER)?;
         asked.view().map_err(|why| why.under(DOSSIER))?;
-        for (at, key) in asked.sections.iter().flatten().enumerate() {
+        let named = asked.sections.iter().flatten().map(|key| ("sections", key));
+        for (at, (list, key)) in named
+            .enumerate()
+            .chain(asked.drop.iter().map(|key| ("drop", key)).enumerate())
+        {
             if !BUILT_IN_KEYS.contains(&key.as_str()) && !extra.contains(&key.as_str()) {
                 return Err(Error::invalid_arg(format!(
                     "`{key}` is not a dossier section; there are {}",
@@ -353,50 +387,115 @@ impl DossierOptions {
                         .collect::<Vec<_>>()
                         .join(", ")
                 ))
-                .with_field(format!("{DOSSIER}.sections[{at}]")));
+                .with_field(format!("{DOSSIER}.{list}[{at}]")));
             }
         }
+        asked.policy().map_err(|why| why.under(DOSSIER))?;
         Ok(asked)
+    }
+
+    /// The policy checked: a dropped section not also named, and no empty
+    /// category.
+    fn policy(&self) -> Result<(), Error> {
+        for (at, key) in self.drop.iter().enumerate() {
+            if self.sections.iter().flatten().any(|named| named == key) {
+                return Err(
+                    Error::invalid_arg(format!("`{key}` is both named and dropped"))
+                        .with_field(format!("drop[{at}]"))
+                        .with_hint("name it in `sections` or in `drop`, not both"),
+                );
+            }
+        }
+        if let Some(at) = self.drop_categories.iter().position(String::is_empty) {
+            return Err(Error::invalid_arg(
+                "a category is a rule's category, as its pack names it",
+            )
+            .with_field(format!("dropCategories[{at}]")));
+        }
+        Ok(())
     }
 }
 
 /// The record every binding writes the options as.
 const DOSSIER: &str = "dossier";
 
-/// The dossier of `document`: the format line, the legend of the sections
-/// written, and each section, built-in and `extra`, in order.
-///
-/// ```
-/// use teistro_serial::Document;
-/// use teistro_serial::canonical::from_hash_form;
-/// use teistro_serial::dossier::{DossierOptions, dossier};
-///
-/// let chart: Document = from_hash_form(include_str!("../tests/dossier-chart.json"))?;
-/// let text = dossier(&chart, &DossierOptions::default(), &[])?;
-/// assert!(text.starts_with("# teistro dossier 2\n== LEGEND ==\n"));
-/// // Asking for what the document does not carry is refused by its place.
-/// let asked = DossierOptions { sections: Some(vec!["NOT_A_SECTION".into()]), ..DossierOptions::default() };
-/// assert_eq!(dossier(&chart, &asked, &[]).unwrap_err().field(), Some("sections[0]"));
-/// # Ok::<(), teistro_core::error::Error>(())
-/// ```
-///
-/// # Errors
-///
-/// `INVALID_ARG` naming `sections[i]` for a key no section has, or one
-/// the document does not carry (with what would carry it as the hint),
-/// and whatever [`DossierOptions::view`] refuses.
-pub fn dossier(
+/// The `DROPPED` section: the policy a dossier was written under, written
+/// first so a reader meets it before anything it thinned.
+struct Dropped {
+    rows: Vec<Vec<String>>,
+}
+
+impl DossierSection for Dropped {
+    fn key(&self) -> &'static str {
+        "DROPPED"
+    }
+    fn columns(&self) -> &[Column] {
+        const COLUMNS: [Column; 3] = [
+            column("what", "`section` or `category`"),
+            column("key", "the section's key, or the category's"),
+            column(
+                "rows",
+                "the rows left out: a section's, or a category's across every section; `-` for a section the chart does not carry",
+            ),
+        ];
+        &COLUMNS
+    }
+    fn notes(&self) -> &[&str] {
+        &["Nothing else was left out: every section and row not counted here is written."]
+    }
+    fn asked_by(&self) -> &'static str {
+        "`drop` or `dropCategories` on the dossier record"
+    }
+    fn rows(&self, _: &Document, _: &View) -> Option<Vec<Vec<String>>> {
+        Some(self.rows.clone())
+    }
+}
+
+/// A section written, with its rows.
+type Written<'a> = Vec<(&'a dyn DossierSection, Vec<Vec<String>>)>;
+
+/// The `DROPPED` rows of a policy's sections: each once, with the rows it
+/// would have written, `-` where the document does not carry it.
+fn dropped_sections(
     document: &Document,
     options: &DossierOptions,
-    extra: &[&dyn DossierSection],
-) -> Result<String, Error> {
-    let view = options.view()?;
-    let all: Vec<&dyn DossierSection> = BUILT_IN
-        .iter()
-        .copied()
-        .chain(extra.iter().copied())
-        .collect();
-    let mut written: Vec<(&dyn DossierSection, Vec<Vec<String>>)> = Vec::new();
+    all: &[&dyn DossierSection],
+    view: &View,
+) -> Result<Vec<Vec<String>>, Error> {
+    let mut dropped = Vec::new();
+    for (at, key) in options.drop.iter().enumerate() {
+        let Some(section) = all.iter().find(|one| one.key() == key) else {
+            return Err(
+                Error::invalid_arg(format!("`{key}` is not a dossier section"))
+                    .with_field(format!("drop[{at}]")),
+            );
+        };
+        if options
+            .drop
+            .get(..at)
+            .is_some_and(|before| before.contains(key))
+        {
+            continue;
+        }
+        let rows = section
+            .rows(document, view)
+            .map_or_else(|| String::from("-"), |rows| rows.len().to_string());
+        dropped.push(vec![String::from("section"), key.clone(), rows]);
+    }
+    Ok(dropped)
+}
+
+/// The sections written, in the dossier's order: those named, each
+/// refused by its place when no section has it or the document does not
+/// carry it, or the preset's and every reader's own the document carries,
+/// less those dropped.
+fn chosen<'a>(
+    document: &Document,
+    options: &DossierOptions,
+    all: &[&'a dyn DossierSection],
+    view: &View,
+) -> Result<Written<'a>, Error> {
+    let mut written: Written<'a> = Vec::new();
     if let Some(asked) = &options.sections {
         for (at, key) in asked.iter().enumerate() {
             let Some(section) = all.iter().find(|one| one.key() == key) else {
@@ -409,7 +508,7 @@ pub fn dossier(
                 ))
                 .with_field(format!("sections[{at}]")));
             };
-            let Some(rows) = section.rows(document, &view) else {
+            let Some(rows) = section.rows(document, view) else {
                 return Err(Error::invalid_arg(format!(
                     "the chart does not carry `{key}`, so its dossier cannot write it"
                 ))
@@ -427,15 +526,88 @@ pub fn dossier(
         written.dedup_by(|a, b| a.0.key() == b.0.key());
     } else {
         let named = options.preset.sections();
-        for section in &all {
+        for section in all {
             let builtin = BUILT_IN_KEYS.contains(&section.key());
-            if builtin && !named.contains(&section.key()) {
+            if (builtin && !named.contains(&section.key()))
+                || options.drop.iter().any(|key| key == section.key())
+            {
                 continue;
             }
-            if let Some(rows) = section.rows(document, &view) {
+            if let Some(rows) = section.rows(document, view) {
                 written.push((*section, rows));
             }
         }
+    }
+    Ok(written)
+}
+
+/// Leaves out the rows of each category in a policy from every section
+/// with a category column, and answers the `DROPPED` rows that count them.
+fn drop_categories(categories: &[String], written: &mut Written<'_>) -> Vec<Vec<String>> {
+    let mut dropped = Vec::new();
+    for (at, category) in categories.iter().enumerate() {
+        let before = categories.get(..at);
+        if before.is_some_and(|before| before.contains(category)) {
+            continue;
+        }
+        let mut gone = 0_usize;
+        for (section, rows) in written.iter_mut() {
+            let Some(column) = section.category_column() else {
+                continue;
+            };
+            let had = rows.len();
+            rows.retain(|row| row.get(column) != Some(category));
+            gone += had - rows.len();
+        }
+        dropped.push(vec![
+            String::from("category"),
+            category.clone(),
+            gone.to_string(),
+        ]);
+    }
+    dropped
+}
+
+/// The dossier of `document`: the format line, the legend of the sections
+/// written, and each section, built-in and `extra`, in order.
+///
+/// ```
+/// use teistro_serial::Document;
+/// use teistro_serial::canonical::from_hash_form;
+/// use teistro_serial::dossier::{DossierOptions, dossier};
+///
+/// let chart: Document = from_hash_form(include_str!("../tests/dossier-chart.json"))?;
+/// let text = dossier(&chart, &DossierOptions::default(), &[])?;
+/// assert!(text.starts_with("# teistro dossier 3\n== LEGEND ==\n"));
+/// // Asking for what the document does not carry is refused by its place.
+/// let asked = DossierOptions { sections: Some(vec!["NOT_A_SECTION".into()]), ..DossierOptions::default() };
+/// assert_eq!(dossier(&chart, &asked, &[]).unwrap_err().field(), Some("sections[0]"));
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+///
+/// # Errors
+///
+/// `INVALID_ARG` naming `sections[i]` for a key no section has, or one
+/// the document does not carry (with what would carry it as the hint),
+/// and whatever [`DossierOptions::view`] refuses.
+pub fn dossier(
+    document: &Document,
+    options: &DossierOptions,
+    extra: &[&dyn DossierSection],
+) -> Result<String, Error> {
+    let view = options.view()?;
+    options.policy()?;
+    let all: Vec<&dyn DossierSection> = BUILT_IN
+        .iter()
+        .copied()
+        .chain(extra.iter().copied())
+        .collect();
+    let mut dropped = dropped_sections(document, options, &all, &view)?;
+    let mut written = chosen(document, options, &all, &view)?;
+    dropped.extend(drop_categories(&options.drop_categories, &mut written));
+    let policy = Dropped { rows: dropped };
+    if !policy.rows.is_empty() {
+        written.insert(0, (&policy, policy.rows.clone()));
     }
     let mut out = format!("# teistro dossier {DOSSIER_FORMAT}\n");
     out.push_str(&legend(written.iter().map(|(section, _)| *section)));
@@ -1413,6 +1585,12 @@ impl DossierSection for AvakahadaSection {
             row("yoni", word(&a.yoni)),
             row("gana", word(&a.gana)),
             row("nadi", word(&a.nadi)),
+            row("paya_by_nakshatra", a.paya_by_nakshatra.key().to_owned()),
+            row(
+                "paya_by_house",
+                a.paya_by_house
+                    .map_or_else(|| "-".to_owned(), |paya| paya.key().to_owned()),
+            ),
         ])
     }
 }

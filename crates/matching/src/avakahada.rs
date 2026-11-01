@@ -2,18 +2,22 @@
 //! (`03-design/matching.md`, C301).
 
 use serde::{Deserialize, Serialize};
-use teistro_core::catalogue::{Gana, Graha, Nadi, Nakshatra, Rashi, Varna, Yoni};
+use teistro_core::catalogue::{Gana, Graha, Nadi, Nakshatra, Paya, Rashi, Varna, Yoni};
 use teistro_core::error::Error;
 
-use crate::{BirthSyllable, Ghata, Native, birth_syllable, sign_varna};
+use crate::{
+    BirthSyllable, Ghata, Native, birth_syllable, house_from_lagna, paya_by_house,
+    paya_by_nakshatra, sign_varna,
+};
 
 /// What a janma-patrika prints of the Moon: its star and pada, the
 /// syllable the child is named by, and the readings a koota takes of one
 /// native (C301).
 ///
 /// A gathering, not doctrine of its own: each reading is the one the Ashta
-/// Koota reads of the same Moon, so it carries no rules. Vashya, paya,
-/// disha and tatwa are not here (C300, C301).
+/// Koota reads of the same Moon, so it carries no rules. The paya is
+/// read by both methods a patrika prints (C1105 to C1107); vashya, disha
+/// and tatwa are not here (C300, C301).
 ///
 /// ```
 /// use teistro_core::catalogue::{Graha, Nadi, Rashi};
@@ -52,6 +56,36 @@ pub struct Avakahada {
     /// The ghata chakra of the Moon's sign: what strikes the native
     /// (C758).
     pub ghata: Ghata,
+    /// The paya by the Moon's nakshatra (C1106).
+    pub paya_by_nakshatra: Paya,
+    /// The paya by the Moon's house counted from the lagna's sign
+    /// (C1105, C1107); `None` until [`Avakahada::with_lagna`] reads a
+    /// lagna, and always present on a chart's avakahada.
+    pub paya_by_house: Option<Paya>,
+}
+
+impl Avakahada {
+    /// The avakahada with the paya by house read from the lagna's sign
+    /// (C1105, C1107).
+    ///
+    /// ```
+    /// use teistro_core::catalogue::{Paya, Rashi};
+    /// use teistro_matching::{Native, avakahada};
+    ///
+    /// // A Moon in Taurus under a Virgo lagna is in the 9th: silver.
+    /// let read = avakahada(Native::of_moon(45.0)?)?.with_lagna(Rashi::Virgo);
+    /// assert_eq!(read.paya_by_house, Some(Paya::Rajata));
+    /// // Rohini, by its star: iron.
+    /// assert_eq!(read.paya_by_nakshatra, Paya::Loha);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    #[must_use]
+    pub fn with_lagna(self, lagna: Rashi) -> Self {
+        Self {
+            paya_by_house: paya_by_house(house_from_lagna(lagna, self.rashi)),
+            ..self
+        }
+    }
 }
 
 /// The avakahada of a Moon (C301).
@@ -84,6 +118,8 @@ pub fn avakahada(moon: Native) -> Result<Avakahada, Error> {
         nadi: star.nadi,
         syllable: birth_syllable(moon.nakshatra, moon.pada)?,
         ghata: Ghata::of(moon.rashi),
+        paya_by_nakshatra: paya_by_nakshatra(moon.nakshatra),
+        paya_by_house: None,
     })
 }
 

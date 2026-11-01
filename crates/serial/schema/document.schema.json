@@ -273,6 +273,21 @@
           "minimum": 0,
           "type": "integer"
         },
+        "payaByHouse": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Paya"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The paya by the Moon's house counted from the lagna's sign (C1105, C1107); `None` until `Avakahada::with_lagna` reads a lagna, and always present on a chart's avakahada."
+        },
+        "payaByNakshatra": {
+          "$ref": "#/$defs/Paya",
+          "description": "The paya by the Moon's nakshatra (C1106)."
+        },
         "rashi": {
           "$ref": "#/$defs/Rashi",
           "description": "The Moon's sign."
@@ -305,7 +320,8 @@
         "gana",
         "nadi",
         "syllable",
-        "ghata"
+        "ghata",
+        "payaByNakshatra"
       ],
       "type": "object"
     },
@@ -5961,6 +5977,33 @@
         "segments"
       ],
       "type": "object"
+    },
+    "Paya": {
+      "anyOf": [
+        {
+          "description": "A key of the `paya` catalogue, as a document writes it.",
+          "enum": [
+            "SUVARNA",
+            "RAJATA",
+            "TAMRA",
+            "LOHA"
+          ],
+          "type": "string"
+        },
+        {
+          "description": "A `paya` member's full key, which a request may send and no document writes.",
+          "enum": [
+            "paya.SUVARNA",
+            "paya.RAJATA",
+            "paya.TAMRA",
+            "paya.LOHA"
+          ],
+          "type": "string",
+          "writeOnly": true
+        }
+      ],
+      "description": "A key of the `paya` catalogue, bare or full.",
+      "x-teistro-kind": "paya"
     },
     "PeriodRow": {
       "description": "One period, as a row.",

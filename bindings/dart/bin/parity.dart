@@ -1934,6 +1934,10 @@ void main() {
       'chart-$i-avakahada-ghata',
       '${ghata.chandra.fullKey} ${ghata.tithi.fullKey} ${ghata.vara.fullKey} ${ghata.nakshatra.fullKey}',
     );
+    put(
+      'chart-$i-avakahada-paya',
+      '${birth.payaByNakshatra.fullKey} ${birth.payaByHouse.fullKey}',
+    );
     final fell = chart.moment!;
     put(
       'chart-$i-moment',
@@ -3934,6 +3938,7 @@ void main() {
     ('chart.found_many', ctx.chart.foundMany),
     ('chart.rashifal', ctx.chart.rashifal),
     ('chart.rashifal_many', ctx.chart.rashifalMany),
+    ('chart.disagreements', ctx.chart.disagreements),
     ('almanac.of', ctx.almanac.of),
     ('almanac.festivals', ctx.almanac.festivals),
     ('almanac.disagreements', ctx.almanac.disagreements),

@@ -17,10 +17,10 @@ use crate::gochar::GocharReading;
 use crate::sade_sati::Report;
 use crate::{
     ChartArea, ChartRequest, ConsiderationRules, Considerations, Dignities, DignityRequest,
-    FortitudeRequest, Fortitudes, GocharRequest, GocharSection, Hit, HitRequest, Lot, LotReading,
-    LotRequest, Matched, Matter, PartnerMatching, PerfectionRequest, PerfectionRules, PlanInputs,
-    PlanRequest, Plans, RuleRequest, RuleSet, RulesReading, RulesSection, SadeSatiRequest,
-    SarvatobhadraRequest,
+    FortitudeRequest, Fortitudes, GocharRequest, GocharSection, Hit, HitRequest, LongevitySection,
+    Lot, LotReading, LotRequest, MarakaSection, Matched, Matter, PartnerMatching,
+    PerfectionRequest, PerfectionRules, PlanInputs, PlanRequest, Plans, RuleRequest, RuleSet,
+    RulesReading, RulesSection, SadeSatiRequest, SarvatobhadraRequest,
 };
 use teistro_gochar::sarvatobhadra::SarvatobhadraReading;
 use teistro_serial::dossier::DossierOptions;
@@ -283,7 +283,12 @@ impl ChartRecords {
             "dossier" => {
                 self.dossier = Some(DossierOptions::from_json(
                     json,
-                    &[RulesSection::KEY, GocharSection::KEY],
+                    &[
+                        RulesSection::KEY,
+                        LongevitySection::KEY,
+                        MarakaSection::KEY,
+                        GocharSection::KEY,
+                    ],
                 )?);
             }
             "dignities" => self.dignities = Some(DignityRequest::from_json(json)?),
@@ -972,13 +977,20 @@ fn dossier_of(
         .iter()
         .enumerate()
         .map(|(at, document)| {
-            let rules = RulesSection::new(readings.get(at));
+            let reading = readings.get(at);
+            let rules = RulesSection::new(reading);
+            let spans = LongevitySection::new(reading);
+            let marakas = MarakaSection::new(reading);
             let transits = GocharSection::new(
                 records.gochar.as_ref().map_or(&[], GocharRequest::instants),
                 gochar.get(at).map(Vec::as_slice),
             );
-            teistro_serial::dossier::dossier(document, &options, &[&rules, &transits])
-                .map_err(|error| error.under("dossier").with_hint(format!("chart {at}")))
+            teistro_serial::dossier::dossier(
+                document,
+                &options,
+                &[&rules, &spans, &marakas, &transits],
+            )
+            .map_err(|error| error.under("dossier").with_hint(format!("chart {at}")))
         })
         .collect()
 }

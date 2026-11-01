@@ -13,11 +13,13 @@ import java.util.Objects;
  *
  * @param at The "now" a dated dossier is read at, a UTC Julian day: the running dasha periods are marked and their branch expanded. Date-free when left out. Null leaves the SDK's default.
  * @param dashaDepth How many levels a dasha timeline is written to, one up; every level computed when left out. Null leaves the SDK's default.
+ * @param drop The sections never written, by key, built in or the reader's own (`LONGEVITY`, `MARAKAS`): a policy, written into the dossier as its `DROPPED` section, so the text, and any hash of it, says what was kept out. A section both named in `sections` and dropped is refused. Null leaves the SDK's default.
+ * @param dropCategories The categories whose rows a section with a category column (`RULES`) never writes, `marana` or `ayur`, each counted in `DROPPED`. Null leaves the SDK's default.
  * @param preset The sections when `sections` is left out. Null leaves the SDK's default.
  * @param sections The sections to write, by key, in the dossier's own order; the preset's when left out. Every one named must be carried. Null leaves the SDK's default.
  * @param utcOffsetSeconds The clock instants are written in, seconds east of UTC; UTC when left out, and a chart request's own clock for its `dossier` record. Null leaves the SDK's default.
  */
-public record DossierRequest(Double at, Integer dashaDepth, DossierPreset preset, List<String> sections, Integer utcOffsetSeconds) implements RequestJson {
+public record DossierRequest(Double at, Integer dashaDepth, List<String> drop, List<String> dropCategories, DossierPreset preset, List<String> sections, Integer utcOffsetSeconds) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -29,6 +31,8 @@ public record DossierRequest(Double at, Integer dashaDepth, DossierPreset preset
         if (dashaDepth != null) {
             Read.range(dashaDepth, "DossierRequest.dashaDepth", 0L, 255L);
         }
+        drop = drop == null ? null : List.copyOf(drop);
+        dropCategories = dropCategories == null ? null : List.copyOf(dropCategories);
         sections = sections == null ? null : List.copyOf(sections);
     }
 
@@ -38,7 +42,7 @@ public record DossierRequest(Double at, Integer dashaDepth, DossierPreset preset
      *
      */
     public DossierRequest() {
-        this(null, null, null, null, null);
+        this(null, null, null, null, null, null, null);
     }
 
     /**
@@ -55,6 +59,8 @@ public record DossierRequest(Double at, Integer dashaDepth, DossierPreset preset
     public static final class Builder {
         private Double at;
         private Integer dashaDepth;
+        private List<String> drop;
+        private List<String> dropCategories;
         private DossierPreset preset;
         private List<String> sections;
         private Integer utcOffsetSeconds;
@@ -80,6 +86,28 @@ public record DossierRequest(Double at, Integer dashaDepth, DossierPreset preset
          */
         public Builder dashaDepth(int dashaDepth) {
             this.dashaDepth = dashaDepth;
+            return this;
+        }
+
+        /**
+         * Sets {@code drop}.
+         *
+         * @param drop The sections never written, by key, built in or the reader's own (`LONGEVITY`, `MARAKAS`): a policy, written into the dossier as its `DROPPED` section, so the text, and any hash of it, says what was kept out. A section both named in `sections` and dropped is refused. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder drop(List<String> drop) {
+            this.drop = drop;
+            return this;
+        }
+
+        /**
+         * Sets {@code dropCategories}.
+         *
+         * @param dropCategories The categories whose rows a section with a category column (`RULES`) never writes, `marana` or `ayur`, each counted in `DROPPED`. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder dropCategories(List<String> dropCategories) {
+            this.dropCategories = dropCategories;
             return this;
         }
 
@@ -123,7 +151,7 @@ public record DossierRequest(Double at, Integer dashaDepth, DossierPreset preset
          * @throws NullPointerException naming a required field left unset
          */
         public DossierRequest build() {
-            return new DossierRequest(at, dashaDepth, preset, sections, utcOffsetSeconds);
+            return new DossierRequest(at, dashaDepth, drop, dropCategories, preset, sections, utcOffsetSeconds);
         }
     }
 
@@ -139,6 +167,8 @@ public record DossierRequest(Double at, Integer dashaDepth, DossierPreset preset
         return new DossierRequest(
             Read.orNull(json.get("at"), present -> Read.number(present, "DossierRequest.at")),
             Read.orNull(json.get("dashaDepth"), present -> Read.int32(present, "DossierRequest.dashaDepth")),
+            Read.orNull(json.get("drop"), present -> Read.list(present, "DossierRequest.drop", item0 -> Read.text(item0, "DossierRequest.drop"))),
+            Read.orNull(json.get("dropCategories"), present -> Read.list(present, "DossierRequest.dropCategories", item0 -> Read.text(item0, "DossierRequest.dropCategories"))),
             Read.orNull(json.get("preset"), present -> Read.member(present, "DossierRequest.preset", DossierPreset::byKey)),
             Read.orNull(json.get("sections"), present -> Read.list(present, "DossierRequest.sections", item0 -> Read.text(item0, "DossierRequest.sections"))),
             Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "DossierRequest.utcOffsetSeconds")));
@@ -152,6 +182,12 @@ public record DossierRequest(Double at, Integer dashaDepth, DossierPreset preset
         }
         if (dashaDepth != null) {
             json.put("dashaDepth", dashaDepth);
+        }
+        if (drop != null) {
+            json.put("drop", drop);
+        }
+        if (dropCategories != null) {
+            json.put("dropCategories", dropCategories);
         }
         if (preset != null) {
             json.put("preset", preset.toJson());

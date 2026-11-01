@@ -40,12 +40,20 @@ pub struct Record {
     /// describes a C request rather than a JSON record.
     pub reads: Option<&'static str>,
     run: fn(&Context, &str) -> Result<Answered, Error>,
+    /// The same record answered against a second context, for a record
+    /// that compares two (`chart.disagreements`): `run` is then the
+    /// comparison of the context with itself.
+    compares: Option<Compare>,
     #[cfg_attr(
         not(feature = "schema"),
         expect(dead_code, reason = "read only by the `schema` feature's methods")
     )]
     schemas: Schemas,
 }
+
+/// A record answered under two contexts: the call's, and the one it is
+/// compared with.
+type Compare = fn(&Context, &Context, &str) -> Result<Answered, Error>;
 
 /// Writes one type's JSON Schema into a generator, answering the
 /// reference to it.
@@ -206,6 +214,51 @@ impl Record {
         (self.run)(context, json)
     }
 
+    /// Whether the record compares two contexts, so a caller may name a
+    /// second one ([`Record::answer_against`]).
+    ///
+    /// ```
+    /// let compares = |name| teistro::records::record(name).is_some_and(|record| record.compares());
+    /// assert!(!compares("calendar.convert"));
+    /// ```
+    #[must_use]
+    pub const fn compares(&self) -> bool {
+        self.compares.is_some()
+    }
+
+    /// The record `json` read and answered under `context`, compared with
+    /// `other`; a record that compares nothing answers under `context`
+    /// alone, as [`Record::answer`] does.
+    ///
+    /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
+    /// use teistro::{Context, Ephemeris};
+    ///
+    /// let classical = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let kp = Context::builder().profile("kp-default").ephemeris([Ephemeris::Builtin]).build()?;
+    /// let compare = teistro::records::record("chart.disagreements").expect("a chart build carries it");
+    /// let birth = r#"{"first": {"instant": 2447000.25, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}}"#;
+    /// let answered = compare.answer_against(&classical, &kp, birth)?;
+    /// assert_eq!(answered.value["otherProfile"], "kp-default");
+    /// # }
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Record::answer`], under either context.
+    pub fn answer_against(
+        &self,
+        context: &Context,
+        other: &Context,
+        json: &str,
+    ) -> Result<Answered, Error> {
+        match self.compares {
+            Some(compare) => compare(context, other, json),
+            None => (self.run)(context, json),
+        }
+    }
+
     /// The record's request as JSON Schema, written into `generator`:
     /// the reference to it, its definitions left in the generator. Never
     /// stricter than the reader, because it is derived from the type the
@@ -311,6 +364,14 @@ impl Answered {
     }
 }
 
+/// `chart.disagreements`: the record's two charts, the first under
+/// `context` and the second under `other`.
+#[cfg(feature = "chart")]
+fn disagreements(context: &Context, other: &Context, json: &str) -> Result<Answered, Error> {
+    let asked = crate::ChartDisagreementRequest::from_json(json)?;
+    Answered::sealed(context.chart().disagreements(other, &asked)?)
+}
+
 fn written<T: serde::Serialize>(value: &T) -> Result<serde_json::Value, Error> {
     serde_json::to_value(value)
         .map_err(|why| Error::internal(format!("an answer serde cannot write: {why}")))
@@ -326,16 +387,96 @@ fn written<T: serde::Serialize>(value: &T) -> Result<serde_json::Value, Error> {
 #[must_use]
 pub fn records() -> Vec<Record> {
     let mut all: Vec<Record> = vec![
-        #[cfg(feature = "chart")]
+        #[cfg(feature = "numerology")]
+        Record {
+            name: "numerology.profile",
+            boundary: "ts_numerology_profile",
+            title: "A name and a birth date read under numerology",
+            reads: None,
+            run: |_, json| Answered::plain(&crate::NumerologyRequest::from_json(json)?.answer()?),
+            compares: None,
+            schemas: schemas!(crate::NumerologyRequest => teistro_numerology::Profile),
+        },
+        #[cfg(feature = "muhurta")]
+        Record {
+            name: "almanac.navatara",
+            boundary: "ts_navatara",
+            title: "The navatara chakra of a birth star",
+            reads: None,
+            run: |_, json| Answered::plain(&crate::NavataraRequest::from_json(json)?.answer()),
+            compares: None,
+            schemas: schemas!(crate::NavataraRequest => Vec<teistro_muhurta::tara::NavataraRow>),
+        },
+        #[cfg(feature = "pakshi")]
+        Record {
+            name: "almanac.pakshi",
+            boundary: "ts_pakshi",
+            title: "A native's bird over days, by Pancha Pakshi",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::PakshiRequest::from_json(json)?;
+                Answered::sealed(context.almanac().pakshi_request(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::pakshi_request::RequestAsked => Vec<crate::PakshiDay>),
+        },
+        #[cfg(feature = "rashifal")]
+        Record {
+            name: "chart.rashifal",
+            boundary: "ts_rashifal",
+            title: "A period read for each of the twelve signs",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::RashifalBatch::from_json(json)?;
+                Answered::sealed(context.chart().rashifal_answers(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::rashifal_request::BatchAsked => Vec<crate::RashifalAnswer>),
+        },
+        #[cfg(feature = "research")]
+        Record {
+            name: "research.study",
+            boundary: "ts_research",
+            title: "Count or test rules over a batch of births",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::ResearchRequest::from_json(json)?;
+                match context.research().request(&asked)? {
+                    crate::ResearchAnswer::Counts(table) => Answered::sealed(table),
+                    crate::ResearchAnswer::Tested(tested) => Answered::sealed(tested),
+                }
+            },
+            compares: None,
+            schemas: schemas!(crate::research_request::RequestAsked => crate::research_request::Studied),
+        },
+    ];
+    all.extend(intl_records());
+    #[cfg(feature = "chart")]
+    all.extend(chart_records());
+    #[cfg(feature = "chart")]
+    all.extend(naming_records());
+    all.extend(almanac_records());
+    all.extend(almanac_lookup_records());
+    all.extend(time_records());
+    all.extend(engine_records());
+    all.push(verify_record());
+    all.sort_by_key(|record| record.name);
+    all
+}
+
+/// The chart's records: founding, comparing, and matching two names.
+#[cfg(feature = "chart")]
+fn chart_records() -> [Record; 3] {
+    [
         Record {
             name: "matching.naam",
             boundary: "ts_naam_milan",
             title: "Match two names by their first syllables",
             reads: None,
             run: |_, json| Answered::plain(&crate::NaamRequest::from_json(json)?.answer()?),
+            compares: None,
             schemas: schemas!(crate::NaamRequest => crate::NaamMilan),
         },
-        #[cfg(feature = "chart")]
         Record {
             name: "chart.found",
             boundary: "ts_chart_found",
@@ -352,76 +493,19 @@ pub fn records() -> Vec<Record> {
                     provenance: Some(composed.founded.provenance.clone()),
                 })
             },
+            compares: None,
             schemas: schemas!(fn crate::found_request::schema => crate::Composed<'static>, parts: crate::ChartRecords::NAMES),
         },
-        #[cfg(feature = "numerology")]
         Record {
-            name: "numerology.profile",
-            boundary: "ts_numerology_profile",
-            title: "A name and a birth date read under numerology",
+            name: "chart.disagreements",
+            boundary: "ts_chart_disagreements",
+            title: "Where two charts disagree: one birth under two settings, or two births",
             reads: None,
-            run: |_, json| Answered::plain(&crate::NumerologyRequest::from_json(json)?.answer()?),
-            schemas: schemas!(crate::NumerologyRequest => teistro_numerology::Profile),
+            run: |context, json| disagreements(context, context, json),
+            compares: Some(disagreements),
+            schemas: schemas!(fn crate::area::disagreement_schema => crate::ChartDisagreements, parts: []),
         },
-        #[cfg(feature = "muhurta")]
-        Record {
-            name: "almanac.navatara",
-            boundary: "ts_navatara",
-            title: "The navatara chakra of a birth star",
-            reads: None,
-            run: |_, json| Answered::plain(&crate::NavataraRequest::from_json(json)?.answer()),
-            schemas: schemas!(crate::NavataraRequest => Vec<teistro_muhurta::tara::NavataraRow>),
-        },
-        #[cfg(feature = "pakshi")]
-        Record {
-            name: "almanac.pakshi",
-            boundary: "ts_pakshi",
-            title: "A native's bird over days, by Pancha Pakshi",
-            reads: None,
-            run: |context, json| {
-                let asked = crate::PakshiRequest::from_json(json)?;
-                Answered::sealed(context.almanac().pakshi_request(&asked)?)
-            },
-            schemas: schemas!(crate::pakshi_request::RequestAsked => Vec<crate::PakshiDay>),
-        },
-        #[cfg(feature = "rashifal")]
-        Record {
-            name: "chart.rashifal",
-            boundary: "ts_rashifal",
-            title: "A period read for each of the twelve signs",
-            reads: None,
-            run: |context, json| {
-                let asked = crate::RashifalBatch::from_json(json)?;
-                Answered::sealed(context.chart().rashifal_answers(&asked)?)
-            },
-            schemas: schemas!(crate::rashifal_request::BatchAsked => Vec<crate::RashifalAnswer>),
-        },
-        #[cfg(feature = "research")]
-        Record {
-            name: "research.study",
-            boundary: "ts_research",
-            title: "Count or test rules over a batch of births",
-            reads: None,
-            run: |context, json| {
-                let asked = crate::ResearchRequest::from_json(json)?;
-                match context.research().request(&asked)? {
-                    crate::ResearchAnswer::Counts(table) => Answered::sealed(table),
-                    crate::ResearchAnswer::Tested(tested) => Answered::sealed(tested),
-                }
-            },
-            schemas: schemas!(crate::research_request::RequestAsked => crate::research_request::Studied),
-        },
-    ];
-    all.extend(intl_records());
-    #[cfg(feature = "chart")]
-    all.extend(naming_records());
-    all.extend(almanac_records());
-    all.extend(almanac_lookup_records());
-    all.extend(time_records());
-    all.extend(engine_records());
-    all.push(verify_record());
-    all.sort_by_key(|record| record.name);
-    all
+    ]
 }
 
 /// The locale engine's records.
@@ -439,6 +523,7 @@ fn intl_records() -> [Record; 6] {
                         .in_words(&crate::InWordsRequest::from_json(json)?)?,
                 )
             },
+            compares: None,
             schemas: schemas!(crate::InWordsRequest => crate::InWords),
         },
         Record {
@@ -453,6 +538,7 @@ fn intl_records() -> [Record; 6] {
                         .time(&crate::TimeTextRequest::from_json(json)?)?,
                 )
             },
+            compares: None,
             schemas: schemas!(crate::TimeTextRequest => crate::CivilText),
         },
         Record {
@@ -467,6 +553,7 @@ fn intl_records() -> [Record; 6] {
                         .date(&crate::DateTextRequest::from_json(json)?)?,
                 )
             },
+            compares: None,
             schemas: schemas!(crate::DateTextRequest => crate::CivilText),
         },
         Record {
@@ -481,6 +568,7 @@ fn intl_records() -> [Record; 6] {
                         .lexicon(&crate::LexiconRequest::from_json(json)?)?,
                 )
             },
+            compares: None,
             schemas: schemas!(crate::LexiconRequest => crate::Lexicon),
         },
         Record {
@@ -495,6 +583,7 @@ fn intl_records() -> [Record; 6] {
                         .lookup(&crate::LookupRequest::from_json(json)?)?,
                 )
             },
+            compares: None,
             schemas: schemas!(crate::LookupRequest => crate::Lookup),
         },
         Record {
@@ -510,6 +599,7 @@ fn intl_records() -> [Record; 6] {
                         .in_full()?,
                 )
             },
+            compares: None,
             schemas: schemas!(crate::DatesRequest => crate::FoundDates),
         },
     ]
@@ -529,6 +619,7 @@ fn naming_records() -> [Record; 5] {
             run: |context, json| {
                 Answered::plain(&crate::NamingSyllablesRequest::from_json(json)?.answer(context)?)
             },
+            compares: None,
             schemas: schemas!(crate::NamingSyllablesRequest => Vec<teistro_matching::PadaSyllable>),
         },
         Record {
@@ -539,6 +630,7 @@ fn naming_records() -> [Record; 5] {
             run: |context, json| {
                 Answered::plain(&crate::NamingReadRequest::from_json(json)?.answer(context))
             },
+            compares: None,
             schemas: schemas!(crate::NamingReadRequest => Vec<crate::NameRead>),
         },
         Record {
@@ -549,6 +641,7 @@ fn naming_records() -> [Record; 5] {
             run: |context, json| {
                 Answered::plain(&crate::NamingCheckRequest::from_json(json)?.answer(context)?)
             },
+            compares: None,
             schemas: schemas!(crate::NamingCheckRequest => Vec<crate::NameChecked>),
         },
         Record {
@@ -559,6 +652,7 @@ fn naming_records() -> [Record; 5] {
             run: |context, json| {
                 Answered::plain(&crate::NamingOfRequest::from_json(json)?.answer(context)?)
             },
+            compares: None,
             schemas: schemas!(crate::NamingOfRequest => teistro_matching::Names),
         },
         Record {
@@ -569,6 +663,7 @@ fn naming_records() -> [Record; 5] {
             run: |context, json| {
                 Answered::plain(&crate::NamingSuggestRequest::from_json(json)?.answer(context)?)
             },
+            compares: None,
             schemas: schemas!(crate::NamingSuggestRequest => teistro_matching::Suggestions),
         },
     ]
@@ -588,6 +683,7 @@ fn almanac_records() -> [Record; 10] {
                 let asked = crate::AnniversariesRequest::from_json(json)?;
                 Answered::sealed(context.almanac().anniversaries_in_full(&asked)?)
             },
+            compares: None,
             schemas: schemas!(crate::area::AnniversariesAsked => teistro_panchanga::festival::Observances),
         },
         Record {
@@ -599,6 +695,7 @@ fn almanac_records() -> [Record; 10] {
                 let asked = crate::ChangesRequest::from_json(json)?;
                 Answered::sealed(context.almanac().changes(&asked)?)
             },
+            compares: None,
             schemas: schemas!(crate::area::ChangesAsked => crate::ChangePoints),
         },
         Record {
@@ -610,6 +707,7 @@ fn almanac_records() -> [Record; 10] {
                 let asked = crate::AshauchQuery::from_json(json)?;
                 Answered::sealed(context.almanac().ashauch_query(&asked)?)
             },
+            compares: None,
             schemas: schemas!(crate::ashauch_request::AshauchAsked => crate::ashauch::Ashauch),
         },
         Record {
@@ -621,6 +719,7 @@ fn almanac_records() -> [Record; 10] {
                 let asked = crate::HouseholdQuery::from_json(json)?;
                 Answered::sealed(context.almanac().household_query(&asked)?)
             },
+            compares: None,
             schemas: schemas!(crate::ashauch_request::HouseholdAsked => crate::ashauch::HouseholdAnswer),
         },
         Record {
@@ -629,6 +728,7 @@ fn almanac_records() -> [Record; 10] {
             title: "The ashauch relation and the sapinda degree a path in a family gives",
             reads: None,
             run: |_, json| Answered::plain(&crate::KinQuery::from_json(json)?.answer()?),
+            compares: None,
             schemas: schemas!(crate::KinQuery => crate::ashauch::Kin),
         },
         Record {
@@ -637,6 +737,7 @@ fn almanac_records() -> [Record; 10] {
             title: "Whether a rite may go on during a period of impurity, and the clause that says so",
             reads: None,
             run: |_, json| Answered::plain(&crate::RiteQuery::from_json(json)?.answer()?),
+            compares: None,
             schemas: schemas!(crate::RiteQuery => crate::ashauch::RiteAnswer),
         },
         Record {
@@ -648,6 +749,7 @@ fn almanac_records() -> [Record; 10] {
                 let asked = crate::DeathTimeQuery::from_json(json)?;
                 Answered::sealed(context.almanac().death_time_query(&asked)?)
             },
+            compares: None,
             schemas: schemas!(crate::ashauch_request::DeathTimeAsked => crate::death_time::DeathTime),
         },
         Record {
@@ -659,6 +761,7 @@ fn almanac_records() -> [Record; 10] {
                 let asked = crate::FirstYearQuery::from_json(json)?;
                 Answered::sealed(context.almanac().first_year_query(&asked)?)
             },
+            compares: None,
             schemas: schemas!(crate::first_year_request::FirstYearAsked => crate::first_year::FirstYearSchedule),
         },
         Record {
@@ -667,6 +770,7 @@ fn almanac_records() -> [Record; 10] {
             title: "Every day of a range at a place, and what is asked beside them",
             reads: Some(crate::DaysRequest::DESCRIPTION),
             run: days,
+            compares: None,
             schemas: schemas!(fn crate::days_request::schema => crate::days_request::DaysWritten<'static>, parts: crate::days_request::PARTS),
         },
         Record {
@@ -675,6 +779,7 @@ fn almanac_records() -> [Record; 10] {
             title: "A range's festivals as an iCalendar feed",
             reads: None,
             run: festival_calendar,
+            compares: None,
             schemas: schemas!(crate::area::FestivalCalendarAsked => String),
         },
     ]
@@ -693,6 +798,7 @@ fn almanac_lookup_records() -> [Record; 6] {
                 let asked = crate::PackRequest::from_json(json)?;
                 Answered::plain(&context.almanac().festival_pack(&asked))
             },
+            compares: None,
             schemas: schemas!(crate::area::PackAsked => crate::PackListing),
         },
         Record {
@@ -701,6 +807,7 @@ fn almanac_lookup_records() -> [Record; 6] {
             title: "A range of days as a compact digest a small process reads with no engine",
             reads: None,
             run: digest,
+            compares: None,
             schemas: schemas!(crate::area::DigestAsked => DigestWritten),
         },
         Record {
@@ -712,6 +819,7 @@ fn almanac_lookup_records() -> [Record; 6] {
                 let asked = crate::NextRequest::from_json(json)?;
                 Answered::sealed(context.almanac().next_in_full(&asked)?)
             },
+            compares: None,
             schemas: schemas!(crate::area::NextAsked => crate::NextOccurrence),
         },
         Record {
@@ -723,6 +831,7 @@ fn almanac_lookup_records() -> [Record; 6] {
                 let asked = crate::SentencesRequest::from_json(json)?;
                 Answered::sealed(context.almanac().sentences(&asked)?)
             },
+            compares: None,
             schemas: schemas!(crate::area::SentencesAsked => crate::DaySentences),
         },
         Record {
@@ -737,6 +846,7 @@ fn almanac_lookup_records() -> [Record; 6] {
                 let asked = crate::PublishedReasonsRequest::from_json(json)?;
                 Answered::sealed(context.almanac().published_reasons_request(&[], &asked)?)
             },
+            compares: None,
             schemas: schemas!(crate::area::ReasonsAsked => crate::PublishedReasons),
         },
         Record {
@@ -748,6 +858,7 @@ fn almanac_lookup_records() -> [Record; 6] {
                 let asked = crate::SankalpaRequest::from_json(json)?;
                 Answered::sealed(context.almanac().sankalpa_request(&asked)?)
             },
+            compares: None,
             schemas: schemas!(crate::sankalpa_request::SankalpaAsked => crate::Sankalpa),
         },
     ]
@@ -766,6 +877,7 @@ fn verify_record() -> Record {
             let asked = crate::verify::ClaimsRequest::from_json(json)?;
             Answered::sealed(context.verify().claims(&asked)?)
         },
+        compares: None,
         schemas: schemas!(crate::area::verify::ClaimsAsked => crate::verify::Claims),
     }
 }
@@ -787,6 +899,7 @@ fn engine_records() -> [Record; 2] {
                 let value = context.engine().call(&asked.name, &arguments)?;
                 engine_answer(context, &asked, &asked.name, value)
             },
+            compares: None,
             schemas: schemas!(crate::EngineCall => serde_json::Value),
         },
         Record {
@@ -799,6 +912,7 @@ fn engine_records() -> [Record; 2] {
                 let manifest = context.engine().manifest()?;
                 engine_answer(context, &asked, "manifest", written(&manifest)?)
             },
+            compares: None,
             schemas: schemas!(crate::ManifestRequest => crate::NativeManifest),
         },
     ]
@@ -833,6 +947,7 @@ fn time_records() -> [Record; 6] {
                 let asked = crate::ResolveRequest::from_json(json)?;
                 Answered::plain(&context.time().resolve(&asked.civil, &asked.zone)?)
             },
+            compares: None,
             schemas: schemas!(crate::time_request::ResolveAsked => crate::Resolved),
         },
         Record {
@@ -848,6 +963,7 @@ fn time_records() -> [Record; 6] {
                         .civil_of(asked.instant, &asked.zone, asked.calendar)?;
                 Answered::plain(&crate::CivilReading { civil, zone })
             },
+            compares: None,
             schemas: schemas!(crate::time_request::CivilAsked => crate::CivilReading),
         },
         Record {
@@ -859,6 +975,7 @@ fn time_records() -> [Record; 6] {
                 let asked = crate::ScaleRequest::from_json(json)?;
                 Answered::plain(&context.time().convert(asked.jd, asked.from, asked.to)?)
             },
+            compares: None,
             schemas: schemas!(crate::ScaleRequest => crate::scale::Conversion),
         },
         Record {
@@ -873,6 +990,7 @@ fn time_records() -> [Record; 6] {
                 let weekday = calendars.weekday_of(&date)?;
                 Answered::plain(&crate::CalendarReading { date, weekday })
             },
+            compares: None,
             schemas: schemas!(crate::time_request::CalendarAsked => crate::CalendarReading),
         },
         Record {
@@ -887,6 +1005,7 @@ fn time_records() -> [Record; 6] {
                 let weekday = calendars.weekday_of(&date)?;
                 Answered::plain(&crate::CalendarReading { date, weekday })
             },
+            compares: None,
             schemas: schemas!(crate::time_request::AddAsked => crate::CalendarReading),
         },
         Record {
@@ -902,6 +1021,7 @@ fn time_records() -> [Record; 6] {
                     asked.overflow,
                 )?)
             },
+            compares: None,
             schemas: schemas!(crate::time_request::BetweenAsked => crate::DateSpan),
         },
     ]

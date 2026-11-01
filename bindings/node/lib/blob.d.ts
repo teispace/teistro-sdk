@@ -4525,7 +4525,7 @@ export interface ChartsMarriageDoshaRows {
  * The `avakahada` section of a Charts blob: one typed array per column, each a
  * view over the blob's bytes rather than a copy.
  *
- * Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+ * Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods (C1105 to C1107). Vashya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
  */
 export interface ChartsAvakahada {
   /**
@@ -4601,6 +4601,16 @@ export interface ChartsAvakahada {
    * The values are `Nakshatra` ids.
    */
   readonly ghataNakshatra: Uint16Array;
+  /**
+   * The birth paya by the Moon's nakshatra, by the Vishwavidyalaya Panchang (C1106).
+   * The values are `Paya` ids.
+   */
+  readonly payaByNakshatra: Uint16Array;
+  /**
+   * The birth paya by the Moon's house counted from the lagna's sign, by Sangraha Shiromani XIII v. 92 as the Vishwavidyalaya Panchang applies it (C1105, C1107); a chart's avakahada always reads it.
+   * The values are `Paya` ids.
+   */
+  readonly payaByHouse: Uint16Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
@@ -5953,7 +5963,7 @@ export interface Charts {
    */
   readonly marriageDoshaRows: ChartsMarriageDoshaRows;
   /**
-   * Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
+   * Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods (C1105 to C1107). Vashya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.
    */
   readonly avakahada: ChartsAvakahada;
   /**

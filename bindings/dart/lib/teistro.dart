@@ -1075,6 +1075,44 @@ final class ChartArea extends _Area {
         as Map<String, Object?>,
   );
 
+  /// **Where two charts disagree** (`03-design/chart-disagreements.md`):
+  /// [first] founded under this context, [second] (the first's birth again
+  /// when left out) under [other], and only the facts that differ, each with
+  /// both sides: the lagna's sign, each graha's sign, the Moon's nakshatra
+  /// and pada, each dasha level's running lord at [at] (each birth's own
+  /// when left out) and each rule one side holds and the other does not.
+  /// Pass this context again as [other] to compare two births under one
+  /// setting. A side naming no dasha system is read under Vimshottari; the
+  /// rules are compared when either side names some.
+  ///
+  /// ```dart
+  /// final kp = teistro.context(profile: 'kp-default', ephemeris: [teimeris()]);
+  /// final found = classical.chart.disagreements(
+  ///   kp,
+  ///   first: ComparedBirth(instant: 2447000.25, place: kathmandu, utcOffsetSeconds: 20700),
+  /// );
+  /// final lagna = found.lagna; // null when both fall in one sign
+  /// ```
+  ChartDisagreements disagreements(
+    Context other, {
+    required ComparedBirth first,
+    ComparedBirth? second,
+    double? at,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'first': first._asked,
+      if (second != null) 'second': second._asked,
+      if (at != null) 'at': at,
+    });
+    return _chartDisagreements(
+      _context._guarded(
+        () => other._guarded(
+          () => _context._inner.chartDisagreements(other._inner, asked),
+        ),
+      ),
+    );
+  }
+
   /// Founds a chart at an instant and a place.
   ///
   /// Everything but this is the context's settings, so two charts
@@ -8292,6 +8330,8 @@ List<Avakahada> _decodeAvakahadas(Charts batch) {
         vara: Vara.byId(c.ghataVara[chart]),
         nakshatra: Nakshatra.byId(c.ghataNakshatra[chart]),
       ),
+      payaByNakshatra: Paya.byId(c.payaByNakshatra[chart]),
+      payaByHouse: Paya.byId(c.payaByHouse[chart]),
     );
   }, growable: false);
 }
@@ -12675,6 +12715,8 @@ final class Avakahada extends _Value {
     required this.nadi,
     required this.syllable,
     required this.ghata,
+    required this.payaByNakshatra,
+    required this.payaByHouse,
   });
 
   /// The Moon's nakshatra.
@@ -12711,6 +12753,14 @@ final class Avakahada extends _Value {
   /// (Muhurta Chintamani XI vv. 27–30, C758).
   final Ghata ghata;
 
+  /// The birth paya by the Moon's nakshatra (Vishwavidyalaya Panchang,
+  /// C1106).
+  final Paya payaByNakshatra;
+
+  /// The birth paya by the Moon's house counted from the lagna's sign
+  /// (Sangraha Shiromani XIII v. 92, C1105, C1107).
+  final Paya payaByHouse;
+
   @override
   List<Object?> get _fields => [
     nakshatra,
@@ -12724,6 +12774,8 @@ final class Avakahada extends _Value {
     nadi,
     syllable,
     ghata,
+    payaByNakshatra,
+    payaByHouse,
   ];
 }
 
@@ -17601,6 +17653,341 @@ final class Disagreements {
   final FestivalDisagreements? festivals;
 }
 
+/// One birth of a chart comparison ([ChartArea.disagreements]): the fields
+/// of a chart request a comparison reads.
+final class ComparedBirth extends _Value {
+  const ComparedBirth({
+    required this.instant,
+    required this.place,
+    required this.utcOffsetSeconds,
+    this.kind,
+    this.dashas = const <KeyOf<DashaSystem>>[],
+    this.rules,
+  });
+
+  /// The instant, a Julian day (UTC).
+  final double instant;
+
+  /// Where.
+  final Observer place;
+
+  /// The local clock's offset from UTC, east positive.
+  final int utcOffsetSeconds;
+
+  /// A chart kind; natal when left out.
+  final ChartKind? kind;
+
+  /// The dasha systems compared; Vimshottari when none is named.
+  final List<KeyOf<DashaSystem>> dashas;
+
+  /// The rules compared, when either side names some.
+  final RuleRequest? rules;
+
+  Map<String, Object?> get _asked => <String, Object?>{
+    'instant': instant,
+    'latitudeDeg': place.latitudeDeg,
+    'longitudeDeg': place.longitudeDeg,
+    'altitudeM': place.altitudeM,
+    'utcOffsetSeconds': utcOffsetSeconds,
+    if (kind != null) 'kind': kind!.fullKey,
+    if (dashas.isNotEmpty)
+      'dashas': [for (final system in dashas) system.fullKey],
+    if (rules != null) 'rules': rules!._wire,
+  };
+
+  @override
+  List<Object?> get _fields => [
+    instant,
+    place.latitudeDeg,
+    place.longitudeDeg,
+    place.altitudeM,
+    utcOffsetSeconds,
+    kind,
+    ...dashas.map((system) => system.fullKey),
+    rules,
+  ];
+}
+
+/// A placement as one side reads it: the sign, and where in the circle and
+/// the sign it stands, which is the reason when two signs differ.
+final class SignPlacement extends _Value {
+  const SignPlacement({
+    required this.sign,
+    required this.longitudeDeg,
+    required this.degreesInSign,
+  });
+
+  final Rashi sign;
+
+  /// The longitude in that side's zodiac, degrees.
+  final double longitudeDeg;
+
+  /// Degrees into the sign, 0 to 30.
+  final double degreesInSign;
+
+  @override
+  List<Object?> get _fields => [sign, longitudeDeg, degreesInSign];
+}
+
+/// A placement in two signs: the lagna's, or a graha's.
+final class PlacementDisagreement extends _Value {
+  const PlacementDisagreement({required this.first, required this.second});
+
+  /// As the first chart has it.
+  final SignPlacement first;
+
+  /// As the second has it.
+  final SignPlacement second;
+
+  @override
+  List<Object?> get _fields => [first, second];
+}
+
+/// A graha in two signs.
+final class GrahaDisagreement extends _Value {
+  const GrahaDisagreement({
+    required this.graha,
+    required this.first,
+    required this.second,
+  });
+
+  final Graha graha;
+  final SignPlacement first;
+  final SignPlacement second;
+
+  @override
+  List<Object?> get _fields => [graha, first, second];
+}
+
+/// The Moon's star and pada as one side reads it.
+final class MoonStar extends _Value {
+  const MoonStar({
+    required this.nakshatra,
+    required this.pada,
+    required this.longitudeDeg,
+  });
+
+  final Nakshatra nakshatra;
+
+  /// 1 to 4.
+  final int pada;
+
+  /// The Moon's longitude in that side's zodiac, degrees.
+  final double longitudeDeg;
+
+  @override
+  List<Object?> get _fields => [nakshatra, pada, longitudeDeg];
+}
+
+/// The Moon's nakshatra or pada, differing.
+final class NakshatraDisagreement extends _Value {
+  const NakshatraDisagreement({required this.first, required this.second});
+
+  final MoonStar first;
+  final MoonStar second;
+
+  @override
+  List<Object?> get _fields => [first, second];
+}
+
+/// The period of one dasha level running at the instant compared.
+final class RunningLord extends _Value {
+  const RunningLord({
+    required this.lord,
+    required this.sign,
+    required this.interval,
+  });
+
+  final Graha lord;
+
+  /// The sign, for a sign dasha; null for a graha's.
+  final Rashi? sign;
+
+  final Interval interval;
+
+  @override
+  List<Object?> get _fields => [lord, sign, interval.from, interval.to];
+}
+
+/// One dasha level whose running lord differs; a side whose periods do not
+/// reach the instant is null.
+final class DashaDisagreement extends _Value {
+  const DashaDisagreement({
+    required this.system,
+    required this.level,
+    required this.first,
+    required this.second,
+  });
+
+  /// The system's full key (`dasha_system.VIMSHOTTARI`), registered or
+  /// catalogued.
+  final String system;
+
+  /// 1 for the mahadasha, 2 for the antardasha, and on.
+  final int level;
+
+  final RunningLord? first;
+  final RunningLord? second;
+
+  @override
+  List<Object?> get _fields => [system, level, first, second];
+}
+
+/// A rule one side holds and the other does not, or with another net
+/// status: `active`, `partially-cancelled` or `fully-cancelled`, null where
+/// it does not hold.
+final class YogaDisagreement extends _Value {
+  const YogaDisagreement({
+    required this.rule,
+    required this.category,
+    required this.first,
+    required this.second,
+  });
+
+  final String rule;
+  final String category;
+  final String? first;
+  final String? second;
+
+  @override
+  List<Object?> get _fields => [rule, category, first, second];
+}
+
+/// What [ChartArea.disagreements] answers: only the facts that differ.
+final class ChartDisagreements {
+  const ChartDisagreements({
+    required this.otherProfile,
+    required this.otherSettingsHash,
+    required this.at,
+    required this.compared,
+    required this.lagna,
+    required this.grahas,
+    required this.nakshatra,
+    required this.dashas,
+    required this.yogas,
+    required this.provenance,
+  });
+
+  /// The profile the other context resolved.
+  final String otherProfile;
+
+  /// The other context's settings hash, so a stored comparison is known
+  /// stale when either side's settings change.
+  final String otherSettingsHash;
+
+  /// The instant the dasha lords were compared at; null for each birth's
+  /// own.
+  final double? at;
+
+  /// How many facts were compared.
+  final int compared;
+
+  /// The lagna, when its sign differs.
+  final PlacementDisagreement? lagna;
+
+  /// Each graha whose sign differs.
+  final List<GrahaDisagreement> grahas;
+
+  /// The Moon's nakshatra, when it or its pada differs.
+  final NakshatraDisagreement? nakshatra;
+
+  /// Each dasha level whose running lord differs.
+  final List<DashaDisagreement> dashas;
+
+  /// Each rule one side holds and the other does not, or with another
+  /// status.
+  final List<YogaDisagreement> yogas;
+
+  /// The first chart's, which sealed the record; its input hash is the
+  /// request's.
+  final Provenance provenance;
+}
+
+/// `ts_chart_disagreements`'s answer as frozen records, members as this
+/// binding's enums.
+ChartDisagreements _chartDisagreements(String json) {
+  final answer = jsonDecode(json) as Map<String, Object?>;
+  final value = _festivalAt(answer['value']);
+  SignPlacement placed(Object? raw) {
+    final one = _festivalAt(raw);
+    return SignPlacement(
+      sign: _key(one['sign'], Rashi.byKey, Rashi.unknown),
+      longitudeDeg: (one['longitudeDeg']! as num).toDouble(),
+      degreesInSign: (one['degreesInSign']! as num).toDouble(),
+    );
+  }
+
+  MoonStar star(Object? raw) {
+    final one = _festivalAt(raw);
+    return MoonStar(
+      nakshatra: _key(one['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+      pada: one['pada']! as int,
+      longitudeDeg: (one['longitudeDeg']! as num).toDouble(),
+    );
+  }
+
+  RunningLord? running(Object? raw) {
+    if (raw == null) return null;
+    final one = _festivalAt(raw);
+    final sign = one['sign'];
+    return RunningLord(
+      lord: _key(one['lord'], Graha.byKey, Graha.unknown),
+      sign: sign == null ? null : _key(sign, Rashi.byKey, Rashi.unknown),
+      interval: _festivalInterval(one['interval']),
+    );
+  }
+
+  final lagna = value['lagna'];
+  final nakshatra = value['nakshatra'];
+  return ChartDisagreements(
+    otherProfile: value['otherProfile']! as String,
+    otherSettingsHash: value['otherSettingsHash']! as String,
+    at: (value['at'] as num?)?.toDouble(),
+    compared: value['compared']! as int,
+    lagna:
+        lagna == null
+            ? null
+            : PlacementDisagreement(
+              first: placed(_festivalAt(lagna)['first']),
+              second: placed(_festivalAt(lagna)['second']),
+            ),
+    grahas: List.unmodifiable([
+      for (final one in _festivalEach(value['grahas']))
+        GrahaDisagreement(
+          graha: _key(one['graha'], Graha.byKey, Graha.unknown),
+          first: placed(one['first']),
+          second: placed(one['second']),
+        ),
+    ]),
+    nakshatra:
+        nakshatra == null
+            ? null
+            : NakshatraDisagreement(
+              first: star(_festivalAt(nakshatra)['first']),
+              second: star(_festivalAt(nakshatra)['second']),
+            ),
+    dashas: List.unmodifiable([
+      for (final one in _festivalEach(value['dashas']))
+        DashaDisagreement(
+          system: one['system']! as String,
+          level: one['level']! as int,
+          first: running(one['first']),
+          second: running(one['second']),
+        ),
+    ]),
+    yogas: List.unmodifiable([
+      for (final one in _festivalEach(value['yogas']))
+        YogaDisagreement(
+          rule: one['rule']! as String,
+          category: one['category']! as String,
+          first: one['first'] as String?,
+          second: one['second'] as String?,
+        ),
+    ]),
+    provenance: Provenance.fromJson(_festivalAt(answer['provenance'])),
+  );
+}
+
 /// `ts_almanac_disagreements`'s answer as frozen records, members as this
 /// binding's enums and dates in its own shape.
 Disagreements _disagreements(String json) {
@@ -21741,6 +22128,12 @@ enum DossierSection implements _Keyed {
   /// What held under the request's `rules` record, a row a rule.
   rules('RULES'),
 
+  /// The spans a `rules` record's `longevity` computed, a row a span.
+  longevity('LONGEVITY'),
+
+  /// The marakas a `rules` record's `longevity` names, a row a graha.
+  marakas('MARAKAS'),
+
   /// Each graha's transit at each of the request's `gochar` instants.
   gochar('GOCHAR');
 
@@ -21769,11 +22162,22 @@ final class DossierRequest extends _Facade {
     this.at,
     this.dashaDepth,
     this.utcOffsetSeconds,
+    this.drop = const <DossierSection>[],
+    this.dropCategories = const <String>[],
   });
 
   /// The sections, written in the dossier's own order; one a flag computes
   /// widens the request with it.
   final List<DossierSection>? sections;
+
+  /// The sections never written, a policy the dossier states in its
+  /// `DROPPED` section, so its text says what was kept out
+  /// (`03-design/dossier.md`, "A policy").
+  final List<DossierSection> drop;
+
+  /// The rule categories whose `RULES` rows are never written, `marana`
+  /// or `ayur`, each counted in `DROPPED`.
+  final List<String> dropCategories;
 
   /// The preset, [DossierPreset.full] when left out.
   final DossierPreset? preset;
@@ -21799,6 +22203,8 @@ final class DossierRequest extends _Facade {
     if (at != null) 'at': at,
     if (dashaDepth != null) 'dashaDepth': dashaDepth,
     if (utcOffsetSeconds != null) 'utcOffsetSeconds': utcOffsetSeconds,
+    if (drop.isNotEmpty) 'drop': [for (final s in drop) s.key],
+    if (dropCategories.isNotEmpty) 'dropCategories': dropCategories,
   };
 }
 

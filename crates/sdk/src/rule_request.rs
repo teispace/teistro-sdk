@@ -646,6 +646,221 @@ pub struct RulesReading<'r> {
     pub unreadable: Vec<&'static str>,
 }
 
+/// The `LONGEVITY` section of a chart's dossier: each span a rules
+/// reading's `longevity` computed, a row a span, and the span the strongest
+/// names (`03-design/dossier.md`). A policy drops it with `drop`
+/// (`DossierOptions::drop`), and the dossier then says so.
+///
+/// ```no_run
+/// # fn read(document: &teistro::Document, reading: &teistro::RulesReading<'_>) -> Result<(), teistro::Error> {
+/// use teistro::dossier::{DossierOptions, dossier};
+///
+/// let spans = teistro::LongevitySection::new(Some(reading));
+/// let text = dossier(document, &DossierOptions::default(), &[&spans])?;
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Clone, Copy, Debug)]
+pub struct LongevitySection<'a, 'r> {
+    reading: Option<&'a RulesReading<'r>>,
+}
+
+impl<'a, 'r> LongevitySection<'a, 'r> {
+    /// The section's key, as a dossier record names it.
+    pub const KEY: &'static str = "LONGEVITY";
+
+    /// The section of `reading`; written when it read `longevity`.
+    ///
+    /// ```
+    /// assert_eq!(teistro::LongevitySection::new(None).reading(), None);
+    /// ```
+    #[must_use]
+    pub const fn new(reading: Option<&'a RulesReading<'r>>) -> LongevitySection<'a, 'r> {
+        LongevitySection { reading }
+    }
+
+    /// The reading it writes, if any.
+    ///
+    /// ```
+    /// assert!(teistro::LongevitySection::new(None).reading().is_none());
+    /// ```
+    #[must_use]
+    pub const fn reading(&self) -> Option<&'a RulesReading<'r>> {
+        self.reading
+    }
+}
+
+impl crate::dossier::DossierSection for LongevitySection<'_, '_> {
+    fn key(&self) -> &'static str {
+        LongevitySection::KEY
+    }
+    fn columns(&self) -> &[crate::dossier::Column] {
+        use crate::dossier::{Column, column};
+        const COLUMNS: [Column; 3] = [
+            column(
+                "span",
+                "the span, as Jataka Parijata ch. 5 and BPHS ch. 44 name it",
+            ),
+            column("years", "its years, two decimals"),
+            column("note", "the class of life it gives, or what chose it"),
+        ];
+        &COLUMNS
+    }
+    fn asked_by(&self) -> &'static str {
+        "`longevity: true` in the chart request's `rules` record"
+    }
+    fn rows(&self, _: &crate::Document, _: &crate::dossier::View) -> Option<Vec<Vec<String>>> {
+        use crate::dossier::{fixed, word};
+        let spans = self.reading?.longevity.as_ref()?;
+        let years = |value: f64| fixed(value, 2);
+        let maybe = |value: Option<f64>| value.map_or_else(|| String::from("-"), years);
+        let dash = || String::from("-");
+        let ayurdaya = &spans.ayurdaya;
+        let mut rows = vec![
+            vec![
+                String::from("PINDAYU"),
+                years(ayurdaya.pindayu.years),
+                dash(),
+            ],
+            vec![
+                String::from("NISARGAYU"),
+                years(ayurdaya.nisargayu.years),
+                dash(),
+            ],
+            vec![String::from("AMSAYU"), years(ayurdaya.amsayu.years), dash()],
+            vec![
+                String::from("JEEVASARMAN"),
+                years(ayurdaya.jeevasarman.years),
+                dash(),
+            ],
+            vec![
+                String::from("RASMIJA"),
+                years(spans.rasmi.years),
+                word(&spans.rasmi.class),
+            ],
+            vec![
+                String::from("NAKSHATRAJA"),
+                maybe(spans.dasayus.as_ref().map(|dasas| dasas.years)),
+                dash(),
+            ],
+            vec![
+                String::from("KALACHAKRAJA"),
+                years(spans.chakrayus.years),
+                dash(),
+            ],
+            vec![
+                String::from("BHINNASHTAKAVARGAJA"),
+                maybe(spans.ashtakavarga.as_ref().map(|ayus| ayus.bhinna)),
+                dash(),
+            ],
+            vec![
+                String::from("SAMUDAYASHTAKAVARGAJA"),
+                maybe(spans.ashtakavarga.as_ref().map(|ayus| ayus.samudaya)),
+                dash(),
+            ],
+        ];
+        if let Some(pairs) = &spans.three_pairs {
+            rows.push(vec![
+                String::from("THREE_PAIRS"),
+                maybe(pairs.years),
+                word(&pairs.class),
+            ]);
+        }
+        rows.push(vec![
+            String::from("CHOSEN"),
+            dash(),
+            spans.choice.ayus.map_or_else(dash, |ayus| {
+                let by = spans
+                    .choice
+                    .strongest
+                    .map_or_else(dash, |body| body.key().to_owned());
+                format!("{} by {by}", word(&ayus))
+            }),
+        ]);
+        Some(rows)
+    }
+}
+
+/// The `MARAKAS` section of a chart's dossier: each graha a rules
+/// reading's `longevity` names a maraka, with its reasons (BPHS ch. 44).
+/// A policy drops it with `drop`, and the dossier then says so.
+///
+/// ```no_run
+/// # fn read(document: &teistro::Document, reading: &teistro::RulesReading<'_>) -> Result<(), teistro::Error> {
+/// use teistro::dossier::{DossierOptions, dossier};
+///
+/// let marakas = teistro::MarakaSection::new(Some(reading));
+/// let text = dossier(document, &DossierOptions::default(), &[&marakas])?;
+/// # Ok(())
+/// # }
+/// ```
+#[derive(Clone, Copy, Debug)]
+pub struct MarakaSection<'a, 'r> {
+    reading: Option<&'a RulesReading<'r>>,
+}
+
+impl<'a, 'r> MarakaSection<'a, 'r> {
+    /// The section's key, as a dossier record names it.
+    pub const KEY: &'static str = "MARAKAS";
+
+    /// The section of `reading`; written when it read `longevity`.
+    ///
+    /// ```
+    /// assert!(teistro::MarakaSection::new(None).reading().is_none());
+    /// ```
+    #[must_use]
+    pub const fn new(reading: Option<&'a RulesReading<'r>>) -> MarakaSection<'a, 'r> {
+        MarakaSection { reading }
+    }
+
+    /// The reading it writes, if any.
+    ///
+    /// ```
+    /// assert!(teistro::MarakaSection::new(None).reading().is_none());
+    /// ```
+    #[must_use]
+    pub const fn reading(&self) -> Option<&'a RulesReading<'r>> {
+        self.reading
+    }
+}
+
+impl crate::dossier::DossierSection for MarakaSection<'_, '_> {
+    fn key(&self) -> &'static str {
+        MarakaSection::KEY
+    }
+    fn columns(&self) -> &[crate::dossier::Column] {
+        use crate::dossier::{Column, column};
+        const COLUMNS: [Column; 3] = [
+            column("graha", "a graha with a reason to kill"),
+            column("reasons", "its reasons, `,`-separated (lord-of-second, …)"),
+            column("prime", "whether a reason is a prime one: yes or no"),
+        ];
+        &COLUMNS
+    }
+    fn asked_by(&self) -> &'static str {
+        "`longevity: true` in the chart request's `rules` record"
+    }
+    fn rows(&self, _: &crate::Document, _: &crate::dossier::View) -> Option<Vec<Vec<String>>> {
+        let marakas = &self.reading?.longevity.as_ref()?.marakas;
+        Some(
+            marakas
+                .iter()
+                .map(|(graha, reasons)| {
+                    vec![
+                        graha.key().to_owned(),
+                        reasons
+                            .iter()
+                            .map(|reason| crate::dossier::word(&reason))
+                            .collect::<Vec<_>>()
+                            .join(","),
+                        String::from(if reasons.is_prime() { "yes" } else { "no" }),
+                    ]
+                })
+                .collect(),
+        )
+    }
+}
+
 /// The `RULES` section of a chart's dossier: every rule that held on it,
 /// a row a rule (`03-design/dossier.md`). A chart request writes it from
 /// its `rules` record; a caller of [`crate::dossier::dossier`] passes it as
@@ -705,6 +920,9 @@ impl crate::dossier::DossierSection for RulesSection<'_, '_> {
     }
     fn asked_by(&self) -> &'static str {
         "the `rules` record on the chart request"
+    }
+    fn category_column(&self) -> Option<usize> {
+        Some(1)
     }
     fn rows(&self, _: &crate::Document, _: &crate::dossier::View) -> Option<Vec<Vec<String>>> {
         let joined = |items: Vec<String>| {

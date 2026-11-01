@@ -222,6 +222,11 @@ import type {
   PakshiDay,
   PakshiDays,
   DisagreementRequest,
+  ChartDisagreementRequest,
+  ChartDisagreements,
+  SignPlacement,
+  MoonStar,
+  RunningLord,
   FestivalCalendarRequest,
   Sankalpa,
   SankalpaAnswer,
@@ -1390,6 +1395,34 @@ function theDisagreements(official: Context, modern: Context): string {
   return `${tithi} ${change?.minutesFromSunrise} ${moved} ${hash} ${day?.karana?.other.span.to}`;
 }
 void theDisagreements;
+
+// Two charts compared: a lagna's sign on both sides, a Moon's pada, a
+// running lord and a rule's status, each by its own type.
+function theChartDisagreements(classical: Context, kp: Context): string {
+  const asked: ChartDisagreementRequest = {
+    first: {
+      instant: 2447000.25,
+      place: { latitude: 27.7172, longitude: 85.324 },
+      utcOffsetSeconds: 20700,
+      dashas: ['dasha_system.VIMSHOTTARI'],
+      rules: { shipped: ['YOGAS'] },
+    },
+    at: 2461000.5,
+  };
+  const found: ChartDisagreements = classical.chart.disagreements(kp, asked);
+  const lagna: SignPlacement | undefined = found.lagna?.second;
+  const sign: Rashi | undefined = lagna?.sign;
+  const star: MoonStar | undefined = found.nakshatra?.first;
+  const lord: RunningLord | null | undefined = found.dashas[0]?.second;
+  const status = found.yogas[0]?.first;
+  const hash: string = found.provenance.inputHash;
+  // @ts-expect-error the context compared with is a Context, not its options
+  classical.chart.disagreements({ profile: 'kp-default' }, asked);
+  // @ts-expect-error a comparison reads one birth a side, not a batch
+  classical.chart.disagreements(kp, { first: { instants: [2447000.25], place: asked.first.place, utcOffsetSeconds: 0 } });
+  return `${sign} ${lagna?.degreesInSign} ${star?.pada} ${lord?.lord} ${status} ${hash} ${found.otherSettingsHash}`;
+}
+void theChartDisagreements;
 
 // A sankalpa's parts by their catalogue types, and its ayana by the two
 // reckonings alone.

@@ -82,6 +82,12 @@ pub use area::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,
     ReckonedPlace,
 };
+#[cfg(feature = "chart")]
+pub use area::{
+    ChartDisagreementRequest, ChartDisagreements, DashaDisagreement, GrahaDisagreement,
+    LagnaDisagreement, MoonStar, NakshatraDisagreement, RunningLord, SignPlacement,
+    YogaDisagreement,
+};
 pub use area::{
     DIGEST_DEFAULT_DAYS, DIGEST_FLAG_FAST, DIGEST_FLAG_PUBLISHED, DIGEST_FORMAT_MAJOR,
     DIGEST_FORMAT_MINOR, DIGEST_MAX_DAYS, DIGEST_NO_NAME, DIGEST_NO_TIME, DIGEST_SCHEMA,
@@ -332,8 +338,8 @@ pub use crate::found_request::FoundRequest;
 // (`03-design/annual-chart.md`).
 #[cfg(feature = "chart")]
 pub use crate::rule_request::{
-    Longevity, Present, RuleReadings, RuleRequest, RuleSet, RulesReading, RulesSection,
-    ShippedRules,
+    Longevity, LongevitySection, MarakaSection, Present, RuleReadings, RuleRequest, RuleSet,
+    RulesReading, RulesSection, ShippedRules,
 };
 #[cfg(feature = "chart")]
 pub use crate::rules_bridge::{

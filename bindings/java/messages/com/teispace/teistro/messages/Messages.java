@@ -1404,6 +1404,33 @@ public final class Messages {
         }
     }
 
+    /** A `paya` as a message names it: the full catalogue key. */
+    public enum PayaKey {
+        /** `paya.SUVARNA`. */
+        SUVARNA("paya.SUVARNA"),
+        /** `paya.RAJATA`. */
+        RAJATA("paya.RAJATA"),
+        /** `paya.TAMRA`. */
+        TAMRA("paya.TAMRA"),
+        /** `paya.LOHA`. */
+        LOHA("paya.LOHA");
+
+        private final String value;
+
+        PayaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `point` as a message names it: the full catalogue key. */
     public enum PointKey {
         /** `point.LAGNA`. */
@@ -1978,6 +2005,31 @@ public final class Messages {
         private final String value;
 
         TraditionKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `tridosha` as a message names it: the full catalogue key. */
+    public enum TridoshaKey {
+        /** `tridosha.VATA`. */
+        VATA("tridosha.VATA"),
+        /** `tridosha.PITTA`. */
+        PITTA("tridosha.PITTA"),
+        /** `tridosha.KAPHA`. */
+        KAPHA("tridosha.KAPHA");
+
+        private final String value;
+
+        TridoshaKey(String value) {
             this.value = value;
         }
 
@@ -11233,6 +11285,61 @@ public final class Messages {
 
 
             /**
+             * The messages under `paya`.
+             *
+             * @return the group
+             */
+            public SdkEntityPaya paya() {
+                return new SdkEntityPaya(r);
+            }
+
+            /** The messages under `SdkEntityPaya`, each rendered by its own key. */
+            public static final class SdkEntityPaya {
+                private final Renderer r;
+
+                SdkEntityPaya(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `paya.LOHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms loha() {
+                    return r.entity("paya.LOHA");
+                }
+
+                /**
+                 * The forms of `paya.RAJATA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rajata() {
+                    return r.entity("paya.RAJATA");
+                }
+
+                /**
+                 * The forms of `paya.SUVARNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms suvarna() {
+                    return r.entity("paya.SUVARNA");
+                }
+
+                /**
+                 * The forms of `paya.TAMRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tamra() {
+                    return r.entity("paya.TAMRA");
+                }
+            }
+
+
+            /**
              * The messages under `point`.
              *
              * @return the group
@@ -12878,6 +12985,52 @@ public final class Messages {
                  */
                 public EntityForms sikh() {
                     return r.entity("tradition.SIKH");
+                }
+            }
+
+
+            /**
+             * The messages under `tridosha`.
+             *
+             * @return the group
+             */
+            public SdkEntityTridosha tridosha() {
+                return new SdkEntityTridosha(r);
+            }
+
+            /** The messages under `SdkEntityTridosha`, each rendered by its own key. */
+            public static final class SdkEntityTridosha {
+                private final Renderer r;
+
+                SdkEntityTridosha(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `tridosha.KAPHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kapha() {
+                    return r.entity("tridosha.KAPHA");
+                }
+
+                /**
+                 * The forms of `tridosha.PITTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms pitta() {
+                    return r.entity("tridosha.PITTA");
+                }
+
+                /**
+                 * The forms of `tridosha.VATA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vata() {
+                    return r.entity("tridosha.VATA");
                 }
             }
 

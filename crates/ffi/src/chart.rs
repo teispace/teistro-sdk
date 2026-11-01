@@ -2891,6 +2891,8 @@ struct AvakahadaColumns {
     cell: Vec<u8>,
     varga: Vec<u8>,
     ghata: [Vec<u16>; 4],
+    paya_by_nakshatra: Vec<u16>,
+    paya_by_house: Vec<u16>,
     /// Empty when no chart asked, so a caller that did not pays for no text.
     syllables: String,
 }
@@ -2925,6 +2927,11 @@ impl AvakahadaColumns {
             ]) {
                 column.push(id);
             }
+            columns.paya_by_nakshatra.push(read.paya_by_nakshatra.id());
+            columns.paya_by_house.push(
+                read.paya_by_house
+                    .map_or(u16::MAX, teistro_core::catalogue::Catalogued::id),
+            );
         }
         if !readings.is_empty() {
             let texts: Vec<[&str; 2]> = readings
@@ -2961,6 +2968,8 @@ impl AvakahadaColumns {
                 ColumnData::U16(&self.ghata[1]),
                 ColumnData::U16(&self.ghata[2]),
                 ColumnData::U16(&self.ghata[3]),
+                ColumnData::U16(&self.paya_by_nakshatra),
+                ColumnData::U16(&self.paya_by_house),
             ],
         )?;
         writer.bytes("avakahada_syllables", self.syllables.as_bytes())
@@ -6436,6 +6445,97 @@ pub unsafe extern "C" fn ts_chart_layout_row(
         let asked = unsafe { crate::support::text(key, "key") }?;
         let row = ctx.sdk().chart().layout(asked)?;
         let json = TsString::from_string(teistro_core::envelope::canonical_json(&row));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
+/// **Where two charts disagree** (`03-design/chart-disagreements.md`): the
+/// first chart founded under `context`, the second under `other`, and
+/// answers with `{value, provenance}` as canonical JSON, sealed by the
+/// first chart's provenance with the whole request as its input, every
+/// catalogue member a full key. Pass `context` again as `other` to compare
+/// two births under one setting.
+///
+/// `value` is `{otherProfile, otherSettingsHash, at, compared, lagna,
+/// grahas, nakshatra, dashas, yogas}`: `lagna` null unless its sign
+/// differs, else `{first, second}`, each side `{sign, longitudeDeg,
+/// degreesInSign}`; `grahas` each graha both place whose sign differs, as
+/// `{graha, first, second}`; `nakshatra` null unless the Moon's star or
+/// pada differs, else `{first, second}`, each `{nakshatra, pada,
+/// longitudeDeg}`; `dashas` each level both carry whose running lord
+/// differs, `{system, level, first, second}`, each side `{lord, sign,
+/// interval}` or null; and `yogas` each rule one side holds and the other
+/// does not, or with another status, `{rule, category, first, second}`.
+/// `compared` counts the facts read.
+///
+/// `request_json` is `{"first", "second", "at"}`: `first` a chart request
+/// of one birth (`instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+/// `utcOffsetSeconds`, and any `dashas` and `rules` record), `second`
+/// another, optional (the first's birth again), and `at` the UTC Julian
+/// day the running dasha lords are compared at (each birth's own when left
+/// out). A side naming no dasha system is read under Vimshottari. A key it
+/// does not read, a chart request its reader refuses or one of more than
+/// one birth is `INVALID_ARG`, named under `disagreements`; a null `other`
+/// is `INVALID_ARG` naming `other`. Either context without an ephemeris is
+/// `CAPABILITY`.
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let classical = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # let kp = TsContext::build(&OptionTexts { profile: Some("kp-default"), ..OptionTexts::default() }, teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::chart::ts_chart_disagreements;
+/// use teistro_ffi::string::TsString;
+///
+/// // One birth at Kathmandu, under two profiles.
+/// let birth = c"{\"first\": {\"instant\": 2447000.25, \"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"utcOffsetSeconds\": 20700}}";
+/// let mut out = TsString::empty();
+/// // SAFETY: two live contexts, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_chart_disagreements(&raw const classical, &raw const kp, birth.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// assert_eq!(answer["value"]["otherProfile"], "kp-default");
+/// assert!(answer["value"]["compared"].as_u64() > Some(11));
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` and `other` must be live handles; `request_json`
+/// NUL-terminated; `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_chart_disagreements(
+    context: *const TsContext,
+    other: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the caller promises null or a live handle.
+        let other = unsafe { crate::support::context(other) }.ok_or_else(|| {
+            Error::new(Status::InvalidArg, "the context to compare with is null")
+                .with_field("other")
+        })?;
+        // SAFETY: the entry point's contract.
+        let asked = teistro::ChartDisagreementRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx
+            .sdk()
+            .chart()
+            .disagreements_request(other.sdk(), &asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
         // SAFETY: the entry point's contract.
         unsafe { write_plain(out_json, "out_json", json) }
     })

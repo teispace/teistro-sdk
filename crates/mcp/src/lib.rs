@@ -291,6 +291,18 @@ impl Fault {
 /// patch and the locale tag, empty where the call named none.
 type ContextKey = (String, String, String);
 
+/// The key the contexts a call's scope names are kept under.
+fn context_key(asked: &tools::Arguments) -> ContextKey {
+    (
+        asked
+            .profile
+            .clone()
+            .unwrap_or_else(|| DEFAULT_PROFILE.to_owned()),
+        asked.settings.clone().unwrap_or_default(),
+        asked.locale.clone().unwrap_or_default(),
+    )
+}
+
 /// Opens the engine a context computes with first: one provider per
 /// context, all over the one engine.
 ///
@@ -1348,9 +1360,24 @@ impl Server {
         if let Some(request) = arguments.get("request") {
             self.limits.check(request)?;
         }
-        let asked = tools::Arguments::read(arguments)?;
-        let context = self.context(&asked)?;
-        envelope(record.answer(context, &asked.request)?)
+        let (arguments, other) = tools::Arguments::other(record, arguments)?;
+        let asked = tools::Arguments::read(&arguments)?;
+        let Some(other) = other else {
+            let context = self.context(&asked)?;
+            return envelope(record.answer(context, &asked.request)?);
+        };
+        // Both built before either is borrowed; a full cache cleared by the
+        // second leaves the first to be built again, and two fit.
+        self.context(&asked)?;
+        self.context(&other).map_err(tools::of_other)?;
+        self.context(&asked)?;
+        let (Some(context), Some(compared)) = (
+            self.contexts.get(&context_key(&asked)),
+            self.contexts.get(&context_key(&other)),
+        ) else {
+            return Err(Error::internal("a context the server built is gone"));
+        };
+        envelope(record.answer_against(context, compared, &asked.request)?)
     }
 
     /// The engine's own operations listed as tools; none without a
@@ -1386,14 +1413,7 @@ impl Server {
     }
 
     fn context(&mut self, asked: &tools::Arguments) -> Result<&Context, Error> {
-        let key: ContextKey = (
-            asked
-                .profile
-                .clone()
-                .unwrap_or_else(|| DEFAULT_PROFILE.to_owned()),
-            asked.settings.clone().unwrap_or_default(),
-            asked.locale.clone().unwrap_or_default(),
-        );
+        let key = context_key(asked);
         if !self.contexts.contains_key(&key) && self.contexts.len() >= CONTEXTS {
             self.contexts.clear();
         }

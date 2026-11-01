@@ -134,6 +134,7 @@ import type {
   Yoni,
   Gana,
   Nadi,
+  Paya,
   VashyaRelation,
   DhinamRule,
   Rajju,
@@ -1004,6 +1005,10 @@ export interface Avakahada {
   readonly syllable: BirthSyllable;
   /** The ghata chakra of the Moon's sign: what strikes the native (Muhurta Chintamani XI vv. 27–30, C758). */
   readonly ghata: Ghata;
+  /** The birth paya by the Moon's nakshatra (Vishwavidyalaya Panchang, C1106). */
+  readonly payaByNakshatra: Paya;
+  /** The birth paya by the Moon's house counted from the lagna's sign (Sangraha Shiromani XIII v. 92, C1105, C1107). */
+  readonly payaByHouse: Paya;
 }
 
 /** What strikes a native of one Moon sign: Muhurta Chintamani's four rows of the ghata chakra (C758). */
@@ -3235,6 +3240,10 @@ export type DossierSection =
   | 'AVAKAHADA'
   /** What held under the request's `rules` record, a row a rule. */
   | 'RULES'
+  /** The spans a `rules` record's `longevity` computed, a row a span. */
+  | 'LONGEVITY'
+  /** The marakas a `rules` record's `longevity` names, a row a graha. */
+  | 'MARAKAS'
   /** Each graha's transit at each of the request's `gochar` instants. */
   | 'GOCHAR';
 
@@ -7714,6 +7723,21 @@ export declare class ChartArea {
    */
   foundMany(request: ChartBatchRequest): Charts;
   /**
+   * **Where two charts disagree** (`03-design/chart-disagreements.md`):
+   * `first` founded under this context, `second` (the first's birth again
+   * when left out) under `other`, and only the facts that differ, each with
+   * both sides. Pass this context again as `other` to compare two births
+   * under one setting.
+   *
+   * @example
+   * const kp = new Context({ profile: 'kp-default', ephemeris: teimeris() });
+   * const found = classical.chart.disagreements(kp, {
+   *   first: { instant: 2447000.25, place: { latitude: 27.7172, longitude: 85.324 }, utcOffsetSeconds: 20700 },
+   * });
+   * found.dashas[0]?.second?.lord; // the lord KP's chart runs, where it differs
+   */
+  disagreements(other: Context, request: ChartDisagreementRequest): ChartDisagreements;
+  /**
    * One period of civil days at a place read for each of the twelve signs
    * (`03-design/rashifal.md`); with `baseline`, the baseline engine's score
    * of each sign for that period.
@@ -8688,6 +8712,79 @@ export interface Disagreements {
     readonly ekadashis: readonly EkadashiDisagreement[];
     readonly provenance: Provenance;
   } | null;
+}
+
+/** One birth of a chart comparison: the fields of a chart request a comparison reads. */
+export type ComparedBirth = Pick<ChartRequest, 'instant' | 'place' | 'utcOffsetSeconds' | 'kind' | 'dashas' | 'rules'>;
+
+/** Two charts compared, as `chart.disagreements` reads them. */
+export interface ChartDisagreementRequest {
+  /** The first birth, founded under the context asked. */
+  readonly first: ComparedBirth;
+  /** The second, founded under the other context; the first's birth again when left out. */
+  readonly second?: ComparedBirth;
+  /** The instant the running dasha lords are compared at, a Julian day (UTC); each birth's own when left out. */
+  readonly at?: number;
+}
+
+/** A placement as one side reads it: the sign, and where in the circle and the sign it stands. */
+export interface SignPlacement {
+  readonly sign: Rashi;
+  /** The longitude in that side's zodiac, degrees. */
+  readonly longitudeDeg: number;
+  /** Degrees into the sign, 0 to 30. */
+  readonly degreesInSign: number;
+}
+
+/** The Moon's star and pada as one side reads it. */
+export interface MoonStar {
+  readonly nakshatra: Nakshatra;
+  /** 1 to 4. */
+  readonly pada: number;
+  /** The Moon's longitude in that side's zodiac, degrees. */
+  readonly longitudeDeg: number;
+}
+
+/** The period of one dasha level running at the instant compared. */
+export interface RunningLord {
+  readonly lord: Graha;
+  /** The sign, for a sign dasha; `null` for a graha's. */
+  readonly sign: Rashi | null;
+  readonly interval: Interval;
+}
+
+/** What `chart.disagreements` answers, frozen to its leaves: only what differs. */
+export interface ChartDisagreements {
+  /** The profile the other context resolved. */
+  readonly otherProfile: string;
+  /** The other context's settings hash, so a stored comparison is known stale when either side changes. */
+  readonly otherSettingsHash: string;
+  /** The instant the dasha lords were compared at; `null` for each birth's own. */
+  readonly at: number | null;
+  /** How many facts were compared: the lagna, each graha, the nakshatra, each dasha level and each rule. */
+  readonly compared: number;
+  /** The lagna, when its sign differs. */
+  readonly lagna: { readonly first: SignPlacement; readonly second: SignPlacement } | null;
+  /** Each graha whose sign differs. */
+  readonly grahas: readonly { readonly graha: Graha; readonly first: SignPlacement; readonly second: SignPlacement }[];
+  /** The Moon's nakshatra, when it or its pada differs. */
+  readonly nakshatra: { readonly first: MoonStar; readonly second: MoonStar } | null;
+  /** Each dasha level whose running lord differs; a side whose periods do not reach the instant is `null`. */
+  readonly dashas: readonly {
+    readonly system: DashaSystem | DashaKey;
+    readonly level: number;
+    readonly first: RunningLord | null;
+    readonly second: RunningLord | null;
+  }[];
+  /** Each rule one side holds and the other does not, or with another net status. */
+  readonly yogas: readonly {
+    readonly rule: string;
+    readonly category: string;
+    readonly first: 'active' | 'partially-cancelled' | 'fully-cancelled' | null;
+    readonly second: 'active' | 'partially-cancelled' | 'fully-cancelled' | null;
+  }[];
+  /** The first chart's, which sealed the record; its `inputHash` is the request's. */
+  readonly provenance: Provenance;
 }
 
 /**

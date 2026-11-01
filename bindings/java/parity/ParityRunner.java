@@ -1643,6 +1643,7 @@ public final class ParityRunner {
             surface("chart.found_many", () -> ctx.chart().foundMany(new double[] {0}, place, 0, ChartOptions.none()));
             surface("chart.rashifal", () -> ctx.chart().rashifal(null));
             surface("chart.rashifal_many", () -> ctx.chart().rashifalMany(List.of(), null));
+            surface("chart.disagreements", () -> ctx.chart().disagreements(ctx, null));
             surface("almanac.of", () -> ctx.almanac().of(day, day, place, 0));
             surface("almanac.festivals", () -> ctx.almanac().festivals(day, day, place, 0, null));
             surface("almanac.disagreements", () -> ctx.almanac().disagreements(ctx, day, day, place, 0, true, null));
@@ -2067,6 +2068,7 @@ public final class ParityRunner {
         Ghata ghata = birth.ghata();
         put(c + "-avakahada-ghata", ghata.chandra().fullKey() + " " + ghata.tithi().fullKey() + " "
                 + ghata.vara().fullKey() + " " + ghata.nakshatra().fullKey());
+        put(c + "-avakahada-paya", birth.payaByNakshatra().fullKey() + " " + birth.payaByHouse().fullKey());
         Moment fell = chart.moment().orElseThrow();
         put(c + "-moment", fell.rising().sign().fullKey() + " " + bound(fell.rising().rose()) + " "
                 + bound(fell.rising().sets()) + " " + fell.eclipse().kind().key() + " "

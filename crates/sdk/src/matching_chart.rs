@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_chart::foundation::ChartFoundation;
-use teistro_core::catalogue::Graha;
+use teistro_core::catalogue::{Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_matching::{
     AshtaKoota, Avakahada, KootaRules, Kuja, KujaNative, KujaRules, KujaSky, MarriageDosha,
@@ -305,8 +305,10 @@ pub(crate) fn avakahada_of(foundation: &ChartFoundation) -> Result<Avakahada, Er
         .with_hint("found it under a sidereal profile, such as the default"));
     }
     let moon = longitude(foundation, Graha::Moon, FIELD)?;
+    let lagna = Rashi::of_longitude(foundation.lagna_deg);
     Native::of_moon(moon)
         .and_then(avakahada)
+        .map(|read| read.with_lagna(lagna))
         .map_err(|error| error.under(FIELD))
 }
 

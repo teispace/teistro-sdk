@@ -31,6 +31,7 @@ public final class Requests {
             Map.entry("calendar.add", AddAsked::of),
             Map.entry("calendar.between", BetweenAsked::of),
             Map.entry("calendar.convert", CalendarAsked::of),
+            Map.entry("chart.disagreements", ChartDisagreementsRequest::of),
             Map.entry("chart.found", ChartFoundRequest::of),
             Map.entry("chart.rashifal", BatchAsked::of),
             Map.entry("intl.date", DateTextRequest::of),

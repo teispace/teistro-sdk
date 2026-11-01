@@ -305,6 +305,7 @@ from ._requests import (
     ChakraPortion as ChakraPortion,
     ChakrayusRules as ChakrayusRules,
     ChaldeanCompound as ChaldeanCompound,
+    ChartDisagreementsRequest as ChartDisagreementsRequest,
     ChartFoundRequest as ChartFoundRequest,
     CircumstanceRequest as CircumstanceRequest,
     CircumstanceRules as CircumstanceRules,
@@ -998,6 +999,7 @@ from .catalogue import (
     MuhurtaNature,
     Nadi,
     Parity,
+    Paya,
     PointFamily,
     Rising,
     Ritu,
@@ -1012,6 +1014,7 @@ from .catalogue import (
     StarClass,
     State,
     Tatwa,
+    Tridosha,
     TithiClass,
     Varna,
     YearOffice,
@@ -1508,8 +1511,18 @@ __all__ = [
     "PublishedReasons",
     "ReckonedPlace",
     "PublishedUnplaced",
+    "ChartDisagreements",
+    "ComparedBirth",
+    "DashaDisagreement",
     "DayDisagreement",
     "DayDisagreements",
+    "GrahaDisagreement",
+    "LagnaDisagreement",
+    "MoonStar",
+    "NakshatraDisagreement",
+    "RunningLord",
+    "SignPlacement",
+    "YogaDisagreement",
     "Disagreements",
     "EkadashiDisagreement",
     "FestivalDisagreement",
@@ -2091,6 +2104,7 @@ __all__ = [
     "MuhurtaNature",
     "MuhurtaYoga",
     "Nadi",
+    "Paya",
     "Paksha",
     "Panchaka",
     "Parity",
@@ -2110,6 +2124,7 @@ __all__ = [
     "StarClass",
     "State",
     "Tatwa",
+    "Tridosha",
     "Tithi",
     "TithiClass",
     "Vara",
@@ -3212,6 +3227,45 @@ class ChartArea(_Area):
             self._context._through_provider(lambda: self._context.inner.chart_layout_row(named))
         )
         return row
+
+    def disagreements(
+        self,
+        other: "Context",
+        *,
+        first: "ComparedBirth",
+        second: Optional["ComparedBirth"] = None,
+        at: Optional[float] = None,
+    ) -> "ChartDisagreements":
+        """**Where two charts disagree** (`03-design/chart-disagreements.md`):
+        `first` founded under this context, `second` (the first's birth
+        again when left out) under `other`, and only the facts that differ,
+        each with both sides: the lagna's sign, each graha's sign, the
+        Moon's nakshatra and pada, each dasha level's running lord at `at`
+        (each birth's own when left out) and each rule one side holds and
+        the other does not. Pass this context again as `other` to compare
+        two births under one setting. A side naming no dasha system is
+        read under Vimshottari; the rules are compared when either side
+        names `rules`.
+
+        >>> # kp = Context(profile="kp-default", ephemeris=teimeris())
+        >>> # birth = ComparedBirth(instant=2447000.25, place=kathmandu, utc_offset_seconds=20700)
+        >>> # found = classical.chart.disagreements(kp, first=birth)
+        >>> # found.lagna  # None when both lagnas fall in one sign
+        """
+        if not isinstance(other, Context):
+            raise TeistroError(
+                Status.INVALID_ARG, "disagreements compares this context with another Context", field="other"
+            )
+        asked: Dict[str, Any] = {"first": first._asked()}
+        if second is not None:
+            asked["second"] = second._asked()
+        if at is not None:
+            asked["at"] = at
+        theirs = other.inner
+        answered = self._context._through_provider(
+            lambda: other._through_provider(lambda: self._context.inner.chart_disagreements(theirs, json.dumps(asked)))
+        )
+        return _chart_disagreements_answer(answered)
 
     def found(
         self,
@@ -8363,6 +8417,12 @@ class Avakahada:
     ghata: Ghata
     """The ghata chakra of the Moon's sign: what strikes the native (Muhurta Chintamani XI vv. 27–30, C758)."""
 
+    paya_by_nakshatra: Paya
+    """The birth paya by the Moon's nakshatra (Vishwavidyalaya Panchang, C1106)."""
+
+    paya_by_house: Paya
+    """The birth paya by the Moon's house counted from the lagna's sign (Sangraha Shiromani XIII v. 92, C1105, C1107)."""
+
 
 @dataclass(frozen=True)
 class RisingSign:
@@ -10458,6 +10518,162 @@ class Disagreements:
 
     days: Optional[DayDisagreements]
     festivals: Optional[FestivalDisagreements]
+
+
+@dataclass(frozen=True)
+class ComparedBirth:
+    """One birth of a chart comparison (`chart.disagreements`): the fields
+    of a chart request a comparison reads."""
+
+    instant: float
+    """The instant, a Julian day (UTC)."""
+
+    place: Observer
+    """Where."""
+
+    utc_offset_seconds: int
+    """The local clock's offset from UTC, east positive."""
+
+    kind: Optional[ChartKind] = None
+    """A chart kind; natal when left out."""
+
+    dashas: Sequence[Union[DashaSystem, str]] = ()
+    """The dasha systems compared; Vimshottari when none is named."""
+
+    rules: Optional[RuleRequest] = None
+    """The rules compared, when either side names some."""
+
+    def _asked(self) -> Dict[str, Any]:
+        asked: Dict[str, Any] = {
+            "instant": self.instant,
+            "latitudeDeg": self.place.latitude_deg,
+            "longitudeDeg": self.place.longitude_deg,
+            "altitudeM": self.place.altitude_m,
+            "utcOffsetSeconds": self.utc_offset_seconds,
+        }
+        if self.kind is not None:
+            asked["kind"] = self.kind.key
+        if self.dashas:
+            asked["dashas"] = [system.full_key if isinstance(system, DashaSystem) else system for system in self.dashas]
+        rules = _rules_json(self.rules)
+        if rules is not None:
+            asked["rules"] = json.loads(rules)
+        return asked
+
+
+@dataclass(frozen=True)
+class SignPlacement:
+    """A placement as one side reads it: the sign, and where in the circle
+    and the sign it stands, which is the reason when two signs differ."""
+
+    sign: Rashi
+    longitude_deg: float
+    """The longitude in that side's zodiac, degrees."""
+
+    degrees_in_sign: float
+    """Degrees into the sign, 0 to 30."""
+
+
+@dataclass(frozen=True)
+class LagnaDisagreement:
+    """The lagna in two signs."""
+
+    first: SignPlacement
+    second: SignPlacement
+
+
+@dataclass(frozen=True)
+class GrahaDisagreement:
+    """A graha in two signs."""
+
+    graha: Graha
+    first: SignPlacement
+    second: SignPlacement
+
+
+@dataclass(frozen=True)
+class MoonStar:
+    """The Moon's star and pada as one side reads it."""
+
+    nakshatra: Nakshatra
+    pada: int
+    """1 to 4."""
+
+    longitude_deg: float
+    """The Moon's longitude in that side's zodiac, degrees."""
+
+
+@dataclass(frozen=True)
+class NakshatraDisagreement:
+    """The Moon's nakshatra or pada, differing."""
+
+    first: MoonStar
+    second: MoonStar
+
+
+@dataclass(frozen=True)
+class RunningLord:
+    """The period of one dasha level running at the instant compared."""
+
+    lord: Graha
+    sign: Optional[Rashi]
+    """The sign, for a sign dasha; `None` for a graha's."""
+
+    interval: Interval
+
+
+@dataclass(frozen=True)
+class DashaDisagreement:
+    """One dasha level whose running lord differs; a side whose periods do
+    not reach the instant is `None`."""
+
+    system: str
+    """The system's full key (`dasha_system.VIMSHOTTARI`), registered or catalogued."""
+
+    level: int
+    """1 for the mahadasha, 2 for the antardasha, and on."""
+
+    first: Optional[RunningLord]
+    second: Optional[RunningLord]
+
+
+@dataclass(frozen=True)
+class YogaDisagreement:
+    """A rule one side holds and the other does not, or with another net
+    status: `active`, `partially-cancelled` or `fully-cancelled`, `None`
+    where it does not hold."""
+
+    rule: str
+    category: str
+    first: Optional[str]
+    second: Optional[str]
+
+
+@dataclass(frozen=True)
+class ChartDisagreements:
+    """What `chart.disagreements` answers: only the facts that differ."""
+
+    other_profile: str
+    """The profile the other context resolved."""
+
+    other_settings_hash: str
+    """The other context's settings hash, so a stored comparison is known
+    stale when either side changes."""
+
+    at: Optional[float]
+    """The instant the dasha lords were compared at; `None` for each
+    birth's own."""
+
+    compared: int
+    """How many facts were compared."""
+
+    lagna: Optional[LagnaDisagreement]
+    grahas: Tuple[GrahaDisagreement, ...]
+    nakshatra: Optional[NakshatraDisagreement]
+    dashas: Tuple[DashaDisagreement, ...]
+    yogas: Tuple[YogaDisagreement, ...]
+    provenance: Provenance
+    """The first chart's, which sealed the record; its `input_hash` is the request's."""
 
 
 @dataclass(frozen=True)
@@ -13734,6 +13950,8 @@ DossierSection = Literal[
     "ASPECTS",
     "AVAKAHADA",
     "RULES",
+    "LONGEVITY",
+    "MARAKAS",
     "GOCHAR",
 ]
 """A section of a chart's dossier, in the dossier's own order
@@ -17058,6 +17276,64 @@ def _disagreements_answer(text: str) -> "Disagreements":
     return Disagreements(days=days, festivals=festivals)
 
 
+def _chart_disagreements_answer(text: str) -> ChartDisagreements:
+    """`ts_chart_disagreements`'s answer as frozen records, members as this
+    binding's enums, with the provenance beside the record."""
+    answer = json.loads(text)
+    value = answer["value"]
+
+    def placed(raw: Mapping[str, Any]) -> SignPlacement:
+        return SignPlacement(
+            sign=_member(Rashi, raw["sign"]),
+            longitude_deg=float(raw["longitudeDeg"]),
+            degrees_in_sign=float(raw["degreesInSign"]),
+        )
+
+    def star(raw: Mapping[str, Any]) -> MoonStar:
+        return MoonStar(
+            nakshatra=_member(Nakshatra, raw["nakshatra"]), pada=raw["pada"], longitude_deg=float(raw["longitudeDeg"])
+        )
+
+    def running(raw: Optional[Mapping[str, Any]]) -> Optional[RunningLord]:
+        if raw is None:
+            return None
+        sign = raw["sign"]
+        return RunningLord(
+            lord=_member(Graha, raw["lord"]),
+            sign=None if sign is None else _member(Rashi, sign),
+            interval=_interval(raw["interval"]),
+        )
+
+    lagna = value["lagna"]
+    nakshatra = value["nakshatra"]
+    at = value["at"]
+    return ChartDisagreements(
+        other_profile=value["otherProfile"],
+        other_settings_hash=value["otherSettingsHash"],
+        at=None if at is None else float(at),
+        compared=value["compared"],
+        lagna=None if lagna is None else LagnaDisagreement(first=placed(lagna["first"]), second=placed(lagna["second"])),
+        grahas=tuple(
+            GrahaDisagreement(graha=_member(Graha, one["graha"]), first=placed(one["first"]), second=placed(one["second"]))
+            for one in value["grahas"]
+        ),
+        nakshatra=None
+        if nakshatra is None
+        else NakshatraDisagreement(first=star(nakshatra["first"]), second=star(nakshatra["second"])),
+        dashas=tuple(
+            DashaDisagreement(
+                system=one["system"], level=one["level"], first=running(one["first"]), second=running(one["second"])
+            )
+            for one in value["dashas"]
+        ),
+        yogas=tuple(
+            YogaDisagreement(rule=one["rule"], category=one["category"], first=one["first"], second=one["second"])
+            for one in value["yogas"]
+        ),
+        provenance=decode_provenance(answer["provenance"]),
+    )
+
+
 def _years_answer(text: str) -> LunarYears:
     """The `years` section: the envelope's years as frozen records, with
     the provenance beside them."""
@@ -19345,6 +19621,8 @@ class ChartBatch:
                     vara=Vara(c.ghata_vara[chart]),
                     nakshatra=Nakshatra(c.ghata_nakshatra[chart]),
                 ),
+                paya_by_nakshatra=Paya(c.paya_by_nakshatra[chart]),
+                paya_by_house=Paya(c.paya_by_house[chart]),
             )
             for chart in range(c.length)
         ]

@@ -1,0 +1,41 @@
+kind: paya
+number: 90
+version: 1
+doc: "The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107)."
+members:
+  - key: SUVARNA
+    id: 0
+    doc: "Gold: the Moon in the 1st, 6th or 11th from the lagna, or in Jyeshtha to Shatabhisha; the best"
+    sources:
+      - text: "Vishwavidyalaya Panchang, Kameshwar Singh Darbhanga Sanskrit University, 2005–06"
+        ref: "स्वर्णादिचरणकजन्मज्ञानम्, leaf 10: १।६।११ स्थिते स्वर्णपादे; ज्येष्ठादिसप्तसु स्वर्णपादे; स्वर्णपादेऽत्युत्कृष्टं"
+      - text: "Sangraha Shiromani (Chambal Archives scan)"
+        ref: "XIII v. 92, p. 142: जन्माङ्गरुद्रेषु सुवर्णपादं"
+    mark: V
+  - key: RAJATA
+    id: 1
+    doc: "Silver: the Moon in the 2nd, 5th or 9th from the lagna, or in Ardra to Anuradha; good"
+    sources:
+      - text: "Vishwavidyalaya Panchang, Kameshwar Singh Darbhanga Sanskrit University, 2005–06"
+        ref: "स्वर्णादिचरणकजन्मज्ञानम्, leaf 10: २।५।९ स्थिते रजतपादे; आर्द्रादिद्वादशनक्षत्रेषु रजतपादे; रजतपादे शोभनं"
+      - text: "Sangraha Shiromani (Chambal Archives scan)"
+        ref: "XIII v. 92, p. 142: द्विपञ्चनन्दै रजतस्य पादं"
+    mark: V
+  - key: TAMRA
+    id: 2
+    doc: "Copper: the Moon in the 3rd, 7th or 10th from the lagna, or in Purva Bhadrapada to Bharani; middling"
+    sources:
+      - text: "Vishwavidyalaya Panchang, Kameshwar Singh Darbhanga Sanskrit University, 2005–06"
+        ref: "स्वर्णादिचरणकजन्मज्ञानम्, leaf 10: ३।७।१० स्थिते ताम्रपादे; पूर्वभाद्रादिपञ्चसु ताम्रपादे; ताम्रपादे मध्यमं"
+      - text: "Sangraha Shiromani (Chambal Archives scan)"
+        ref: "XIII v. 92, p. 142: त्रिसप्तदिक्षु ताम्रपादं"
+    mark: V
+  - key: LOHA
+    id: 3
+    doc: "Iron: the Moon in the 4th, 8th or 12th from the lagna, or in Krittika to Mrigashira; poor"
+    sources:
+      - text: "Vishwavidyalaya Panchang, Kameshwar Singh Darbhanga Sanskrit University, 2005–06"
+        ref: "स्वर्णादिचरणकजन्मज्ञानम्, leaf 10: ४।८।१२ स्थिते लौहपादे; कृत्तिकादित्रिषु लौहपादे; लौहपादे हीनं"
+      - text: "Sangraha Shiromani (Chambal Archives scan)"
+        ref: "XIII v. 92, p. 142: वेदाष्टसार्केष्विह लोहपादं"
+    mark: V

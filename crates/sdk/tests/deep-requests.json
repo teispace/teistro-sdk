@@ -2639,6 +2639,34 @@
     }
   },
   {
+    "record": "chart.disagreements",
+    "request": {
+      "at": 1.5,
+      "first": {
+        "instant": 2447000.25,
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700,
+        "dashas": [
+          "VIMSHOTTARI"
+        ],
+        "rules": {
+          "shipped": [
+            "YOGAS"
+          ]
+        }
+      },
+      "second": {
+        "instant": 2447000.75,
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700
+      }
+    }
+  },
+  {
     "record": "chart.found",
     "request": {
       "altitudeM": 1.5,
@@ -2963,6 +2991,12 @@
       "dossier": {
         "at": 1.5,
         "dashaDepth": 1,
+        "drop": [
+          "x"
+        ],
+        "dropCategories": [
+          "x"
+        ],
         "preset": "FAMILY",
         "sections": [
           "x"

@@ -4352,6 +4352,64 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// **Where two charts disagree** (`03-design/chart-disagreements.md`): the
+    /// first chart founded under `context`, the second under `other`, and
+    /// answers with `{value, provenance}` as canonical JSON, sealed by the
+    /// first chart's provenance with the whole request as its input, every
+    /// catalogue member a full key. Pass `context` again as `other` to compare
+    /// two births under one setting.
+    ///
+    /// `value` is `{otherProfile, otherSettingsHash, at, compared, lagna,
+    /// grahas, nakshatra, dashas, yogas}`: `lagna` null unless its sign
+    /// differs, else `{first, second}`, each side `{sign, longitudeDeg,
+    /// degreesInSign}`; `grahas` each graha both place whose sign differs, as
+    /// `{graha, first, second}`; `nakshatra` null unless the Moon's star or
+    /// pada differs, else `{first, second}`, each `{nakshatra, pada,
+    /// longitudeDeg}`; `dashas` each level both carry whose running lord
+    /// differs, `{system, level, first, second}`, each side `{lord, sign,
+    /// interval}` or null; and `yogas` each rule one side holds and the other
+    /// does not, or with another status, `{rule, category, first, second}`.
+    /// `compared` counts the facts read.
+    ///
+    /// `request_json` is `{"first", "second", "at"}`: `first` a chart request
+    /// of one birth (`instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+    /// `utcOffsetSeconds`, and any `dashas` and `rules` record), `second`
+    /// another, optional (the first's birth again), and `at` the UTC Julian
+    /// day the running dasha lords are compared at (each birth's own when left
+    /// out). A side naming no dasha system is read under Vimshottari. A key it
+    /// does not read, a chart request its reader refuses or one of more than
+    /// one birth is `INVALID_ARG`, named under `disagreements`; a null `other`
+    /// is `INVALID_ARG` naming `other`. Either context without an ephemeris is
+    /// `CAPABILITY`.
+    #[napi]
+    pub fn chart_disagreements(
+        &self,
+        env: Env,
+        other: &Context,
+        request_json: String,
+    ) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        other.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::chart::ts_chart_disagreements(
+                self.handle,
+                other.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        let left = self.leave();
+        let other_left = other.leave();
+        left?;
+        other_left?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Founds a chart at an instant and a place and answers with its blob:
     /// where every graha stands, in which bhava under both readings, in
     /// which zodiac, on which day, at what time of that day.

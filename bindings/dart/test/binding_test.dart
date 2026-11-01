@@ -1645,6 +1645,77 @@ void _engineTests() {
     );
   });
 
+  /// Two births twelve hours apart under one setting, and one birth under
+  /// two (`03-design/chart-disagreements.md`): half a day turns the lagna
+  /// half the circle and moves the Moon a pada at least, and one context
+  /// compared with itself disagrees on nothing.
+  test('two charts say where they disagree', () {
+    final classical = teistro.context(
+      profile: 'parashari-classical',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(classical.dispose);
+    final kp = teistro.context(
+      profile: 'kp-default',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(kp.dispose);
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final birth = ComparedBirth(
+      instant: 2447000.25,
+      place: kathmandu,
+      utcOffsetSeconds: 20700,
+    );
+    final twins = classical.chart.disagreements(
+      classical,
+      first: birth,
+      second: ComparedBirth(
+        instant: 2447000.75,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+      ),
+    );
+    expect(twins.lagna, isNotNull);
+    expect(twins.lagna!.first.sign, isNot(twins.lagna!.second.sign));
+    expect(twins.lagna!.first.degreesInSign, inInclusiveRange(0, 30));
+    expect(twins.nakshatra, isNotNull);
+    expect(twins.compared, greaterThanOrEqualTo(12));
+    expect(twins.otherSettingsHash, classical.settingsHash);
+
+    final same = classical.chart.disagreements(classical, first: birth);
+    expect(same.lagna, isNull);
+    expect(same.nakshatra, isNull);
+    expect([...same.grahas, ...same.dashas, ...same.yogas], isEmpty);
+    final settings = classical.chart.disagreements(
+      kp,
+      first: birth,
+      at: 2461000.5,
+    );
+    expect(settings.otherProfile, 'kp-default');
+    expect(settings.at, 2461000.5);
+    expect(
+      () => classical.chart.disagreements(
+        kp,
+        first: ComparedBirth(
+          instant: 2447000.25,
+          place: kathmandu,
+          utcOffsetSeconds: 999999,
+        ),
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          startsWith('disagreements.first'),
+        ),
+      ),
+    );
+  });
+
   /// A chain is **ordered and explicit** (ADR-0029): tried in order, and
   /// a refusal names every entry that failed rather than only the last,
   /// which would hide the one the caller actually wanted. Needs no
@@ -6453,6 +6524,19 @@ void _engineTests() {
         const counts = [1, 5, 9, 2, 6, 10, 3, 7, 4, 8, 11, 12];
         final at = read.rashi.id;
         expect(read.ghata.chandra, Rashi.byId((at + counts[at] - 1) % 12));
+        // The paya by star is the Vishwavidyalaya Panchang's four runs
+        // (C1106); by house it is read from the lagna (C1105).
+        final star = read.nakshatra.id;
+        final byStar =
+            star >= 5 && star <= 16
+                ? Paya.rajata
+                : star >= 17 && star <= 23
+                ? Paya.suvarna
+                : star >= 2 && star <= 4
+                ? Paya.loha
+                : Paya.tamra;
+        expect(read.payaByNakshatra, byStar);
+        expect(read.payaByHouse, isNot(Paya.unknown));
       }
       expect(padas.length, greaterThan(20));
       ctx.dispose();

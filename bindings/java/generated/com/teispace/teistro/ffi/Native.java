@@ -4060,6 +4060,7 @@ public final class Native {
         "ts_calendar_jd_of_fixed",
         "ts_calendar_fixed_of_jd",
         "ts_chart_layout_row",
+        "ts_chart_disagreements",
         "ts_chart_found",
         "ts_time_resolve",
         "ts_time_civil",
@@ -4350,6 +4351,39 @@ public final class Native {
      * `INVALID_ARG` with the keys the context knows as the hint.
      */
     public final MethodHandle ts_chart_layout_row;
+
+    /**
+     * **Where two charts disagree** (`03-design/chart-disagreements.md`): the
+     * first chart founded under `context`, the second under `other`, and
+     * answers with `{value, provenance}` as canonical JSON, sealed by the
+     * first chart's provenance with the whole request as its input, every
+     * catalogue member a full key. Pass `context` again as `other` to compare
+     * two births under one setting.
+     *
+     * `value` is `{otherProfile, otherSettingsHash, at, compared, lagna,
+     * grahas, nakshatra, dashas, yogas}`: `lagna` null unless its sign
+     * differs, else `{first, second}`, each side `{sign, longitudeDeg,
+     * degreesInSign}`; `grahas` each graha both place whose sign differs, as
+     * `{graha, first, second}`; `nakshatra` null unless the Moon's star or
+     * pada differs, else `{first, second}`, each `{nakshatra, pada,
+     * longitudeDeg}`; `dashas` each level both carry whose running lord
+     * differs, `{system, level, first, second}`, each side `{lord, sign,
+     * interval}` or null; and `yogas` each rule one side holds and the other
+     * does not, or with another status, `{rule, category, first, second}`.
+     * `compared` counts the facts read.
+     *
+     * `request_json` is `{"first", "second", "at"}`: `first` a chart request
+     * of one birth (`instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+     * `utcOffsetSeconds`, and any `dashas` and `rules` record), `second`
+     * another, optional (the first's birth again), and `at` the UTC Julian
+     * day the running dasha lords are compared at (each birth's own when left
+     * out). A side naming no dasha system is read under Vimshottari. A key it
+     * does not read, a chart request its reader refuses or one of more than
+     * one birth is `INVALID_ARG`, named under `disagreements`; a null `other`
+     * is `INVALID_ARG` naming `other`. Either context without an ephemeris is
+     * `CAPABILITY`.
+     */
+    public final MethodHandle ts_chart_disagreements;
 
     /**
      * Founds a chart at an instant and a place and answers with its blob:
@@ -5342,6 +5376,7 @@ public final class Native {
         ts_calendar_jd_of_fixed = linker.downcallHandle(symbols.find("ts_calendar_jd_of_fixed").orElseThrow(() -> missing("ts_calendar_jd_of_fixed")), FunctionDescriptor.of(JAVA_DOUBLE, JAVA_LONG));
         ts_calendar_fixed_of_jd = linker.downcallHandle(symbols.find("ts_calendar_fixed_of_jd").orElseThrow(() -> missing("ts_calendar_fixed_of_jd")), FunctionDescriptor.of(JAVA_LONG, JAVA_DOUBLE, ADDRESS));
         ts_chart_layout_row = linker.downcallHandle(symbols.find("ts_chart_layout_row").orElseThrow(() -> missing("ts_chart_layout_row")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_chart_disagreements = linker.downcallHandle(symbols.find("ts_chart_disagreements").orElseThrow(() -> missing("ts_chart_disagreements")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_chart_found = linker.downcallHandle(symbols.find("ts_chart_found").orElseThrow(() -> missing("ts_chart_found")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_time_resolve = linker.downcallHandle(symbols.find("ts_time_resolve").orElseThrow(() -> missing("ts_time_resolve")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_time_civil = linker.downcallHandle(symbols.find("ts_time_civil").orElseThrow(() -> missing("ts_time_civil")), FunctionDescriptor.of(JAVA_INT, ADDRESS, JAVA_DOUBLE, ADDRESS, JAVA_SHORT, ADDRESS, ADDRESS));
