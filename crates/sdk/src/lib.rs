@@ -64,6 +64,7 @@ pub use area::MuhurtaDays;
 pub use area::NumerologyArea;
 #[cfg(feature = "research")]
 pub use area::ResearchArea;
+pub use area::VerifyArea;
 pub use area::{
     AlmanacAnswer, AlmanacArea, AlmanacRequest, AlmanacSections, CalendarArea, DayDisagreement,
     DayDisagreements, DisagreementRequest, Disagreements, EkadashiDisagreement, EngineArea,
@@ -565,6 +566,12 @@ pub mod research {
         MAX_UNCERTAINTY_MINUTES, Recombine, Referents, Study, Subject,
     };
     pub use teistro_research::*;
+}
+/// What a text claims of the time, checked against what the SDK computes
+/// (`03-design/lexicon.md` §3): what `sdk.verify().claims` takes and
+/// answers with.
+pub mod verify {
+    pub use crate::area::verify::{Claim, Claims, ClaimsRequest, Unread, Verdict};
 }
 // Prashna: the query chart read as Shatpanchashika prints it
 // (`03-design/prashna.md`).

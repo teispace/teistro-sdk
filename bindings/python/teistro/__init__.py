@@ -458,6 +458,7 @@ from ._requests import (
     LexiconRequest as LexiconRequest,
     LookupRequest as LookupRequest,
     DatesRequest as DatesRequest,
+    ClaimsRequest as ClaimsRequest,
     WordsAmount as WordsAmount,
     WordsAmountValue as WordsAmountValue,
     WordsDigits as WordsDigits,
@@ -1204,6 +1205,7 @@ __all__ = [
     "LexiconRequest",
     "LookupRequest",
     "DatesRequest",
+    "ClaimsRequest",
     "WordsAmount",
     "WordsAmountValue",
     "WordsDigits",
@@ -1223,6 +1225,11 @@ __all__ = [
     "DateReading",
     "FoundDate",
     "FoundDates",
+    # What a text claims of the time, checked.
+    "VerifyArea",
+    "Claim",
+    "Claims",
+    "ClaimsAnswer",
     "InWords",
     "AmountInWords",
     # The transit hit list, and its names.
@@ -4835,6 +4842,95 @@ class ResearchTested:
     provenance: Provenance
 
 
+class VerifyArea(_Area):
+    """`sdk.verify`: what a text claims of the time, checked against what
+    the almanac computes at an instant and a place
+    (`03-design/lexicon.md` §3)."""
+
+    def claims(self, request: ClaimsRequest) -> "ClaimsAnswer":
+        """Every claim a text makes of the time, each `HELD`,
+        `CONTRADICTED` (with the member computed) or `UNREAD` (with why),
+        judged against `almanac.sankalpa` at the instant. The grammar is
+        narrow: a member of a day's kind, a graha in a sign, the Moon in a
+        nakshatra.
+
+        >>> # sdk.verify.claims({"text": "आज एकादशी हो", "at": 2461055.59375, "latitudeDeg": 27.7172,
+        >>> #     "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}).value.claims[0].verdict
+        """
+        envelope = json.loads(
+            self._context._through_provider(lambda: self._context.inner.verify_claims(json.dumps(request)))
+        )
+        return ClaimsAnswer(
+            value=Claims(
+                claims=tuple(
+                    Claim(
+                        start=raw["start"],
+                        end=raw["end"],
+                        text=raw["text"],
+                        kind=raw["kind"],
+                        graha=raw["graha"],
+                        claimed=tuple(raw["claimed"]),
+                        verdict=raw["verdict"],
+                        computed=raw["computed"],
+                        reason=raw["reason"],
+                    )
+                    for raw in envelope["value"]["claims"]
+                )
+            ),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
+
+
+@dataclass(frozen=True)
+class Claim:
+    """One claim a text makes of the time, and what it was found to be."""
+
+    start: int
+    """Where the span naming the member begins, counted in code points."""
+
+    end: int
+    """Where it ends, exclusive, in the same count."""
+
+    text: str
+    """The span's text."""
+
+    kind: Optional[str]
+    """The kind claimed (`tithi`, `rashi`); `None` on a claim ambiguous
+    between kinds."""
+
+    graha: Optional[str]
+    """The graha whose sign or nakshatra is claimed, a full key."""
+
+    claimed: Tuple[str, ...]
+    """Every member the span may name: the claim holds when the SDK
+    computes any of them."""
+
+    verdict: Literal["HELD", "CONTRADICTED", "UNREAD"]
+    """What the claim was found to be."""
+
+    computed: Optional[str]
+    """The member the SDK computes, on a claim judged."""
+
+    reason: Optional[Literal["QUESTION", "NEGATED", "OTHER_TIME", "NOT_COMPUTED", "AMBIGUOUS"]]
+    """Why the claim was not judged, on one unread."""
+
+
+@dataclass(frozen=True)
+class Claims:
+    """Every claim a text makes, in the text's order."""
+
+    claims: Tuple[Claim, ...]
+
+
+@dataclass(frozen=True)
+class ClaimsAnswer:
+    """What `verify.claims` answers."""
+
+    value: Claims
+    provenance: Provenance
+    """What computed the sankalpa the claims were judged against."""
+
+
 class ResearchArea(_Area):
     """`sdk.research` — counts and permutation tests over a batch of births
     (`03-design/research.md`). Every rule of `rules` is a predicate, read
@@ -5095,6 +5191,11 @@ class Context:
         """The naming of a child: syllables, names read and checked, and a
         name book."""
         return NamingArea(self)
+
+    @cached_property
+    def verify(self) -> VerifyArea:
+        """What a text claims of the time, checked against the almanac."""
+        return VerifyArea(self)
 
     @cached_property
     def research(self) -> ResearchArea:

@@ -44,6 +44,7 @@ public final class Context implements AutoCloseable {
     private final MatchingArea matching = new MatchingArea(this);
     private final NumerologyArea numerology = new NumerologyArea(this);
     private final NamingArea naming = new NamingArea(this);
+    private final VerifyArea verify = new VerifyArea(this);
     private final ResearchArea research = new ResearchArea(this);
     private final Engine engine = new Engine(this);
     private final FrameArea frame;
@@ -481,6 +482,15 @@ public final class Context implements AutoCloseable {
      */
     public NamingArea naming() {
         return naming;
+    }
+
+    /**
+     * What a text claims of the time, checked against the almanac.
+     *
+     * @return the verify area of this context
+     */
+    public VerifyArea verify() {
+        return verify;
     }
 
     /**

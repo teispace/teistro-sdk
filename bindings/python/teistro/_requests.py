@@ -58,6 +58,7 @@ __all__ = [
     "CivilAsked",
     "ScaleRequest",
     "ResolveAsked",
+    "ClaimsRequest",
     "Anniversary",
     "AshauchRequest",
     "AshauchTable",
@@ -1557,6 +1558,34 @@ class ResolveAsked(TypedDict, total=False):
     time: Optional[CivilTime]
 
     zone: Required[ZoneSpec]
+
+
+class ClaimsRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+    """The place's height above sea level in metres, 0 when left out."""
+
+    at: Required[float]
+    """The instant the claims are judged at, a UTC Julian day."""
+
+    ayana: AyanaReckoning
+    """How the ayana is reckoned: `SIDEREAL`, at Makara and Karka sankranti, when left out."""
+
+    latitudeDeg: Required[float]
+    """The place's latitude, degrees north positive."""
+
+    locale: Optional[str]
+    """The locale whose names are searched (a BCP 47 tag, by RFC 4647 lookup); every loaded locale's when left out."""
+
+    longitudeDeg: Required[float]
+    """The place's longitude, degrees east positive."""
+
+    text: Required[str]
+    """The text whose claims are checked."""
+
+    utcOffsetSeconds: Required[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive."""
 
 
 class Anniversary(TypedDict, total=False):

@@ -419,6 +419,7 @@ pub fn records() -> Vec<Record> {
     all.extend(almanac_lookup_records());
     all.extend(time_records());
     all.extend(engine_records());
+    all.push(verify_record());
     all.sort_by_key(|record| record.name);
     all
 }
@@ -750,6 +751,23 @@ fn almanac_lookup_records() -> [Record; 6] {
             schemas: schemas!(crate::sankalpa_request::SankalpaAsked => crate::Sankalpa),
         },
     ]
+}
+
+/// What a text claims of the time, checked against the sankalpa at an
+/// instant and a place (`03-design/lexicon.md` §3), sealed with the
+/// sankalpa's provenance.
+fn verify_record() -> Record {
+    Record {
+        name: "verify.claims",
+        boundary: "ts_verify_claims",
+        title: "What a text claims of the time, each claim held, contradicted or unread",
+        reads: None,
+        run: |context, json| {
+            let asked = crate::verify::ClaimsRequest::from_json(json)?;
+            Answered::sealed(context.verify().claims(&asked)?)
+        },
+        schemas: schemas!(crate::area::verify::ClaimsAsked => crate::verify::Claims),
+    }
 }
 
 /// The engine passthrough (ADR-0030): what the engine says it offers,

@@ -107,6 +107,15 @@ out of any earlier period. No other period moves.
 - An observance kept or broken at moonrise carries `moonrise`, the instant and the place
   (SR-60); `ASHUNYA_SHAYANA` joins `DHARMASINDHU`, kept and broken at moonrise (DS p. 44).
 
+**What a text claims of the time, checked.**
+**Numbers:** none.
+- `sdk.verify().claims` in every binding and MCP (`verify.claims`, `ts_verify_claims`): the claims a text
+  makes of the time ("today is Ekadashi", "the Moon is in Rohini", "आज सोमबार हो"), found through the
+  lexicon, each `HELD`, `CONTRADICTED` with the member computed, or `UNREAD` with why (`QUESTION`,
+  `NEGATED`, `OTHER_TIME`, `NOT_COMPUTED`, `AMBIGUOUS`), judged against `almanac.sankalpa` at the
+  instant and the place and sealed with its provenance (A2-4, `03-design/lexicon.md` §3). The grammar is
+  narrow on purpose and the page says what it does not read.
+
 **The dates a text names.**
 **Numbers:** none.
 - `intl.dates` in every binding and MCP (`ts_intl_dates`): every Bikram Sambat and Gregorian date in a

@@ -2488,6 +2488,142 @@ final class MatchingArea extends _Area {
 /// `sdk.numerology` — a name and a birth date under Balliett's letter
 /// cycle and Cheiro's Chaldean table (`03-design/numerology.md`, C320 to
 /// C328). It reads no sky.
+/// `sdk.verify` — what a text claims of the time, checked against what the
+/// almanac computes at an instant and a place (`03-design/lexicon.md` §3).
+final class VerifyArea extends _Area {
+  const VerifyArea._(super.context);
+
+  /// Every claim a text makes of the time, each `HELD`, `CONTRADICTED`
+  /// (with the member computed) or `UNREAD` (with why), judged against
+  /// `almanac.sankalpa` at the instant. The grammar is narrow: a member of
+  /// a day's kind, a graha in a sign, the Moon in a nakshatra.
+  ///
+  /// ```dart
+  /// final checked = sdk.verify.claims(const ClaimsRequest(
+  ///   text: 'आज एकादशी हो', at: 2461055.59375,
+  ///   latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700,
+  /// ));
+  /// final verdict = checked.value.claims.first.verdict; // HELD or CONTRADICTED
+  /// ```
+  ClaimsAnswer claims(ClaimsRequest request) {
+    final envelope =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.verifyClaims(jsonEncode(request._wire)),
+              ),
+            )
+            as Map<String, Object?>;
+    final value = envelope['value']! as Map<String, Object?>;
+    return ClaimsAnswer(
+      value: Claims(
+        claims: List.unmodifiable(
+          (value['claims']! as List<Object?>).cast<Map<String, Object?>>().map(
+            (raw) => Claim(
+              start: raw['start']! as int,
+              end: raw['end']! as int,
+              text: raw['text']! as String,
+              kind: raw['kind'] as String?,
+              graha: raw['graha'] as String?,
+              claimed: List.unmodifiable(
+                (raw['claimed']! as List<Object?>).cast<String>(),
+              ),
+              verdict: raw['verdict']! as String,
+              computed: raw['computed'] as String?,
+              reason: raw['reason'] as String?,
+            ),
+          ),
+        ),
+      ),
+      provenance: Provenance.fromJson(
+        envelope['provenance']! as Map<String, Object?>,
+      ),
+    );
+  }
+}
+
+/// One claim a text makes of the time, and what it was found to be.
+final class Claim extends _Value {
+  const Claim({
+    required this.start,
+    required this.end,
+    required this.text,
+    this.kind,
+    this.graha,
+    required this.claimed,
+    required this.verdict,
+    this.computed,
+    this.reason,
+  });
+
+  /// Where the span naming the member begins, counted in code points.
+  final int start;
+
+  /// Where it ends, exclusive, in the same count.
+  final int end;
+
+  /// The span's text.
+  final String text;
+
+  /// The kind claimed (`tithi`, `rashi`); null on a claim ambiguous
+  /// between kinds.
+  final String? kind;
+
+  /// The graha whose sign or nakshatra is claimed, a full key.
+  final String? graha;
+
+  /// Every member the span may name: the claim holds when the SDK computes
+  /// any of them.
+  final List<String> claimed;
+
+  /// `HELD`, `CONTRADICTED` or `UNREAD`.
+  final String verdict;
+
+  /// The member the SDK computes, on a claim judged.
+  final String? computed;
+
+  /// Why the claim was not judged: `QUESTION`, `NEGATED`, `OTHER_TIME`,
+  /// `NOT_COMPUTED` or `AMBIGUOUS`.
+  final String? reason;
+
+  @override
+  List<Object?> get _fields => [
+    start,
+    end,
+    text,
+    kind,
+    graha,
+    claimed,
+    verdict,
+    computed,
+    reason,
+  ];
+}
+
+/// Every claim a text makes, in the text's order.
+final class Claims extends _Value {
+  const Claims({required this.claims});
+
+  /// The claims.
+  final List<Claim> claims;
+
+  @override
+  List<Object?> get _fields => [claims];
+}
+
+/// What `verify.claims` answers.
+final class ClaimsAnswer extends _Value {
+  const ClaimsAnswer({required this.value, required this.provenance});
+
+  /// The claims.
+  final Claims value;
+
+  /// What computed the sankalpa the claims were judged against.
+  final Provenance provenance;
+
+  @override
+  List<Object?> get _fields => [value, provenance];
+}
+
 final class NumerologyArea extends _Area {
   const NumerologyArea._(super.context);
 
@@ -2874,6 +3010,9 @@ final class Context {
   /// The naming of a child: syllables, names read and checked, and a name
   /// book.
   late final NamingArea naming = NamingArea._(this);
+
+  /// What a text claims of the time, checked against the almanac.
+  late final VerifyArea verify = VerifyArea._(this);
 
   /// Counts and permutation tests over a batch of births.
   late final ResearchArea research = ResearchArea._(this);

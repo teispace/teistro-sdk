@@ -242,6 +242,27 @@ void main() {
     ]);
   });
 
+  test('what a text claims of the time, checked against the almanac', () {
+    final ctx = context();
+    addTearDown(ctx.dispose);
+    final checked = ctx.verify.claims(
+      const ClaimsRequest(
+        text: 'आज एकादशी हो। The Sun is in Capricorn. Is the Moon in Rohini?',
+        at: 2461055.59375,
+        latitudeDeg: 27.7172,
+        longitudeDeg: 85.324,
+        altitudeM: 1400,
+        utcOffsetSeconds: 20700,
+      ),
+    );
+    final claims = checked.value.claims;
+    expect(claims.map((c) => c.kind), ['tithi', 'rashi', 'nakshatra']);
+    expect(claims[0].verdict, isNot('UNREAD'));
+    expect(claims[1].graha, 'graha.SUN');
+    expect(claims[1].verdict, isIn(['HELD', 'CONTRADICTED']));
+    expect([claims[2].verdict, claims[2].reason], ['UNREAD', 'QUESTION']);
+  });
+
   test('a date and a time as text and parts', () {
     final ctx = context();
     addTearDown(ctx.dispose);

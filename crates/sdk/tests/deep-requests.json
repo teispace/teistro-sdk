@@ -4366,5 +4366,18 @@
         "zone": "x"
       }
     }
+  },
+  {
+    "record": "verify.claims",
+    "request": {
+      "altitudeM": 1.5,
+      "at": 1.5,
+      "ayana": "TROPICAL",
+      "latitudeDeg": 1.5,
+      "locale": "x",
+      "longitudeDeg": 1.5,
+      "text": "x",
+      "utcOffsetSeconds": 1
+    }
   }
 ]

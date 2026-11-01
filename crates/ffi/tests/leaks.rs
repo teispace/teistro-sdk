@@ -213,7 +213,7 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
             Status::Ok
         );
     });
-    let entries: [JsonEntry; 11] = [
+    let entries: [JsonEntry; 12] = [
         teistro_ffi::navatara::ts_navatara,
         teistro_ffi::numerology::ts_numerology_profile,
         teistro_ffi::pakshi::ts_pakshi,
@@ -225,6 +225,7 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
         teistro_ffi::naming::ts_naming_of,
         teistro_ffi::naming::ts_naming_load,
         teistro_ffi::naming::ts_naming_suggest,
+        teistro_ffi::verify::ts_verify_claims,
     ];
     holds_nothing("refused JSON requests and their records", || {
         for entry in entries {

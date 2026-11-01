@@ -7275,6 +7275,33 @@ export class MatchingArea extends Area {
 }
 
 /**
+ * `sdk.verify` — what a text claims of the time, checked against what the
+ * almanac computes at an instant and a place (`03-design/lexicon.md` §3).
+ */
+export class VerifyArea extends Area {
+  /**
+   * Every claim a text makes of the time, each `HELD`, `CONTRADICTED`
+   * (with the member computed) or `UNREAD` (with why), judged against
+   * `almanac.sankalpa` at the instant. The grammar is narrow: a member of
+   * a day's kind, a graha in a sign, the Moon in a nakshatra.
+   *
+   * ```js
+   * const { value } = sdk.verify.claims({
+   *   text: 'आज एकादशी हो', at: 2461055.59375,
+   *   latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700,
+   * });
+   * value.claims[0].verdict; // 'HELD' or 'CONTRADICTED'
+   * ```
+   */
+  claims(request) {
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.verifyClaims(JSON.stringify(request))),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
+  }
+}
+
+/**
  * `sdk.numerology` — a name and a birth date under Balliett's letter cycle
  * and Cheiro's Chaldean table (`03-design/numerology.md`, C320 to C328).
  * It reads no sky.
@@ -8768,6 +8795,8 @@ export class Context {
     this.numerology = new NumerologyArea(reach);
     /** The naming of a child: syllables, names read and checked, and a name book. */
     this.naming = new NamingArea(reach);
+    /** What a text claims of the time, checked against the almanac. */
+    this.verify = new VerifyArea(reach);
     /** Counts and permutation tests over a batch of births. */
     this.research = new ResearchArea(reach);
     this.#engine = new Engine(reach);

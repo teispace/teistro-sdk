@@ -216,6 +216,7 @@ import type {
   LookupRequest,
   DatesRequest,
   CalendarDay,
+  ClaimsRequest,
   InWordsRequest,
   TimeTextRequest,
   Interval,
@@ -8707,6 +8708,49 @@ export declare class MatchingArea {
   naam(bride: string, groom: string, rules?: NaamRules): NaamMilan;
 }
 
+/** One claim a text makes of the time, and what it was found to be. */
+export interface Claim {
+  /** Where the span naming the member begins, counted in Unicode scalar values (code points). */
+  readonly start: number;
+  /** Where it ends, exclusive, in the same count. */
+  readonly end: number;
+  /** The span's text. */
+  readonly text: string;
+  /** The kind claimed (`tithi`, `rashi`); `null` on a claim ambiguous between kinds. */
+  readonly kind: string | null;
+  /** The graha whose sign or nakshatra is claimed, a full key. */
+  readonly graha: string | null;
+  /** Every member the span may name: the claim holds when the SDK computes any of them. */
+  readonly claimed: readonly string[];
+  /** What the claim was found to be. */
+  readonly verdict: 'HELD' | 'CONTRADICTED' | 'UNREAD';
+  /** The member the SDK computes, on a claim judged. */
+  readonly computed: string | null;
+  /** Why the claim was not judged, on one unread. */
+  readonly reason: 'QUESTION' | 'NEGATED' | 'OTHER_TIME' | 'NOT_COMPUTED' | 'AMBIGUOUS' | null;
+}
+
+/** What `verify.claims` answers. */
+export interface ClaimsAnswer {
+  /** Every claim, in the text's order. */
+  readonly value: { readonly claims: readonly Claim[] };
+  /** What computed the sankalpa the claims were judged against. */
+  readonly provenance: Provenance;
+}
+
+/**
+ * `sdk.verify` — what a text claims of the time, checked against what the
+ * almanac computes at an instant and a place.
+ */
+export declare class VerifyArea {
+  /**
+   * Every claim a text makes of the time ("today is Ekadashi", "the Moon is
+   * in Rohini"), each held, contradicted (with the member computed) or
+   * unread (with why), against `almanac.sankalpa` at the instant.
+   */
+  claims(request: ClaimsRequest): ClaimsAnswer;
+}
+
 /**
  * `sdk.numerology` — a name and a birth date under Balliett's letter cycle
  * and Cheiro's Chaldean table. It reads no sky.
@@ -9040,6 +9084,8 @@ export declare class Context {
   readonly numerology: NumerologyArea;
   /** The naming of a child: syllables, names read and checked, and a name book. */
   readonly naming: NamingArea;
+  /** What a text claims of the time, checked against the almanac. */
+  readonly verify: VerifyArea;
   /** Counts and permutation tests over a batch of births. */
   readonly research: ResearchArea;
   /** The id of the profile the settings came from. */

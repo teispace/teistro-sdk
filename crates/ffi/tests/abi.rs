@@ -10844,6 +10844,52 @@ fn a_sankalpa_crosses_as_the_facade_answers_it() {
     assert_eq!(ctx.last_error().2.as_deref(), Some("sankalpa.latitudeDeg"));
 }
 
+/// Claims cross as the façade judges them, sealed, and a refusal is named
+/// under `claims` (`03-design/lexicon.md` §3).
+#[test]
+fn claims_cross_as_the_facade_judges_them() {
+    let asked = r#"{"text": "The Sun is in Capricorn. Is it Ekadashi?", "at": 2461055.59375,
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700}"#;
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
+    let call = |request: &str| -> Result<String, Status> {
+        let request = CString::new(request).unwrap();
+        let mut json = TsString::empty();
+        // SAFETY: a live context, a NUL-terminated request and a valid slot.
+        let status = unsafe {
+            teistro_ffi::verify::ts_verify_claims(ctx.handle, request.as_ptr(), &raw mut json)
+        };
+        if status == Status::Ok {
+            Ok(owned(json))
+        } else {
+            // SAFETY: the empty descriptor a refusal leaves.
+            unsafe { ts_string_free(&raw mut json) };
+            Err(status)
+        }
+    };
+    let crossed: serde_json::Value = serde_json::from_str(&call(asked).unwrap()).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .verify()
+        .claims(&teistro::verify::ClaimsRequest::from_json(asked).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    assert_eq!(crossed["value"]["claims"][0]["verdict"], "HELD");
+    assert_eq!(crossed["value"]["claims"][1]["reason"], "QUESTION");
+
+    let unread = r#"{"text": "x", "at": 2461055.59375, "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324, "utcOffsetSeconds": 20700, "clock": 1}"#;
+    assert_eq!(call(unread).unwrap_err(), Status::InvalidArg);
+    assert_eq!(ctx.last_error().2.as_deref(), Some("claims.clock"));
+}
+
 /// A Tibetan year's names cross as the calendar gives them, written in
 /// full, and a year before the first rabjung is refused by name.
 #[test]

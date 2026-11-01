@@ -121,6 +121,7 @@ the protocol's own failures.
 | `naming.syllables`, `naming.read`, `naming.check`, `naming.of`, `naming.suggest` | the naming requests: a pada's syllables, names read and checked, a birth's names, a book's suggestions (a book carried whole: an MCP context keeps no loaded book, so `naming.load` is no tool) | built since (`namakarana.md` §10) |
 | `intl.lexicon`, `intl.lookup` | `LexiconRequest`, `LookupRequest`: a locale's names for every catalogue member, and the members a text may name | built since (`lexicon.md` §1) |
 | `intl.dates` | `DatesRequest`: the Bikram Sambat and Gregorian dates a text names, every reading of each | built since (`lexicon.md` §2) |
+| `verify.claims` | `ClaimsRequest`: what a text claims of the time, judged against the sankalpa at an instant and a place | built since (`lexicon.md` §3) |
 
 Step 2 needed the chart's composition in the façade. Until it was built,
 `ts_chart_found` composed a chart's families inside the boundary crate

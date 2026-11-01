@@ -95,6 +95,8 @@ import type {
   LexiconRequest,
   DatesRequest,
   FoundDates,
+  ClaimsRequest,
+  ClaimsAnswer,
   Lookup,
   LookupRequest,
   DateTextRequest,
@@ -2312,6 +2314,17 @@ function theDates(ctx: Context): string {
 }
 
 void theDates;
+
+// What a text claims of the time, checked.
+function theClaims(ctx: Context): string {
+  const asked: ClaimsRequest = { text: 'आज एकादशी हो', at: 2461055.59375, latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700 };
+  const checked: ClaimsAnswer = ctx.verify.claims(asked);
+  // @ts-expect-error a verdict is one of three
+  const verdict: 'TRUE' = checked.value.claims[0]?.verdict ?? 'HELD';
+  return [checked.provenance.inputHash, verdict].join();
+}
+
+void theClaims;
 
 // A stored baseline snapshot translated into the contexts to open.
 function theRecordedSettings(ctx: Context): string {

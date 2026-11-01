@@ -873,6 +873,44 @@ export interface ResolveAsked {
 }
 
 /**
+ * The request as a binding writes it.
+ */
+export interface ClaimsRequest {
+  /**
+   * The place's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The instant the claims are judged at, a UTC Julian day.
+   */
+  readonly at: number;
+  /**
+   * How the ayana is reckoned: `SIDEREAL`, at Makara and Karka sankranti, when left out.
+   */
+  readonly ayana?: AyanaReckoning;
+  /**
+   * The place's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The locale whose names are searched (a BCP 47 tag, by RFC 4647 lookup); every loaded locale's when left out.
+   */
+  readonly locale?: string | null;
+  /**
+   * The place's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The text whose claims are checked.
+   */
+  readonly text: string;
+  /**
+   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   */
+  readonly utcOffsetSeconds: number;
+}
+
+/**
  * An anniversary a request asks the days of.
  */
 export interface Anniversary {

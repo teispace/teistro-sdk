@@ -91,6 +91,7 @@ function instances() {
     MatchingArea: ctx.matching,
     NumerologyArea: ctx.numerology,
     NamingArea: ctx.naming,
+    VerifyArea: ctx.verify,
     ResearchArea: ctx.research,
     // The built-in describes no operations of its own; the test provider
     // does, which is what an engine is made from.

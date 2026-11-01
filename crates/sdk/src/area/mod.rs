@@ -36,6 +36,7 @@ mod numerology;
 #[cfg(feature = "research")]
 pub(crate) mod research;
 mod time;
+pub(crate) mod verify;
 
 use teistro_calendar::solar::drik::DrikSun;
 use teistro_calendar::{CalendarSystem, shipped};
@@ -135,3 +136,4 @@ pub use numerology::NumerologyArea;
 #[cfg(feature = "research")]
 pub use research::ResearchArea;
 pub use time::{TimeArea, ZoneDatabase, ZoneDatabaseSource};
+pub use verify::VerifyArea;
