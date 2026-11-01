@@ -7,7 +7,7 @@ design written from it is [`python-binding.md`](python-binding.md).
 
 ## 1. What a binding must marshal
 
-The description carries 26 exported constants, 177 enums of 1486 members
+The description carries 26 exported constants, 180 enums of 1506 members
 in all, 2 opaque handle types, 10 callback types, 28 structs, 87 entry
 points and 6 result-blob schemas, extracted from 30 source files. A
 binding's mechanical layer is a rule per **role**, not a rule per entry
@@ -69,21 +69,21 @@ a call gets in the binding.
 
 | target | identifiers | members | fields | parameters | calls |
 |---|---|---|---|---|---|
-| Dart | 2068 | 2 | 0 | 0 | 0 |
+| Dart | 2088 | 2 | 0 | 0 | 0 |
 | TypeScript | 582 | 0 | 0 | 1 | 0 |
-| Python | 2068 | 0 | 1 | 3 | 0 |
-| Java | 2068 | 0 | 1 | 0 | 0 |
+| Python | 2088 | 0 | 1 | 3 | 0 |
+| Java | 2088 | 0 | 1 | 0 | 0 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| no identifier the Dart emitter writes is a reserved word there | **holds** | 2 caught and renamed, 0 left; 2068 looked at |
+| no identifier the Dart emitter writes is a reserved word there | **holds** | 2 caught and renamed, 0 left; 2088 looked at |
 | no identifier the TypeScript emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 582 looked at |
-| no identifier the Python emitter writes is a reserved word there | **holds** | 4 caught and renamed, 0 left; 2068 looked at |
-| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 2068 looked at |
-| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 2068 disagree |
+| no identifier the Python emitter writes is a reserved word there | **holds** | 4 caught and renamed, 0 left; 2088 looked at |
+| no identifier the Java emitter writes is a reserved word there | **holds** | 1 caught and renamed, 0 left; 2088 looked at |
+| renaming leaves no two names alike in one scope in Dart | **holds** | 0 of 2088 disagree |
 | renaming leaves no two names alike in one scope in TypeScript | **holds** | 0 of 582 disagree |
-| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 2068 disagree |
-| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 2068 disagree |
+| renaming leaves no two names alike in one scope in Python | **holds** | 0 of 2088 disagree |
+| renaming leaves no two names alike in one scope in Java | **holds** | 0 of 2088 disagree |
 
 What Dart renames:
 

@@ -87,6 +87,9 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_DAY_MARKER` | 79 | A marker an almanac prints over a stretch of a day from the Moon's star or sign alone (`03-design/day-markers.md` §3). `printed` marks a reading the almanacs print with no text read behind it (crux C1051). |
 | `TS_KIND_GOWRI` | 80 | The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark. |
 | `TS_KIND_FAST_KIND` | 81 | How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62). |
+| `TS_KIND_YEAR_OFFICE` | 82 | One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`). |
+| `TS_KIND_RULER_TEXT` | 83 | A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1). |
+| `TS_KIND_RULER_DAY_RULE` | 84 | Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072). |
 
 ## ts_graha
 
@@ -1542,6 +1545,44 @@ How a vrata's fast is kept, in the words of the texts that define it: *Dharmasin
 | `TS_FAST_KIND_PHALAHARA` | 4 | Fruit only: what one unable to fast keeps instead (फलाहार) |
 | `TS_FAST_KIND_KSHIRAHARA` | 5 | Milk only: what one unable to fast keeps instead (क्षीरभक्ष) |
 | `TS_FAST_KIND_JALAHARA` | 6 | Water only: what one unable to fast keeps instead (जलाहार) |
+
+## ts_year_office
+
+One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_YEAR_OFFICE << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_YEAR_OFFICE_RAJA` | 0 | The king, the year's lord (abdapa, varsheśa): the lord of Chaitra Shukla Pratipada's weekday |
+| `TS_YEAR_OFFICE_MANTRI` | 1 | The minister (mantrī; bhūpati in Narada Samhita): Mesha's ingress |
+| `TS_YEAR_OFFICE_SENADHIPATI` | 2 | The commander (senādhipati): Simha's ingress |
+| `TS_YEAR_OFFICE_SASYADHIPATI` | 3 | The lord of the crops (sasyeśa), Jyotirnibandha's first lord of grain: Karka's ingress |
+| `TS_YEAR_OFFICE_DHANYADHIPATI` | 4 | The lord of grain (dhānyādhipa), Jyotirnibandha's later lord of grain: Dhanu's ingress |
+| `TS_YEAR_OFFICE_ARGHADHIPATI` | 5 | The lord of prices (arghādhipati): Mithuna's ingress |
+| `TS_YEAR_OFFICE_MEGHADHIPATI` | 6 | The lord of the clouds (meghādhipa): the Sun's entry into Ardra |
+| `TS_YEAR_OFFICE_RASADHIPATI` | 7 | The lord of juices (rasādhipa): Tula's ingress |
+| `TS_YEAR_OFFICE_NIRASADHIPATI` | 8 | The lord of dry goods (nīraseśa): Makara's ingress |
+
+## ts_ruler_text
+
+A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_TEXT << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_RULER_TEXT_JYOTIRNIBANDHA` | 0 | Jyotirnibandha p. 29 vv. 7-10, quoting Jyotiṣaphalodaya: the raja, the mantri and the lords of the crops, the clouds, juices and grain |
+| `TS_RULER_TEXT_NARADA_SAMHITA` | 1 | Narada Samhita ch. 2 vv. 1-3: the raja, the mantri and the lords of the crops, juices and dry goods |
+| `TS_RULER_TEXT_NAVANAYAKA` | 2 | The nine (navanāyaka) of the southern panchangas, which add the commander and the lord of prices; no verse read |
+
+## ts_ruler_day_rule
+
+Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_DAY_RULE << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_RULER_DAY_RULE_SUNRISE` | 0 | The raja: the weekday at the sunrise Chaitra Shukla Pratipada runs at; of two the earlier, and of none the day it began in |
+| `TS_RULER_DAY_RULE_NEW_MOON` | 1 | The raja: the weekday holding the junction of the new moon and the pratipada |
+| `TS_RULER_DAY_RULE_GARGA` | 2 | The raja: the new moon's day if it falls before that day's midday, else the next |
+| `TS_RULER_DAY_RULE_DAYLIGHT` | 3 | An ingress: the day whose daylight holds it, and for one at night the day the next sunrise begins |
+| `TS_RULER_DAY_RULE_VARA` | 4 | An ingress: the weekday, sunrise to sunrise, holding its instant |
 
 ## ts_status
 

@@ -326,7 +326,13 @@ enum Kind {
   /// The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.
   gowri(80, 'gowri'),
   /// How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).
-  fastKind(81, 'fast_kind');
+  fastKind(81, 'fast_kind'),
+  /// One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`).
+  yearOffice(82, 'year_office'),
+  /// A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1).
+  rulerText(83, 'ruler_text'),
+  /// Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).
+  rulerDayRule(84, 'ruler_day_rule');
 
   const Kind(this.id, this.key);
 
@@ -5005,6 +5011,151 @@ enum FastKind implements KeyOf<FastKind> {
 
   /// The member with a key, or `null` for one this build does not know.
   static FastKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_YEAR_OFFICE << 16) | member`.
+enum YearOffice implements KeyOf<YearOffice> {
+  /// The king, the year's lord (abdapa, varsheśa): the lord of Chaitra Shukla Pratipada's weekday
+  raja(0, 'RAJA'),
+  /// The minister (mantrī; bhūpati in Narada Samhita): Mesha's ingress
+  mantri(1, 'MANTRI'),
+  /// The commander (senādhipati): Simha's ingress
+  senadhipati(2, 'SENADHIPATI'),
+  /// The lord of the crops (sasyeśa), Jyotirnibandha's first lord of grain: Karka's ingress
+  sasyadhipati(3, 'SASYADHIPATI'),
+  /// The lord of grain (dhānyādhipa), Jyotirnibandha's later lord of grain: Dhanu's ingress
+  dhanyadhipati(4, 'DHANYADHIPATI'),
+  /// The lord of prices (arghādhipati): Mithuna's ingress
+  arghadhipati(5, 'ARGHADHIPATI'),
+  /// The lord of the clouds (meghādhipa): the Sun's entry into Ardra
+  meghadhipati(6, 'MEGHADHIPATI'),
+  /// The lord of juices (rasādhipa): Tula's ingress
+  rasadhipati(7, 'RASADHIPATI'),
+  /// The lord of dry goods (nīraseśa): Makara's ingress
+  nirasadhipati(8, 'NIRASADHIPATI'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const YearOffice(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'year_office.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<YearOffice> registered(String key) => Registered._('year_office.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static YearOffice byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => YearOffice.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static YearOffice? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_TEXT << 16) | member`.
+enum RulerText implements KeyOf<RulerText> {
+  /// Jyotirnibandha p. 29 vv. 7-10, quoting Jyotiṣaphalodaya: the raja, the mantri and the lords of the crops, the clouds, juices and grain
+  jyotirnibandha(0, 'JYOTIRNIBANDHA'),
+  /// Narada Samhita ch. 2 vv. 1-3: the raja, the mantri and the lords of the crops, juices and dry goods
+  naradaSamhita(1, 'NARADA_SAMHITA'),
+  /// The nine (navanāyaka) of the southern panchangas, which add the commander and the lord of prices; no verse read
+  navanayaka(2, 'NAVANAYAKA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const RulerText(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'ruler_text.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<RulerText> registered(String key) => Registered._('ruler_text.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static RulerText byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => RulerText.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static RulerText? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_DAY_RULE << 16) | member`.
+enum RulerDayRule implements KeyOf<RulerDayRule> {
+  /// The raja: the weekday at the sunrise Chaitra Shukla Pratipada runs at; of two the earlier, and of none the day it began in
+  sunrise(0, 'SUNRISE'),
+  /// The raja: the weekday holding the junction of the new moon and the pratipada
+  newMoon(1, 'NEW_MOON'),
+  /// The raja: the new moon's day if it falls before that day's midday, else the next
+  garga(2, 'GARGA'),
+  /// An ingress: the day whose daylight holds it, and for one at night the day the next sunrise begins
+  daylight(3, 'DAYLIGHT'),
+  /// An ingress: the weekday, sunrise to sunrise, holding its instant
+  vara(4, 'VARA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const RulerDayRule(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'ruler_day_rule.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<RulerDayRule> registered(String key) => Registered._('ruler_day_rule.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static RulerDayRule byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => RulerDayRule.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static RulerDayRule? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

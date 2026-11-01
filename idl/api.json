@@ -694,6 +694,24 @@
           "value": 81,
           "doc": "How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).",
           "key": "fast_kind"
+        },
+        {
+          "name": "YearOffice",
+          "value": 82,
+          "doc": "One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`).",
+          "key": "year_office"
+        },
+        {
+          "name": "RulerText",
+          "value": 83,
+          "doc": "A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1).",
+          "key": "ruler_text"
+        },
+        {
+          "name": "RulerDayRule",
+          "value": 84,
+          "doc": "Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).",
+          "key": "ruler_day_rule"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -6916,6 +6934,135 @@
           "value": 6,
           "doc": "Water only: what one unable to fast keeps instead (जलाहार)",
           "key": "JALAHARA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "YearOffice",
+      "doc": "One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_YEAR_OFFICE << 16) | member`.",
+      "repr": "u16",
+      "kind": "year_office",
+      "values": [
+        {
+          "name": "Raja",
+          "value": 0,
+          "doc": "The king, the year's lord (abdapa, varsheśa): the lord of Chaitra Shukla Pratipada's weekday",
+          "key": "RAJA"
+        },
+        {
+          "name": "Mantri",
+          "value": 1,
+          "doc": "The minister (mantrī; bhūpati in Narada Samhita): Mesha's ingress",
+          "key": "MANTRI"
+        },
+        {
+          "name": "Senadhipati",
+          "value": 2,
+          "doc": "The commander (senādhipati): Simha's ingress",
+          "key": "SENADHIPATI"
+        },
+        {
+          "name": "Sasyadhipati",
+          "value": 3,
+          "doc": "The lord of the crops (sasyeśa), Jyotirnibandha's first lord of grain: Karka's ingress",
+          "key": "SASYADHIPATI"
+        },
+        {
+          "name": "Dhanyadhipati",
+          "value": 4,
+          "doc": "The lord of grain (dhānyādhipa), Jyotirnibandha's later lord of grain: Dhanu's ingress",
+          "key": "DHANYADHIPATI"
+        },
+        {
+          "name": "Arghadhipati",
+          "value": 5,
+          "doc": "The lord of prices (arghādhipati): Mithuna's ingress",
+          "key": "ARGHADHIPATI"
+        },
+        {
+          "name": "Meghadhipati",
+          "value": 6,
+          "doc": "The lord of the clouds (meghādhipa): the Sun's entry into Ardra",
+          "key": "MEGHADHIPATI"
+        },
+        {
+          "name": "Rasadhipati",
+          "value": 7,
+          "doc": "The lord of juices (rasādhipa): Tula's ingress",
+          "key": "RASADHIPATI"
+        },
+        {
+          "name": "Nirasadhipati",
+          "value": 8,
+          "doc": "The lord of dry goods (nīraseśa): Makara's ingress",
+          "key": "NIRASADHIPATI"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "RulerText",
+      "doc": "A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_TEXT << 16) | member`.",
+      "repr": "u16",
+      "kind": "ruler_text",
+      "values": [
+        {
+          "name": "Jyotirnibandha",
+          "value": 0,
+          "doc": "Jyotirnibandha p. 29 vv. 7-10, quoting Jyotiṣaphalodaya: the raja, the mantri and the lords of the crops, the clouds, juices and grain",
+          "key": "JYOTIRNIBANDHA"
+        },
+        {
+          "name": "NaradaSamhita",
+          "value": 1,
+          "doc": "Narada Samhita ch. 2 vv. 1-3: the raja, the mantri and the lords of the crops, juices and dry goods",
+          "key": "NARADA_SAMHITA"
+        },
+        {
+          "name": "Navanayaka",
+          "value": 2,
+          "doc": "The nine (navanāyaka) of the southern panchangas, which add the commander and the lord of prices; no verse read",
+          "key": "NAVANAYAKA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "RulerDayRule",
+      "doc": "Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_DAY_RULE << 16) | member`.",
+      "repr": "u16",
+      "kind": "ruler_day_rule",
+      "values": [
+        {
+          "name": "Sunrise",
+          "value": 0,
+          "doc": "The raja: the weekday at the sunrise Chaitra Shukla Pratipada runs at; of two the earlier, and of none the day it began in",
+          "key": "SUNRISE"
+        },
+        {
+          "name": "NewMoon",
+          "value": 1,
+          "doc": "The raja: the weekday holding the junction of the new moon and the pratipada",
+          "key": "NEW_MOON"
+        },
+        {
+          "name": "Garga",
+          "value": 2,
+          "doc": "The raja: the new moon's day if it falls before that day's midday, else the next",
+          "key": "GARGA"
+        },
+        {
+          "name": "Daylight",
+          "value": 3,
+          "doc": "An ingress: the day whose daylight holds it, and for one at night the day the next sunrise begins",
+          "key": "DAYLIGHT"
+        },
+        {
+          "name": "Vara",
+          "value": 4,
+          "doc": "An ingress: the weekday, sunrise to sunrise, holding its instant",
+          "key": "VARA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -26332,7 +26479,7 @@
         {
           "id": 23,
           "name": "years",
-          "doc": "UTF-8 JSON, canonical: the lunar years these days fall in when `sections` asked for `TS_PANCHANGA_YEARS`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §10). `value` is a list of years in order, each `{samvatsara, count, vikrama, shaka, kali, opened, began, ended, jovian, lupta, rulers}`: the name the year carries as a full key (`samvatsara.PRAMADICHA`), the count that named it under `calendars.samvatsara` (`BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA`), its Vikrama, Shaka and Kali numbers (the Kali year elapsed, the Shaka plus 3179), the new moon that opened its first Chaitra, the sunrise of Chaitra Shukla Pratipada that began it and the next year's that ended it, in UTC Julian days; the Jovian years that ran in it, each `{member, count, from, to}` with its member in full, the signs mean Jupiter had crossed since the Kali age began, counted from 0, and its bounds in UTC Julian days; the Jovian year expunged in it, in full, or null; and its office-bearers (`03-design/year-rulers.md`), each `{office, event, texts, readings}`: the office (`RAJA`, `MANTRI`, `SENADHIPATI`, `SASYADHIPATI`, `DHANYADHIPATI`, `ARGHADHIPATI`, `MEGHADHIPATI`, `RASADHIPATI`, `NIRASADHIPATI`), the new moon or the Sun's ingress that makes it in UTC Julian days, the texts that name it (`JYOTIRNIBANDHA`, `NARADA_SAMHITA`, `NAVANAYAKA`), and its weekday under each rule the texts give, each `{rule, vara, lord, day}`: the rule (`SUNRISE`, `NEW_MOON`, `GARGA` for the raja, `DAYLIGHT`, `VARA` for the rest, the first the plainest), the weekday and its lord in full, and the sunrise that opened it. Consecutive years abut, `ended` to `began`. Empty when `sections` did not ask for them.",
+          "doc": "UTF-8 JSON, canonical: the lunar years these days fall in when `sections` asked for `TS_PANCHANGA_YEARS`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §10). `value` is a list of years in order, each `{samvatsara, count, vikrama, shaka, kali, opened, began, ended, jovian, lupta, rulers}`: the name the year carries as a full key (`samvatsara.PRAMADICHA`), the count that named it under `calendars.samvatsara` (`BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA`), its Vikrama, Shaka and Kali numbers (the Kali year elapsed, the Shaka plus 3179), the new moon that opened its first Chaitra, the sunrise of Chaitra Shukla Pratipada that began it and the next year's that ended it, in UTC Julian days; the Jovian years that ran in it, each `{member, count, from, to}` with its member in full, the signs mean Jupiter had crossed since the Kali age began, counted from 0, and its bounds in UTC Julian days; the Jovian year expunged in it, in full, or null; and its office-bearers (`03-design/year-rulers.md`), each `{office, event, texts, readings}`: the office in full (`year_office.RAJA`, `MANTRI`, `SENADHIPATI`, `SASYADHIPATI`, `DHANYADHIPATI`, `ARGHADHIPATI`, `MEGHADHIPATI`, `RASADHIPATI`, `NIRASADHIPATI`), the new moon or the Sun's ingress that makes it in UTC Julian days, the texts that name it in full (`ruler_text.JYOTIRNIBANDHA`, `NARADA_SAMHITA`, `NAVANAYAKA`), and its weekday under each rule the texts give, each `{rule, vara, lord, day}`: the rule in full (`ruler_day_rule.SUNRISE`, `NEW_MOON`, `GARGA` for the raja, `DAYLIGHT`, `VARA` for the rest, the first the plainest), the weekday and its lord in full, and the sunrise that opened it. Consecutive years abut, `ended` to `began`. Empty when `sections` did not ask for them.",
           "kind": "bytes",
           "fields": []
         },

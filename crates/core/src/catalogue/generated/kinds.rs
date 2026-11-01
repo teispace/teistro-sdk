@@ -176,9 +176,15 @@ pub enum Kind {
     Gowri = 80,
     /// How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).
     FastKind = 81,
+    /// One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`).
+    YearOffice = 82,
+    /// A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1).
+    RulerText = 83,
+    /// Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).
+    RulerDayRule = 84,
 }
 
-const BY_NAME: [(&str, Kind); 80] = [
+const BY_NAME: [(&str, Kind); 83] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -240,6 +246,8 @@ const BY_NAME: [(&str, Kind); 80] = [
     ("rising", Kind::Rising),
     ("ritu", Kind::Ritu),
     ("rule", Kind::Rule),
+    ("ruler_day_rule", Kind::RulerDayRule),
+    ("ruler_text", Kind::RulerText),
     ("samvatsara", Kind::Samvatsara),
     ("sex", Kind::Sex),
     ("shiva_vasa", Kind::ShivaVasa),
@@ -257,13 +265,14 @@ const BY_NAME: [(&str, Kind); 80] = [
     ("vara", Kind::Vara),
     ("varga", Kind::Varga),
     ("varna", Kind::Varna),
+    ("year_office", Kind::YearOffice),
     ("yoga", Kind::Yoga),
     ("yoni", Kind::Yoni),
 ];
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 80] = [
+    pub const ALL: [Kind; 83] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -344,6 +353,9 @@ impl Kind {
         Kind::DayMarker,
         Kind::Gowri,
         Kind::FastKind,
+        Kind::YearOffice,
+        Kind::RulerText,
+        Kind::RulerDayRule,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -436,6 +448,9 @@ impl Kind {
             Kind::DayMarker => "day_marker",
             Kind::Gowri => "gowri",
             Kind::FastKind => "fast_kind",
+            Kind::YearOffice => "year_office",
+            Kind::RulerText => "ruler_text",
+            Kind::RulerDayRule => "ruler_day_rule",
         }
     }
 
@@ -542,6 +557,9 @@ impl Kind {
             Kind::DayMarker => 3,
             Kind::Gowri => 8,
             Kind::FastKind => 7,
+            Kind::YearOffice => 9,
+            Kind::RulerText => 3,
+            Kind::RulerDayRule => 5,
         }
     }
 
@@ -649,6 +667,9 @@ impl Kind {
             79 => Some(Kind::DayMarker),
             80 => Some(Kind::Gowri),
             81 => Some(Kind::FastKind),
+            82 => Some(Kind::YearOffice),
+            83 => Some(Kind::RulerText),
+            84 => Some(Kind::RulerDayRule),
             _ => None,
         }
     }

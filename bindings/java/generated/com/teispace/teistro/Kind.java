@@ -387,7 +387,22 @@ public enum Kind implements Member {
     /**
      * How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).
      */
-    FAST_KIND(81, "fast_kind");
+    FAST_KIND(81, "fast_kind"),
+
+    /**
+     * One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`).
+     */
+    YEAR_OFFICE(82, "year_office"),
+
+    /**
+     * A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1).
+     */
+    RULER_TEXT(83, "ruler_text"),
+
+    /**
+     * Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).
+     */
+    RULER_DAY_RULE(84, "ruler_day_rule");
 
     private static final Kind[] MEMBERS = values();
 

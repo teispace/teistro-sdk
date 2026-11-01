@@ -1142,5 +1142,28 @@
     "PHALAHARA": {},
     "KSHIRAHARA": {},
     "JALAHARA": {}
+  },
+  "year_office": {
+    "RAJA": {},
+    "MANTRI": {},
+    "SENADHIPATI": {},
+    "SASYADHIPATI": {},
+    "DHANYADHIPATI": {},
+    "ARGHADHIPATI": {},
+    "MEGHADHIPATI": {},
+    "RASADHIPATI": {},
+    "NIRASADHIPATI": {}
+  },
+  "ruler_text": {
+    "JYOTIRNIBANDHA": {},
+    "NARADA_SAMHITA": {},
+    "NAVANAYAKA": {}
+  },
+  "ruler_day_rule": {
+    "SUNRISE": {},
+    "NEW_MOON": {},
+    "GARGA": {},
+    "DAYLIGHT": {},
+    "VARA": {}
   }
 }

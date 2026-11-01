@@ -294,7 +294,10 @@ export type Kind =
   | 'tradition'
   | 'day_marker'
   | 'gowri'
-  | 'fast_kind';
+  | 'fast_kind'
+  | 'year_office'
+  | 'ruler_text'
+  | 'ruler_day_rule';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -602,6 +605,18 @@ export declare const Kind: {
    * How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).
    */
   readonly FastKind: 'fast_kind';
+  /**
+   * One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`).
+   */
+  readonly YearOffice: 'year_office';
+  /**
+   * A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1).
+   */
+  readonly RulerText: 'ruler_text';
+  /**
+   * Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).
+   */
+  readonly RulerDayRule: 'ruler_day_rule';
 };
 
 /**
@@ -6295,6 +6310,129 @@ export declare const FastKind: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const FastKindById: ReadonlyMap<number, FastKind>;
+
+/**
+ * One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_YEAR_OFFICE << 16) | member`.
+ */
+export type YearOffice =
+  | 'year_office.RAJA'
+  | 'year_office.MANTRI'
+  | 'year_office.SENADHIPATI'
+  | 'year_office.SASYADHIPATI'
+  | 'year_office.DHANYADHIPATI'
+  | 'year_office.ARGHADHIPATI'
+  | 'year_office.MEGHADHIPATI'
+  | 'year_office.RASADHIPATI'
+  | 'year_office.NIRASADHIPATI'
+  | 'unknown';
+
+/** Every YearOffice by name; the values are the strings the union accepts. */
+export declare const YearOffice: {
+  /**
+   * The king, the year's lord (abdapa, varsheśa): the lord of Chaitra Shukla Pratipada's weekday
+   */
+  readonly Raja: 'year_office.RAJA';
+  /**
+   * The minister (mantrī; bhūpati in Narada Samhita): Mesha's ingress
+   */
+  readonly Mantri: 'year_office.MANTRI';
+  /**
+   * The commander (senādhipati): Simha's ingress
+   */
+  readonly Senadhipati: 'year_office.SENADHIPATI';
+  /**
+   * The lord of the crops (sasyeśa), Jyotirnibandha's first lord of grain: Karka's ingress
+   */
+  readonly Sasyadhipati: 'year_office.SASYADHIPATI';
+  /**
+   * The lord of grain (dhānyādhipa), Jyotirnibandha's later lord of grain: Dhanu's ingress
+   */
+  readonly Dhanyadhipati: 'year_office.DHANYADHIPATI';
+  /**
+   * The lord of prices (arghādhipati): Mithuna's ingress
+   */
+  readonly Arghadhipati: 'year_office.ARGHADHIPATI';
+  /**
+   * The lord of the clouds (meghādhipa): the Sun's entry into Ardra
+   */
+  readonly Meghadhipati: 'year_office.MEGHADHIPATI';
+  /**
+   * The lord of juices (rasādhipa): Tula's ingress
+   */
+  readonly Rasadhipati: 'year_office.RASADHIPATI';
+  /**
+   * The lord of dry goods (nīraseśa): Makara's ingress
+   */
+  readonly Nirasadhipati: 'year_office.NIRASADHIPATI';
+};
+
+/**
+ * Every YearOffice by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const YearOfficeById: ReadonlyMap<number, YearOffice>;
+
+/**
+ * A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_TEXT << 16) | member`.
+ */
+export type RulerText = 'ruler_text.JYOTIRNIBANDHA' | 'ruler_text.NARADA_SAMHITA' | 'ruler_text.NAVANAYAKA' | 'unknown';
+
+/** Every RulerText by name; the values are the strings the union accepts. */
+export declare const RulerText: {
+  /**
+   * Jyotirnibandha p. 29 vv. 7-10, quoting Jyotiṣaphalodaya: the raja, the mantri and the lords of the crops, the clouds, juices and grain
+   */
+  readonly Jyotirnibandha: 'ruler_text.JYOTIRNIBANDHA';
+  /**
+   * Narada Samhita ch. 2 vv. 1-3: the raja, the mantri and the lords of the crops, juices and dry goods
+   */
+  readonly NaradaSamhita: 'ruler_text.NARADA_SAMHITA';
+  /**
+   * The nine (navanāyaka) of the southern panchangas, which add the commander and the lord of prices; no verse read
+   */
+  readonly Navanayaka: 'ruler_text.NAVANAYAKA';
+};
+
+/**
+ * Every RulerText by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const RulerTextById: ReadonlyMap<number, RulerText>;
+
+/**
+ * Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_DAY_RULE << 16) | member`.
+ */
+export type RulerDayRule = 'ruler_day_rule.SUNRISE' | 'ruler_day_rule.NEW_MOON' | 'ruler_day_rule.GARGA' | 'ruler_day_rule.DAYLIGHT' | 'ruler_day_rule.VARA' | 'unknown';
+
+/** Every RulerDayRule by name; the values are the strings the union accepts. */
+export declare const RulerDayRule: {
+  /**
+   * The raja: the weekday at the sunrise Chaitra Shukla Pratipada runs at; of two the earlier, and of none the day it began in
+   */
+  readonly Sunrise: 'ruler_day_rule.SUNRISE';
+  /**
+   * The raja: the weekday holding the junction of the new moon and the pratipada
+   */
+  readonly NewMoon: 'ruler_day_rule.NEW_MOON';
+  /**
+   * The raja: the new moon's day if it falls before that day's midday, else the next
+   */
+  readonly Garga: 'ruler_day_rule.GARGA';
+  /**
+   * An ingress: the day whose daylight holds it, and for one at night the day the next sunrise begins
+   */
+  readonly Daylight: 'ruler_day_rule.DAYLIGHT';
+  /**
+   * An ingress: the weekday, sunrise to sunrise, holding its instant
+   */
+  readonly Vara: 'ruler_day_rule.VARA';
+};
+
+/**
+ * Every RulerDayRule by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const RulerDayRuleById: ReadonlyMap<number, RulerDayRule>;
 
 /**
  * The status of a call, with the code it has at the C boundary.
