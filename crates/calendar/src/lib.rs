@@ -34,6 +34,7 @@ pub mod regional_solar;
 pub mod samvatsara;
 pub mod solar;
 pub mod tibetan;
+pub mod vira_nirvana;
 
 pub use bikram_sambat::BikramSambat;
 pub use date::{

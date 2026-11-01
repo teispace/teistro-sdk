@@ -3157,7 +3157,7 @@ export interface PublishedSet {
 /**
  * The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.
  */
-export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | readonly FestivalRuleItem[];
+export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | readonly FestivalRuleItem[];
 
 /**
  * How asta is seen: a criterion the SDK names, or one spelt out.
@@ -4704,7 +4704,7 @@ export interface PublishedEntryWithdraw {
 /**
  * A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.
  */
-export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
+export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
 
 /**
  * How visibility is decided.

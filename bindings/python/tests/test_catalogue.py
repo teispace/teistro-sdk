@@ -148,7 +148,9 @@ class TheCatalogue(unittest.TestCase):
             + 11 + 5 + 7
             # `Paya`'s four and `Tridosha`'s three, each with its UNKNOWN and
             # its member of `Kind`.
-            + 5 + 1 + 4 + 1,
+            + 5 + 1 + 4 + 1
+            # `Era`'s `VIRA_NIRVANA`.
+            + 1,
         )
 
     def test_every_member_is_an_int_with_a_key(self) -> None:

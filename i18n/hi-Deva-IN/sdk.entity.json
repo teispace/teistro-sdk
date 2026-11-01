@@ -2957,6 +2957,112 @@
       "name": "ग्याल्पो ल्होसार",
       "prose": "ग्याल्पो ल्होसार",
       "iast": "Gyalpo Lhosar"
+    },
+    "MAHAVIR_NIRVANA": {
+      "name": "महावीर निर्वाण",
+      "prose": "महावीर निर्वाण",
+      "iast": "Mahāvīra Nirvāṇa"
+    },
+    "VIRA_NIRVANA_NEW_YEAR": {
+      "name": "वीर निर्वाण नववर्ष",
+      "prose": "वीर निर्वाण नववर्ष",
+      "iast": "Vīra Nirvāṇa Navavarṣa"
+    },
+    "PARYUSHANA": {
+      "name": "पर्युषण आरंभ",
+      "prose": "पर्युषण आरंभ",
+      "iast": "Paryuṣaṇa"
+    },
+    "SAMVATSARI": {
+      "name": "संवत्सरी",
+      "prose": "संवत्सरी",
+      "iast": "Sāṃvatsarī"
+    },
+    "PARYUSHANA_TRAYODASHI": {
+      "name": "पर्युषण आरंभ (कृष्ण त्रयोदशी से)",
+      "prose": "पर्युषण आरंभ (कृष्ण त्रयोदशी से)",
+      "iast": "Paryuṣaṇa"
+    },
+    "SAMVATSARI_PANCHAMI": {
+      "name": "संवत्सरी (शुक्ल पंचमी)",
+      "prose": "संवत्सरी (शुक्ल पंचमी)",
+      "iast": "Sāṃvatsarī"
+    },
+    "DASA_LAKSHANA": {
+      "name": "दशलक्षण पर्व आरंभ",
+      "prose": "दशलक्षण पर्व आरंभ",
+      "iast": "Daśalakṣaṇa Parva"
+    },
+    "CHAITRA_AYAMBIL_OLI": {
+      "name": "चैत्र आयंबिल ओली आरंभ",
+      "prose": "चैत्र आयंबिल ओली आरंभ",
+      "iast": "Āyambila Olī"
+    },
+    "CHAITRA_AYAMBIL_OLI_END": {
+      "name": "चैत्र आयंबिल ओली समापन",
+      "prose": "चैत्र आयंबिल ओली समापन",
+      "iast": "Āyambila Olī"
+    },
+    "ASHVINA_AYAMBIL_OLI": {
+      "name": "आश्विन आयंबिल ओली आरंभ",
+      "prose": "आश्विन आयंबिल ओली आरंभ",
+      "iast": "Āyambila Olī"
+    },
+    "ASHVINA_AYAMBIL_OLI_END": {
+      "name": "आश्विन आयंबिल ओली समापन",
+      "prose": "आश्विन आयंबिल ओली समापन",
+      "iast": "Āyambila Olī"
+    },
+    "JAIN_PARVA_DVITIYA": {
+      "name": "पर्व तिथि: द्वितीया",
+      "prose": "पर्व तिथि: द्वितीया",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_PANCHAMI": {
+      "name": "पर्व तिथि: पंचमी",
+      "prose": "पर्व तिथि: पंचमी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_ASHTAMI": {
+      "name": "पर्व तिथि: अष्टमी",
+      "prose": "पर्व तिथि: अष्टमी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_EKADASHI": {
+      "name": "पर्व तिथि: एकादशी",
+      "prose": "पर्व तिथि: एकादशी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_CHATURDASHI": {
+      "name": "पर्व तिथि: चतुर्दशी",
+      "prose": "पर्व तिथि: चतुर्दशी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_PURNIMA": {
+      "name": "पर्व तिथि: पूर्णिमा",
+      "prose": "पर्व तिथि: पूर्णिमा",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_AMAVASYA": {
+      "name": "पर्व तिथि: अमावस्या",
+      "prose": "पर्व तिथि: अमावस्या",
+      "iast": "Parva Tithi"
+    },
+    "MAHAVIR_JAYANTI": {
+      "name": "महावीर जयंती",
+      "prose": "महावीर जयंती"
+    },
+    "ANANTA_CHATURDASHI": {
+      "name": "अनंत चतुर्दशी",
+      "prose": "अनंत चतुर्दशी"
+    }
+  },
+  "era": {
+    "VIRA_NIRVANA": {
+      "short": "वी.नि.सं.",
+      "name": "वीर निर्वाण संवत्",
+      "prose": "वीर निर्वाण संवत्",
+      "iast": "Vīra Nirvāṇa Saṃvat"
     }
   },
   "year_office": {

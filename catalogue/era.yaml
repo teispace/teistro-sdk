@@ -73,3 +73,12 @@ members:
       - text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7"
         ref: "docs/calendars/hijri.md"
     mark: V
+  - key: VIRA_NIRVANA
+    id: 10
+    doc: "Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada"
+    sources:
+      - text: "Sircar, Indian Epigraphy (1965), pp. 321-322"
+        ref: "docs/03-design/vira-nirvana-and-jain-festivals.md"
+      - text: "Jinasena, Harivamsha (783 CE): 605 years and 5 months before the Shaka era"
+        ref: "docs/03-design/vira-nirvana-and-jain-festivals.md"
+    mark: V

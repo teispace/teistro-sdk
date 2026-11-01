@@ -377,6 +377,7 @@ pub fn era_from_str(value: &str) -> Result<u16> {
         "era.COMMON_ERA" => Ok(7),
         "era.BEFORE_COMMON_ERA" => Ok(8),
         "era.HIJRI" => Ok(9),
+        "era.VIRA_NIRVANA" => Ok(10),
         other => Err(Error::from_reason(format!("`{other}` is not a Era"))),
     }
 }
@@ -395,6 +396,7 @@ pub fn era_to_str(value: u16) -> String {
         7 => "era.COMMON_ERA",
         8 => "era.BEFORE_COMMON_ERA",
         9 => "era.HIJRI",
+        10 => "era.VIRA_NIRVANA",
         _ => "unknown",
     }
     .to_string()

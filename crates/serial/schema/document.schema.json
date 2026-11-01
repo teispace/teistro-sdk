@@ -3001,7 +3001,8 @@
             "BENGALI",
             "COMMON_ERA",
             "BEFORE_COMMON_ERA",
-            "HIJRI"
+            "HIJRI",
+            "VIRA_NIRVANA"
           ],
           "type": "string"
         },
@@ -3017,7 +3018,8 @@
             "era.BENGALI",
             "era.COMMON_ERA",
             "era.BEFORE_COMMON_ERA",
-            "era.HIJRI"
+            "era.HIJRI",
+            "era.VIRA_NIRVANA"
           ],
           "type": "string",
           "writeOnly": true

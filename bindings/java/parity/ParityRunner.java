@@ -3065,6 +3065,7 @@ public final class ParityRunner {
                     String.valueOf(year.vikrama()),
                     String.valueOf(year.shaka()),
                     String.valueOf(year.kali()),
+                    String.valueOf(year.viraNirvana()),
                     number(year.opened()),
                     number(year.began()),
                     number(year.ended()),

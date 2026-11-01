@@ -1056,6 +1056,7 @@ class AnEngine(WithLibrary):
             self.assertEqual(value.vara, Vara.GURUVARA)
             self.assertEqual((value.year.samvatsara, value.year.vikrama), (Samvatsara.SIDDHARTHI, 2082))
             self.assertEqual(value.year.kali, 5126)
+            self.assertEqual(value.year.vira_nirvana, 2552)
             self.assertEqual((value.month.month, value.month.amanta), (Masa.MAGHA, Masa.PAUSHA))
             self.assertEqual(value.month.kind, MonthKind.NIJA)
             self.assertEqual((value.ritu, value.ayana, value.ayana_reckoning), (Ritu.SHISHIRA, Ayana.UTTARAYANA, "SIDEREAL"))
@@ -1089,6 +1090,8 @@ class AnEngine(WithLibrary):
             fasts = text["JANMASHTAMI"]["meta"]["fast"]
             self.assertEqual([fast["kind"] for fast in fasts], ["UPAVASA", "PHALAHARA"])
             self.assertTrue(fasts[1]["ifUnable"])
+            jain = {row["key"]: row for row in ctx.almanac.festival_pack("JAIN")["rules"]}
+            self.assertEqual(jain["DASA_LAKSHANA"]["meta"]["communities"], ["DIGAMBARA"])
             with self.assertRaises(TeistroError) as unread:
                 ctx.almanac.festival_pack("NO_SUCH_PACK")
             self.assertEqual(unread.exception.field, "pack.pack")

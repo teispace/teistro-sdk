@@ -18,6 +18,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_astro::events::{Longitudes, Search};
 use teistro_calendar::samvatsara::{JovianYear, Parameters};
+use teistro_calendar::vira_nirvana::{self, Epoch};
 use teistro_core::catalogue::{Kind, Masa, Samvatsara, write_in_full};
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Ut1, Utc};
@@ -95,6 +96,11 @@ pub struct LunarYear {
     /// *kali-gatābda*): the Shaka year plus 3179, since the Shaka era
     /// began when 3179 years of the Kali age had passed (C757).
     pub kali: i32,
+    /// The Vira Nirvana year that opens at this year's Kartika Shukla
+    /// Pratipada: the Vikrama year plus 470 (`teistro_calendar::vira_nirvana`).
+    /// From Chaitra to Ashwina the year before it runs, one fewer.
+    #[serde(rename = "viraNirvana")]
+    pub vira_nirvana: i32,
     /// The new moon that opened the year's first Chaitra.
     pub opened: JulianDay<Utc>,
     /// The sunrise that opened Chaitra Shukla Pratipada, the year's first
@@ -165,6 +171,8 @@ impl LunarYear {
     /// assert_eq!(southern.samvatsara, teistro_calendar::samvatsara::chandramana(i64::from(southern.shaka)));
     /// assert_eq!((southern.vikrama, southern.lupta), (found.vikrama, None));
     /// assert_eq!(southern.kali - southern.shaka, 3179);
+    /// // VS 2083's Kartika opens the Vira Nirvana year 2553.
+    /// assert_eq!(southern.vira_nirvana - southern.vikrama, 470);
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     ///
@@ -210,6 +218,7 @@ impl LunarYear {
             vikrama: shaka + 135,
             shaka,
             kali: shaka + KALI_BEFORE_SHAKA,
+            vira_nirvana: vira_nirvana::from_kartikadi_vikrama(shaka + 135, Epoch::Traditional),
             opened,
             began,
             ended,

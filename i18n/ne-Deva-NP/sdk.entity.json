@@ -478,6 +478,12 @@
       "name": "ईस्वी पूर्व",
       "prose": "ईस्वी पूर्व",
       "iast": "Īsvī Pūrva"
+    },
+    "VIRA_NIRVANA": {
+      "short": "वी.नि.सं.",
+      "name": "वीर निर्वाण संवत्",
+      "prose": "वीर निर्वाण संवत्",
+      "iast": "Vīra Nirvāṇa Saṃvat"
     }
   },
   "avastha_baladi": {
@@ -4384,6 +4390,96 @@
       "name": "अशून्यशयन व्रत",
       "prose": "अशून्यशयन व्रत",
       "iast": "Aśūnyaśayanavrata"
+    },
+    "MAHAVIR_NIRVANA": {
+      "name": "महावीर निर्वाण",
+      "prose": "महावीर निर्वाण",
+      "iast": "Mahāvīra Nirvāṇa"
+    },
+    "VIRA_NIRVANA_NEW_YEAR": {
+      "name": "वीर निर्वाण नववर्ष",
+      "prose": "वीर निर्वाण नववर्ष",
+      "iast": "Vīra Nirvāṇa Navavarṣa"
+    },
+    "PARYUSHANA": {
+      "name": "पर्युषण आरम्भ",
+      "prose": "पर्युषण आरम्भ",
+      "iast": "Paryuṣaṇa"
+    },
+    "SAMVATSARI": {
+      "name": "संवत्सरी",
+      "prose": "संवत्सरी",
+      "iast": "Sāṃvatsarī"
+    },
+    "PARYUSHANA_TRAYODASHI": {
+      "name": "पर्युषण आरम्भ (कृष्ण त्रयोदशीदेखि)",
+      "prose": "पर्युषण आरम्भ (कृष्ण त्रयोदशीदेखि)",
+      "iast": "Paryuṣaṇa"
+    },
+    "SAMVATSARI_PANCHAMI": {
+      "name": "संवत्सरी (शुक्ल पञ्चमी)",
+      "prose": "संवत्सरी (शुक्ल पञ्चमी)",
+      "iast": "Sāṃvatsarī"
+    },
+    "DASA_LAKSHANA": {
+      "name": "दशलक्षण पर्व आरम्भ",
+      "prose": "दशलक्षण पर्व आरम्भ",
+      "iast": "Daśalakṣaṇa Parva"
+    },
+    "CHAITRA_AYAMBIL_OLI": {
+      "name": "चैत्र आयम्बिल ओली आरम्भ",
+      "prose": "चैत्र आयम्बिल ओली आरम्भ",
+      "iast": "Āyambila Olī"
+    },
+    "CHAITRA_AYAMBIL_OLI_END": {
+      "name": "चैत्र आयम्बिल ओली समापन",
+      "prose": "चैत्र आयम्बिल ओली समापन",
+      "iast": "Āyambila Olī"
+    },
+    "ASHVINA_AYAMBIL_OLI": {
+      "name": "आश्विन आयम्बिल ओली आरम्भ",
+      "prose": "आश्विन आयम्बिल ओली आरम्भ",
+      "iast": "Āyambila Olī"
+    },
+    "ASHVINA_AYAMBIL_OLI_END": {
+      "name": "आश्विन आयम्बिल ओली समापन",
+      "prose": "आश्विन आयम्बिल ओली समापन",
+      "iast": "Āyambila Olī"
+    },
+    "JAIN_PARVA_DVITIYA": {
+      "name": "पर्व तिथि: द्वितीया",
+      "prose": "पर्व तिथि: द्वितीया",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_PANCHAMI": {
+      "name": "पर्व तिथि: पञ्चमी",
+      "prose": "पर्व तिथि: पञ्चमी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_ASHTAMI": {
+      "name": "पर्व तिथि: अष्टमी",
+      "prose": "पर्व तिथि: अष्टमी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_EKADASHI": {
+      "name": "पर्व तिथि: एकादशी",
+      "prose": "पर्व तिथि: एकादशी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_CHATURDASHI": {
+      "name": "पर्व तिथि: चतुर्दशी",
+      "prose": "पर्व तिथि: चतुर्दशी",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_PURNIMA": {
+      "name": "पर्व तिथि: पूर्णिमा",
+      "prose": "पर्व तिथि: पूर्णिमा",
+      "iast": "Parva Tithi"
+    },
+    "JAIN_PARVA_AMAVASYA": {
+      "name": "पर्व तिथि: अमावस्या",
+      "prose": "पर्व तिथि: अमावस्या",
+      "iast": "Parva Tithi"
     }
   },
   "agni_vasa": {

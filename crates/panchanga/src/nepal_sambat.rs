@@ -18,15 +18,12 @@
 use serde::{Deserialize, Serialize};
 use teistro_calendar::FixedDay;
 use teistro_calendar::gregorian::year_from_fixed;
-use teistro_calendar::lunisolar::{MonthKind, SYNODIC_DAYS};
+use teistro_calendar::lunisolar::{MonthKind, kartikadi_middle, kartikadi_month};
 use teistro_core::catalogue::{Kind, Masa, Paksha, write_in_full};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
 
 use crate::almanac::Panchanga;
-
-/// The amanta month Nepal Sambat counts its year from: Kachhala.
-const FIRST: Masa = Masa::Kartika;
 
 /// The Nepal Sambat year whose middle falls in civil year 0. The year
 /// 1146 opened at Kartika's new moon in October 2025, so its middle is in
@@ -195,12 +192,10 @@ pub fn year_of(amanta: Masa, sunrise: JulianDay<Utc>) -> i32 {
 /// An estimate of the middle of the Nepal Sambat year a day in an amanta
 /// month falls in: its sunrise moved by the months between.
 ///
-/// An adhika month moves the estimate by a month at most, and the middle
-/// stands about four months from either end of its civil year: that is
-/// the margin the count has for the sidereal months' drift through the
-/// civil year, a day in seventy years. The measured page holds the count
-/// to the lunar years the almanac itself finds, and reports how near a
-/// civil new year the estimate came.
+/// Nepal Sambat is a Kartikadi year, so this is
+/// [`kartikadi_middle`]. The measured page holds the count to the lunar
+/// years the almanac itself finds, and reports how near a civil new year
+/// the estimate came.
 ///
 /// ```
 /// use teistro_calendar::{CalendarSystem, Gregorian};
@@ -215,13 +210,7 @@ pub fn year_of(amanta: Masa, sunrise: JulianDay<Utc>) -> i32 {
 /// ```
 #[must_use]
 pub fn middle_of(amanta: Masa, sunrise: JulianDay<Utc>) -> FixedDay {
-    let (day, _) = FixedDay::from_jd(sunrise);
-    let to_middle = (5.5 - f64::from(month_of(amanta) - 1)) * SYNODIC_DAYS;
-    #[allow(
-        clippy::cast_possible_truncation,
-        reason = "at most six months of days"
-    )]
-    day.plus_days(to_middle.round() as i64)
+    kartikadi_middle(amanta, sunrise)
 }
 
 /// The Nepal Sambat month an amanta month is, 1 for Kachhala.
@@ -234,9 +223,8 @@ pub fn middle_of(amanta: Masa, sunrise: JulianDay<Utc>) -> FixedDay {
 /// assert_eq!(month_of(Masa::Ashwina), 12);
 /// ```
 #[must_use]
-#[allow(clippy::cast_possible_truncation, reason = "at most 12")]
 pub const fn month_of(amanta: Masa) -> u8 {
-    ((amanta.id() + 12 - FIRST.id()) % 12 + 1) as u8
+    kartikadi_month(amanta)
 }
 
 #[cfg(test)]

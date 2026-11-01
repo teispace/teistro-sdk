@@ -28,9 +28,11 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_astro::solve::{Caps, next_crossing};
+use teistro_core::catalogue::Masa;
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Utc};
 
+use crate::fixed::FixedDay;
 use crate::solar::{SolarModel, find_sankranti};
 
 /// The Moon a lunisolar calendar needs, beside the Sun a [`SolarModel`]
@@ -382,6 +384,55 @@ fn back(at: JulianDay<Utc>, days: f64) -> Result<JulianDay<Utc>, Error> {
 /// An instant so many days later.
 fn forward(at: JulianDay<Utc>, days: f64) -> Result<JulianDay<Utc>, Error> {
     JulianDay::try_new(at.get() + days).map_err(Error::from)
+}
+
+/// The month of a Kartikadi year an amanta month is, 1 for Kartika to 12
+/// for Ashwina: the count Nepal Sambat and the Vira Nirvana Samvat both
+/// number their years by, each opening at Kartika Shukla Pratipada.
+///
+/// ```
+/// use teistro_calendar::lunisolar::kartikadi_month;
+/// use teistro_core::catalogue::Masa;
+///
+/// assert_eq!(kartikadi_month(Masa::Kartika), 1);
+/// assert_eq!(kartikadi_month(Masa::Chaitra), 6);
+/// assert_eq!(kartikadi_month(Masa::Ashwina), 12);
+/// ```
+#[must_use]
+#[allow(clippy::cast_possible_truncation, reason = "at most 12")]
+pub const fn kartikadi_month(amanta: Masa) -> u8 {
+    ((amanta.id() + 12 - Masa::Kartika.id()) % 12 + 1) as u8
+}
+
+/// An estimate of the middle of the Kartikadi year a day in an amanta
+/// month falls in: its sunrise moved by the months between.
+///
+/// An adhika month moves the estimate by a month at most, and the middle
+/// stands about four months from either end of its civil year: that is
+/// the margin a count of years by the civil year the middle falls in has
+/// for the sidereal months' drift through the civil year, a day in
+/// seventy years (`03-design/nepal-sambat-measured.md`).
+///
+/// ```
+/// use teistro_calendar::lunisolar::kartikadi_middle;
+/// use teistro_calendar::{CalendarSystem, Gregorian};
+/// use teistro_core::catalogue::Masa;
+/// use teistro_core::quantity::JulianDay;
+///
+/// // The Kartikadi year opening in November 2026 has its middle in 2027.
+/// let middle = kartikadi_middle(Masa::Kartika, JulianDay::literal(2_461_369.5));
+/// assert_eq!(Gregorian.date_of(middle)?.year, 2027);
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[must_use]
+pub fn kartikadi_middle(amanta: Masa, sunrise: JulianDay<Utc>) -> FixedDay {
+    let (day, _) = FixedDay::from_jd(sunrise);
+    let to_middle = (5.5 - f64::from(kartikadi_month(amanta) - 1)) * SYNODIC_DAYS;
+    #[allow(
+        clippy::cast_possible_truncation,
+        reason = "at most six months of days"
+    )]
+    day.plus_days(to_middle.round() as i64)
 }
 
 #[cfg(test)]

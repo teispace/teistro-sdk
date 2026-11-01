@@ -16288,7 +16288,14 @@ enum FestivalPack {
   /// The Government of India's central holidays: the rules of the days its
   /// memoranda list, and the four days the moon sets, each as the notice
   /// printed it and marked so (`03-design/india-central-holidays.md`).
-  indiaCentral('INDIA_CENTRAL');
+  indiaCentral('INDIA_CENTRAL'),
+
+  /// The Jain festivals and fasts: Mahavira's birth and nirvana, the Vira
+  /// Nirvana new year, Paryushana and Samvatsari by both Shvetambara
+  /// reckonings, Das Lakshana, the Ayambil Olis and the monthly parva
+  /// tithis, each naming the sect and gaccha that keep it
+  /// (`03-design/vira-nirvana-and-jain-festivals.md`).
+  jain('JAIN');
 
   const FestivalPack(this.key);
 
@@ -18550,6 +18557,7 @@ final class LunarYear extends _Value {
     required this.vikrama,
     required this.shaka,
     required this.kali,
+    required this.viraNirvana,
     required this.opened,
     required this.began,
     required this.ended,
@@ -18573,6 +18581,10 @@ final class LunarYear extends _Value {
 
   /// The Kali year elapsed: the Shaka year plus 3179.
   final int kali;
+
+  /// The Vira Nirvana year that opens at this year's Kartika Shukla
+  /// Pratipada: the Vikrama year plus 470.
+  final int viraNirvana;
 
   /// The new moon that opened the year's first Chaitra, a UTC Julian day.
   final double opened;
@@ -18602,6 +18614,7 @@ final class LunarYear extends _Value {
     vikrama,
     shaka,
     kali,
+    viraNirvana,
     opened,
     began,
     ended,
@@ -18934,6 +18947,7 @@ LunarYear _lunarYear(Map<String, Object?> raw) {
     vikrama: raw['vikrama']! as int,
     shaka: raw['shaka']! as int,
     kali: raw['kali']! as int,
+    viraNirvana: raw['viraNirvana']! as int,
     opened: jd(raw['opened']),
     began: jd(raw['began']),
     ended: jd(raw['ended']),

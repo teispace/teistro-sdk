@@ -43,9 +43,11 @@ pub enum Era {
     BeforeCommonEra = 8,
     /// Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0
     Hijri = 9,
+    /// Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada
+    ViraNirvana = 10,
 }
 
-const BY_KEY: [(&str, Era); 10] = [
+const BY_KEY: [(&str, Era); 11] = [
     ("BEFORE_COMMON_ERA", Era::BeforeCommonEra),
     ("BENGALI", Era::Bengali),
     ("BUDDHA", Era::Buddha),
@@ -56,6 +58,7 @@ const BY_KEY: [(&str, Era); 10] = [
     ("NEPAL_SAMBAT", Era::NepalSambat),
     ("SHAKA", Era::Shaka),
     ("VIKRAMA", Era::Vikrama),
+    ("VIRA_NIRVANA", Era::ViraNirvana),
 ];
 
 const ALIASES: [(&str, Era); 0] = [
@@ -66,7 +69,7 @@ impl Era {
     pub const KIND: Kind = Kind::Era;
 
     /// Every member, in id order.
-    pub const ALL: [Era; 10] = [
+    pub const ALL: [Era; 11] = [
         Era::Vikrama,
         Era::Shaka,
         Era::Kali,
@@ -77,6 +80,7 @@ impl Era {
         Era::CommonEra,
         Era::BeforeCommonEra,
         Era::Hijri,
+        Era::ViraNirvana,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -99,6 +103,7 @@ impl Era {
             Era::CommonEra => "COMMON_ERA",
             Era::BeforeCommonEra => "BEFORE_COMMON_ERA",
             Era::Hijri => "HIJRI",
+            Era::ViraNirvana => "VIRA_NIRVANA",
         }
     }
 
@@ -122,6 +127,7 @@ impl Era {
             Era::CommonEra => "era.COMMON_ERA",
             Era::BeforeCommonEra => "era.BEFORE_COMMON_ERA",
             Era::Hijri => "era.HIJRI",
+            Era::ViraNirvana => "era.VIRA_NIRVANA",
         }
     }
 
@@ -145,6 +151,7 @@ impl Era {
             Era::CommonEra => "The common era of the Gregorian and Julian calendars",
             Era::BeforeCommonEra => "Before the common era; year 1 BCE is astronomical year 0",
             Era::Hijri => "Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0",
+            Era::ViraNirvana => "Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada",
         }
     }
 
@@ -168,6 +175,7 @@ impl Era {
             Era::CommonEra => None,
             Era::BeforeCommonEra => None,
             Era::Hijri => None,
+            Era::ViraNirvana => None,
         }
     }
 
@@ -191,6 +199,7 @@ impl Era {
             Era::CommonEra => Mark::Verified,
             Era::BeforeCommonEra => Mark::Verified,
             Era::Hijri => Mark::Verified,
+            Era::ViraNirvana => Mark::Verified,
         }
     }
 
@@ -214,6 +223,7 @@ impl Era {
             Era::CommonEra => false,
             Era::BeforeCommonEra => false,
             Era::Hijri => false,
+            Era::ViraNirvana => false,
         }
     }
 
@@ -238,6 +248,7 @@ impl Era {
             Era::CommonEra => &[Source { text: "calendar-gregorian-julian", reference: "docs/03-design/calendar-gregorian-julian.md" }],
             Era::BeforeCommonEra => &[Source { text: "calendar-gregorian-julian", reference: "docs/03-design/calendar-gregorian-julian.md" }],
             Era::Hijri => &[Source { text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7", reference: "docs/calendars/hijri.md" }],
+            Era::ViraNirvana => &[Source { text: "Sircar, Indian Epigraphy (1965), pp. 321-322", reference: "docs/03-design/vira-nirvana-and-jain-festivals.md" }, Source { text: "Jinasena, Harivamsha (783 CE): 605 years and 5 months before the Shaka era", reference: "docs/03-design/vira-nirvana-and-jain-festivals.md" }],
         }
     }
 
@@ -261,6 +272,7 @@ impl Era {
             Era::CommonEra => &[],
             Era::BeforeCommonEra => &[],
             Era::Hijri => &[],
+            Era::ViraNirvana => &[],
         }
     }
 
@@ -309,7 +321,7 @@ impl Era {
     /// use teistro_core::catalogue::Era;
     ///
     /// assert_eq!(Era::from_id(0), Some(Era::Vikrama));
-    /// assert_eq!(Era::from_id(10), None);
+    /// assert_eq!(Era::from_id(11), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Era> {
@@ -324,6 +336,7 @@ impl Era {
             7 => Some(Era::CommonEra),
             8 => Some(Era::BeforeCommonEra),
             9 => Some(Era::Hijri),
+            10 => Some(Era::ViraNirvana),
             _ => None,
         }
     }

@@ -458,6 +458,7 @@ final class AlmanacReads {
                 Reads.integer(y, "vikrama"),
                 Reads.integer(y, "shaka"),
                 Reads.integer(y, "kali"),
+                Reads.integer(y, "viraNirvana"),
                 Reads.number(y, "opened"),
                 Reads.number(y, "began"),
                 Reads.number(y, "ended"),

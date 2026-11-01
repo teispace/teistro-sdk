@@ -9670,7 +9670,7 @@ class MuhurtaAnswer:
     instant among the applied conventions, and the hash of the value."""
 
 
-FestivalPack = Literal["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA", "GAUDIYA", "INDIA_CENTRAL"]
+FestivalPack = Literal["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA", "GAUDIYA", "INDIA_CENTRAL", "JAIN"]
 """A pack of festival rules the SDK ships: *Dharmasindhu*'s; those as
 Nepal's national panchanga keeps them (a rite of the daylight on the day
 whose sunrise holds its tithi) with the days it counts from them
@@ -10757,6 +10757,9 @@ class LunarYear:
 
     kali: int
     """The Kali year elapsed: the Shaka year plus 3179."""
+
+    vira_nirvana: int
+    """The Vira Nirvana year that opens at this year's Kartika Shukla Pratipada: the Vikrama year plus 470."""
 
     opened: float
     """The new moon that opened the year's first Chaitra, a UTC Julian day."""
@@ -17375,6 +17378,7 @@ def _lunar_year(raw: Mapping[str, Any]) -> LunarYear:
         vikrama=raw["vikrama"],
         shaka=raw["shaka"],
         kali=raw["kali"],
+        vira_nirvana=raw["viraNirvana"],
         opened=raw["opened"],
         began=raw["began"],
         ended=raw["ended"],

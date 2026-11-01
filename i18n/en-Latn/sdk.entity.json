@@ -478,6 +478,12 @@
       "name": "Before Common Era",
       "prose": "before the Common Era",
       "iast": "Īsvī Pūrva"
+    },
+    "VIRA_NIRVANA": {
+      "short": "VNS",
+      "name": "Vira Nirvana Samvat",
+      "prose": "the Vira Nirvana Samvat",
+      "iast": "Vīra Nirvāṇa Saṃvat"
     }
   },
   "avastha_baladi": {
@@ -4392,6 +4398,78 @@
       "name": "Ashunya Shayana Vrata",
       "prose": "the Ashunya-shayana vrata",
       "iast": "Aśūnyaśayanavrata"
+    },
+    "MAHAVIR_NIRVANA": {
+      "name": "Mahavir Nirvana",
+      "prose": "Mahavir Nirvana"
+    },
+    "VIRA_NIRVANA_NEW_YEAR": {
+      "name": "Vira Nirvana new year",
+      "prose": "Vira Nirvana new year"
+    },
+    "PARYUSHANA": {
+      "name": "Paryushana begins",
+      "prose": "Paryushana begins"
+    },
+    "SAMVATSARI": {
+      "name": "Samvatsari",
+      "prose": "Samvatsari"
+    },
+    "PARYUSHANA_TRAYODASHI": {
+      "name": "Paryushana begins (from the dark 13th)",
+      "prose": "Paryushana begins (from the dark 13th)"
+    },
+    "SAMVATSARI_PANCHAMI": {
+      "name": "Samvatsari (on the bright 5th)",
+      "prose": "Samvatsari (on the bright 5th)"
+    },
+    "DASA_LAKSHANA": {
+      "name": "Das Lakshana begins",
+      "prose": "Das Lakshana begins"
+    },
+    "CHAITRA_AYAMBIL_OLI": {
+      "name": "Chaitra Ayambil Oli begins",
+      "prose": "Chaitra Ayambil Oli begins"
+    },
+    "CHAITRA_AYAMBIL_OLI_END": {
+      "name": "Chaitra Ayambil Oli ends",
+      "prose": "Chaitra Ayambil Oli ends"
+    },
+    "ASHVINA_AYAMBIL_OLI": {
+      "name": "Ashvina Ayambil Oli begins",
+      "prose": "Ashvina Ayambil Oli begins"
+    },
+    "ASHVINA_AYAMBIL_OLI_END": {
+      "name": "Ashvina Ayambil Oli ends",
+      "prose": "Ashvina Ayambil Oli ends"
+    },
+    "JAIN_PARVA_DVITIYA": {
+      "name": "Parva tithi: the 2nd",
+      "prose": "Parva tithi: the 2nd"
+    },
+    "JAIN_PARVA_PANCHAMI": {
+      "name": "Parva tithi: the 5th",
+      "prose": "Parva tithi: the 5th"
+    },
+    "JAIN_PARVA_ASHTAMI": {
+      "name": "Parva tithi: the 8th",
+      "prose": "Parva tithi: the 8th"
+    },
+    "JAIN_PARVA_EKADASHI": {
+      "name": "Parva tithi: the 11th",
+      "prose": "Parva tithi: the 11th"
+    },
+    "JAIN_PARVA_CHATURDASHI": {
+      "name": "Parva tithi: the 14th",
+      "prose": "Parva tithi: the 14th"
+    },
+    "JAIN_PARVA_PURNIMA": {
+      "name": "Parva tithi: the full moon",
+      "prose": "Parva tithi: the full moon"
+    },
+    "JAIN_PARVA_AMAVASYA": {
+      "name": "Parva tithi: the new moon",
+      "prose": "Parva tithi: the new moon"
     }
   },
   "agni_vasa": {

@@ -1176,6 +1176,7 @@ void _engineTests() {
     expect(value.year.samvatsara, Samvatsara.siddharthi);
     expect(value.year.vikrama, 2082);
     expect(value.year.kali, 5126);
+    expect(value.year.viraNirvana, 2552);
     expect(value.month.month, Masa.magha);
     expect(value.month.amanta, Masa.pausha);
     expect(value.month.kind, MonthKind.nija);
@@ -1235,6 +1236,14 @@ void _engineTests() {
     expect((fast['kind'], fast['end']), ('UPAVASA', 'PARANA'));
     expect(() => sky.almanac.festivalPack('NO_SUCH_PACK'), throwsA(anything));
     expect(FestivalPack.indiaCentral.key, listing['pack']);
+    final jain =
+        (sky.almanac.festivalPack(FestivalPack.jain.key)['rules']!
+                as List<Object?>)
+            .cast<Map<String, Object?>>();
+    final das = jain.firstWhere((rule) => rule['key'] == 'DASA_LAKSHANA');
+    expect((das['meta']! as Map<String, Object?>)['communities'], [
+      'DIGAMBARA',
+    ]);
     expect(
       const FestivalRequest(
         rules: FestivalPack.indiaCentral,

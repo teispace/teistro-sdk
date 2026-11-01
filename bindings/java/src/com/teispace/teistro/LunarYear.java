@@ -12,6 +12,7 @@ import java.util.List;
  * @param vikrama the Vikrama year
  * @param shaka the Shaka year, whose number the southern count reads
  * @param kali the Kali year elapsed: the Shaka year plus 3179
+ * @param viraNirvana the Vira Nirvana year that opens at this year's Kartika Shukla Pratipada: the Vikrama year plus 470
  * @param opened the new moon that opened the year's first Chaitra, a UTC Julian day
  * @param began the sunrise of Chaitra Shukla Pratipada, where the name is
  *     read, a UTC Julian day
@@ -23,7 +24,7 @@ import java.util.List;
  *     every rule its texts give ({@code 03-design/year-rulers.md})
  */
 public record LunarYear(
-        Samvatsara samvatsara, String count, int vikrama, int shaka, int kali, double opened, double began, double ended,
+        Samvatsara samvatsara, String count, int vikrama, int shaka, int kali, int viraNirvana, double opened, double began, double ended,
         List<JovianYear> jovian, Samvatsara lupta, List<YearRuler> rulers) {
     /** Keeps the lists unmodifiable. */
     public LunarYear {
