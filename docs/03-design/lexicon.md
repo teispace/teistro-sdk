@@ -1,7 +1,9 @@
 # The lexicon: names to keys, dates in text, and claims checked (A2-3, SR-61, A2-4)
 
-Status: `draft`, 2026-11-01: designed before code. A2-3 (the lexicon and
-its reverse), SR-61 (dates found in free text) and A2-4 (claims checked
+Status: `built`, 2026-11-01: `intl.lexicon` and `intl.lookup`
+(`crates/intl/src/lexicon.rs`), `intl.dates` (`crates/intl/src/dates.rs`)
+and `verify.claims` (`crates/sdk/src/area/verify.rs`) in every binding
+and MCP; designed before code. A2-3 (the lexicon and its reverse), SR-61 (dates found in free text) and A2-4 (claims checked
 against the SDK) are one stack: the second and third read text through
 the first.
 
@@ -310,9 +312,21 @@ slots.
 
 ## 5. Cost
 
-Measured on the maintainer's Mac (M-series, release build), by the
-`intl` bench's `lexicon` group: see §5 of the measured numbers once
-recorded.
+The lexicon is built once per `Intl`, on the first lookup, for every
+locale the tree holds, and kept; each call after that reads the built
+one. Measured on the maintainer's Mac (Apple M2 Pro, release build) by
+the `intl` bench (`cargo bench -p teistro-intl --bench intl --
+'lexicon|dates'`), 2026-11-01, criterion's median:
+
+| What | Cost |
+| --- | --- |
+| Build every locale's lexicon from nothing, then one lookup (what a context's first lookup pays) | 8.1 ms |
+| Look up two sentences of 18 words on a built lexicon | 30 µs |
+| Read a sentence naming three dates on a built lexicon | 8.5 µs |
+
+A claim check (`verify.claims`) adds the lookup to one
+`almanac.sankalpa` at the asked instant, which dominates it; it is not
+measured here.
 
 ## 6. Cruxes
 
