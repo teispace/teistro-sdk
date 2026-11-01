@@ -443,7 +443,6 @@ class FestivalKey(enum.StrEnum):
     CHANDRODAYA = "festival.CHANDRODAYA"
     SANKASHTA_CHATURTHI = "festival.SANKASHTA_CHATURTHI"
     KARAKA_CHATURTHI = "festival.KARAKA_CHATURTHI"
-    ASHUNYA_SHAYANA = "festival.ASHUNYA_SHAYANA"
     MESHA_SANKRANTI = "festival.MESHA_SANKRANTI"
     VRISHABHA_SANKRANTI = "festival.VRISHABHA_SANKRANTI"
     MITHUNA_SANKRANTI = "festival.MITHUNA_SANKRANTI"
@@ -707,6 +706,7 @@ class FestivalKey(enum.StrEnum):
     GOOD_FRIDAY = "festival.GOOD_FRIDAY"
     HOLI = "festival.HOLI"
     FAGU_PURNIMA = "festival.FAGU_PURNIMA"
+    ASHUNYA_SHAYANA = "festival.ASHUNYA_SHAYANA"
 
 
 class FestivalKindKey(enum.StrEnum):

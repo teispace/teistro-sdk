@@ -507,6 +507,10 @@ typedef enum ts_kind {
      * The eight Gowri (gauri) of the Tamil almanacs' Gowri panchangam, each an eighth of the daylight or of the night ruled by a graha (`03-design/gowri-panchangam.md`). A printed reading with no text read behind it (crux C1052); `auspicious` is the nalla neram the almanacs mark.
      */
     TS_KIND_GOWRI = 80,
+    /**
+     * How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).
+     */
+    TS_KIND_FAST_KIND = 81,
 } ts_kind;
 
 /**
@@ -4772,6 +4776,42 @@ typedef enum ts_gowri {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_GOWRI_UNKNOWN = -1,
 } ts_gowri;
+
+/**
+ * How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62). Members are the catalogue's ids; the full key id is `(TS_KIND_FAST_KIND << 16) | member`.
+ */
+typedef enum ts_fast_kind {
+    /**
+     * No meal by day or by night (अहोरात्रभोजनाभावः)
+     */
+    TS_FAST_KIND_UPAVASA = 0,
+    /**
+     * One meal, of one grain, once, at midday (मध्याह्ने एकवारमेकान्नभोजनम्)
+     */
+    TS_FAST_KIND_EKABHAKTA = 1,
+    /**
+     * The one meal at night, in the pradosha, after the three ghatis of dusk (रात्रावेव प्रदोषकाले भोजनम्)
+     */
+    TS_FAST_KIND_NAKTA = 2,
+    /**
+     * Only the food that comes that day unasked (याचनां विना तद्दिने लब्धस्यान्नस्य भोजनम्)
+     */
+    TS_FAST_KIND_AYACHITA = 3,
+    /**
+     * Fruit only: what one unable to fast keeps instead (फलाहार)
+     */
+    TS_FAST_KIND_PHALAHARA = 4,
+    /**
+     * Milk only: what one unable to fast keeps instead (क्षीरभक्ष)
+     */
+    TS_FAST_KIND_KSHIRAHARA = 5,
+    /**
+     * Water only: what one unable to fast keeps instead (जलाहार)
+     */
+    TS_FAST_KIND_JALAHARA = 6,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_FAST_KIND_UNKNOWN = -1,
+} ts_fast_kind;
 
 /**
  * The status of a call, with the code it has at the C boundary.
@@ -10523,7 +10563,8 @@ ts_status ts_almanac_anniversaries(const ts_context * context, const char * requ
  * (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`:
  * each row `{key, form, source, meta, unsourced}`, `form` how its day is
  * found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta`
- * its kind, tradition, communities and regions, `unsourced` the fields no
+ * its kind, tradition, communities, regions and fast (each reading
+ * `{kind, ifUnable, start, end, source}`), `unsourced` the fields no
  * source gives, and a published row's `subjectTo` and `lastYear`.
  *
  * `request_json` is `{"pack"}`, a pack the SDK ships. Nothing is

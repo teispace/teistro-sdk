@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 364 of the examples' 376 members.
+/// The cases compare 389 of the examples' 401 members.
 library;
 
 import 'dart:convert';
@@ -259,7 +259,7 @@ void main() {
       'almanac.days',
       path: ['festivals', 'published', 0],
       dropping: [['entries', 0, 'window']],
-      members: 4,
+      members: 5,
       written: PublishedSet(
         entries: [
           PublishedEntryAdd(
@@ -274,6 +274,15 @@ void main() {
             key: 'x',
             meta: FestivalMeta(
               communities: ['x'],
+              fast: [
+                VrataFast(
+                  end: FastEnd.night,
+                  ifUnable: true,
+                  kind: FastKind.ekabhakta,
+                  source: 'x',
+                  start: FastStart.morning,
+                ),
+              ],
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
@@ -297,7 +306,7 @@ void main() {
       'almanac.days',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 26,
+      members: 30,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -326,6 +335,15 @@ void main() {
           ),
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -376,6 +394,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -400,6 +427,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -429,6 +465,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -624,7 +669,7 @@ void main() {
       'almanac.digest',
       path: ['festivals', 'published', 0],
       dropping: [['entries', 0, 'window']],
-      members: 4,
+      members: 5,
       written: PublishedSet(
         entries: [
           PublishedEntryAdd(
@@ -639,6 +684,15 @@ void main() {
             key: 'x',
             meta: FestivalMeta(
               communities: ['x'],
+              fast: [
+                VrataFast(
+                  end: FastEnd.night,
+                  ifUnable: true,
+                  kind: FastKind.ekabhakta,
+                  source: 'x',
+                  start: FastStart.morning,
+                ),
+              ],
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
@@ -662,7 +716,7 @@ void main() {
       'almanac.digest',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 26,
+      members: 30,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -691,6 +745,15 @@ void main() {
           ),
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -741,6 +804,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -765,6 +837,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -794,6 +875,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -874,7 +964,7 @@ void main() {
       'almanac.festival_calendar',
       path: ['festivals', 'published', 0],
       dropping: [['entries', 0, 'window']],
-      members: 4,
+      members: 5,
       written: PublishedSet(
         entries: [
           PublishedEntryAdd(
@@ -889,6 +979,15 @@ void main() {
             key: 'x',
             meta: FestivalMeta(
               communities: ['x'],
+              fast: [
+                VrataFast(
+                  end: FastEnd.night,
+                  ifUnable: true,
+                  kind: FastKind.ekabhakta,
+                  source: 'x',
+                  start: FastStart.morning,
+                ),
+              ],
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
@@ -912,7 +1011,7 @@ void main() {
       'almanac.festival_calendar',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 26,
+      members: 30,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -941,6 +1040,15 @@ void main() {
           ),
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -991,6 +1099,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -1015,6 +1132,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -1044,6 +1170,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -1251,7 +1386,7 @@ void main() {
       'almanac.next',
       path: ['festivals', 'published', 0],
       dropping: [['entries', 0, 'window']],
-      members: 4,
+      members: 5,
       written: PublishedSet(
         entries: [
           PublishedEntryAdd(
@@ -1266,6 +1401,15 @@ void main() {
             key: 'x',
             meta: FestivalMeta(
               communities: ['x'],
+              fast: [
+                VrataFast(
+                  end: FastEnd.night,
+                  ifUnable: true,
+                  kind: FastKind.ekabhakta,
+                  source: 'x',
+                  start: FastStart.morning,
+                ),
+              ],
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
@@ -1289,7 +1433,7 @@ void main() {
       'almanac.next',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 26,
+      members: 30,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1318,6 +1462,15 @@ void main() {
           ),
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -1368,6 +1521,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -1392,6 +1554,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -1421,6 +1592,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -1487,7 +1667,7 @@ void main() {
       'almanac.publishedReasons',
       path: ['festivals', 'published', 0],
       dropping: [['entries', 0, 'window']],
-      members: 4,
+      members: 5,
       written: PublishedSet(
         entries: [
           PublishedEntryAdd(
@@ -1502,6 +1682,15 @@ void main() {
             key: 'x',
             meta: FestivalMeta(
               communities: ['x'],
+              fast: [
+                VrataFast(
+                  end: FastEnd.night,
+                  ifUnable: true,
+                  kind: FastKind.ekabhakta,
+                  source: 'x',
+                  start: FastStart.morning,
+                ),
+              ],
               kind: FestivalKind.religiousCultural,
               optional: true,
               regions: ['x'],
@@ -1525,7 +1714,7 @@ void main() {
       'almanac.publishedReasons',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 26,
+      members: 30,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1554,6 +1743,15 @@ void main() {
           ),
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -1604,6 +1802,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -1628,6 +1835,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
@@ -1657,6 +1873,15 @@ void main() {
           key: 'x',
           meta: FestivalMeta(
             communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
             kind: FestivalKind.religiousCultural,
             optional: true,
             regions: ['x'],
