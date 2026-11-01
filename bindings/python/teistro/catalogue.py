@@ -306,6 +306,15 @@ class Kind(Member):
     fast_kind = 81
     """How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62)."""
 
+    year_office = 82
+    """One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`)."""
+
+    ruler_text = 83
+    """A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1)."""
+
+    ruler_day_rule = 84
+    """Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072)."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3760,6 +3769,84 @@ class FastKind(Catalogued):
     """
 
 
+class YearOffice(Catalogued):
+    """One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_YEAR_OFFICE << 16) | member`."""
+
+    RAJA = 0
+    """The king, the year's lord (abdapa, varsheśa): the lord of Chaitra Shukla Pratipada's weekday"""
+
+    MANTRI = 1
+    """The minister (mantrī; bhūpati in Narada Samhita): Mesha's ingress"""
+
+    SENADHIPATI = 2
+    """The commander (senādhipati): Simha's ingress"""
+
+    SASYADHIPATI = 3
+    """The lord of the crops (sasyeśa), Jyotirnibandha's first lord of grain: Karka's ingress"""
+
+    DHANYADHIPATI = 4
+    """The lord of grain (dhānyādhipa), Jyotirnibandha's later lord of grain: Dhanu's ingress"""
+
+    ARGHADHIPATI = 5
+    """The lord of prices (arghādhipati): Mithuna's ingress"""
+
+    MEGHADHIPATI = 6
+    """The lord of the clouds (meghādhipa): the Sun's entry into Ardra"""
+
+    RASADHIPATI = 7
+    """The lord of juices (rasādhipa): Tula's ingress"""
+
+    NIRASADHIPATI = 8
+    """The lord of dry goods (nīraseśa): Makara's ingress"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class RulerText(Catalogued):
+    """A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_TEXT << 16) | member`."""
+
+    JYOTIRNIBANDHA = 0
+    """Jyotirnibandha p. 29 vv. 7-10, quoting Jyotiṣaphalodaya: the raja, the mantri and the lords of the crops, the clouds, juices and grain"""
+
+    NARADA_SAMHITA = 1
+    """Narada Samhita ch. 2 vv. 1-3: the raja, the mantri and the lords of the crops, juices and dry goods"""
+
+    NAVANAYAKA = 2
+    """The nine (navanāyaka) of the southern panchangas, which add the commander and the lord of prices; no verse read"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class RulerDayRule(Catalogued):
+    """Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_DAY_RULE << 16) | member`."""
+
+    SUNRISE = 0
+    """The raja: the weekday at the sunrise Chaitra Shukla Pratipada runs at; of two the earlier, and of none the day it began in"""
+
+    NEW_MOON = 1
+    """The raja: the weekday holding the junction of the new moon and the pratipada"""
+
+    GARGA = 2
+    """The raja: the new moon's day if it falls before that day's midday, else the next"""
+
+    DAYLIGHT = 3
+    """An ingress: the day whose daylight holds it, and for one at night the day the next sunrise begins"""
+
+    VARA = 4
+    """An ingress: the weekday, sunrise to sunrise, holding its instant"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -6025,6 +6112,9 @@ _KEYS: dict[str, dict[int, str]] = {
         79: "day_marker",
         80: "gowri",
         81: "fast_kind",
+        82: "year_office",
+        83: "ruler_text",
+        84: "ruler_day_rule",
     },
     "Graha": {
         0: "SUN",
@@ -7177,6 +7267,32 @@ _KEYS: dict[str, dict[int, str]] = {
         6: "JALAHARA",
         -1: "UNKNOWN",
     },
+    "YearOffice": {
+        0: "RAJA",
+        1: "MANTRI",
+        2: "SENADHIPATI",
+        3: "SASYADHIPATI",
+        4: "DHANYADHIPATI",
+        5: "ARGHADHIPATI",
+        6: "MEGHADHIPATI",
+        7: "RASADHIPATI",
+        8: "NIRASADHIPATI",
+        -1: "UNKNOWN",
+    },
+    "RulerText": {
+        0: "JYOTIRNIBANDHA",
+        1: "NARADA_SAMHITA",
+        2: "NAVANAYAKA",
+        -1: "UNKNOWN",
+    },
+    "RulerDayRule": {
+        0: "SUNRISE",
+        1: "NEW_MOON",
+        2: "GARGA",
+        3: "DAYLIGHT",
+        4: "VARA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -7943,4 +8059,7 @@ _KINDS: dict[str, str] = {
     "DayMarker": "day_marker",
     "Gowri": "gowri",
     "FastKind": "fast_kind",
+    "YearOffice": "year_office",
+    "RulerText": "ruler_text",
+    "RulerDayRule": "ruler_day_rule",
 }

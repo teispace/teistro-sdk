@@ -78,6 +78,9 @@ mod tradition;
 mod day_marker;
 mod gowri;
 mod fast_kind;
+mod year_office;
+mod ruler_text;
+mod ruler_day_rule;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -156,6 +159,9 @@ pub use tradition::*;
 pub use day_marker::*;
 pub use gowri::*;
 pub use fast_kind::*;
+pub use year_office::*;
+pub use ruler_text::*;
+pub use ruler_day_rule::*;
 
 use crate::key::KeyId;
 
@@ -248,6 +254,9 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::DayMarker => DayMarker::from_key(key).map(DayMarker::key_id),
         Kind::Gowri => Gowri::from_key(key).map(Gowri::key_id),
         Kind::FastKind => FastKind::from_key(key).map(FastKind::key_id),
+        Kind::YearOffice => YearOffice::from_key(key).map(YearOffice::key_id),
+        Kind::RulerText => RulerText::from_key(key).map(RulerText::key_id),
+        Kind::RulerDayRule => RulerDayRule::from_key(key).map(RulerDayRule::key_id),
         _ => None,
     }
 }
@@ -338,6 +347,9 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::DayMarker => DayMarker::from_id(id.id()).map(DayMarker::key),
         Kind::Gowri => Gowri::from_id(id.id()).map(Gowri::key),
         Kind::FastKind => FastKind::from_id(id.id()).map(FastKind::key),
+        Kind::YearOffice => YearOffice::from_id(id.id()).map(YearOffice::key),
+        Kind::RulerText => RulerText::from_id(id.id()).map(RulerText::key),
+        Kind::RulerDayRule => RulerDayRule::from_id(id.id()).map(RulerDayRule::key),
         _ => None,
     }
 }

@@ -22361,6 +22361,345 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "year_office",
+      "number": 82,
+      "version": 1,
+      "doc": "One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "RAJA",
+          "id": 0,
+          "doc": "The king, the year's lord (abdapa, varsheśa): the lord of Chaitra Shukla Pratipada's weekday",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29, rājādīnāṃ nirṇayaḥ vv. 1-7, 10"
+            },
+            {
+              "text": "Narada Samhita (Kashi Sanskrit Series 40, 1984)",
+              "ref": "2.1"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MANTRI",
+          "id": 1,
+          "doc": "The minister (mantrī; bhūpati in Narada Samhita): Mesha's ingress",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29 vv. 7, 10"
+            },
+            {
+              "text": "Narada Samhita (Kashi Sanskrit Series 40, 1984)",
+              "ref": "2.2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SENADHIPATI",
+          "id": 2,
+          "doc": "The commander (senādhipati): Simha's ingress",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the southern panchangas' nine (navanāyaka)",
+              "ref": "`03-design/year-rulers.md` §1, C1071"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "SASYADHIPATI",
+          "id": 3,
+          "doc": "The lord of the crops (sasyeśa), Jyotirnibandha's first lord of grain: Karka's ingress",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29 vv. 8, 10"
+            },
+            {
+              "text": "Narada Samhita (Kashi Sanskrit Series 40, 1984)",
+              "ref": "2.2"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DHANYADHIPATI",
+          "id": 4,
+          "doc": "The lord of grain (dhānyādhipa), Jyotirnibandha's later lord of grain: Dhanu's ingress",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29 vv. 9, 10"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "ARGHADHIPATI",
+          "id": 5,
+          "doc": "The lord of prices (arghādhipati): Mithuna's ingress",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the southern panchangas' nine (navanāyaka)",
+              "ref": "`03-design/year-rulers.md` §1, C1071"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "MEGHADHIPATI",
+          "id": 6,
+          "doc": "The lord of the clouds (meghādhipa): the Sun's entry into Ardra",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29 vv. 8, 10"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RASADHIPATI",
+          "id": 7,
+          "doc": "The lord of juices (rasādhipa): Tula's ingress",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29 vv. 9, 10"
+            },
+            {
+              "text": "Narada Samhita (Kashi Sanskrit Series 40, 1984)",
+              "ref": "2.3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NIRASADHIPATI",
+          "id": 8,
+          "doc": "The lord of dry goods (nīraseśa): Makara's ingress",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Narada Samhita (Kashi Sanskrit Series 40, 1984)",
+              "ref": "2.3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "ruler_text",
+      "number": 83,
+      "version": 1,
+      "doc": "A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "JYOTIRNIBANDHA",
+          "id": 0,
+          "doc": "Jyotirnibandha p. 29 vv. 7-10, quoting Jyotiṣaphalodaya: the raja, the mantri and the lords of the crops, the clouds, juices and grain",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NARADA_SAMHITA",
+          "id": 1,
+          "doc": "Narada Samhita ch. 2 vv. 1-3: the raja, the mantri and the lords of the crops, juices and dry goods",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Narada Samhita (Kashi Sanskrit Series 40, 1984)",
+              "ref": "2.1-3, pp. 6-7"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NAVANAYAKA",
+          "id": 2,
+          "doc": "The nine (navanāyaka) of the southern panchangas, which add the commander and the lord of prices; no verse read",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the southern panchangas' nine (navanāyaka)",
+              "ref": "`03-design/year-rulers.md` §1, C1071"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "ruler_day_rule",
+      "number": 84,
+      "version": 1,
+      "doc": "Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "SUNRISE",
+          "id": 0,
+          "doc": "The raja: the weekday at the sunrise Chaitra Shukla Pratipada runs at; of two the earlier, and of none the day it began in",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29 vv. 2-4"
+            },
+            {
+              "text": "Narada Samhita (Kashi Sanskrit Series 40, 1984)",
+              "ref": "2.1"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NEW_MOON",
+          "id": 1,
+          "doc": "The raja: the weekday holding the junction of the new moon and the pratipada",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29 v. 1, from Ratnāvalī"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "GARGA",
+          "id": 2,
+          "doc": "The raja: the new moon's day if it falls before that day's midday, else the next",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29 v. 6, Garga"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DAYLIGHT",
+          "id": 3,
+          "doc": "An ingress: the day whose daylight holds it, and for one at night the day the next sunrise begins",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "the printed southern panchangas",
+              "ref": "`03-design/year-rulers.md` §2.2, C1072"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "VARA",
+          "id": 4,
+          "doc": "An ingress: the weekday, sunrise to sunrise, holding its instant",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
+              "ref": "p. 29 vv. 7-9"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

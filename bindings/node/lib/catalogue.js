@@ -294,6 +294,9 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   DayMarker: 'day_marker',
   Gowri: 'gowri',
   FastKind: 'fast_kind',
+  YearOffice: 'year_office',
+  RulerText: 'ruler_text',
+  RulerDayRule: 'ruler_day_rule',
 });
 
 /**
@@ -377,6 +380,9 @@ export const KindById = /* @__PURE__ */ new Map([
   [79, 'day_marker'],
   [80, 'gowri'],
   [81, 'fast_kind'],
+  [82, 'year_office'],
+  [83, 'ruler_text'],
+  [84, 'ruler_day_rule'],
 ]);
 
 /** Every Graha by name. */
@@ -3059,6 +3065,73 @@ export const FastKindById = /* @__PURE__ */ new Map([
   [4, 'fast_kind.PHALAHARA'],
   [5, 'fast_kind.KSHIRAHARA'],
   [6, 'fast_kind.JALAHARA'],
+]);
+
+/** Every YearOffice by name. */
+export const YearOffice = /* @__PURE__ */ Object.freeze({
+  Raja: 'year_office.RAJA',
+  Mantri: 'year_office.MANTRI',
+  Senadhipati: 'year_office.SENADHIPATI',
+  Sasyadhipati: 'year_office.SASYADHIPATI',
+  Dhanyadhipati: 'year_office.DHANYADHIPATI',
+  Arghadhipati: 'year_office.ARGHADHIPATI',
+  Meghadhipati: 'year_office.MEGHADHIPATI',
+  Rasadhipati: 'year_office.RASADHIPATI',
+  Nirasadhipati: 'year_office.NIRASADHIPATI',
+});
+
+/**
+ * Every YearOffice by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const YearOfficeById = /* @__PURE__ */ new Map([
+  [0, 'year_office.RAJA'],
+  [1, 'year_office.MANTRI'],
+  [2, 'year_office.SENADHIPATI'],
+  [3, 'year_office.SASYADHIPATI'],
+  [4, 'year_office.DHANYADHIPATI'],
+  [5, 'year_office.ARGHADHIPATI'],
+  [6, 'year_office.MEGHADHIPATI'],
+  [7, 'year_office.RASADHIPATI'],
+  [8, 'year_office.NIRASADHIPATI'],
+]);
+
+/** Every RulerText by name. */
+export const RulerText = /* @__PURE__ */ Object.freeze({
+  Jyotirnibandha: 'ruler_text.JYOTIRNIBANDHA',
+  NaradaSamhita: 'ruler_text.NARADA_SAMHITA',
+  Navanayaka: 'ruler_text.NAVANAYAKA',
+});
+
+/**
+ * Every RulerText by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const RulerTextById = /* @__PURE__ */ new Map([
+  [0, 'ruler_text.JYOTIRNIBANDHA'],
+  [1, 'ruler_text.NARADA_SAMHITA'],
+  [2, 'ruler_text.NAVANAYAKA'],
+]);
+
+/** Every RulerDayRule by name. */
+export const RulerDayRule = /* @__PURE__ */ Object.freeze({
+  Sunrise: 'ruler_day_rule.SUNRISE',
+  NewMoon: 'ruler_day_rule.NEW_MOON',
+  Garga: 'ruler_day_rule.GARGA',
+  Daylight: 'ruler_day_rule.DAYLIGHT',
+  Vara: 'ruler_day_rule.VARA',
+});
+
+/**
+ * Every RulerDayRule by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const RulerDayRuleById = /* @__PURE__ */ new Map([
+  [0, 'ruler_day_rule.SUNRISE'],
+  [1, 'ruler_day_rule.NEW_MOON'],
+  [2, 'ruler_day_rule.GARGA'],
+  [3, 'ruler_day_rule.DAYLIGHT'],
+  [4, 'ruler_day_rule.VARA'],
 ]);
 
 /** Every Status by name. */

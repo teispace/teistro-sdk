@@ -511,6 +511,18 @@ typedef enum ts_kind {
      * How a vrata's fast is kept, in the words of the texts that define it: *Dharmasindhu*'s four observances of the body (p. 6) and what p. 18 allows one unable to keep the Ekadashi's (`03-design/festival-metadata.md` §6, SR-62).
      */
     TS_KIND_FAST_KIND = 81,
+    /**
+     * One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`).
+     */
+    TS_KIND_YEAR_OFFICE = 82,
+    /**
+     * A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1).
+     */
+    TS_KIND_RULER_TEXT = 83,
+    /**
+     * Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).
+     */
+    TS_KIND_RULER_DAY_RULE = 84,
 } ts_kind;
 
 /**
@@ -4812,6 +4824,98 @@ typedef enum ts_fast_kind {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_FAST_KIND_UNKNOWN = -1,
 } ts_fast_kind;
+
+/**
+ * One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_YEAR_OFFICE << 16) | member`.
+ */
+typedef enum ts_year_office {
+    /**
+     * The king, the year's lord (abdapa, varsheśa): the lord of Chaitra Shukla Pratipada's weekday
+     */
+    TS_YEAR_OFFICE_RAJA = 0,
+    /**
+     * The minister (mantrī; bhūpati in Narada Samhita): Mesha's ingress
+     */
+    TS_YEAR_OFFICE_MANTRI = 1,
+    /**
+     * The commander (senādhipati): Simha's ingress
+     */
+    TS_YEAR_OFFICE_SENADHIPATI = 2,
+    /**
+     * The lord of the crops (sasyeśa), Jyotirnibandha's first lord of grain: Karka's ingress
+     */
+    TS_YEAR_OFFICE_SASYADHIPATI = 3,
+    /**
+     * The lord of grain (dhānyādhipa), Jyotirnibandha's later lord of grain: Dhanu's ingress
+     */
+    TS_YEAR_OFFICE_DHANYADHIPATI = 4,
+    /**
+     * The lord of prices (arghādhipati): Mithuna's ingress
+     */
+    TS_YEAR_OFFICE_ARGHADHIPATI = 5,
+    /**
+     * The lord of the clouds (meghādhipa): the Sun's entry into Ardra
+     */
+    TS_YEAR_OFFICE_MEGHADHIPATI = 6,
+    /**
+     * The lord of juices (rasādhipa): Tula's ingress
+     */
+    TS_YEAR_OFFICE_RASADHIPATI = 7,
+    /**
+     * The lord of dry goods (nīraseśa): Makara's ingress
+     */
+    TS_YEAR_OFFICE_NIRASADHIPATI = 8,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_YEAR_OFFICE_UNKNOWN = -1,
+} ts_year_office;
+
+/**
+ * A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_TEXT << 16) | member`.
+ */
+typedef enum ts_ruler_text {
+    /**
+     * Jyotirnibandha p. 29 vv. 7-10, quoting Jyotiṣaphalodaya: the raja, the mantri and the lords of the crops, the clouds, juices and grain
+     */
+    TS_RULER_TEXT_JYOTIRNIBANDHA = 0,
+    /**
+     * Narada Samhita ch. 2 vv. 1-3: the raja, the mantri and the lords of the crops, juices and dry goods
+     */
+    TS_RULER_TEXT_NARADA_SAMHITA = 1,
+    /**
+     * The nine (navanāyaka) of the southern panchangas, which add the commander and the lord of prices; no verse read
+     */
+    TS_RULER_TEXT_NAVANAYAKA = 2,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_RULER_TEXT_UNKNOWN = -1,
+} ts_ruler_text;
+
+/**
+ * Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072). Members are the catalogue's ids; the full key id is `(TS_KIND_RULER_DAY_RULE << 16) | member`.
+ */
+typedef enum ts_ruler_day_rule {
+    /**
+     * The raja: the weekday at the sunrise Chaitra Shukla Pratipada runs at; of two the earlier, and of none the day it began in
+     */
+    TS_RULER_DAY_RULE_SUNRISE = 0,
+    /**
+     * The raja: the weekday holding the junction of the new moon and the pratipada
+     */
+    TS_RULER_DAY_RULE_NEW_MOON = 1,
+    /**
+     * The raja: the new moon's day if it falls before that day's midday, else the next
+     */
+    TS_RULER_DAY_RULE_GARGA = 2,
+    /**
+     * An ingress: the day whose daylight holds it, and for one at night the day the next sunrise begins
+     */
+    TS_RULER_DAY_RULE_DAYLIGHT = 3,
+    /**
+     * An ingress: the weekday, sunrise to sunrise, holding its instant
+     */
+    TS_RULER_DAY_RULE_VARA = 4,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_RULER_DAY_RULE_UNKNOWN = -1,
+} ts_ruler_day_rule;
 
 /**
  * The status of a call, with the code it has at the C boundary.
