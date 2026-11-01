@@ -132,6 +132,7 @@ impl FestivalRule {
     /// let rules = FestivalRule::india_central();
     /// let janmashtami = rules.iter().find(|rule| rule.key == "JANMASHTAMI").ok_or("shipped")?;
     /// assert!(janmashtami.source.contains("C851") && janmashtami.meta.optional);
+    /// assert!(janmashtami.source.contains("Hari Bhakti Vilasa 15.358"));
     /// let diwali = rules.iter().find(|rule| rule.key == "LAKSHMI_PUJA").ok_or("shipped")?;
     /// assert!(diwali.source.starts_with("Dharmasindhu") && !diwali.meta.optional);
     /// # Ok::<(), &str>(())
@@ -168,16 +169,15 @@ impl FestivalRule {
                 ..rule
             })
         });
-        let janmashtami = of("JANMASHTAMI", &text).map(|rule| {
-            let udaya = rule.udaya();
-            FestivalRule {
-                source: format!(
-                    "fitted to the notices' Janmashtami, which they mark Vaishnava; no Vaishnava text in hand states it (C175, C851). {}",
-                    udaya.source
-                ),
-                meta: listed(hindu, true).with_fast("JANMASHTAMI"),
-                ..udaya
-            }
+        let vaishnava = FestivalRule::hari_bhakti_vilasa();
+        let janmashtami = of("JANMASHTAMI_VAISHNAVA", &vaishnava).map(|rule| FestivalRule {
+            key: "JANMASHTAMI".to_owned(),
+            source: format!(
+                "the notices mark their Janmashtami Vaishnava (C851): {}",
+                rule.source
+            ),
+            meta: listed(hindu, true).with_fast("JANMASHTAMI_VAISHNAVA"),
+            ..rule
         });
         let holika = of("HOLIKA", &text).map(|rule| FestivalRule {
             meta: FestivalMeta {

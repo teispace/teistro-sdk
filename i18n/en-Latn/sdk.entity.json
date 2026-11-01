@@ -2921,6 +2921,31 @@
       "prose": "Gaudiya Ekadashi",
       "iast": "Gauḍīya Ekādaśī"
     },
+    "JANMASHTAMI_VAISHNAVA": {
+      "name": "Vaishnava Janmashtami",
+      "prose": "Vaishnava Janmashtami",
+      "iast": "Vaiṣṇava Janmāṣṭamī"
+    },
+    "RAMA_NAVAMI_VAISHNAVA": {
+      "name": "Vaishnava Rama Navami",
+      "prose": "Vaishnava Rama Navami",
+      "iast": "Vaiṣṇava Rāmanavamī"
+    },
+    "NRISIMHA_CHATURDASHI": {
+      "name": "Nrisimha Chaturdashi",
+      "prose": "Nrisimha Chaturdashi",
+      "iast": "Nṛsiṃhacaturdaśī"
+    },
+    "RADHASHTAMI_VAISHNAVA": {
+      "name": "Vaishnava Radhashtami",
+      "prose": "Vaishnava Radhashtami",
+      "iast": "Vaiṣṇava Rādhāṣṭamī"
+    },
+    "GAURA_PURNIMA": {
+      "name": "Gaura Purnima",
+      "prose": "Gaura Purnima",
+      "iast": "Gaurapūrṇimā"
+    },
     "CHAITE_DASHAIN": {
       "name": "Chaite Dashain",
       "prose": "Chaite Dashain",

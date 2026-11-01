@@ -7706,6 +7706,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.GAURA_PURNIMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gauraPurnima() {
+                    return r.entity("festival.GAURA_PURNIMA");
+                }
+
+                /**
                  * The forms of `festival.GAURA_SAPTAMI` in the current locale.
                  *
                  * @return the forms
@@ -8225,6 +8234,15 @@ public final class Messages {
                  */
                 public EntityForms janmashtami() {
                     return r.entity("festival.JANMASHTAMI");
+                }
+
+                /**
+                 * The forms of `festival.JANMASHTAMI_VAISHNAVA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms janmashtamiVaishnava() {
+                    return r.entity("festival.JANMASHTAMI_VAISHNAVA");
                 }
 
                 /**
@@ -8948,6 +8966,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.NRISIMHA_CHATURDASHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nrisimhaChaturdashi() {
+                    return r.entity("festival.NRISIMHA_CHATURDASHI");
+                }
+
+                /**
                  * The forms of `festival.NUWAKOT_DUPCHESHWAR_MELA` in the current locale.
                  *
                  * @return the forms
@@ -9173,6 +9200,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.RADHASHTAMI_VAISHNAVA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms radhashtamiVaishnava() {
+                    return r.entity("festival.RADHASHTAMI_VAISHNAVA");
+                }
+
+                /**
                  * The forms of `festival.RAKSHABANDHAN` in the current locale.
                  *
                  * @return the forms
@@ -9197,6 +9233,15 @@ public final class Messages {
                  */
                 public EntityForms ramaNavami() {
                     return r.entity("festival.RAMA_NAVAMI");
+                }
+
+                /**
+                 * The forms of `festival.RAMA_NAVAMI_VAISHNAVA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ramaNavamiVaishnava() {
+                    return r.entity("festival.RAMA_NAVAMI_VAISHNAVA");
                 }
 
                 /**

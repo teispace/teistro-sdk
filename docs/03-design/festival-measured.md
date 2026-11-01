@@ -4,7 +4,8 @@ Status: `generated` by `cargo xtask festival`. Do not edit:
 `check-festival` regenerates this page and fails on any difference.
 
 It measures `festival-rules.md` §5.2, §5.3 and §9.3: the shipped rules
-(`FestivalRule::dharmasindhu()`) through `sdk.almanac().festivals`, over
+(`FestivalRule::dharmasindhu()`, and the `GAUDIYA` pack's
+`FestivalRule::hari_bhakti_vilasa()`) through `sdk.almanac().festivals`, over
 the built-in ephemeris at Delhi on India's clock, and at Kathmandu on
 Nepal's (§4).
 
@@ -13,43 +14,41 @@ Nepal's (§4).
 The days the Government of India listed as holidays for its offices in Delhi,
 read off copies of each year's office memorandum (the pass's source names them).
 Janmashtami is listed twice where the restricted list gives a Smarta day apart
-from the Vaishnava one; *Dharmasindhu* is a Smarta text.
+from the Vaishnava one: the Smarta day is held to *Dharmasindhu*'s rule and the
+Vaishnava to the `GAUDIYA` pack's, after *Hari Bhakti Vilasa*.
 
 | year | rule | list | published | found | case | decided by |
 |---:|---|---|---|---|---|---|
 | 2021 | JANMASHTAMI | Smarta | 30 Aug | 30 Aug | Both | guard 0 |
-| 2021 | JANMASHTAMI | Vaishnava | 30 Aug | 30 Aug | Both | guard 0 |
+| 2021 | JANMASHTAMI_VAISHNAVA | Vaishnava | 30 Aug | 30 Aug | LaterOnly | otherwise |
 | 2021 | LAKSHMI_PUJA | compulsory | 4 Nov | 4 Nov | LaterOnly | guard 0 |
 | 2021 | RAMA_NAVAMI | compulsory | 21 Apr | 21 Apr | LaterOnly | otherwise |
 | 2021 | VIJAYA_DASHAMI | compulsory | 15 Oct | 15 Oct | LaterOnly | guard 0 |
 | 2023 | JANMASHTAMI | Smarta | 6 Sep | 6 Sep | EarlierOnly | guard 1 |
-| 2023 | JANMASHTAMI | Vaishnava | 7 Sep | 6 Sep ✗ | EarlierOnly | guard 1 |
+| 2023 | JANMASHTAMI_VAISHNAVA | Vaishnava | 7 Sep | 7 Sep | LaterOnly | otherwise |
 | 2023 | LAKSHMI_PUJA | compulsory | 12 Nov | 12 Nov | EarlierOnly | otherwise |
 | 2023 | RAMA_NAVAMI | compulsory | 30 Mar | 30 Mar | LaterOnly | otherwise |
 | 2023 | VIJAYA_DASHAMI | compulsory | 24 Oct | 24 Oct | LaterOnly | guard 2 |
-| 2024 | JANMASHTAMI | Vaishnava | 26 Aug | 26 Aug | LaterOnly | guard 0 |
+| 2024 | JANMASHTAMI_VAISHNAVA | Vaishnava | 26 Aug | 26 Aug | LaterOnly | otherwise |
 | 2024 | LAKSHMI_PUJA | compulsory | 31 Oct | 1 Nov ✗ | UnequalParts | guard 0 |
 | 2024 | RAMA_NAVAMI | compulsory | 17 Apr | 17 Apr | UnequalParts | otherwise |
 | 2024 | VIJAYA_DASHAMI | compulsory | 12 Oct | 12 Oct | EarlierOnly | guard 5 |
 | 2025 | JANMASHTAMI | Smarta | 15 Aug | 15 Aug | EarlierOnly | guard 2 |
-| 2025 | JANMASHTAMI | Vaishnava | 16 Aug | 15 Aug ✗ | EarlierOnly | guard 2 |
+| 2025 | JANMASHTAMI_VAISHNAVA | Vaishnava | 16 Aug | 16 Aug | LaterOnly | otherwise |
 | 2025 | LAKSHMI_PUJA | compulsory | 20 Oct | 20 Oct | UnequalParts | otherwise |
 | 2025 | VIJAYA_DASHAMI | compulsory | 2 Oct | 2 Oct | LaterOnly | guard 0 |
-| 2027 | JANMASHTAMI | Vaishnava | 25 Aug | 24 Aug ✗ | EarlierOnly | guard 2 |
+| 2027 | JANMASHTAMI_VAISHNAVA | Vaishnava | 25 Aug | 25 Aug | LaterOnly | otherwise |
 | 2027 | LAKSHMI_PUJA | compulsory | 29 Oct | 29 Oct | LaterOnly | guard 0 |
 | 2027 | RAMA_NAVAMI | compulsory | 15 Apr | 15 Apr | LaterOnly | otherwise |
 | 2027 | VIJAYA_DASHAMI | compulsory | 9 Oct | 9 Oct | EarlierOnly | guard 3 |
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| each shipped rule falls on the day the published list gives | falsified | 4 of 22 disagree; each parting is named below with its cause |
+| each shipped rule falls on the day the published list gives | falsified | 1 of 22 disagree; each parting is named below with its cause |
 
 Where the rule parts from the published day, and why:
 
-- 2023 JANMASHTAMI (Vaishnava): the Vaishnava day, the later one, whose sunrise the 8th holds; the shipped rule is the Smarta one of p. 49, which takes the earlier day when it alone holds nishitha, and *Dharmasindhu* states no Vaishnava rule for Janmashtami (C175)
 - 2024 LAKSHMI_PUJA (compulsory): the new moon lasts more than a ghati past the later day's sunset, which p. 77 calls beyond doubt; the list takes the earlier day, over which the calendars of that year were divided
-- 2025 JANMASHTAMI (Vaishnava): the Vaishnava day, the later one, whose sunrise the 8th holds; the shipped rule is the Smarta one of p. 49, which takes the earlier day when it alone holds nishitha, and *Dharmasindhu* states no Vaishnava rule for Janmashtami (C175)
-- 2027 JANMASHTAMI (Vaishnava): the Vaishnava day, the later one, whose sunrise the 8th holds; the shipped rule is the Smarta one of p. 49, which takes the earlier day when it alone holds nishitha, and *Dharmasindhu* states no Vaishnava rule for Janmashtami (C175)
 
 ## 2. What a decade reaches
 
@@ -79,6 +78,11 @@ one a year did reach.
 | ASHUNYA_SHAYANA | EarlierOnly 2, LaterOnly 2 | otherwise: 2, guard 0: 2 |
 | MAHA_NAVAMI | EarlierOnly 5, LaterOnly 4, UnequalParts 1 | otherwise: 6, guard 0: 4 |
 | DEVI_VISARJAN | LaterOnly 5, UnequalParts 5 | otherwise: 9, guard 0: 1 |
+| JANMASHTAMI_VAISHNAVA | LaterOnly 10 | otherwise: 10 |
+| RAMA_NAVAMI_VAISHNAVA | LaterOnly 10 | guard 0: 10 |
+| NRISIMHA_CHATURDASHI | LaterOnly 4 | otherwise: 4 |
+| RADHASHTAMI_VAISHNAVA | LaterOnly 10 | otherwise: 10 |
+| GAURA_PURNIMA | LaterOnly 10 | otherwise: 10 |
 
 The guards no year reached, and why:
 
@@ -91,6 +95,12 @@ The guards no year reached, and why:
 - UPAKARMA_MADHYANDINA guard 0: Shravana's full moon holding two sunrises, a vriddhi no year of the decade had; the crate test `upakarma_parts_the_yajurvedis_on_how_long_the_later_day_holds_the_full_moon` reaches it.
 - UPAKARMA_TAITTIRIYA guard 0: Shravana's full moon holding two sunrises, a vriddhi no year of the decade had; the crate test `upakarma_parts_the_yajurvedis_on_how_long_the_later_day_holds_the_full_moon` reaches it.
 - KARAKA_CHATURTHI guard 1: the 4th holding both moonrises, which needs it to outlast the 24 h 50 m between them, and no Ashvina of the decade had; the crate test `a_rite_at_moonrise_reads_each_days_first_moonrise` reaches it.
+- JANMASHTAMI_VAISHNAVA guard 0: the dark 8th holding two sunrises with Rohini joining it at the earlier midnight, a vriddhi no Shravana of the decade had; the crate test `vaishnava_janmashtami_leaves_the_eighth_the_seventh_pierces` reaches it.
+- JANMASHTAMI_VAISHNAVA guard 1: the dark 8th holding two sunrises with Rohini standing at the later midnight alone, a vriddhi no Shravana of the decade had; the crate test `vaishnava_janmashtami_leaves_the_eighth_the_seventh_pierces` reaches it.
+- JANMASHTAMI_VAISHNAVA guard 2: the dark 8th holding two sunrises, a vriddhi no Shravana of the decade had; the crate test `vaishnava_janmashtami_leaves_the_eighth_the_seventh_pierces` reaches it.
+- NRISIMHA_CHATURDASHI guard 0: the bright 14th holding two sunrises, a vriddhi no Vaishakha of the decade had; the crate test `a_gaudiya_day_is_the_pure_sunrise_the_earlier_of_two` reaches it.
+- RADHASHTAMI_VAISHNAVA guard 0: the bright 8th holding two sunrises, a vriddhi no Bhadrapada of the decade had; the crate test `a_gaudiya_day_is_the_pure_sunrise_the_earlier_of_two` reaches it.
+- GAURA_PURNIMA guard 0: the full moon holding two sunrises, a vriddhi no Phalguna of the decade had; the crate test `a_gaudiya_day_is_the_pure_sunrise_the_earlier_of_two` reaches it.
 
 ## 3. Ekadashi against a published almanac
 

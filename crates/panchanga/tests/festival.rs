@@ -2086,3 +2086,200 @@ fn an_answer_names_its_catalogue_members_where_its_table_says() {
         "a string path is unlisted, or a listed one is gone"
     );
 }
+
+/// A rule of the `GAUDIYA` pack, by key.
+fn gaudiya(key: &str) -> FestivalRule {
+    FestivalRule::hari_bhakti_vilasa()
+        .into_iter()
+        .find(|rule| rule.key == key)
+        .unwrap()
+}
+
+/// The one day `rule` keeps over `tithis` and `nakshatras` in `month`,
+/// as the synthetic day's index, with its case and deciding guard.
+fn kept(
+    rule: &FestivalRule,
+    tithis: &[(Tithi, f64)],
+    nakshatras: &[(Nakshatra, f64)],
+    month: Masa,
+) -> (u8, Case, Decided) {
+    let days = days_of(tithis, nakshatras, month, MonthKind::Nija);
+    let answer = observances(std::slice::from_ref(rule), &days).unwrap();
+    assert!(answer.unjudged.is_empty(), "{:?}", answer.unjudged);
+    let [observance] = answer.observances.as_slice() else {
+        panic!("one {}, not {:?}", rule.key, answer.observances);
+    };
+    (
+        observance.day.day - 1,
+        observance.case,
+        observance.decided_by.clone(),
+    )
+}
+
+/// A dark 7th, 8th and 9th, the 7th ending at `saptami` and the 8th at
+/// `ashtami`, each a Julian day of the synthetic days.
+fn dark_eighth(saptami: f64, ashtami: f64) -> [(Tithi, f64); 5] {
+    [
+        (Tithi::KrishnaShashthi, ghati(0, 5.0)),
+        (Tithi::KrishnaSaptami, saptami),
+        (Tithi::KrishnaAshtami, ashtami),
+        (Tithi::KrishnaNavami, ghati(3, 50.0)),
+        (Tithi::KrishnaDashami, ghati(5, 0.0)),
+    ]
+}
+
+#[test]
+fn vaishnava_janmashtami_leaves_the_eighth_the_seventh_pierces() {
+    let rule = gaudiya("JANMASHTAMI_VAISHNAVA");
+    let none: [(Nakshatra, f64); 0] = [];
+    let shravana = Masa::Shravana;
+    // HBV 15.358: the 7th holds day 1's sunrise, the 8th day 2's; the
+    // Smarta's nishitha would take day 1 (p. 49's first row).
+    let pierced = dark_eighth(ghati(1, 40.0), ghati(2, 42.0));
+    assert_eq!(
+        kept(&rule, &pierced, &none, shravana),
+        (2, Case::LaterOnly, Decided::Otherwise)
+    );
+    // 15.365: no sunrise holds the 8th, so the 9th's day.
+    let kshaya = dark_eighth(ghati(1, 10.0), ghati(1, 55.0));
+    assert_eq!(
+        kept(&rule, &kshaya, &none, shravana),
+        (2, Case::Neither, Decided::Otherwise)
+    );
+    // 15.374: pure on both days, the earlier.
+    let grown = dark_eighth(ghati(0, 50.0), ghati(2, 5.0));
+    assert_eq!(
+        kept(&rule, &grown, &none, shravana),
+        (1, Case::Both, Decided::Guard { index: 2 })
+    );
+    // With Rohini at the earlier midnight (ghati 45), still the earlier.
+    let rohini_earlier = [
+        (Nakshatra::Krittika, ghati(1, 30.0)),
+        (Nakshatra::Rohini, ghati(1, 50.0)),
+        (Nakshatra::Mrigashira, ghati(5, 0.0)),
+    ];
+    assert_eq!(
+        kept(&rule, &grown, &rohini_earlier, shravana),
+        (1, Case::Both, Decided::Guard { index: 0 })
+    );
+    // Rohini absent at the earlier midnight and standing with the 9th at
+    // the later's: the later (15.374's commentary).
+    let rohini_later = [
+        (Nakshatra::Krittika, ghati(1, 50.0)),
+        (Nakshatra::Rohini, ghati(2, 50.0)),
+        (Nakshatra::Mrigashira, ghati(5, 0.0)),
+    ];
+    assert_eq!(
+        kept(&rule, &grown, &rohini_later, shravana),
+        (2, Case::Both, Decided::Guard { index: 1 })
+    );
+}
+
+#[test]
+fn vaishnava_rama_navami_keeps_a_pierced_ninth_no_sunrise_holds() {
+    let rule = gaudiya("RAMA_NAVAMI_VAISHNAVA");
+    let none: [(Nakshatra, f64); 0] = [];
+    let ninth = |ashtami: f64, navami: f64| {
+        [
+            (Tithi::ShuklaSaptami, ghati(0, 5.0)),
+            (Tithi::ShuklaAshtami, ashtami),
+            (Tithi::ShuklaNavami, navami),
+            (Tithi::ShuklaDashami, ghati(3, 50.0)),
+            (Tithi::ShuklaEkadashi, ghati(5, 0.0)),
+        ]
+    };
+    // HBV 14.252: the 8th holds day 1's sunrise, so the 9th's day is 2.
+    assert_eq!(
+        kept(
+            &rule,
+            &ninth(ghati(1, 20.0), ghati(2, 30.0)),
+            &none,
+            Masa::Chaitra
+        ),
+        (2, Case::LaterOnly, Decided::Guard { index: 0 })
+    );
+    // 14.253: no sunrise holds the 9th; the pierced day, so that the
+    // parana falls on the 10th.
+    assert_eq!(
+        kept(
+            &rule,
+            &ninth(ghati(1, 10.0), ghati(1, 55.0)),
+            &none,
+            Masa::Chaitra
+        ),
+        (1, Case::Neither, Decided::Otherwise)
+    );
+    assert_eq!(
+        kept(
+            &rule,
+            &ninth(ghati(0, 50.0), ghati(2, 5.0)),
+            &none,
+            Masa::Chaitra
+        ),
+        (1, Case::Both, Decided::Otherwise)
+    );
+}
+
+#[test]
+fn a_gaudiya_day_is_the_pure_sunrise_the_earlier_of_two() {
+    // (key, month, the tithi before, the tithi, the two after)
+    let rules = [
+        (
+            "NRISIMHA_CHATURDASHI",
+            Masa::Vaishakha,
+            [
+                Tithi::ShuklaTrayodashi,
+                Tithi::ShuklaChaturdashi,
+                Tithi::Purnima,
+                Tithi::KrishnaPratipada,
+            ],
+        ),
+        (
+            "RADHASHTAMI_VAISHNAVA",
+            Masa::Bhadrapada,
+            [
+                Tithi::ShuklaSaptami,
+                Tithi::ShuklaAshtami,
+                Tithi::ShuklaNavami,
+                Tithi::ShuklaDashami,
+            ],
+        ),
+        (
+            "GAURA_PURNIMA",
+            Masa::Phalguna,
+            [
+                Tithi::ShuklaChaturdashi,
+                Tithi::Purnima,
+                Tithi::KrishnaPratipada,
+                Tithi::KrishnaDvitiya,
+            ],
+        ),
+    ];
+    let none: [(Nakshatra, f64); 0] = [];
+    for (key, month, [before, tithi, after, next]) in rules {
+        let rule = gaudiya(key);
+        let run = |pierced: f64, own: f64| {
+            [
+                (before, pierced),
+                (tithi, own),
+                (after, ghati(3, 50.0)),
+                (next, ghati(5, 0.0)),
+            ]
+        };
+        assert_eq!(
+            kept(&rule, &run(ghati(1, 20.0), ghati(2, 30.0)), &none, month),
+            (2, Case::LaterOnly, Decided::Otherwise),
+            "{key}"
+        );
+        assert_eq!(
+            kept(&rule, &run(ghati(1, 10.0), ghati(1, 55.0)), &none, month),
+            (2, Case::Neither, Decided::Otherwise),
+            "{key}"
+        );
+        assert_eq!(
+            kept(&rule, &run(ghati(0, 50.0), ghati(2, 5.0)), &none, month),
+            (1, Case::Both, Decided::Guard { index: 0 }),
+            "{key}"
+        );
+    }
+}

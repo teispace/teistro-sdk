@@ -134,7 +134,7 @@ calendar and the computed rules is what §5 measures.
 | C171 | the month of an observance | **the nija month**: an adhika month holds no festival unless the rule says so | the rule names an adhika month as well |
 | C172 | the two days | **the sunrise day the tithi begins in and the next**; when the tithi holds two sunrises, the two days it holds them on | — ; stated so that case 4, where neither window meets the tithi, still has an earlier and a later day, and checked against p. 49, whose "later only" example begins after the earlier day's niśītha |
 | C173 | Lakshmi puja when neither day holds pradosha | **the earlier**, as when the earlier alone holds it (p. 77's "evam … abhave 'pi") | the *Purusharthachintamani*'s reading the same page records, which moves it to the later day when the new moon there lasts past three yamas |
-| C175 | Janmashtami for the Vaishnava schools | **not shipped**: *Dharmasindhu* gives the Smarta rule, and the government's compulsory holiday is the Vaishnava day, the later one in each year the two part (`festival-measured.md` §1) | a Vaishnava rule taken from a Vaishnava text, which has not been read |
+| C175 | Janmashtami for the Vaishnava schools | **built (SR-17)**: *Dharmasindhu* gives the Smarta rule, which `DHARMASINDHU` keeps; *Hari Bhakti Vilasa* 15.358–374 gives the Vaishnava, the `GAUDIYA` pack's `JANMASHTAMI_VAISHNAVA` (§8.10), the later day in each year the two part (`festival-measured.md` §1) | — |
 | C176 | a ghati inside a window | **a thirtieth** of the daylight after sunrise or of the night after sunset, as C168 takes a muhurta | 24 minutes whatever the season; the difference moves Lakshmi puja only when the new moon ends within minutes of a ghati past sunset |
 | C174 | the yugma verse and the dark fortnight's 14th and 1st | **unpaired**: the verse joins the 14th to the full moon and the new moon to the 1st, which are the bright 14th and the bright 1st | pairing the dark 14th with the new moon and the dark 1st with the full moon, which the verse does not say |
 
@@ -271,9 +271,10 @@ reports that it did.
    widening is founded as runs of its own (§7.1, step 4).
 3. **Built**: the measured pass (`cargo xtask festival`, gated in
    fast-check) and `festival-measured.md`. It corrected two rules
-   (§4.1). What remains apart from the published days is the Vaishnava
-   Janmashtami (C175) and the 2024 Lakshmi puja. For that one the text
-   gives the later day beyond doubt, and the list takes the earlier.
+   (§4.1). What remains apart from the published days is the 2024
+   Lakshmi puja, for which the text gives the later day beyond doubt and
+   the list takes the earlier. The Vaishnava Janmashtami (C175) parted
+   until SR-17 held it to the `GAUDIYA` pack's rule (§8.10).
    The two guards no year of the decade reached each cite the crate test
    that reaches them, and the pass checks that the test exists.
 4. **Built**: the boundary and the bindings (§7). `FestivalRequest`
@@ -935,6 +936,63 @@ normalised from the OCR of the Internet Archive's `hbv_vol2` and is to
 be checked against the page images. No source says whether a
 mahadvadashi holds in an adhika month; they are kept there (*nitya*,
 13.282–285), unmeasured.
+
+### 8.10 The Gaudiya festivals (SR-17)
+
+As built (`FestivalRule::hari_bhakti_vilasa`, the `GAUDIYA` pack beside
+its Ekadashi). Read off the OCR of *Hari Bhakti Vilasa* vol. 2 (Haridas
+Shastri's edition, the Internet Archive's `hbv_vol2`), vilasas 12, 14 and
+15, with Sanatana's commentary; the verse numbers are the edition's.
+
+**What the text says.** The Vaishnava leaves a pierced (*viddha*) tithi as
+he leaves a pierced Ekadashi: "त्याज्या विद्धा च सप्तम्या सा विद्धैकादशी यथा"
+(15.358), and 12.352's commentary names Rama Navami and Nrisimha
+Chaturdashi with Janmashtami as kept the same way. Rohini joined does not
+save a pierced 8th (15.359–369: "सर्क्षापि न कर्तव्या सप्तमीसंयुताष्टमी"),
+nor Svati or a Tuesday a pierced 14th (14.461). What pierces is the tithi
+before at **sunrise**: the commentary on 15.361 names those who carry the
+Ekadashi's arunodaya over to Janmashtami and refutes them, since every
+tithi but the 11th is complete only from sunrise (C1120). So:
+
+| festival | key | the text | the day |
+|---|---|---|---|
+| Janmashtami | `JANMASHTAMI_VAISHNAVA` | 15.358–374 | the day whose sunrise the 8th holds; of two such days the earlier (15.374), unless Rohini, absent at its midnight, stands with the 9th at the later's (15.374's commentary, C1121); no sunrise holding it, the 9th's day (15.365) |
+| Rama Navami | `RAMA_NAVAMI_VAISHNAVA` | 14.249–253 | the day whose sunrise the 9th holds, the earlier of two; no sunrise holding it, the pierced day, since the parana must fall on the 10th (14.253, C1122) |
+| Nrisimha Chaturdashi | `NRISIMHA_CHATURDASHI` | 14.455–461 | the day whose sunrise the 14th holds, the earlier of two, else the later |
+| Radhashtami | `RADHASHTAMI_VAISHNAVA` | none: a convention (C1123) | as Nrisimha Chaturdashi, the 8th of Bhadrapada's bright half |
+| Gaura Purnima | `GAURA_PURNIMA` | none for the day: a convention (C1123); the month and tithi are *Chaitanya Charitamrita* Adi 13.89's | as Nrisimha Chaturdashi, Phalguna's full moon |
+
+Every rule is read at `SUNRISE`. The day pure at sunrise is a guard
+`WHOLLY { EARLIER }` (the earlier of two days holding the instant); a
+rule's `otherwise` is the later day, or for Rama Navami the earlier.
+Janmashtami's two Rohini guards come first and read only `BOTH`. The keys
+carry `_VAISHNAVA` where another pack ships the festival under its own
+name: the Smarta rules stay `DHARMASINDHU`'s, and a request may hold both.
+
+**The fast.** Janmashtami's parana is `TITHI_END { ROHINI }`, the end of
+the 8th and of Rohini, by day when one spans the night (15.385–386,
+15.397–402); Rama Navami's is `NEXT_TITHI`, "the fast on the 9th, the
+parana on the 10th" (14.252). The `fast` readings are
+`festival-metadata.md` §6's.
+
+**What is measured.** `crates/panchanga/tests/festival.rs` holds each
+guard on synthetic days. `crates/sdk/tests/gaudiya.rs` holds the five
+against Drik Panchang's ISKCON lists (rank 3, GCal's output) for New Delhi
+and New York, 2023 to 2026, and Janmashtami for 2020 to 2030, under the
+refracted upper limb's sunrise: 27 rows at each place, and all 54 agree.
+The places part on nine: Janmashtami 2020 and 2023 (in 2023 the 8th begins
+before New York's sunrise of 6 September and after Delhi's), Gaura Purnima
+2023 to 2025, Rama Navami 2024 and 2026 and Radhashtami 2023 and 2026; the
+rule parts with them each time.
+`festival-measured.md` §1 now holds the central list's Vaishnava
+Janmashtami to `JANMASHTAMI_VAISHNAVA`, and `INDIA_CENTRAL` keeps it in
+place of the fitted sunrise rule (C851).
+
+**Not built.** Vamana Dvadashi (15.5xx–611): its day turns on Shravana
+joined to the bright 12th and on the Ekadashi's fast before it, which this
+language cannot say yet. The many appearance and disappearance days of the
+acharyas a published calendar prints are not in the text and are not
+rules here.
 
 ## 9. Nepal
 

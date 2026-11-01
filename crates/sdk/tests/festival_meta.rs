@@ -119,7 +119,7 @@ fn a_pack_listing_is_read_from_its_name() -> Result<(), teistro::Error> {
             .map(|row| row.meta.kind.is_some()),
         Some(true)
     );
-    assert_eq!(FestivalPack::Gaudiya.listing().rules.len(), 1);
+    assert_eq!(FestivalPack::Gaudiya.listing().rules.len(), 6);
     Ok(())
 }
 

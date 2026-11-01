@@ -2913,6 +2913,31 @@
       "prose": "गौडीय एकादशी",
       "iast": "Gauḍīya Ekādaśī"
     },
+    "JANMASHTAMI_VAISHNAVA": {
+      "name": "वैष्णव श्रीकृष्ण जन्माष्टमी",
+      "prose": "वैष्णव श्रीकृष्ण जन्माष्टमी",
+      "iast": "Vaiṣṇava Janmāṣṭamī"
+    },
+    "RAMA_NAVAMI_VAISHNAVA": {
+      "name": "वैष्णव रामनवमी",
+      "prose": "वैष्णव रामनवमी",
+      "iast": "Vaiṣṇava Rāmanavamī"
+    },
+    "NRISIMHA_CHATURDASHI": {
+      "name": "नृसिंह चतुर्दशी",
+      "prose": "नृसिंह चतुर्दशी",
+      "iast": "Nṛsiṃhacaturdaśī"
+    },
+    "RADHASHTAMI_VAISHNAVA": {
+      "name": "वैष्णव राधाष्टमी",
+      "prose": "वैष्णव राधाष्टमी",
+      "iast": "Vaiṣṇava Rādhāṣṭamī"
+    },
+    "GAURA_PURNIMA": {
+      "name": "गौर पूर्णिमा",
+      "prose": "गौर पूर्णिमा",
+      "iast": "Gaurapūrṇimā"
+    },
     "CHAITE_DASHAIN": {
       "name": "चैते दशैं",
       "prose": "चैते दशैं",
