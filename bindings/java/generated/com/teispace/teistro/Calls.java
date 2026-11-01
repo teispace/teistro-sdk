@@ -1568,6 +1568,41 @@ final class Calls {
     }
 
     /**
+     * `ts_verify_claims`: Every claim a text makes of the time, each judged against what
+     * `almanac.sankalpa` computes at the instant and the place
+     * (`03-design/lexicon.md` §3), answered with `{value, provenance}` as
+     * canonical JSON.
+     *
+     * `value` is `{claims}`, each claim `{start, end, text, kind, graha,
+     * claimed, verdict, computed, reason}` in the text's order: the span
+     * naming the member (counted in Unicode scalar values), the kind claimed,
+     * the graha whose sign or nakshatra it is, every key the span may name,
+     * `HELD`, `CONTRADICTED` or `UNREAD`, the key computed on a claim judged,
+     * and on one unread why: `QUESTION`, `NEGATED`, `OTHER_TIME`,
+     * `NOT_COMPUTED` or `AMBIGUOUS`.
+     *
+     * `request_json` is `{"text", "at", "latitudeDeg", "longitudeDeg",
+     * "altitudeM", "utcOffsetSeconds", "ayana", "locale"}`: `at` a UTC Julian
+     * day, `altitudeM` 0 and `ayana` `SIDEREAL` when left out, and `locale`
+     * whose names are searched, every loaded locale's when left out. A key it
+     * does not read or an instant, place or offset out of range is
+     * `INVALID_ARG`, named under `claims`; a locale no loaded one answers is
+     * `UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is
+     * `CAPABILITY`.
+     */
+    static String verifyClaims(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_verify_claims.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_numerology_profile`: Reads a name and a birth date under numerology's two systems and
      * answers with the profile as canonical JSON: the name under each
      * system, word by word with every reduction step, Balliett's birth

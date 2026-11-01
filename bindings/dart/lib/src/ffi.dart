@@ -2061,6 +2061,8 @@ typedef TsNamingSuggestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poi
 typedef TsNamingSuggestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNavataraNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNavataraDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsVerifyClaimsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsVerifyClaimsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsPakshiNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2168,6 +2170,7 @@ final class TeistroLibrary {
         ts_naming_load = library.lookupFunction<TsNamingLoadNative, TsNamingLoadDart>('ts_naming_load'),
         ts_naming_suggest = library.lookupFunction<TsNamingSuggestNative, TsNamingSuggestDart>('ts_naming_suggest'),
         ts_navatara = library.lookupFunction<TsNavataraNative, TsNavataraDart>('ts_navatara'),
+        ts_verify_claims = library.lookupFunction<TsVerifyClaimsNative, TsVerifyClaimsDart>('ts_verify_claims'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
         ts_pakshi = library.lookupFunction<TsPakshiNative, TsPakshiDart>('ts_pakshi'),
         ts_rashifal = library.lookupFunction<TsRashifalNative, TsRashifalDart>('ts_rashifal'),
@@ -2987,6 +2990,29 @@ final class TeistroLibrary {
   /// not read, or a star that is not a nakshatra key, is `INVALID_ARG`,
   /// named under `navatara`.
   final TsNavataraDart ts_navatara;
+
+  /// Every claim a text makes of the time, each judged against what
+  /// `almanac.sankalpa` computes at the instant and the place
+  /// (`03-design/lexicon.md` §3), answered with `{value, provenance}` as
+  /// canonical JSON.
+  ///
+  /// `value` is `{claims}`, each claim `{start, end, text, kind, graha,
+  /// claimed, verdict, computed, reason}` in the text's order: the span
+  /// naming the member (counted in Unicode scalar values), the kind claimed,
+  /// the graha whose sign or nakshatra it is, every key the span may name,
+  /// `HELD`, `CONTRADICTED` or `UNREAD`, the key computed on a claim judged,
+  /// and on one unread why: `QUESTION`, `NEGATED`, `OTHER_TIME`,
+  /// `NOT_COMPUTED` or `AMBIGUOUS`.
+  ///
+  /// `request_json` is `{"text", "at", "latitudeDeg", "longitudeDeg",
+  /// "altitudeM", "utcOffsetSeconds", "ayana", "locale"}`: `at` a UTC Julian
+  /// day, `altitudeM` 0 and `ayana` `SIDEREAL` when left out, and `locale`
+  /// whose names are searched, every loaded locale's when left out. A key it
+  /// does not read or an instant, place or offset out of range is
+  /// `INVALID_ARG`, named under `claims`; a locale no loaded one answers is
+  /// `UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is
+  /// `CAPABILITY`.
+  final TsVerifyClaimsDart ts_verify_claims;
 
   /// Reads a name and a birth date under numerology's two systems and
   /// answers with the profile as canonical JSON: the name under each
@@ -7286,6 +7312,38 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_navatara(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// Every claim a text makes of the time, each judged against what
+  /// `almanac.sankalpa` computes at the instant and the place
+  /// (`03-design/lexicon.md` §3), answered with `{value, provenance}` as
+  /// canonical JSON.
+  ///
+  /// `value` is `{claims}`, each claim `{start, end, text, kind, graha,
+  /// claimed, verdict, computed, reason}` in the text's order: the span
+  /// naming the member (counted in Unicode scalar values), the kind claimed,
+  /// the graha whose sign or nakshatra it is, every key the span may name,
+  /// `HELD`, `CONTRADICTED` or `UNREAD`, the key computed on a claim judged,
+  /// and on one unread why: `QUESTION`, `NEGATED`, `OTHER_TIME`,
+  /// `NOT_COMPUTED` or `AMBIGUOUS`.
+  ///
+  /// `request_json` is `{"text", "at", "latitudeDeg", "longitudeDeg",
+  /// "altitudeM", "utcOffsetSeconds", "ayana", "locale"}`: `at` a UTC Julian
+  /// day, `altitudeM` 0 and `ayana` `SIDEREAL` when left out, and `locale`
+  /// whose names are searched, every loaded locale's when left out. A key it
+  /// does not read or an instant, place or offset out of range is
+  /// `INVALID_ARG`, named under `claims`; a locale no loaded one answers is
+  /// `UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is
+  /// `CAPABILITY`.
+  String verifyClaims(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_verify_claims(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

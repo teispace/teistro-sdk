@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 87 entry points over 28 structs and 180 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 91 entry points over 28 structs and 180 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 
@@ -105,6 +105,9 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 | [`ts_intl_in_words`](intl/ts_intl_in_words) | A number or an amount of money in words and in figures, by CLDR's rule-based number formats (`03-design/amounts-in-words.md`), answered as canonical JSON: `{text, figure, rules, locale, amount}`, `amount` for an amount the major and minor counts, each in words with its unit word, and whether a decimal was rounded. |
 | [`ts_intl_time`](intl/ts_intl_time) | A time of day as text and parts, through the locale's pattern and its parts of the day (`03-design/intl-engine-and-packs.md`), answered as canonical JSON: `{text, parts, locale, resolvedFrom, isFallback, isDraft, warnings}`, each part `{kind, text}` and the parts joined being `text`. |
 | [`ts_intl_date`](intl/ts_intl_date) | A date as text and parts, in its own calendar, through the locale's pattern (`03-design/intl-engine-and-packs.md`), answered as `ts_intl_time` answers. |
+| [`ts_intl_lexicon`](intl/ts_intl_lexicon) | Every catalogue member's names in a locale, romanised forms too (`03-design/lexicon.md` §1), answered as canonical JSON: `{locale, entries}`, each entry `{key, forms}` and each form `{form, text, locale}`, the form `name`, `prose`, `short`, `iast`, any the locale adds, or `romanised`, and `locale` the one in the chain that gave it. |
+| [`ts_intl_lookup`](intl/ts_intl_lookup) | The catalogue members a text may name (`03-design/lexicon.md` §1.3), answered as canonical JSON: `{matches}`, each match `{start, end, text, candidates}` in the text's order, `start` and `end` counted in Unicode scalar values, and each candidate `{key, via}`, `via` the forms whose fold the span's is. |
+| [`ts_intl_dates`](intl/ts_intl_dates) | Every Bikram Sambat and Gregorian date a text names (`03-design/lexicon.md` §2), answered as canonical JSON: `{dates}`, each found date `{start, end, text, readings}` in the text's order, `start` and `end` counted in Unicode scalar values, and each reading `{date, order, gregorian}`: the date in its calendar (`{calendar, year, month, day, era, leap}`), how its figures were ordered (`YMD`, `DMY` or `MDY`), and the Gregorian day it is, on a Bikram Sambat reading. |
 | [`ts_intl_transliterate`](intl/ts_intl_transliterate) | Text from one script into another (`deva`, `iast`), as a string lent until the next call on the context. |
 | [`ts_intl_entity`](intl/ts_intl_entity) | An entity's forms in the current locale or its fallbacks, as a JSON object lent until the next call on the context: every form the locale gives (`name`, `prose`, `iast`, `short`, and any it adds), the `glyph` when it has one, and the `gender` when the locale marks one. |
 | [`ts_intl_render`](intl/ts_intl_render) | Renders a message with parameters given as a JSON object: a string, an integer, a number or an array is itself; an entity is `{"$entity": "graha.SUN"}`; a date `{"$date": {"calendar": "GREGORIAN", "year": 2026, "month": 9, "day": 6}}`; a time `{"$time": {"hour": 6, "minute": 15, "second": 0}}`; a date and time `{"$datetime": {"date": {...}, "time": {...}}}`; a ghati count `{"$ghati": {"ghati": 12, "pala": 30, "vipala": 0}}`. |
@@ -159,6 +162,12 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 | entry point | what it does |
 |---|---|
 | [`ts_navatara`](navatara/ts_navatara) | The navatara chakra of a birth star: the 27 stars in the order the count from the birth star reaches them, each `{"nakshatra", "count", "tara", "cycle", "special"}`, `cycle` the round of nine (1 janma, 2 anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani* names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`, `VAINASHIKA`, `MANASA`) or null (C1053). |
+
+### Verify
+
+| entry point | what it does |
+|---|---|
+| [`ts_verify_claims`](verify/ts_verify_claims) | Every claim a text makes of the time, each judged against what `almanac.sankalpa` computes at the instant and the place (`03-design/lexicon.md` §3), answered with `{value, provenance}` as canonical JSON. |
 
 ### Numerology
 
@@ -242,6 +251,7 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 - `crates/ffi/src/naam.rs`
 - `crates/ffi/src/naming.rs`
 - `crates/ffi/src/navatara.rs`
+- `crates/ffi/src/verify.rs`
 - `crates/ffi/src/numerology.rs`
 - `crates/ffi/src/pakshi.rs`
 - `crates/ffi/src/rashifal.rs`

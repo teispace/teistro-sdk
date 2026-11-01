@@ -4107,6 +4107,7 @@ public final class Native {
         "ts_naming_load",
         "ts_naming_suggest",
         "ts_navatara",
+        "ts_verify_claims",
         "ts_numerology_profile",
         "ts_pakshi",
         "ts_rashifal",
@@ -5084,6 +5085,31 @@ public final class Native {
     public final MethodHandle ts_navatara;
 
     /**
+     * Every claim a text makes of the time, each judged against what
+     * `almanac.sankalpa` computes at the instant and the place
+     * (`03-design/lexicon.md` §3), answered with `{value, provenance}` as
+     * canonical JSON.
+     *
+     * `value` is `{claims}`, each claim `{start, end, text, kind, graha,
+     * claimed, verdict, computed, reason}` in the text's order: the span
+     * naming the member (counted in Unicode scalar values), the kind claimed,
+     * the graha whose sign or nakshatra it is, every key the span may name,
+     * `HELD`, `CONTRADICTED` or `UNREAD`, the key computed on a claim judged,
+     * and on one unread why: `QUESTION`, `NEGATED`, `OTHER_TIME`,
+     * `NOT_COMPUTED` or `AMBIGUOUS`.
+     *
+     * `request_json` is `{"text", "at", "latitudeDeg", "longitudeDeg",
+     * "altitudeM", "utcOffsetSeconds", "ayana", "locale"}`: `at` a UTC Julian
+     * day, `altitudeM` 0 and `ayana` `SIDEREAL` when left out, and `locale`
+     * whose names are searched, every loaded locale's when left out. A key it
+     * does not read or an instant, place or offset out of range is
+     * `INVALID_ARG`, named under `claims`; a locale no loaded one answers is
+     * `UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is
+     * `CAPABILITY`.
+     */
+    public final MethodHandle ts_verify_claims;
+
+    /**
      * Reads a name and a birth date under numerology's two systems and
      * answers with the profile as canonical JSON: the name under each
      * system, word by word with every reduction step, Balliett's birth
@@ -5363,6 +5389,7 @@ public final class Native {
         ts_naming_load = linker.downcallHandle(symbols.find("ts_naming_load").orElseThrow(() -> missing("ts_naming_load")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_suggest = linker.downcallHandle(symbols.find("ts_naming_suggest").orElseThrow(() -> missing("ts_naming_suggest")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_navatara = linker.downcallHandle(symbols.find("ts_navatara").orElseThrow(() -> missing("ts_navatara")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_verify_claims = linker.downcallHandle(symbols.find("ts_verify_claims").orElseThrow(() -> missing("ts_verify_claims")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_numerology_profile = linker.downcallHandle(symbols.find("ts_numerology_profile").orElseThrow(() -> missing("ts_numerology_profile")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_pakshi = linker.downcallHandle(symbols.find("ts_pakshi").orElseThrow(() -> missing("ts_pakshi")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_rashifal = linker.downcallHandle(symbols.find("ts_rashifal").orElseThrow(() -> missing("ts_rashifal")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

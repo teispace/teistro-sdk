@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 389 of the examples' 401 members.
+/// The cases compare 390 of the examples' 402 members.
 library;
 
 import 'dart:convert';
@@ -2703,6 +2703,16 @@ void main() {
         locale: 'x',
         style: DateStyle.long,
       ).toJson(),
+    );
+  });
+
+  test('intl.dates: DatesRequest', () {
+    _holds(
+      'intl.dates',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: DatesRequest(calendars: [Calendar.julian], text: 'x').toJson(),
     );
   });
 
