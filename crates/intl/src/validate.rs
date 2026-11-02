@@ -1085,7 +1085,7 @@ mod tests {
         // the eleven points BPHS names (`docs/03-design/entity-names.md`
         // §4c).
         assert_eq!(kind("point").present, 19);
-        assert_eq!(kind("era").present, 9);
+        assert_eq!(kind("era").present, 10);
         for (name, total) in [
             ("tithi", 30),
             ("karana", 11),
