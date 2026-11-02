@@ -226,8 +226,9 @@ fn kept_by(communities: &[&str]) -> FestivalMeta {
         kind: Some(FestivalKind::ReligiousCultural),
         tradition: Some(Tradition::Jain),
         communities: communities.iter().map(|&key| key.to_owned()).collect(),
-        regions: Vec::new(),
-        optional: false,
+        // No fast: the Jain fasts (Ayambil's one plain meal, the parva
+        // tithis' upavasa) wait on their own sources, not the Hindu texts'.
+        ..FestivalMeta::default()
     }
 }
 
