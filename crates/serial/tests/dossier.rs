@@ -458,3 +458,10 @@ fn a_policy_that_contradicts_itself_is_refused_by_its_place() {
     });
     assert_eq!(empty.field(), Some("dropCategories[1]"));
 }
+
+#[test]
+fn a_column_is_its_name_and_its_meaning() {
+    // Built at run time too, as a consumer building columns from data does.
+    let named = column("rule", "a rule's key");
+    assert_eq!((named.name, named.meaning), ("rule", "a rule's key"));
+}
