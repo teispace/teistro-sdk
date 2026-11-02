@@ -67,8 +67,8 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 
 | SR | Status | Where | Note or question |
 |---|---|---|---|
-| SR-33 | planned | `muhurta`; C206 | A ruleset for the committee's vivaha sheet, with a documented divergence for every clause that still differs. |
-| SR-34 | planned | `muhurta` | The house and business rites at P1: bhumi puja, shilanyas or griha arambha, vastu shanti, and a shop or business opening. Gem wearing, shiva vasa beside agni vasa for a rudri, and a lagna graded by the native's chart are P2. |
+| SR-33 | done | `ActivityRules::chintamani_vivaha`, `CHINTAMANI_VIVAHA`; C206, C1135 | *Muhurta Chintamani*'s marriage (Vivaha-prakarana VI vv. 13, 55, with ch. I vv. 46–47's blackouts) leaves 32 of the committee's 39 readable VS 2083 vivaha days clean, against Raman's 4. The seven it parts on are all a rikta tithi over the whole daylight, documented as C1135 rather than absorbed (`saait-measured.md`). |
+| SR-34 | done | `crates/muhurta/src/chintamani.rs`; `CHINTAMANI_GRIHARAMBHA`, `CHINTAMANI_BHUMI_PUJA`, `CHINTAMANI_VASTU_SHANTI`, `CHINTAMANI_VIPANI`; the clause `VRISHA_VASTU` | Each clause from its verse: the house's beginning and shilanyas (Vastu-prakarana XII vv. 13–18, the bull of the house a new instant clause), bhumi puja (the same election, Rahu's mouth unjudged), vastu shanti (XIII v. 3), the shop (II v. 17); griha pravesh stays Raman's. Against the committee's VS 2083 and the Surya Panchanga's VS 2082 lists: 75 of 77 shop days clean; 3 of 15 foundation days, the rest parting on v. 15's months and Venus set (C1134). Cruxes C1130–C1134. Gem wearing, shiva vasa for a rudri and a lagna graded by the native's chart stay P2. |
 | SR-35 | planned | a new sourced vastu module | Aayadi: aaya, vyaya, the nakshatra and the others, each from its source. |
 
 ## 5. Jyotish

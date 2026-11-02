@@ -52,6 +52,21 @@ public sealed interface MuhurtaRequestRules extends RequestJson permits MuhurtaR
     /** {@code RAMAN_VEHICLE}. */
     MuhurtaRequestRules RAMAN_VEHICLE = Key.RAMAN_VEHICLE;
 
+    /** {@code CHINTAMANI_GRIHARAMBHA}. */
+    MuhurtaRequestRules CHINTAMANI_GRIHARAMBHA = Key.CHINTAMANI_GRIHARAMBHA;
+
+    /** {@code CHINTAMANI_BHUMI_PUJA}. */
+    MuhurtaRequestRules CHINTAMANI_BHUMI_PUJA = Key.CHINTAMANI_BHUMI_PUJA;
+
+    /** {@code CHINTAMANI_VASTU_SHANTI}. */
+    MuhurtaRequestRules CHINTAMANI_VASTU_SHANTI = Key.CHINTAMANI_VASTU_SHANTI;
+
+    /** {@code CHINTAMANI_VIPANI}. */
+    MuhurtaRequestRules CHINTAMANI_VIPANI = Key.CHINTAMANI_VIPANI;
+
+    /** {@code CHINTAMANI_VIVAHA}. */
+    MuhurtaRequestRules CHINTAMANI_VIVAHA = Key.CHINTAMANI_VIVAHA;
+
     /**
      * The value, as a {@code MuhurtaRequestRules}.
      *
@@ -141,7 +156,27 @@ public sealed interface MuhurtaRequestRules extends RequestJson permits MuhurtaR
         /**
          * {@code RAMAN_VEHICLE}.
          */
-        RAMAN_VEHICLE("RAMAN_VEHICLE");
+        RAMAN_VEHICLE("RAMAN_VEHICLE"),
+        /**
+         * {@code CHINTAMANI_GRIHARAMBHA}.
+         */
+        CHINTAMANI_GRIHARAMBHA("CHINTAMANI_GRIHARAMBHA"),
+        /**
+         * {@code CHINTAMANI_BHUMI_PUJA}.
+         */
+        CHINTAMANI_BHUMI_PUJA("CHINTAMANI_BHUMI_PUJA"),
+        /**
+         * {@code CHINTAMANI_VASTU_SHANTI}.
+         */
+        CHINTAMANI_VASTU_SHANTI("CHINTAMANI_VASTU_SHANTI"),
+        /**
+         * {@code CHINTAMANI_VIPANI}.
+         */
+        CHINTAMANI_VIPANI("CHINTAMANI_VIPANI"),
+        /**
+         * {@code CHINTAMANI_VIVAHA}.
+         */
+        CHINTAMANI_VIVAHA("CHINTAMANI_VIVAHA");
 
         private final String key;
 

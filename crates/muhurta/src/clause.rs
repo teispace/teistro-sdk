@@ -244,6 +244,21 @@ pub enum ClauseKind {
         /// Whose varjyam.
         nakshatra: Nakshatra,
     },
+    /// The bull of the house (vrisha vastu chakra): the day's star counted
+    /// from the Sun's over the twenty-eight with Abhijit, laid on a bull's
+    /// limbs (*Muhurta Chintamani*, Vastu-prakarana XII vv. 13–14). Three
+    /// at the head burn, four at the forefeet empty, four at the hind feet
+    /// steady, three at the back bring fortune, four at the right flank
+    /// gain, three at the tail lose the master, four at the left flank
+    /// poverty and three at the mouth constant pain: "seven bad, eleven
+    /// good, ten bad". Read for the rites whose rules ask it
+    /// (`ActivityRules::vrisha_vastu`).
+    VrishaVastu {
+        /// The day's star counted from the Sun's, 1 (the Sun's own) to 28.
+        count: u8,
+        /// Best on the eleven good counts, rejected on the seventeen bad.
+        grade: Grade,
+    },
 }
 
 /// Which clause, without what it found: the name a rule uses to point at
@@ -330,6 +345,8 @@ pub enum ClauseKey {
     Ghata,
     /// [`ClauseKind::AshubhaYoga`].
     AshubhaYoga,
+    /// [`ClauseKind::VrishaVastu`].
+    VrishaVastu,
 }
 
 impl ClauseKey {
@@ -342,7 +359,7 @@ impl ClauseKey {
     ///
     /// assert!(ClauseKey::ALL.iter().enumerate().all(|(place, key)| *key as usize == place));
     /// ```
-    pub const ALL: [ClauseKey; 34] = [
+    pub const ALL: [ClauseKey; 35] = [
         ClauseKey::Tithi,
         ClauseKey::Nakshatra,
         ClauseKey::Yoga,
@@ -377,6 +394,7 @@ impl ClauseKey {
         ClauseKey::Varjyam,
         ClauseKey::Ghata,
         ClauseKey::AshubhaYoga,
+        ClauseKey::VrishaVastu,
     ];
 }
 
@@ -426,6 +444,7 @@ impl ClauseKind {
             ClauseKind::Varjyam { .. } => ClauseKey::Varjyam,
             ClauseKind::Ghata { .. } => ClauseKey::Ghata,
             ClauseKind::AshubhaYoga { .. } => ClauseKey::AshubhaYoga,
+            ClauseKind::VrishaVastu { .. } => ClauseKey::VrishaVastu,
         }
     }
 
@@ -456,7 +475,8 @@ impl ClauseKind {
             | ClauseKind::Vara { grade, .. }
             | ClauseKind::Month { grade, .. }
             | ClauseKind::SolarMonth { grade, .. }
-            | ClauseKind::Lagna { grade, .. } => *grade == Grade::Best,
+            | ClauseKind::Lagna { grade, .. }
+            | ClauseKind::VrishaVastu { grade, .. } => *grade == Grade::Best,
             ClauseKind::MuhurtaYoga { yoga } => yoga.attributes().auspicious,
             ClauseKind::Choghadiya { choghadiya } => choghadiya.attributes().auspicious,
             ClauseKind::Tarabala { reading } => reading.tara.favourable(),

@@ -68,7 +68,8 @@ impl ClauseKey {
             | ClauseKey::VenusInSixth
             | ClauseKey::MarsInEighth
             | ClauseKey::AshtamaLagna
-            | ClauseKey::Ghata => &[],
+            | ClauseKey::Ghata
+            | ClauseKey::VrishaVastu => &[],
         }
     }
 }
@@ -239,6 +240,7 @@ mod tests {
     /// One clause of a kind, every list in it non-empty, so each listed
     /// path has a member to write. Exhaustive, so a new kind is sampled
     /// before it compiles.
+    #[allow(clippy::too_many_lines, reason = "one arm per kind, every kind")]
     fn sample(key: ClauseKey) -> ClauseKind {
         let two = || vec![Graha::Jupiter, Graha::Venus];
         match key {
@@ -336,6 +338,10 @@ mod tests {
             },
             ClauseKey::AshubhaYoga => ClauseKind::AshubhaYoga {
                 yoga: AshubhaYoga::Yamaghanta,
+            },
+            ClauseKey::VrishaVastu => ClauseKind::VrishaVastu {
+                count: 1,
+                grade: Grade::Rejected,
             },
         }
     }

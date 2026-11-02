@@ -600,6 +600,7 @@ void main() {
         shool: [Shool(afterGhatis: 1, vara: Vara.somavara)],
         unjudged: [<String, Object?>{'what': 'x', 'why': 'x'}],
         unwanted: [MuhurtaUnwanted(bars: true, grahas: [Graha.moon], houses: [1])],
+        vrishaVastu: true,
       )).toJson(),
     );
   });

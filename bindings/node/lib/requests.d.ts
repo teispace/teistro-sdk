@@ -3193,7 +3193,7 @@ export type MuhurtaRanking = 'TEXTS' | 'BASELINE';
 /**
  * The rules: an activity the SDK ships the rules of, by name, or rules spelt out.
  */
-export type MuhurtaRequestRules = 'RAMAN_MARRIAGE' | 'BASELINE_MARRIAGE' | 'RAMAN_NAMAKARANA' | 'RAMAN_ANNAPRASANA' | 'RAMAN_UPANAYANA' | 'RAMAN_GRIHA_PRAVESHA' | 'RAMAN_KARNAVEDHA' | 'RAMAN_CHUDAKARANA' | 'RAMAN_VIDYARAMBHA' | 'RAMAN_YATRA' | 'RAMAN_TRADE_PURCHASE' | 'RAMAN_SELLING' | 'RAMAN_NEW_CLOTHES' | 'RAMAN_VEHICLE' | ActivityRules;
+export type MuhurtaRequestRules = 'RAMAN_MARRIAGE' | 'BASELINE_MARRIAGE' | 'RAMAN_NAMAKARANA' | 'RAMAN_ANNAPRASANA' | 'RAMAN_UPANAYANA' | 'RAMAN_GRIHA_PRAVESHA' | 'RAMAN_KARNAVEDHA' | 'RAMAN_CHUDAKARANA' | 'RAMAN_VIDYARAMBHA' | 'RAMAN_YATRA' | 'RAMAN_TRADE_PURCHASE' | 'RAMAN_SELLING' | 'RAMAN_NEW_CLOTHES' | 'RAMAN_VEHICLE' | 'CHINTAMANI_GRIHARAMBHA' | 'CHINTAMANI_BHUMI_PUJA' | 'CHINTAMANI_VASTU_SHANTI' | 'CHINTAMANI_VIPANI' | 'CHINTAMANI_VIVAHA' | ActivityRules;
 
 /**
  * How a feed's event came to be, which a [`FeedSelector`] can name.
@@ -4792,6 +4792,10 @@ export interface ActivityRules {
    * The grahas the rite wants out of houses. Empty where the rules spelt out leave it out.
    */
   readonly unwanted?: readonly MuhurtaUnwanted[];
+  /**
+   * Whether the bull of the house is read (*Muhurta Chintamani*, Vastu-prakarana XII vv. 13–14): the day's star counted from the Sun's, graded at each instant as a [`ClauseKind::VrishaVastu`]. False where the rules spelt out leave it out; JSON writes it `vrishaVastu`.
+   */
+  readonly vrishaVastu?: boolean;
 }
 
 /**
@@ -7295,7 +7299,7 @@ export interface ThresholdsCustom {
 /**
  * A clause that bars a rite outright: every clause of a kind, or one clause exactly.
  */
-export type Bar = 'TITHI' | 'NAKSHATRA' | 'YOGA' | 'KARANA' | 'VARA' | 'MONTH' | 'SOLAR_MONTH' | 'LAGNA' | 'PADA' | 'KAALA' | 'CHOGHADIYA' | 'ABHIJIT' | 'MUHURTA_YOGA' | 'TARABALA' | 'CHANDRABALA' | 'KARTARI' | 'MOON_IN_DUSTHANA' | 'MOON_JOINED' | 'VENUS_IN_SIXTH' | 'MARS_IN_EIGHTH' | 'ASHTAMA_LAGNA' | 'KUNAVAMSA' | 'PANCHAKA_REMAINDER' | 'LAGNA_TYAJYA' | 'SEVENTH_OCCUPIED' | 'MALEFIC_IN_LAGNA' | 'BENEFIC_IN_LAGNA' | 'EXALTED_IN_LAGNA' | 'LUMINARY_IN_ELEVENTH' | 'KENDRA_BENEFICS' | 'UNWANTED_PLACEMENT' | 'VARJYAM' | 'GHATA' | 'ASHUBHA_YOGA' | MuhurtaClauseKind;
+export type Bar = 'TITHI' | 'NAKSHATRA' | 'YOGA' | 'KARANA' | 'VARA' | 'MONTH' | 'SOLAR_MONTH' | 'LAGNA' | 'PADA' | 'KAALA' | 'CHOGHADIYA' | 'ABHIJIT' | 'MUHURTA_YOGA' | 'TARABALA' | 'CHANDRABALA' | 'KARTARI' | 'MOON_IN_DUSTHANA' | 'MOON_JOINED' | 'VENUS_IN_SIXTH' | 'MARS_IN_EIGHTH' | 'ASHTAMA_LAGNA' | 'KUNAVAMSA' | 'PANCHAKA_REMAINDER' | 'LAGNA_TYAJYA' | 'SEVENTH_OCCUPIED' | 'MALEFIC_IN_LAGNA' | 'BENEFIC_IN_LAGNA' | 'EXALTED_IN_LAGNA' | 'LUMINARY_IN_ELEVENTH' | 'KENDRA_BENEFICS' | 'UNWANTED_PLACEMENT' | 'VARJYAM' | 'GHATA' | 'ASHUBHA_YOGA' | 'VRISHA_VASTU' | MuhurtaClauseKind;
 
 /**
  * What the engine's weights take for one activity.
@@ -8349,7 +8353,7 @@ export interface MotionThresholds {
 /**
  * What a clause says.
  */
-export type MuhurtaClauseKind = MuhurtaClauseKindTithi | MuhurtaClauseKindNakshatra | MuhurtaClauseKindYoga | MuhurtaClauseKindKarana | MuhurtaClauseKindVara | MuhurtaClauseKindMonth | MuhurtaClauseKindSolarMonth | MuhurtaClauseKindLagna | MuhurtaClauseKindPada | MuhurtaClauseKindKaala | MuhurtaClauseKindChoghadiya | MuhurtaClauseKindAbhijit | MuhurtaClauseKindMuhurtaYoga | MuhurtaClauseKindTarabala | MuhurtaClauseKindGhata | MuhurtaClauseKindAshubhaYoga | MuhurtaClauseKindChandrabala | MuhurtaClauseKindKartari | MuhurtaClauseKindMoonInDusthana | MuhurtaClauseKindMoonJoined | MuhurtaClauseKindVenusInSixth | MuhurtaClauseKindMarsInEighth | MuhurtaClauseKindAshtamaLagna | MuhurtaClauseKindKunavamsa | MuhurtaClauseKindPanchakaRemainder | MuhurtaClauseKindLagnaTyajya | MuhurtaClauseKindSeventhOccupied | MuhurtaClauseKindMaleficInLagna | MuhurtaClauseKindBeneficInLagna | MuhurtaClauseKindExaltedInLagna | MuhurtaClauseKindLuminaryInEleventh | MuhurtaClauseKindKendraBenefics | MuhurtaClauseKindUnwantedPlacement | MuhurtaClauseKindVarjyam;
+export type MuhurtaClauseKind = MuhurtaClauseKindTithi | MuhurtaClauseKindNakshatra | MuhurtaClauseKindYoga | MuhurtaClauseKindKarana | MuhurtaClauseKindVara | MuhurtaClauseKindMonth | MuhurtaClauseKindSolarMonth | MuhurtaClauseKindLagna | MuhurtaClauseKindPada | MuhurtaClauseKindKaala | MuhurtaClauseKindChoghadiya | MuhurtaClauseKindAbhijit | MuhurtaClauseKindMuhurtaYoga | MuhurtaClauseKindTarabala | MuhurtaClauseKindGhata | MuhurtaClauseKindAshubhaYoga | MuhurtaClauseKindChandrabala | MuhurtaClauseKindKartari | MuhurtaClauseKindMoonInDusthana | MuhurtaClauseKindMoonJoined | MuhurtaClauseKindVenusInSixth | MuhurtaClauseKindMarsInEighth | MuhurtaClauseKindAshtamaLagna | MuhurtaClauseKindKunavamsa | MuhurtaClauseKindPanchakaRemainder | MuhurtaClauseKindLagnaTyajya | MuhurtaClauseKindSeventhOccupied | MuhurtaClauseKindMaleficInLagna | MuhurtaClauseKindBeneficInLagna | MuhurtaClauseKindExaltedInLagna | MuhurtaClauseKindLuminaryInEleventh | MuhurtaClauseKindKendraBenefics | MuhurtaClauseKindUnwantedPlacement | MuhurtaClauseKindVarjyam | MuhurtaClauseKindVrishaVastu;
 
 /**
  * A tithi the rules grade best or reject (panchanga shuddhi).
@@ -8755,6 +8759,21 @@ export interface MuhurtaClauseKindVarjyam {
    * Whose varjyam.
    */
   readonly nakshatra: Member<catalogue.Nakshatra>;
+}
+
+/**
+ * The bull of the house (vrisha vastu chakra): the day's star counted from the Sun's over the twenty-eight with Abhijit, laid on a bull's limbs (*Muhurta Chintamani*, Vastu-prakarana XII vv. 13–14). Three at the head burn, four at the forefeet empty, four at the hind feet steady, three at the back bring fortune, four at the right flank gain, three at the tail lose the master, four at the left flank poverty and three at the mouth constant pain: "seven bad, eleven good, ten bad". Read for the rites whose rules ask it (`ActivityRules::vrisha_vastu`).
+ */
+export interface MuhurtaClauseKindVrishaVastu {
+  readonly clause: 'VRISHA_VASTU';
+  /**
+   * The day's star counted from the Sun's, 1 (the Sun's own) to 28.
+   */
+  readonly count: number;
+  /**
+   * Best on the eleven good counts, rejected on the seventeen bad.
+   */
+  readonly grade: MuhurtaGrade;
 }
 
 /**

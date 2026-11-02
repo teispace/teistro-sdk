@@ -679,18 +679,71 @@ feeding is Uttara Phalguni (C203), and the house entry's months are
 graded as printed, though two of them fall outside the northern course
 the same chapter asks (C204).
 
+**The house, the shop and *Muhurta Chintamani*'s marriage**
+(`crates/muhurta/src/chintamani.rs`). Five rites are read from Daivajna
+Rama's *Muhurta Chintamani* (1600), in Mahidhara's (1905) and Pyarelal
+Mishra's (1939) printings with their Hindi commentaries, with *Muhurta
+Martanda* (1904) where it words the same rule:
+
+| key | *Muhurta Chintamani* | Nepal |
+|---|---|---|
+| `CHINTAMANI_GRIHARAMBHA` | beginning a house, Vastu-prakarana XII vv. 13–18 | griharambha, the foundation (shilanyas, "जग राख्ने") |
+| `CHINTAMANI_BHUMI_PUJA` | the same election, with Rahu's mouth for the digging (v. 19) unjudged | bhumi puja |
+| `CHINTAMANI_VASTU_SHANTI` | the vastu puja and bhutabali, Grihapravesha-prakarana XIII v. 3 | vastu shanti |
+| `CHINTAMANI_VIPANI` | the market, Nakshatra-prakarana II v. 17 (its second half) | dokan kholne |
+| `CHINTAMANI_VIVAHA` | the marriage, Vivaha-prakarana VI vv. 13 and 55 | vivaha |
+
+Each clause is the verse's: the house's months are lunar months each
+with the Sun's sign (v. 15, `MonthRule::Lunar` with every month shut
+but the paired ones, `with_sun`); its tithis, varas, lagnas and the
+panchaka are v. 18's; the shop's stars are the friendly (the soft group,
+which ch. II v. 7 names *mṛdu-maitra*), the fixed and the swift, without
+the riktas, Tuesday or an Aquarius lagna; the marriage's months are the
+Sun's six signs of v. 13, a gate, and its stars, tithis and weekdays
+v. 55's. Ch. I vv. 46–47 forbid a house's beginning and consecration
+and a marriage while Jupiter or Venus is set or in an uneven month, so
+those three heed `GURU_ASTA`, `SHUKRA_ASTA`, `ADHIKA_MASA` and
+`KSHAYA_MASA`; the shop is not named there and heeds none.
+
+**The bull of the house** (`VRISHA_VASTU`, vv. 13–14). The day's star
+is counted from the Sun's over the twenty-eight with Abhijit (276°40′ to
+280°53′20″, ch. VI v. 55), the Sun's own the first, and laid on a bull:
+the head and forefeet (1–7) and the tail, the left flank and the mouth
+(19–28) bad, the hind feet, the back and the right flank (8–18) good —
+"seven bad, eleven good, ten bad". It is an instant clause, since the
+Moon moves through it, read where `ActivityRules.vrishaVastu` is set:
+best on a good count, rejected on a bad one.
+
+The verses avoid and do not rank, so nothing bars (C205), and they
+carry no general shuddhi beneath them (C1130): a limb a verse leaves
+out is middling. The readings that needed a choice are cruxes: the
+panchaka against the house's good stars (C1131), the first tithi of
+both halves (C1132), vastu shanti heeding the consecration's blackouts
+(C1133) and the house's months against Narada's (C1134). A door's
+facing, Rahu's mouth, the first stone's corner, the owner's chart and
+the vedha of the marriage's stars are listed in `unjudged`.
+
 **Measured** (`saait-measured.md`, gated by `check-saait`): the
-committee's VS 2083 muhurta sheet, 94 rows read off its page images,
-each printed day founded at Kathmandu over the committee's sky and the
-modern one and searched with the rite's rules. Six rows print a weekday
-their own date contradicts, and are read neither way. Every readable
-bratabandha and griha pravesh day has a clean window; 27 of 35 pasni
-days do, most of the rest parting at the 10th that must be empty; and
-4 of 39 vivaha days do under Raman's marriage, which parts from the
-committee by Tuesday, Pausha, dark-half tithis and yogas (C206). The
+committee's VS 2083 muhurta sheet, 148 rows, and the Surya Panchanga's
+VS 2082 lists of the foundation, the house entry and the shop, 41 rows
+(its preface says the committee decided them), each read off the page
+images, founded at Kathmandu over the committee's sky and the modern one
+and searched with each set of the rite's rules. Six rows of the sheet
+print a weekday their own date contradicts, and are read neither way.
+Over the committee's sky every readable bratabandha day has a clean
+window; 27 of 35 pasni days do, most of the rest parting at the 10th
+that must be empty; 3 of 5 griha pravesh days do, the two VS 2082 ones
+parting on Saturday and on Venus set. Of 39 vivaha days, 4 are clean
+under Raman's marriage, which parts by Tuesday, Pausha, dark-half tithis
+and yogas, and 32 under *Muhurta Chintamani*'s, all seven of whose
+partings are a rikta tithi over the whole daylight (C206, C1135). 75 of
+77 shop days are clean under `CHINTAMANI_VIPANI` (a Tuesday and a rikta
+9th part). Only 3 of 15 foundation days are: v. 15's months reject
+the whole daylight of eight (Kartika, Magha, and Margashirsha with the
+Sun past Scorpio), Venus set closes two, and the committee's months are open (C1134). The
 counts are over the committee's sky as `nepali-committee` version 4
-reads it, with modern star planets (C38); the text's planets gave 24
-and 5. The page also counts the days of the year each rite leaves open.
+reads it, with modern star planets (C38). The page also counts the days
+of each year each set of rules leaves open.
 
 ## 5. What is measured
 

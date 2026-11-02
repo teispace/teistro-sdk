@@ -7744,7 +7744,8 @@ fn scored(window: &teistro::muhurta::Judgement) -> String {
 /// 2024-11-25..27 at the test provider: the texts bar all of the day's
 /// windows for different reasons, and the baseline scores them, so both
 /// the bars and the scores cross every layer; and a thread ceremony,
-/// whose unwanted placements cross with their houses and grahas.
+/// whose unwanted placements cross with their houses and grahas; and a
+/// house's beginning, whose bull of the house no other rite reads.
 /// Each sign's line of a rashifal answer: Saturn, the verdicts, each
 /// event, and the baseline's score when asked.
 fn rashifal_signs(
@@ -8117,6 +8118,7 @@ fn a_muhurta(report: &mut Report, geo: &Context, place: &Place, offset: UtcOffse
         ("raman", "RAMAN_MARRIAGE", "TEXTS"),
         ("baseline", "BASELINE_MARRIAGE", "BASELINE"),
         ("upanayana", "RAMAN_UPANAYANA", "TEXTS"),
+        ("griharambha", "CHINTAMANI_GRIHARAMBHA", "TEXTS"),
     ] {
         let asked = teistro::MuhurtaRequest::from_json(&format!(
             r#"{{"rules":"{rules}","ranking":"{ranking}","native":{{"star":"ROHINI","moonSign":"TAURUS","lagna":"LEO"}},"daysWithWindows":3,"most":12}}"#

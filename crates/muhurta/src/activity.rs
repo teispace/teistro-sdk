@@ -431,6 +431,13 @@ pub struct ActivityRules {
     /// spelt out leave it out.
     #[serde(default)]
     pub unwanted: Vec<Unwanted>,
+    /// Whether the bull of the house is read (*Muhurta Chintamani*,
+    /// Vastu-prakarana XII vv. 13–14): the day's star counted from the
+    /// Sun's, graded at each instant as a [`ClauseKind::VrishaVastu`].
+    /// False where the rules spelt out leave it out; JSON writes it
+    /// `vrishaVastu`.
+    #[serde(default, rename = "vrishaVastu")]
+    pub vrisha_vastu: bool,
     /// The clauses that bar the rite outright rather than weigh against
     /// it.
     pub bars: Vec<Bar>,
@@ -526,6 +533,7 @@ impl ActivityRules {
                 BlackoutKind::EclipseStar,
             ],
             unwanted: Vec::new(),
+            vrisha_vastu: false,
             bars: [
                 ClauseKey::SeventhOccupied,
                 ClauseKey::MarsInEighth,
@@ -608,6 +616,7 @@ impl ActivityRules {
                 BlackoutKind::ShukraAsta,
             ],
             unwanted: Vec::new(),
+            vrisha_vastu: false,
             bars: vec![
                 Bar::Key(ClauseKey::SolarMonth),
                 Bar::Key(ClauseKey::Nakshatra),
@@ -766,6 +775,16 @@ impl ActivityRules {
                 at,
             });
         }
+        if self.vrisha_vastu {
+            let count = vrisha_count(sky.longitude(Graha::Sun), sky.longitude(Graha::Moon));
+            found.push(Clause {
+                kind: ClauseKind::VrishaVastu {
+                    count,
+                    grade: vrisha_grade(count),
+                },
+                at,
+            });
+        }
         for house in 1..=12 {
             let named: Vec<Graha> = GRAHAS
                 .into_iter()
@@ -869,6 +888,63 @@ impl ActivityRules {
             }
             _ => false,
         }
+    }
+}
+
+/// Where Abhijit begins and ends, in degrees of sidereal longitude: the
+/// last quarter of Uttara Ashadha (276°40′) to the first fifteenth of
+/// Shravana (280°53′20″) (*Muhurta Chintamani*, Vivaha-prakarana VI v. 55).
+const ABHIJIT: (f64, f64) = (276.0 + 40.0 / 60.0, 280.0 + 53.0 / 60.0 + 20.0 / 3600.0);
+
+/// A longitude's star among the twenty-eight with Abhijit, 0 (Ashwini) to
+/// 27 (Revati), Abhijit the 21st between Uttara Ashadha and Shravana.
+fn star_of_28(longitude: f64) -> u8 {
+    if (ABHIJIT.0..ABHIJIT.1).contains(&longitude.rem_euclid(360.0)) {
+        return 21;
+    }
+    let star = navamsa_of(longitude) / 4;
+    if star <= 20 { star } else { star + 1 }
+}
+
+/// The day's star counted from the Sun's over the twenty-eight, the
+/// Sun's own the first: the bull's count (*Muhurta Chintamani*,
+/// Vastu-prakarana XII vv. 13–14).
+///
+/// ```
+/// use teistro_muhurta::activity::vrisha_count;
+///
+/// // The Sun and the Moon in Ashwini: the first, at the head.
+/// assert_eq!(vrisha_count(1.0, 5.0), 1);
+/// // The Sun in Uttara Ashadha's first quarter, the Moon in Abhijit: the second.
+/// assert_eq!(vrisha_count(268.0, 278.0), 2);
+/// // The Moon a star behind the Sun: the twenty-eighth.
+/// assert_eq!(vrisha_count(20.0, 5.0), 28);
+/// ```
+#[must_use]
+pub fn vrisha_count(sun: f64, moon: f64) -> u8 {
+    (star_of_28(moon) + 28 - star_of_28(sun)) % 28 + 1
+}
+
+/// The bull's grade of a count: the verse's "seven bad, eleven good, ten
+/// bad" — the head and forefeet (1 to 7) and the tail, the left flank
+/// and the mouth (19 to 28) rejected, the hind feet, the back and the
+/// right flank (8 to 18) best.
+///
+/// ```
+/// use teistro_muhurta::Grade;
+/// use teistro_muhurta::activity::vrisha_grade;
+///
+/// assert_eq!(vrisha_grade(7), Grade::Rejected);
+/// assert_eq!(vrisha_grade(8), Grade::Best);
+/// assert_eq!(vrisha_grade(18), Grade::Best);
+/// assert_eq!(vrisha_grade(19), Grade::Rejected);
+/// ```
+#[must_use]
+pub const fn vrisha_grade(count: u8) -> Grade {
+    if 8 <= count && count <= 18 {
+        Grade::Best
+    } else {
+        Grade::Rejected
     }
 }
 

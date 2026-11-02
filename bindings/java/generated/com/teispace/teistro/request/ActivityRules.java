@@ -22,8 +22,9 @@ import java.util.Objects;
  * @param shool For a journey asked a direction, the ghati each weekday's disha shool is lifted at. Empty, the direction is not judged; a weekday missing from a list that is not shuts its days to the direction. Null leaves the SDK's default.
  * @param unjudged What the source asks that is not judged, said rather than dropped.
  * @param unwanted The grahas the rite wants out of houses. Empty where the rules spelt out leave it out. Null leaves the SDK's default.
+ * @param vrishaVastu Whether the bull of the house is read (*Muhurta Chintamani*, Vastu-prakarana XII vv. 13–14): the day's star counted from the Sun's, graded at each instant as a `ClauseKind::VrishaVastu`. False where the rules spelt out leave it out; JSON writes it `vrishaVastu`. Null leaves the SDK's default.
  */
-public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRules day, List<com.teispace.teistro.BlackoutKind> heeds, Hours hours, GradedRashi lagnas, MonthRule months, List<NakshatraPada> padas, List<Shool> shool, List<MuhurtaUnjudged> unjudged, List<MuhurtaUnwanted> unwanted) implements RequestJson {
+public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRules day, List<com.teispace.teistro.BlackoutKind> heeds, Hours hours, GradedRashi lagnas, MonthRule months, List<NakshatraPada> padas, List<Shool> shool, List<MuhurtaUnjudged> unjudged, List<MuhurtaUnwanted> unwanted, Boolean vrishaVastu) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -60,7 +61,7 @@ public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRu
      * @param unjudged What the source asks that is not judged, said rather than dropped.
      */
     public ActivityRules(List<Bar> bars, DayRules day, List<com.teispace.teistro.BlackoutKind> heeds, GradedRashi lagnas, MonthRule months, List<NakshatraPada> padas, List<MuhurtaUnjudged> unjudged) {
-        this(bars, null, day, heeds, null, lagnas, months, padas, null, unjudged, null);
+        this(bars, null, day, heeds, null, lagnas, months, padas, null, unjudged, null, null);
     }
 
     /**
@@ -86,6 +87,7 @@ public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRu
         private List<Shool> shool;
         private List<MuhurtaUnjudged> unjudged;
         private List<MuhurtaUnwanted> unwanted;
+        private Boolean vrishaVastu;
 
         private Builder() {}
 
@@ -211,13 +213,24 @@ public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRu
         }
 
         /**
+         * Sets {@code vrishaVastu}.
+         *
+         * @param vrishaVastu Whether the bull of the house is read (*Muhurta Chintamani*, Vastu-prakarana XII vv. 13–14): the day's star counted from the Sun's, graded at each instant as a `ClauseKind::VrishaVastu`. False where the rules spelt out leave it out; JSON writes it `vrishaVastu`. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder vrishaVastu(boolean vrishaVastu) {
+            this.vrishaVastu = vrishaVastu;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public ActivityRules build() {
-            return new ActivityRules(bars, baseline, day, heeds, hours, lagnas, months, padas, shool, unjudged, unwanted);
+            return new ActivityRules(bars, baseline, day, heeds, hours, lagnas, months, padas, shool, unjudged, unwanted, vrishaVastu);
         }
     }
 
@@ -241,7 +254,8 @@ public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRu
             Read.list(Read.required(json.get("padas"), "ActivityRules.padas"), "ActivityRules.padas", item0 -> NakshatraPada.of(item0)),
             Read.orNull(json.get("shool"), present -> Read.list(present, "ActivityRules.shool", item0 -> Shool.of(item0))),
             Read.list(Read.required(json.get("unjudged"), "ActivityRules.unjudged"), "ActivityRules.unjudged", item0 -> MuhurtaUnjudged.of(item0)),
-            Read.orNull(json.get("unwanted"), present -> Read.list(present, "ActivityRules.unwanted", item0 -> MuhurtaUnwanted.of(item0))));
+            Read.orNull(json.get("unwanted"), present -> Read.list(present, "ActivityRules.unwanted", item0 -> MuhurtaUnwanted.of(item0))),
+            Read.orNull(json.get("vrishaVastu"), present -> Read.bool(present, "ActivityRules.vrishaVastu")));
     }
 
     @Override
@@ -265,6 +279,9 @@ public record ActivityRules(List<Bar> bars, MuhurtaBaselineEvent baseline, DayRu
         json.put("unjudged", unjudged.stream().map(item0 -> item0.toJson()).toList());
         if (unwanted != null) {
             json.put("unwanted", unwanted.stream().map(item0 -> item0.toJson()).toList());
+        }
+        if (vrishaVastu != null) {
+            json.put("vrishaVastu", vrishaVastu);
         }
         return json;
     }

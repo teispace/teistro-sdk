@@ -4878,6 +4878,61 @@ final class MuhurtaRequestRulesRamanVehicle extends MuhurtaRequestRules {
   List<Object?> get _fields => const [];
 }
 
+/// `CHINTAMANI_GRIHARAMBHA`.
+final class MuhurtaRequestRulesChintamaniGriharambha extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesChintamaniGriharambha();
+
+  @override
+  Object? get _wire => 'CHINTAMANI_GRIHARAMBHA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `CHINTAMANI_BHUMI_PUJA`.
+final class MuhurtaRequestRulesChintamaniBhumiPuja extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesChintamaniBhumiPuja();
+
+  @override
+  Object? get _wire => 'CHINTAMANI_BHUMI_PUJA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `CHINTAMANI_VASTU_SHANTI`.
+final class MuhurtaRequestRulesChintamaniVastuShanti extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesChintamaniVastuShanti();
+
+  @override
+  Object? get _wire => 'CHINTAMANI_VASTU_SHANTI';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `CHINTAMANI_VIPANI`.
+final class MuhurtaRequestRulesChintamaniVipani extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesChintamaniVipani();
+
+  @override
+  Object? get _wire => 'CHINTAMANI_VIPANI';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `CHINTAMANI_VIVAHA`.
+final class MuhurtaRequestRulesChintamaniVivaha extends MuhurtaRequestRules {
+  const MuhurtaRequestRulesChintamaniVivaha();
+
+  @override
+  Object? get _wire => 'CHINTAMANI_VIVAHA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
 /// The value itself.
 final class MuhurtaRequestRulesValue extends MuhurtaRequestRules {
   const MuhurtaRequestRulesValue(this.value);
@@ -6933,6 +6988,7 @@ final class ActivityRules extends _Request {
     this.shool = const [],
     required this.unjudged,
     this.unwanted = const [],
+    this.vrishaVastu = false,
   });
 
   /// The clauses that bar the rite outright rather than weigh against it.
@@ -6968,6 +7024,9 @@ final class ActivityRules extends _Request {
   /// The grahas the rite wants out of houses. Empty where the rules spelt out leave it out.
   final List<MuhurtaUnwanted> unwanted;
 
+  /// Whether the bull of the house is read (*Muhurta Chintamani*, Vastu-prakarana XII vv. 13–14): the day's star counted from the Sun's, graded at each instant as a [`ClauseKind::VrishaVastu`]. False where the rules spelt out leave it out; JSON writes it `vrishaVastu`.
+  final bool vrishaVastu;
+
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     'bars': [for (final e0 in bars) e0._wire],
@@ -6981,10 +7040,11 @@ final class ActivityRules extends _Request {
     'shool': [for (final e0 in shool) e0._wire],
     'unjudged': unjudged,
     'unwanted': [for (final e0 in unwanted) e0._wire],
+    'vrishaVastu': vrishaVastu,
   };
 
   @override
-  List<Object?> get _fields => [bars, baseline, day, heeds, hours, lagnas, months, padas, shool, unjudged, unwanted];
+  List<Object?> get _fields => [bars, baseline, day, heeds, hours, lagnas, months, padas, shool, unjudged, unwanted, vrishaVastu];
 }
 
 /// How one observer stands to one event.
@@ -10958,6 +11018,17 @@ final class BarAshubhaYoga extends Bar {
 
   @override
   Object? get _wire => 'ASHUBHA_YOGA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `VRISHA_VASTU`.
+final class BarVrishaVastu extends Bar {
+  const BarVrishaVastu();
+
+  @override
+  Object? get _wire => 'VRISHA_VASTU';
 
   @override
   List<Object?> get _fields => const [];

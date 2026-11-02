@@ -28,6 +28,7 @@
 
 pub mod activity;
 pub mod baseline;
+pub mod chintamani;
 pub mod clause;
 pub mod day;
 pub mod grade;

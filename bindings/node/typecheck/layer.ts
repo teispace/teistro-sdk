@@ -2759,6 +2759,8 @@ function theMuhurta(almanac: Almanac): string {
           return clause.row;
         case 'ASHUBHA_YOGA':
           return clause.yoga;
+        case 'VRISHA_VASTU':
+          return `${clause.count} ${clause.grade}`;
         default:
           return clause.clause;
       }

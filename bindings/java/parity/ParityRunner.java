@@ -2973,6 +2973,7 @@ public final class ParityRunner {
         searches.put("raman", map("rules", "RAMAN_MARRIAGE", "ranking", "TEXTS"));
         searches.put("baseline", map("rules", "BASELINE_MARRIAGE", "ranking", "BASELINE"));
         searches.put("upanayana", map("rules", "RAMAN_UPANAYANA", "ranking", "TEXTS"));
+        searches.put("griharambha", map("rules", "CHINTAMANI_GRIHARAMBHA", "ranking", "TEXTS"));
         for (Map.Entry<String, Map<String, Object>> search : searches.entrySet()) {
             Map<String, Object> asked = new LinkedHashMap<>(search.getValue());
             asked.put("native", nativeBirth);
