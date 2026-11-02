@@ -925,6 +925,8 @@ mod tests {
         // An anusvara typed as m before a consonant, and ai typed for e.
         assert_eq!(fold("Samkranti"), fold("Sankranti"));
         assert_eq!(fold("Vaishakh"), fold("Baisakh"));
+        // An n before a y glide is kept, and the glide dropped as typed.
+        assert_eq!(fold("Kanya"), fold("कन्या"));
     }
 
     #[test]
@@ -959,5 +961,8 @@ mod tests {
         let found = words("क्षमावाणी पढ़ो");
         let texts: Vec<&str> = found.iter().map(|w| w.text).collect();
         assert_eq!(texts, ["क्षमावाणी", "पढ़ो"]);
+        // A combining mark typed after a Latin letter stays in its word.
+        let typed: Vec<&str> = words("kr\u{325}ṣṇa ok").iter().map(|w| w.text).collect();
+        assert_eq!(typed, ["kr\u{325}ṣṇa", "ok"]);
     }
 }
