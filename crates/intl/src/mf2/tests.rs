@@ -283,6 +283,21 @@ fn names_and_numbers_follow_the_grammar() {
     assert!(!is_number_literal("01"));
     assert!(!is_number_literal("1."));
     assert!(!is_number_literal("+1"));
+    // An exponent's digits, signed or not, and never none.
+    assert!(is_number_literal("2E7"));
+    assert!(!is_number_literal("1e"));
+    assert!(!is_number_literal("1e+"));
+    assert!(!is_number_literal("1ex"));
+}
+
+#[test]
+fn a_local_wants_whitespace_before_its_variable() {
+    let refused = failure(".local$x = {|a|} {{{$x}}}");
+    assert!(
+        refused.message.contains("whitespace after `.local`"),
+        "{}",
+        refused.message
+    );
 }
 
 const ROUND_TRIPS: [&str; 12] = [
