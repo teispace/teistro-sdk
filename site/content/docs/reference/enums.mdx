@@ -90,6 +90,8 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_YEAR_OFFICE` | 82 | One of the year's offices, each held by the lord of an event's weekday (`03-design/year-rulers.md`). |
 | `TS_KIND_RULER_TEXT` | 83 | A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1). |
 | `TS_KIND_RULER_DAY_RULE` | 84 | Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072). |
+| `TS_KIND_PAYA` | 90 | The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107). |
+| `TS_KIND_TRIDOSHA` | 91 | The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110). |
 
 ## ts_graha
 
@@ -1584,6 +1586,27 @@ Which day an office's event takes its weekday from (`03-design/year-rulers.md` �
 | `TS_RULER_DAY_RULE_GARGA` | 2 | The raja: the new moon's day if it falls before that day's midday, else the next |
 | `TS_RULER_DAY_RULE_DAYLIGHT` | 3 | An ingress: the day whose daylight holds it, and for one at night the day the next sunrise begins |
 | `TS_RULER_DAY_RULE_VARA` | 4 | An ingress: the weekday, sunrise to sunrise, holding its instant |
+
+## ts_paya
+
+The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107). Members are the catalogue's ids; the full key id is `(TS_KIND_PAYA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_PAYA_SUVARNA` | 0 | Gold: the Moon in the 1st, 6th or 11th from the lagna, or in Jyeshtha to Shatabhisha; the best |
+| `TS_PAYA_RAJATA` | 1 | Silver: the Moon in the 2nd, 5th or 9th from the lagna, or in Ardra to Anuradha; good |
+| `TS_PAYA_TAMRA` | 2 | Copper: the Moon in the 3rd, 7th or 10th from the lagna, or in Purva Bhadrapada to Bharani; middling |
+| `TS_PAYA_LOHA` | 3 | Iron: the Moon in the 4th, 8th or 12th from the lagna, or in Krittika to Mrigashira; poor |
+
+## ts_tridosha
+
+The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110). Members are the catalogue's ids; the full key id is `(TS_KIND_TRIDOSHA << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_TRIDOSHA_VATA` | 0 | Vata, the windy humour, as a classical text attributes it to a graha; not a diagnosis |
+| `TS_TRIDOSHA_PITTA` | 1 | Pitta, the bilious humour, as a classical text attributes it to a graha; not a diagnosis |
+| `TS_TRIDOSHA_KAPHA` | 2 | Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis |
 
 ## ts_status
 

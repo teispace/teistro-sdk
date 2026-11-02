@@ -4,7 +4,7 @@
     {
       "kind": "graha",
       "number": 1,
-      "version": 1,
+      "version": 2,
       "doc": "The nine grahas of the Parashari tradition and the three outer planets.",
       "types": {
         "GrahaDescriptors": {
@@ -34,7 +34,10 @@
         "own": "list<key:rashi>",
         "friends": "list<key:graha>",
         "neutrals": "list<key:graha>",
-        "enemies": "list<key:graha>"
+        "enemies": "list<key:graha>",
+        "classical_doshas": "list<key:tridosha>",
+        "classical_predominant_dosha": "option<key:tridosha>",
+        "classical_tattva": "option<key:tatwa>"
       },
       "members": [
         {
@@ -83,7 +86,12 @@
               "SATURN",
               "RAHU",
               "KETU"
-            ]
+            ],
+            "classical_doshas": [
+              "PITTA"
+            ],
+            "classical_predominant_dosha": "PITTA",
+            "classical_tattva": null
           },
           "sources": [
             {
@@ -93,6 +101,10 @@
             {
               "text": "BPHS",
               "ref": "3"
+            },
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.13: पित्तप्रकृतिको"
             }
           ],
           "mark": "V",
@@ -144,7 +156,13 @@
             "enemies": [
               "RAHU",
               "KETU"
-            ]
+            ],
+            "classical_doshas": [
+              "VATA",
+              "KAPHA"
+            ],
+            "classical_predominant_dosha": null,
+            "classical_tattva": null
           },
           "sources": [
             {
@@ -154,6 +172,10 @@
             {
               "text": "BPHS",
               "ref": "3"
+            },
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.14: बहुवातकफः (ch. 3 in the usual numbering)"
             }
           ],
           "mark": "V",
@@ -206,7 +228,12 @@
             "enemies": [
               "MERCURY",
               "RAHU"
-            ]
+            ],
+            "classical_doshas": [
+              "PITTA"
+            ],
+            "classical_predominant_dosha": "PITTA",
+            "classical_tattva": "AGNI"
           },
           "sources": [
             {
@@ -216,6 +243,10 @@
             {
               "text": "BPHS",
               "ref": "3"
+            },
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.10 (tattva), 2.15 (pitta)"
             }
           ],
           "mark": "V",
@@ -268,7 +299,14 @@
             ],
             "enemies": [
               "MOON"
-            ]
+            ],
+            "classical_doshas": [
+              "PITTA",
+              "KAPHA",
+              "VATA"
+            ],
+            "classical_predominant_dosha": null,
+            "classical_tattva": "PRITHVI"
           },
           "sources": [
             {
@@ -278,6 +316,10 @@
             {
               "text": "BPHS",
               "ref": "3"
+            },
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.10 (tattva), 2.16: पित्तवान् कफवान् … मारुतप्रकृतिः"
             }
           ],
           "mark": "V",
@@ -330,7 +372,12 @@
               "MERCURY",
               "VENUS",
               "RAHU"
-            ]
+            ],
+            "classical_doshas": [
+              "KAPHA"
+            ],
+            "classical_predominant_dosha": "KAPHA",
+            "classical_tattva": "AKASHA"
           },
           "sources": [
             {
@@ -340,6 +387,10 @@
             {
               "text": "BPHS",
               "ref": "3"
+            },
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.10 (tattva), 2.17: कफप्रकृतिको"
             }
           ],
           "mark": "V",
@@ -392,7 +443,13 @@
             "enemies": [
               "SUN",
               "MOON"
-            ]
+            ],
+            "classical_doshas": [
+              "KAPHA",
+              "VATA"
+            ],
+            "classical_predominant_dosha": "KAPHA",
+            "classical_tattva": "JALA"
           },
           "sources": [
             {
@@ -402,6 +459,10 @@
             {
               "text": "BPHS",
               "ref": "3"
+            },
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.10 (tattva), 2.18: कफाधिक्यानिलात्मा"
             }
           ],
           "mark": "V",
@@ -454,7 +515,12 @@
               "SUN",
               "MOON",
               "MARS"
-            ]
+            ],
+            "classical_doshas": [
+              "VATA"
+            ],
+            "classical_predominant_dosha": "VATA",
+            "classical_tattva": "VAYU"
           },
           "sources": [
             {
@@ -464,6 +530,10 @@
             {
               "text": "BPHS",
               "ref": "3"
+            },
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.10 (tattva), 2.19: अनिलात्मकः"
             }
           ],
           "mark": "V",
@@ -513,7 +583,12 @@
               "MOON",
               "MARS",
               "KETU"
-            ]
+            ],
+            "classical_doshas": [
+              "VATA"
+            ],
+            "classical_predominant_dosha": "VATA",
+            "classical_tattva": null
           },
           "sources": [
             {
@@ -523,6 +598,10 @@
             {
               "text": "BPHS",
               "ref": "3"
+            },
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.20: वातप्रकृतिको"
             }
           ],
           "mark": "T",
@@ -580,7 +659,12 @@
               "MOON",
               "VENUS",
               "RAHU"
-            ]
+            ],
+            "classical_doshas": [
+              "VATA"
+            ],
+            "classical_predominant_dosha": "VATA",
+            "classical_tattva": null
           },
           "sources": [
             {
@@ -590,6 +674,10 @@
             {
               "text": "BPHS",
               "ref": "3"
+            },
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.20: … प्रतिमः शिखी (like Rahu)"
             }
           ],
           "mark": "T",
@@ -619,7 +707,10 @@
             "own": [],
             "friends": [],
             "neutrals": [],
-            "enemies": []
+            "enemies": [],
+            "classical_doshas": [],
+            "classical_predominant_dosha": null,
+            "classical_tattva": null
           },
           "sources": [
             {
@@ -646,7 +737,10 @@
             "own": [],
             "friends": [],
             "neutrals": [],
-            "enemies": []
+            "enemies": [],
+            "classical_doshas": [],
+            "classical_predominant_dosha": null,
+            "classical_tattva": null
           },
           "sources": [
             {
@@ -673,7 +767,10 @@
             "own": [],
             "friends": [],
             "neutrals": [],
-            "enemies": []
+            "enemies": [],
+            "classical_doshas": [],
+            "classical_predominant_dosha": null,
+            "classical_tattva": null
           },
           "sources": [
             {
@@ -22715,6 +22812,161 @@
             {
               "text": "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)",
               "ref": "p. 29 vv. 7-9"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "paya",
+      "number": 90,
+      "version": 1,
+      "doc": "The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "SUVARNA",
+          "id": 0,
+          "doc": "Gold: the Moon in the 1st, 6th or 11th from the lagna, or in Jyeshtha to Shatabhisha; the best",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Vishwavidyalaya Panchang, Kameshwar Singh Darbhanga Sanskrit University, 2005–06",
+              "ref": "स्वर्णादिचरणकजन्मज्ञानम्, leaf 10: १।६।११ स्थिते स्वर्णपादे; ज्येष्ठादिसप्तसु स्वर्णपादे; स्वर्णपादेऽत्युत्कृष्टं"
+            },
+            {
+              "text": "Sangraha Shiromani (Chambal Archives scan)",
+              "ref": "XIII v. 92, p. 142: जन्माङ्गरुद्रेषु सुवर्णपादं"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RAJATA",
+          "id": 1,
+          "doc": "Silver: the Moon in the 2nd, 5th or 9th from the lagna, or in Ardra to Anuradha; good",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Vishwavidyalaya Panchang, Kameshwar Singh Darbhanga Sanskrit University, 2005–06",
+              "ref": "स्वर्णादिचरणकजन्मज्ञानम्, leaf 10: २।५।९ स्थिते रजतपादे; आर्द्रादिद्वादशनक्षत्रेषु रजतपादे; रजतपादे शोभनं"
+            },
+            {
+              "text": "Sangraha Shiromani (Chambal Archives scan)",
+              "ref": "XIII v. 92, p. 142: द्विपञ्चनन्दै रजतस्य पादं"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "TAMRA",
+          "id": 2,
+          "doc": "Copper: the Moon in the 3rd, 7th or 10th from the lagna, or in Purva Bhadrapada to Bharani; middling",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Vishwavidyalaya Panchang, Kameshwar Singh Darbhanga Sanskrit University, 2005–06",
+              "ref": "स्वर्णादिचरणकजन्मज्ञानम्, leaf 10: ३।७।१० स्थिते ताम्रपादे; पूर्वभाद्रादिपञ्चसु ताम्रपादे; ताम्रपादे मध्यमं"
+            },
+            {
+              "text": "Sangraha Shiromani (Chambal Archives scan)",
+              "ref": "XIII v. 92, p. 142: त्रिसप्तदिक्षु ताम्रपादं"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "LOHA",
+          "id": 3,
+          "doc": "Iron: the Moon in the 4th, 8th or 12th from the lagna, or in Krittika to Mrigashira; poor",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Vishwavidyalaya Panchang, Kameshwar Singh Darbhanga Sanskrit University, 2005–06",
+              "ref": "स्वर्णादिचरणकजन्मज्ञानम्, leaf 10: ४।८।१२ स्थिते लौहपादे; कृत्तिकादित्रिषु लौहपादे; लौहपादे हीनं"
+            },
+            {
+              "text": "Sangraha Shiromani (Chambal Archives scan)",
+              "ref": "XIII v. 92, p. 142: वेदाष्टसार्केष्विह लोहपादं"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "tridosha",
+      "number": 91,
+      "version": 1,
+      "doc": "The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "VATA",
+          "id": 0,
+          "doc": "Vata, the windy humour, as a classical text attributes it to a graha; not a diagnosis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.14, 2.16, 2.18–2.20"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "PITTA",
+          "id": 1,
+          "doc": "Pitta, the bilious humour, as a classical text attributes it to a graha; not a diagnosis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.13, 2.15, 2.16"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KAPHA",
+          "id": 2,
+          "doc": "Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "BPHS, Gyan Press 1899, Subodhini (Nepal Sanskrit University scan)",
+              "ref": "Purvakhanda 2.14, 2.16–2.18"
             }
           ],
           "mark": "V",

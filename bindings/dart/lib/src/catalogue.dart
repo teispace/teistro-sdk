@@ -332,7 +332,11 @@ enum Kind {
   /// A text, or a body of practice, that names the year's offices (`03-design/year-rulers.md` §1).
   rulerText(83, 'ruler_text'),
   /// Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).
-  rulerDayRule(84, 'ruler_day_rule');
+  rulerDayRule(84, 'ruler_day_rule'),
+  /// The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107).
+  paya(90, 'paya'),
+  /// The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).
+  tridosha(91, 'tridosha');
 
   const Kind(this.id, this.key);
 
@@ -5158,6 +5162,94 @@ enum RulerDayRule implements KeyOf<RulerDayRule> {
 
   /// The member with a key, or `null` for one this build does not know.
   static RulerDayRule? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107). Members are the catalogue's ids; the full key id is `(TS_KIND_PAYA << 16) | member`.
+enum Paya implements KeyOf<Paya> {
+  /// Gold: the Moon in the 1st, 6th or 11th from the lagna, or in Jyeshtha to Shatabhisha; the best
+  suvarna(0, 'SUVARNA'),
+  /// Silver: the Moon in the 2nd, 5th or 9th from the lagna, or in Ardra to Anuradha; good
+  rajata(1, 'RAJATA'),
+  /// Copper: the Moon in the 3rd, 7th or 10th from the lagna, or in Purva Bhadrapada to Bharani; middling
+  tamra(2, 'TAMRA'),
+  /// Iron: the Moon in the 4th, 8th or 12th from the lagna, or in Krittika to Mrigashira; poor
+  loha(3, 'LOHA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const Paya(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'paya.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Paya> registered(String key) => Registered._('paya.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static Paya byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => Paya.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Paya? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110). Members are the catalogue's ids; the full key id is `(TS_KIND_TRIDOSHA << 16) | member`.
+enum Tridosha implements KeyOf<Tridosha> {
+  /// Vata, the windy humour, as a classical text attributes it to a graha; not a diagnosis
+  vata(0, 'VATA'),
+  /// Pitta, the bilious humour, as a classical text attributes it to a graha; not a diagnosis
+  pitta(1, 'PITTA'),
+  /// Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis
+  kapha(2, 'KAPHA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const Tridosha(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'tridosha.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<Tridosha> registered(String key) => Registered._('tridosha.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static Tridosha byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => Tridosha.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Tridosha? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

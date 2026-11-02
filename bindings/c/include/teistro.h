@@ -523,6 +523,14 @@ typedef enum ts_kind {
      * Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).
      */
     TS_KIND_RULER_DAY_RULE = 84,
+    /**
+     * The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107).
+     */
+    TS_KIND_PAYA = 90,
+    /**
+     * The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).
+     */
+    TS_KIND_TRIDOSHA = 91,
 } ts_kind;
 
 /**
@@ -4920,6 +4928,50 @@ typedef enum ts_ruler_day_rule {
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_RULER_DAY_RULE_UNKNOWN = -1,
 } ts_ruler_day_rule;
+
+/**
+ * The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107). Members are the catalogue's ids; the full key id is `(TS_KIND_PAYA << 16) | member`.
+ */
+typedef enum ts_paya {
+    /**
+     * Gold: the Moon in the 1st, 6th or 11th from the lagna, or in Jyeshtha to Shatabhisha; the best
+     */
+    TS_PAYA_SUVARNA = 0,
+    /**
+     * Silver: the Moon in the 2nd, 5th or 9th from the lagna, or in Ardra to Anuradha; good
+     */
+    TS_PAYA_RAJATA = 1,
+    /**
+     * Copper: the Moon in the 3rd, 7th or 10th from the lagna, or in Purva Bhadrapada to Bharani; middling
+     */
+    TS_PAYA_TAMRA = 2,
+    /**
+     * Iron: the Moon in the 4th, 8th or 12th from the lagna, or in Krittika to Mrigashira; poor
+     */
+    TS_PAYA_LOHA = 3,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_PAYA_UNKNOWN = -1,
+} ts_paya;
+
+/**
+ * The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110). Members are the catalogue's ids; the full key id is `(TS_KIND_TRIDOSHA << 16) | member`.
+ */
+typedef enum ts_tridosha {
+    /**
+     * Vata, the windy humour, as a classical text attributes it to a graha; not a diagnosis
+     */
+    TS_TRIDOSHA_VATA = 0,
+    /**
+     * Pitta, the bilious humour, as a classical text attributes it to a graha; not a diagnosis
+     */
+    TS_TRIDOSHA_PITTA = 1,
+    /**
+     * Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis
+     */
+    TS_TRIDOSHA_KAPHA = 2,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_TRIDOSHA_UNKNOWN = -1,
+} ts_tridosha;
 
 /**
  * The status of a call, with the code it has at the C boundary.
@@ -10050,6 +10102,41 @@ int64_t ts_calendar_fixed_of_jd(double jd, double * out_fraction);
  * `out_json` valid for a write.
  */
 ts_status ts_chart_layout_row(const ts_context * context, const char * key, ts_string * out_json);
+
+/**
+ * **Where two charts disagree** (`03-design/chart-disagreements.md`): the
+ * first chart founded under `context`, the second under `other`, and
+ * answers with `{value, provenance}` as canonical JSON, sealed by the
+ * first chart's provenance with the whole request as its input, every
+ * catalogue member a full key. Pass `context` again as `other` to compare
+ * two births under one setting.
+ *
+ * `value` is `{otherProfile, otherSettingsHash, at, compared, lagna,
+ * grahas, nakshatra, dashas, yogas}`: `lagna` null unless its sign
+ * differs, else `{first, second}`, each side `{sign, longitudeDeg,
+ * degreesInSign}`; `grahas` each graha both place whose sign differs, as
+ * `{graha, first, second}`; `nakshatra` null unless the Moon's star or
+ * pada differs, else `{first, second}`, each `{nakshatra, pada,
+ * longitudeDeg}`; `dashas` each level both carry whose running lord
+ * differs, `{system, level, first, second}`, each side `{lord, sign,
+ * interval}` or null; and `yogas` each rule one side holds and the other
+ * does not, or with another status, `{rule, category, first, second}`.
+ * `compared` counts the facts read.
+ *
+ * `request_json` is `{"first", "second", "at"}`: `first` a chart request
+ * of one birth (`instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,
+ * `utcOffsetSeconds`, and any `dashas` and `rules` record), `second`
+ * another, optional (the first's birth again), and `at` the UTC Julian
+ * day the running dasha lords are compared at (each birth's own when left
+ * out). A side naming no dasha system is read under Vimshottari. A key it
+ * does not read, a chart request its reader refuses or one of more than
+ * one birth is `INVALID_ARG`, named under `disagreements`; a null `other`
+ * is `INVALID_ARG` naming `other`. Either context without an ephemeris is
+ * `CAPABILITY`.
+ * Safety: `context` and `other` must be live handles; `request_json`
+ * NUL-terminated; `out_json` valid for a write.
+ */
+ts_status ts_chart_disagreements(const ts_context * context, const ts_context * other, const char * request_json, ts_string * out_json);
 
 /**
  * Founds a chart at an instant and a place and answers with its blob:

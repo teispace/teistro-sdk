@@ -713,6 +713,18 @@
           "value": 84,
           "doc": "Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).",
           "key": "ruler_day_rule"
+        },
+        {
+          "name": "Paya",
+          "value": 90,
+          "doc": "The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107).",
+          "key": "paya"
+        },
+        {
+          "name": "Tridosha",
+          "value": 91,
+          "doc": "The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).",
+          "key": "tridosha"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -4496,6 +4508,12 @@
           "value": 9,
           "doc": "Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0",
           "key": "HIJRI"
+        },
+        {
+          "name": "ViraNirvana",
+          "value": 10,
+          "doc": "Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada",
+          "key": "VIRA_NIRVANA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -7064,6 +7082,66 @@
           "value": 4,
           "doc": "An ingress: the weekday, sunrise to sunrise, holding its instant",
           "key": "VARA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "Paya",
+      "doc": "The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107). Members are the catalogue's ids; the full key id is `(TS_KIND_PAYA << 16) | member`.",
+      "repr": "u16",
+      "kind": "paya",
+      "values": [
+        {
+          "name": "Suvarna",
+          "value": 0,
+          "doc": "Gold: the Moon in the 1st, 6th or 11th from the lagna, or in Jyeshtha to Shatabhisha; the best",
+          "key": "SUVARNA"
+        },
+        {
+          "name": "Rajata",
+          "value": 1,
+          "doc": "Silver: the Moon in the 2nd, 5th or 9th from the lagna, or in Ardra to Anuradha; good",
+          "key": "RAJATA"
+        },
+        {
+          "name": "Tamra",
+          "value": 2,
+          "doc": "Copper: the Moon in the 3rd, 7th or 10th from the lagna, or in Purva Bhadrapada to Bharani; middling",
+          "key": "TAMRA"
+        },
+        {
+          "name": "Loha",
+          "value": 3,
+          "doc": "Iron: the Moon in the 4th, 8th or 12th from the lagna, or in Krittika to Mrigashira; poor",
+          "key": "LOHA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "Tridosha",
+      "doc": "The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110). Members are the catalogue's ids; the full key id is `(TS_KIND_TRIDOSHA << 16) | member`.",
+      "repr": "u16",
+      "kind": "tridosha",
+      "values": [
+        {
+          "name": "Vata",
+          "value": 0,
+          "doc": "Vata, the windy humour, as a classical text attributes it to a graha; not a diagnosis",
+          "key": "VATA"
+        },
+        {
+          "name": "Pitta",
+          "value": 1,
+          "doc": "Pitta, the bilious humour, as a classical text attributes it to a graha; not a diagnosis",
+          "key": "PITTA"
+        },
+        {
+          "name": "Kapha",
+          "value": 2,
+          "doc": "Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis",
+          "key": "KAPHA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -16101,6 +16179,70 @@
       "source": "crates/ffi/src/chart.rs"
     },
     {
+      "name": "ts_chart_disagreements",
+      "doc": "**Where two charts disagree** (`03-design/chart-disagreements.md`): the\nfirst chart founded under `context`, the second under `other`, and\nanswers with `{value, provenance}` as canonical JSON, sealed by the\nfirst chart's provenance with the whole request as its input, every\ncatalogue member a full key. Pass `context` again as `other` to compare\ntwo births under one setting.\n\n`value` is `{otherProfile, otherSettingsHash, at, compared, lagna,\ngrahas, nakshatra, dashas, yogas}`: `lagna` null unless its sign\ndiffers, else `{first, second}`, each side `{sign, longitudeDeg,\ndegreesInSign}`; `grahas` each graha both place whose sign differs, as\n`{graha, first, second}`; `nakshatra` null unless the Moon's star or\npada differs, else `{first, second}`, each `{nakshatra, pada,\nlongitudeDeg}`; `dashas` each level both carry whose running lord\ndiffers, `{system, level, first, second}`, each side `{lord, sign,\ninterval}` or null; and `yogas` each rule one side holds and the other\ndoes not, or with another status, `{rule, category, first, second}`.\n`compared` counts the facts read.\n\n`request_json` is `{\"first\", \"second\", \"at\"}`: `first` a chart request\nof one birth (`instant`, `latitudeDeg`, `longitudeDeg`, `altitudeM`,\n`utcOffsetSeconds`, and any `dashas` and `rules` record), `second`\nanother, optional (the first's birth again), and `at` the UTC Julian\nday the running dasha lords are compared at (each birth's own when left\nout). A side naming no dasha system is read under Vimshottari. A key it\ndoes not read, a chart request its reader refuses or one of more than\none birth is `INVALID_ARG`, named under `disagreements`; a null `other`\nis `INVALID_ARG` naming `other`. Either context without an ephemeris is\n`CAPABILITY`.",
+      "safety": "`context` and `other` must be live handles; `request_json`\nNUL-terminated; `out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "other",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/chart.rs"
+    },
+    {
       "name": "ts_chart_found",
       "doc": "Founds a chart at an instant and a place and answers with its blob:\nwhere every graha stands, in which bhava under both readings, in\nwhich zodiac, on which day, at what time of that day.\n\nEverything but the request is the context's settings, so two calls\nunder one context are comparable and the settings hash says why. The\ncivil calendar the day's date is read in comes from\n`calendars.civil_calendar`, which is what that knob was waiting for.\n\nA context without an ephemeris is `CAPABILITY`; a provider failure is\n`PROVIDER` with the provider's own code in the last error.",
       "safety": "`context` must be a live handle; `request` valid for a read; `out_blob`\nvalid for a write.",
@@ -25025,7 +25167,7 @@
         {
           "id": 118,
           "name": "avakahada",
-          "doc": "Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301). Vashya, paya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.",
+          "doc": "Each chart's avakahada, a row a chart in the `cast` section's order: what a janma-patrika prints of the Moon, each reading the one the Ashta Koota takes of the same Moon (C301), and the birth paya by both methods (C1105 to C1107). Vashya, disha and tatwa are not here (C300). Empty when the avakahada was not asked for.",
           "kind": "columns",
           "fields": [
             {
@@ -25115,6 +25257,18 @@
               "scalar": "u16",
               "doc": "The nakshatra that strikes the native (v. 30).",
               "enum": "Nakshatra"
+            },
+            {
+              "name": "paya_by_nakshatra",
+              "scalar": "u16",
+              "doc": "The birth paya by the Moon's nakshatra, by the Vishwavidyalaya Panchang (C1106).",
+              "enum": "Paya"
+            },
+            {
+              "name": "paya_by_house",
+              "scalar": "u16",
+              "doc": "The birth paya by the Moon's house counted from the lagna's sign, by Sangraha Shiromani XIII v. 92 as the Vishwavidyalaya Panchang applies it (C1105, C1107); a chart's avakahada always reads it.",
+              "enum": "Paya"
             }
           ]
         },
@@ -26684,7 +26838,7 @@
         {
           "id": 23,
           "name": "years",
-          "doc": "UTF-8 JSON, canonical: the lunar years these days fall in when `sections` asked for `TS_PANCHANGA_YEARS`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §10). `value` is a list of years in order, each `{samvatsara, count, vikrama, shaka, kali, opened, began, ended, jovian, lupta, rulers}`: the name the year carries as a full key (`samvatsara.PRAMADICHA`), the count that named it under `calendars.samvatsara` (`BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA`), its Vikrama, Shaka and Kali numbers (the Kali year elapsed, the Shaka plus 3179), the new moon that opened its first Chaitra, the sunrise of Chaitra Shukla Pratipada that began it and the next year's that ended it, in UTC Julian days; the Jovian years that ran in it, each `{member, count, from, to}` with its member in full, the signs mean Jupiter had crossed since the Kali age began, counted from 0, and its bounds in UTC Julian days; the Jovian year expunged in it, in full, or null; and its office-bearers (`03-design/year-rulers.md`), each `{office, event, texts, readings}`: the office in full (`year_office.RAJA`, `MANTRI`, `SENADHIPATI`, `SASYADHIPATI`, `DHANYADHIPATI`, `ARGHADHIPATI`, `MEGHADHIPATI`, `RASADHIPATI`, `NIRASADHIPATI`), the new moon or the Sun's ingress that makes it in UTC Julian days, the texts that name it in full (`ruler_text.JYOTIRNIBANDHA`, `NARADA_SAMHITA`, `NAVANAYAKA`), and its weekday under each rule the texts give, each `{rule, vara, lord, day}`: the rule in full (`ruler_day_rule.SUNRISE`, `NEW_MOON`, `GARGA` for the raja, `DAYLIGHT`, `VARA` for the rest, the first the plainest), the weekday and its lord in full, and the sunrise that opened it. Consecutive years abut, `ended` to `began`. Empty when `sections` did not ask for them.",
+          "doc": "UTF-8 JSON, canonical: the lunar years these days fall in when `sections` asked for `TS_PANCHANGA_YEARS`, as the envelope `{value, provenance}` (`03-design/calendar-indian-lunisolar.md` §10). `value` is a list of years in order, each `{samvatsara, count, vikrama, shaka, kali, viraNirvana, opened, began, ended, jovian, lupta, rulers}`: the name the year carries as a full key (`samvatsara.PRAMADICHA`), the count that named it under `calendars.samvatsara` (`BARHASPATYA`, `BARHASPATYA_RUNNING`, `CHANDRAMANA`), its Vikrama, Shaka and Kali numbers (the Kali year elapsed, the Shaka plus 3179), the Vira Nirvana year that opens at its Kartika Shukla Pratipada (the Vikrama plus 470), the new moon that opened its first Chaitra, the sunrise of Chaitra Shukla Pratipada that began it and the next year's that ended it, in UTC Julian days; the Jovian years that ran in it, each `{member, count, from, to}` with its member in full, the signs mean Jupiter had crossed since the Kali age began, counted from 0, and its bounds in UTC Julian days; the Jovian year expunged in it, in full, or null; and its office-bearers (`03-design/year-rulers.md`), each `{office, event, texts, readings}`: the office in full (`year_office.RAJA`, `MANTRI`, `SENADHIPATI`, `SASYADHIPATI`, `DHANYADHIPATI`, `ARGHADHIPATI`, `MEGHADHIPATI`, `RASADHIPATI`, `NIRASADHIPATI`), the new moon or the Sun's ingress that makes it in UTC Julian days, the texts that name it in full (`ruler_text.JYOTIRNIBANDHA`, `NARADA_SAMHITA`, `NAVANAYAKA`), and its weekday under each rule the texts give, each `{rule, vara, lord, day}`: the rule in full (`ruler_day_rule.SUNRISE`, `NEW_MOON`, `GARGA` for the raja, `DAYLIGHT`, `VARA` for the rest, the first the plainest), the weekday and its lord in full, and the sunrise that opened it. Consecutive years abut, `ended` to `began`. Empty when `sections` did not ask for them.",
           "kind": "bytes",
           "fields": []
         },
