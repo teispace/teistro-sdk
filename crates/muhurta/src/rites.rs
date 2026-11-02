@@ -31,17 +31,17 @@ use crate::season::BlackoutKind;
 use crate::tara::ChandraBala;
 
 /// The bright half's `n`th tithi, 1 to 15 (the 15th the Purnima).
-fn bright(n: u16) -> Option<Tithi> {
+pub(crate) fn bright(n: u16) -> Option<Tithi> {
     Tithi::from_id(n - 1)
 }
 
 /// The dark half's `n`th tithi, 1 to 15 (the 15th the Amavasya).
-fn dark(n: u16) -> Option<Tithi> {
+pub(crate) fn dark(n: u16) -> Option<Tithi> {
     Tithi::from_id(n + 14)
 }
 
 /// The `n`th tithi of both halves.
-fn both(numbers: &[u16]) -> Vec<Tithi> {
+pub(crate) fn both(numbers: &[u16]) -> Vec<Tithi> {
     numbers
         .iter()
         .flat_map(|n| [bright(*n), dark(*n)])
@@ -50,13 +50,13 @@ fn both(numbers: &[u16]) -> Vec<Tithi> {
 }
 
 /// The two days the Moon is full and new.
-fn syzygies() -> Vec<Tithi> {
+pub(crate) fn syzygies() -> Vec<Tithi> {
     vec![Tithi::Purnima, Tithi::Amavasya]
 }
 
 /// Monday, Wednesday, Thursday and Friday, which every chapter here
 /// calls good.
-fn benefic_varas() -> Vec<Vara> {
+pub(crate) fn benefic_varas() -> Vec<Vara> {
     vec![
         Vara::Somavara,
         Vara::Budhavara,
@@ -66,10 +66,10 @@ fn benefic_varas() -> Vec<Vara> {
 }
 
 /// The fixed signs.
-const FIXED: [Rashi; 4] = [Rashi::Taurus, Rashi::Leo, Rashi::Scorpio, Rashi::Aquarius];
+pub(crate) const FIXED: [Rashi; 4] = [Rashi::Taurus, Rashi::Leo, Rashi::Scorpio, Rashi::Aquarius];
 
 /// The common signs.
-const COMMON: [Rashi; 4] = [
+pub(crate) const COMMON: [Rashi; 4] = [
     Rashi::Gemini,
     Rashi::Virgo,
     Rashi::Sagittarius,
@@ -77,11 +77,12 @@ const COMMON: [Rashi; 4] = [
 ];
 
 /// The movable signs.
-const MOVABLE: [Rashi; 4] = [Rashi::Aries, Rashi::Cancer, Rashi::Libra, Rashi::Capricorn];
+pub(crate) const MOVABLE: [Rashi; 4] =
+    [Rashi::Aries, Rashi::Cancer, Rashi::Libra, Rashi::Capricorn];
 
 /// The natural benefics a house can be "devoid of": Jupiter, Venus and
 /// Mercury, the set the neutralisations read (`instant.rs`).
-const BENEFICS: [Graha; 3] = [Graha::Jupiter, Graha::Venus, Graha::Mercury];
+pub(crate) const BENEFICS: [Graha; 3] = [Graha::Jupiter, Graha::Venus, Graha::Mercury];
 
 /// A chapter's grades laid over the general shuddhi.
 fn over_shuddhi(
@@ -101,7 +102,7 @@ fn over_shuddhi(
 }
 
 /// A list named good, the rest left as `otherwise`.
-fn good<T>(best: Vec<T>, otherwise: Grade) -> Graded<T> {
+pub(crate) fn good<T>(best: Vec<T>, otherwise: Grade) -> Graded<T> {
     Graded {
         best,
         middling: Vec::new(),
@@ -111,7 +112,7 @@ fn good<T>(best: Vec<T>, otherwise: Grade) -> Graded<T> {
 }
 
 /// Something asked and not judged.
-fn unjudged(what: &str, why: &str) -> Unjudged {
+pub(crate) fn unjudged(what: &str, why: &str) -> Unjudged {
     Unjudged {
         what: what.into(),
         why: why.into(),
@@ -247,6 +248,7 @@ impl ActivityRules {
             padas: Vec::new(),
             heeds: Vec::new(),
             unwanted: vec![Unwanted::vacant(vec![8])],
+            vrisha_vastu: false,
             bars: Vec::new(),
             unjudged: vec![
                 age("the 10th, 12th or 16th day from the birth"),
@@ -336,6 +338,7 @@ impl ActivityRules {
                 Unwanted::of(vec![Graha::Mars], vec![8]),
                 Unwanted::of(vec![Graha::Venus], vec![9]),
             ],
+            vrisha_vastu: false,
             bars: Vec::new(),
             unjudged: vec![age("the 6th, 8th, 9th or 12th month of the child")],
             baseline: None,
@@ -450,6 +453,7 @@ impl ActivityRules {
                 Unwanted::of(vec![Graha::Mars, Graha::Saturn], vec![2, 5, 12]),
                 Unwanted::of(vec![Graha::Moon], vec![1]),
             ],
+            vrisha_vastu: false,
             bars: vec![Bar::Key(ClauseKey::MoonInDusthana)],
             unjudged: upanayana_unjudged(),
             baseline: None,
@@ -530,6 +534,7 @@ impl ActivityRules {
             padas: Vec::new(),
             heeds: vec![BlackoutKind::GuruAsta, BlackoutKind::ShukraAsta],
             unwanted: vec![Unwanted::vacant(vec![8])],
+            vrisha_vastu: false,
             bars: Vec::new(),
             unjudged: vec![
                 unjudged(
@@ -582,6 +587,7 @@ impl ActivityRules {
             padas: Vec::new(),
             heeds: Vec::new(),
             unwanted: vec![Unwanted::vacant(vec![8])],
+            vrisha_vastu: false,
             bars: Vec::new(),
             unjudged: vec![
                 age("the 12th or 16th day of the child, or its 6th, 7th or 8th month"),
@@ -683,6 +689,7 @@ impl ActivityRules {
             padas: Vec::new(),
             heeds: vec![BlackoutKind::GuruAsta, BlackoutKind::ShukraAsta],
             unwanted: Vec::new(),
+            vrisha_vastu: false,
             bars: Vec::new(),
             unjudged: vec![
                 age("the 3rd or 5th year of the child"),
@@ -791,6 +798,7 @@ impl ActivityRules {
             padas: Vec::new(),
             heeds: Vec::new(),
             unwanted: vec![Unwanted::vacant(vec![8])],
+            vrisha_vastu: false,
             bars: Vec::new(),
             unjudged: vec![
                 unjudged(
@@ -912,6 +920,7 @@ impl ActivityRules {
             padas,
             heeds: vec![BlackoutKind::Sankranti],
             unwanted: Vec::new(),
+            vrisha_vastu: false,
             bars: Vec::new(),
             unjudged: vec![
                 unjudged(
@@ -1134,6 +1143,7 @@ impl ActivityRules {
             padas: Vec::new(),
             heeds: Vec::new(),
             unwanted: Vec::new(),
+            vrisha_vastu: false,
             bars: Vec::new(),
             unjudged: Vec::new(),
             baseline: None,

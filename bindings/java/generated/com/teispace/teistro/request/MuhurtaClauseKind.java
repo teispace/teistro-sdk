@@ -8,7 +8,7 @@ import java.util.Map;
 /**
  * What a clause says.
  */
-public sealed interface MuhurtaClauseKind extends RequestJson permits MuhurtaClauseKindTithi, MuhurtaClauseKindNakshatra, MuhurtaClauseKindYoga, MuhurtaClauseKindKarana, MuhurtaClauseKindVara, MuhurtaClauseKindMonth, MuhurtaClauseKindSolarMonth, MuhurtaClauseKindLagna, MuhurtaClauseKindPada, MuhurtaClauseKindKaala, MuhurtaClauseKindChoghadiya, MuhurtaClauseKindAbhijit, MuhurtaClauseKindMuhurtaYoga, MuhurtaClauseKindTarabala, MuhurtaClauseKindGhata, MuhurtaClauseKindAshubhaYoga, MuhurtaClauseKindChandrabala, MuhurtaClauseKindKartari, MuhurtaClauseKindMoonInDusthana, MuhurtaClauseKindMoonJoined, MuhurtaClauseKindVenusInSixth, MuhurtaClauseKindMarsInEighth, MuhurtaClauseKindAshtamaLagna, MuhurtaClauseKindKunavamsa, MuhurtaClauseKindPanchakaRemainder, MuhurtaClauseKindLagnaTyajya, MuhurtaClauseKindSeventhOccupied, MuhurtaClauseKindMaleficInLagna, MuhurtaClauseKindBeneficInLagna, MuhurtaClauseKindExaltedInLagna, MuhurtaClauseKindLuminaryInEleventh, MuhurtaClauseKindKendraBenefics, MuhurtaClauseKindUnwantedPlacement, MuhurtaClauseKindVarjyam {
+public sealed interface MuhurtaClauseKind extends RequestJson permits MuhurtaClauseKindTithi, MuhurtaClauseKindNakshatra, MuhurtaClauseKindYoga, MuhurtaClauseKindKarana, MuhurtaClauseKindVara, MuhurtaClauseKindMonth, MuhurtaClauseKindSolarMonth, MuhurtaClauseKindLagna, MuhurtaClauseKindPada, MuhurtaClauseKindKaala, MuhurtaClauseKindChoghadiya, MuhurtaClauseKindAbhijit, MuhurtaClauseKindMuhurtaYoga, MuhurtaClauseKindTarabala, MuhurtaClauseKindGhata, MuhurtaClauseKindAshubhaYoga, MuhurtaClauseKindChandrabala, MuhurtaClauseKindKartari, MuhurtaClauseKindMoonInDusthana, MuhurtaClauseKindMoonJoined, MuhurtaClauseKindVenusInSixth, MuhurtaClauseKindMarsInEighth, MuhurtaClauseKindAshtamaLagna, MuhurtaClauseKindKunavamsa, MuhurtaClauseKindPanchakaRemainder, MuhurtaClauseKindLagnaTyajya, MuhurtaClauseKindSeventhOccupied, MuhurtaClauseKindMaleficInLagna, MuhurtaClauseKindBeneficInLagna, MuhurtaClauseKindExaltedInLagna, MuhurtaClauseKindLuminaryInEleventh, MuhurtaClauseKindKendraBenefics, MuhurtaClauseKindUnwantedPlacement, MuhurtaClauseKindVarjyam, MuhurtaClauseKindVrishaVastu {
     /**
      * A {@code MuhurtaClauseKind} from its JSON, by its `clause`.
      *
@@ -119,6 +119,9 @@ public sealed interface MuhurtaClauseKind extends RequestJson permits MuhurtaCla
         }
         if ("VARJYAM".equals(which)) {
             return MuhurtaClauseKindVarjyam.of(raw);
+        }
+        if ("VRISHA_VASTU".equals(which)) {
+            return MuhurtaClauseKindVrishaVastu.of(raw);
         }
         throw new IllegalArgumentException("not a MuhurtaClauseKind: clause " + which);
     }

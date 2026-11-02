@@ -823,6 +823,7 @@ from ._requests import (
     MuhurtaClauseKindKendraBenefics as MuhurtaClauseKindKendraBenefics,
     MuhurtaClauseKindUnwantedPlacement as MuhurtaClauseKindUnwantedPlacement,
     MuhurtaClauseKindVarjyam as MuhurtaClauseKindVarjyam,
+    MuhurtaClauseKindVrishaVastu as MuhurtaClauseKindVrishaVastu,
     ChandraBala as ChandraBala,
     GradedKarana as GradedKarana,
     GradedNakshatra as GradedNakshatra,
@@ -1673,6 +1674,7 @@ __all__ = [
     "VarjyamClause",
     "GhataClause",
     "AshubhaYogaClause",
+    "VrishaVastuClause",
     "Ghata",
     "MuhurtaActivity",
     "KpChart",
@@ -9251,6 +9253,11 @@ MuhurtaActivity = Literal[
     "RAMAN_SELLING",
     "RAMAN_NEW_CLOTHES",
     "RAMAN_VEHICLE",
+    "CHINTAMANI_GRIHARAMBHA",
+    "CHINTAMANI_BHUMI_PUJA",
+    "CHINTAMANI_VASTU_SHANTI",
+    "CHINTAMANI_VIPANI",
+    "CHINTAMANI_VIVAHA",
 ]
 """A set of rules the SDK ships, which a muhurta request names as `rules`."""
 
@@ -9573,6 +9580,18 @@ class AshubhaYogaClause(MuhurtaClauseKind):
 
     CLAUSE: ClassVar[str] = "ASHUBHA_YOGA"
     yoga: AshubhaYoga
+
+
+@dataclass(frozen=True)
+class VrishaVastuClause(MuhurtaClauseKind):
+    """The bull of the house (vrisha vastu chakra): the day's star counted
+    from the Sun's over the twenty-eight with Abhijit (Muhurta Chintamani,
+    Vastu-prakarana XII vv. 13-14). Best on counts 8 to 18, rejected on
+    the rest."""
+
+    CLAUSE: ClassVar[str] = "VRISHA_VASTU"
+    count: int
+    grade: str
 
 
 MUHURTA_CLAUSES: Mapping[str, type] = MappingProxyType(

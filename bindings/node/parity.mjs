@@ -1794,6 +1794,7 @@ for (const [name, rules, ranking] of [
   ['raman', 'RAMAN_MARRIAGE', 'TEXTS'],
   ['baseline', 'BASELINE_MARRIAGE', 'BASELINE'],
   ['upanayana', 'RAMAN_UPANAYANA', 'TEXTS'],
+  ['griharambha', 'CHINTAMANI_GRIHARAMBHA', 'TEXTS'],
 ]) {
   const { muhurta } = geo.almanac.of({
     from: gregorian(2024, 11, 25),

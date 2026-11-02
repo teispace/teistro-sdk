@@ -63,11 +63,27 @@ pub enum Activity {
     /// Acquiring a vehicle, by Raman
     /// ([`ActivityRules::raman_vehicle`]).
     RamanVehicle,
+    /// Beginning a house, griharambha — Nepal's laying of the foundation,
+    /// shilanyas — by *Muhurta Chintamani*
+    /// ([`ActivityRules::chintamani_griharambha`]).
+    ChintamaniGriharambha,
+    /// The ground's worship before digging, bhumi puja, by *Muhurta
+    /// Chintamani* ([`ActivityRules::chintamani_bhumi_puja`]).
+    ChintamaniBhumiPuja,
+    /// The house's propitiation, vastu shanti, by *Muhurta Chintamani*
+    /// ([`ActivityRules::chintamani_vastu_shanti`]).
+    ChintamaniVastuShanti,
+    /// Opening a shop or a business, vipani, by *Muhurta Chintamani*
+    /// ([`ActivityRules::chintamani_vipani`]).
+    ChintamaniVipani,
+    /// A marriage by *Muhurta Chintamani*
+    /// ([`ActivityRules::chintamani_vivaha`]).
+    ChintamaniVivaha,
 }
 
 impl Activity {
     /// Every activity the SDK ships.
-    pub const ALL: [Activity; 14] = [
+    pub const ALL: [Activity; 19] = [
         Activity::RamanMarriage,
         Activity::BaselineMarriage,
         Activity::RamanNamakarana,
@@ -82,6 +98,11 @@ impl Activity {
         Activity::RamanSelling,
         Activity::RamanNewClothes,
         Activity::RamanVehicle,
+        Activity::ChintamaniGriharambha,
+        Activity::ChintamaniBhumiPuja,
+        Activity::ChintamaniVastuShanti,
+        Activity::ChintamaniVipani,
+        Activity::ChintamaniVivaha,
     ];
 
     /// Its key, as serde writes it and a request names it.
@@ -102,6 +123,11 @@ impl Activity {
             Activity::RamanSelling => "RAMAN_SELLING",
             Activity::RamanNewClothes => "RAMAN_NEW_CLOTHES",
             Activity::RamanVehicle => "RAMAN_VEHICLE",
+            Activity::ChintamaniGriharambha => "CHINTAMANI_GRIHARAMBHA",
+            Activity::ChintamaniBhumiPuja => "CHINTAMANI_BHUMI_PUJA",
+            Activity::ChintamaniVastuShanti => "CHINTAMANI_VASTU_SHANTI",
+            Activity::ChintamaniVipani => "CHINTAMANI_VIPANI",
+            Activity::ChintamaniVivaha => "CHINTAMANI_VIVAHA",
         }
     }
 
@@ -123,6 +149,11 @@ impl Activity {
             Activity::RamanSelling => ActivityRules::raman_selling(),
             Activity::RamanNewClothes => ActivityRules::raman_new_clothes(),
             Activity::RamanVehicle => ActivityRules::raman_vehicle(),
+            Activity::ChintamaniGriharambha => ActivityRules::chintamani_griharambha(),
+            Activity::ChintamaniBhumiPuja => ActivityRules::chintamani_bhumi_puja(),
+            Activity::ChintamaniVastuShanti => ActivityRules::chintamani_vastu_shanti(),
+            Activity::ChintamaniVipani => ActivityRules::chintamani_vipani(),
+            Activity::ChintamaniVivaha => ActivityRules::chintamani_vivaha(),
         }
     }
 }

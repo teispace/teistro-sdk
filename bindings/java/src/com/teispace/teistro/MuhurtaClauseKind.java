@@ -23,7 +23,7 @@ import java.util.Map;
  */
 public sealed interface MuhurtaClauseKind {
     /** Every kind's tag, in the order the kinds are declared. */
-    List<String> CLAUSES = List.of("TITHI", "NAKSHATRA", "YOGA", "KARANA", "VARA", "MONTH", "SOLAR_MONTH", "LAGNA", "PADA", "KAALA", "CHOGHADIYA", "ABHIJIT", "MUHURTA_YOGA", "TARABALA", "CHANDRABALA", "KARTARI", "MOON_IN_DUSTHANA", "MOON_JOINED", "VENUS_IN_SIXTH", "MARS_IN_EIGHTH", "ASHTAMA_LAGNA", "KUNAVAMSA", "PANCHAKA_REMAINDER", "LAGNA_TYAJYA", "SEVENTH_OCCUPIED", "MALEFIC_IN_LAGNA", "BENEFIC_IN_LAGNA", "EXALTED_IN_LAGNA", "LUMINARY_IN_ELEVENTH", "KENDRA_BENEFICS", "UNWANTED_PLACEMENT", "VARJYAM", "GHATA", "ASHUBHA_YOGA");
+    List<String> CLAUSES = List.of("TITHI", "NAKSHATRA", "YOGA", "KARANA", "VARA", "MONTH", "SOLAR_MONTH", "LAGNA", "PADA", "KAALA", "CHOGHADIYA", "ABHIJIT", "MUHURTA_YOGA", "TARABALA", "CHANDRABALA", "KARTARI", "MOON_IN_DUSTHANA", "MOON_JOINED", "VENUS_IN_SIXTH", "MARS_IN_EIGHTH", "ASHTAMA_LAGNA", "KUNAVAMSA", "PANCHAKA_REMAINDER", "LAGNA_TYAJYA", "SEVENTH_OCCUPIED", "MALEFIC_IN_LAGNA", "BENEFIC_IN_LAGNA", "EXALTED_IN_LAGNA", "LUMINARY_IN_ELEVENTH", "KENDRA_BENEFICS", "UNWANTED_PLACEMENT", "VARJYAM", "GHATA", "ASHUBHA_YOGA", "VRISHA_VASTU");
 
     /**
      * The kind's tag, as the answer and a request spell it.
@@ -95,6 +95,7 @@ public sealed interface MuhurtaClauseKind {
             case "VARJYAM" -> new VarjyamClause(Reads.member(Nakshatra.byKey(Reads.string(o, "nakshatra")), "Nakshatra", o.get("nakshatra")));
             case "GHATA" -> new GhataClause(Reads.string(o, "row"));
             case "ASHUBHA_YOGA" -> new AshubhaYogaClause(Reads.member(AshubhaYoga.byKey(Reads.string(o, "yoga")), "AshubhaYoga", o.get("yoga")));
+            case "VRISHA_VASTU" -> new VrishaVastuClause(Reads.integer(o, "count"), Reads.string(o, "grade"));
             default -> throw Reads.internal("the library drew a clause this build does not know: " + tag);
         };
     }
@@ -731,6 +732,26 @@ public sealed interface MuhurtaClauseKind {
         @Override
         public String clause() {
             return "ASHUBHA_YOGA";
+        }
+    }
+
+    /**
+     * The bull of the house (vrisha vastu chakra): the day's star counted from the Sun's over the twenty-eight
+     * with Abhijit (Muhurta Chintamani, Vastu-prakarana XII vv. 13–14). Best on counts 8 to 18, rejected on the
+     * rest.
+     *
+     * @param count the day's star counted from the Sun's, 1 to 28
+     * @param grade the count's grade
+     */
+    record VrishaVastuClause(int count, String grade) implements MuhurtaClauseKind {
+        /**
+         * The kind's tag.
+         *
+         * @return {@code "VRISHA_VASTU"}
+         */
+        @Override
+        public String clause() {
+            return "VRISHA_VASTU";
         }
     }
 }

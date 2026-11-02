@@ -1,21 +1,26 @@
 //! The measurement pass over the **saait packs**
-//! (`03-design/muhurta.md` §4.6): the rites beyond marriage held to the
-//! days Nepal's national panchanga committee printed for them.
+//! (`03-design/muhurta.md` §4.6): the rites held to the days Nepal's
+//! panchanga printed for them.
 //!
-//! The committee's VS 2083 muhurta sheet prints, by Bikram Sambat date
-//! and weekday, the days of the year it finds for a thread ceremony
-//! (bratabandha), a marriage (vivaha), the first feeding (pasni) and a
-//! house entry (griha pravesh). Each row, read off the page image, is
-//! founded at Kathmandu on Nepal's clock and searched with the rite
-//! Raman's *Muhurtha* gives it, over the committee's own sky and the
-//! modern one. A printed day **agrees** when the search finds a clean
+//! The national panchanga committee's VS 2083 muhurta sheet prints, by
+//! Bikram Sambat date and weekday, the days of the year it finds for a
+//! thread ceremony (bratabandha), a marriage (vivaha), the first feeding
+//! (pasni), a house entry (griha pravesh), the laying of a house's
+//! foundation (griharambha) and opening a shop (dokan). The Surya
+//! Panchanga's VS 2082 page of "the days of the various saaits", which
+//! its preface says the committee decided, prints the same three house
+//! and shop rites for the year before, most rows without a weekday. Each
+//! row, read off the page image, is founded at Kathmandu on Nepal's clock
+//! and searched with each set of the SDK's rules for its rite — Raman's
+//! *Muhurtha* and *Muhurta Chintamani* — over the committee's own sky and
+//! the modern one. A printed day **agrees** when the search finds a clean
 //! window in its daylight: one no bar strikes and no grade of the rite's
 //! own rejects. A day that does not is attributed to the clauses that
 //! reject every daylight window it has.
 //!
-//! The sheet's weekday is checked against its date first; a row whose
-//! two disagree contradicts itself, and is listed by name rather than
-//! read either way.
+//! A printed weekday is checked against its date first; a row whose two
+//! disagree contradicts itself, and is listed by name rather than read
+//! either way.
 //!
 //! `cargo xtask saait` writes the page; `check-saait` regenerates it in
 //! memory and fails on any difference.
@@ -36,63 +41,98 @@ use crate::measure::{Claim, table};
 
 const PAGE: &str = "docs/03-design/saait-measured.md";
 
-/// The Bikram Sambat year the sheet is for.
+/// The Bikram Sambat year of the committee's sheet.
 const YEAR: i32 = 2083;
 
-/// A rite the sheet prints days for.
+/// The Bikram Sambat year of the Surya Panchanga's lists.
+const YEAR_BEFORE: i32 = 2082;
+
+/// The years the rows are of, each founded whole under each sky.
+const YEARS: [i32; 2] = [YEAR_BEFORE, YEAR];
+
+/// A rite a list prints days for.
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Debug)]
 enum Rite {
     Bratabandha,
     Vivaha,
     Pasni,
     GrihaPravesh,
+    Griharambha,
+    Dokan,
 }
 
 impl Rite {
-    const ALL: [Rite; 4] = [
-        Rite::Bratabandha,
-        Rite::Vivaha,
-        Rite::Pasni,
-        Rite::GrihaPravesh,
-    ];
-
-    /// The rules the SDK ships for it.
-    const fn activity(self) -> Activity {
-        match self {
-            Rite::Bratabandha => Activity::RamanUpanayana,
-            Rite::Vivaha => Activity::RamanMarriage,
-            Rite::Pasni => Activity::RamanAnnaprasana,
-            Rite::GrihaPravesh => Activity::RamanGrihaPravesha,
-        }
-    }
-
-    /// Its place in [`Rite::ALL`].
-    const fn index(self) -> usize {
-        self as usize
-    }
-
-    /// Its name on the sheet.
+    /// Its name on the page.
     const fn name(self) -> &'static str {
         match self {
             Rite::Bratabandha => "bratabandha",
             Rite::Vivaha => "vivaha",
             Rite::Pasni => "pasni",
             Rite::GrihaPravesh => "griha pravesh",
+            Rite::Griharambha => "griharambha",
+            Rite::Dokan => "dokan",
         }
     }
 }
 
-/// One row of the sheet: the rite, the Bikram Sambat month and day, and
-/// the weekday printed beside it.
+/// A rite's printed days read under one set of the SDK's rules: each
+/// rite under the rules shipped for it, and the marriage under both
+/// Raman's and *Muhurta Chintamani*'s (crux C206).
+const TESTS: [(Rite, Activity); 7] = [
+    (Rite::Bratabandha, Activity::RamanUpanayana),
+    (Rite::Vivaha, Activity::RamanMarriage),
+    (Rite::Vivaha, Activity::ChintamaniVivaha),
+    (Rite::Pasni, Activity::RamanAnnaprasana),
+    (Rite::GrihaPravesh, Activity::RamanGrihaPravesha),
+    (Rite::Griharambha, Activity::ChintamaniGriharambha),
+    (Rite::Dokan, Activity::ChintamaniVipani),
+];
+
+/// The rite and the rules of a test, by its place in [`TESTS`].
+fn test(index: usize) -> (Rite, Activity) {
+    TESTS
+        .get(index)
+        .copied()
+        .unwrap_or((Rite::Vivaha, Activity::RamanMarriage))
+}
+
+/// One printed row: the Bikram Sambat year, the rite, the month and day,
+/// and the weekday printed beside it, where one is.
 struct Printed {
+    year: i32,
     rite: Rite,
     month: u8,
     day: u8,
-    vara: Vara,
+    vara: Option<Vara>,
 }
 
+impl Printed {
+    /// The list it is printed in.
+    const fn list(&self) -> &'static str {
+        if self.year == YEAR {
+            "the committee's sheet"
+        } else {
+            "the Surya Panchanga"
+        }
+    }
+}
+
+/// A row of the committee's VS 2083 sheet, which prints every weekday.
 const fn row(rite: Rite, month: u8, day: u8, vara: Vara) -> Printed {
     Printed {
+        year: YEAR,
+        rite,
+        month,
+        day,
+        vara: Some(vara),
+    }
+}
+
+/// A row of the Surya Panchanga's VS 2082 lists, the weekday where
+/// printed.
+const fn before(rite: Rite, month: u8, day: u8, vara: Option<Vara>) -> Printed {
+    Printed {
+        year: YEAR_BEFORE,
         rite,
         month,
         day,
@@ -100,16 +140,18 @@ const fn row(rite: Rite, month: u8, day: u8, vara: Vara) -> Printed {
     }
 }
 
-use Rite::{Bratabandha as B, GrihaPravesh as G, Pasni as P, Vivaha as V};
+use Rite::{
+    Bratabandha as B, Dokan as D, GrihaPravesh as G, Griharambha as H, Pasni as P, Vivaha as V,
+};
 use Vara::{
     Budhavara as WED, Guruvara as THU, Mangalavara as TUE, Ravivara as SUN, Shanivara as SAT,
     Shukravara as FRI, Somavara as MON,
 };
 
-/// The committee's VS 2083 muhurta sheet, its three tables in the order
+/// The committee's VS 2083 muhurta sheet, its tables in the order
 /// printed: each rite's months left to right, each month's days top to
 /// bottom.
-const SHEET: [Printed; 94] = [
+static SHEET: [Printed; 148] = [
     row(B, 1, 20, SUN),
     row(B, 1, 21, MON),
     row(B, 1, 23, WED),
@@ -204,7 +246,113 @@ const SHEET: [Printed; 94] = [
     row(P, 12, 25, THU),
     row(G, 1, 31, THU),
     row(G, 11, 20, THU),
+    row(H, 1, 21, MON),
+    row(H, 8, 5, SAT),
+    row(H, 8, 9, WED),
+    row(H, 8, 10, THU),
+    row(H, 9, 1, WED),
+    row(H, 9, 4, SAT),
+    row(H, 9, 11, SAT),
+    row(H, 11, 7, FRI),
+    row(H, 11, 13, THU),
+    row(D, 1, 7, MON),
+    row(D, 1, 21, MON),
+    row(D, 1, 25, FRI),
+    row(D, 1, 31, THU),
+    row(D, 3, 10, WED),
+    row(D, 3, 13, SAT),
+    row(D, 3, 18, THU),
+    row(D, 5, 1, MON),
+    row(D, 5, 4, THU),
+    row(D, 5, 14, SUN),
+    row(D, 5, 16, TUE),
+    row(D, 5, 19, FRI),
+    row(D, 5, 28, SUN),
+    row(D, 5, 29, MON),
+    row(D, 6, 1, THU),
+    row(D, 6, 5, MON),
+    row(D, 7, 15, SUN),
+    row(D, 7, 16, MON),
+    row(D, 7, 19, THU),
+    row(D, 7, 29, SUN),
+    row(D, 8, 5, SAT),
+    row(D, 8, 6, SUN),
+    row(D, 8, 9, WED),
+    row(D, 8, 10, THU),
+    row(D, 8, 13, SUN),
+    row(D, 8, 17, THU),
+    row(D, 8, 19, SAT),
+    row(D, 8, 26, SAT),
+    row(D, 9, 4, SAT),
+    row(D, 9, 11, SAT),
+    row(D, 9, 15, WED),
+    row(D, 9, 25, SAT),
+    row(D, 10, 9, SAT),
+    row(D, 10, 14, THU),
+    row(D, 10, 29, FRI),
+    row(D, 11, 7, FRI),
+    row(D, 11, 13, THU),
+    row(D, 11, 20, THU),
+    row(D, 11, 26, WED),
+    row(D, 12, 4, THU),
+    row(D, 12, 10, WED),
+    row(D, 12, 18, THU),
+    row(D, 12, 25, THU),
+    row(D, 12, 28, SUN),
+    row(D, 12, 29, MON),
 ];
+
+/// The Surya Panchanga's VS 2082 lists (printed p. 80, "विभिन्न साइतका
+/// दिनहरू"): the house's foundation, the house entry and the shop, each
+/// month's days in the order printed.
+static SURYA_2082: [Printed; 41] = [
+    before(H, 4, 26, Some(MON)),
+    before(H, 7, 21, Some(FRI)),
+    before(H, 8, 11, Some(THU)),
+    before(H, 8, 19, Some(FRI)),
+    before(H, 8, 20, Some(SAT)),
+    before(H, 11, 14, Some(THU)),
+    before(G, 10, 28, Some(WED)),
+    before(G, 11, 14, Some(THU)),
+    before(G, 11, 30, Some(SAT)),
+    before(D, 1, 7, None),
+    before(D, 1, 8, None),
+    before(D, 1, 17, Some(WED)),
+    before(D, 2, 4, Some(SUN)),
+    before(D, 2, 14, Some(WED)),
+    before(D, 2, 17, Some(SAT)),
+    before(D, 3, 27, None),
+    before(D, 3, 28, None),
+    before(D, 4, 5, None),
+    before(D, 4, 29, None),
+    before(D, 5, 9, None),
+    before(D, 5, 15, None),
+    before(D, 6, 11, None),
+    before(D, 6, 25, None),
+    before(D, 6, 26, None),
+    before(D, 7, 7, None),
+    before(D, 7, 17, None),
+    before(D, 7, 21, None),
+    before(D, 7, 29, None),
+    before(D, 7, 30, None),
+    before(D, 8, 14, None),
+    before(D, 8, 19, None),
+    before(D, 8, 20, None),
+    before(D, 10, 24, None),
+    before(D, 10, 28, None),
+    before(D, 11, 14, None),
+    before(D, 11, 30, None),
+    before(D, 12, 6, None),
+    before(D, 12, 11, None),
+    before(D, 12, 14, None),
+    before(D, 12, 27, None),
+    before(D, 12, 28, None),
+];
+
+/// Every printed row, the committee's first.
+fn rows() -> impl Iterator<Item = &'static Printed> {
+    SHEET.iter().chain(&SURYA_2082)
+}
 
 fn kathmandu() -> (Place, UtcOffset) {
     (
@@ -349,6 +497,12 @@ fn bar_name(bar: &Bar) -> String {
 /// member.
 fn rejected_grade(kind: &ClauseKind, level: Level) -> Option<String> {
     let rejected = |grade: &Grade| *grade == Grade::Rejected;
+    // The bull's count moves through a day's windows, so its rejection
+    // is named by the clause alone and a day all of whose windows fall on
+    // the bad limbs reads as one reason.
+    if let (ClauseKind::VrishaVastu { grade, .. }, Level::Instant) = (kind, level) {
+        return rejected(grade).then(|| key_name(kind.key()));
+    }
     let member = match (kind, level) {
         (ClauseKind::Tithi { tithi, grade }, Level::Day) => rejected(grade).then(|| tithi.key()),
         (ClauseKind::Nakshatra { nakshatra, grade }, Level::Day) => {
@@ -494,22 +648,24 @@ fn instant(
     Ok(judged(&open))
 }
 
-/// The rows whose printed weekday is not their date's, each as (rite,
-/// month, day): the sheet contradicts itself there, and the row is read
-/// neither way. Refused both ways, so a row added to the list that agrees,
-/// or a row that disagrees and is not listed, fails the pass.
-const MISPRINTS: [(Rite, u8, u8); 6] = [
-    (B, 10, 21),
-    (B, 10, 23),
-    (B, 12, 4),
-    (V, 3, 14),
-    (V, 3, 15),
-    (P, 10, 25),
+/// The rows whose printed weekday is not their date's, each as (year,
+/// rite, month, day): the list contradicts itself there, and the row is
+/// read neither way. Refused both ways, so a row added to the list that
+/// agrees, or a row that disagrees and is not listed, fails the pass.
+const MISPRINTS: [(i32, Rite, u8, u8); 6] = [
+    (YEAR, B, 10, 21),
+    (YEAR, B, 10, 23),
+    (YEAR, B, 12, 4),
+    (YEAR, V, 3, 14),
+    (YEAR, V, 3, 15),
+    (YEAR, P, 10, 25),
 ];
 
-/// One printed row and what was found of it.
-struct Found<'a> {
-    printed: &'a Printed,
+/// One printed row read under one test, and what was found of it.
+struct Found {
+    printed: &'static Printed,
+    /// Its test's place in [`TESTS`].
+    test: usize,
     /// The Gregorian day.
     date: CalendarDate,
     /// The weekday the date has.
@@ -519,9 +675,14 @@ struct Found<'a> {
     readings: Option<[Reading; 2]>,
 }
 
-impl Found<'_> {
+impl Found {
     fn reading(&self, sky: Sky) -> Option<&Reading> {
         self.readings.as_ref().and_then(|r| r.get(sky.index()))
+    }
+
+    /// Whether the printed weekday contradicts the date.
+    fn misprinted(&self) -> bool {
+        self.printed.vara.is_some_and(|vara| vara != self.vara)
     }
 }
 
@@ -530,8 +691,8 @@ fn iso(date: &CalendarDate) -> String {
     format!("{}-{:02}-{:02}", date.year, date.month, date.day)
 }
 
-/// VS 2083's first and last days, as Gregorian dates.
-fn the_year(context: &Context) -> Result<(CalendarDate, CalendarDate), String> {
+/// A Bikram Sambat year's first and last days, as Gregorian dates.
+fn the_year(context: &Context, bs: i32) -> Result<(CalendarDate, CalendarDate), String> {
     let calendar = context.calendar();
     let first_of = |year| {
         calendar
@@ -542,17 +703,19 @@ fn the_year(context: &Context) -> Result<(CalendarDate, CalendarDate), String> {
             .map_err(|e| e.to_string())
     };
     let next = calendar
-        .fixed_of(&first_of(YEAR + 1)?)
+        .fixed_of(&first_of(bs + 1)?)
         .map_err(|e| e.to_string())?;
     let last = calendar
         .date_of(Calendar::Gregorian, next.plus_days(-1))
         .map_err(|e| e.to_string())?;
-    Ok((first_of(YEAR)?, last))
+    Ok((first_of(bs)?, last))
 }
 
-/// A sky's year: every day of it, and, rite by rite, the days the rite's
-/// season closes with the blackouts that close them.
+/// A sky's Bikram Sambat year: every day of it, and, test by test, the
+/// days the rules' season closes with the blackouts that close them.
 struct Year {
+    sky: Sky,
+    bs: i32,
     days: Vec<Panchanga>,
     closed: Vec<BTreeMap<String, Vec<String>>>,
 }
@@ -564,10 +727,10 @@ impl Year {
         self.days.iter().find(|day| iso(&day.day.date) == date)
     }
 
-    /// The days the rite's rules leave daylight open on, the season's
+    /// The days a test's rules leave daylight open on, the season's
     /// closed days left out.
-    fn open(&self, rite: Rite, rules: &ActivityRules) -> usize {
-        let closed = self.closed.get(rite.index());
+    fn open(&self, test: usize, rules: &ActivityRules) -> usize {
+        let closed = self.closed.get(test);
         self.days
             .iter()
             .filter(|day| !closed.is_some_and(|c| c.contains_key(&iso(&day.day.date))))
@@ -576,20 +739,28 @@ impl Year {
     }
 }
 
-/// Founds a sky's year. The season is searched only for a rite that
-/// heeds one; a rite heeding none closes nothing.
-fn year(sky: Sky) -> Result<Year, String> {
+/// The founded year of a sky and a Bikram Sambat year.
+fn year_of(years: &[Year], sky: Sky, bs: i32) -> Result<&Year, String> {
+    years
+        .iter()
+        .find(|y| y.sky == sky && y.bs == bs)
+        .ok_or_else(|| format!("{}'s VS {bs} not founded", sky.name()))
+}
+
+/// Founds a sky's Bikram Sambat year. The season is searched only for
+/// rules that heed one; rules heeding none close nothing.
+fn year(sky: Sky, bs: i32) -> Result<Year, String> {
     let context = sky.context()?;
     let (place, clock) = kathmandu();
-    let (first, last) = the_year(&context)?;
+    let (first, last) = the_year(&context, bs)?;
     let days = context
         .almanac()
         .of(&first, &last, &place, clock)
-        .map_err(|e| format!("{}'s year: {e}", sky.name()))?;
-    let closed = Rite::ALL
+        .map_err(|e| format!("{}'s VS {bs}: {e}", sky.name()))?;
+    let closed = TESTS
         .iter()
-        .map(|rite| {
-            let rules = rite.activity().rules();
+        .map(|(rite, activity)| {
+            let rules = activity.rules();
             if rules.heeds.is_empty() {
                 return Ok(BTreeMap::new());
             }
@@ -610,6 +781,8 @@ fn year(sky: Sky) -> Result<Year, String> {
         })
         .collect::<Result<_, String>>()?;
     Ok(Year {
+        sky,
+        bs,
         days: days.value,
         closed,
     })
@@ -666,88 +839,99 @@ fn with_the_sages_pausha() -> ActivityRules {
 }
 
 /// What the page measures.
-struct Measured<'a> {
-    found: Vec<Found<'a>>,
-    /// Each sky's open days of the year, rite by rite in [`Rite::ALL`]'s
-    /// order, and the days founded.
-    open: [Vec<usize>; 2],
-    days: usize,
+struct Measured {
+    found: Vec<Found>,
+    /// The open days of each founded year, test by test in [`TESTS`]'s
+    /// order, with the days founded.
+    open: Vec<(Sky, i32, Vec<usize>, usize)>,
     /// The printed marriages' days the sages' Pausha leaves open over the
     /// committee's sky, and those Raman's own rules leave open.
     pausha: (usize, usize),
 }
 
-/// A day of the sheet read against each sky's day rules: the rows, the
-/// days left for the instant's search, and each row's day verdicts.
+/// The rows read against each sky's day rules: the rows under each test,
+/// the days left for the instant's search, and each row's day verdicts.
 type DayLevel = (
-    Vec<Found<'static>>,
+    Vec<Found>,
     Vec<(Sky, ActivityRules, CalendarDate)>,
     Vec<Option<[Verdict; 2]>>,
 );
 
 /// Each printed row converted, its weekday checked against `MISPRINTS`
-/// both ways, and judged at the day level under each sky.
-fn day_level(years: &[Year; 2], rules: &[ActivityRules]) -> Result<DayLevel, String> {
+/// both ways, and judged under each of its rite's tests at the day level
+/// under each sky.
+fn day_level(years: &[Year], rules: &[ActivityRules]) -> Result<DayLevel, String> {
     let calendar_context = Sky::Committee.context()?;
     let calendar = calendar_context.calendar();
 
-    // The day level from each sky's year, and the windows to search.
     let mut problems = Vec::new();
     let mut found = Vec::new();
     let mut tasks = Vec::new();
     let mut days_of: Vec<Option<[Verdict; 2]>> = Vec::new();
-    for printed in &SHEET {
-        let bs = CalendarDate::defined(Calendar::BikramSambat, YEAR, printed.month, printed.day);
+    for printed in rows() {
+        let bs = CalendarDate::defined(
+            Calendar::BikramSambat,
+            printed.year,
+            printed.month,
+            printed.day,
+        );
         let date = calendar
             .convert(&bs, Calendar::Gregorian)
-            .map_err(|e| format!("BS {YEAR}-{}-{}: {e}", printed.month, printed.day))?;
+            .map_err(|e| format!("BS {}-{}-{}: {e}", printed.year, printed.month, printed.day))?;
         let fixed = calendar.fixed_of(&date).map_err(|e| e.to_string())?;
         let vara = Vara::from_id(fixed.weekday() as u16).unwrap_or(Vara::Ravivara);
-        let listed = MISPRINTS.contains(&(printed.rite, printed.month, printed.day));
-        let misprinted = vara != printed.vara;
+        let listed = MISPRINTS.contains(&(printed.year, printed.rite, printed.month, printed.day));
+        let misprinted = printed.vara.is_some_and(|v| v != vara);
         if listed != misprinted {
             problems.push(format!(
-                "{} BS {YEAR}-{}-{}: printed {}, the date's {}, and {} in MISPRINTS",
+                "{} BS {}-{}-{}: printed {}, the date's {}, and {} in MISPRINTS",
                 printed.rite.name(),
+                printed.year,
                 printed.month,
                 printed.day,
-                printed.vara.key(),
+                printed.vara.map_or("no weekday", |v| v.key()),
                 vara.key(),
                 if listed { "listed" } else { "not listed" }
             ));
         }
-        let rite_rules = rules.get(printed.rite.index()).ok_or("a rite's rules")?;
-        let mut verdicts = Vec::new();
-        for sky in Sky::ALL {
-            let year = &years[sky.index()];
-            let closed = year
-                .closed
-                .get(printed.rite.index())
-                .and_then(|closed| closed.get(&iso(&date)));
-            let verdict = if let Some(by) = closed {
-                Verdict::Closed(by.clone())
-            } else {
-                let day = year
-                    .day(&date)
-                    .ok_or_else(|| format!("{}: not in the year", iso(&date)))?;
-                day_verdict(day, rite_rules)
-            };
-            if !misprinted && verdict == Verdict::Clean {
-                tasks.push((sky, rite_rules.clone(), date.clone()));
+        for (index, (rite, _)) in TESTS.iter().enumerate() {
+            if *rite != printed.rite {
+                continue;
             }
-            verdicts.push(verdict);
+            let test_rules = rules.get(index).ok_or("a test's rules")?;
+            let mut verdicts = Vec::new();
+            for sky in Sky::ALL {
+                let year = year_of(years, sky, printed.year)?;
+                let closed = year
+                    .closed
+                    .get(index)
+                    .and_then(|closed| closed.get(&iso(&date)));
+                let verdict = if let Some(by) = closed {
+                    Verdict::Closed(by.clone())
+                } else {
+                    let day = year
+                        .day(&date)
+                        .ok_or_else(|| format!("{}: not in the year", iso(&date)))?;
+                    day_verdict(day, test_rules)
+                };
+                if !misprinted && verdict == Verdict::Clean {
+                    tasks.push((sky, test_rules.clone(), date.clone()));
+                }
+                verdicts.push(verdict);
+            }
+            days_of.push(if misprinted {
+                None
+            } else {
+                Some(verdicts.try_into().map_err(|_| "two skies")?)
+            });
+            found.push(Found {
+                printed,
+                test: index,
+                date: date.clone(),
+                vara,
+                readings: None,
+            });
         }
-        days_of.push(if misprinted {
-            None
-        } else {
-            Some(verdicts.try_into().map_err(|_| "two skies")?)
-        });
-        found.push(Found {
-            printed,
-            date,
-            vara,
-            readings: None,
-        });
     }
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
@@ -756,10 +940,14 @@ fn day_level(years: &[Year; 2], rules: &[ActivityRules]) -> Result<DayLevel, Str
 }
 
 fn page() -> Result<String, String> {
+    let founding: Vec<(Sky, i32)> = Sky::ALL
+        .iter()
+        .flat_map(|sky| YEARS.iter().map(move |bs| (*sky, *bs)))
+        .collect();
     let years = std::thread::scope(|scope| {
-        let workers: Vec<_> = Sky::ALL
+        let workers: Vec<_> = founding
             .iter()
-            .map(|sky| scope.spawn(move || year(*sky)))
+            .map(|(sky, bs)| scope.spawn(move || year(*sky, *bs)))
             .collect();
         workers
             .into_iter()
@@ -770,8 +958,7 @@ fn page() -> Result<String, String> {
             })
             .collect::<Result<Vec<Year>, String>>()
     })?;
-    let years: [Year; 2] = years.try_into().map_err(|_| "two skies")?;
-    let rules: Vec<ActivityRules> = Rite::ALL.iter().map(|r| r.activity().rules()).collect();
+    let rules: Vec<ActivityRules> = TESTS.iter().map(|(_, a)| a.rules()).collect();
     let (mut found, tasks, days_of) = day_level(&years, &rules)?;
 
     // The instant on the days the day rules leave open.
@@ -795,35 +982,32 @@ fn page() -> Result<String, String> {
     let open = years
         .iter()
         .map(|year| {
-            Rite::ALL
+            let open = rules
                 .iter()
-                .zip(&rules)
-                .map(|(rite, rules)| year.open(*rite, rules))
-                .collect()
+                .enumerate()
+                .map(|(test, rules)| year.open(test, rules))
+                .collect();
+            (year.sky, year.bs, open, year.days.len())
         })
-        .collect::<Vec<Vec<usize>>>()
-        .try_into()
-        .map_err(|_| "two skies")?;
-    let committee = &years[Sky::Committee.index()];
+        .collect();
+    let committee = year_of(&years, Sky::Committee, YEAR)?;
     let pausha = pausha(&found, committee)?;
     Ok(render(&Measured {
         found,
         open,
-        days: committee.days.len(),
         pausha,
     }))
 }
 
 /// The printed marriages' days the sages' Pausha and Raman's own rules
 /// each leave day-clean over the committee's sky.
-fn pausha(found: &[Found<'_>], committee: &Year) -> Result<(usize, usize), String> {
+fn pausha(found: &[Found], committee: &Year) -> Result<(usize, usize), String> {
     let sages = with_the_sages_pausha();
     let raman = ActivityRules::raman_marriage();
     let mut pausha = (0, 0);
-    for f in found
-        .iter()
-        .filter(|f| f.printed.rite == Rite::Vivaha && f.readings.is_some())
-    {
+    for f in found.iter().filter(|f| {
+        test(f.test).1 == Activity::RamanMarriage && f.printed.year == YEAR && f.readings.is_some()
+    }) {
         let day = committee.day(&f.date).ok_or("a printed day")?;
         pausha.0 += usize::from(day_verdict(day, &sages) == Verdict::Clean);
         pausha.1 += usize::from(day_verdict(day, &raman) == Verdict::Clean);
@@ -831,60 +1015,72 @@ fn pausha(found: &[Found<'_>], committee: &Year) -> Result<(usize, usize), Strin
     Ok(pausha)
 }
 
-fn render(m: &Measured<'_>) -> String {
+fn render(m: &Measured) -> String {
     let mut out = String::from(
         "# Saait, measured\n\n\
          Status: `generated` by `cargo xtask saait`. Do not edit:\n\
          `check-saait` regenerates this page and fails on any difference.\n\n\
-         It measures `muhurta.md` §4.6: the rites Raman's *Muhurtha* gives\n\
-         beyond marriage, and his marriage, against the days the Nepal Panchanga\n\
-         Nirnayak Samiti printed for them on its VS 2083 muhurta sheet. Each\n\
-         printed day is founded at Kathmandu (27.7172° N, 85.324° E, 1400 m) on\n\
-         Nepal's clock, over the committee's own sky (`nepali-committee`, the\n\
-         Surya Siddhanta) and the modern one (`nepali-drik`), and searched\n\
-         with the rite's shipped rules. A day is **day-clean** when the rite's\n\
+         It measures `muhurta.md` §4.6: the rites Raman's *Muhurtha* gives,\n\
+         his marriage, and *Muhurta Chintamani*'s house, shop and marriage\n\
+         rites, against the days the Nepal Panchanga Nirnayak Samiti printed\n\
+         for them on its VS 2083 muhurta sheet, and the Surya Panchanga's VS\n\
+         2082 lists of the house's foundation, the house entry and the shop,\n\
+         which its preface says the committee decided. Each printed day is\n\
+         founded at Kathmandu (27.7172° N, 85.324° E, 1400 m) on Nepal's\n\
+         clock, over the committee's own sky (`nepali-committee`, the Surya\n\
+         Siddhanta) and the modern one (`nepali-drik`), and searched with each\n\
+         of the rite's shipped rules. A day is **day-clean** when the rules'\n\
          grades of the tithi, nakshatra, yoga, karana, vara and month leave some\n\
          of its daylight unrejected, and **clean** when some window of that\n\
-         daylight is also struck by no bar and rejected by no lagna or quarter.\n\
-         Where a day is not, the clauses named are those rejecting every\n\
-         window, or, where no one clause does, each window's.\n\n\
-         ## 1. The sheet\n\n",
+         daylight is also struck by no bar and rejected by no lagna, quarter or\n\
+         bull of the house. Where a day is not, the clauses named are those\n\
+         rejecting every window, or, where no one clause does, each window's.\n\n\
+         ## 1. The lists\n\n",
     );
-    let misprints: Vec<String> = m
-        .found
-        .iter()
-        .filter(|f| f.vara != f.printed.vara)
-        .map(|f| {
-            format!(
-                "{} {}-{} (printed {}, the date's {})",
-                f.printed.rite.name(),
-                f.printed.month,
-                f.printed.day,
-                f.printed.vara.key(),
-                f.vara.key()
-            )
-        })
-        .collect();
-    let per_rite: Vec<String> = Rite::ALL
-        .iter()
-        .map(|rite| {
-            let n = m.found.iter().filter(|f| f.printed.rite == *rite).count();
-            format!("{n} {}", rite.name())
-        })
-        .collect();
+    let mut misprints = BTreeSet::new();
+    for f in m.found.iter().filter(|f| f.misprinted()) {
+        misprints.insert(format!(
+            "{} {}-{}-{} (printed {}, the date's {})",
+            f.printed.rite.name(),
+            f.printed.year,
+            f.printed.month,
+            f.printed.day,
+            f.printed.vara.map_or("none", |v| v.key()),
+            f.vara.key()
+        ));
+    }
+    let misprints: Vec<String> = misprints.into_iter().collect();
+    let mut per_list: BTreeMap<(i32, Rite), usize> = BTreeMap::new();
+    for printed in rows() {
+        *per_list.entry((printed.year, printed.rite)).or_default() += 1;
+    }
+    let counted = |year: i32| -> String {
+        per_list
+            .iter()
+            .filter(|((y, _), _)| *y == year)
+            .map(|((_, rite), n)| format!("{n} {}", rite.name()))
+            .collect::<Vec<_>>()
+            .join(", ")
+    };
+    let weekdays = rows().filter(|p| p.vara.is_some()).count();
     let _ = writeln!(
         out,
-        "The sheet prints {} rows ({}), each a Bikram Sambat date and its\n\
-         weekday, read off the page images. Each date is converted by the shipped\n\
-         Bikram Sambat calendar and its weekday compared with the one printed;\n\
-         a row whose two disagree contradicts itself and is read neither way.\n",
+        "The committee's sheet prints {} rows ({}), each a Bikram Sambat date\n\
+         and its weekday; the Surya Panchanga's lists {} ({}), {} of them with\n\
+         a weekday. All are read off the page images. Each date is converted by\n\
+         the shipped Bikram Sambat calendar and a printed weekday compared with\n\
+         its date's; a row whose two disagree contradicts itself and is read\n\
+         neither way.\n",
         SHEET.len(),
-        per_rite.join(", ")
+        counted(YEAR),
+        SURYA_2082.len(),
+        counted(YEAR_BEFORE),
+        SURYA_2082.iter().filter(|p| p.vara.is_some()).count(),
     );
     out.push_str(&table(&[Claim::counted(
         "every printed weekday is its date's",
         misprints.len(),
-        SHEET.len(),
+        weekdays,
     )
     .with_note(format!(
         "the pass refuses a change to these: {}",
@@ -896,60 +1092,76 @@ fn render(m: &Measured<'_>) -> String {
     out
 }
 
-/// §2: each rite's printed days and the year's open days, by sky.
-fn each_rite(out: &mut String, m: &Measured<'_>) {
+/// The readings of a test's rows printed in a year under a sky.
+fn readings(m: &Measured, test: usize, year: Option<i32>, sky: Sky) -> Vec<&Reading> {
+    m.found
+        .iter()
+        .filter(|f| f.test == test && year.is_none_or(|y| f.printed.year == y))
+        .filter_map(|f| f.reading(sky))
+        .collect()
+}
+
+/// §2: each test's printed days and the year's open days, by list and
+/// sky.
+fn each_rite(out: &mut String, m: &Measured) {
     out.push_str(
         "\n## 2. Each rite against its printed days\n\n\
-         The year is VS 2083's days at Kathmandu; a day the rite's season closes\n\
-         is not open. A printed day the day rules leave open is necessarily one\n\
-         of the year's open days, so the year's count says how much the rules\n\
-         narrow the year before the committee chose.\n\n\
-         | rite | rules | sky | printed and read | day-clean | clean | open days of the year |\n\
-         |---|---|---|---:|---:|---:|---:|\n",
+         A year is its Bikram Sambat year's days at Kathmandu; a day the rules'\n\
+         season closes is not open. A printed day the day rules leave open is\n\
+         necessarily one of the year's open days, so the year's count says how\n\
+         much the rules narrow the year before the list chose.\n\n\
+         | rite | rules | VS | sky | printed and read | day-clean | clean | open days of the year |\n\
+         |---|---|---:|---|---:|---:|---:|---:|\n",
     );
-    for rite in Rite::ALL {
-        for sky in Sky::ALL {
-            let read: Vec<&Reading> = m
+    for (index, (rite, activity)) in TESTS.iter().enumerate() {
+        for bs in YEARS {
+            if !m
                 .found
                 .iter()
-                .filter(|f| f.printed.rite == rite)
-                .filter_map(|f| f.reading(sky))
-                .collect();
-            let day_clean = read.iter().filter(|r| r.day == Verdict::Clean).count();
-            let clean = read
-                .iter()
-                .filter(|r| r.instant == Some(Verdict::Clean))
-                .count();
-            let open = m.open[sky.index()].get(rite.index()).copied().unwrap_or(0);
-            let _ = writeln!(
-                out,
-                "| {} | `{}` | {} | {} | {day_clean} | {clean} | {open} of {} |",
-                rite.name(),
-                rite.activity().key(),
-                sky.name(),
-                read.len(),
-                m.days,
-            );
+                .any(|f| f.test == index && f.printed.year == bs)
+            {
+                continue;
+            }
+            for sky in Sky::ALL {
+                let read = readings(m, index, Some(bs), sky);
+                let day_clean = read.iter().filter(|r| r.day == Verdict::Clean).count();
+                let clean = read
+                    .iter()
+                    .filter(|r| r.instant == Some(Verdict::Clean))
+                    .count();
+                let (open, days) = m
+                    .open
+                    .iter()
+                    .find(|(s, y, _, _)| *s == sky && *y == bs)
+                    .map_or((0, 0), |(_, _, open, days)| {
+                        (open.get(index).copied().unwrap_or(0), *days)
+                    });
+                let _ = writeln!(
+                    out,
+                    "| {} | `{}` | {bs} | {} | {} | {day_clean} | {clean} | {open} of {days} |",
+                    rite.name(),
+                    activity.key(),
+                    sky.name(),
+                    read.len(),
+                );
+            }
         }
     }
     out.push('\n');
-    let claims: Vec<Claim> = Rite::ALL
+    let claims: Vec<Claim> = TESTS
         .iter()
-        .map(|rite| {
-            let read: Vec<&Reading> = m
-                .found
-                .iter()
-                .filter(|f| f.printed.rite == *rite)
-                .filter_map(|f| f.reading(Sky::Committee))
-                .collect();
+        .enumerate()
+        .map(|(index, (rite, activity))| {
+            let read = readings(m, index, None, Sky::Committee);
             let unclean = read
                 .iter()
                 .filter(|r| r.instant != Some(Verdict::Clean))
                 .count();
             Claim::counted(
                 format!(
-                    "over the committee's sky, every printed {} day has a clean window",
-                    rite.name()
+                    "over the committee's sky, every printed {} day has a clean window under `{}`",
+                    rite.name(),
+                    activity.key()
                 ),
                 unclean,
                 read.len(),
@@ -960,7 +1172,7 @@ fn each_rite(out: &mut String, m: &Measured<'_>) {
 }
 
 /// §3: the clauses that part a printed day from the rules.
-fn what_parts_them(out: &mut String, m: &Measured<'_>) {
+fn what_parts_them(out: &mut String, m: &Measured) {
     out.push_str(
         "\n## 3. What parts them\n\n\
          Over the committee's sky, each clause that rejects every daylight\n\
@@ -968,11 +1180,11 @@ fn what_parts_them(out: &mut String, m: &Measured<'_>) {
          clause on a day not day-clean, an instant one on a day-clean day with\n\
          no clean window. A day whose windows are each rejected by a different\n\
          clause is counted under \"no one clause\".\n\n\
-         | rite | clause | printed days |\n|---|---|---:|\n",
+         | rite | rules | clause | printed days |\n|---|---|---|---:|\n",
     );
-    for rite in Rite::ALL {
+    for (index, (rite, activity)) in TESTS.iter().enumerate() {
         let mut counts: BTreeMap<String, usize> = BTreeMap::new();
-        for f in m.found.iter().filter(|f| f.printed.rite == rite) {
+        for f in m.found.iter().filter(|f| f.test == index) {
             let Some(read) = f.reading(Sky::Committee) else {
                 continue;
             };
@@ -997,7 +1209,12 @@ fn what_parts_them(out: &mut String, m: &Measured<'_>) {
         let mut counts: Vec<(String, usize)> = counts.into_iter().collect();
         counts.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
         for (clause, n) in counts {
-            let _ = writeln!(out, "| {} | {clause} | {n} |", rite.name());
+            let _ = writeln!(
+                out,
+                "| {} | `{}` | {clause} | {n} |",
+                rite.name(),
+                activity.key()
+            );
         }
     }
     let _ = write!(
@@ -1010,27 +1227,30 @@ fn what_parts_them(out: &mut String, m: &Measured<'_>) {
     );
 }
 
-/// §4: every row of the sheet under both skies.
-fn every_row(out: &mut String, m: &Measured<'_>) {
+/// §4: every row under each of its rite's rules and both skies.
+fn every_row(out: &mut String, m: &Measured) {
     out.push_str(
         "\n## 4. Every row\n\n\
-         | rite | BS 2083 | day | printed | committee's sky | modern sky |\n\
-         |---|---|---|---|---|---|\n",
+         | rite | rules | list | BS | day | printed | committee's sky | modern sky |\n\
+         |---|---|---|---|---|---|---|---|\n",
     );
     for f in &m.found {
         let shown = |sky| {
             f.reading(sky)
                 .map_or_else(|| String::from("—"), Reading::shown)
         };
-        let printed = if f.vara == f.printed.vara {
-            f.printed.vara.key().to_owned()
-        } else {
-            format!("{} (the date's {})", f.printed.vara.key(), f.vara.key())
+        let printed = match f.printed.vara {
+            None => String::from("—"),
+            Some(vara) if vara == f.vara => vara.key().to_owned(),
+            Some(vara) => format!("{} (the date's {})", vara.key(), f.vara.key()),
         };
         let _ = writeln!(
             out,
-            "| {} | {}-{:02} | {} | {printed} | {} | {} |",
+            "| {} | `{}` | {} | {}-{}-{:02} | {} | {printed} | {} | {} |",
             f.printed.rite.name(),
+            test(f.test).1.key(),
+            f.printed.list(),
+            f.printed.year,
             f.printed.month,
             f.printed.day,
             iso(&f.date),

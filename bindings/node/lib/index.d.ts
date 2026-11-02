@@ -6783,7 +6783,12 @@ export type MuhurtaActivity =
   | 'RAMAN_TRADE_PURCHASE'
   | 'RAMAN_SELLING'
   | 'RAMAN_NEW_CLOTHES'
-  | 'RAMAN_VEHICLE';
+  | 'RAMAN_VEHICLE'
+  | 'CHINTAMANI_GRIHARAMBHA'
+  | 'CHINTAMANI_BHUMI_PUJA'
+  | 'CHINTAMANI_VASTU_SHANTI'
+  | 'CHINTAMANI_VIPANI'
+  | 'CHINTAMANI_VIVAHA';
 
 /** A visibility criterion the SDK names. */
 export type AstaName = 'SURYA_SIDDHANTA' | 'COMBUSTION_ORB' | 'PTOLEMY';

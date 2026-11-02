@@ -14909,7 +14909,23 @@ enum MuhurtaActivity {
   ramanNewClothes('RAMAN_NEW_CLOTHES'),
 
   /// Acquiring a vehicle, by Raman.
-  ramanVehicle('RAMAN_VEHICLE');
+  ramanVehicle('RAMAN_VEHICLE'),
+
+  /// Beginning a house, griharambha (shilanyas), by Muhurta Chintamani.
+  chintamaniGriharambha('CHINTAMANI_GRIHARAMBHA'),
+
+  /// The ground's worship before digging, bhumi puja, by Muhurta
+  /// Chintamani.
+  chintamaniBhumiPuja('CHINTAMANI_BHUMI_PUJA'),
+
+  /// The house's propitiation, vastu shanti, by Muhurta Chintamani.
+  chintamaniVastuShanti('CHINTAMANI_VASTU_SHANTI'),
+
+  /// Opening a shop or a business, vipani, by Muhurta Chintamani.
+  chintamaniVipani('CHINTAMANI_VIPANI'),
+
+  /// A marriage by Muhurta Chintamani.
+  chintamaniVivaha('CHINTAMANI_VIVAHA');
 
   const MuhurtaActivity(this.key);
 
@@ -15767,6 +15783,33 @@ final class AshubhaYogaClause extends MuhurtaClauseKind {
   Map<String, Object?> get _json => {'clause': clause, 'yoga': yoga.fullKey};
 }
 
+/// The bull of the house (vrisha vastu chakra): the day's star counted
+/// from the Sun's over the twenty-eight with Abhijit (Muhurta Chintamani,
+/// Vastu-prakarana XII vv. 13-14). Best on counts 8 to 18, rejected on
+/// the rest.
+final class VrishaVastuClause extends MuhurtaClauseKind {
+  const VrishaVastuClause({required this.count, required this.grade});
+
+  /// The day's star counted from the Sun's, 1 to 28.
+  final int count;
+
+  /// The count's grade.
+  final String grade;
+
+  @override
+  String get clause => 'VRISHA_VASTU';
+
+  @override
+  List<Object?> get _fields => [count, grade];
+
+  @override
+  Map<String, Object?> get _json => {
+    'clause': clause,
+    'count': count,
+    'grade': grade,
+  };
+}
+
 /// A clause kind from its tagged JSON: a switch over every tag, so a tag
 /// this build does not know is refused by name rather than guessed.
 MuhurtaClauseKind _clauseKind(
@@ -15871,6 +15914,10 @@ MuhurtaClauseKind _clauseKind(
   'GHATA' => GhataClause(row: raw['row']! as String),
   'ASHUBHA_YOGA' => AshubhaYogaClause(
     yoga: _key(raw['yoga'], AshubhaYoga.byKey, AshubhaYoga.unknown),
+  ),
+  'VRISHA_VASTU' => VrishaVastuClause(
+    count: raw['count']! as int,
+    grade: raw['grade']! as String,
   ),
   final tag =>
     throw StateError(

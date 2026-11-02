@@ -112,6 +112,9 @@ public sealed interface Bar extends RequestJson permits Bar.Key, BarValue {
     /** {@code ASHUBHA_YOGA}. */
     Bar ASHUBHA_YOGA = Key.ASHUBHA_YOGA;
 
+    /** {@code VRISHA_VASTU}. */
+    Bar VRISHA_VASTU = Key.VRISHA_VASTU;
+
     /**
      * The value, as a {@code Bar}.
      *
@@ -281,7 +284,11 @@ public sealed interface Bar extends RequestJson permits Bar.Key, BarValue {
         /**
          * {@code ASHUBHA_YOGA}.
          */
-        ASHUBHA_YOGA("ASHUBHA_YOGA");
+        ASHUBHA_YOGA("ASHUBHA_YOGA"),
+        /**
+         * {@code VRISHA_VASTU}.
+         */
+        VRISHA_VASTU("VRISHA_VASTU");
 
         private final String key;
 

@@ -3693,7 +3693,9 @@ pub struct PanchangaRequest {
     /// `RAMAN_ANNAPRASANA`, `RAMAN_KARNAVEDHA`, `RAMAN_CHUDAKARANA`,
     /// `RAMAN_UPANAYANA`, `RAMAN_VIDYARAMBHA`, `RAMAN_GRIHA_PRAVESHA`,
     /// `RAMAN_YATRA`, `RAMAN_TRADE_PURCHASE`, `RAMAN_SELLING`,
-    /// `RAMAN_NEW_CLOTHES`, `RAMAN_VEHICLE`); and,
+    /// `RAMAN_NEW_CLOTHES`, `RAMAN_VEHICLE`, `CHINTAMANI_GRIHARAMBHA`,
+    /// `CHINTAMANI_BHUMI_PUJA`, `CHINTAMANI_VASTU_SHANTI`,
+    /// `CHINTAMANI_VIPANI`, `CHINTAMANI_VIVAHA`); and,
     /// each optional,
     /// `native` (`{star, moonSign}`, whose tarabala and chandrabala are
     /// read), `ranking` (`TEXTS` or `BASELINE`), `daysWithWindows` (7),

@@ -686,6 +686,7 @@ __all__ = [
     "MuhurtaClauseKindKendraBenefics",
     "MuhurtaClauseKindUnwantedPlacement",
     "MuhurtaClauseKindVarjyam",
+    "MuhurtaClauseKindVrishaVastu",
     "ChandraBala",
     "GradedKarana",
     "GradedNakshatra",
@@ -3465,7 +3466,7 @@ MuhurtaRanking: TypeAlias = Literal['TEXTS', 'BASELINE']
 """
 
 
-MuhurtaRequestRules: TypeAlias = "Union[Literal['RAMAN_MARRIAGE', 'BASELINE_MARRIAGE', 'RAMAN_NAMAKARANA', 'RAMAN_ANNAPRASANA', 'RAMAN_UPANAYANA', 'RAMAN_GRIHA_PRAVESHA', 'RAMAN_KARNAVEDHA', 'RAMAN_CHUDAKARANA', 'RAMAN_VIDYARAMBHA', 'RAMAN_YATRA', 'RAMAN_TRADE_PURCHASE', 'RAMAN_SELLING', 'RAMAN_NEW_CLOTHES', 'RAMAN_VEHICLE'], ActivityRules]"
+MuhurtaRequestRules: TypeAlias = "Union[Literal['RAMAN_MARRIAGE', 'BASELINE_MARRIAGE', 'RAMAN_NAMAKARANA', 'RAMAN_ANNAPRASANA', 'RAMAN_UPANAYANA', 'RAMAN_GRIHA_PRAVESHA', 'RAMAN_KARNAVEDHA', 'RAMAN_CHUDAKARANA', 'RAMAN_VIDYARAMBHA', 'RAMAN_YATRA', 'RAMAN_TRADE_PURCHASE', 'RAMAN_SELLING', 'RAMAN_NEW_CLOTHES', 'RAMAN_VEHICLE', 'CHINTAMANI_GRIHARAMBHA', 'CHINTAMANI_BHUMI_PUJA', 'CHINTAMANI_VASTU_SHANTI', 'CHINTAMANI_VIPANI', 'CHINTAMANI_VIVAHA'], ActivityRules]"
 """The rules: an activity the SDK ships the rules of, by name, or rules spelt out."""
 
 
@@ -4809,6 +4810,9 @@ class ActivityRules(TypedDict, total=False):
 
     unwanted: Sequence[MuhurtaUnwanted]
     """The grahas the rite wants out of houses. Empty where the rules spelt out leave it out."""
+
+    vrishaVastu: bool
+    """Whether the bull of the house is read (*Muhurta Chintamani*, Vastu-prakarana XII vv. 13–14): the day's star counted from the Sun's, graded at each instant as a `ClauseKind::VrishaVastu`. False where the rules spelt out leave it out; JSON writes it `vrishaVastu`."""
 
 
 class HouseholdTie(TypedDict, total=False):
@@ -7906,7 +7910,7 @@ class ThresholdsCustom(TypedDict, total=False):
     """Venus's."""
 
 
-Bar: TypeAlias = "Union[Literal['TITHI', 'NAKSHATRA', 'YOGA', 'KARANA', 'VARA', 'MONTH', 'SOLAR_MONTH', 'LAGNA', 'PADA', 'KAALA', 'CHOGHADIYA', 'ABHIJIT', 'MUHURTA_YOGA', 'TARABALA', 'CHANDRABALA', 'KARTARI', 'MOON_IN_DUSTHANA', 'MOON_JOINED', 'VENUS_IN_SIXTH', 'MARS_IN_EIGHTH', 'ASHTAMA_LAGNA', 'KUNAVAMSA', 'PANCHAKA_REMAINDER', 'LAGNA_TYAJYA', 'SEVENTH_OCCUPIED', 'MALEFIC_IN_LAGNA', 'BENEFIC_IN_LAGNA', 'EXALTED_IN_LAGNA', 'LUMINARY_IN_ELEVENTH', 'KENDRA_BENEFICS', 'UNWANTED_PLACEMENT', 'VARJYAM', 'GHATA', 'ASHUBHA_YOGA'], Union[MuhurtaClauseKind, _layer.MuhurtaClauseKind]]"
+Bar: TypeAlias = "Union[Literal['TITHI', 'NAKSHATRA', 'YOGA', 'KARANA', 'VARA', 'MONTH', 'SOLAR_MONTH', 'LAGNA', 'PADA', 'KAALA', 'CHOGHADIYA', 'ABHIJIT', 'MUHURTA_YOGA', 'TARABALA', 'CHANDRABALA', 'KARTARI', 'MOON_IN_DUSTHANA', 'MOON_JOINED', 'VENUS_IN_SIXTH', 'MARS_IN_EIGHTH', 'ASHTAMA_LAGNA', 'KUNAVAMSA', 'PANCHAKA_REMAINDER', 'LAGNA_TYAJYA', 'SEVENTH_OCCUPIED', 'MALEFIC_IN_LAGNA', 'BENEFIC_IN_LAGNA', 'EXALTED_IN_LAGNA', 'LUMINARY_IN_ELEVENTH', 'KENDRA_BENEFICS', 'UNWANTED_PLACEMENT', 'VARJYAM', 'GHATA', 'ASHUBHA_YOGA', 'VRISHA_VASTU'], Union[MuhurtaClauseKind, _layer.MuhurtaClauseKind]]"
 """A clause that bars a rite outright: every clause of a kind, or one clause exactly."""
 
 
@@ -8813,7 +8817,7 @@ class MotionThresholds(TypedDict, total=False):
     """The threshold while it retrogrades."""
 
 
-MuhurtaClauseKind: TypeAlias = "Union[MuhurtaClauseKindTithi, MuhurtaClauseKindNakshatra, MuhurtaClauseKindYoga, MuhurtaClauseKindKarana, MuhurtaClauseKindVara, MuhurtaClauseKindMonth, MuhurtaClauseKindSolarMonth, MuhurtaClauseKindLagna, MuhurtaClauseKindPada, MuhurtaClauseKindKaala, MuhurtaClauseKindChoghadiya, MuhurtaClauseKindAbhijit, MuhurtaClauseKindMuhurtaYoga, MuhurtaClauseKindTarabala, MuhurtaClauseKindGhata, MuhurtaClauseKindAshubhaYoga, MuhurtaClauseKindChandrabala, MuhurtaClauseKindKartari, MuhurtaClauseKindMoonInDusthana, MuhurtaClauseKindMoonJoined, MuhurtaClauseKindVenusInSixth, MuhurtaClauseKindMarsInEighth, MuhurtaClauseKindAshtamaLagna, MuhurtaClauseKindKunavamsa, MuhurtaClauseKindPanchakaRemainder, MuhurtaClauseKindLagnaTyajya, MuhurtaClauseKindSeventhOccupied, MuhurtaClauseKindMaleficInLagna, MuhurtaClauseKindBeneficInLagna, MuhurtaClauseKindExaltedInLagna, MuhurtaClauseKindLuminaryInEleventh, MuhurtaClauseKindKendraBenefics, MuhurtaClauseKindUnwantedPlacement, MuhurtaClauseKindVarjyam]"
+MuhurtaClauseKind: TypeAlias = "Union[MuhurtaClauseKindTithi, MuhurtaClauseKindNakshatra, MuhurtaClauseKindYoga, MuhurtaClauseKindKarana, MuhurtaClauseKindVara, MuhurtaClauseKindMonth, MuhurtaClauseKindSolarMonth, MuhurtaClauseKindLagna, MuhurtaClauseKindPada, MuhurtaClauseKindKaala, MuhurtaClauseKindChoghadiya, MuhurtaClauseKindAbhijit, MuhurtaClauseKindMuhurtaYoga, MuhurtaClauseKindTarabala, MuhurtaClauseKindGhata, MuhurtaClauseKindAshubhaYoga, MuhurtaClauseKindChandrabala, MuhurtaClauseKindKartari, MuhurtaClauseKindMoonInDusthana, MuhurtaClauseKindMoonJoined, MuhurtaClauseKindVenusInSixth, MuhurtaClauseKindMarsInEighth, MuhurtaClauseKindAshtamaLagna, MuhurtaClauseKindKunavamsa, MuhurtaClauseKindPanchakaRemainder, MuhurtaClauseKindLagnaTyajya, MuhurtaClauseKindSeventhOccupied, MuhurtaClauseKindMaleficInLagna, MuhurtaClauseKindBeneficInLagna, MuhurtaClauseKindExaltedInLagna, MuhurtaClauseKindLuminaryInEleventh, MuhurtaClauseKindKendraBenefics, MuhurtaClauseKindUnwantedPlacement, MuhurtaClauseKindVarjyam, MuhurtaClauseKindVrishaVastu]"
 """What a clause says."""
 
 
@@ -9148,6 +9152,18 @@ class MuhurtaClauseKindVarjyam(TypedDict, total=False):
 
     nakshatra: Required[Union[_catalogue.Nakshatra, str]]
     """Whose varjyam."""
+
+
+class MuhurtaClauseKindVrishaVastu(TypedDict, total=False):
+    """The bull of the house (vrisha vastu chakra): the day's star counted from the Sun's over the twenty-eight with Abhijit, laid on a bull's limbs (*Muhurta Chintamani*, Vastu-prakarana XII vv. 13–14). Three at the head burn, four at the forefeet empty, four at the hind feet steady, three at the back bring fortune, four at the right flank gain, three at the tail lose the master, four at the left flank poverty and three at the mouth constant pain: "seven bad, eleven good, ten bad". Read for the rites whose rules ask it (`ActivityRules::vrisha_vastu`)."""
+
+    clause: Required[Literal['VRISHA_VASTU']]
+
+    count: Required[int]
+    """The day's star counted from the Sun's, 1 (the Sun's own) to 28."""
+
+    grade: Required[MuhurtaGrade]
+    """Best on the eleven good counts, rejected on the seventeen bad."""
 
 
 class ChandraBala(TypedDict, total=False):

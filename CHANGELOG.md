@@ -27,6 +27,20 @@ days are unchanged; `GAUDIYA`'s answer gains the five festivals.
 - `INDIA_CENTRAL`'s Janmashtami, which the notices mark Vaishnava, is the text's Vaishnava rule in place of the
   fitted sunrise rule (C851), and `festival-measured.md` §1 holds the lists' Vaishnava day to it.
 
+**Muhurta Chintamani's house, shop and marriage rites.**
+**Numbers:** none: new activities and a new clause, and no shipped rite reads the clause.
+- Five activities, named in every binding and in a muhurta request's `rules`: `CHINTAMANI_GRIHARAMBHA`
+  (beginning a house, Nepal's foundation, shilanyas), `CHINTAMANI_BHUMI_PUJA`, `CHINTAMANI_VASTU_SHANTI`,
+  `CHINTAMANI_VIPANI` (opening a shop) and `CHINTAMANI_VIVAHA`, each from its verse (Vastu-prakarana XII
+  vv. 13–18, Grihapravesha-prakarana XIII v. 3, Nakshatra-prakarana II v. 17, Vivaha-prakarana VI vv. 13
+  and 55, with ch. I vv. 46–47's blackouts). They carry no general shuddhi (C1130) and nothing bars
+  (SR-33, SR-34, C1131–C1134).
+- The clause `VRISHA_VASTU { count, grade }`, the bull of the house: the day's star counted from the Sun's
+  over the twenty-eight with Abhijit, best on the eleven good counts, read where `ActivityRules.vrishaVastu`
+  is set (`vrisha_count`, `vrisha_grade`).
+- `saait-measured.md` holds the new rites to the committee's VS 2083 foundation and shop days and the Surya
+  Panchanga's VS 2082 lists, and the committee's marriages to both marriage rules (C206).
+
 **The navatara chakra.**
 **Numbers:** none: a new answer, and nothing it reads moves.
 - `AlmanacArea::navatara(birth)`, the record `almanac.navatara` (`NavataraRequest`, an agent server tool),

@@ -837,7 +837,8 @@
                 1
               ]
             }
-          ]
+          ],
+          "vrishaVastu": true
         }
       },
       "nepalSambat": true,

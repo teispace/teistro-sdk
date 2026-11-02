@@ -3134,6 +3134,11 @@ void main() {
     ('raman', MuhurtaActivity.ramanMarriage, MuhurtaRanking.texts),
     ('baseline', MuhurtaActivity.baselineMarriage, MuhurtaRanking.baseline),
     ('upanayana', MuhurtaActivity.ramanUpanayana, MuhurtaRanking.texts),
+    (
+      'griharambha',
+      MuhurtaActivity.chintamaniGriharambha,
+      MuhurtaRanking.texts,
+    ),
   ]) {
     final muhurta =
         geo.almanac
