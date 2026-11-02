@@ -1527,6 +1527,14 @@ mod tests {
             deep.pointer("/0/request/cancel"),
             Some(&json!({"kind": "AT", "deg": 1.5, "label": "x"}))
         );
+        // A text the hand example writes is the hand example's, which
+        // holds to a pattern the model does not carry.
+        let hand =
+            json!([{"record": deep.pointer("/0/record"), "request": {"cancel": {"label": "a"}}}]);
+        assert_eq!(
+            deep_examples(&api, &hand).pointer("/0/request/cancel/label"),
+            Some(&json!("a"))
+        );
         let test = dart_deep_test(&api, &deep);
         assert!(
             test.contains("Cancel(how: HowAt(deg: 1.5), label: 'x')"),

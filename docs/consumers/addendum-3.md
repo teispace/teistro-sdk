@@ -110,7 +110,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 | A2-8 | planned | SR-16 | |
 | A2-9 | partly built | `calendars/regional-solar.md` | The Tamil, Malayalam, Bengali and Odia calendars are built and measured against the *Rashtriya Panchang*. Planned: the Tamil school setting (vakya or thirukanitha). |
 | A2-10 | built | SR-08 | |
-| SR-51 | partly built | `core/src/envelope.rs` | The envelope already carries the SDK version, the settings hash and the digest of the inputs and the output. Missing: a receipt that names the record, and a deterministic `verify(receipt)` that recomputes and compares the result. Planned, as an attester for the OKF format's attested computation. |
+| SR-51 | built | `core/src/receipt.rs`, `sdk/src/area/receipt.rs` | **Built, 2026-11-02.** `verify.issue` answers a record beside a receipt (`teistro.receipt/1`): the record, its canonical request and digest, the settings snapshot (profile, the whole settings document and its hash), the locale, packs, ephemeris and zone database, the SDK, calculation and catalogue versions, the output digest and a seal. `verify.receipt` re-runs the record under the receipt's own settings and answers `HELD`, `DIFFERS` (which digest moved, the versions on each side), `NOT_RERUN` with why (record, provider, settings, locale, packs, out of range, refused) or `BROKEN`. In every binding, at the C boundary and as MCP tools; the attester of OKF v0.2's attested computation. `03-design/receipts-and-datasets.md` §1, C1170–C1173. |
 
 ## 8. Platform
 
@@ -126,7 +126,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 
 | SR | Status | Where | Note or question |
 |---|---|---|---|
-| SR-57 | planned | `research` | A dataset format with a reliability rating per record and a settings snapshot per study. |
+| SR-57 | built | `research/src/dataset.rs` | **Built, 2026-11-02.** `teistro.dataset/1`: births rated by the Rodden Rating (AA, A, B, C, DD, X, XX), studies each with a settings snapshot, the worst rating it admits and the rest of its `research.study` request; loaded strictly with refusals that name the field; the JSON Schema generated into `crates/research/schema/dataset.schema.json`; `ResearchArea::dataset` runs a study under its own settings. Rust only for now. `03-design/receipts-and-datasets.md` §2, C1174–C1175. |
 | SR-58 | partly built, the sky view moved to P2 and the pose to P3 by addendum 5 | `astro` (topocentric altitude and azimuth, visibility) | Planned: every graha, the junction stars, the ecliptic and the horizon at a place and instant first (P2); then a record for a device pose and an instant, giving the grahas, the Moon's junction stars and the rising lagna point. |
 
 ## 10. Addendum 4's requests

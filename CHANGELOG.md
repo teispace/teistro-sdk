@@ -77,6 +77,25 @@ days are unchanged; `GAUDIYA`'s answer gains the five festivals.
   polylines, in mundo or zodiacal, stopped and said at the polar limit, every point on its angle to 1e-6°
   (SR-47, `03-design/astrocartography.md`, C1155–C1157). `teistro_western::lines` draws them.
 
+**Receipts, and a verify that answers a receipt again.**
+**Numbers:** none: new answers, and nothing they read moves.
+- `VerifyArea::issue` and `VerifyArea::receipt`, the records `verify.issue` and `verify.receipt` (agent server
+  tools), `ts_verify_issue` and `ts_verify_receipt` at the C boundary and `verify.issue` and `verify.receipt`
+  in every binding: a record's answer beside a receipt (`teistro.receipt/1`, `teistro::verify::Receipt`)
+  naming the record, its canonical request, the settings snapshot, locale, packs, ephemeris, zone database,
+  versions and output digest under a seal; and the receipt answered again under its own settings, `HELD`,
+  `DIFFERS`, `NOT_RERUN` with why, or `BROKEN`, with every version that moved (SR-51,
+  `03-design/receipts-and-datasets.md` §1, C1170–C1173).
+- `Context::with_settings` and `SettingsSnapshot`: a context under another snapshot's settings over the same
+  ephemeris, which the core now shares behind an `Arc`.
+
+**Research datasets.**
+**Numbers:** none: a new format.
+- `teistro_research::dataset` (`teistro.dataset/1`): births rated by the Rodden Rating and studies each with
+  a settings snapshot and the worst rating it admits, loaded with refusals that name the field, its JSON
+  Schema generated into `crates/research/schema/dataset.schema.json`; `ResearchArea::dataset` runs a study
+  under its own settings (SR-57, `03-design/receipts-and-datasets.md` §2, C1174–C1175).
+
 **The navatara chakra.**
 **Numbers:** none: a new answer, and nothing it reads moves.
 - `AlmanacArea::navatara(birth)`, the record `almanac.navatara` (`NavataraRequest`, an agent server tool),

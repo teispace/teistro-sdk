@@ -228,6 +228,9 @@ import type {
   DatesRequest,
   CalendarDay,
   ClaimsRequest,
+  IssueRequest,
+  Receipt,
+  ReceiptProvider,
   InWordsRequest,
   TimeTextRequest,
   Interval,
@@ -329,6 +332,8 @@ export type {
   CalendarResolutionTabular,
   Confidence,
   MonthDay,
+  PackStamp,
+  Version,
 } from './records.js';
 export type { CalendarDate, CivilTime, ZoneSpec } from './types.js';
 /** One subject of an event study: a birth and the event of its life. */
@@ -9014,6 +9019,63 @@ export declare class VerifyArea {
    * unread (with why), against `almanac.sankalpa` at the instant.
    */
   claims(request: ClaimsRequest): ClaimsAnswer;
+  /**
+   * A record's answer and its receipt: what was asked, under which
+   * settings, ephemeris and versions, and the digest of what was answered.
+   */
+  issue(request: IssueRequest): Issued;
+  /**
+   * A receipt answered again under its own settings and compared, with
+   * every version that moved; an object or its JSON text.
+   */
+  receipt(receipt: Receipt | string): ReceiptCheck;
+}
+
+/** What `verify.issue` answers. */
+export interface Issued {
+  /** The record's own answer, `{value, provenance}` or the value alone, as its JSON reads. */
+  readonly answer: unknown;
+  /** The receipt, to hand back whole to `verify.receipt`. */
+  readonly receipt: Receipt;
+}
+
+/** What answered a receipt: its versions, ephemeris and zone database. */
+export interface ReceiptSide {
+  readonly sdkVersion: { readonly major: number; readonly minor: number; readonly patch: number };
+  readonly calculationVersion: number;
+  readonly catalogueVersion: number;
+  /** The ephemeris, or `null` where none was read. */
+  readonly provider: ReceiptProvider | null;
+  readonly tzdb: string;
+}
+
+/** A field that moved between the receipt's side and this one. */
+export interface ReceiptMove {
+  /** `output`, `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider` or `tzdb`. */
+  readonly field: string;
+  /** The receipt's, as text. */
+  readonly issued: string;
+  /** This side's, as text. */
+  readonly now: string;
+}
+
+/** What `verify.receipt` answers. */
+export interface ReceiptCheck {
+  readonly verdict: 'HELD' | 'DIFFERS' | 'NOT_RERUN' | 'BROKEN';
+  /** The record the receipt names. */
+  readonly record: string;
+  /** Every field that moved, `output` first when the digest did. */
+  readonly moved: readonly ReceiptMove[];
+  /** The digests that no longer hold, on a receipt `BROKEN`. */
+  readonly broken: readonly string[];
+  readonly issued: ReceiptSide;
+  /** What checked it: this context. */
+  readonly now: ReceiptSide;
+  /** Why it was not re-run, on `NOT_RERUN`. */
+  readonly reason: {
+    readonly cause: 'RECORD' | 'PROVIDER' | 'SETTINGS' | 'LOCALE' | 'PACKS' | 'OUT_OF_RANGE' | 'REFUSED';
+    readonly detail: string;
+  } | null;
 }
 
 /**

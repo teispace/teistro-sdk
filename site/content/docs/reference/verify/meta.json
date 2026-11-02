@@ -1,4 +1,4 @@
 {
   "title": "Verify",
-  "pages": ["ts_verify_claims"]
+  "pages": ["ts_verify_claims", "ts_verify_issue", "ts_verify_receipt"]
 }

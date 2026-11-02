@@ -11,7 +11,7 @@
             "nakshatraTie": true,
             "twoMuhurtaFloor": true
           },
-          "key": "x",
+          "key": "GRANDFATHER",
           "kind": "EKODDISHTA",
           "origin": {
             "by": "LUNAR",
@@ -79,7 +79,7 @@
         "fireGiver": true,
         "fullDays": 1,
         "heardAt": 1.5,
-        "key": "x",
+        "key": "grandfather",
         "nearness": "SAME_VILLAGE",
         "relation": "FATHER"
       },
@@ -270,7 +270,7 @@
       "utcOffsetSeconds": 1,
       "zone": {
         "kind": "IANA",
-        "zone": "x"
+        "zone": "Asia/Kathmandu"
       }
     }
   },
@@ -1235,7 +1235,7 @@
   {
     "record": "almanac.festivalPack",
     "request": {
-      "pack": "x"
+      "pack": "INDIA_CENTRAL"
     }
   },
   {
@@ -1644,7 +1644,7 @@
       },
       "latitudeDeg": 1.5,
       "longitudeDeg": 1.5,
-      "name": "x",
+      "name": "Nepal",
       "only": [
         {
           "forms": [
@@ -1677,7 +1677,7 @@
         "at": 1.5,
         "firstAbdika": "ELEVENTH_DAY",
         "firstYearAdhika": "NIJA",
-        "key": "x",
+        "key": "grandfather",
         "night": "HALF_NIGHT",
         "sapindana": "TWELFTH_DAY",
         "una": "ONE_TITHI",
@@ -1712,16 +1712,16 @@
                 "upanayana": "NOT_DONE"
               }
             },
-            "key": "x"
+            "key": "father"
           }
         ],
         "observers": [
           {
-            "key": "x",
+            "key": "son",
             "ties": [
               {
                 "abroad": true,
-                "event": "x",
+                "event": "father",
                 "fireGiver": true,
                 "fullDays": 1,
                 "heardAt": 1.5,
@@ -2174,7 +2174,7 @@
       "latitudeDeg": 1.5,
       "limitDays": 1,
       "longitudeDeg": 1.5,
-      "rule": "x",
+      "rule": "VIJAYA_DASHAMI",
       "utcOffsetSeconds": 1
     }
   },
@@ -2278,9 +2278,9 @@
                 }
               }
             ],
-            "format": "x",
-            "id": "x",
-            "publisher": "x",
+            "format": "teistro.published/1",
+            "id": "np-2083",
+            "publisher": "a patro printed in Nepal",
             "version": 1
           }
         ],
@@ -2561,7 +2561,7 @@
           "altitudeM": 1.5,
           "latitudeDeg": 1.5,
           "longitudeDeg": 1.5,
-          "name": "x",
+          "name": "Kathmandu",
           "utcOffsetSeconds": 1
         }
       ],
@@ -2590,7 +2590,7 @@
         "year": 1
       },
       "latitudeDeg": 1.5,
-      "locale": "x",
+      "locale": "ne-Deva-NP",
       "longitudeDeg": 1.5,
       "utcOffsetSeconds": 1
     }
@@ -4096,7 +4096,7 @@
         "year": 1
       },
       "digits": "DEVA",
-      "locale": "x",
+      "locale": "hi-Deva-IN",
       "style": "LONG"
     }
   },
@@ -4106,14 +4106,14 @@
       "calendars": [
         "calendar.JULIAN"
       ],
-      "text": "x"
+      "text": "बिसं २०८२ कात्तिक १५ गते, अर्थात् 1 November 2025"
     }
   },
   {
     "record": "intl.inWords",
     "request": {
       "amount": {
-        "currency": "x",
+        "currency": "NPR",
         "minorDigits": 1,
         "only": true,
         "rounding": "HALF_EVEN",
@@ -4123,7 +4123,7 @@
       },
       "digits": "DEVA",
       "grouping": "INTERNATIONAL",
-      "locale": "x",
+      "locale": "ne-Deva-NP",
       "number": 1,
       "style": "VERBOSE"
     }
@@ -4132,19 +4132,19 @@
     "record": "intl.lexicon",
     "request": {
       "kinds": [
-        "x"
+        "masa"
       ],
-      "locale": "x"
+      "locale": "ne-Deva-NP"
     }
   },
   {
     "record": "intl.lookup",
     "request": {
       "kinds": [
-        "x"
+        "tithi"
       ],
       "locale": "x",
-      "text": "x"
+      "text": "आज एकादशी हो, चन्द्रमा रोहिणीमा छ"
     }
   },
   {
@@ -4157,15 +4157,15 @@
       },
       "digits": "DEVA",
       "hour12": true,
-      "locale": "x",
+      "locale": "ne-Deva-NP",
       "style": "LONG"
     }
   },
   {
     "record": "matching.naam",
     "request": {
-      "bride": "x",
-      "groom": "x",
+      "bride": "सीता",
+      "groom": "राम",
       "rules": {
         "koota": {
           "bhakootLift": "GARGA",
@@ -4195,7 +4195,7 @@
         "pada": 1
       },
       "names": [
-        "x"
+        "चूडामणि"
       ],
       "rules": {
         "finalA": "SILENT",
@@ -4230,7 +4230,7 @@
     "record": "naming.read",
     "request": {
       "names": [
-        "x"
+        "राम"
       ],
       "rules": {
         "finalA": "SILENT",
@@ -4253,11 +4253,11 @@
       "book": {
         "names": [
           {
-            "devanagari": "x",
-            "latin": "x",
+            "devanagari": "गणेश",
+            "latin": "Ganesh",
             "sex": "sex.FEMALE",
             "tags": {
-              "meaning.en": "x"
+              "meaning.en": "lord of the ganas"
             }
           }
         ]
@@ -4310,7 +4310,7 @@
         "month": 1,
         "year": 1
       },
-      "name": "x",
+      "name": "Henry Elder",
       "rules": {
         "birthReduction": "DIGIT_SUM",
         "chaldeanCompound": "LETTER_TOTAL",
@@ -4410,7 +4410,7 @@
       },
       "zone": {
         "kind": "IANA",
-        "zone": "x"
+        "zone": "Asia/Kathmandu"
       }
     }
   },
@@ -4423,8 +4423,325 @@
       "latitudeDeg": 1.5,
       "locale": "x",
       "longitudeDeg": 1.5,
-      "text": "x",
+      "text": "आज एकादशी हो। The Moon is in Rohini. Jupiter is in Gemini.",
       "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "verify.issue",
+    "request": {
+      "record": "calendar.convert",
+      "request": {
+        "date": {
+          "year": 2026,
+          "month": 10,
+          "day": 10
+        },
+        "into": "calendar.BIKRAM_SAMBAT"
+      }
+    }
+  },
+  {
+    "record": "verify.receipt",
+    "request": {
+      "calculationVersion": 1,
+      "catalogueVersion": 1,
+      "digest": "b3e8cc7ef9a53b44dfaea91cd7f80e234b19c53af67b396bdac9366234d53e92",
+      "format": "teistro.receipt/1",
+      "locale": "en-Latn",
+      "outputDigest": "a7ebfed315d6b2006e985057eac1703277edc707f8ee31cd8f9f8cfd6777d952",
+      "packs": [],
+      "provider": {
+        "dataVersion": "x",
+        "name": "x",
+        "version": "x"
+      },
+      "record": "calendar.convert",
+      "request": {
+        "date": {
+          "day": 10,
+          "month": 10,
+          "year": 2026
+        },
+        "into": "calendar.BIKRAM_SAMBAT"
+      },
+      "requestDigest": "9bfa7817e77236651f364f8585db007f3861a7e15fc5c98c1872198763bf5c85",
+      "sdkVersion": {
+        "major": 1,
+        "minor": 1,
+        "patch": 1
+      },
+      "settings": {
+        "hash": "79554c56c7f1e1760a4469f49666f618fe45a8387d134d636cc759c46e7f4071",
+        "profile": "nepali-drik",
+        "settings": {
+          "aspect": {
+            "drishti_table": "PARASHARA",
+            "node_aspects": "NONE"
+          },
+          "calendars": {
+            "civil_calendar": "BIKRAM_SAMBAT",
+            "eras": [
+              "VIKRAMA",
+              "SHAKA",
+              "KALI",
+              "NEPAL_SAMBAT"
+            ],
+            "lunar_month": "PURNIMANTA",
+            "samvatsara": "BARHASPATYA"
+          },
+          "dasha": {
+            "after_cycle": "END",
+            "ashtottari_grouping": "FOUR_AND_THREE",
+            "ayurdaya_place": "SHARE",
+            "ayurdaya_readings": "BPHS",
+            "ayurdaya_span": "STRONGEST",
+            "balance": "SPATIAL",
+            "birth_period": "COMPRESSED",
+            "decennial_division": "PROPORTIONAL",
+            "depth": {
+              "AAYU": 3,
+              "ASHTAKAVARGA": 3,
+              "ASHTOTTARI": 3,
+              "CHARA": 3,
+              "CHATURASHITI_SAMA": 3,
+              "DECENNIALS": 3,
+              "DRIG": 3,
+              "DWADASHOTTARI": 3,
+              "DWISAPTATI_SAMA": 3,
+              "FIRDARIA": 3,
+              "KALACHAKRA": 3,
+              "KARAKA": 3,
+              "KARANA_CHATURASHITI": 3,
+              "MANDOOKA": 3,
+              "MUDDA": 3,
+              "NAISARGIKA": 3,
+              "NARAYANA": 3,
+              "NIRYANA_SHOOLA": 3,
+              "PADANADHAMSA": 3,
+              "PANCHASWARA": 3,
+              "PANCHOTTARI": 3,
+              "PATYAYINI": 3,
+              "PROFECTION": 3,
+              "RELEASING_DAIMON": 3,
+              "RELEASING_FORTUNE": 3,
+              "SHASHTIHAYANI": 3,
+              "SHATABDIKA": 3,
+              "SHATTRIMSHA_SAMA": 3,
+              "SHODASHOTTARI": 3,
+              "SHOOLA": 3,
+              "STHIRA": 3,
+              "SUDARSHANA_CHAKRA": 3,
+              "SUDASA": 3,
+              "TARA": 3,
+              "TITHI_ASHTOTTARI": 3,
+              "TITHI_YOGINI": 3,
+              "TRIBHAGI": 3,
+              "TRIKONA": 3,
+              "VARNADA": 3,
+              "VARSHA_NARAYANA": 3,
+              "VARSHA_YOGINI": 3,
+              "VIMSHOTTARI": 3,
+              "YOGARDHA": 3,
+              "YOGA_VIMSHOTTARI": 3,
+              "YOGINI": 3
+            },
+            "dual_lord": "BPHS",
+            "firdaria_nodes": "END",
+            "kalachakra_after_ninth": "REVERSE",
+            "kalachakra_balance": "FIRST_SIGN",
+            "kalachakra_membership": "LISTED",
+            "karaka_division": "PROPORTIONAL",
+            "naisargika_division": "SHARES",
+            "rashi_start": "STRONGER",
+            "releasing_shared_sign": "NEXT",
+            "seed_overflow": "WRAP_TO_START",
+            "shanta_sign": "FRIENDLY",
+            "strongest_graha": "SHADBALA_TOTAL",
+            "year_length": {
+              "AAYU": "SAVANA_360",
+              "ASHTAKAVARGA": "SAVANA_360",
+              "ASHTOTTARI": "JULIAN_365_25",
+              "CHARA": "JULIAN_365_25",
+              "CHATURASHITI_SAMA": "JULIAN_365_25",
+              "DECENNIALS": "SAVANA_360",
+              "DRIG": "JULIAN_365_25",
+              "DWADASHOTTARI": "JULIAN_365_25",
+              "DWISAPTATI_SAMA": "JULIAN_365_25",
+              "FIRDARIA": "JULIAN_365_25",
+              "KALACHAKRA": "JULIAN_365_25",
+              "KARAKA": "JULIAN_365_25",
+              "KARANA_CHATURASHITI": "JULIAN_365_25",
+              "MANDOOKA": "JULIAN_365_25",
+              "MUDDA": "JULIAN_365_25",
+              "NAISARGIKA": "SAVANA_360",
+              "NARAYANA": "JULIAN_365_25",
+              "NIRYANA_SHOOLA": "JULIAN_365_25",
+              "PADANADHAMSA": "JULIAN_365_25",
+              "PANCHASWARA": "JULIAN_365_25",
+              "PANCHOTTARI": "JULIAN_365_25",
+              "PATYAYINI": "JULIAN_365_25",
+              "PROFECTION": "JULIAN_365_25",
+              "RELEASING_DAIMON": "SAVANA_360",
+              "RELEASING_FORTUNE": "SAVANA_360",
+              "SHASHTIHAYANI": "JULIAN_365_25",
+              "SHATABDIKA": "JULIAN_365_25",
+              "SHATTRIMSHA_SAMA": "JULIAN_365_25",
+              "SHODASHOTTARI": "JULIAN_365_25",
+              "SHOOLA": "JULIAN_365_25",
+              "STHIRA": "JULIAN_365_25",
+              "SUDARSHANA_CHAKRA": "JULIAN_365_25",
+              "SUDASA": "JULIAN_365_25",
+              "TARA": "JULIAN_365_25",
+              "TITHI_ASHTOTTARI": "JULIAN_365_25",
+              "TITHI_YOGINI": "JULIAN_365_25",
+              "TRIBHAGI": "JULIAN_365_25",
+              "TRIKONA": "JULIAN_365_25",
+              "VARNADA": "JULIAN_365_25",
+              "VARSHA_NARAYANA": "JULIAN_365_25",
+              "VARSHA_YOGINI": "JULIAN_365_25",
+              "VIMSHOTTARI": "JULIAN_365_25",
+              "YOGARDHA": "JULIAN_365_25",
+              "YOGA_VIMSHOTTARI": "JULIAN_365_25",
+              "YOGINI": "JULIAN_365_25"
+            }
+          },
+          "day": {
+            "day_boundary": "SUNRISE",
+            "ghati_reckoning": "CIVIL",
+            "hora_reckoning": "PROPORTIONAL",
+            "polar_day_policy": "NEAREST_EVENT",
+            "sunrise": {
+              "kind": "NAMED",
+              "which": "CENTRE_REFRACTION"
+            }
+          },
+          "frame": {
+            "ayanamsha": {
+              "id": "LAHIRI",
+              "kind": "CATALOGUED"
+            },
+            "ayanamsha_basis": "MEAN",
+            "centre": "TOPOCENTRIC",
+            "nakshatra_scheme": "TWENTY_SEVEN",
+            "node": "MEAN",
+            "positions": "APPARENT",
+            "siddhanta": {
+              "kind": "DRIK"
+            },
+            "zodiac": "SIDEREAL"
+          },
+          "gochar": {
+            "ashtakavarga_good_from": "FIVE",
+            "node_obstruction": "NOT_EACH_OTHER",
+            "node_vedha": "LIKE_THE_SUN",
+            "transit_centre": "AS_CHART"
+          },
+          "houses": {
+            "chalit_system": "VEHLOW",
+            "module_overrides": {
+              "kp": "PLACIDUS"
+            },
+            "placement_system": "WHOLE_SIGN",
+            "polar_policy": "ERROR"
+          },
+          "jaimini": {
+            "brahma": "VERSES",
+            "chara_karakas": "SEVEN",
+            "eight_karaka_order": "PARASHARA",
+            "graha_arudha_exception": "NONE",
+            "node_co_lordship": "NONE"
+          },
+          "kp": {
+            "day_lord_day": "SUNRISE",
+            "node_rulers": "SIGN_OR_CONJOINED",
+            "retrograde_rejection": "STAR",
+            "ruling_count": "FIVE"
+          },
+          "output": {
+            "precision": {
+              "angle_decimals": 9,
+              "instant_decimals": 8,
+              "score_decimals": 3
+            }
+          },
+          "panchanga": {
+            "amrit_kalam": "RAMAN",
+            "centre": "GEOCENTRIC",
+            "durmuhurta": "MUHURTA_CHINTAMANI",
+            "eclipse_horizon": {
+              "kind": "NAMED",
+              "which": "UPPER_LIMB_REFRACTION"
+            },
+            "eclipse_shadow": "DANJON",
+            "eclipse_vedha": "FIXED_HOURS",
+            "lagna_table": {
+              "kind": "CHART"
+            },
+            "moon_events": "WINDOW",
+            "muhurta_tables": "CLASSICAL",
+            "panchaka_name": "WEEKDAY",
+            "panchaka_start": "AQUARIUS",
+            "punya_kala": "DHARMASINDHU",
+            "ritu": "SOLAR",
+            "shiva_vasa": "PRINTED",
+            "solar_month_start": "BIKRAM_SAMBAT",
+            "varjyam": "MUHURTA_CHINTAMANI"
+          },
+          "provider": {
+            "cache_cells": 65536,
+            "overrides": "PREFER_NATIVE",
+            "tier": "STANDARD"
+          },
+          "schema": 1,
+          "state": {
+            "combustion_orbs": "BPHS",
+            "marana_saturn": "FIRST",
+            "marana_venus": "SIXTH",
+            "pushkara_bhaga": "VIDYAMADHAVIYA",
+            "sayanadi_ghatis": "ELAPSED",
+            "sayanadi_nodes": "NINE_GRAHA_ORDER"
+          },
+          "strength": {
+            "bala_scheme": "PARASHARA",
+            "benefics": "CONDITIONAL",
+            "bhava_dig": "SRIPATI",
+            "bhava_division": "CHALIT",
+            "bhava_drishti": "SPHUTA",
+            "bhava_special_rules": "NONE",
+            "cheshta": "SRIPATI",
+            "dig": "ANGLES",
+            "drekkana": "MALE_NEUTER_FEMALE",
+            "drik": "QUARTER",
+            "ekadhipatya": "BPHS",
+            "ishta_kashta": "SQUARE_ROOTS",
+            "kaala_lords": "AHARGANA",
+            "kranti": "HINDU_TABLE",
+            "luminary_cheshta": "NONE",
+            "moon_bindu_from_jupiter": "TWELFTH",
+            "moon_paksha": "DOUBLED",
+            "naisargika": "EXACT",
+            "nathonnatha": "MIDNIGHT",
+            "pre_dawn_night": "PREVIOUS_EVENING",
+            "required_rupas": "SRIPATI",
+            "saptavargaja": "COMPOUND",
+            "shodhana": "EACH_GRAHA",
+            "sun_ayana": "DOUBLED",
+            "vimshopaka": "BPHS",
+            "yuddha": "SRIPATI"
+          },
+          "time": {
+            "delta_t": "TABLE_THEN_MODEL",
+            "dst_gap": "ERROR",
+            "dst_overlap": "EARLIER",
+            "unknown_time": "REFUSE"
+          },
+          "vargas": {
+            "unattested_dn": "CYCLIC"
+          }
+        }
+      },
+      "tzdb": "2026c"
     }
   }
 ]

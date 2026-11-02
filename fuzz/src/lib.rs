@@ -31,9 +31,9 @@ use teistro_ffi::intl::{
     ts_intl_render, ts_intl_set_locale, ts_intl_transliterate,
 };
 use teistro_ffi::key::ts_key_parse;
-use teistro_ffi::verify::ts_verify_claims;
 use teistro_ffi::mapping::{ts_chart_astrocartography, ts_chart_relocated};
 use teistro_ffi::mundane::ts_chart_mundane;
+use teistro_ffi::verify::{ts_verify_claims, ts_verify_issue, ts_verify_receipt};
 use teistro_ffi::naam::ts_naam_milan;
 use teistro_ffi::numerology::ts_numerology_profile;
 use teistro_ffi::pakshi::ts_pakshi;
@@ -230,6 +230,8 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_chart_mundane",
     "ts_chart_relocated",
     "ts_chart_astrocartography",
+    "ts_verify_issue",
+    "ts_verify_receipt",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -526,6 +528,14 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         "ts_chart_astrocartography",
         Seed::Answered,
         r#"{"instant":2447000.25,"bodies":["SUN","MOON"],"projection":"ZODIACAL","stepDeg":5,"latitudeLimitDeg":85}"#,
+        "ts_verify_issue",
+        Seed::Answered,
+        r#"{"record":"calendar.convert","request":{"date":{"year":2026,"month":10,"day":10},"into":"calendar.BIKRAM_SAMBAT"}}"#,
+    ),
+    (
+        "ts_verify_receipt",
+        Seed::Refused,
+        r#"{"format":"teistro.receipt/2","record":"calendar.convert"}"#,
     ),
 ];
 
@@ -695,6 +705,8 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_chart_mundane" => string_call(ts_chart_mundane, text),
         "ts_chart_relocated" => string_call(ts_chart_relocated, text),
         "ts_chart_astrocartography" => string_call(ts_chart_astrocartography, text),
+        "ts_verify_issue" => string_call(ts_verify_issue, text),
+        "ts_verify_receipt" => string_call(ts_verify_receipt, text),
         _ => Status::Ok,
     }
 }

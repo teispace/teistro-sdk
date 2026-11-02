@@ -7542,6 +7542,36 @@ export class VerifyArea extends Area {
     );
     return deepFreeze({ value, provenance: decodeProvenance(provenance) });
   }
+
+  /**
+   * A record's answer and its receipt: what was asked, under which
+   * settings, ephemeris and versions, and the digest of what was answered
+   * (`03-design/receipts-and-datasets.md` §1). The answer is the record's
+   * own JSON, as `verify.receipt` digests it; the receipt is handed back
+   * whole.
+   *
+   * ```js
+   * const { answer, receipt } = sdk.verify.issue({
+   *   record: 'calendar.convert',
+   *   request: { date: { year: 2026, month: 10, day: 10 }, into: 'calendar.BIKRAM_SAMBAT' },
+   * });
+   * sdk.verify.receipt(receipt).verdict; // 'HELD'
+   * ```
+   */
+  issue(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.verifyIssue(JSON.stringify(request)))));
+  }
+
+  /**
+   * A receipt checked: answered again under its own settings and compared,
+   * `HELD`, `DIFFERS`, `NOT_RERUN` (with why) or `BROKEN` (a field edited
+   * after issue), with every version that moved between the two sides. A
+   * receipt is an object or its JSON text.
+   */
+  receipt(receipt) {
+    const text = typeof receipt === 'string' ? receipt : JSON.stringify(receipt);
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.verifyReceipt(text))));
+  }
 }
 
 /**

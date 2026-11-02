@@ -1827,6 +1827,112 @@ final class ClaimsRequest extends _Request {
   List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, locale, longitudeDeg, text, utcOffsetSeconds];
 }
 
+/// A record to answer with a receipt: its name and its request.
+final class IssueRequest extends _Request {
+  const IssueRequest({
+    required this.record,
+    required this.request,
+  });
+
+  /// The record's name, `area.operation`, as `records` lists it.
+  final String record;
+
+  /// The record's request, as that record reads it.
+  final Object? request;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'record': record,
+    'request': request,
+  };
+
+  @override
+  List<Object?> get _fields => [record, request];
+}
+
+/// What a record was asked, under what, and the digest of what it answered.
+final class Receipt extends _Request {
+  const Receipt({
+    required this.calculationVersion,
+    required this.catalogueVersion,
+    required this.digest,
+    required this.format,
+    required this.locale,
+    required this.outputDigest,
+    required this.packs,
+    this.provider,
+    required this.record,
+    required this.request,
+    required this.requestDigest,
+    required this.sdkVersion,
+    required this.settings,
+    required this.tzdb,
+  });
+
+  /// The calculation version.
+  final int calculationVersion;
+
+  /// The catalogue's version.
+  final int catalogueVersion;
+
+  /// The seal: the hash of this receipt's canonical JSON with `digest` left out.
+  final String digest;
+
+  /// [`FORMAT`].
+  final String format;
+
+  /// The locale the context answered in.
+  final String locale;
+
+  /// The hash of the answer's value, canonical JSON.
+  final String outputDigest;
+
+  /// The runtime packs the context had loaded.
+  final Object? packs;
+
+  /// The ephemeris the answer was computed with; none where it read none.
+  final ReceiptProvider? provider;
+
+  /// The record's name, `area.operation`.
+  final String record;
+
+  /// The request as the record read it.
+  final Object? request;
+
+  /// The hash of the request's canonical JSON.
+  final String requestDigest;
+
+  /// The SDK's version.
+  final Version sdkVersion;
+
+  /// The settings, whole, with their profile and hash.
+  final SettingsSnapshot settings;
+
+  /// The zone database's version.
+  final String tzdb;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'calculationVersion': calculationVersion,
+    'catalogueVersion': catalogueVersion,
+    'digest': digest,
+    'format': format,
+    'locale': locale,
+    'outputDigest': outputDigest,
+    'packs': packs,
+    if (provider case final providerValue?) 'provider': providerValue._wire,
+    'record': record,
+    'request': request,
+    'requestDigest': requestDigest,
+    'sdkVersion': sdkVersion._wire,
+    'settings': settings._wire,
+    'tzdb': tzdb,
+  };
+
+  @override
+  List<Object?> get _fields => [calculationVersion, catalogueVersion, digest, format, locale, outputDigest, packs, provider, record, request, requestDigest, sdkVersion, settings, tzdb];
+}
+
 /// An anniversary a request asks the days of.
 final class Anniversary extends _Request {
   const Anniversary({
@@ -3571,6 +3677,90 @@ enum StudyKind implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// The ephemeris an answer was computed with, as a receipt names it.
+final class ReceiptProvider extends _Request {
+  const ReceiptProvider({
+    required this.dataVersion,
+    required this.name,
+    required this.version,
+  });
+
+  /// The version of the data it read.
+  final String dataVersion;
+
+  /// The provider's name.
+  final String name;
+
+  /// Its version.
+  final String version;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'dataVersion': dataVersion,
+    'name': name,
+    'version': version,
+  };
+
+  @override
+  List<Object?> get _fields => [dataVersion, name, version];
+}
+
+/// A semantic version.
+final class Version extends _Request {
+  const Version({
+    required this.major,
+    required this.minor,
+    required this.patch,
+  });
+
+  /// Major.
+  final int major;
+
+  /// Minor.
+  final int minor;
+
+  /// Patch.
+  final int patch;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'major': major,
+    'minor': minor,
+    'patch': patch,
+  };
+
+  @override
+  List<Object?> get _fields => [major, minor, patch];
+}
+
+/// The settings something was computed under, whole.
+final class SettingsSnapshot extends _Request {
+  const SettingsSnapshot({
+    required this.hash,
+    required this.profile,
+    required this.settings,
+  });
+
+  /// The SHA-256 of the settings' canonical JSON: the `settings_hash` a provenance carries.
+  final String hash;
+
+  /// The profile the settings were resolved from.
+  final String profile;
+
+  /// The settings document, every knob, as `Context::settings_json` writes it. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.
+  final Object? settings;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'hash': hash,
+    'profile': profile,
+    'settings': settings,
+  };
+
+  @override
+  List<Object?> get _fields => [hash, profile, settings];
 }
 
 /// Which month the first anniversary takes when its month is doubled (C666).

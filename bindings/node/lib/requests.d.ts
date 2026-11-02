@@ -929,6 +929,82 @@ export interface ClaimsRequest {
 }
 
 /**
+ * A record to answer with a receipt: its name and its request.
+ */
+export interface IssueRequest {
+  /**
+   * The record's name, `area.operation`, as `records` lists it.
+   */
+  readonly record: string;
+  /**
+   * The record's request, as that record reads it.
+   */
+  readonly request: unknown;
+}
+
+/**
+ * What a record was asked, under what, and the digest of what it answered.
+ */
+export interface Receipt {
+  /**
+   * The calculation version.
+   */
+  readonly calculationVersion: number;
+  /**
+   * The catalogue's version.
+   */
+  readonly catalogueVersion: number;
+  /**
+   * The seal: the hash of this receipt's canonical JSON with `digest` left out.
+   */
+  readonly digest: string;
+  /**
+   * [`FORMAT`].
+   */
+  readonly format: string;
+  /**
+   * The locale the context answered in.
+   */
+  readonly locale: string;
+  /**
+   * The hash of the answer's value, canonical JSON.
+   */
+  readonly outputDigest: string;
+  /**
+   * The runtime packs the context had loaded.
+   */
+  readonly packs: unknown;
+  /**
+   * The ephemeris the answer was computed with; none where it read none.
+   */
+  readonly provider?: ReceiptProvider | null;
+  /**
+   * The record's name, `area.operation`.
+   */
+  readonly record: string;
+  /**
+   * The request as the record read it.
+   */
+  readonly request: unknown;
+  /**
+   * The hash of the request's canonical JSON.
+   */
+  readonly requestDigest: string;
+  /**
+   * The SDK's version.
+   */
+  readonly sdkVersion: Version;
+  /**
+   * The settings, whole, with their profile and hash.
+   */
+  readonly settings: SettingsSnapshot;
+  /**
+   * The zone database's version.
+   */
+  readonly tzdb: string;
+}
+
+/**
  * An anniversary a request asks the days of.
  */
 export interface Anniversary {
@@ -2495,6 +2571,60 @@ export interface CivilTime {
    */
   readonly nanos?: number;
   readonly second: number;
+}
+
+/**
+ * The ephemeris an answer was computed with, as a receipt names it.
+ */
+export interface ReceiptProvider {
+  /**
+   * The version of the data it read.
+   */
+  readonly dataVersion: string;
+  /**
+   * The provider's name.
+   */
+  readonly name: string;
+  /**
+   * Its version.
+   */
+  readonly version: string;
+}
+
+/**
+ * A semantic version.
+ */
+export interface Version {
+  /**
+   * Major.
+   */
+  readonly major: number;
+  /**
+   * Minor.
+   */
+  readonly minor: number;
+  /**
+   * Patch.
+   */
+  readonly patch: number;
+}
+
+/**
+ * The settings something was computed under, whole.
+ */
+export interface SettingsSnapshot {
+  /**
+   * The SHA-256 of the settings' canonical JSON: the `settings_hash` a provenance carries.
+   */
+  readonly hash: string;
+  /**
+   * The profile the settings were resolved from.
+   */
+  readonly profile: string;
+  /**
+   * The settings document, every knob, as `Context::settings_json` writes it. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.
+   */
+  readonly settings: unknown;
 }
 
 /**

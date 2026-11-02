@@ -688,6 +688,29 @@ class TheLocaleEngine(WithLibrary):
             sky.verify.claims(far)
         self.assertEqual(refused.exception.field, "claims.latitudeDeg")
 
+    def test_a_receipt_is_checked_again(self) -> None:
+        from teistro import IssueRequest, Issued, ReceiptCheck
+
+        sky = self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN)
+        self.addCleanup(sky.close)
+        asked: IssueRequest = {
+            "record": "calendar.convert",
+            "request": {"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"},
+        }
+        issued: Issued = sky.verify.issue(asked)
+        self.assertEqual(issued.receipt["format"], "teistro.receipt/1")
+        self.assertEqual(issued.receipt["record"], "calendar.convert")
+        held: ReceiptCheck = sky.verify.receipt(issued.receipt)
+        self.assertEqual((held.verdict, held.moved, held.broken, held.reason), ("HELD", (), (), None))
+        self.assertEqual(sky.verify.receipt(json.dumps(issued.receipt)).verdict, "HELD")
+        edited = dict(issued.receipt)
+        edited["locale"] = "de-Latn-DE"
+        broken = sky.verify.receipt(edited)
+        self.assertEqual((broken.verdict, broken.broken), ("BROKEN", ("digest",)))
+        with self.assertRaises(TeistroError) as refused:
+            sky.verify.issue({"record": "almanac.nothing", "request": {}})
+        self.assertEqual(refused.exception.field, "issue.record")
+
     def test_transliteration_changes_the_script(self) -> None:
         latin = self.ctx.intl.transliterate("सूर्य")
         self.assertTrue(latin)

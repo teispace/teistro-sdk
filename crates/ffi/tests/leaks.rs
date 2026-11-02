@@ -213,7 +213,7 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
             Status::Ok
         );
     });
-    let entries: [JsonEntry; 15] = [
+    let entries: [JsonEntry; 17] = [
         teistro_ffi::mundane::ts_chart_mundane,
         teistro_ffi::mapping::ts_chart_relocated,
         teistro_ffi::mapping::ts_chart_astrocartography,
@@ -229,12 +229,43 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
         teistro_ffi::naming::ts_naming_load,
         teistro_ffi::naming::ts_naming_suggest,
         teistro_ffi::verify::ts_verify_claims,
+        teistro_ffi::verify::ts_verify_issue,
+        teistro_ffi::verify::ts_verify_receipt,
     ];
     holds_nothing("refused JSON requests and their records", || {
         for entry in entries {
             assert_ne!(json(&ctx, entry, "{\"unknown\": 1}"), Status::Ok);
             drop(ctx.last_error());
         }
+    });
+}
+
+/// A record issued with its receipt, and the receipt checked, give back
+/// what they answered.
+#[test]
+fn the_receipts_give_back_their_answers() {
+    let ctx = builtin();
+    let issue = r#"{"record": "calendar.convert", "request": {"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}}"#;
+    holds_nothing("a record issued with its receipt", || {
+        assert_eq!(
+            json(&ctx, teistro_ffi::verify::ts_verify_issue, issue),
+            Status::Ok
+        );
+    });
+    let receipt = teistro_core::envelope::canonical_json(
+        &teistro::Context::builder()
+            .build()
+            .unwrap()
+            .verify()
+            .issue(&teistro::verify::IssueRequest::from_json(issue).unwrap())
+            .unwrap()
+            .receipt,
+    );
+    holds_nothing("a receipt checked", || {
+        assert_eq!(
+            json(&ctx, teistro_ffi::verify::ts_verify_receipt, &receipt),
+            Status::Ok
+        );
     });
 }
 

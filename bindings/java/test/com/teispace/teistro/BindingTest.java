@@ -351,6 +351,19 @@ public final class BindingTest {
                 check(!checked.claims().get(1).verdict().equals("UNREAD"), "the Sun's sign is judged");
                 same("QUESTION", checked.claims().get(2).reason(), "a question is not judged");
             }
+            try (Context issuing = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true).build())) {
+                Issued issued = issuing.verify().issue(new com.teispace.teistro.request.IssueRequest("calendar.convert",
+                        Map.of("date", Map.of("year", 2026, "month", 10, "day", 10), "into", "calendar.BIKRAM_SAMBAT")));
+                check(issued.receipt().contains("\"format\":\"teistro.receipt/1\""), "a receipt");
+                ReceiptCheck held = issuing.verify().receipt(issued.receipt());
+                same("HELD", held.verdict(), "held: " + held.reason());
+                check(held.moved().isEmpty() && held.broken().isEmpty(), "nothing moved");
+                ReceiptCheck broken = issuing.verify().receipt(issued.receipt().replace("\"locale\":\"", "\"locale\":\"x"));
+                same("BROKEN", broken.verdict(), "an edit is caught");
+                TeistroException none = refusal(() -> issuing.verify().issue(
+                        new com.teispace.teistro.request.IssueRequest("almanac.nothing", Map.of())));
+                same("issue.record", none.field(), "a record this build lacks");
+            }
         });
 
         tests.put("a pack lays its record over the one standing, and a damaged one is refused whole", () -> {

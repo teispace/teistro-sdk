@@ -97,6 +97,9 @@ import type {
   FoundDates,
   ClaimsRequest,
   ClaimsAnswer,
+  IssueRequest,
+  Issued,
+  ReceiptCheck,
   Lookup,
   LookupRequest,
   DateTextRequest,
@@ -2392,6 +2395,20 @@ function theClaims(ctx: Context): string {
 }
 
 void theClaims;
+
+// A receipt issued and checked again.
+function theReceipt(ctx: Context): string {
+  const asked: IssueRequest = { record: 'calendar.convert', request: { date: { year: 2026, month: 10, day: 10 } } };
+  const issued: Issued = ctx.verify.issue(asked);
+  const check: ReceiptCheck = ctx.verify.receipt(issued.receipt);
+  // @ts-expect-error a verdict is one of four
+  const verdict: 'TRUE' = check.verdict;
+  // @ts-expect-error a receipt is the record or its JSON
+  ctx.verify.receipt(1);
+  return [ctx.verify.receipt(JSON.stringify(issued.receipt)).verdict, verdict, check.reason?.cause].join();
+}
+
+void theReceipt;
 
 // A stored baseline snapshot translated into the contexts to open.
 function theRecordedSettings(ctx: Context): string {

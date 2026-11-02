@@ -2788,6 +2788,220 @@ final class VerifyArea extends _Area {
       ),
     );
   }
+
+  /// A record's answer and its receipt: what was asked, under which
+  /// settings, ephemeris and versions, and the digest of what was answered
+  /// (`03-design/receipts-and-datasets.md` §1). The answer is the record's
+  /// own JSON; the receipt is handed back whole to [receipt].
+  ///
+  /// ```dart
+  /// final issued = sdk.verify.issue(const IssueRequest(
+  ///   record: 'calendar.convert',
+  ///   request: {'date': {'year': 2026, 'month': 10, 'day': 10}, 'into': 'calendar.BIKRAM_SAMBAT'},
+  /// ));
+  /// final verdict = sdk.verify.receipt(issued.receipt).verdict; // HELD
+  /// ```
+  Issued issue(IssueRequest request) {
+    final issued =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.verifyIssue(jsonEncode(request._wire)),
+              ),
+            )
+            as Map<String, Object?>;
+    return Issued(
+      answer: issued['answer'],
+      receipt: Map.unmodifiable(issued['receipt']! as Map<String, Object?>),
+    );
+  }
+
+  /// A receipt checked: answered again under its own settings and
+  /// compared, `HELD`, `DIFFERS`, `NOT_RERUN` (with why) or `BROKEN` (a
+  /// field edited after issue), with every version that moved between the
+  /// two sides.
+  ReceiptCheck receipt(Map<String, Object?> receipt) {
+    final raw =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.verifyReceipt(jsonEncode(receipt)),
+              ),
+            )
+            as Map<String, Object?>;
+    final reason = raw['reason'] as Map<String, Object?>?;
+    return ReceiptCheck(
+      verdict: raw['verdict']! as String,
+      record: raw['record']! as String,
+      moved: List.unmodifiable(
+        (raw['moved']! as List<Object?>).cast<Map<String, Object?>>().map(
+          (m) => ReceiptMove(
+            field: m['field']! as String,
+            issued: m['issued']! as String,
+            now: m['now']! as String,
+          ),
+        ),
+      ),
+      broken: List.unmodifiable(
+        (raw['broken']! as List<Object?>).cast<String>(),
+      ),
+      issued: ReceiptSide._of(raw['issued']! as Map<String, Object?>),
+      now: ReceiptSide._of(raw['now']! as Map<String, Object?>),
+      reason:
+          reason == null
+              ? null
+              : NotRerunReason(
+                cause: reason['cause']! as String,
+                detail: reason['detail']! as String,
+              ),
+    );
+  }
+}
+
+/// What `verify.issue` answers.
+final class Issued extends _Value {
+  const Issued({required this.answer, required this.receipt});
+
+  /// The record's own answer, `{value, provenance}` or the value alone, as
+  /// its JSON reads.
+  final Object? answer;
+
+  /// The receipt, to hand back whole to [VerifyArea.receipt].
+  final Map<String, Object?> receipt;
+
+  @override
+  List<Object?> get _fields => [answer, receipt];
+}
+
+/// What answered a receipt: its versions, ephemeris and zone database.
+final class ReceiptSide extends _Value {
+  const ReceiptSide({
+    required this.sdkVersion,
+    required this.calculationVersion,
+    required this.catalogueVersion,
+    required this.provider,
+    required this.tzdb,
+  });
+
+  factory ReceiptSide._of(Map<String, Object?> raw) {
+    final version = raw['sdkVersion']! as Map<String, Object?>;
+    final provider = raw['provider'] as Map<String, Object?>?;
+    return ReceiptSide(
+      sdkVersion: '${version['major']}.${version['minor']}.${version['patch']}',
+      calculationVersion: raw['calculationVersion']! as int,
+      catalogueVersion: raw['catalogueVersion']! as int,
+      provider:
+          provider == null
+              ? null
+              : Map.unmodifiable(provider.cast<String, String>()),
+      tzdb: raw['tzdb']! as String,
+    );
+  }
+
+  /// The SDK's version, `major.minor.patch`.
+  final String sdkVersion;
+
+  /// The calculation version.
+  final int calculationVersion;
+
+  /// The catalogue's version.
+  final int catalogueVersion;
+
+  /// `name`, `version` and `dataVersion` of the ephemeris; null where none
+  /// was read.
+  final Map<String, String>? provider;
+
+  /// The zone database's version.
+  final String tzdb;
+
+  @override
+  List<Object?> get _fields => [
+    sdkVersion,
+    calculationVersion,
+    catalogueVersion,
+    provider,
+    tzdb,
+  ];
+}
+
+/// A field that moved between the receipt's side and this one.
+final class ReceiptMove extends _Value {
+  const ReceiptMove({
+    required this.field,
+    required this.issued,
+    required this.now,
+  });
+
+  /// `output`, `sdkVersion`, `calculationVersion`, `catalogueVersion`,
+  /// `provider` or `tzdb`.
+  final String field;
+
+  /// The receipt's, as text.
+  final String issued;
+
+  /// This side's, as text.
+  final String now;
+
+  @override
+  List<Object?> get _fields => [field, issued, now];
+}
+
+/// Why a receipt was not answered again.
+final class NotRerunReason extends _Value {
+  const NotRerunReason({required this.cause, required this.detail});
+
+  /// `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE`
+  /// or `REFUSED`.
+  final String cause;
+
+  /// What was missing or what refused, in words.
+  final String detail;
+
+  @override
+  List<Object?> get _fields => [cause, detail];
+}
+
+/// What `verify.receipt` answers.
+final class ReceiptCheck extends _Value {
+  const ReceiptCheck({
+    required this.verdict,
+    required this.record,
+    required this.moved,
+    required this.broken,
+    required this.issued,
+    required this.now,
+    required this.reason,
+  });
+
+  /// `HELD`, `DIFFERS`, `NOT_RERUN` or `BROKEN`.
+  final String verdict;
+
+  /// The record the receipt names.
+  final String record;
+
+  /// Every field that moved, `output` first when the digest did.
+  final List<ReceiptMove> moved;
+
+  /// The digests that no longer hold, on a receipt `BROKEN`.
+  final List<String> broken;
+
+  /// What issued the receipt, as it says.
+  final ReceiptSide issued;
+
+  /// What checked it.
+  final ReceiptSide now;
+
+  /// Why it was not answered again, on `NOT_RERUN`.
+  final NotRerunReason? reason;
+
+  @override
+  List<Object?> get _fields => [
+    verdict,
+    record,
+    moved,
+    broken,
+    issued,
+    now,
+    reason,
+  ];
 }
 
 /// One claim a text makes of the time, and what it was found to be.

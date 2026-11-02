@@ -21,6 +21,7 @@
 pub mod knobs;
 mod profiles;
 pub mod recorded;
+mod snapshot;
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -51,6 +52,7 @@ pub use knobs::{
     Vimshopaka, YearLength, Yuddha, Zodiac,
 };
 pub use profiles::{DEFAULT_PROFILE, PROFILE_ALIASES, Profile, ProfileId, SHIPPED_PROFILES, root};
+pub use snapshot::SettingsSnapshot;
 
 /// The settings document's schema version; a later knob appends and an
 /// old document still hashes the same under the old schema.

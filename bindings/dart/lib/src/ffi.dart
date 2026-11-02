@@ -2077,6 +2077,10 @@ typedef TsNavataraNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<
 typedef TsNavataraDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsVerifyClaimsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsVerifyClaimsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsVerifyIssueNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsVerifyIssueDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsVerifyReceiptNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsVerifyReceiptDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsPakshiNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2189,6 +2193,8 @@ final class TeistroLibrary {
         ts_naming_suggest = library.lookupFunction<TsNamingSuggestNative, TsNamingSuggestDart>('ts_naming_suggest'),
         ts_navatara = library.lookupFunction<TsNavataraNative, TsNavataraDart>('ts_navatara'),
         ts_verify_claims = library.lookupFunction<TsVerifyClaimsNative, TsVerifyClaimsDart>('ts_verify_claims'),
+        ts_verify_issue = library.lookupFunction<TsVerifyIssueNative, TsVerifyIssueDart>('ts_verify_issue'),
+        ts_verify_receipt = library.lookupFunction<TsVerifyReceiptNative, TsVerifyReceiptDart>('ts_verify_receipt'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
         ts_pakshi = library.lookupFunction<TsPakshiNative, TsPakshiDart>('ts_pakshi'),
         ts_rashifal = library.lookupFunction<TsRashifalNative, TsRashifalDart>('ts_rashifal'),
@@ -3135,6 +3141,51 @@ final class TeistroLibrary {
   /// `UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is
   /// `CAPABILITY`.
   final TsVerifyClaimsDart ts_verify_claims;
+
+  /// A record answered with its receipt (`03-design/receipts-and-datasets.md`
+  /// §1.2), answered as canonical JSON: `{answer, receipt}`.
+  ///
+  /// `answer` is the record's own answer, `{value, provenance}` where it is
+  /// sealed and the value alone where it is not. `receipt` is `{format,
+  /// record, request, requestDigest, settings, locale, packs, provider, tzdb,
+  /// sdkVersion, calculationVersion, catalogueVersion, outputDigest,
+  /// digest}`: `format` `teistro.receipt/1`, `settings` the snapshot
+  /// `{profile, settings, hash}` with the whole settings document,
+  /// `provider` `{name, version, dataVersion}` or null where the answer read
+  /// no ephemeris, `outputDigest` the SHA-256 of the value's canonical JSON,
+  /// and `digest` the seal, the SHA-256 of the receipt's canonical JSON
+  /// without `digest`. An OKF *Attested Computation*'s executor; hand the
+  /// receipt to `ts_verify_receipt` to attest it.
+  ///
+  /// `request_json` is `{"record", "request"}`: a record's name as the
+  /// records table lists it and its request. A key it does not read is
+  /// `INVALID_ARG`, named under `issue`; a record this build does not
+  /// carry is `UNSUPPORTED`, named `issue.record`; a request that is not an
+  /// object is `INVALID_ARG`, named `issue.request`; otherwise whatever the
+  /// record refuses.
+  final TsVerifyIssueDart ts_verify_issue;
+
+  /// A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its
+  /// record answered again on this context under the receipt's own settings,
+  /// locale and request, and the value's digest compared, answered as
+  /// canonical JSON: `{verdict, record, moved, broken, issued, now, reason}`.
+  ///
+  /// `verdict` is `HELD` (the digest is the receipt's), `DIFFERS` (another),
+  /// `NOT_RERUN` (not answered again; `reason` is `{cause, detail}`, the
+  /// cause `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE`
+  /// or `REFUSED`) or `BROKEN` (a digest the receipt carries is not its own
+  /// fields'; `broken` names each: `requestDigest`, `settings.hash`,
+  /// `digest`). `moved` lists each field that moved between the receipt and
+  /// the check, `{field, issued, now}`: `output` first when the value did,
+  /// then `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider`
+  /// and `tzdb`. `issued` and `now` are the two sides' `{sdkVersion,
+  /// calculationVersion, catalogueVersion, provider, tzdb}`. An OKF
+  /// *Attested Computation*'s attester.
+  ///
+  /// `request_json` is the receipt `ts_verify_issue` answered, whole. A key
+  /// it does not have is `INVALID_ARG`, named under `receipt`; a format other
+  /// than `teistro.receipt/1` is `SCHEMA_VERSION`, named `receipt.format`.
+  final TsVerifyReceiptDart ts_verify_receipt;
 
   /// Reads a name and a birth date under numerology's two systems and
   /// answers with the profile as canonical JSON: the name under each
@@ -7613,6 +7664,69 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_verify_claims(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// A record answered with its receipt (`03-design/receipts-and-datasets.md`
+  /// §1.2), answered as canonical JSON: `{answer, receipt}`.
+  ///
+  /// `answer` is the record's own answer, `{value, provenance}` where it is
+  /// sealed and the value alone where it is not. `receipt` is `{format,
+  /// record, request, requestDigest, settings, locale, packs, provider, tzdb,
+  /// sdkVersion, calculationVersion, catalogueVersion, outputDigest,
+  /// digest}`: `format` `teistro.receipt/1`, `settings` the snapshot
+  /// `{profile, settings, hash}` with the whole settings document,
+  /// `provider` `{name, version, dataVersion}` or null where the answer read
+  /// no ephemeris, `outputDigest` the SHA-256 of the value's canonical JSON,
+  /// and `digest` the seal, the SHA-256 of the receipt's canonical JSON
+  /// without `digest`. An OKF *Attested Computation*'s executor; hand the
+  /// receipt to `ts_verify_receipt` to attest it.
+  ///
+  /// `request_json` is `{"record", "request"}`: a record's name as the
+  /// records table lists it and its request. A key it does not read is
+  /// `INVALID_ARG`, named under `issue`; a record this build does not
+  /// carry is `UNSUPPORTED`, named `issue.record`; a request that is not an
+  /// object is `INVALID_ARG`, named `issue.request`; otherwise whatever the
+  /// record refuses.
+  String verifyIssue(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_verify_issue(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its
+  /// record answered again on this context under the receipt's own settings,
+  /// locale and request, and the value's digest compared, answered as
+  /// canonical JSON: `{verdict, record, moved, broken, issued, now, reason}`.
+  ///
+  /// `verdict` is `HELD` (the digest is the receipt's), `DIFFERS` (another),
+  /// `NOT_RERUN` (not answered again; `reason` is `{cause, detail}`, the
+  /// cause `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE`
+  /// or `REFUSED`) or `BROKEN` (a digest the receipt carries is not its own
+  /// fields'; `broken` names each: `requestDigest`, `settings.hash`,
+  /// `digest`). `moved` lists each field that moved between the receipt and
+  /// the check, `{field, issued, now}`: `output` first when the value did,
+  /// then `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider`
+  /// and `tzdb`. `issued` and `now` are the two sides' `{sdkVersion,
+  /// calculationVersion, catalogueVersion, provider, tzdb}`. An OKF
+  /// *Attested Computation*'s attester.
+  ///
+  /// `request_json` is the receipt `ts_verify_issue` answered, whole. A key
+  /// it does not have is `INVALID_ARG`, named under `receipt`; a format other
+  /// than `teistro.receipt/1` is `SCHEMA_VERSION`, named `receipt.format`.
+  String verifyReceipt(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_verify_receipt(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

@@ -52,4 +52,65 @@ public final class VerifyArea {
         }).toList();
         return new ClaimsAnswer(claims, Provenance.of(Reads.field(envelope, "provenance")));
     }
+
+    /**
+     * A record's answer and its receipt: what was asked, under which settings,
+     * ephemeris and versions, and the digest of what was answered
+     * ({@code 03-design/receipts-and-datasets.md} §1). The receipt is kept as
+     * its JSON text, to hand back whole to {@link #receipt(String)}.
+     *
+     * @param request the record's name and its request
+     * @return the record's own answer and the receipt
+     */
+    public Issued issue(com.teispace.teistro.request.IssueRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is an IssueRequest", "request");
+        }
+        String json = Json.write(request);
+        Map<?, ?> issued = Reads.object(Json.read(context.locked((lib, raw) -> Calls.verifyIssue(lib, raw, json))));
+        return new Issued(Reads.field(issued, "answer"), Json.write(Reads.field(issued, "receipt")));
+    }
+
+    /**
+     * A receipt checked: answered again under its own settings and compared,
+     * {@code HELD}, {@code DIFFERS}, {@code NOT_RERUN} (with why) or
+     * {@code BROKEN} (a field edited after issue), with every version that
+     * moved between the two sides.
+     *
+     * @param receipt the receipt's JSON text, as {@link Issued#receipt()} keeps it
+     * @return the check
+     */
+    public ReceiptCheck receipt(String receipt) {
+        if (receipt == null) {
+            throw Reads.invalid("receipt is a receipt's JSON text", "receipt");
+        }
+        Map<?, ?> raw = Reads.object(Json.read(context.locked((lib, ctx) -> Calls.verifyReceipt(lib, ctx, receipt))));
+        List<ReceiptCheck.Move> moved = Reads.array(raw, "moved").stream().map(m -> {
+            Map<?, ?> move = Reads.object(m);
+            return new ReceiptCheck.Move(Reads.string(move, "field"), Reads.string(move, "issued"), Reads.string(move, "now"));
+        }).toList();
+        List<String> broken = Reads.array(raw, "broken").stream().map(Reads::string).toList();
+        Object reason = Reads.field(raw, "reason");
+        ReceiptCheck.Reason why = null;
+        if (reason != null) {
+            Map<?, ?> r = Reads.object(reason);
+            why = new ReceiptCheck.Reason(Reads.string(r, "cause"), Reads.string(r, "detail"));
+        }
+        return new ReceiptCheck(Reads.string(raw, "verdict"), Reads.string(raw, "record"), moved, broken,
+                side(Reads.object(raw, "issued")), side(Reads.object(raw, "now")), why);
+    }
+
+    private static ReceiptCheck.Side side(Map<?, ?> raw) {
+        Map<?, ?> version = Reads.object(raw, "sdkVersion");
+        Object provider = Reads.field(raw, "provider");
+        ReceiptCheck.Provider ephemeris = null;
+        if (provider != null) {
+            Map<?, ?> p = Reads.object(provider);
+            ephemeris = new ReceiptCheck.Provider(Reads.string(p, "name"), Reads.string(p, "version"),
+                    Reads.string(p, "dataVersion"));
+        }
+        return new ReceiptCheck.Side(Reads.integer(version, "major") + "." + Reads.integer(version, "minor") + "."
+                + Reads.integer(version, "patch"), Reads.integer(raw, "calculationVersion"),
+                Reads.integer(raw, "catalogueVersion"), ephemeris, Reads.string(raw, "tzdb"));
+    }
 }

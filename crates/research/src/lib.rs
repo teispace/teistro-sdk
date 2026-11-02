@@ -48,6 +48,7 @@ use teistro_core::error::Error;
 
 mod bits;
 mod correct;
+pub mod dataset;
 mod effect;
 mod engine;
 mod events;

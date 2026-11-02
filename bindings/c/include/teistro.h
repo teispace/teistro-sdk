@@ -11005,6 +11005,59 @@ ts_status ts_navatara(const ts_context * context, const char * request_json, ts_
 ts_status ts_verify_claims(const ts_context * context, const char * request_json, ts_string * out_json);
 
 /**
+ * A record answered with its receipt (`03-design/receipts-and-datasets.md`
+ * §1.2), answered as canonical JSON: `{answer, receipt}`.
+ *
+ * `answer` is the record's own answer, `{value, provenance}` where it is
+ * sealed and the value alone where it is not. `receipt` is `{format,
+ * record, request, requestDigest, settings, locale, packs, provider, tzdb,
+ * sdkVersion, calculationVersion, catalogueVersion, outputDigest,
+ * digest}`: `format` `teistro.receipt/1`, `settings` the snapshot
+ * `{profile, settings, hash}` with the whole settings document,
+ * `provider` `{name, version, dataVersion}` or null where the answer read
+ * no ephemeris, `outputDigest` the SHA-256 of the value's canonical JSON,
+ * and `digest` the seal, the SHA-256 of the receipt's canonical JSON
+ * without `digest`. An OKF *Attested Computation*'s executor; hand the
+ * receipt to `ts_verify_receipt` to attest it.
+ *
+ * `request_json` is `{"record", "request"}`: a record's name as the
+ * records table lists it and its request. A key it does not read is
+ * `INVALID_ARG`, named under `issue`; a record this build does not
+ * carry is `UNSUPPORTED`, named `issue.record`; a request that is not an
+ * object is `INVALID_ARG`, named `issue.request`; otherwise whatever the
+ * record refuses.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_verify_issue(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
+ * A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its
+ * record answered again on this context under the receipt's own settings,
+ * locale and request, and the value's digest compared, answered as
+ * canonical JSON: `{verdict, record, moved, broken, issued, now, reason}`.
+ *
+ * `verdict` is `HELD` (the digest is the receipt's), `DIFFERS` (another),
+ * `NOT_RERUN` (not answered again; `reason` is `{cause, detail}`, the
+ * cause `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE`
+ * or `REFUSED`) or `BROKEN` (a digest the receipt carries is not its own
+ * fields'; `broken` names each: `requestDigest`, `settings.hash`,
+ * `digest`). `moved` lists each field that moved between the receipt and
+ * the check, `{field, issued, now}`: `output` first when the value did,
+ * then `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider`
+ * and `tzdb`. `issued` and `now` are the two sides' `{sdkVersion,
+ * calculationVersion, catalogueVersion, provider, tzdb}`. An OKF
+ * *Attested Computation*'s attester.
+ *
+ * `request_json` is the receipt `ts_verify_issue` answered, whole. A key
+ * it does not have is `INVALID_ARG`, named under `receipt`; a format other
+ * than `teistro.receipt/1` is `SCHEMA_VERSION`, named `receipt.format`.
+ * Safety: `context` must be a live handle; `request_json` NUL-terminated;
+ * `out_json` valid for a write.
+ */
+ts_status ts_verify_receipt(const ts_context * context, const char * request_json, ts_string * out_json);
+
+/**
  * Reads a name and a birth date under numerology's two systems and
  * answers with the profile as canonical JSON: the name under each
  * system, word by word with every reduction step, Balliett's birth
