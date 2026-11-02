@@ -1,0 +1,826 @@
+{
+  "schema": "teistro-costs/1",
+  "commit": "335943617b96ffaccde2165ff3f863516c943c19",
+  "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
+  "target": "aarch64-linux",
+  "floor": 24356523,
+  "entries": [
+    {
+      "name": "unit",
+      "record": "chart.found",
+      "request": {
+        "instant": 2451545.25,
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700
+      },
+      "first": 19596231,
+      "again": 3883077
+    },
+    {
+      "name": "chart.found",
+      "record": "chart.found",
+      "request": {
+        "instants": [
+          2447000.25,
+          2447365.75
+        ],
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700,
+        "vargas": [
+          "D9"
+        ],
+        "shadbala": true,
+        "fortitudes": {},
+        "lots": {},
+        "kp": {
+          "anyAyanamsha": true
+        },
+        "antiscia": {},
+        "varsha": {
+          "through": 1
+        }
+      },
+      "first": 420199265,
+      "again": 22936218
+    },
+    {
+      "name": "almanac.days",
+      "record": "almanac.days",
+      "request": {
+        "first": {
+          "year": 2026,
+          "month": 10,
+          "day": 10
+        },
+        "last": {
+          "year": 2026,
+          "month": 10,
+          "day": 12
+        },
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700,
+        "muhurta": {
+          "rules": "RAMAN_MARRIAGE"
+        },
+        "festivals": {
+          "rules": "DHARMASINDHU"
+        },
+        "years": true,
+        "eclipses": true,
+        "nepalSambat": true,
+        "sky": true
+      },
+      "first": 3498247768,
+      "again": 1378895505
+    },
+    {
+      "name": "matching.naam",
+      "record": "matching.naam",
+      "request": {
+        "bride": "सीता",
+        "groom": "राम"
+      },
+      "first": 311850,
+      "again": 281613
+    },
+    {
+      "name": "naming.syllables",
+      "record": "naming.syllables",
+      "request": {
+        "of": {
+          "of": "RASHI",
+          "rashi": "CAPRICORN"
+        }
+      },
+      "first": 422985,
+      "again": 412862
+    },
+    {
+      "name": "naming.read",
+      "record": "naming.read",
+      "request": {
+        "names": [
+          "राम",
+          "Shiva"
+        ],
+        "rules": {
+          "name": {
+            "latin": "CASUAL"
+          }
+        }
+      },
+      "first": 432106,
+      "again": 275266
+    },
+    {
+      "name": "naming.check",
+      "record": "naming.check",
+      "request": {
+        "names": [
+          "चूडामणि",
+          "गणेश"
+        ],
+        "birth": {
+          "nakshatra": "ARDRA",
+          "pada": 3
+        }
+      },
+      "first": 292794,
+      "again": 249881
+    },
+    {
+      "name": "naming.of",
+      "record": "naming.of",
+      "request": {
+        "birth": {
+          "nakshatra": "KRITTIKA",
+          "pada": 1
+        }
+      },
+      "first": 70895,
+      "again": 51337
+    },
+    {
+      "name": "naming.suggest",
+      "record": "naming.suggest",
+      "request": {
+        "book": {
+          "names": [
+            {
+              "devanagari": "गणेश",
+              "latin": "Ganesh",
+              "sex": "MALE",
+              "tags": {
+                "meaning.en": "lord of the ganas"
+              }
+            },
+            {
+              "devanagari": "गीता",
+              "sex": "FEMALE"
+            }
+          ]
+        },
+        "birth": {
+          "nakshatra": "ARDRA",
+          "pada": 3
+        },
+        "filter": {
+          "sex": "FEMALE",
+          "syllables": [
+            2
+          ],
+          "clauses": [
+            "SONANT_INITIAL",
+            "LONG_A_FOR_A_GIRL"
+          ]
+        }
+      },
+      "first": 343313,
+      "again": 314345
+    },
+    {
+      "name": "time.resolve",
+      "record": "time.resolve",
+      "request": {
+        "date": {
+          "year": 1990,
+          "month": 4,
+          "day": 5
+        },
+        "time": {
+          "hour": 4,
+          "minute": 30,
+          "second": 0
+        },
+        "zone": {
+          "kind": "IANA",
+          "zone": "Asia/Kathmandu"
+        }
+      },
+      "first": 119248,
+      "again": 103011
+    },
+    {
+      "name": "time.civil",
+      "record": "time.civil",
+      "request": {
+        "instant": 2447986.4583333335,
+        "zone": {
+          "kind": "FIXED",
+          "offset": 20700
+        },
+        "calendar": "BIKRAM_SAMBAT"
+      },
+      "first": 102551,
+      "again": 73959
+    },
+    {
+      "name": "time.convert",
+      "record": "time.convert",
+      "request": {
+        "jd": 2451545.0,
+        "from": "UTC",
+        "to": "TT"
+      },
+      "first": 32210,
+      "again": 32131
+    },
+    {
+      "name": "calendar.convert",
+      "record": "calendar.convert",
+      "request": {
+        "date": {
+          "year": 2026,
+          "month": 10,
+          "day": 10
+        },
+        "into": "calendar.BIKRAM_SAMBAT"
+      },
+      "first": 76383,
+      "again": 50638
+    },
+    {
+      "name": "calendar.add",
+      "record": "calendar.add",
+      "request": {
+        "calendar": "calendar.BIKRAM_SAMBAT",
+        "date": {
+          "year": 2081,
+          "month": 2,
+          "day": 32
+        },
+        "months": 1,
+        "overflow": "CARRY"
+      },
+      "first": 94433,
+      "again": 64620
+    },
+    {
+      "name": "calendar.between",
+      "record": "calendar.between",
+      "request": {
+        "calendar": "calendar.BIKRAM_SAMBAT",
+        "from": {
+          "year": 2050,
+          "month": 2,
+          "day": 32
+        },
+        "to": {
+          "year": 2082,
+          "month": 2,
+          "day": 31
+        },
+        "overflow": "CONSTRAIN"
+      },
+      "first": 88814,
+      "again": 60964
+    },
+    {
+      "name": "numerology.profile",
+      "record": "numerology.profile",
+      "request": {
+        "name": "Henry Elder",
+        "date": {
+          "year": 1872,
+          "month": 1,
+          "day": 17
+        },
+        "rules": {
+          "masters": "NONE"
+        }
+      },
+      "first": 273576,
+      "again": 244535
+    },
+    {
+      "name": "almanac.navatara",
+      "record": "almanac.navatara",
+      "request": {
+        "birth": "ASHWINI"
+      },
+      "first": 253504,
+      "again": 267072
+    },
+    {
+      "name": "intl.inWords",
+      "record": "intl.inWords",
+      "request": {
+        "amount": {
+          "currency": "NPR",
+          "value": {
+            "minor": 123456
+          },
+          "only": true
+        },
+        "locale": "ne-Deva-NP",
+        "grouping": "INDIAN"
+      },
+      "first": 1239788,
+      "again": 148427
+    },
+    {
+      "name": "intl.time",
+      "record": "intl.time",
+      "request": {
+        "at": {
+          "hour": 6,
+          "minute": 5
+        },
+        "hour12": true,
+        "locale": "ne-Deva-NP"
+      },
+      "first": 132907,
+      "again": 110247
+    },
+    {
+      "name": "intl.date",
+      "record": "intl.date",
+      "request": {
+        "at": {
+          "calendar": "calendar.GREGORIAN",
+          "year": 2026,
+          "month": 10,
+          "day": 31
+        },
+        "style": "FULL",
+        "locale": "hi-Deva-IN"
+      },
+      "first": 280009,
+      "again": 165971
+    },
+    {
+      "name": "almanac.digest",
+      "record": "almanac.digest",
+      "request": {
+        "first": {
+          "year": 2025,
+          "month": 10,
+          "day": 1
+        },
+        "days": 3,
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700,
+        "festivals": {
+          "rules": "NEPAL"
+        }
+      },
+      "first": 302298736,
+      "again": 119880163
+    },
+    {
+      "name": "almanac.festival_calendar",
+      "record": "almanac.festival_calendar",
+      "request": {
+        "first": {
+          "year": 2025,
+          "month": 10,
+          "day": 1
+        },
+        "last": {
+          "year": 2025,
+          "month": 10,
+          "day": 31
+        },
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700,
+        "festivals": {
+          "rules": "NEPAL"
+        },
+        "stampUnixSeconds": 1767225600,
+        "name": "Nepal",
+        "refreshMinutes": 0
+      },
+      "first": 528976831,
+      "again": 216870612
+    },
+    {
+      "name": "almanac.changes",
+      "record": "almanac.changes",
+      "request": {
+        "first": {
+          "year": 2026,
+          "month": 11,
+          "day": 1
+        },
+        "last": {
+          "year": 2026,
+          "month": 11,
+          "day": 2
+        },
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "zone": {
+          "kind": "IANA",
+          "zone": "Asia/Kathmandu"
+        },
+        "kinds": [
+          "TITHI",
+          "SUN_SIGN"
+        ]
+      },
+      "first": 97535309,
+      "again": 18652613
+    },
+    {
+      "name": "almanac.anniversaries",
+      "record": "almanac.anniversaries",
+      "request": {
+        "fromYear": 2026,
+        "years": 10,
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700,
+        "calendar": "BIKRAM_SAMBAT",
+        "anniversaries": [
+          {
+            "key": "GRANDFATHER",
+            "origin": {
+              "by": "LUNAR",
+              "month": "KARTIKA",
+              "tithi": "SHUKLA_DASHAMI"
+            }
+          },
+          {
+            "key": "WEDDING",
+            "origin": {
+              "by": "LUNAR",
+              "month": "MARGASHIRSHA",
+              "tithi": "SHUKLA_PANCHAMI"
+            },
+            "kind": "EVENT",
+            "window": {
+              "window": "DAY_MUHURTA",
+              "from": 8,
+              "to": 9
+            }
+          }
+        ]
+      },
+      "first": 33973585041,
+      "again": 31665921191
+    },
+    {
+      "name": "almanac.next",
+      "record": "almanac.next",
+      "request": {
+        "after": 2461042.0,
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700,
+        "rule": "VIJAYA_DASHAMI",
+        "festivals": {
+          "rules": "NEPAL_PANCHANGA"
+        },
+        "limitDays": 400
+      },
+      "first": 3271097412,
+      "again": 1518159218
+    },
+    {
+      "name": "almanac.sentences",
+      "record": "almanac.sentences",
+      "request": {
+        "date": {
+          "year": 2026,
+          "month": 3,
+          "day": 18
+        },
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700,
+        "locale": "ne-Deva-NP"
+      },
+      "first": 208845772,
+      "again": 31975760
+    },
+    {
+      "name": "almanac.publishedReasons",
+      "record": "almanac.publishedReasons",
+      "request": {
+        "first": {
+          "year": 2026,
+          "month": 10,
+          "day": 1
+        },
+        "last": {
+          "year": 2026,
+          "month": 10,
+          "day": 31
+        },
+        "latitudeDeg": 28.2096,
+        "longitudeDeg": 83.9856,
+        "altitudeM": 827,
+        "utcOffsetSeconds": 20700,
+        "festivals": {
+          "rules": "NEPAL",
+          "published": [
+            {
+              "format": "teistro.published/1",
+              "publisher": "a patro printed in Nepal",
+              "id": "np-2083",
+              "version": 3,
+              "entries": [
+                {
+                  "action": "SET",
+                  "rule": "NAVARATRA_ARAMBHA",
+                  "day": {
+                    "calendar": "GREGORIAN",
+                    "year": 2026,
+                    "month": 10,
+                    "day": 11
+                  },
+                  "source": "p. 41"
+                }
+              ]
+            }
+          ]
+        },
+        "places": [
+          {
+            "name": "Kathmandu",
+            "latitudeDeg": 27.7172,
+            "longitudeDeg": 85.324,
+            "altitudeM": 1400,
+            "utcOffsetSeconds": 20700
+          }
+        ]
+      },
+      "first": 503444750,
+      "again": 212559053
+    },
+    {
+      "name": "almanac.pakshi",
+      "record": "almanac.pakshi",
+      "request": {
+        "first": {
+          "year": 1984,
+          "month": 10,
+          "day": 30
+        },
+        "last": {
+          "year": 1984,
+          "month": 11,
+          "day": 1
+        },
+        "latitudeDeg": 13.0827,
+        "longitudeDeg": 80.2707,
+        "altitudeM": 6,
+        "utcOffsetSeconds": 19800,
+        "native": {
+          "bird": "COCK"
+        }
+      },
+      "first": 210348615,
+      "again": 48687654
+    },
+    {
+      "name": "almanac.sankalpa",
+      "record": "almanac.sankalpa",
+      "request": {
+        "at": 2461055.59375,
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700,
+        "ayana": "TROPICAL"
+      },
+      "first": 1451082242,
+      "again": 322894892
+    },
+    {
+      "name": "almanac.ashauch",
+      "record": "almanac.ashauch",
+      "request": {
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1337,
+        "utcOffsetSeconds": 20700,
+        "request": {
+          "key": "grandfather",
+          "relation": "SAPINDA",
+          "event": {
+            "event": "DEATH",
+            "at": 2461051.677083
+          }
+        }
+      },
+      "first": 562041653,
+      "again": 167879092
+    },
+    {
+      "name": "almanac.household",
+      "record": "almanac.household",
+      "request": {
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1337,
+        "utcOffsetSeconds": 20700,
+        "household": {
+          "events": [
+            {
+              "key": "father",
+              "event": {
+                "event": "DEATH",
+                "at": 2461051.677083,
+                "deceased": {
+                  "sex": "MALE"
+                }
+              }
+            },
+            {
+              "key": "mother",
+              "event": {
+                "event": "DEATH",
+                "at": 2461055.84375,
+                "deceased": {
+                  "sex": "FEMALE"
+                }
+              }
+            }
+          ],
+          "observers": [
+            {
+              "key": "son",
+              "ties": [
+                {
+                  "event": "father",
+                  "relation": "CHILD",
+                  "fireGiver": true
+                },
+                {
+                  "event": "mother",
+                  "relation": "CHILD"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      "first": 767697284,
+      "again": 354073748
+    },
+    {
+      "name": "almanac.ashauchKin",
+      "record": "almanac.ashauchKin",
+      "request": {
+        "kin": {
+          "path": [
+            "FATHER",
+            "FATHER",
+            "SON",
+            "SON"
+          ],
+          "observer": {
+            "sex": "MALE"
+          },
+          "livingForebears": 1
+        }
+      },
+      "first": 114944,
+      "again": 108022
+    },
+    {
+      "name": "almanac.ashauchRite",
+      "record": "almanac.ashauchRite",
+      "request": {
+        "rite": {
+          "rite": "MARRIAGE",
+          "begun": true,
+          "noOtherWay": true
+        }
+      },
+      "first": 64398,
+      "again": 62095
+    },
+    {
+      "name": "almanac.deathTime",
+      "record": "almanac.deathTime",
+      "request": {
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1337,
+        "utcOffsetSeconds": 20700,
+        "at": 2461051.677083,
+        "crematedAt": 2461052.0
+      },
+      "first": 1816344041,
+      "again": 709981400
+    },
+    {
+      "name": "almanac.festivalPack",
+      "record": "almanac.festivalPack",
+      "request": {
+        "pack": "INDIA_CENTRAL"
+      },
+      "first": 1554031,
+      "again": 1622744
+    },
+    {
+      "name": "almanac.firstYear",
+      "record": "almanac.firstYear",
+      "request": {
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1337,
+        "utcOffsetSeconds": 20700,
+        "request": {
+          "key": "grandfather",
+          "at": 2461051.677083,
+          "firstAbdika": "ELEVENTH_DAY",
+          "firstYearAdhika": "NIJA"
+        }
+      },
+      "first": 3261697983,
+      "again": 1420927685
+    },
+    {
+      "name": "chart.rashifal",
+      "record": "chart.rashifal",
+      "request": {
+        "periods": [
+          {
+            "first": {
+              "year": 2026,
+              "month": 10,
+              "day": 4
+            },
+            "last": {
+              "year": 2026,
+              "month": 10,
+              "day": 10
+            },
+            "latitudeDeg": 27.7172,
+            "longitudeDeg": 85.324,
+            "altitudeM": 1400,
+            "utcOffsetSeconds": 20700
+          }
+        ],
+        "baseline": "WEEKLY"
+      },
+      "first": 188370206,
+      "again": 41038361
+    },
+    {
+      "name": "research.study",
+      "record": "research.study",
+      "request": {
+        "study": "COUNTS",
+        "rules": {
+          "shipped": [
+            "YOGAS"
+          ]
+        },
+        "holds": "FORMED",
+        "births": [
+          {
+            "instant": 2446000.25,
+            "latitudeDeg": 27.7172,
+            "longitudeDeg": 85.324,
+            "altitudeM": 1400,
+            "utcOffsetSeconds": 20700,
+            "uncertaintyMinutes": 0
+          },
+          {
+            "instant": 2447100.5,
+            "latitudeDeg": 27.7172,
+            "longitudeDeg": 85.324,
+            "altitudeM": 1400,
+            "utcOffsetSeconds": 20700,
+            "uncertaintyMinutes": 0
+          },
+          {
+            "instant": 2448300.75,
+            "latitudeDeg": 27.7172,
+            "longitudeDeg": 85.324,
+            "altitudeM": 1400,
+            "utcOffsetSeconds": 20700,
+            "uncertaintyMinutes": 0
+          }
+        ],
+        "design": {
+          "groups": [
+            0,
+            1,
+            1
+          ]
+        }
+      },
+      "first": 59448563,
+      "again": 12782438
+    }
+  ]
+}

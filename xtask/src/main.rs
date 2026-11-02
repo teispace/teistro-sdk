@@ -235,6 +235,9 @@
 //!   scenario costs, counted under callgrind, and two such runs compared
 //!   (fail above 3%, warn above 1%), with the costs a change's commits
 //!   accepted in `Instruction-cost` trailers.
+//! - `costs` and `check-costs`: what each record entry point costs
+//!   relative to a plain chart, counted under callgrind, the record and
+//!   the page rendered from it (`docs/05-testing/costs-measured.md`).
 //! - `hashes`: what this build computes for a fixed scenario, hashed per
 //!   section, so two architectures can be compared; with a path, every
 //!   value's bits are written there too.
@@ -298,6 +301,7 @@ mod compat;
 mod composites;
 mod conformance;
 mod consumer;
+mod costs;
 mod coverage;
 mod dart_binding;
 mod dasha_coverage;
@@ -777,6 +781,7 @@ fn main() {
         Some("check-versions") => release::check(&repo_root()),
         Some(command @ ("sizes" | "check-sizes")) => sizes::command(&repo_root(), command, &args),
         Some("check-abi") => abi_stability::check(&repo_root(), &args),
+        Some(command @ ("costs" | "check-costs")) => costs::command(&repo_root(), command, &args),
         Some("coverage") => coverage::command(&repo_root(), "coverage", &args),
         Some("check-coverage") => coverage::command(&repo_root(), "check-coverage", &args),
         Some("check-doc-examples") => doc_examples::check(&repo_root()),
@@ -864,6 +869,7 @@ fn usage() -> i32 {
          check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | coverage --bindings DIR | check-coverage [--from FILE] [--bindings DIR] | check-doc-examples | mutants --from DIR | mutants --matrix | check-mutants [--from DIR] | check-abi [--against REF] | check-site | check-guides | check-teimeris-adapter | relock-teimeris-adapter | check-properties | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \
          publish maven [--automatic] [--dry-run] [--dist DIR] | bench [FILE] | \
+         costs --measure FILE | costs --from FILE | costs --render | check-costs [--from FILE] | \
          compare-bench BASE HEAD [ACCEPTED] | hashes [VALUES] | compare-hashes A B | accuracy | \
          calendars bs-fit | gen catalogue | gen calendars | gen time | gen intl | gen ffi",
         passes.join("\n  ")

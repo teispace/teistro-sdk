@@ -1591,7 +1591,7 @@ fn generated_pages_are_gated(root: &Path, outcome: &mut Outcome) {
             continue;
         }
         for gate in named {
-            if !xtask.contains(&format!("Some(\"{gate}\")")) && !gate_in_passes(&xtask, gate) {
+            if !dispatches(&xtask, gate) && !gate_in_passes(&xtask, gate) {
                 outcome.failures.push(Finding {
                     file: name.clone(),
                     line: 3,
@@ -1605,6 +1605,13 @@ fn generated_pages_are_gated(root: &Path, outcome: &mut Outcome) {
 
 /// Whether a `check-<name>` gate comes from a row of the passes table,
 /// which declares its gate by the row's own name rather than by an arm.
+/// Whether `main` dispatches `gate`: an arm of its own, `Some("check-x")`,
+/// or the last of an arm shared with the command that writes the page,
+/// `Some(command @ ("x" | "check-x"))`.
+fn dispatches(xtask: &str, gate: &str) -> bool {
+    xtask.contains(&format!("Some(\"{gate}\")")) || xtask.contains(&format!("| \"{gate}\")) =>"))
+}
+
 fn gate_in_passes(xtask: &str, gate: &str) -> bool {
     let Some(pass) = gate.strip_prefix("check-") else {
         return false;
@@ -3738,9 +3745,19 @@ pub(crate) fn check(root: &Path) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::{
-        NEXT, Outcome, REGISTER, RESUME, SHAPES, declaration_of, gate_declared_by, gate_run_by,
-        names_question, open_questions_are_named, section_of, shapes,
+        NEXT, Outcome, REGISTER, RESUME, SHAPES, declaration_of, dispatches, gate_declared_by,
+        gate_run_by, names_question, open_questions_are_named, section_of, shapes,
     };
+
+    #[test]
+    fn a_gate_is_dispatched_by_its_own_arm_or_last_in_a_shared_one() {
+        let main = "        Some(\"check-docs\") => docs::check(),\n        \
+                    Some(command @ (\"costs\" | \"check-costs\")) => costs::command(command),\n";
+        assert!(dispatches(main, "check-docs"));
+        assert!(dispatches(main, "check-costs"));
+        assert!(!dispatches(main, "check-sizes"));
+        assert!(!dispatches(main, "costs"));
+    }
 
     #[test]
     #[allow(clippy::unwrap_used, reason = "a test fails by panicking")]

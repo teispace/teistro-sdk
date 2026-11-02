@@ -1055,3 +1055,131 @@ fn push_numbers(section: &mut Section, value: Option<&serde_json::Value>) {
         _ => {}
     }
 }
+
+// ── The entry points priced ────────────────────────────────────────────────
+
+/// Every record entry point's example request: the fixture the agent
+/// server's tests send and every binding's tests type
+/// (`crates/sdk/tests/requests.json`), one request a record.
+const EXAMPLES: &str = include_str!("../../sdk/tests/requests.json");
+
+/// The entry point every other is priced against: one chart founded at
+/// Kathmandu, nothing read of it but the chart itself.
+pub const UNIT: &str = "unit";
+
+/// The request [`UNIT`] asks of `chart.found`.
+const UNIT_REQUEST: &str = r#"{"instant": 2451545.25, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700}"#;
+
+/// The records whose names start with this answer from a loaded engine of
+/// the consumer's own, not from the SDK, so the SDK prices none of them.
+pub const UNPRICED: &str = "engine.";
+
+/// One entry point priced by `cargo xtask costs`: a record and the request
+/// it is priced on.
+///
+/// ```
+/// use teistro_scenario::{UNIT, entries};
+///
+/// let all = entries()?;
+/// // The unit first, then every record's example but the engine's.
+/// assert_eq!(all[0].name, UNIT);
+/// assert!(all.iter().any(|entry| entry.name == "calendar.convert"));
+/// assert!(all.iter().all(|entry| !entry.record.starts_with("engine.")));
+/// # Ok::<(), String>(())
+/// ```
+#[derive(Clone, Debug, PartialEq)]
+pub struct Entry {
+    /// What the cost page calls it: the record's name, or [`UNIT`].
+    pub name: String,
+    /// The record answered.
+    pub record: String,
+    /// The request, as the fixture writes it.
+    pub request: serde_json::Value,
+}
+
+/// The entry points priced, in order: [`UNIT`], then each record's example
+/// in the fixture's order, those under [`UNPRICED`] left out.
+///
+/// # Errors
+///
+/// The fixture's text when it does not read as a list of `record` and
+/// `request` pairs.
+///
+/// ```
+/// use teistro_scenario::entries;
+///
+/// let names: Vec<String> = entries()?.into_iter().map(|entry| entry.name).collect();
+/// assert!(names.contains(&"almanac.days".to_owned()));
+/// # Ok::<(), String>(())
+/// ```
+pub fn entries() -> Result<Vec<Entry>, String> {
+    let unit = Entry {
+        name: UNIT.to_owned(),
+        record: "chart.found".to_owned(),
+        request: serde_json::from_str(UNIT_REQUEST).map_err(|e| format!("the unit: {e}"))?,
+    };
+    let examples: Vec<serde_json::Value> =
+        serde_json::from_str(EXAMPLES).map_err(|e| format!("requests.json: {e}"))?;
+    let mut all = vec![unit];
+    for example in examples {
+        let record = example
+            .get("record")
+            .and_then(serde_json::Value::as_str)
+            .ok_or_else(|| format!("requests.json: an example names no record: {example}"))?;
+        if record.starts_with(UNPRICED) {
+            continue;
+        }
+        let request = example
+            .get("request")
+            .cloned()
+            .ok_or_else(|| format!("requests.json: `{record}` has no request"))?;
+        all.push(Entry {
+            name: record.to_owned(),
+            record: record.to_owned(),
+            request,
+        });
+    }
+    Ok(all)
+}
+
+/// Answers the entry point `name` `calls` times on one context over the
+/// built-in ephemeris, built first, and gives the bytes the answers wrote:
+/// what `teistro-scenario entry` runs under callgrind. No calls is the
+/// context and the record's lookup alone, the floor every price is
+/// measured above; the second call is the first's work again on a context
+/// that has answered it once.
+///
+/// # Errors
+///
+/// An entry point not in [`entries`], and the SDK's refusal of its
+/// request, as text.
+///
+/// ```
+/// use teistro_scenario::priced;
+///
+/// assert!(priced("calendar.convert", 1)? > 0);
+/// assert_eq!(priced("calendar.convert", 0)?, 0);
+/// assert!(priced("no.such", 1).is_err());
+/// # Ok::<(), String>(())
+/// ```
+pub fn priced(name: &str, calls: u32) -> Result<usize, String> {
+    let entry = entries()?
+        .into_iter()
+        .find(|entry| entry.name == name)
+        .ok_or_else(|| format!("no entry point named `{name}`"))?;
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .map_err(|e| e.to_string())?;
+    let record = teistro::records::record(&entry.record)
+        .ok_or_else(|| format!("no record named `{}`", entry.record))?;
+    let request = entry.request.to_string();
+    let mut written = 0;
+    for _ in 0..calls {
+        let answered = record
+            .answer(&sdk, &request)
+            .map_err(|e| format!("{name}: {e}"))?;
+        written += answered.value.to_string().len();
+    }
+    Ok(written)
+}

@@ -283,6 +283,8 @@ jobs:
         run: cargo xtask check-mobile-sizes
       - name: Teimeris ranges page (each data block's files, sizes and digests, from the manifest the adapter checks a downloaded range against)
         run: cargo xtask check-teimeris-ranges
+      - name: Costs page (each entry point's cost relative to a plain chart, rendered from the record, which prices every entry point on its example)
+        run: cargo xtask check-costs
       - name: Coverage page (each crate's floor, rendered from the record, none lowered against main)
         run: cargo xtask check-coverage
       - name: Mutants page (each kernel crate's floor and named survivors, rendered from the record, no floor lowered against main)

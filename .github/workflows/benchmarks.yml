@@ -64,6 +64,15 @@ jobs:
       - name: What this branch costs
         run: cargo xtask bench head.tsv | tee head.txt
 
+      - name: What each entry point costs, against the record
+        # Every record entry point priced against a plain chart (SR-54),
+        # and the page's record held to it: a relative cost more than a
+        # tenth from the record fails, and the record is re-measured from
+        # this run's `entry-costs.json` (`cargo xtask costs --from FILE`).
+        run: |
+          cargo xtask costs --measure entry-costs.json
+          cargo xtask check-costs --from entry-costs.json
+
       - name: What the base commit costs
         if: github.event_name == 'pull_request'
         env:
@@ -122,5 +131,6 @@ jobs:
           path: |
             head.tsv
             base.tsv
+            entry-costs.json
           if-no-files-found: warn
           retention-days: 7
