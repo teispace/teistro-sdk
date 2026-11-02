@@ -6528,6 +6528,31 @@ test('a chart carries its rectification', () => {
   assert.ok(svarodaya.runs.slice(1).every((run, k) => run.from === svarodaya.runs[k].to), 'the runs tile the window');
   assert.ok(svarodaya.at.run.from <= instant && instant < svarodaya.at.run.to);
 
+  // The birth-time sensitivity: keys in full, and the lagna's sign read
+  // back through the chart a second either side of its nearest change.
+  const reference = instant + 30 * 365.25;
+  const { sensitivity } = ctx.chart.found({
+    instant,
+    ...at,
+    rectification: { sensitivity: { minutes: 180, dasha: { at: reference } } },
+  }).rectification;
+  assert.ok(sensitivity.lagnaSign.value.startsWith('rashi.') && sensitivity.lagnaPada.value.nakshatra.startsWith('nakshatra.'));
+  assert.deepEqual(sensitivity.vargas.slice(0, 2).map((one) => one.varga), ['varga.D9', 'varga.D10']);
+  assert.equal(sensitivity.dasha.system, 'dasha_system.VIMSHOTTARI');
+  assert.ok(sensitivity.dasha.lords.value.every((lord) => lord.startsWith('graha.')));
+  assert.equal(sensitivity.cusps.length, 12);
+  const sign = (when) => Math.floor(ctx.chart.found({ instant: when, ...at }).lagnaDeg / 30);
+  for (const [change, side] of [[sensitivity.lagnaSign.earlier, -1], [sensitivity.lagnaSign.later, 1]]) {
+    if (change === null) continue;
+    assert.ok(Math.abs(Math.abs(change.at - instant) * 1440 - change.minutes) < 1e-6);
+    assert.equal(sign(change.at - side / 86400), sign(instant), 'a second inside the change');
+    assert.equal((sign(change.at + side / 86400) - sign(instant) + 12) % 12, side === 1 ? 1 : 11, 'a second past it');
+  }
+  assert.throws(
+    () => ctx.chart.found({ instant, ...at, rectification: { sensitivity: { minutes: 30, seedMinutes: 90 } } }),
+    (error) => error.field === 'rectification.sensitivity.seedMinutes',
+  );
+
   assert.throws(
     () => ctx.chart.found({ instant, ...at, rectification: { purify: { minutes: 0 } } }),
     (error) => error.field === 'rectification.purify.minutes',

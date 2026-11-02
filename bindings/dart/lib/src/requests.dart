@@ -5631,6 +5631,39 @@ final class ConceptionRules extends _Request {
   List<Object?> get _fields => [moon, nisheka, pranapadaHouse, purifier];
 }
 
+/// How far the chart's time can move before each fact it states changes, searched over the minutes either side of its instant (`03-design/rectification.md`, "Birth-time sensitivity").
+final class SensitivityRequest extends _Request {
+  const SensitivityRequest({
+    this.dasha,
+    required this.minutes,
+    this.seedMinutes = 1.0,
+    this.vargas,
+  });
+
+  /// The dasha whose running periods are followed; none when left out.
+  final SensitivityDasha? dasha;
+
+  /// How far either side of the chart's instant the search runs, minutes, as [`Purify::minutes`].
+  final double minutes;
+
+  /// The seed step, minutes, a second to an hour: a fact that changes and changes back inside one step is not seen.
+  final double seedMinutes;
+
+  /// The vargas whose lagnas are followed; D9, D10 and every varga the chart carries when left out (C1140).
+  final List<Varga>? vargas;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (dasha case final dashaValue?) 'dasha': dashaValue._wire,
+    'minutes': minutes,
+    'seedMinutes': seedMinutes,
+    if (vargas case final vargasValue?) 'vargas': [for (final e0 in vargasValue) e0.key],
+  };
+
+  @override
+  List<Object?> get _fields => [dasha, minutes, seedMinutes, vargas];
+}
+
 /// The Shiva Svarodaya's nadis and tattvas over the minutes either side of the chart's instant.
 final class SvarodayaAsked extends _Request {
   const SvarodayaAsked({
@@ -7653,6 +7686,34 @@ final class PranapadaHouseRules extends _Request {
 
   @override
   List<Object?> get _fields => [count, firstAuspicious, pranapada];
+}
+
+/// The dasha a sensitivity follows: the periods running at `at`, under the context's dasha settings (C1142).
+final class SensitivityDasha extends _Request {
+  const SensitivityDasha({
+    required this.at,
+    this.depth = 3,
+    this.system = DashaSystem.vimshottari,
+  });
+
+  /// The reference instant, a UTC Julian day.
+  final double at;
+
+  /// How many levels, 1 to 6: 3, the pratyantardasha, when left out.
+  final int depth;
+
+  /// A nakshatra-seeded system; Vimshottari when left out.
+  final DashaSystem system;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'at': at,
+    'depth': depth,
+    'system': system.key,
+  };
+
+  @override
+  List<Object?> get _fields => [at, depth, system];
 }
 
 /// The readings the ishṭa-devatā is given under.

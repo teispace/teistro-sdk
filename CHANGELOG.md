@@ -41,6 +41,17 @@ days are unchanged; `GAUDIYA`'s answer gains the five festivals.
 - `saait-measured.md` holds the new rites to the committee's VS 2083 foundation and shop days and the Surya
   Panchanga's VS 2082 lists, and the committee's marriages to both marriage rules (C206).
 
+**A birth's sensitivity to its recorded time.**
+**Numbers:** none unless asked: a rectification without `sensitivity` answers and hashes as before.
+- `ChartArea::sensitivity` and the rectification record's `sensitivity` member (`SensitivityRequest`,
+  read at the C boundary through the chart's `rectification` section and by every binding): for one birth,
+  the minutes earlier and later to the nearest change of the lagna's sign and pada, each varga's lagna,
+  the Moon's pada, the dasha running at a reference instant and each bhava middle's sign, with the instant
+  of each change to a hundredth of a second and what the fact becomes (A2-5, `03-design/rectification.md`,
+  C1140–C1143). `Foundation::chalit_at` founds a chalit at another instant.
+- The purifier's edge search is generic over any value that compares (`edges::runs`); its answers do not
+  move.
+
 **The navatara chakra.**
 **Numbers:** none: a new answer, and nothing it reads moves.
 - `AlmanacArea::navatara(birth)`, the record `almanac.navatara` (`NavataraRequest`, an agent server tool),

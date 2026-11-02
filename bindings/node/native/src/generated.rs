@@ -2400,7 +2400,11 @@ pub struct ChartRequest {
     /// family remembers, `fatherPresent`, `presentation`, `oil`, `wick`
     /// and `attendants`, and `rules`, *Brihat Jataka* ch. V) and `baseline`
     /// (the baseline engine's unsourced cascade: `uncertaintyMinutes` 1
-    /// to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`).
+    /// to 720, `accuracy`, dated `events`, `sex`, `coverage` and `dasha`),
+    /// `svarodaya` (`minutes`, the Shiva Svarodaya's runs) and
+    /// `sensitivity` (`minutes` either side to search, `seedMinutes`,
+    /// `vargas`, and `dasha` `{at, system, depth}`: how far the time can
+    /// move before each fact the chart states changes).
     /// Each chart's readings come back in the `rectification` section,
     /// one member for each reading asked. Null for none, which costs
     /// nothing (`03-design/rectification.md`). Refusals are named from

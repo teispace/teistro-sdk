@@ -15,16 +15,17 @@ import java.util.Objects;
  * @param circumstance *Brihat Jataka* ch. V's circumstances at the chart's instant (`ChartArea::circumstance`). Null leaves the SDK's default.
  * @param conception The pranapada's house, the nisheka and the conception Moon at the chart's instant (`ChartArea::conception`). Null leaves the SDK's default.
  * @param purify The purifier of BPHS ch. 2 vv. 67–78 over a window around the chart's instant (`ChartArea::rectify`). Null leaves the SDK's default.
+ * @param sensitivity How far the chart's time can move before each fact it states changes (`ChartArea::sensitivity`). Null leaves the SDK's default.
  * @param svarodaya The Shiva Svarodaya's nadis and tattvas around the chart's instant (`ChartArea::svarodaya`, `ChartArea::svarodaya_runs`): a report the text does not make at a birth. Null leaves the SDK's default.
  */
-public record RectificationRequest(BaselineRectificationRequest baseline, CircumstanceRequest circumstance, ConceptionRules conception, PurifyRequest purify, SvarodayaAsked svarodaya) implements RequestJson {
+public record RectificationRequest(BaselineRectificationRequest baseline, CircumstanceRequest circumstance, ConceptionRules conception, PurifyRequest purify, SensitivityRequest sensitivity, SvarodayaAsked svarodaya) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
      *
      */
     public RectificationRequest() {
-        this(null, null, null, null, null);
+        this(null, null, null, null, null, null);
     }
 
     /**
@@ -43,6 +44,7 @@ public record RectificationRequest(BaselineRectificationRequest baseline, Circum
         private CircumstanceRequest circumstance;
         private ConceptionRules conception;
         private PurifyRequest purify;
+        private SensitivityRequest sensitivity;
         private SvarodayaAsked svarodaya;
 
         private Builder() {}
@@ -92,6 +94,17 @@ public record RectificationRequest(BaselineRectificationRequest baseline, Circum
         }
 
         /**
+         * Sets {@code sensitivity}.
+         *
+         * @param sensitivity How far the chart's time can move before each fact it states changes (`ChartArea::sensitivity`). Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder sensitivity(SensitivityRequest sensitivity) {
+            this.sensitivity = sensitivity;
+            return this;
+        }
+
+        /**
          * Sets {@code svarodaya}.
          *
          * @param svarodaya The Shiva Svarodaya's nadis and tattvas around the chart's instant (`ChartArea::svarodaya`, `ChartArea::svarodaya_runs`): a report the text does not make at a birth. Null leaves the SDK's default.
@@ -109,7 +122,7 @@ public record RectificationRequest(BaselineRectificationRequest baseline, Circum
          * @throws NullPointerException naming a required field left unset
          */
         public RectificationRequest build() {
-            return new RectificationRequest(baseline, circumstance, conception, purify, svarodaya);
+            return new RectificationRequest(baseline, circumstance, conception, purify, sensitivity, svarodaya);
         }
     }
 
@@ -127,6 +140,7 @@ public record RectificationRequest(BaselineRectificationRequest baseline, Circum
             Read.orNull(json.get("circumstance"), present -> CircumstanceRequest.of(present)),
             Read.orNull(json.get("conception"), present -> ConceptionRules.of(present)),
             Read.orNull(json.get("purify"), present -> PurifyRequest.of(present)),
+            Read.orNull(json.get("sensitivity"), present -> SensitivityRequest.of(present)),
             Read.orNull(json.get("svarodaya"), present -> SvarodayaAsked.of(present)));
     }
 
@@ -144,6 +158,9 @@ public record RectificationRequest(BaselineRectificationRequest baseline, Circum
         }
         if (purify != null) {
             json.put("purify", purify.toJson());
+        }
+        if (sensitivity != null) {
+            json.put("sensitivity", sensitivity.toJson());
         }
         if (svarodaya != null) {
             json.put("svarodaya", svarodaya.toJson());

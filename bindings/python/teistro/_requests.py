@@ -239,6 +239,7 @@ __all__ = [
     "CircumstanceRequest",
     "ConceptionRules",
     "PurifyRequest",
+    "SensitivityRequest",
     "SvarodayaAsked",
     "RemedyRules",
     "AshtakavargaAyusRules",
@@ -350,6 +351,7 @@ __all__ = [
     "NishekaRules",
     "PranapadaHouseRules",
     "PurifierRules",
+    "SensitivityDasha",
     "DevataRules",
     "FunctionalRules",
     "ShantiRules",
@@ -2389,6 +2391,9 @@ class RectificationRequest(TypedDict, total=False):
     purify: Optional[PurifyRequest]
     """The purifier of BPHS ch. 2 vv. 67–78 over a window around the chart's instant (`ChartArea::rectify`)."""
 
+    sensitivity: Optional[SensitivityRequest]
+    """How far the chart's time can move before each fact it states changes (`ChartArea::sensitivity`)."""
+
     svarodaya: Optional[SvarodayaAsked]
     """The Shiva Svarodaya's nadis and tattvas around the chart's instant (`ChartArea::svarodaya`, `ChartArea::svarodaya_runs`): a report the text does not make at a birth."""
 
@@ -4040,6 +4045,22 @@ class PurifyRequest(TypedDict, total=False):
     """The purifier's readings; the texts' own when left out."""
 
 
+class SensitivityRequest(TypedDict, total=False):
+    """How far the chart's time can move before each fact it states changes, searched over the minutes either side of its instant (`03-design/rectification.md`, "Birth-time sensitivity")."""
+
+    dasha: Optional[SensitivityDasha]
+    """The dasha whose running periods are followed; none when left out."""
+
+    minutes: Required[float]
+    """How far either side of the chart's instant the search runs, minutes, as `Purify::minutes`."""
+
+    seedMinutes: float
+    """The seed step, minutes, a second to an hour: a fact that changes and changes back inside one step is not seen."""
+
+    vargas: Optional[Sequence[Union[_catalogue.Varga, str]]]
+    """The vargas whose lagnas are followed; D9, D10 and every varga the chart carries when left out (C1140)."""
+
+
 class SvarodayaAsked(TypedDict, total=False):
     """The Shiva Svarodaya's nadis and tattvas over the minutes either side of the chart's instant."""
 
@@ -5338,6 +5359,19 @@ class PurifierRules(TypedDict, total=False):
 
     seedMinutes: float
     """The seed step, in minutes: the window is sampled this often and every change between two samples is found exactly (X15). It must be shorter than the briefest run a clause holds, which the verse's pranapada sets at six minutes a sign."""
+
+
+class SensitivityDasha(TypedDict, total=False):
+    """The dasha a sensitivity follows: the periods running at `at`, under the context's dasha settings (C1142)."""
+
+    at: Required[float]
+    """The reference instant, a UTC Julian day."""
+
+    depth: int
+    """How many levels, 1 to 6: 3, the pratyantardasha, when left out."""
+
+    system: Union[_catalogue.DashaSystem, str]
+    """A nakshatra-seeded system; Vimshottari when left out."""
 
 
 class DevataRules(TypedDict, total=False):

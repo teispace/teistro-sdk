@@ -255,6 +255,98 @@ baseline's; nothing in the purifier's `Rules` reaches it.
 
 Each names its field under `rectification`.
 
+## Birth-time sensitivity (A2-5)
+
+Status: `built` 2026-11-01 (`crates/rectification/src/sensitivity.rs`,
+`ChartArea::sensitivity`, the record's `sensitivity` member).
+
+The purifier answers which parts of a window survive. A consumer showing a
+chart also needs the converse: **how far the recorded time can move before
+what the chart says changes.** A lagna two minutes from the next sign, a
+navamsha lagna forty seconds from its next, a pratyantardasha that a birth
+four minutes earlier would already have left: each is a fact the chart
+states with less certainty than its clock suggests. `sensitivity` answers,
+for one birth, the minutes earlier and later to each fact's nearest change,
+the instant of the change and what the fact becomes. It is a report: it
+never bars, and no text is read for it.
+
+**The facts** (`Sensitivity`), each a value at the birth with its nearest
+change on either side (`earlier`, `later`), `None` where the fact holds
+over the whole searched span:
+
+| fact | value | changes when |
+|---|---|---|
+| `lagnaSign` | the lagna's sign | the lagna crosses 30° |
+| `lagnaPada` | the lagna's nakshatra and pada | the lagna crosses 3°20′ |
+| `vargas` | each varga's lagna sign | the lagna crosses that varga's part boundary |
+| `moonPada` | the Moon's nakshatra and pada | the Moon crosses 3°20′ |
+| `dasha` | the lords running at a reference instant, to a depth | the reference instant crosses a period boundary as the birth's Moon moves the balance |
+| `cusps` | each bhava middle's sign, under the chart's chalit | a middle crosses 30° |
+
+**The search reuses the purifier's.** One window around the birth, the
+record's `minutes` either side, bounded as `purify`'s
+(`LONGEST_HOURS`); sampled on the purifier's seed grid (`seedMinutes`,
+a minute by default, a second at the finest); every pair of samples that
+differ bisected until the change is pinned (`edges.rs`, generalised from
+the purifier's verdict to any value that compares). The value sampled is
+the birth's whole set of facts at once, so a change of any fact is an
+edge, and each fact's nearest change either side is read off the runs:
+the first run, walking out from the birth's, whose value of that fact
+differs. A change is placed to within `EDGE_TOLERANCE_DAYS`, a hundredth
+of a second (`precisionSeconds`). As with the purifier, a fact that
+changes and changes back inside one seed cell is not seen; a minute is
+shorter than the briefest D60 part the lagna holds outside the polar
+circles.
+
+**Cruxes**, numbered in the register:
+
+- **C1140, which vargas.** D9 and D10 always, then every varga the chart
+  carries, in the catalogue's order, the D1 left out (it is `lagnaSign`).
+  A request's `vargas` replaces the list.
+- **C1141, which cusps are relevant.** The bhava middles of the chart's
+  chalit (Sripati by default), whose signs move with the meridian as well
+  as the lagna. Under a whole-sign chalit every middle is the lagna's sign
+  counted on, so `cusps` is empty, not twelve copies of `lagnaSign`.
+- **C1142, the dasha's reference.** The request names the reference
+  instant, the system (a nakshatra-seeded row, Vimshottari by default) and
+  the depth (three, the pratyantardasha, by default); the rules are the
+  context's (`settings.dasha`). A temporal balance reads the Moon's stay in
+  its segment, found by the same bisection on the Moon's segment, cached by
+  segment. No reference, no `dasha` fact.
+- **C1143, the minutes reported.** `minutes` is the distance from the
+  birth to the change, positive on both sides, to the precision above; the
+  change's `at` is the instant itself, so a consumer reads either.
+
+**Acceptance:**
+
+- on real skies (Kathmandu, a high-latitude city and a southern one, the
+  built-in ephemeris), every change reported is held through the consumer:
+  a chart founded one second inside it states the birth's fact and a chart
+  founded one second past it states the reported `to`, its lagna, vargas,
+  Moon, dasha and chalit read from the chart document, not from the kernel;
+- a fact with no change in the span says so, and widening the span finds it;
+- the kernel's tests hold the edges of a sky of straight lines to the
+  arithmetic.
+
+**Cost**, measured with criterion (`crates/sdk/benches/sensitivity.rs`, run
+with `cargo bench -p teistro --features builtin-ephemeris,rectification
+--bench sensitivity`) over the façade and the built-in ephemeris, on a birth
+at Kathmandu. Ten samples each, on an Apple-silicon Mac, 2 November 2026,
+with criterion's estimate of the mean time and its 95% confidence interval:
+
+| asked | mean | 95% interval |
+|---|---:|---:|
+| ±60 min, D9 and D10 (the default) | 23.8 ms | 17.9 to 36.8 ms |
+| ±60 min, every varga and the Vimshottari at two levels | 187 ms | 155 to 224 ms |
+| ±720 min, D9 and D10 | 125 ms | 106 to 143 ms |
+
+The cost grows with the facts watched more than with the span: each varga
+and each dasha level is another search over the same windows, and a day's
+span is twelve hours' windows over the same few facts. These are times on one
+machine, not counts, and are not gated. The relative costs of
+`05-testing/costs-measured.md` price each record's example, and no example
+asks for a sensitivity, so it has no row there.
+
 ## Cruxes
 
 **X1. Whose BPHS.** The Subodhini prints carry vv. 71–78 as a correction of

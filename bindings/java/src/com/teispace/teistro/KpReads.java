@@ -731,6 +731,51 @@ final class KpReads {
                 Optional.ofNullable(absent(raw, "conception")).map(KpReads::conception),
                 Optional.ofNullable(absent(raw, "circumstance")).map(KpReads::circumstance),
                 Optional.ofNullable(absent(raw, "baseline")).map(KpReads::baseline),
-                Optional.ofNullable(absent(raw, "svarodaya")).map(KpReads::svarodaya));
+                Optional.ofNullable(absent(raw, "svarodaya")).map(KpReads::svarodaya),
+                Optional.ofNullable(absent(raw, "sensitivity")).map(KpReads::sensitivity));
+    }
+
+    private static <T> Sensitivity.Fact<T> fact(Object raw, Function<Object, T> read) {
+        Function<Object, Sensitivity.Change<T>> change = side -> new Sensitivity.Change<>(
+                JsonRead.decimal(at(side, "at")), JsonRead.decimal(at(side, "minutes")), read.apply(at(side, "to")));
+        return new Sensitivity.Fact<>(
+                read.apply(at(raw, "value")),
+                Optional.ofNullable(absent(raw, "earlier")).map(change),
+                Optional.ofNullable(absent(raw, "later")).map(change));
+    }
+
+    private static Sensitivity.Pada pada(Object raw) {
+        return new Sensitivity.Pada(nakshatra(at(raw, "nakshatra")), JsonRead.integer(at(raw, "pada")));
+    }
+
+    /** A chart's birth-time sensitivity, its keys made members. */
+    private static Sensitivity sensitivity(Object raw) {
+        Object span = at(raw, "span");
+        Object grid = at(raw, "grid");
+        List<Sensitivity.VargaLagna> vargas = new ArrayList<>();
+        for (Object one : JsonRead.list(at(raw, "vargas"))) {
+            vargas.add(new Sensitivity.VargaLagna(
+                    JsonRead.member(Varga::byKey, "Varga", at(one, "varga")),
+                    fact(at(one, "lagna"), KpReads::rashi)));
+        }
+        List<Sensitivity.Cusp> cusps = new ArrayList<>();
+        for (Object one : JsonRead.list(at(raw, "cusps"))) {
+            cusps.add(new Sensitivity.Cusp(JsonRead.integer(at(one, "house")), fact(at(one, "sign"), KpReads::rashi)));
+        }
+        return new Sensitivity(
+                JsonRead.decimal(at(raw, "birth")),
+                JsonRead.decimal(at(span, "from")),
+                JsonRead.decimal(at(span, "to")),
+                JsonRead.decimal(at(raw, "precisionSeconds")),
+                new Purified.Grid(JsonRead.decimal(at(grid, "stepDays")), JsonRead.integer(at(grid, "cells"))),
+                fact(at(raw, "lagnaSign"), KpReads::rashi),
+                fact(at(raw, "lagnaPada"), KpReads::pada),
+                vargas,
+                fact(at(raw, "moonPada"), KpReads::pada),
+                Optional.ofNullable(absent(raw, "dasha")).map(dasha -> new Sensitivity.Running(
+                        JsonRead.decimal(at(dasha, "at")),
+                        JsonRead.member(DashaSystem::byKey, "DashaSystem", at(dasha, "system")),
+                        fact(at(dasha, "lords"), KpReads::grahas))),
+                cusps);
     }
 }

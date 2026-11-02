@@ -54,8 +54,12 @@ pub mod circumstance;
 pub mod conception;
 mod edges;
 pub mod purifier;
+pub mod sensitivity;
 pub mod svarodaya;
 
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod sensitivity_tests;
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests;
@@ -387,6 +391,7 @@ impl Day {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "RectificationWindow"))]
 #[serde(rename_all = "camelCase")]
 pub struct Window {
     /// Its start, a UTC Julian day.
@@ -711,7 +716,18 @@ pub fn narrow(window: Window, sky: &dyn Sky, rules: &Rules) -> Result<Answer, Er
     let judge = purifier::Judge::new(sky, rules);
     let step_days = rules.seed_minutes / (24.0 * 60.0);
     let known = known_edges(window, &judge)?;
-    let (runs, edges, cells) = edges::runs(window, step_days, &known, |at| judge.verdict(at))?;
+    let (pieces, cells) = edges::runs(window, step_days, &known, |at| {
+        judge.verdict(JulianDay::literal(at))
+    })?;
+    let runs: Vec<Run> = pieces
+        .into_iter()
+        .map(|piece| Run {
+            from: JulianDay::literal(piece.from),
+            to: JulianDay::literal(piece.to),
+            verdict: piece.value,
+        })
+        .collect();
+    let edges = runs.iter().skip(1).map(|run| run.from).collect();
     let (intervals, removed) = match rules.purify_as {
         PurifyAs::Bar => runs.into_iter().partition(|run| run.verdict.pure),
         PurifyAs::Weight => (runs, Vec::new()),

@@ -315,6 +315,10 @@ const rectificationAsked = RectificationRequest(
     ],
   ),
   svarodaya: SvarodayaRequest(minutes: 20),
+  sensitivity: SensitivityRequest(
+    minutes: 20,
+    dasha: SensitivityDasha(at: 2469000.5),
+  ),
 );
 
 /// A purifier's verdict and each clause it judged, colon-joined.
@@ -462,6 +466,39 @@ void putRectification(String at, Rectification rc) {
   put('$at-svarodaya-at', runSaid(sa.run));
   for (final (k, one) in sv.runs.indexed) {
     put('$at-svarodaya-$k', runSaid(one));
+  }
+  final se = rc.sensitivity!;
+  String fact<T>(SensitivityFact<T> one, String Function(T) spell) {
+    String side(SensitivityChange<T>? change) =>
+        change == null
+            ? '-'
+            : '${number(change.at)}:${number(change.minutes)}:${spell(change.to)}';
+    return '${spell(one.value)} ${side(one.earlier)} ${side(one.later)}';
+  }
+
+  String sign(Rashi rashi) => rashi.fullKey;
+  String pada(SensitivityPada one) => '${one.nakshatra.fullKey}/${one.pada}';
+  put(
+    '$at-sensitivity',
+    '${number(se.birth)} ${number(se.span.$1)} ${number(se.span.$2)} '
+        '${number(se.precisionSeconds)} ${se.grid.cells} '
+        '${number(se.grid.stepDays)}',
+  );
+  put('$at-sensitivity-lagna-sign', fact(se.lagnaSign, sign));
+  put('$at-sensitivity-lagna-pada', fact(se.lagnaPada, pada));
+  put('$at-sensitivity-moon-pada', fact(se.moonPada, pada));
+  for (final one in se.vargas) {
+    put('$at-sensitivity-${one.varga.fullKey}', fact(one.lagna, sign));
+  }
+  if (se.dasha case final dasha?) {
+    put(
+      '$at-sensitivity-dasha',
+      '${number(dasha.at)} ${dasha.system.fullKey} '
+          '${fact(dasha.lords, (List<Graha> lords) => joined(lords.map((g) => g.fullKey)))}',
+    );
+  }
+  for (final cusp in se.cusps) {
+    put('$at-sensitivity-cusp-${cusp.house}', fact(cusp.sign, sign));
   }
 }
 

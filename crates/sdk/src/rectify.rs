@@ -15,13 +15,16 @@ use std::cell::Cell;
 use serde::Serialize;
 use teistro_chart::foundation::Founder;
 use teistro_chart::zodiac::ChartZodiac;
-use teistro_core::catalogue::{ChartKind, Graha};
+use teistro_core::catalogue::{ChartKind, Graha, HouseSystem};
 use teistro_core::envelope::{Envelope, content_hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_rectification::baseline::{self, BaselineAnswer, BaselineRequest};
+use teistro_rectification::sensitivity::{
+    Sensitivity, SensitivityRules, SensitivitySky, sensitivity,
+};
 use teistro_rectification::{
     Answer, Circumstance, CircumstanceRules, Conception, ConceptionRules, ConceptionSky, Day,
     Facts, Rules, Sky, Svarodaya, SvarodayaRun, Window, circumstance, conception, narrow,
@@ -246,6 +249,61 @@ impl ChartArea<'_> {
         })
     }
 
+    /// How far a birth time can move before each fact its chart states
+    /// changes (`03-design/rectification.md`, "Birth-time sensitivity",
+    /// A2-5): the lagna's sign and pada, each varga's lagna, the Moon's
+    /// pada, the dasha running at a reference instant and the chalit's
+    /// bhava middles, each with its nearest change either side inside
+    /// `span`, found to a hundredth of a second.
+    ///
+    /// A report, never a bar. The sky is the chart's own at every instant
+    /// searched, as [`ChartArea::rectify`] reads it.
+    ///
+    /// ```no_run
+    /// # use teistro::{Context, Ephemeris, UtcOffset};
+    /// # use teistro::quantity::{JulianDay, Place};
+    /// # use teistro::rectification::Window;
+    /// # use teistro::rectification::sensitivity::SensitivityRules;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// # let place: Place = todo!();
+    /// let birth = JulianDay::literal(2_460_000.3);
+    /// // An hour either side.
+    /// let span = Window::between(JulianDay::literal(birth.get() - 1.0 / 24.0), JulianDay::literal(birth.get() + 1.0 / 24.0))?;
+    /// let read = sdk.chart().sensitivity(birth, span, &place, UtcOffset::UTC, &SensitivityRules::default())?.value;
+    /// if let Some(later) = &read.lagna_sign.later {
+    ///     println!("the lagna becomes {:?} {:.1} minutes later", later.to, later.minutes);
+    /// }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`SensitivityRules::check`] refuses, a span that does not hold
+    /// the birth, a context with no ephemeris, and whatever founding a
+    /// chart at an instant of the span refuses.
+    pub fn sensitivity(
+        self,
+        birth: JulianDay<Utc>,
+        span: Window,
+        place: &Place,
+        offset: UtcOffset,
+        rules: &SensitivityRules,
+    ) -> Result<Envelope<Sensitivity>, Error> {
+        rules.check()?;
+        let input = SensitivityInput {
+            birth,
+            span,
+            place: *place,
+            utc_offset_seconds: offset.seconds(),
+            rules,
+        };
+        self.over_sky(birth, place, offset, &input, |sky| {
+            sensitivity(birth, span, sky, rules)
+        })
+    }
+
     /// The baseline engine's rectification, reproduced
     /// (`03-design/rectification.md`, step 6): a posterior over a grid of
     /// candidate times, from a prior on the reported time and the tattva
@@ -307,13 +365,11 @@ impl ChartArea<'_> {
         input: &I,
         read: impl FnOnce(&ChartSky<'_, '_>) -> Result<T, Error>,
     ) -> Result<Envelope<T>, Error> {
-        let reckoning: Reckoning = self
-            .context()
-            .resolved()
-            .settings
-            .day
-            .ghati_reckoning
-            .try_into()?;
+        let settings = &self.context().resolved().settings;
+        let reckoning: Reckoning = settings.day.ghati_reckoning.try_into()?;
+        // A whole-sign chalit's middles only count on from the lagna's
+        // sign, so the sensitivity does not read them (C1141).
+        let chalit = settings.houses.chalit_system != HouseSystem::WholeSign;
         self.founding(offset, |founder| {
             let chart = founder.found_one(founded_at, place, ChartKind::Natal)?;
             let sky = ChartSky {
@@ -321,6 +377,7 @@ impl ChartArea<'_> {
                 place: *place,
                 zodiac: chart.value.zodiac,
                 reckoning,
+                chalit,
                 luminaries: Cell::new(None),
             };
             let answer = read(&sky)?;
@@ -340,6 +397,18 @@ struct RectifyInput<'r> {
     place: Place,
     utc_offset_seconds: i32,
     rules: &'r Rules,
+}
+
+/// What a sensitivity reading was asked, which its input hash seals.
+#[derive(Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+struct SensitivityInput<'r> {
+    birth: JulianDay<Utc>,
+    span: Window,
+    place: Place,
+    utc_offset_seconds: i32,
+    rules: &'r SensitivityRules,
 }
 
 /// What a conception report was asked, which its input hash seals.
@@ -397,6 +466,9 @@ struct ChartSky<'a, 'f> {
     zodiac: ChartZodiac,
     /// How the chart counts its ghatis, which the pranapada counts in.
     reckoning: Reckoning,
+    /// Whether the chart's chalit is one whose bhava middles the
+    /// sensitivity reads: every one but whole sign (C1141).
+    chalit: bool,
     /// The Sun and the Moon of the last instant asked, by its bits: the
     /// purifier asks the Sun and then the Moon of one instant, which is one
     /// request.
@@ -413,6 +485,7 @@ impl<'a, 'f> ChartSky<'a, 'f> {
             place: self.place,
             zodiac: chart.value.zodiac,
             reckoning: self.reckoning,
+            chalit: self.chalit,
             luminaries: Cell::new(None),
         })
     }
@@ -478,6 +551,19 @@ impl Sky for ChartSky<'_, '_> {
                         / (day.next_sunrise.get() - day.sunset.get())
             }
         })
+    }
+}
+
+impl SensitivitySky for ChartSky<'_, '_> {
+    fn middles_deg(&self, at: JulianDay<Utc>) -> Result<Option<[f64; 12]>, Error> {
+        if !self.chalit {
+            return Ok(None);
+        }
+        Ok(Some(
+            self.founder
+                .chalit_at(at, &self.place, &self.zodiac)?
+                .madhya,
+        ))
     }
 }
 

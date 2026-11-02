@@ -16,11 +16,14 @@ import java.util.Optional;
  * @param baseline The baseline engine's cascade around it; empty unless {@code baseline} was
  *     asked.
  * @param svarodaya The Shiva Svarodaya around it; empty unless {@code svarodaya} was asked.
+ * @param sensitivity How far its time can move before each fact it states changes; empty unless
+ *     {@code sensitivity} was asked.
  */
 public record Rectification(
         Optional<Purified> purified,
         Optional<Conception> conception,
         Optional<Circumstance> circumstance,
         Optional<BaselineRectification> baseline,
-        Optional<SvarodayaAround> svarodaya) {
+        Optional<SvarodayaAround> svarodaya,
+        Optional<Sensitivity> sensitivity) {
 }

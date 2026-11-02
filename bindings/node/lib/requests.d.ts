@@ -1895,6 +1895,10 @@ export interface RectificationRequest {
    */
   readonly purify?: PurifyRequest | null;
   /**
+   * How far the chart's time can move before each fact it states changes ([`ChartArea::sensitivity`]).
+   */
+  readonly sensitivity?: SensitivityRequest | null;
+  /**
    * The Shiva Svarodaya's nadis and tattvas around the chart's instant ([`ChartArea::svarodaya`], [`ChartArea::svarodaya_runs`]): a report the text does not make at a birth.
    */
   readonly svarodaya?: SvarodayaAsked | null;
@@ -3871,6 +3875,28 @@ export interface PurifyRequest {
 }
 
 /**
+ * How far the chart's time can move before each fact it states changes, searched over the minutes either side of its instant (`03-design/rectification.md`, "Birth-time sensitivity").
+ */
+export interface SensitivityRequest {
+  /**
+   * The dasha whose running periods are followed; none when left out.
+   */
+  readonly dasha?: SensitivityDasha | null;
+  /**
+   * How far either side of the chart's instant the search runs, minutes, as [`Purify::minutes`].
+   */
+  readonly minutes: number;
+  /**
+   * The seed step, minutes, a second to an hour: a fact that changes and changes back inside one step is not seen.
+   */
+  readonly seedMinutes?: number;
+  /**
+   * The vargas whose lagnas are followed; D9, D10 and every varga the chart carries when left out (C1140).
+   */
+  readonly vargas?: readonly Member<catalogue.Varga>[] | null;
+}
+
+/**
  * The Shiva Svarodaya's nadis and tattvas over the minutes either side of the chart's instant.
  */
 export interface SvarodayaAsked {
@@ -5417,6 +5443,24 @@ export interface PurifierRules {
    * The seed step, in minutes: the window is sampled this often and every change between two samples is found exactly (X15). It must be shorter than the briefest run a clause holds, which the verse's pranapada sets at six minutes a sign.
    */
   readonly seedMinutes?: number;
+}
+
+/**
+ * The dasha a sensitivity follows: the periods running at `at`, under the context's dasha settings (C1142).
+ */
+export interface SensitivityDasha {
+  /**
+   * The reference instant, a UTC Julian day.
+   */
+  readonly at: number;
+  /**
+   * How many levels, 1 to 6: 3, the pratyantardasha, when left out.
+   */
+  readonly depth?: number;
+  /**
+   * A nakshatra-seeded system; Vimshottari when left out.
+   */
+  readonly system?: Member<catalogue.DashaSystem>;
 }
 
 /**

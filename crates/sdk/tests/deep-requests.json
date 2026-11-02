@@ -3720,6 +3720,18 @@
             "seedMinutes": 1.5
           }
         },
+        "sensitivity": {
+          "dasha": {
+            "at": 1.5,
+            "depth": 1,
+            "system": "dasha_system.ASHTOTTARI"
+          },
+          "minutes": 1.5,
+          "seedMinutes": 1.5,
+          "vargas": [
+            "varga.D2"
+          ]
+        },
         "svarodaya": {
           "minutes": 1.5
         }

@@ -2241,7 +2241,7 @@ fn prashna_link(
 /// instant, and the baseline's cascade over half an hour with a marriage
 /// in the fit and an accident held out, and the Svarodaya's runs over
 /// twenty minutes either side.
-const RECTIFICATION_JSON: &str = r#"{"purify":{"minutes":20},"conception":{},"circumstance":{"facts":{"fatherPresent":false}},"baseline":{"uncertaintyMinutes":30,"sex":"MALE","events":[{"kind":"MARRIAGE","on":2469000.5},{"kind":"ACCIDENT","on":2471000.5,"heldOut":true}]},"svarodaya":{"minutes":20}}"#;
+const RECTIFICATION_JSON: &str = r#"{"purify":{"minutes":20},"conception":{},"circumstance":{"facts":{"fatherPresent":false}},"baseline":{"uncertaintyMinutes":30,"sex":"MALE","events":[{"kind":"MARRIAGE","on":2469000.5},{"kind":"ACCIDENT","on":2471000.5,"heldOut":true}]},"svarodaya":{"minutes":20},"sensitivity":{"minutes":20,"dasha":{"at":2469000.5}}}"#;
 
 /// A chart read as a birth time to rectify, as the other three print it:
 /// the purifier's runs and the clauses each held, the conception's
@@ -2316,6 +2316,96 @@ fn the_rectification(
     rectification_circumstance(report, &key, read.circumstance.as_ref().expect("asked for"));
     rectification_baseline(report, &key, read.baseline.as_ref().expect("asked for"));
     rectification_svarodaya(report, &key, read.svarodaya.as_ref().expect("asked for"));
+    rectification_sensitivity(report, &key, read.sensitivity.as_ref().expect("asked for"));
+}
+
+/// A chart's birth-time sensitivity, as the other runners print it: the
+/// span and grid, then each fact as its value and its change either side,
+/// a change `at:minutes:to` and a side with none `-`.
+fn rectification_sensitivity(
+    report: &mut Report,
+    key: &dyn Fn(&str) -> String,
+    read: &teistro::rectification::sensitivity::Sensitivity,
+) {
+    use teistro::rectification::sensitivity::{Fact, Pada};
+    fn fact<T>(fact: &Fact<T>, spell: &dyn Fn(&T) -> String) -> String {
+        let side = |change: Option<&teistro::rectification::sensitivity::Change<T>>| {
+            change.map_or_else(
+                || String::from("-"),
+                |change| {
+                    format!(
+                        "{}:{}:{}",
+                        number(change.at.get()),
+                        number(change.minutes),
+                        spell(&change.to)
+                    )
+                },
+            )
+        };
+        format!(
+            "{} {} {}",
+            spell(&fact.value),
+            side(fact.earlier.as_ref()),
+            side(fact.later.as_ref())
+        )
+    }
+    let sign = |rashi: &teistro::catalogue::Rashi| rashi.full_key().to_owned();
+    let pada = |pada: &Pada| format!("{}/{}", pada.nakshatra.full_key(), pada.pada);
+    put(
+        report,
+        &key("-sensitivity"),
+        format!(
+            "{} {} {} {} {} {}",
+            number(read.birth.get()),
+            number(read.span.from.get()),
+            number(read.span.to.get()),
+            number(read.precision_seconds),
+            read.grid.cells,
+            number(read.grid.step_days)
+        ),
+    );
+    put(
+        report,
+        &key("-sensitivity-lagna-sign"),
+        fact(&read.lagna_sign, &sign),
+    );
+    put(
+        report,
+        &key("-sensitivity-lagna-pada"),
+        fact(&read.lagna_pada, &pada),
+    );
+    put(
+        report,
+        &key("-sensitivity-moon-pada"),
+        fact(&read.moon_pada, &pada),
+    );
+    for one in &read.vargas {
+        put(
+            report,
+            &key(&format!("-sensitivity-{}", one.varga.full_key())),
+            fact(&one.lagna, &sign),
+        );
+    }
+    if let Some(dasha) = &read.dasha {
+        let lords = |lords: &Vec<Graha>| dashed(lords.iter().map(|g| g.full_key().to_owned()));
+        put(
+            report,
+            &key("-sensitivity-dasha"),
+            format!(
+                "{} {} {}",
+                number(dasha.at.get()),
+                dasha.system.full_key(),
+                fact(&dasha.lords, &lords)
+            ),
+        );
+    }
+    for cusp in &read.cusps {
+        put(
+            report,
+            &key(&format!("-sensitivity-cusp-{}", cusp.house)),
+            fact(&cusp.sign, &sign),
+        );
+    }
 }
 
 /// The conception reports at a chart's instant, as the other three print

@@ -5799,7 +5799,7 @@ function rectificationsOf(batch) {
  * A chart's rectification as the boundary's JSON writes it, its bare keys
  * made full and its members left out `null`.
  */
-function rectificationFrom({ purified = null, conception = null, circumstance = null, baseline = null, svarodaya = null }) {
+function rectificationFrom({ purified = null, conception = null, circumstance = null, baseline = null, svarodaya = null, sensitivity = null }) {
   const graha = (key) => `graha.${key}`;
   const rashi = (key) => `rashi.${key}`;
   const nakshatra = (key) => (key === null ? null : `nakshatra.${key}`);
@@ -5856,6 +5856,31 @@ function rectificationFrom({ purified = null, conception = null, circumstance = 
             stages: baseline.stages.map((stage) => ({ ...stage, notes: stage.notes.map(note) })),
           },
     svarodaya: svarodaya === null ? null : { ...svarodaya, at: { ...svarodaya.at, tithi: `tithi.${svarodaya.at.tithi}` } },
+    sensitivity: sensitivity === null ? null : sensitivityFrom(sensitivity),
+  };
+}
+
+/**
+ * A chart's birth-time sensitivity as the boundary writes it, its bare keys
+ * made full: each fact `{ value, earlier, later }`, a side with no change
+ * `null`.
+ */
+function sensitivityFrom({ lagnaSign, lagnaPada, vargas, moonPada, dasha = null, cusps, ...rest }) {
+  const fact = (one, as) => {
+    const change = (side) => (side === null ? null : { ...side, to: as(side.to) });
+    return { value: as(one.value), earlier: change(one.earlier), later: change(one.later) };
+  };
+  const rashi = (key) => `rashi.${key}`;
+  const pada = ({ nakshatra, pada }) => ({ nakshatra: `nakshatra.${nakshatra}`, pada });
+  const lords = (keys) => keys.map((key) => `graha.${key}`);
+  return {
+    ...rest,
+    lagnaSign: fact(lagnaSign, rashi),
+    lagnaPada: fact(lagnaPada, pada),
+    vargas: vargas.map((one) => ({ varga: `varga.${one.varga}`, lagna: fact(one.lagna, rashi) })),
+    moonPada: fact(moonPada, pada),
+    dasha: dasha === null ? null : { at: dasha.at, system: `dasha_system.${dasha.system}`, lords: fact(dasha.lords, lords) },
+    cusps: cusps.map((one) => ({ house: one.house, sign: fact(one.sign, rashi) })),
   };
 }
 

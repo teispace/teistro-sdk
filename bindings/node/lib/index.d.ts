@@ -3782,6 +3782,51 @@ export type BaselineNote =
       readonly contribution: number;
     };
 
+/** Where a fact changes, nearest the birth on one side. */
+export interface SensitivityChange<T> {
+  /** The instant, a Julian day (UTC), to a hundredth of a second. */
+  readonly at: number;
+  /** How far it is from the birth, minutes, positive on either side. */
+  readonly minutes: number;
+  /** What the fact becomes. */
+  readonly to: T;
+}
+
+/** A fact at the birth and its nearest change either side; `null` on a side where it holds over the whole span searched. */
+export interface SensitivityFact<T> {
+  readonly value: T;
+  readonly earlier: SensitivityChange<T> | null;
+  readonly later: SensitivityChange<T> | null;
+}
+
+/** A nakshatra's quarter. */
+export interface SensitivityPada {
+  readonly nakshatra: Nakshatra;
+  /** 1 to 4. */
+  readonly pada: number;
+}
+
+/** How far the chart's time can move before each fact it states changes (`03-design/rectification.md`, "Birth-time sensitivity"). */
+export interface Sensitivity {
+  /** The chart's instant, a Julian day (UTC). */
+  readonly birth: number;
+  /** The span searched either side of it. */
+  readonly span: Interval;
+  /** How closely each change is placed: a hundredth of a second. */
+  readonly precisionSeconds: number;
+  /** The seed grid the span was sampled on. */
+  readonly grid: { readonly stepDays: number; readonly cells: number };
+  readonly lagnaSign: SensitivityFact<Rashi>;
+  readonly lagnaPada: SensitivityFact<SensitivityPada>;
+  /** Each varga's lagna: D9, D10 and those the chart carries, unless asked. */
+  readonly vargas: readonly { readonly varga: Varga; readonly lagna: SensitivityFact<Rashi> }[];
+  readonly moonPada: SensitivityFact<SensitivityPada>;
+  /** The lords running at the reference instant, the mahadasha first; `null` unless asked. */
+  readonly dasha: { readonly at: number; readonly system: DashaSystem; readonly lords: SensitivityFact<readonly Graha[]> } | null;
+  /** Each bhava middle's sign under the chart's chalit, houses 1 to 12; none under a whole-sign chalit. */
+  readonly cusps: readonly { readonly house: number; readonly sign: SensitivityFact<Rashi> }[];
+}
+
 /** A chart read as a birth time to rectify: each member `null` unless asked (`03-design/rectification.md`). */
 export interface Rectification {
   /** What the purifier leaves standing of the window. */
@@ -3978,6 +4023,8 @@ export interface Rectification {
     /** Every run inside the window, in order and clipped to it. */
     readonly runs: readonly SvarodayaRun[];
   } | null;
+  /** How far the chart's time can move before each fact it states changes: a report, never a bar. */
+  readonly sensitivity: Sensitivity | null;
 }
 
 /** A graha's śānti: its image, ṛk, japa, fuel, food, fee, gem and place (BPHS ch. 84). */
