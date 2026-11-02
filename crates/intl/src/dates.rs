@@ -30,7 +30,7 @@ use teistro_calendar::{CalendarDate, CalendarDay, CalendarSystem, Gregorian, shi
 use teistro_core::catalogue::{Calendar, Kind, write_in_full};
 use teistro_core::error::Error;
 
-use crate::lexicon::fold;
+use crate::lexicon::{fold, in_word};
 use crate::{Intl, Value, params};
 
 /// The record's name where a binding sends it, which a refusal is named
@@ -391,14 +391,6 @@ fn digit(c: char) -> Option<u32> {
         '\u{966}'..='\u{96f}' => Some(u32::from(c) - 0x966),
         _ => None,
     }
-}
-
-fn in_word(c: char) -> bool {
-    c.is_alphabetic()
-        || ('\u{900}'..='\u{963}').contains(&c)
-        || ('\u{971}'..='\u{97f}').contains(&c)
-        || ('\u{300}'..='\u{36f}').contains(&c)
-        || matches!(c, '\u{200c}' | '\u{200d}')
 }
 
 /// A text's tokens, each with its span in scalar values.
@@ -885,5 +877,11 @@ mod tests {
                 Token::Mark('.'),
             ]
         );
+    }
+
+    #[test]
+    fn a_conjunct_stays_inside_its_word() {
+        let read: Vec<Token<'_>> = tokens("श्रावण ९").iter().map(|p| p.token).collect();
+        assert_eq!(read, [Token::Word("श्रावण"), Token::Number(9, 1)]);
     }
 }

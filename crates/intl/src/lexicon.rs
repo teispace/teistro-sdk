@@ -623,12 +623,12 @@ fn is_devanagari(text: &str) -> bool {
     text.chars().any(|c| ('\u{900}'..='\u{97f}').contains(&c))
 }
 
-/// Whether a character belongs to a word: a letter, a Devanagari sign, or
-/// a combining mark typed after a Latin letter.
-fn in_word(c: char) -> bool {
+/// Whether a character belongs to a word: a letter, a Devanagari sign the
+/// letters leave out (the virama, the nukta, the stress marks), or a
+/// combining mark typed after a Latin letter.
+pub(crate) fn in_word(c: char) -> bool {
     c.is_alphabetic()
         || ('\u{900}'..='\u{963}').contains(&c)
-        || ('\u{971}'..='\u{97f}').contains(&c)
         || ('\u{300}'..='\u{36f}').contains(&c)
         // The joiners Nepali writes inside a word (`र्‍`, a half form).
         || matches!(c, '\u{200c}' | '\u{200d}')
@@ -922,6 +922,9 @@ mod tests {
         // does not make every word one.
         assert_ne!(fold("Kartik"), fold("Kattik"));
         assert_eq!(fold("Kattik"), fold("कात्तिक"));
+        // An anusvara typed as m before a consonant, and ai typed for e.
+        assert_eq!(fold("Samkranti"), fold("Sankranti"));
+        assert_eq!(fold("Vaishakh"), fold("Baisakh"));
     }
 
     #[test]
@@ -949,5 +952,12 @@ mod tests {
         let spans: Vec<(usize, usize, &str)> =
             found.iter().map(|w| (w.start, w.end, w.text)).collect();
         assert_eq!(spans, [(0, 2, "आज"), (4, 12, "Ekadashi")]);
+    }
+
+    #[test]
+    fn a_virama_or_a_nukta_keeps_a_word_whole() {
+        let found = words("क्षमावाणी पढ़ो");
+        let texts: Vec<&str> = found.iter().map(|w| w.text).collect();
+        assert_eq!(texts, ["क्षमावाणी", "पढ़ो"]);
     }
 }

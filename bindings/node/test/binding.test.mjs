@@ -838,11 +838,11 @@ test('every catalogue enum has a complete id table', () => {
   // and `TsMuhurtaYoga`'s Ravi and Guru Pushya; 1486 since a vrata's
   // `TsFastKind`, seven, with its member of `TsKind`; 1506 since the
   // year's rulers' `TsYearOffice`, nine, `TsRulerText`, three, and
-  // `TsRulerDayRule`, five, with their three members of `TsKind`; 1513
+  // `TsRulerDayRule`, five, with their three members of `TsKind`; 1515
   // since the birth paya's `TsPaya`, four, and the classical doshas'
-  // `TsTridosha`, three, each with its member of `TsKind`; 1514 since
+  // `TsTridosha`, three, each with its member of `TsKind`; 1516 since
   // `TsEra` gained `VIRA_NIRVANA`.
-  assert.equal(entries, 1514, 'every member of every enum is in a table');
+  assert.equal(entries, 1516, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
