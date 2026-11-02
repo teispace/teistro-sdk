@@ -1,0 +1,40 @@
+---
+title: ts_verify_issue
+description: "A record answered with its receipt (`03-design/receipts-and-datasets.md` §1.2), answered as canonical JSON: `{answer, receipt}`."
+---
+
+A record answered with its receipt (`03-design/receipts-and-datasets.md` §1.2), answered as canonical JSON: `{answer, receipt}`.
+
+`answer` is the record's own answer, `{value, provenance}` where it is sealed and the value alone where it is not. `receipt` is `{format, record, request, requestDigest, settings, locale, packs, provider, tzdb, sdkVersion, calculationVersion, catalogueVersion, outputDigest, digest}`: `format` `teistro.receipt/1`, `settings` the snapshot `{profile, settings, hash}` with the whole settings document, `provider` `{name, version, dataVersion}` or null where the answer read no ephemeris, `outputDigest` the SHA-256 of the value's canonical JSON, and `digest` the seal, the SHA-256 of the receipt's canonical JSON without `digest`. An OKF *Attested Computation*'s executor; hand the receipt to `ts_verify_receipt` to attest it.
+
+`request_json` is `{"record", "request"}`: a record's name as the records table lists it and its request. A key it does not read is `INVALID_ARG`, named under `issue`; a record this build does not carry is `UNSUPPORTED`, named `issue.record`; a request that is not an object is `INVALID_ARG`, named `issue.request`; otherwise whatever the record refuses.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_verify_issue(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `verify.issue` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/verify.rs`.

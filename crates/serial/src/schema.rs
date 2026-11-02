@@ -82,9 +82,15 @@ pub fn generate_sidecar() -> Result<String, String> {
     generate_for::<crate::sidecar::GocharSidecar>(GOCHAR_SIDECAR_ID, "A chart's gochar sidecar")
 }
 
-/// One root type's schema under `id` and `title`.
+/// One root type's schema under `id` and `title`, by the rules
+/// [`generate`] states: what generates every schema the SDK checks in,
+/// the chart document's and the research dataset's alike.
+///
+/// # Errors
+///
+/// As [`generate`].
 #[cfg(feature = "schema")]
-fn generate_for<T: schemars::JsonSchema>(id: &str, title: &str) -> Result<String, String> {
+pub fn generate_for<T: schemars::JsonSchema>(id: &str, title: &str) -> Result<String, String> {
     let generator = schemars::generate::SchemaSettings::draft2020_12().into_generator();
     let mut schema = generator.into_root_schema_for::<T>();
     schema.insert("$id".to_owned(), id.into());

@@ -10957,6 +10957,61 @@ fn claims_cross_as_the_facade_judges_them() {
     assert_eq!(ctx.last_error().2.as_deref(), Some("claims.clock"));
 }
 
+/// A receipt issued across the boundary is the façade's, and checked
+/// across it holds; a receipt of a record this build lacks and a receipt
+/// in another format are refused by name
+/// (`03-design/receipts-and-datasets.md` §4).
+#[test]
+fn a_receipt_crosses_and_holds() {
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
+    let call = |entry: JsonEntry, request: &str| -> Result<serde_json::Value, Status> {
+        let request = CString::new(request).unwrap();
+        let mut json = TsString::empty();
+        // SAFETY: a live context, a NUL-terminated request and a valid slot.
+        let status = unsafe { entry(ctx.handle, request.as_ptr(), &raw mut json) };
+        if status == Status::Ok {
+            Ok(serde_json::from_str(&owned(json)).unwrap())
+        } else {
+            // SAFETY: the empty descriptor a refusal leaves.
+            unsafe { ts_string_free(&raw mut json) };
+            Err(status)
+        }
+    };
+    let asked = r#"{"record": "almanac.sankalpa", "request": {"at": 2461055.59375,
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}}"#;
+    let issued = call(teistro_ffi::verify::ts_verify_issue, asked).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .verify()
+        .issue(&teistro::verify::IssueRequest::from_json(asked).unwrap())
+        .unwrap();
+    assert_eq!(
+        issued,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    let receipt = issued["receipt"].to_string();
+    let check = call(teistro_ffi::verify::ts_verify_receipt, &receipt).unwrap();
+    assert_eq!(check["verdict"], "HELD", "{check}");
+
+    let lacking = r#"{"record": "almanac.nothing", "request": {}}"#;
+    assert_eq!(
+        call(teistro_ffi::verify::ts_verify_issue, lacking).unwrap_err(),
+        Status::Unsupported
+    );
+    assert_eq!(ctx.last_error().2.as_deref(), Some("issue.record"));
+    let other = receipt.replace("teistro.receipt/1", "teistro.receipt/2");
+    assert_eq!(
+        call(teistro_ffi::verify::ts_verify_receipt, &other).unwrap_err(),
+        Status::SchemaVersion
+    );
+    assert_eq!(ctx.last_error().2.as_deref(), Some("receipt.format"));
+}
+
 /// A Tibetan year's names cross as the calendar gives them, written in
 /// full, and a year before the first rabjung is refused by name.
 #[test]

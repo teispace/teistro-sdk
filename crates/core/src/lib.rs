@@ -72,6 +72,7 @@ pub mod math;
 pub mod preset;
 pub mod quantity;
 pub mod ratio;
+pub mod receipt;
 pub mod registry;
 pub mod settings;
 #[cfg(feature = "signed-packs")]

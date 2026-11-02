@@ -331,6 +331,8 @@ const Map<String, Type> _records = {
   'time.convert': ScaleRequest,
   'time.resolve': ResolveAsked,
   'verify.claims': ClaimsRequest,
+  'verify.issue': IssueRequest,
+  'verify.receipt': Receipt,
 };
 
 void main() {

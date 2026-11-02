@@ -466,6 +466,10 @@ from ._requests import (
     LookupRequest as LookupRequest,
     DatesRequest as DatesRequest,
     ClaimsRequest as ClaimsRequest,
+    IssueRequest as IssueRequest,
+    Receipt as Receipt,
+    ReceiptProvider as ReceiptProvider,
+    SettingsSnapshot as SettingsSnapshot,
     WordsAmount as WordsAmount,
     WordsAmountValue as WordsAmountValue,
     WordsDigits as WordsDigits,
@@ -1219,6 +1223,10 @@ __all__ = [
     "LookupRequest",
     "DatesRequest",
     "ClaimsRequest",
+    "IssueRequest",
+    "Receipt",
+    "ReceiptProvider",
+    "SettingsSnapshot",
     "WordsAmount",
     "WordsAmountValue",
     "WordsDigits",
@@ -1243,6 +1251,11 @@ __all__ = [
     "Claim",
     "Claims",
     "ClaimsAnswer",
+    "Issued",
+    "ReceiptSide",
+    "ReceiptMove",
+    "NotRerunReason",
+    "ReceiptCheck",
     "InWords",
     "AmountInWords",
     # The transit hit list, and its names.
@@ -5122,6 +5135,115 @@ class VerifyArea(_Area):
             ),
             provenance=decode_provenance(envelope["provenance"]),
         )
+
+    def issue(self, request: IssueRequest) -> "Issued":
+        """A record's answer and its receipt: what was asked, under which
+        settings, ephemeris and versions, and the digest of what was
+        answered (`03-design/receipts-and-datasets.md` §1). The answer is
+        the record's own JSON, as `verify.receipt` digests it; the receipt
+        is handed back whole.
+
+        >>> # issued = sdk.verify.issue({"record": "calendar.convert", "request": {
+        >>> #     "date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}})
+        >>> # sdk.verify.receipt(issued.receipt).verdict  # 'HELD'
+        """
+        issued = json.loads(
+            self._context._through_provider(lambda: self._context.inner.verify_issue(json.dumps(request)))
+        )
+        return Issued(answer=issued["answer"], receipt=issued["receipt"])
+
+    def receipt(self, receipt: Union[Receipt, Mapping[str, Any], str]) -> "ReceiptCheck":
+        """A receipt checked: answered again under its own settings and
+        compared, `HELD`, `DIFFERS`, `NOT_RERUN` (with why) or `BROKEN` (a
+        field edited after issue), with every version that moved between
+        the two sides. A receipt is the record or its JSON text."""
+        text = receipt if isinstance(receipt, str) else json.dumps(receipt)
+        raw = json.loads(self._context._through_provider(lambda: self._context.inner.verify_receipt(text)))
+        reason = raw["reason"]
+        return ReceiptCheck(
+            verdict=raw["verdict"],
+            record=raw["record"],
+            moved=tuple(ReceiptMove(field=m["field"], issued=m["issued"], now=m["now"]) for m in raw["moved"]),
+            broken=tuple(raw["broken"]),
+            issued=_receipt_side(raw["issued"]),
+            now=_receipt_side(raw["now"]),
+            reason=None if reason is None else NotRerunReason(cause=reason["cause"], detail=reason["detail"]),
+        )
+
+
+def _receipt_side(raw: Mapping[str, Any]) -> "ReceiptSide":
+    version = raw["sdkVersion"]
+    return ReceiptSide(
+        sdk_version=(version["major"], version["minor"], version["patch"]),
+        calculation_version=raw["calculationVersion"],
+        catalogue_version=raw["catalogueVersion"],
+        provider=None if raw["provider"] is None else MappingProxyType(dict(raw["provider"])),
+        tzdb=raw["tzdb"],
+    )
+
+
+@dataclass(frozen=True)
+class Issued:
+    """What `verify.issue` answers."""
+
+    answer: Any
+    """The record's own answer, `{value, provenance}` or the value alone,
+    as its JSON reads."""
+
+    receipt: Receipt
+    """The receipt, to hand back whole to `verify.receipt`."""
+
+
+@dataclass(frozen=True)
+class ReceiptSide:
+    """What answered a receipt: its versions, ephemeris and zone database."""
+
+    sdk_version: Tuple[int, int, int]
+    calculation_version: int
+    catalogue_version: int
+    provider: Optional[Mapping[str, str]]
+    """`name`, `version` and `dataVersion` of the ephemeris; `None` where
+    none was read."""
+
+    tzdb: str
+
+
+@dataclass(frozen=True)
+class ReceiptMove:
+    """A field that moved between the receipt's side and this one."""
+
+    field: str
+    """`output`, `sdkVersion`, `calculationVersion`, `catalogueVersion`,
+    `provider` or `tzdb`."""
+
+    issued: str
+    now: str
+
+
+@dataclass(frozen=True)
+class NotRerunReason:
+    """Why a receipt was not answered again."""
+
+    cause: Literal["RECORD", "PROVIDER", "SETTINGS", "LOCALE", "PACKS", "OUT_OF_RANGE", "REFUSED"]
+    detail: str
+
+
+@dataclass(frozen=True)
+class ReceiptCheck:
+    """What `verify.receipt` answers."""
+
+    verdict: Literal["HELD", "DIFFERS", "NOT_RERUN", "BROKEN"]
+    record: str
+    moved: Tuple[ReceiptMove, ...]
+    """Every field that moved, `output` first when the digest did."""
+
+    broken: Tuple[str, ...]
+    """The digests that no longer hold, on a receipt `BROKEN`."""
+
+    issued: ReceiptSide
+    now: ReceiptSide
+    reason: Optional[NotRerunReason]
+    """Why it was not answered again, on `NOT_RERUN`."""
 
 
 @dataclass(frozen=True)

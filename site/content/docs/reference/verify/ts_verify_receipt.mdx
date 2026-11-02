@@ -1,0 +1,40 @@
+---
+title: ts_verify_receipt
+description: "A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its record answered again on this context under the receipt's own settings, locale and request, and the value's digest compared, answered as canonical JSON: `{verdict, record, moved, broken, issued, now, reason}`."
+---
+
+A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its record answered again on this context under the receipt's own settings, locale and request, and the value's digest compared, answered as canonical JSON: `{verdict, record, moved, broken, issued, now, reason}`.
+
+`verdict` is `HELD` (the digest is the receipt's), `DIFFERS` (another), `NOT_RERUN` (not answered again; `reason` is `{cause, detail}`, the cause `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE` or `REFUSED`) or `BROKEN` (a digest the receipt carries is not its own fields'; `broken` names each: `requestDigest`, `settings.hash`, `digest`). `moved` lists each field that moved between the receipt and the check, `{field, issued, now}`: `output` first when the value did, then `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider` and `tzdb`. `issued` and `now` are the two sides' `{sdkVersion, calculationVersion, catalogueVersion, provider, tzdb}`. An OKF *Attested Computation*'s attester.
+
+`request_json` is the receipt `ts_verify_issue` answered, whole. A key it does not have is `INVALID_ARG`, named under `receipt`; a format other than `teistro.receipt/1` is `SCHEMA_VERSION`, named `receipt.format`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_verify_receipt(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `verify.receipt` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/verify.rs`.

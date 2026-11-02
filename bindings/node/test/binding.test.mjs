@@ -3459,6 +3459,32 @@ test('what a text claims of the time, checked against the almanac', () => {
   ctx.dispose();
 });
 
+test('a receipt issued, checked again, and caught when edited', () => {
+  const ctx = context();
+  const { answer, receipt } = ctx.verify.issue({
+    record: 'calendar.convert',
+    request: { date: { year: 2026, month: 10, day: 10 }, into: 'calendar.BIKRAM_SAMBAT' },
+  });
+  assert.ok(Object.isFrozen(receipt), 'frozen');
+  assert.equal(receipt.format, 'teistro.receipt/1');
+  assert.equal(receipt.record, 'calendar.convert');
+  assert.ok(answer, 'answered');
+  const held = ctx.verify.receipt(receipt);
+  assert.deepEqual([held.verdict, held.moved, held.broken, held.reason], ['HELD', [], [], null]);
+  assert.equal(ctx.verify.receipt(JSON.stringify(receipt)).verdict, 'HELD');
+  const edited = ctx.verify.receipt({ ...receipt, locale: 'de-Latn-DE' });
+  assert.deepEqual([edited.verdict, edited.broken], ['BROKEN', ['digest']]);
+  assert.throws(
+    () => ctx.verify.issue({ record: 'almanac.nothing', request: {} }),
+    (error) => error instanceof TeistroError && error.field === 'issue.record',
+  );
+  assert.throws(
+    () => ctx.verify.receipt({ ...receipt, format: 'teistro.receipt/2' }),
+    (error) => error instanceof TeistroError && error.field === 'receipt.format',
+  );
+  ctx.dispose();
+});
+
 test('a date and a time as text and parts, in the locale\'s pattern', () => {
   const ctx = context({ locale: 'en-Latn' });
   const dawn = ctx.intl.time({ at: { hour: 6, minute: 5 }, hour12: true, locale: 'hi-Deva-IN' });

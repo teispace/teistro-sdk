@@ -269,6 +269,10 @@ name = "verify"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "receipt"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "ritu"
 required-features = ["builtin-ephemeris"]
 

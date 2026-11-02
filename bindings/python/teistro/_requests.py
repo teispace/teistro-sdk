@@ -60,6 +60,8 @@ __all__ = [
     "ScaleRequest",
     "ResolveAsked",
     "ClaimsRequest",
+    "IssueRequest",
+    "Receipt",
     "Anniversary",
     "AshauchRequest",
     "AshauchTable",
@@ -149,6 +151,9 @@ __all__ = [
     "StudyKind",
     "ResearchSubject",
     "CivilTime",
+    "ReceiptProvider",
+    "Version",
+    "SettingsSnapshot",
     "FirstYearAdhika",
     "InSamsarpa",
     "JanmaOptions",
@@ -1605,6 +1610,62 @@ class ClaimsRequest(TypedDict, total=False):
     """The offset from UTC the place's civil days run at, in seconds, east positive."""
 
 
+class IssueRequest(TypedDict, total=False):
+    """A record to answer with a receipt: its name and its request."""
+
+    record: Required[str]
+    """The record's name, `area.operation`, as `records` lists it."""
+
+    request: Required[Any]
+    """The record's request, as that record reads it."""
+
+
+class Receipt(TypedDict, total=False):
+    """What a record was asked, under what, and the digest of what it answered."""
+
+    calculationVersion: Required[int]
+    """The calculation version."""
+
+    catalogueVersion: Required[int]
+    """The catalogue's version."""
+
+    digest: Required[str]
+    """The seal: the hash of this receipt's canonical JSON with `digest` left out."""
+
+    format: Required[str]
+    """`FORMAT`."""
+
+    locale: Required[str]
+    """The locale the context answered in."""
+
+    outputDigest: Required[str]
+    """The hash of the answer's value, canonical JSON."""
+
+    packs: Required[Any]
+    """The runtime packs the context had loaded."""
+
+    provider: Optional[ReceiptProvider]
+    """The ephemeris the answer was computed with; none where it read none."""
+
+    record: Required[str]
+    """The record's name, `area.operation`."""
+
+    request: Required[Any]
+    """The request as the record read it."""
+
+    requestDigest: Required[str]
+    """The hash of the request's canonical JSON."""
+
+    sdkVersion: Required[Version]
+    """The SDK's version."""
+
+    settings: Required[SettingsSnapshot]
+    """The settings, whole, with their profile and hash."""
+
+    tzdb: Required[str]
+    """The zone database's version."""
+
+
 class Anniversary(TypedDict, total=False):
     """An anniversary a request asks the days of."""
 
@@ -2904,6 +2965,45 @@ class CivilTime(TypedDict, total=False):
     """Left out, zero: what the reader below takes, so the schema read against does not require what the reader does not."""
 
     second: Required[int]
+
+
+class ReceiptProvider(TypedDict, total=False):
+    """The ephemeris an answer was computed with, as a receipt names it."""
+
+    dataVersion: Required[str]
+    """The version of the data it read."""
+
+    name: Required[str]
+    """The provider's name."""
+
+    version: Required[str]
+    """Its version."""
+
+
+class Version(TypedDict, total=False):
+    """A semantic version."""
+
+    major: Required[int]
+    """Major."""
+
+    minor: Required[int]
+    """Minor."""
+
+    patch: Required[int]
+    """Patch."""
+
+
+class SettingsSnapshot(TypedDict, total=False):
+    """The settings something was computed under, whole."""
+
+    hash: Required[str]
+    """The SHA-256 of the settings' canonical JSON: the `settings_hash` a provenance carries."""
+
+    profile: Required[str]
+    """The profile the settings were resolved from."""
+
+    settings: Required[Any]
+    """The settings document, every knob, as `Context::settings_json` writes it. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here."""
 
 
 FirstYearAdhika: TypeAlias = Literal['ADHIKA', 'NIJA']

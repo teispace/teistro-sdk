@@ -106,16 +106,23 @@ const UNTYPED_REQUESTS: [&str; 2] = ["engine.call", "engine.manifest"];
 /// The parts of a request that are a JSON value and nothing narrower: the
 /// rule language's untagged references (a subject, a sign, a body), a
 /// record read in a second step by its own reader (a rule set, research's
-/// test and control, a chart comparison's two chart requests), and a
-/// theme's open style and content.
-const RAW_REQUEST_PARTS: [&str; 11] = [
+/// test and control, a chart comparison's two chart requests), a theme's
+/// open style and content, and a receipt's request, packs and settings,
+/// which are any record's, the stamps the issuing context wrote, and the
+/// settings document `settings.describe` states: a receipt is handed back
+/// whole, as it came.
+const RAW_REQUEST_PARTS: [&str; 15] = [
     "BodyRef",
     "BodySubject",
     "ChartDisagreementsRequest.first",
     "ChartDisagreementsRequest.second",
+    "IssueRequest.request",
+    "Receipt.packs",
+    "Receipt.request",
     "ResearchRequest.control",
     "ResearchRequest.rules",
     "ResearchRequest.test",
+    "SettingsSnapshot.settings",
     "SignRef",
     "Subject",
     "ThemePatch.content",

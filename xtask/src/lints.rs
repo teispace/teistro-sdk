@@ -3409,7 +3409,11 @@ const READ_THROUGH: [&str; 6] = [
 /// The JSON readers no tool reads, each with why: what the third gate
 /// allows, so that a reader nobody reaches is a decision written down
 /// and not an omission.
-const NOT_A_TOOL: [(&str, &str); 5] = [
+const NOT_A_TOOL: [(&str, &str); 6] = [
+    (
+        "Dataset",
+        "a research dataset, read once to make a study's `research.study` request (`receipts-and-datasets.md` §2); an agent sends that request to the `research.study` tool",
+    ),
     (
         "DisagreementRequest",
         "compares two contexts, and the agent server computes every context over the one engine its command line chose (`mcp-server.md` D6), so a tool cannot name the second setup's ephemeris; an agent compares by calling `almanac.days` under each profile",
@@ -3560,7 +3564,7 @@ fn every_reader_reaches_a_tool(root: &Path, outcome: &mut Outcome) {
 /// taken does not compile, and this list keeps a new area method from
 /// taking a map in the first place. An entry that no longer matches is
 /// refused too, so the list cannot outlive the parameter it excuses.
-const JAVA_UNTYPED: [(&str, &str); 21] = [
+const JAVA_UNTYPED: [(&str, &str); 22] = [
     ("ChartArea.layout(layout)", MEMBER_OR_KEY),
     ("ChartOptions.ChartOptions(readings)", WRITTEN),
     ("ChartOptions.Drawing(layout)", MEMBER_OR_KEY),
@@ -3580,6 +3584,10 @@ const JAVA_UNTYPED: [(&str, &str); 21] = [
     ("Engine.call(arguments)", OPEN),
     ("IntlArea.render(params)", OPEN),
     ("IshtaDevata.IshtaDevata(rules)", ANSWERED),
+    (
+        "Issued.Issued(answer)",
+        "any record's answer, as `verify.issue` answered it and its receipt digested it (`receipts-and-datasets.md` §1)",
+    ),
     (
         "Json.write(value)",
         "the writer itself, which takes any value a request holds",

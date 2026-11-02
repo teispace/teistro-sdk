@@ -579,9 +579,16 @@ pub mod research {
 }
 /// What a text claims of the time, checked against what the SDK computes
 /// (`03-design/lexicon.md` §3): what `sdk.verify().claims` takes and
-/// answers with.
+/// answers with; and receipts, a record's answer named so it can be
+/// computed again, and the check of one (`03-design/receipts-and-datasets.md`
+/// §1): what `sdk.verify().issue` and `sdk.verify().receipt` take and
+/// answer with.
 pub mod verify {
+    pub use crate::area::receipt::{
+        IssueRequest, Issued, Moved, NotRerun, NotRerunCause, ReceiptCheck, ReceiptVerdict, Side,
+    };
     pub use crate::area::verify::{Claim, Claims, ClaimsRequest, Unread, Verdict};
+    pub use teistro_core::receipt::{FORMAT, Receipt, ReceiptProvider};
 }
 // Prashna: the query chart read as Shatpanchashika prints it
 // (`03-design/prashna.md`).
@@ -604,7 +611,7 @@ pub use crate::first_year_request::FirstYearQuery;
 #[cfg(feature = "pakshi")]
 pub use crate::pakshi_request::{PakshiDay, PakshiNative, PakshiRequest};
 #[cfg(feature = "research")]
-pub use crate::research_request::{ResearchAnswer, ResearchRequest, ResearchStudy};
+pub use crate::research_request::{DatasetAnswer, ResearchAnswer, ResearchRequest, ResearchStudy};
 pub use crate::sankalpa_request::SankalpaRequest;
 #[cfg(feature = "pakshi")]
 pub use teistro_pakshi as pakshi;

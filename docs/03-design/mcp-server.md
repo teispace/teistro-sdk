@@ -122,6 +122,7 @@ the protocol's own failures.
 | `intl.lexicon`, `intl.lookup` | `LexiconRequest`, `LookupRequest`: a locale's names for every catalogue member, and the members a text may name | built since (`lexicon.md` §1) |
 | `intl.dates` | `DatesRequest`: the Bikram Sambat and Gregorian dates a text names, every reading of each | built since (`lexicon.md` §2) |
 | `verify.claims` | `ClaimsRequest`: what a text claims of the time, judged against the sankalpa at an instant and a place | built since (`lexicon.md` §3) |
+| `verify.issue`, `verify.receipt` | `IssueRequest`, `Receipt`: a record's answer with its receipt, and a receipt answered again under its own settings and compared, the attester of an OKF attested computation | built since (`receipts-and-datasets.md` §1) |
 
 Step 2 needed the chart's composition in the façade. Until it was built,
 `ts_chart_found` composed a chart's families inside the boundary crate

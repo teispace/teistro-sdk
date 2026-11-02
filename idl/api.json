@@ -18879,6 +18879,108 @@
       "source": "crates/ffi/src/verify.rs"
     },
     {
+      "name": "ts_verify_issue",
+      "doc": "A record answered with its receipt (`03-design/receipts-and-datasets.md`\n§1.2), answered as canonical JSON: `{answer, receipt}`.\n\n`answer` is the record's own answer, `{value, provenance}` where it is\nsealed and the value alone where it is not. `receipt` is `{format,\nrecord, request, requestDigest, settings, locale, packs, provider, tzdb,\nsdkVersion, calculationVersion, catalogueVersion, outputDigest,\ndigest}`: `format` `teistro.receipt/1`, `settings` the snapshot\n`{profile, settings, hash}` with the whole settings document,\n`provider` `{name, version, dataVersion}` or null where the answer read\nno ephemeris, `outputDigest` the SHA-256 of the value's canonical JSON,\nand `digest` the seal, the SHA-256 of the receipt's canonical JSON\nwithout `digest`. An OKF *Attested Computation*'s executor; hand the\nreceipt to `ts_verify_receipt` to attest it.\n\n`request_json` is `{\"record\", \"request\"}`: a record's name as the\nrecords table lists it and its request. A key it does not read is\n`INVALID_ARG`, named under `issue`; a record this build does not\ncarry is `UNSUPPORTED`, named `issue.record`; a request that is not an\nobject is `INVALID_ARG`, named `issue.request`; otherwise whatever the\nrecord refuses.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/verify.rs"
+    },
+    {
+      "name": "ts_verify_receipt",
+      "doc": "A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its\nrecord answered again on this context under the receipt's own settings,\nlocale and request, and the value's digest compared, answered as\ncanonical JSON: `{verdict, record, moved, broken, issued, now, reason}`.\n\n`verdict` is `HELD` (the digest is the receipt's), `DIFFERS` (another),\n`NOT_RERUN` (not answered again; `reason` is `{cause, detail}`, the\ncause `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE`\nor `REFUSED`) or `BROKEN` (a digest the receipt carries is not its own\nfields'; `broken` names each: `requestDigest`, `settings.hash`,\n`digest`). `moved` lists each field that moved between the receipt and\nthe check, `{field, issued, now}`: `output` first when the value did,\nthen `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider`\nand `tzdb`. `issued` and `now` are the two sides' `{sdkVersion,\ncalculationVersion, catalogueVersion, provider, tzdb}`. An OKF\n*Attested Computation*'s attester.\n\n`request_json` is the receipt `ts_verify_issue` answered, whole. A key\nit does not have is `INVALID_ARG`, named under `receipt`; a format other\nthan `teistro.receipt/1` is `SCHEMA_VERSION`, named `receipt.format`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/verify.rs"
+    },
+    {
       "name": "ts_numerology_profile",
       "doc": "Reads a name and a birth date under numerology's two systems and\nanswers with the profile as canonical JSON: the name under each\nsystem, word by word with every reduction step, Balliett's birth\nnumber, Cheiro's day and year, and the baseline engine's own numbers\nunder the baseline rules only (`03-design/numerology.md`).\n\n`request_json` is `{\"name\", \"date\", \"rules\"}`: the name in the 26\nLatin letters, the date as `{\"year\", \"month\", \"day\"}` in the Gregorian\ncalendar, and the `NumerologyRules` with every field optional. A\ncharacter outside A to Z while `rules.nonLatin` refuses, a name with\nno letter, or a date the calendar does not have is `INVALID_ARG`,\nnamed under `numerology`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",

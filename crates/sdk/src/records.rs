@@ -462,6 +462,7 @@ pub fn records() -> Vec<Record> {
     all.extend(time_records());
     all.extend(engine_records());
     all.push(verify_record());
+    all.extend(receipt_records());
     all.sort_by_key(|record| record.name);
     all
 }
@@ -935,6 +936,38 @@ fn verify_record() -> Record {
         compares: None,
         schemas: schemas!(crate::area::verify::ClaimsAsked => crate::verify::Claims),
     }
+}
+
+/// Receipts (`03-design/receipts-and-datasets.md` §1, SR-51): a record
+/// answered with a receipt, and a receipt checked by answering it again.
+/// Neither is sealed: what each answers carries its own versions.
+fn receipt_records() -> [Record; 2] {
+    [
+        Record {
+            name: "verify.issue",
+            boundary: "ts_verify_issue",
+            title: "A record answered with a receipt that lets it be computed again",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::verify::IssueRequest::from_json(json)?;
+                Answered::plain(&context.verify().issue(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::verify::IssueRequest => crate::verify::Issued),
+        },
+        Record {
+            name: "verify.receipt",
+            boundary: "ts_verify_receipt",
+            title: "A receipt checked: its record answered again and the digests compared",
+            reads: None,
+            run: |context, json| {
+                let receipt = crate::verify::Receipt::from_json(json)?;
+                Answered::plain(&context.verify().receipt(&receipt))
+            },
+            compares: None,
+            schemas: schemas!(crate::verify::Receipt => crate::verify::ReceiptCheck),
+        },
+    ]
 }
 
 /// The engine passthrough (ADR-0030): what the engine says it offers,

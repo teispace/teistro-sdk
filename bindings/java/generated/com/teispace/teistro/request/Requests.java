@@ -51,7 +51,9 @@ public final class Requests {
             Map.entry("time.civil", CivilAsked::of),
             Map.entry("time.convert", ScaleRequest::of),
             Map.entry("time.resolve", ResolveAsked::of),
-            Map.entry("verify.claims", ClaimsRequest::of));
+            Map.entry("verify.claims", ClaimsRequest::of),
+            Map.entry("verify.issue", IssueRequest::of),
+            Map.entry("verify.receipt", Receipt::of));
 
     private Requests() {}
 
