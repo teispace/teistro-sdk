@@ -22840,6 +22840,84 @@ Rectification _rectification(Map<String, Object?> raw) {
     circumstance: some(raw['circumstance'], _circumstance),
     baseline: some(raw['baseline'], _rectificationBaseline),
     svarodaya: some(raw['svarodaya'], _svarodaya),
+    sensitivity: some(raw['sensitivity'], _sensitivity),
+  );
+}
+
+/// A chart's birth-time sensitivity from its JSON, its keys made members.
+Sensitivity _sensitivity(Map<String, Object?> raw) {
+  SensitivityFact<T> fact<T>(Object? value, T Function(Object?) read) {
+    final one = _object(value);
+    SensitivityChange<T>? change(Object? side) =>
+        side == null
+            ? null
+            : SensitivityChange<T>(
+              at: _real(_object(side)['at']),
+              minutes: _real(_object(side)['minutes']),
+              to: read(_object(side)['to']),
+            );
+    return SensitivityFact<T>(
+      value: read(one['value']),
+      earlier: change(one['earlier']),
+      later: change(one['later']),
+    );
+  }
+
+  SensitivityPada pada(Object? value) {
+    final one = _object(value);
+    return SensitivityPada(
+      nakshatra: _key(one['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+      pada: one['pada']! as int,
+    );
+  }
+
+  Rashi sign(Object? value) => _key(value, Rashi.byKey, Rashi.unknown);
+  List<Graha> lords(Object? value) =>
+      List<Graha>.unmodifiable(_keys(value, Graha.byKey, Graha.unknown));
+  final span = _object(raw['span']);
+  final grid = _object(raw['grid']);
+  final dasha = raw['dasha'];
+  return Sensitivity(
+    birth: _real(raw['birth']),
+    span: (_real(span['from']), _real(span['to'])),
+    precisionSeconds: _real(raw['precisionSeconds']),
+    grid: PurifierGrid(
+      stepDays: _real(grid['stepDays']),
+      cells: grid['cells']! as int,
+    ),
+    lagnaSign: fact(raw['lagnaSign'], sign),
+    lagnaPada: fact(raw['lagnaPada'], pada),
+    vargas: List<VargaLagna>.unmodifiable(
+      _array(raw['vargas'])
+          .map(_object)
+          .map(
+            (one) => VargaLagna(
+              varga: Varga.byKey(one['varga']! as String) ?? Varga.unknown,
+              lagna: fact(one['lagna'], sign),
+            ),
+          ),
+    ),
+    moonPada: fact(raw['moonPada'], pada),
+    dasha:
+        dasha == null
+            ? null
+            : RunningDasha(
+              at: _real(_object(dasha)['at']),
+              system:
+                  DashaSystem.byKey(_object(dasha)['system']! as String) ??
+                  DashaSystem.unknown,
+              lords: fact(_object(dasha)['lords'], lords),
+            ),
+    cusps: List<CuspSign>.unmodifiable(
+      _array(raw['cusps'])
+          .map(_object)
+          .map(
+            (one) => CuspSign(
+              house: one['house']! as int,
+              sign: fact(one['sign'], sign),
+            ),
+          ),
+    ),
   );
 }
 
@@ -27990,6 +28068,7 @@ final class RectificationRequest extends _Facade {
     this.circumstance,
     this.baseline,
     this.svarodaya,
+    this.sensitivity,
   });
 
   /// The purifier of BPHS ch. 2 vv. 67–78 over a window around the
@@ -28010,6 +28089,10 @@ final class RectificationRequest extends _Facade {
   /// every run of a window around it.
   final SvarodayaRequest? svarodaya;
 
+  /// How far the chart's time can move before each fact it states
+  /// changes, searched over the minutes either side of its instant.
+  final SensitivityRequest? sensitivity;
+
   /// Its JSON, as the SDK reads it.
   @override
   Object? get _wire => <String, Object?>{
@@ -28019,6 +28102,7 @@ final class RectificationRequest extends _Facade {
       'circumstance': circumstance._record,
     if (baseline case final baseline?) 'baseline': baseline._record,
     if (svarodaya case final svarodaya?) 'svarodaya': svarodaya._record,
+    if (sensitivity case final sensitivity?) 'sensitivity': sensitivity._wire,
   };
 
   String get _json => jsonEncode(_wire);
@@ -28992,6 +29076,7 @@ final class Rectification {
     required this.circumstance,
     required this.baseline,
     required this.svarodaya,
+    required this.sensitivity,
   });
 
   /// What the purifier leaves standing of the window.
@@ -29008,6 +29093,178 @@ final class Rectification {
 
   /// The Shiva Svarodaya around it.
   final SvarodayaAround? svarodaya;
+
+  /// How far its time can move before each fact it states changes.
+  final Sensitivity? sensitivity;
+}
+
+/// Where a fact changes, nearest the birth on one side.
+final class SensitivityChange<T> extends _Value {
+  const SensitivityChange({
+    required this.at,
+    required this.minutes,
+    required this.to,
+  });
+
+  /// The instant, as a Julian day (UTC), to a hundredth of a second.
+  final double at;
+
+  /// How far it is from the birth, minutes, positive on either side.
+  final double minutes;
+
+  /// What the fact becomes.
+  final T to;
+
+  @override
+  List<Object?> get _fields => [at, minutes, to];
+}
+
+/// A fact at the birth and its nearest change either side; null on a side
+/// where it holds over the whole span searched.
+final class SensitivityFact<T> extends _Value {
+  const SensitivityFact({
+    required this.value,
+    required this.earlier,
+    required this.later,
+  });
+
+  /// The fact at the birth.
+  final T value;
+
+  /// Its nearest change before the birth.
+  final SensitivityChange<T>? earlier;
+
+  /// Its nearest change after the birth.
+  final SensitivityChange<T>? later;
+
+  @override
+  List<Object?> get _fields => [value, earlier, later];
+}
+
+/// A nakshatra's quarter: which nakshatra, and which of its four padas.
+final class SensitivityPada extends _Value {
+  const SensitivityPada({required this.nakshatra, required this.pada});
+
+  /// The nakshatra.
+  final Nakshatra nakshatra;
+
+  /// The pada, 1 to 4.
+  final int pada;
+
+  @override
+  List<Object?> get _fields => [nakshatra, pada];
+}
+
+/// One varga's lagna and its changes.
+final class VargaLagna extends _Value {
+  const VargaLagna({required this.varga, required this.lagna});
+
+  /// Which varga.
+  final Varga varga;
+
+  /// Its lagna's sign.
+  final SensitivityFact<Rashi> lagna;
+
+  @override
+  List<Object?> get _fields => [varga, lagna];
+}
+
+/// One bhava middle's sign under the chart's chalit, and its changes.
+final class CuspSign extends _Value {
+  const CuspSign({required this.house, required this.sign});
+
+  /// The house, 1 to 12.
+  final int house;
+
+  /// Its middle's sign.
+  final SensitivityFact<Rashi> sign;
+
+  @override
+  List<Object?> get _fields => [house, sign];
+}
+
+/// The dasha running at a reference instant, and its changes.
+final class RunningDasha extends _Value {
+  const RunningDasha({
+    required this.at,
+    required this.system,
+    required this.lords,
+  });
+
+  /// The reference instant, as a Julian day (UTC).
+  final double at;
+
+  /// The system.
+  final DashaSystem system;
+
+  /// The lords running then, the mahadasha first; none before the birth
+  /// or past the cycle's end.
+  final SensitivityFact<List<Graha>> lords;
+
+  @override
+  List<Object?> get _fields => [at, system, lords];
+}
+
+/// How far the chart's time can move before each fact it states changes
+/// (`03-design/rectification.md`, "Birth-time sensitivity").
+final class Sensitivity extends _Value {
+  const Sensitivity({
+    required this.birth,
+    required this.span,
+    required this.precisionSeconds,
+    required this.grid,
+    required this.lagnaSign,
+    required this.lagnaPada,
+    required this.vargas,
+    required this.moonPada,
+    required this.dasha,
+    required this.cusps,
+  });
+
+  /// The chart's instant, as a Julian day (UTC).
+  final double birth;
+
+  /// The span searched either side of it, from and to.
+  final (double, double) span;
+
+  /// How closely each change is placed: a hundredth of a second.
+  final double precisionSeconds;
+
+  /// The grid the span was seeded on.
+  final PurifierGrid grid;
+
+  /// The lagna's sign.
+  final SensitivityFact<Rashi> lagnaSign;
+
+  /// The lagna's nakshatra and pada.
+  final SensitivityFact<SensitivityPada> lagnaPada;
+
+  /// Each varga's lagna: D9, D10 and those the chart carries, unless asked.
+  final List<VargaLagna> vargas;
+
+  /// The Moon's nakshatra and pada.
+  final SensitivityFact<SensitivityPada> moonPada;
+
+  /// The dasha running at the reference instant, when one was asked.
+  final RunningDasha? dasha;
+
+  /// Each bhava middle's sign, houses 1 to 12; none under a whole-sign
+  /// chalit.
+  final List<CuspSign> cusps;
+
+  @override
+  List<Object?> get _fields => [
+    birth,
+    span,
+    precisionSeconds,
+    grid,
+    lagnaSign,
+    lagnaPada,
+    vargas,
+    moonPada,
+    dasha,
+    cusps,
+  ];
 }
 
 /// A return's own chart, read down to what Tajika reads from it.

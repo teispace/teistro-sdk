@@ -1723,6 +1723,31 @@ public final class BindingTest {
                 same(now.nadi().equals("MOON") ? Sex.FEMALE : Sex.MALE, now.sex(), "the nadi gives the sex");
                 same(2, svarodaya.at().junctions().size(), "the turn's two junctions");
 
+                Rectification moved = sky.chart().found(2_460_482.5, kathmandu, 20_700,
+                        ChartOptions.builder().rectification(RectificationRequest.of(Map.of("sensitivity",
+                                Map.of("minutes", 90, "dasha", Map.of("at", 2_470_482.5))))).build())
+                        .rectification().orElseThrow();
+                Sensitivity se = moved.sensitivity().orElseThrow();
+                same(2_460_482.5, se.birth(), "the chart's instant");
+                same(Varga.D9, se.vargas().get(0).varga(), "the D9 first");
+                same(Varga.D10, se.vargas().get(1).varga(), "then the D10");
+                check(se.cusps().isEmpty() || se.cusps().size() == 12, "twelve middles or none");
+                same(DashaSystem.VIMSHOTTARI, se.dasha().orElseThrow().system(), "the default system");
+                check(se.moonPada().value().pada() >= 1 && se.moonPada().value().pada() <= 4, "a pada is 1 to 4");
+                double second = 1.0 / 86_400.0;
+                java.util.function.DoubleFunction<Rashi> signAt = at -> Rashi.of((int) Math.floor(
+                        sky.chart().found(at, kathmandu, 20_700, ChartOptions.none()).lagnaDeg() / 30));
+                Sensitivity.Fact<Rashi> lagna = se.lagnaSign();
+                check(lagna.earlier().isPresent() || lagna.later().isPresent(), "the lagna changes within the span");
+                lagna.earlier().ifPresent(change -> {
+                    same(lagna.value(), signAt.apply(change.at() + second), "a second inside, the birth's sign");
+                    same(change.to(), signAt.apply(change.at() - second), "a second past, what it becomes");
+                });
+                lagna.later().ifPresent(change -> {
+                    same(lagna.value(), signAt.apply(change.at() - second), "a second inside, the birth's sign");
+                    same(change.to(), signAt.apply(change.at() + second), "a second past, what it becomes");
+                });
+
                 Rectification alone = sky.chart().found(2_460_482.5, kathmandu, 20_700,
                         ChartOptions.builder().rectification(RectificationRequest.of(Map.of("purify", Map.of("minutes", 20)))).build())
                         .rectification().orElseThrow();

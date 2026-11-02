@@ -1767,7 +1767,8 @@ public final class ParityRunner {
                         "baseline", map("uncertaintyMinutes", 30, "sex", "MALE", "events", List.of(
                                 map("kind", "MARRIAGE", "on", 2469000.5),
                                 map("kind", "ACCIDENT", "on", 2471000.5, "heldOut", true))),
-                        "svarodaya", map("minutes", 20))))
+                        "svarodaya", map("minutes", 20),
+                        "sensitivity", map("minutes", 20, "dasha", map("at", 2469000.5)))))
                 .westernAspects(WesternAspectRequest.of(map(
                         "aspects", List.of("CONJUNCTION", "SEXTILE", "SQUARE", "TRINE", "QUINCUNX", "OPPOSITION"),
                         "orbs", map("model", "MOIETIES", "orbs", orbs))))
@@ -2717,6 +2718,30 @@ public final class ParityRunner {
         for (int k = 0; k < svarodaya.runs().size(); k += 1) {
             put(at + "-svarodaya-" + k, svarodayaRunSaid(svarodaya.runs().get(k)));
         }
+        Sensitivity se = rc.sensitivity().orElseThrow();
+        Function<Rashi, String> sign = Rashi::fullKey;
+        Function<Sensitivity.Pada, String> pada = p -> p.nakshatra().fullKey() + "/" + p.pada();
+        put(at + "-sensitivity", number(se.birth()) + " " + number(se.from()) + " " + number(se.to()) + " "
+                + number(se.precisionSeconds()) + " " + se.grid().cells() + " " + number(se.grid().stepDays()));
+        put(at + "-sensitivity-lagna-sign", factSaid(se.lagnaSign(), sign));
+        put(at + "-sensitivity-lagna-pada", factSaid(se.lagnaPada(), pada));
+        put(at + "-sensitivity-moon-pada", factSaid(se.moonPada(), pada));
+        for (Sensitivity.VargaLagna one : se.vargas()) {
+            put(at + "-sensitivity-" + one.varga().fullKey(), factSaid(one.lagna(), sign));
+        }
+        se.dasha().ifPresent(dasha -> put(at + "-sensitivity-dasha", number(dasha.at()) + " "
+                + dasha.system().fullKey() + " " + factSaid(dasha.lords(), ParityRunner::grahaKeys)));
+        for (Sensitivity.Cusp cusp : se.cusps()) {
+            put(at + "-sensitivity-cusp-" + cusp.house(), factSaid(cusp.sign(), sign));
+        }
+    }
+
+    /** A sensitivity fact and its nearest change either side, as every runner spells them. */
+    private static <T> String factSaid(Sensitivity.Fact<T> fact, Function<T, String> spell) {
+        Function<Sensitivity.Change<T>, String> side = change -> number(change.at()) + ":"
+                + number(change.minutes()) + ":" + spell.apply(change.to());
+        return spell.apply(fact.value()) + " " + fact.earlier().map(side).orElse("-") + " "
+                + fact.later().map(side).orElse("-");
     }
 
     /** A chart's progressions and directions. */

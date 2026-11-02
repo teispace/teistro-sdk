@@ -1253,6 +1253,10 @@ const KEPT_TWINS: &[(&str, &str)] = &[
         "types the two births as `ComparedBirth` (a place, an offset, the dashas and rules compared), which the generated `ChartDisagreementsRequest` leaves as raw JSON",
     ),
     (
+        "SensitivityPada",
+        "an answer's nakshatra pada, its nakshatra a full key (`nakshatra.ROHINI`) as every answer in the Node layer writes one, where the request's `Birth` asks a native's: the same fields, an answer's values",
+    ),
+    (
         "Graded",
         "generic over the member it grades; the generated `GradedRashi`, `GradedTithi` and the rest are its instances, which TypeScript writes `Graded<Rashi>`",
     ),

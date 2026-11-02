@@ -8,8 +8,9 @@
 //! bit. Each is optional, and one left out is not read.
 
 use serde::{Deserialize, Serialize};
+use teistro_core::catalogue::{DashaSystem, Varga};
 use teistro_core::error::Error;
-use teistro_core::quantity::{JulianDay, Utc};
+use teistro_core::quantity::{Depth, JulianDay, Utc};
 use teistro_core::settings::{
     AfterCycle, AshtottariGrouping, Balance, BirthPeriod, SeedOverflow, YearLength,
 };
@@ -17,11 +18,13 @@ use teistro_core::time::UtcOffset;
 use teistro_rectification::baseline::{
     Accuracy, BaselineAnswer, BaselineRequest, LifeEvent, Sex, baseline_dasha_rules,
 };
+use teistro_rectification::sensitivity::{DashaAt, Sensitivity, SensitivityRules};
 use teistro_rectification::{
-    Answer, Circumstance, CircumstanceRules, Conception, ConceptionRules, Facts, Rules, Svarodaya,
-    SvarodayaRun, Window,
+    Answer, Circumstance, CircumstanceRules, Conception, ConceptionRules, DEFAULT_SEED_MINUTES,
+    Facts, Rules, Svarodaya, SvarodayaRun, Window,
 };
 use teistro_serial::Document;
+use teistro_vargas::Scheme;
 
 use crate::ChartArea;
 
@@ -182,6 +185,127 @@ pub struct SvarodayaAround {
     pub runs: Vec<SvarodayaRun>,
 }
 
+/// How far the chart's time can move before each fact it states changes,
+/// searched over the minutes either side of its instant
+/// (`03-design/rectification.md`, "Birth-time sensitivity").
+///
+/// ```
+/// use teistro::SensitivityAsked;
+///
+/// let asked: SensitivityAsked = serde_json::from_str(r#"{"minutes": 60, "dasha": {"at": 2470000.5}}"#)?;
+/// assert_eq!(asked.seed_minutes, 1.0);
+/// assert_eq!(asked.dasha.map(|dasha| dasha.depth), Some(3));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+#[cfg_attr(feature = "schema", schemars(rename = "SensitivityRequest"))]
+pub struct SensitivityAsked {
+    /// How far either side of the chart's instant the search runs,
+    /// minutes, as [`Purify::minutes`].
+    pub minutes: f64,
+    /// The seed step, minutes, a second to an hour: a fact that changes
+    /// and changes back inside one step is not seen.
+    #[serde(default = "default_seed_minutes")]
+    pub seed_minutes: f64,
+    /// The vargas whose lagnas are followed; D9, D10 and every varga the
+    /// chart carries when left out (C1140).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub vargas: Option<Vec<Varga>>,
+    /// The dasha whose running periods are followed; none when left out.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dasha: Option<SensitivityDasha>,
+}
+
+fn default_seed_minutes() -> f64 {
+    DEFAULT_SEED_MINUTES
+}
+
+/// The dasha a sensitivity follows: the periods running at `at`, under the
+/// context's dasha settings (C1142).
+///
+/// ```
+/// use teistro::SensitivityDasha;
+/// use teistro::catalogue::DashaSystem;
+///
+/// let asked: SensitivityDasha = serde_json::from_str(r#"{"at": 2470000.5, "system": "YOGINI", "depth": 2}"#)?;
+/// assert_eq!((asked.system, asked.depth), (DashaSystem::Yogini, 2));
+/// # Ok::<(), serde_json::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase", deny_unknown_fields)]
+pub struct SensitivityDasha {
+    /// The reference instant, a UTC Julian day.
+    pub at: JulianDay<Utc>,
+    /// A nakshatra-seeded system; Vimshottari when left out.
+    #[serde(default = "default_system")]
+    pub system: DashaSystem,
+    /// How many levels, 1 to 6: 3, the pratyantardasha, when left out.
+    #[serde(default = "default_depth")]
+    pub depth: u8,
+}
+
+fn default_system() -> DashaSystem {
+    DashaSystem::Vimshottari
+}
+
+fn default_depth() -> u8 {
+    3
+}
+
+impl SensitivityAsked {
+    /// The kernel's rules for a chart: the vargas asked, or D9, D10 and
+    /// those `carried`, and the dasha under `settings`.
+    ///
+    /// ```
+    /// use teistro::SensitivityAsked;
+    /// use teistro::catalogue::Varga;
+    /// use teistro::settings::root;
+    ///
+    /// let asked: SensitivityAsked = serde_json::from_str(r#"{"minutes": 30}"#)?;
+    /// let rules = asked.rules(&[Varga::D1, Varga::D10, Varga::D60], &root().dasha)?;
+    /// assert_eq!(rules.vargas, [Varga::D9, Varga::D10, Varga::D60]);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` for a depth outside 1 to 6, named
+    /// `rectification.dasha.depth`.
+    pub fn rules(
+        &self,
+        carried: &[Varga],
+        settings: &teistro_core::settings::Dasha,
+    ) -> Result<SensitivityRules, Error> {
+        let vargas = match &self.vargas {
+            Some(vargas) => vargas.clone(),
+            None => Varga::ALL
+                .into_iter()
+                .filter(|varga| matches!(varga, Varga::D9 | Varga::D10) || carried.contains(varga))
+                .filter(|varga| *varga != Varga::D1)
+                .collect(),
+        };
+        let dasha = match self.dasha {
+            Some(asked) => Some(DashaAt {
+                at: asked.at,
+                system: asked.system,
+                depth: Depth::try_new(asked.depth).map_err(|refused| {
+                    Error::invalid_arg(refused.to_string()).with_field("rectification.dasha.depth")
+                })?,
+                rules: teistro_dasha::Rules::of(settings, asked.system),
+            }),
+            None => None,
+        };
+        Ok(SensitivityRules {
+            seed_minutes: self.seed_minutes,
+            vargas,
+            dasha,
+        })
+    }
+}
+
 /// A chart read as a birth time to rectify.
 ///
 /// ```
@@ -219,6 +343,10 @@ pub struct RectificationRequest {
     /// the text does not make at a birth.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub svarodaya: Option<SvarodayaAsked>,
+    /// How far the chart's time can move before each fact it states
+    /// changes ([`ChartArea::sensitivity`]).
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sensitivity: Option<SensitivityAsked>,
 }
 
 impl RectificationRequest {
@@ -263,6 +391,9 @@ pub struct Rectification {
     /// The Shiva Svarodaya around it.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub svarodaya: Option<SvarodayaAround>,
+    /// How far its time can move before each fact it states changes.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub sensitivity: Option<Sensitivity>,
 }
 
 impl ChartArea<'_> {
@@ -333,12 +464,33 @@ impl ChartArea<'_> {
                 }
                 None => None,
             };
+            let sensitivity = match &asked.sensitivity {
+                Some(asked) => {
+                    let carried: Vec<Varga> = document
+                        .vargas
+                        .iter()
+                        .filter_map(|chart| {
+                            Varga::ALL
+                                .into_iter()
+                                .find(|varga| Scheme::of(*varga) == chart.axis.lagna)
+                        })
+                        .collect();
+                    let settings = &self.context().resolved().settings.dasha;
+                    let read = asked.rules(&carried, settings).and_then(|rules| {
+                        let span = window_around(at, asked.minutes, "minutes")?;
+                        self.sensitivity(at, span, place, offset, &rules)
+                    });
+                    Some(read.map_err(|error| rebased(error, "sensitivity"))?.value)
+                }
+                None => None,
+            };
             Ok(Rectification {
                 purified,
                 conception,
                 circumstance,
                 baseline,
                 svarodaya,
+                sensitivity,
             })
         };
         read().map_err(|error| error.under(RECTIFICATION))

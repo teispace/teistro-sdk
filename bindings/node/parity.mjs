@@ -427,6 +427,7 @@ const charts = geo.chart.foundMany({
       ],
     },
     svarodaya: { minutes: 20 },
+    sensitivity: { minutes: 20, dasha: { at: 2469000.5 } },
   },
   westernAspects: {
     aspects: ['CONJUNCTION', 'SEXTILE', 'SQUARE', 'TRINE', 'QUINCUNX', 'OPPOSITION'],
@@ -604,6 +605,29 @@ function putRectification(prefix, read) {
   );
   put(`${prefix}-svarodaya-at`, runSaid(at.run));
   runs.forEach((one, k) => put(`${prefix}-svarodaya-${k}`, runSaid(one)));
+  const moved = read.sensitivity;
+  const fact = (one, spell) => {
+    const side = (change) => (change === null ? '-' : `${number(change.at)}:${number(change.minutes)}:${spell(change.to)}`);
+    return `${spell(one.value)} ${side(one.earlier)} ${side(one.later)}`;
+  };
+  const sign = (rashi) => rashi;
+  const pada = (one) => `${one.nakshatra}/${one.pada}`;
+  put(
+    `${prefix}-sensitivity`,
+    `${number(moved.birth)} ${number(moved.span.from)} ${number(moved.span.to)} ${number(moved.precisionSeconds)} ` +
+      `${moved.grid.cells} ${number(moved.grid.stepDays)}`,
+  );
+  put(`${prefix}-sensitivity-lagna-sign`, fact(moved.lagnaSign, sign));
+  put(`${prefix}-sensitivity-lagna-pada`, fact(moved.lagnaPada, pada));
+  put(`${prefix}-sensitivity-moon-pada`, fact(moved.moonPada, pada));
+  moved.vargas.forEach((one) => put(`${prefix}-sensitivity-${one.varga}`, fact(one.lagna, sign)));
+  if (moved.dasha !== null) {
+    put(
+      `${prefix}-sensitivity-dasha`,
+      `${number(moved.dasha.at)} ${moved.dasha.system} ${fact(moved.dasha.lords, (lords) => lords.join(',') || '-')}`,
+    );
+  }
+  moved.cusps.forEach((one) => put(`${prefix}-sensitivity-cusp-${one.house}`, fact(one.sign, sign)));
 }
 
 /** An Ashta Koota as every runner prints it, under `prefix`. */

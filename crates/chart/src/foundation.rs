@@ -970,25 +970,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let placement = self.settings().houses.placement_system;
         let (cusps, built) = self.cusps(placement, ut1, tt, place, &zodiac)?;
         let houses = Bhavas::of(Chalit::of(built), &cusps);
-        let wanted = Chalit::of(self.settings().houses.chalit_system);
-        let (cusps, built) = self.cusps(wanted.source, ut1, tt, place, &zodiac)?;
-        let chalit = Bhavas::of(
-            Chalit {
-                // A substituted division is still reported as itself.
-                method: if built == wanted.source {
-                    wanted.method
-                } else {
-                    built
-                },
-                source: built,
-                reading: if built == wanted.source {
-                    wanted.reading
-                } else {
-                    Chalit::of(built).reading
-                },
-            },
-            &cusps,
-        );
+        let chalit = self.chalit(ut1, tt, place, &zodiac)?;
 
         let lagna_deg = self.lagna(ut1, tt, place, &zodiac)?;
         let day_ut1 = JulianDay::<Ut1>::literal(day.lagna_sunrise().get());
@@ -2134,6 +2116,67 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
         let ut1 = JulianDay::<Ut1>::literal(at.get());
         let (tt, _) = tt_of(ut1, self.delta_t)?;
         self.angles(ut1, tt, place, zodiac)
+    }
+
+    /// The chart's chalit at an instant, as a chart founded then would
+    /// carry it ([`ChartFoundation::chalit`]): the bhavas of the settings'
+    /// chalit system, in the zodiac taken rather than recomputed, as for
+    /// [`Founder::ascendant_at`]. What the birth-time sensitivity reads
+    /// the bhava middles from (`03-design/rectification.md`, C1141).
+    ///
+    /// ```
+    /// use teistro_chart::sample::{self, Sample};
+    /// let sample = Sample::new();
+    /// let founder = sample.founder();
+    /// let foundation = sample::foundation()?;
+    /// let chalit = founder.chalit_at(sample::INSTANT, &sample::place(), &foundation.zodiac)?;
+    /// assert_eq!(chalit, foundation.chalit);
+    /// # Ok::<(), teistro_core::error::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Founder::ascendant_at`].
+    pub fn chalit_at(
+        &self,
+        at: JulianDay<Utc>,
+        place: &Place,
+        zodiac: &ChartZodiac,
+    ) -> Result<Bhavas, Error> {
+        let ut1 = JulianDay::<Ut1>::literal(at.get());
+        let (tt, _) = tt_of(ut1, self.delta_t)?;
+        self.chalit(ut1, tt, place, zodiac)
+    }
+
+    /// The chalit: built from the cusps of the system it *reads*, which for
+    /// Sripati is Porphyry's, and reported as itself when the polar policy
+    /// substituted the division it is built from.
+    fn chalit(
+        &self,
+        ut1: JulianDay<Ut1>,
+        tt: JulianDay<Tt>,
+        place: &Place,
+        zodiac: &ChartZodiac,
+    ) -> Result<Bhavas, Error> {
+        let wanted = Chalit::of(self.settings().houses.chalit_system);
+        let (cusps, built) = self.cusps(wanted.source, ut1, tt, place, zodiac)?;
+        Ok(Bhavas::of(
+            Chalit {
+                // A substituted division is still reported as itself.
+                method: if built == wanted.source {
+                    wanted.method
+                } else {
+                    built
+                },
+                source: built,
+                reading: if built == wanted.source {
+                    wanted.reading
+                } else {
+                    Chalit::of(built).reading
+                },
+            },
+            &cusps,
+        ))
     }
 
     /// The solar model the day's arcs were found with, for a caller that

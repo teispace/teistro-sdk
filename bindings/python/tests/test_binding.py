@@ -2931,6 +2931,33 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as refused:
                 ctx.chart.found(instant=instant, rectification={"svarodaya": {"minutes": 0}}, **at)
             self.assertEqual(refused.exception.field, "rectification.svarodaya.minutes")
+            moved = ctx.chart.found(
+                instant=instant, rectification={"sensitivity": {"minutes": 90, "dasha": {"at": instant + 10_000}}}, **at
+            ).rectification
+            assert moved is not None and moved.sensitivity is not None
+            se = moved.sensitivity
+            self.assertEqual(se.birth, instant)
+            self.assertAlmostEqual(se.precision_seconds, 0.00864, delta=1e-9)
+            self.assertEqual([v.varga for v in se.vargas[:2]], [Varga.D9, Varga.D10])
+            self.assertEqual([c.house for c in se.cusps], list(range(1, 13)))
+            assert se.dasha is not None
+            self.assertEqual(se.dasha.system, DashaSystem.VIMSHOTTARI)
+            self.assertTrue(all(isinstance(g, Graha) for g in se.dasha.lords.value))
+            self.assertIsInstance(se.moon_pada.value.nakshatra, Nakshatra)
+            changes = [c for c in (se.lagna_sign.earlier, se.lagna_sign.later) if c is not None]
+            self.assertTrue(changes, "the lagna changes sign within an hour and a half either side")
+            second = 1 / 86_400
+            for c, earlier in [(se.lagna_sign.earlier, True), (se.lagna_sign.later, False)]:
+                if c is None:
+                    continue
+                self.assertTrue(0 < c.minutes <= 90)
+                inside, past = (c.at + second, c.at - second) if earlier else (c.at - second, c.at + second)
+                held = Rashi(int(ctx.chart.found(instant=inside, **at).lagna_deg // 30))
+                became = Rashi(int(ctx.chart.found(instant=past, **at).lagna_deg // 30))
+                self.assertEqual((held, became), (se.lagna_sign.value, c.to))
+            with self.assertRaises(TeistroError) as refused:
+                ctx.chart.found(instant=instant, rectification={"sensitivity": {"minutes": 90, "seedMinutes": 90}}, **at)
+            self.assertEqual(refused.exception.field, "rectification.sensitivity.seedMinutes")
 
     def test_a_chart_carries_its_kp_reading(self) -> None:
         """KP crosses whole, its keys made members: the lords bracket each

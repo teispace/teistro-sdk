@@ -1296,6 +1296,7 @@ function theRectification(ctx: Context): string {
       dasha: { yearLength: 'SAVANA_360', birthPeriod: 'ELAPSED' },
     },
     svarodaya: { minutes: 20 },
+    sensitivity: { minutes: 60, seedMinutes: 1, dasha: { at: 2460000.5, depth: 2 } },
   };
   const read: Rectification | null = ctx.chart.found({
     instant: 2451545,
@@ -1342,7 +1343,14 @@ function theRectification(ctx: Context): string {
     read.svarodaya === null
       ? '-'
       : `${read.svarodaya.at.tithi} ${read.svarodaya.at.run.nadi} ${read.svarodaya.runs.map((r) => `${r.tattva} ${r.sex}`).join()}`;
-  return [runs, conceived, born, cascade, breath, String(wrong)].join();
+  const moved = read.sensitivity;
+  const sensitive =
+    moved === null
+      ? '-'
+      : `${moved.lagnaSign.value} ${moved.lagnaSign.later?.minutes ?? '-'} ${moved.lagnaPada.value.nakshatra} ` +
+        `${moved.vargas.map((v) => `${v.varga} ${v.lagna.earlier?.to ?? '-'}`).join()} ` +
+        `${moved.dasha?.lords.value.join() ?? '-'} ${moved.cusps.map((c) => `${c.house} ${c.sign.value}`).join()}`;
+  return [runs, conceived, born, cascade, breath, sensitive, String(wrong)].join();
 }
 
 void theRectification;

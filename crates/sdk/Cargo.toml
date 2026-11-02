@@ -160,6 +160,7 @@ builtin-standard = ["builtin-ephemeris", "teistro-ephemeris-builtin/standard"]
 builtin-full = ["builtin-ephemeris", "teistro-ephemeris-builtin/full"]
 
 [dev-dependencies]
+criterion = { version = "0.5", default-features = false }
 # Signs the test packs with a key made in the test; the SDK embeds none.
 ed25519-dalek = { version = "3", default-features = false }
 jiff-tzdb = "0.1"
@@ -181,6 +182,11 @@ workspace = true
 # `calendars` and `parity` are absent on purpose: the first names
 # `Ephemeris::None` (a calendar needs no ephemeris, which is its lesson)
 # and the second `Ephemeris::Test`. Neither is gated.
+
+[[bench]]
+name = "sensitivity"
+harness = false
+required-features = ["builtin-ephemeris", "rectification"]
 
 [[test]]
 name = "sealing"

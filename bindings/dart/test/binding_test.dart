@@ -8190,6 +8190,55 @@ void _engineTests() {
         ),
       ),
     );
+
+    const moved = RectificationRequest(
+      sensitivity: SensitivityRequest(
+        minutes: 90,
+        dasha: SensitivityDasha(at: instant + 10000),
+      ),
+    );
+    final se = found(moved)!.sensitivity!;
+    expect(se.birth, instant);
+    expect(se.precisionSeconds, closeTo(0.00864, 1e-9));
+    expect(se.vargas.take(2).map((v) => v.varga), [Varga.d9, Varga.d10]);
+    expect(se.cusps.map((c) => c.house), List.generate(12, (k) => k + 1));
+    expect(se.dasha!.system, DashaSystem.vimshottari);
+    expect(se.dasha!.lords.value, isNot(contains(Graha.unknown)));
+    expect(se.moonPada.value.nakshatra, isNot(Nakshatra.unknown));
+    Rashi signAt(double at) => Rashi.byId(
+      (ctx.chart
+                  .found(instant: at, place: place, utcOffsetSeconds: 20700)
+                  .lagnaDeg /
+              30)
+          .floor(),
+    );
+    const second = 1 / 86400;
+    final earlier = se.lagnaSign.earlier;
+    final later = se.lagnaSign.later;
+    expect(earlier != null || later != null, isTrue);
+    if (earlier != null) {
+      expect(earlier.minutes, inInclusiveRange(0, 90));
+      expect(signAt(earlier.at + second), se.lagnaSign.value);
+      expect(signAt(earlier.at - second), earlier.to);
+    }
+    if (later != null) {
+      expect(later.minutes, inInclusiveRange(0, 90));
+      expect(signAt(later.at - second), se.lagnaSign.value);
+      expect(signAt(later.at + second), later.to);
+    }
+    const coarse = RectificationRequest(
+      sensitivity: SensitivityRequest(minutes: 90, seedMinutes: 90),
+    );
+    expect(
+      () => found(coarse),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'rectification.sensitivity.seedMinutes',
+        ),
+      ),
+    );
     ctx.dispose();
   });
 

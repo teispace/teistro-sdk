@@ -590,6 +590,8 @@ from ._requests import (
     PublishedReasonsRequest as PublishedReasonsRequest,
     PublishedSet as PublishedSet,
     PurifyRequest as PurifyRequest,
+    SensitivityRequest as SensitivityRequest,
+    SensitivityDasha as SensitivityDasha,
     PurifyAs as PurifyAs,
     PrashnaQuestion as PrashnaQuestion,
     MuhurtaRanking as MuhurtaRanking,
@@ -1859,6 +1861,8 @@ __all__ = [
     # Rectification: a chart read as a birth time to rectify.
     "RectificationRequest",
     "PurifyRequest",
+    "SensitivityRequest",
+    "SensitivityDasha",
     "PurifierRules",
     "RectificationSpecies",
     "GulikaExtension",
@@ -1934,6 +1938,17 @@ __all__ = [
     "SvarodayaAround",
     "Svarodaya",
     "SvarodayaRun",
+    "Sensitivity",
+    "SensitivityPada",
+    "SignChange",
+    "SignFact",
+    "PadaChange",
+    "PadaFact",
+    "LordsChange",
+    "LordsFact",
+    "VargaLagna",
+    "CuspSign",
+    "RunningDasha",
     # Gochar: the transits read against a chart, and their names.
     "GocharRequest",
     "GocharReading",
@@ -14682,6 +14697,132 @@ class SvarodayaAround:
 
 
 @dataclass(frozen=True)
+class SensitivityPada:
+    """A nakshatra's quarter: which nakshatra, and which of its four padas."""
+
+    nakshatra: Nakshatra
+    pada: int
+    """1 to 4."""
+
+
+@dataclass(frozen=True)
+class SignChange:
+    """Where a sign changes, nearest the birth on one side."""
+
+    at: float
+    """The instant, as a Julian day (UTC), to a hundredth of a second."""
+    minutes: float
+    """How far it is from the birth, minutes, positive on either side."""
+    to: Rashi
+    """What the sign becomes."""
+
+
+@dataclass(frozen=True)
+class SignFact:
+    """A sign at the birth and its nearest change either side; `None` on a
+    side where it holds over the whole span searched."""
+
+    value: Rashi
+    earlier: Optional[SignChange]
+    later: Optional[SignChange]
+
+
+@dataclass(frozen=True)
+class PadaChange:
+    """Where a pada changes, nearest the birth on one side."""
+
+    at: float
+    """The instant, as a Julian day (UTC), to a hundredth of a second."""
+    minutes: float
+    """How far it is from the birth, minutes, positive on either side."""
+    to: SensitivityPada
+    """What the pada becomes."""
+
+
+@dataclass(frozen=True)
+class PadaFact:
+    """A pada at the birth and its nearest change either side."""
+
+    value: SensitivityPada
+    earlier: Optional[PadaChange]
+    later: Optional[PadaChange]
+
+
+@dataclass(frozen=True)
+class LordsChange:
+    """Where the running dasha changes, nearest the birth on one side."""
+
+    at: float
+    """The instant, as a Julian day (UTC), to a hundredth of a second."""
+    minutes: float
+    """How far it is from the birth, minutes, positive on either side."""
+    to: Tuple[Graha, ...]
+    """The lords then running, the mahadasha first."""
+
+
+@dataclass(frozen=True)
+class LordsFact:
+    """The lords running at the reference instant and their nearest change
+    either side."""
+
+    value: Tuple[Graha, ...]
+    earlier: Optional[LordsChange]
+    later: Optional[LordsChange]
+
+
+@dataclass(frozen=True)
+class VargaLagna:
+    """One varga's lagna and its changes."""
+
+    varga: Varga
+    lagna: SignFact
+
+
+@dataclass(frozen=True)
+class CuspSign:
+    """One bhava middle's sign under the chart's chalit, and its changes."""
+
+    house: int
+    """1 to 12."""
+    sign: SignFact
+
+
+@dataclass(frozen=True)
+class RunningDasha:
+    """The dasha running at a reference instant, and its changes."""
+
+    at: float
+    """The reference instant, as a Julian day (UTC)."""
+    system: DashaSystem
+    lords: LordsFact
+    """Empty where the instant is before the birth or past the cycle."""
+
+
+@dataclass(frozen=True)
+class Sensitivity:
+    """How far the chart's time can move before each fact it states changes
+    (`03-design/rectification.md`, "Birth-time sensitivity")."""
+
+    birth: float
+    """The chart's instant, as a Julian day (UTC)."""
+    span: Tuple[float, float]
+    """The span searched either side of it."""
+    precision_seconds: float
+    """How closely each change is placed: a hundredth of a second."""
+    grid: PurifierGrid
+    """The seed grid the span was sampled on."""
+    lagna_sign: SignFact
+    lagna_pada: PadaFact
+    vargas: Tuple[VargaLagna, ...]
+    """Each varga's lagna: D9, D10 and those the chart carries, unless asked."""
+    moon_pada: PadaFact
+    dasha: Optional[RunningDasha]
+    """When asked."""
+    cusps: Tuple[CuspSign, ...]
+    """Houses 1 to 12; none under a whole-sign chalit."""
+
+
+@dataclass(frozen=True)
 class Rectification:
     """A chart read as a birth time to rectify (`03-design/rectification.md`):
     each reading the request asked for, `None` for one it did not."""
@@ -14696,6 +14837,8 @@ class Rectification:
     """The baseline engine's cascade around it."""
     svarodaya: Optional[SvarodayaAround]
     """The Shiva Svarodaya around it."""
+    sensitivity: Optional[Sensitivity]
+    """How far its time can move before each fact it states changes."""
 
 
 @dataclass(frozen=True)
@@ -16326,12 +16469,73 @@ def _rectification(raw: Mapping[str, Any]) -> Rectification:
     circumstance = raw.get("circumstance")
     baseline = raw.get("baseline")
     svarodaya = raw.get("svarodaya")
+    sensitivity = raw.get("sensitivity")
     return Rectification(
         purified=None if purified is None else _purified(purified),
         conception=None if conception is None else _conception(conception),
         circumstance=None if circumstance is None else _circumstance(circumstance),
         baseline=None if baseline is None else _rectification_baseline(baseline),
         svarodaya=None if svarodaya is None else _svarodaya(svarodaya),
+        sensitivity=None if sensitivity is None else _sensitivity(sensitivity),
+    )
+
+
+def _sensitivity(raw: Mapping[str, Any]) -> Sensitivity:
+    """A chart's birth-time sensitivity, from its JSON, its keys made
+    members."""
+
+    def pada(one: Mapping[str, Any]) -> SensitivityPada:
+        return SensitivityPada(nakshatra=_member(Nakshatra, one["nakshatra"]), pada=one["pada"])
+
+    def sign_fact(one: Mapping[str, Any]) -> SignFact:
+        def change(side: Optional[Mapping[str, Any]]) -> Optional[SignChange]:
+            if side is None:
+                return None
+            return SignChange(at=side["at"], minutes=side["minutes"], to=_rashi(side["to"]))
+
+        return SignFact(value=_rashi(one["value"]), earlier=change(one["earlier"]), later=change(one["later"]))
+
+    def pada_fact(one: Mapping[str, Any]) -> PadaFact:
+        def change(side: Optional[Mapping[str, Any]]) -> Optional[PadaChange]:
+            if side is None:
+                return None
+            return PadaChange(at=side["at"], minutes=side["minutes"], to=pada(side["to"]))
+
+        return PadaFact(value=pada(one["value"]), earlier=change(one["earlier"]), later=change(one["later"]))
+
+    def lords(keys: Sequence[str]) -> Tuple[Graha, ...]:
+        return tuple(_graha(key) for key in keys)
+
+    def lords_fact(one: Mapping[str, Any]) -> LordsFact:
+        def change(side: Optional[Mapping[str, Any]]) -> Optional[LordsChange]:
+            if side is None:
+                return None
+            return LordsChange(at=side["at"], minutes=side["minutes"], to=lords(side["to"]))
+
+        return LordsFact(value=lords(one["value"]), earlier=change(one["earlier"]), later=change(one["later"]))
+
+    span = raw["span"]
+    grid = raw["grid"]
+    dasha = raw.get("dasha")
+    return Sensitivity(
+        birth=raw["birth"],
+        span=(span["from"], span["to"]),
+        precision_seconds=raw["precisionSeconds"],
+        grid=PurifierGrid(step_days=grid["stepDays"], cells=grid["cells"]),
+        lagna_sign=sign_fact(raw["lagnaSign"]),
+        lagna_pada=pada_fact(raw["lagnaPada"]),
+        vargas=tuple(
+            VargaLagna(varga=_member(Varga, one["varga"]), lagna=sign_fact(one["lagna"])) for one in raw["vargas"]
+        ),
+        moon_pada=pada_fact(raw["moonPada"]),
+        dasha=None
+        if dasha is None
+        else RunningDasha(
+            at=dasha["at"],
+            system=_member(DashaSystem, dasha["system"]),
+            lords=lords_fact(dasha["lords"]),
+        ),
+        cusps=tuple(CuspSign(house=one["house"], sign=sign_fact(one["sign"])) for one in raw["cusps"]),
     )
 
 

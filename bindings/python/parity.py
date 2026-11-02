@@ -109,6 +109,9 @@ from teistro import (
     ReportedTimeNote,
     StageNote,
     SvarodayaRun,
+    SignFact,
+    PadaFact,
+    LordsFact,
     TattvaSexNote,
     Scale,
     Teistro,
@@ -417,6 +420,7 @@ RECTIFICATION: RectificationRequest = {
         "events": [{"kind": "MARRIAGE", "on": 2469000.5}, {"kind": "ACCIDENT", "on": 2471000.5, "heldOut": True}],
     },
     "svarodaya": {"minutes": 20},
+    "sensitivity": {"minutes": 20, "dasha": {"at": 2469000.5}},
 }
 """The rectification every runner asks of each chart."""
 
@@ -529,6 +533,51 @@ def put_rectification(at: str, rc: Rectification) -> None:
     put(f"{at}-svarodaya-at", run_said(sa.run))
     for k, one in enumerate(sv.runs):
         put(f"{at}-svarodaya-{k}", run_said(one))
+    se = rc.sensitivity
+    assert se is not None
+    put(
+        f"{at}-sensitivity",
+        f"{number(se.birth)} {number(se.span[0])} {number(se.span[1])} {number(se.precision_seconds)}"
+        f" {se.grid.cells} {number(se.grid.step_days)}",
+    )
+    put(f"{at}-sensitivity-lagna-sign", sign_fact_said(se.lagna_sign))
+    put(f"{at}-sensitivity-lagna-pada", pada_fact_said(se.lagna_pada))
+    put(f"{at}-sensitivity-moon-pada", pada_fact_said(se.moon_pada))
+    for varga in se.vargas:
+        put(f"{at}-sensitivity-{varga.varga.full_key}", sign_fact_said(varga.lagna))
+    if se.dasha is not None:
+        put(
+            f"{at}-sensitivity-dasha",
+            f"{number(se.dasha.at)} {se.dasha.system.full_key} {lords_fact_said(se.dasha.lords)}",
+        )
+    for cusp in se.cusps:
+        put(f"{at}-sensitivity-cusp-{cusp.house}", sign_fact_said(cusp.sign))
+
+
+def sign_fact_said(fact: SignFact) -> str:
+    """A sign and its nearest change either side, as every runner spells them."""
+    sides = [
+        "-" if c is None else f"{number(c.at)}:{number(c.minutes)}:{c.to.full_key}" for c in (fact.earlier, fact.later)
+    ]
+    return f"{fact.value.full_key} {sides[0]} {sides[1]}"
+
+
+def pada_fact_said(fact: PadaFact) -> str:
+    """A nakshatra pada and its nearest change either side, as every runner spells them."""
+    sides = [
+        "-" if c is None else f"{number(c.at)}:{number(c.minutes)}:{c.to.nakshatra.full_key}/{c.to.pada}"
+        for c in (fact.earlier, fact.later)
+    ]
+    return f"{fact.value.nakshatra.full_key}/{fact.value.pada} {sides[0]} {sides[1]}"
+
+
+def lords_fact_said(fact: LordsFact) -> str:
+    """The lords running and their nearest change either side, as every runner spells them."""
+    sides = [
+        "-" if c is None else f"{number(c.at)}:{number(c.minutes)}:{listed_or_dash(g.full_key for g in c.to)}"
+        for c in (fact.earlier, fact.later)
+    ]
+    return f"{listed_or_dash(g.full_key for g in fact.value)} {sides[0]} {sides[1]}"
 
 
 def run_said(run: SvarodayaRun) -> str:

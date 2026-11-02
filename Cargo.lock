@@ -1680,6 +1680,7 @@ checksum = "c3a6bfce3d99adfa72d24750a61f782f3036a81e7f86d8841ee1326deaebd171"
 name = "teistro"
 version = "1.0.0-rc.1"
 dependencies = [
+ "criterion",
  "ed25519-dalek",
  "jiff-tzdb",
  "schemars",

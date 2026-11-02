@@ -104,7 +104,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 | A2-2 | planned | the records | `detail: brief \| full` on results, with token sizes measured and documented. |
 | A2-3 | planned | `intl` | `lexicon(locale)` and its reverse, from text to key, including romanised variants. |
 | A2-4 | planned | `sdk` | `verify.claims`, built on A2-3. |
-| A2-5 | planned | `rectification` | How many minutes the birth time can move before each fact changes. Nothing like it exists today. The search reuses the crate's windows. |
+| A2-5 | built | `rectification` | How many minutes the birth time can move before each fact changes: the record's `sensitivity` member, `ChartArea::sensitivity`, every binding. The search reuses the purifier's windows and bisection (`03-design/rectification.md`, "Birth-time sensitivity", C1140–C1143). |
 | A2-6 | built | `crates/mcp` (`elicit.rs`, `tasks.rs`, `tools.rs`; `tests/rounds.rs`) | **Built, 2026-10-30.** A record tool refused for a top-level field its request lacks (a birth's `instant`, a place's `latitudeDeg`) answers `resultType: "input_required"` with one form, `inputRequests["teistro.missing"]`, where the client declares form elicitation; the retry's `inputResponses` complete the call, and a declined form gets the refusal. Tasks were built before. The tool list's one order is held by a test. The SDK has no spans, so `traceparent` changes nothing, and a test holds that. `03-design/mcp-server.md`, "A missing input is asked for". |
 | A2-7 | planned | the dossier | The dossier's token count per locale, measured, and a language-neutral mode beside the localised one. |
 | A2-8 | planned | SR-16 | |

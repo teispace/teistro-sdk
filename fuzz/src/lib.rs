@@ -354,7 +354,7 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
     (
         "rectification_json",
         Seed::Answered,
-        r#"{"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}}}"#,
+        r#"{"purify":{"minutes":30},"circumstance":{"facts":{"fatherPresent":false}},"sensitivity":{"minutes":30,"vargas":["D9"],"dasha":{"at":2469000.5,"depth":2}}}"#,
     ),
     (
         "lalkitab_json",

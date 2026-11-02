@@ -382,6 +382,7 @@ mod baseline {
                 dasha: DashaAsked::default(),
             }),
             svarodaya: Some(SvarodayaAsked { minutes: 30.0 }),
+            sensitivity: None,
         };
         // A dasha left out is the baseline engine's own.
         assert_eq!(DashaAsked::default().rules(), baseline_dasha_rules());
@@ -1106,5 +1107,189 @@ mod record {
                 assert_eq!(mine.supported, supported, "{id}: {mine:?}");
             }
         }
+    }
+}
+
+/// One fact's changes held to what the chart document says: the birth's
+/// value a second inside each change and the change's `to` a second past
+/// it, `read` taking the fact from a chart founded at an instant. Returns
+/// how many changes were held.
+fn held<T: Clone + PartialEq + core::fmt::Debug>(
+    name: &str,
+    fact: &teistro::rectification::sensitivity::Fact<T>,
+    found: &dyn Fn(f64) -> Document,
+    read: &dyn Fn(&Document) -> T,
+) -> usize {
+    let second = 1.0 / 86_400.0;
+    let sides = [(true, fact.earlier.as_ref()), (false, fact.later.as_ref())];
+    let mut changes = 0;
+    for (earlier, change) in sides {
+        let Some(change) = change else { continue };
+        let at = change.at.get();
+        let (inside, past) = if earlier {
+            (at + second, at - second)
+        } else {
+            (at - second, at + second)
+        };
+        assert_eq!(read(&found(inside)), fact.value, "{name} a second inside");
+        assert_eq!(read(&found(past)), change.to, "{name} a second past");
+        changes += 1;
+    }
+    changes
+}
+
+/// A birth on a sky that can happen, its sensitivity asked through the
+/// record, and every change read back through charts founded a second
+/// either side of it: the lagna's sign and pada, every varga's lagna, the
+/// Moon's pada (the chart's avakahada), the Vimshottari running thirty
+/// years on (the chart's own dasha) and the chalit's middles, each from
+/// the chart document rather than the kernel
+/// (`03-design/rectification.md`, "Birth-time sensitivity").
+fn sensitivity_holds_through_the_charts(at: f64, place: Place, offset: UtcOffset, minutes: f64) {
+    use teistro::catalogue::{DashaSystem, Varga};
+    use teistro::rectification::sensitivity::Pada;
+    use teistro::{RectificationRequest, Timeline};
+
+    let sdk = sdk();
+    let reference = at + 30.0 * 365.25;
+    let request = ChartRequest::at(place, offset)
+        .with_every_varga()
+        .with_avakahada()
+        .with_dashas([DashaSystem::Vimshottari]);
+    let found = |at: f64| {
+        sdk.chart()
+            .reading(JulianDay::<Utc>::literal(at), &request)
+            .unwrap()
+            .value
+    };
+    let birth = found(at);
+    let asked = RectificationRequest::from_json(&format!(
+        r#"{{"sensitivity": {{"minutes": {minutes}, "dasha": {{"at": {reference}}}}}}}"#
+    ))
+    .unwrap();
+    let read = sdk
+        .chart()
+        .rectification(&birth, offset, &asked)
+        .unwrap()
+        .sensitivity
+        .unwrap();
+    assert_eq!(read.birth.get(), at);
+    assert!((read.precision_seconds - 0.008_64).abs() < 1e-9);
+
+    let mut changes = held("the lagna's sign", &read.lagna_sign, &found, &|document| {
+        Rashi::of_longitude(document.foundation.lagna_deg)
+    });
+    changes += held("the lagna's pada", &read.lagna_pada, &found, &|document| {
+        Pada::of(document.foundation.lagna_deg).unwrap()
+    });
+    // Every varga the chart carries but the rashi, D9 and D10 first.
+    assert_eq!(read.vargas.len(), Varga::ALL.len() - 1);
+    for varga in &read.vargas {
+        let lagna = |document: &Document| {
+            document
+                .vargas
+                .iter()
+                .find(|chart| chart.axis == teistro::Axis::of(varga.varga))
+                .unwrap()
+                .lagna
+                .sign
+        };
+        assert_eq!(lagna(&birth), varga.lagna.value, "{}", varga.varga);
+        changes += held("a varga's lagna", &varga.lagna, &found, &lagna);
+    }
+    let moon = |document: &Document| {
+        let read = document.avakahada.as_ref().unwrap();
+        Pada {
+            nakshatra: read.nakshatra,
+            pada: read.pada,
+        }
+    };
+    assert_eq!(moon(&birth), read.moon_pada.value);
+    changes += held("the Moon's pada", &read.moon_pada, &found, &moon);
+    let running = read.dasha.as_ref().unwrap();
+    let lords = |document: &Document| -> Vec<Graha> {
+        sdk.chart()
+            .dasha(document, DashaSystem::Vimshottari)
+            .unwrap()
+            .at(
+                JulianDay::literal(reference),
+                teistro::quantity::Depth::try_new(3).unwrap(),
+            )
+            .iter()
+            .map(|period| period.lord)
+            .collect()
+    };
+    assert_eq!(lords(&birth), running.lords.value);
+    changes += held("the running dasha", &running.lords, &found, &lords);
+    // The default chalit is Sripati's, so all twelve middles are read.
+    assert_eq!(read.cusps.len(), 12);
+    for cusp in &read.cusps {
+        let house = usize::from(cusp.house - 1);
+        let middle =
+            |document: &Document| Rashi::of_longitude(document.foundation.chalit.madhya[house]);
+        assert_eq!(middle(&birth), cusp.sign.value);
+        changes += held("a bhava middle", &cusp.sign, &found, &middle);
+    }
+    // The lagna's navamsha changes inside any span of an hour or more.
+    assert!(read.vargas[0].lagna.earlier.is_some() || read.vargas[0].lagna.later.is_some());
+    assert!(changes > 20, "{changes} changes held");
+}
+
+#[test]
+fn a_kathmandu_births_facts_hold_either_side_of_each_change() {
+    sensitivity_holds_through_the_charts(MOMENT, kathmandu(), OFFSET, 240.0);
+}
+
+#[test]
+fn an_oslo_births_facts_hold_either_side_of_each_change() {
+    let oslo = Place::new(
+        Latitude::literal(59.9139),
+        Longitude::literal(10.7522),
+        Altitude::literal(23.0),
+    );
+    sensitivity_holds_through_the_charts(2_455_004.4, oslo, UtcOffset::literal(2, 0, 0), 90.0);
+}
+
+#[test]
+fn a_sydney_births_facts_hold_either_side_of_each_change() {
+    let sydney = Place::new(
+        Latitude::literal(-33.8688),
+        Longitude::literal(151.2093),
+        Altitude::literal(58.0),
+    );
+    sensitivity_holds_through_the_charts(2_458_849.1, sydney, UtcOffset::literal(11, 0, 0), 90.0);
+}
+
+/// A refused sensitivity names its field under the record.
+#[test]
+fn a_refused_sensitivity_names_its_field() {
+    use teistro::RectificationRequest;
+
+    let sdk = sdk();
+    let birth = chart(&sdk, MOMENT);
+    for (json, field) in [
+        (
+            r#"{"sensitivity": {"minutes": 0}}"#,
+            "rectification.sensitivity.minutes",
+        ),
+        (
+            r#"{"sensitivity": {"minutes": 30, "seedMinutes": 90}}"#,
+            "rectification.sensitivity.seedMinutes",
+        ),
+        (
+            r#"{"sensitivity": {"minutes": 30, "dasha": {"at": 2470000.5, "depth": 9}}}"#,
+            "rectification.sensitivity.dasha.depth",
+        ),
+        (
+            r#"{"sensitivity": {"minutes": 30, "dasha": {"at": 2470000.5, "system": "CHARA"}}}"#,
+            "rectification.sensitivity.dasha.system",
+        ),
+    ] {
+        let asked = RectificationRequest::from_json(json).unwrap();
+        let refused = sdk
+            .chart()
+            .rectification(&birth, OFFSET, &asked)
+            .unwrap_err();
+        assert_eq!(refused.field(), Some(field), "{json}");
     }
 }
