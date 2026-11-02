@@ -297,6 +297,8 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   YearOffice: 'year_office',
   RulerText: 'ruler_text',
   RulerDayRule: 'ruler_day_rule',
+  Paya: 'paya',
+  Tridosha: 'tridosha',
 });
 
 /**
@@ -383,6 +385,8 @@ export const KindById = /* @__PURE__ */ new Map([
   [82, 'year_office'],
   [83, 'ruler_text'],
   [84, 'ruler_day_rule'],
+  [90, 'paya'],
+  [91, 'tridosha'],
 ]);
 
 /** Every Graha by name. */
@@ -3134,6 +3138,42 @@ export const RulerDayRuleById = /* @__PURE__ */ new Map([
   [2, 'ruler_day_rule.GARGA'],
   [3, 'ruler_day_rule.DAYLIGHT'],
   [4, 'ruler_day_rule.VARA'],
+]);
+
+/** Every Paya by name. */
+export const Paya = /* @__PURE__ */ Object.freeze({
+  Suvarna: 'paya.SUVARNA',
+  Rajata: 'paya.RAJATA',
+  Tamra: 'paya.TAMRA',
+  Loha: 'paya.LOHA',
+});
+
+/**
+ * Every Paya by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const PayaById = /* @__PURE__ */ new Map([
+  [0, 'paya.SUVARNA'],
+  [1, 'paya.RAJATA'],
+  [2, 'paya.TAMRA'],
+  [3, 'paya.LOHA'],
+]);
+
+/** Every Tridosha by name. */
+export const Tridosha = /* @__PURE__ */ Object.freeze({
+  Vata: 'tridosha.VATA',
+  Pitta: 'tridosha.PITTA',
+  Kapha: 'tridosha.KAPHA',
+});
+
+/**
+ * Every Tridosha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const TridoshaById = /* @__PURE__ */ new Map([
+  [0, 'tridosha.VATA'],
+  [1, 'tridosha.PITTA'],
+  [2, 'tridosha.KAPHA'],
 ]);
 
 /** Every Status by name. */

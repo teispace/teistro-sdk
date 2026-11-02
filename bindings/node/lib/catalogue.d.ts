@@ -297,7 +297,9 @@ export type Kind =
   | 'fast_kind'
   | 'year_office'
   | 'ruler_text'
-  | 'ruler_day_rule';
+  | 'ruler_day_rule'
+  | 'paya'
+  | 'tridosha';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -617,6 +619,14 @@ export declare const Kind: {
    * Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).
    */
   readonly RulerDayRule: 'ruler_day_rule';
+  /**
+   * The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107).
+   */
+  readonly Paya: 'paya';
+  /**
+   * The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).
+   */
+  readonly Tridosha: 'tridosha';
 };
 
 /**
@@ -6438,6 +6448,64 @@ export declare const RulerDayRule: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const RulerDayRuleById: ReadonlyMap<number, RulerDayRule>;
+
+/**
+ * The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107). Members are the catalogue's ids; the full key id is `(TS_KIND_PAYA << 16) | member`.
+ */
+export type Paya = 'paya.SUVARNA' | 'paya.RAJATA' | 'paya.TAMRA' | 'paya.LOHA' | 'unknown';
+
+/** Every Paya by name; the values are the strings the union accepts. */
+export declare const Paya: {
+  /**
+   * Gold: the Moon in the 1st, 6th or 11th from the lagna, or in Jyeshtha to Shatabhisha; the best
+   */
+  readonly Suvarna: 'paya.SUVARNA';
+  /**
+   * Silver: the Moon in the 2nd, 5th or 9th from the lagna, or in Ardra to Anuradha; good
+   */
+  readonly Rajata: 'paya.RAJATA';
+  /**
+   * Copper: the Moon in the 3rd, 7th or 10th from the lagna, or in Purva Bhadrapada to Bharani; middling
+   */
+  readonly Tamra: 'paya.TAMRA';
+  /**
+   * Iron: the Moon in the 4th, 8th or 12th from the lagna, or in Krittika to Mrigashira; poor
+   */
+  readonly Loha: 'paya.LOHA';
+};
+
+/**
+ * Every Paya by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const PayaById: ReadonlyMap<number, Paya>;
+
+/**
+ * The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110). Members are the catalogue's ids; the full key id is `(TS_KIND_TRIDOSHA << 16) | member`.
+ */
+export type Tridosha = 'tridosha.VATA' | 'tridosha.PITTA' | 'tridosha.KAPHA' | 'unknown';
+
+/** Every Tridosha by name; the values are the strings the union accepts. */
+export declare const Tridosha: {
+  /**
+   * Vata, the windy humour, as a classical text attributes it to a graha; not a diagnosis
+   */
+  readonly Vata: 'tridosha.VATA';
+  /**
+   * Pitta, the bilious humour, as a classical text attributes it to a graha; not a diagnosis
+   */
+  readonly Pitta: 'tridosha.PITTA';
+  /**
+   * Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis
+   */
+  readonly Kapha: 'tridosha.KAPHA';
+};
+
+/**
+ * Every Tridosha by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const TridoshaById: ReadonlyMap<number, Tridosha>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

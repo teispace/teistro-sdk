@@ -81,6 +81,8 @@ mod fast_kind;
 mod year_office;
 mod ruler_text;
 mod ruler_day_rule;
+mod paya;
+mod tridosha;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -162,6 +164,8 @@ pub use fast_kind::*;
 pub use year_office::*;
 pub use ruler_text::*;
 pub use ruler_day_rule::*;
+pub use paya::*;
+pub use tridosha::*;
 
 use crate::key::KeyId;
 
@@ -257,6 +261,8 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::YearOffice => YearOffice::from_key(key).map(YearOffice::key_id),
         Kind::RulerText => RulerText::from_key(key).map(RulerText::key_id),
         Kind::RulerDayRule => RulerDayRule::from_key(key).map(RulerDayRule::key_id),
+        Kind::Paya => Paya::from_key(key).map(Paya::key_id),
+        Kind::Tridosha => Tridosha::from_key(key).map(Tridosha::key_id),
         _ => None,
     }
 }
@@ -350,6 +356,8 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::YearOffice => YearOffice::from_id(id.id()).map(YearOffice::key),
         Kind::RulerText => RulerText::from_id(id.id()).map(RulerText::key),
         Kind::RulerDayRule => RulerDayRule::from_id(id.id()).map(RulerDayRule::key),
+        Kind::Paya => Paya::from_id(id.id()).map(Paya::key),
+        Kind::Tridosha => Tridosha::from_id(id.id()).map(Tridosha::key),
         _ => None,
     }
 }

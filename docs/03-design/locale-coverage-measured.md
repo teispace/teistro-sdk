@@ -6,13 +6,13 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 442 of 528 | 83.7% | 181 of 181 | 100.0% |
-| `hi-Deva-IN` | base | 332 of 528 | 62.9% | 74 of 181 | 40.9% |
-| `ne-Deva-NP` | strict | 442 of 528 | 83.7% | 181 of 181 | 100.0% |
-| `sa-Deva` | base | 332 of 528 | 62.9% | 68 of 181 | 37.6% |
-| `sa-Latn` | base | 332 of 528 | 62.9% | 0 of 181 | 0.0% |
+| `en-Latn` | strict | 447 of 533 | 83.9% | 181 of 181 | 100.0% |
+| `hi-Deva-IN` | base | 333 of 533 | 62.5% | 74 of 181 | 40.9% |
+| `ne-Deva-NP` | strict | 447 of 533 | 83.9% | 181 of 181 | 100.0% |
+| `sa-Deva` | base | 332 of 533 | 62.3% | 68 of 181 | 37.6% |
+| `sa-Latn` | base | 332 of 533 | 62.3% | 0 of 181 | 0.0% |
 
-528 members of 42 kinds, 181 messages.
+533 members of 43 kinds, 181 messages.
 
 `hi-Deva-IN` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
 
@@ -39,7 +39,7 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `day_marker` | 3 | 3 | 0 | 3 | 0 | 0 |
 | `dignity` | 11 | 11 | 11 | 11 | 11 | 11 |
 | `direction` | 8 | 8 | 8 | 8 | 8 | 8 |
-| `era` | 10 | 9 | 0 | 9 | 0 | 0 |
+| `era` | 11 | 10 | 1 | 10 | 0 | 0 |
 | `gana` | 3 | 3 | 3 | 3 | 3 | 3 |
 | `gowri` | 8 | 8 | 0 | 8 | 0 | 0 |
 | `graha` | 12 | 9 | 9 | 9 | 9 | 9 |
@@ -53,6 +53,7 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `nature` | 3 | 2 | 0 | 2 | 0 | 0 |
 | `paksha` | 2 | 2 | 2 | 2 | 2 | 2 |
 | `panchaka` | 5 | 5 | 5 | 5 | 5 | 5 |
+| `paya` | 4 | 4 | 0 | 4 | 0 | 0 |
 | `point` | 49 | 19 | 8 | 19 | 8 | 8 |
 | `rashi` | 12 | 12 | 12 | 12 | 12 | 12 |
 | `relationship` | 5 | 5 | 5 | 5 | 5 | 5 |

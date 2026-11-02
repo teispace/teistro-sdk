@@ -315,6 +315,12 @@ class Kind(Member):
     ruler_day_rule = 84
     """Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072)."""
 
+    paya = 90
+    """The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107)."""
+
+    tridosha = 91
+    """The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110)."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3850,6 +3856,45 @@ class RulerDayRule(Catalogued):
     """
 
 
+class Paya(Catalogued):
+    """The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107). Members are the catalogue's ids; the full key id is `(TS_KIND_PAYA << 16) | member`."""
+
+    SUVARNA = 0
+    """Gold: the Moon in the 1st, 6th or 11th from the lagna, or in Jyeshtha to Shatabhisha; the best"""
+
+    RAJATA = 1
+    """Silver: the Moon in the 2nd, 5th or 9th from the lagna, or in Ardra to Anuradha; good"""
+
+    TAMRA = 2
+    """Copper: the Moon in the 3rd, 7th or 10th from the lagna, or in Purva Bhadrapada to Bharani; middling"""
+
+    LOHA = 3
+    """Iron: the Moon in the 4th, 8th or 12th from the lagna, or in Krittika to Mrigashira; poor"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class Tridosha(Catalogued):
+    """The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110). Members are the catalogue's ids; the full key id is `(TS_KIND_TRIDOSHA << 16) | member`."""
+
+    VATA = 0
+    """Vata, the windy humour, as a classical text attributes it to a graha; not a diagnosis"""
+
+    PITTA = 1
+    """Pitta, the bilious humour, as a classical text attributes it to a graha; not a diagnosis"""
+
+    KAPHA = 2
+    """Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -6118,6 +6163,8 @@ _KEYS: dict[str, dict[int, str]] = {
         82: "year_office",
         83: "ruler_text",
         84: "ruler_day_rule",
+        90: "paya",
+        91: "tridosha",
     },
     "Graha": {
         0: "SUN",
@@ -7297,6 +7344,19 @@ _KEYS: dict[str, dict[int, str]] = {
         4: "VARA",
         -1: "UNKNOWN",
     },
+    "Paya": {
+        0: "SUVARNA",
+        1: "RAJATA",
+        2: "TAMRA",
+        3: "LOHA",
+        -1: "UNKNOWN",
+    },
+    "Tridosha": {
+        0: "VATA",
+        1: "PITTA",
+        2: "KAPHA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -8066,4 +8126,6 @@ _KINDS: dict[str, str] = {
     "YearOffice": "year_office",
     "RulerText": "ruler_text",
     "RulerDayRule": "ruler_day_rule",
+    "Paya": "paya",
+    "Tridosha": "tridosha",
 }

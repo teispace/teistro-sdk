@@ -182,9 +182,13 @@ pub enum Kind {
     RulerText = 83,
     /// Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).
     RulerDayRule = 84,
+    /// The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107).
+    Paya = 90,
+    /// The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).
+    Tridosha = 91,
 }
 
-const BY_NAME: [(&str, Kind); 83] = [
+const BY_NAME: [(&str, Kind); 85] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -239,6 +243,7 @@ const BY_NAME: [(&str, Kind); 83] = [
     ("paksha", Kind::Paksha),
     ("panchaka", Kind::Panchaka),
     ("parity", Kind::Parity),
+    ("paya", Kind::Paya),
     ("point", Kind::Point),
     ("point_family", Kind::PointFamily),
     ("rashi", Kind::Rashi),
@@ -261,6 +266,7 @@ const BY_NAME: [(&str, Kind); 83] = [
     ("tithi", Kind::Tithi),
     ("tithi_class", Kind::TithiClass),
     ("tradition", Kind::Tradition),
+    ("tridosha", Kind::Tridosha),
     ("vaiseshikamsa", Kind::Vaiseshikamsa),
     ("vara", Kind::Vara),
     ("varga", Kind::Varga),
@@ -272,7 +278,7 @@ const BY_NAME: [(&str, Kind); 83] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 83] = [
+    pub const ALL: [Kind; 85] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -356,6 +362,8 @@ impl Kind {
         Kind::YearOffice,
         Kind::RulerText,
         Kind::RulerDayRule,
+        Kind::Paya,
+        Kind::Tridosha,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -451,6 +459,8 @@ impl Kind {
             Kind::YearOffice => "year_office",
             Kind::RulerText => "ruler_text",
             Kind::RulerDayRule => "ruler_day_rule",
+            Kind::Paya => "paya",
+            Kind::Tridosha => "tridosha",
         }
     }
 
@@ -560,6 +570,8 @@ impl Kind {
             Kind::YearOffice => 9,
             Kind::RulerText => 3,
             Kind::RulerDayRule => 5,
+            Kind::Paya => 4,
+            Kind::Tridosha => 3,
         }
     }
 
@@ -670,6 +682,8 @@ impl Kind {
             82 => Some(Kind::YearOffice),
             83 => Some(Kind::RulerText),
             84 => Some(Kind::RulerDayRule),
+            90 => Some(Kind::Paya),
+            91 => Some(Kind::Tridosha),
             _ => None,
         }
     }

@@ -402,7 +402,17 @@ public enum Kind implements Member {
     /**
      * Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072).
      */
-    RULER_DAY_RULE(84, "ruler_day_rule");
+    RULER_DAY_RULE(84, "ruler_day_rule"),
+
+    /**
+     * The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107).
+     */
+    PAYA(90, "paya"),
+
+    /**
+     * The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).
+     */
+    TRIDOSHA(91, "tridosha");
 
     private static final Kind[] MEMBERS = values();
 
