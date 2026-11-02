@@ -456,6 +456,7 @@ pub fn records() -> Vec<Record> {
     #[cfg(feature = "chart")]
     all.extend(naming_records());
     all.extend(almanac_records());
+    all.extend(ashauch_records());
     all.extend(almanac_lookup_records());
     all.extend(time_records());
     all.extend(engine_records());
@@ -669,10 +670,10 @@ fn naming_records() -> [Record; 5] {
     ]
 }
 
-/// The almanac's records every build carries over a range or a death: its
-/// change points, an ashauch, a first year, its days with what is asked
-/// beside them, and its festivals as a feed.
-fn almanac_records() -> [Record; 10] {
+/// The almanac's records every build carries over a range: its change
+/// points, anniversaries, its days with what is asked beside them, and its
+/// festivals as a feed.
+fn almanac_records() -> [Record; 4] {
     [
         Record {
             name: "almanac.anniversaries",
@@ -698,6 +699,31 @@ fn almanac_records() -> [Record; 10] {
             compares: None,
             schemas: schemas!(crate::area::ChangesAsked => crate::ChangePoints),
         },
+        Record {
+            name: "almanac.days",
+            boundary: "ts_panchanga_days",
+            title: "Every day of a range at a place, and what is asked beside them",
+            reads: Some(crate::DaysRequest::DESCRIPTION),
+            run: days,
+            compares: None,
+            schemas: schemas!(fn crate::days_request::schema => crate::days_request::DaysWritten<'static>, parts: crate::days_request::PARTS),
+        },
+        Record {
+            name: "almanac.festival_calendar",
+            boundary: "ts_almanac_festival_calendar",
+            title: "A range's festivals as an iCalendar feed",
+            reads: None,
+            run: festival_calendar,
+            compares: None,
+            schemas: schemas!(crate::area::FestivalCalendarAsked => String),
+        },
+    ]
+}
+
+/// The almanac's records of a birth or a death: an ashauch, a household's,
+/// a kin's relation, a rite's leave, a death's time and its first year.
+fn ashauch_records() -> [Record; 6] {
+    [
         Record {
             name: "almanac.ashauch",
             boundary: "ts_almanac_ashauch",
@@ -763,24 +789,6 @@ fn almanac_records() -> [Record; 10] {
             },
             compares: None,
             schemas: schemas!(crate::first_year_request::FirstYearAsked => crate::first_year::FirstYearSchedule),
-        },
-        Record {
-            name: "almanac.days",
-            boundary: "ts_panchanga_days",
-            title: "Every day of a range at a place, and what is asked beside them",
-            reads: Some(crate::DaysRequest::DESCRIPTION),
-            run: days,
-            compares: None,
-            schemas: schemas!(fn crate::days_request::schema => crate::days_request::DaysWritten<'static>, parts: crate::days_request::PARTS),
-        },
-        Record {
-            name: "almanac.festival_calendar",
-            boundary: "ts_almanac_festival_calendar",
-            title: "A range's festivals as an iCalendar feed",
-            reads: None,
-            run: festival_calendar,
-            compares: None,
-            schemas: schemas!(crate::area::FestivalCalendarAsked => String),
         },
     ]
 }

@@ -374,3 +374,87 @@ fn a_tropical_chart_says_so() {
             .any(|row| row.contains(&"TROPICAL"))
     );
 }
+
+/// A consumer section whose first column is a rule's category.
+struct Ruled;
+
+impl DossierSection for Ruled {
+    fn key(&self) -> &'static str {
+        "RULED"
+    }
+    fn columns(&self) -> &[Column] {
+        const COLUMNS: [Column; 2] = [column("category", "a category"), column("rule", "a rule")];
+        &COLUMNS
+    }
+    fn category_column(&self) -> Option<usize> {
+        Some(0)
+    }
+    fn asked_by(&self) -> &'static str {
+        "the consumer's own call"
+    }
+    fn rows(&self, _: &Document, _: &View) -> Option<Vec<Vec<String>>> {
+        let row = |category: &str, rule: &str| vec![category.to_owned(), rule.to_owned()];
+        Some(vec![
+            row("WEALTH", "a"),
+            row("WEALTH", "b"),
+            row("HEALTH", "c"),
+        ])
+    }
+}
+
+#[test]
+fn a_policy_is_written_first_and_counts_each_thing_it_left_out_once() {
+    let document = chart();
+    let full = dossier(&document, &on_clock(), &[&Ruled]).unwrap();
+    let shadbala = rows(&full, "SHADBALA").len().to_string();
+    let owned = |keys: &[&str]| keys.iter().map(|one| (*one).to_owned()).collect();
+    let thinned = DossierOptions {
+        drop: owned(&["SHADBALA", "SHADBALA"]),
+        drop_categories: owned(&["WEALTH", "WEALTH", "NONE"]),
+        ..on_clock()
+    };
+    let text = dossier(&document, &thinned, &[&Ruled]).unwrap();
+    assert_eq!(banners(&text)[..2], ["LEGEND", "DROPPED"]);
+    assert!(!banners(&text).contains(&"SHADBALA"));
+    assert_eq!(
+        rows(&text, "DROPPED"),
+        [
+            ["section", "SHADBALA", shadbala.as_str()],
+            ["category", "WEALTH", "2"],
+            ["category", "NONE", "0"],
+        ]
+    );
+    assert_eq!(rows(&text, "RULED"), [["HEALTH", "c"]]);
+    // A section the chart does not carry is dropped all the same, its
+    // rows unknown.
+    let bare = Document::of(document.foundation.clone());
+    let lacking = DossierOptions {
+        drop: owned(&["SHADBALA"]),
+        ..on_clock()
+    };
+    let text = dossier(&bare, &lacking, &[]).unwrap();
+    assert_eq!(rows(&text, "DROPPED"), [["section", "SHADBALA", "-"]]);
+}
+
+#[test]
+fn a_policy_that_contradicts_itself_is_refused_by_its_place() {
+    let document = chart();
+    let owned =
+        |keys: &[&str]| -> Vec<String> { keys.iter().map(|one| (*one).to_owned()).collect() };
+    let refused = |options: DossierOptions| dossier(&document, &options, &[]).unwrap_err();
+    let unknown = refused(DossierOptions {
+        drop: owned(&["PLANETS"]),
+        ..on_clock()
+    });
+    assert_eq!(unknown.field(), Some("drop[0]"));
+    let both = refused(DossierOptions {
+        drop: owned(&["GRAHAS"]),
+        ..asking(&["GRAHAS"])
+    });
+    assert_eq!(both.field(), Some("drop[0]"));
+    let empty = refused(DossierOptions {
+        drop_categories: owned(&["WEALTH", ""]),
+        ..on_clock()
+    });
+    assert_eq!(empty.field(), Some("dropCategories[1]"));
+}

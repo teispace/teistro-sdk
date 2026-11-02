@@ -215,6 +215,10 @@ name = "disagreements"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "chart_disagreements"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "muhurta"
 required-features = ["builtin-ephemeris"]
 
