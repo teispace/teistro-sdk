@@ -41,6 +41,14 @@ days are unchanged; `GAUDIYA`'s answer gains the five festivals.
 - `saait-measured.md` holds the new rites to the committee's VS 2083 foundation and shop days and the Surya
   Panchanga's VS 2082 lists, and the committee's marriages to both marriage rules (C206).
 
+**A relative cost per entry point.**
+**Numbers:** none: a measured page, and nothing it reads moves.
+- `cargo xtask costs` prices every record's example (but `engine.*`) under callgrind, on its first call
+  and on a call again, relative to a plain chart at Kathmandu (`docs/05-testing/costs.json`, rendered to
+  `costs-measured.md`, SR-54). `check-costs` holds the page to the record and the record to the examples
+  in fast-check; the benchmarks workflow re-measures every pull request and fails a relative cost that moved
+  more than 10%.
+
 **A birth's sensitivity to its recorded time.**
 **Numbers:** none unless asked: a rectification without `sensitivity` answers and hashes as before.
 - `ChartArea::sensitivity` and the rectification record's `sensitivity` member (`SensitivityRequest`,

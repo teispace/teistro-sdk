@@ -374,3 +374,35 @@ re-checks.
    that waits on another repository, so it can start in parallel with 2.
 6. Run **every** `check-*` after each step (`sweep-every-generated-page`),
    and read the CI step durations before merging.
+
+## 5. `costs-measured.md`: a relative cost per entry point (SR-54)
+
+The application asked for a cost per entry point it can plan by, measured
+and not written by hand. Wall time is a machine's; an instruction count
+under callgrind is the code's, the same on a busy runner and an idle one,
+which is why `bench` counts it (ADR-0022). So the page prices each entry
+point in instructions, and against a unit rather than in seconds:
+
+- **The entry points** are the records, the names the C boundary, every
+  binding and the agent server share, each answered on its example in
+  `crates/sdk/tests/requests.json` (the fixture every binding's tests and
+  the agent server's already send, so the list is never kept twice), over
+  the built-in ephemeris. `engine.*` answers from the consumer's own
+  engine and is not priced. The list is `teistro_scenario::entries`.
+- **The unit** is a plain chart: `chart.found` at Kathmandu, nothing read
+  of it but the chart.
+- **Two prices** an entry point: its first call on a fresh context (the
+  ephemeris's segments decoded for it included), and the same request
+  again on that context. Both are counted above the context alone
+  (`teistro-scenario entry unit 0`), so building a context is priced once,
+  as the floor.
+
+| check | where | holds |
+|---|---|---|
+| `check-costs` | fast-check | the page equals what `costs.json` renders, and the record prices exactly the entry points, each on its current example |
+| `check-costs --from` | benchmarks, every pull request | each relative cost counted on the pull request's head within **10%** of the record's; over that, the record is re-measured from the run's `entry-costs.json` with `cargo xtask costs --from FILE` |
+
+A tenth because the page is read to its first figure: a smaller move
+changes no plan, and an exact gate would send every pull request that
+touched a hot path back for a re-record. A changed example changes what
+was priced, so it fails the first check at once.

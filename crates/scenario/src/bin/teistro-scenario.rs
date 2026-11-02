@@ -12,6 +12,7 @@
 //! teistro-scenario nothing     # what the process costs before any work
 //! teistro-scenario astro       # that, plus the astronomy section
 //! teistro-scenario values      # every value of every section, as the hash matrix compares them
+//! teistro-scenario entry almanac.days 1   # one entry point answered once, as `cargo xtask costs` prices it
 //! ```
 
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
@@ -37,6 +38,24 @@ fn main() {
     // is what `cargo xtask bench` subtracts from every other run.
     if name == "nothing" {
         println!("nothing 0");
+        return;
+    }
+    // One entry point answered a number of times on a fresh context: what
+    // `cargo xtask costs` prices (`teistro-scenario entry unit 0` is the
+    // context alone, the floor every price is measured above).
+    if name == "entry" {
+        let (Some(entry), Some(calls)) = (args.next(), args.next().and_then(|n| n.parse().ok()))
+        else {
+            eprintln!("usage: teistro-scenario entry <name> <calls>");
+            std::process::exit(2);
+        };
+        match teistro_scenario::priced(&entry, calls) {
+            Ok(written) => println!("{entry} {}", black_box(written)),
+            Err(why) => {
+                eprintln!("{why}");
+                std::process::exit(1);
+            }
+        }
         return;
     }
     // Every value of every section, in the file the hash matrix compares:

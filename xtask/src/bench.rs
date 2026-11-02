@@ -103,7 +103,13 @@ pub(crate) fn report(root: &Path, out: Option<&Path>) -> i32 {
 /// Runs one section under callgrind and reads the instruction count out
 /// of the profile it wrote.
 fn count(binary: &Path, section: &str, into: &Path) -> Option<u64> {
-    let profile = into.join(format!("callgrind.{section}.out"));
+    counted(binary, &[section], section, into)
+}
+
+/// Runs the scenario with `args` under callgrind, its profile named after
+/// `label`, and reads the instruction count out of the profile.
+pub(crate) fn counted(binary: &Path, args: &[&str], label: &str, into: &Path) -> Option<u64> {
+    let profile = into.join(format!("callgrind.{label}.out"));
     let status = Command::new("valgrind")
         .args([
             "--tool=callgrind",
@@ -115,7 +121,7 @@ fn count(binary: &Path, section: &str, into: &Path) -> Option<u64> {
         ])
         .arg(format!("--callgrind-out-file={}", profile.display()))
         .arg(binary)
-        .arg(section)
+        .args(args)
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .status();
