@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 390 of the examples' 402 members.
+/// The cases compare 392 of the examples' 404 members.
 library;
 
 import 'dart:convert';
@@ -2430,6 +2430,21 @@ void main() {
           firstAuspicious: true,
           pranapada: PranapadaRule.printedExample,
         ),
+      ).toJson(),
+    );
+  });
+
+  test('chart.found at rectification.sensitivity: SensitivityRequest', () {
+    _holds(
+      'chart.found',
+      path: ['rectification', 'sensitivity'],
+      dropping: [],
+      members: 2,
+      written: SensitivityRequest(
+        dasha: SensitivityDasha(at: 1.5, depth: 1, system: DashaSystem.ashtottari),
+        minutes: 1.5,
+        seedMinutes: 1.5,
+        vargas: [Varga.d2],
       ).toJson(),
     );
   });
