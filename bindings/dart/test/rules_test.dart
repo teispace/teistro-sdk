@@ -304,6 +304,7 @@ const Map<String, Type> _records = {
   'almanac.pakshi': PakshiRequest,
   'almanac.publishedReasons': PublishedReasonsRequest,
   'almanac.sankalpa': SankalpaRequest,
+  'almanac.skyView': SkyViewRequest,
   'calendar.add': AddAsked,
   'calendar.between': BetweenAsked,
   'calendar.convert': CalendarAsked,

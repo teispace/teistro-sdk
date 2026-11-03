@@ -2446,6 +2446,84 @@ pub unsafe extern "C" fn ts_almanac_changes(
     })
 }
 
+/// The sky at a place and an instant (`03-design/sky-view.md`), answered
+/// with `{value, provenance}` as canonical JSON.
+///
+/// `value` is `{at, siderealTimeDeg, obliquityDeg, atmosphere,
+/// eclipticStepDeg, horizonStepDeg, grahas, stars, ecliptic, horizon}`:
+/// each of `grahas` `{graha, raDeg, decDeg, altitudeDeg,
+/// refractedAltitudeDeg, azimuthDeg}`, topocentric, apparent and of date,
+/// the azimuth from north through east and Rahu and Ketu the node the
+/// settings name; each of `stars` the same with `star`, `nakshatra` (the
+/// nakshatra it is the yogatara of, or null) and `magnitude`; `ecliptic`
+/// `{kind, longitudeDeg, altitudeDeg, refractedAltitudeDeg, azimuthDeg}`
+/// at every step of tropical longitude and at the `ASCENDANT` and the
+/// `DESCENDANT`, in the order of longitude; and `horizon` `{azimuthDeg,
+/// raDeg, decDeg, longitudeDeg, latitudeDeg}` at every step of azimuth
+/// from north.
+///
+/// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "at",
+/// "grahas", "stars", "eclipticStepDeg", "horizonStepDeg", "pressureHpa",
+/// "temperatureC"}`: `at` a UTC Julian day, `grahas` and `stars` lists of
+/// keys (the nine and the twenty-seven yogataras when left out), each step
+/// 0.1 to 90 degrees (5 when left out), and the air 1010 hPa and 10 °C
+/// when left out, a pressure of 0 for no refraction. A key it does not
+/// read, a place out of range, a step or an atmosphere out of range is
+/// `INVALID_ARG`, named under `skyView`; a context without an ephemeris
+/// is `CAPABILITY`, and one over a classical astronomy `UNSUPPORTED`
+/// (C1185).
+///
+/// ```
+/// # #[cfg(feature = "builtin-ephemeris")] {
+/// # use teistro_ffi::context::{OptionTexts, TsContext};
+/// #
+/// # let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::Builtin)?;
+/// # fn owned(mut out: teistro_ffi::string::TsString) -> String {
+/// #     // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+/// #     let text = String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) }).into_owned();
+/// #     // SAFETY: a descriptor the library wrote, freed once.
+/// #     unsafe { teistro_ffi::string::ts_string_free(&raw mut out) };
+/// #     text
+/// # }
+/// use teistro_core::Status;
+/// use teistro_ffi::panchanga::ts_almanac_sky_view;
+/// use teistro_ffi::string::TsString;
+///
+/// let request = c"{\"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"at\": 2461345.25}";
+/// let mut out = TsString::empty();
+/// // SAFETY: a live context, a NUL-terminated request and a writable slot.
+/// let status = unsafe { ts_almanac_sky_view(&raw const ctx, request.as_ptr(), &raw mut out) };
+/// assert_eq!(status, Status::Ok);
+/// let answer: serde_json::Value = serde_json::from_str(&owned(out))?;
+/// // The nine grahas and the twenty-seven junction stars.
+/// assert_eq!(answer["value"]["grahas"].as_array().map(Vec::len), Some(9));
+/// assert_eq!(answer["value"]["stars"].as_array().map(Vec::len), Some(27));
+/// # }
+/// # Ok::<(), Box<dyn std::error::Error>>(())
+/// ```
+///
+/// # Safety
+///
+/// `context` must be a live handle; `request_json` NUL-terminated;
+/// `out_json` valid for a write.
+#[cfg_attr(not(test), unsafe(no_mangle))]
+pub unsafe extern "C" fn ts_almanac_sky_view(
+    context: *const TsContext,
+    request_json: *const c_char,
+    out_json: *mut TsString,
+) -> Status {
+    with_context(context, |ctx| {
+        // SAFETY: the entry point's contract.
+        let asked = teistro::SkyViewRequest::from_json(unsafe {
+            crate::support::text(request_json, "request_json")
+        }?)?;
+        let answer = ctx.sdk().almanac().sky_view_query(&asked)?;
+        let json = TsString::from_string(teistro_core::envelope::canonical_json(&answer));
+        // SAFETY: the entry point's contract.
+        unsafe { write_plain(out_json, "out_json", json) }
+    })
+}
+
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
 mod tests {

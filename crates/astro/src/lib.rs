@@ -65,6 +65,7 @@ pub mod rise_set;
 pub mod scale;
 pub mod sidereal;
 pub mod sky;
+pub mod sky_view;
 pub mod solve;
 pub mod stars;
 pub mod topocentric;

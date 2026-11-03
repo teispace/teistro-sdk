@@ -127,7 +127,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 | SR | Status | Where | Note or question |
 |---|---|---|---|
 | SR-57 | built | `research/src/dataset.rs` | **Built, 2026-11-02.** `teistro.dataset/1`: births rated by the Rodden Rating (AA, A, B, C, DD, X, XX), studies each with a settings snapshot, the worst rating it admits and the rest of its `research.study` request; loaded strictly with refusals that name the field; the JSON Schema generated into `crates/research/schema/dataset.schema.json`; `ResearchArea::dataset` runs a study under its own settings. Rust only for now. `03-design/receipts-and-datasets.md` §2, C1174–C1175. |
-| SR-58 | partly built, the sky view moved to P2 and the pose to P3 by addendum 5 | `astro` (topocentric altitude and azimuth, visibility) | Planned: every graha, the junction stars, the ecliptic and the horizon at a place and instant first (P2); then a record for a device pose and an instant, giving the grahas, the Moon's junction stars and the rising lagna point. |
+| SR-58 | the sky view built (P2); the pose P3 by addendum 5 | `astro` (topocentric altitude and azimuth, visibility) | Built: `almanac.skyView` gives every graha, the 27 junction stars, the ecliptic with the ascendant and the descendant, and the horizon at a place and an instant, airless and refracted, held to JPL Horizons (`03-design/sky-view.md`, C1180–C1186). Planned (P3): `almanac.skyPose`, a device pose laid on this record unchanged, giving what falls in the view, the Moon's junction stars and the rising lagna point (§7). |
 
 ## 10. Addendum 4's requests
 

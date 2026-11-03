@@ -457,6 +457,7 @@ pub fn records() -> Vec<Record> {
     #[cfg(feature = "chart")]
     all.extend(naming_records());
     all.extend(almanac_records());
+    all.push(sky_view_record());
     all.extend(ashauch_records());
     all.extend(almanac_lookup_records());
     all.extend(time_records());
@@ -918,6 +919,22 @@ fn almanac_lookup_records() -> [Record; 6] {
             schemas: schemas!(crate::sankalpa_request::SankalpaAsked => crate::Sankalpa),
         },
     ]
+}
+
+/// The sky view at a place and an instant (`03-design/sky-view.md`).
+fn sky_view_record() -> Record {
+    Record {
+        name: "almanac.skyView",
+        boundary: "ts_almanac_sky_view",
+        title: "Where every graha and junction star stands in the local sky, with the ecliptic and the horizon",
+        reads: None,
+        run: |context, json| {
+            let asked = crate::SkyViewRequest::from_json(json)?;
+            Answered::sealed(context.almanac().sky_view_query(&asked)?)
+        },
+        compares: None,
+        schemas: schemas!(crate::sky_view_request::SkyViewAsked => crate::sky_view::SkyView),
+    }
 }
 
 /// What a text claims of the time, checked against the sankalpa at an

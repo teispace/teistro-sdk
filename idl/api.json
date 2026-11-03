@@ -18418,6 +18418,57 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_almanac_sky_view",
+      "doc": "The sky at a place and an instant (`03-design/sky-view.md`), answered\nwith `{value, provenance}` as canonical JSON.\n\n`value` is `{at, siderealTimeDeg, obliquityDeg, atmosphere,\neclipticStepDeg, horizonStepDeg, grahas, stars, ecliptic, horizon}`:\neach of `grahas` `{graha, raDeg, decDeg, altitudeDeg,\nrefractedAltitudeDeg, azimuthDeg}`, topocentric, apparent and of date,\nthe azimuth from north through east and Rahu and Ketu the node the\nsettings name; each of `stars` the same with `star`, `nakshatra` (the\nnakshatra it is the yogatara of, or null) and `magnitude`; `ecliptic`\n`{kind, longitudeDeg, altitudeDeg, refractedAltitudeDeg, azimuthDeg}`\nat every step of tropical longitude and at the `ASCENDANT` and the\n`DESCENDANT`, in the order of longitude; and `horizon` `{azimuthDeg,\nraDeg, decDeg, longitudeDeg, latitudeDeg}` at every step of azimuth\nfrom north.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\", \"at\",\n\"grahas\", \"stars\", \"eclipticStepDeg\", \"horizonStepDeg\", \"pressureHpa\",\n\"temperatureC\"}`: `at` a UTC Julian day, `grahas` and `stars` lists of\nkeys (the nine and the twenty-seven yogataras when left out), each step\n0.1 to 90 degrees (5 when left out), and the air 1010 hPa and 10 °C\nwhen left out, a pressure of 0 for no refraction. A key it does not\nread, a place out of range, a step or an atmosphere out of range is\n`INVALID_ARG`, named under `skyView`; a context without an ephemeris\nis `CAPABILITY`, and one over a classical astronomy `UNSUPPORTED`\n(C1185).",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "ts_naam_milan",
       "doc": "Matches two names star to star (naam milan) and answers with the\n`naam` blob: each name's first syllable in the śatapada cakra, the\nvarga koota, and the Ashta Koota and the ten considerations of the two\nname stars (`03-design/matching.md`, C291 to C296).\n\n`request_json` is `{\"bride\", \"groom\", \"rules\"}`: the two names, in\nDevanagari or in the Latin scheme `rules.name.latin` declares, and the\n`NaamRules` with every field optional. A name the cakra does not read,\na Latin name while `latin` refuses, a `CASUAL` name read more than one\nway, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`,\nnamed under `naam.bride` or `naam.groom`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_blob` valid for a write.",

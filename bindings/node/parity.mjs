@@ -2453,6 +2453,22 @@ put(
     .join(' '),
 );
 
+// ── The sky view ───────────────────────────────────────────────────────
+// Kathmandu at 18:00 UTC on 31 October 2026 over the built-in sky
+// (`03-design/sky-view.md`): the hash, each list's length, the Moon and
+// the ascendant.
+{
+  const sky = new Context({ profile: 'nepali-drik', ephemeris: 'BUILTIN' });
+  const { value, provenance } = sky.almanac.skyView({ place, at: 2461345.25 });
+  sky.dispose();
+  put('sky-view-hash', provenance.contentHash);
+  put('sky-view-count', `${value.grahas.length} ${value.stars.length} ${value.ecliptic.length} ${value.horizon.length}`);
+  const moon = value.grahas.find((one) => one.graha === 'graha.MOON');
+  put('sky-view-moon', `${number(moon.altitudeDeg)} ${number(moon.refractedAltitudeDeg)} ${number(moon.azimuthDeg)}`);
+  const ascendant = value.ecliptic.find((point) => point.kind === 'ASCENDANT');
+  put('sky-view-ascendant', `${number(ascendant.longitudeDeg)} ${number(ascendant.azimuthDeg)}`);
+}
+
 // ── The eclipses ───────────────────────────────────────────────────────
 // September 2025 at Kathmandu over the built-in sky, which the test
 // provider cannot complete: a total lunar eclipse seen whole and a

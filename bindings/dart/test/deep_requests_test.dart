@@ -1955,6 +1955,27 @@ void main() {
     );
   });
 
+  test('almanac.skyView: SkyViewRequest', () {
+    _holds(
+      'almanac.skyView',
+      path: [],
+      dropping: [],
+      members: 2,
+      written: SkyViewRequest(
+        altitudeM: 1.5,
+        at: 1.5,
+        eclipticStepDeg: 1.5,
+        grahas: [Graha.moon],
+        horizonStepDeg: 1.5,
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        pressureHpa: 1.5,
+        stars: [Star.bharani],
+        temperatureC: 1.5,
+      ).toJson(),
+    );
+  });
+
   test('calendar.add: AddAsked', () {
     _holds(
       'calendar.add',

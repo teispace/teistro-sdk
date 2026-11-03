@@ -1624,6 +1624,69 @@ void _engineTests() {
     },
   );
 
+  // The sky at Kathmandu at 18:00 UTC on 31 October 2026 over the built-in
+  // sky (`03-design/sky-view.md`): the nine grahas, the twenty-seven
+  // yogataras with Spica Chitra's, the ecliptic at every fifth degree with
+  // its two crossings and the horizon at every fifth degree of azimuth.
+  test('an almanac draws the sky at a place and an instant', () {
+    final sky = teistro.context(
+      profile: 'nepali-drik',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final found = sky.almanac.skyView(at: 2461345.25, place: kathmandu);
+    final view = found.value;
+    expect(found.provenance.contentHash, isNotEmpty);
+    expect(view.grahas, hasLength(9));
+    expect(view.graha(Graha.moon)!.graha, Graha.moon);
+    expect(view.stars, hasLength(27));
+    expect(view.stars[13].star, Star.spica);
+    expect(view.stars[13].nakshatra, Nakshatra.chitra);
+    expect([view.ecliptic.length, view.horizon.length], [74, 72]);
+    expect(
+      view.ecliptic.where((point) => point.kind == 'ASCENDANT'),
+      hasLength(1),
+    );
+    final few =
+        sky.almanac
+            .skyView(
+              at: 2461345.25,
+              place: kathmandu,
+              grahas: const [Graha.moon],
+              stars: const [],
+              eclipticStepDeg: 30,
+              pressureHpa: 0,
+            )
+            .value;
+    expect(
+      [few.grahas.length, few.stars.length, few.ecliptic.length],
+      [1, 0, 14],
+    );
+    expect(
+      few.grahas.single.refractedAltitudeDeg,
+      few.grahas.single.altitudeDeg,
+    );
+    expect(
+      () => sky.almanac.skyView(
+        at: 2461345.25,
+        place: kathmandu,
+        eclipticStepDeg: 0,
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (error) => error.field,
+          'field',
+          'skyView.eclipticStepDeg',
+        ),
+      ),
+    );
+  });
+
   // A death at 10:00 on 20 October 2026 in Kathmandu: the sixteen, fifteen
   // of them done again after a twelfth-day sapindana (DS p. 331); with
   // Dhakal's readings for Nepal the first abdika is the eleventh day's and

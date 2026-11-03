@@ -871,6 +871,69 @@ final class SentencesRequest extends _Request {
   List<Object?> get _fields => [altitudeM, calendar, date, latitudeDeg, locale, longitudeDeg, utcOffsetSeconds];
 }
 
+/// The request as a binding writes it.
+final class SkyViewRequest extends _Request {
+  const SkyViewRequest({
+    this.altitudeM = 0.0,
+    required this.at,
+    this.eclipticStepDeg,
+    this.grahas,
+    this.horizonStepDeg,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    this.pressureHpa,
+    this.stars,
+    this.temperatureC,
+  });
+
+  /// The place's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The instant, a UTC Julian day.
+  final double at;
+
+  /// The ecliptic's step in longitude, degrees, 0.1 to 90; 5 when left out.
+  final double? eclipticStepDeg;
+
+  /// The grahas placed, in this order; the nine, Sun to Ketu, when left out.
+  final List<Graha>? grahas;
+
+  /// The horizon's step in azimuth, degrees, 0.1 to 90; 5 when left out.
+  final double? horizonStepDeg;
+
+  /// The place's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  /// The pressure the refraction is reckoned under, hectopascals, 0 to 1100; 1010 when left out, and 0 for no refraction.
+  final double? pressureHpa;
+
+  /// The stars placed, in this order; the twenty-seven nakshatras' yogataras when left out.
+  final List<Star>? stars;
+
+  /// The temperature, degrees Celsius, −90 to 60; 10 when left out.
+  final double? temperatureC;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'at': at,
+    if (eclipticStepDeg case final eclipticStepDegValue?) 'eclipticStepDeg': eclipticStepDegValue,
+    if (grahas case final grahasValue?) 'grahas': [for (final e0 in grahasValue) e0.key],
+    if (horizonStepDeg case final horizonStepDegValue?) 'horizonStepDeg': horizonStepDegValue,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    if (pressureHpa case final pressureHpaValue?) 'pressureHpa': pressureHpaValue,
+    if (stars case final starsValue?) 'stars': [for (final e0 in starsValue) e0.key],
+    if (temperatureC case final temperatureCValue?) 'temperatureC': temperatureCValue,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, at, eclipticStepDeg, grahas, horizonStepDeg, latitudeDeg, longitudeDeg, pressureHpa, stars, temperatureC];
+}
+
 /// An add request as a binding writes it.
 final class AddAsked extends _Request {
   const AddAsked({

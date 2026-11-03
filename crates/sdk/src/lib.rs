@@ -158,6 +158,7 @@ mod remedy_request;
 #[cfg(feature = "research")]
 mod research_request;
 mod sankalpa_request;
+mod sky_view_request;
 // The record entry points: every area a binding reaches with one JSON
 // record, by name (`03-design/mcp-server.md` D3).
 pub mod records;
@@ -288,6 +289,9 @@ pub use teistro_panchanga::nepal_sambat::NepalSambatDate;
 // A day's sky, which `AlmanacRequest::with_sky` asks and
 // `AlmanacAnswer::sky` answers (`03-design/day-sky.md`).
 pub use teistro_astro::day_sky;
+// The sky at a place and an instant (`03-design/sky-view.md`).
+pub use crate::sky_view_request::SkyViewRequest;
+pub use teistro_astro::sky_view;
 // What a reading answers with, and the sections it holds: the document
 // is `teistro-serial`'s, and an operation that answers one must let a
 // consumer name it and every section of it.

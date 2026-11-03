@@ -1558,6 +1558,26 @@ public final class ParityRunner {
                 put("gowri", String.join(" ", gowri));
             }
 
+            // ── The sky view ──────────────────────────────────────────────
+            // Kathmandu at 18:00 UTC on 31 October 2026 over the built-in sky
+            // (03-design/sky-view.md): the hash, each list's length, the Moon
+            // and the ascendant.
+            SkyViewAnswer skyView;
+            try (Context builtin = teistro.context(ContextOptions.builder()
+                    .profile("nepali-drik").ephemeris(Ephemeris.BUILTIN).build())) {
+                skyView = builtin.almanac().skyView(2_461_345.25, place, null, null, null, null, null, null);
+            }
+            put("sky-view-hash", skyView.provenance().contentHash());
+            put("sky-view-count", skyView.value().grahas().size() + " " + skyView.value().stars().size() + " "
+                    + skyView.value().ecliptic().size() + " " + skyView.value().horizon().size());
+            GrahaSky skyMoon = skyView.value().graha(Graha.MOON).orElseThrow();
+            put("sky-view-moon", String.join(" ", number(skyMoon.altitudeDeg()),
+                    number(skyMoon.refractedAltitudeDeg()), number(skyMoon.azimuthDeg())));
+            EclipticPoint skyAscendant = skyView.value().ecliptic().stream()
+                    .filter(point -> "ASCENDANT".equals(point.kind())).findFirst().orElseThrow();
+            put("sky-view-ascendant", String.join(" ", number(skyAscendant.longitudeDeg()),
+                    number(skyAscendant.azimuthDeg())));
+
             // ── The eclipses ──────────────────────────────────────────────
             // September 2025 at Kathmandu over the built-in sky: a total lunar
             // eclipse seen whole and a partial solar one the place does not see.

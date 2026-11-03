@@ -11469,3 +11469,66 @@ fn an_ashauch_crosses_as_the_facade_answers_it() {
                     "event": {"event": "DEATH", "at": 2461051.677083}}}"#;
     assert_eq!(ashauch_json(&ctx, unread).unwrap_err(), Status::InvalidArg);
 }
+
+fn sky_view_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_sky_view(ctx.handle, request.as_ptr(), &raw mut json)
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// The sky view crosses as the façade answers it, its members in full
+/// (`03-design/sky-view.md`); a step below the least and a classical sky
+/// are refused.
+#[test]
+fn a_sky_view_crosses_as_the_facade_answers_it() {
+    let asked = r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "at": 2461345.25, "grahas": ["MOON", "RAHU"], "horizonStepDeg": 45}"#;
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
+    let crossed: serde_json::Value =
+        serde_json::from_str(&sky_view_json(&ctx, asked).unwrap()).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .almanac()
+        .sky_view_query(&teistro::SkyViewRequest::from_json(asked).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    assert_eq!(crossed["value"]["grahas"][1]["graha"], "graha.RAHU");
+    assert_eq!(
+        crossed["value"]["horizon"].as_array().map(Vec::len),
+        Some(8)
+    );
+    assert_eq!(
+        sky_view_json(
+            &ctx,
+            r#"{"latitudeDeg": 0, "longitudeDeg": 0, "at": 2461345.25, "eclipticStepDeg": 0}"#
+        ),
+        Err(Status::InvalidArg)
+    );
+    let classical = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::SuryaSiddhanta,
+        Some("nepali-committee"),
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(sky_view_json(&classical, asked), Err(Status::Unsupported));
+}

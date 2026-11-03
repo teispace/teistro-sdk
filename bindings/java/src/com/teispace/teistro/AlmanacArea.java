@@ -739,6 +739,61 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>The sky at a place and an instant</b> ({@code 03-design/sky-view.md}): where each graha and each
+     * nakshatra's junction star stands, topocentric, apparent and of date, its altitude airless and refracted and
+     * its azimuth from north through east; and the ecliptic, with the ascendant and the descendant, and the
+     * horizon as point lists. {@code grahas} and {@code stars} are the nine and the twenty-seven yogataras when
+     * null; each step is 0.1 to 90 degrees, five when null; the air is 1010 hPa and 10 degrees Celsius when null,
+     * and a pressure of 0 turns refraction off. A context over a classical astronomy is refused (C1185).
+     *
+     * <pre>{@code
+     * SkyViewAnswer sky = sdk.almanac().skyView(2_461_345.25, kathmandu, null, null, null, null, null, null);
+     * double moon = sky.value().graha(Graha.MOON).orElseThrow().azimuthDeg();
+     * }</pre>
+     *
+     * @param at the instant, a UTC Julian day, read as UT1
+     * @param place where the sky is seen
+     * @param grahas the grahas placed, in this order; the nine when null
+     * @param stars the stars placed, in this order; the twenty-seven yogataras when null
+     * @param eclipticStepDeg the ecliptic's step in longitude; 5 when null
+     * @param horizonStepDeg the horizon's step in azimuth; 5 when null
+     * @param pressureHpa the air's pressure; 1010 when null
+     * @param temperatureC the air's temperature; 10 when null
+     * @return the sky, sealed
+     */
+    public SkyViewAnswer skyView(double at, Observer place, List<Graha> grahas, List<Star> stars,
+            Double eclipticStepDeg, Double horizonStepDeg, Double pressureHpa, Double temperatureC) {
+        if (place == null) {
+            throw Reads.invalid("place is an Observer", "place");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("latitudeDeg", place.latitudeDeg().value());
+        asked.put("longitudeDeg", place.longitudeDeg().value());
+        asked.put("altitudeM", place.altitudeM().value());
+        asked.put("at", at);
+        if (grahas != null) {
+            asked.put("grahas", grahas.stream().map(Graha::key).toList());
+        }
+        if (stars != null) {
+            asked.put("stars", stars.stream().map(Star::key).toList());
+        }
+        if (eclipticStepDeg != null) {
+            asked.put("eclipticStepDeg", eclipticStepDeg);
+        }
+        if (horizonStepDeg != null) {
+            asked.put("horizonStepDeg", horizonStepDeg);
+        }
+        if (pressureHpa != null) {
+            asked.put("pressureHpa", pressureHpa);
+        }
+        if (temperatureC != null) {
+            asked.put("temperatureC", temperatureC);
+        }
+        String json = Json.write(asked);
+        return AlmanacReads.skyViewAnswer(context.locked((lib, raw) -> Calls.almanacSkyView(lib, raw, json)));
+    }
+
+    /**
      * <b>A death's first year</b> at a place ({@code 03-design/shraddha.md} §3.3): the
      * <i>Dharmasindhu</i>'s sixteen shraddhas, the first abdika and the sapindana, each on its day. The
      * eleventh day is the ashauch's day one plus ten, and every day kept on a tithi is the festival

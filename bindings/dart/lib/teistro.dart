@@ -2160,6 +2160,47 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **The sky at a place and an instant** (`03-design/sky-view.md`):
+  /// where each graha and each nakshatra's junction star stands,
+  /// topocentric, apparent and of date, its altitude airless and refracted
+  /// and its azimuth from north through east; and the ecliptic, with the
+  /// ascendant and the descendant, and the horizon as point lists.
+  /// [grahas] and [stars] are the nine and the twenty-seven yogataras when
+  /// null; each step is 0.1 to 90 degrees, five when null; the air is
+  /// 1010 hPa and 10 °C, and a pressure of 0 turns refraction off. A
+  /// context over a classical astronomy is refused (C1185).
+  ///
+  /// ```dart
+  /// final view = sdk.almanac.skyView(at: 2461345.25, place: kathmandu);
+  /// final moon = view.value.graha(Graha.moon)!.azimuthDeg;
+  /// ```
+  SkyViewAnswer skyView({
+    required double at,
+    required Observer place,
+    List<Graha>? grahas,
+    List<Star>? stars,
+    double? eclipticStepDeg,
+    double? horizonStepDeg,
+    double? pressureHpa,
+    double? temperatureC,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'at': at,
+      if (grahas != null) 'grahas': [for (final graha in grahas) graha.key],
+      if (stars != null) 'stars': [for (final star in stars) star.key],
+      if (eclipticStepDeg != null) 'eclipticStepDeg': eclipticStepDeg,
+      if (horizonStepDeg != null) 'horizonStepDeg': horizonStepDeg,
+      if (pressureHpa != null) 'pressureHpa': pressureHpa,
+      if (temperatureC != null) 'temperatureC': temperatureC,
+    });
+    return _skyView(
+      _context._guarded(() => _context._inner.almanacSkyView(asked)),
+    );
+  }
+
   /// **A death's first year** at a place (`03-design/shraddha.md` §3.3):
   /// the *Dharmasindhu*'s sixteen shraddhas, the first abdika and the
   /// sapindana, each on its day. Every day is the festival evaluator's, and
@@ -20458,6 +20499,326 @@ final class DeathTime extends _Value {
 
   @override
   List<Object?> get _fields => [death, cremation, rites, table];
+}
+
+/// A graha in the local sky (`03-design/sky-view.md`): topocentric,
+/// apparent and of date, the azimuth from north through east.
+final class GrahaSky extends _Value {
+  const GrahaSky({
+    required this.graha,
+    required this.raDeg,
+    required this.decDeg,
+    required this.altitudeDeg,
+    required this.refractedAltitudeDeg,
+    required this.azimuthDeg,
+  });
+
+  /// The graha.
+  final Graha graha;
+
+  /// On the true equator and equinox of date, degrees in `[0, 360)`.
+  final double raDeg;
+
+  /// The declination, degrees.
+  final double decDeg;
+
+  /// Airless, of the centre.
+  final double altitudeDeg;
+
+  /// Under the air's refraction; airless below the horizon (C973).
+  final double refractedAltitudeDeg;
+
+  /// From north through east, degrees in `[0, 360)`.
+  final double azimuthDeg;
+
+  @override
+  List<Object?> get _fields => [
+    graha,
+    raDeg,
+    decDeg,
+    altitudeDeg,
+    refractedAltitudeDeg,
+    azimuthDeg,
+  ];
+}
+
+/// A star in the local sky, as a graha's.
+final class StarSky extends _Value {
+  const StarSky({
+    required this.star,
+    this.nakshatra,
+    this.magnitude,
+    required this.raDeg,
+    required this.decDeg,
+    required this.altitudeDeg,
+    required this.refractedAltitudeDeg,
+    required this.azimuthDeg,
+  });
+
+  /// The star.
+  final Star star;
+
+  /// The nakshatra it is the yogatara of, or null.
+  final Nakshatra? nakshatra;
+
+  /// Its visual magnitude, or null.
+  final double? magnitude;
+
+  /// On the true equator and equinox of date, degrees in `[0, 360)`.
+  final double raDeg;
+
+  /// The declination, degrees.
+  final double decDeg;
+
+  /// Airless.
+  final double altitudeDeg;
+
+  /// Under the air's refraction; airless below the horizon (C973).
+  final double refractedAltitudeDeg;
+
+  /// From north through east, degrees in `[0, 360)`.
+  final double azimuthDeg;
+
+  @override
+  List<Object?> get _fields => [
+    star,
+    nakshatra,
+    magnitude,
+    raDeg,
+    decDeg,
+    altitudeDeg,
+    refractedAltitudeDeg,
+    azimuthDeg,
+  ];
+}
+
+/// A point of the ecliptic in the local sky, by tropical longitude of date.
+final class EclipticPoint extends _Value {
+  const EclipticPoint({
+    required this.kind,
+    required this.longitudeDeg,
+    required this.altitudeDeg,
+    required this.refractedAltitudeDeg,
+    required this.azimuthDeg,
+  });
+
+  /// `SAMPLE`, `ASCENDANT` or `DESCENDANT`.
+  final String kind;
+
+  /// Tropical, on the true ecliptic of date, degrees in `[0, 360)`.
+  final double longitudeDeg;
+
+  /// Airless.
+  final double altitudeDeg;
+
+  /// Under the air's refraction.
+  final double refractedAltitudeDeg;
+
+  /// From north through east.
+  final double azimuthDeg;
+
+  @override
+  List<Object?> get _fields => [
+    kind,
+    longitudeDeg,
+    altitudeDeg,
+    refractedAltitudeDeg,
+    azimuthDeg,
+  ];
+}
+
+/// A point of the airless horizon, and where it lies on the sphere of
+/// date.
+final class HorizonPoint extends _Value {
+  const HorizonPoint({
+    required this.azimuthDeg,
+    required this.raDeg,
+    required this.decDeg,
+    required this.longitudeDeg,
+    required this.latitudeDeg,
+  });
+
+  /// From north through east, degrees in `[0, 360)`.
+  final double azimuthDeg;
+
+  /// On the true equator of date.
+  final double raDeg;
+
+  /// The declination.
+  final double decDeg;
+
+  /// Tropical, on the true ecliptic of date.
+  final double longitudeDeg;
+
+  /// From that ecliptic.
+  final double latitudeDeg;
+
+  @override
+  List<Object?> get _fields => [
+    azimuthDeg,
+    raDeg,
+    decDeg,
+    longitudeDeg,
+    latitudeDeg,
+  ];
+}
+
+/// The sky at a place and an instant (`03-design/sky-view.md`).
+final class SkyView extends _Value {
+  const SkyView({
+    required this.at,
+    required this.siderealTimeDeg,
+    required this.obliquityDeg,
+    required this.pressureHpa,
+    required this.temperatureC,
+    required this.eclipticStepDeg,
+    required this.horizonStepDeg,
+    required this.grahas,
+    required this.stars,
+    required this.ecliptic,
+    required this.horizon,
+  });
+
+  /// UT1 read as UTC, a Julian day.
+  final double at;
+
+  /// The local apparent sidereal time, degrees.
+  final double siderealTimeDeg;
+
+  /// The true obliquity, degrees.
+  final double obliquityDeg;
+
+  /// The air's pressure the refraction was reckoned under, hPa.
+  final double pressureHpa;
+
+  /// The air's temperature, °C.
+  final double temperatureC;
+
+  /// The ecliptic's step, degrees.
+  final double eclipticStepDeg;
+
+  /// The horizon's step, degrees.
+  final double horizonStepDeg;
+
+  /// Each graha asked, in the order asked.
+  final List<GrahaSky> grahas;
+
+  /// Each star asked, in the order asked.
+  final List<StarSky> stars;
+
+  /// Every step of longitude and the two crossings, in longitude order.
+  final List<EclipticPoint> ecliptic;
+
+  /// Every step of azimuth from north.
+  final List<HorizonPoint> horizon;
+
+  /// A graha's place, if it was asked.
+  GrahaSky? graha(Graha graha) {
+    for (final placed in grahas) {
+      if (placed.graha == graha) return placed;
+    }
+    return null;
+  }
+
+  @override
+  List<Object?> get _fields => [
+    at,
+    siderealTimeDeg,
+    obliquityDeg,
+    pressureHpa,
+    temperatureC,
+    eclipticStepDeg,
+    horizonStepDeg,
+    grahas,
+    stars,
+    ecliptic,
+    horizon,
+  ];
+}
+
+/// What `almanac.skyView` answers.
+final class SkyViewAnswer {
+  const SkyViewAnswer({required this.value, required this.provenance});
+
+  /// The sky.
+  final SkyView value;
+
+  /// What computed it, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// `ts_almanac_sky_view`'s answer, with the provenance beside it.
+SkyViewAnswer _skyView(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final raw = envelope['value']! as Map<String, Object?>;
+  final air = raw['atmosphere']! as Map<String, Object?>;
+  List<Map<String, Object?>> rows(String key) =>
+      (raw[key]! as List<Object?>).cast<Map<String, Object?>>();
+  return SkyViewAnswer(
+    value: SkyView(
+      at: _real(raw['at']),
+      siderealTimeDeg: _real(raw['siderealTimeDeg']),
+      obliquityDeg: _real(raw['obliquityDeg']),
+      pressureHpa: _real(air['pressureHpa']),
+      temperatureC: _real(air['temperatureC']),
+      eclipticStepDeg: _real(raw['eclipticStepDeg']),
+      horizonStepDeg: _real(raw['horizonStepDeg']),
+      grahas: List.unmodifiable([
+        for (final one in rows('grahas'))
+          GrahaSky(
+            graha: _graha(one['graha']),
+            raDeg: _real(one['raDeg']),
+            decDeg: _real(one['decDeg']),
+            altitudeDeg: _real(one['altitudeDeg']),
+            refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
+            azimuthDeg: _real(one['azimuthDeg']),
+          ),
+      ]),
+      stars: List.unmodifiable([
+        for (final one in rows('stars'))
+          StarSky(
+            star: _key(one['star'], Star.byKey, Star.unknown),
+            nakshatra:
+                one['nakshatra'] == null
+                    ? null
+                    : _key(
+                      one['nakshatra'],
+                      Nakshatra.byKey,
+                      Nakshatra.unknown,
+                    ),
+            magnitude: (one['magnitude'] as num?)?.toDouble(),
+            raDeg: _real(one['raDeg']),
+            decDeg: _real(one['decDeg']),
+            altitudeDeg: _real(one['altitudeDeg']),
+            refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
+            azimuthDeg: _real(one['azimuthDeg']),
+          ),
+      ]),
+      ecliptic: List.unmodifiable([
+        for (final one in rows('ecliptic'))
+          EclipticPoint(
+            kind: one['kind']! as String,
+            longitudeDeg: _real(one['longitudeDeg']),
+            altitudeDeg: _real(one['altitudeDeg']),
+            refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
+            azimuthDeg: _real(one['azimuthDeg']),
+          ),
+      ]),
+      horizon: List.unmodifiable([
+        for (final one in rows('horizon'))
+          HorizonPoint(
+            azimuthDeg: _real(one['azimuthDeg']),
+            raDeg: _real(one['raDeg']),
+            decDeg: _real(one['decDeg']),
+            longitudeDeg: _real(one['longitudeDeg']),
+            latitudeDeg: _real(one['latitudeDeg']),
+          ),
+      ]),
+    ),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
 }
 
 /// What `almanac.deathTime` answers.

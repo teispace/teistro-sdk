@@ -8365,6 +8365,53 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **The sky at a place and an instant** (`03-design/sky-view.md`):
+   * where each graha and each nakshatra's junction star stands,
+   * topocentric, apparent and of date, its altitude airless and refracted
+   * and its azimuth from north through east; and the ecliptic, with the
+   * `ASCENDANT` and the `DESCENDANT`, and the horizon as point lists.
+   * `grahas` and `stars` are the nine and the twenty-seven yogataras when
+   * left out; each step is 0.1 to 90 degrees, five when left out; the air
+   * is 1010 hPa and 10 °C, and a pressure of 0 turns refraction off. A
+   * context over a classical astronomy is refused (C1185).
+   *
+   * @example
+   * const { value } = sdk.almanac.skyView({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   at: 2461345.25,
+   * });
+   * value.grahas[1]; // { graha: 'graha.MOON', altitudeDeg, azimuthDeg, ... }
+   *
+   * @param {object} query
+   * @param {object} query.place `{ latitude, longitude, altitude }`
+   * @param {number} query.at the instant, a UTC Julian day
+   * @param {string[]} [query.grahas] graha keys, in the order wanted
+   * @param {string[]} [query.stars] star keys, in the order wanted
+   * @param {number} [query.eclipticStepDeg] the ecliptic's step
+   * @param {number} [query.horizonStepDeg] the horizon's step
+   * @param {number} [query.pressureHpa] the air's pressure
+   * @param {number} [query.temperatureC] the air's temperature
+   * @returns {{ value: object, provenance: object }}
+   */
+  skyView(query) {
+    if (typeof query !== 'object' || query === null || Array.isArray(query)) {
+      throw new TypeError('skyView: expected a query, e.g. { place, at }');
+    }
+    const { place: where, ...rest } = query;
+    const place = where ?? {};
+    const asked = {
+      ...rest,
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+    };
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacSkyView(JSON.stringify(asked))),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
+  }
+
+  /**
    * **A death's first year** at a place (`03-design/shraddha.md` §3.3):
    * the *Dharmasindhu*'s sixteen shraddhas (pp. 329–331), the sapindana
    * and the first abdika, each on its day. `origin` is the death's lunar

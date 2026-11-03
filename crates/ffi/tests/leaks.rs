@@ -352,13 +352,13 @@ fn paired(ctx: &Ctx, other: &Ctx, entry: PairedEntry, request: &str) -> Status {
     status
 }
 
-/// The almanac's rites, its festival calendar and its two comparisons:
-/// each answer and each refusal's record given back.
+/// The almanac's rites, its festival calendar, the sky view and its two
+/// comparisons: each answer and each refusal's record given back.
 #[test]
 fn the_rites_and_the_comparisons_give_back_their_answers() {
     let ctx = builtin();
     let place = r#""latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337, "utcOffsetSeconds": 20700"#;
-    let rites: [(&str, JsonEntry, String); 5] = [
+    let rites: [(&str, JsonEntry, String); 6] = [
         (
             "a sankalpa",
             teistro_ffi::panchanga::ts_almanac_sankalpa,
@@ -388,6 +388,13 @@ fn the_rites_and_the_comparisons_give_back_their_answers() {
             teistro_ffi::panchanga::ts_almanac_festival_calendar,
             format!(
                 r#"{{"first": {{"year": 2025, "month": 10, "day": 1}}, "last": {{"year": 2025, "month": 10, "day": 2}}, {place}, "festivals": {{"rules": "NEPAL"}}, "stampUnixSeconds": 1767225600, "name": "Nepal", "refreshMinutes": 0}}"#
+            ),
+        ),
+        (
+            "a sky view",
+            teistro_ffi::panchanga::ts_almanac_sky_view,
+            String::from(
+                r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337, "at": 2461345.25}"#,
             ),
         ),
     ];

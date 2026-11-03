@@ -5630,6 +5630,51 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// The sky at a place and an instant (`03-design/sky-view.md`), answered
+    /// with `{value, provenance}` as canonical JSON.
+    ///
+    /// `value` is `{at, siderealTimeDeg, obliquityDeg, atmosphere,
+    /// eclipticStepDeg, horizonStepDeg, grahas, stars, ecliptic, horizon}`:
+    /// each of `grahas` `{graha, raDeg, decDeg, altitudeDeg,
+    /// refractedAltitudeDeg, azimuthDeg}`, topocentric, apparent and of date,
+    /// the azimuth from north through east and Rahu and Ketu the node the
+    /// settings name; each of `stars` the same with `star`, `nakshatra` (the
+    /// nakshatra it is the yogatara of, or null) and `magnitude`; `ecliptic`
+    /// `{kind, longitudeDeg, altitudeDeg, refractedAltitudeDeg, azimuthDeg}`
+    /// at every step of tropical longitude and at the `ASCENDANT` and the
+    /// `DESCENDANT`, in the order of longitude; and `horizon` `{azimuthDeg,
+    /// raDeg, decDeg, longitudeDeg, latitudeDeg}` at every step of azimuth
+    /// from north.
+    ///
+    /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "at",
+    /// "grahas", "stars", "eclipticStepDeg", "horizonStepDeg", "pressureHpa",
+    /// "temperatureC"}`: `at` a UTC Julian day, `grahas` and `stars` lists of
+    /// keys (the nine and the twenty-seven yogataras when left out), each step
+    /// 0.1 to 90 degrees (5 when left out), and the air 1010 hPa and 10 °C
+    /// when left out, a pressure of 0 for no refraction. A key it does not
+    /// read, a place out of range, a step or an atmosphere out of range is
+    /// `INVALID_ARG`, named under `skyView`; a context without an ephemeris
+    /// is `CAPABILITY`, and one over a classical astronomy `UNSUPPORTED`
+    /// (C1185).
+    #[napi]
+    pub fn almanac_sky_view(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_sky_view(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Matches two names star to star (naam milan) and answers with the
     /// `naam` blob: each name's first syllable in the śatapada cakra, the
     /// varga koota, and the Ashta Koota and the ten considerations of the two

@@ -123,6 +123,7 @@ from teistro.catalogue import (
     Ritu,
     RulerDayRule,
     SolarEclipseKind,
+    Star,
     Sunrise,
     Sunrises,
     Tithi,
@@ -1249,6 +1250,35 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as early:
                 ctx.almanac.death_time(place=kathmandu, utc_offset_seconds=20700, at=father, cremated_at=father - 1)
             self.assertEqual(early.exception.field, "deathTime.crematedAt")
+
+    def test_an_almanac_draws_the_sky_at_a_place_and_an_instant(self) -> None:
+        """The sky at Kathmandu at 18:00 UTC on 31 October 2026 over the
+        built-in sky (`03-design/sky-view.md`): the nine grahas, the
+        twenty-seven yogataras with Spica Chitra's, the ecliptic at every
+        fifth degree with its two crossings and the horizon at every fifth
+        degree of azimuth."""
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
+            found = ctx.almanac.sky_view(place=kathmandu, at=2461345.25)
+            view = found.value
+            self.assertTrue(found.provenance.content_hash)
+            self.assertEqual(len(view.grahas), 9)
+            moon = view.graha(Graha.MOON)
+            assert moon is not None
+            self.assertEqual(moon.graha, Graha.MOON)
+            self.assertEqual(len(view.stars), 27)
+            self.assertEqual(view.stars[13].star, Star.SPICA)
+            self.assertEqual(view.stars[13].nakshatra, Nakshatra.CHITRA)
+            self.assertEqual((len(view.ecliptic), len(view.horizon)), (74, 72))
+            self.assertEqual(sum(1 for point in view.ecliptic if point.kind == "ASCENDANT"), 1)
+            few = ctx.almanac.sky_view(
+                place=kathmandu, at=2461345.25, grahas=[Graha.MOON], stars=[], ecliptic_step_deg=30, pressure_hpa=0
+            ).value
+            self.assertEqual((len(few.grahas), len(few.stars), len(few.ecliptic)), (1, 0, 14))
+            self.assertEqual(few.grahas[0].refracted_altitude_deg, few.grahas[0].altitude_deg)
+            with self.assertRaises(TeistroError) as coarse:
+                ctx.almanac.sky_view(place=kathmandu, at=2461345.25, ecliptic_step_deg=0)
+            self.assertEqual(coarse.exception.field, "skyView.eclipticStepDeg")
 
     def test_an_almanac_schedules_the_first_year_after_a_death(self) -> None:
         """A death at 10:00 on 20 October 2026 in Kathmandu: the
