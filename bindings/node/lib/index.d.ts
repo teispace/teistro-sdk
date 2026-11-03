@@ -126,6 +126,7 @@ import type {
   Longitude,
   BlackoutKind,
   LunarEclipseKind,
+  MundaneKind,
   SolarEclipseKind,
   YearOffice,
   RulerText,
@@ -167,7 +168,16 @@ import type {
 // The typed accessors and an entity's forms, declared where `sdk.intl`
 // answers with them: the flat surface had both members and declared
 // neither, which the areas made visible.
-import type { FeedAlarm, FeedHint, FeedSelector, SuppliedEvent } from './requests.js';
+import type {
+  AstrocartographyRequest,
+  FeedAlarm,
+  FeedHint,
+  FeedSelector,
+  MundaneEvent,
+  Projection,
+  RelocationRequest,
+  SuppliedEvent,
+} from './requests.js';
 import type { EntityForms, Messages } from './messages.js';
 import type { Provenance, Step } from './records.js';
 // The request records, generated from the façade's own schemas of them
@@ -7021,6 +7031,93 @@ export interface AlmanacDayRequest extends Omit<AlmanacRequest, 'from' | 'to'> {
 }
 
 /** What `Context.found` needs to found one chart. */
+/** What `chart.mundane` asks. */
+export interface MundaneQuery {
+  /** Which moment. */
+  readonly kind: MundaneKind;
+  /** The year whose moment is asked; or give `from`. */
+  readonly year?: number;
+  /** The instant the search starts at, a Julian day (UTC). */
+  readonly from?: number;
+  /** For a lunation, the ingress it precedes; `MundaneKind.MeshaSankranti` by default. */
+  readonly ingress?: MundaneKind;
+  /** For `MundaneKind.Event`, the event on record. */
+  readonly event?: MundaneEvent;
+  /** Where the chart is cast. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive; 0 by default. */
+  readonly utcOffsetSeconds?: number;
+}
+
+/** A mundane moment and the chart cast for it. */
+export interface MundaneChart {
+  readonly kind: MundaneKind;
+  /** The moment, a Julian day (UTC). */
+  readonly instant: number;
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude: number };
+  readonly utcOffsetSeconds: number;
+  /** For a lunation, the ingress it precedes. */
+  readonly ingress: { readonly kind: MundaneKind; readonly instant: number } | null;
+  /** For a solar eclipse, its kind. */
+  readonly solarEclipse: SolarEclipseKind | null;
+  /** For a lunar eclipse, its kind. */
+  readonly lunarEclipse: LunarEclipseKind | null;
+  /** For an event, its name. */
+  readonly name: string | null;
+  /** For an event, its source. */
+  readonly source: string | null;
+  /** The chart cast for the moment. */
+  readonly chart: Chart;
+  readonly provenance: Provenance;
+}
+
+/** One place's angles and houses. */
+export interface RelocatedChart {
+  readonly latitudeDeg: number;
+  readonly longitudeDeg: number;
+  readonly altitudeM: number;
+  readonly ascendantDeg: number;
+  readonly midheavenDeg: number;
+  /** The twelve cusps, the first house's first. */
+  readonly cuspsDeg: readonly number[];
+  readonly houseSystem: HouseSystem;
+}
+
+/** A chart's instant recast at each place asked. */
+export interface Relocation {
+  readonly instant: number;
+  readonly obliquityDeg: number;
+  readonly places: readonly RelocatedChart[];
+  readonly provenance: Provenance;
+}
+
+/** An angle a line traces. */
+export type MapAngle = 'MC' | 'IC' | 'ASC' | 'DSC';
+
+/** One body's line on one angle. */
+export interface AstroLine {
+  readonly body: Graha;
+  readonly angle: MapAngle;
+  /** `[longitudeDeg, latitudeDeg]`, south to north. */
+  readonly points: readonly (readonly [number, number])[];
+  /** Where a rising or setting line stops, when it stops inside the map. */
+  readonly polarLimitDeg: number | null;
+}
+
+/** The lines at an instant, and what they were drawn under. */
+export interface Astrocartography {
+  readonly instant: number;
+  readonly projection: Projection;
+  readonly stepDeg: number;
+  readonly latitudeLimitDeg: number;
+  /** How close every point is to its angle. */
+  readonly toleranceDeg: number;
+  readonly greenwichRamcDeg: number;
+  readonly obliquityDeg: number;
+  readonly lines: readonly AstroLine[];
+  readonly provenance: Provenance;
+}
+
 export interface ChartRequest {
   /** The instant, as a Julian day (UTC). */
   readonly instant: number;
@@ -7770,6 +7867,23 @@ export declare class ChartArea {
   layout(key: ChartLayout | LayoutKey | string): LayoutRow;
   /** Founds a chart at an instant and a place. */
   found(request: ChartRequest): Chart;
+  /**
+   * A mundane chart: the moment its kind names (an ingress, the lunation
+   * before one, an eclipse, a great conjunction, or an event on record),
+   * found by the SDK's own searches, and the chart cast for it at the
+   * place, `ChartKind.Mundane` (`ChartKind.Event` for an event).
+   */
+  mundane(request: MundaneQuery): MundaneChart;
+  /**
+   * A chart's instant recast at other places: each place's ascendant,
+   * midheaven and twelve cusps. The grahas stand where they stood.
+   */
+  relocated(request: RelocationRequest): Relocation;
+  /**
+   * The astrocartography lines at an instant: each body's MC, IC, ASC and
+   * DSC lines as `[longitudeDeg, latitudeDeg]` points, south to north.
+   */
+  astrocartography(request: AstrocartographyRequest): Astrocartography;
   /**
    * Founds a chart at each of many instants, at one place, in one
    * crossing: the founder shares the settings and the solar model across

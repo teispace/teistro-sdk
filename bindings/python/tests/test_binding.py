@@ -74,6 +74,7 @@ from teistro import (
     Teistro,
     PolarDay,
     TeistroError,
+    MundaneEvent,
     Overflow,
     TimeScale,
     PlanRequest,
@@ -113,6 +114,9 @@ from teistro.catalogue import (
     Graha,
     LunarEclipseKind,
     Masa,
+    MundaneKind,
+    HouseSystem,
+    ChartKind,
     MonthKind,
     PolarDayPolicy,
     PolarKind,
@@ -6848,3 +6852,55 @@ class AnAlmanacDay(WithLibrary):
             self.assertIsNotNone(brahma)
             assert brahma is not None
             self.assertLess(brahma.from_jd, brahma.to_jd)
+
+
+class AMundaneChart(WithLibrary):
+    """`chart.mundane`, `chart.relocated` and `chart.astrocartography`
+    (`03-design/mundane-charts.md`, `03-design/astrocartography.md`)."""
+
+    def test_the_moment_is_found_and_the_chart_cast_there(self) -> None:
+        # The Aries ingress of 2024 (USNO, 20 March 03:06 UTC).
+        place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            aries = ctx.chart.mundane(kind=MundaneKind.ARIES_INGRESS, year=2024, place=place)
+            self.assertEqual(aries.kind, MundaneKind.ARIES_INGRESS)
+            self.assertLess(abs(aries.instant - (2460389.5 + (3 + 6 / 60) / 24)), 2 / 1440)
+            self.assertEqual(aries.chart.kind, ChartKind.MUNDANE)
+            self.assertTrue(aries.provenance.input_hash)
+            new_moon = ctx.chart.mundane(
+                kind="NEW_MOON_BEFORE_INGRESS", year=2024, ingress="mundane_kind.ARIES_INGRESS", place=place
+            )
+            assert new_moon.ingress is not None
+            self.assertEqual(new_moon.ingress.kind, MundaneKind.ARIES_INGRESS)
+            self.assertLess(new_moon.instant, new_moon.ingress.instant)
+            event = ctx.chart.mundane(
+                kind=MundaneKind.EVENT,
+                event=MundaneEvent(name="A founding", instant=2451545.0, source="a record"),
+                place=place,
+                utc_offset_seconds=20700,
+            )
+            self.assertEqual(event.chart.kind, ChartKind.EVENT)
+            self.assertEqual((event.name, event.source, event.instant), ("A founding", "a record", 2451545.0))
+            with self.assertRaises(TeistroError) as caught:
+                ctx.chart.mundane(kind=MundaneKind.EVENT, year=2024, place=place)
+            self.assertTrue((caught.exception.field or "").startswith("mundane."))
+
+    def test_a_relocation_and_the_lines_answer_their_places(self) -> None:
+        london = Observer(latitude_deg=Latitude(51.5), longitude_deg=Longitude(-0.12), altitude_m=Altitude(0))
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            moved = ctx.chart.relocated(instant=2447000.25, places=[london], house_system=HouseSystem.PLACIDUS)
+            self.assertEqual(len(moved.places), 1)
+            here = moved.places[0]
+            self.assertEqual((len(here.cusps_deg), here.house_system), (12, HouseSystem.PLACIDUS))
+            self.assertLess(abs(here.cusps_deg[0] - here.ascendant_deg), 1e-9)
+            with self.assertRaises(TeistroError) as caught:
+                ctx.chart.relocated(instant=2447000.25, places=[])
+            self.assertEqual(caught.exception.field, "relocated.places")
+            lines = ctx.chart.astrocartography(instant=2447000.25, bodies=[Graha.SUN, "MOON"], step_deg=5)
+            self.assertEqual([line.angle for line in lines.lines], ["MC", "IC", "ASC", "DSC"] * 2)
+            self.assertEqual(lines.lines[0].body, Graha.SUN)
+            self.assertTrue(all(line.points for line in lines.lines))
+            with self.assertRaises(TeistroError) as caught:
+                ctx.chart.astrocartography(instant=2447000.25, step_deg=0)
+            self.assertEqual(caught.exception.field, "astrocartography.stepDeg")
+

@@ -1644,6 +1644,9 @@ public final class ParityRunner {
             surface("chart.rashifal", () -> ctx.chart().rashifal(null));
             surface("chart.rashifal_many", () -> ctx.chart().rashifalMany(List.of(), null));
             surface("chart.disagreements", () -> ctx.chart().disagreements(ctx, null));
+            surface("chart.mundane", () -> ctx.chart().mundane(null, place, null, null, null, null, 0));
+            surface("chart.relocated", () -> ctx.chart().relocated(0, null, null));
+            surface("chart.astrocartography", () -> ctx.chart().astrocartography(0, null, null, null, null));
             surface("almanac.of", () -> ctx.almanac().of(day, day, place, 0));
             surface("almanac.festivals", () -> ctx.almanac().festivals(day, day, place, 0, null));
             surface("almanac.disagreements", () -> ctx.almanac().disagreements(ctx, day, day, place, 0, true, null));

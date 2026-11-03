@@ -1,0 +1,75 @@
+---
+title: ts_chart_astrocartography
+description: "**The astrocartography lines** at an instant (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC lines on the Earth, as `{value, provenance}` canonical JSON sealed by the chart the bodies were read from, with the request as its input."
+---
+
+**The astrocartography lines** at an instant (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC lines on the Earth, as `{value, provenance}` canonical JSON sealed by the chart the bodies were read from, with the request as its input.
+
+`value` is `{instant, projection, stepDeg, latitudeLimitDeg, toleranceDeg, greenwichRamcDeg, obliquityDeg, lines}`, each line `{body, angle, points, polarLimitDeg}`: `body` a `graha` key, `angle` `MC`, `IC`, `ASC` or `DSC`, `points` `[longitudeDeg, latitudeDeg]` pairs from south to north, longitude east in `[-180, 180)`, and `polarLimitDeg` for a rising or setting line the latitude past which it does not run (C1156). Every point is on its angle, read back through a chart cast there, to `toleranceDeg`.
+
+`request_json` is `{"instant", "bodies", "projection", "stepDeg", "latitudeLimitDeg"}`: `instant` a UTC Julian day; `bodies` `graha` keys, the seven and the outer planets the profile places when left out; `projection` `IN_MUNDO` (the default) or `ZODIACAL` (C1155); `stepDeg` above 0 and at most 10, 1 by default; `latitudeLimitDeg` above 0 and below 90, 80 by default. A key the record does not read, a value out of range or a body the chart does not place is `INVALID_ARG`, named under `astrocartography`; a context without an ephemeris is `CAPABILITY`.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.chart.astrocartography
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.chart.astrocartography
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.chart.astrocartography
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.chart().astrocartography
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.chart().astrocartography
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_chart_astrocartography(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `chart.astrocartography` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/mapping.rs`.

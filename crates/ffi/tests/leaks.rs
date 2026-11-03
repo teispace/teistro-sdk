@@ -213,7 +213,10 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
             Status::Ok
         );
     });
-    let entries: [JsonEntry; 12] = [
+    let entries: [JsonEntry; 15] = [
+        teistro_ffi::mundane::ts_chart_mundane,
+        teistro_ffi::mapping::ts_chart_relocated,
+        teistro_ffi::mapping::ts_chart_astrocartography,
         teistro_ffi::navatara::ts_navatara,
         teistro_ffi::numerology::ts_numerology_profile,
         teistro_ffi::pakshi::ts_pakshi,
@@ -235,6 +238,29 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
     });
 }
 
+#[test]
+#[cfg(all(feature = "chart", feature = "western"))]
+fn a_mundane_moment_a_relocation_and_a_map_give_back_their_answers() {
+    let ctx = builtin();
+    holds_nothing("a mundane chart's moment", || {
+        let entry = teistro_ffi::mundane::ts_chart_mundane;
+        let event = r#"{"kind": "EVENT", "event": {"name": "x", "instant": 2460000.5, "source": "y"}, "latitudeDeg": 27.7, "longitudeDeg": 85.3}"#;
+        assert_eq!(json(&ctx, entry, event), Status::Ok);
+    });
+    holds_nothing("a relocation and a map's lines", || {
+        let relocated =
+            r#"{"instant": 2460000.5, "places": [{"latitudeDeg": 51.5, "longitudeDeg": 0}]}"#;
+        assert_eq!(
+            json(&ctx, teistro_ffi::mapping::ts_chart_relocated, relocated),
+            Status::Ok
+        );
+        let map = r#"{"instant": 2460000.5, "bodies": ["SUN"], "stepDeg": 10}"#;
+        assert_eq!(
+            json(&ctx, teistro_ffi::mapping::ts_chart_astrocartography, map),
+            Status::Ok
+        );
+    });
+}
 #[test]
 fn intl_gives_back_what_it_renders() {
     let ctx = builtin();

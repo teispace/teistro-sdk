@@ -44,6 +44,11 @@ public enum ChartKind implements Catalogued {
      */
     COMPOSITE(6, "COMPOSITE"),
 
+    /**
+     * Mundane: a chart of a year, a lunation, an eclipse or a conjunction, cast for a place (`03-design/mundane-charts.md`)
+     */
+    MUNDANE(7, "MUNDANE"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

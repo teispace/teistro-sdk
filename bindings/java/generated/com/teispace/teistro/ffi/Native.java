@@ -4107,6 +4107,9 @@ public final class Native {
         "ts_almanac_festival_pack",
         "ts_almanac_changes",
         "ts_naam_milan",
+        "ts_chart_relocated",
+        "ts_chart_astrocartography",
+        "ts_chart_mundane",
         "ts_naming_syllables",
         "ts_naming_read",
         "ts_naming_check",
@@ -5021,6 +5024,85 @@ public final class Native {
     public final MethodHandle ts_naam_milan;
 
     /**
+     * **A chart recast at other places** (`03-design/astrocartography.md`):
+     * each place's ascendant, midheaven and twelve cusps at one instant, in
+     * the context's zodiac, as `{value, provenance}` canonical JSON sealed by
+     * the first place's chart with the request as its input.
+     *
+     * `value` is `{instant, obliquityDeg, places}`, each place
+     * `{latitudeDeg, longitudeDeg, altitudeM, ascendantDeg, midheavenDeg,
+     * cuspsDeg, houseSystem}` in the order asked, `cuspsDeg` twelve and
+     * `houseSystem` a `house_system` key.
+     *
+     * `request_json` is `{"instant", "places", "houseSystem"}`: `instant` a
+     * UTC Julian day; `places` one to 256 `{"latitudeDeg", "longitudeDeg",
+     * "altitudeM"}`; `houseSystem` a `house_system` key, the profile's
+     * Western override else Placidus when left out (C1157). A key the record
+     * does not read, no place or too many, or a place out of range is
+     * `INVALID_ARG`, named under `relocated` (`relocated.places[1].latitudeDeg`);
+     * a context without an ephemeris is `CAPABILITY`.
+     */
+    public final MethodHandle ts_chart_relocated;
+
+    /**
+     * **The astrocartography lines** at an instant
+     * (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC
+     * lines on the Earth, as `{value, provenance}` canonical JSON sealed by
+     * the chart the bodies were read from, with the request as its input.
+     *
+     * `value` is `{instant, projection, stepDeg, latitudeLimitDeg,
+     * toleranceDeg, greenwichRamcDeg, obliquityDeg, lines}`, each line
+     * `{body, angle, points, polarLimitDeg}`: `body` a `graha` key, `angle`
+     * `MC`, `IC`, `ASC` or `DSC`, `points` `[longitudeDeg, latitudeDeg]`
+     * pairs from south to north, longitude east in `[-180, 180)`, and
+     * `polarLimitDeg` for a rising or setting line the latitude past which
+     * it does not run (C1156). Every point is on its angle, read back
+     * through a chart cast there, to `toleranceDeg`.
+     *
+     * `request_json` is `{"instant", "bodies", "projection", "stepDeg",
+     * "latitudeLimitDeg"}`: `instant` a UTC Julian day; `bodies` `graha`
+     * keys, the seven and the outer planets the profile places when left
+     * out; `projection` `IN_MUNDO` (the default) or `ZODIACAL` (C1155);
+     * `stepDeg` above 0 and at most 10, 1 by default; `latitudeLimitDeg`
+     * above 0 and below 90, 80 by default. A key the record does not read,
+     * a value out of range or a body the chart does not place is
+     * `INVALID_ARG`, named under `astrocartography`; a context without an
+     * ephemeris is `CAPABILITY`.
+     */
+    public final MethodHandle ts_chart_astrocartography;
+
+    /**
+     * **The moment of a mundane chart** (`03-design/mundane-charts.md`): an
+     * ingress, the lunation before one, an eclipse, a great conjunction or
+     * an event on record, and the place it is cast for, as `{value,
+     * provenance}` canonical JSON sealed by the chart cast there, with the
+     * request as its input.
+     *
+     * `value` is `{kind, instant, latitudeDeg, longitudeDeg, altitudeM,
+     * utcOffsetSeconds, ingress, solarEclipse, lunarEclipse, name,
+     * source}`: `kind` a `mundane_kind` key, `instant` the moment as a UTC
+     * Julian day; `ingress` `{kind, instant}` the ingress a lunation
+     * precedes; `solarEclipse` or `lunarEclipse` an eclipse's kind; `name`
+     * and `source` an event's, as the record gave them. A field a kind does
+     * not carry is absent.
+     *
+     * `request_json` is `{"kind", "year", "from", "ingress", "event",
+     * "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`:
+     * `kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC
+     * Julian day) where the search starts, the first ingress, eclipse or
+     * conjunction at or after it; `ingress` the ingress a lunation precedes,
+     * `MESHA_SANKRANTI` by default (C1151); `event` `{"name", "instant",
+     * "source"}` for an `EVENT`, which reads neither `year` nor `from`. The
+     * sankrantis are read in the context's own zodiac, the four tropical
+     * ingresses in the tropical one. A key the record does not read, a
+     * missing or extra `year`, `from`, `ingress` or `event`, or a place out
+     * of range is `INVALID_ARG`, named under `mundane`; an eclipse over a
+     * classical astronomy is `UNSUPPORTED` naming `kind`; a context without
+     * an ephemeris is `CAPABILITY`.
+     */
+    public final MethodHandle ts_chart_mundane;
+
+    /**
      * The syllables a pada, a star or a sign names a child by, in the
      * śatapada cakra's order, each with every initial that reaches it: its
      * own letter, a paired letter (C294) and the patro's substitute for a
@@ -5423,6 +5505,9 @@ public final class Native {
         ts_almanac_festival_pack = linker.downcallHandle(symbols.find("ts_almanac_festival_pack").orElseThrow(() -> missing("ts_almanac_festival_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_changes = linker.downcallHandle(symbols.find("ts_almanac_changes").orElseThrow(() -> missing("ts_almanac_changes")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_chart_relocated = linker.downcallHandle(symbols.find("ts_chart_relocated").orElseThrow(() -> missing("ts_chart_relocated")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_chart_astrocartography = linker.downcallHandle(symbols.find("ts_chart_astrocartography").orElseThrow(() -> missing("ts_chart_astrocartography")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_chart_mundane = linker.downcallHandle(symbols.find("ts_chart_mundane").orElseThrow(() -> missing("ts_chart_mundane")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_syllables = linker.downcallHandle(symbols.find("ts_naming_syllables").orElseThrow(() -> missing("ts_naming_syllables")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_read = linker.downcallHandle(symbols.find("ts_naming_read").orElseThrow(() -> missing("ts_naming_read")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naming_check = linker.downcallHandle(symbols.find("ts_naming_check").orElseThrow(() -> missing("ts_naming_check")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));

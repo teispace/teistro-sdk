@@ -3932,6 +3932,10 @@ pub mod sdk {
         pub mod muhurta_yoga {
         }
 
+        /// The `mundane_kind` group.
+        pub mod mundane_kind {
+        }
+
         /// The `nadi` group.
         pub mod nadi {
         }
