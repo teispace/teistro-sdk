@@ -6714,11 +6714,13 @@ test('a festival pack lists its rules with their values', () => {
 test('a mundane chart finds its moment and casts the chart there', () => {
   // The Aries ingress of 2024 (USNO, 20 March 03:06 UTC), the new moon
   // before it, an event on record, and the refusal of an event's year.
+  // Three minutes, because the wasm build's compact tier puts the Sun
+  // up to 5.45″ off (`completion-measured.md`), 2.2 minutes of ingress.
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
   const place = { latitude: 27.7172, longitude: 85.324 };
   const aries = ctx.chart.mundane({ kind: 'mundane_kind.ARIES_INGRESS', year: 2024, place });
   assert.equal(aries.kind, 'mundane_kind.ARIES_INGRESS');
-  assert.ok(Math.abs(aries.instant - (2460389.5 + (3 + 6 / 60) / 24)) < 2 / 1440, String(aries.instant));
+  assert.ok(Math.abs(aries.instant - (2460389.5 + (3 + 6 / 60) / 24)) < 3 / 1440, String(aries.instant));
   assert.equal(aries.chart.kind, ChartKind.Mundane);
   assert.equal(aries.chart.instant, aries.instant);
   assert.ok(Object.isFrozen(aries) && aries.provenance.inputHash.length > 0);

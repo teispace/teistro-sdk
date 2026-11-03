@@ -4846,11 +4846,13 @@
   "mundane_kind": {
     "MESHA_SANKRANTI": {
       "name": "मेष सङ्क्रान्ति",
-      "prose": "मेष सङ्क्रान्ति"
+      "prose": "मेष सङ्क्रान्ति",
+      "iast": "Meṣa saṅkrānti"
     },
     "MAKARA_SANKRANTI": {
       "name": "मकर सङ्क्रान्ति",
-      "prose": "मकर सङ्क्रान्ति"
+      "prose": "मकर सङ्क्रान्ति",
+      "iast": "Makara saṅkrānti"
     },
     "ARIES_INGRESS": {
       "name": "सायन मेष प्रवेश",
