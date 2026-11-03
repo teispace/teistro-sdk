@@ -286,16 +286,17 @@ final class Fallback {
   final String what;
 }
 
-/// A semantic version.
+/// A semantic version, with its pre-release label as written.
 final class Version {
   /// A Version with every field named.
-  const Version({required this.major, required this.minor, required this.patch});
+  const Version({required this.major, required this.minor, required this.patch, required this.pre});
 
   /// A Version from its JSON.
   factory Version.fromJson(Map<String, Object?> json) => Version(
         major: (json['major']! as num).toInt(),
         minor: (json['minor']! as num).toInt(),
         patch: (json['patch']! as num).toInt(),
+        pre: json['pre'] == null ? null : json['pre']! as String,
       );
 
   /// Major.
@@ -306,6 +307,9 @@ final class Version {
 
   /// Patch.
   final int patch;
+
+  /// The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release.
+  final String? pre;
 }
 
 /// A pack that took part.

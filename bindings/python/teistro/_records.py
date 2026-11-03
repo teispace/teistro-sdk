@@ -315,7 +315,7 @@ def decode_fallback(raw: Mapping[str, Any]) -> Fallback:
 
 @dataclass(frozen=True)
 class Version:
-    """A semantic version."""
+    """A semantic version, with its pre-release label as written."""
 
     major: int
     """Major."""
@@ -326,6 +326,9 @@ class Version:
     patch: int
     """Patch."""
 
+    pre: str | None
+    """The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release."""
+
 
 def decode_version(raw: Mapping[str, Any]) -> Version:
     """A `Version` from its JSON."""
@@ -333,6 +336,7 @@ def decode_version(raw: Mapping[str, Any]) -> Version:
         major=raw["major"],
         minor=raw["minor"],
         patch=raw["patch"],
+        pre=None if raw.get("pre") is None else raw["pre"],
     )
 
 

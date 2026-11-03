@@ -28901,7 +28901,7 @@
     },
     {
       "name": "Version",
-      "doc": "A semantic version.",
+      "doc": "A semantic version, with its pre-release label as written.",
       "shape": {
         "kind": "OBJECT",
         "fields": [
@@ -28940,6 +28940,15 @@
               }
             },
             "nullable": false
+          },
+          {
+            "name": "pre",
+            "doc": "The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": true,
+            "null": true
           }
         ]
       }

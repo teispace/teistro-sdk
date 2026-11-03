@@ -87,7 +87,11 @@ days are unchanged; `GAUDIYA`'s answer gains the five festivals.
   `DIFFERS`, `NOT_RERUN` with why, or `BROKEN`, with every version that moved (SR-51,
   `03-design/receipts-and-datasets.md` §1, C1170–C1173).
 - `Context::with_settings` and `SettingsSnapshot`: a context under another snapshot's settings over the same
-  ephemeris, which the core now shares behind an `Arc`.
+  ephemeris, which the core now shares behind an `Arc`. A snapshot keeps its settings document as it was
+  carried and is hashed over it, so settings another build wrote are `NOT_RERUN` naming the knob, never
+  `BROKEN` (C1176).
+- `Version` keeps a pre-release label (`pre`, `1.0.0-rc.1`) and orders by semantic-version precedence; a
+  provenance's `sdk_version` now carries it. A release writes what it wrote before (C1177).
 
 **Research datasets.**
 **Numbers:** none: a new format.

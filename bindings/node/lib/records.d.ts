@@ -245,7 +245,7 @@ export interface Fallback {
 export declare function decodeFallback(json: unknown): Fallback;
 
 /**
- * A semantic version.
+ * A semantic version, with its pre-release label as written.
  */
 export interface Version {
   /**
@@ -260,6 +260,10 @@ export interface Version {
    * Patch.
    */
   readonly patch: number;
+  /**
+   * The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release.
+   */
+  readonly pre: string | null;
 }
 
 /**

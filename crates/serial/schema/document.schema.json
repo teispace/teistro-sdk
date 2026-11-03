@@ -8456,7 +8456,7 @@
       "x-teistro-kind": "varna"
     },
     "Version": {
-      "description": "A semantic version.",
+      "description": "A semantic version, with its pre-release label as written.",
       "properties": {
         "major": {
           "description": "Major.",
@@ -8478,6 +8478,13 @@
           "maximum": 65535,
           "minimum": 0,
           "type": "integer"
+        },
+        "pre": {
+          "description": "The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release.",
+          "type": [
+            "string",
+            "null"
+          ]
         }
       },
       "required": [

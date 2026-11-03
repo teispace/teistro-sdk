@@ -176,7 +176,7 @@ impl Side {
     /// The side a receipt says issued it.
     fn issued(receipt: &Receipt) -> Side {
         Side {
-            sdk_version: receipt.sdk_version,
+            sdk_version: receipt.sdk_version.clone(),
             calculation_version: receipt.calculation_version,
             catalogue_version: receipt.catalogue_version,
             provider: receipt.provider.clone(),
