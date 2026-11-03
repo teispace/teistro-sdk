@@ -2,47 +2,52 @@
 
 Status: `generated` by `cargo xtask costs --from FILE` from instructions counted under callgrind (`cargo xtask costs --measure FILE`, Linux); `check-costs` holds this page to [`costs.json`](costs.json), and the benchmarks workflow holds every pull request's count to it within 10%. Do not edit.
 
-Each entry point is a record, the name the C boundary, every binding and the agent server's tools share, answered on the example request of `crates/sdk/tests/requests.json` over the built-in ephemeris. The unit is a plain chart, `chart.found` at Kathmandu with nothing read of it but the chart. **First call** is the entry point's first answer on a fresh context, what a one-off call pays, the ephemeris's segments decoded for it included; **again** is the same request a second time on that context, what a consumer that keeps its context pays per call. Both are instructions above the context alone (24 356 523 to build it), so they are counts, not times: a relative cost is the same on a phone and a server where a time is not, and an entry point's figure says how its work compares, not how long it takes on any machine. The engine's records (`engine.*`) answer from the consumer's own engine and are not priced.
+Each entry point is a record, the name the C boundary, every binding and the agent server's tools share, answered on the example request of `crates/sdk/tests/requests.json` over the built-in ephemeris. The unit is a plain chart, `chart.found` at Kathmandu with nothing read of it but the chart. **First call** is the entry point's first answer on a fresh context, what a one-off call pays, the ephemeris's segments decoded for it included; **again** is the same request a second time on that context, what a consumer that keeps its context pays per call. Both are instructions above the context alone (26 282 782 to build it), so they are counts, not times: a relative cost is the same on a phone and a server where a time is not, and an entry point's figure says how its work compares, not how long it takes on any machine. The engine's records (`engine.*`) answer from the consumer's own engine and are not priced.
 
-Counted at `335943617b96`, `rustc 1.99.1 (58cf8f9c3 2026-10-13)`, aarch64-linux.
+Counted at `198304d0ba44`, `rustc 1.99.1 (58cf8f9c3 2026-10-13)`, x86_64-linux.
 
 | entry point | first call | again | instructions, first call | instructions, again |
 |---|---:|---:|---:|---:|
-| `chart.found` (the unit) | 1.00× | 1.00× | 19 596 231 | 3 883 077 |
-| `chart.found` | 21.4× | 5.91× | 420 199 265 | 22 936 218 |
-| `almanac.days` | 179× | 355× | 3 498 247 768 | 1 378 895 505 |
-| `matching.naam` | 0.0159× | 0.0725× | 311 850 | 281 613 |
-| `naming.syllables` | 0.0216× | 0.106× | 422 985 | 412 862 |
-| `naming.read` | 0.0221× | 0.0709× | 432 106 | 275 266 |
-| `naming.check` | 0.0149× | 0.0644× | 292 794 | 249 881 |
-| `naming.of` | 0.00362× | 0.0132× | 70 895 | 51 337 |
-| `naming.suggest` | 0.0175× | 0.0810× | 343 313 | 314 345 |
-| `time.resolve` | 0.00609× | 0.0265× | 119 248 | 103 011 |
-| `time.civil` | 0.00523× | 0.0190× | 102 551 | 73 959 |
-| `time.convert` | 0.00164× | 0.00827× | 32 210 | 32 131 |
-| `calendar.convert` | 0.00390× | 0.0130× | 76 383 | 50 638 |
-| `calendar.add` | 0.00482× | 0.0166× | 94 433 | 64 620 |
-| `calendar.between` | 0.00453× | 0.0157× | 88 814 | 60 964 |
-| `numerology.profile` | 0.0140× | 0.0630× | 273 576 | 244 535 |
-| `almanac.navatara` | 0.0129× | 0.0688× | 253 504 | 267 072 |
-| `intl.inWords` | 0.0633× | 0.0382× | 1 239 788 | 148 427 |
-| `intl.time` | 0.00678× | 0.0284× | 132 907 | 110 247 |
-| `intl.date` | 0.0143× | 0.0427× | 280 009 | 165 971 |
-| `almanac.digest` | 15.4× | 30.9× | 302 298 736 | 119 880 163 |
-| `almanac.festival_calendar` | 27.0× | 55.9× | 528 976 831 | 216 870 612 |
-| `almanac.changes` | 4.98× | 4.80× | 97 535 309 | 18 652 613 |
-| `almanac.anniversaries` | 1734× | 8155× | 33 973 585 041 | 31 665 921 191 |
-| `almanac.next` | 167× | 391× | 3 271 097 412 | 1 518 159 218 |
-| `almanac.sentences` | 10.7× | 8.23× | 208 845 772 | 31 975 760 |
-| `almanac.publishedReasons` | 25.7× | 54.7× | 503 444 750 | 212 559 053 |
-| `almanac.pakshi` | 10.7× | 12.5× | 210 348 615 | 48 687 654 |
-| `almanac.sankalpa` | 74.0× | 83.2× | 1 451 082 242 | 322 894 892 |
-| `almanac.ashauch` | 28.7× | 43.2× | 562 041 653 | 167 879 092 |
-| `almanac.household` | 39.2× | 91.2× | 767 697 284 | 354 073 748 |
-| `almanac.ashauchKin` | 0.00587× | 0.0278× | 114 944 | 108 022 |
-| `almanac.ashauchRite` | 0.00329× | 0.0160× | 64 398 | 62 095 |
-| `almanac.deathTime` | 92.7× | 183× | 1 816 344 041 | 709 981 400 |
-| `almanac.festivalPack` | 0.0793× | 0.418× | 1 554 031 | 1 622 744 |
-| `almanac.firstYear` | 166× | 366× | 3 261 697 983 | 1 420 927 685 |
-| `chart.rashifal` | 9.61× | 10.6× | 188 370 206 | 41 038 361 |
-| `research.study` | 3.03× | 3.29× | 59 448 563 | 12 782 438 |
+| `chart.found` (the unit) | 1.00× | 1.00× | 19 176 620 | 4 758 796 |
+| `chart.found` | 20.6× | 5.32× | 394 143 184 | 25 337 297 |
+| `chart.disagreements` | 3.09× | 8.09× | 59 339 394 | 38 509 257 |
+| `almanac.days` | 176× | 282× | 3 368 241 207 | 1 343 075 447 |
+| `matching.naam` | 0.0168× | 0.0618× | 322 325 | 294 182 |
+| `naming.syllables` | 0.0227× | 0.0896× | 434 925 | 426 430 |
+| `naming.read` | 0.0230× | 0.0628× | 440 384 | 299 052 |
+| `naming.check` | 0.0158× | 0.0549× | 303 537 | 261 235 |
+| `naming.of` | 0.00390× | 0.0112× | 74 867 | 53 385 |
+| `naming.suggest` | 0.0202× | 0.0716× | 387 449 | 340 803 |
+| `time.resolve` | 0.00659× | 0.0232× | 126 398 | 110 262 |
+| `time.civil` | 0.00613× | 0.0168× | 117 471 | 79 865 |
+| `time.convert` | 0.00172× | 0.00718× | 32 897 | 34 172 |
+| `calendar.convert` | 0.00474× | 0.0115× | 90 855 | 54 880 |
+| `calendar.add` | 0.00584× | 0.0146× | 111 939 | 69 270 |
+| `calendar.between` | 0.00547× | 0.0143× | 104 834 | 68 065 |
+| `numerology.profile` | 0.0147× | 0.0535× | 282 068 | 254 699 |
+| `almanac.navatara` | 0.0136× | 0.0580× | 261 736 | 275 912 |
+| `intl.inWords` | 0.0661× | 0.0330× | 1 267 705 | 156 844 |
+| `intl.time` | 0.00734× | 0.0245× | 140 686 | 116 591 |
+| `intl.date` | 0.0153× | 0.0371× | 292 560 | 176 379 |
+| `intl.lexicon` | 2.42× | 0.272× | 46 415 398 | 1 294 156 |
+| `intl.lookup` | 4.10× | 0.105× | 78 633 505 | 499 093 |
+| `intl.dates` | 0.317× | 0.0325× | 6 084 962 | 154 787 |
+| `verify.claims` | 74.8× | 61.9× | 1 435 365 484 | 294 426 004 |
+| `almanac.digest` | 15.2× | 24.9× | 291 671 997 | 118 632 385 |
+| `almanac.festival_calendar` | 26.4× | 43.9× | 506 193 635 | 209 064 430 |
+| `almanac.changes` | 4.82× | 3.75× | 92 393 334 | 17 839 969 |
+| `almanac.anniversaries` | 1680× | 6291× | 32 222 798 532 | 29 935 814 742 |
+| `almanac.next` | 162× | 300× | 3 108 433 093 | 1 429 466 016 |
+| `almanac.sentences` | 10.4× | 6.67× | 199 318 235 | 31 754 553 |
+| `almanac.publishedReasons` | 25.1× | 42.8× | 480 890 872 | 203 851 658 |
+| `almanac.pakshi` | 10.6× | 10.5× | 202 505 958 | 49 990 019 |
+| `almanac.sankalpa` | 71.6× | 63.4× | 1 373 475 740 | 301 757 721 |
+| `almanac.ashauch` | 27.8× | 33.3× | 533 944 113 | 158 539 324 |
+| `almanac.household` | 38.0× | 70.4× | 729 143 823 | 334 946 224 |
+| `almanac.ashauchKin` | 0.00596× | 0.0228× | 114 352 | 108 542 |
+| `almanac.ashauchRite` | 0.00341× | 0.0137× | 65 338 | 65 267 |
+| `almanac.deathTime` | 89.4× | 139× | 1 714 336 160 | 662 550 214 |
+| `almanac.festivalPack` | 0.0833× | 0.349× | 1 598 336 | 1 661 149 |
+| `almanac.firstYear` | 162× | 281× | 3 101 042 879 | 1 337 790 519 |
+| `chart.rashifal` | 9.60× | 9.28× | 184 032 860 | 44 180 869 |
+| `research.study` | 3.09× | 3.17× | 59 236 991 | 15 084 109 |
