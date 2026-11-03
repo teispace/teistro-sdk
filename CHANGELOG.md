@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**What would settle each uncomputed dasha.**
+**Numbers:** none: a documentation column.
+- `dasha-coverage-measured.md` names, for each of the 8 catalogued dashas this build does not compute,
+  the source that would settle it: Sanjay Rath's *Upadesa Sutras* translation for `SUDASA` and `VARNADA`,
+  Sareen's *Pancha Swara* for `PANCHASWARA`, and, for the tithi, yoga and karana seeds and
+  `VARSHA_NARAYANA`, that no classical text is known (SR-43).
+
 **The Gaudiya festivals, and Janmashtami's Vaishnava rule.**
 **Numbers:** `INDIA_CENTRAL`'s `JANMASHTAMI` day moves only in a year the 8th holds no sunrise, or two with
 Rohini at the later midnight only (none of 2021 to 2027); its parana is the text's one reading, the end of
