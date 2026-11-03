@@ -313,6 +313,8 @@ jobs:
         run: cargo xtask check-schema
       - name: Dossier page (each section's bytes against the JSON of what it writes, over the corpus)
         run: cargo xtask check-dossier
+      - name: Dossier tokens page (keys and each locale's names, tokens over the corpus)
+        run: cargo xtask check-dossier-tokens
       - name: Batch page (the calls, widths and repeats a batch asks the ephemeris for)
         run: cargo xtask check-batching
       - name: Sade Sati page (every bound of a century's periods read back through the gochar, over the recorded births)

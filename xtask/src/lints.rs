@@ -3582,6 +3582,10 @@ const JAVA_UNTYPED: [(&str, &str); 22] = [
     ),
     ("Drawing.Drawing(layout)", MEMBER_OR_KEY),
     ("Engine.call(arguments)", OPEN),
+    (
+        "FinderAnswer.FinderAnswer(value)",
+        "a finder's record as the wire spells it, read from JSON the SDK wrote (`observance-finder.md`)",
+    ),
     ("IntlArea.render(params)", OPEN),
     ("IshtaDevata.IshtaDevata(rules)", ANSWERED),
     (

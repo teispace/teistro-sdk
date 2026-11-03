@@ -334,6 +334,9 @@ const Map<String, Type> _records = {
   'verify.claims': ClaimsRequest,
   'verify.issue': IssueRequest,
   'verify.receipt': Receipt,
+  'almanac.elect': ElectRequest,
+  'almanac.observance': ObservanceRequest,
+  'almanac.people': PeopleRequest,
 };
 
 void main() {

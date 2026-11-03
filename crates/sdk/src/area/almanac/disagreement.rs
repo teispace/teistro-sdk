@@ -227,7 +227,7 @@ pub(crate) fn day(ours: &Panchanga, theirs: &Panchanga) -> Option<DayDisagreemen
 /// Whether two spans of one occurrence, one under each sky, overlap: the
 /// two reckonings move a tithi by minutes or hours, never by a day, so the
 /// same occurrence overlaps itself and the next one does not.
-fn overlap(a: Interval, b: Interval) -> bool {
+pub(super) fn overlap(a: Interval, b: Interval) -> bool {
     a.from.get() < b.to.get() && b.from.get() < a.to.get()
 }
 

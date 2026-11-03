@@ -5564,6 +5564,55 @@ test('a chart carries its prashna', () => {
  * when asked, and a bad year refused by its record's name
  * (`03-design/lalkitab.md`).
  */
+test('the finders: an election ranked, an observance paired, a day for many', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const official = new Context(nepalOfficial());
+  const place = { latitudeDeg: 27.7172, longitudeDeg: 85.324, altitudeM: 1400, utcOffsetSeconds: 20700 };
+  try {
+    const elected = ctx.almanac.elect({
+      first: { year: 2026, month: 11, day: 25 }, last: { year: 2026, month: 11, day: 27 },
+      ...place, muhurta: { rules: 'RAMAN_MARRIAGE', most: 3 },
+    });
+    assert.ok(Object.isFrozen(elected.value.windows), 'frozen');
+    assert.equal(typeof elected.provenance.inputHash, 'string');
+    elected.value.windows.forEach((w, at) => assert.equal(w.rank, at + 1));
+    assert.throws(
+      () => ctx.almanac.elect({ first: { year: 2026, month: 11, day: 25 }, ...place, latitudeDeg: 97, muhurta: { rules: 'RAMAN_MARRIAGE' } }),
+      (error) => error instanceof TeistroError && error.field === 'elect.latitudeDeg',
+    );
+
+    const traditions = [
+      { name: 'modern', festivals: { rules: 'DHARMASINDHU' }, rule: 'EKADASHI_SMARTA' },
+      { name: 'official', festivals: { rules: 'DHARMASINDHU' }, rule: 'EKADASHI_SMARTA', reckoning: 'OTHER' },
+    ];
+    const asked = { first: { year: 2025, month: 10, day: 25 }, last: { year: 2025, month: 11, day: 10 }, ...place, traditions };
+    const found = ctx.almanac.observance(asked, official);
+    assert.deepEqual(found.value.traditions.map((t) => t.reckoning), ['THIS', 'OTHER']);
+    assert.ok(found.value.occurrences.length > 0, 'an Ekadashi in the range');
+    assert.equal(found.value.parted, found.value.occurrences.filter((o) => !o.agree).length);
+    for (const parted of found.value.occurrences.filter((o) => !o.agree)) {
+      assert.ok(['SKY', 'PUBLISHED'].includes(parted.reason), 'one rule parts on its sky');
+    }
+    assert.throws(
+      () => ctx.almanac.observance(asked),
+      (error) => error instanceof TeistroError && error.field === 'observance.traditions[1].reckoning',
+    );
+
+    const digest = ctx.almanac.people({
+      day: { year: 2026, month: 11, day: 1 }, ...place,
+      people: [{ name: 'Asha', instant: 2447000.25, ...place }],
+    });
+    const [asha] = digest.value.people;
+    assert.equal(asha.name, 'Asha');
+    assert.equal(asha.dasha.length, 3);
+    assert.equal(asha.transits.length, 9);
+    assert.ok(digest.value.sunrise < digest.value.nextSunrise, 'a day runs sunrise to sunrise');
+  } finally {
+    official.dispose();
+    ctx.dispose();
+  }
+});
+
 /**
  * Two reckonings of November 2025 at Kathmandu: the committee's over the
  * Surya Siddhanta and the modern one. Each tithi difference names both

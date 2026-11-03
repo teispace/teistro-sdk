@@ -1,0 +1,40 @@
+---
+title: ts_almanac_elect
+description: "The times a muhurta rule set leaves over a range at a place, ranked best first (`03-design/election-search.md`), answered with `{value, provenance}` as canonical JSON."
+---
+
+The times a muhurta rule set leaves over a range at a place, ranked best first (`03-design/election-search.md`), answered with `{value, provenance}` as canonical JSON.
+
+`value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut, ranking, unjudged}`, each window `{rank, at, open, holds, fails, barredBy, score}`: `rank` 1 the best, `at` its UTC Julian days, `holds` the clauses that count for the time over it and `fails` those against it, each with the span it held over, and `barredBy` the rules' bars that close it.
+
+`request_json` is `{"calendar", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "muhurta"}`: the days as `{"year", "month", "day"}` in `calendar` (Gregorian when left out), `last` the first when left out, and `muhurta` the rule set as `almanac.days` reads it (`rules` an activity's name or rules spelt out, `native`, `ranking`, `daysWithWindows`, `most`, `asta`, `direction`). A key it does not read, a place or offset out of range or a rule set its reader refuses is `INVALID_ARG`, named under `elect`; a context without an ephemeris is `CAPABILITY`, as is a build without the muhurta family.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_almanac_elect(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `almanac.elect` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/finders.rs`.

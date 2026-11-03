@@ -1220,4 +1220,57 @@ public final class AlmanacArea {
                 }),
                 Reads.each(value, "withheld", Reads::string));
     }
+
+    /**
+     * <b>The times a muhurta rule set leaves, ranked</b> ({@code 03-design/election-search.md}): the
+     * search {@code days} runs with {@code muhurta}, asked on its own, each window ranked from 1 with
+     * the clauses for it ({@code holds}) and against it ({@code fails}). The record keeps the wire's
+     * spelling: catalogue members are bare keys.
+     *
+     * @param request the days, the place and the rule set
+     * @return the ranked windows, sealed
+     */
+    public FinderAnswer elect(com.teispace.teistro.request.ElectRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is an ElectRequest", "request");
+        }
+        String json = Json.write(request);
+        return FinderAnswer.of(context.locked((lib, raw) -> Calls.almanacElect(lib, raw, json)));
+    }
+
+    /**
+     * <b>When an observance falls under each tradition</b> ({@code 03-design/observance-finder.md}):
+     * each tradition's rule over a year or a range, the occurrences paired by their tithi, and where
+     * they part what differs and why ({@code RULE}, {@code SKY}, {@code RULE_AND_SKY},
+     * {@code PUBLISHED}). A tradition reckoned {@code OTHER} is reckoned under {@code other}.
+     *
+     * @param request the range, the place and the traditions
+     * @param other the context an {@code OTHER} tradition is reckoned under, or null for none
+     * @return the occurrences, sealed by the first tradition's reckoning
+     */
+    public FinderAnswer observance(com.teispace.teistro.request.ObservanceRequest request, Context other) {
+        if (request == null) {
+            throw Reads.invalid("request is an ObservanceRequest", "request");
+        }
+        String json = Json.write(request);
+        // This context as the other is no other.
+        return FinderAnswer.of(context.lockedWith(other == null ? context : other,
+                (lib, ours, theirs) -> Calls.almanacObservance(lib, ours, theirs, json)));
+    }
+
+    /**
+     * <b>A day for many people at once</b> ({@code 03-design/people-digest.md}): each birth's running
+     * dasha, every graha's gochar from their Moon, the day's transit hits on their chart, the day's tara
+     * and the Moon's house from theirs, the day running sunrise to sunrise at the place.
+     *
+     * @param request the day, the place and the births
+     * @return each person's day, sealed
+     */
+    public FinderAnswer people(com.teispace.teistro.request.PeopleRequest request) {
+        if (request == null) {
+            throw Reads.invalid("request is a PeopleRequest", "request");
+        }
+        String json = Json.write(request);
+        return FinderAnswer.of(context.locked((lib, raw) -> Calls.almanacPeople(lib, raw, json)));
+    }
 }

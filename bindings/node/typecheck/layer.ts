@@ -100,6 +100,12 @@ import type {
   IssueRequest,
   Issued,
   ReceiptCheck,
+  ElectRequest,
+  ElectAnswer,
+  ObservanceRequest,
+  ObservanceAnswer,
+  PeopleRequest,
+  PeopleAnswer,
   Lookup,
   LookupRequest,
   DateTextRequest,
@@ -2409,6 +2415,25 @@ function theReceipt(ctx: Context): string {
 }
 
 void theReceipt;
+
+// The finders: an election, an observance across two reckonings, a day for many.
+function theFinders(ctx: Context, official: Context): string {
+  const place = { latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700 };
+  const elect: ElectRequest = { first: { year: 2026, month: 11, day: 25 }, ...place, muhurta: { rules: 'RAMAN_MARRIAGE' } };
+  const elected: ElectAnswer = ctx.almanac.elect(elect);
+  const observance: ObservanceRequest = {
+    year: 2026, ...place,
+    traditions: [{ name: 'official', festivals: { rules: 'NEPAL_PANCHANGA' }, rule: 'HARIBODHINI_EKADASHI', reckoning: 'OTHER' }],
+  };
+  const found: ObservanceAnswer = ctx.almanac.observance(observance, official);
+  // @ts-expect-error a reason is one of four
+  const reason: 'CALENDAR' = found.value.occurrences[0]?.reason ?? 'SKY';
+  const people: PeopleRequest = { day: { year: 2026, month: 11, day: 1 }, ...place, people: [{ name: 'Asha', instant: 2447000.25, ...place }] };
+  const digest: PeopleAnswer = ctx.almanac.people(people);
+  return [elected.value.windows[0]?.rank, reason, digest.value.people[0]?.dasha[0]?.lord].join();
+}
+
+void theFinders;
 
 // A stored baseline snapshot translated into the contexts to open.
 function theRecordedSettings(ctx: Context): string {

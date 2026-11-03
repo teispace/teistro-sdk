@@ -229,6 +229,7 @@ impl Dimension {
 /// ```
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "MuhurtaFactor"))]
 pub struct Factor {
     /// What for.
     pub dimension: Dimension,
@@ -262,6 +263,7 @@ pub struct Factor {
 /// ```
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "MuhurtaScore"))]
 #[serde(rename_all = "camelCase")]
 pub struct Score {
     /// The score, 0 to 100.

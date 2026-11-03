@@ -11532,3 +11532,165 @@ fn a_sky_view_crosses_as_the_facade_answers_it() {
     .unwrap();
     assert_eq!(sky_view_json(&classical, asked), Err(Status::Unsupported));
 }
+
+/// A finder's answer crossed: `entry` called on a context (and, for the
+/// observance finder, an other), the JSON owned.
+fn finder_json(
+    ctx: &Ctx,
+    other: Option<*const TsContext>,
+    request: &str,
+    entry: fn(*const TsContext, *const c_char, *mut TsString) -> Status,
+) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    let status = match other {
+        // SAFETY: a live context, a live or null other, a NUL-terminated
+        // request and a valid slot.
+        Some(other) => unsafe {
+            teistro_ffi::finders::ts_almanac_observance(
+                ctx.handle,
+                other,
+                request.as_ptr(),
+                &raw mut json,
+            )
+        },
+        None => entry(ctx.handle, request.as_ptr(), &raw mut json),
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+fn elect_entry(ctx: *const TsContext, request: *const c_char, out: *mut TsString) -> Status {
+    // SAFETY: the callers hand a live context, a request and a slot.
+    unsafe { teistro_ffi::finders::ts_almanac_elect(ctx, request, out) }
+}
+
+fn people_entry(ctx: *const TsContext, request: *const c_char, out: *mut TsString) -> Status {
+    // SAFETY: the callers hand a live context, a request and a slot.
+    unsafe { teistro_ffi::finders::ts_almanac_people(ctx, request, out) }
+}
+
+fn builtin_facade() -> teistro::Context {
+    teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+}
+
+fn json_of<T: serde::Serialize>(answer: &teistro_core::envelope::Envelope<T>) -> serde_json::Value {
+    serde_json::from_str(&teistro_core::envelope::canonical_json(answer)).unwrap()
+}
+
+/// An election crosses as the façade ranks it, and a refusal is named
+/// under `elect` (`03-design/election-search.md`).
+#[test]
+fn an_election_crosses_as_the_facade_ranks_it() {
+    let asked = r#"{"first": {"year": 2026, "month": 11, "day": 25},
+        "last": {"year": 2026, "month": 11, "day": 27},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "utcOffsetSeconds": 20700, "muhurta": {"rules": "RAMAN_MARRIAGE", "most": 3}}"#;
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let crossed: serde_json::Value =
+        serde_json::from_str(&finder_json(&ctx, None, asked, elect_entry).unwrap()).unwrap();
+    let kernel = builtin_facade()
+        .almanac()
+        .elect(&teistro::finders::ElectRequest::from_json(asked).unwrap())
+        .unwrap();
+    assert_eq!(crossed, json_of(&kernel));
+    let windows = crossed["value"]["windows"].as_array().unwrap();
+    assert!(windows.len() <= 3);
+    for (at, window) in windows.iter().enumerate() {
+        assert_eq!(window["rank"], at + 1);
+    }
+
+    let nowhere = r#"{"first": {"year": 2026, "month": 11, "day": 25}, "latitudeDeg": 97,
+        "longitudeDeg": 85.324, "utcOffsetSeconds": 20700, "muhurta": {"rules": "RAMAN_MARRIAGE"}}"#;
+    assert_eq!(
+        finder_json(&ctx, None, nowhere, elect_entry).unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(ctx.last_error().2.as_deref(), Some("elect.latitudeDeg"));
+}
+
+/// An observance under two reckonings crosses as the façade pairs it; the
+/// context itself as the other is no other, so an `OTHER` tradition is
+/// then refused by name (`03-design/observance-finder.md`).
+#[test]
+fn an_observance_crosses_as_the_facade_pairs_it() {
+    let asked = r#"{"first": {"year": 2026, "month": 1, "day": 1},
+        "last": {"year": 2026, "month": 3, "day": 31},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "utcOffsetSeconds": 20700, "traditions": [
+            {"name": "drik", "festivals": {"rules": "DHARMASINDHU"}, "rule": "EKADASHI_SMARTA"},
+            {"name": "surya", "festivals": {"rules": "DHARMASINDHU"}, "rule": "EKADASHI_SMARTA", "reckoning": "OTHER"}]}"#;
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let other = Ctx::with_ephemeris(0, TsEphemeris::SuryaSiddhanta, None, None, None).unwrap();
+    let crossed: serde_json::Value =
+        serde_json::from_str(&finder_json(&ctx, Some(other.handle), asked, elect_entry).unwrap())
+            .unwrap();
+    let surya = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::SuryaSiddhanta])
+        .build()
+        .unwrap();
+    let kernel = builtin_facade()
+        .almanac()
+        .observance(
+            &teistro::finders::ObservanceRequest::from_json(asked).unwrap(),
+            Some(&surya),
+        )
+        .unwrap();
+    assert_eq!(crossed, json_of(&kernel));
+    assert_eq!(crossed["value"]["traditions"][1]["reckoning"], "OTHER");
+    assert_ne!(
+        crossed["value"]["occurrences"].as_array().map(Vec::len),
+        Some(0)
+    );
+
+    assert_eq!(
+        finder_json(&ctx, Some(ctx.handle), asked, elect_entry).unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(
+        ctx.last_error().2.as_deref(),
+        Some("observance.traditions[1].reckoning")
+    );
+    assert_eq!(
+        finder_json(&ctx, Some(ptr::null()), asked, elect_entry).unwrap_err(),
+        Status::InvalidArg
+    );
+}
+
+/// A people digest crosses as the façade reads it, and a refusal is named
+/// under `people` (`03-design/people-digest.md`).
+#[test]
+fn a_people_digest_crosses_as_the_facade_reads_it() {
+    let asked = r#"{"day": {"year": 2026, "month": 11, "day": 1},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "utcOffsetSeconds": 20700, "people": [
+            {"name": "Asha", "instant": 2447000.25, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700},
+            {"name": "Ravi", "instant": 2451545.0, "latitudeDeg": 19.076, "longitudeDeg": 72.8777, "utcOffsetSeconds": 19800}]}"#;
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let crossed: serde_json::Value =
+        serde_json::from_str(&finder_json(&ctx, None, asked, people_entry).unwrap()).unwrap();
+    let kernel = builtin_facade()
+        .almanac()
+        .people(&teistro::finders::PeopleRequest::from_json(asked).unwrap())
+        .unwrap();
+    assert_eq!(crossed, json_of(&kernel));
+    assert_eq!(crossed["value"]["people"][1]["name"], "Ravi");
+
+    let twice = r#"{"day": {"year": 2026, "month": 11, "day": 1}, "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324, "utcOffsetSeconds": 20700, "people": [
+            {"name": "Asha", "instant": 2447000.25, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700},
+            {"name": "Asha", "instant": 2447000.25, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}]}"#;
+    assert_eq!(
+        finder_json(&ctx, None, twice, people_entry).unwrap_err(),
+        Status::InvalidArg
+    );
+    assert_eq!(ctx.last_error().2.as_deref(), Some("people.people[1].name"));
+}

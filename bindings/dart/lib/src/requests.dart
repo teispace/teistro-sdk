@@ -413,6 +413,59 @@ final class DigestRequest extends _Request {
   List<Object?> get _fields => [altitudeM, calendar, days, festivals, first, latitudeDeg, longitudeDeg, utcOffsetSeconds, zone];
 }
 
+/// The request as a binding writes it.
+final class ElectRequest extends _Request {
+  const ElectRequest({
+    this.altitudeM = 0.0,
+    this.calendar,
+    required this.first,
+    this.last,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.muhurta,
+    required this.utcOffsetSeconds,
+  });
+
+  /// The place's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The calendar `first` and `last` are in; Gregorian when left out.
+  final Calendar? calendar;
+
+  /// The first day searched.
+  final DayAsked first;
+
+  /// The last day searched, inclusive; the first when left out.
+  final DayAsked? last;
+
+  /// The place's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  /// The rule set: an activity's name or rules spelt out, the native, the ranking, how many days are cut and how many windows kept.
+  final MuhurtaRequest muhurta;
+
+  /// The offset from UTC the place's civil days run at, in seconds, east positive.
+  final int utcOffsetSeconds;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    'first': first._wire,
+    if (last case final lastValue?) 'last': lastValue._wire,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'muhurta': muhurta._wire,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, calendar, first, last, latitudeDeg, longitudeDeg, muhurta, utcOffsetSeconds];
+}
+
 /// [`PackRequest`] as the bindings write it.
 final class PackRequest extends _Request {
   const PackRequest({
@@ -687,6 +740,64 @@ final class NextRequest extends _Request {
 }
 
 /// The request as a binding writes it.
+final class ObservanceRequest extends _Request {
+  const ObservanceRequest({
+    this.altitudeM = 0.0,
+    this.calendar,
+    this.first,
+    this.last,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.traditions,
+    required this.utcOffsetSeconds,
+    this.year,
+  });
+
+  /// The place's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The calendar the year or the days are in; Gregorian when left out.
+  final Calendar? calendar;
+
+  /// The first day; or `year`, not both.
+  final DayAsked? first;
+
+  /// The last day, inclusive, with `first`; the first when left out.
+  final DayAsked? last;
+
+  /// The place's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  /// The traditions compared, 1 to 8, in the order the answer lists them.
+  final List<ObservanceTradition> traditions;
+
+  /// The offset from UTC the place's civil days run at, in seconds, east positive.
+  final int utcOffsetSeconds;
+
+  /// A whole year of `calendar`, from its month 1, day 1; or `first`, not both.
+  final int? year;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    if (first case final firstValue?) 'first': firstValue._wire,
+    if (last case final lastValue?) 'last': lastValue._wire,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'traditions': [for (final e0 in traditions) e0._wire],
+    'utcOffsetSeconds': utcOffsetSeconds,
+    if (year case final yearValue?) 'year': yearValue,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, calendar, first, last, latitudeDeg, longitudeDeg, traditions, utcOffsetSeconds, year];
+}
+
+/// The request as a binding writes it.
 final class PakshiRequest extends _Request {
   const PakshiRequest({
     this.altitudeM = 0.0,
@@ -733,6 +844,64 @@ final class PakshiRequest extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, calendar, first, last, latitudeDeg, longitudeDeg, native, rules, utcOffsetSeconds];
+}
+
+/// The request as a binding writes it.
+final class PeopleRequest extends _Request {
+  const PeopleRequest({
+    this.altitudeM = 0.0,
+    this.calendar,
+    this.dasha,
+    required this.day,
+    this.depth,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.people,
+    required this.utcOffsetSeconds,
+  });
+
+  /// Its height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The calendar `day` is in; Gregorian when left out.
+  final Calendar? calendar;
+
+  /// The dasha system read; `VIMSHOTTARI` when left out.
+  final DashaSystem? dasha;
+
+  /// The day the digest is of.
+  final DayAsked day;
+
+  /// How many of its levels are named, 1 to 6; 3 when left out.
+  final int? depth;
+
+  /// The latitude of the place the day is reckoned at, degrees north positive.
+  final double latitudeDeg;
+
+  /// Its longitude, degrees east positive.
+  final double longitudeDeg;
+
+  /// The births, 1 to 50, in the order the answer lists them.
+  final List<PeoplePerson> people;
+
+  /// The offset from UTC its civil day runs at, in seconds, east positive.
+  final int utcOffsetSeconds;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (calendar case final calendarValue?) 'calendar': calendarValue.key,
+    if (dasha case final dashaValue?) 'dasha': dashaValue.key,
+    'day': day._wire,
+    if (depth case final depthValue?) 'depth': depthValue,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'people': [for (final e0 in people) e0._wire],
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, calendar, dasha, day, depth, latitudeDeg, longitudeDeg, people, utcOffsetSeconds];
 }
 
 /// The request as a binding writes it.
@@ -2762,6 +2931,39 @@ enum NextKind implements _Keyed {
   final String key;
 }
 
+/// One tradition as a binding writes it.
+final class ObservanceTradition extends _Request {
+  const ObservanceTradition({
+    required this.festivals,
+    required this.name,
+    this.reckoning = ObservanceReckoning.thisValue,
+    required this.rule,
+  });
+
+  /// The festival request whose rule it keeps: a pack by name, or rules spelt out.
+  final FestivalRequest festivals;
+
+  /// What the answer calls it; each name once.
+  final String name;
+
+  /// Which context reckons it: `THIS`, the call's own, when left out, or `OTHER`, the second context a binding passes.
+  final ObservanceReckoning reckoning;
+
+  /// The key of the rule in `festivals` whose days are found: a karmakala rule, an Ekadashi rule or one counted from another's day.
+  final String rule;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'festivals': festivals._wire,
+    'name': name,
+    'reckoning': reckoning.key,
+    'rule': rule,
+  };
+
+  @override
+  List<Object?> get _fields => [festivals, name, reckoning, rule];
+}
+
 /// Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha` with an optional `rule`.
 final class NativeAsked extends _Request {
   const NativeAsked({
@@ -2817,6 +3019,49 @@ final class PakshiRules extends _Request {
 
   @override
   List<Object?> get _fields => [clock, relations, subs];
+}
+
+/// One person as a binding writes them.
+final class PeoplePerson extends _Request {
+  const PeoplePerson({
+    this.altitudeM = 0.0,
+    required this.instant,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.name,
+    required this.utcOffsetSeconds,
+  });
+
+  /// The birthplace's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The birth, a UTC Julian day.
+  final double instant;
+
+  /// The birthplace's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The birthplace's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  /// What the answer calls them; each name once.
+  final String name;
+
+  /// The offset from UTC of the birth's clock, in seconds, east positive.
+  final int utcOffsetSeconds;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'instant': instant,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'name': name,
+    'utcOffsetSeconds': utcOffsetSeconds,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, instant, latitudeDeg, longitudeDeg, name, utcOffsetSeconds];
 }
 
 /// How the half of the year is reckoned.
@@ -5519,6 +5764,20 @@ final class HouseholdObserver extends _Request {
   List<Object?> get _fields => [key, ties];
 }
 
+/// Which context reckons a tradition: the call's own, or the other one it was handed (`almanac.observance(request, other)`).
+enum ObservanceReckoning implements _Keyed {
+  /// The context the call is made on.
+  thisValue('THIS'),
+  /// The other context the call is handed.
+  other('OTHER');
+
+  const ObservanceReckoning(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
 enum PakshiBird implements _Keyed {
   /// *Vallūṟu*: Ayyar's hawk, the modern books' vulture.
@@ -5616,6 +5875,20 @@ final class DignityRules extends _Request {
 
   @override
   List<Object?> get _fields => [terms, triplicities];
+}
+
+/// How a dossier writes catalogue members.
+enum DossierNames implements _Keyed {
+  /// Catalogue keys (`JUPITER`, `ARIES`): one text in every language.
+  keys('KEYS'),
+  /// A locale's names (`Jupiter`, `बृहस्पति`), where a key names one member of the dossier's kinds.
+  locale('LOCALE');
+
+  const DossierNames(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }
 
 /// A named list of sections; presets choose sections and never thin them.

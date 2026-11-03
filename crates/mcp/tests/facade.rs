@@ -107,6 +107,73 @@ fn every_record_tool_has_an_example_and_every_example_a_tool() {
     assert_eq!(tools, examples);
 }
 
+/// The finders show an agent one to three requests each, in their input
+/// schema, and every one is answered as the façade answers it.
+#[test]
+fn a_finder_tool_carries_examples_that_answer() {
+    let mut server = Server::new(Engine::Builtin);
+    let reply = server
+        .handle(
+            &json!({"jsonrpc": "2.0", "id": 1, "method": "tools/list", "params": {
+                "_meta": {"io.modelcontextprotocol/protocolVersion": "2026-07-28", "io.modelcontextprotocol/clientCapabilities": {}}}})
+            .to_string(),
+        )
+        .unwrap();
+    let reply: Value = serde_json::from_str(&reply).unwrap();
+    let tools = reply["result"]["tools"].as_array().unwrap();
+    let context = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    for name in ["almanac.elect", "almanac.observance", "almanac.people"] {
+        let tool = tools.iter().find(|tool| tool["name"] == name).unwrap();
+        let examples = tool["inputSchema"]["examples"].as_array().unwrap();
+        assert!((1..=3).contains(&examples.len()), "{name}");
+        for example in examples {
+            let request = example["request"].clone();
+            let result = call(&mut server, name, &json!({"request": request}));
+            answers_as_the_facade(name, &result, &context, &request);
+        }
+    }
+    // A record without examples shows none.
+    let plain = tools
+        .iter()
+        .find(|tool| tool["name"] == "verify.claims")
+        .unwrap();
+    assert!(plain["inputSchema"].get("examples").is_none());
+}
+
+/// **The observance finder compares** (`03-design/observance-finder.md`
+/// §6): a tradition reckoned `OTHER` is reckoned under the context the
+/// `other` argument names, and refused by its field without one.
+#[test]
+fn an_observance_reckons_another_tradition_under_other() {
+    let mut server = Server::new(Engine::Builtin);
+    let request = json!({"year": 2026, "latitudeDeg": 27.7172, "longitudeDeg": 85.324,
+        "utcOffsetSeconds": 20_700, "traditions": [
+            {"name": "here", "festivals": {"rules": "DHARMASINDHU"}, "rule": "EKADASHI_SMARTA"},
+            {"name": "there", "festivals": {"rules": "DHARMASINDHU"}, "rule": "EKADASHI_SMARTA",
+             "reckoning": "OTHER"}]});
+    let found = call(
+        &mut server,
+        "almanac.observance",
+        &json!({"request": request, "other": {"profile": "kp-default"}}),
+    );
+    assert_eq!(found["isError"], false, "{found}");
+    let traditions = &found["structuredContent"]["value"]["traditions"];
+    assert_eq!(traditions[1]["reckoning"], "OTHER");
+    assert_eq!(traditions[1]["profile"], "kp-default");
+    assert_eq!(traditions[0]["profile"], teistro::settings::DEFAULT_PROFILE);
+    let alone = call(&mut server, "almanac.observance", &json!({"request": request}));
+    assert_eq!(alone["isError"], true, "{alone}");
+    assert!(
+        alone["structuredContent"]["field"]
+            .as_str()
+            .is_some_and(|field| field.ends_with("traditions[1].reckoning")),
+        "{alone}"
+    );
+}
+
 #[test]
 fn a_tool_answers_as_the_facade_does() {
     let mut server = Server::new(Engine::Builtin);

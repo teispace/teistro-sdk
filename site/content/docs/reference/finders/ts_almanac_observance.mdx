@@ -1,0 +1,41 @@
+---
+title: ts_almanac_observance
+description: "When an observance falls in a year or a window under each named tradition (`03-design/observance-finder.md`), the occurrences paired across them, answered with `{value, provenance}` as canonical JSON, sealed by the first tradition's reckoning."
+---
+
+When an observance falls in a year or a window under each named tradition (`03-design/observance-finder.md`), the occurrences paired across them, answered with `{value, provenance}` as canonical JSON, sealed by the first tradition's reckoning.
+
+`value` is `{traditions, occurrences, parted, unjudged}`: each tradition `{name, rule, reckoning, profile, settingsHash, provider}`; each occurrence `{month, adhika, kept, agree, differs, reason}`, `kept` a tradition's `{tradition, day, observance}` or `{tradition, day, fast}` in the request's order (no `day` where it keeps none), `differs` among `ABSENT`, `DAY` and `MONTH`, and `reason` `RULE`, `SKY`, `RULE_AND_SKY` or `PUBLISHED` where the days or months part.
+
+`request_json` is `{"calendar", "year", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "traditions"}`: a `year` of `calendar` (Gregorian when left out) or the days `first` to `last`; `traditions` 1 to 8, each `{"name", "festivals", "rule", "reckoning"}`, `festivals` a festival request, `rule` a key of it and `reckoning` `THIS` (the default) or `OTHER`, which reckons it under `other`. `other` is null, or `context` itself, when no tradition is reckoned `OTHER`. A key it does not read, a place or offset out of range, a rule `festivals` does not carry, a name given twice or an `OTHER` tradition with no other context is `INVALID_ARG`; more than 8 traditions `LIMIT`; a dated rule `UNSUPPORTED`; each named under `observance`.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_almanac_observance(const ts_context * context, const ts_context * other, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `almanac.observance` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `other` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `other` null or a live handle, which may be `context`; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/finders.rs`.

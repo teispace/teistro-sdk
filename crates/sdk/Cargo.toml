@@ -273,6 +273,15 @@ name = "receipt"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "finders"
+required-features = ["builtin-ephemeris", "chart", "muhurta"]
+
+[[bench]]
+name = "finders"
+harness = false
+required-features = ["builtin-ephemeris", "chart", "muhurta"]
+
+[[test]]
 name = "ritu"
 required-features = ["builtin-ephemeris"]
 

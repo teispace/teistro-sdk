@@ -248,6 +248,28 @@ impl<'a> IntlArea<'a> {
         self.context.locale_engine().lexicon(request)
     }
 
+    /// A dossier written in keys, rewritten in a locale's names: the
+    /// locale given, or this area's when it names none
+    /// (`03-design/dossier.md`, "Names"). A key two kinds name differently
+    /// (`MAGHA`) stays a key, and the legend says so.
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let named = sdk.intl().named_dossier("== GRAHAS ==\nJUPITER|ARIES\n", Some("en-Latn"))?;
+    /// assert_eq!(named, "== GRAHAS ==\nJupiter|Aries\n");
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// A locale no loaded one answers, as [`IntlArea::lexicon`] refuses it.
+    pub fn named_dossier(self, dossier: &str, locale: Option<&str>) -> Result<String, Error> {
+        crate::dossier_names::named(self.context, dossier, locale)
+    }
+
     /// Every span of a text that may name a catalogue member, each with
     /// every member it may name (`03-design/lexicon.md` §1.3).
     ///

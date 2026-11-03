@@ -2606,6 +2606,72 @@ final class AlmanacArea extends _Area {
       ),
     );
   }
+
+  /// **The times a muhurta rule set leaves, ranked**
+  /// (`03-design/election-search.md`): the search [days] runs with
+  /// `muhurta`, asked on its own, each window ranked from 1 with the
+  /// clauses for it (`holds`) and against it (`fails`). The answer keeps
+  /// the wire's spelling: catalogue members are bare keys, and
+  /// `value['windows']` lists the windows best first.
+  FinderAnswer elect(ElectRequest request) => FinderAnswer._of(
+    _context._guarded(
+      () => _context._inner.almanacElect(jsonEncode(request._wire)),
+    ),
+  );
+
+  /// **When an observance falls under each tradition**
+  /// (`03-design/observance-finder.md`): each tradition's rule over a year
+  /// or a range, the occurrences paired by their tithi, and where they part
+  /// what differs and why (`RULE`, `SKY`, `RULE_AND_SKY`, `PUBLISHED`). A
+  /// tradition reckoned `OTHER` is reckoned under [other].
+  FinderAnswer observance(ObservanceRequest request, {Context? other}) {
+    final asked = jsonEncode(request._wire);
+    // This context as the other is no other.
+    final theirs = other ?? _context;
+    return FinderAnswer._of(
+      _context._guarded(
+        () => theirs._guarded(
+          () => _context._inner.almanacObservance(theirs._inner, asked),
+        ),
+      ),
+    );
+  }
+
+  /// **A day for many people at once** (`03-design/people-digest.md`):
+  /// each birth's running dasha, every graha's gochar from their Moon, the
+  /// day's transit hits on their chart, the day's tara and the Moon's house
+  /// from theirs, the day running sunrise to sunrise at the place.
+  FinderAnswer people(PeopleRequest request) => FinderAnswer._of(
+    _context._guarded(
+      () => _context._inner.almanacPeople(jsonEncode(request._wire)),
+    ),
+  );
+}
+
+/// What [AlmanacArea.elect], [AlmanacArea.observance] and
+/// [AlmanacArea.people] answer: the record as the wire spells it, and its
+/// provenance.
+final class FinderAnswer extends _Value {
+  const FinderAnswer({required this.value, required this.provenance});
+
+  factory FinderAnswer._of(String answered) {
+    final envelope = jsonDecode(answered) as Map<String, Object?>;
+    return FinderAnswer(
+      value: Map.unmodifiable(envelope['value']! as Map<String, Object?>),
+      provenance: Provenance.fromJson(
+        envelope['provenance']! as Map<String, Object?>,
+      ),
+    );
+  }
+
+  /// The record, catalogue members as bare keys.
+  final Map<String, Object?> value;
+
+  /// What computed it.
+  final Provenance provenance;
+
+  @override
+  List<Object?> get _fields => [value, provenance];
 }
 
 /// One instant at which something changes (`03-design/change-points.md`).

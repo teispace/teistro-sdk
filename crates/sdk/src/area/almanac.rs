@@ -88,11 +88,18 @@ mod changes;
 mod day_plan;
 mod digest;
 mod disagreement;
+// The finders (A2-1): an election search, an observance under each
+// tradition, and a day for many people.
+#[cfg(feature = "muhurta")]
+pub(crate) mod elect;
 mod feed;
 #[cfg(feature = "muhurta")]
 mod muhurta;
 mod next;
+pub(crate) mod observance;
 mod pack;
+#[cfg(all(feature = "chart", feature = "muhurta"))]
+pub(crate) mod people;
 mod reasons;
 mod sait;
 mod sentences;

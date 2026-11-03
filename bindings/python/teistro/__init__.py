@@ -471,6 +471,13 @@ from ._requests import (
     Receipt as Receipt,
     ReceiptProvider as ReceiptProvider,
     SettingsSnapshot as SettingsSnapshot,
+    ElectRequest as ElectRequest,
+    ObservanceRequest as ObservanceRequest,
+    PeopleRequest as PeopleRequest,
+    ObservanceTradition as ObservanceTradition,
+    ObservanceReckoning as ObservanceReckoning,
+    PeoplePerson as PeoplePerson,
+    DossierNames as DossierNames,
     WordsAmount as WordsAmount,
     WordsAmountValue as WordsAmountValue,
     WordsDigits as WordsDigits,
@@ -1257,6 +1264,15 @@ __all__ = [
     "ReceiptMove",
     "NotRerunReason",
     "ReceiptCheck",
+    # The finders.
+    "ElectRequest",
+    "ObservanceRequest",
+    "PeopleRequest",
+    "ObservanceTradition",
+    "ObservanceReckoning",
+    "PeoplePerson",
+    "DossierNames",
+    "FinderAnswer",
     "InWords",
     "AmountInWords",
     # The transit hit list, and its names.
@@ -4718,6 +4734,71 @@ class AlmanacArea(_Area):
             lambda: self._context.inner.almanac_digest(json.dumps(asked))
         )
         return digest
+
+    def elect(self, request: ElectRequest) -> "FinderAnswer":
+        """**The times a muhurta rule set leaves, ranked**
+        (``03-design/election-search.md``): the search ``days`` runs with
+        ``muhurta``, asked on its own, each window ranked from 1 with the
+        clauses for it (``holds``) and against it (``fails``). The answer
+        keeps the wire's spelling: catalogue members are bare keys.
+
+        >>> # sdk.almanac.elect({"first": {"year": 2026, "month": 11, "day": 20},
+        >>> #     "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700,
+        >>> #     "muhurta": {"rules": "RAMAN_MARRIAGE", "most": 3}}).value["windows"][0]["rank"]
+        """
+        answered = self._context._through_provider(
+            lambda: self._context.inner.almanac_elect(json.dumps(request))
+        )
+        return _finder_answer(answered)
+
+    def observance(self, request: ObservanceRequest, other: Optional["Context"] = None) -> "FinderAnswer":
+        """**When an observance falls under each tradition**
+        (``03-design/observance-finder.md``): each tradition's rule over a
+        year or a range, the occurrences paired by their tithi, and where
+        they part what differs and why (``RULE``, ``SKY``,
+        ``RULE_AND_SKY``, ``PUBLISHED``). A tradition reckoned ``OTHER`` is
+        reckoned under ``other``, another Context."""
+        if other is not None and not isinstance(other, Context):
+            raise TeistroError(Status.INVALID_ARG, "the other reckoning is another Context", field="other")
+        text = json.dumps(request)
+        if other is None:
+            # This context as the other is no other.
+            ours = self._context.inner
+            answered = self._context._through_provider(lambda: ours.almanac_observance(ours, text))
+        else:
+            theirs = other.inner
+            answered = self._context._through_provider(
+                lambda: other._through_provider(lambda: self._context.inner.almanac_observance(theirs, text))
+            )
+        return _finder_answer(answered)
+
+    def people(self, request: PeopleRequest) -> "FinderAnswer":
+        """**A day for many people at once** (``03-design/people-digest.md``):
+        each birth's running dasha, every graha's gochar from their Moon,
+        the day's transit hits on their chart, the day's tara and the Moon's
+        house from theirs, the day running sunrise to sunrise at the place."""
+        answered = self._context._through_provider(
+            lambda: self._context.inner.almanac_people(json.dumps(request))
+        )
+        return _finder_answer(answered)
+
+
+@dataclass(frozen=True)
+class FinderAnswer:
+    """What ``almanac.elect``, ``almanac.observance`` and ``almanac.people``
+    answer: the record as the wire spells it, and its provenance."""
+
+    value: Mapping[str, Any]
+    """The record, catalogue members as bare keys."""
+
+    provenance: Provenance
+    """What computed it."""
+
+
+def _finder_answer(answered: str) -> FinderAnswer:
+    envelope = json.loads(answered)
+    value: Mapping[str, Any] = envelope["value"]
+    return FinderAnswer(value=value, provenance=decode_provenance(envelope["provenance"]))
 
 
 class MatchingArea(_Area):

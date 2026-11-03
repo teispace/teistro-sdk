@@ -364,6 +364,36 @@ public final class BindingTest {
                         new com.teispace.teistro.request.IssueRequest("almanac.nothing", Map.of())));
                 same("issue.record", none.field(), "a record this build lacks");
             }
+            try (Context modern = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build());
+                    Context official = teistro.context(ContextOptions.builder().profile("nepali-committee")
+                            .ephemeris(Ephemeris.SURYA_SIDDHANTA).build())) {
+                String place = "\"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"utcOffsetSeconds\": 20700";
+                FinderAnswer elected = modern.almanac().elect(com.teispace.teistro.request.ElectRequest.of(Json.read(
+                        "{\"first\": {\"year\": 2026, \"month\": 11, \"day\": 25}, \"last\": {\"year\": 2026, \"month\": 11, \"day\": 27}, "
+                                + place + ", \"muhurta\": {\"rules\": \"RAMAN_MARRIAGE\", \"most\": 3}}")));
+                List<?> windows = (List<?>) elected.value().get("windows");
+                for (int k = 0; k < windows.size(); k++) {
+                    same(k + 1, (int) Reads.number(Reads.object(windows.get(k)), "rank"), "ranked from 1");
+                }
+                com.teispace.teistro.request.ObservanceRequest asked = com.teispace.teistro.request.ObservanceRequest.of(Json.read(
+                        "{\"first\": {\"year\": 2025, \"month\": 10, \"day\": 25}, \"last\": {\"year\": 2025, \"month\": 11, \"day\": 10}, "
+                                + place + ", \"traditions\": ["
+                                + "{\"name\": \"modern\", \"festivals\": {\"rules\": \"DHARMASINDHU\"}, \"rule\": \"EKADASHI_SMARTA\"}, "
+                                + "{\"name\": \"official\", \"festivals\": {\"rules\": \"DHARMASINDHU\"}, \"rule\": \"EKADASHI_SMARTA\", \"reckoning\": \"OTHER\"}]}"));
+                FinderAnswer found = modern.almanac().observance(asked, official);
+                List<?> traditions = (List<?>) found.value().get("traditions");
+                same("OTHER", Reads.string(Reads.object(traditions.get(1)), "reckoning"), "the second under the other sky");
+                check(!((List<?>) found.value().get("occurrences")).isEmpty(), "an Ekadashi in the range");
+                same("observance.traditions[1].reckoning", refusal(() -> modern.almanac().observance(asked, null)).field(),
+                        "an OTHER tradition needs another context");
+                FinderAnswer digest = modern.almanac().people(com.teispace.teistro.request.PeopleRequest.of(Json.read(
+                        "{\"day\": {\"year\": 2026, \"month\": 11, \"day\": 1}, " + place
+                                + ", \"people\": [{\"name\": \"Asha\", \"instant\": 2447000.25, " + place + "}]}")));
+                Map<?, ?> asha = Reads.object(((List<?>) digest.value().get("people")).get(0));
+                same("Asha", Reads.string(asha, "name"), "the person named");
+                same(3, Reads.array(asha, "dasha").size(), "three levels of dasha");
+                same(9, Reads.array(asha, "transits").size(), "every graha's transit");
+            }
         });
 
         tests.put("a pack lays its record over the one standing, and a damaged one is refused whole", () -> {

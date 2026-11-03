@@ -465,3 +465,29 @@ fn a_column_is_its_name_and_its_meaning() {
     let named = column("rule", "a rule's key");
     assert_eq!((named.name, named.meaning), ("rule", "a rule's key"));
 }
+
+#[test]
+fn names_are_keys_unless_asked_and_a_locale_needs_names() {
+    use teistro_serial::dossier::DossierNames;
+
+    let keys = DossierOptions::from_json(r#"{"sections": ["CHART"]}"#, &[]).unwrap();
+    assert_eq!(keys.names, DossierNames::Keys);
+    // Keys serialise as they did before names were asked.
+    assert!(!serde_json::to_string(&keys).unwrap().contains("names"));
+    let refused = DossierOptions::from_json(r#"{"locale": "ne"}"#, &[]).unwrap_err();
+    assert_eq!(refused.field(), Some("dossier.locale"));
+    let named = DossierOptions::from_json(r#"{"names": "LOCALE", "locale": "ne"}"#, &[]).unwrap();
+    // The crate itself writes keys whatever is asked: the SDK names them.
+    assert_eq!(
+        dossier(
+            &chart(),
+            &DossierOptions {
+                names: named.names,
+                ..on_clock()
+            },
+            &[]
+        )
+        .unwrap(),
+        dossier(&chart(), &on_clock(), &[]).unwrap()
+    );
+}

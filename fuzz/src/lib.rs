@@ -30,6 +30,7 @@ use teistro_ffi::intl::{
     TsIntlLoaded, ts_intl_dates, ts_intl_entity, ts_intl_has, ts_intl_lexicon, ts_intl_load_pack, ts_intl_lookup,
     ts_intl_render, ts_intl_set_locale, ts_intl_transliterate,
 };
+use teistro_ffi::finders::{ts_almanac_elect, ts_almanac_observance, ts_almanac_people};
 use teistro_ffi::key::ts_key_parse;
 use teistro_ffi::mapping::{ts_chart_astrocartography, ts_chart_relocated};
 use teistro_ffi::mundane::ts_chart_mundane;
@@ -233,6 +234,9 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_verify_issue",
     "ts_verify_receipt",
     "ts_almanac_sky_view",
+    "ts_almanac_elect",
+    "ts_almanac_observance",
+    "ts_almanac_people",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -509,6 +513,20 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         "ts_verify_claims",
         Seed::Answered,
         r#"{"text":"आज एकादशी हो। The Moon is in Rohini?","at":2461055.59375,"latitudeDeg":27.7172,"longitudeDeg":85.324,"utcOffsetSeconds":20700}"#,
+    ),    (
+        "ts_almanac_elect",
+        Seed::Answered,
+        r#"{"first":{"year":2026,"month":11,"day":25},"latitudeDeg":27.7172,"longitudeDeg":85.324,"utcOffsetSeconds":20700,"muhurta":{"rules":"RAMAN_MARRIAGE","most":2}}"#,
+    ),
+    (
+        "ts_almanac_observance",
+        Seed::Answered,
+        r#"{"first":{"year":2026,"month":1,"day":1},"last":{"year":2026,"month":1,"day":31},"latitudeDeg":27.7172,"longitudeDeg":85.324,"utcOffsetSeconds":20700,"traditions":[{"name":"smarta","festivals":{"rules":"DHARMASINDHU"},"rule":"EKADASHI_SMARTA"},{"name":"vaishnava","festivals":{"rules":"DHARMASINDHU"},"rule":"EKADASHI_VAISHNAVA"}]}"#,
+    ),
+    (
+        "ts_almanac_people",
+        Seed::Answered,
+        r#"{"day":{"year":2026,"month":11,"day":1},"latitudeDeg":27.7172,"longitudeDeg":85.324,"utcOffsetSeconds":20700,"people":[{"name":"Asha","instant":2447000.25,"latitudeDeg":27.7172,"longitudeDeg":85.324,"utcOffsetSeconds":20700}]}"#,
     ),
     (
         "ts_chart_mundane",
@@ -716,6 +734,9 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_verify_issue" => string_call(ts_verify_issue, text),
         "ts_verify_receipt" => string_call(ts_verify_receipt, text),
         "ts_almanac_sky_view" => string_call(ts_almanac_sky_view, text),
+        "ts_almanac_elect" => string_call(ts_almanac_elect, text),
+        "ts_almanac_observance" => paired_call(ts_almanac_observance, text),
+        "ts_almanac_people" => string_call(ts_almanac_people, text),
         _ => Status::Ok,
     }
 }

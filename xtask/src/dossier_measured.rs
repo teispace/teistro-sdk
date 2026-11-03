@@ -88,7 +88,7 @@ impl Total {
 /// A birth founded with every section a dossier writes; the points left
 /// out of one whose sunrise the day does not have (a polar summer), which
 /// the points need and the corpus holds.
-fn whole(
+pub(crate) fn whole(
     sdk: &teistro::Context,
     birth: &crate::births::Birth,
 ) -> Result<Envelope<Document>, teistro::Error> {

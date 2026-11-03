@@ -86,10 +86,13 @@ fn record_tool(record: &Record, detail: Detail) -> Value {
         "name": record.name,
         "title": record.title,
         "description": description(record),
-        "inputSchema": match detail {
-            Detail::Full => input,
-            Detail::Lean => schemas::lean(input, record),
-        },
+        "inputSchema": schemas::with_examples(
+            match detail {
+                Detail::Full => input,
+                Detail::Lean => schemas::lean(input, record),
+            },
+            record,
+        ),
         "annotations": annotations(record.title),
     });
     match (detail, schemas::output(record)) {

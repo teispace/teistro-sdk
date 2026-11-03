@@ -232,6 +232,9 @@ import type {
   IssueRequest,
   Receipt,
   ReceiptProvider,
+  ElectRequest,
+  ObservanceRequest,
+  PeopleRequest,
   InWordsRequest,
   TimeTextRequest,
   Interval,
@@ -8244,6 +8247,146 @@ export declare class AlmanacArea {
    * const { rules } = sdk.almanac.festivalPack('INDIA_CENTRAL');
    */
   festivalPack(pack: string): FestivalPackListing;
+
+  /**
+   * The times a muhurta rule set leaves over a range, ranked best first,
+   * each with the clauses for it and against it
+   * (`03-design/election-search.md`). Members are bare keys, as on the wire.
+   */
+  elect(request: ElectRequest): ElectAnswer;
+
+  /**
+   * When an observance falls under each tradition, the occurrences paired
+   * across them and why they part (`03-design/observance-finder.md`). A
+   * tradition reckoned `OTHER` is reckoned under `other`.
+   */
+  observance(request: ObservanceRequest, other?: Context | null): ObservanceAnswer;
+
+  /**
+   * A day for many people at once: each birth's running dasha, transits,
+   * the day's hits, tara and the Moon's house from theirs
+   * (`03-design/people-digest.md`).
+   */
+  people(request: PeopleRequest): PeopleAnswer;
+}
+
+/** A wire calendar date, as the finders answer it: `{calendar, year, month, day, ...}`. */
+export type WireDate = Readonly<Record<string, unknown>> & {
+  readonly calendar: string;
+  readonly year: number;
+  readonly month: number;
+  readonly day: number;
+};
+
+/** A window an election search ranked. */
+export interface ElectedWindow {
+  /** 1 for the best, in the ranking the request chose. */
+  readonly rank: number;
+  /** The window, UTC Julian days. */
+  readonly at: Interval;
+  /** Whether no bar closes it. */
+  readonly open: boolean;
+  /** The clauses that count for the time over it. */
+  readonly holds: readonly Readonly<Record<string, unknown>>[];
+  /** The clauses that count against it. */
+  readonly fails: readonly Readonly<Record<string, unknown>>[];
+  /** The bars that close it. */
+  readonly barredBy: readonly Readonly<Record<string, unknown>>[];
+  /** The ranking's score, where the ranking scores. */
+  readonly score?: Readonly<Record<string, unknown>> | null;
+}
+
+/** What `almanac.elect` answers. */
+export interface ElectAnswer {
+  readonly value: {
+    readonly windows: readonly ElectedWindow[];
+    readonly closed: readonly Readonly<Record<string, unknown>>[];
+    readonly daysJudged: number;
+    readonly daysCut: number;
+    readonly windowsBlackedOut: number;
+    readonly ranking: string;
+    readonly unjudged: readonly Readonly<Record<string, unknown>>[];
+  };
+  readonly provenance: Provenance;
+}
+
+/** One tradition's day for an occurrence. */
+export interface KeptDay {
+  readonly tradition: string;
+  /** The day it keeps; absent where it keeps none in the range. */
+  readonly day?: WireDate;
+  /** A karmakala rule's observance, as a festival answer holds it. */
+  readonly observance?: Readonly<Record<string, unknown>>;
+  /** An Ekadashi rule's fast. */
+  readonly fast?: Readonly<Record<string, unknown>>;
+}
+
+/** One occurrence of an observance, paired across the traditions. */
+export interface ObservanceOccurrence {
+  readonly month: string;
+  readonly adhika: boolean;
+  readonly kept: readonly KeptDay[];
+  readonly agree: boolean;
+  readonly differs: readonly ('ABSENT' | 'DAY' | 'MONTH')[];
+  readonly reason?: 'RULE' | 'SKY' | 'RULE_AND_SKY' | 'PUBLISHED' | null;
+}
+
+/** What `almanac.observance` answers. */
+export interface ObservanceAnswer {
+  readonly value: {
+    readonly traditions: readonly {
+      readonly name: string;
+      readonly rule: string;
+      readonly reckoning: 'THIS' | 'OTHER';
+      readonly profile: string;
+      readonly settingsHash: string;
+      /** The ephemeris that reckoned it, as the festival answer stamps it. */
+      readonly provider: Readonly<Record<string, unknown>>;
+    }[];
+    readonly occurrences: readonly ObservanceOccurrence[];
+    readonly parted: number;
+    readonly unjudged: readonly Readonly<Record<string, unknown>>[];
+  };
+  readonly provenance: Provenance;
+}
+
+/** A dasha period running for a person, one level. */
+export interface RunningPeriod {
+  readonly level: number;
+  readonly lord: string;
+  readonly sign?: string | null;
+  readonly from: number;
+  readonly to: number;
+}
+
+/** One person's day in a people digest. */
+export interface PersonDay {
+  readonly name: string;
+  readonly birthStar: string;
+  readonly moonSign: string;
+  readonly lagna: string;
+  readonly dasha: readonly RunningPeriod[];
+  readonly dashaOpens: readonly RunningPeriod[];
+  readonly transits: readonly Readonly<Record<string, unknown>>[];
+  readonly hits: readonly Readonly<Record<string, unknown>>[];
+  readonly tara: Readonly<Record<string, unknown>>;
+  readonly chandraHouse: number;
+  readonly chandrashtama: boolean;
+  readonly sadeSati: boolean;
+}
+
+/** What `almanac.people` answers. */
+export interface PeopleAnswer {
+  readonly value: {
+    readonly day: WireDate;
+    readonly sunrise: number;
+    readonly nextSunrise: number;
+    readonly nakshatra: string;
+    readonly moonSign: string;
+    readonly dasha: string;
+    readonly people: readonly PersonDay[];
+  };
+  readonly provenance: Provenance;
 }
 
 /** A festival pack's rows (`almanac.festivalPack`). */

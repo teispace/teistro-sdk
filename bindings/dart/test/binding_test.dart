@@ -406,6 +406,105 @@ void main() {
     ctx.dispose();
   });
 
+  // The finders (A2-1): an election ranked, an observance paired across
+  // two reckonings, and a day for many people.
+  test('the finders rank, pair and digest', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    final official = teistro.context(
+      profile: 'nepali-committee',
+      ephemeris: const [NamedEphemeris(Ephemeris.suryaSiddhanta)],
+    );
+    addTearDown(ctx.dispose);
+    addTearDown(official.dispose);
+
+    final elected = ctx.almanac.elect(
+      const ElectRequest(
+        first: DayAsked(year: 2026, month: 11, day: 25),
+        last: DayAsked(year: 2026, month: 11, day: 27),
+        latitudeDeg: 27.7172,
+        longitudeDeg: 85.324,
+        altitudeM: 1400,
+        utcOffsetSeconds: 20700,
+        muhurta: MuhurtaRequest(rules: MuhurtaActivity.ramanMarriage, most: 3),
+      ),
+    );
+    final windows = elected.value['windows']! as List<Object?>;
+    for (var k = 0; k < windows.length; k += 1) {
+      expect((windows[k]! as Map<String, Object?>)['rank'], k + 1);
+    }
+
+    const asked = ObservanceRequest(
+      first: DayAsked(year: 2025, month: 10, day: 25),
+      last: DayAsked(year: 2025, month: 11, day: 10),
+      latitudeDeg: 27.7172,
+      longitudeDeg: 85.324,
+      altitudeM: 1400,
+      utcOffsetSeconds: 20700,
+      traditions: [
+        ObservanceTradition(
+          name: 'modern',
+          festivals: FestivalRequest(rules: FestivalPack.dharmasindhu),
+          rule: 'EKADASHI_SMARTA',
+        ),
+        ObservanceTradition(
+          name: 'official',
+          festivals: FestivalRequest(rules: FestivalPack.dharmasindhu),
+          rule: 'EKADASHI_SMARTA',
+          reckoning: ObservanceReckoning.other,
+        ),
+      ],
+    );
+    final found = ctx.almanac.observance(asked, other: official);
+    final traditions =
+        (found.value['traditions']! as List<Object?>)
+            .cast<Map<String, Object?>>();
+    expect(traditions.map((t) => t['reckoning']), ['THIS', 'OTHER']);
+    final occurrences =
+        (found.value['occurrences']! as List<Object?>)
+            .cast<Map<String, Object?>>();
+    expect(occurrences, isNotEmpty);
+    expect(
+      found.value['parted'],
+      occurrences.where((o) => o['agree'] != true).length,
+    );
+    expect(
+      () => ctx.almanac.observance(asked),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'observance.traditions[1].reckoning',
+        ),
+      ),
+    );
+
+    final digest = ctx.almanac.people(
+      const PeopleRequest(
+        day: DayAsked(year: 2026, month: 11, day: 1),
+        latitudeDeg: 27.7172,
+        longitudeDeg: 85.324,
+        utcOffsetSeconds: 20700,
+        people: [
+          PeoplePerson(
+            name: 'Asha',
+            instant: 2447000.25,
+            latitudeDeg: 27.7172,
+            longitudeDeg: 85.324,
+            utcOffsetSeconds: 20700,
+          ),
+        ],
+      ),
+    );
+    final asha =
+        (digest.value['people']! as List<Object?>).first!
+            as Map<String, Object?>;
+    expect(asha['name'], 'Asha');
+    expect((asha['dasha']! as List<Object?>).length, 3);
+    expect((asha['transits']! as List<Object?>).length, 9);
+  });
+
   // Anniversaries over a span (`03-design/anniversary-span.md`): a barkhi
   // and an event, each day naming the rule that chose it, and a span too
   // long refused on `years`.
