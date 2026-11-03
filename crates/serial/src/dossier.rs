@@ -293,6 +293,53 @@ pub struct DossierOptions {
     /// `DROPPED`.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub drop_categories: Vec<String>,
+    /// How members are written: catalogue keys, which read the same in
+    /// every language, or a locale's names (`03-design/dossier.md`,
+    /// "Names"). Keys when left out. This crate writes keys; the SDK
+    /// writes the names.
+    #[serde(default, skip_serializing_if = "DossierNames::is_keys")]
+    pub names: DossierNames,
+    /// The locale whose names a `LOCALE` dossier is written in, the
+    /// context's when left out. Read only with `names` `LOCALE`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub locale: Option<String>,
+}
+
+/// How a dossier writes catalogue members.
+///
+/// ```
+/// use teistro_serial::dossier::{DossierNames, DossierOptions};
+///
+/// let named = DossierOptions::from_json(r#"{"names": "LOCALE", "locale": "ne"}"#, &[])?;
+/// assert_eq!(named.names, DossierNames::Locale);
+/// assert!(DossierOptions::default().names.is_keys());
+/// # Ok::<(), teistro_core::error::Error>(())
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum DossierNames {
+    /// Catalogue keys (`JUPITER`, `ARIES`): one text in every language.
+    #[default]
+    Keys,
+    /// A locale's names (`Jupiter`, `बृहस्पति`), where a key names one
+    /// member of the dossier's kinds.
+    Locale,
+}
+
+impl DossierNames {
+    /// Whether members are written as keys.
+    ///
+    /// ```
+    /// use teistro_serial::dossier::DossierNames;
+    ///
+    /// assert!(DossierNames::Keys.is_keys());
+    /// assert!(!DossierNames::Locale.is_keys());
+    /// ```
+    #[must_use]
+    pub fn is_keys(&self) -> bool {
+        *self == DossierNames::Keys
+    }
 }
 
 impl DossierOptions {
@@ -310,7 +357,8 @@ impl DossierOptions {
     /// # Errors
     ///
     /// `INVALID_ARG` on an `at` that is no instant, a `dashaDepth` of
-    /// zero, or a clock more than a day from UTC.
+    /// zero, a clock more than a day from UTC, or a `locale` for a
+    /// dossier written in keys.
     pub fn view(&self) -> Result<View, Error> {
         let at = self
             .at
@@ -322,6 +370,12 @@ impl DossierOptions {
             return Err(
                 Error::invalid_arg("a timeline is written to one level at least")
                     .with_field("dashaDepth"),
+            );
+        }
+        if self.names.is_keys() && self.locale.is_some() {
+            return Err(
+                Error::invalid_arg("a locale is read only for a dossier written in names")
+                    .with_field("locale"),
             );
         }
         let offset = self.utc_offset_seconds.unwrap_or(0);

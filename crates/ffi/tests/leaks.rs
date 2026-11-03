@@ -213,7 +213,7 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
             Status::Ok
         );
     });
-    let entries: [JsonEntry; 17] = [
+    let entries: [JsonEntry; 19] = [
         teistro_ffi::mundane::ts_chart_mundane,
         teistro_ffi::mapping::ts_chart_relocated,
         teistro_ffi::mapping::ts_chart_astrocartography,
@@ -231,6 +231,8 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
         teistro_ffi::verify::ts_verify_claims,
         teistro_ffi::verify::ts_verify_issue,
         teistro_ffi::verify::ts_verify_receipt,
+        teistro_ffi::finders::ts_almanac_elect,
+        teistro_ffi::finders::ts_almanac_people,
     ];
     holds_nothing("refused JSON requests and their records", || {
         for entry in entries {
@@ -358,7 +360,7 @@ fn paired(ctx: &Ctx, other: &Ctx, entry: PairedEntry, request: &str) -> Status {
 fn the_rites_and_the_comparisons_give_back_their_answers() {
     let ctx = builtin();
     let place = r#""latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337, "utcOffsetSeconds": 20700"#;
-    let rites: [(&str, JsonEntry, String); 6] = [
+    let rites: [(&str, JsonEntry, String); 8] = [
         (
             "a sankalpa",
             teistro_ffi::panchanga::ts_almanac_sankalpa,
@@ -395,6 +397,20 @@ fn the_rites_and_the_comparisons_give_back_their_answers() {
             teistro_ffi::panchanga::ts_almanac_sky_view,
             String::from(
                 r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337, "at": 2461345.25}"#,
+            ),
+        ),
+        (
+            "an election",
+            teistro_ffi::finders::ts_almanac_elect,
+            format!(
+                r#"{{"first": {{"year": 2026, "month": 11, "day": 25}}, {place}, "muhurta": {{"rules": "RAMAN_MARRIAGE", "most": 2}}}}"#
+            ),
+        ),
+        (
+            "a people digest",
+            teistro_ffi::finders::ts_almanac_people,
+            format!(
+                r#"{{"day": {{"year": 2026, "month": 11, "day": 1}}, {place}, "people": [{{"name": "Asha", "instant": 2447000.25, {place}}}]}}"#
             ),
         ),
     ];
@@ -531,6 +547,41 @@ fn the_remaining_families_give_back_their_answers() {
         unsafe { ts_string_free(&raw mut answer) };
     });
     // A shipped pack, as the pack fuzzer's corpus keeps it.
+}
+
+/// An observance reckoned across two contexts, and its refusal: each
+/// answer and each refusal's record given back.
+#[test]
+fn an_observance_across_two_reckonings_gives_back_its_answer() {
+    let ctx = builtin();
+    let other = Ctx::with_ephemeris(0, TsEphemeris::SuryaSiddhanta, None, None, None).unwrap();
+    let place = r#""latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337, "utcOffsetSeconds": 20700"#;
+    let traditions = format!(
+        r#"{{"first": {{"year": 2026, "month": 1, "day": 1}}, "last": {{"year": 2026, "month": 1, "day": 20}}, {place}, "traditions": [{{"name": "drik", "festivals": {{"rules": "DHARMASINDHU"}}, "rule": "EKADASHI_SMARTA"}}, {{"name": "surya", "festivals": {{"rules": "DHARMASINDHU"}}, "rule": "EKADASHI_SMARTA", "reckoning": "OTHER"}}]}}"#
+    );
+    holds_nothing("an observance across two reckonings", || {
+        assert_eq!(
+            paired(
+                &ctx,
+                &other,
+                teistro_ffi::finders::ts_almanac_observance,
+                &traditions
+            ),
+            Status::Ok
+        );
+    });
+    holds_nothing("an observance refused, and its record", || {
+        assert_ne!(
+            paired(
+                &ctx,
+                &other,
+                teistro_ffi::finders::ts_almanac_observance,
+                "{\"unknown\": 1}"
+            ),
+            Status::Ok
+        );
+        drop(ctx.last_error());
+    });
 }
 
 #[test]

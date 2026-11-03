@@ -73,6 +73,10 @@ struct Schemas {
     /// its own reader: what a caller may ask the schema of one at a time.
     #[cfg(feature = "schema")]
     parts: &'static [&'static str],
+    /// One to three requests a tool shows as its input's `examples`, each
+    /// one the record answers; none for most records yet.
+    #[cfg(feature = "schema")]
+    examples: &'static [&'static str],
 }
 
 /// What a record's schema says of a part whose reader reads no single
@@ -168,6 +172,8 @@ macro_rules! schemas {
             answer: Some(schemars::SchemaGenerator::subschema_for::<$answer>),
             #[cfg(feature = "schema")]
             parts: &$parts,
+            #[cfg(feature = "schema")]
+            examples: &[],
         }
     };
     ($request:ty => $answer:ty) => {
@@ -178,6 +184,32 @@ macro_rules! schemas {
             answer: Some(schemars::SchemaGenerator::subschema_for::<$answer>),
             #[cfg(feature = "schema")]
             parts: &[],
+            #[cfg(feature = "schema")]
+            examples: &[],
+        }
+    };
+    ($request:ty => $answer:ty, parts: $parts:expr, examples: $examples:expr) => {
+        Schemas {
+            #[cfg(feature = "schema")]
+            request: Some(schemars::SchemaGenerator::subschema_for::<$request>),
+            #[cfg(feature = "schema")]
+            answer: Some(schemars::SchemaGenerator::subschema_for::<$answer>),
+            #[cfg(feature = "schema")]
+            parts: &$parts,
+            #[cfg(feature = "schema")]
+            examples: &$examples,
+        }
+    };
+    ($request:ty => $answer:ty, examples: $examples:expr) => {
+        Schemas {
+            #[cfg(feature = "schema")]
+            request: Some(schemars::SchemaGenerator::subschema_for::<$request>),
+            #[cfg(feature = "schema")]
+            answer: Some(schemars::SchemaGenerator::subschema_for::<$answer>),
+            #[cfg(feature = "schema")]
+            parts: &[],
+            #[cfg(feature = "schema")]
+            examples: &$examples,
         }
     };
 }
@@ -282,6 +314,22 @@ impl Record {
         self.schemas.parts
     }
 
+    /// Requests the record answers, each as JSON, which a tool shows as
+    /// its input schema's `examples`: one to three for the finders, none
+    /// yet for most records.
+    ///
+    /// ```
+    /// # #[cfg(feature = "muhurta")] {
+    /// let elect = teistro::records::record("almanac.elect").expect("a muhurta build carries it");
+    /// assert!((1..=3).contains(&elect.examples().len()));
+    /// # }
+    /// ```
+    #[cfg(feature = "schema")]
+    #[must_use]
+    pub fn examples(&self) -> &'static [&'static str] {
+        self.schemas.examples
+    }
+
     /// The record's answer value as JSON Schema, as
     /// [`Record::request_schema`] writes the request's.
     #[cfg(feature = "schema")]
@@ -362,6 +410,13 @@ impl Answered {
             None => canonical_json(&self.value),
         }
     }
+}
+
+/// `almanac.observance`: each tradition reckoned `OTHER` under `other`,
+/// the rest under `context`.
+fn observance(context: &Context, other: &Context, json: &str) -> Result<Answered, Error> {
+    let asked = crate::finders::ObservanceRequest::from_json(json)?;
+    Answered::sealed(context.almanac().observance(&asked, Some(other))?)
 }
 
 /// `chart.disagreements`: the record's two charts, the first under
@@ -464,6 +519,7 @@ pub fn records() -> Vec<Record> {
     all.extend(engine_records());
     all.push(verify_record());
     all.extend(receipt_records());
+    all.extend(finder_records());
     all.sort_by_key(|record| record.name);
     all
 }
@@ -983,6 +1039,76 @@ fn receipt_records() -> [Record; 2] {
             },
             compares: None,
             schemas: schemas!(crate::verify::Receipt => crate::verify::ReceiptCheck),
+        },
+    ]
+}
+
+/// The election search's examples: a month's marriage windows at
+/// Kathmandu, and a week's journey east read against a native.
+#[cfg(all(feature = "schema", feature = "muhurta"))]
+const ELECT_EXAMPLES: [&str; 2] = [
+    r#"{"first": {"year": 2026, "month": 11, "day": 20}, "last": {"year": 2026, "month": 12, "day": 15}, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700, "muhurta": {"rules": "RAMAN_MARRIAGE", "most": 3}}"#,
+    r#"{"first": {"year": 2026, "month": 12, "day": 1}, "last": {"year": 2026, "month": 12, "day": 7}, "latitudeDeg": 28.6139, "longitudeDeg": 77.209, "utcOffsetSeconds": 19800, "muhurta": {"rules": "RAMAN_YATRA", "direction": "EAST", "native": {"star": "ROHINI", "moonSign": "TAURUS"}, "most": 5}}"#,
+];
+
+/// The observance finder's examples: the Smarta and the Vaishnava
+/// Ekadashi over a year, and Haribodhini Ekadashi at Kathmandu in 2025.
+#[cfg(feature = "schema")]
+const OBSERVANCE_EXAMPLES: [&str; 2] = [
+    r#"{"year": 2026, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700, "traditions": [{"name": "smarta", "festivals": {"rules": "DHARMASINDHU"}, "rule": "EKADASHI_SMARTA"}, {"name": "vaishnava", "festivals": {"rules": "DHARMASINDHU"}, "rule": "EKADASHI_VAISHNAVA"}]}"#,
+    r#"{"first": {"year": 2025, "month": 10, "day": 15}, "last": {"year": 2025, "month": 11, "day": 15}, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700, "traditions": [{"name": "nepal", "festivals": {"rules": "NEPAL_PANCHANGA"}, "rule": "HARIBODHINI_EKADASHI"}]}"#,
+];
+
+/// The people digest's example: two births read on one day at Kathmandu.
+#[cfg(all(feature = "schema", feature = "chart", feature = "muhurta"))]
+const PEOPLE_EXAMPLES: [&str; 1] = [
+    r#"{"day": {"year": 2026, "month": 11, "day": 1}, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700, "people": [{"name": "Asha", "instant": 2447000.25, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}, {"name": "Ravi", "instant": 2451545.0, "latitudeDeg": 19.076, "longitudeDeg": 72.8777, "utcOffsetSeconds": 19800}]}"#,
+];
+
+/// The finders (A2-1): the election search, the observance finder and the
+/// people digest, each with the examples its tool shows. The observance
+/// finder compares: a tradition reckoned `OTHER` is reckoned under the
+/// second context a caller names (an agent's `other`, a binding's second
+/// argument), and refused by its field when there is none.
+fn finder_records() -> Vec<Record> {
+    vec![
+        #[cfg(feature = "muhurta")]
+        Record {
+            name: "almanac.elect",
+            boundary: "ts_almanac_elect",
+            title: "The times a muhurta rule set leaves over a range at a place, ranked, each with the clauses that hold for it and against it",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::finders::ElectRequest::from_json(json)?;
+                Answered::sealed(context.almanac().elect(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::area::almanac::elect::ElectAsked => crate::finders::Elections, parts: ["muhurta"], examples: ELECT_EXAMPLES),
+        },
+        Record {
+            name: "almanac.observance",
+            boundary: "ts_almanac_observance",
+            title: "When an observance falls in a year or a window under each named tradition, paired, with what differs and why where they part",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::finders::ObservanceRequest::from_json(json)?;
+                Answered::sealed(context.almanac().observance(&asked, None)?)
+            },
+            compares: Some(observance),
+            schemas: schemas!(crate::area::almanac::observance::ObservanceAsked => crate::finders::ObservanceFinding, examples: OBSERVANCE_EXAMPLES),
+        },
+        #[cfg(all(feature = "chart", feature = "muhurta"))]
+        Record {
+            name: "almanac.people",
+            boundary: "ts_almanac_people",
+            title: "A day for many people at once: each one's running dasha, transits, the day's hits on their chart, tara and chandrabala",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::finders::PeopleRequest::from_json(json)?;
+                Answered::sealed(context.almanac().people(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::area::almanac::people::PeopleAsked => crate::finders::PeopleDigest, examples: PEOPLE_EXAMPLES),
         },
     ]
 }

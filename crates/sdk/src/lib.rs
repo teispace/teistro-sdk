@@ -49,6 +49,7 @@ mod asked;
 mod composites;
 mod context;
 mod days_request;
+mod dossier_names;
 mod engine_request;
 mod ephemeris;
 #[cfg(feature = "chart")]
@@ -593,6 +594,22 @@ pub mod verify {
     };
     pub use crate::area::verify::{Claim, Claims, ClaimsRequest, Unread, Verdict};
     pub use teistro_core::receipt::{FORMAT, Receipt, ReceiptProvider};
+}
+/// The finders (A2-1): the times a muhurta rule set leaves
+/// (`03-design/election-search.md`), when an observance falls under each
+/// tradition (`03-design/observance-finder.md`) and a day for many people
+/// (`03-design/people-digest.md`), each one record.
+pub mod finders {
+    #[cfg(feature = "muhurta")]
+    pub use crate::area::almanac::elect::{ElectRequest, ElectedWindow, Elections};
+    pub use crate::area::almanac::observance::{
+        Difference, Kept, MOST_TRADITIONS, ObservanceFinding, ObservanceRequest, Occurrence,
+        Parting, Reckoning, Tradition, TraditionReckoned, UnjudgedIn,
+    };
+    #[cfg(all(feature = "chart", feature = "muhurta"))]
+    pub use crate::area::almanac::people::{
+        DASHA_DEPTH, MOST_PEOPLE, PeopleDigest, PeopleRequest, Person, PersonDay, RunningPeriod,
+    };
 }
 // Prashna: the query chart read as Shatpanchashika prints it
 // (`03-design/prashna.md`).

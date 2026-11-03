@@ -153,6 +153,25 @@ pub(crate) fn input(record: &Record) -> Value {
     rooted(schema, &mut generator)
 }
 
+/// `input` with the record's example requests as its `examples`
+/// (JSON Schema 2020-12's annotation), each written as the tool's
+/// arguments, `{"request": …}`; `input` as it is for a record with none.
+/// An example is the SDK's own constant, so one that is not JSON is left
+/// out rather than shown, and the SDK's tests hold every one to answer.
+pub(crate) fn with_examples(input: Value, record: &Record) -> Value {
+    let examples: Vec<Value> = record
+        .examples()
+        .iter()
+        .filter_map(|text| serde_json::from_str::<Value>(text).ok())
+        .map(|request| json!({ "request": request }))
+        .collect();
+    if examples.is_empty() {
+        input
+    } else {
+        with(input, "examples", Value::Array(examples))
+    }
+}
+
 /// The arguments naming the context a call computes under, as every tool
 /// reading one states them: `profile`, `settings` and `locale`.
 pub(crate) fn scope_properties() -> Map<String, Value> {
@@ -199,13 +218,22 @@ pub(crate) fn output(record: &Record) -> Option<Value> {
     Some(rooted(schema, &mut generator))
 }
 
-/// The request's own properties, where its schema is inline.
+/// The request's own properties: inline, or in the definition its
+/// schema refers to (a request type named at its source, such as
+/// `ElectRequest`, is answered as `{"$ref": "#/$defs/ElectRequest"}`).
 fn request_parts(input: &mut Value) -> Option<&mut Map<String, Value>> {
-    input
-        .get_mut("properties")?
-        .get_mut("request")?
-        .get_mut("properties")?
-        .as_object_mut()
+    let named = input
+        .get("properties")?
+        .get("request")?
+        .get("$ref")
+        .and_then(Value::as_str)
+        .and_then(|reference| reference.strip_prefix("#/$defs/"))
+        .map(str::to_owned);
+    let request = match named {
+        Some(name) => input.get_mut("$defs")?.get_mut(&name)?,
+        None => input.get_mut("properties")?.get_mut("request")?,
+    };
+    request.get_mut("properties")?.as_object_mut()
 }
 
 /// `input` with each of the record's parts a line naming
@@ -345,7 +373,7 @@ pub(crate) fn describe(arguments: &Map<String, Value>) -> Result<Value, Error> {
     match arguments.get("part") {
         None => Ok(json!({
             "tool": name,
-            "input": input(&record),
+            "input": with_examples(input(&record), &record),
             "output": output(&record),
         })),
         Some(Value::String(wanted)) => {

@@ -8935,6 +8935,93 @@ export class AlmanacArea extends Area {
     }
     return deepFreeze(JSON.parse(run(this, (inner) => inner.almanacFestivalPack(JSON.stringify({ pack })))));
   }
+
+  /**
+   * **The times a muhurta rule set leaves, ranked**
+   * (`03-design/election-search.md`): the search `days` runs with
+   * `muhurta`, asked on its own, each window ranked from 1 with the
+   * clauses for it (`holds`) and against it (`fails`). The request and the
+   * answer keep the wire's spelling: catalogue members are bare keys.
+   *
+   * ```js
+   * const { value } = sdk.almanac.elect({
+   *   first: { year: 2026, month: 11, day: 20 }, last: { year: 2026, month: 12, day: 15 },
+   *   latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700,
+   *   muhurta: { rules: 'RAMAN_MARRIAGE', most: 3 },
+   * });
+   * value.windows[0].rank; // 1
+   * ```
+   *
+   * @param {object} request an `ElectRequest`
+   * @returns {object} `{ value, provenance }`
+   */
+  elect(request) {
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacElect(JSON.stringify(request))),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
+  }
+
+  /**
+   * **When an observance falls under each tradition**
+   * (`03-design/observance-finder.md`): each tradition's rule over a year
+   * or a range, the occurrences paired by their tithi, and where they part
+   * what differs and why (`RULE`, `SKY`, `RULE_AND_SKY`, `PUBLISHED`). A
+   * tradition reckoned `OTHER` is reckoned under `other`, another Context.
+   *
+   * ```js
+   * const { value } = sdk.almanac.observance({
+   *   year: 2026, latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700,
+   *   traditions: [
+   *     { name: 'smarta', festivals: { rules: 'DHARMASINDHU' }, rule: 'EKADASHI_SMARTA' },
+   *     { name: 'vaishnava', festivals: { rules: 'DHARMASINDHU' }, rule: 'EKADASHI_VAISHNAVA' },
+   *   ],
+   * });
+   * value.occurrences.filter((o) => !o.agree).length === value.parted; // true
+   * ```
+   *
+   * @param {object} request an `ObservanceRequest`
+   * @param {Context} [other] the Context an `OTHER` tradition is reckoned under
+   * @returns {object} `{ value, provenance }`
+   */
+  observance(request, other) {
+    let theirs;
+    if (other !== undefined && other !== null) {
+      theirs = natives.get(other);
+      if (theirs === undefined) throw new TypeError('observance: other is another Context');
+    }
+    const text = JSON.stringify(request);
+    // This context as the other is no other.
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacObservance(theirs ? theirs() : inner, text)),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
+  }
+
+  /**
+   * **A day for many people at once** (`03-design/people-digest.md`):
+   * each birth's running dasha, every graha's gochar from their Moon, the
+   * day's transit hits on their chart, the day's tara and the Moon's house
+   * from theirs, the day running sunrise to sunrise at the place.
+   *
+   * ```js
+   * const { value } = sdk.almanac.people({
+   *   day: { year: 2026, month: 11, day: 1 },
+   *   latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700,
+   *   people: [{ name: 'Asha', instant: 2447000.25, latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700 }],
+   * });
+   * value.people[0].dasha.length; // 3
+   * ```
+   *
+   * @param {object} request a `PeopleRequest`
+   * @returns {object} `{ value, provenance }`
+   */
+  people(request) {
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacPeople(JSON.stringify(request))),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
+  }
 }
 
 /**

@@ -67,6 +67,7 @@ pub mod context;
 pub mod day;
 pub mod ephemeris;
 mod family;
+pub mod finders;
 pub mod frame;
 pub mod intl;
 pub mod key;

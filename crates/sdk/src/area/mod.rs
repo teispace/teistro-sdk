@@ -17,7 +17,7 @@
 //! One module per area, because eight of them in one file would be one
 //! file nobody reads.
 
-mod almanac;
+pub(crate) mod almanac;
 mod calendar;
 #[cfg(feature = "chart")]
 mod chart;

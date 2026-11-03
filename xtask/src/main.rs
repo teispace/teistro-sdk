@@ -312,6 +312,7 @@ mod doc_examples;
 mod document_schema;
 mod doshas;
 mod dossier_measured;
+mod dossier_tokens;
 mod eclipses;
 mod engine;
 mod ephemgen;
@@ -405,6 +406,7 @@ mod teimeris_ranges;
 mod terms;
 mod time;
 mod time_lords;
+mod tokens;
 mod topocentric;
 mod vargas;
 mod varshaphala;
@@ -572,6 +574,11 @@ const PASSES: &[Pass] = &[
         "dossier",
         dossier_measured::generate,
         dossier_measured::check_generated,
+    ),
+    (
+        "dossier-tokens",
+        dossier_tokens::generate,
+        dossier_tokens::check_generated,
     ),
     (
         "fortitudes",

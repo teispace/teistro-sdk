@@ -1145,4 +1145,85 @@
       "temperatureC": 15
     }
   }
+,
+  {
+    "record": "almanac.elect",
+    "request": {
+      "first": {
+        "year": 2026,
+        "month": 11,
+        "day": 20
+      },
+      "last": {
+        "year": 2026,
+        "month": 12,
+        "day": 15
+      },
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "muhurta": {
+        "rules": "RAMAN_MARRIAGE",
+        "most": 3
+      }
+    }
+  },
+  {
+    "record": "almanac.observance",
+    "request": {
+      "year": 2026,
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "traditions": [
+        {
+          "name": "smarta",
+          "festivals": {
+            "rules": "DHARMASINDHU"
+          },
+          "rule": "EKADASHI_SMARTA"
+        },
+        {
+          "name": "vaishnava",
+          "festivals": {
+            "rules": "DHARMASINDHU"
+          },
+          "rule": "EKADASHI_VAISHNAVA"
+        }
+      ]
+    }
+  },
+  {
+    "record": "almanac.people",
+    "request": {
+      "day": {
+        "year": 2026,
+        "month": 11,
+        "day": 1
+      },
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700,
+      "people": [
+        {
+          "name": "Asha",
+          "instant": 2447000.25,
+          "latitudeDeg": 27.7172,
+          "longitudeDeg": 85.324,
+          "altitudeM": 1400,
+          "utcOffsetSeconds": 20700
+        },
+        {
+          "name": "Ravi",
+          "instant": 2451545.0,
+          "latitudeDeg": 19.076,
+          "longitudeDeg": 72.8777,
+          "utcOffsetSeconds": 19800
+        }
+      ]
+    }
+  }
 ]

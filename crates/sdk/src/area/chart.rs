@@ -195,7 +195,7 @@ const GRAHAS_IN_ORDER: [Graha; 9] = [
 /// maintainer's brief asks for.
 #[derive(Clone, Copy, Debug)]
 pub struct ChartArea<'a> {
-    context: &'a Context,
+    pub(crate) context: &'a Context,
 }
 
 mod disagreement;

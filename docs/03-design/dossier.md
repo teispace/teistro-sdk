@@ -154,6 +154,7 @@ A section a consumer adds (below) comes after these, in the order added.
   depth computed; the computed depth when left out.
 - `utc_offset_seconds`: the clock instants are written in; UTC when left
   out, and the chart request's own for its `dossier` record.
+- `names`: `KEYS` (the default) or `LOCALE`, with `locale`; see "Names".
 
 Two presets name section lists, and nothing else:
 
@@ -199,6 +200,29 @@ writes them, where version 2 left a rules reading's longevity out, and
 `AVAKAHADA` gains the birth paya's two rows (`paya_by_nakshatra`,
 `paya_by_house`, SR-32); it moves no other byte.
 
+## Names
+
+A dossier is written in **catalogue keys** (`JUPITER`, `ARIES`) unless
+asked otherwise: one text in every language, the language-neutral mode,
+and the one a reader parses without a locale. `names: "LOCALE"` writes
+the same dossier in a locale's names (`locale`, the context's when left
+out): the serial crate writes keys, and the SDK
+(`IntlArea::named_dossier`, the chart request's `dossier` record)
+replaces each whole key in a row with the lexicon's `name` form for it
+(C1166). Only a key that names one text is replaced: a key two kinds
+spell apart in that locale (`MAGHA`, a nakshatra and a month) stays a
+key, since a model reading `Magh` where the column meant the nakshatra
+would be told the wrong thing. Banners, the legend and column headers
+stay as written, but for the legend's line on members, which says the
+locale; a `|` in a name becomes `/`, so every row keeps its fields. A
+`locale` with `names` `KEYS` is refused (`dossier.locale`).
+
+What each mode costs in tokens, per locale, is on a generated page,
+[`dossier-tokens-measured.md`](dossier-tokens-measured.md) (`cargo xtask
+dossier-tokens`, held by `check-dossier-tokens`), counted with a
+documented dependency-free approximation (C1165): no model's tokenizer
+ships with the SDK, and a count by one is that model's alone.
+
 ## Extending it
 
 A **section** is a trait, `DossierSection`: a key, a banner, its columns
@@ -211,7 +235,7 @@ documented the way a built-in one is.
 ## Across the boundary
 
 A chart request's `dossier` record (`{sections?, preset?, at?,
-dashaDepth?, utcOffsetSeconds?}`, `DossierOptions::from_json`, which knows `RULES` and `GOCHAR` there) writes
+dashaDepth?, utcOffsetSeconds?, names?, locale?}`, `DossierOptions::from_json`, which knows `RULES` and `GOCHAR` there) writes
 each chart's dossier on the request's own clock, and section 137,
 `dossier`, carries them as a JSON array of strings, one a chart
 (`tests/abi.rs` holds it to the façade's own). A section the record
@@ -233,7 +257,7 @@ reads the record, so a model can ask a chart for its own dossier.
 | | |
 |---|---|
 | **decided** | bare catalogue keys, not codes; presets choose sections and never thin them, and a named section the document lacks is refused; one column table writes the header and the legend; date-free unless `at` |
-| **a setting** | `sections`, `preset`, `at`, `dasha_depth`, `utc_offset_seconds`, and the policy, `drop` and `dropCategories` |
+| **a setting** | `sections`, `preset`, `at`, `dasha_depth`, `utc_offset_seconds`, the policy, `drop` and `dropCategories`, and `names` and `locale` |
 | **not built** | a rules reading's house readings; the Ashtakavarga's transit judgement; a localised legend |
 
 ## What is measured

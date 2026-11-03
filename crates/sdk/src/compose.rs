@@ -602,7 +602,7 @@ impl ChartArea<'_> {
         })?;
         Ok(Composed {
             // Before `readings` and `gochar`, which the literal moves.
-            dossier: dossier_of(documents, &readings, &gochar, records, request.offset())?,
+            dossier: self.dossier_of(documents, &readings, &gochar, records, request.offset())?,
             hashes,
             readings,
             plans,
@@ -955,44 +955,53 @@ fn dossier_needs(asked: Option<&DossierOptions>, request: ChartRequest) -> Chart
         })
 }
 
-/// Every chart's dossier, on the request's clock unless the record named
-/// one, with its `RULES` when the request read the charts under rules and
-/// its `GOCHAR` when it read their transits; a refusal is named under
-/// `dossier` and the chart it came from.
-fn dossier_of(
-    documents: &[Document],
-    readings: &[RulesReading<'_>],
-    gochar: &[Vec<GocharReading>],
-    records: &ChartRecords,
-    clock: teistro_core::time::UtcOffset,
-) -> Result<Vec<String>, Error> {
-    let Some(asked) = &records.dossier else {
-        return Ok(Vec::new());
-    };
-    let options = DossierOptions {
-        utc_offset_seconds: asked.utc_offset_seconds.or(Some(clock.seconds())),
-        ..asked.clone()
-    };
-    documents
-        .iter()
-        .enumerate()
-        .map(|(at, document)| {
-            let reading = readings.get(at);
-            let rules = RulesSection::new(reading);
-            let spans = LongevitySection::new(reading);
-            let marakas = MarakaSection::new(reading);
-            let transits = GocharSection::new(
-                records.gochar.as_ref().map_or(&[], GocharRequest::instants),
-                gochar.get(at).map(Vec::as_slice),
-            );
-            teistro_serial::dossier::dossier(
-                document,
-                &options,
-                &[&rules, &spans, &marakas, &transits],
-            )
-            .map_err(|error| error.under("dossier").with_hint(format!("chart {at}")))
-        })
-        .collect()
+impl ChartArea<'_> {
+    /// Every chart's dossier, on the request's clock unless the record named
+    /// one, with its `RULES` when the request read the charts under rules and
+    /// its `GOCHAR` when it read their transits; a refusal is named under
+    /// `dossier` and the chart it came from.
+    fn dossier_of(
+        self,
+        documents: &[Document],
+        readings: &[RulesReading<'_>],
+        gochar: &[Vec<GocharReading>],
+        records: &ChartRecords,
+        clock: teistro_core::time::UtcOffset,
+    ) -> Result<Vec<String>, Error> {
+        let Some(asked) = &records.dossier else {
+            return Ok(Vec::new());
+        };
+        let options = DossierOptions {
+            utc_offset_seconds: asked.utc_offset_seconds.or(Some(clock.seconds())),
+            ..asked.clone()
+        };
+        documents
+            .iter()
+            .enumerate()
+            .map(|(at, document)| {
+                let reading = readings.get(at);
+                let rules = RulesSection::new(reading);
+                let spans = LongevitySection::new(reading);
+                let marakas = MarakaSection::new(reading);
+                let transits = GocharSection::new(
+                    records.gochar.as_ref().map_or(&[], GocharRequest::instants),
+                    gochar.get(at).map(Vec::as_slice),
+                );
+                let keyed = teistro_serial::dossier::dossier(
+                    document,
+                    &options,
+                    &[&rules, &spans, &marakas, &transits],
+                )
+                .map_err(|error| error.under("dossier").with_hint(format!("chart {at}")))?;
+                if options.names.is_keys() {
+                    Ok(keyed)
+                } else {
+                    crate::dossier_names::named(self.context, &keyed, options.locale.as_deref())
+                        .map_err(|error| error.under("dossier"))
+                }
+            })
+            .collect()
+    }
 }
 
 #[cfg(any(feature = "tajika", feature = "western"))]

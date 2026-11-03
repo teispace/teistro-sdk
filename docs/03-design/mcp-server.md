@@ -124,6 +124,9 @@ the protocol's own failures.
 | `intl.dates` | `DatesRequest`: the Bikram Sambat and Gregorian dates a text names, every reading of each | built since (`lexicon.md` §2) |
 | `verify.claims` | `ClaimsRequest`: what a text claims of the time, judged against the sankalpa at an instant and a place | built since (`lexicon.md` §3) |
 | `verify.issue`, `verify.receipt` | `IssueRequest`, `Receipt`: a record's answer with its receipt, and a receipt answered again under its own settings and compared, the attester of an OKF attested computation | built since (`receipts-and-datasets.md` §1) |
+| `almanac.elect` | `ElectRequest`: the times a muhurta rule set leaves over a range, ranked, each with the clauses for and against it | built since (`election-search.md`) |
+| `almanac.observance` | `ObservanceRequest`: when an observance falls under each tradition, paired, and why they part; a tradition reckoned `OTHER` under the context `other` names | built since (`observance-finder.md`) |
+| `almanac.people` | `PeopleRequest`: a day for up to 50 births, each one's dasha, gochar, hits, tara and the Moon's house | built since (`people-digest.md`) |
 
 Step 2 needed the chart's composition in the façade. Until it was built,
 `ts_chart_found` composed a chart's families inside the boundary crate

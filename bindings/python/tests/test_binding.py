@@ -663,6 +663,53 @@ class TheLocaleEngine(WithLibrary):
             self.ctx.intl.dates({"text": "x", "calendars": ["calendar.JULIAN"]})
         self.assertEqual(refused.exception.field, "dates.calendars")
 
+    def test_the_finders_answer(self) -> None:
+        from teistro import ElectRequest, FinderAnswer, ObservanceRequest, PeopleRequest
+
+        sky = self.teistro.context(ephemeris=Ephemeris.BUILTIN)
+        self.addCleanup(sky.close)
+        official = self.teistro.context(**nepal_official())
+        self.addCleanup(official.close)
+        elect: ElectRequest = {
+            "first": {"year": 2026, "month": 11, "day": 25},
+            "last": {"year": 2026, "month": 11, "day": 27},
+            "muhurta": {"rules": "RAMAN_MARRIAGE", "most": 3},
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700,
+        }
+        elected: FinderAnswer = sky.almanac.elect(elect)
+        self.assertEqual([w["rank"] for w in elected.value["windows"]], list(range(1, len(elected.value["windows"]) + 1)))
+        far: ElectRequest = {**elect, "latitudeDeg": 97.0}
+        with self.assertRaises(TeistroError) as refused:
+            sky.almanac.elect(far)
+        self.assertEqual(refused.exception.field, "elect.latitudeDeg")
+
+        asked: ObservanceRequest = {
+            "first": {"year": 2025, "month": 10, "day": 25},
+            "last": {"year": 2025, "month": 11, "day": 10},
+            "traditions": [
+                {"name": "modern", "festivals": {"rules": "DHARMASINDHU"}, "rule": "EKADASHI_SMARTA"},
+                {"name": "official", "festivals": {"rules": "DHARMASINDHU"}, "rule": "EKADASHI_SMARTA", "reckoning": "OTHER"},
+            ],
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700,
+        }
+        found = sky.almanac.observance(asked, official)
+        self.assertEqual([t["reckoning"] for t in found.value["traditions"]], ["THIS", "OTHER"])
+        self.assertTrue(found.value["occurrences"])
+        self.assertEqual(found.value["parted"], sum(1 for o in found.value["occurrences"] if not o["agree"]))
+        with self.assertRaises(TeistroError) as refused:
+            sky.almanac.observance(asked)
+        self.assertEqual(refused.exception.field, "observance.traditions[1].reckoning")
+
+        people: PeopleRequest = {
+            "day": {"year": 2026, "month": 11, "day": 1},
+            "people": [{"name": "Asha", "instant": 2447000.25, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700}],
+            "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "utcOffsetSeconds": 20700,
+        }
+        digest = sky.almanac.people(people)
+        asha = digest.value["people"][0]
+        self.assertEqual((asha["name"], len(asha["dasha"]), len(asha["transits"])), ("Asha", 3, 9))
+        self.assertLess(digest.value["sunrise"], digest.value["nextSunrise"])
+
     def test_what_a_text_claims_is_checked(self) -> None:
         from teistro import ClaimsAnswer, ClaimsRequest
 

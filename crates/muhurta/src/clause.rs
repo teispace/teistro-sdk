@@ -530,6 +530,7 @@ pub enum GhataRow {
 /// ```
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[cfg_attr(feature = "schema", schemars(rename = "MuhurtaClause"))]
 pub struct Clause {
     /// What it says.
     #[serde(flatten)]
