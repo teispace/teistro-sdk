@@ -766,5 +766,48 @@
         ]
       }
     }
+  },
+  {
+    "record": "chart.mundane",
+    "request": {
+      "kind": "MESHA_SANKRANTI",
+      "year": 2026,
+      "latitudeDeg": 27.7172,
+      "longitudeDeg": 85.324,
+      "altitudeM": 1400,
+      "utcOffsetSeconds": 20700
+    }
+  },
+  {
+    "record": "chart.relocated",
+    "request": {
+      "instant": 2447000.25,
+      "places": [
+        {
+          "latitudeDeg": 51.5,
+          "longitudeDeg": -0.12,
+          "altitudeM": 0
+        },
+        {
+          "latitudeDeg": 27.7172,
+          "longitudeDeg": 85.324,
+          "altitudeM": 1400
+        }
+      ],
+      "houseSystem": "PLACIDUS"
+    }
+  },
+  {
+    "record": "chart.astrocartography",
+    "request": {
+      "instant": 2447000.25,
+      "bodies": [
+        "SUN",
+        "MOON"
+      ],
+      "projection": "IN_MUNDO",
+      "stepDeg": 5,
+      "latitudeLimitDeg": 80
+    }
   }
 ]

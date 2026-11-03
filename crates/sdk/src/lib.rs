@@ -162,8 +162,12 @@ mod sankalpa_request;
 // record, by name (`03-design/mcp-server.md` D3).
 pub mod records;
 // A consumer's own layouts and dasha systems, read from JSON.
+#[cfg(feature = "western")]
+mod mapping;
 #[cfg(feature = "tajika")]
 mod masa_pravesha;
+#[cfg(feature = "chart")]
+mod mundane;
 pub mod registrations;
 #[cfg(feature = "chart")]
 mod returns;
@@ -621,6 +625,21 @@ pub use teistro_rashifal as rashifal;
 // (`03-design/western-returns.md`).
 #[cfg(feature = "chart")]
 pub use crate::returns::{BodyReturn, OffsetReturn};
+// Mundane charts: an ingress, the lunation before one, an eclipse, a
+// great conjunction or an event on record, cast for a place
+// (`03-design/mundane-charts.md`).
+#[cfg(feature = "chart")]
+pub use crate::mundane::{
+    CONJUNCTION_STEP_DAYS, MundaneChart, MundaneEvent, MundaneIngress, MundaneMoment,
+    MundaneRequest,
+};
+// A chart recast at other places, and the astrocartography lines
+// (`03-design/astrocartography.md`).
+#[cfg(feature = "western")]
+pub use crate::mapping::{
+    Astrocartography, AstrocartographyRequest, RELOCATION_PLACES_MAX, RelocatedChart, Relocation,
+    RelocationPlace, RelocationRequest,
+};
 // One year's months, or one month's days, as a chart request asks for
 // them (`03-design/annual-chart.md`).
 #[cfg(feature = "tajika")]

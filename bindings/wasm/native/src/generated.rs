@@ -300,6 +300,7 @@ pub fn chart_kind_from_str(value: &str) -> Result<u16> {
         "chart_kind.RETURN" => Ok(4),
         "chart_kind.RELOCATED" => Ok(5),
         "chart_kind.COMPOSITE" => Ok(6),
+        "chart_kind.MUNDANE" => Ok(7),
         other => Err(Error::from_reason(format!("`{other}` is not a ChartKind"))),
     }
 }
@@ -315,6 +316,7 @@ pub fn chart_kind_to_str(value: u16) -> String {
         4 => "chart_kind.RETURN",
         5 => "chart_kind.RELOCATED",
         6 => "chart_kind.COMPOSITE",
+        7 => "chart_kind.MUNDANE",
         _ => "unknown",
     }
     .to_string()
@@ -5656,6 +5658,122 @@ impl Context {
         self.leave()?;
         self.check(status)?;
         Ok(take_blob(&mut out_blob))
+    }
+
+    /// **A chart recast at other places** (`03-design/astrocartography.md`):
+    /// each place's ascendant, midheaven and twelve cusps at one instant, in
+    /// the context's zodiac, as `{value, provenance}` canonical JSON sealed by
+    /// the first place's chart with the request as its input.
+    ///
+    /// `value` is `{instant, obliquityDeg, places}`, each place
+    /// `{latitudeDeg, longitudeDeg, altitudeM, ascendantDeg, midheavenDeg,
+    /// cuspsDeg, houseSystem}` in the order asked, `cuspsDeg` twelve and
+    /// `houseSystem` a `house_system` key.
+    ///
+    /// `request_json` is `{"instant", "places", "houseSystem"}`: `instant` a
+    /// UTC Julian day; `places` one to 256 `{"latitudeDeg", "longitudeDeg",
+    /// "altitudeM"}`; `houseSystem` a `house_system` key, the profile's
+    /// Western override else Placidus when left out (C1157). A key the record
+    /// does not read, no place or too many, or a place out of range is
+    /// `INVALID_ARG`, named under `relocated` (`relocated.places[1].latitudeDeg`);
+    /// a context without an ephemeris is `CAPABILITY`.
+    #[wasm_bindgen(js_name = chartRelocated)]
+    pub fn chart_relocated(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::mapping::ts_chart_relocated(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// **The astrocartography lines** at an instant
+    /// (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC
+    /// lines on the Earth, as `{value, provenance}` canonical JSON sealed by
+    /// the chart the bodies were read from, with the request as its input.
+    ///
+    /// `value` is `{instant, projection, stepDeg, latitudeLimitDeg,
+    /// toleranceDeg, greenwichRamcDeg, obliquityDeg, lines}`, each line
+    /// `{body, angle, points, polarLimitDeg}`: `body` a `graha` key, `angle`
+    /// `MC`, `IC`, `ASC` or `DSC`, `points` `[longitudeDeg, latitudeDeg]`
+    /// pairs from south to north, longitude east in `[-180, 180)`, and
+    /// `polarLimitDeg` for a rising or setting line the latitude past which
+    /// it does not run (C1156). Every point is on its angle, read back
+    /// through a chart cast there, to `toleranceDeg`.
+    ///
+    /// `request_json` is `{"instant", "bodies", "projection", "stepDeg",
+    /// "latitudeLimitDeg"}`: `instant` a UTC Julian day; `bodies` `graha`
+    /// keys, the seven and the outer planets the profile places when left
+    /// out; `projection` `IN_MUNDO` (the default) or `ZODIACAL` (C1155);
+    /// `stepDeg` above 0 and at most 10, 1 by default; `latitudeLimitDeg`
+    /// above 0 and below 90, 80 by default. A key the record does not read,
+    /// a value out of range or a body the chart does not place is
+    /// `INVALID_ARG`, named under `astrocartography`; a context without an
+    /// ephemeris is `CAPABILITY`.
+    #[wasm_bindgen(js_name = chartAstrocartography)]
+    pub fn chart_astrocartography(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::mapping::ts_chart_astrocartography(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// **The moment of a mundane chart** (`03-design/mundane-charts.md`): an
+    /// ingress, the lunation before one, an eclipse, a great conjunction or
+    /// an event on record, and the place it is cast for, as `{value,
+    /// provenance}` canonical JSON sealed by the chart cast there, with the
+    /// request as its input.
+    ///
+    /// `value` is `{kind, instant, latitudeDeg, longitudeDeg, altitudeM,
+    /// utcOffsetSeconds, ingress, solarEclipse, lunarEclipse, name,
+    /// source}`: `kind` a `mundane_kind` key, `instant` the moment as a UTC
+    /// Julian day; `ingress` `{kind, instant}` the ingress a lunation
+    /// precedes; `solarEclipse` or `lunarEclipse` an eclipse's kind; `name`
+    /// and `source` an event's, as the record gave them. A field a kind does
+    /// not carry is absent.
+    ///
+    /// `request_json` is `{"kind", "year", "from", "ingress", "event",
+    /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`:
+    /// `kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC
+    /// Julian day) where the search starts, the first ingress, eclipse or
+    /// conjunction at or after it; `ingress` the ingress a lunation precedes,
+    /// `MESHA_SANKRANTI` by default (C1151); `event` `{"name", "instant",
+    /// "source"}` for an `EVENT`, which reads neither `year` nor `from`. The
+    /// sankrantis are read in the context's own zodiac, the four tropical
+    /// ingresses in the tropical one. A key the record does not read, a
+    /// missing or extra `year`, `from`, `ingress` or `event`, or a place out
+    /// of range is `INVALID_ARG`, named under `mundane`; an eclipse over a
+    /// classical astronomy is `UNSUPPORTED` naming `kind`; a context without
+    /// an ephemeris is `CAPABILITY`.
+    #[wasm_bindgen(js_name = chartMundane)]
+    pub fn chart_mundane(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::mundane::ts_chart_mundane(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
     }
 
     /// The syllables a pada, a star or a sign names a child by, in the

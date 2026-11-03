@@ -158,6 +158,12 @@ from ._requests import (
     MuhurtaRequest as MuhurtaRequest,
     AngleMethod as AngleMethod,
     AnnualPlace as AnnualPlace,
+    AstrocartographyRequest as AstrocartographyRequest,
+    MundaneEvent as MundaneEvent,
+    MundaneRequest as MundaneRequest,
+    Projection as Projection,
+    RelocationPlace as RelocationPlace,
+    RelocationRequest as RelocationRequest,
     AntisciaRequest as AntisciaRequest,
     ArgalaPlace as ArgalaPlace,
     AshauchBand as AshauchBand,
@@ -1012,6 +1018,7 @@ from .catalogue import (
     Sex,
     BlackoutKind,
     LunarEclipseKind,
+    MundaneKind,
     SolarEclipseKind,
     Star,
     StarClass,
@@ -1963,6 +1970,12 @@ __all__ = [
     "BaselineScore",
     "RashifalAnswer",
     "RashifalAnswers",
+    "MundaneIngress",
+    "MundaneChart",
+    "RelocatedChart",
+    "Relocation",
+    "AstroLine",
+    "Astrocartography",
     "RashifalSealed",
     "GocharReference",
     "GocharRules",
@@ -2136,6 +2149,7 @@ __all__ = [
     "TibetanYear",
     "BlackoutKind",
     "LunarEclipseKind",
+    "MundaneKind",
     "SolarEclipseKind",
     "Star",
     "StarClass",
@@ -3594,6 +3608,164 @@ class ChartArea(_Area):
         envelope = json.loads(answered)
         return RashifalAnswers(
             value=tuple(_rashifal_answer(one) for one in envelope["value"]),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
+
+    def mundane(
+        self,
+        *,
+        kind: Union[MundaneKind, str],
+        place: Observer,
+        year: Optional[int] = None,
+        from_instant: Optional[float] = None,
+        ingress: Optional[Union[MundaneKind, str]] = None,
+        event: Optional["MundaneEvent"] = None,
+        utc_offset_seconds: int = 0,
+    ) -> "MundaneChart":
+        """A mundane chart (`03-design/mundane-charts.md`): the moment its
+        kind names (an ingress, the lunation before one, an eclipse, a great
+        conjunction, or an event on record), found by the SDK's own
+        searches, and the chart cast for it at `place`, `ChartKind.MUNDANE`
+        (`ChartKind.EVENT` for an event). The moment is sealed by the
+        chart cast there, with the request as its input."""
+        asked: Dict[str, Any] = {
+            "kind": _member_key(kind),
+            "latitudeDeg": float(place.latitude_deg),
+            "longitudeDeg": float(place.longitude_deg),
+            "altitudeM": float(place.altitude_m),
+            "utcOffsetSeconds": utc_offset_seconds,
+        }
+        if year is not None:
+            asked["year"] = year
+        if from_instant is not None:
+            asked["from"] = from_instant
+        if ingress is not None:
+            asked["ingress"] = _member_key(ingress)
+        if event is not None:
+            asked["event"] = dict(event)
+        answered = self._context._through_provider(lambda: self._context.inner.chart_mundane(json.dumps(asked)))
+        envelope = json.loads(answered)
+        value = envelope["value"]
+        found = _member(MundaneKind, value["kind"])
+        chart = self.found(
+            instant=value["instant"],
+            place=Observer(
+                latitude_deg=Latitude(value["latitudeDeg"]),
+                longitude_deg=Longitude(value["longitudeDeg"]),
+                altitude_m=Altitude(value["altitudeM"]),
+            ),
+            utc_offset_seconds=value["utcOffsetSeconds"],
+            kind=ChartKind.EVENT if found is MundaneKind.EVENT else ChartKind.MUNDANE,
+        )
+        before = value.get("ingress")
+        solar = value.get("solarEclipse")
+        lunar = value.get("lunarEclipse")
+        return MundaneChart(
+            kind=found,
+            instant=value["instant"],
+            ingress=None
+            if before is None
+            else MundaneIngress(kind=_member(MundaneKind, before["kind"]), instant=before["instant"]),
+            solar_eclipse=None if solar is None else _member(SolarEclipseKind, solar),
+            lunar_eclipse=None if lunar is None else _member(LunarEclipseKind, lunar),
+            name=value.get("name"),
+            source=value.get("source"),
+            chart=chart,
+            provenance=decode_provenance(envelope["provenance"]),
+        )
+
+    def relocated(
+        self,
+        *,
+        instant: float,
+        places: Sequence[Observer],
+        house_system: Optional[Union[HouseSystem, str]] = None,
+    ) -> "Relocation":
+        """A chart's instant recast at other places
+        (`03-design/astrocartography.md`): each place's ascendant,
+        midheaven and twelve cusps, in this context's zodiac. The grahas
+        stand where they stood; only the angles and the houses move."""
+        asked: Dict[str, Any] = {
+            "instant": instant,
+            "places": [
+                {
+                    "latitudeDeg": float(one.latitude_deg),
+                    "longitudeDeg": float(one.longitude_deg),
+                    "altitudeM": float(one.altitude_m),
+                }
+                for one in places
+            ],
+        }
+        if house_system is not None:
+            asked["houseSystem"] = _member_key(house_system)
+        answered = self._context._through_provider(lambda: self._context.inner.chart_relocated(json.dumps(asked)))
+        envelope = json.loads(answered)
+        value = envelope["value"]
+        return Relocation(
+            instant=value["instant"],
+            obliquity_deg=value["obliquityDeg"],
+            places=tuple(
+                RelocatedChart(
+                    latitude_deg=one["latitudeDeg"],
+                    longitude_deg=one["longitudeDeg"],
+                    altitude_m=one["altitudeM"],
+                    ascendant_deg=one["ascendantDeg"],
+                    midheaven_deg=one["midheavenDeg"],
+                    cusps_deg=tuple(one["cuspsDeg"]),
+                    house_system=_member(HouseSystem, one["houseSystem"]),
+                )
+                for one in value["places"]
+            ),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
+
+    def astrocartography(
+        self,
+        *,
+        instant: float,
+        bodies: Optional[Sequence[Union[Graha, str]]] = None,
+        projection: Optional[Projection] = None,
+        step_deg: Optional[float] = None,
+        latitude_limit_deg: Optional[float] = None,
+    ) -> "Astrocartography":
+        """The astrocartography lines at an instant
+        (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC
+        lines as `(longitude_deg, latitude_deg)` points from south to north.
+        A rising or setting line stops at its `polar_limit_deg`. Every point
+        is on its angle, read back through a chart cast there, to
+        `tolerance_deg`. `projection` is `IN_MUNDO` (the default) or
+        `ZODIACAL`."""
+        asked: Dict[str, Any] = {"instant": instant}
+        if bodies is not None:
+            asked["bodies"] = [_member_key(one) for one in bodies]
+        if projection is not None:
+            asked["projection"] = projection
+        if step_deg is not None:
+            asked["stepDeg"] = step_deg
+        if latitude_limit_deg is not None:
+            asked["latitudeLimitDeg"] = latitude_limit_deg
+        answered = self._context._through_provider(
+            lambda: self._context.inner.chart_astrocartography(json.dumps(asked))
+        )
+        envelope = json.loads(answered)
+        value = envelope["value"]
+        return Astrocartography(
+            instant=value["instant"],
+            projection=value["projection"],
+            step_deg=value["stepDeg"],
+            latitude_limit_deg=value["latitudeLimitDeg"],
+            tolerance_deg=value["toleranceDeg"],
+            greenwich_ramc_deg=value["greenwichRamcDeg"],
+            obliquity_deg=value["obliquityDeg"],
+            lines=tuple(
+                AstroLine(
+                    body=_member(Graha, line["body"]),
+                    angle=line["angle"],
+                    points=tuple((point[0], point[1]) for point in line["points"]),
+                    polar_limit_deg=line.get("polarLimitDeg"),
+                )
+                for line in value["lines"]
+            ),
             provenance=decode_provenance(envelope["provenance"]),
         )
 
@@ -11949,6 +12121,79 @@ class RashifalAnswers:
     value: Tuple[RashifalAnswer, ...]
     provenance: Provenance
     """What computed them, and under what; `input_hash` seals the request."""
+
+
+@dataclass(frozen=True)
+class MundaneIngress:
+    """The ingress a lunation precedes."""
+
+    kind: MundaneKind
+    instant: float
+
+
+@dataclass(frozen=True)
+class MundaneChart:
+    """A mundane moment and the chart cast for it."""
+
+    kind: MundaneKind
+    instant: float
+    """The moment, a Julian day (UTC)."""
+    ingress: Optional[MundaneIngress]
+    solar_eclipse: Optional[SolarEclipseKind]
+    lunar_eclipse: Optional[LunarEclipseKind]
+    name: Optional[str]
+    source: Optional[str]
+    chart: "Chart"
+    provenance: Provenance
+
+
+@dataclass(frozen=True)
+class RelocatedChart:
+    """One place's angles and houses at the chart's instant."""
+
+    latitude_deg: float
+    longitude_deg: float
+    altitude_m: float
+    ascendant_deg: float
+    midheaven_deg: float
+    cusps_deg: Tuple[float, ...]
+    house_system: HouseSystem
+
+
+@dataclass(frozen=True)
+class Relocation:
+    """A chart's instant recast at each place asked."""
+
+    instant: float
+    obliquity_deg: float
+    places: Tuple[RelocatedChart, ...]
+    provenance: Provenance
+
+
+@dataclass(frozen=True)
+class AstroLine:
+    """One body's line on one angle (`MC`, `IC`, `ASC` or `DSC`)."""
+
+    body: Graha
+    angle: str
+    points: Tuple[Tuple[float, float], ...]
+    """`(longitude_deg, latitude_deg)`, south to north."""
+    polar_limit_deg: Optional[float]
+
+
+@dataclass(frozen=True)
+class Astrocartography:
+    """The lines at an instant, and what they were drawn under."""
+
+    instant: float
+    projection: str
+    step_deg: float
+    latitude_limit_deg: float
+    tolerance_deg: float
+    greenwich_ramc_deg: float
+    obliquity_deg: float
+    lines: Tuple[AstroLine, ...]
+    provenance: Provenance
 
 
 @dataclass(frozen=True)

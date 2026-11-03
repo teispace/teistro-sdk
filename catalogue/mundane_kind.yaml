@@ -1,0 +1,100 @@
+kind: mundane_kind
+number: 130
+version: 1
+doc: "Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`)."
+members:
+  - key: MESHA_SANKRANTI
+    id: 0
+    doc: "The Sun's entry into sidereal Mesha, which opens the solar year and names its minister (C1150)"
+    sources:
+      - text: "Narada Samhita (Kashi Sanskrit Series 40, 1984)"
+        ref: "2.2"
+      - text: "Jyotirnibandha (Anandashrama Sanskrit Series 85, 1919)"
+        ref: "p. 29 vv. 7, 10"
+    mark: V
+  - key: MAKARA_SANKRANTI
+    id: 1
+    doc: "The Sun's entry into sidereal Makara, the turn to the northern course (uttarayana) (C1150)"
+    sources:
+      - text: "Narada Samhita (Kashi Sanskrit Series 40, 1984)"
+        ref: "2.3"
+    mark: V
+  - key: ARIES_INGRESS
+    id: 2
+    doc: "The Sun at tropical 0°, the spring equinox, the starting point Ptolemy prefers (C1150)"
+    sources:
+      - text: "Ptolemy, Tetrabiblos (Robbins, Loeb 1940)"
+        ref: "II.10"
+    mark: V
+  - key: CANCER_INGRESS
+    id: 3
+    doc: "The Sun at tropical 90°, the summer solstice, one of Ptolemy's four starting points (C1150)"
+    sources:
+      - text: "Ptolemy, Tetrabiblos (Robbins, Loeb 1940)"
+        ref: "II.10"
+    mark: V
+  - key: LIBRA_INGRESS
+    id: 4
+    doc: "The Sun at tropical 180°, the autumn equinox, one of Ptolemy's four starting points (C1150)"
+    sources:
+      - text: "Ptolemy, Tetrabiblos (Robbins, Loeb 1940)"
+        ref: "II.10"
+    mark: V
+  - key: CAPRICORN_INGRESS
+    id: 5
+    doc: "The Sun at tropical 270°, the winter solstice, one of Ptolemy's four starting points (C1150)"
+    sources:
+      - text: "Ptolemy, Tetrabiblos (Robbins, Loeb 1940)"
+        ref: "II.10"
+    mark: V
+  - key: NEW_MOON_BEFORE_INGRESS
+    id: 6
+    doc: "The last new moon before an ingress: before Mesha, the new moon that opens Chaitra, whose weekday's lord rules the year (C1151)"
+    sources:
+      - text: "Brihat Samhita (Chidambaram Iyer, 1884)"
+        ref: "ch. 19, grahavarshaphala"
+      - text: "Ptolemy, Tetrabiblos (Robbins, Loeb 1940)"
+        ref: "II.10"
+    mark: V
+  - key: FULL_MOON_BEFORE_INGRESS
+    id: 7
+    doc: "The last full moon before an ingress (C1151)"
+    sources:
+      - text: "Ptolemy, Tetrabiblos (Robbins, Loeb 1940)"
+        ref: "II.10"
+    mark: V
+  - key: SYZYGY_BEFORE_INGRESS
+    id: 8
+    doc: "Whichever of the new and the full moon most nearly precedes an ingress, Ptolemy's own reading (C1151)"
+    sources:
+      - text: "Ptolemy, Tetrabiblos (Robbins, Loeb 1940)"
+        ref: "II.10"
+    mark: V
+  - key: SOLAR_ECLIPSE
+    id: 9
+    doc: "The next solar eclipse, at its greatest (C1154)"
+    sources:
+      - text: "Ptolemy, Tetrabiblos (Robbins, Loeb 1940)"
+        ref: "II.4-II.6"
+    mark: V
+  - key: LUNAR_ECLIPSE
+    id: 10
+    doc: "The next lunar eclipse, at its greatest (C1154)"
+    sources:
+      - text: "Ptolemy, Tetrabiblos (Robbins, Loeb 1940)"
+        ref: "II.4-II.6"
+    mark: V
+  - key: GREAT_CONJUNCTION
+    id: 11
+    doc: "The next conjunction of Jupiter and Saturn in geocentric longitude, the first of a triple one (C1153)"
+    sources:
+      - text: "Abu Ma'shar, On the Great Conjunctions (Yamamoto and Burnett, Brill 2000)"
+        ref: "I.1"
+    mark: T
+  - key: EVENT
+    id: 12
+    doc: "An event on record: a name, an instant and a place, cast as given, its source carried on the answer"
+    sources:
+      - text: structural
+        ref: design
+    mark: V

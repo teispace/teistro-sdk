@@ -450,6 +450,7 @@ pub fn records() -> Vec<Record> {
             schemas: schemas!(crate::research_request::RequestAsked => crate::research_request::Studied),
         },
     ];
+    all.extend(map_records());
     all.extend(intl_records());
     #[cfg(feature = "chart")]
     all.extend(chart_records());
@@ -505,6 +506,52 @@ fn chart_records() -> [Record; 3] {
             run: |context, json| disagreements(context, context, json),
             compares: Some(disagreements),
             schemas: schemas!(fn crate::area::disagreement_schema => crate::ChartDisagreements, parts: []),
+        },
+    ]
+}
+
+/// The mundane, relocation and map records (`03-design/mundane-charts.md`,
+/// `03-design/astrocartography.md`), each present with its feature.
+fn map_records() -> Vec<Record> {
+    vec![
+        #[cfg(feature = "chart")]
+        Record {
+            name: "chart.mundane",
+            boundary: "ts_chart_mundane",
+            title: "The moment of a mundane chart: an ingress, a lunation, an eclipse, a conjunction or an event",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::MundaneRequest::from_json(json)?;
+                Answered::sealed(context.chart().mundane_moment(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::MundaneRequest => crate::MundaneMoment),
+        },
+        #[cfg(feature = "western")]
+        Record {
+            name: "chart.relocated",
+            boundary: "ts_chart_relocated",
+            title: "A chart's angles and houses recast at other places",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::RelocationRequest::from_json(json)?;
+                Answered::sealed(context.chart().relocated(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::RelocationRequest => crate::Relocation),
+        },
+        #[cfg(feature = "western")]
+        Record {
+            name: "chart.astrocartography",
+            boundary: "ts_chart_astrocartography",
+            title: "Each body's MC, IC, ASC and DSC lines on the Earth",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::AstrocartographyRequest::from_json(json)?;
+                Answered::sealed(context.chart().astrocartography(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::AstrocartographyRequest => crate::Astrocartography),
         },
     ]
 }

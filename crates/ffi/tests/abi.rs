@@ -9268,6 +9268,69 @@ fn a_name_and_a_date_cross_as_the_kernel_reads_them() {
     }
 }
 
+/// A mundane chart's moment, a relocation and a map's lines cross as the
+/// façade answers them, and a refusal is named under each record
+/// (`03-design/mundane-charts.md`, `03-design/astrocartography.md`).
+#[cfg(all(feature = "western", feature = "builtin-ephemeris"))]
+#[test]
+fn a_mundane_moment_a_relocation_and_a_map_cross_as_the_facade_answers_them() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let mundane = r#"{"kind": "NEW_MOON_BEFORE_INGRESS", "year": 2024, "ingress": "ARIES_INGRESS", "latitudeDeg": 51.5, "longitudeDeg": -0.12}"#;
+    let crossed = entry_json(teistro_ffi::mundane::ts_chart_mundane, &ctx, mundane).unwrap();
+    let kernel = sdk
+        .chart()
+        .mundane_moment(&teistro::MundaneRequest::from_json(mundane).unwrap())
+        .unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    let relocated = r#"{"instant": 2447000.25, "places": [{"latitudeDeg": 27.7172, "longitudeDeg": 85.324}, {"latitudeDeg": -33.9, "longitudeDeg": 18.4}]}"#;
+    let crossed = entry_json(teistro_ffi::mapping::ts_chart_relocated, &ctx, relocated).unwrap();
+    let kernel = sdk
+        .chart()
+        .relocated(&teistro::RelocationRequest::from_json(relocated).unwrap())
+        .unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    let map = r#"{"instant": 2447000.25, "bodies": ["MOON", "SATURN"], "stepDeg": 5, "projection": "ZODIACAL"}"#;
+    let crossed = entry_json(teistro_ffi::mapping::ts_chart_astrocartography, &ctx, map).unwrap();
+    let kernel = sdk
+        .chart()
+        .astrocartography(&teistro::AstrocartographyRequest::from_json(map).unwrap())
+        .unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    for (entry, request, field) in [
+        (
+            teistro_ffi::mundane::ts_chart_mundane as JsonEntry,
+            r#"{"kind": "EVENT", "latitudeDeg": 0, "longitudeDeg": 0}"#,
+            "mundane.event",
+        ),
+        (
+            teistro_ffi::mapping::ts_chart_relocated,
+            r#"{"instant": 2447000.25, "places": []}"#,
+            "relocated.places",
+        ),
+        (
+            teistro_ffi::mapping::ts_chart_astrocartography,
+            r#"{"instant": 2447000.25, "bodies": ["SUN"], "stepDeg": 0}"#,
+            "astrocartography.stepDeg",
+        ),
+        (
+            teistro_ffi::mapping::ts_chart_astrocartography,
+            r#"{"instant": 2447000.25, "bodies": ["KETU", "PLUTO"], "pole": 1}"#,
+            "astrocartography.pole",
+        ),
+    ] {
+        assert_eq!(
+            entry_json(entry, &ctx, request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}
+
 /// A birth star's navatara chakra crosses as the kernel answers it, the
 /// special stars at the verse's counts, and a refusal is named under
 /// `navatara` (`03-design/navatara-chakra.md`).

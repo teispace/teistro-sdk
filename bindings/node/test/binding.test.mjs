@@ -18,6 +18,7 @@ import {
   LotById,
   RashiById,
   SahamById,
+  ChartKind,
   ChartLayout,
   Leap,
   Lilith,
@@ -841,8 +842,10 @@ test('every catalogue enum has a complete id table', () => {
   // `TsRulerDayRule`, five, with their three members of `TsKind`; 1515
   // since the birth paya's `TsPaya`, four, and the classical doshas'
   // `TsTridosha`, three, each with its member of `TsKind`; 1516 since
-  // `TsEra` gained `VIRA_NIRVANA`.
-  assert.equal(entries, 1516, 'every member of every enum is in a table');
+  // `TsEra` gained `VIRA_NIRVANA`; 1531 since the mundane charts'
+  // `TsMundaneKind`, thirteen, with its member of `TsKind`, and
+  // `TsChartKind`'s `MUNDANE`.
+  assert.equal(entries, 1531, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -6649,4 +6652,69 @@ test('a festival pack lists its rules with their values', () => {
   assert.throws(() => ctx.almanac.festivalPack(null), TypeError);
   assert.throws(() => ctx.almanac.festivalPack('NO_SUCH_PACK'), (error) => error.field === 'pack.pack');
   ctx.dispose();
+});
+
+test('a mundane chart finds its moment and casts the chart there', () => {
+  // The Aries ingress of 2024 (USNO, 20 March 03:06 UTC), the new moon
+  // before it, an event on record, and the refusal of an event's year.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 27.7172, longitude: 85.324 };
+  const aries = ctx.chart.mundane({ kind: 'mundane_kind.ARIES_INGRESS', year: 2024, place });
+  assert.equal(aries.kind, 'mundane_kind.ARIES_INGRESS');
+  assert.ok(Math.abs(aries.instant - (2460389.5 + (3 + 6 / 60) / 24)) < 2 / 1440, String(aries.instant));
+  assert.equal(aries.chart.kind, ChartKind.Mundane);
+  assert.equal(aries.chart.instant, aries.instant);
+  assert.ok(Object.isFrozen(aries) && aries.provenance.inputHash.length > 0);
+  const lunation = ctx.chart.mundane({
+    kind: 'NEW_MOON_BEFORE_INGRESS',
+    year: 2024,
+    ingress: 'ARIES_INGRESS',
+    place,
+  });
+  assert.equal(lunation.ingress.kind, 'mundane_kind.ARIES_INGRESS');
+  assert.ok(lunation.instant < lunation.ingress.instant);
+  const event = ctx.chart.mundane({
+    kind: 'mundane_kind.EVENT',
+    event: { name: 'A founding', instant: 2451545, source: 'a record' },
+    place,
+    utcOffsetSeconds: 20700,
+  });
+  assert.equal(event.chart.kind, ChartKind.Event);
+  assert.deepEqual([event.name, event.source, event.instant], ['A founding', 'a record', 2451545]);
+  assert.throws(
+    () => ctx.chart.mundane({ kind: 'EVENT', year: 2024, place }),
+    (error) => error instanceof TeistroError && error.field.startsWith('mundane.'),
+  );
+});
+
+test('a relocated chart and the astrocartography lines answer their places', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const moved = ctx.chart.relocated({
+    instant: 2447000.25,
+    places: [
+      { latitudeDeg: 51.5, longitudeDeg: -0.12 },
+      { latitudeDeg: 27.7172, longitudeDeg: 85.324 },
+    ],
+    houseSystem: 'house_system.PLACIDUS',
+  });
+  assert.equal(moved.places.length, 2);
+  for (const place of moved.places) {
+    assert.equal(place.cuspsDeg.length, 12);
+    assert.equal(place.houseSystem, 'house_system.PLACIDUS');
+    assert.ok(Math.abs(place.cuspsDeg[0] - place.ascendantDeg) < 1e-9);
+  }
+  assert.throws(() => ctx.chart.relocated({ instant: 2447000.25, places: [] }), (error) => error.field === 'relocated.places');
+  const map = ctx.chart.astrocartography({ instant: 2447000.25, bodies: ['graha.SUN', 'MOON'], stepDeg: 5 });
+  assert.equal(map.lines.length, 8);
+  assert.deepEqual(
+    map.lines.map((line) => line.angle),
+    ['MC', 'IC', 'ASC', 'DSC', 'MC', 'IC', 'ASC', 'DSC'],
+  );
+  assert.equal(map.lines[0].body, 'graha.SUN');
+  assert.ok(map.lines.every((line) => line.points.length > 0));
+  assert.ok(Object.isFrozen(map.lines[0].points[0]));
+  assert.throws(
+    () => ctx.chart.astrocartography({ instant: 2447000.25, stepDeg: 0 }),
+    (error) => error.field === 'astrocartography.stepDeg',
+  );
 });

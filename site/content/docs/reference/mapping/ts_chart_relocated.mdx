@@ -1,0 +1,75 @@
+---
+title: ts_chart_relocated
+description: "**A chart recast at other places** (`03-design/astrocartography.md`): each place's ascendant, midheaven and twelve cusps at one instant, in the context's zodiac, as `{value, provenance}` canonical JSON sealed by the first place's chart with the request as its input."
+---
+
+**A chart recast at other places** (`03-design/astrocartography.md`): each place's ascendant, midheaven and twelve cusps at one instant, in the context's zodiac, as `{value, provenance}` canonical JSON sealed by the first place's chart with the request as its input.
+
+`value` is `{instant, obliquityDeg, places}`, each place `{latitudeDeg, longitudeDeg, altitudeM, ascendantDeg, midheavenDeg, cuspsDeg, houseSystem}` in the order asked, `cuspsDeg` twelve and `houseSystem` a `house_system` key.
+
+`request_json` is `{"instant", "places", "houseSystem"}`: `instant` a UTC Julian day; `places` one to 256 `{"latitudeDeg", "longitudeDeg", "altitudeM"}`; `houseSystem` a `house_system` key, the profile's Western override else Placidus when left out (C1157). A key the record does not read, no place or too many, or a place out of range is `INVALID_ARG`, named under `relocated` (`relocated.places[1].latitudeDeg`); a context without an ephemeris is `CAPABILITY`.
+
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.chart.relocated
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.chart.relocated
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.chart.relocated
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.chart().relocated
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.chart().relocated
+```
+
+</Tab>
+<Tab value="C">
+
+```c
+ts_status ts_chart_relocated(const ts_context * context, const char * request_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `chart.relocated` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `request_json` | `const char *` | a string read | — |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `request_json` NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/mapping.rs`.

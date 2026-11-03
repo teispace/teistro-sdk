@@ -247,4 +247,57 @@ public final class ChartArea {
     public RashifalAnswers rashifalMany(List<RashifalRequest> requests, String baseline) {
         return RashifalReads.rashifalMany(context, requests, baseline);
     }
+
+    /**
+     * A mundane chart ({@code 03-design/mundane-charts.md}): the moment its
+     * kind names (an ingress, the lunation before one, an eclipse, a great
+     * conjunction, or an event on record), found by the SDK's own searches,
+     * and the chart cast for it at the place, {@link ChartKind#MUNDANE}
+     * ({@link ChartKind#EVENT} for an event).
+     *
+     * @param kind which moment
+     * @param place where the chart is cast
+     * @param year the year whose moment is asked, or null to give {@code from}
+     * @param from the instant the search starts at, a Julian day (UTC), or null
+     * @param ingress for a lunation, the ingress it precedes; null for Mesha's
+     * @param event for {@link MundaneKind#EVENT}, the event on record; otherwise null
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @return the moment and the chart cast for it
+     */
+    public MundaneChart mundane(MundaneKind kind, Observer place, Integer year, Double from, MundaneKind ingress,
+            MundaneEvent event, int utcOffsetSeconds) {
+        return MapReads.mundane(context, this, kind, place, year, from, ingress, event, utcOffsetSeconds);
+    }
+
+    /**
+     * A chart's instant recast at other places
+     * ({@code 03-design/astrocartography.md}): each place's ascendant,
+     * midheaven and twelve cusps, in the context's zodiac.
+     *
+     * @param instant the chart's instant, a Julian day (UTC)
+     * @param places one to 256 places
+     * @param houseSystem the house division, or null for the Western default
+     * @return each place's angles and cusps
+     */
+    public Relocation relocated(double instant, List<Observer> places, HouseSystem houseSystem) {
+        return MapReads.relocated(context, instant, places, houseSystem);
+    }
+
+    /**
+     * The astrocartography lines at an instant
+     * ({@code 03-design/astrocartography.md}): each body's MC, IC, ASC and
+     * DSC lines as {@code [longitudeDeg, latitudeDeg]} points, south to
+     * north, every point on its angle to {@code toleranceDeg}.
+     *
+     * @param instant a Julian day (UTC)
+     * @param bodies the bodies, or null for the seven and the outer planets placed
+     * @param projection {@code IN_MUNDO} or {@code ZODIACAL}, or null for in mundo
+     * @param stepDeg the step of latitude in (0, 10], or null for 1
+     * @param latitudeLimitDeg how far north and south in (0, 90), or null for 80
+     * @return the lines and what they were drawn under
+     */
+    public Astrocartography astrocartography(double instant, List<Graha> bodies, String projection, Double stepDeg,
+            Double latitudeLimitDeg) {
+        return MapReads.astrocartography(context, instant, bodies, projection, stepDeg, latitudeLimitDeg);
+    }
 }

@@ -60,6 +60,23 @@ days are unchanged; `GAUDIYA`'s answer gains the five festivals.
 - The purifier's edge search is generic over any value that compares (`edges::runs`); its answers do not
   move.
 
+**Mundane charts.**
+**Numbers:** none: a new answer, and nothing it reads moves.
+- `ChartArea::mundane` and `mundane_moment`, the record `chart.mundane` (`MundaneRequest`, an agent server
+  tool), `ts_chart_mundane` at the C boundary (the `chart` family) and `chart.mundane` in every binding: the
+  moment a new `MundaneKind` names (the Mesha and Makara sankrantis, the four tropical ingresses, the new or
+  full moon or the syzygy before an ingress, a solar or lunar eclipse, the Jupiter–Saturn great conjunction,
+  or an event on record with its source) found by the existing searches, and the chart cast there as the
+  new `ChartKind::Mundane` (SR-45, `03-design/mundane-charts.md`, C1150–C1154).
+
+**Relocation and astrocartography.**
+**Numbers:** none: new answers, and nothing they read moves.
+- `ChartArea::relocated` and `astrocartography`, the records `chart.relocated` and `chart.astrocartography`,
+  `ts_chart_relocated` and `ts_chart_astrocartography` (the `western` family) and both in every binding: a
+  chart's angles and cusps recast at up to 256 places, and each body's MC, IC, ASC and DSC lines as sampled
+  polylines, in mundo or zodiacal, stopped and said at the polar limit, every point on its angle to 1e-6°
+  (SR-47, `03-design/astrocartography.md`, C1155–C1157). `teistro_western::lines` draws them.
+
 **The navatara chakra.**
 **Numbers:** none: a new answer, and nothing it reads moves.
 - `AlmanacArea::navatara(birth)`, the record `almanac.navatara` (`NavataraRequest`, an agent server tool),

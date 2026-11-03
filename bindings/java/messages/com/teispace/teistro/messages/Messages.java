@@ -1233,6 +1233,51 @@ public final class Messages {
         }
     }
 
+    /** A `mundane_kind` as a message names it: the full catalogue key. */
+    public enum MundaneKindKey {
+        /** `mundane_kind.MESHA_SANKRANTI`. */
+        MESHA_SANKRANTI("mundane_kind.MESHA_SANKRANTI"),
+        /** `mundane_kind.MAKARA_SANKRANTI`. */
+        MAKARA_SANKRANTI("mundane_kind.MAKARA_SANKRANTI"),
+        /** `mundane_kind.ARIES_INGRESS`. */
+        ARIES_INGRESS("mundane_kind.ARIES_INGRESS"),
+        /** `mundane_kind.CANCER_INGRESS`. */
+        CANCER_INGRESS("mundane_kind.CANCER_INGRESS"),
+        /** `mundane_kind.LIBRA_INGRESS`. */
+        LIBRA_INGRESS("mundane_kind.LIBRA_INGRESS"),
+        /** `mundane_kind.CAPRICORN_INGRESS`. */
+        CAPRICORN_INGRESS("mundane_kind.CAPRICORN_INGRESS"),
+        /** `mundane_kind.NEW_MOON_BEFORE_INGRESS`. */
+        NEW_MOON_BEFORE_INGRESS("mundane_kind.NEW_MOON_BEFORE_INGRESS"),
+        /** `mundane_kind.FULL_MOON_BEFORE_INGRESS`. */
+        FULL_MOON_BEFORE_INGRESS("mundane_kind.FULL_MOON_BEFORE_INGRESS"),
+        /** `mundane_kind.SYZYGY_BEFORE_INGRESS`. */
+        SYZYGY_BEFORE_INGRESS("mundane_kind.SYZYGY_BEFORE_INGRESS"),
+        /** `mundane_kind.SOLAR_ECLIPSE`. */
+        SOLAR_ECLIPSE("mundane_kind.SOLAR_ECLIPSE"),
+        /** `mundane_kind.LUNAR_ECLIPSE`. */
+        LUNAR_ECLIPSE("mundane_kind.LUNAR_ECLIPSE"),
+        /** `mundane_kind.GREAT_CONJUNCTION`. */
+        GREAT_CONJUNCTION("mundane_kind.GREAT_CONJUNCTION"),
+        /** `mundane_kind.EVENT`. */
+        EVENT("mundane_kind.EVENT");
+
+        private final String value;
+
+        MundaneKindKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `nadi` as a message names it: the full catalogue key. */
     public enum NadiKey {
         /** `nadi.AADI`. */
@@ -11052,6 +11097,142 @@ public final class Messages {
                  */
                 public EntityForms tripushkar() {
                     return r.entity("muhurta_yoga.TRIPUSHKAR");
+                }
+            }
+
+
+            /**
+             * The messages under `mundane_kind`.
+             *
+             * @return the group
+             */
+            public SdkEntityMundaneKind mundaneKind() {
+                return new SdkEntityMundaneKind(r);
+            }
+
+            /** The messages under `SdkEntityMundaneKind`, each rendered by its own key. */
+            public static final class SdkEntityMundaneKind {
+                private final Renderer r;
+
+                SdkEntityMundaneKind(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `mundane_kind.ARIES_INGRESS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ariesIngress() {
+                    return r.entity("mundane_kind.ARIES_INGRESS");
+                }
+
+                /**
+                 * The forms of `mundane_kind.CANCER_INGRESS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms cancerIngress() {
+                    return r.entity("mundane_kind.CANCER_INGRESS");
+                }
+
+                /**
+                 * The forms of `mundane_kind.CAPRICORN_INGRESS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms capricornIngress() {
+                    return r.entity("mundane_kind.CAPRICORN_INGRESS");
+                }
+
+                /**
+                 * The forms of `mundane_kind.EVENT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms event() {
+                    return r.entity("mundane_kind.EVENT");
+                }
+
+                /**
+                 * The forms of `mundane_kind.FULL_MOON_BEFORE_INGRESS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms fullMoonBeforeIngress() {
+                    return r.entity("mundane_kind.FULL_MOON_BEFORE_INGRESS");
+                }
+
+                /**
+                 * The forms of `mundane_kind.GREAT_CONJUNCTION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms greatConjunction() {
+                    return r.entity("mundane_kind.GREAT_CONJUNCTION");
+                }
+
+                /**
+                 * The forms of `mundane_kind.LIBRA_INGRESS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms libraIngress() {
+                    return r.entity("mundane_kind.LIBRA_INGRESS");
+                }
+
+                /**
+                 * The forms of `mundane_kind.LUNAR_ECLIPSE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms lunarEclipse() {
+                    return r.entity("mundane_kind.LUNAR_ECLIPSE");
+                }
+
+                /**
+                 * The forms of `mundane_kind.MAKARA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms makaraSankranti() {
+                    return r.entity("mundane_kind.MAKARA_SANKRANTI");
+                }
+
+                /**
+                 * The forms of `mundane_kind.MESHA_SANKRANTI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms meshaSankranti() {
+                    return r.entity("mundane_kind.MESHA_SANKRANTI");
+                }
+
+                /**
+                 * The forms of `mundane_kind.NEW_MOON_BEFORE_INGRESS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms newMoonBeforeIngress() {
+                    return r.entity("mundane_kind.NEW_MOON_BEFORE_INGRESS");
+                }
+
+                /**
+                 * The forms of `mundane_kind.SOLAR_ECLIPSE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms solarEclipse() {
+                    return r.entity("mundane_kind.SOLAR_ECLIPSE");
+                }
+
+                /**
+                 * The forms of `mundane_kind.SYZYGY_BEFORE_INGRESS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms syzygyBeforeIngress() {
+                    return r.entity("mundane_kind.SYZYGY_BEFORE_INGRESS");
                 }
             }
 

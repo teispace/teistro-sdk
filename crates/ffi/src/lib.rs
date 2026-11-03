@@ -74,6 +74,8 @@ pub mod key;
 pub mod naam;
 #[cfg(not(feature = "chart"))]
 pub use family::chart as naam;
+pub mod mapping;
+pub mod mundane;
 pub mod naming;
 pub mod navatara;
 pub mod numerology;

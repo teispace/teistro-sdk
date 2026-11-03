@@ -702,7 +702,8 @@
             "PRASHNA",
             "RETURN",
             "RELOCATED",
-            "COMPOSITE"
+            "COMPOSITE",
+            "MUNDANE"
           ],
           "type": "string"
         },
@@ -715,7 +716,8 @@
             "chart_kind.PRASHNA",
             "chart_kind.RETURN",
             "chart_kind.RELOCATED",
-            "chart_kind.COMPOSITE"
+            "chart_kind.COMPOSITE",
+            "chart_kind.MUNDANE"
           ],
           "type": "string",
           "writeOnly": true

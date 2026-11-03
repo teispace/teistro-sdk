@@ -1,6 +1,6 @@
 kind: chart_kind
 number: 30
-version: 1
+version: 2
 doc: "What a chart is a chart of."
 members:
   - key: NATAL
@@ -51,4 +51,11 @@ members:
     sources:
       - text: structural
         ref: design
+    mark: V
+  - key: MUNDANE
+    id: 7
+    doc: "Mundane: a chart of a year, a lunation, an eclipse or a conjunction, cast for a place (`03-design/mundane-charts.md`)"
+    sources:
+      - text: "Ptolemy, Tetrabiblos (Robbins, Loeb 1940)"
+        ref: "II.4-II.10"
     mark: V

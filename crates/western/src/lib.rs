@@ -40,6 +40,7 @@ mod configuration;
 mod declination;
 mod harmonic;
 mod houses;
+mod mapping;
 mod midpoint;
 mod parallel_span;
 mod progression;
@@ -69,6 +70,10 @@ pub use harmonic::{
 pub use houses::{
     ASCENDANT_REACH_DEG, HouseFrame, HousePlacement, HouseRequest, LEO_HOUSE_SYSTEM,
     LILLY_HOUSE_SYSTEM, MODULE, WesternHouses, place_in_houses, rising_an_hour_before,
+};
+pub use mapping::{
+    AstroLine, LINE_TOLERANCE_DEG, MAX_STEP_DEG, MapAngle, MapSky, MappedBody, Projection,
+    Sampling, equatorial_of, lines,
 };
 pub use midpoint::{
     DEFAULT_MIDPOINT_ORB_DEG, MAX_MIDPOINT_ORB_DEG, MidpointRequest, MidpointRow,

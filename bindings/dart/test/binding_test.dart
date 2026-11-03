@@ -1116,6 +1116,102 @@ void _engineTests() {
     expect(feed(refreshMinutes: null), isNot(contains('REFRESH-INTERVAL')));
   });
 
+  // The Aries ingress of 2024 (USNO, 20 March 03:06 UTC), the new moon
+  // before it, an event on record, a relocation and the lines
+  // (`03-design/mundane-charts.md`, `03-design/astrocartography.md`).
+  test('a mundane chart, a relocation and the lines answer their places', () {
+    final sky = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final place = Observer(
+      longitudeDeg: Longitude(85.324),
+      latitudeDeg: Latitude(27.7172),
+      altitudeM: Altitude(1400),
+    );
+    final aries = sky.chart.mundane(
+      kind: MundaneKind.ariesIngress,
+      year: 2024,
+      place: place,
+    );
+    expect(aries.kind, MundaneKind.ariesIngress);
+    expect(
+      (aries.instant - (2460389.5 + (3 + 6 / 60) / 24)).abs(),
+      lessThan(2 / 1440),
+    );
+    expect(aries.chart.kind, ChartKind.mundane);
+    expect(aries.provenance.inputHash, isNotEmpty);
+    final newMoon = sky.chart.mundane(
+      kind: MundaneKind.newMoonBeforeIngress,
+      year: 2024,
+      ingress: MundaneKind.ariesIngress,
+      place: place,
+    );
+    expect(newMoon.ingress!.kind, MundaneKind.ariesIngress);
+    expect(newMoon.instant, lessThan(newMoon.ingress!.instant));
+    final event = sky.chart.mundane(
+      kind: MundaneKind.event,
+      event: const MundaneEvent(
+        name: 'A founding',
+        instant: 2451545,
+        source: 'a record',
+      ),
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    expect(event.chart.kind, ChartKind.event);
+    expect((event.name, event.source), ('A founding', 'a record'));
+    expect(
+      () =>
+          sky.chart.mundane(kind: MundaneKind.event, year: 2024, place: place),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          startsWith('mundane.'),
+        ),
+      ),
+    );
+    final moved = sky.chart.relocated(
+      instant: 2447000.25,
+      places: [place],
+      houseSystem: HouseSystem.placidus,
+    );
+    expect(moved.places.single.cuspsDeg, hasLength(12));
+    expect(moved.places.single.houseSystem, HouseSystem.placidus);
+    expect(
+      () => sky.chart.relocated(instant: 2447000.25, places: const []),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'relocated.places',
+        ),
+      ),
+    );
+    final map = sky.chart.astrocartography(
+      instant: 2447000.25,
+      bodies: const [Graha.sun, Graha.moon],
+      stepDeg: 5,
+    );
+    expect(
+      [for (final line in map.lines) line.angle],
+      ['MC', 'IC', 'ASC', 'DSC', 'MC', 'IC', 'ASC', 'DSC'],
+    );
+    expect(map.lines.first.body, Graha.sun);
+    expect(map.lines.every((line) => line.points.isNotEmpty), isTrue);
+    expect(
+      () => sky.chart.astrocartography(instant: 2447000.25, stepDeg: 0),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'astrocartography.stepDeg',
+        ),
+      ),
+    );
+  });
+
   // 2026 is the 40th year of the 17th rabjung, Parabhava, Fire–male–Horse
   // (Janson, appendix B); a year before the first rabjung is refused by
   // name (`calendars/tibetan.md`).

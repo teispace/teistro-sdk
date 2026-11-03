@@ -132,6 +132,10 @@ import type {
   BuildInfo,
   Calendar,
   Chart,
+  MundaneChart,
+  Relocation,
+  Astrocartography,
+  AstroLine,
   ChartBatchRequest,
   Charts,
   Context,
@@ -448,6 +452,28 @@ export {
   wrongAnswer,
   wrongBody,
 };
+
+/** A mundane chart, a relocation and the lines, typed. */
+function maps(): number {
+  const place = { latitude: 27.7172, longitude: 85.324 };
+  const year: MundaneChart = ctx.chart.mundane({ kind: 'mundane_kind.MESHA_SANKRANTI', year: 2026, place });
+  const cast: Chart = year.chart;
+  const before: number | undefined = year.ingress?.instant;
+  // @ts-expect-error a kind is a mundane_kind key, not a chart kind
+  ctx.chart.mundane({ kind: 'chart_kind.NATAL', year: 2026, place });
+  const moved: Relocation = ctx.chart.relocated({
+    instant: 2460482.5,
+    places: [{ latitudeDeg: place.latitude, longitudeDeg: place.longitude }],
+    houseSystem: 'house_system.KOCH',
+  });
+  const cusp: number = moved.places[0]!.cuspsDeg[0]!;
+  const map: Astrocartography = ctx.chart.astrocartography({ instant: 2460482.5, projection: 'ZODIACAL' });
+  const line: AstroLine = map.lines[0]!;
+  const [longitude, latitude]: readonly [number, number] = line.points[0]!;
+  // @ts-expect-error the projections are two
+  ctx.chart.astrocartography({ instant: 2460482.5, projection: 'LOCAL_SPACE' });
+  return cast.lagnaDeg + (before ?? 0) + cusp + longitude + latitude + (line.polarLimitDeg ?? 0);
+}
 
 /** The chart layer, typed: one chart and a batch of them. */
 function charts(): string {
@@ -2843,3 +2869,4 @@ function theSentences(ctx: Context): string {
   return `${day.locale} ${day.draft} ${day.sentences[0]?.text} ${day.withheld.length}`;
 }
 void theSentences;
+void maps;
