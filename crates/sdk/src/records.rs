@@ -454,6 +454,16 @@ pub fn records() -> Vec<Record> {
         },
         #[cfg(feature = "muhurta")]
         Record {
+            name: "almanac.aayadi",
+            boundary: "ts_aayadi",
+            title: "A building's measure read by remainders under one vastu text",
+            reads: None,
+            run: |_, json| Answered::plain(&crate::AayadiRequest::from_json(json)?.answer()?),
+            compares: None,
+            schemas: schemas!(crate::AayadiRequest => teistro_muhurta::aayadi::Aayadi),
+        },
+        #[cfg(feature = "muhurta")]
+        Record {
             name: "almanac.navatara",
             boundary: "ts_navatara",
             title: "The navatara chakra of a birth star",

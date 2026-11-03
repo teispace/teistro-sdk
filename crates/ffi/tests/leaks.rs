@@ -192,6 +192,11 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
         let entry = teistro_ffi::navatara::ts_navatara;
         assert_eq!(json(&ctx, entry, r#"{"birth": "MAGHA"}"#), Status::Ok);
     });
+    holds_nothing("an aayadi reading", || {
+        let entry = teistro_ffi::aayadi::ts_aayadi;
+        let asked = r#"{"system": "SAMARANGANA", "length": 29, "breadth": 7, "owner": "BHARANI"}"#;
+        assert_eq!(json(&ctx, entry, asked), Status::Ok);
+    });
     let pakshi = r#"{"first": {"year": 1984, "month": 10, "day": 30},
         "latitudeDeg": 13.0827, "longitudeDeg": 80.2707, "altitudeM": 6,
         "utcOffsetSeconds": 19800, "native": {"bird": "COCK"}}"#;
@@ -213,11 +218,12 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
             Status::Ok
         );
     });
-    let entries: [JsonEntry; 19] = [
+    let entries: [JsonEntry; 20] = [
         teistro_ffi::mundane::ts_chart_mundane,
         teistro_ffi::mapping::ts_chart_relocated,
         teistro_ffi::mapping::ts_chart_astrocartography,
         teistro_ffi::navatara::ts_navatara,
+        teistro_ffi::aayadi::ts_aayadi,
         teistro_ffi::numerology::ts_numerology_profile,
         teistro_ffi::pakshi::ts_pakshi,
         teistro_ffi::rashifal::ts_rashifal,

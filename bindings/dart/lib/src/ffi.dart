@@ -2077,6 +2077,8 @@ typedef TsNamingSuggestNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Poi
 typedef TsNamingSuggestDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNavataraNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNavataraDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAayadiNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAayadiDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsVerifyClaimsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsVerifyClaimsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsVerifyIssueNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2195,6 +2197,7 @@ final class TeistroLibrary {
         ts_naming_load = library.lookupFunction<TsNamingLoadNative, TsNamingLoadDart>('ts_naming_load'),
         ts_naming_suggest = library.lookupFunction<TsNamingSuggestNative, TsNamingSuggestDart>('ts_naming_suggest'),
         ts_navatara = library.lookupFunction<TsNavataraNative, TsNavataraDart>('ts_navatara'),
+        ts_aayadi = library.lookupFunction<TsAayadiNative, TsAayadiDart>('ts_aayadi'),
         ts_verify_claims = library.lookupFunction<TsVerifyClaimsNative, TsVerifyClaimsDart>('ts_verify_claims'),
         ts_verify_issue = library.lookupFunction<TsVerifyIssueNative, TsVerifyIssueDart>('ts_verify_issue'),
         ts_verify_receipt = library.lookupFunction<TsVerifyReceiptNative, TsVerifyReceiptDart>('ts_verify_receipt'),
@@ -3149,6 +3152,20 @@ final class TeistroLibrary {
   /// not read, or a star that is not a nakshatra key, is `INVALID_ARG`,
   /// named under `navatara`.
   final TsNavataraDart ts_navatara;
+
+  /// A building's measure read under one system: `{"system", "quantities",
+  /// "vyaya", "tara", "clauses", "unjudged"}`, each quantity `{"quantity",
+  /// "measure", "value", "multiplier", "divisor", "quotient", "remainder",
+  /// "count", "yoni", "nakshatra", "vara", "tithi", "yoga", "source"}` and
+  /// each clause `{"clause", "holds", "source"}` (C1190 to C1199).
+  ///
+  /// `request_json` is `{"system", "length", "breadth", "owner"?,
+  /// "measure"?}`: `MAYAMATA`, `MANASARA`, `SAMARANGANA` or `CHINTAMANI`,
+  /// the two sides in whole units (1 to 1 000 000), the owner's nakshatra
+  /// key, and for `MANASARA` only the measure. A key the record does not
+  /// read, a side out of range or a measure asked of another system is
+  /// `INVALID_ARG`, named under `aayadi`.
+  final TsAayadiDart ts_aayadi;
 
   /// Every claim a text makes of the time, each judged against what
   /// `almanac.sankalpa` computes at the instant and the place
@@ -7700,6 +7717,29 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_navatara(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// A building's measure read under one system: `{"system", "quantities",
+  /// "vyaya", "tara", "clauses", "unjudged"}`, each quantity `{"quantity",
+  /// "measure", "value", "multiplier", "divisor", "quotient", "remainder",
+  /// "count", "yoni", "nakshatra", "vara", "tithi", "yoga", "source"}` and
+  /// each clause `{"clause", "holds", "source"}` (C1190 to C1199).
+  ///
+  /// `request_json` is `{"system", "length", "breadth", "owner"?,
+  /// "measure"?}`: `MAYAMATA`, `MANASARA`, `SAMARANGANA` or `CHINTAMANI`,
+  /// the two sides in whole units (1 to 1 000 000), the owner's nakshatra
+  /// key, and for `MANASARA` only the measure. A key the record does not
+  /// read, a side out of range or a measure asked of another system is
+  /// `INVALID_ARG`, named under `aayadi`.
+  String aayadi(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_aayadi(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

@@ -4028,6 +4028,14 @@ pub mod sdk {
         pub mod varna {
         }
 
+        /// The `vastu_yoni` group.
+        pub mod vastu_yoni {
+        }
+
+        /// The `vyaya_kind` group.
+        pub mod vyaya_kind {
+        }
+
         /// The `year_office` group.
         pub mod year_office {
         }

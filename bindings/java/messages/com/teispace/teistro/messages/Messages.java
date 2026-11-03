@@ -2274,6 +2274,66 @@ public final class Messages {
         }
     }
 
+    /** A `vastu_yoni` as a message names it: the full catalogue key. */
+    public enum VastuYoniKey {
+        /** `vastu_yoni.DHVAJA`. */
+        DHVAJA("vastu_yoni.DHVAJA"),
+        /** `vastu_yoni.DHUMA`. */
+        DHUMA("vastu_yoni.DHUMA"),
+        /** `vastu_yoni.SIMHA`. */
+        SIMHA("vastu_yoni.SIMHA"),
+        /** `vastu_yoni.SHVAN`. */
+        SHVAN("vastu_yoni.SHVAN"),
+        /** `vastu_yoni.VRISHA`. */
+        VRISHA("vastu_yoni.VRISHA"),
+        /** `vastu_yoni.KHARA`. */
+        KHARA("vastu_yoni.KHARA"),
+        /** `vastu_yoni.GAJA`. */
+        GAJA("vastu_yoni.GAJA"),
+        /** `vastu_yoni.KAKA`. */
+        KAKA("vastu_yoni.KAKA");
+
+        private final String value;
+
+        VastuYoniKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `vyaya_kind` as a message names it: the full catalogue key. */
+    public enum VyayaKindKey {
+        /** `vyaya_kind.PISHACHA`. */
+        PISHACHA("vyaya_kind.PISHACHA"),
+        /** `vyaya_kind.RAKSHASA`. */
+        RAKSHASA("vyaya_kind.RAKSHASA"),
+        /** `vyaya_kind.YAKSHA`. */
+        YAKSHA("vyaya_kind.YAKSHA");
+
+        private final String value;
+
+        VyayaKindKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `year_office` as a message names it: the full catalogue key. */
     public enum YearOfficeKey {
         /** `year_office.RAJA`. */
@@ -13992,6 +14052,143 @@ public final class Messages {
                  */
                 public EntityForms vaishya() {
                     return r.entity("varna.VAISHYA");
+                }
+            }
+
+
+            /**
+             * The messages under `vastu_yoni`.
+             *
+             * @return the group
+             */
+            public SdkEntityVastuYoni vastuYoni() {
+                return new SdkEntityVastuYoni(r);
+            }
+
+            /** The messages under `SdkEntityVastuYoni`, each rendered by its own key. */
+            public static final class SdkEntityVastuYoni {
+                private final Renderer r;
+
+                SdkEntityVastuYoni(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `vastu_yoni.DHUMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dhuma() {
+                    return r.entity("vastu_yoni.DHUMA");
+                }
+
+                /**
+                 * The forms of `vastu_yoni.DHVAJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dhvaja() {
+                    return r.entity("vastu_yoni.DHVAJA");
+                }
+
+                /**
+                 * The forms of `vastu_yoni.GAJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gaja() {
+                    return r.entity("vastu_yoni.GAJA");
+                }
+
+                /**
+                 * The forms of `vastu_yoni.KAKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kaka() {
+                    return r.entity("vastu_yoni.KAKA");
+                }
+
+                /**
+                 * The forms of `vastu_yoni.KHARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms khara() {
+                    return r.entity("vastu_yoni.KHARA");
+                }
+
+                /**
+                 * The forms of `vastu_yoni.SHVAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shvan() {
+                    return r.entity("vastu_yoni.SHVAN");
+                }
+
+                /**
+                 * The forms of `vastu_yoni.SIMHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms simha() {
+                    return r.entity("vastu_yoni.SIMHA");
+                }
+
+                /**
+                 * The forms of `vastu_yoni.VRISHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vrisha() {
+                    return r.entity("vastu_yoni.VRISHA");
+                }
+            }
+
+
+            /**
+             * The messages under `vyaya_kind`.
+             *
+             * @return the group
+             */
+            public SdkEntityVyayaKind vyayaKind() {
+                return new SdkEntityVyayaKind(r);
+            }
+
+            /** The messages under `SdkEntityVyayaKind`, each rendered by its own key. */
+            public static final class SdkEntityVyayaKind {
+                private final Renderer r;
+
+                SdkEntityVyayaKind(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `vyaya_kind.PISHACHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms pishacha() {
+                    return r.entity("vyaya_kind.PISHACHA");
+                }
+
+                /**
+                 * The forms of `vyaya_kind.RAKSHASA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rakshasa() {
+                    return r.entity("vyaya_kind.RAKSHASA");
+                }
+
+                /**
+                 * The forms of `vyaya_kind.YAKSHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yaksha() {
+                    return r.entity("vyaya_kind.YAKSHA");
                 }
             }
 

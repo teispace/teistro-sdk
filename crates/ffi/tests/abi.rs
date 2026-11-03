@@ -9380,6 +9380,55 @@ fn a_navatara_chakra_crosses_as_the_kernel_answers_it() {
     }
 }
 
+/// An aayadi reading crosses as the kernel answers it: the gloss's 29 by
+/// 7 hastas reckon the lion, Rohini and vyaya 4 under *Muhurta
+/// Chintamani*, and every refusal is named under `aayadi`
+/// (`03-design/aayadi.md`).
+#[cfg(feature = "muhurta")]
+#[test]
+fn an_aayadi_reading_crosses_as_the_kernel_answers_it() {
+    let ctx = Ctx::defaults();
+    let request = r#"{"system": "CHINTAMANI", "length": 29, "breadth": 7, "owner": "ANURADHA"}"#;
+    let crossed = entry_json(teistro_ffi::aayadi::ts_aayadi, &ctx, request).unwrap();
+    let kernel = teistro::AayadiRequest::from_json(request)
+        .unwrap()
+        .answer()
+        .unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    let read: serde_json::Value = serde_json::from_str(&crossed).unwrap();
+    let counts: Vec<u64> = read["quantities"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .map(|reckoned| reckoned["count"].as_u64().unwrap())
+        .collect();
+    assert_eq!(counts, [3, 7, 3, 4, 1, 4, 4, 2, 64, 4]);
+    assert_eq!(read["quantities"][0]["yoni"], "SIMHA");
+    assert_eq!(read["quantities"][5]["nakshatra"], "ROHINI");
+    assert_eq!(read["tara"], "SADHANA");
+    for (request, field) in [
+        (
+            r#"{"system": "MAYAMATA", "length": 0, "breadth": 7}"#,
+            "aayadi.length",
+        ),
+        (
+            r#"{"system": "MAYAMATA", "length": 7, "breadth": 1000001}"#,
+            "aayadi.breadth",
+        ),
+        (
+            r#"{"system": "MAYAMATA", "length": 7, "breadth": 7, "measure": "SUM"}"#,
+            "aayadi.measure",
+        ),
+    ] {
+        assert_eq!(
+            entry_json(teistro_ffi::aayadi::ts_aayadi, &ctx, request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}
+
 /// The naming of a child crosses as the façade answers it: each entry's
 /// JSON is the façade's own, a book loaded through the boundary is the
 /// context's for a later suggestion, and every refusal is named under

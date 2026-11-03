@@ -1,5 +1,15 @@
 [
   {
+    "record": "almanac.aayadi",
+    "request": {
+      "breadth": 1,
+      "length": 1,
+      "measure": "SUM",
+      "owner": "nakshatra.BHARANI",
+      "system": "MANASARA"
+    }
+  },
+  {
     "record": "almanac.anniversaries",
     "request": {
       "altitudeM": 1.5,

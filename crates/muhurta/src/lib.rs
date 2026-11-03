@@ -26,6 +26,7 @@
 #![cfg_attr(coverage_nightly, feature(coverage_attribute))]
 #![doc(html_no_source)]
 
+pub mod aayadi;
 pub mod activity;
 pub mod baseline;
 pub mod chintamani;

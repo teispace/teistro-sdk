@@ -1272,6 +1272,27 @@ class VarnaKey(enum.StrEnum):
     MLECCHA = "varna.MLECCHA"
 
 
+class VastuYoniKey(enum.StrEnum):
+    """A `vastu_yoni` as a message names it: the full catalogue key."""
+
+    DHVAJA = "vastu_yoni.DHVAJA"
+    DHUMA = "vastu_yoni.DHUMA"
+    SIMHA = "vastu_yoni.SIMHA"
+    SHVAN = "vastu_yoni.SHVAN"
+    VRISHA = "vastu_yoni.VRISHA"
+    KHARA = "vastu_yoni.KHARA"
+    GAJA = "vastu_yoni.GAJA"
+    KAKA = "vastu_yoni.KAKA"
+
+
+class VyayaKindKey(enum.StrEnum):
+    """A `vyaya_kind` as a message names it: the full catalogue key."""
+
+    PISHACHA = "vyaya_kind.PISHACHA"
+    RAKSHASA = "vyaya_kind.RAKSHASA"
+    YAKSHA = "vyaya_kind.YAKSHA"
+
+
 class YearOfficeKey(enum.StrEnum):
     """A `year_office` as a message names it: the full catalogue key."""
 
@@ -2412,6 +2433,16 @@ class MessagesSdkEntity:
         return MessagesSdkEntityVarna(self._r)
 
     @property
+    def vastu_yoni(self) -> MessagesSdkEntityVastuYoni:
+        """The messages under `vastu_yoni`."""
+        return MessagesSdkEntityVastuYoni(self._r)
+
+    @property
+    def vyaya_kind(self) -> MessagesSdkEntityVyayaKind:
+        """The messages under `vyaya_kind`."""
+        return MessagesSdkEntityVyayaKind(self._r)
+
+    @property
     def year_office(self) -> MessagesSdkEntityYearOffice:
         """The messages under `year_office`."""
         return MessagesSdkEntityYearOffice(self._r)
@@ -2689,6 +2720,77 @@ class MessagesSdkEntityYearOffice:
     def sasyadhipati(self) -> EntityForms:
         """The forms of `year_office.SASYADHIPATI` in the current locale."""
         return self._r.entity("year_office.SASYADHIPATI")
+
+
+class MessagesSdkEntityVyayaKind:
+    """The messages under `MessagesSdkEntityVyayaKind`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def pishacha(self) -> EntityForms:
+        """The forms of `vyaya_kind.PISHACHA` in the current locale."""
+        return self._r.entity("vyaya_kind.PISHACHA")
+
+    @property
+    def rakshasa(self) -> EntityForms:
+        """The forms of `vyaya_kind.RAKSHASA` in the current locale."""
+        return self._r.entity("vyaya_kind.RAKSHASA")
+
+    @property
+    def yaksha(self) -> EntityForms:
+        """The forms of `vyaya_kind.YAKSHA` in the current locale."""
+        return self._r.entity("vyaya_kind.YAKSHA")
+
+
+class MessagesSdkEntityVastuYoni:
+    """The messages under `MessagesSdkEntityVastuYoni`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def dhuma(self) -> EntityForms:
+        """The forms of `vastu_yoni.DHUMA` in the current locale."""
+        return self._r.entity("vastu_yoni.DHUMA")
+
+    @property
+    def dhvaja(self) -> EntityForms:
+        """The forms of `vastu_yoni.DHVAJA` in the current locale."""
+        return self._r.entity("vastu_yoni.DHVAJA")
+
+    @property
+    def gaja(self) -> EntityForms:
+        """The forms of `vastu_yoni.GAJA` in the current locale."""
+        return self._r.entity("vastu_yoni.GAJA")
+
+    @property
+    def kaka(self) -> EntityForms:
+        """The forms of `vastu_yoni.KAKA` in the current locale."""
+        return self._r.entity("vastu_yoni.KAKA")
+
+    @property
+    def khara(self) -> EntityForms:
+        """The forms of `vastu_yoni.KHARA` in the current locale."""
+        return self._r.entity("vastu_yoni.KHARA")
+
+    @property
+    def shvan(self) -> EntityForms:
+        """The forms of `vastu_yoni.SHVAN` in the current locale."""
+        return self._r.entity("vastu_yoni.SHVAN")
+
+    @property
+    def simha(self) -> EntityForms:
+        """The forms of `vastu_yoni.SIMHA` in the current locale."""
+        return self._r.entity("vastu_yoni.SIMHA")
+
+    @property
+    def vrisha(self) -> EntityForms:
+        """The forms of `vastu_yoni.VRISHA` in the current locale."""
+        return self._r.entity("vastu_yoni.VRISHA")
 
 
 class MessagesSdkEntityVarna:

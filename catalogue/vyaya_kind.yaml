@@ -1,0 +1,26 @@
+kind: vyaya_kind
+number: 161
+version: 1
+doc: "The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195)."
+members:
+  - key: PISHACHA
+    id: 0
+    doc: "Piśāca, a vyaya equal to the aaya"
+    sources:
+      - text: "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)"
+        ref: "XXVI vv. 36-37, 48, 51"
+    mark: V
+  - key: RAKSHASA
+    id: 1
+    doc: "Rākṣasa, a vyaya greater than the aaya"
+    sources:
+      - text: "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)"
+        ref: "XXVI vv. 36-37, 48, 51"
+    mark: V
+  - key: YAKSHA
+    id: 2
+    doc: "Yakṣa, a vyaya less than the aaya, the good one (v. 48)"
+    sources:
+      - text: "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)"
+        ref: "XXVI vv. 36-37, 48, 51"
+    mark: V

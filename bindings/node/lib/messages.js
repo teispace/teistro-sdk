@@ -1239,6 +1239,21 @@ export function messages(r) {
           shudra: () => r.entity('varna.SHUDRA'),
           vaishya: () => r.entity('varna.VAISHYA'),
         },
+        vastuYoni: {
+          dhuma: () => r.entity('vastu_yoni.DHUMA'),
+          dhvaja: () => r.entity('vastu_yoni.DHVAJA'),
+          gaja: () => r.entity('vastu_yoni.GAJA'),
+          kaka: () => r.entity('vastu_yoni.KAKA'),
+          khara: () => r.entity('vastu_yoni.KHARA'),
+          shvan: () => r.entity('vastu_yoni.SHVAN'),
+          simha: () => r.entity('vastu_yoni.SIMHA'),
+          vrisha: () => r.entity('vastu_yoni.VRISHA'),
+        },
+        vyayaKind: {
+          pishacha: () => r.entity('vyaya_kind.PISHACHA'),
+          rakshasa: () => r.entity('vyaya_kind.RAKSHASA'),
+          yaksha: () => r.entity('vyaya_kind.YAKSHA'),
+        },
         yearOffice: {
           dhanyadhipati: () => r.entity('year_office.DHANYADHIPATI'),
           mantri: () => r.entity('year_office.MANTRI'),

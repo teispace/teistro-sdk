@@ -4251,6 +4251,42 @@ class AnEngine(WithLibrary):
                 ctx.almanac.navatara("ABHIJIT")
             self.assertEqual(refused.exception.field, "navatara.birth")
 
+    def test_a_measure_reads_into_its_aayadi_without_a_sky(self) -> None:
+        """*Muhurta Chintamani* XII v. 3 with Mahidhara's gloss: Anuradha's
+        owner, Rohini and the lion give 203, 29 by 7 hastas; v. 11's ten
+        reckonings and v. 7's vyaya (`03-design/aayadi.md`)."""
+        from teistro.catalogue import Nakshatra, Vara, VastuYoni, VyayaKind
+
+        with self.teistro.context(ephemeris=Ephemeris.BUILTIN) as ctx:
+            reading = ctx.almanac.aayadi("CHINTAMANI", 29, 7, owner=Nakshatra.ANURADHA)
+            self.assertEqual(reading.system, "CHINTAMANI")
+            self.assertEqual([reckoned.count for reckoned in reading.quantities], [3, 7, 3, 4, 1, 4, 4, 2, 64, 4])
+            aaya = reading.get("AAYA")
+            assert aaya is not None
+            self.assertEqual((aaya.value, aaya.multiplier, aaya.divisor, aaya.yoni), (203, 9, 8, VastuYoni.SIMHA))
+            nakshatra = reading.get("NAKSHATRA")
+            assert nakshatra is not None
+            self.assertEqual(nakshatra.nakshatra, Nakshatra.ROHINI)
+            vara = reading.get("VARA")
+            assert vara is not None
+            self.assertEqual(vara.vara, Vara.SHANIVARA)
+            self.assertIsNone(reading.get("YONI"))
+            self.assertEqual(reading.tara, "SADHANA")
+            self.assertEqual((reading.holds("AAYA_ODD"), reading.holds("YONI_GOOD")), (True, None))
+            self.assertIsNone(reading.vyaya)
+            self.assertEqual(ctx.almanac.aayadi("CHINTAMANI", 29, 7, owner="ANURADHA"), reading, "a key reads as its member")
+            samarangana = ctx.almanac.aayadi("SAMARANGANA", 29, 7)
+            self.assertEqual((samarangana.vyaya, samarangana.tara), (VyayaKind.RAKSHASA, None))
+            self.assertIn("AMSHA", samarangana.unjudged)
+            whole = ctx.almanac.aayadi("MANASARA", 29, 7, measure="SUM")
+            self.assertEqual({reckoned.measure for reckoned in whole.quantities}, {"SUM"})
+            with self.assertRaises(TeistroError) as zero:
+                ctx.almanac.aayadi("MAYAMATA", 0, 7)
+            self.assertEqual(zero.exception.field, "aayadi.length")
+            with self.assertRaises(TeistroError) as measured:
+                ctx.almanac.aayadi("MAYAMATA", 7, 7, measure="SUM")
+            self.assertEqual(measured.exception.field, "aayadi.measure")
+
     def test_a_name_and_a_birth_date_read_under_numerology_without_a_chart(self) -> None:
         """Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6, born
         17 January 1872 1 + 8 + 9 = 18 = 9; Cheiro p. 70: Henry 18/9 and

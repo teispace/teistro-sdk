@@ -1384,6 +1384,31 @@ enum VarnaKey {
   final String key;
 }
 
+enum VastuYoniKey {
+  dhvaja('vastu_yoni.DHVAJA'),
+  dhuma('vastu_yoni.DHUMA'),
+  simha('vastu_yoni.SIMHA'),
+  shvan('vastu_yoni.SHVAN'),
+  vrisha('vastu_yoni.VRISHA'),
+  khara('vastu_yoni.KHARA'),
+  gaja('vastu_yoni.GAJA'),
+  kaka('vastu_yoni.KAKA');
+
+  const VastuYoniKey(this.key);
+
+  final String key;
+}
+
+enum VyayaKindKey {
+  pishacha('vyaya_kind.PISHACHA'),
+  rakshasa('vyaya_kind.RAKSHASA'),
+  yaksha('vyaya_kind.YAKSHA');
+
+  const VyayaKindKey(this.key);
+
+  final String key;
+}
+
 enum YearOfficeKey {
   raja('year_office.RAJA'),
   mantri('year_office.MANTRI'),
@@ -3332,6 +3357,31 @@ final class MessagesSdkEntityVarna {
   EntityForms get vaishya => _r.entity('varna.VAISHYA');
 }
 
+final class MessagesSdkEntityVastuYoni {
+  const MessagesSdkEntityVastuYoni(this._r);
+
+  final Renderer _r;
+
+  EntityForms get dhuma => _r.entity('vastu_yoni.DHUMA');
+  EntityForms get dhvaja => _r.entity('vastu_yoni.DHVAJA');
+  EntityForms get gaja => _r.entity('vastu_yoni.GAJA');
+  EntityForms get kaka => _r.entity('vastu_yoni.KAKA');
+  EntityForms get khara => _r.entity('vastu_yoni.KHARA');
+  EntityForms get shvan => _r.entity('vastu_yoni.SHVAN');
+  EntityForms get simha => _r.entity('vastu_yoni.SIMHA');
+  EntityForms get vrisha => _r.entity('vastu_yoni.VRISHA');
+}
+
+final class MessagesSdkEntityVyayaKind {
+  const MessagesSdkEntityVyayaKind(this._r);
+
+  final Renderer _r;
+
+  EntityForms get pishacha => _r.entity('vyaya_kind.PISHACHA');
+  EntityForms get rakshasa => _r.entity('vyaya_kind.RAKSHASA');
+  EntityForms get yaksha => _r.entity('vyaya_kind.YAKSHA');
+}
+
 final class MessagesSdkEntityYearOffice {
   const MessagesSdkEntityYearOffice(this._r);
 
@@ -3462,6 +3512,8 @@ final class MessagesSdkEntity {
   MessagesSdkEntityVara get vara => MessagesSdkEntityVara(_r);
   MessagesSdkEntityVarga get varga => MessagesSdkEntityVarga(_r);
   MessagesSdkEntityVarna get varna => MessagesSdkEntityVarna(_r);
+  MessagesSdkEntityVastuYoni get vastuYoni => MessagesSdkEntityVastuYoni(_r);
+  MessagesSdkEntityVyayaKind get vyayaKind => MessagesSdkEntityVyayaKind(_r);
   MessagesSdkEntityYearOffice get yearOffice => MessagesSdkEntityYearOffice(_r);
   MessagesSdkEntityYoga get yoga => MessagesSdkEntityYoga(_r);
   MessagesSdkEntityYoni get yoni => MessagesSdkEntityYoni(_r);

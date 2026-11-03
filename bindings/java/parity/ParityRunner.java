@@ -769,6 +769,31 @@ public final class ParityRunner {
         return ints("/", reduction.steps());
     }
 
+    /**
+     * The gloss's 29 by 7 hastas under Muhurta Chintamani and Samarangana: each
+     * quantity {@code QUANTITY:count}, the vyaya's kind, the tara, then each
+     * clause {@code CLAUSE:holds}.
+     */
+    private static void putAayadi(Context ctx) {
+        for (var line : List.of(
+                List.of("aayadi_chintamani", "CHINTAMANI", "ANURADHA"),
+                List.of("aayadi_samarangana", "SAMARANGANA", "BHARANI"))) {
+            var reading = ctx.almanac().aayadi(
+                    com.teispace.teistro.request.AayadiSystem.byKey(line.get(1)).orElseThrow(), 29, 7,
+                    Nakshatra.byKey(line.get(2)).orElseThrow(), null);
+            var parts = new ArrayList<String>();
+            for (var reckoned : reading.quantities()) {
+                parts.add(reckoned.quantity().key() + ":" + reckoned.count());
+            }
+            parts.add("vyaya:" + (reading.vyaya() == null ? "-" : reading.vyaya().fullKey()));
+            parts.add("tara:" + (reading.tara() == null ? "-" : reading.tara().key()));
+            for (var judged : reading.clauses()) {
+                parts.add(judged.clause().key() + ":" + judged.holds());
+            }
+            put(line.get(0), String.join(" ", parts));
+        }
+    }
+
     /** Ashwini's navatara chakra, every row {@code star:tara:round:special}. */
     private static void putNavatara(Context ctx) {
         var rows = new ArrayList<String>();
@@ -1289,6 +1314,7 @@ public final class ParityRunner {
             putNaming(ctx);
             putNumerology(ctx);
             putNavatara(ctx);
+            putAayadi(ctx);
 
             // ── The calendars ─────────────────────────────────────────────
             CalendarDate day = date(2015, 4, 14);
@@ -1685,6 +1711,7 @@ public final class ParityRunner {
             surface("almanac.ashauch", () -> ctx.almanac().ashauch(null, place, 0));
             surface("almanac.first_year", () -> ctx.almanac().firstYear(null, place, 0));
             surface("almanac.navatara", () -> ctx.almanac().navatara(null));
+            surface("almanac.aayadi", () -> ctx.almanac().aayadi(null, 29, 7, null, null));
             surface("almanac.published_reasons", () -> ctx.almanac().publishedReasons(day, day, place, 0, null,
                     List.of(), null));
             surface("almanac.changes", () -> ctx.almanac().changes(null));

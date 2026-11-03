@@ -844,8 +844,9 @@ test('every catalogue enum has a complete id table', () => {
   // `TsTridosha`, three, each with its member of `TsKind`; 1516 since
   // `TsEra` gained `VIRA_NIRVANA`; 1531 since the mundane charts'
   // `TsMundaneKind`, thirteen, with its member of `TsKind`, and
-  // `TsChartKind`'s `MUNDANE`.
-  assert.equal(entries, 1531, 'every member of every enum is in a table');
+  // `TsChartKind`'s `MUNDANE`; 1544 since aayadi's `TsVastuYoni`, eight,
+  // and `TsVyayaKind`, three, each with its member of `TsKind`.
+  assert.equal(entries, 1544, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -3597,6 +3598,41 @@ test('a birth star reads into its navatara chakra without a sky', () => {
     (error) => error instanceof TeistroError && error.field === 'navatara.birth',
   );
   assert.throws(() => ctx.almanac.navatara(1), TypeError);
+  ctx.dispose();
+});
+
+test('a measure reads into its aayadi without a sky', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'NONE' });
+  // Muhurta Chintamani XII v. 3 with Mahidhara's gloss: Anuradha's owner,
+  // Rohini and the lion give 203, 29 by 7 hastas.
+  const reading = ctx.almanac.aayadi({ system: 'CHINTAMANI', length: 29, breadth: 7, owner: 'nakshatra.ANURADHA' });
+  assert.ok(Object.isFrozen(reading) && Object.isFrozen(reading.quantities[0]), 'frozen');
+  assert.deepEqual(
+    reading.quantities.map((reckoned) => reckoned.count),
+    [3, 7, 3, 4, 1, 4, 4, 2, 64, 4],
+  );
+  const [aaya, vara] = reading.quantities;
+  assert.deepEqual([aaya.value, aaya.multiplier, aaya.divisor, aaya.yoni], [203, 9, 8, 'vastu_yoni.SIMHA']);
+  assert.equal(vara.vara, 'vara.SHANIVARA');
+  assert.equal(reading.quantities[5].nakshatra, 'nakshatra.ROHINI');
+  assert.equal(reading.quantities[7].yoga, 'yoga.PRITI');
+  assert.deepEqual([reading.tara, reading.vyaya], ['SADHANA', null]);
+  assert.ok(reading.clauses.some((judged) => judged.clause === 'AAYA_ODD' && judged.holds));
+  const samarangana = ctx.almanac.aayadi({ system: 'SAMARANGANA', length: 29, breadth: 7 });
+  assert.equal(samarangana.vyaya, 'vyaya_kind.RAKSHASA');
+  assert.ok(samarangana.unjudged.includes('AMSHA'));
+  const mayamata = ctx.almanac.aayadi({ system: 'MAYAMATA', length: 29, breadth: 7 });
+  assert.equal(mayamata.quantities.find((reckoned) => reckoned.quantity === 'TITHI').tithi, 'tithi.SHUKLA_DWADASHI');
+  for (const [asked, field] of [
+    [{ system: 'MAYAMATA', length: 0, breadth: 7 }, 'aayadi.length'],
+    [{ system: 'MAYAMATA', length: 7, breadth: 7, measure: 'SUM' }, 'aayadi.measure'],
+  ]) {
+    assert.throws(
+      () => ctx.almanac.aayadi(asked),
+      (error) => error instanceof TeistroError && error.field === field,
+    );
+  }
+  assert.throws(() => ctx.almanac.aayadi(null), TypeError);
   ctx.dispose();
 });
 

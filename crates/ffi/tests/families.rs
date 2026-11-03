@@ -162,7 +162,7 @@ fn every_chart_family_answers_in_its_build_and_is_refused_without_it() {
 #[test]
 fn every_entry_point_family_answers_in_its_build_and_is_refused_without_it() {
     let ctx = Ctx::new(TS_CONTEXT_TEST_PROVIDER, None, None, None).expect("a test context");
-    let entries: [(&str, bool, JsonEntry); 8] = [
+    let entries: [(&str, bool, JsonEntry); 9] = [
         (
             "chart",
             cfg!(feature = "chart"),
@@ -182,6 +182,11 @@ fn every_entry_point_family_answers_in_its_build_and_is_refused_without_it() {
             "muhurta",
             cfg!(feature = "muhurta"),
             teistro_ffi::navatara::ts_navatara,
+        ),
+        (
+            "muhurta",
+            cfg!(feature = "muhurta"),
+            teistro_ffi::aayadi::ts_aayadi,
         ),
         (
             "numerology",

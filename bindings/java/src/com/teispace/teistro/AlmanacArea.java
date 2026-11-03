@@ -609,6 +609,53 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>A building's measure read by remainders</b> under one vastu text
+     * ({@code 03-design/aayadi.md}): the two sides in whole units of the
+     * caller's choosing (1 to 1 000 000), the owner's star for the clauses
+     * that read it, and for {@code MANASARA} only the measure its six
+     * reckonings take. It answers each quantity the system reckons, the
+     * vyaya's kind and the tara where it reads them, and each clause it
+     * judges, never one verdict. It reads no sky.
+     *
+     * <pre>{@code
+     * Aayadi reading = sky.almanac().aayadi(AayadiSystem.CHINTAMANI, 29, 7, Nakshatra.ANURADHA, null);
+     * Nakshatra star = reading.get(AayadiQuantity.NAKSHATRA).nakshatra(); // Rohini
+     * }</pre>
+     *
+     * @param system the text whose reckoning is read
+     * @param length the length
+     * @param breadth the breadth, in the same unit
+     * @param owner the owner's star; may be null
+     * @param measure for {@code MANASARA} only, the measure; may be null for the split
+     * @return the reading
+     * @throws TeistroException naming {@code system} when it is null, {@code aayadi.length} or
+     *     {@code aayadi.breadth} for a side out of range, and {@code aayadi.measure} for a measure
+     *     asked of another system
+     */
+    public Aayadi aayadi(
+            com.teispace.teistro.request.AayadiSystem system,
+            long length,
+            long breadth,
+            Nakshatra owner,
+            com.teispace.teistro.request.ManasaraMeasure measure) {
+        if (system == null) {
+            throw Reads.invalid("system is an AayadiSystem, such as AayadiSystem.CHINTAMANI", "system");
+        }
+        Map<String, Object> asked = new java.util.LinkedHashMap<>();
+        asked.put("system", system.key());
+        asked.put("length", length);
+        asked.put("breadth", breadth);
+        if (owner != null) {
+            asked.put("owner", owner.key());
+        }
+        if (measure != null) {
+            asked.put("measure", measure.key());
+        }
+        String json = Json.write(asked);
+        return Aayadi.read(Json.read(context.locked((lib, raw) -> Calls.aayadi(lib, raw, json))));
+    }
+
+    /**
      * <b>A household's periods of impurity</b> at a place ({@code 03-design/ashauch.md} §11): several
      * births and deaths and several observers in one request. Each observer's ties name an event by its
      * key and the observer's relation to it; they are read in the order the news reached that observer,

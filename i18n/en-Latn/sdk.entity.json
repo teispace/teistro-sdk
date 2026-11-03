@@ -4888,5 +4888,64 @@
       "name": "Event",
       "prose": "event"
     }
+  },
+  "vastu_yoni": {
+    "DHVAJA": {
+      "name": "Banner",
+      "prose": "Banner",
+      "iast": "Dhvaja"
+    },
+    "DHUMA": {
+      "name": "Smoke",
+      "prose": "Smoke",
+      "iast": "Dhūma"
+    },
+    "SIMHA": {
+      "name": "Lion",
+      "prose": "Lion",
+      "iast": "Siṃha"
+    },
+    "SHVAN": {
+      "name": "Dog",
+      "prose": "Dog",
+      "iast": "Śvan"
+    },
+    "VRISHA": {
+      "name": "Bull",
+      "prose": "Bull",
+      "iast": "Vṛṣa"
+    },
+    "KHARA": {
+      "name": "Ass",
+      "prose": "Ass",
+      "iast": "Khara"
+    },
+    "GAJA": {
+      "name": "Elephant",
+      "prose": "Elephant",
+      "iast": "Gaja"
+    },
+    "KAKA": {
+      "name": "Crow",
+      "prose": "Crow",
+      "iast": "Kāka"
+    }
+  },
+  "vyaya_kind": {
+    "PISHACHA": {
+      "name": "Pishacha",
+      "prose": "Pishacha",
+      "iast": "Piśāca"
+    },
+    "RAKSHASA": {
+      "name": "Rakshasa",
+      "prose": "Rakshasa",
+      "iast": "Rākṣasa"
+    },
+    "YAKSHA": {
+      "name": "Yaksha",
+      "prose": "Yaksha",
+      "iast": "Yakṣa"
+    }
   }
 }

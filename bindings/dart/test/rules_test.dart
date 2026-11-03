@@ -298,6 +298,7 @@ const Map<String, Type> _records = {
   'almanac.festivalPack': PackRequest,
   'almanac.firstYear': FirstYearQuery,
   'almanac.navatara': NavataraRequest,
+  'almanac.aayadi': AayadiRequest,
   'almanac.anniversaries': AnniversariesRequest,
   'almanac.next': NextRequest,
   'almanac.sentences': SentencesRequest,
