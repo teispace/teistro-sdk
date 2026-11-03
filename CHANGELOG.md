@@ -100,6 +100,15 @@ days are unchanged; `GAUDIYA`'s answer gains the five festivals.
   Schema generated into `crates/research/schema/dataset.schema.json`; `ResearchArea::dataset` runs a study
   under its own settings (SR-57, `03-design/receipts-and-datasets.md` §2, C1174–C1175).
 
+**The sky view.**
+**Numbers:** none: a new answer; the day's sky's refraction now runs through the same function at the same air, bit for bit.
+- `AlmanacArea::sky_view`, the record `almanac.skyView` (`SkyViewRequest`, an agent server tool),
+  `ts_almanac_sky_view` at the C boundary and `almanac.skyView` in every binding: at a place and an instant,
+  each graha and each nakshatra's junction star topocentric, apparent and of date, its altitude airless and
+  refracted under the air asked and its azimuth; the ecliptic with the ascendant and the descendant, and the
+  horizon, as point lists at a step asked. Held to JPL Horizons; a classical astronomy is refused
+  (SR-58's sky view, `03-design/sky-view.md`, C1180–C1186).
+
 **The navatara chakra.**
 **Numbers:** none: a new answer, and nothing it reads moves.
 - `AlmanacArea::navatara(birth)`, the record `almanac.navatara` (`NavataraRequest`, an agent server tool),

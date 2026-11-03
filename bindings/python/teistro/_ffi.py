@@ -4487,6 +4487,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_changes.restype = ctypes.c_int32
+        self.ts_almanac_sky_view: Any = library.ts_almanac_sky_view
+        self.ts_almanac_sky_view.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_sky_view.restype = ctypes.c_int32
         self.ts_naam_milan: Any = library.ts_naam_milan
         self.ts_naam_milan.argtypes = [
             ctypes.POINTER(_Context),
@@ -6305,6 +6312,50 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_almanac_changes(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def almanac_sky_view(self, request_json: str) -> str:
+        """The sky at a place and an instant (`03-design/sky-view.md`), answered
+        with `{value, provenance}` as canonical JSON.
+
+        `value` is `{at, siderealTimeDeg, obliquityDeg, atmosphere,
+        eclipticStepDeg, horizonStepDeg, grahas, stars, ecliptic, horizon}`:
+        each of `grahas` `{graha, raDeg, decDeg, altitudeDeg,
+        refractedAltitudeDeg, azimuthDeg}`, topocentric, apparent and of date,
+        the azimuth from north through east and Rahu and Ketu the node the
+        settings name; each of `stars` the same with `star`, `nakshatra` (the
+        nakshatra it is the yogatara of, or null) and `magnitude`; `ecliptic`
+        `{kind, longitudeDeg, altitudeDeg, refractedAltitudeDeg, azimuthDeg}`
+        at every step of tropical longitude and at the `ASCENDANT` and the
+        `DESCENDANT`, in the order of longitude; and `horizon` `{azimuthDeg,
+        raDeg, decDeg, longitudeDeg, latitudeDeg}` at every step of azimuth
+        from north.
+
+        `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "at",
+        "grahas", "stars", "eclipticStepDeg", "horizonStepDeg", "pressureHpa",
+        "temperatureC"}`: `at` a UTC Julian day, `grahas` and `stars` lists of
+        keys (the nine and the twenty-seven yogataras when left out), each step
+        0.1 to 90 degrees (5 when left out), and the air 1010 hPa and 10 °C
+        when left out, a pressure of 0 for no refraction. A key it does not
+        read, a place out of range, a step or an atmosphere out of range is
+        `INVALID_ARG`, named under `skyView`; a context without an ephemeris
+        is `CAPABILITY`, and one over a classical astronomy `UNSUPPORTED`
+        (C1185).
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_sky_view(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

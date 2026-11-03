@@ -470,6 +470,52 @@ export interface SentencesRequest {
 }
 
 /**
+ * The request as a binding writes it.
+ */
+export interface SkyViewRequest {
+  /**
+   * The place's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The instant, a UTC Julian day.
+   */
+  readonly at: number;
+  /**
+   * The ecliptic's step in longitude, degrees, 0.1 to 90; 5 when left out.
+   */
+  readonly eclipticStepDeg?: number | null;
+  /**
+   * The grahas placed, in this order; the nine, Sun to Ketu, when left out.
+   */
+  readonly grahas?: readonly Member<catalogue.Graha>[] | null;
+  /**
+   * The horizon's step in azimuth, degrees, 0.1 to 90; 5 when left out.
+   */
+  readonly horizonStepDeg?: number | null;
+  /**
+   * The place's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The pressure the refraction is reckoned under, hectopascals, 0 to 1100; 1010 when left out, and 0 for no refraction.
+   */
+  readonly pressureHpa?: number | null;
+  /**
+   * The stars placed, in this order; the twenty-seven nakshatras' yogataras when left out.
+   */
+  readonly stars?: readonly Member<catalogue.Star>[] | null;
+  /**
+   * The temperature, degrees Celsius, −90 to 60; 10 when left out.
+   */
+  readonly temperatureC?: number | null;
+}
+
+/**
  * An add request as a binding writes it.
  */
 export interface AddAsked {

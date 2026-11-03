@@ -5844,6 +5844,37 @@ test('an almanac says a household, a relation, a rite and the death time', () =>
 });
 
 /**
+ * The sky at Kathmandu at 18:00 UTC on 31 October 2026 over the built-in
+ * sky (`03-design/sky-view.md`): the nine grahas, the twenty-seven
+ * yogataras with Spica Chitra's, the ecliptic at every fifth degree with
+ * its two crossings and the horizon at every fifth degree of azimuth.
+ */
+test('an almanac draws the sky at a place and an instant', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const { value, provenance } = ctx.almanac.skyView({ place, at: 2461345.25 });
+  assert.equal(typeof provenance.contentHash, 'string');
+  assert.equal(value.grahas.length, 9);
+  assert.equal(value.grahas[1].graha, 'graha.MOON');
+  assert.equal(value.stars.length, 27);
+  assert.equal(value.stars[13].star, 'star.SPICA');
+  assert.equal(value.stars[13].nakshatra, 'nakshatra.CHITRA');
+  assert.equal(value.ecliptic.length, 74);
+  assert.equal(value.horizon.length, 72);
+  assert.equal(value.ecliptic.filter((point) => point.kind === 'ASCENDANT').length, 1);
+  assert.ok(Object.isFrozen(value.grahas[0]));
+  const few = ctx.almanac.skyView({ place, at: 2461345.25, grahas: ['MOON'], stars: [], eclipticStepDeg: 30, pressureHpa: 0 });
+  assert.equal(few.value.grahas.length, 1);
+  assert.equal(few.value.ecliptic.length, 14);
+  assert.equal(few.value.grahas[0].refractedAltitudeDeg, few.value.grahas[0].altitudeDeg);
+  assert.throws(
+    () => ctx.almanac.skyView({ place, at: 2461345.25, eclipticStepDeg: 0 }),
+    (error) => error.field === 'skyView.eclipticStepDeg',
+  );
+  ctx.dispose();
+});
+
+/**
  * A death at 10:00 on 20 October 2026 in Kathmandu: the *Dharmasindhu*'s
  * sixteen in place order, the first monthly first, fifteen of them drawn
  * to the sapindana on the twelfth day; and under Nepal's readings the

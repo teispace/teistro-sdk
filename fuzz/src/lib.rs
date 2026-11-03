@@ -40,7 +40,7 @@ use teistro_ffi::pakshi::ts_pakshi;
 use teistro_ffi::panchanga::{
     TsPanchangaRequest, ts_almanac_ashauch, ts_almanac_digest, ts_almanac_disagreements,
     ts_almanac_festival_calendar, ts_almanac_first_year, ts_almanac_published_reasons,
-    ts_almanac_sankalpa, ts_panchanga_days,
+    ts_almanac_sankalpa, ts_almanac_sky_view, ts_panchanga_days,
 };
 use teistro_ffi::published::ts_published_verify;
 use teistro_ffi::rashifal::ts_rashifal;
@@ -232,6 +232,7 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_chart_astrocartography",
     "ts_verify_issue",
     "ts_verify_receipt",
+    "ts_almanac_sky_view",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -528,6 +529,8 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         "ts_chart_astrocartography",
         Seed::Answered,
         r#"{"instant":2447000.25,"bodies":["SUN","MOON"],"projection":"ZODIACAL","stepDeg":5,"latitudeLimitDeg":85}"#,
+    ),
+    (
         "ts_verify_issue",
         Seed::Answered,
         r#"{"record":"calendar.convert","request":{"date":{"year":2026,"month":10,"day":10},"into":"calendar.BIKRAM_SAMBAT"}}"#,
@@ -536,6 +539,11 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         "ts_verify_receipt",
         Seed::Refused,
         r#"{"format":"teistro.receipt/2","record":"calendar.convert"}"#,
+    ),
+    (
+        "ts_almanac_sky_view",
+        Seed::Answered,
+        r#"{"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"at":2461345.25,"grahas":["MOON","graha.KETU"],"stars":["SPICA"],"eclipticStepDeg":30,"horizonStepDeg":45,"pressureHpa":0}"#,
     ),
 ];
 
@@ -707,6 +715,7 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_chart_astrocartography" => string_call(ts_chart_astrocartography, text),
         "ts_verify_issue" => string_call(ts_verify_issue, text),
         "ts_verify_receipt" => string_call(ts_verify_receipt, text),
+        "ts_almanac_sky_view" => string_call(ts_almanac_sky_view, text),
         _ => Status::Ok,
     }
 }

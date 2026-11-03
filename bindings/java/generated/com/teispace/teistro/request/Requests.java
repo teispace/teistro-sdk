@@ -28,6 +28,7 @@ public final class Requests {
             Map.entry("almanac.publishedReasons", PublishedReasonsRequest::of),
             Map.entry("almanac.sankalpa", SankalpaRequest::of),
             Map.entry("almanac.sentences", SentencesRequest::of),
+            Map.entry("almanac.skyView", SkyViewRequest::of),
             Map.entry("calendar.add", AddAsked::of),
             Map.entry("calendar.between", BetweenAsked::of),
             Map.entry("calendar.convert", CalendarAsked::of),

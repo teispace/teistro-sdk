@@ -197,6 +197,7 @@ from ._requests import (
     KinQuery as KinQuery,
     RiteQuery as RiteQuery,
     DeathTimeQuery as DeathTimeQuery,
+    SkyViewRequest as SkyViewRequest,
     HouseholdQuery as HouseholdQuery,
     KinAsked as KinAsked,
     KinTable as KinTable,
@@ -1585,6 +1586,7 @@ __all__ = [
     "KinQuery",
     "RiteQuery",
     "DeathTimeQuery",
+    "SkyViewRequest",
     "HouseholdQuery",
     "KinAsked",
     "KinTable",
@@ -1626,6 +1628,12 @@ __all__ = [
     "DeathRite",
     "DeathTime",
     "DeathTimeAnswer",
+    "EclipticPoint",
+    "GrahaSky",
+    "HorizonPoint",
+    "SkyView",
+    "SkyViewAnswer",
+    "StarSky",
     "FirstAbdika",
     "FirstYearAdhika",
     "SapindanaAt",
@@ -4252,6 +4260,53 @@ class AlmanacArea(_Area):
             asked["table"] = table
         answered = self._context._through_provider(lambda: self._context.inner.almanac_death_time(json.dumps(asked)))
         return _death_time_answer(answered)
+
+    def sky_view(
+        self,
+        *,
+        place: Observer,
+        at: float,
+        grahas: Optional[Sequence[Union[Graha, str]]] = None,
+        stars: Optional[Sequence[Union[Star, str]]] = None,
+        ecliptic_step_deg: Optional[float] = None,
+        horizon_step_deg: Optional[float] = None,
+        pressure_hpa: Optional[float] = None,
+        temperature_c: Optional[float] = None,
+    ) -> "SkyViewAnswer":
+        """**The sky at a place and an instant** (`03-design/sky-view.md`):
+        where each graha and each nakshatra's junction star stands,
+        topocentric, apparent and of date, its altitude airless and
+        refracted and its azimuth from north through east; and the
+        ecliptic, with the ascendant and the descendant, and the horizon as
+        point lists. `grahas` and `stars` are the nine and the twenty-seven
+        yogataras when left out; each step is 0.1 to 90 degrees, five when
+        left out; the air is 1010 hPa and 10 °C, and a pressure of 0 turns
+        refraction off. A context over a classical astronomy is refused
+        (C1185).
+
+        >>> # view = ctx.almanac.sky_view(place=kathmandu, at=2461345.25)
+        >>> # view.value.grahas[1].azimuth_deg  # the Moon's
+        """
+        asked: Dict[str, Any] = {
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "at": at,
+        }
+        if grahas is not None:
+            asked["grahas"] = [_member_key(graha) for graha in grahas]
+        if stars is not None:
+            asked["stars"] = [_member_key(star) for star in stars]
+        for key, value in (
+            ("eclipticStepDeg", ecliptic_step_deg),
+            ("horizonStepDeg", horizon_step_deg),
+            ("pressureHpa", pressure_hpa),
+            ("temperatureC", temperature_c),
+        ):
+            if value is not None:
+                asked[key] = value
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_sky_view(json.dumps(asked)))
+        return _sky_view_answer(answered)
 
     def first_year(
         self,
@@ -11539,6 +11594,102 @@ class DeathTime:
 
 
 @dataclass(frozen=True)
+class GrahaSky:
+    """A graha in the local sky (`03-design/sky-view.md`): topocentric,
+    apparent and of date, the azimuth from north through east."""
+
+    graha: Graha
+    ra_deg: float
+    dec_deg: float
+    altitude_deg: float
+    """Airless, of the centre."""
+
+    refracted_altitude_deg: float
+    """Under the air's refraction; airless below the horizon (C973)."""
+
+    azimuth_deg: float
+
+
+@dataclass(frozen=True)
+class StarSky:
+    """A star in the local sky, as a graha's."""
+
+    star: Star
+    nakshatra: Optional[Nakshatra]
+    """The nakshatra it is the yogatara of, or `None`."""
+
+    magnitude: Optional[float]
+    ra_deg: float
+    dec_deg: float
+    altitude_deg: float
+    refracted_altitude_deg: float
+    azimuth_deg: float
+
+
+@dataclass(frozen=True)
+class EclipticPoint:
+    """A point of the ecliptic in the local sky: `SAMPLE`, `ASCENDANT`
+    or `DESCENDANT`, by tropical longitude of date."""
+
+    kind: str
+    longitude_deg: float
+    altitude_deg: float
+    refracted_altitude_deg: float
+    azimuth_deg: float
+
+
+@dataclass(frozen=True)
+class HorizonPoint:
+    """A point of the airless horizon, and where it lies on the sphere of
+    date."""
+
+    azimuth_deg: float
+    ra_deg: float
+    dec_deg: float
+    longitude_deg: float
+    latitude_deg: float
+
+
+@dataclass(frozen=True)
+class SkyView:
+    """The sky at a place and an instant (`03-design/sky-view.md`)."""
+
+    at: float
+    """UT1 read as UTC, a Julian day."""
+
+    sidereal_time_deg: float
+    obliquity_deg: float
+    pressure_hpa: float
+    temperature_c: float
+    ecliptic_step_deg: float
+    horizon_step_deg: float
+    grahas: Tuple[GrahaSky, ...]
+    stars: Tuple[StarSky, ...]
+    ecliptic: Tuple[EclipticPoint, ...]
+    """Every step of longitude and the two crossings, in longitude order."""
+
+    horizon: Tuple[HorizonPoint, ...]
+    """Every step of azimuth from north."""
+
+    def graha(self, graha: Graha) -> Optional[GrahaSky]:
+        """A graha's place, if it was asked."""
+        return next((placed for placed in self.grahas if placed.graha == graha), None)
+
+
+@dataclass(frozen=True)
+class SkyViewAnswer:
+    """What `almanac.sky_view` answers.
+
+    >>> # view = ctx.almanac.sky_view(place=kathmandu, at=2461345.25)
+    >>> # view.value.graha(Graha.MOON).azimuth_deg
+    """
+
+    value: SkyView
+    provenance: Provenance
+    """What computed it, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
 class DeathTimeAnswer:
     """What `almanac.death_time` answers.
 
@@ -18078,6 +18229,69 @@ def _death_instant(raw: Mapping[str, Any]) -> DeathInstant:
         panchaka=bool(raw["panchaka"]),
         feet=raw.get("feet"),
         pushkara=raw.get("pushkara"),
+    )
+
+
+def _sky_view_answer(text: str) -> "SkyViewAnswer":
+    """`ts_almanac_sky_view`'s answer, with the provenance beside it."""
+    envelope = json.loads(text)
+    raw = envelope["value"]
+    air = raw["atmosphere"]
+    return SkyViewAnswer(
+        value=SkyView(
+            at=raw["at"],
+            sidereal_time_deg=raw["siderealTimeDeg"],
+            obliquity_deg=raw["obliquityDeg"],
+            pressure_hpa=air["pressureHpa"],
+            temperature_c=air["temperatureC"],
+            ecliptic_step_deg=raw["eclipticStepDeg"],
+            horizon_step_deg=raw["horizonStepDeg"],
+            grahas=tuple(
+                GrahaSky(
+                    graha=_member(Graha, one["graha"]),
+                    ra_deg=one["raDeg"],
+                    dec_deg=one["decDeg"],
+                    altitude_deg=one["altitudeDeg"],
+                    refracted_altitude_deg=one["refractedAltitudeDeg"],
+                    azimuth_deg=one["azimuthDeg"],
+                )
+                for one in raw["grahas"]
+            ),
+            stars=tuple(
+                StarSky(
+                    star=_member(Star, one["star"]),
+                    nakshatra=None if one["nakshatra"] is None else _member(Nakshatra, one["nakshatra"]),
+                    magnitude=one["magnitude"],
+                    ra_deg=one["raDeg"],
+                    dec_deg=one["decDeg"],
+                    altitude_deg=one["altitudeDeg"],
+                    refracted_altitude_deg=one["refractedAltitudeDeg"],
+                    azimuth_deg=one["azimuthDeg"],
+                )
+                for one in raw["stars"]
+            ),
+            ecliptic=tuple(
+                EclipticPoint(
+                    kind=one["kind"],
+                    longitude_deg=one["longitudeDeg"],
+                    altitude_deg=one["altitudeDeg"],
+                    refracted_altitude_deg=one["refractedAltitudeDeg"],
+                    azimuth_deg=one["azimuthDeg"],
+                )
+                for one in raw["ecliptic"]
+            ),
+            horizon=tuple(
+                HorizonPoint(
+                    azimuth_deg=one["azimuthDeg"],
+                    ra_deg=one["raDeg"],
+                    dec_deg=one["decDeg"],
+                    longitude_deg=one["longitudeDeg"],
+                    latitude_deg=one["latitudeDeg"],
+                )
+                for one in raw["horizon"]
+            ),
+        ),
+        provenance=decode_provenance(envelope["provenance"]),
     )
 
 

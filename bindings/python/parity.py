@@ -3186,6 +3186,26 @@ def main() -> None:
         ).eclipses
     assert eclipses is not None
 
+    # ── The sky view ──────────────────────────────────────────────────
+    # Kathmandu at 18:00 UTC on 31 October 2026 over the built-in sky
+    # (`03-design/sky-view.md`): the hash, each list's length, the Moon and
+    # the ascendant.
+    with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as builtin:
+        sky_view = builtin.almanac.sky_view(place=place, at=2461345.25)
+    put("sky-view-hash", sky_view.provenance.content_hash)
+    put(
+        "sky-view-count",
+        f"{len(sky_view.value.grahas)} {len(sky_view.value.stars)} {len(sky_view.value.ecliptic)} {len(sky_view.value.horizon)}",
+    )
+    sky_moon = sky_view.value.graha(Graha.MOON)
+    assert sky_moon is not None
+    put(
+        "sky-view-moon",
+        f"{number(sky_moon.altitude_deg)} {number(sky_moon.refracted_altitude_deg)} {number(sky_moon.azimuth_deg)}",
+    )
+    sky_ascendant = next(point for point in sky_view.value.ecliptic if point.kind == "ASCENDANT")
+    put("sky-view-ascendant", f"{number(sky_ascendant.longitude_deg)} {number(sky_ascendant.azimuth_deg)}")
+
     # ── The lagna table and the homa ahuti ────────────────────────────
     # 15 June 2025 at Kathmandu over the built-in sky, each sign's span
     # (`03-design/amrit-kalam-and-lagnas.md` §2) and each graha's share

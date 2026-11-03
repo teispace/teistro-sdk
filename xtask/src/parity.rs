@@ -112,14 +112,21 @@ struct Report {
 /// sunrises and cuts move by tens of milliseconds with the Sun's and the
 /// nutation's truncation, and its homa ahuti, whose shares begin and end
 /// where the Moon's and the Sun's stars change, a second or so apart on
-/// the compact tier. So these lines are
+/// the compact tier, and the sky view, whose Moon stands a few
+/// ten-thousandths of a degree from the standard tier's. So these lines are
 /// held to the same **shape** — every kind, rule and count, and which
 /// contacts and stretches exist — and their numbers and hashes are the
 /// tier's own. The list fails both ways: a line with a different shape
 /// fails, and so does a prefix none of whose lines differ any more,
 /// because then the build carries the standard tier and the exception is
 /// stale.
-const WASM_TIER: [&str; 4] = ["eclipses-", "lilith-", "lagnas-", "homa-ahuti-"];
+const WASM_TIER: [&str; 5] = [
+    "eclipses-",
+    "lilith-",
+    "lagnas-",
+    "homa-ahuti-",
+    "sky-view-",
+];
 
 /// The wasm runner's own values: its build's target, which must be a
 /// wasm32 one, and is the one line it may not share.

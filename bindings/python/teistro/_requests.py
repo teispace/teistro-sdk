@@ -36,6 +36,7 @@ __all__ = [
     "PublishedReasonsRequest",
     "SankalpaRequest",
     "SentencesRequest",
+    "SkyViewRequest",
     "AddAsked",
     "BetweenAsked",
     "CalendarAsked",
@@ -1159,6 +1160,40 @@ class SentencesRequest(TypedDict, total=False):
     longitudeDeg: Required[float]
 
     utcOffsetSeconds: Required[int]
+
+
+class SkyViewRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+    """The place's height above sea level in metres, 0 when left out."""
+
+    at: Required[float]
+    """The instant, a UTC Julian day."""
+
+    eclipticStepDeg: Optional[float]
+    """The ecliptic's step in longitude, degrees, 0.1 to 90; 5 when left out."""
+
+    grahas: Optional[Sequence[Union[_catalogue.Graha, str]]]
+    """The grahas placed, in this order; the nine, Sun to Ketu, when left out."""
+
+    horizonStepDeg: Optional[float]
+    """The horizon's step in azimuth, degrees, 0.1 to 90; 5 when left out."""
+
+    latitudeDeg: Required[float]
+    """The place's latitude, degrees north positive."""
+
+    longitudeDeg: Required[float]
+    """The place's longitude, degrees east positive."""
+
+    pressureHpa: Optional[float]
+    """The pressure the refraction is reckoned under, hectopascals, 0 to 1100; 1010 when left out, and 0 for no refraction."""
+
+    stars: Optional[Sequence[Union[_catalogue.Star, str]]]
+    """The stars placed, in this order; the twenty-seven nakshatras' yogataras when left out."""
+
+    temperatureC: Optional[float]
+    """The temperature, degrees Celsius, −90 to 60; 10 when left out."""
 
 
 class AddAsked(TypedDict, total=False):

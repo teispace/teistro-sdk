@@ -4106,6 +4106,7 @@ public final class Native {
         "ts_almanac_anniversaries",
         "ts_almanac_festival_pack",
         "ts_almanac_changes",
+        "ts_almanac_sky_view",
         "ts_naam_milan",
         "ts_chart_relocated",
         "ts_chart_astrocartography",
@@ -5011,6 +5012,36 @@ public final class Native {
     public final MethodHandle ts_almanac_changes;
 
     /**
+     * The sky at a place and an instant (`03-design/sky-view.md`), answered
+     * with `{value, provenance}` as canonical JSON.
+     *
+     * `value` is `{at, siderealTimeDeg, obliquityDeg, atmosphere,
+     * eclipticStepDeg, horizonStepDeg, grahas, stars, ecliptic, horizon}`:
+     * each of `grahas` `{graha, raDeg, decDeg, altitudeDeg,
+     * refractedAltitudeDeg, azimuthDeg}`, topocentric, apparent and of date,
+     * the azimuth from north through east and Rahu and Ketu the node the
+     * settings name; each of `stars` the same with `star`, `nakshatra` (the
+     * nakshatra it is the yogatara of, or null) and `magnitude`; `ecliptic`
+     * `{kind, longitudeDeg, altitudeDeg, refractedAltitudeDeg, azimuthDeg}`
+     * at every step of tropical longitude and at the `ASCENDANT` and the
+     * `DESCENDANT`, in the order of longitude; and `horizon` `{azimuthDeg,
+     * raDeg, decDeg, longitudeDeg, latitudeDeg}` at every step of azimuth
+     * from north.
+     *
+     * `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "at",
+     * "grahas", "stars", "eclipticStepDeg", "horizonStepDeg", "pressureHpa",
+     * "temperatureC"}`: `at` a UTC Julian day, `grahas` and `stars` lists of
+     * keys (the nine and the twenty-seven yogataras when left out), each step
+     * 0.1 to 90 degrees (5 when left out), and the air 1010 hPa and 10 °C
+     * when left out, a pressure of 0 for no refraction. A key it does not
+     * read, a place out of range, a step or an atmosphere out of range is
+     * `INVALID_ARG`, named under `skyView`; a context without an ephemeris
+     * is `CAPABILITY`, and one over a classical astronomy `UNSUPPORTED`
+     * (C1185).
+     */
+    public final MethodHandle ts_almanac_sky_view;
+
+    /**
      * Matches two names star to star (naam milan) and answers with the
      * `naam` blob: each name's first syllable in the śatapada cakra, the
      * varga koota, and the Ashta Koota and the ten considerations of the two
@@ -5555,6 +5586,7 @@ public final class Native {
         ts_almanac_anniversaries = linker.downcallHandle(symbols.find("ts_almanac_anniversaries").orElseThrow(() -> missing("ts_almanac_anniversaries")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_festival_pack = linker.downcallHandle(symbols.find("ts_almanac_festival_pack").orElseThrow(() -> missing("ts_almanac_festival_pack")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_almanac_changes = linker.downcallHandle(symbols.find("ts_almanac_changes").orElseThrow(() -> missing("ts_almanac_changes")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
+        ts_almanac_sky_view = linker.downcallHandle(symbols.find("ts_almanac_sky_view").orElseThrow(() -> missing("ts_almanac_sky_view")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_naam_milan = linker.downcallHandle(symbols.find("ts_naam_milan").orElseThrow(() -> missing("ts_naam_milan")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_chart_relocated = linker.downcallHandle(symbols.find("ts_chart_relocated").orElseThrow(() -> missing("ts_chart_relocated")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
         ts_chart_astrocartography = linker.downcallHandle(symbols.find("ts_chart_astrocartography").orElseThrow(() -> missing("ts_chart_astrocartography")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
