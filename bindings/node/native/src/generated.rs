@@ -256,6 +256,7 @@ pub fn chart_kind_from_str(value: &str) -> Result<u16> {
         "chart_kind.RETURN" => Ok(4),
         "chart_kind.RELOCATED" => Ok(5),
         "chart_kind.COMPOSITE" => Ok(6),
+        "chart_kind.MUNDANE" => Ok(7),
         other => Err(Error::from_reason(format!("`{other}` is not a ChartKind"))),
     }
 }
@@ -271,6 +272,7 @@ pub fn chart_kind_to_str(value: u16) -> String {
         4 => "chart_kind.RETURN",
         5 => "chart_kind.RELOCATED",
         6 => "chart_kind.COMPOSITE",
+        7 => "chart_kind.MUNDANE",
         _ => "unknown",
     }
     .to_string()
@@ -5628,6 +5630,51 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// The sky at a place and an instant (`03-design/sky-view.md`), answered
+    /// with `{value, provenance}` as canonical JSON.
+    ///
+    /// `value` is `{at, siderealTimeDeg, obliquityDeg, atmosphere,
+    /// eclipticStepDeg, horizonStepDeg, grahas, stars, ecliptic, horizon}`:
+    /// each of `grahas` `{graha, raDeg, decDeg, altitudeDeg,
+    /// refractedAltitudeDeg, azimuthDeg}`, topocentric, apparent and of date,
+    /// the azimuth from north through east and Rahu and Ketu the node the
+    /// settings name; each of `stars` the same with `star`, `nakshatra` (the
+    /// nakshatra it is the yogatara of, or null) and `magnitude`; `ecliptic`
+    /// `{kind, longitudeDeg, altitudeDeg, refractedAltitudeDeg, azimuthDeg}`
+    /// at every step of tropical longitude and at the `ASCENDANT` and the
+    /// `DESCENDANT`, in the order of longitude; and `horizon` `{azimuthDeg,
+    /// raDeg, decDeg, longitudeDeg, latitudeDeg}` at every step of azimuth
+    /// from north.
+    ///
+    /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "at",
+    /// "grahas", "stars", "eclipticStepDeg", "horizonStepDeg", "pressureHpa",
+    /// "temperatureC"}`: `at` a UTC Julian day, `grahas` and `stars` lists of
+    /// keys (the nine and the twenty-seven yogataras when left out), each step
+    /// 0.1 to 90 degrees (5 when left out), and the air 1010 hPa and 10 °C
+    /// when left out, a pressure of 0 for no refraction. A key it does not
+    /// read, a place out of range, a step or an atmosphere out of range is
+    /// `INVALID_ARG`, named under `skyView`; a context without an ephemeris
+    /// is `CAPABILITY`, and one over a classical astronomy `UNSUPPORTED`
+    /// (C1185).
+    #[napi]
+    pub fn almanac_sky_view(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_sky_view(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Matches two names star to star (naam milan) and answers with the
     /// `naam` blob: each name's first syllable in the śatapada cakra, the
     /// varga koota, and the Ashta Koota and the ten considerations of the two
@@ -5652,6 +5699,122 @@ impl Context {
         self.leave()?;
         self.check(&env, status)?;
         take_blob(&env, &mut out_blob)
+    }
+
+    /// **A chart recast at other places** (`03-design/astrocartography.md`):
+    /// each place's ascendant, midheaven and twelve cusps at one instant, in
+    /// the context's zodiac, as `{value, provenance}` canonical JSON sealed by
+    /// the first place's chart with the request as its input.
+    ///
+    /// `value` is `{instant, obliquityDeg, places}`, each place
+    /// `{latitudeDeg, longitudeDeg, altitudeM, ascendantDeg, midheavenDeg,
+    /// cuspsDeg, houseSystem}` in the order asked, `cuspsDeg` twelve and
+    /// `houseSystem` a `house_system` key.
+    ///
+    /// `request_json` is `{"instant", "places", "houseSystem"}`: `instant` a
+    /// UTC Julian day; `places` one to 256 `{"latitudeDeg", "longitudeDeg",
+    /// "altitudeM"}`; `houseSystem` a `house_system` key, the profile's
+    /// Western override else Placidus when left out (C1157). A key the record
+    /// does not read, no place or too many, or a place out of range is
+    /// `INVALID_ARG`, named under `relocated` (`relocated.places[1].latitudeDeg`);
+    /// a context without an ephemeris is `CAPABILITY`.
+    #[napi]
+    pub fn chart_relocated(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::mapping::ts_chart_relocated(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// **The astrocartography lines** at an instant
+    /// (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC
+    /// lines on the Earth, as `{value, provenance}` canonical JSON sealed by
+    /// the chart the bodies were read from, with the request as its input.
+    ///
+    /// `value` is `{instant, projection, stepDeg, latitudeLimitDeg,
+    /// toleranceDeg, greenwichRamcDeg, obliquityDeg, lines}`, each line
+    /// `{body, angle, points, polarLimitDeg}`: `body` a `graha` key, `angle`
+    /// `MC`, `IC`, `ASC` or `DSC`, `points` `[longitudeDeg, latitudeDeg]`
+    /// pairs from south to north, longitude east in `[-180, 180)`, and
+    /// `polarLimitDeg` for a rising or setting line the latitude past which
+    /// it does not run (C1156). Every point is on its angle, read back
+    /// through a chart cast there, to `toleranceDeg`.
+    ///
+    /// `request_json` is `{"instant", "bodies", "projection", "stepDeg",
+    /// "latitudeLimitDeg"}`: `instant` a UTC Julian day; `bodies` `graha`
+    /// keys, the seven and the outer planets the profile places when left
+    /// out; `projection` `IN_MUNDO` (the default) or `ZODIACAL` (C1155);
+    /// `stepDeg` above 0 and at most 10, 1 by default; `latitudeLimitDeg`
+    /// above 0 and below 90, 80 by default. A key the record does not read,
+    /// a value out of range or a body the chart does not place is
+    /// `INVALID_ARG`, named under `astrocartography`; a context without an
+    /// ephemeris is `CAPABILITY`.
+    #[napi]
+    pub fn chart_astrocartography(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::mapping::ts_chart_astrocartography(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// **The moment of a mundane chart** (`03-design/mundane-charts.md`): an
+    /// ingress, the lunation before one, an eclipse, a great conjunction or
+    /// an event on record, and the place it is cast for, as `{value,
+    /// provenance}` canonical JSON sealed by the chart cast there, with the
+    /// request as its input.
+    ///
+    /// `value` is `{kind, instant, latitudeDeg, longitudeDeg, altitudeM,
+    /// utcOffsetSeconds, ingress, solarEclipse, lunarEclipse, name,
+    /// source}`: `kind` a `mundane_kind` key, `instant` the moment as a UTC
+    /// Julian day; `ingress` `{kind, instant}` the ingress a lunation
+    /// precedes; `solarEclipse` or `lunarEclipse` an eclipse's kind; `name`
+    /// and `source` an event's, as the record gave them. A field a kind does
+    /// not carry is absent.
+    ///
+    /// `request_json` is `{"kind", "year", "from", "ingress", "event",
+    /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`:
+    /// `kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC
+    /// Julian day) where the search starts, the first ingress, eclipse or
+    /// conjunction at or after it; `ingress` the ingress a lunation precedes,
+    /// `MESHA_SANKRANTI` by default (C1151); `event` `{"name", "instant",
+    /// "source"}` for an `EVENT`, which reads neither `year` nor `from`. The
+    /// sankrantis are read in the context's own zodiac, the four tropical
+    /// ingresses in the tropical one. A key the record does not read, a
+    /// missing or extra `year`, `from`, `ingress` or `event`, or a place out
+    /// of range is `INVALID_ARG`, named under `mundane`; an eclipse over a
+    /// classical astronomy is `UNSUPPORTED` naming `kind`; a context without
+    /// an ephemeris is `CAPABILITY`.
+    #[napi]
+    pub fn chart_mundane(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::mundane::ts_chart_mundane(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
     }
 
     /// The syllables a pada, a star or a sign names a child by, in the
@@ -5865,6 +6028,77 @@ impl Context {
         // SAFETY: the handle is live and every pointer is valid for the call.
         let status = unsafe {
             ffi::verify::ts_verify_claims(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// A record answered with its receipt (`03-design/receipts-and-datasets.md`
+    /// §1.2), answered as canonical JSON: `{answer, receipt}`.
+    ///
+    /// `answer` is the record's own answer, `{value, provenance}` where it is
+    /// sealed and the value alone where it is not. `receipt` is `{format,
+    /// record, request, requestDigest, settings, locale, packs, provider, tzdb,
+    /// sdkVersion, calculationVersion, catalogueVersion, outputDigest,
+    /// digest}`: `format` `teistro.receipt/1`, `settings` the snapshot
+    /// `{profile, settings, hash}` with the whole settings document,
+    /// `provider` `{name, version, dataVersion}` or null where the answer read
+    /// no ephemeris, `outputDigest` the SHA-256 of the value's canonical JSON,
+    /// and `digest` the seal, the SHA-256 of the receipt's canonical JSON
+    /// without `digest`. An OKF *Attested Computation*'s executor; hand the
+    /// receipt to `ts_verify_receipt` to attest it.
+    ///
+    /// `request_json` is `{"record", "request"}`: a record's name as the
+    /// records table lists it and its request. A key it does not read is
+    /// `INVALID_ARG`, named under `issue`; a record this build does not
+    /// carry is `UNSUPPORTED`, named `issue.record`; a request that is not an
+    /// object is `INVALID_ARG`, named `issue.request`; otherwise whatever the
+    /// record refuses.
+    #[napi]
+    pub fn verify_issue(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::verify::ts_verify_issue(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its
+    /// record answered again on this context under the receipt's own settings,
+    /// locale and request, and the value's digest compared, answered as
+    /// canonical JSON: `{verdict, record, moved, broken, issued, now, reason}`.
+    ///
+    /// `verdict` is `HELD` (the digest is the receipt's), `DIFFERS` (another),
+    /// `NOT_RERUN` (not answered again; `reason` is `{cause, detail}`, the
+    /// cause `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE`
+    /// or `REFUSED`) or `BROKEN` (a digest the receipt carries is not its own
+    /// fields'; `broken` names each: `requestDigest`, `settings.hash`,
+    /// `digest`). `moved` lists each field that moved between the receipt and
+    /// the check, `{field, issued, now}`: `output` first when the value did,
+    /// then `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider`
+    /// and `tzdb`. `issued` and `now` are the two sides' `{sdkVersion,
+    /// calculationVersion, catalogueVersion, provider, tzdb}`. An OKF
+    /// *Attested Computation*'s attester.
+    ///
+    /// `request_json` is the receipt `ts_verify_issue` answered, whole. A key
+    /// it does not have is `INVALID_ARG`, named under `receipt`; a format other
+    /// than `teistro.receipt/1` is `SCHEMA_VERSION`, named `receipt.format`.
+    #[napi]
+    pub fn verify_receipt(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::verify::ts_verify_receipt(self.handle, request_json.as_ptr(), &raw mut out_json)
         };
         self.leave()?;
         self.check(&env, status)?;

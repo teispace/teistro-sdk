@@ -544,3 +544,83 @@ fn dasha_named(key: &str) -> Result<DashaName, Error> {
     }
     Ok(DashaName::Registered(bare.to_owned()))
 }
+
+/// What a dataset's study answers: the study's own answer, run under the
+/// study's settings, beside the records it admitted and those its
+/// `minimumRating` set aside (`03-design/receipts-and-datasets.md` §2.3).
+#[derive(Clone, Debug, PartialEq, Serialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "camelCase")]
+pub struct DatasetAnswer {
+    /// The study's id.
+    pub study: String,
+    /// The ids of the records the study read, in the order of its births.
+    pub admitted: Vec<String>,
+    /// The records set aside by their rating.
+    pub excluded: Vec<teistro_research::dataset::Excluded>,
+    /// What `research.study` answers for the study's request.
+    pub answer: ResearchAnswer,
+}
+
+impl ResearchArea<'_> {
+    /// Runs the study `study` of a dataset: its request
+    /// ([`Dataset::study_request`](teistro_research::dataset::Dataset::study_request))
+    /// answered as [`ResearchArea::request`] answers it, on a context
+    /// derived from this one under the study's own settings snapshot
+    /// ([`Context::with_settings`](crate::Context::with_settings)).
+    ///
+    /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
+    /// use teistro::research::dataset::Dataset;
+    /// use teistro::{Context, Ephemeris, ResearchAnswer};
+    /// use teistro_core::settings::SettingsSnapshot;
+    ///
+    /// let context = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let snapshot = SettingsSnapshot::of(context.resolved());
+    /// let birth = |jd: f64| serde_json::json!({"instant": jd, "latitudeDeg": 27.7,
+    ///     "longitudeDeg": 85.3, "utcOffsetSeconds": 20700});
+    /// let dataset = Dataset::from_value(&serde_json::json!({
+    ///     "format": "teistro.dataset/1", "name": "two births",
+    ///     "records": [
+    ///         {"id": "a", "birth": birth(2447000.25), "rating": "AA"},
+    ///         {"id": "b", "birth": birth(2448000.75), "rating": "C"},
+    ///         {"id": "c", "birth": birth(2449000.5), "rating": "A"}],
+    ///     "studies": [{"id": "s", "settings": snapshot, "minimumRating": "B",
+    ///         "groups": {"a": 0, "c": 1},
+    ///         "request": {"study": "COUNTS", "rules": {"shipped": ["YOGAS"]}}}]}), "dataset")?;
+    /// let studied = context.research().dataset(&dataset, "s")?;
+    /// assert_eq!(studied.admitted, ["a", "c"]);
+    /// assert_eq!(studied.excluded[0].id, "b");
+    /// assert!(matches!(studied.answer, ResearchAnswer::Counts(_)));
+    /// # }
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`Dataset::study_request`](teistro_research::dataset::Dataset::study_request)
+    /// refuses; what [`Context::with_settings`](crate::Context::with_settings)
+    /// refuses of the study's settings, under `dataset.studies[i]`; and
+    /// what [`ResearchRequest::from_json`] and [`ResearchArea::request`]
+    /// refuse of the request, named under `research` as the record names it.
+    pub fn dataset(
+        self,
+        dataset: &teistro_research::dataset::Dataset,
+        study: &str,
+    ) -> Result<DatasetAnswer, Error> {
+        let asked = dataset.study_request(study)?;
+        let derived = self
+            .context()
+            .with_settings(&asked.study.settings, None)
+            .map_err(|why| why.under(&format!("dataset.studies[{}]", asked.index)))?;
+        let request =
+            ResearchRequest::from_json(&teistro_core::envelope::canonical_json(&asked.request))?;
+        let answer = derived.research().request(&request)?;
+        Ok(DatasetAnswer {
+            study: asked.study.id.clone(),
+            admitted: asked.admitted,
+            excluded: asked.excluded,
+            answer,
+        })
+    }
+}

@@ -1,0 +1,247 @@
+{
+  "$defs": {
+    "DatasetBirth": {
+      "additionalProperties": false,
+      "description": "A birth as a dataset records it: the fields `research.study` reads.",
+      "properties": {
+        "altitudeM": {
+          "description": "Metres above sea level; 0 when left out.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "instant": {
+          "description": "The instant, a UTC Julian day.",
+          "format": "double",
+          "type": "number"
+        },
+        "latitudeDeg": {
+          "description": "Degrees north positive.",
+          "format": "double",
+          "type": "number"
+        },
+        "longitudeDeg": {
+          "description": "Degrees east positive.",
+          "format": "double",
+          "type": "number"
+        },
+        "uncertaintyMinutes": {
+          "description": "How far either side the time may be, in minutes; 0 when left out.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "utcOffsetSeconds": {
+          "description": "The offset from UTC the birth's clock ran at, seconds east positive.",
+          "format": "int32",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "instant",
+        "latitudeDeg",
+        "longitudeDeg",
+        "utcOffsetSeconds"
+      ],
+      "type": "object"
+    },
+    "DatasetRecord": {
+      "additionalProperties": false,
+      "description": "One record: a birth, its rating and where it came from.",
+      "properties": {
+        "birth": {
+          "$ref": "#/$defs/DatasetBirth",
+          "description": "The birth."
+        },
+        "event": {
+          "description": "The instant of the record's event, a UTC Julian day, for a timed study.",
+          "format": "double",
+          "type": [
+            "number",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "The record's id, unique in the dataset.",
+          "type": "string"
+        },
+        "rating": {
+          "$ref": "#/$defs/Rating",
+          "description": "How reliable the birth's time is, by its source."
+        },
+        "source": {
+          "description": "The source, in words: the register, the book and page, the person.",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "birth",
+        "rating"
+      ],
+      "type": "object"
+    },
+    "DatasetStudy": {
+      "additionalProperties": false,
+      "description": "One study: the settings it runs under, the worst rating it admits, its groups, and the rest of its request.",
+      "properties": {
+        "groups": {
+          "additionalProperties": {
+            "format": "uint32",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "description": "Each admitted record's group, by its id, for a `COUNTS` or `COMPARE` study.",
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "id": {
+          "description": "The study's id, unique in the dataset.",
+          "type": "string"
+        },
+        "minimumRating": {
+          "$ref": "#/$defs/Rating",
+          "description": "The worst rating the study admits: `AA`, `A`, `B`, `C` or `DD`."
+        },
+        "request": {
+          "additionalProperties": true,
+          "description": "`research.study`'s request less `births`, `subjects` and `design`, which the dataset supplies.",
+          "type": "object"
+        },
+        "settings": {
+          "$ref": "#/$defs/SettingsSnapshot",
+          "description": "The settings the study is run under, whole."
+        }
+      },
+      "required": [
+        "id",
+        "settings",
+        "minimumRating",
+        "request"
+      ],
+      "type": "object"
+    },
+    "Hash": {
+      "description": "A SHA-256, as sixty-four hex digits.",
+      "pattern": "^[0-9a-fA-F]{64}$",
+      "type": "string"
+    },
+    "Rating": {
+      "description": "How reliable a birth's data is, by its source: the Rodden Rating, as Astro-Databank keeps it (`03-design/receipts-and-datasets.md` §2.1).",
+      "oneOf": [
+        {
+          "const": "AA",
+          "description": "A birth certificate, a civil register or a written family record.",
+          "type": "string"
+        },
+        {
+          "const": "A",
+          "description": "The native, kin or an associate, from memory.",
+          "type": "string"
+        },
+        {
+          "const": "B",
+          "description": "A biography or an autobiography.",
+          "type": "string"
+        },
+        {
+          "const": "C",
+          "description": "Caution: no source, an ambiguous one, or one not credible.",
+          "type": "string"
+        },
+        {
+          "const": "DD",
+          "description": "Dirty data: two or more unsubstantiated, conflicting sources.",
+          "type": "string"
+        },
+        {
+          "const": "X",
+          "description": "The date, without a time.",
+          "type": "string"
+        },
+        {
+          "const": "XX",
+          "description": "The date itself questioned.",
+          "type": "string"
+        }
+      ]
+    },
+    "SettingsSnapshot": {
+      "additionalProperties": false,
+      "description": "The settings something was computed under, whole.",
+      "properties": {
+        "hash": {
+          "$ref": "#/$defs/Hash",
+          "description": "The SHA-256 of the document's canonical JSON: the `settings_hash` a provenance carries."
+        },
+        "profile": {
+          "description": "The profile the settings were resolved from.",
+          "type": "string"
+        },
+        "settings": {
+          "additionalProperties": true,
+          "description": "The settings document, every knob, as `Context::settings_json` writes it, and kept as it was read. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "profile",
+        "settings",
+        "hash"
+      ],
+      "type": "object"
+    }
+  },
+  "$id": "urn:teistro:schema:dataset:1.0.0-rc.1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "description": "A research dataset.",
+  "properties": {
+    "description": {
+      "description": "What it is, in words.",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "format": {
+      "description": "`FORMAT`.",
+      "type": "string"
+    },
+    "name": {
+      "description": "The dataset's name.",
+      "type": "string"
+    },
+    "records": {
+      "description": "The records, in the order a study reads them.",
+      "items": {
+        "$ref": "#/$defs/DatasetRecord"
+      },
+      "type": "array"
+    },
+    "studies": {
+      "description": "The studies.",
+      "items": {
+        "$ref": "#/$defs/DatasetStudy"
+      },
+      "type": "array"
+    }
+  },
+  "required": [
+    "format",
+    "name",
+    "records",
+    "studies"
+  ],
+  "title": "A research dataset",
+  "type": "object"
+}

@@ -1116,6 +1116,102 @@ void _engineTests() {
     expect(feed(refreshMinutes: null), isNot(contains('REFRESH-INTERVAL')));
   });
 
+  // The Aries ingress of 2024 (USNO, 20 March 03:06 UTC), the new moon
+  // before it, an event on record, a relocation and the lines
+  // (`03-design/mundane-charts.md`, `03-design/astrocartography.md`).
+  test('a mundane chart, a relocation and the lines answer their places', () {
+    final sky = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final place = Observer(
+      longitudeDeg: Longitude(85.324),
+      latitudeDeg: Latitude(27.7172),
+      altitudeM: Altitude(1400),
+    );
+    final aries = sky.chart.mundane(
+      kind: MundaneKind.ariesIngress,
+      year: 2024,
+      place: place,
+    );
+    expect(aries.kind, MundaneKind.ariesIngress);
+    expect(
+      (aries.instant - (2460389.5 + (3 + 6 / 60) / 24)).abs(),
+      lessThan(2 / 1440),
+    );
+    expect(aries.chart.kind, ChartKind.mundane);
+    expect(aries.provenance.inputHash, isNotEmpty);
+    final newMoon = sky.chart.mundane(
+      kind: MundaneKind.newMoonBeforeIngress,
+      year: 2024,
+      ingress: MundaneKind.ariesIngress,
+      place: place,
+    );
+    expect(newMoon.ingress!.kind, MundaneKind.ariesIngress);
+    expect(newMoon.instant, lessThan(newMoon.ingress!.instant));
+    final event = sky.chart.mundane(
+      kind: MundaneKind.event,
+      event: const MundaneEvent(
+        name: 'A founding',
+        instant: 2451545,
+        source: 'a record',
+      ),
+      place: place,
+      utcOffsetSeconds: 20700,
+    );
+    expect(event.chart.kind, ChartKind.event);
+    expect((event.name, event.source), ('A founding', 'a record'));
+    expect(
+      () =>
+          sky.chart.mundane(kind: MundaneKind.event, year: 2024, place: place),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          startsWith('mundane.'),
+        ),
+      ),
+    );
+    final moved = sky.chart.relocated(
+      instant: 2447000.25,
+      places: [place],
+      houseSystem: HouseSystem.placidus,
+    );
+    expect(moved.places.single.cuspsDeg, hasLength(12));
+    expect(moved.places.single.houseSystem, HouseSystem.placidus);
+    expect(
+      () => sky.chart.relocated(instant: 2447000.25, places: const []),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'relocated.places',
+        ),
+      ),
+    );
+    final map = sky.chart.astrocartography(
+      instant: 2447000.25,
+      bodies: const [Graha.sun, Graha.moon],
+      stepDeg: 5,
+    );
+    expect(
+      [for (final line in map.lines) line.angle],
+      ['MC', 'IC', 'ASC', 'DSC', 'MC', 'IC', 'ASC', 'DSC'],
+    );
+    expect(map.lines.first.body, Graha.sun);
+    expect(map.lines.every((line) => line.points.isNotEmpty), isTrue);
+    expect(
+      () => sky.chart.astrocartography(instant: 2447000.25, stepDeg: 0),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'astrocartography.stepDeg',
+        ),
+      ),
+    );
+  });
+
   // 2026 is the 40th year of the 17th rabjung, Parabhava, Fire–male–Horse
   // (Janson, appendix B); a year before the first rabjung is refused by
   // name (`calendars/tibetan.md`).
@@ -1527,6 +1623,69 @@ void _engineTests() {
       );
     },
   );
+
+  // The sky at Kathmandu at 18:00 UTC on 31 October 2026 over the built-in
+  // sky (`03-design/sky-view.md`): the nine grahas, the twenty-seven
+  // yogataras with Spica Chitra's, the ecliptic at every fifth degree with
+  // its two crossings and the horizon at every fifth degree of azimuth.
+  test('an almanac draws the sky at a place and an instant', () {
+    final sky = teistro.context(
+      profile: 'nepali-drik',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    final kathmandu = Observer(
+      latitudeDeg: Latitude(27.7172),
+      longitudeDeg: Longitude(85.324),
+      altitudeM: Altitude(1400),
+    );
+    final found = sky.almanac.skyView(at: 2461345.25, place: kathmandu);
+    final view = found.value;
+    expect(found.provenance.contentHash, isNotEmpty);
+    expect(view.grahas, hasLength(9));
+    expect(view.graha(Graha.moon)!.graha, Graha.moon);
+    expect(view.stars, hasLength(27));
+    expect(view.stars[13].star, Star.spica);
+    expect(view.stars[13].nakshatra, Nakshatra.chitra);
+    expect([view.ecliptic.length, view.horizon.length], [74, 72]);
+    expect(
+      view.ecliptic.where((point) => point.kind == 'ASCENDANT'),
+      hasLength(1),
+    );
+    final few =
+        sky.almanac
+            .skyView(
+              at: 2461345.25,
+              place: kathmandu,
+              grahas: const [Graha.moon],
+              stars: const [],
+              eclipticStepDeg: 30,
+              pressureHpa: 0,
+            )
+            .value;
+    expect(
+      [few.grahas.length, few.stars.length, few.ecliptic.length],
+      [1, 0, 14],
+    );
+    expect(
+      few.grahas.single.refractedAltitudeDeg,
+      few.grahas.single.altitudeDeg,
+    );
+    expect(
+      () => sky.almanac.skyView(
+        at: 2461345.25,
+        place: kathmandu,
+        eclipticStepDeg: 0,
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (error) => error.field,
+          'field',
+          'skyView.eclipticStepDeg',
+        ),
+      ),
+    );
+  });
 
   // A death at 10:00 on 20 October 2026 in Kathmandu: the sixteen, fifteen
   // of them done again after a twelfth-day sapindana (DS p. 331); with

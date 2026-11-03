@@ -9268,6 +9268,69 @@ fn a_name_and_a_date_cross_as_the_kernel_reads_them() {
     }
 }
 
+/// A mundane chart's moment, a relocation and a map's lines cross as the
+/// façade answers them, and a refusal is named under each record
+/// (`03-design/mundane-charts.md`, `03-design/astrocartography.md`).
+#[cfg(all(feature = "western", feature = "builtin-ephemeris"))]
+#[test]
+fn a_mundane_moment_a_relocation_and_a_map_cross_as_the_facade_answers_them() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::Builtin, None, None, None).unwrap();
+    let sdk = teistro::Context::builder()
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let mundane = r#"{"kind": "NEW_MOON_BEFORE_INGRESS", "year": 2024, "ingress": "ARIES_INGRESS", "latitudeDeg": 51.5, "longitudeDeg": -0.12}"#;
+    let crossed = entry_json(teistro_ffi::mundane::ts_chart_mundane, &ctx, mundane).unwrap();
+    let kernel = sdk
+        .chart()
+        .mundane_moment(&teistro::MundaneRequest::from_json(mundane).unwrap())
+        .unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    let relocated = r#"{"instant": 2447000.25, "places": [{"latitudeDeg": 27.7172, "longitudeDeg": 85.324}, {"latitudeDeg": -33.9, "longitudeDeg": 18.4}]}"#;
+    let crossed = entry_json(teistro_ffi::mapping::ts_chart_relocated, &ctx, relocated).unwrap();
+    let kernel = sdk
+        .chart()
+        .relocated(&teistro::RelocationRequest::from_json(relocated).unwrap())
+        .unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    let map = r#"{"instant": 2447000.25, "bodies": ["MOON", "SATURN"], "stepDeg": 5, "projection": "ZODIACAL"}"#;
+    let crossed = entry_json(teistro_ffi::mapping::ts_chart_astrocartography, &ctx, map).unwrap();
+    let kernel = sdk
+        .chart()
+        .astrocartography(&teistro::AstrocartographyRequest::from_json(map).unwrap())
+        .unwrap();
+    assert_eq!(crossed, teistro_core::envelope::canonical_json(&kernel));
+    for (entry, request, field) in [
+        (
+            teistro_ffi::mundane::ts_chart_mundane as JsonEntry,
+            r#"{"kind": "EVENT", "latitudeDeg": 0, "longitudeDeg": 0}"#,
+            "mundane.event",
+        ),
+        (
+            teistro_ffi::mapping::ts_chart_relocated,
+            r#"{"instant": 2447000.25, "places": []}"#,
+            "relocated.places",
+        ),
+        (
+            teistro_ffi::mapping::ts_chart_astrocartography,
+            r#"{"instant": 2447000.25, "bodies": ["SUN"], "stepDeg": 0}"#,
+            "astrocartography.stepDeg",
+        ),
+        (
+            teistro_ffi::mapping::ts_chart_astrocartography,
+            r#"{"instant": 2447000.25, "bodies": ["KETU", "PLUTO"], "pole": 1}"#,
+            "astrocartography.pole",
+        ),
+    ] {
+        assert_eq!(
+            entry_json(entry, &ctx, request).unwrap_err(),
+            Status::InvalidArg,
+            "{request}"
+        );
+        assert_eq!(ctx.last_error().2.as_deref(), Some(field), "{request}");
+    }
+}
+
 /// A birth star's navatara chakra crosses as the kernel answers it, the
 /// special stars at the verse's counts, and a refusal is named under
 /// `navatara` (`03-design/navatara-chakra.md`).
@@ -10894,6 +10957,61 @@ fn claims_cross_as_the_facade_judges_them() {
     assert_eq!(ctx.last_error().2.as_deref(), Some("claims.clock"));
 }
 
+/// A receipt issued across the boundary is the façade's, and checked
+/// across it holds; a receipt of a record this build lacks and a receipt
+/// in another format are refused by name
+/// (`03-design/receipts-and-datasets.md` §4).
+#[test]
+fn a_receipt_crosses_and_holds() {
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
+    let call = |entry: JsonEntry, request: &str| -> Result<serde_json::Value, Status> {
+        let request = CString::new(request).unwrap();
+        let mut json = TsString::empty();
+        // SAFETY: a live context, a NUL-terminated request and a valid slot.
+        let status = unsafe { entry(ctx.handle, request.as_ptr(), &raw mut json) };
+        if status == Status::Ok {
+            Ok(serde_json::from_str(&owned(json)).unwrap())
+        } else {
+            // SAFETY: the empty descriptor a refusal leaves.
+            unsafe { ts_string_free(&raw mut json) };
+            Err(status)
+        }
+    };
+    let asked = r#"{"record": "almanac.sankalpa", "request": {"at": 2461055.59375,
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "utcOffsetSeconds": 20700}}"#;
+    let issued = call(teistro_ffi::verify::ts_verify_issue, asked).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .verify()
+        .issue(&teistro::verify::IssueRequest::from_json(asked).unwrap())
+        .unwrap();
+    assert_eq!(
+        issued,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    let receipt = issued["receipt"].to_string();
+    let check = call(teistro_ffi::verify::ts_verify_receipt, &receipt).unwrap();
+    assert_eq!(check["verdict"], "HELD", "{check}");
+
+    let lacking = r#"{"record": "almanac.nothing", "request": {}}"#;
+    assert_eq!(
+        call(teistro_ffi::verify::ts_verify_issue, lacking).unwrap_err(),
+        Status::Unsupported
+    );
+    assert_eq!(ctx.last_error().2.as_deref(), Some("issue.record"));
+    let other = receipt.replace("teistro.receipt/1", "teistro.receipt/2");
+    assert_eq!(
+        call(teistro_ffi::verify::ts_verify_receipt, &other).unwrap_err(),
+        Status::SchemaVersion
+    );
+    assert_eq!(ctx.last_error().2.as_deref(), Some("receipt.format"));
+}
+
 /// A Tibetan year's names cross as the calendar gives them, written in
 /// full, and a year before the first rabjung is refused by name.
 #[test]
@@ -11350,4 +11468,67 @@ fn an_ashauch_crosses_as_the_facade_answers_it() {
         "request": {"key": "k", "relation": "SAPINDA", "caste": "any",
                     "event": {"event": "DEATH", "at": 2461051.677083}}}"#;
     assert_eq!(ashauch_json(&ctx, unread).unwrap_err(), Status::InvalidArg);
+}
+
+fn sky_view_json(ctx: &Ctx, request: &str) -> Result<String, Status> {
+    let request = CString::new(request).unwrap();
+    let mut json = TsString::empty();
+    // SAFETY: a live context, a NUL-terminated request and a valid slot.
+    let status = unsafe {
+        teistro_ffi::panchanga::ts_almanac_sky_view(ctx.handle, request.as_ptr(), &raw mut json)
+    };
+    if status == Status::Ok {
+        Ok(owned(json))
+    } else {
+        // SAFETY: the empty descriptor a refusal leaves.
+        unsafe { ts_string_free(&raw mut json) };
+        Err(status)
+    }
+}
+
+/// The sky view crosses as the façade answers it, its members in full
+/// (`03-design/sky-view.md`); a step below the least and a classical sky
+/// are refused.
+#[test]
+fn a_sky_view_crosses_as_the_facade_answers_it() {
+    let asked = r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "at": 2461345.25, "grahas": ["MOON", "RAHU"], "horizonStepDeg": 45}"#;
+    let ctx =
+        Ctx::with_ephemeris(0, TsEphemeris::Builtin, Some("nepali-drik"), None, None).unwrap();
+    let crossed: serde_json::Value =
+        serde_json::from_str(&sky_view_json(&ctx, asked).unwrap()).unwrap();
+    let kernel = teistro::Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([teistro::Ephemeris::Builtin])
+        .build()
+        .unwrap()
+        .almanac()
+        .sky_view_query(&teistro::SkyViewRequest::from_json(asked).unwrap())
+        .unwrap();
+    assert_eq!(
+        crossed,
+        serde_json::from_str::<serde_json::Value>(&teistro_core::envelope::canonical_json(&kernel))
+            .unwrap()
+    );
+    assert_eq!(crossed["value"]["grahas"][1]["graha"], "graha.RAHU");
+    assert_eq!(
+        crossed["value"]["horizon"].as_array().map(Vec::len),
+        Some(8)
+    );
+    assert_eq!(
+        sky_view_json(
+            &ctx,
+            r#"{"latitudeDeg": 0, "longitudeDeg": 0, "at": 2461345.25, "eclipticStepDeg": 0}"#
+        ),
+        Err(Status::InvalidArg)
+    );
+    let classical = Ctx::with_ephemeris(
+        0,
+        TsEphemeris::SuryaSiddhanta,
+        Some("nepali-committee"),
+        None,
+        None,
+    )
+    .unwrap();
+    assert_eq!(sky_view_json(&classical, asked), Err(Status::Unsupported));
 }

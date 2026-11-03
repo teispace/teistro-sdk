@@ -50,6 +50,7 @@ use crate::phenomena::{bright_limb_deg, parallactic_angle_deg, phase_of};
 use crate::rise_set::Solver;
 use crate::scale::tt_of;
 use crate::sky::{Apparent, ApparentPositions, obliquity_parts, observer_at};
+use crate::sky_view::Atmosphere;
 
 /// The nodes each body's fit is read at. Measured against the source by
 /// this module's test and `crates/sdk/tests/day_sky.rs`.
@@ -554,7 +555,7 @@ fn cross(left: &Vector3, right: &Vector3) -> Vector3 {
 
 /// The altitude and the azimuth from north through east, degrees, of a
 /// direction at an hour angle (Meeus, ch. 13).
-fn horizontal(hour_angle_deg: f64, dec_deg: f64, latitude_deg: f64) -> (f64, f64) {
+pub(crate) fn horizontal(hour_angle_deg: f64, dec_deg: f64, latitude_deg: f64) -> (f64, f64) {
     let (sin_h, cos_h) = math::sin_cos(hour_angle_deg * DEG2RAD);
     let (sin_dec, cos_dec) = math::sin_cos(dec_deg * DEG2RAD);
     let (sin_phi, cos_phi) = math::sin_cos(latitude_deg * DEG2RAD);
@@ -573,20 +574,7 @@ fn horizontal(hour_angle_deg: f64, dec_deg: f64, latitude_deg: f64) -> (f64, f64
 /// degrees (Sæmundsson 1986, Meeus eq. 16.4), or the airless altitude
 /// where the body stays below the horizon (crux C973).
 fn refracted_deg(altitude_deg: f64) -> f64 {
-    // Sæmundsson's fit turns over below about −3°, and anything that low
-    // is below the horizon however it is refracted.
-    const FLOOR_DEG: f64 = -2.0;
-    if altitude_deg < FLOOR_DEG {
-        return altitude_deg;
-    }
-    let lifted = altitude_deg + 10.3 / (altitude_deg + 5.11);
-    let refraction_deg = 1.02 / math::tan(lifted * DEG2RAD) / 60.0;
-    let refracted = altitude_deg + refraction_deg;
-    if refracted < 0.0 {
-        altitude_deg
-    } else {
-        refracted
-    }
+    crate::sky_view::refracted_deg(altitude_deg, Atmosphere::STANDARD)
 }
 
 /// The Moon's shape, from her place and the Sun's as the station sees

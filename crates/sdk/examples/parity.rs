@@ -844,6 +844,9 @@ fn the_surface(report: &mut Report) {
         ("chart.rashifal", "present"),
         ("chart.rashifal_many", "present"),
         ("chart.disagreements", "present"),
+        ("chart.mundane", "present"),
+        ("chart.relocated", "present"),
+        ("chart.astrocartography", "present"),
         ("engine.call", "present"),
         ("engine.call_json", "present"),
         ("engine.manifest", "present"),
@@ -7617,6 +7620,72 @@ fn navatara(report: &mut Report, sdk: &Context) {
     );
 }
 
+/// The sky at Kathmandu at 18:00 UTC on 31 October 2026 over the built-in
+/// sky (`03-design/sky-view.md`): the hash, each list's length, the Moon
+/// and the ascendant.
+fn sky_view(report: &mut Report) {
+    let sky = Context::builder()
+        .profile("nepali-drik")
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .expect("a context over the built-in sky");
+    let asked = teistro::SkyViewRequest::from_json(
+        r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400, "at": 2461345.25}"#,
+    )
+    .expect("a sky view request");
+    let found = sky
+        .almanac()
+        .sky_view(&asked)
+        .expect("the built-in sky draws the sky");
+    // The boundary seals the full-keyed value, as it does the eclipses.
+    let written = sky
+        .almanac()
+        .sky_view_query(&asked)
+        .expect("the built-in sky draws the sky");
+    put(
+        report,
+        "sky-view-hash",
+        written.provenance.content_hash.to_string(),
+    );
+    let value = &found.value;
+    put(
+        report,
+        "sky-view-count",
+        format!(
+            "{} {} {} {}",
+            value.grahas.len(),
+            value.stars.len(),
+            value.ecliptic.len(),
+            value.horizon.len()
+        ),
+    );
+    let moon = value.graha(Graha::Moon).expect("the Moon was asked");
+    put(
+        report,
+        "sky-view-moon",
+        format!(
+            "{} {} {}",
+            number(moon.altitude_deg),
+            number(moon.refracted_altitude_deg),
+            number(moon.azimuth_deg)
+        ),
+    );
+    let ascendant = value
+        .ecliptic
+        .iter()
+        .find(|point| point.kind == teistro::sky_view::EclipticPointKind::Ascendant)
+        .expect("an ascendant");
+    put(
+        report,
+        "sky-view-ascendant",
+        format!(
+            "{} {}",
+            number(ascendant.longitude_deg),
+            number(ascendant.azimuth_deg)
+        ),
+    );
+}
+
 /// The eclipses a panchanga request carries, as the report prints them.
 ///
 /// September 2025 at Kathmandu over the built-in sky, which the test
@@ -8353,6 +8422,7 @@ fn main() {
     lagnas(&mut report, &place, offset);
     markers(&mut report, &place, offset);
     navatara(&mut report, &geo);
+    sky_view(&mut report);
     the_lilith(&mut report, &place, offset);
     the_zones(&mut report, &place, offset);
 

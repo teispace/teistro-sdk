@@ -304,12 +304,16 @@ const Map<String, Type> _records = {
   'almanac.pakshi': PakshiRequest,
   'almanac.publishedReasons': PublishedReasonsRequest,
   'almanac.sankalpa': SankalpaRequest,
+  'almanac.skyView': SkyViewRequest,
   'calendar.add': AddAsked,
   'calendar.between': BetweenAsked,
   'calendar.convert': CalendarAsked,
   'chart.disagreements': ChartDisagreementsRequest,
+  'chart.astrocartography': AstrocartographyRequest,
   'chart.found': ChartFoundRequest,
+  'chart.mundane': MundaneRequest,
   'chart.rashifal': BatchAsked,
+  'chart.relocated': RelocationRequest,
   'intl.date': DateTextRequest,
   'intl.inWords': InWordsRequest,
   'intl.lexicon': LexiconRequest,
@@ -328,6 +332,8 @@ const Map<String, Type> _records = {
   'time.convert': ScaleRequest,
   'time.resolve': ResolveAsked,
   'verify.claims': ClaimsRequest,
+  'verify.issue': IssueRequest,
+  'verify.receipt': Receipt,
 };
 
 void main() {

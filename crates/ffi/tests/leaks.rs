@@ -213,7 +213,10 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
             Status::Ok
         );
     });
-    let entries: [JsonEntry; 12] = [
+    let entries: [JsonEntry; 17] = [
+        teistro_ffi::mundane::ts_chart_mundane,
+        teistro_ffi::mapping::ts_chart_relocated,
+        teistro_ffi::mapping::ts_chart_astrocartography,
         teistro_ffi::navatara::ts_navatara,
         teistro_ffi::numerology::ts_numerology_profile,
         teistro_ffi::pakshi::ts_pakshi,
@@ -226,6 +229,8 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
         teistro_ffi::naming::ts_naming_load,
         teistro_ffi::naming::ts_naming_suggest,
         teistro_ffi::verify::ts_verify_claims,
+        teistro_ffi::verify::ts_verify_issue,
+        teistro_ffi::verify::ts_verify_receipt,
     ];
     holds_nothing("refused JSON requests and their records", || {
         for entry in entries {
@@ -235,6 +240,58 @@ fn the_almanac_and_the_json_families_give_back_their_answers() {
     });
 }
 
+/// A record issued with its receipt, and the receipt checked, give back
+/// what they answered.
+#[test]
+fn the_receipts_give_back_their_answers() {
+    let ctx = builtin();
+    let issue = r#"{"record": "calendar.convert", "request": {"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}}"#;
+    holds_nothing("a record issued with its receipt", || {
+        assert_eq!(
+            json(&ctx, teistro_ffi::verify::ts_verify_issue, issue),
+            Status::Ok
+        );
+    });
+    let receipt = teistro_core::envelope::canonical_json(
+        &teistro::Context::builder()
+            .build()
+            .unwrap()
+            .verify()
+            .issue(&teistro::verify::IssueRequest::from_json(issue).unwrap())
+            .unwrap()
+            .receipt,
+    );
+    holds_nothing("a receipt checked", || {
+        assert_eq!(
+            json(&ctx, teistro_ffi::verify::ts_verify_receipt, &receipt),
+            Status::Ok
+        );
+    });
+}
+
+#[test]
+#[cfg(all(feature = "chart", feature = "western"))]
+fn a_mundane_moment_a_relocation_and_a_map_give_back_their_answers() {
+    let ctx = builtin();
+    holds_nothing("a mundane chart's moment", || {
+        let entry = teistro_ffi::mundane::ts_chart_mundane;
+        let event = r#"{"kind": "EVENT", "event": {"name": "x", "instant": 2460000.5, "source": "y"}, "latitudeDeg": 27.7, "longitudeDeg": 85.3}"#;
+        assert_eq!(json(&ctx, entry, event), Status::Ok);
+    });
+    holds_nothing("a relocation and a map's lines", || {
+        let relocated =
+            r#"{"instant": 2460000.5, "places": [{"latitudeDeg": 51.5, "longitudeDeg": 0}]}"#;
+        assert_eq!(
+            json(&ctx, teistro_ffi::mapping::ts_chart_relocated, relocated),
+            Status::Ok
+        );
+        let map = r#"{"instant": 2460000.5, "bodies": ["SUN"], "stepDeg": 10}"#;
+        assert_eq!(
+            json(&ctx, teistro_ffi::mapping::ts_chart_astrocartography, map),
+            Status::Ok
+        );
+    });
+}
 #[test]
 fn intl_gives_back_what_it_renders() {
     let ctx = builtin();
@@ -295,13 +352,13 @@ fn paired(ctx: &Ctx, other: &Ctx, entry: PairedEntry, request: &str) -> Status {
     status
 }
 
-/// The almanac's rites, its festival calendar and its two comparisons:
-/// each answer and each refusal's record given back.
+/// The almanac's rites, its festival calendar, the sky view and its two
+/// comparisons: each answer and each refusal's record given back.
 #[test]
 fn the_rites_and_the_comparisons_give_back_their_answers() {
     let ctx = builtin();
     let place = r#""latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337, "utcOffsetSeconds": 20700"#;
-    let rites: [(&str, JsonEntry, String); 5] = [
+    let rites: [(&str, JsonEntry, String); 6] = [
         (
             "a sankalpa",
             teistro_ffi::panchanga::ts_almanac_sankalpa,
@@ -331,6 +388,13 @@ fn the_rites_and_the_comparisons_give_back_their_answers() {
             teistro_ffi::panchanga::ts_almanac_festival_calendar,
             format!(
                 r#"{{"first": {{"year": 2025, "month": 10, "day": 1}}, "last": {{"year": 2025, "month": 10, "day": 2}}, {place}, "festivals": {{"rules": "NEPAL"}}, "stampUnixSeconds": 1767225600, "name": "Nepal", "refreshMinutes": 0}}"#
+            ),
+        ),
+        (
+            "a sky view",
+            teistro_ffi::panchanga::ts_almanac_sky_view,
+            String::from(
+                r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1337, "at": 2461345.25}"#,
             ),
         ),
     ];

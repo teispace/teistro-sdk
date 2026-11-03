@@ -158,12 +158,17 @@ mod remedy_request;
 #[cfg(feature = "research")]
 mod research_request;
 mod sankalpa_request;
+mod sky_view_request;
 // The record entry points: every area a binding reaches with one JSON
 // record, by name (`03-design/mcp-server.md` D3).
 pub mod records;
 // A consumer's own layouts and dasha systems, read from JSON.
+#[cfg(feature = "western")]
+mod mapping;
 #[cfg(feature = "tajika")]
 mod masa_pravesha;
+#[cfg(feature = "chart")]
+mod mundane;
 pub mod registrations;
 #[cfg(feature = "chart")]
 mod returns;
@@ -284,6 +289,9 @@ pub use teistro_panchanga::nepal_sambat::NepalSambatDate;
 // A day's sky, which `AlmanacRequest::with_sky` asks and
 // `AlmanacAnswer::sky` answers (`03-design/day-sky.md`).
 pub use teistro_astro::day_sky;
+// The sky at a place and an instant (`03-design/sky-view.md`).
+pub use crate::sky_view_request::SkyViewRequest;
+pub use teistro_astro::sky_view;
 // What a reading answers with, and the sections it holds: the document
 // is `teistro-serial`'s, and an operation that answers one must let a
 // consumer name it and every section of it.
@@ -575,9 +583,16 @@ pub mod research {
 }
 /// What a text claims of the time, checked against what the SDK computes
 /// (`03-design/lexicon.md` §3): what `sdk.verify().claims` takes and
-/// answers with.
+/// answers with; and receipts, a record's answer named so it can be
+/// computed again, and the check of one (`03-design/receipts-and-datasets.md`
+/// §1): what `sdk.verify().issue` and `sdk.verify().receipt` take and
+/// answer with.
 pub mod verify {
+    pub use crate::area::receipt::{
+        IssueRequest, Issued, Moved, NotRerun, NotRerunCause, ReceiptCheck, ReceiptVerdict, Side,
+    };
     pub use crate::area::verify::{Claim, Claims, ClaimsRequest, Unread, Verdict};
+    pub use teistro_core::receipt::{FORMAT, Receipt, ReceiptProvider};
 }
 // Prashna: the query chart read as Shatpanchashika prints it
 // (`03-design/prashna.md`).
@@ -600,7 +615,7 @@ pub use crate::first_year_request::FirstYearQuery;
 #[cfg(feature = "pakshi")]
 pub use crate::pakshi_request::{PakshiDay, PakshiNative, PakshiRequest};
 #[cfg(feature = "research")]
-pub use crate::research_request::{ResearchAnswer, ResearchRequest, ResearchStudy};
+pub use crate::research_request::{DatasetAnswer, ResearchAnswer, ResearchRequest, ResearchStudy};
 pub use crate::sankalpa_request::SankalpaRequest;
 #[cfg(feature = "pakshi")]
 pub use teistro_pakshi as pakshi;
@@ -621,6 +636,21 @@ pub use teistro_rashifal as rashifal;
 // (`03-design/western-returns.md`).
 #[cfg(feature = "chart")]
 pub use crate::returns::{BodyReturn, OffsetReturn};
+// Mundane charts: an ingress, the lunation before one, an eclipse, a
+// great conjunction or an event on record, cast for a place
+// (`03-design/mundane-charts.md`).
+#[cfg(feature = "chart")]
+pub use crate::mundane::{
+    CONJUNCTION_STEP_DAYS, MundaneChart, MundaneEvent, MundaneIngress, MundaneMoment,
+    MundaneRequest,
+};
+// A chart recast at other places, and the astrocartography lines
+// (`03-design/astrocartography.md`).
+#[cfg(feature = "western")]
+pub use crate::mapping::{
+    Astrocartography, AstrocartographyRequest, RELOCATION_PLACES_MAX, RelocatedChart, Relocation,
+    RelocationPlace, RelocationRequest,
+};
 // One year's months, or one month's days, as a chart request asks for
 // them (`03-design/annual-chart.md`).
 #[cfg(feature = "tajika")]

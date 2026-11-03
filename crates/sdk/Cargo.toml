@@ -269,6 +269,10 @@ name = "verify"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
+name = "receipt"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
 name = "ritu"
 required-features = ["builtin-ephemeris"]
 
@@ -282,6 +286,10 @@ required-features = ["builtin-ephemeris"]
 
 [[test]]
 name = "day_sky"
+required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "sky_view"
 required-features = ["builtin-ephemeris"]
 
 [[test]]
@@ -463,6 +471,15 @@ required-features = ["builtin-ephemeris"]
 [[test]]
 name = "returns"
 required-features = ["builtin-ephemeris"]
+
+[[test]]
+name = "mundane"
+required-features = ["builtin-ephemeris", "western"]
+
+[[bench]]
+name = "mundane"
+harness = false
+required-features = ["builtin-ephemeris", "western"]
 
 [[test]]
 name = "immanuel"

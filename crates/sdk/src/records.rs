@@ -450,17 +450,20 @@ pub fn records() -> Vec<Record> {
             schemas: schemas!(crate::research_request::RequestAsked => crate::research_request::Studied),
         },
     ];
+    all.extend(map_records());
     all.extend(intl_records());
     #[cfg(feature = "chart")]
     all.extend(chart_records());
     #[cfg(feature = "chart")]
     all.extend(naming_records());
     all.extend(almanac_records());
+    all.push(sky_view_record());
     all.extend(ashauch_records());
     all.extend(almanac_lookup_records());
     all.extend(time_records());
     all.extend(engine_records());
     all.push(verify_record());
+    all.extend(receipt_records());
     all.sort_by_key(|record| record.name);
     all
 }
@@ -505,6 +508,52 @@ fn chart_records() -> [Record; 3] {
             run: |context, json| disagreements(context, context, json),
             compares: Some(disagreements),
             schemas: schemas!(fn crate::area::disagreement_schema => crate::ChartDisagreements, parts: []),
+        },
+    ]
+}
+
+/// The mundane, relocation and map records (`03-design/mundane-charts.md`,
+/// `03-design/astrocartography.md`), each present with its feature.
+fn map_records() -> Vec<Record> {
+    vec![
+        #[cfg(feature = "chart")]
+        Record {
+            name: "chart.mundane",
+            boundary: "ts_chart_mundane",
+            title: "The moment of a mundane chart: an ingress, a lunation, an eclipse, a conjunction or an event",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::MundaneRequest::from_json(json)?;
+                Answered::sealed(context.chart().mundane_moment(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::MundaneRequest => crate::MundaneMoment),
+        },
+        #[cfg(feature = "western")]
+        Record {
+            name: "chart.relocated",
+            boundary: "ts_chart_relocated",
+            title: "A chart's angles and houses recast at other places",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::RelocationRequest::from_json(json)?;
+                Answered::sealed(context.chart().relocated(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::RelocationRequest => crate::Relocation),
+        },
+        #[cfg(feature = "western")]
+        Record {
+            name: "chart.astrocartography",
+            boundary: "ts_chart_astrocartography",
+            title: "Each body's MC, IC, ASC and DSC lines on the Earth",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::AstrocartographyRequest::from_json(json)?;
+                Answered::sealed(context.chart().astrocartography(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::AstrocartographyRequest => crate::Astrocartography),
         },
     ]
 }
@@ -872,6 +921,22 @@ fn almanac_lookup_records() -> [Record; 6] {
     ]
 }
 
+/// The sky view at a place and an instant (`03-design/sky-view.md`).
+fn sky_view_record() -> Record {
+    Record {
+        name: "almanac.skyView",
+        boundary: "ts_almanac_sky_view",
+        title: "Where every graha and junction star stands in the local sky, with the ecliptic and the horizon",
+        reads: None,
+        run: |context, json| {
+            let asked = crate::SkyViewRequest::from_json(json)?;
+            Answered::sealed(context.almanac().sky_view_query(&asked)?)
+        },
+        compares: None,
+        schemas: schemas!(crate::sky_view_request::SkyViewAsked => crate::sky_view::SkyView),
+    }
+}
+
 /// What a text claims of the time, checked against the sankalpa at an
 /// instant and a place (`03-design/lexicon.md` §3), sealed with the
 /// sankalpa's provenance.
@@ -888,6 +953,38 @@ fn verify_record() -> Record {
         compares: None,
         schemas: schemas!(crate::area::verify::ClaimsAsked => crate::verify::Claims),
     }
+}
+
+/// Receipts (`03-design/receipts-and-datasets.md` §1, SR-51): a record
+/// answered with a receipt, and a receipt checked by answering it again.
+/// Neither is sealed: what each answers carries its own versions.
+fn receipt_records() -> [Record; 2] {
+    [
+        Record {
+            name: "verify.issue",
+            boundary: "ts_verify_issue",
+            title: "A record answered with a receipt that lets it be computed again",
+            reads: None,
+            run: |context, json| {
+                let asked = crate::verify::IssueRequest::from_json(json)?;
+                Answered::plain(&context.verify().issue(&asked)?)
+            },
+            compares: None,
+            schemas: schemas!(crate::verify::IssueRequest => crate::verify::Issued),
+        },
+        Record {
+            name: "verify.receipt",
+            boundary: "ts_verify_receipt",
+            title: "A receipt checked: its record answered again and the digests compared",
+            reads: None,
+            run: |context, json| {
+                let receipt = crate::verify::Receipt::from_json(json)?;
+                Answered::plain(&context.verify().receipt(&receipt))
+            },
+            compares: None,
+            schemas: schemas!(crate::verify::Receipt => crate::verify::ReceiptCheck),
+        },
+    ]
 }
 
 /// The engine passthrough (ADR-0030): what the engine says it offers,

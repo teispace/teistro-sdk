@@ -24,6 +24,8 @@
     "crates/ffi/src/positions.rs",
     "crates/ffi/src/panchanga.rs",
     "crates/ffi/src/naam.rs",
+    "crates/ffi/src/mapping.rs",
+    "crates/ffi/src/mundane.rs",
     "crates/ffi/src/naming.rs",
     "crates/ffi/src/navatara.rs",
     "crates/ffi/src/verify.rs",
@@ -725,6 +727,12 @@
           "value": 91,
           "doc": "The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).",
           "key": "tridosha"
+        },
+        {
+          "name": "MundaneKind",
+          "value": 130,
+          "doc": "Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).",
+          "key": "mundane_kind"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -3827,6 +3835,12 @@
           "value": 6,
           "doc": "Composite",
           "key": "COMPOSITE"
+        },
+        {
+          "name": "Mundane",
+          "value": 7,
+          "doc": "Mundane: a chart of a year, a lunation, an eclipse or a conjunction, cast for a place (`03-design/mundane-charts.md`)",
+          "key": "MUNDANE"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -7142,6 +7156,93 @@
           "value": 2,
           "doc": "Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis",
           "key": "KAPHA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "MundaneKind",
+      "doc": "Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_MUNDANE_KIND << 16) | member`.",
+      "repr": "u16",
+      "kind": "mundane_kind",
+      "values": [
+        {
+          "name": "MeshaSankranti",
+          "value": 0,
+          "doc": "The Sun's entry into sidereal Mesha, which opens the solar year and names its minister (C1150)",
+          "key": "MESHA_SANKRANTI"
+        },
+        {
+          "name": "MakaraSankranti",
+          "value": 1,
+          "doc": "The Sun's entry into sidereal Makara, the turn to the northern course (uttarayana) (C1150)",
+          "key": "MAKARA_SANKRANTI"
+        },
+        {
+          "name": "AriesIngress",
+          "value": 2,
+          "doc": "The Sun at tropical 0°, the spring equinox, the starting point Ptolemy prefers (C1150)",
+          "key": "ARIES_INGRESS"
+        },
+        {
+          "name": "CancerIngress",
+          "value": 3,
+          "doc": "The Sun at tropical 90°, the summer solstice, one of Ptolemy's four starting points (C1150)",
+          "key": "CANCER_INGRESS"
+        },
+        {
+          "name": "LibraIngress",
+          "value": 4,
+          "doc": "The Sun at tropical 180°, the autumn equinox, one of Ptolemy's four starting points (C1150)",
+          "key": "LIBRA_INGRESS"
+        },
+        {
+          "name": "CapricornIngress",
+          "value": 5,
+          "doc": "The Sun at tropical 270°, the winter solstice, one of Ptolemy's four starting points (C1150)",
+          "key": "CAPRICORN_INGRESS"
+        },
+        {
+          "name": "NewMoonBeforeIngress",
+          "value": 6,
+          "doc": "The last new moon before an ingress: before Mesha, the new moon that opens Chaitra, whose weekday's lord rules the year (C1151)",
+          "key": "NEW_MOON_BEFORE_INGRESS"
+        },
+        {
+          "name": "FullMoonBeforeIngress",
+          "value": 7,
+          "doc": "The last full moon before an ingress (C1151)",
+          "key": "FULL_MOON_BEFORE_INGRESS"
+        },
+        {
+          "name": "SyzygyBeforeIngress",
+          "value": 8,
+          "doc": "Whichever of the new and the full moon most nearly precedes an ingress, Ptolemy's own reading (C1151)",
+          "key": "SYZYGY_BEFORE_INGRESS"
+        },
+        {
+          "name": "SolarEclipse",
+          "value": 9,
+          "doc": "The next solar eclipse, at its greatest (C1154)",
+          "key": "SOLAR_ECLIPSE"
+        },
+        {
+          "name": "LunarEclipse",
+          "value": 10,
+          "doc": "The next lunar eclipse, at its greatest (C1154)",
+          "key": "LUNAR_ECLIPSE"
+        },
+        {
+          "name": "GreatConjunction",
+          "value": 11,
+          "doc": "The next conjunction of Jupiter and Saturn in geocentric longitude, the first of a triple one (C1153)",
+          "key": "GREAT_CONJUNCTION"
+        },
+        {
+          "name": "Event",
+          "value": 12,
+          "doc": "An event on record: a name, an instant and a place, cast as given, its source carried on the answer",
+          "key": "EVENT"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -18418,6 +18519,57 @@
       "source": "crates/ffi/src/panchanga.rs"
     },
     {
+      "name": "ts_almanac_sky_view",
+      "doc": "The sky at a place and an instant (`03-design/sky-view.md`), answered\nwith `{value, provenance}` as canonical JSON.\n\n`value` is `{at, siderealTimeDeg, obliquityDeg, atmosphere,\neclipticStepDeg, horizonStepDeg, grahas, stars, ecliptic, horizon}`:\neach of `grahas` `{graha, raDeg, decDeg, altitudeDeg,\nrefractedAltitudeDeg, azimuthDeg}`, topocentric, apparent and of date,\nthe azimuth from north through east and Rahu and Ketu the node the\nsettings name; each of `stars` the same with `star`, `nakshatra` (the\nnakshatra it is the yogatara of, or null) and `magnitude`; `ecliptic`\n`{kind, longitudeDeg, altitudeDeg, refractedAltitudeDeg, azimuthDeg}`\nat every step of tropical longitude and at the `ASCENDANT` and the\n`DESCENDANT`, in the order of longitude; and `horizon` `{azimuthDeg,\nraDeg, decDeg, longitudeDeg, latitudeDeg}` at every step of azimuth\nfrom north.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\", \"at\",\n\"grahas\", \"stars\", \"eclipticStepDeg\", \"horizonStepDeg\", \"pressureHpa\",\n\"temperatureC\"}`: `at` a UTC Julian day, `grahas` and `stars` lists of\nkeys (the nine and the twenty-seven yogataras when left out), each step\n0.1 to 90 degrees (5 when left out), and the air 1010 hPa and 10 °C\nwhen left out, a pressure of 0 for no refraction. A key it does not\nread, a place out of range, a step or an atmosphere out of range is\n`INVALID_ARG`, named under `skyView`; a context without an ephemeris\nis `CAPABILITY`, and one over a classical astronomy `UNSUPPORTED`\n(C1185).",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/panchanga.rs"
+    },
+    {
       "name": "ts_naam_milan",
       "doc": "Matches two names star to star (naam milan) and answers with the\n`naam` blob: each name's first syllable in the śatapada cakra, the\nvarga koota, and the Ashta Koota and the ten considerations of the two\nname stars (`03-design/matching.md`, C291 to C296).\n\n`request_json` is `{\"bride\", \"groom\", \"rules\"}`: the two names, in\nDevanagari or in the Latin scheme `rules.name.latin` declares, and the\n`NaamRules` with every field optional. A name the cakra does not read,\na Latin name while `latin` refuses, a `CASUAL` name read more than one\nway, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`,\nnamed under `naam.bride` or `naam.groom`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_blob` valid for a write.",
@@ -18469,6 +18621,159 @@
         "blob": "naam"
       },
       "source": "crates/ffi/src/naam.rs"
+    },
+    {
+      "name": "ts_chart_relocated",
+      "doc": "**A chart recast at other places** (`03-design/astrocartography.md`):\neach place's ascendant, midheaven and twelve cusps at one instant, in\nthe context's zodiac, as `{value, provenance}` canonical JSON sealed by\nthe first place's chart with the request as its input.\n\n`value` is `{instant, obliquityDeg, places}`, each place\n`{latitudeDeg, longitudeDeg, altitudeM, ascendantDeg, midheavenDeg,\ncuspsDeg, houseSystem}` in the order asked, `cuspsDeg` twelve and\n`houseSystem` a `house_system` key.\n\n`request_json` is `{\"instant\", \"places\", \"houseSystem\"}`: `instant` a\nUTC Julian day; `places` one to 256 `{\"latitudeDeg\", \"longitudeDeg\",\n\"altitudeM\"}`; `houseSystem` a `house_system` key, the profile's\nWestern override else Placidus when left out (C1157). A key the record\ndoes not read, no place or too many, or a place out of range is\n`INVALID_ARG`, named under `relocated` (`relocated.places[1].latitudeDeg`);\na context without an ephemeris is `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/mapping.rs"
+    },
+    {
+      "name": "ts_chart_astrocartography",
+      "doc": "**The astrocartography lines** at an instant\n(`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC\nlines on the Earth, as `{value, provenance}` canonical JSON sealed by\nthe chart the bodies were read from, with the request as its input.\n\n`value` is `{instant, projection, stepDeg, latitudeLimitDeg,\ntoleranceDeg, greenwichRamcDeg, obliquityDeg, lines}`, each line\n`{body, angle, points, polarLimitDeg}`: `body` a `graha` key, `angle`\n`MC`, `IC`, `ASC` or `DSC`, `points` `[longitudeDeg, latitudeDeg]`\npairs from south to north, longitude east in `[-180, 180)`, and\n`polarLimitDeg` for a rising or setting line the latitude past which\nit does not run (C1156). Every point is on its angle, read back\nthrough a chart cast there, to `toleranceDeg`.\n\n`request_json` is `{\"instant\", \"bodies\", \"projection\", \"stepDeg\",\n\"latitudeLimitDeg\"}`: `instant` a UTC Julian day; `bodies` `graha`\nkeys, the seven and the outer planets the profile places when left\nout; `projection` `IN_MUNDO` (the default) or `ZODIACAL` (C1155);\n`stepDeg` above 0 and at most 10, 1 by default; `latitudeLimitDeg`\nabove 0 and below 90, 80 by default. A key the record does not read,\na value out of range or a body the chart does not place is\n`INVALID_ARG`, named under `astrocartography`; a context without an\nephemeris is `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/mapping.rs"
+    },
+    {
+      "name": "ts_chart_mundane",
+      "doc": "**The moment of a mundane chart** (`03-design/mundane-charts.md`): an\ningress, the lunation before one, an eclipse, a great conjunction or\nan event on record, and the place it is cast for, as `{value,\nprovenance}` canonical JSON sealed by the chart cast there, with the\nrequest as its input.\n\n`value` is `{kind, instant, latitudeDeg, longitudeDeg, altitudeM,\nutcOffsetSeconds, ingress, solarEclipse, lunarEclipse, name,\nsource}`: `kind` a `mundane_kind` key, `instant` the moment as a UTC\nJulian day; `ingress` `{kind, instant}` the ingress a lunation\nprecedes; `solarEclipse` or `lunarEclipse` an eclipse's kind; `name`\nand `source` an event's, as the record gave them. A field a kind does\nnot carry is absent.\n\n`request_json` is `{\"kind\", \"year\", \"from\", \"ingress\", \"event\",\n\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\"}`:\n`kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC\nJulian day) where the search starts, the first ingress, eclipse or\nconjunction at or after it; `ingress` the ingress a lunation precedes,\n`MESHA_SANKRANTI` by default (C1151); `event` `{\"name\", \"instant\",\n\"source\"}` for an `EVENT`, which reads neither `year` nor `from`. The\nsankrantis are read in the context's own zodiac, the four tropical\ningresses in the tropical one. A key the record does not read, a\nmissing or extra `year`, `from`, `ingress` or `event`, or a place out\nof range is `INVALID_ARG`, named under `mundane`; an eclipse over a\nclassical astronomy is `UNSUPPORTED` naming `kind`; a context without\nan ephemeris is `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/mundane.rs"
     },
     {
       "name": "ts_naming_syllables",
@@ -18830,6 +19135,108 @@
     {
       "name": "ts_verify_claims",
       "doc": "Every claim a text makes of the time, each judged against what\n`almanac.sankalpa` computes at the instant and the place\n(`03-design/lexicon.md` §3), answered with `{value, provenance}` as\ncanonical JSON.\n\n`value` is `{claims}`, each claim `{start, end, text, kind, graha,\nclaimed, verdict, computed, reason}` in the text's order: the span\nnaming the member (counted in Unicode scalar values), the kind claimed,\nthe graha whose sign or nakshatra it is, every key the span may name,\n`HELD`, `CONTRADICTED` or `UNREAD`, the key computed on a claim judged,\nand on one unread why: `QUESTION`, `NEGATED`, `OTHER_TIME`,\n`NOT_COMPUTED` or `AMBIGUOUS`.\n\n`request_json` is `{\"text\", \"at\", \"latitudeDeg\", \"longitudeDeg\",\n\"altitudeM\", \"utcOffsetSeconds\", \"ayana\", \"locale\"}`: `at` a UTC Julian\nday, `altitudeM` 0 and `ayana` `SIDEREAL` when left out, and `locale`\nwhose names are searched, every loaded locale's when left out. A key it\ndoes not read or an instant, place or offset out of range is\n`INVALID_ARG`, named under `claims`; a locale no loaded one answers is\n`UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is\n`CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/verify.rs"
+    },
+    {
+      "name": "ts_verify_issue",
+      "doc": "A record answered with its receipt (`03-design/receipts-and-datasets.md`\n§1.2), answered as canonical JSON: `{answer, receipt}`.\n\n`answer` is the record's own answer, `{value, provenance}` where it is\nsealed and the value alone where it is not. `receipt` is `{format,\nrecord, request, requestDigest, settings, locale, packs, provider, tzdb,\nsdkVersion, calculationVersion, catalogueVersion, outputDigest,\ndigest}`: `format` `teistro.receipt/1`, `settings` the snapshot\n`{profile, settings, hash}` with the whole settings document,\n`provider` `{name, version, dataVersion}` or null where the answer read\nno ephemeris, `outputDigest` the SHA-256 of the value's canonical JSON,\nand `digest` the seal, the SHA-256 of the receipt's canonical JSON\nwithout `digest`. An OKF *Attested Computation*'s executor; hand the\nreceipt to `ts_verify_receipt` to attest it.\n\n`request_json` is `{\"record\", \"request\"}`: a record's name as the\nrecords table lists it and its request. A key it does not read is\n`INVALID_ARG`, named under `issue`; a record this build does not\ncarry is `UNSUPPORTED`, named `issue.record`; a request that is not an\nobject is `INVALID_ARG`, named `issue.request`; otherwise whatever the\nrecord refuses.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/verify.rs"
+    },
+    {
+      "name": "ts_verify_receipt",
+      "doc": "A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its\nrecord answered again on this context under the receipt's own settings,\nlocale and request, and the value's digest compared, answered as\ncanonical JSON: `{verdict, record, moved, broken, issued, now, reason}`.\n\n`verdict` is `HELD` (the digest is the receipt's), `DIFFERS` (another),\n`NOT_RERUN` (not answered again; `reason` is `{cause, detail}`, the\ncause `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE`\nor `REFUSED`) or `BROKEN` (a digest the receipt carries is not its own\nfields'; `broken` names each: `requestDigest`, `settings.hash`,\n`digest`). `moved` lists each field that moved between the receipt and\nthe check, `{field, issued, now}`: `output` first when the value did,\nthen `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider`\nand `tzdb`. `issued` and `now` are the two sides' `{sdkVersion,\ncalculationVersion, catalogueVersion, provider, tzdb}`. An OKF\n*Attested Computation*'s attester.\n\n`request_json` is the receipt `ts_verify_issue` answered, whole. A key\nit does not have is `INVALID_ARG`, named under `receipt`; a format other\nthan `teistro.receipt/1` is `SCHEMA_VERSION`, named `receipt.format`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -28799,7 +29206,7 @@
     },
     {
       "name": "Version",
-      "doc": "A semantic version.",
+      "doc": "A semantic version, with its pre-release label as written.",
       "shape": {
         "kind": "OBJECT",
         "fields": [
@@ -28838,6 +29245,15 @@
               }
             },
             "nullable": false
+          },
+          {
+            "name": "pre",
+            "doc": "The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release.",
+            "ty": {
+              "kind": "TEXT"
+            },
+            "nullable": true,
+            "null": true
           }
         ]
       }

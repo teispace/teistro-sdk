@@ -580,6 +580,47 @@ final class AlmanacReads {
                 Reads.string(v, "table")), provenance(envelope));
     }
 
+    /** {@code ts_almanac_sky_view}'s answer, its members resolved, with the provenance beside it. */
+    static SkyViewAnswer skyViewAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        Map<?, ?> v = Reads.object(envelope, "value");
+        Map<?, ?> air = Reads.object(v, "atmosphere");
+        return new SkyViewAnswer(new SkyView(
+                Reads.number(v, "at"),
+                Reads.number(v, "siderealTimeDeg"),
+                Reads.number(v, "obliquityDeg"),
+                Reads.number(air, "pressureHpa"),
+                Reads.number(air, "temperatureC"),
+                Reads.number(v, "eclipticStepDeg"),
+                Reads.number(v, "horizonStepDeg"),
+                Reads.each(v, "grahas", raw -> {
+                    Map<?, ?> r = Reads.object(raw);
+                    return new GrahaSky(member(r, "graha", "Graha", Graha::byKey), Reads.number(r, "raDeg"),
+                            Reads.number(r, "decDeg"), Reads.number(r, "altitudeDeg"),
+                            Reads.number(r, "refractedAltitudeDeg"), Reads.number(r, "azimuthDeg"));
+                }),
+                Reads.each(v, "stars", raw -> {
+                    Map<?, ?> r = Reads.object(raw);
+                    return new StarSky(member(r, "star", "Star", Star::byKey),
+                            r.get("nakshatra") == null ? null : member(r, "nakshatra", "Nakshatra", Nakshatra::byKey),
+                            Reads.optionalNumber(r, "magnitude"), Reads.number(r, "raDeg"),
+                            Reads.number(r, "decDeg"), Reads.number(r, "altitudeDeg"),
+                            Reads.number(r, "refractedAltitudeDeg"), Reads.number(r, "azimuthDeg"));
+                }),
+                Reads.each(v, "ecliptic", raw -> {
+                    Map<?, ?> r = Reads.object(raw);
+                    return new EclipticPoint(Reads.string(r, "kind"), Reads.number(r, "longitudeDeg"),
+                            Reads.number(r, "altitudeDeg"), Reads.number(r, "refractedAltitudeDeg"),
+                            Reads.number(r, "azimuthDeg"));
+                }),
+                Reads.each(v, "horizon", raw -> {
+                    Map<?, ?> r = Reads.object(raw);
+                    return new HorizonPoint(Reads.number(r, "azimuthDeg"), Reads.number(r, "raDeg"),
+                            Reads.number(r, "decDeg"), Reads.number(r, "longitudeDeg"),
+                            Reads.number(r, "latitudeDeg"));
+                })), provenance(envelope));
+    }
+
     /** One reading of the death-time check. */
     private static DeathInstant deathInstant(Map<?, ?> r) {
         return new DeathInstant(

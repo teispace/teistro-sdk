@@ -33,6 +33,7 @@ mod matching;
 mod naming;
 #[cfg(feature = "numerology")]
 mod numerology;
+pub(crate) mod receipt;
 #[cfg(feature = "research")]
 pub(crate) mod research;
 mod time;

@@ -2053,8 +2053,16 @@ typedef TsAlmanacFestivalPackNative = ffi.Int32 Function(ffi.Pointer<Context>, f
 typedef TsAlmanacFestivalPackDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacChangesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacChangesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacSkyViewNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacSkyViewDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
+typedef TsChartRelocatedNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsChartRelocatedDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsChartAstrocartographyNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsChartAstrocartographyDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsChartMundaneNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsChartMundaneDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNamingSyllablesNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNamingSyllablesDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNamingReadNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2071,6 +2079,10 @@ typedef TsNavataraNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<
 typedef TsNavataraDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsVerifyClaimsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsVerifyClaimsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsVerifyIssueNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsVerifyIssueDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsVerifyReceiptNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsVerifyReceiptDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsPakshiNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2171,7 +2183,11 @@ final class TeistroLibrary {
         ts_almanac_anniversaries = library.lookupFunction<TsAlmanacAnniversariesNative, TsAlmanacAnniversariesDart>('ts_almanac_anniversaries'),
         ts_almanac_festival_pack = library.lookupFunction<TsAlmanacFestivalPackNative, TsAlmanacFestivalPackDart>('ts_almanac_festival_pack'),
         ts_almanac_changes = library.lookupFunction<TsAlmanacChangesNative, TsAlmanacChangesDart>('ts_almanac_changes'),
+        ts_almanac_sky_view = library.lookupFunction<TsAlmanacSkyViewNative, TsAlmanacSkyViewDart>('ts_almanac_sky_view'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
+        ts_chart_relocated = library.lookupFunction<TsChartRelocatedNative, TsChartRelocatedDart>('ts_chart_relocated'),
+        ts_chart_astrocartography = library.lookupFunction<TsChartAstrocartographyNative, TsChartAstrocartographyDart>('ts_chart_astrocartography'),
+        ts_chart_mundane = library.lookupFunction<TsChartMundaneNative, TsChartMundaneDart>('ts_chart_mundane'),
         ts_naming_syllables = library.lookupFunction<TsNamingSyllablesNative, TsNamingSyllablesDart>('ts_naming_syllables'),
         ts_naming_read = library.lookupFunction<TsNamingReadNative, TsNamingReadDart>('ts_naming_read'),
         ts_naming_check = library.lookupFunction<TsNamingCheckNative, TsNamingCheckDart>('ts_naming_check'),
@@ -2180,6 +2196,8 @@ final class TeistroLibrary {
         ts_naming_suggest = library.lookupFunction<TsNamingSuggestNative, TsNamingSuggestDart>('ts_naming_suggest'),
         ts_navatara = library.lookupFunction<TsNavataraNative, TsNavataraDart>('ts_navatara'),
         ts_verify_claims = library.lookupFunction<TsVerifyClaimsNative, TsVerifyClaimsDart>('ts_verify_claims'),
+        ts_verify_issue = library.lookupFunction<TsVerifyIssueNative, TsVerifyIssueDart>('ts_verify_issue'),
+        ts_verify_receipt = library.lookupFunction<TsVerifyReceiptNative, TsVerifyReceiptDart>('ts_verify_receipt'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
         ts_pakshi = library.lookupFunction<TsPakshiNative, TsPakshiDart>('ts_pakshi'),
         ts_rashifal = library.lookupFunction<TsRashifalNative, TsRashifalDart>('ts_rashifal'),
@@ -2928,6 +2946,34 @@ final class TeistroLibrary {
   /// `utcOffsetSeconds` or `zone`, and optional `kinds`.
   final TsAlmanacChangesDart ts_almanac_changes;
 
+  /// The sky at a place and an instant (`03-design/sky-view.md`), answered
+  /// with `{value, provenance}` as canonical JSON.
+  ///
+  /// `value` is `{at, siderealTimeDeg, obliquityDeg, atmosphere,
+  /// eclipticStepDeg, horizonStepDeg, grahas, stars, ecliptic, horizon}`:
+  /// each of `grahas` `{graha, raDeg, decDeg, altitudeDeg,
+  /// refractedAltitudeDeg, azimuthDeg}`, topocentric, apparent and of date,
+  /// the azimuth from north through east and Rahu and Ketu the node the
+  /// settings name; each of `stars` the same with `star`, `nakshatra` (the
+  /// nakshatra it is the yogatara of, or null) and `magnitude`; `ecliptic`
+  /// `{kind, longitudeDeg, altitudeDeg, refractedAltitudeDeg, azimuthDeg}`
+  /// at every step of tropical longitude and at the `ASCENDANT` and the
+  /// `DESCENDANT`, in the order of longitude; and `horizon` `{azimuthDeg,
+  /// raDeg, decDeg, longitudeDeg, latitudeDeg}` at every step of azimuth
+  /// from north.
+  ///
+  /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "at",
+  /// "grahas", "stars", "eclipticStepDeg", "horizonStepDeg", "pressureHpa",
+  /// "temperatureC"}`: `at` a UTC Julian day, `grahas` and `stars` lists of
+  /// keys (the nine and the twenty-seven yogataras when left out), each step
+  /// 0.1 to 90 degrees (5 when left out), and the air 1010 hPa and 10 °C
+  /// when left out, a pressure of 0 for no refraction. A key it does not
+  /// read, a place out of range, a step or an atmosphere out of range is
+  /// `INVALID_ARG`, named under `skyView`; a context without an ephemeris
+  /// is `CAPABILITY`, and one over a classical astronomy `UNSUPPORTED`
+  /// (C1185).
+  final TsAlmanacSkyViewDart ts_almanac_sky_view;
+
   /// Matches two names star to star (naam milan) and answers with the
   /// `naam` blob: each name's first syllable in the śatapada cakra, the
   /// varga koota, and the Ashta Koota and the ten considerations of the two
@@ -2940,6 +2986,79 @@ final class TeistroLibrary {
   /// way, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`,
   /// named under `naam.bride` or `naam.groom`.
   final TsNaamMilanDart ts_naam_milan;
+
+  /// **A chart recast at other places** (`03-design/astrocartography.md`):
+  /// each place's ascendant, midheaven and twelve cusps at one instant, in
+  /// the context's zodiac, as `{value, provenance}` canonical JSON sealed by
+  /// the first place's chart with the request as its input.
+  ///
+  /// `value` is `{instant, obliquityDeg, places}`, each place
+  /// `{latitudeDeg, longitudeDeg, altitudeM, ascendantDeg, midheavenDeg,
+  /// cuspsDeg, houseSystem}` in the order asked, `cuspsDeg` twelve and
+  /// `houseSystem` a `house_system` key.
+  ///
+  /// `request_json` is `{"instant", "places", "houseSystem"}`: `instant` a
+  /// UTC Julian day; `places` one to 256 `{"latitudeDeg", "longitudeDeg",
+  /// "altitudeM"}`; `houseSystem` a `house_system` key, the profile's
+  /// Western override else Placidus when left out (C1157). A key the record
+  /// does not read, no place or too many, or a place out of range is
+  /// `INVALID_ARG`, named under `relocated` (`relocated.places[1].latitudeDeg`);
+  /// a context without an ephemeris is `CAPABILITY`.
+  final TsChartRelocatedDart ts_chart_relocated;
+
+  /// **The astrocartography lines** at an instant
+  /// (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC
+  /// lines on the Earth, as `{value, provenance}` canonical JSON sealed by
+  /// the chart the bodies were read from, with the request as its input.
+  ///
+  /// `value` is `{instant, projection, stepDeg, latitudeLimitDeg,
+  /// toleranceDeg, greenwichRamcDeg, obliquityDeg, lines}`, each line
+  /// `{body, angle, points, polarLimitDeg}`: `body` a `graha` key, `angle`
+  /// `MC`, `IC`, `ASC` or `DSC`, `points` `[longitudeDeg, latitudeDeg]`
+  /// pairs from south to north, longitude east in `[-180, 180)`, and
+  /// `polarLimitDeg` for a rising or setting line the latitude past which
+  /// it does not run (C1156). Every point is on its angle, read back
+  /// through a chart cast there, to `toleranceDeg`.
+  ///
+  /// `request_json` is `{"instant", "bodies", "projection", "stepDeg",
+  /// "latitudeLimitDeg"}`: `instant` a UTC Julian day; `bodies` `graha`
+  /// keys, the seven and the outer planets the profile places when left
+  /// out; `projection` `IN_MUNDO` (the default) or `ZODIACAL` (C1155);
+  /// `stepDeg` above 0 and at most 10, 1 by default; `latitudeLimitDeg`
+  /// above 0 and below 90, 80 by default. A key the record does not read,
+  /// a value out of range or a body the chart does not place is
+  /// `INVALID_ARG`, named under `astrocartography`; a context without an
+  /// ephemeris is `CAPABILITY`.
+  final TsChartAstrocartographyDart ts_chart_astrocartography;
+
+  /// **The moment of a mundane chart** (`03-design/mundane-charts.md`): an
+  /// ingress, the lunation before one, an eclipse, a great conjunction or
+  /// an event on record, and the place it is cast for, as `{value,
+  /// provenance}` canonical JSON sealed by the chart cast there, with the
+  /// request as its input.
+  ///
+  /// `value` is `{kind, instant, latitudeDeg, longitudeDeg, altitudeM,
+  /// utcOffsetSeconds, ingress, solarEclipse, lunarEclipse, name,
+  /// source}`: `kind` a `mundane_kind` key, `instant` the moment as a UTC
+  /// Julian day; `ingress` `{kind, instant}` the ingress a lunation
+  /// precedes; `solarEclipse` or `lunarEclipse` an eclipse's kind; `name`
+  /// and `source` an event's, as the record gave them. A field a kind does
+  /// not carry is absent.
+  ///
+  /// `request_json` is `{"kind", "year", "from", "ingress", "event",
+  /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`:
+  /// `kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC
+  /// Julian day) where the search starts, the first ingress, eclipse or
+  /// conjunction at or after it; `ingress` the ingress a lunation precedes,
+  /// `MESHA_SANKRANTI` by default (C1151); `event` `{"name", "instant",
+  /// "source"}` for an `EVENT`, which reads neither `year` nor `from`. The
+  /// sankrantis are read in the context's own zodiac, the four tropical
+  /// ingresses in the tropical one. A key the record does not read, a
+  /// missing or extra `year`, `from`, `ingress` or `event`, or a place out
+  /// of range is `INVALID_ARG`, named under `mundane`; an eclipse over a
+  /// classical astronomy is `UNSUPPORTED` naming `kind`; a context without
+  /// an ephemeris is `CAPABILITY`.
+  final TsChartMundaneDart ts_chart_mundane;
 
   /// The syllables a pada, a star or a sign names a child by, in the
   /// śatapada cakra's order, each with every initial that reaches it: its
@@ -3053,6 +3172,51 @@ final class TeistroLibrary {
   /// `UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is
   /// `CAPABILITY`.
   final TsVerifyClaimsDart ts_verify_claims;
+
+  /// A record answered with its receipt (`03-design/receipts-and-datasets.md`
+  /// §1.2), answered as canonical JSON: `{answer, receipt}`.
+  ///
+  /// `answer` is the record's own answer, `{value, provenance}` where it is
+  /// sealed and the value alone where it is not. `receipt` is `{format,
+  /// record, request, requestDigest, settings, locale, packs, provider, tzdb,
+  /// sdkVersion, calculationVersion, catalogueVersion, outputDigest,
+  /// digest}`: `format` `teistro.receipt/1`, `settings` the snapshot
+  /// `{profile, settings, hash}` with the whole settings document,
+  /// `provider` `{name, version, dataVersion}` or null where the answer read
+  /// no ephemeris, `outputDigest` the SHA-256 of the value's canonical JSON,
+  /// and `digest` the seal, the SHA-256 of the receipt's canonical JSON
+  /// without `digest`. An OKF *Attested Computation*'s executor; hand the
+  /// receipt to `ts_verify_receipt` to attest it.
+  ///
+  /// `request_json` is `{"record", "request"}`: a record's name as the
+  /// records table lists it and its request. A key it does not read is
+  /// `INVALID_ARG`, named under `issue`; a record this build does not
+  /// carry is `UNSUPPORTED`, named `issue.record`; a request that is not an
+  /// object is `INVALID_ARG`, named `issue.request`; otherwise whatever the
+  /// record refuses.
+  final TsVerifyIssueDart ts_verify_issue;
+
+  /// A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its
+  /// record answered again on this context under the receipt's own settings,
+  /// locale and request, and the value's digest compared, answered as
+  /// canonical JSON: `{verdict, record, moved, broken, issued, now, reason}`.
+  ///
+  /// `verdict` is `HELD` (the digest is the receipt's), `DIFFERS` (another),
+  /// `NOT_RERUN` (not answered again; `reason` is `{cause, detail}`, the
+  /// cause `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE`
+  /// or `REFUSED`) or `BROKEN` (a digest the receipt carries is not its own
+  /// fields'; `broken` names each: `requestDigest`, `settings.hash`,
+  /// `digest`). `moved` lists each field that moved between the receipt and
+  /// the check, `{field, issued, now}`: `output` first when the value did,
+  /// then `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider`
+  /// and `tzdb`. `issued` and `now` are the two sides' `{sdkVersion,
+  /// calculationVersion, catalogueVersion, provider, tzdb}`. An OKF
+  /// *Attested Computation*'s attester.
+  ///
+  /// `request_json` is the receipt `ts_verify_issue` answered, whole. A key
+  /// it does not have is `INVALID_ARG`, named under `receipt`; a format other
+  /// than `teistro.receipt/1` is `SCHEMA_VERSION`, named `receipt.format`.
+  final TsVerifyReceiptDart ts_verify_receipt;
 
   /// Reads a name and a birth date under numerology's two systems and
   /// answers with the profile as canonical JSON: the name under each
@@ -7229,6 +7393,43 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
+  /// The sky at a place and an instant (`03-design/sky-view.md`), answered
+  /// with `{value, provenance}` as canonical JSON.
+  ///
+  /// `value` is `{at, siderealTimeDeg, obliquityDeg, atmosphere,
+  /// eclipticStepDeg, horizonStepDeg, grahas, stars, ecliptic, horizon}`:
+  /// each of `grahas` `{graha, raDeg, decDeg, altitudeDeg,
+  /// refractedAltitudeDeg, azimuthDeg}`, topocentric, apparent and of date,
+  /// the azimuth from north through east and Rahu and Ketu the node the
+  /// settings name; each of `stars` the same with `star`, `nakshatra` (the
+  /// nakshatra it is the yogatara of, or null) and `magnitude`; `ecliptic`
+  /// `{kind, longitudeDeg, altitudeDeg, refractedAltitudeDeg, azimuthDeg}`
+  /// at every step of tropical longitude and at the `ASCENDANT` and the
+  /// `DESCENDANT`, in the order of longitude; and `horizon` `{azimuthDeg,
+  /// raDeg, decDeg, longitudeDeg, latitudeDeg}` at every step of azimuth
+  /// from north.
+  ///
+  /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "at",
+  /// "grahas", "stars", "eclipticStepDeg", "horizonStepDeg", "pressureHpa",
+  /// "temperatureC"}`: `at` a UTC Julian day, `grahas` and `stars` lists of
+  /// keys (the nine and the twenty-seven yogataras when left out), each step
+  /// 0.1 to 90 degrees (5 when left out), and the air 1010 hPa and 10 °C
+  /// when left out, a pressure of 0 for no refraction. A key it does not
+  /// read, a place out of range, a step or an atmosphere out of range is
+  /// `INVALID_ARG`, named under `skyView`; a context without an ephemeris
+  /// is `CAPABILITY`, and one over a classical astronomy `UNSUPPORTED`
+  /// (C1185).
+  String almanacSkyView(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_sky_view(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
   /// Matches two names star to star (naam milan) and answers with the
   /// `naam` blob: each name's first syllable in the śatapada cakra, the
   /// varga koota, and the Ashta Koota and the ten considerations of the two
@@ -7248,6 +7449,106 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_naam_milan(_handle, rawrequestJson, outBlob);
         if (status != 0) _fail(status);
         return _takeBlob(_lib, outBlob);
+    });
+  }
+
+  /// **A chart recast at other places** (`03-design/astrocartography.md`):
+  /// each place's ascendant, midheaven and twelve cusps at one instant, in
+  /// the context's zodiac, as `{value, provenance}` canonical JSON sealed by
+  /// the first place's chart with the request as its input.
+  ///
+  /// `value` is `{instant, obliquityDeg, places}`, each place
+  /// `{latitudeDeg, longitudeDeg, altitudeM, ascendantDeg, midheavenDeg,
+  /// cuspsDeg, houseSystem}` in the order asked, `cuspsDeg` twelve and
+  /// `houseSystem` a `house_system` key.
+  ///
+  /// `request_json` is `{"instant", "places", "houseSystem"}`: `instant` a
+  /// UTC Julian day; `places` one to 256 `{"latitudeDeg", "longitudeDeg",
+  /// "altitudeM"}`; `houseSystem` a `house_system` key, the profile's
+  /// Western override else Placidus when left out (C1157). A key the record
+  /// does not read, no place or too many, or a place out of range is
+  /// `INVALID_ARG`, named under `relocated` (`relocated.places[1].latitudeDeg`);
+  /// a context without an ephemeris is `CAPABILITY`.
+  String chartRelocated(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_chart_relocated(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// **The astrocartography lines** at an instant
+  /// (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC
+  /// lines on the Earth, as `{value, provenance}` canonical JSON sealed by
+  /// the chart the bodies were read from, with the request as its input.
+  ///
+  /// `value` is `{instant, projection, stepDeg, latitudeLimitDeg,
+  /// toleranceDeg, greenwichRamcDeg, obliquityDeg, lines}`, each line
+  /// `{body, angle, points, polarLimitDeg}`: `body` a `graha` key, `angle`
+  /// `MC`, `IC`, `ASC` or `DSC`, `points` `[longitudeDeg, latitudeDeg]`
+  /// pairs from south to north, longitude east in `[-180, 180)`, and
+  /// `polarLimitDeg` for a rising or setting line the latitude past which
+  /// it does not run (C1156). Every point is on its angle, read back
+  /// through a chart cast there, to `toleranceDeg`.
+  ///
+  /// `request_json` is `{"instant", "bodies", "projection", "stepDeg",
+  /// "latitudeLimitDeg"}`: `instant` a UTC Julian day; `bodies` `graha`
+  /// keys, the seven and the outer planets the profile places when left
+  /// out; `projection` `IN_MUNDO` (the default) or `ZODIACAL` (C1155);
+  /// `stepDeg` above 0 and at most 10, 1 by default; `latitudeLimitDeg`
+  /// above 0 and below 90, 80 by default. A key the record does not read,
+  /// a value out of range or a body the chart does not place is
+  /// `INVALID_ARG`, named under `astrocartography`; a context without an
+  /// ephemeris is `CAPABILITY`.
+  String chartAstrocartography(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_chart_astrocartography(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// **The moment of a mundane chart** (`03-design/mundane-charts.md`): an
+  /// ingress, the lunation before one, an eclipse, a great conjunction or
+  /// an event on record, and the place it is cast for, as `{value,
+  /// provenance}` canonical JSON sealed by the chart cast there, with the
+  /// request as its input.
+  ///
+  /// `value` is `{kind, instant, latitudeDeg, longitudeDeg, altitudeM,
+  /// utcOffsetSeconds, ingress, solarEclipse, lunarEclipse, name,
+  /// source}`: `kind` a `mundane_kind` key, `instant` the moment as a UTC
+  /// Julian day; `ingress` `{kind, instant}` the ingress a lunation
+  /// precedes; `solarEclipse` or `lunarEclipse` an eclipse's kind; `name`
+  /// and `source` an event's, as the record gave them. A field a kind does
+  /// not carry is absent.
+  ///
+  /// `request_json` is `{"kind", "year", "from", "ingress", "event",
+  /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`:
+  /// `kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC
+  /// Julian day) where the search starts, the first ingress, eclipse or
+  /// conjunction at or after it; `ingress` the ingress a lunation precedes,
+  /// `MESHA_SANKRANTI` by default (C1151); `event` `{"name", "instant",
+  /// "source"}` for an `EVENT`, which reads neither `year` nor `from`. The
+  /// sankrantis are read in the context's own zodiac, the four tropical
+  /// ingresses in the tropical one. A key the record does not read, a
+  /// missing or extra `year`, `from`, `ingress` or `event`, or a place out
+  /// of range is `INVALID_ARG`, named under `mundane`; an eclipse over a
+  /// classical astronomy is `UNSUPPORTED` naming `kind`; a context without
+  /// an ephemeris is `CAPABILITY`.
+  String chartMundane(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_chart_mundane(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 
@@ -7431,6 +7732,69 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_verify_claims(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// A record answered with its receipt (`03-design/receipts-and-datasets.md`
+  /// §1.2), answered as canonical JSON: `{answer, receipt}`.
+  ///
+  /// `answer` is the record's own answer, `{value, provenance}` where it is
+  /// sealed and the value alone where it is not. `receipt` is `{format,
+  /// record, request, requestDigest, settings, locale, packs, provider, tzdb,
+  /// sdkVersion, calculationVersion, catalogueVersion, outputDigest,
+  /// digest}`: `format` `teistro.receipt/1`, `settings` the snapshot
+  /// `{profile, settings, hash}` with the whole settings document,
+  /// `provider` `{name, version, dataVersion}` or null where the answer read
+  /// no ephemeris, `outputDigest` the SHA-256 of the value's canonical JSON,
+  /// and `digest` the seal, the SHA-256 of the receipt's canonical JSON
+  /// without `digest`. An OKF *Attested Computation*'s executor; hand the
+  /// receipt to `ts_verify_receipt` to attest it.
+  ///
+  /// `request_json` is `{"record", "request"}`: a record's name as the
+  /// records table lists it and its request. A key it does not read is
+  /// `INVALID_ARG`, named under `issue`; a record this build does not
+  /// carry is `UNSUPPORTED`, named `issue.record`; a request that is not an
+  /// object is `INVALID_ARG`, named `issue.request`; otherwise whatever the
+  /// record refuses.
+  String verifyIssue(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_verify_issue(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its
+  /// record answered again on this context under the receipt's own settings,
+  /// locale and request, and the value's digest compared, answered as
+  /// canonical JSON: `{verdict, record, moved, broken, issued, now, reason}`.
+  ///
+  /// `verdict` is `HELD` (the digest is the receipt's), `DIFFERS` (another),
+  /// `NOT_RERUN` (not answered again; `reason` is `{cause, detail}`, the
+  /// cause `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE`
+  /// or `REFUSED`) or `BROKEN` (a digest the receipt carries is not its own
+  /// fields'; `broken` names each: `requestDigest`, `settings.hash`,
+  /// `digest`). `moved` lists each field that moved between the receipt and
+  /// the check, `{field, issued, now}`: `output` first when the value did,
+  /// then `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider`
+  /// and `tzdb`. `issued` and `now` are the two sides' `{sdkVersion,
+  /// calculationVersion, catalogueVersion, provider, tzdb}`. An OKF
+  /// *Attested Computation*'s attester.
+  ///
+  /// `request_json` is the receipt `ts_verify_issue` answered, whole. A key
+  /// it does not have is `INVALID_ARG`, named under `receipt`; a format other
+  /// than `teistro.receipt/1` is `SCHEMA_VERSION`, named `receipt.format`.
+  String verifyReceipt(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_verify_receipt(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

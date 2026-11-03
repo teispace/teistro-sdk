@@ -351,6 +351,19 @@ public final class BindingTest {
                 check(!checked.claims().get(1).verdict().equals("UNREAD"), "the Sun's sign is judged");
                 same("QUESTION", checked.claims().get(2).reason(), "a question is not judged");
             }
+            try (Context issuing = teistro.context(ContextOptions.builder().profile("nepali-drik").testProvider(true).build())) {
+                Issued issued = issuing.verify().issue(new com.teispace.teistro.request.IssueRequest("calendar.convert",
+                        Map.of("date", Map.of("year", 2026, "month", 10, "day", 10), "into", "calendar.BIKRAM_SAMBAT")));
+                check(issued.receipt().contains("\"format\":\"teistro.receipt/1\""), "a receipt");
+                ReceiptCheck held = issuing.verify().receipt(issued.receipt());
+                same("HELD", held.verdict(), "held: " + held.reason());
+                check(held.moved().isEmpty() && held.broken().isEmpty(), "nothing moved");
+                ReceiptCheck broken = issuing.verify().receipt(issued.receipt().replace("\"locale\":\"", "\"locale\":\"x"));
+                same("BROKEN", broken.verdict(), "an edit is caught");
+                TeistroException none = refusal(() -> issuing.verify().issue(
+                        new com.teispace.teistro.request.IssueRequest("almanac.nothing", Map.of())));
+                same("issue.record", none.field(), "a record this build lacks");
+            }
         });
 
         tests.put("a pack lays its record over the one standing, and a damaged one is refused whole", () -> {
@@ -2804,6 +2817,38 @@ public final class BindingTest {
                 TeistroException early = refusal(() -> sky.almanac().deathTime(father, father - 1, kathmandu, 20_700,
                         null));
                 same("deathTime.crematedAt", early.field(), "a burning before the death");
+            }
+        });
+
+        tests.put("an almanac draws the sky at a place and an instant", () -> {
+            // Kathmandu at 18:00 UTC on 31 October 2026 over the built-in sky
+            // (03-design/sky-view.md): the nine grahas, the twenty-seven
+            // yogataras with Spica Chitra's, the ecliptic at every fifth degree
+            // with its two crossings and the horizon at every fifth degree.
+            Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                SkyViewAnswer found = sky.almanac().skyView(2_461_345.25, kathmandu, null, null, null, null, null,
+                        null);
+                SkyView view = found.value();
+                check(!found.provenance().contentHash().isEmpty(), "the sky is sealed");
+                same(9, view.grahas().size(), "the nine grahas");
+                same(Graha.MOON, view.graha(Graha.MOON).orElseThrow().graha(), "the Moon by its member");
+                same(27, view.stars().size(), "the twenty-seven yogataras");
+                same(Star.SPICA, view.stars().get(13).star(), "Chitra's yogatara");
+                same(Nakshatra.CHITRA, view.stars().get(13).nakshatra(), "Spica's nakshatra");
+                same(74, view.ecliptic().size(), "every fifth degree and the two crossings");
+                same(72, view.horizon().size(), "every fifth degree of azimuth");
+                same(1L, view.ecliptic().stream().filter(point -> "ASCENDANT".equals(point.kind())).count(),
+                        "one ascendant");
+                SkyView few = sky.almanac().skyView(2_461_345.25, kathmandu, List.of(Graha.MOON), List.of(), 30.0,
+                        null, 0.0, null).value();
+                same(14, few.ecliptic().size(), "every thirtieth degree and the two crossings");
+                same(few.grahas().get(0).altitudeDeg(), few.grahas().get(0).refractedAltitudeDeg(),
+                        "no air, no refraction");
+                TeistroException coarse = refusal(() -> sky.almanac().skyView(2_461_345.25, kathmandu, null, null,
+                        0.0, null, null, null));
+                same("skyView.eclipticStepDeg", coarse.field(), "a step below the least");
             }
         });
 

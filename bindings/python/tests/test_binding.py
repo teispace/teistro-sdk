@@ -74,6 +74,7 @@ from teistro import (
     Teistro,
     PolarDay,
     TeistroError,
+    MundaneEvent,
     Overflow,
     TimeScale,
     PlanRequest,
@@ -113,12 +114,16 @@ from teistro.catalogue import (
     Graha,
     LunarEclipseKind,
     Masa,
+    MundaneKind,
+    HouseSystem,
+    ChartKind,
     MonthKind,
     PolarDayPolicy,
     PolarKind,
     Ritu,
     RulerDayRule,
     SolarEclipseKind,
+    Star,
     Sunrise,
     Sunrises,
     Tithi,
@@ -684,6 +689,29 @@ class TheLocaleEngine(WithLibrary):
             sky.verify.claims(far)
         self.assertEqual(refused.exception.field, "claims.latitudeDeg")
 
+    def test_a_receipt_is_checked_again(self) -> None:
+        from teistro import IssueRequest, Issued, ReceiptCheck
+
+        sky = self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN)
+        self.addCleanup(sky.close)
+        asked: IssueRequest = {
+            "record": "calendar.convert",
+            "request": {"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"},
+        }
+        issued: Issued = sky.verify.issue(asked)
+        self.assertEqual(issued.receipt["format"], "teistro.receipt/1")
+        self.assertEqual(issued.receipt["record"], "calendar.convert")
+        held: ReceiptCheck = sky.verify.receipt(issued.receipt)
+        self.assertEqual((held.verdict, held.moved, held.broken, held.reason), ("HELD", (), (), None))
+        self.assertEqual(sky.verify.receipt(json.dumps(issued.receipt)).verdict, "HELD")
+        edited = dict(issued.receipt)
+        edited["locale"] = "de-Latn-DE"
+        broken = sky.verify.receipt(edited)
+        self.assertEqual((broken.verdict, broken.broken), ("BROKEN", ("digest",)))
+        with self.assertRaises(TeistroError) as refused:
+            sky.verify.issue({"record": "almanac.nothing", "request": {}})
+        self.assertEqual(refused.exception.field, "issue.record")
+
     def test_transliteration_changes_the_script(self) -> None:
         latin = self.ctx.intl.transliterate("सूर्य")
         self.assertTrue(latin)
@@ -1222,6 +1250,35 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as early:
                 ctx.almanac.death_time(place=kathmandu, utc_offset_seconds=20700, at=father, cremated_at=father - 1)
             self.assertEqual(early.exception.field, "deathTime.crematedAt")
+
+    def test_an_almanac_draws_the_sky_at_a_place_and_an_instant(self) -> None:
+        """The sky at Kathmandu at 18:00 UTC on 31 October 2026 over the
+        built-in sky (`03-design/sky-view.md`): the nine grahas, the
+        twenty-seven yogataras with Spica Chitra's, the ecliptic at every
+        fifth degree with its two crossings and the horizon at every fifth
+        degree of azimuth."""
+        kathmandu = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
+            found = ctx.almanac.sky_view(place=kathmandu, at=2461345.25)
+            view = found.value
+            self.assertTrue(found.provenance.content_hash)
+            self.assertEqual(len(view.grahas), 9)
+            moon = view.graha(Graha.MOON)
+            assert moon is not None
+            self.assertEqual(moon.graha, Graha.MOON)
+            self.assertEqual(len(view.stars), 27)
+            self.assertEqual(view.stars[13].star, Star.SPICA)
+            self.assertEqual(view.stars[13].nakshatra, Nakshatra.CHITRA)
+            self.assertEqual((len(view.ecliptic), len(view.horizon)), (74, 72))
+            self.assertEqual(sum(1 for point in view.ecliptic if point.kind == "ASCENDANT"), 1)
+            few = ctx.almanac.sky_view(
+                place=kathmandu, at=2461345.25, grahas=[Graha.MOON], stars=[], ecliptic_step_deg=30, pressure_hpa=0
+            ).value
+            self.assertEqual((len(few.grahas), len(few.stars), len(few.ecliptic)), (1, 0, 14))
+            self.assertEqual(few.grahas[0].refracted_altitude_deg, few.grahas[0].altitude_deg)
+            with self.assertRaises(TeistroError) as coarse:
+                ctx.almanac.sky_view(place=kathmandu, at=2461345.25, ecliptic_step_deg=0)
+            self.assertEqual(coarse.exception.field, "skyView.eclipticStepDeg")
 
     def test_an_almanac_schedules_the_first_year_after_a_death(self) -> None:
         """A death at 10:00 on 20 October 2026 in Kathmandu: the
@@ -6848,3 +6905,55 @@ class AnAlmanacDay(WithLibrary):
             self.assertIsNotNone(brahma)
             assert brahma is not None
             self.assertLess(brahma.from_jd, brahma.to_jd)
+
+
+class AMundaneChart(WithLibrary):
+    """`chart.mundane`, `chart.relocated` and `chart.astrocartography`
+    (`03-design/mundane-charts.md`, `03-design/astrocartography.md`)."""
+
+    def test_the_moment_is_found_and_the_chart_cast_there(self) -> None:
+        # The Aries ingress of 2024 (USNO, 20 March 03:06 UTC).
+        place = Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400))
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            aries = ctx.chart.mundane(kind=MundaneKind.ARIES_INGRESS, year=2024, place=place)
+            self.assertEqual(aries.kind, MundaneKind.ARIES_INGRESS)
+            self.assertLess(abs(aries.instant - (2460389.5 + (3 + 6 / 60) / 24)), 2 / 1440)
+            self.assertEqual(aries.chart.kind, ChartKind.MUNDANE)
+            self.assertTrue(aries.provenance.input_hash)
+            new_moon = ctx.chart.mundane(
+                kind="NEW_MOON_BEFORE_INGRESS", year=2024, ingress="mundane_kind.ARIES_INGRESS", place=place
+            )
+            assert new_moon.ingress is not None
+            self.assertEqual(new_moon.ingress.kind, MundaneKind.ARIES_INGRESS)
+            self.assertLess(new_moon.instant, new_moon.ingress.instant)
+            event = ctx.chart.mundane(
+                kind=MundaneKind.EVENT,
+                event=MundaneEvent(name="A founding", instant=2451545.0, source="a record"),
+                place=place,
+                utc_offset_seconds=20700,
+            )
+            self.assertEqual(event.chart.kind, ChartKind.EVENT)
+            self.assertEqual((event.name, event.source, event.instant), ("A founding", "a record", 2451545.0))
+            with self.assertRaises(TeistroError) as caught:
+                ctx.chart.mundane(kind=MundaneKind.EVENT, year=2024, place=place)
+            self.assertTrue((caught.exception.field or "").startswith("mundane."))
+
+    def test_a_relocation_and_the_lines_answer_their_places(self) -> None:
+        london = Observer(latitude_deg=Latitude(51.5), longitude_deg=Longitude(-0.12), altitude_m=Altitude(0))
+        with self.teistro.context(profile=PROFILE, ephemeris=Ephemeris.BUILTIN) as ctx:
+            moved = ctx.chart.relocated(instant=2447000.25, places=[london], house_system=HouseSystem.PLACIDUS)
+            self.assertEqual(len(moved.places), 1)
+            here = moved.places[0]
+            self.assertEqual((len(here.cusps_deg), here.house_system), (12, HouseSystem.PLACIDUS))
+            self.assertLess(abs(here.cusps_deg[0] - here.ascendant_deg), 1e-9)
+            with self.assertRaises(TeistroError) as caught:
+                ctx.chart.relocated(instant=2447000.25, places=[])
+            self.assertEqual(caught.exception.field, "relocated.places")
+            lines = ctx.chart.astrocartography(instant=2447000.25, bodies=[Graha.SUN, "MOON"], step_deg=5)
+            self.assertEqual([line.angle for line in lines.lines], ["MC", "IC", "ASC", "DSC"] * 2)
+            self.assertEqual(lines.lines[0].body, Graha.SUN)
+            self.assertTrue(all(line.points for line in lines.lines))
+            with self.assertRaises(TeistroError) as caught:
+                ctx.chart.astrocartography(instant=2447000.25, step_deg=0)
+            self.assertEqual(caught.exception.field, "astrocartography.stepDeg")
+

@@ -126,6 +126,7 @@ import type {
   Longitude,
   BlackoutKind,
   LunarEclipseKind,
+  MundaneKind,
   SolarEclipseKind,
   YearOffice,
   RulerText,
@@ -144,6 +145,7 @@ import type {
   NameVarga,
   Overflow,
   VargaRelation,
+  Star,
 } from './catalogue.js';
 import type {
   CalendarDate,
@@ -167,7 +169,16 @@ import type {
 // The typed accessors and an entity's forms, declared where `sdk.intl`
 // answers with them: the flat surface had both members and declared
 // neither, which the areas made visible.
-import type { FeedAlarm, FeedHint, FeedSelector, SuppliedEvent } from './requests.js';
+import type {
+  AstrocartographyRequest,
+  FeedAlarm,
+  FeedHint,
+  FeedSelector,
+  MundaneEvent,
+  Projection,
+  RelocationRequest,
+  SuppliedEvent,
+} from './requests.js';
 import type { EntityForms, Messages } from './messages.js';
 import type { Provenance, Step } from './records.js';
 // The request records, generated from the façade's own schemas of them
@@ -218,6 +229,9 @@ import type {
   DatesRequest,
   CalendarDay,
   ClaimsRequest,
+  IssueRequest,
+  Receipt,
+  ReceiptProvider,
   InWordsRequest,
   TimeTextRequest,
   Interval,
@@ -319,6 +333,8 @@ export type {
   CalendarResolutionTabular,
   Confidence,
   MonthDay,
+  PackStamp,
+  Version,
 } from './records.js';
 export type { CalendarDate, CivilTime, ZoneSpec } from './types.js';
 /** One subject of an event study: a birth and the event of its life. */
@@ -7021,6 +7037,93 @@ export interface AlmanacDayRequest extends Omit<AlmanacRequest, 'from' | 'to'> {
 }
 
 /** What `Context.found` needs to found one chart. */
+/** What `chart.mundane` asks. */
+export interface MundaneQuery {
+  /** Which moment. */
+  readonly kind: MundaneKind;
+  /** The year whose moment is asked; or give `from`. */
+  readonly year?: number;
+  /** The instant the search starts at, a Julian day (UTC). */
+  readonly from?: number;
+  /** For a lunation, the ingress it precedes; `MundaneKind.MeshaSankranti` by default. */
+  readonly ingress?: MundaneKind;
+  /** For `MundaneKind.Event`, the event on record. */
+  readonly event?: MundaneEvent;
+  /** Where the chart is cast. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive; 0 by default. */
+  readonly utcOffsetSeconds?: number;
+}
+
+/** A mundane moment and the chart cast for it. */
+export interface MundaneChart {
+  readonly kind: MundaneKind;
+  /** The moment, a Julian day (UTC). */
+  readonly instant: number;
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude: number };
+  readonly utcOffsetSeconds: number;
+  /** For a lunation, the ingress it precedes. */
+  readonly ingress: { readonly kind: MundaneKind; readonly instant: number } | null;
+  /** For a solar eclipse, its kind. */
+  readonly solarEclipse: SolarEclipseKind | null;
+  /** For a lunar eclipse, its kind. */
+  readonly lunarEclipse: LunarEclipseKind | null;
+  /** For an event, its name. */
+  readonly name: string | null;
+  /** For an event, its source. */
+  readonly source: string | null;
+  /** The chart cast for the moment. */
+  readonly chart: Chart;
+  readonly provenance: Provenance;
+}
+
+/** One place's angles and houses. */
+export interface RelocatedChart {
+  readonly latitudeDeg: number;
+  readonly longitudeDeg: number;
+  readonly altitudeM: number;
+  readonly ascendantDeg: number;
+  readonly midheavenDeg: number;
+  /** The twelve cusps, the first house's first. */
+  readonly cuspsDeg: readonly number[];
+  readonly houseSystem: HouseSystem;
+}
+
+/** A chart's instant recast at each place asked. */
+export interface Relocation {
+  readonly instant: number;
+  readonly obliquityDeg: number;
+  readonly places: readonly RelocatedChart[];
+  readonly provenance: Provenance;
+}
+
+/** An angle a line traces. */
+export type MapAngle = 'MC' | 'IC' | 'ASC' | 'DSC';
+
+/** One body's line on one angle. */
+export interface AstroLine {
+  readonly body: Graha;
+  readonly angle: MapAngle;
+  /** `[longitudeDeg, latitudeDeg]`, south to north. */
+  readonly points: readonly (readonly [number, number])[];
+  /** Where a rising or setting line stops, when it stops inside the map. */
+  readonly polarLimitDeg: number | null;
+}
+
+/** The lines at an instant, and what they were drawn under. */
+export interface Astrocartography {
+  readonly instant: number;
+  readonly projection: Projection;
+  readonly stepDeg: number;
+  readonly latitudeLimitDeg: number;
+  /** How close every point is to its angle. */
+  readonly toleranceDeg: number;
+  readonly greenwichRamcDeg: number;
+  readonly obliquityDeg: number;
+  readonly lines: readonly AstroLine[];
+  readonly provenance: Provenance;
+}
+
 export interface ChartRequest {
   /** The instant, as a Julian day (UTC). */
   readonly instant: number;
@@ -7771,6 +7874,23 @@ export declare class ChartArea {
   /** Founds a chart at an instant and a place. */
   found(request: ChartRequest): Chart;
   /**
+   * A mundane chart: the moment its kind names (an ingress, the lunation
+   * before one, an eclipse, a great conjunction, or an event on record),
+   * found by the SDK's own searches, and the chart cast for it at the
+   * place, `ChartKind.Mundane` (`ChartKind.Event` for an event).
+   */
+  mundane(request: MundaneQuery): MundaneChart;
+  /**
+   * A chart's instant recast at other places: each place's ascendant,
+   * midheaven and twelve cusps. The grahas stand where they stood.
+   */
+  relocated(request: RelocationRequest): Relocation;
+  /**
+   * The astrocartography lines at an instant: each body's MC, IC, ASC and
+   * DSC lines as `[longitudeDeg, latitudeDeg]` points, south to north.
+   */
+  astrocartography(request: AstrocartographyRequest): Astrocartography;
+  /**
    * Founds a chart at each of many instants, at one place, in one
    * crossing: the founder shares the settings and the solar model across
    * the batch. A batch of none is an empty result rather than an error.
@@ -7954,6 +8074,26 @@ export declare class AlmanacArea {
    * value.death.panchaka;
    */
   deathTime(query: DeathTimeAsked): DeathTimeAnswer;
+
+  /**
+   * **The sky at a place and an instant** (`03-design/sky-view.md`):
+   * where each graha and each nakshatra's junction star stands,
+   * topocentric, apparent and of date, its altitude airless and refracted
+   * and its azimuth from north through east; and the ecliptic, with the
+   * `ASCENDANT` and the `DESCENDANT`, and the horizon as point lists.
+   * `grahas` and `stars` are the nine and the twenty-seven yogataras when
+   * left out; each step is 0.1 to 90 degrees, five when left out; the air
+   * is 1010 hPa and 10 °C, and a pressure of 0 turns refraction off. A
+   * context over a classical astronomy is refused (C1185).
+   *
+   * @example
+   * const { value } = sdk.almanac.skyView({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   at: 2461345.25,
+   * });
+   * value.grahas[1].azimuthDeg; // the Moon's
+   */
+  skyView(query: SkyViewAsked): SkyViewAnswer;
   /**
    * **A death's first year** at a place (`03-design/shraddha.md` §3.3):
    * the *Dharmasindhu*'s sixteen shraddhas, the sapindana and the first
@@ -8544,6 +8684,92 @@ export interface DeathInstant {
   readonly pushkara?: 'TRIPUSHKARA' | 'DVIPUSHKARA';
 }
 
+/** The query `almanac.skyView` reads (`03-design/sky-view.md`). */
+export interface SkyViewAsked {
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The instant, a UTC Julian day, read as UT1. */
+  readonly at: number;
+  /** The grahas placed, in this order; the nine when left out. */
+  readonly grahas?: readonly Member<Graha>[];
+  /** The stars placed, in this order; the twenty-seven yogataras when left out. */
+  readonly stars?: readonly Member<Star>[];
+  /** The ecliptic's step in longitude, 0.1 to 90 degrees; 5 when left out. */
+  readonly eclipticStepDeg?: number;
+  /** The horizon's step in azimuth, 0.1 to 90 degrees; 5 when left out. */
+  readonly horizonStepDeg?: number;
+  /** The air's pressure, 0 to 1100 hPa; 1010 when left out, 0 for no refraction. */
+  readonly pressureHpa?: number;
+  /** The air's temperature, −90 to 60 °C; 10 when left out. */
+  readonly temperatureC?: number;
+}
+
+/** Where a body stands in the local sky: topocentric, apparent and of date. */
+export interface SkySeen {
+  /** On the true equator and equinox of date, degrees in [0, 360). */
+  readonly raDeg: number;
+  readonly decDeg: number;
+  /** Airless, of the centre. */
+  readonly altitudeDeg: number;
+  /** Under the air's refraction; airless below the horizon (C973). */
+  readonly refractedAltitudeDeg: number;
+  /** From north through east, degrees in [0, 360). */
+  readonly azimuthDeg: number;
+}
+
+/** A graha in the local sky. */
+export interface GrahaSky extends SkySeen {
+  readonly graha: Graha;
+}
+
+/** A star in the local sky. */
+export interface StarSky extends SkySeen {
+  readonly star: Star;
+  /** The nakshatra it is the yogatara of, or `null`. */
+  readonly nakshatra: Nakshatra | null;
+  /** Its visual magnitude, or `null`. */
+  readonly magnitude: number | null;
+}
+
+/** A point of the ecliptic, by tropical longitude of date. */
+export interface EclipticPoint {
+  readonly kind: 'SAMPLE' | 'ASCENDANT' | 'DESCENDANT';
+  readonly longitudeDeg: number;
+  readonly altitudeDeg: number;
+  readonly refractedAltitudeDeg: number;
+  readonly azimuthDeg: number;
+}
+
+/** A point of the airless horizon, and where it lies on the sphere of date. */
+export interface HorizonPoint {
+  readonly azimuthDeg: number;
+  readonly raDeg: number;
+  readonly decDeg: number;
+  readonly longitudeDeg: number;
+  readonly latitudeDeg: number;
+}
+
+/** What `almanac.skyView` answers. */
+export interface SkyViewAnswer {
+  readonly value: {
+    /** UT1 read as UTC, a Julian day. */
+    readonly at: number;
+    readonly siderealTimeDeg: number;
+    readonly obliquityDeg: number;
+    readonly atmosphere: { readonly pressureHpa: number; readonly temperatureC: number };
+    readonly eclipticStepDeg: number;
+    readonly horizonStepDeg: number;
+    readonly grahas: readonly GrahaSky[];
+    readonly stars: readonly StarSky[];
+    /** Every step of longitude and the two crossings, in longitude order. */
+    readonly ecliptic: readonly EclipticPoint[];
+    /** Every step of azimuth from north. */
+    readonly horizon: readonly HorizonPoint[];
+  };
+  /** What computed it, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
 /** What `almanac.deathTime` answers, frozen to its leaves. */
 export interface DeathTimeAnswer {
   readonly value: {
@@ -8900,6 +9126,63 @@ export declare class VerifyArea {
    * unread (with why), against `almanac.sankalpa` at the instant.
    */
   claims(request: ClaimsRequest): ClaimsAnswer;
+  /**
+   * A record's answer and its receipt: what was asked, under which
+   * settings, ephemeris and versions, and the digest of what was answered.
+   */
+  issue(request: IssueRequest): Issued;
+  /**
+   * A receipt answered again under its own settings and compared, with
+   * every version that moved; an object or its JSON text.
+   */
+  receipt(receipt: Receipt | string): ReceiptCheck;
+}
+
+/** What `verify.issue` answers. */
+export interface Issued {
+  /** The record's own answer, `{value, provenance}` or the value alone, as its JSON reads. */
+  readonly answer: unknown;
+  /** The receipt, to hand back whole to `verify.receipt`. */
+  readonly receipt: Receipt;
+}
+
+/** What answered a receipt: its versions, ephemeris and zone database. */
+export interface ReceiptSide {
+  readonly sdkVersion: { readonly major: number; readonly minor: number; readonly patch: number };
+  readonly calculationVersion: number;
+  readonly catalogueVersion: number;
+  /** The ephemeris, or `null` where none was read. */
+  readonly provider: ReceiptProvider | null;
+  readonly tzdb: string;
+}
+
+/** A field that moved between the receipt's side and this one. */
+export interface ReceiptMove {
+  /** `output`, `sdkVersion`, `calculationVersion`, `catalogueVersion`, `provider` or `tzdb`. */
+  readonly field: string;
+  /** The receipt's, as text. */
+  readonly issued: string;
+  /** This side's, as text. */
+  readonly now: string;
+}
+
+/** What `verify.receipt` answers. */
+export interface ReceiptCheck {
+  readonly verdict: 'HELD' | 'DIFFERS' | 'NOT_RERUN' | 'BROKEN';
+  /** The record the receipt names. */
+  readonly record: string;
+  /** Every field that moved, `output` first when the digest did. */
+  readonly moved: readonly ReceiptMove[];
+  /** The digests that no longer hold, on a receipt `BROKEN`. */
+  readonly broken: readonly string[];
+  readonly issued: ReceiptSide;
+  /** What checked it: this context. */
+  readonly now: ReceiptSide;
+  /** Why it was not re-run, on `NOT_RERUN`. */
+  readonly reason: {
+    readonly cause: 'RECORD' | 'PROVIDER' | 'SETTINGS' | 'LOCALE' | 'PACKS' | 'OUT_OF_RANGE' | 'REFUSED';
+    readonly detail: string;
+  } | null;
 }
 
 /**

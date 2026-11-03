@@ -158,6 +158,12 @@ from ._requests import (
     MuhurtaRequest as MuhurtaRequest,
     AngleMethod as AngleMethod,
     AnnualPlace as AnnualPlace,
+    AstrocartographyRequest as AstrocartographyRequest,
+    MundaneEvent as MundaneEvent,
+    MundaneRequest as MundaneRequest,
+    Projection as Projection,
+    RelocationPlace as RelocationPlace,
+    RelocationRequest as RelocationRequest,
     AntisciaRequest as AntisciaRequest,
     ArgalaPlace as ArgalaPlace,
     AshauchBand as AshauchBand,
@@ -191,6 +197,7 @@ from ._requests import (
     KinQuery as KinQuery,
     RiteQuery as RiteQuery,
     DeathTimeQuery as DeathTimeQuery,
+    SkyViewRequest as SkyViewRequest,
     HouseholdQuery as HouseholdQuery,
     KinAsked as KinAsked,
     KinTable as KinTable,
@@ -460,6 +467,10 @@ from ._requests import (
     LookupRequest as LookupRequest,
     DatesRequest as DatesRequest,
     ClaimsRequest as ClaimsRequest,
+    IssueRequest as IssueRequest,
+    Receipt as Receipt,
+    ReceiptProvider as ReceiptProvider,
+    SettingsSnapshot as SettingsSnapshot,
     WordsAmount as WordsAmount,
     WordsAmountValue as WordsAmountValue,
     WordsDigits as WordsDigits,
@@ -1012,6 +1023,7 @@ from .catalogue import (
     Sex,
     BlackoutKind,
     LunarEclipseKind,
+    MundaneKind,
     SolarEclipseKind,
     Star,
     StarClass,
@@ -1212,6 +1224,10 @@ __all__ = [
     "LookupRequest",
     "DatesRequest",
     "ClaimsRequest",
+    "IssueRequest",
+    "Receipt",
+    "ReceiptProvider",
+    "SettingsSnapshot",
     "WordsAmount",
     "WordsAmountValue",
     "WordsDigits",
@@ -1236,6 +1252,11 @@ __all__ = [
     "Claim",
     "Claims",
     "ClaimsAnswer",
+    "Issued",
+    "ReceiptSide",
+    "ReceiptMove",
+    "NotRerunReason",
+    "ReceiptCheck",
     "InWords",
     "AmountInWords",
     # The transit hit list, and its names.
@@ -1565,6 +1586,7 @@ __all__ = [
     "KinQuery",
     "RiteQuery",
     "DeathTimeQuery",
+    "SkyViewRequest",
     "HouseholdQuery",
     "KinAsked",
     "KinTable",
@@ -1606,6 +1628,12 @@ __all__ = [
     "DeathRite",
     "DeathTime",
     "DeathTimeAnswer",
+    "EclipticPoint",
+    "GrahaSky",
+    "HorizonPoint",
+    "SkyView",
+    "SkyViewAnswer",
+    "StarSky",
     "FirstAbdika",
     "FirstYearAdhika",
     "SapindanaAt",
@@ -1963,6 +1991,12 @@ __all__ = [
     "BaselineScore",
     "RashifalAnswer",
     "RashifalAnswers",
+    "MundaneIngress",
+    "MundaneChart",
+    "RelocatedChart",
+    "Relocation",
+    "AstroLine",
+    "Astrocartography",
     "RashifalSealed",
     "GocharReference",
     "GocharRules",
@@ -2136,6 +2170,7 @@ __all__ = [
     "TibetanYear",
     "BlackoutKind",
     "LunarEclipseKind",
+    "MundaneKind",
     "SolarEclipseKind",
     "Star",
     "StarClass",
@@ -3597,6 +3632,164 @@ class ChartArea(_Area):
             provenance=decode_provenance(envelope["provenance"]),
         )
 
+    def mundane(
+        self,
+        *,
+        kind: Union[MundaneKind, str],
+        place: Observer,
+        year: Optional[int] = None,
+        from_instant: Optional[float] = None,
+        ingress: Optional[Union[MundaneKind, str]] = None,
+        event: Optional["MundaneEvent"] = None,
+        utc_offset_seconds: int = 0,
+    ) -> "MundaneChart":
+        """A mundane chart (`03-design/mundane-charts.md`): the moment its
+        kind names (an ingress, the lunation before one, an eclipse, a great
+        conjunction, or an event on record), found by the SDK's own
+        searches, and the chart cast for it at `place`, `ChartKind.MUNDANE`
+        (`ChartKind.EVENT` for an event). The moment is sealed by the
+        chart cast there, with the request as its input."""
+        asked: Dict[str, Any] = {
+            "kind": _member_key(kind),
+            "latitudeDeg": float(place.latitude_deg),
+            "longitudeDeg": float(place.longitude_deg),
+            "altitudeM": float(place.altitude_m),
+            "utcOffsetSeconds": utc_offset_seconds,
+        }
+        if year is not None:
+            asked["year"] = year
+        if from_instant is not None:
+            asked["from"] = from_instant
+        if ingress is not None:
+            asked["ingress"] = _member_key(ingress)
+        if event is not None:
+            asked["event"] = dict(event)
+        answered = self._context._through_provider(lambda: self._context.inner.chart_mundane(json.dumps(asked)))
+        envelope = json.loads(answered)
+        value = envelope["value"]
+        found = _member(MundaneKind, value["kind"])
+        chart = self.found(
+            instant=value["instant"],
+            place=Observer(
+                latitude_deg=Latitude(value["latitudeDeg"]),
+                longitude_deg=Longitude(value["longitudeDeg"]),
+                altitude_m=Altitude(value["altitudeM"]),
+            ),
+            utc_offset_seconds=value["utcOffsetSeconds"],
+            kind=ChartKind.EVENT if found is MundaneKind.EVENT else ChartKind.MUNDANE,
+        )
+        before = value.get("ingress")
+        solar = value.get("solarEclipse")
+        lunar = value.get("lunarEclipse")
+        return MundaneChart(
+            kind=found,
+            instant=value["instant"],
+            ingress=None
+            if before is None
+            else MundaneIngress(kind=_member(MundaneKind, before["kind"]), instant=before["instant"]),
+            solar_eclipse=None if solar is None else _member(SolarEclipseKind, solar),
+            lunar_eclipse=None if lunar is None else _member(LunarEclipseKind, lunar),
+            name=value.get("name"),
+            source=value.get("source"),
+            chart=chart,
+            provenance=decode_provenance(envelope["provenance"]),
+        )
+
+    def relocated(
+        self,
+        *,
+        instant: float,
+        places: Sequence[Observer],
+        house_system: Optional[Union[HouseSystem, str]] = None,
+    ) -> "Relocation":
+        """A chart's instant recast at other places
+        (`03-design/astrocartography.md`): each place's ascendant,
+        midheaven and twelve cusps, in this context's zodiac. The grahas
+        stand where they stood; only the angles and the houses move."""
+        asked: Dict[str, Any] = {
+            "instant": instant,
+            "places": [
+                {
+                    "latitudeDeg": float(one.latitude_deg),
+                    "longitudeDeg": float(one.longitude_deg),
+                    "altitudeM": float(one.altitude_m),
+                }
+                for one in places
+            ],
+        }
+        if house_system is not None:
+            asked["houseSystem"] = _member_key(house_system)
+        answered = self._context._through_provider(lambda: self._context.inner.chart_relocated(json.dumps(asked)))
+        envelope = json.loads(answered)
+        value = envelope["value"]
+        return Relocation(
+            instant=value["instant"],
+            obliquity_deg=value["obliquityDeg"],
+            places=tuple(
+                RelocatedChart(
+                    latitude_deg=one["latitudeDeg"],
+                    longitude_deg=one["longitudeDeg"],
+                    altitude_m=one["altitudeM"],
+                    ascendant_deg=one["ascendantDeg"],
+                    midheaven_deg=one["midheavenDeg"],
+                    cusps_deg=tuple(one["cuspsDeg"]),
+                    house_system=_member(HouseSystem, one["houseSystem"]),
+                )
+                for one in value["places"]
+            ),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
+
+    def astrocartography(
+        self,
+        *,
+        instant: float,
+        bodies: Optional[Sequence[Union[Graha, str]]] = None,
+        projection: Optional[Projection] = None,
+        step_deg: Optional[float] = None,
+        latitude_limit_deg: Optional[float] = None,
+    ) -> "Astrocartography":
+        """The astrocartography lines at an instant
+        (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC
+        lines as `(longitude_deg, latitude_deg)` points from south to north.
+        A rising or setting line stops at its `polar_limit_deg`. Every point
+        is on its angle, read back through a chart cast there, to
+        `tolerance_deg`. `projection` is `IN_MUNDO` (the default) or
+        `ZODIACAL`."""
+        asked: Dict[str, Any] = {"instant": instant}
+        if bodies is not None:
+            asked["bodies"] = [_member_key(one) for one in bodies]
+        if projection is not None:
+            asked["projection"] = projection
+        if step_deg is not None:
+            asked["stepDeg"] = step_deg
+        if latitude_limit_deg is not None:
+            asked["latitudeLimitDeg"] = latitude_limit_deg
+        answered = self._context._through_provider(
+            lambda: self._context.inner.chart_astrocartography(json.dumps(asked))
+        )
+        envelope = json.loads(answered)
+        value = envelope["value"]
+        return Astrocartography(
+            instant=value["instant"],
+            projection=value["projection"],
+            step_deg=value["stepDeg"],
+            latitude_limit_deg=value["latitudeLimitDeg"],
+            tolerance_deg=value["toleranceDeg"],
+            greenwich_ramc_deg=value["greenwichRamcDeg"],
+            obliquity_deg=value["obliquityDeg"],
+            lines=tuple(
+                AstroLine(
+                    body=_member(Graha, line["body"]),
+                    angle=line["angle"],
+                    points=tuple((point[0], point[1]) for point in line["points"]),
+                    polar_limit_deg=line.get("polarLimitDeg"),
+                )
+                for line in value["lines"]
+            ),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
+
 class AlmanacArea(_Area):
     """`sdk.almanac` — a day, or a run of days, with its limbs.
 
@@ -4067,6 +4260,53 @@ class AlmanacArea(_Area):
             asked["table"] = table
         answered = self._context._through_provider(lambda: self._context.inner.almanac_death_time(json.dumps(asked)))
         return _death_time_answer(answered)
+
+    def sky_view(
+        self,
+        *,
+        place: Observer,
+        at: float,
+        grahas: Optional[Sequence[Union[Graha, str]]] = None,
+        stars: Optional[Sequence[Union[Star, str]]] = None,
+        ecliptic_step_deg: Optional[float] = None,
+        horizon_step_deg: Optional[float] = None,
+        pressure_hpa: Optional[float] = None,
+        temperature_c: Optional[float] = None,
+    ) -> "SkyViewAnswer":
+        """**The sky at a place and an instant** (`03-design/sky-view.md`):
+        where each graha and each nakshatra's junction star stands,
+        topocentric, apparent and of date, its altitude airless and
+        refracted and its azimuth from north through east; and the
+        ecliptic, with the ascendant and the descendant, and the horizon as
+        point lists. `grahas` and `stars` are the nine and the twenty-seven
+        yogataras when left out; each step is 0.1 to 90 degrees, five when
+        left out; the air is 1010 hPa and 10 °C, and a pressure of 0 turns
+        refraction off. A context over a classical astronomy is refused
+        (C1185).
+
+        >>> # view = ctx.almanac.sky_view(place=kathmandu, at=2461345.25)
+        >>> # view.value.grahas[1].azimuth_deg  # the Moon's
+        """
+        asked: Dict[str, Any] = {
+            "latitudeDeg": place.latitude_deg,
+            "longitudeDeg": place.longitude_deg,
+            "altitudeM": place.altitude_m,
+            "at": at,
+        }
+        if grahas is not None:
+            asked["grahas"] = [_member_key(graha) for graha in grahas]
+        if stars is not None:
+            asked["stars"] = [_member_key(star) for star in stars]
+        for key, value in (
+            ("eclipticStepDeg", ecliptic_step_deg),
+            ("horizonStepDeg", horizon_step_deg),
+            ("pressureHpa", pressure_hpa),
+            ("temperatureC", temperature_c),
+        ):
+            if value is not None:
+                asked[key] = value
+        answered = self._context._through_provider(lambda: self._context.inner.almanac_sky_view(json.dumps(asked)))
+        return _sky_view_answer(answered)
 
     def first_year(
         self,
@@ -4950,6 +5190,115 @@ class VerifyArea(_Area):
             ),
             provenance=decode_provenance(envelope["provenance"]),
         )
+
+    def issue(self, request: IssueRequest) -> "Issued":
+        """A record's answer and its receipt: what was asked, under which
+        settings, ephemeris and versions, and the digest of what was
+        answered (`03-design/receipts-and-datasets.md` §1). The answer is
+        the record's own JSON, as `verify.receipt` digests it; the receipt
+        is handed back whole.
+
+        >>> # issued = sdk.verify.issue({"record": "calendar.convert", "request": {
+        >>> #     "date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}})
+        >>> # sdk.verify.receipt(issued.receipt).verdict  # 'HELD'
+        """
+        issued = json.loads(
+            self._context._through_provider(lambda: self._context.inner.verify_issue(json.dumps(request)))
+        )
+        return Issued(answer=issued["answer"], receipt=issued["receipt"])
+
+    def receipt(self, receipt: Union[Receipt, Mapping[str, Any], str]) -> "ReceiptCheck":
+        """A receipt checked: answered again under its own settings and
+        compared, `HELD`, `DIFFERS`, `NOT_RERUN` (with why) or `BROKEN` (a
+        field edited after issue), with every version that moved between
+        the two sides. A receipt is the record or its JSON text."""
+        text = receipt if isinstance(receipt, str) else json.dumps(receipt)
+        raw = json.loads(self._context._through_provider(lambda: self._context.inner.verify_receipt(text)))
+        reason = raw["reason"]
+        return ReceiptCheck(
+            verdict=raw["verdict"],
+            record=raw["record"],
+            moved=tuple(ReceiptMove(field=m["field"], issued=m["issued"], now=m["now"]) for m in raw["moved"]),
+            broken=tuple(raw["broken"]),
+            issued=_receipt_side(raw["issued"]),
+            now=_receipt_side(raw["now"]),
+            reason=None if reason is None else NotRerunReason(cause=reason["cause"], detail=reason["detail"]),
+        )
+
+
+def _receipt_side(raw: Mapping[str, Any]) -> "ReceiptSide":
+    version = raw["sdkVersion"]
+    return ReceiptSide(
+        sdk_version=(version["major"], version["minor"], version["patch"]),
+        calculation_version=raw["calculationVersion"],
+        catalogue_version=raw["catalogueVersion"],
+        provider=None if raw["provider"] is None else MappingProxyType(dict(raw["provider"])),
+        tzdb=raw["tzdb"],
+    )
+
+
+@dataclass(frozen=True)
+class Issued:
+    """What `verify.issue` answers."""
+
+    answer: Any
+    """The record's own answer, `{value, provenance}` or the value alone,
+    as its JSON reads."""
+
+    receipt: Receipt
+    """The receipt, to hand back whole to `verify.receipt`."""
+
+
+@dataclass(frozen=True)
+class ReceiptSide:
+    """What answered a receipt: its versions, ephemeris and zone database."""
+
+    sdk_version: Tuple[int, int, int]
+    calculation_version: int
+    catalogue_version: int
+    provider: Optional[Mapping[str, str]]
+    """`name`, `version` and `dataVersion` of the ephemeris; `None` where
+    none was read."""
+
+    tzdb: str
+
+
+@dataclass(frozen=True)
+class ReceiptMove:
+    """A field that moved between the receipt's side and this one."""
+
+    field: str
+    """`output`, `sdkVersion`, `calculationVersion`, `catalogueVersion`,
+    `provider` or `tzdb`."""
+
+    issued: str
+    now: str
+
+
+@dataclass(frozen=True)
+class NotRerunReason:
+    """Why a receipt was not answered again."""
+
+    cause: Literal["RECORD", "PROVIDER", "SETTINGS", "LOCALE", "PACKS", "OUT_OF_RANGE", "REFUSED"]
+    detail: str
+
+
+@dataclass(frozen=True)
+class ReceiptCheck:
+    """What `verify.receipt` answers."""
+
+    verdict: Literal["HELD", "DIFFERS", "NOT_RERUN", "BROKEN"]
+    record: str
+    moved: Tuple[ReceiptMove, ...]
+    """Every field that moved, `output` first when the digest did."""
+
+    broken: Tuple[str, ...]
+    """The digests that no longer hold, on a receipt `BROKEN`."""
+
+    issued: ReceiptSide
+    now: ReceiptSide
+    reason: Optional[NotRerunReason]
+    """Why it was not answered again, on `NOT_RERUN`."""
 
 
 @dataclass(frozen=True)
@@ -11245,6 +11594,102 @@ class DeathTime:
 
 
 @dataclass(frozen=True)
+class GrahaSky:
+    """A graha in the local sky (`03-design/sky-view.md`): topocentric,
+    apparent and of date, the azimuth from north through east."""
+
+    graha: Graha
+    ra_deg: float
+    dec_deg: float
+    altitude_deg: float
+    """Airless, of the centre."""
+
+    refracted_altitude_deg: float
+    """Under the air's refraction; airless below the horizon (C973)."""
+
+    azimuth_deg: float
+
+
+@dataclass(frozen=True)
+class StarSky:
+    """A star in the local sky, as a graha's."""
+
+    star: Star
+    nakshatra: Optional[Nakshatra]
+    """The nakshatra it is the yogatara of, or `None`."""
+
+    magnitude: Optional[float]
+    ra_deg: float
+    dec_deg: float
+    altitude_deg: float
+    refracted_altitude_deg: float
+    azimuth_deg: float
+
+
+@dataclass(frozen=True)
+class EclipticPoint:
+    """A point of the ecliptic in the local sky: `SAMPLE`, `ASCENDANT`
+    or `DESCENDANT`, by tropical longitude of date."""
+
+    kind: str
+    longitude_deg: float
+    altitude_deg: float
+    refracted_altitude_deg: float
+    azimuth_deg: float
+
+
+@dataclass(frozen=True)
+class HorizonPoint:
+    """A point of the airless horizon, and where it lies on the sphere of
+    date."""
+
+    azimuth_deg: float
+    ra_deg: float
+    dec_deg: float
+    longitude_deg: float
+    latitude_deg: float
+
+
+@dataclass(frozen=True)
+class SkyView:
+    """The sky at a place and an instant (`03-design/sky-view.md`)."""
+
+    at: float
+    """UT1 read as UTC, a Julian day."""
+
+    sidereal_time_deg: float
+    obliquity_deg: float
+    pressure_hpa: float
+    temperature_c: float
+    ecliptic_step_deg: float
+    horizon_step_deg: float
+    grahas: Tuple[GrahaSky, ...]
+    stars: Tuple[StarSky, ...]
+    ecliptic: Tuple[EclipticPoint, ...]
+    """Every step of longitude and the two crossings, in longitude order."""
+
+    horizon: Tuple[HorizonPoint, ...]
+    """Every step of azimuth from north."""
+
+    def graha(self, graha: Graha) -> Optional[GrahaSky]:
+        """A graha's place, if it was asked."""
+        return next((placed for placed in self.grahas if placed.graha == graha), None)
+
+
+@dataclass(frozen=True)
+class SkyViewAnswer:
+    """What `almanac.sky_view` answers.
+
+    >>> # view = ctx.almanac.sky_view(place=kathmandu, at=2461345.25)
+    >>> # view.value.graha(Graha.MOON).azimuth_deg
+    """
+
+    value: SkyView
+    provenance: Provenance
+    """What computed it, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
 class DeathTimeAnswer:
     """What `almanac.death_time` answers.
 
@@ -11949,6 +12394,79 @@ class RashifalAnswers:
     value: Tuple[RashifalAnswer, ...]
     provenance: Provenance
     """What computed them, and under what; `input_hash` seals the request."""
+
+
+@dataclass(frozen=True)
+class MundaneIngress:
+    """The ingress a lunation precedes."""
+
+    kind: MundaneKind
+    instant: float
+
+
+@dataclass(frozen=True)
+class MundaneChart:
+    """A mundane moment and the chart cast for it."""
+
+    kind: MundaneKind
+    instant: float
+    """The moment, a Julian day (UTC)."""
+    ingress: Optional[MundaneIngress]
+    solar_eclipse: Optional[SolarEclipseKind]
+    lunar_eclipse: Optional[LunarEclipseKind]
+    name: Optional[str]
+    source: Optional[str]
+    chart: "Chart"
+    provenance: Provenance
+
+
+@dataclass(frozen=True)
+class RelocatedChart:
+    """One place's angles and houses at the chart's instant."""
+
+    latitude_deg: float
+    longitude_deg: float
+    altitude_m: float
+    ascendant_deg: float
+    midheaven_deg: float
+    cusps_deg: Tuple[float, ...]
+    house_system: HouseSystem
+
+
+@dataclass(frozen=True)
+class Relocation:
+    """A chart's instant recast at each place asked."""
+
+    instant: float
+    obliquity_deg: float
+    places: Tuple[RelocatedChart, ...]
+    provenance: Provenance
+
+
+@dataclass(frozen=True)
+class AstroLine:
+    """One body's line on one angle (`MC`, `IC`, `ASC` or `DSC`)."""
+
+    body: Graha
+    angle: str
+    points: Tuple[Tuple[float, float], ...]
+    """`(longitude_deg, latitude_deg)`, south to north."""
+    polar_limit_deg: Optional[float]
+
+
+@dataclass(frozen=True)
+class Astrocartography:
+    """The lines at an instant, and what they were drawn under."""
+
+    instant: float
+    projection: str
+    step_deg: float
+    latitude_limit_deg: float
+    tolerance_deg: float
+    greenwich_ramc_deg: float
+    obliquity_deg: float
+    lines: Tuple[AstroLine, ...]
+    provenance: Provenance
 
 
 @dataclass(frozen=True)
@@ -17711,6 +18229,69 @@ def _death_instant(raw: Mapping[str, Any]) -> DeathInstant:
         panchaka=bool(raw["panchaka"]),
         feet=raw.get("feet"),
         pushkara=raw.get("pushkara"),
+    )
+
+
+def _sky_view_answer(text: str) -> "SkyViewAnswer":
+    """`ts_almanac_sky_view`'s answer, with the provenance beside it."""
+    envelope = json.loads(text)
+    raw = envelope["value"]
+    air = raw["atmosphere"]
+    return SkyViewAnswer(
+        value=SkyView(
+            at=raw["at"],
+            sidereal_time_deg=raw["siderealTimeDeg"],
+            obliquity_deg=raw["obliquityDeg"],
+            pressure_hpa=air["pressureHpa"],
+            temperature_c=air["temperatureC"],
+            ecliptic_step_deg=raw["eclipticStepDeg"],
+            horizon_step_deg=raw["horizonStepDeg"],
+            grahas=tuple(
+                GrahaSky(
+                    graha=_member(Graha, one["graha"]),
+                    ra_deg=one["raDeg"],
+                    dec_deg=one["decDeg"],
+                    altitude_deg=one["altitudeDeg"],
+                    refracted_altitude_deg=one["refractedAltitudeDeg"],
+                    azimuth_deg=one["azimuthDeg"],
+                )
+                for one in raw["grahas"]
+            ),
+            stars=tuple(
+                StarSky(
+                    star=_member(Star, one["star"]),
+                    nakshatra=None if one["nakshatra"] is None else _member(Nakshatra, one["nakshatra"]),
+                    magnitude=one["magnitude"],
+                    ra_deg=one["raDeg"],
+                    dec_deg=one["decDeg"],
+                    altitude_deg=one["altitudeDeg"],
+                    refracted_altitude_deg=one["refractedAltitudeDeg"],
+                    azimuth_deg=one["azimuthDeg"],
+                )
+                for one in raw["stars"]
+            ),
+            ecliptic=tuple(
+                EclipticPoint(
+                    kind=one["kind"],
+                    longitude_deg=one["longitudeDeg"],
+                    altitude_deg=one["altitudeDeg"],
+                    refracted_altitude_deg=one["refractedAltitudeDeg"],
+                    azimuth_deg=one["azimuthDeg"],
+                )
+                for one in raw["ecliptic"]
+            ),
+            horizon=tuple(
+                HorizonPoint(
+                    azimuth_deg=one["azimuthDeg"],
+                    ra_deg=one["raDeg"],
+                    dec_deg=one["decDeg"],
+                    longitude_deg=one["longitudeDeg"],
+                    latitude_deg=one["latitudeDeg"],
+                )
+                for one in raw["horizon"]
+            ),
+        ),
+        provenance=decode_provenance(envelope["provenance"]),
     )
 
 

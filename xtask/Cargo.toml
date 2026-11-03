@@ -40,6 +40,7 @@ teistro-intl = { path = "../crates/intl", default-features = false, features = [
 teistro-muhurta = { path = "../crates/muhurta" }
 teistro-panchanga = { path = "../crates/panchanga" }
 teistro-port-ephemeris = { path = "../crates/port-ephemeris" }
+teistro-research = { path = "../crates/research", features = ["schema"] }
 teistro-rules = { path = "../crates/rules" }
 teistro-scenario = { path = "../crates/scenario" }
 teistro-serial = { path = "../crates/serial", features = ["schema"] }

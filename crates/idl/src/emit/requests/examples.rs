@@ -10,6 +10,8 @@
 //! into, so it is taken from the record's hand-written example at the same
 //! place, and left out where that example has none. The values need not
 //! make sense together: the examples are held to the schema, not answered.
+//! A text is the hand example's where it has one, since a text's pattern
+//! is in the schema and not in the model.
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -183,7 +185,13 @@ impl<'a> Writer<'a> {
             RecordType::Bool => Value::Bool(true),
             RecordType::Integer { .. } => json!(1),
             RecordType::Number => json!(1.5),
-            RecordType::Text => json!("x"),
+            // A text may hold to a pattern the model does not carry (a
+            // digest's 64 hex digits): the hand example's text where it
+            // has one, which its own record answered.
+            RecordType::Text => hand
+                .filter(|h| h.is_string())
+                .cloned()
+                .unwrap_or_else(|| json!("x")),
             // A raw part stays JSON in every binding, so there is no type
             // of its to read it into: the hand example's, if it has one.
             RecordType::Json => return hand.cloned(),

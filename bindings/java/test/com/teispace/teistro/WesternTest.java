@@ -79,6 +79,43 @@ final class WesternTest {
      * @param teistro the library
      */
     static void add(Map<String, BindingTest.Test> tests, Teistro teistro) {
+        tests.put("a mundane chart, a relocation and the lines answer their places", () -> {
+            // The Aries ingress of 2024 (USNO, 20 March 03:06 UTC), the new
+            // moon before it, an event on record, a relocation and the lines.
+            try (Context sky = tropical(teistro)) {
+                Observer kathmandu = new Observer(new Longitude(85.324), new Latitude(27.7172), new Altitude(1400));
+                MundaneChart aries = sky.chart().mundane(MundaneKind.ARIES_INGRESS, kathmandu, 2024, null, null,
+                        null, 0);
+                same(MundaneKind.ARIES_INGRESS, aries.kind(), "the kind");
+                check(Math.abs(aries.instant() - (2_460_389.5 + (3 + 6 / 60.0) / 24)) < 2 / 1440.0,
+                        "the ingress, to two minutes: " + aries.instant());
+                same(ChartKind.MUNDANE, aries.chart().kind(), "a mundane chart");
+                MundaneChart newMoon = sky.chart().mundane(MundaneKind.NEW_MOON_BEFORE_INGRESS, kathmandu, 2024, null,
+                        MundaneKind.ARIES_INGRESS, null, 0);
+                same(MundaneKind.ARIES_INGRESS, newMoon.ingress().kind(), "the ingress it precedes");
+                check(newMoon.instant() < newMoon.ingress().instant(), "the lunation before the ingress");
+                MundaneChart event = sky.chart().mundane(MundaneKind.EVENT, kathmandu, null, null, null,
+                        new MundaneEvent("A founding", 2_451_545, "a record"), 20_700);
+                same(ChartKind.EVENT, event.chart().kind(), "an event chart");
+                same("a record", event.source(), "the source carried");
+                check(refusedField(() -> sky.chart().mundane(MundaneKind.EVENT, kathmandu, 2024, null, null, null, 0))
+                        .startsWith("mundane."), "an event's year refused");
+                Relocation moved = sky.chart().relocated(2_447_000.25, List.of(LONDON), HouseSystem.PLACIDUS);
+                same(12, moved.places().get(0).cuspsDeg().size(), "twelve cusps");
+                same(HouseSystem.PLACIDUS, moved.places().get(0).houseSystem(), "the division asked");
+                same("relocated.places", refusedField(() -> sky.chart().relocated(2_447_000.25, List.of(), null)),
+                        "no place refused");
+                Astrocartography map = sky.chart().astrocartography(2_447_000.25, List.of(Graha.SUN, Graha.MOON), null,
+                        5.0, null);
+                same(List.of("MC", "IC", "ASC", "DSC", "MC", "IC", "ASC", "DSC"),
+                        map.lines().stream().map(AstroLine::angle).toList(), "the angles in order");
+                same(Graha.SUN, map.lines().get(0).body(), "the first body");
+                check(map.lines().stream().noneMatch(line -> line.points().isEmpty()), "every line drawn");
+                same("astrocartography.stepDeg",
+                        refusedField(() -> sky.chart().astrocartography(2_447_000.25, null, null, 0.0, null)),
+                        "a zero step refused");
+            }
+        });
         tests.put("a chart carries its considerations", () -> {
             try (Context sky = baseline(teistro)) {
                 double[] instants = new double[16];

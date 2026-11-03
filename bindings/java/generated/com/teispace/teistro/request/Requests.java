@@ -28,12 +28,16 @@ public final class Requests {
             Map.entry("almanac.publishedReasons", PublishedReasonsRequest::of),
             Map.entry("almanac.sankalpa", SankalpaRequest::of),
             Map.entry("almanac.sentences", SentencesRequest::of),
+            Map.entry("almanac.skyView", SkyViewRequest::of),
             Map.entry("calendar.add", AddAsked::of),
             Map.entry("calendar.between", BetweenAsked::of),
             Map.entry("calendar.convert", CalendarAsked::of),
+            Map.entry("chart.astrocartography", AstrocartographyRequest::of),
             Map.entry("chart.disagreements", ChartDisagreementsRequest::of),
             Map.entry("chart.found", ChartFoundRequest::of),
+            Map.entry("chart.mundane", MundaneRequest::of),
             Map.entry("chart.rashifal", BatchAsked::of),
+            Map.entry("chart.relocated", RelocationRequest::of),
             Map.entry("intl.date", DateTextRequest::of),
             Map.entry("intl.dates", DatesRequest::of),
             Map.entry("intl.inWords", InWordsRequest::of),
@@ -51,7 +55,9 @@ public final class Requests {
             Map.entry("time.civil", CivilAsked::of),
             Map.entry("time.convert", ScaleRequest::of),
             Map.entry("time.resolve", ResolveAsked::of),
-            Map.entry("verify.claims", ClaimsRequest::of));
+            Map.entry("verify.claims", ClaimsRequest::of),
+            Map.entry("verify.issue", IssueRequest::of),
+            Map.entry("verify.receipt", Receipt::of));
 
     private Requests() {}
 

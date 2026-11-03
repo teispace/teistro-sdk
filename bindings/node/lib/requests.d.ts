@@ -470,6 +470,52 @@ export interface SentencesRequest {
 }
 
 /**
+ * The request as a binding writes it.
+ */
+export interface SkyViewRequest {
+  /**
+   * The place's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The instant, a UTC Julian day.
+   */
+  readonly at: number;
+  /**
+   * The ecliptic's step in longitude, degrees, 0.1 to 90; 5 when left out.
+   */
+  readonly eclipticStepDeg?: number | null;
+  /**
+   * The grahas placed, in this order; the nine, Sun to Ketu, when left out.
+   */
+  readonly grahas?: readonly Member<catalogue.Graha>[] | null;
+  /**
+   * The horizon's step in azimuth, degrees, 0.1 to 90; 5 when left out.
+   */
+  readonly horizonStepDeg?: number | null;
+  /**
+   * The place's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The pressure the refraction is reckoned under, hectopascals, 0 to 1100; 1010 when left out, and 0 for no refraction.
+   */
+  readonly pressureHpa?: number | null;
+  /**
+   * The stars placed, in this order; the twenty-seven nakshatras' yogataras when left out.
+   */
+  readonly stars?: readonly Member<catalogue.Star>[] | null;
+  /**
+   * The temperature, degrees Celsius, −90 to 60; 10 when left out.
+   */
+  readonly temperatureC?: number | null;
+}
+
+/**
  * An add request as a binding writes it.
  */
 export interface AddAsked {
@@ -498,6 +544,32 @@ export interface CalendarAsked {
   readonly calendar?: Member<catalogue.Calendar> | null;
   readonly date: DayAsked;
   readonly into: Member<catalogue.Calendar>;
+}
+
+/**
+ * The lines of a map at one instant.
+ */
+export interface AstrocartographyRequest {
+  /**
+   * The bodies, in the order their lines are answered; none for the seven and whichever outer planets the profile places.
+   */
+  readonly bodies?: readonly Member<catalogue.Graha>[];
+  /**
+   * The instant, a Julian day (UTC).
+   */
+  readonly instant: number;
+  /**
+   * The furthest latitude sampled north and south, degrees, above zero and below ninety; eighty by default.
+   */
+  readonly latitudeLimitDeg?: number;
+  /**
+   * In mundo, the default, or zodiacal (C1155).
+   */
+  readonly projection?: Projection;
+  /**
+   * The step of latitude between a line's points, degrees, above zero and at most ten; one by default.
+   */
+  readonly stepDeg?: number;
 }
 
 /**
@@ -580,11 +652,71 @@ export interface ChartFoundRequest {
 }
 
 /**
+ * A mundane chart as a binding asks for it: a kind, when to look from (a `year` or an instant `from`), or the `event` an `EVENT` casts, and the place the chart is cast for.
+ */
+export interface MundaneRequest {
+  /**
+   * The place's altitude, metres.
+   */
+  readonly altitudeM?: number;
+  /**
+   * For an `EVENT`, the event on record.
+   */
+  readonly event?: MundaneEvent | null;
+  /**
+   * The instant the search starts at, a Julian day (UTC): the first ingress, eclipse or conjunction at or after it.
+   */
+  readonly from?: number | null;
+  /**
+   * For a lunation, the ingress it precedes; `MESHA_SANKRANTI` when left out, the new moon that opens Chaitra (C1151).
+   */
+  readonly ingress?: Member<catalogue.MundaneKind> | null;
+  /**
+   * Which chart.
+   */
+  readonly kind: Member<catalogue.MundaneKind>;
+  /**
+   * The place's latitude, degrees, north positive (C1152).
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees, east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The local clock's offset from UTC, seconds, east positive.
+   */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The year (Gregorian) whose ingress, or whose first eclipse or conjunction after 1 January 0h UTC, is asked; or name `from`.
+   */
+  readonly year?: number | null;
+}
+
+/**
  * Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked.
  */
 export interface BatchAsked {
   readonly baseline?: BaselinePeriod | null;
   readonly periods: readonly PeriodAsked[];
+}
+
+/**
+ * A chart's instant recast at other places.
+ */
+export interface RelocationRequest {
+  /**
+   * The house division; the profile's Western override, else Placidus, when left out (C1157).
+   */
+  readonly houseSystem?: Member<catalogue.HouseSystem> | null;
+  /**
+   * The chart's instant, a Julian day (UTC).
+   */
+  readonly instant: number;
+  /**
+   * The places, one to 256.
+   */
+  readonly places: readonly RelocationPlace[];
 }
 
 /**
@@ -926,6 +1058,82 @@ export interface ClaimsRequest {
    * The offset from UTC the place's civil days run at, in seconds, east positive.
    */
   readonly utcOffsetSeconds: number;
+}
+
+/**
+ * A record to answer with a receipt: its name and its request.
+ */
+export interface IssueRequest {
+  /**
+   * The record's name, `area.operation`, as `records` lists it.
+   */
+  readonly record: string;
+  /**
+   * The record's request, as that record reads it.
+   */
+  readonly request: unknown;
+}
+
+/**
+ * What a record was asked, under what, and the digest of what it answered.
+ */
+export interface Receipt {
+  /**
+   * The calculation version.
+   */
+  readonly calculationVersion: number;
+  /**
+   * The catalogue's version.
+   */
+  readonly catalogueVersion: number;
+  /**
+   * The seal: the hash of this receipt's canonical JSON with `digest` left out.
+   */
+  readonly digest: string;
+  /**
+   * [`FORMAT`].
+   */
+  readonly format: string;
+  /**
+   * The locale the context answered in.
+   */
+  readonly locale: string;
+  /**
+   * The hash of the answer's value, canonical JSON.
+   */
+  readonly outputDigest: string;
+  /**
+   * The runtime packs the context had loaded.
+   */
+  readonly packs: unknown;
+  /**
+   * The ephemeris the answer was computed with; none where it read none.
+   */
+  readonly provider?: ReceiptProvider | null;
+  /**
+   * The record's name, `area.operation`.
+   */
+  readonly record: string;
+  /**
+   * The request as the record read it.
+   */
+  readonly request: unknown;
+  /**
+   * The hash of the request's canonical JSON.
+   */
+  readonly requestDigest: string;
+  /**
+   * The SDK's version.
+   */
+  readonly sdkVersion: Version;
+  /**
+   * The settings, whole, with their profile and hash.
+   */
+  readonly settings: SettingsSnapshot;
+  /**
+   * The zone database's version.
+   */
+  readonly tzdb: string;
 }
 
 /**
@@ -1505,6 +1713,14 @@ export interface ReckonedPlace {
  * `TROPICAL`: Uttarayana from the winter solstice to the summer solstice, the tropical Sun's.
  */
 export type AyanaReckoning = 'SIDEREAL' | 'TROPICAL';
+
+/**
+ * How a body is placed on the angles (C1155), written `"IN_MUNDO"` or `"ZODIACAL"`.
+ *
+ * `IN_MUNDO`: The body where it stands, its ecliptic latitude kept, against the true horizon: the practice of astrocartography's maps.
+ * `ZODIACAL`: The body's degree of the ecliptic, latitude zeroed: a point on a line has the body's longitude on the chart's own angle there.
+ */
+export type Projection = 'IN_MUNDO' | 'ZODIACAL';
 
 /**
  * What the antiscia are asked: the orbs a pair is read under, and whether a reflection is read on the cusps.
@@ -2131,6 +2347,24 @@ export interface HouseRequest {
 }
 
 /**
+ * An event on record, cast as given (`EVENT`).
+ */
+export interface MundaneEvent {
+  /**
+   * When, a Julian day (UTC).
+   */
+  readonly instant: number;
+  /**
+   * What happened.
+   */
+  readonly name: string;
+  /**
+   * Where the record of it comes from, carried on the answer.
+   */
+  readonly source: string;
+}
+
+/**
  * The period a score is weighed for, which sets the Moon's weight.
  *
  * `DAILY`: A day: the Moon weighs 5.
@@ -2154,6 +2388,24 @@ export interface PeriodAsked {
   readonly snapshot?: Snapshot | null;
   readonly spells?: readonly number[] | null;
   readonly utcOffsetSeconds: number;
+}
+
+/**
+ * A place a chart is recast at.
+ */
+export interface RelocationPlace {
+  /**
+   * Altitude, metres.
+   */
+  readonly altitudeM?: number;
+  /**
+   * Latitude, degrees, north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * Longitude, degrees, east positive.
+   */
+  readonly longitudeDeg: number;
 }
 
 /**
@@ -2495,6 +2747,64 @@ export interface CivilTime {
    */
   readonly nanos?: number;
   readonly second: number;
+}
+
+/**
+ * The ephemeris an answer was computed with, as a receipt names it.
+ */
+export interface ReceiptProvider {
+  /**
+   * The version of the data it read.
+   */
+  readonly dataVersion: string;
+  /**
+   * The provider's name.
+   */
+  readonly name: string;
+  /**
+   * Its version.
+   */
+  readonly version: string;
+}
+
+/**
+ * A semantic version, with its pre-release label as written.
+ */
+export interface Version {
+  /**
+   * Major.
+   */
+  readonly major: number;
+  /**
+   * Minor.
+   */
+  readonly minor: number;
+  /**
+   * Patch.
+   */
+  readonly patch: number;
+  /**
+   * The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release.
+   */
+  readonly pre?: string | null;
+}
+
+/**
+ * The settings something was computed under, whole.
+ */
+export interface SettingsSnapshot {
+  /**
+   * The SHA-256 of the document's canonical JSON: the `settings_hash` a provenance carries.
+   */
+  readonly hash: string;
+  /**
+   * The profile the settings were resolved from.
+   */
+  readonly profile: string;
+  /**
+   * The settings document, every knob, as `Context::settings_json` writes it, and kept as it was read. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.
+   */
+  readonly settings: unknown;
 }
 
 /**

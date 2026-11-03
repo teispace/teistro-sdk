@@ -4832,5 +4832,61 @@
       "prose": "Kapha",
       "iast": "Kapha"
     }
+  },
+  "mundane_kind": {
+    "MESHA_SANKRANTI": {
+      "name": "Mesha sankranti",
+      "prose": "mesha sankranti",
+      "iast": "Meṣa saṅkrānti"
+    },
+    "MAKARA_SANKRANTI": {
+      "name": "Makara sankranti",
+      "prose": "makara sankranti",
+      "iast": "Makara saṅkrānti"
+    },
+    "ARIES_INGRESS": {
+      "name": "Aries ingress",
+      "prose": "aries ingress"
+    },
+    "CANCER_INGRESS": {
+      "name": "Cancer ingress",
+      "prose": "cancer ingress"
+    },
+    "LIBRA_INGRESS": {
+      "name": "Libra ingress",
+      "prose": "libra ingress"
+    },
+    "CAPRICORN_INGRESS": {
+      "name": "Capricorn ingress",
+      "prose": "capricorn ingress"
+    },
+    "NEW_MOON_BEFORE_INGRESS": {
+      "name": "New moon before the ingress",
+      "prose": "new moon before the ingress"
+    },
+    "FULL_MOON_BEFORE_INGRESS": {
+      "name": "Full moon before the ingress",
+      "prose": "full moon before the ingress"
+    },
+    "SYZYGY_BEFORE_INGRESS": {
+      "name": "Syzygy before the ingress",
+      "prose": "syzygy before the ingress"
+    },
+    "SOLAR_ECLIPSE": {
+      "name": "Solar eclipse",
+      "prose": "solar eclipse"
+    },
+    "LUNAR_ECLIPSE": {
+      "name": "Lunar eclipse",
+      "prose": "lunar eclipse"
+    },
+    "GREAT_CONJUNCTION": {
+      "name": "Great conjunction",
+      "prose": "great conjunction"
+    },
+    "EVENT": {
+      "name": "Event",
+      "prose": "event"
+    }
   }
 }

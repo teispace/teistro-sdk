@@ -263,6 +263,48 @@ void main() {
     expect([claims[2].verdict, claims[2].reason], ['UNREAD', 'QUESTION']);
   });
 
+  test('a receipt issued, checked again, and caught when edited', () {
+    final ctx = context();
+    addTearDown(ctx.dispose);
+    final issued = ctx.verify.issue(
+      const IssueRequest(
+        record: 'calendar.convert',
+        request: <String, Object?>{
+          'date': <String, Object?>{'year': 2026, 'month': 10, 'day': 10},
+          'into': 'calendar.BIKRAM_SAMBAT',
+        },
+      ),
+    );
+    expect(issued.receipt['format'], 'teistro.receipt/1');
+    final held = ctx.verify.receipt(issued.receipt);
+    expect(
+      [held.verdict, held.moved, held.broken, held.reason],
+      ['HELD', isEmpty, isEmpty, isNull],
+    );
+    final broken = ctx.verify.receipt({
+      ...issued.receipt,
+      'locale': 'de-Latn-DE',
+    });
+    expect(
+      [broken.verdict, broken.broken],
+      [
+        'BROKEN',
+        ['digest'],
+      ],
+    );
+    expect(
+      () => ctx.verify.issue(
+        const IssueRequest(
+          record: 'almanac.nothing',
+          request: <String, Object?>{},
+        ),
+      ),
+      throwsA(
+        isA<TeistroException>().having((e) => e.field, 'field', 'issue.record'),
+      ),
+    );
+  });
+
   test('a date and a time as text and parts', () {
     final ctx = context();
     addTearDown(ctx.dispose);

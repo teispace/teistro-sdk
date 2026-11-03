@@ -871,6 +871,69 @@ final class SentencesRequest extends _Request {
   List<Object?> get _fields => [altitudeM, calendar, date, latitudeDeg, locale, longitudeDeg, utcOffsetSeconds];
 }
 
+/// The request as a binding writes it.
+final class SkyViewRequest extends _Request {
+  const SkyViewRequest({
+    this.altitudeM = 0.0,
+    required this.at,
+    this.eclipticStepDeg,
+    this.grahas,
+    this.horizonStepDeg,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    this.pressureHpa,
+    this.stars,
+    this.temperatureC,
+  });
+
+  /// The place's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The instant, a UTC Julian day.
+  final double at;
+
+  /// The ecliptic's step in longitude, degrees, 0.1 to 90; 5 when left out.
+  final double? eclipticStepDeg;
+
+  /// The grahas placed, in this order; the nine, Sun to Ketu, when left out.
+  final List<Graha>? grahas;
+
+  /// The horizon's step in azimuth, degrees, 0.1 to 90; 5 when left out.
+  final double? horizonStepDeg;
+
+  /// The place's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  /// The pressure the refraction is reckoned under, hectopascals, 0 to 1100; 1010 when left out, and 0 for no refraction.
+  final double? pressureHpa;
+
+  /// The stars placed, in this order; the twenty-seven nakshatras' yogataras when left out.
+  final List<Star>? stars;
+
+  /// The temperature, degrees Celsius, −90 to 60; 10 when left out.
+  final double? temperatureC;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'at': at,
+    if (eclipticStepDeg case final eclipticStepDegValue?) 'eclipticStepDeg': eclipticStepDegValue,
+    if (grahas case final grahasValue?) 'grahas': [for (final e0 in grahasValue) e0.key],
+    if (horizonStepDeg case final horizonStepDegValue?) 'horizonStepDeg': horizonStepDegValue,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    if (pressureHpa case final pressureHpaValue?) 'pressureHpa': pressureHpaValue,
+    if (stars case final starsValue?) 'stars': [for (final e0 in starsValue) e0.key],
+    if (temperatureC case final temperatureCValue?) 'temperatureC': temperatureCValue,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, at, eclipticStepDeg, grahas, horizonStepDeg, latitudeDeg, longitudeDeg, pressureHpa, stars, temperatureC];
+}
+
 /// An add request as a binding writes it.
 final class AddAsked extends _Request {
   const AddAsked({
@@ -960,6 +1023,44 @@ final class CalendarAsked extends _Request {
 
   @override
   List<Object?> get _fields => [calendar, date, into];
+}
+
+/// The lines of a map at one instant.
+final class AstrocartographyRequest extends _Request {
+  const AstrocartographyRequest({
+    this.bodies,
+    required this.instant,
+    this.latitudeLimitDeg = 80.0,
+    this.projection = Projection.inMundo,
+    this.stepDeg = 1.0,
+  });
+
+  /// The bodies, in the order their lines are answered; none for the seven and whichever outer planets the profile places.
+  final List<Graha>? bodies;
+
+  /// The instant, a Julian day (UTC).
+  final double instant;
+
+  /// The furthest latitude sampled north and south, degrees, above zero and below ninety; eighty by default.
+  final double latitudeLimitDeg;
+
+  /// In mundo, the default, or zodiacal (C1155).
+  final Projection projection;
+
+  /// The step of latitude between a line's points, degrees, above zero and at most ten; one by default.
+  final double stepDeg;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (bodies case final bodiesValue?) 'bodies': [for (final e0 in bodiesValue) e0.key],
+    'instant': instant,
+    'latitudeLimitDeg': latitudeLimitDeg,
+    'projection': projection.key,
+    'stepDeg': stepDeg,
+  };
+
+  @override
+  List<Object?> get _fields => [bodies, instant, latitudeLimitDeg, projection, stepDeg];
 }
 
 /// Two charts compared: `first` founded under the call's context, `second` (the first's birth again when left out) under the other's, and `at` the UTC Julian day the running dasha lords are compared at (each birth's own when left out).
@@ -1223,6 +1324,64 @@ final class ChartFoundRequest extends _Request {
   List<Object?> get _fields => [altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, dossier, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, latitudeDeg, longitudeDeg, lots, masaPravesha, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, utcOffsetSeconds, vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernConfigurations, westernHouses];
 }
 
+/// A mundane chart as a binding asks for it: a kind, when to look from (a `year` or an instant `from`), or the `event` an `EVENT` casts, and the place the chart is cast for.
+final class MundaneRequest extends _Request {
+  const MundaneRequest({
+    this.altitudeM = 0.0,
+    this.event,
+    this.from,
+    this.ingress,
+    required this.kind,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    this.utcOffsetSeconds = 0,
+    this.year,
+  });
+
+  /// The place's altitude, metres.
+  final double altitudeM;
+
+  /// For an `EVENT`, the event on record.
+  final MundaneEvent? event;
+
+  /// The instant the search starts at, a Julian day (UTC): the first ingress, eclipse or conjunction at or after it.
+  final double? from;
+
+  /// For a lunation, the ingress it precedes; `MESHA_SANKRANTI` when left out, the new moon that opens Chaitra (C1151).
+  final MundaneKind? ingress;
+
+  /// Which chart.
+  final MundaneKind kind;
+
+  /// The place's latitude, degrees, north positive (C1152).
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees, east positive.
+  final double longitudeDeg;
+
+  /// The local clock's offset from UTC, seconds, east positive.
+  final int utcOffsetSeconds;
+
+  /// The year (Gregorian) whose ingress, or whose first eclipse or conjunction after 1 January 0h UTC, is asked; or name `from`.
+  final int? year;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (event case final eventValue?) 'event': eventValue._wire,
+    if (from case final fromValue?) 'from': fromValue,
+    if (ingress case final ingressValue?) 'ingress': ingressValue.key,
+    'kind': kind.key,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'utcOffsetSeconds': utcOffsetSeconds,
+    if (year case final yearValue?) 'year': yearValue,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, event, from, ingress, kind, latitudeDeg, longitudeDeg, utcOffsetSeconds, year];
+}
+
 /// Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked.
 final class BatchAsked extends _Request {
   const BatchAsked({
@@ -1242,6 +1401,34 @@ final class BatchAsked extends _Request {
 
   @override
   List<Object?> get _fields => [baseline, periods];
+}
+
+/// A chart's instant recast at other places.
+final class RelocationRequest extends _Request {
+  const RelocationRequest({
+    this.houseSystem,
+    required this.instant,
+    required this.places,
+  });
+
+  /// The house division; the profile's Western override, else Placidus, when left out (C1157).
+  final HouseSystem? houseSystem;
+
+  /// The chart's instant, a Julian day (UTC).
+  final double instant;
+
+  /// The places, one to 256.
+  final List<RelocationPlace> places;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (houseSystem case final houseSystemValue?) 'houseSystem': houseSystemValue.key,
+    'instant': instant,
+    'places': [for (final e0 in places) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [houseSystem, instant, places];
 }
 
 /// What a caller asks to be written: a date in any calendar, and how.
@@ -1825,6 +2012,112 @@ final class ClaimsRequest extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, locale, longitudeDeg, text, utcOffsetSeconds];
+}
+
+/// A record to answer with a receipt: its name and its request.
+final class IssueRequest extends _Request {
+  const IssueRequest({
+    required this.record,
+    required this.request,
+  });
+
+  /// The record's name, `area.operation`, as `records` lists it.
+  final String record;
+
+  /// The record's request, as that record reads it.
+  final Object? request;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'record': record,
+    'request': request,
+  };
+
+  @override
+  List<Object?> get _fields => [record, request];
+}
+
+/// What a record was asked, under what, and the digest of what it answered.
+final class Receipt extends _Request {
+  const Receipt({
+    required this.calculationVersion,
+    required this.catalogueVersion,
+    required this.digest,
+    required this.format,
+    required this.locale,
+    required this.outputDigest,
+    required this.packs,
+    this.provider,
+    required this.record,
+    required this.request,
+    required this.requestDigest,
+    required this.sdkVersion,
+    required this.settings,
+    required this.tzdb,
+  });
+
+  /// The calculation version.
+  final int calculationVersion;
+
+  /// The catalogue's version.
+  final int catalogueVersion;
+
+  /// The seal: the hash of this receipt's canonical JSON with `digest` left out.
+  final String digest;
+
+  /// [`FORMAT`].
+  final String format;
+
+  /// The locale the context answered in.
+  final String locale;
+
+  /// The hash of the answer's value, canonical JSON.
+  final String outputDigest;
+
+  /// The runtime packs the context had loaded.
+  final Object? packs;
+
+  /// The ephemeris the answer was computed with; none where it read none.
+  final ReceiptProvider? provider;
+
+  /// The record's name, `area.operation`.
+  final String record;
+
+  /// The request as the record read it.
+  final Object? request;
+
+  /// The hash of the request's canonical JSON.
+  final String requestDigest;
+
+  /// The SDK's version.
+  final Version sdkVersion;
+
+  /// The settings, whole, with their profile and hash.
+  final SettingsSnapshot settings;
+
+  /// The zone database's version.
+  final String tzdb;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'calculationVersion': calculationVersion,
+    'catalogueVersion': catalogueVersion,
+    'digest': digest,
+    'format': format,
+    'locale': locale,
+    'outputDigest': outputDigest,
+    'packs': packs,
+    if (provider case final providerValue?) 'provider': providerValue._wire,
+    'record': record,
+    'request': request,
+    'requestDigest': requestDigest,
+    'sdkVersion': sdkVersion._wire,
+    'settings': settings._wire,
+    'tzdb': tzdb,
+  };
+
+  @override
+  List<Object?> get _fields => [calculationVersion, catalogueVersion, digest, format, locale, outputDigest, packs, provider, record, request, requestDigest, sdkVersion, settings, tzdb];
 }
 
 /// An anniversary a request asks the days of.
@@ -2540,6 +2833,20 @@ enum AyanaReckoning implements _Keyed {
   final String key;
 }
 
+/// How a body is placed on the angles (C1155), written `"IN_MUNDO"` or `"ZODIACAL"`.
+enum Projection implements _Keyed {
+  /// The body where it stands, its ecliptic latitude kept, against the true horizon: the practice of astrocartography's maps.
+  inMundo('IN_MUNDO'),
+  /// The body's degree of the ecliptic, latitude zeroed: a point on a line has the body's longitude on the chart's own angle there.
+  zodiacal('ZODIACAL');
+
+  const Projection(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// A drawing: a layout of a divisional chart.
 final class DrawingAsked extends _Request {
   const DrawingAsked({
@@ -3013,6 +3320,34 @@ final class HouseRequest extends _Request {
   List<Object?> get _fields => [system];
 }
 
+/// An event on record, cast as given (`EVENT`).
+final class MundaneEvent extends _Request {
+  const MundaneEvent({
+    required this.instant,
+    required this.name,
+    required this.source,
+  });
+
+  /// When, a Julian day (UTC).
+  final double instant;
+
+  /// What happened.
+  final String name;
+
+  /// Where the record of it comes from, carried on the answer.
+  final String source;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'instant': instant,
+    'name': name,
+    'source': source,
+  };
+
+  @override
+  List<Object?> get _fields => [instant, name, source];
+}
+
 /// The period a score is weighed for, which sets the Moon's weight.
 enum BaselinePeriod implements _Keyed {
   /// A day: the Moon weighs 5.
@@ -3082,6 +3417,34 @@ final class PeriodAsked extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, calendar, events, first, last, latitudeDeg, longitudeDeg, snapshot, spells, utcOffsetSeconds];
+}
+
+/// A place a chart is recast at.
+final class RelocationPlace extends _Request {
+  const RelocationPlace({
+    this.altitudeM = 0.0,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+  });
+
+  /// Altitude, metres.
+  final double altitudeM;
+
+  /// Latitude, degrees, north positive.
+  final double latitudeDeg;
+
+  /// Longitude, degrees, east positive.
+  final double longitudeDeg;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg];
 }
 
 /// A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
@@ -3571,6 +3934,95 @@ enum StudyKind implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// The ephemeris an answer was computed with, as a receipt names it.
+final class ReceiptProvider extends _Request {
+  const ReceiptProvider({
+    required this.dataVersion,
+    required this.name,
+    required this.version,
+  });
+
+  /// The version of the data it read.
+  final String dataVersion;
+
+  /// The provider's name.
+  final String name;
+
+  /// Its version.
+  final String version;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'dataVersion': dataVersion,
+    'name': name,
+    'version': version,
+  };
+
+  @override
+  List<Object?> get _fields => [dataVersion, name, version];
+}
+
+/// A semantic version, with its pre-release label as written.
+final class Version extends _Request {
+  const Version({
+    required this.major,
+    required this.minor,
+    required this.patch,
+    this.pre,
+  });
+
+  /// Major.
+  final int major;
+
+  /// Minor.
+  final int minor;
+
+  /// Patch.
+  final int patch;
+
+  /// The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release.
+  final String? pre;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'major': major,
+    'minor': minor,
+    'patch': patch,
+    if (pre case final preValue?) 'pre': preValue,
+  };
+
+  @override
+  List<Object?> get _fields => [major, minor, patch, pre];
+}
+
+/// The settings something was computed under, whole.
+final class SettingsSnapshot extends _Request {
+  const SettingsSnapshot({
+    required this.hash,
+    required this.profile,
+    required this.settings,
+  });
+
+  /// The SHA-256 of the document's canonical JSON: the `settings_hash` a provenance carries.
+  final String hash;
+
+  /// The profile the settings were resolved from.
+  final String profile;
+
+  /// The settings document, every knob, as `Context::settings_json` writes it, and kept as it was read. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.
+  final Object? settings;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'hash': hash,
+    'profile': profile,
+    'settings': settings,
+  };
+
+  @override
+  List<Object?> get _fields => [hash, profile, settings];
 }
 
 /// Which month the first anniversary takes when its month is doubled (C666).

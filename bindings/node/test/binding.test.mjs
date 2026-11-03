@@ -18,6 +18,7 @@ import {
   LotById,
   RashiById,
   SahamById,
+  ChartKind,
   ChartLayout,
   Leap,
   Lilith,
@@ -841,8 +842,10 @@ test('every catalogue enum has a complete id table', () => {
   // `TsRulerDayRule`, five, with their three members of `TsKind`; 1515
   // since the birth paya's `TsPaya`, four, and the classical doshas'
   // `TsTridosha`, three, each with its member of `TsKind`; 1516 since
-  // `TsEra` gained `VIRA_NIRVANA`.
-  assert.equal(entries, 1516, 'every member of every enum is in a table');
+  // `TsEra` gained `VIRA_NIRVANA`; 1531 since the mundane charts'
+  // `TsMundaneKind`, thirteen, with its member of `TsKind`, and
+  // `TsChartKind`'s `MUNDANE`.
+  assert.equal(entries, 1531, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -3456,6 +3459,32 @@ test('what a text claims of the time, checked against the almanac', () => {
   ctx.dispose();
 });
 
+test('a receipt issued, checked again, and caught when edited', () => {
+  const ctx = context();
+  const { answer, receipt } = ctx.verify.issue({
+    record: 'calendar.convert',
+    request: { date: { year: 2026, month: 10, day: 10 }, into: 'calendar.BIKRAM_SAMBAT' },
+  });
+  assert.ok(Object.isFrozen(receipt), 'frozen');
+  assert.equal(receipt.format, 'teistro.receipt/1');
+  assert.equal(receipt.record, 'calendar.convert');
+  assert.ok(answer, 'answered');
+  const held = ctx.verify.receipt(receipt);
+  assert.deepEqual([held.verdict, held.moved, held.broken, held.reason], ['HELD', [], [], null]);
+  assert.equal(ctx.verify.receipt(JSON.stringify(receipt)).verdict, 'HELD');
+  const edited = ctx.verify.receipt({ ...receipt, locale: 'de-Latn-DE' });
+  assert.deepEqual([edited.verdict, edited.broken], ['BROKEN', ['digest']]);
+  assert.throws(
+    () => ctx.verify.issue({ record: 'almanac.nothing', request: {} }),
+    (error) => error instanceof TeistroError && error.field === 'issue.record',
+  );
+  assert.throws(
+    () => ctx.verify.receipt({ ...receipt, format: 'teistro.receipt/2' }),
+    (error) => error instanceof TeistroError && error.field === 'receipt.format',
+  );
+  ctx.dispose();
+});
+
 test('a date and a time as text and parts, in the locale\'s pattern', () => {
   const ctx = context({ locale: 'en-Latn' });
   const dawn = ctx.intl.time({ at: { hour: 6, minute: 5 }, hour12: true, locale: 'hi-Deva-IN' });
@@ -5815,6 +5844,37 @@ test('an almanac says a household, a relation, a rite and the death time', () =>
 });
 
 /**
+ * The sky at Kathmandu at 18:00 UTC on 31 October 2026 over the built-in
+ * sky (`03-design/sky-view.md`): the nine grahas, the twenty-seven
+ * yogataras with Spica Chitra's, the ecliptic at every fifth degree with
+ * its two crossings and the horizon at every fifth degree of azimuth.
+ */
+test('an almanac draws the sky at a place and an instant', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
+  const place = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };
+  const { value, provenance } = ctx.almanac.skyView({ place, at: 2461345.25 });
+  assert.equal(typeof provenance.contentHash, 'string');
+  assert.equal(value.grahas.length, 9);
+  assert.equal(value.grahas[1].graha, 'graha.MOON');
+  assert.equal(value.stars.length, 27);
+  assert.equal(value.stars[13].star, 'star.SPICA');
+  assert.equal(value.stars[13].nakshatra, 'nakshatra.CHITRA');
+  assert.equal(value.ecliptic.length, 74);
+  assert.equal(value.horizon.length, 72);
+  assert.equal(value.ecliptic.filter((point) => point.kind === 'ASCENDANT').length, 1);
+  assert.ok(Object.isFrozen(value.grahas[0]));
+  const few = ctx.almanac.skyView({ place, at: 2461345.25, grahas: ['MOON'], stars: [], eclipticStepDeg: 30, pressureHpa: 0 });
+  assert.equal(few.value.grahas.length, 1);
+  assert.equal(few.value.ecliptic.length, 14);
+  assert.equal(few.value.grahas[0].refractedAltitudeDeg, few.value.grahas[0].altitudeDeg);
+  assert.throws(
+    () => ctx.almanac.skyView({ place, at: 2461345.25, eclipticStepDeg: 0 }),
+    (error) => error.field === 'skyView.eclipticStepDeg',
+  );
+  ctx.dispose();
+});
+
+/**
  * A death at 10:00 on 20 October 2026 in Kathmandu: the *Dharmasindhu*'s
  * sixteen in place order, the first monthly first, fifteen of them drawn
  * to the sapindana on the twelfth day; and under Nepal's readings the
@@ -6649,4 +6709,71 @@ test('a festival pack lists its rules with their values', () => {
   assert.throws(() => ctx.almanac.festivalPack(null), TypeError);
   assert.throws(() => ctx.almanac.festivalPack('NO_SUCH_PACK'), (error) => error.field === 'pack.pack');
   ctx.dispose();
+});
+
+test('a mundane chart finds its moment and casts the chart there', () => {
+  // The Aries ingress of 2024 (USNO, 20 March 03:06 UTC), the new moon
+  // before it, an event on record, and the refusal of an event's year.
+  // Three minutes, because the wasm build's compact tier puts the Sun
+  // up to 5.45″ off (`completion-measured.md`), 2.2 minutes of ingress.
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const place = { latitude: 27.7172, longitude: 85.324 };
+  const aries = ctx.chart.mundane({ kind: 'mundane_kind.ARIES_INGRESS', year: 2024, place });
+  assert.equal(aries.kind, 'mundane_kind.ARIES_INGRESS');
+  assert.ok(Math.abs(aries.instant - (2460389.5 + (3 + 6 / 60) / 24)) < 3 / 1440, String(aries.instant));
+  assert.equal(aries.chart.kind, ChartKind.Mundane);
+  assert.equal(aries.chart.instant, aries.instant);
+  assert.ok(Object.isFrozen(aries) && aries.provenance.inputHash.length > 0);
+  const lunation = ctx.chart.mundane({
+    kind: 'NEW_MOON_BEFORE_INGRESS',
+    year: 2024,
+    ingress: 'ARIES_INGRESS',
+    place,
+  });
+  assert.equal(lunation.ingress.kind, 'mundane_kind.ARIES_INGRESS');
+  assert.ok(lunation.instant < lunation.ingress.instant);
+  const event = ctx.chart.mundane({
+    kind: 'mundane_kind.EVENT',
+    event: { name: 'A founding', instant: 2451545, source: 'a record' },
+    place,
+    utcOffsetSeconds: 20700,
+  });
+  assert.equal(event.chart.kind, ChartKind.Event);
+  assert.deepEqual([event.name, event.source, event.instant], ['A founding', 'a record', 2451545]);
+  assert.throws(
+    () => ctx.chart.mundane({ kind: 'EVENT', year: 2024, place }),
+    (error) => error instanceof TeistroError && error.field.startsWith('mundane.'),
+  );
+});
+
+test('a relocated chart and the astrocartography lines answer their places', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const moved = ctx.chart.relocated({
+    instant: 2447000.25,
+    places: [
+      { latitudeDeg: 51.5, longitudeDeg: -0.12 },
+      { latitudeDeg: 27.7172, longitudeDeg: 85.324 },
+    ],
+    houseSystem: 'house_system.PLACIDUS',
+  });
+  assert.equal(moved.places.length, 2);
+  for (const place of moved.places) {
+    assert.equal(place.cuspsDeg.length, 12);
+    assert.equal(place.houseSystem, 'house_system.PLACIDUS');
+    assert.ok(Math.abs(place.cuspsDeg[0] - place.ascendantDeg) < 1e-9);
+  }
+  assert.throws(() => ctx.chart.relocated({ instant: 2447000.25, places: [] }), (error) => error.field === 'relocated.places');
+  const map = ctx.chart.astrocartography({ instant: 2447000.25, bodies: ['graha.SUN', 'MOON'], stepDeg: 5 });
+  assert.equal(map.lines.length, 8);
+  assert.deepEqual(
+    map.lines.map((line) => line.angle),
+    ['MC', 'IC', 'ASC', 'DSC', 'MC', 'IC', 'ASC', 'DSC'],
+  );
+  assert.equal(map.lines[0].body, 'graha.SUN');
+  assert.ok(map.lines.every((line) => line.points.length > 0));
+  assert.ok(Object.isFrozen(map.lines[0].points[0]));
+  assert.throws(
+    () => ctx.chart.astrocartography({ instant: 2447000.25, stepDeg: 0 }),
+    (error) => error.field === 'astrocartography.stepDeg',
+  );
 });

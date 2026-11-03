@@ -31,14 +31,16 @@ use teistro_ffi::intl::{
     ts_intl_render, ts_intl_set_locale, ts_intl_transliterate,
 };
 use teistro_ffi::key::ts_key_parse;
-use teistro_ffi::verify::ts_verify_claims;
+use teistro_ffi::mapping::{ts_chart_astrocartography, ts_chart_relocated};
+use teistro_ffi::mundane::ts_chart_mundane;
+use teistro_ffi::verify::{ts_verify_claims, ts_verify_issue, ts_verify_receipt};
 use teistro_ffi::naam::ts_naam_milan;
 use teistro_ffi::numerology::ts_numerology_profile;
 use teistro_ffi::pakshi::ts_pakshi;
 use teistro_ffi::panchanga::{
     TsPanchangaRequest, ts_almanac_ashauch, ts_almanac_digest, ts_almanac_disagreements,
     ts_almanac_festival_calendar, ts_almanac_first_year, ts_almanac_published_reasons,
-    ts_almanac_sankalpa, ts_panchanga_days,
+    ts_almanac_sankalpa, ts_almanac_sky_view, ts_panchanga_days,
 };
 use teistro_ffi::published::ts_published_verify;
 use teistro_ffi::rashifal::ts_rashifal;
@@ -225,6 +227,12 @@ pub const OTHER_SLOTS: &[&str] = &[
     "ts_intl_dates",
     "ts_verify_claims",
     "ts_chart_disagreements",
+    "ts_chart_mundane",
+    "ts_chart_relocated",
+    "ts_chart_astrocartography",
+    "ts_verify_issue",
+    "ts_verify_receipt",
+    "ts_almanac_sky_view",
 ];
 
 /// Whether a seed of the `json` target is to be answered, or only not
@@ -502,6 +510,41 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         Seed::Answered,
         r#"{"text":"आज एकादशी हो। The Moon is in Rohini?","at":2461055.59375,"latitudeDeg":27.7172,"longitudeDeg":85.324,"utcOffsetSeconds":20700}"#,
     ),
+    (
+        "ts_chart_mundane",
+        Seed::Answered,
+        r#"{"kind":"NEW_MOON_BEFORE_INGRESS","year":2024,"ingress":"ARIES_INGRESS","latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"utcOffsetSeconds":20700}"#,
+    ),
+    (
+        "ts_chart_mundane",
+        Seed::Answered,
+        r#"{"kind":"EVENT","event":{"name":"A founding","instant":2451545,"source":"a record"},"latitudeDeg":51.5,"longitudeDeg":-0.12}"#,
+    ),
+    (
+        "ts_chart_relocated",
+        Seed::Answered,
+        r#"{"instant":2447000.25,"places":[{"latitudeDeg":51.5,"longitudeDeg":-0.12},{"latitudeDeg":-33.9,"longitudeDeg":151.2}],"houseSystem":"PLACIDUS"}"#,
+    ),
+    (
+        "ts_chart_astrocartography",
+        Seed::Answered,
+        r#"{"instant":2447000.25,"bodies":["SUN","MOON"],"projection":"ZODIACAL","stepDeg":5,"latitudeLimitDeg":85}"#,
+    ),
+    (
+        "ts_verify_issue",
+        Seed::Answered,
+        r#"{"record":"calendar.convert","request":{"date":{"year":2026,"month":10,"day":10},"into":"calendar.BIKRAM_SAMBAT"}}"#,
+    ),
+    (
+        "ts_verify_receipt",
+        Seed::Refused,
+        r#"{"format":"teistro.receipt/2","record":"calendar.convert"}"#,
+    ),
+    (
+        "ts_almanac_sky_view",
+        Seed::Answered,
+        r#"{"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"at":2461345.25,"grahas":["MOON","graha.KETU"],"stars":["SPICA"],"eclipticStepDeg":30,"horizonStepDeg":45,"pressureHpa":0}"#,
+    ),
 ];
 
 /// The corpus file of one seed: its selector byte, counted from the slot's
@@ -667,6 +710,12 @@ fn answer(at: usize, text: &CString) -> Status {
         "ts_intl_lookup" => string_call(ts_intl_lookup, text),
         "ts_intl_dates" => string_call(ts_intl_dates, text),
         "ts_verify_claims" => string_call(ts_verify_claims, text),
+        "ts_chart_mundane" => string_call(ts_chart_mundane, text),
+        "ts_chart_relocated" => string_call(ts_chart_relocated, text),
+        "ts_chart_astrocartography" => string_call(ts_chart_astrocartography, text),
+        "ts_verify_issue" => string_call(ts_verify_issue, text),
+        "ts_verify_receipt" => string_call(ts_verify_receipt, text),
+        "ts_almanac_sky_view" => string_call(ts_almanac_sky_view, text),
         _ => Status::Ok,
     }
 }

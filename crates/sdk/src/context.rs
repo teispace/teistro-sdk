@@ -103,8 +103,10 @@ type Books = std::collections::HashMap<BookId, Arc<NameBook>>;
 /// read through an `Arc`, which costs a pointer and no atomic operation.
 struct Core {
     settings: Resolved,
-    /// Behind the context's cache, so its forks share what it remembers.
-    provider: Option<Box<dyn EphemerisProvider>>,
+    /// Behind the context's cache, so its forks share what it remembers;
+    /// shared too with a context derived under other settings
+    /// ([`Context::with_settings`]).
+    provider: Option<Arc<dyn EphemerisProvider>>,
     /// Resolved once from `time.delta_t`, as the boundary resolves it,
     /// so the two agree on which model a context uses.
     delta_t: DeltaTModel,
@@ -287,6 +289,82 @@ impl Context {
             core: Arc::clone(&self.core),
             state: Arc::new(self.state()),
         }
+    }
+
+    /// **This context under other settings**: the snapshot's settings and
+    /// profile, in `locale` when one is named, over this context's
+    /// ephemeris (behind the same cache), layouts, dasha systems, zone
+    /// database, packs and name books. What re-runs a receipt and runs a
+    /// dataset's study under the settings it was written under
+    /// (`03-design/receipts-and-datasets.md` §1.4).
+    ///
+    /// The settings are held to their hash and checked for coherence as a
+    /// build checks them, and to the ephemeris as a build holds them.
+    ///
+    /// ```
+    /// use teistro::Context;
+    /// use teistro::settings::{Profile, SettingsPatch, SettingsSnapshot};
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let kp = Profile::shipped("kp-default").ok_or("a profile")?.resolve(&SettingsPatch::default())?;
+    /// let derived = sdk.with_settings(&SettingsSnapshot::of(&kp), Some("en-Latn"))?;
+    /// assert_eq!(derived.profile(), "kp-default");
+    /// assert_eq!(derived.settings_hash(), kp.settings.hash());
+    /// assert_eq!(sdk.profile(), teistro::settings::DEFAULT_PROFILE);
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// What [`SettingsSnapshot::resolved`](teistro_core::settings::SettingsSnapshot::resolved) refuses; `UNSUPPORTED` at
+    /// `settings.frame.siddhanta` or `settings.time.delta_t` when this
+    /// context's ephemeris is a classical one opened for other values of
+    /// them, which only a build can open again, and wherever a build
+    /// refuses settings its ephemeris contradicts; a locale not loaded,
+    /// at `locale`.
+    pub fn with_settings(
+        &self,
+        snapshot: &teistro_core::settings::SettingsSnapshot,
+        locale: Option<&str>,
+    ) -> Result<Context, Error> {
+        let mut settings = snapshot.resolved()?;
+        let delta_t = DeltaTModel::from_knob(settings.settings.time.delta_t).unwrap_or_default();
+        let provider = self.core.provider.as_deref();
+        if provider.is_some_and(|p| p.capabilities().astronomy == Astronomy::Classical) {
+            let opened = if settings.settings.frame.siddhanta != self.settings().frame.siddhanta {
+                Some("settings.frame.siddhanta")
+            } else if delta_t != self.core.delta_t {
+                Some("settings.time.delta_t")
+            } else {
+                None
+            };
+            if let Some(field) = opened {
+                return Err(Error::unsupported(
+                    "this context's ephemeris is a classical one, opened for its own \
+                     frame.siddhanta and time.delta_t, and these settings name others",
+                )
+                .with_field(field)
+                .with_hint("build a context under these settings to open it for them"));
+            }
+        }
+        astronomy_coherence(&mut settings, provider)?;
+        let core = Core {
+            settings,
+            provider: self.core.provider.clone(),
+            delta_t,
+            layouts: self.core.layouts.clone(),
+            #[cfg(feature = "chart")]
+            dashas: self.core.dashas.clone(),
+        };
+        let mut state = self.state();
+        if let Some(tag) = locale {
+            state
+                .intl
+                .set_locale(tag)
+                .map(drop)
+                .map_err(|e| crate::area::intl::refused_locale(&state.intl, tag, &e.to_string()))?;
+        }
+        Ok(Context::of(Arc::new(core), state))
     }
 
     /// The resolved settings, every knob as this context will use it.
@@ -887,7 +965,7 @@ impl ContextBuilder {
             (Some(opened), Some(wrap)) => Some(wrap(opened)),
             (opened, _) => opened,
         };
-        let provider = remembering(opened, settings.settings.provider.cache_cells);
+        let provider = remembering(opened, settings.settings.provider.cache_cells).map(Arc::from);
         let mut layouts = Layouts::new();
         for (index, layout) in self.layouts.into_iter().enumerate() {
             // Named by its place, so a caller who gave several knows which.

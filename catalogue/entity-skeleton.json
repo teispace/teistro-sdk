@@ -598,7 +598,8 @@
     "PRASHNA": {},
     "RETURN": {},
     "RELOCATED": {},
-    "COMPOSITE": {}
+    "COMPOSITE": {},
+    "MUNDANE": {}
   },
   "point": {
     "LAGNA": {},
@@ -1177,5 +1178,20 @@
     "VATA": {},
     "PITTA": {},
     "KAPHA": {}
+  },
+  "mundane_kind": {
+    "MESHA_SANKRANTI": {},
+    "MAKARA_SANKRANTI": {},
+    "ARIES_INGRESS": {},
+    "CANCER_INGRESS": {},
+    "LIBRA_INGRESS": {},
+    "CAPRICORN_INGRESS": {},
+    "NEW_MOON_BEFORE_INGRESS": {},
+    "FULL_MOON_BEFORE_INGRESS": {},
+    "SYZYGY_BEFORE_INGRESS": {},
+    "SOLAR_ECLIPSE": {},
+    "LUNAR_ECLIPSE": {},
+    "GREAT_CONJUNCTION": {},
+    "EVENT": {}
   }
 }

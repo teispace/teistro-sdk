@@ -926,6 +926,26 @@ enum MuhurtaYogaKey {
   final String key;
 }
 
+enum MundaneKindKey {
+  meshaSankranti('mundane_kind.MESHA_SANKRANTI'),
+  makaraSankranti('mundane_kind.MAKARA_SANKRANTI'),
+  ariesIngress('mundane_kind.ARIES_INGRESS'),
+  cancerIngress('mundane_kind.CANCER_INGRESS'),
+  libraIngress('mundane_kind.LIBRA_INGRESS'),
+  capricornIngress('mundane_kind.CAPRICORN_INGRESS'),
+  newMoonBeforeIngress('mundane_kind.NEW_MOON_BEFORE_INGRESS'),
+  fullMoonBeforeIngress('mundane_kind.FULL_MOON_BEFORE_INGRESS'),
+  syzygyBeforeIngress('mundane_kind.SYZYGY_BEFORE_INGRESS'),
+  solarEclipse('mundane_kind.SOLAR_ECLIPSE'),
+  lunarEclipse('mundane_kind.LUNAR_ECLIPSE'),
+  greatConjunction('mundane_kind.GREAT_CONJUNCTION'),
+  event('mundane_kind.EVENT');
+
+  const MundaneKindKey(this.key);
+
+  final String key;
+}
+
 enum NadiKey {
   aadi('nadi.AADI'),
   madhya('nadi.MADHYA'),
@@ -2873,6 +2893,26 @@ final class MessagesSdkEntityMuhurtaYoga {
   EntityForms get tripushkar => _r.entity('muhurta_yoga.TRIPUSHKAR');
 }
 
+final class MessagesSdkEntityMundaneKind {
+  const MessagesSdkEntityMundaneKind(this._r);
+
+  final Renderer _r;
+
+  EntityForms get ariesIngress => _r.entity('mundane_kind.ARIES_INGRESS');
+  EntityForms get cancerIngress => _r.entity('mundane_kind.CANCER_INGRESS');
+  EntityForms get capricornIngress => _r.entity('mundane_kind.CAPRICORN_INGRESS');
+  EntityForms get event => _r.entity('mundane_kind.EVENT');
+  EntityForms get fullMoonBeforeIngress => _r.entity('mundane_kind.FULL_MOON_BEFORE_INGRESS');
+  EntityForms get greatConjunction => _r.entity('mundane_kind.GREAT_CONJUNCTION');
+  EntityForms get libraIngress => _r.entity('mundane_kind.LIBRA_INGRESS');
+  EntityForms get lunarEclipse => _r.entity('mundane_kind.LUNAR_ECLIPSE');
+  EntityForms get makaraSankranti => _r.entity('mundane_kind.MAKARA_SANKRANTI');
+  EntityForms get meshaSankranti => _r.entity('mundane_kind.MESHA_SANKRANTI');
+  EntityForms get newMoonBeforeIngress => _r.entity('mundane_kind.NEW_MOON_BEFORE_INGRESS');
+  EntityForms get solarEclipse => _r.entity('mundane_kind.SOLAR_ECLIPSE');
+  EntityForms get syzygyBeforeIngress => _r.entity('mundane_kind.SYZYGY_BEFORE_INGRESS');
+}
+
 final class MessagesSdkEntityNadi {
   const MessagesSdkEntityNadi(this._r);
 
@@ -3398,6 +3438,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityLunarEclipseKind get lunarEclipseKind => MessagesSdkEntityLunarEclipseKind(_r);
   MessagesSdkEntityMasa get masa => MessagesSdkEntityMasa(_r);
   MessagesSdkEntityMuhurtaYoga get muhurtaYoga => MessagesSdkEntityMuhurtaYoga(_r);
+  MessagesSdkEntityMundaneKind get mundaneKind => MessagesSdkEntityMundaneKind(_r);
   MessagesSdkEntityNadi get nadi => MessagesSdkEntityNadi(_r);
   MessagesSdkEntityNakshatra get nakshatra => MessagesSdkEntityNakshatra(_r);
   MessagesSdkEntityNature get nature => MessagesSdkEntityNature(_r);

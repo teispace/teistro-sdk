@@ -3189,6 +3189,151 @@ export class ChartArea extends Area {
   }
 
   /**
+   * **A mundane chart** (`03-design/mundane-charts.md`): the moment its
+   * kind names, an ingress, the lunation before one, an eclipse, a great
+   * conjunction or an event on record, found by the SDK's own searches,
+   * and the chart cast for it at `place`, `ChartKind.Mundane`
+   * (`ChartKind.Event` for an event). The moment is sealed by the chart
+   * cast there, with the request as its input.
+   *
+   * @example
+   * const year = ctx.chart.mundane({
+   *   kind: 'mundane_kind.MESHA_SANKRANTI', year: 2026,
+   *   place: { latitude: 27.7172, longitude: 85.324 }, utcOffsetSeconds: 20700,
+   * });
+   * year.instant; // the ingress, a Julian day (UTC)
+   * year.chart.lagna; // the chart cast for it
+   *
+   * @param {object} request
+   * @param {string} request.kind a `mundane_kind` key
+   * @param {number} [request.year] the year whose ingress, or whose first eclipse or conjunction, is asked
+   * @param {number} [request.from] or the instant the search starts at, a Julian day (UTC)
+   * @param {string} [request.ingress] for a lunation, the ingress it precedes; Mesha's by default
+   * @param {object} [request.event] for an `EVENT`, `{ name, instant, source }`
+   * @param {object} request.place `{ latitude, longitude, altitude }`
+   * @param {number} [request.utcOffsetSeconds] the local clock's offset, 0 by default
+   * @returns {object} the moment, its `chart` and its `provenance`
+   */
+  mundane(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError("mundane: expected a request, e.g. { kind: 'mundane_kind.MESHA_SANKRANTI', year: 2026, place }");
+    }
+    const place = request.place ?? {};
+    const asked = {
+      kind: request.kind,
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+      utcOffsetSeconds: finite(request.utcOffsetSeconds ?? 0, 'utcOffsetSeconds'),
+    };
+    for (const key of ['year', 'from', 'ingress', 'event']) {
+      if (request[key] !== undefined && request[key] !== null) asked[key] = request[key];
+    }
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.chartMundane(JSON.stringify(asked))),
+    );
+    const moment = deepFreeze(mundaneMoment(value));
+    const chart = this.found({
+      instant: value.instant,
+      place: { latitude: value.latitudeDeg, longitude: value.longitudeDeg, altitude: value.altitudeM },
+      utcOffsetSeconds: value.utcOffsetSeconds,
+      kind: value.kind === 'EVENT' ? ChartKind.Event : ChartKind.Mundane,
+    });
+    return Object.freeze({ ...moment, chart, provenance: deepFreeze(decodeProvenance(provenance)) });
+  }
+
+  /**
+   * **A chart's instant recast at other places**
+   * (`03-design/astrocartography.md`): each place's ascendant, midheaven
+   * and twelve cusps, in this context's zodiac. The grahas stand where
+   * they stood; only the angles and the houses move.
+   *
+   * @example
+   * const moved = ctx.chart.relocated({
+   *   instant: 2447000.25,
+   *   places: [{ latitudeDeg: 51.5, longitudeDeg: -0.12 }],
+   * });
+   * moved.places[0].midheavenDeg;
+   *
+   * @param {object} request
+   * @param {number} request.instant the chart's instant, a Julian day (UTC)
+   * @param {ReadonlyArray<object>} request.places one to 256 `{ latitudeDeg, longitudeDeg, altitudeM }`
+   * @param {string} [request.houseSystem] a `house_system` key; the Western default when left out
+   * @returns {object} each place's angles and cusps, and the `provenance`
+   */
+  relocated(request) {
+    if (typeof request !== 'object' || request === null || !Array.isArray(request.places)) {
+      throw new TypeError('relocated: expected { instant, places: [{ latitudeDeg, longitudeDeg }] }');
+    }
+    // The places cross as written, so a key the SDK does not read is
+    // refused by name there rather than dropped here.
+    const asked = {
+      instant: finite(request.instant, 'instant'),
+      places: request.places,
+    };
+    if (request.houseSystem !== undefined && request.houseSystem !== null) {
+      asked.houseSystem = request.houseSystem;
+    }
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.chartRelocated(JSON.stringify(asked))),
+    );
+    return deepFreeze({
+      instant: value.instant,
+      obliquityDeg: value.obliquityDeg,
+      places: value.places.map((place) => ({
+        ...place,
+        houseSystem: `house_system.${place.houseSystem}`,
+      })),
+      provenance: decodeProvenance(provenance),
+    });
+  }
+
+  /**
+   * **The astrocartography lines** at an instant
+   * (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC
+   * lines as `[longitudeDeg, latitudeDeg]` points from south to north. A
+   * rising or setting line stops at its `polarLimitDeg`. Every point is
+   * on its angle, read back through a chart cast there, to `toleranceDeg`.
+   *
+   * @example
+   * const map = ctx.chart.astrocartography({ instant: 2447000.25, bodies: ['graha.SUN'] });
+   * map.lines[0].angle; // 'MC'
+   *
+   * @param {object} request
+   * @param {number} request.instant a Julian day (UTC)
+   * @param {ReadonlyArray<string>} [request.bodies] `graha` keys; the seven and the outer planets placed when left out
+   * @param {string} [request.projection] `IN_MUNDO` (the default) or `ZODIACAL`
+   * @param {number} [request.stepDeg] the step of latitude, 1° by default
+   * @param {number} [request.latitudeLimitDeg] how far north and south, 80° by default
+   * @returns {object} the lines and what they were drawn under, and the `provenance`
+   */
+  astrocartography(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('astrocartography: expected { instant }');
+    }
+    const asked = { instant: finite(request.instant, 'instant') };
+    if (request.bodies !== undefined && request.bodies !== null) {
+      asked.bodies = catalogueKeys(request.bodies, 'bodies', 'Graha');
+    }
+    for (const key of ['projection', 'stepDeg', 'latitudeLimitDeg']) {
+      if (request[key] !== undefined && request[key] !== null) asked[key] = request[key];
+    }
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.chartAstrocartography(JSON.stringify(asked))),
+    );
+    return deepFreeze({
+      ...value,
+      lines: value.lines.map((line) => ({
+        body: `graha.${line.body}`,
+        angle: line.angle,
+        points: line.points,
+        polarLimitDeg: line.polarLimitDeg ?? null,
+      })),
+      provenance: decodeProvenance(provenance),
+    });
+  }
+
+  /**
    * Founds a chart at each of many instants, at one place, in one
    * crossing.
    *
@@ -6564,6 +6709,29 @@ function dateFrom(json) {
  * @param {T} value
  * @returns {T}
  */
+/**
+ * `ts_chart_mundane`'s moment as this layer hands it out: every catalogue
+ * member a full key, and a field the kind does not carry `null`.
+ *
+ * @param {object} value
+ * @returns {object}
+ */
+function mundaneMoment(value) {
+  return {
+    kind: `mundane_kind.${value.kind}`,
+    instant: value.instant,
+    place: { latitude: value.latitudeDeg, longitude: value.longitudeDeg, altitude: value.altitudeM },
+    utcOffsetSeconds: value.utcOffsetSeconds,
+    ingress: value.ingress
+      ? { kind: `mundane_kind.${value.ingress.kind}`, instant: value.ingress.instant }
+      : null,
+    solarEclipse: value.solarEclipse ? `solar_eclipse_kind.${value.solarEclipse}` : null,
+    lunarEclipse: value.lunarEclipse ? `lunar_eclipse_kind.${value.lunarEclipse}` : null,
+    name: value.name ?? null,
+    source: value.source ?? null,
+  };
+}
+
 function deepFreeze(value) {
   if (value !== null && typeof value === 'object') {
     for (const inner of Object.values(value)) deepFreeze(inner);
@@ -7374,6 +7542,36 @@ export class VerifyArea extends Area {
     );
     return deepFreeze({ value, provenance: decodeProvenance(provenance) });
   }
+
+  /**
+   * A record's answer and its receipt: what was asked, under which
+   * settings, ephemeris and versions, and the digest of what was answered
+   * (`03-design/receipts-and-datasets.md` §1). The answer is the record's
+   * own JSON, as `verify.receipt` digests it; the receipt is handed back
+   * whole.
+   *
+   * ```js
+   * const { answer, receipt } = sdk.verify.issue({
+   *   record: 'calendar.convert',
+   *   request: { date: { year: 2026, month: 10, day: 10 }, into: 'calendar.BIKRAM_SAMBAT' },
+   * });
+   * sdk.verify.receipt(receipt).verdict; // 'HELD'
+   * ```
+   */
+  issue(request) {
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.verifyIssue(JSON.stringify(request)))));
+  }
+
+  /**
+   * A receipt checked: answered again under its own settings and compared,
+   * `HELD`, `DIFFERS`, `NOT_RERUN` (with why) or `BROKEN` (a field edited
+   * after issue), with every version that moved between the two sides. A
+   * receipt is an object or its JSON text.
+   */
+  receipt(receipt) {
+    const text = typeof receipt === 'string' ? receipt : JSON.stringify(receipt);
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.verifyReceipt(text))));
+  }
 }
 
 /**
@@ -8162,6 +8360,53 @@ export class AlmanacArea extends Area {
     const asked = located(query, 'deathTime', '{ place, utcOffsetSeconds, at }');
     const { value, provenance } = JSON.parse(
       run(this, (inner) => inner.almanacDeathTime(JSON.stringify(asked))),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
+  }
+
+  /**
+   * **The sky at a place and an instant** (`03-design/sky-view.md`):
+   * where each graha and each nakshatra's junction star stands,
+   * topocentric, apparent and of date, its altitude airless and refracted
+   * and its azimuth from north through east; and the ecliptic, with the
+   * `ASCENDANT` and the `DESCENDANT`, and the horizon as point lists.
+   * `grahas` and `stars` are the nine and the twenty-seven yogataras when
+   * left out; each step is 0.1 to 90 degrees, five when left out; the air
+   * is 1010 hPa and 10 °C, and a pressure of 0 turns refraction off. A
+   * context over a classical astronomy is refused (C1185).
+   *
+   * @example
+   * const { value } = sdk.almanac.skyView({
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   at: 2461345.25,
+   * });
+   * value.grahas[1]; // { graha: 'graha.MOON', altitudeDeg, azimuthDeg, ... }
+   *
+   * @param {object} query
+   * @param {object} query.place `{ latitude, longitude, altitude }`
+   * @param {number} query.at the instant, a UTC Julian day
+   * @param {string[]} [query.grahas] graha keys, in the order wanted
+   * @param {string[]} [query.stars] star keys, in the order wanted
+   * @param {number} [query.eclipticStepDeg] the ecliptic's step
+   * @param {number} [query.horizonStepDeg] the horizon's step
+   * @param {number} [query.pressureHpa] the air's pressure
+   * @param {number} [query.temperatureC] the air's temperature
+   * @returns {{ value: object, provenance: object }}
+   */
+  skyView(query) {
+    if (typeof query !== 'object' || query === null || Array.isArray(query)) {
+      throw new TypeError('skyView: expected a query, e.g. { place, at }');
+    }
+    const { place: where, ...rest } = query;
+    const place = where ?? {};
+    const asked = {
+      ...rest,
+      latitudeDeg: finite(place.latitude, 'place.latitude'),
+      longitudeDeg: finite(place.longitude, 'place.longitude'),
+      altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
+    };
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacSkyView(JSON.stringify(asked))),
     );
     return deepFreeze({ value, provenance: decodeProvenance(provenance) });
   }

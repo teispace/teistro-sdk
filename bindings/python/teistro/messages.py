@@ -864,6 +864,24 @@ class MuhurtaYogaKey(enum.StrEnum):
     GURU_PUSHYA = "muhurta_yoga.GURU_PUSHYA"
 
 
+class MundaneKindKey(enum.StrEnum):
+    """A `mundane_kind` as a message names it: the full catalogue key."""
+
+    MESHA_SANKRANTI = "mundane_kind.MESHA_SANKRANTI"
+    MAKARA_SANKRANTI = "mundane_kind.MAKARA_SANKRANTI"
+    ARIES_INGRESS = "mundane_kind.ARIES_INGRESS"
+    CANCER_INGRESS = "mundane_kind.CANCER_INGRESS"
+    LIBRA_INGRESS = "mundane_kind.LIBRA_INGRESS"
+    CAPRICORN_INGRESS = "mundane_kind.CAPRICORN_INGRESS"
+    NEW_MOON_BEFORE_INGRESS = "mundane_kind.NEW_MOON_BEFORE_INGRESS"
+    FULL_MOON_BEFORE_INGRESS = "mundane_kind.FULL_MOON_BEFORE_INGRESS"
+    SYZYGY_BEFORE_INGRESS = "mundane_kind.SYZYGY_BEFORE_INGRESS"
+    SOLAR_ECLIPSE = "mundane_kind.SOLAR_ECLIPSE"
+    LUNAR_ECLIPSE = "mundane_kind.LUNAR_ECLIPSE"
+    GREAT_CONJUNCTION = "mundane_kind.GREAT_CONJUNCTION"
+    EVENT = "mundane_kind.EVENT"
+
+
 class NadiKey(enum.StrEnum):
     """A `nadi` as a message names it: the full catalogue key."""
 
@@ -2272,6 +2290,11 @@ class MessagesSdkEntity:
     def muhurta_yoga(self) -> MessagesSdkEntityMuhurtaYoga:
         """The messages under `muhurta_yoga`."""
         return MessagesSdkEntityMuhurtaYoga(self._r)
+
+    @property
+    def mundane_kind(self) -> MessagesSdkEntityMundaneKind:
+        """The messages under `mundane_kind`."""
+        return MessagesSdkEntityMundaneKind(self._r)
 
     @property
     def nadi(self) -> MessagesSdkEntityNadi:
@@ -4140,6 +4163,79 @@ class MessagesSdkEntityNadi:
     def madhya(self) -> EntityForms:
         """The forms of `nadi.MADHYA` in the current locale."""
         return self._r.entity("nadi.MADHYA")
+
+
+class MessagesSdkEntityMundaneKind:
+    """The messages under `MessagesSdkEntityMundaneKind`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def aries_ingress(self) -> EntityForms:
+        """The forms of `mundane_kind.ARIES_INGRESS` in the current locale."""
+        return self._r.entity("mundane_kind.ARIES_INGRESS")
+
+    @property
+    def cancer_ingress(self) -> EntityForms:
+        """The forms of `mundane_kind.CANCER_INGRESS` in the current locale."""
+        return self._r.entity("mundane_kind.CANCER_INGRESS")
+
+    @property
+    def capricorn_ingress(self) -> EntityForms:
+        """The forms of `mundane_kind.CAPRICORN_INGRESS` in the current locale."""
+        return self._r.entity("mundane_kind.CAPRICORN_INGRESS")
+
+    @property
+    def event(self) -> EntityForms:
+        """The forms of `mundane_kind.EVENT` in the current locale."""
+        return self._r.entity("mundane_kind.EVENT")
+
+    @property
+    def full_moon_before_ingress(self) -> EntityForms:
+        """The forms of `mundane_kind.FULL_MOON_BEFORE_INGRESS` in the current locale."""
+        return self._r.entity("mundane_kind.FULL_MOON_BEFORE_INGRESS")
+
+    @property
+    def great_conjunction(self) -> EntityForms:
+        """The forms of `mundane_kind.GREAT_CONJUNCTION` in the current locale."""
+        return self._r.entity("mundane_kind.GREAT_CONJUNCTION")
+
+    @property
+    def libra_ingress(self) -> EntityForms:
+        """The forms of `mundane_kind.LIBRA_INGRESS` in the current locale."""
+        return self._r.entity("mundane_kind.LIBRA_INGRESS")
+
+    @property
+    def lunar_eclipse(self) -> EntityForms:
+        """The forms of `mundane_kind.LUNAR_ECLIPSE` in the current locale."""
+        return self._r.entity("mundane_kind.LUNAR_ECLIPSE")
+
+    @property
+    def makara_sankranti(self) -> EntityForms:
+        """The forms of `mundane_kind.MAKARA_SANKRANTI` in the current locale."""
+        return self._r.entity("mundane_kind.MAKARA_SANKRANTI")
+
+    @property
+    def mesha_sankranti(self) -> EntityForms:
+        """The forms of `mundane_kind.MESHA_SANKRANTI` in the current locale."""
+        return self._r.entity("mundane_kind.MESHA_SANKRANTI")
+
+    @property
+    def new_moon_before_ingress(self) -> EntityForms:
+        """The forms of `mundane_kind.NEW_MOON_BEFORE_INGRESS` in the current locale."""
+        return self._r.entity("mundane_kind.NEW_MOON_BEFORE_INGRESS")
+
+    @property
+    def solar_eclipse(self) -> EntityForms:
+        """The forms of `mundane_kind.SOLAR_ECLIPSE` in the current locale."""
+        return self._r.entity("mundane_kind.SOLAR_ECLIPSE")
+
+    @property
+    def syzygy_before_ingress(self) -> EntityForms:
+        """The forms of `mundane_kind.SYZYGY_BEFORE_INGRESS` in the current locale."""
+        return self._r.entity("mundane_kind.SYZYGY_BEFORE_INGRESS")
 
 
 class MessagesSdkEntityMuhurtaYoga:

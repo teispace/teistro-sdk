@@ -31,16 +31,16 @@ Building is not what is missing: every row here is one line of table
 data once the verse settles it, which is why none of them is scheduled
 and all of them are listed.
 
-| system | why it is not computed |
-|---|---|
-| `TITHI_ASHTOTTARI` | Ashtottari's table seeded by the **tithi**. The reference index does not carry over from the nakshatra rows because the cycles differ, 30 against 27, so the seat is unknown |
-| `TITHI_YOGINI` | Yogini's table on the same thirty-fold cycle, blocked by the same unknown seat |
-| `YOGA_VIMSHOTTARI` | Vimshottari's table seeded by the **yoga**, on a twenty-seven-fold cycle whose reference is not the nakshatra's |
-| `KARANA_CHATURASHITI` | Chaturashiti-sama's table seeded by the **karana**, on a sixty-fold cycle |
-| `PANCHASWARA` | no attested shape at all. It is catalogued because a system by that name is named, which is what a key space is for |
-| `VARNADA` | the Varnada lagna it starts from is **not** built: no reading of the received rule reproduces the recorded values, five schools disagree (C22) and `teistro_points` ships none of them ([`points-measured.md`](points-measured.md)). `Start` has no arm for it, so a consumer cannot register the dasha either until a school is cited and the point is built |
-| `SUDASA` | no verse is in hand. BPHS does not name it among its dasas (ch. 46 vv. 6 to 11), and neither Sanskrit edition of the Jaimini sutras read states it in plain words; PyJHora starts it from the Sree lagna with a first period set by its longitude, which the kernel has neither of. It was listed as waiting on the karakamsha, which is built and is not its start in any source read |
-| `VARSHA_NARAYANA` | Narayana read over one year. The solar return it waited on is built and the three annual dashas beside it are computed (`annual-dashas.md`), but neither book read for them gives this one: Charak's chapter V and the *Tajika Nilakanthi* name the Mudda, the Yogini and the Patyayini and stop |
+| system | why it is not computed | what would settle it |
+|---|---|---|
+| `TITHI_ASHTOTTARI` | Ashtottari's table seeded by the **tithi**. The reference index does not carry over from the nakshatra rows because the cycles differ, 30 against 27, so the seat is unknown | a written statement of the tithi its cycle starts from. No classical verse for it is known: it is taught with the tithi pravesha chart in Sanjay Rath's school, and PyJHora's reading is a program, not a source |
+| `TITHI_YOGINI` | Yogini's table on the same thirty-fold cycle, blocked by the same unknown seat | the same statement as `TITHI_ASHTOTTARI`, for Yogini's eight lords |
+| `YOGA_VIMSHOTTARI` | Vimshottari's table seeded by the **yoga**, on a twenty-seven-fold cycle whose reference is not the nakshatra's | a written statement of the yoga its cycle starts from, from the same school, which teaches it with the yoga pravesha chart; no classical verse for it is known |
+| `KARANA_CHATURASHITI` | Chaturashiti-sama's table seeded by the **karana**, on a sixty-fold cycle | a written statement of the karana its cycle starts from, from the same school and its karana pravesha chart; no classical verse for it is known |
+| `PANCHASWARA` | no attested shape at all. It is catalogued because a system by that name is named, which is what a key space is for | an English reading of the swara periods in Narapati's *Swarodaya*, if it states them. S. S. Sareen's *Pancha Swara* (Sagar, 1999) is the translation most cited; no public-domain English one is known |
+| `VARNADA` | the Varnada lagna it starts from is **not** built: no reading of the received rule reproduces the recorded values, five schools disagree (C22) and `teistro_points` ships none of them ([`points-measured.md`](points-measured.md)). `Start` has no arm for it, so a consumer cannot register the dasha either until a school is cited and the point is built | a cited school for the Varnada lagna among C22's five, worked in a translation of Jaimini's *Upadesa Sutras*: Sanjay Rath's (Sagar, 1997) treats both the lagna and its dasha; B. Suryanarain Rao's, of the first two adhyayas, names the lagna |
+| `SUDASA` | no verse is in hand. BPHS does not name it among its dasas (ch. 46 vv. 6 to 11), and neither Sanskrit edition of the Jaimini sutras read states it in plain words; PyJHora starts it from the Sree lagna with a first period set by its longitude, which the kernel has neither of. It was listed as waiting on the karakamsha, which is built and is not its start in any source read | Sanjay Rath's translation of the *Upadesa Sutras* (Sagar, 1997), which lists Sudasa among its dashas, read against the Sanskrit sutra it rests on |
+| `VARSHA_NARAYANA` | Narayana read over one year. The solar return it waited on is built and the three annual dashas beside it are computed (`annual-dashas.md`), but neither book read for them gives this one: Charak's chapter V and the *Tajika Nilakanthi* name the Mudda, the Yogini and the Patyayini and stop | a text that reads Narayana over one year. No classical one is known; the Tajika books read for the annual dashas stop at three, and the modern manuals that teach it have not been read |
 
 ## Asking for one
 

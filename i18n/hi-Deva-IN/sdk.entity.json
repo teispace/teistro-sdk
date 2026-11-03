@@ -3128,5 +3128,59 @@
       "prose": "नारदसंहिता",
       "iast": "Nāradasaṃhitā"
     }
+  },
+  "mundane_kind": {
+    "MESHA_SANKRANTI": {
+      "name": "मेष संक्रांति",
+      "prose": "मेष संक्रांति"
+    },
+    "MAKARA_SANKRANTI": {
+      "name": "मकर संक्रांति",
+      "prose": "मकर संक्रांति"
+    },
+    "ARIES_INGRESS": {
+      "name": "सायन मेष प्रवेश",
+      "prose": "सायन मेष प्रवेश"
+    },
+    "CANCER_INGRESS": {
+      "name": "सायन कर्क प्रवेश",
+      "prose": "सायन कर्क प्रवेश"
+    },
+    "LIBRA_INGRESS": {
+      "name": "सायन तुला प्रवेश",
+      "prose": "सायन तुला प्रवेश"
+    },
+    "CAPRICORN_INGRESS": {
+      "name": "सायन मकर प्रवेश",
+      "prose": "सायन मकर प्रवेश"
+    },
+    "NEW_MOON_BEFORE_INGRESS": {
+      "name": "प्रवेश से पहले की अमावस्या",
+      "prose": "प्रवेश से पहले की अमावस्या"
+    },
+    "FULL_MOON_BEFORE_INGRESS": {
+      "name": "प्रवेश से पहले की पूर्णिमा",
+      "prose": "प्रवेश से पहले की पूर्णिमा"
+    },
+    "SYZYGY_BEFORE_INGRESS": {
+      "name": "प्रवेश से पहले की अमावस्या या पूर्णिमा",
+      "prose": "प्रवेश से पहले की अमावस्या या पूर्णिमा"
+    },
+    "SOLAR_ECLIPSE": {
+      "name": "सूर्य ग्रहण",
+      "prose": "सूर्य ग्रहण"
+    },
+    "LUNAR_ECLIPSE": {
+      "name": "चंद्र ग्रहण",
+      "prose": "चंद्र ग्रहण"
+    },
+    "GREAT_CONJUNCTION": {
+      "name": "गुरु–शनि युति",
+      "prose": "गुरु–शनि युति"
+    },
+    "EVENT": {
+      "name": "घटना",
+      "prose": "घटना"
+    }
   }
 }

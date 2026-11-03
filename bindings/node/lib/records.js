@@ -107,6 +107,7 @@ export function decodeVersion(json) {
     major: json.major,
     minor: json.minor,
     patch: json.patch,
+    pre: json.pre == null ? null : json.pre,
   };
 }
 

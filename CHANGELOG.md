@@ -12,6 +12,13 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**What would settle each uncomputed dasha.**
+**Numbers:** none: a documentation column.
+- `dasha-coverage-measured.md` names, for each of the 8 catalogued dashas this build does not compute,
+  the source that would settle it: Sanjay Rath's *Upadesa Sutras* translation for `SUDASA` and `VARNADA`,
+  Sareen's *Pancha Swara* for `PANCHASWARA`, and, for the tithi, yoga and karana seeds and
+  `VARSHA_NARAYANA`, that no classical text is known (SR-43).
+
 **The Gaudiya festivals, and Janmashtami's Vaishnava rule.**
 **Numbers:** `INDIA_CENTRAL`'s `JANMASHTAMI` day moves only in a year the 8th holds no sunrise, or two with
 Rohini at the later midnight only (none of 2021 to 2027); its parana is the text's one reading, the end of
@@ -59,6 +66,55 @@ days are unchanged; `GAUDIYA`'s answer gains the five festivals.
   C1140–C1143). `Foundation::chalit_at` founds a chalit at another instant.
 - The purifier's edge search is generic over any value that compares (`edges::runs`); its answers do not
   move.
+
+**Mundane charts.**
+**Numbers:** none: a new answer, and nothing it reads moves.
+- `ChartArea::mundane` and `mundane_moment`, the record `chart.mundane` (`MundaneRequest`, an agent server
+  tool), `ts_chart_mundane` at the C boundary (the `chart` family) and `chart.mundane` in every binding: the
+  moment a new `MundaneKind` names (the Mesha and Makara sankrantis, the four tropical ingresses, the new or
+  full moon or the syzygy before an ingress, a solar or lunar eclipse, the Jupiter–Saturn great conjunction,
+  or an event on record with its source) found by the existing searches, and the chart cast there as the
+  new `ChartKind::Mundane` (SR-45, `03-design/mundane-charts.md`, C1150–C1154).
+
+**Relocation and astrocartography.**
+**Numbers:** none: new answers, and nothing they read moves.
+- `ChartArea::relocated` and `astrocartography`, the records `chart.relocated` and `chart.astrocartography`,
+  `ts_chart_relocated` and `ts_chart_astrocartography` (the `western` family) and both in every binding: a
+  chart's angles and cusps recast at up to 256 places, and each body's MC, IC, ASC and DSC lines as sampled
+  polylines, in mundo or zodiacal, stopped and said at the polar limit, every point on its angle to 1e-6°
+  (SR-47, `03-design/astrocartography.md`, C1155–C1157). `teistro_western::lines` draws them.
+
+**Receipts, and a verify that answers a receipt again.**
+**Numbers:** none: new answers, and nothing they read moves.
+- `VerifyArea::issue` and `VerifyArea::receipt`, the records `verify.issue` and `verify.receipt` (agent server
+  tools), `ts_verify_issue` and `ts_verify_receipt` at the C boundary and `verify.issue` and `verify.receipt`
+  in every binding: a record's answer beside a receipt (`teistro.receipt/1`, `teistro::verify::Receipt`)
+  naming the record, its canonical request, the settings snapshot, locale, packs, ephemeris, zone database,
+  versions and output digest under a seal; and the receipt answered again under its own settings, `HELD`,
+  `DIFFERS`, `NOT_RERUN` with why, or `BROKEN`, with every version that moved (SR-51,
+  `03-design/receipts-and-datasets.md` §1, C1170–C1173).
+- `Context::with_settings` and `SettingsSnapshot`: a context under another snapshot's settings over the same
+  ephemeris, which the core now shares behind an `Arc`. A snapshot keeps its settings document as it was
+  carried and is hashed over it, so settings another build wrote are `NOT_RERUN` naming the knob, never
+  `BROKEN` (C1176).
+- `Version` keeps a pre-release label (`pre`, `1.0.0-rc.1`) and orders by semantic-version precedence; a
+  provenance's `sdk_version` now carries it. A release writes what it wrote before (C1177).
+
+**Research datasets.**
+**Numbers:** none: a new format.
+- `teistro_research::dataset` (`teistro.dataset/1`): births rated by the Rodden Rating and studies each with
+  a settings snapshot and the worst rating it admits, loaded with refusals that name the field, its JSON
+  Schema generated into `crates/research/schema/dataset.schema.json`; `ResearchArea::dataset` runs a study
+  under its own settings (SR-57, `03-design/receipts-and-datasets.md` §2, C1174–C1175).
+
+**The sky view.**
+**Numbers:** none: a new answer; the day's sky's refraction now runs through the same function at the same air, bit for bit.
+- `AlmanacArea::sky_view`, the record `almanac.skyView` (`SkyViewRequest`, an agent server tool),
+  `ts_almanac_sky_view` at the C boundary and `almanac.skyView` in every binding: at a place and an instant,
+  each graha and each nakshatra's junction star topocentric, apparent and of date, its altitude airless and
+  refracted under the air asked and its azimuth; the ecliptic with the ascendant and the descendant, and the
+  horizon, as point lists at a step asked. Held to JPL Horizons; a classical astronomy is refused
+  (SR-58's sky view, `03-design/sky-view.md`, C1180–C1186).
 
 **The navatara chakra.**
 **Numbers:** none: a new answer, and nothing it reads moves.

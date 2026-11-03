@@ -3769,6 +3769,36 @@ void main() {
   }
   western.dispose();
 
+  // ── The sky view ─────────────────────────────────────────────────────
+  // Kathmandu at 18:00 UTC on 31 October 2026 over the built-in sky
+  // (`03-design/sky-view.md`): the hash, each list's length, the Moon and
+  // the ascendant.
+  final skyContext = teistro.context(
+    profile: 'nepali-drik',
+    ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+  );
+  final skyView = skyContext.almanac.skyView(at: 2461345.25, place: place);
+  skyContext.dispose();
+  put('sky-view-hash', skyView.provenance.contentHash);
+  put(
+    'sky-view-count',
+    '${skyView.value.grahas.length} ${skyView.value.stars.length} '
+        '${skyView.value.ecliptic.length} ${skyView.value.horizon.length}',
+  );
+  final skyMoon = skyView.value.graha(Graha.moon)!;
+  put(
+    'sky-view-moon',
+    '${number(skyMoon.altitudeDeg)} ${number(skyMoon.refractedAltitudeDeg)} '
+        '${number(skyMoon.azimuthDeg)}',
+  );
+  final skyAscendant = skyView.value.ecliptic.firstWhere(
+    (EclipticPoint point) => point.kind == 'ASCENDANT',
+  );
+  put(
+    'sky-view-ascendant',
+    '${number(skyAscendant.longitudeDeg)} ${number(skyAscendant.azimuthDeg)}',
+  );
+
   // ── The eclipses ─────────────────────────────────────────────────────
   // September 2025 at Kathmandu over the built-in sky, which the test
   // provider cannot complete: a total lunar eclipse seen whole and a
@@ -3982,6 +4012,9 @@ void main() {
     ('chart.rashifal', ctx.chart.rashifal),
     ('chart.rashifal_many', ctx.chart.rashifalMany),
     ('chart.disagreements', ctx.chart.disagreements),
+    ('chart.mundane', ctx.chart.mundane),
+    ('chart.relocated', ctx.chart.relocated),
+    ('chart.astrocartography', ctx.chart.astrocartography),
     ('almanac.of', ctx.almanac.of),
     ('almanac.festivals', ctx.almanac.festivals),
     ('almanac.disagreements', ctx.almanac.disagreements),

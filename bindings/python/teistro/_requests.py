@@ -36,12 +36,16 @@ __all__ = [
     "PublishedReasonsRequest",
     "SankalpaRequest",
     "SentencesRequest",
+    "SkyViewRequest",
     "AddAsked",
     "BetweenAsked",
     "CalendarAsked",
+    "AstrocartographyRequest",
     "ChartDisagreementsRequest",
     "ChartFoundRequest",
+    "MundaneRequest",
     "BatchAsked",
+    "RelocationRequest",
     "DateTextRequest",
     "DatesRequest",
     "InWordsRequest",
@@ -60,6 +64,8 @@ __all__ = [
     "ScaleRequest",
     "ResolveAsked",
     "ClaimsRequest",
+    "IssueRequest",
+    "Receipt",
     "Anniversary",
     "AshauchRequest",
     "AshauchTable",
@@ -88,6 +94,7 @@ __all__ = [
     "PakshiRules",
     "ReckonedPlace",
     "AyanaReckoning",
+    "Projection",
     "AntisciaRequest",
     "ConsiderationRules",
     "DignityRequest",
@@ -120,8 +127,10 @@ __all__ = [
     "WesternAspectRequest",
     "ConfigurationRequest",
     "HouseRequest",
+    "MundaneEvent",
     "BaselinePeriod",
     "PeriodAsked",
+    "RelocationPlace",
     "CalendarDay",
     "WordsDigits",
     "DateStyle",
@@ -149,6 +158,9 @@ __all__ = [
     "StudyKind",
     "ResearchSubject",
     "CivilTime",
+    "ReceiptProvider",
+    "Version",
+    "SettingsSnapshot",
     "FirstYearAdhika",
     "InSamsarpa",
     "JanmaOptions",
@@ -1156,6 +1168,40 @@ class SentencesRequest(TypedDict, total=False):
     utcOffsetSeconds: Required[int]
 
 
+class SkyViewRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+    """The place's height above sea level in metres, 0 when left out."""
+
+    at: Required[float]
+    """The instant, a UTC Julian day."""
+
+    eclipticStepDeg: Optional[float]
+    """The ecliptic's step in longitude, degrees, 0.1 to 90; 5 when left out."""
+
+    grahas: Optional[Sequence[Union[_catalogue.Graha, str]]]
+    """The grahas placed, in this order; the nine, Sun to Ketu, when left out."""
+
+    horizonStepDeg: Optional[float]
+    """The horizon's step in azimuth, degrees, 0.1 to 90; 5 when left out."""
+
+    latitudeDeg: Required[float]
+    """The place's latitude, degrees north positive."""
+
+    longitudeDeg: Required[float]
+    """The place's longitude, degrees east positive."""
+
+    pressureHpa: Optional[float]
+    """The pressure the refraction is reckoned under, hectopascals, 0 to 1100; 1010 when left out, and 0 for no refraction."""
+
+    stars: Optional[Sequence[Union[_catalogue.Star, str]]]
+    """The stars placed, in this order; the twenty-seven nakshatras' yogataras when left out."""
+
+    temperatureC: Optional[float]
+    """The temperature, degrees Celsius, −90 to 60; 10 when left out."""
+
+
 class AddAsked(TypedDict, total=False):
     """An add request as a binding writes it."""
 
@@ -1193,6 +1239,25 @@ class CalendarAsked(TypedDict, total=False):
     date: Required[DayAsked]
 
     into: Required[Union[_catalogue.Calendar, str]]
+
+
+class AstrocartographyRequest(TypedDict, total=False):
+    """The lines of a map at one instant."""
+
+    bodies: Sequence[Union[_catalogue.Graha, str]]
+    """The bodies, in the order their lines are answered; none for the seven and whichever outer planets the profile places."""
+
+    instant: Required[float]
+    """The instant, a Julian day (UTC)."""
+
+    latitudeLimitDeg: float
+    """The furthest latitude sampled north and south, degrees, above zero and below ninety; eighty by default."""
+
+    projection: Projection
+    """In mundo, the default, or zodiacal (C1155)."""
+
+    stepDeg: float
+    """The step of latitude between a line's points, degrees, above zero and at most ten; one by default."""
 
 
 class ChartDisagreementsRequest(TypedDict, total=False):
@@ -1322,12 +1387,52 @@ class ChartFoundRequest(TypedDict, total=False):
     westernHouses: HouseRequest
 
 
+# A mundane chart as a binding asks for it: a kind, when to look from (a `year` or an instant `from`), or the `event` an `EVENT` casts, and the place the chart is cast for.
+MundaneRequest = TypedDict(
+    "MundaneRequest",
+    {
+        # The place's altitude, metres.
+        "altitudeM": "float",
+        # For an `EVENT`, the event on record.
+        "event": "Optional[MundaneEvent]",
+        # The instant the search starts at, a Julian day (UTC): the first ingress, eclipse or conjunction at or after it.
+        "from": "Optional[float]",
+        # For a lunation, the ingress it precedes; `MESHA_SANKRANTI` when left out, the new moon that opens Chaitra (C1151).
+        "ingress": "Optional[Union[_catalogue.MundaneKind, str]]",
+        # Which chart.
+        "kind": "Required[Union[_catalogue.MundaneKind, str]]",
+        # The place's latitude, degrees, north positive (C1152).
+        "latitudeDeg": "Required[float]",
+        # The place's longitude, degrees, east positive.
+        "longitudeDeg": "Required[float]",
+        # The local clock's offset from UTC, seconds, east positive.
+        "utcOffsetSeconds": "int",
+        # The year (Gregorian) whose ingress, or whose first eclipse or conjunction after 1 January 0h UTC, is asked; or name `from`.
+        "year": "Optional[int]",
+    },
+    total=False,
+)
+
+
 class BatchAsked(TypedDict, total=False):
     """Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked."""
 
     baseline: Optional[BaselinePeriod]
 
     periods: Required[Sequence[PeriodAsked]]
+
+
+class RelocationRequest(TypedDict, total=False):
+    """A chart's instant recast at other places."""
+
+    houseSystem: Optional[Union[_catalogue.HouseSystem, str]]
+    """The house division; the profile's Western override, else Placidus, when left out (C1157)."""
+
+    instant: Required[float]
+    """The chart's instant, a Julian day (UTC)."""
+
+    places: Required[Sequence[RelocationPlace]]
+    """The places, one to 256."""
 
 
 class DateTextRequest(TypedDict, total=False):
@@ -1603,6 +1708,62 @@ class ClaimsRequest(TypedDict, total=False):
 
     utcOffsetSeconds: Required[int]
     """The offset from UTC the place's civil days run at, in seconds, east positive."""
+
+
+class IssueRequest(TypedDict, total=False):
+    """A record to answer with a receipt: its name and its request."""
+
+    record: Required[str]
+    """The record's name, `area.operation`, as `records` lists it."""
+
+    request: Required[Any]
+    """The record's request, as that record reads it."""
+
+
+class Receipt(TypedDict, total=False):
+    """What a record was asked, under what, and the digest of what it answered."""
+
+    calculationVersion: Required[int]
+    """The calculation version."""
+
+    catalogueVersion: Required[int]
+    """The catalogue's version."""
+
+    digest: Required[str]
+    """The seal: the hash of this receipt's canonical JSON with `digest` left out."""
+
+    format: Required[str]
+    """`FORMAT`."""
+
+    locale: Required[str]
+    """The locale the context answered in."""
+
+    outputDigest: Required[str]
+    """The hash of the answer's value, canonical JSON."""
+
+    packs: Required[Any]
+    """The runtime packs the context had loaded."""
+
+    provider: Optional[ReceiptProvider]
+    """The ephemeris the answer was computed with; none where it read none."""
+
+    record: Required[str]
+    """The record's name, `area.operation`."""
+
+    request: Required[Any]
+    """The request as the record read it."""
+
+    requestDigest: Required[str]
+    """The hash of the request's canonical JSON."""
+
+    sdkVersion: Required[Version]
+    """The SDK's version."""
+
+    settings: Required[SettingsSnapshot]
+    """The settings, whole, with their profile and hash."""
+
+    tzdb: Required[str]
+    """The zone database's version."""
 
 
 class Anniversary(TypedDict, total=False):
@@ -2069,6 +2230,14 @@ AyanaReckoning: TypeAlias = Literal['SIDEREAL', 'TROPICAL']
 
 `SIDEREAL`: Uttarayana from Makara sankranti, the sidereal Sun's entry into Capricorn, to Karka sankranti: the almanac's own `sun.ayana`.
 `TROPICAL`: Uttarayana from the winter solstice to the summer solstice, the tropical Sun's.
+"""
+
+
+Projection: TypeAlias = Literal['IN_MUNDO', 'ZODIACAL']
+"""How a body is placed on the angles (C1155), written `"IN_MUNDO"` or `"ZODIACAL"`.
+
+`IN_MUNDO`: The body where it stands, its ecliptic latitude kept, against the true horizon: the practice of astrocartography's maps.
+`ZODIACAL`: The body's degree of the ecliptic, latitude zeroed: a point on a line has the body's longitude on the chart's own angle there.
 """
 
 
@@ -2586,6 +2755,19 @@ class HouseRequest(TypedDict, total=False):
     """The division to read, or the module's own when `None`: the profile's `houses.module_overrides.western`, else `LEO_HOUSE_SYSTEM`."""
 
 
+class MundaneEvent(TypedDict, total=False):
+    """An event on record, cast as given (`EVENT`)."""
+
+    instant: Required[float]
+    """When, a Julian day (UTC)."""
+
+    name: Required[str]
+    """What happened."""
+
+    source: Required[str]
+    """Where the record of it comes from, carried on the answer."""
+
+
 BaselinePeriod: TypeAlias = Literal['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']
 """The period a score is weighed for, which sets the Moon's weight.
 
@@ -2618,6 +2800,19 @@ class PeriodAsked(TypedDict, total=False):
     spells: Optional[Sequence[int]]
 
     utcOffsetSeconds: Required[int]
+
+
+class RelocationPlace(TypedDict, total=False):
+    """A place a chart is recast at."""
+
+    altitudeM: float
+    """Altitude, metres."""
+
+    latitudeDeg: Required[float]
+    """Latitude, degrees, north positive."""
+
+    longitudeDeg: Required[float]
+    """Longitude, degrees, east positive."""
 
 
 class CalendarDay(TypedDict, total=False):
@@ -2904,6 +3099,48 @@ class CivilTime(TypedDict, total=False):
     """Left out, zero: what the reader below takes, so the schema read against does not require what the reader does not."""
 
     second: Required[int]
+
+
+class ReceiptProvider(TypedDict, total=False):
+    """The ephemeris an answer was computed with, as a receipt names it."""
+
+    dataVersion: Required[str]
+    """The version of the data it read."""
+
+    name: Required[str]
+    """The provider's name."""
+
+    version: Required[str]
+    """Its version."""
+
+
+class Version(TypedDict, total=False):
+    """A semantic version, with its pre-release label as written."""
+
+    major: Required[int]
+    """Major."""
+
+    minor: Required[int]
+    """Minor."""
+
+    patch: Required[int]
+    """Patch."""
+
+    pre: Optional[str]
+    """The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release."""
+
+
+class SettingsSnapshot(TypedDict, total=False):
+    """The settings something was computed under, whole."""
+
+    hash: Required[str]
+    """The SHA-256 of the document's canonical JSON: the `settings_hash` a provenance carries."""
+
+    profile: Required[str]
+    """The profile the settings were resolved from."""
+
+    settings: Required[Any]
+    """The settings document, every knob, as `Context::settings_json` writes it, and kept as it was read. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here."""
 
 
 FirstYearAdhika: TypeAlias = Literal['ADHIKA', 'NIJA']

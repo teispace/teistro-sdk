@@ -102,6 +102,18 @@ impl Blocker {
     }
 }
 
+/// A catalogued system this build does not compute.
+#[derive(Clone, Copy)]
+struct Unbuilt {
+    key: &'static str,
+    blocker: Blocker,
+    /// Why it is not computed.
+    why: &'static str,
+    /// The source, by name, that would settle it: the translation a reader
+    /// would need in hand, or that none is known (SR-43).
+    settles: &'static str,
+}
+
 /// Every catalogued system this build does not compute, with the reason,
 /// read from [`dasha-kernels.md`]'s own row analysis.
 ///
@@ -111,66 +123,90 @@ impl Blocker {
 /// quietly stop being exhaustive.
 ///
 /// [`dasha-kernels.md`]: ../../docs/03-design/dasha-kernels.md
-const NOT_BUILT: [(&str, Blocker, &str); 8] = [
-    (
-        "TITHI_ASHTOTTARI",
-        Blocker::Text,
-        "Ashtottari's table seeded by the **tithi**. The reference index does not \
+const NOT_BUILT: [Unbuilt; 8] = [
+    Unbuilt {
+        key: "TITHI_ASHTOTTARI",
+        blocker: Blocker::Text,
+        why: "Ashtottari's table seeded by the **tithi**. The reference index does not \
          carry over from the nakshatra rows because the cycles differ, 30 against \
          27, so the seat is unknown",
-    ),
-    (
-        "TITHI_YOGINI",
-        Blocker::Text,
-        "Yogini's table on the same thirty-fold cycle, blocked by the same unknown \
+        settles: "a written statement of the tithi its cycle starts from. No classical \
+         verse for it is known: it is taught with the tithi pravesha chart in \
+         Sanjay Rath's school, and PyJHora's reading is a program, not a \
+         source",
+    },
+    Unbuilt {
+        key: "TITHI_YOGINI",
+        blocker: Blocker::Text,
+        why: "Yogini's table on the same thirty-fold cycle, blocked by the same unknown \
          seat",
-    ),
-    (
-        "YOGA_VIMSHOTTARI",
-        Blocker::Text,
-        "Vimshottari's table seeded by the **yoga**, on a twenty-seven-fold cycle \
+        settles: "the same statement as `TITHI_ASHTOTTARI`, for Yogini's eight lords",
+    },
+    Unbuilt {
+        key: "YOGA_VIMSHOTTARI",
+        blocker: Blocker::Text,
+        why: "Vimshottari's table seeded by the **yoga**, on a twenty-seven-fold cycle \
          whose reference is not the nakshatra's",
-    ),
-    (
-        "KARANA_CHATURASHITI",
-        Blocker::Text,
-        "Chaturashiti-sama's table seeded by the **karana**, on a sixty-fold cycle",
-    ),
-    (
-        "PANCHASWARA",
-        Blocker::Text,
-        "no attested shape at all. It is catalogued because a system by that name \
+        settles: "a written statement of the yoga its cycle starts from, from the same \
+         school, which teaches it with the yoga pravesha chart; no classical \
+         verse for it is known",
+    },
+    Unbuilt {
+        key: "KARANA_CHATURASHITI",
+        blocker: Blocker::Text,
+        why: "Chaturashiti-sama's table seeded by the **karana**, on a sixty-fold cycle",
+        settles: "a written statement of the karana its cycle starts from, from the same \
+         school and its karana pravesha chart; no classical verse for it is \
+         known",
+    },
+    Unbuilt {
+        key: "PANCHASWARA",
+        blocker: Blocker::Text,
+        why: "no attested shape at all. It is catalogued because a system by that name \
          is named, which is what a key space is for",
-    ),
-    (
-        "VARNADA",
-        Blocker::Text,
-        "the Varnada lagna it starts from is **not** built: no reading of the \
+        settles: "an English reading of the swara periods in Narapati's *Swarodaya*, \
+         if it states them. S. S. Sareen's *Pancha Swara* (Sagar, 1999) is the \
+         translation most cited; no public-domain English one is known",
+    },
+    Unbuilt {
+        key: "VARNADA",
+        blocker: Blocker::Text,
+        why: "the Varnada lagna it starts from is **not** built: no reading of the \
          received rule reproduces the recorded values, five schools disagree \
          (C22) and `teistro_points` ships none of them \
          ([`points-measured.md`](points-measured.md)). `Start` has no arm for \
          it, so a consumer cannot register the dasha either until a school is \
          cited and the point is built",
-    ),
-    (
-        "SUDASA",
-        Blocker::Text,
-        "no verse is in hand. BPHS does not name it among its dasas (ch. 46 \
+        settles: "a cited school for the Varnada lagna among C22's five, worked in a \
+         translation of Jaimini's *Upadesa Sutras*: Sanjay Rath's (Sagar, \
+         1997) treats both the lagna and its dasha; B. Suryanarain Rao's, of \
+         the first two adhyayas, names the lagna",
+    },
+    Unbuilt {
+        key: "SUDASA",
+        blocker: Blocker::Text,
+        why: "no verse is in hand. BPHS does not name it among its dasas (ch. 46 \
          vv. 6 to 11), and neither Sanskrit edition of the Jaimini sutras read \
          states it in plain words; PyJHora starts it from the Sree lagna with a \
          first period set by its longitude, which the kernel has neither of. It \
          was listed as waiting on the karakamsha, which is built and is not its \
          start in any source read",
-    ),
-    (
-        "VARSHA_NARAYANA",
-        Blocker::Text,
-        "Narayana read over one year. The solar return it waited on is built \
+        settles: "Sanjay Rath's translation of the *Upadesa Sutras* (Sagar, 1997), \
+         which lists Sudasa among its dashas, read against the Sanskrit sutra \
+         it rests on",
+    },
+    Unbuilt {
+        key: "VARSHA_NARAYANA",
+        blocker: Blocker::Text,
+        why: "Narayana read over one year. The solar return it waited on is built \
          and the three annual dashas beside it are computed \
          (`annual-dashas.md`), but neither book read for them gives this one: \
          Charak's chapter V and the *Tajika Nilakanthi* name the Mudda, the \
          Yogini and the Patyayini and stop",
-    ),
+        settles: "a text that reads Narayana over one year. No classical one is known; \
+         the Tajika books read for the annual dashas stop at three, and the \
+         modern manuals that teach it have not been read",
+    },
 ];
 
 /// The unbuilt systems a **consumer** can supply today, and the kernel each
@@ -342,7 +378,7 @@ fn page(_root: &Path) -> Result<String, String> {
     let catalogued: BTreeSet<&str> = DashaSystem::ALL.iter().map(|system| system.key()).collect();
     let excused: BTreeMap<&str, (Blocker, &str)> = NOT_BUILT
         .into_iter()
-        .map(|(key, blocker, why)| (key, (blocker, why)))
+        .map(|one| (one.key, (one.blocker, one.why)))
         .collect();
 
     // The three directions, each counted rather than asserted.
@@ -372,7 +408,7 @@ fn page(_root: &Path) -> Result<String, String> {
     // measured on the page; they are not a guard in front of it.
     let askable: Vec<&'static str> = NOT_BUILT
         .into_iter()
-        .map(|(key, _, _)| key)
+        .map(|one| one.key)
         .filter(|key| catalogued.contains(key) && !computed.contains(key))
         .collect();
     let refused = refusals(&sdk, &askable)?;
@@ -506,10 +542,9 @@ struct Falsified<'a> {
 /// to go first, and what closes that blocker.
 fn the_queue(out: &mut String) {
     for blocker in Blocker::ALL {
-        let rows: Vec<(&str, &str)> = NOT_BUILT
+        let rows: Vec<Unbuilt> = NOT_BUILT
             .into_iter()
-            .filter(|(_, one, _)| *one == blocker)
-            .map(|(key, _, why)| (key, why))
+            .filter(|one| one.blocker == blocker)
             .collect();
         // A blocker nothing waits on any more is not a queue.
         if rows.is_empty() {
@@ -522,9 +557,9 @@ fn the_queue(out: &mut String) {
             blocker.title()
         );
         let _ = write!(out, "What closes them is {}.\n\n", blocker.what_closes_it());
-        out.push_str("| system | why it is not computed |\n|---|---|\n");
-        for (key, why) in rows {
-            let _ = writeln!(out, "| `{key}` | {why} |");
+        out.push_str("| system | why it is not computed | what would settle it |\n|---|---|---|\n");
+        for one in rows {
+            let _ = writeln!(out, "| `{}` | {} | {} |", one.key, one.why, one.settles);
         }
         out.push('\n');
     }
@@ -588,8 +623,8 @@ fn who_can_supply_one(out: &mut String, walked: &[String]) {
         for (key, kernel) in REGISTRABLE {
             let why = NOT_BUILT
                 .iter()
-                .find(|(one, _, _)| *one == key)
-                .map_or("—", |(_, _, why)| why);
+                .find(|one| one.key == key)
+                .map_or("—", |one| one.why);
             let _ = writeln!(out, "| `{key}` | {} | {why} |", kernel.title());
         }
         out.push('\n');
@@ -647,7 +682,7 @@ fn what_the_types_decide(
             "every system said to be registrable is one this build does not compute",
             REGISTRABLE
                 .iter()
-                .filter(|(key, _)| !NOT_BUILT.iter().any(|(one, _, _)| one == key))
+                .filter(|(key, _)| !NOT_BUILT.iter().any(|one| one.key == *key))
                 .count(),
             REGISTRABLE.len(),
         ),

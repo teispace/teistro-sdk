@@ -407,6 +407,7 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
             "RETURN",
             "RELOCATED",
             "COMPOSITE",
+            "MUNDANE",
         ],
     ),
     (

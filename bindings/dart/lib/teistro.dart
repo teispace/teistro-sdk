@@ -1434,7 +1434,218 @@ final class ChartArea extends _Area {
       ),
     );
   }
+
+  /// A mundane chart (`03-design/mundane-charts.md`): the moment [kind]
+  /// names (an ingress, the lunation before one, an eclipse, a great
+  /// conjunction, or an event on record), found by the SDK's own searches,
+  /// and the chart cast for it at [place], [ChartKind.mundane]
+  /// ([ChartKind.event] for an event). Give [year] or [from]; a lunation
+  /// precedes [ingress], Mesha's by default.
+  MundaneChart mundane({
+    required MundaneKind kind,
+    required Observer place,
+    int? year,
+    double? from,
+    MundaneKind? ingress,
+    MundaneEvent? event,
+    int utcOffsetSeconds = 0,
+  }) {
+    final envelope =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.chartMundane(
+                  jsonEncode(<String, Object?>{
+                    'kind': kind.key,
+                    'latitudeDeg': place.latitudeDeg,
+                    'longitudeDeg': place.longitudeDeg,
+                    'altitudeM': place.altitudeM,
+                    'utcOffsetSeconds': utcOffsetSeconds,
+                    if (year case final year?) 'year': year,
+                    if (from case final from?) 'from': from,
+                    if (ingress case final ingress?) 'ingress': ingress.key,
+                    if (event case final event?) 'event': event._wire,
+                  }),
+                ),
+              ),
+            )
+            as Map<String, Object?>;
+    final value = envelope['value']! as Map<String, Object?>;
+    final which = _key(value['kind'], MundaneKind.byKey, MundaneKind.unknown);
+    final before = value['ingress'] as Map<String, Object?>?;
+    return MundaneChart(
+      kind: which,
+      instant: (value['instant']! as num).toDouble(),
+      ingress:
+          before == null
+              ? null
+              : MundaneIngress(
+                kind: _key(
+                  before['kind'],
+                  MundaneKind.byKey,
+                  MundaneKind.unknown,
+                ),
+                instant: (before['instant']! as num).toDouble(),
+              ),
+      solarEclipse:
+          value['solarEclipse'] == null
+              ? null
+              : _key(
+                value['solarEclipse'],
+                SolarEclipseKind.byKey,
+                SolarEclipseKind.unknown,
+              ),
+      lunarEclipse:
+          value['lunarEclipse'] == null
+              ? null
+              : _key(
+                value['lunarEclipse'],
+                LunarEclipseKind.byKey,
+                LunarEclipseKind.unknown,
+              ),
+      name: value['name'] as String?,
+      source: value['source'] as String?,
+      chart: found(
+        instant: (value['instant']! as num).toDouble(),
+        place: Observer(
+          longitudeDeg: Longitude((value['longitudeDeg']! as num).toDouble()),
+          latitudeDeg: Latitude((value['latitudeDeg']! as num).toDouble()),
+          altitudeM: Altitude((value['altitudeM']! as num).toDouble()),
+        ),
+        utcOffsetSeconds: (value['utcOffsetSeconds']! as num).toInt(),
+        kind: which == MundaneKind.event ? ChartKind.event : ChartKind.mundane,
+      ),
+      provenance: Provenance.fromJson(
+        envelope['provenance']! as Map<String, Object?>,
+      ),
+    );
+  }
+
+  /// A chart's instant recast at other places
+  /// (`03-design/astrocartography.md`): each place's ascendant, midheaven
+  /// and twelve cusps, in this context's zodiac. The grahas stand where
+  /// they stood; only the angles and the houses move.
+  Relocation relocated({
+    required double instant,
+    required List<Observer> places,
+    HouseSystem? houseSystem,
+  }) {
+    final envelope =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.chartRelocated(
+                  jsonEncode(<String, Object?>{
+                    'instant': instant,
+                    'places': [
+                      for (final place in places)
+                        <String, Object?>{
+                          'latitudeDeg': place.latitudeDeg,
+                          'longitudeDeg': place.longitudeDeg,
+                          'altitudeM': place.altitudeM,
+                        },
+                    ],
+                    if (houseSystem case final houseSystem?)
+                      'houseSystem': houseSystem.key,
+                  }),
+                ),
+              ),
+            )
+            as Map<String, Object?>;
+    final value = envelope['value']! as Map<String, Object?>;
+    return Relocation(
+      instant: (value['instant']! as num).toDouble(),
+      obliquityDeg: (value['obliquityDeg']! as num).toDouble(),
+      places: List.unmodifiable([
+        for (final raw in value['places']! as List<Object?>)
+          _relocated(raw! as Map<String, Object?>),
+      ]),
+      provenance: Provenance.fromJson(
+        envelope['provenance']! as Map<String, Object?>,
+      ),
+    );
+  }
+
+  /// The astrocartography lines at an instant
+  /// (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC
+  /// lines as `(longitudeDeg, latitudeDeg)` points from south to north. A
+  /// rising or setting line stops at its `polarLimitDeg`. Every point is on
+  /// its angle, read back through a chart cast there, to `toleranceDeg`.
+  /// [projection] is `IN_MUNDO` (the default) or `ZODIACAL`; the bodies are
+  /// the seven and the outer planets placed when [bodies] is left out.
+  Astrocartography astrocartography({
+    required double instant,
+    List<Graha>? bodies,
+    String? projection,
+    double? stepDeg,
+    double? latitudeLimitDeg,
+  }) {
+    final envelope =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.chartAstrocartography(
+                  jsonEncode(<String, Object?>{
+                    'instant': instant,
+                    if (bodies case final bodies?)
+                      'bodies': [for (final body in bodies) body.key],
+                    if (projection case final projection?)
+                      'projection': projection,
+                    if (stepDeg case final stepDeg?) 'stepDeg': stepDeg,
+                    if (latitudeLimitDeg case final latitudeLimitDeg?)
+                      'latitudeLimitDeg': latitudeLimitDeg,
+                  }),
+                ),
+              ),
+            )
+            as Map<String, Object?>;
+    final value = envelope['value']! as Map<String, Object?>;
+    return Astrocartography(
+      instant: (value['instant']! as num).toDouble(),
+      projection: value['projection']! as String,
+      stepDeg: (value['stepDeg']! as num).toDouble(),
+      latitudeLimitDeg: (value['latitudeLimitDeg']! as num).toDouble(),
+      toleranceDeg: (value['toleranceDeg']! as num).toDouble(),
+      greenwichRamcDeg: (value['greenwichRamcDeg']! as num).toDouble(),
+      obliquityDeg: (value['obliquityDeg']! as num).toDouble(),
+      lines: List.unmodifiable([
+        for (final raw in value['lines']! as List<Object?>)
+          _astroLine(raw! as Map<String, Object?>),
+      ]),
+      provenance: Provenance.fromJson(
+        envelope['provenance']! as Map<String, Object?>,
+      ),
+    );
+  }
 }
+
+/// One place of a relocation, as the boundary writes it.
+RelocatedChart _relocated(Map<String, Object?> raw) => RelocatedChart(
+  latitudeDeg: (raw['latitudeDeg']! as num).toDouble(),
+  longitudeDeg: (raw['longitudeDeg']! as num).toDouble(),
+  altitudeM: (raw['altitudeM']! as num).toDouble(),
+  ascendantDeg: (raw['ascendantDeg']! as num).toDouble(),
+  midheavenDeg: (raw['midheavenDeg']! as num).toDouble(),
+  cuspsDeg: List.unmodifiable([
+    for (final cusp in raw['cuspsDeg']! as List<Object?>)
+      (cusp! as num).toDouble(),
+  ]),
+  houseSystem: _key(raw['houseSystem'], HouseSystem.byKey, HouseSystem.unknown),
+);
+
+/// A `[longitudeDeg, latitudeDeg]` pair as a record.
+(double, double) _lonLat(List<Object?> raw) => (
+  (raw[0]! as num).toDouble(),
+  (raw[1]! as num).toDouble(),
+);
+
+/// One line of a map, as the boundary writes it.
+AstroLine _astroLine(Map<String, Object?> raw) => AstroLine(
+  body: _key(raw['body'], Graha.byKey, Graha.unknown),
+  angle: raw['angle']! as String,
+  points: List.unmodifiable([
+    for (final point in raw['points']! as List<Object?>)
+      _lonLat(point! as List<Object?>),
+  ]),
+  polarLimitDeg: (raw['polarLimitDeg'] as num?)?.toDouble(),
+);
 
 /// `sdk.almanac` — a day, or a run of days, with its limbs.
 ///
@@ -1946,6 +2157,47 @@ final class AlmanacArea extends _Area {
     });
     return _deathTime(
       _context._guarded(() => _context._inner.almanacDeathTime(asked)),
+    );
+  }
+
+  /// **The sky at a place and an instant** (`03-design/sky-view.md`):
+  /// where each graha and each nakshatra's junction star stands,
+  /// topocentric, apparent and of date, its altitude airless and refracted
+  /// and its azimuth from north through east; and the ecliptic, with the
+  /// ascendant and the descendant, and the horizon as point lists.
+  /// [grahas] and [stars] are the nine and the twenty-seven yogataras when
+  /// null; each step is 0.1 to 90 degrees, five when null; the air is
+  /// 1010 hPa and 10 °C, and a pressure of 0 turns refraction off. A
+  /// context over a classical astronomy is refused (C1185).
+  ///
+  /// ```dart
+  /// final view = sdk.almanac.skyView(at: 2461345.25, place: kathmandu);
+  /// final moon = view.value.graha(Graha.moon)!.azimuthDeg;
+  /// ```
+  SkyViewAnswer skyView({
+    required double at,
+    required Observer place,
+    List<Graha>? grahas,
+    List<Star>? stars,
+    double? eclipticStepDeg,
+    double? horizonStepDeg,
+    double? pressureHpa,
+    double? temperatureC,
+  }) {
+    final asked = jsonEncode(<String, Object?>{
+      'latitudeDeg': place.latitudeDeg,
+      'longitudeDeg': place.longitudeDeg,
+      'altitudeM': place.altitudeM,
+      'at': at,
+      if (grahas != null) 'grahas': [for (final graha in grahas) graha.key],
+      if (stars != null) 'stars': [for (final star in stars) star.key],
+      if (eclipticStepDeg != null) 'eclipticStepDeg': eclipticStepDeg,
+      if (horizonStepDeg != null) 'horizonStepDeg': horizonStepDeg,
+      if (pressureHpa != null) 'pressureHpa': pressureHpa,
+      if (temperatureC != null) 'temperatureC': temperatureC,
+    });
+    return _skyView(
+      _context._guarded(() => _context._inner.almanacSkyView(asked)),
     );
   }
 
@@ -2577,6 +2829,220 @@ final class VerifyArea extends _Area {
       ),
     );
   }
+
+  /// A record's answer and its receipt: what was asked, under which
+  /// settings, ephemeris and versions, and the digest of what was answered
+  /// (`03-design/receipts-and-datasets.md` §1). The answer is the record's
+  /// own JSON; the receipt is handed back whole to [receipt].
+  ///
+  /// ```dart
+  /// final issued = sdk.verify.issue(const IssueRequest(
+  ///   record: 'calendar.convert',
+  ///   request: {'date': {'year': 2026, 'month': 10, 'day': 10}, 'into': 'calendar.BIKRAM_SAMBAT'},
+  /// ));
+  /// final verdict = sdk.verify.receipt(issued.receipt).verdict; // HELD
+  /// ```
+  Issued issue(IssueRequest request) {
+    final issued =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.verifyIssue(jsonEncode(request._wire)),
+              ),
+            )
+            as Map<String, Object?>;
+    return Issued(
+      answer: issued['answer'],
+      receipt: Map.unmodifiable(issued['receipt']! as Map<String, Object?>),
+    );
+  }
+
+  /// A receipt checked: answered again under its own settings and
+  /// compared, `HELD`, `DIFFERS`, `NOT_RERUN` (with why) or `BROKEN` (a
+  /// field edited after issue), with every version that moved between the
+  /// two sides.
+  ReceiptCheck receipt(Map<String, Object?> receipt) {
+    final raw =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.verifyReceipt(jsonEncode(receipt)),
+              ),
+            )
+            as Map<String, Object?>;
+    final reason = raw['reason'] as Map<String, Object?>?;
+    return ReceiptCheck(
+      verdict: raw['verdict']! as String,
+      record: raw['record']! as String,
+      moved: List.unmodifiable(
+        (raw['moved']! as List<Object?>).cast<Map<String, Object?>>().map(
+          (m) => ReceiptMove(
+            field: m['field']! as String,
+            issued: m['issued']! as String,
+            now: m['now']! as String,
+          ),
+        ),
+      ),
+      broken: List.unmodifiable(
+        (raw['broken']! as List<Object?>).cast<String>(),
+      ),
+      issued: ReceiptSide._of(raw['issued']! as Map<String, Object?>),
+      now: ReceiptSide._of(raw['now']! as Map<String, Object?>),
+      reason:
+          reason == null
+              ? null
+              : NotRerunReason(
+                cause: reason['cause']! as String,
+                detail: reason['detail']! as String,
+              ),
+    );
+  }
+}
+
+/// What `verify.issue` answers.
+final class Issued extends _Value {
+  const Issued({required this.answer, required this.receipt});
+
+  /// The record's own answer, `{value, provenance}` or the value alone, as
+  /// its JSON reads.
+  final Object? answer;
+
+  /// The receipt, to hand back whole to [VerifyArea.receipt].
+  final Map<String, Object?> receipt;
+
+  @override
+  List<Object?> get _fields => [answer, receipt];
+}
+
+/// What answered a receipt: its versions, ephemeris and zone database.
+final class ReceiptSide extends _Value {
+  const ReceiptSide({
+    required this.sdkVersion,
+    required this.calculationVersion,
+    required this.catalogueVersion,
+    required this.provider,
+    required this.tzdb,
+  });
+
+  factory ReceiptSide._of(Map<String, Object?> raw) {
+    final version = raw['sdkVersion']! as Map<String, Object?>;
+    final provider = raw['provider'] as Map<String, Object?>?;
+    return ReceiptSide(
+      sdkVersion: '${version['major']}.${version['minor']}.${version['patch']}',
+      calculationVersion: raw['calculationVersion']! as int,
+      catalogueVersion: raw['catalogueVersion']! as int,
+      provider:
+          provider == null
+              ? null
+              : Map.unmodifiable(provider.cast<String, String>()),
+      tzdb: raw['tzdb']! as String,
+    );
+  }
+
+  /// The SDK's version, `major.minor.patch`.
+  final String sdkVersion;
+
+  /// The calculation version.
+  final int calculationVersion;
+
+  /// The catalogue's version.
+  final int catalogueVersion;
+
+  /// `name`, `version` and `dataVersion` of the ephemeris; null where none
+  /// was read.
+  final Map<String, String>? provider;
+
+  /// The zone database's version.
+  final String tzdb;
+
+  @override
+  List<Object?> get _fields => [
+    sdkVersion,
+    calculationVersion,
+    catalogueVersion,
+    provider,
+    tzdb,
+  ];
+}
+
+/// A field that moved between the receipt's side and this one.
+final class ReceiptMove extends _Value {
+  const ReceiptMove({
+    required this.field,
+    required this.issued,
+    required this.now,
+  });
+
+  /// `output`, `sdkVersion`, `calculationVersion`, `catalogueVersion`,
+  /// `provider` or `tzdb`.
+  final String field;
+
+  /// The receipt's, as text.
+  final String issued;
+
+  /// This side's, as text.
+  final String now;
+
+  @override
+  List<Object?> get _fields => [field, issued, now];
+}
+
+/// Why a receipt was not answered again.
+final class NotRerunReason extends _Value {
+  const NotRerunReason({required this.cause, required this.detail});
+
+  /// `RECORD`, `PROVIDER`, `SETTINGS`, `LOCALE`, `PACKS`, `OUT_OF_RANGE`
+  /// or `REFUSED`.
+  final String cause;
+
+  /// What was missing or what refused, in words.
+  final String detail;
+
+  @override
+  List<Object?> get _fields => [cause, detail];
+}
+
+/// What `verify.receipt` answers.
+final class ReceiptCheck extends _Value {
+  const ReceiptCheck({
+    required this.verdict,
+    required this.record,
+    required this.moved,
+    required this.broken,
+    required this.issued,
+    required this.now,
+    required this.reason,
+  });
+
+  /// `HELD`, `DIFFERS`, `NOT_RERUN` or `BROKEN`.
+  final String verdict;
+
+  /// The record the receipt names.
+  final String record;
+
+  /// Every field that moved, `output` first when the digest did.
+  final List<ReceiptMove> moved;
+
+  /// The digests that no longer hold, on a receipt `BROKEN`.
+  final List<String> broken;
+
+  /// What issued the receipt, as it says.
+  final ReceiptSide issued;
+
+  /// What checked it.
+  final ReceiptSide now;
+
+  /// Why it was not answered again, on `NOT_RERUN`.
+  final NotRerunReason? reason;
+
+  @override
+  List<Object?> get _fields => [
+    verdict,
+    record,
+    moved,
+    broken,
+    issued,
+    now,
+    reason,
+  ];
 }
 
 /// One claim a text makes of the time, and what it was found to be.
@@ -4648,6 +5114,179 @@ final class RashifalAnswers {
   final List<RashifalAnswer> value;
 
   /// What computed them, and under what; `inputHash` seals the request.
+  final Provenance provenance;
+}
+
+/// The ingress a lunation precedes.
+final class MundaneIngress {
+  const MundaneIngress({required this.kind, required this.instant});
+
+  /// Which ingress.
+  final MundaneKind kind;
+
+  /// When, a Julian day (UTC).
+  final double instant;
+}
+
+/// A mundane moment and the chart cast for it.
+final class MundaneChart {
+  const MundaneChart({
+    required this.kind,
+    required this.instant,
+    required this.ingress,
+    required this.solarEclipse,
+    required this.lunarEclipse,
+    required this.name,
+    required this.source,
+    required this.chart,
+    required this.provenance,
+  });
+
+  /// Which moment.
+  final MundaneKind kind;
+
+  /// The moment, a Julian day (UTC).
+  final double instant;
+
+  /// For a lunation, the ingress it precedes.
+  final MundaneIngress? ingress;
+
+  /// For a solar eclipse, its kind.
+  final SolarEclipseKind? solarEclipse;
+
+  /// For a lunar eclipse, its kind.
+  final LunarEclipseKind? lunarEclipse;
+
+  /// For an event, its name.
+  final String? name;
+
+  /// For an event, its source.
+  final String? source;
+
+  /// The chart cast for the moment.
+  final Chart chart;
+
+  /// What computed the moment, and under what; `inputHash` seals the request.
+  final Provenance provenance;
+}
+
+/// One place's angles and houses at a chart's instant.
+final class RelocatedChart {
+  const RelocatedChart({
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    required this.altitudeM,
+    required this.ascendantDeg,
+    required this.midheavenDeg,
+    required this.cuspsDeg,
+    required this.houseSystem,
+  });
+
+  /// The place, in degrees and metres.
+  final double latitudeDeg;
+
+  /// The place's longitude, east positive.
+  final double longitudeDeg;
+
+  /// The place's altitude.
+  final double altitudeM;
+
+  /// The ascendant, in this context's zodiac.
+  final double ascendantDeg;
+
+  /// The midheaven, in this context's zodiac.
+  final double midheavenDeg;
+
+  /// The twelve cusps, the first house's first.
+  final List<double> cuspsDeg;
+
+  /// The house division the cusps are of.
+  final HouseSystem houseSystem;
+}
+
+/// A chart's instant recast at each place asked.
+final class Relocation {
+  const Relocation({
+    required this.instant,
+    required this.obliquityDeg,
+    required this.places,
+    required this.provenance,
+  });
+
+  /// The instant, a Julian day (UTC).
+  final double instant;
+
+  /// The obliquity of the ecliptic at it.
+  final double obliquityDeg;
+
+  /// Each place, in the order asked.
+  final List<RelocatedChart> places;
+
+  /// What computed them, and under what.
+  final Provenance provenance;
+}
+
+/// One body's line on one angle (`MC`, `IC`, `ASC` or `DSC`).
+final class AstroLine {
+  const AstroLine({
+    required this.body,
+    required this.angle,
+    required this.points,
+    required this.polarLimitDeg,
+  });
+
+  /// The body.
+  final Graha body;
+
+  /// The angle the line traces.
+  final String angle;
+
+  /// `(longitudeDeg, latitudeDeg)`, south to north.
+  final List<(double, double)> points;
+
+  /// Where a rising or setting line stops, when it stops inside the map.
+  final double? polarLimitDeg;
+}
+
+/// The lines at an instant, and what they were drawn under.
+final class Astrocartography {
+  const Astrocartography({
+    required this.instant,
+    required this.projection,
+    required this.stepDeg,
+    required this.latitudeLimitDeg,
+    required this.toleranceDeg,
+    required this.greenwichRamcDeg,
+    required this.obliquityDeg,
+    required this.lines,
+    required this.provenance,
+  });
+
+  /// The instant, a Julian day (UTC).
+  final double instant;
+
+  /// `IN_MUNDO` or `ZODIACAL`.
+  final String projection;
+
+  /// The step of latitude.
+  final double stepDeg;
+
+  /// How far north and south the lines run.
+  final double latitudeLimitDeg;
+
+  /// How close every point is to its angle.
+  final double toleranceDeg;
+
+  /// The right ascension of the meridian at Greenwich.
+  final double greenwichRamcDeg;
+
+  /// The obliquity of the ecliptic.
+  final double obliquityDeg;
+
+  /// Each body's four lines, the bodies in the order asked.
+  final List<AstroLine> lines;
+
+  /// What computed them, and under what.
   final Provenance provenance;
 }
 
@@ -19860,6 +20499,326 @@ final class DeathTime extends _Value {
 
   @override
   List<Object?> get _fields => [death, cremation, rites, table];
+}
+
+/// A graha in the local sky (`03-design/sky-view.md`): topocentric,
+/// apparent and of date, the azimuth from north through east.
+final class GrahaSky extends _Value {
+  const GrahaSky({
+    required this.graha,
+    required this.raDeg,
+    required this.decDeg,
+    required this.altitudeDeg,
+    required this.refractedAltitudeDeg,
+    required this.azimuthDeg,
+  });
+
+  /// The graha.
+  final Graha graha;
+
+  /// On the true equator and equinox of date, degrees in `[0, 360)`.
+  final double raDeg;
+
+  /// The declination, degrees.
+  final double decDeg;
+
+  /// Airless, of the centre.
+  final double altitudeDeg;
+
+  /// Under the air's refraction; airless below the horizon (C973).
+  final double refractedAltitudeDeg;
+
+  /// From north through east, degrees in `[0, 360)`.
+  final double azimuthDeg;
+
+  @override
+  List<Object?> get _fields => [
+    graha,
+    raDeg,
+    decDeg,
+    altitudeDeg,
+    refractedAltitudeDeg,
+    azimuthDeg,
+  ];
+}
+
+/// A star in the local sky, as a graha's.
+final class StarSky extends _Value {
+  const StarSky({
+    required this.star,
+    this.nakshatra,
+    this.magnitude,
+    required this.raDeg,
+    required this.decDeg,
+    required this.altitudeDeg,
+    required this.refractedAltitudeDeg,
+    required this.azimuthDeg,
+  });
+
+  /// The star.
+  final Star star;
+
+  /// The nakshatra it is the yogatara of, or null.
+  final Nakshatra? nakshatra;
+
+  /// Its visual magnitude, or null.
+  final double? magnitude;
+
+  /// On the true equator and equinox of date, degrees in `[0, 360)`.
+  final double raDeg;
+
+  /// The declination, degrees.
+  final double decDeg;
+
+  /// Airless.
+  final double altitudeDeg;
+
+  /// Under the air's refraction; airless below the horizon (C973).
+  final double refractedAltitudeDeg;
+
+  /// From north through east, degrees in `[0, 360)`.
+  final double azimuthDeg;
+
+  @override
+  List<Object?> get _fields => [
+    star,
+    nakshatra,
+    magnitude,
+    raDeg,
+    decDeg,
+    altitudeDeg,
+    refractedAltitudeDeg,
+    azimuthDeg,
+  ];
+}
+
+/// A point of the ecliptic in the local sky, by tropical longitude of date.
+final class EclipticPoint extends _Value {
+  const EclipticPoint({
+    required this.kind,
+    required this.longitudeDeg,
+    required this.altitudeDeg,
+    required this.refractedAltitudeDeg,
+    required this.azimuthDeg,
+  });
+
+  /// `SAMPLE`, `ASCENDANT` or `DESCENDANT`.
+  final String kind;
+
+  /// Tropical, on the true ecliptic of date, degrees in `[0, 360)`.
+  final double longitudeDeg;
+
+  /// Airless.
+  final double altitudeDeg;
+
+  /// Under the air's refraction.
+  final double refractedAltitudeDeg;
+
+  /// From north through east.
+  final double azimuthDeg;
+
+  @override
+  List<Object?> get _fields => [
+    kind,
+    longitudeDeg,
+    altitudeDeg,
+    refractedAltitudeDeg,
+    azimuthDeg,
+  ];
+}
+
+/// A point of the airless horizon, and where it lies on the sphere of
+/// date.
+final class HorizonPoint extends _Value {
+  const HorizonPoint({
+    required this.azimuthDeg,
+    required this.raDeg,
+    required this.decDeg,
+    required this.longitudeDeg,
+    required this.latitudeDeg,
+  });
+
+  /// From north through east, degrees in `[0, 360)`.
+  final double azimuthDeg;
+
+  /// On the true equator of date.
+  final double raDeg;
+
+  /// The declination.
+  final double decDeg;
+
+  /// Tropical, on the true ecliptic of date.
+  final double longitudeDeg;
+
+  /// From that ecliptic.
+  final double latitudeDeg;
+
+  @override
+  List<Object?> get _fields => [
+    azimuthDeg,
+    raDeg,
+    decDeg,
+    longitudeDeg,
+    latitudeDeg,
+  ];
+}
+
+/// The sky at a place and an instant (`03-design/sky-view.md`).
+final class SkyView extends _Value {
+  const SkyView({
+    required this.at,
+    required this.siderealTimeDeg,
+    required this.obliquityDeg,
+    required this.pressureHpa,
+    required this.temperatureC,
+    required this.eclipticStepDeg,
+    required this.horizonStepDeg,
+    required this.grahas,
+    required this.stars,
+    required this.ecliptic,
+    required this.horizon,
+  });
+
+  /// UT1 read as UTC, a Julian day.
+  final double at;
+
+  /// The local apparent sidereal time, degrees.
+  final double siderealTimeDeg;
+
+  /// The true obliquity, degrees.
+  final double obliquityDeg;
+
+  /// The air's pressure the refraction was reckoned under, hPa.
+  final double pressureHpa;
+
+  /// The air's temperature, °C.
+  final double temperatureC;
+
+  /// The ecliptic's step, degrees.
+  final double eclipticStepDeg;
+
+  /// The horizon's step, degrees.
+  final double horizonStepDeg;
+
+  /// Each graha asked, in the order asked.
+  final List<GrahaSky> grahas;
+
+  /// Each star asked, in the order asked.
+  final List<StarSky> stars;
+
+  /// Every step of longitude and the two crossings, in longitude order.
+  final List<EclipticPoint> ecliptic;
+
+  /// Every step of azimuth from north.
+  final List<HorizonPoint> horizon;
+
+  /// A graha's place, if it was asked.
+  GrahaSky? graha(Graha graha) {
+    for (final placed in grahas) {
+      if (placed.graha == graha) return placed;
+    }
+    return null;
+  }
+
+  @override
+  List<Object?> get _fields => [
+    at,
+    siderealTimeDeg,
+    obliquityDeg,
+    pressureHpa,
+    temperatureC,
+    eclipticStepDeg,
+    horizonStepDeg,
+    grahas,
+    stars,
+    ecliptic,
+    horizon,
+  ];
+}
+
+/// What `almanac.skyView` answers.
+final class SkyViewAnswer {
+  const SkyViewAnswer({required this.value, required this.provenance});
+
+  /// The sky.
+  final SkyView value;
+
+  /// What computed it, and the hash of [value].
+  final Provenance provenance;
+}
+
+/// `ts_almanac_sky_view`'s answer, with the provenance beside it.
+SkyViewAnswer _skyView(String json) {
+  final envelope = jsonDecode(json) as Map<String, Object?>;
+  final raw = envelope['value']! as Map<String, Object?>;
+  final air = raw['atmosphere']! as Map<String, Object?>;
+  List<Map<String, Object?>> rows(String key) =>
+      (raw[key]! as List<Object?>).cast<Map<String, Object?>>();
+  return SkyViewAnswer(
+    value: SkyView(
+      at: _real(raw['at']),
+      siderealTimeDeg: _real(raw['siderealTimeDeg']),
+      obliquityDeg: _real(raw['obliquityDeg']),
+      pressureHpa: _real(air['pressureHpa']),
+      temperatureC: _real(air['temperatureC']),
+      eclipticStepDeg: _real(raw['eclipticStepDeg']),
+      horizonStepDeg: _real(raw['horizonStepDeg']),
+      grahas: List.unmodifiable([
+        for (final one in rows('grahas'))
+          GrahaSky(
+            graha: _graha(one['graha']),
+            raDeg: _real(one['raDeg']),
+            decDeg: _real(one['decDeg']),
+            altitudeDeg: _real(one['altitudeDeg']),
+            refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
+            azimuthDeg: _real(one['azimuthDeg']),
+          ),
+      ]),
+      stars: List.unmodifiable([
+        for (final one in rows('stars'))
+          StarSky(
+            star: _key(one['star'], Star.byKey, Star.unknown),
+            nakshatra:
+                one['nakshatra'] == null
+                    ? null
+                    : _key(
+                      one['nakshatra'],
+                      Nakshatra.byKey,
+                      Nakshatra.unknown,
+                    ),
+            magnitude: (one['magnitude'] as num?)?.toDouble(),
+            raDeg: _real(one['raDeg']),
+            decDeg: _real(one['decDeg']),
+            altitudeDeg: _real(one['altitudeDeg']),
+            refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
+            azimuthDeg: _real(one['azimuthDeg']),
+          ),
+      ]),
+      ecliptic: List.unmodifiable([
+        for (final one in rows('ecliptic'))
+          EclipticPoint(
+            kind: one['kind']! as String,
+            longitudeDeg: _real(one['longitudeDeg']),
+            altitudeDeg: _real(one['altitudeDeg']),
+            refractedAltitudeDeg: _real(one['refractedAltitudeDeg']),
+            azimuthDeg: _real(one['azimuthDeg']),
+          ),
+      ]),
+      horizon: List.unmodifiable([
+        for (final one in rows('horizon'))
+          HorizonPoint(
+            azimuthDeg: _real(one['azimuthDeg']),
+            raDeg: _real(one['raDeg']),
+            decDeg: _real(one['decDeg']),
+            longitudeDeg: _real(one['longitudeDeg']),
+            latitudeDeg: _real(one['latitudeDeg']),
+          ),
+      ]),
+    ),
+    provenance: Provenance.fromJson(
+      envelope['provenance']! as Map<String, Object?>,
+    ),
+  );
 }
 
 /// What `almanac.deathTime` answers.

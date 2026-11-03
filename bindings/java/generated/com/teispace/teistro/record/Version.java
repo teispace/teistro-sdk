@@ -7,14 +7,15 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A semantic version.
+ * A semantic version, with its pre-release label as written.
  *
  * @param major Major.
  * @param minor Minor.
  * @param patch Patch.
+ * @param pre The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release. May be null.
  */
 @SuppressWarnings("unused")
-public record Version(long major, long minor, long patch) {
+public record Version(long major, long minor, long patch, String pre) {
     /**
      * A `Version` from its JSON, as {@code Json.read} answers it.
      *
@@ -27,6 +28,7 @@ public record Version(long major, long minor, long patch) {
         return new Version(
             Read.integer(Read.required(json.get("major"), "Version.major"), "Version.major"),
             Read.integer(Read.required(json.get("minor"), "Version.minor"), "Version.minor"),
-            Read.integer(Read.required(json.get("patch"), "Version.patch"), "Version.patch"));
+            Read.integer(Read.required(json.get("patch"), "Version.patch"), "Version.patch"),
+            Read.orNull(json.get("pre"), value -> Read.text(value, "Version.pre")));
     }
 }
