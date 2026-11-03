@@ -3707,12 +3707,13 @@ final class ReceiptProvider extends _Request {
   List<Object?> get _fields => [dataVersion, name, version];
 }
 
-/// A semantic version.
+/// A semantic version, with its pre-release label as written.
 final class Version extends _Request {
   const Version({
     required this.major,
     required this.minor,
     required this.patch,
+    this.pre,
   });
 
   /// Major.
@@ -3724,15 +3725,19 @@ final class Version extends _Request {
   /// Patch.
   final int patch;
 
+  /// The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release.
+  final String? pre;
+
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     'major': major,
     'minor': minor,
     'patch': patch,
+    if (pre case final preValue?) 'pre': preValue,
   };
 
   @override
-  List<Object?> get _fields => [major, minor, patch];
+  List<Object?> get _fields => [major, minor, patch, pre];
 }
 
 /// The settings something was computed under, whole.
@@ -3743,13 +3748,13 @@ final class SettingsSnapshot extends _Request {
     required this.settings,
   });
 
-  /// The SHA-256 of the settings' canonical JSON: the `settings_hash` a provenance carries.
+  /// The SHA-256 of the document's canonical JSON: the `settings_hash` a provenance carries.
   final String hash;
 
   /// The profile the settings were resolved from.
   final String profile;
 
-  /// The settings document, every knob, as `Context::settings_json` writes it. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.
+  /// The settings document, every knob, as `Context::settings_json` writes it, and kept as it was read. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.
   final Object? settings;
 
   @override

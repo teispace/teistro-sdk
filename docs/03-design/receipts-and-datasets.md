@@ -47,12 +47,12 @@ SDK, calculation and catalogue versions, the profile, `settings_hash`,
 | `record` | the record's name, `almanac.digest` |
 | `request` | the request as the record read it, a JSON value, written canonically when hashed or sent |
 | `requestDigest` | the hash of the request's canonical JSON |
-| `settings` | the settings snapshot: `{profile, settings, hash}`, the whole canonical settings document and its hash (§3) |
+| `settings` | the settings snapshot: `{profile, settings, hash}`, the whole canonical settings document, kept as it was carried, and its hash (§3) |
 | `locale` | the locale the context answered in, since a record may answer in words |
 | `packs` | the runtime packs loaded, as the provenance stamps them |
 | `provider` | `{name, version, dataVersion}` of the ephemeris, or null where the answer read none |
 | `tzdb` | the zone database's version |
-| `sdkVersion`, `calculationVersion`, `catalogueVersion` | as the provenance carries them |
+| `sdkVersion`, `calculationVersion`, `catalogueVersion` | as the provenance carries them; `sdkVersion` keeps a pre-release label, `{major, minor, patch, pre: "rc.1"}` (C1177) |
 | `outputDigest` | the hash of the answer's **value**, canonical JSON (C1170) |
 | `digest` | the seal: the hash of the receipt's canonical JSON with `digest` left out |
 
@@ -67,12 +67,17 @@ issued, now, reason}`. The steps, in order:
 1. **Held together.** The request's digest, the snapshot's hash and the
    seal are computed again from the receipt itself. A field edited after
    issue breaks at least the seal: the verdict is `BROKEN` and `broken`
-   names each digest that failed. Nothing is re-run.
+   names each digest that failed. Nothing is re-run. Only a digest that
+   does not match the bytes the receipt carries is `BROKEN`: settings
+   from a build with a knob this one lacks, or without one it has, hold
+   to their hash and come to step 2 (C1176).
 2. **Can it be re-run here.** `NOT_RERUN` with `reason: {cause,
    detail}` when this build carries no such record (`RECORD`); the
    receipt names a provider and the context has none or another one
-   (`PROVIDER`); the receipt's settings need the classical provider opened
-   another way (`SETTINGS`, §1.4); its locale is not answered here
+   (`PROVIDER`); the receipt's settings are not this build's to read, a
+   knob it does not have or one it has that they lack, named in `detail`
+   (`SETTINGS`, C1176), or need the classical provider opened another way
+   (`SETTINGS`, §1.4); its locale is not answered here
    (`LOCALE`); it names a runtime pack not loaded here (`PACKS`).
 3. **Re-run.** The record is answered on the derived context with the
    receipt's request. A refusal `OUT_OF_RANGE` (an instant past the
@@ -214,8 +219,13 @@ records admitted and those set aside with their rating.
 
 ## 3. The settings snapshot
 
-`core/src/settings/snapshot.rs`: `{profile, settings, hash}`. Read
-strictly; `resolved()` holds `hash` to the settings' own and runs the
+`core/src/settings/snapshot.rs`: `{profile, settings, hash}`. The
+document is kept as it was carried, a JSON object, and `hash` is taken
+over its own canonical JSON, never over this build's re-serialised
+`Settings`: a snapshot written by a later build, with a knob this one
+does not have, still holds to its hash here (C1176). `resolved()` holds
+`hash` to the document, then reads it as this build's settings, refusing
+an unknown or missing knob by its field under `settings`, and runs the
 coherence rules, so a snapshot whose document was edited is refused at
 `hash` before anything runs.
 
@@ -254,7 +264,7 @@ MCP tool; a binding runs a study's request through `research.study`.
   all, not timed record by record; a single sankalpa issued and
   checked ran inside a test of 2.4 s, context build included. Nothing
   was timed under a release profile.
-- **The dataset schema** generated from the types is **7 123 bytes**.
+- **The dataset schema** generated from the types is **7 149 bytes**.
 
 ## 6. Cruxes
 
@@ -266,6 +276,8 @@ MCP tool; a binding runs a study's request through `research.study`.
 | C1173 | a receipt whose settings need the classical provider opened another way | `NOT_RERUN`, `SETTINGS`; a modern provider is shared |
 | C1174 | which reliability scale, and what a study admits | Rodden's AA–DD by a study's `minimumRating`; `X` and `XX` never |
 | C1175 | what a dataset study's request is | `research.study`'s request less what the dataset supplies |
+| C1176 | a receipt whose settings another build wrote | the document is kept as carried and hashed as carried: `NOT_RERUN`, `SETTINGS`, naming the knob, never `BROKEN` |
+| C1177 | a pre-release SDK version | kept as written, `1.0.0-rc.1`, and ordered by semantic-version precedence |
 
 ## Sources
 

@@ -7,6 +7,7 @@
 
 use core::fmt::Write as _;
 
+use core::cmp::Ordering;
 use core::fmt;
 use std::borrow::Cow;
 
@@ -339,17 +340,22 @@ fn push_string(text: &str, out: &mut String) {
     out.push('"');
 }
 
-/// A semantic version.
+/// A semantic version, with its pre-release label as written.
+///
+/// Versions order by semantic-version precedence: a pre-release before
+/// its release, and labels compared identifier by identifier, numbers
+/// numerically and before words.
 ///
 /// ```
 /// use teistro_core::envelope::Version;
 ///
 /// assert!(Version::new(1, 10, 0) > Version::new(1, 9, 9));
 /// assert_eq!(Version::new(0, 4, 2).to_string(), "0.4.2");
+/// let candidate = Version::parse("1.0.0-rc.1").unwrap();
+/// assert_eq!(candidate.to_string(), "1.0.0-rc.1");
+/// assert!(candidate < Version::new(1, 0, 0) && candidate > Version::new(0, 9, 9));
 /// ```
-#[derive(
-    Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, serde::Serialize, serde::Deserialize,
-)]
+#[derive(Clone, Debug, PartialEq, Eq, Hash, serde::Serialize, serde::Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 pub struct Version {
     /// Major.
@@ -358,16 +364,21 @@ pub struct Version {
     pub minor: u16,
     /// Patch.
     pub patch: u16,
+    /// The pre-release label after `-`, as written (`rc.1` of
+    /// `1.0.0-rc.1`); absent for a release.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pre: Option<String>,
 }
 
 impl Version {
-    /// A version.
+    /// A release.
     ///
     /// ```
     /// use teistro_core::envelope::Version;
     ///
     /// let version = Version::new(2, 0, 1);
     /// assert_eq!((version.major, version.minor, version.patch), (2, 0, 1));
+    /// assert_eq!(version.pre, None);
     /// ```
     #[must_use]
     pub const fn new(major: u16, minor: u16, patch: u16) -> Version {
@@ -375,31 +386,118 @@ impl Version {
             major,
             minor,
             patch,
+            pre: None,
         }
     }
 
-    /// A version from `major.minor.patch`, as Cargo prints it; a
-    /// pre-release or build suffix after `-` or `+` is ignored.
+    /// A version from `major.minor.patch`, with a pre-release label after
+    /// `-`, as Cargo prints it. The label is kept as written; build
+    /// metadata after `+` takes no part in a version's precedence and is
+    /// dropped.
     ///
     /// ```
     /// use teistro_core::envelope::Version;
     ///
-    /// assert_eq!(Version::parse("1.2.3-rc.1+build"), Some(Version::new(1, 2, 3)));
+    /// let candidate = Version::parse("1.2.3-rc.1+build").unwrap();
+    /// assert_eq!(candidate.pre.as_deref(), Some("rc.1"));
+    /// assert_eq!(candidate.to_string(), "1.2.3-rc.1");
+    /// assert_eq!(Version::parse("1.2.3+build"), Some(Version::new(1, 2, 3)));
     /// assert_eq!(Version::parse("1.2"), None);
     /// assert_eq!(Version::parse("1.2.3.4"), None);
+    /// // A label is dot-separated identifiers, none empty, and a number
+    /// // has no leading zero.
+    /// assert_eq!(Version::parse("1.2.3-rc..1"), None);
+    /// assert_eq!(Version::parse("1.2.3-rc.01"), None);
+    /// assert_eq!(Version::parse("1.2.3-rc_1"), None);
     /// ```
     #[must_use]
     pub fn parse(text: &str) -> Option<Version> {
-        let core = text.split(['-', '+']).next()?;
+        let release = text.split('+').next()?;
+        let (core, pre) = release
+            .split_once('-')
+            .map_or((release, None), |(core, pre)| (core, Some(pre)));
         let mut parts = core.split('.').map(|p| p.parse::<u16>().ok());
-        let version = Version::new(parts.next()??, parts.next()??, parts.next()??);
-        parts.next().is_none().then_some(version)
+        let mut version = Version::new(parts.next()??, parts.next()??, parts.next()??);
+        if parts.next().is_some() || !pre.is_none_or(|pre| pre.split('.').all(is_identifier)) {
+            return None;
+        }
+        version.pre = pre.map(str::to_owned);
+        Some(version)
+    }
+}
+
+/// Whether `id` is a pre-release identifier: ASCII letters, digits and
+/// `-`, not empty, and no leading zero on a number.
+fn is_identifier(id: &str) -> bool {
+    let numeric = id.bytes().all(|b| b.is_ascii_digit());
+    !id.is_empty()
+        && id.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-')
+        && !(numeric && id.len() > 1 && id.starts_with('0'))
+}
+
+/// One identifier of a pre-release label, ordered as semantic versioning
+/// orders them: numbers numerically and before words, words by their
+/// ASCII. Two spellings of one number (a label read, not parsed) order by
+/// their text, so the order is equality's.
+#[derive(PartialEq, Eq)]
+struct Identifier<'a>(&'a str);
+
+impl Identifier<'_> {
+    /// The number without its leading zeros, if the identifier is one.
+    fn number(&self) -> Option<&str> {
+        (!self.0.is_empty() && self.0.bytes().all(|b| b.is_ascii_digit()))
+            .then(|| self.0.trim_start_matches('0'))
+    }
+}
+
+impl Ord for Identifier<'_> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (self.number(), other.number()) {
+            (Some(a), Some(b)) => a.len().cmp(&b.len()).then_with(|| a.cmp(b)),
+            (Some(_), None) => Ordering::Less,
+            (None, Some(_)) => Ordering::Greater,
+            (None, None) => Ordering::Equal,
+        }
+        .then_with(|| self.0.cmp(other.0))
+    }
+}
+
+impl PartialOrd for Identifier<'_> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Version {
+    fn cmp(&self, other: &Self) -> Ordering {
+        (self.major, self.minor, self.patch)
+            .cmp(&(other.major, other.minor, other.patch))
+            .then_with(|| match (&self.pre, &other.pre) {
+                (None, None) => Ordering::Equal,
+                // A pre-release comes before its release.
+                (None, Some(_)) => Ordering::Greater,
+                (Some(_), None) => Ordering::Less,
+                (Some(a), Some(b)) => a
+                    .split('.')
+                    .map(Identifier)
+                    .cmp(b.split('.').map(Identifier)),
+            })
+    }
+}
+
+impl PartialOrd for Version {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
 impl fmt::Display for Version {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)
+        write!(f, "{}.{}.{}", self.major, self.minor, self.patch)?;
+        match &self.pre {
+            Some(pre) => write!(f, "-{pre}"),
+            None => Ok(()),
+        }
     }
 }
 
@@ -1309,6 +1407,50 @@ mod tests {
         assert_ne!(data.answer_key(), key);
     }
 
+    /// A pre-release keeps its label through its JSON and its text, and
+    /// versions order by semantic-version precedence: the specification's
+    /// own example chain, item 11.
+    #[test]
+    fn a_pre_release_round_trips_and_orders_by_precedence() {
+        let candidate = Version::parse("1.0.0-rc.1").unwrap();
+        assert_eq!(candidate.to_string(), "1.0.0-rc.1");
+        let json = serde_json::to_value(&candidate).unwrap();
+        assert_eq!(
+            json,
+            serde_json::json!({"major": 1, "minor": 0, "patch": 0, "pre": "rc.1"})
+        );
+        let read: Version = crate::strict::read_value(&json, "version").unwrap();
+        assert_eq!(read, candidate);
+        // A release writes no label, as before there was one.
+        assert_eq!(
+            serde_json::to_value(Version::new(1, 0, 0)).unwrap(),
+            serde_json::json!({"major": 1, "minor": 0, "patch": 0})
+        );
+        let chain = [
+            "1.0.0-alpha",
+            "1.0.0-alpha.1",
+            "1.0.0-alpha.beta",
+            "1.0.0-beta",
+            "1.0.0-beta.2",
+            "1.0.0-beta.11",
+            "1.0.0-rc.1",
+            "1.0.0",
+            "1.0.1-0",
+        ]
+        .map(|text| Version::parse(text).unwrap());
+        for pair in chain.windows(2) {
+            assert!(pair[0] < pair[1], "{} < {}", pair[0], pair[1]);
+            assert!(pair[1] > pair[0], "{} > {}", pair[1], pair[0]);
+        }
+        assert_eq!(candidate.cmp(&candidate.clone()), Ordering::Equal);
+        // A label read, not parsed, may spell a number with a leading
+        // zero: it orders by its number, then by its text, as `==` does.
+        let mut zero = candidate.clone();
+        zero.pre = Some(String::from("rc.01"));
+        assert!(zero < candidate && candidate.partial_cmp(&zero) == Some(Ordering::Greater));
+        assert!(Version::parse("1.0.0--").is_some());
+    }
+
     #[test]
     fn hashes_versions_and_the_envelope_round_trip() {
         let hash = Hash::of(b"teistro");
@@ -1318,8 +1460,8 @@ mod tests {
         assert_eq!(Version::new(1, 2, 3).to_string(), "1.2.3");
         assert_eq!(Version::parse("1.2.3"), Some(Version::new(1, 2, 3)));
         assert_eq!(
-            Version::parse("0.4.0-alpha.1+build"),
-            Some(Version::new(0, 4, 0))
+            Version::parse("0.4.0-alpha.1+build").unwrap().to_string(),
+            "0.4.0-alpha.1"
         );
         assert_eq!(Version::parse("1.2"), None);
         assert_eq!(Version::parse("1.2.3.4"), None);

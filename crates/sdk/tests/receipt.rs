@@ -10,11 +10,12 @@
 )]
 
 use teistro::Hash;
+use teistro::settings::{Settings, SettingsSnapshot};
 use teistro::verify::{
     IssueRequest, NotRerunCause, Receipt, ReceiptCheck, ReceiptProvider, ReceiptVerdict,
 };
 use teistro::{Context, Ephemeris, Status};
-use teistro_core::envelope::{PackStamp, Version};
+use teistro_core::envelope::{PackStamp, Version, content_hash};
 
 fn context(profile: &str) -> Context {
     Context::builder()
@@ -50,6 +51,15 @@ fn converted(sdk: &Context) -> Receipt {
         &serde_json::json!({"date": {"year": 2026, "month": 10, "day": 10},
             "into": "calendar.BIKRAM_SAMBAT"}),
     )
+}
+
+/// `receipt` with a knob of its settings changed by `edit`, and the
+/// snapshot taken again: what a caller does to ask under other settings.
+fn resettled(mut receipt: Receipt, edit: impl FnOnce(&mut Settings)) -> Receipt {
+    let mut settings = receipt.settings.settings().unwrap();
+    edit(&mut settings);
+    receipt.settings = SettingsSnapshot::new(&receipt.settings.profile, &settings);
+    receipt
 }
 
 fn cause(check: &ReceiptCheck) -> NotRerunCause {
@@ -173,13 +183,16 @@ fn a_field_changed_after_issue_breaks_the_receipt() {
         assert_eq!(check.broken, expected, "{field}");
     }
     // A knob changed under the snapshot's hash breaks the hash too.
-    let mut knob = sankalpa(&sdk);
-    knob.settings.settings.frame.node =
-        if knob.settings.settings.frame.node == teistro::settings::Node::True {
+    let receipt = sankalpa(&sdk);
+    let hash = receipt.settings.hash;
+    let mut knob = resettled(receipt, |settings| {
+        settings.frame.node = if settings.frame.node == teistro::settings::Node::True {
             teistro::settings::Node::Mean
         } else {
             teistro::settings::Node::True
         };
+    });
+    knob.settings.hash = hash;
     assert_eq!(
         sdk.verify().receipt(&knob).broken,
         ["settings.hash", "digest"]
@@ -216,9 +229,9 @@ fn a_change_sealed_again_is_caught_by_the_rerun() {
         .iter()
         .find(|example| example["record"] == "chart.found")
         .unwrap();
-    let mut settings = issued(&sdk, "chart.found", &found["request"]);
-    settings.settings.settings.frame.ayanamsha = teistro::catalogue::Ayanamsha::Raman.into();
-    settings.settings.hash = settings.settings.settings.hash();
+    let settings = resettled(issued(&sdk, "chart.found", &found["request"]), |settings| {
+        settings.frame.ayanamsha = teistro::catalogue::Ayanamsha::Raman.into();
+    });
     assert_eq!(
         sdk.verify().receipt(&settings.sealed()).verdict,
         ReceiptVerdict::Differs
@@ -244,13 +257,8 @@ fn another_sdk_version_is_reported_as_such() {
     assert_eq!(check.verdict, ReceiptVerdict::Held);
     assert_eq!(moved(&check), ["sdkVersion", "calculationVersion"]);
     assert_eq!(check.moved[0].issued, "0.0.1");
-    // A version is its numbers: a pre-release's label is not carried.
-    assert_eq!(
-        check.moved[0].now,
-        Version::parse(env!("CARGO_PKG_VERSION"))
-            .unwrap()
-            .to_string()
-    );
+    // A pre-release keeps its label, as Cargo wrote it.
+    assert_eq!(check.moved[0].now, env!("CARGO_PKG_VERSION"));
     assert_eq!(check.issued.sdk_version, Version::new(0, 0, 1));
     assert_eq!(
         check.now.sdk_version,
@@ -359,14 +367,14 @@ fn a_classical_ephemeris_opened_otherwise_is_not_shared() {
         ReceiptVerdict::Held
     );
     // Another Delta T under the same siddhanta would need it opened anew.
-    let mut other = own;
-    let knob = &mut other.settings.settings.time.delta_t;
-    *knob = if *knob == teistro::settings::DeltaT::EspenakMeeus2006 {
-        teistro::settings::DeltaT::StephensonMorrisonHohenkerk2016
-    } else {
-        teistro::settings::DeltaT::EspenakMeeus2006
-    };
-    other.settings.hash = other.settings.settings.hash();
+    let other = resettled(own, |settings| {
+        let knob = &mut settings.time.delta_t;
+        *knob = if *knob == teistro::settings::DeltaT::EspenakMeeus2006 {
+            teistro::settings::DeltaT::StephensonMorrisonHohenkerk2016
+        } else {
+            teistro::settings::DeltaT::EspenakMeeus2006
+        };
+    });
     let check = official.verify().receipt(&other.sealed());
     assert_eq!(cause(&check), NotRerunCause::Settings, "{check:?}");
     assert!(
@@ -376,6 +384,49 @@ fn a_classical_ephemeris_opened_otherwise_is_not_shared() {
             .detail
             .contains("`settings.time.delta_t`"),
         "the knob is named"
+    );
+}
+
+/// A receipt from a later build, whose settings carry a knob this build
+/// does not have, sealed as that build seals it, is no broken receipt: its
+/// digests hold to the bytes it carries, and the knob is named as why it
+/// was not answered again. So is one from an earlier build that lacks a
+/// knob this build has.
+#[test]
+fn a_receipt_from_another_builds_settings_is_not_broken() {
+    let sdk = context("nepali-drik");
+    let mut later = sankalpa(&sdk);
+    later.settings.settings["frame"]["futureKnob"] = "LATER".into();
+    later.settings.hash = content_hash(&later.settings.settings);
+    let later = later.sealed();
+    // Through its JSON, as a verifier is handed it.
+    let read = Receipt::from_json(&teistro_core::envelope::canonical_json(&later)).unwrap();
+    assert_eq!(read, later);
+    let check = sdk.verify().receipt(&read);
+    assert!(check.broken.is_empty(), "{check:?}");
+    assert_eq!(cause(&check), NotRerunCause::Settings);
+    assert!(
+        check
+            .reason
+            .unwrap()
+            .detail
+            .contains("settings.frame.futureKnob"),
+        "the knob is named"
+    );
+
+    let mut earlier = sankalpa(&sdk);
+    earlier.settings.settings["frame"]
+        .as_object_mut()
+        .unwrap()
+        .remove("node");
+    earlier.settings.hash = content_hash(&earlier.settings.settings);
+    let check = sdk.verify().receipt(&earlier.sealed());
+    assert!(check.broken.is_empty(), "{check:?}");
+    assert_eq!(cause(&check), NotRerunCause::Settings);
+    let detail = check.reason.unwrap().detail;
+    assert!(
+        detail.contains("settings.frame") && detail.contains("`node`"),
+        "{detail}"
     );
 }
 

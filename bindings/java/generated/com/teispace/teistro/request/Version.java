@@ -9,13 +9,14 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * A semantic version.
+ * A semantic version, with its pre-release label as written.
  *
  * @param major Major.
  * @param minor Minor.
  * @param patch Patch.
+ * @param pre The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release. Null leaves the SDK's default.
  */
-public record Version(int major, int minor, int patch) implements RequestJson {
+public record Version(int major, int minor, int patch, String pre) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -30,6 +31,92 @@ public record Version(int major, int minor, int patch) implements RequestJson {
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param major Major.
+     * @param minor Minor.
+     * @param patch Patch.
+     */
+    public Version(int major, int minor, int patch) {
+        this(major, minor, patch, null);
+    }
+
+    /**
+     * A builder, every field unset: an unset optional field is left out, and the
+     * SDK's default stands.
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /** Builds a {@link Version} a field at a time. */
+    public static final class Builder {
+        private Integer major;
+        private Integer minor;
+        private Integer patch;
+        private String pre;
+
+        private Builder() {}
+
+        /**
+         * Sets {@code major}.
+         *
+         * @param major Major.
+         * @return this builder
+         */
+        public Builder major(int major) {
+            this.major = major;
+            return this;
+        }
+
+        /**
+         * Sets {@code minor}.
+         *
+         * @param minor Minor.
+         * @return this builder
+         */
+        public Builder minor(int minor) {
+            this.minor = minor;
+            return this;
+        }
+
+        /**
+         * Sets {@code patch}.
+         *
+         * @param patch Patch.
+         * @return this builder
+         */
+        public Builder patch(int patch) {
+            this.patch = patch;
+            return this;
+        }
+
+        /**
+         * Sets {@code pre}.
+         *
+         * @param pre The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder pre(String pre) {
+            this.pre = pre;
+            return this;
+        }
+
+        /**
+         * The record.
+         *
+         * @return the record
+         * @throws NullPointerException naming a required field left unset
+         */
+        public Version build() {
+            return new Version(Objects.requireNonNull(major, "`Version.major` is required"), Objects.requireNonNull(minor, "`Version.minor` is required"), Objects.requireNonNull(patch, "`Version.patch` is required"), pre);
+        }
+    }
+
+    /**
      * A {@code Version} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
@@ -41,7 +128,8 @@ public record Version(int major, int minor, int patch) implements RequestJson {
         return new Version(
             Read.int32(Read.required(json.get("major"), "Version.major"), "Version.major"),
             Read.int32(Read.required(json.get("minor"), "Version.minor"), "Version.minor"),
-            Read.int32(Read.required(json.get("patch"), "Version.patch"), "Version.patch"));
+            Read.int32(Read.required(json.get("patch"), "Version.patch"), "Version.patch"),
+            Read.orNull(json.get("pre"), present -> Read.text(present, "Version.pre")));
     }
 
     @Override
@@ -50,6 +138,9 @@ public record Version(int major, int minor, int patch) implements RequestJson {
         json.put("major", major);
         json.put("minor", minor);
         json.put("patch", patch);
+        if (pre != null) {
+            json.put("pre", pre);
+        }
         return json;
     }
 }

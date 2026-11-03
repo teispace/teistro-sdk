@@ -2592,7 +2592,7 @@ export interface ReceiptProvider {
 }
 
 /**
- * A semantic version.
+ * A semantic version, with its pre-release label as written.
  */
 export interface Version {
   /**
@@ -2607,6 +2607,10 @@ export interface Version {
    * Patch.
    */
   readonly patch: number;
+  /**
+   * The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release.
+   */
+  readonly pre?: string | null;
 }
 
 /**
@@ -2614,7 +2618,7 @@ export interface Version {
  */
 export interface SettingsSnapshot {
   /**
-   * The SHA-256 of the settings' canonical JSON: the `settings_hash` a provenance carries.
+   * The SHA-256 of the document's canonical JSON: the `settings_hash` a provenance carries.
    */
   readonly hash: string;
   /**
@@ -2622,7 +2626,7 @@ export interface SettingsSnapshot {
    */
   readonly profile: string;
   /**
-   * The settings document, every knob, as `Context::settings_json` writes it. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.
+   * The settings document, every knob, as `Context::settings_json` writes it, and kept as it was read. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.
    */
   readonly settings: unknown;
 }

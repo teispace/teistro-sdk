@@ -2981,7 +2981,7 @@ class ReceiptProvider(TypedDict, total=False):
 
 
 class Version(TypedDict, total=False):
-    """A semantic version."""
+    """A semantic version, with its pre-release label as written."""
 
     major: Required[int]
     """Major."""
@@ -2992,18 +2992,21 @@ class Version(TypedDict, total=False):
     patch: Required[int]
     """Patch."""
 
+    pre: Optional[str]
+    """The pre-release label after `-`, as written (`rc.1` of `1.0.0-rc.1`); absent for a release."""
+
 
 class SettingsSnapshot(TypedDict, total=False):
     """The settings something was computed under, whole."""
 
     hash: Required[str]
-    """The SHA-256 of the settings' canonical JSON: the `settings_hash` a provenance carries."""
+    """The SHA-256 of the document's canonical JSON: the `settings_hash` a provenance carries."""
 
     profile: Required[str]
     """The profile the settings were resolved from."""
 
     settings: Required[Any]
-    """The settings document, every knob, as `Context::settings_json` writes it. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here."""
+    """The settings document, every knob, as `Context::settings_json` writes it, and kept as it was read. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here."""
 
 
 FirstYearAdhika: TypeAlias = Literal['ADHIKA', 'NIJA']

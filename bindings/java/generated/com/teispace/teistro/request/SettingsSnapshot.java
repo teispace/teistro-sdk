@@ -11,9 +11,9 @@ import java.util.Objects;
 /**
  * The settings something was computed under, whole.
  *
- * @param hash The SHA-256 of the settings' canonical JSON: the `settings_hash` a provenance carries.
+ * @param hash The SHA-256 of the document's canonical JSON: the `settings_hash` a provenance carries.
  * @param profile The profile the settings were resolved from.
- * @param settings The settings document, every knob, as `Context::settings_json` writes it. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.
+ * @param settings The settings document, every knob, as `Context::settings_json` writes it, and kept as it was read. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.
  */
 public record SettingsSnapshot(String hash, String profile, Object settings) implements RequestJson {
     /**

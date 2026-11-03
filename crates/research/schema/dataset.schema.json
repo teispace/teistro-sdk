@@ -181,7 +181,7 @@
       "properties": {
         "hash": {
           "$ref": "#/$defs/Hash",
-          "description": "The SHA-256 of the settings' canonical JSON: the `settings_hash` a provenance carries."
+          "description": "The SHA-256 of the document's canonical JSON: the `settings_hash` a provenance carries."
         },
         "profile": {
           "description": "The profile the settings were resolved from.",
@@ -189,7 +189,7 @@
         },
         "settings": {
           "additionalProperties": true,
-          "description": "The settings document, every knob, as `Context::settings_json` writes it. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.",
+          "description": "The settings document, every knob, as `Context::settings_json` writes it, and kept as it was read. Its schema is the settings document's (the MCP server's `settings.describe`), stated there rather than copied here.",
           "type": "object"
         }
       },
