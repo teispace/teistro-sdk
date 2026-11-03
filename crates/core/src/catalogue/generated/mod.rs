@@ -83,6 +83,7 @@ mod ruler_text;
 mod ruler_day_rule;
 mod paya;
 mod tridosha;
+mod mundane_kind;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -166,6 +167,7 @@ pub use ruler_text::*;
 pub use ruler_day_rule::*;
 pub use paya::*;
 pub use tridosha::*;
+pub use mundane_kind::*;
 
 use crate::key::KeyId;
 
@@ -263,6 +265,7 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::RulerDayRule => RulerDayRule::from_key(key).map(RulerDayRule::key_id),
         Kind::Paya => Paya::from_key(key).map(Paya::key_id),
         Kind::Tridosha => Tridosha::from_key(key).map(Tridosha::key_id),
+        Kind::MundaneKind => MundaneKind::from_key(key).map(MundaneKind::key_id),
         _ => None,
     }
 }
@@ -358,6 +361,7 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::RulerDayRule => RulerDayRule::from_id(id.id()).map(RulerDayRule::key),
         Kind::Paya => Paya::from_id(id.id()).map(Paya::key),
         Kind::Tridosha => Tridosha::from_id(id.id()).map(Tridosha::key),
+        Kind::MundaneKind => MundaneKind::from_id(id.id()).map(MundaneKind::key),
         _ => None,
     }
 }

@@ -336,7 +336,9 @@ enum Kind {
   /// The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107).
   paya(90, 'paya'),
   /// The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).
-  tridosha(91, 'tridosha');
+  tridosha(91, 'tridosha'),
+  /// Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).
+  mundaneKind(130, 'mundane_kind');
 
   const Kind(this.id, this.key);
 
@@ -2384,6 +2386,8 @@ enum ChartKind implements KeyOf<ChartKind> {
   relocated(5, 'RELOCATED'),
   /// Composite
   composite(6, 'COMPOSITE'),
+  /// Mundane: a chart of a year, a lunation, an eclipse or a conjunction, cast for a place (`03-design/mundane-charts.md`)
+  mundane(7, 'MUNDANE'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.
@@ -5250,6 +5254,69 @@ enum Tridosha implements KeyOf<Tridosha> {
 
   /// The member with a key, or `null` for one this build does not know.
   static Tridosha? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_MUNDANE_KIND << 16) | member`.
+enum MundaneKind implements KeyOf<MundaneKind> {
+  /// The Sun's entry into sidereal Mesha, which opens the solar year and names its minister (C1150)
+  meshaSankranti(0, 'MESHA_SANKRANTI'),
+  /// The Sun's entry into sidereal Makara, the turn to the northern course (uttarayana) (C1150)
+  makaraSankranti(1, 'MAKARA_SANKRANTI'),
+  /// The Sun at tropical 0°, the spring equinox, the starting point Ptolemy prefers (C1150)
+  ariesIngress(2, 'ARIES_INGRESS'),
+  /// The Sun at tropical 90°, the summer solstice, one of Ptolemy's four starting points (C1150)
+  cancerIngress(3, 'CANCER_INGRESS'),
+  /// The Sun at tropical 180°, the autumn equinox, one of Ptolemy's four starting points (C1150)
+  libraIngress(4, 'LIBRA_INGRESS'),
+  /// The Sun at tropical 270°, the winter solstice, one of Ptolemy's four starting points (C1150)
+  capricornIngress(5, 'CAPRICORN_INGRESS'),
+  /// The last new moon before an ingress: before Mesha, the new moon that opens Chaitra, whose weekday's lord rules the year (C1151)
+  newMoonBeforeIngress(6, 'NEW_MOON_BEFORE_INGRESS'),
+  /// The last full moon before an ingress (C1151)
+  fullMoonBeforeIngress(7, 'FULL_MOON_BEFORE_INGRESS'),
+  /// Whichever of the new and the full moon most nearly precedes an ingress, Ptolemy's own reading (C1151)
+  syzygyBeforeIngress(8, 'SYZYGY_BEFORE_INGRESS'),
+  /// The next solar eclipse, at its greatest (C1154)
+  solarEclipse(9, 'SOLAR_ECLIPSE'),
+  /// The next lunar eclipse, at its greatest (C1154)
+  lunarEclipse(10, 'LUNAR_ECLIPSE'),
+  /// The next conjunction of Jupiter and Saturn in geocentric longitude, the first of a triple one (C1153)
+  greatConjunction(11, 'GREAT_CONJUNCTION'),
+  /// An event on record: a name, an instant and a place, cast as given, its source carried on the answer
+  event(12, 'EVENT'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const MundaneKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'mundane_kind.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<MundaneKind> registered(String key) => Registered._('mundane_kind.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static MundaneKind byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => MundaneKind.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static MundaneKind? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

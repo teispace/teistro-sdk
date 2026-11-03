@@ -412,7 +412,12 @@ public enum Kind implements Member {
     /**
      * The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).
      */
-    TRIDOSHA(91, "tridosha");
+    TRIDOSHA(91, "tridosha"),
+
+    /**
+     * Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).
+     */
+    MUNDANE_KIND(130, "mundane_kind");
 
     private static final Kind[] MEMBERS = values();
 

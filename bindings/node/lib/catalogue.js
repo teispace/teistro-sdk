@@ -299,6 +299,7 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   RulerDayRule: 'ruler_day_rule',
   Paya: 'paya',
   Tridosha: 'tridosha',
+  MundaneKind: 'mundane_kind',
 });
 
 /**
@@ -387,6 +388,7 @@ export const KindById = /* @__PURE__ */ new Map([
   [84, 'ruler_day_rule'],
   [90, 'paya'],
   [91, 'tridosha'],
+  [130, 'mundane_kind'],
 ]);
 
 /** Every Graha by name. */
@@ -1647,6 +1649,7 @@ export const ChartKind = /* @__PURE__ */ Object.freeze({
   Return: 'chart_kind.RETURN',
   Relocated: 'chart_kind.RELOCATED',
   Composite: 'chart_kind.COMPOSITE',
+  Mundane: 'chart_kind.MUNDANE',
 });
 
 /**
@@ -1661,6 +1664,7 @@ export const ChartKindById = /* @__PURE__ */ new Map([
   [4, 'chart_kind.RETURN'],
   [5, 'chart_kind.RELOCATED'],
   [6, 'chart_kind.COMPOSITE'],
+  [7, 'chart_kind.MUNDANE'],
 ]);
 
 /** Every Point by name. */
@@ -3174,6 +3178,43 @@ export const TridoshaById = /* @__PURE__ */ new Map([
   [0, 'tridosha.VATA'],
   [1, 'tridosha.PITTA'],
   [2, 'tridosha.KAPHA'],
+]);
+
+/** Every MundaneKind by name. */
+export const MundaneKind = /* @__PURE__ */ Object.freeze({
+  MeshaSankranti: 'mundane_kind.MESHA_SANKRANTI',
+  MakaraSankranti: 'mundane_kind.MAKARA_SANKRANTI',
+  AriesIngress: 'mundane_kind.ARIES_INGRESS',
+  CancerIngress: 'mundane_kind.CANCER_INGRESS',
+  LibraIngress: 'mundane_kind.LIBRA_INGRESS',
+  CapricornIngress: 'mundane_kind.CAPRICORN_INGRESS',
+  NewMoonBeforeIngress: 'mundane_kind.NEW_MOON_BEFORE_INGRESS',
+  FullMoonBeforeIngress: 'mundane_kind.FULL_MOON_BEFORE_INGRESS',
+  SyzygyBeforeIngress: 'mundane_kind.SYZYGY_BEFORE_INGRESS',
+  SolarEclipse: 'mundane_kind.SOLAR_ECLIPSE',
+  LunarEclipse: 'mundane_kind.LUNAR_ECLIPSE',
+  GreatConjunction: 'mundane_kind.GREAT_CONJUNCTION',
+  Event: 'mundane_kind.EVENT',
+});
+
+/**
+ * Every MundaneKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const MundaneKindById = /* @__PURE__ */ new Map([
+  [0, 'mundane_kind.MESHA_SANKRANTI'],
+  [1, 'mundane_kind.MAKARA_SANKRANTI'],
+  [2, 'mundane_kind.ARIES_INGRESS'],
+  [3, 'mundane_kind.CANCER_INGRESS'],
+  [4, 'mundane_kind.LIBRA_INGRESS'],
+  [5, 'mundane_kind.CAPRICORN_INGRESS'],
+  [6, 'mundane_kind.NEW_MOON_BEFORE_INGRESS'],
+  [7, 'mundane_kind.FULL_MOON_BEFORE_INGRESS'],
+  [8, 'mundane_kind.SYZYGY_BEFORE_INGRESS'],
+  [9, 'mundane_kind.SOLAR_ECLIPSE'],
+  [10, 'mundane_kind.LUNAR_ECLIPSE'],
+  [11, 'mundane_kind.GREAT_CONJUNCTION'],
+  [12, 'mundane_kind.EVENT'],
 ]);
 
 /** Every Status by name. */

@@ -186,9 +186,11 @@ pub enum Kind {
     Paya = 90,
     /// The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).
     Tridosha = 91,
+    /// Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).
+    MundaneKind = 130,
 }
 
-const BY_NAME: [(&str, Kind); 85] = [
+const BY_NAME: [(&str, Kind); 86] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -237,6 +239,7 @@ const BY_NAME: [(&str, Kind); 85] = [
     ("modality", Kind::Modality),
     ("muhurta_nature", Kind::MuhurtaNature),
     ("muhurta_yoga", Kind::MuhurtaYoga),
+    ("mundane_kind", Kind::MundaneKind),
     ("nadi", Kind::Nadi),
     ("nakshatra", Kind::Nakshatra),
     ("nature", Kind::Nature),
@@ -278,7 +281,7 @@ const BY_NAME: [(&str, Kind); 85] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 85] = [
+    pub const ALL: [Kind; 86] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -364,6 +367,7 @@ impl Kind {
         Kind::RulerDayRule,
         Kind::Paya,
         Kind::Tridosha,
+        Kind::MundaneKind,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -461,6 +465,7 @@ impl Kind {
             Kind::RulerDayRule => "ruler_day_rule",
             Kind::Paya => "paya",
             Kind::Tridosha => "tridosha",
+            Kind::MundaneKind => "mundane_kind",
         }
     }
 
@@ -516,7 +521,7 @@ impl Kind {
             Kind::BalaScheme => 2,
             Kind::Koota => 12,
             Kind::CharaKaraka => 8,
-            Kind::ChartKind => 7,
+            Kind::ChartKind => 8,
             Kind::Point => 49,
             Kind::Rule => 0,
             Kind::MuhurtaNature => 7,
@@ -572,6 +577,7 @@ impl Kind {
             Kind::RulerDayRule => 5,
             Kind::Paya => 4,
             Kind::Tridosha => 3,
+            Kind::MundaneKind => 13,
         }
     }
 
@@ -684,6 +690,7 @@ impl Kind {
             84 => Some(Kind::RulerDayRule),
             90 => Some(Kind::Paya),
             91 => Some(Kind::Tridosha),
+            130 => Some(Kind::MundaneKind),
             _ => None,
         }
     }

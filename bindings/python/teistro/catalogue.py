@@ -321,6 +321,9 @@ class Kind(Member):
     tridosha = 91
     """The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110)."""
 
+    mundane_kind = 130
+    """Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`)."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -2001,6 +2004,9 @@ class ChartKind(Catalogued):
 
     COMPOSITE = 6
     """Composite"""
+
+    MUNDANE = 7
+    """Mundane: a chart of a year, a lunation, an eclipse or a conjunction, cast for a place (`03-design/mundane-charts.md`)"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -3888,6 +3894,54 @@ class Tridosha(Catalogued):
 
     KAPHA = 2
     """Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class MundaneKind(Catalogued):
+    """Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_MUNDANE_KIND << 16) | member`."""
+
+    MESHA_SANKRANTI = 0
+    """The Sun's entry into sidereal Mesha, which opens the solar year and names its minister (C1150)"""
+
+    MAKARA_SANKRANTI = 1
+    """The Sun's entry into sidereal Makara, the turn to the northern course (uttarayana) (C1150)"""
+
+    ARIES_INGRESS = 2
+    """The Sun at tropical 0°, the spring equinox, the starting point Ptolemy prefers (C1150)"""
+
+    CANCER_INGRESS = 3
+    """The Sun at tropical 90°, the summer solstice, one of Ptolemy's four starting points (C1150)"""
+
+    LIBRA_INGRESS = 4
+    """The Sun at tropical 180°, the autumn equinox, one of Ptolemy's four starting points (C1150)"""
+
+    CAPRICORN_INGRESS = 5
+    """The Sun at tropical 270°, the winter solstice, one of Ptolemy's four starting points (C1150)"""
+
+    NEW_MOON_BEFORE_INGRESS = 6
+    """The last new moon before an ingress: before Mesha, the new moon that opens Chaitra, whose weekday's lord rules the year (C1151)"""
+
+    FULL_MOON_BEFORE_INGRESS = 7
+    """The last full moon before an ingress (C1151)"""
+
+    SYZYGY_BEFORE_INGRESS = 8
+    """Whichever of the new and the full moon most nearly precedes an ingress, Ptolemy's own reading (C1151)"""
+
+    SOLAR_ECLIPSE = 9
+    """The next solar eclipse, at its greatest (C1154)"""
+
+    LUNAR_ECLIPSE = 10
+    """The next lunar eclipse, at its greatest (C1154)"""
+
+    GREAT_CONJUNCTION = 11
+    """The next conjunction of Jupiter and Saturn in geocentric longitude, the first of a triple one (C1153)"""
+
+    EVENT = 12
+    """An event on record: a name, an instant and a place, cast as given, its source carried on the answer"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -6165,6 +6219,7 @@ _KEYS: dict[str, dict[int, str]] = {
         84: "ruler_day_rule",
         90: "paya",
         91: "tridosha",
+        130: "mundane_kind",
     },
     "Graha": {
         0: "SUN",
@@ -6726,6 +6781,7 @@ _KEYS: dict[str, dict[int, str]] = {
         4: "RETURN",
         5: "RELOCATED",
         6: "COMPOSITE",
+        7: "MUNDANE",
         -1: "UNKNOWN",
     },
     "Point": {
@@ -7355,6 +7411,22 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "VATA",
         1: "PITTA",
         2: "KAPHA",
+        -1: "UNKNOWN",
+    },
+    "MundaneKind": {
+        0: "MESHA_SANKRANTI",
+        1: "MAKARA_SANKRANTI",
+        2: "ARIES_INGRESS",
+        3: "CANCER_INGRESS",
+        4: "LIBRA_INGRESS",
+        5: "CAPRICORN_INGRESS",
+        6: "NEW_MOON_BEFORE_INGRESS",
+        7: "FULL_MOON_BEFORE_INGRESS",
+        8: "SYZYGY_BEFORE_INGRESS",
+        9: "SOLAR_ECLIPSE",
+        10: "LUNAR_ECLIPSE",
+        11: "GREAT_CONJUNCTION",
+        12: "EVENT",
         -1: "UNKNOWN",
     },
     "Status": {
@@ -8128,4 +8200,5 @@ _KINDS: dict[str, str] = {
     "RulerDayRule": "ruler_day_rule",
     "Paya": "paya",
     "Tridosha": "tridosha",
+    "MundaneKind": "mundane_kind",
 }

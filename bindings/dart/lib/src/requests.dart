@@ -1025,6 +1025,44 @@ final class CalendarAsked extends _Request {
   List<Object?> get _fields => [calendar, date, into];
 }
 
+/// The lines of a map at one instant.
+final class AstrocartographyRequest extends _Request {
+  const AstrocartographyRequest({
+    this.bodies,
+    required this.instant,
+    this.latitudeLimitDeg = 80.0,
+    this.projection = Projection.inMundo,
+    this.stepDeg = 1.0,
+  });
+
+  /// The bodies, in the order their lines are answered; none for the seven and whichever outer planets the profile places.
+  final List<Graha>? bodies;
+
+  /// The instant, a Julian day (UTC).
+  final double instant;
+
+  /// The furthest latitude sampled north and south, degrees, above zero and below ninety; eighty by default.
+  final double latitudeLimitDeg;
+
+  /// In mundo, the default, or zodiacal (C1155).
+  final Projection projection;
+
+  /// The step of latitude between a line's points, degrees, above zero and at most ten; one by default.
+  final double stepDeg;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (bodies case final bodiesValue?) 'bodies': [for (final e0 in bodiesValue) e0.key],
+    'instant': instant,
+    'latitudeLimitDeg': latitudeLimitDeg,
+    'projection': projection.key,
+    'stepDeg': stepDeg,
+  };
+
+  @override
+  List<Object?> get _fields => [bodies, instant, latitudeLimitDeg, projection, stepDeg];
+}
+
 /// Two charts compared: `first` founded under the call's context, `second` (the first's birth again when left out) under the other's, and `at` the UTC Julian day the running dasha lords are compared at (each birth's own when left out).
 final class ChartDisagreementsRequest extends _Request {
   const ChartDisagreementsRequest({
@@ -1286,6 +1324,64 @@ final class ChartFoundRequest extends _Request {
   List<Object?> get _fields => [altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, dossier, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, latitudeDeg, longitudeDeg, lots, masaPravesha, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, utcOffsetSeconds, vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernConfigurations, westernHouses];
 }
 
+/// A mundane chart as a binding asks for it: a kind, when to look from (a `year` or an instant `from`), or the `event` an `EVENT` casts, and the place the chart is cast for.
+final class MundaneRequest extends _Request {
+  const MundaneRequest({
+    this.altitudeM = 0.0,
+    this.event,
+    this.from,
+    this.ingress,
+    required this.kind,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+    this.utcOffsetSeconds = 0,
+    this.year,
+  });
+
+  /// The place's altitude, metres.
+  final double altitudeM;
+
+  /// For an `EVENT`, the event on record.
+  final MundaneEvent? event;
+
+  /// The instant the search starts at, a Julian day (UTC): the first ingress, eclipse or conjunction at or after it.
+  final double? from;
+
+  /// For a lunation, the ingress it precedes; `MESHA_SANKRANTI` when left out, the new moon that opens Chaitra (C1151).
+  final MundaneKind? ingress;
+
+  /// Which chart.
+  final MundaneKind kind;
+
+  /// The place's latitude, degrees, north positive (C1152).
+  final double latitudeDeg;
+
+  /// The place's longitude, degrees, east positive.
+  final double longitudeDeg;
+
+  /// The local clock's offset from UTC, seconds, east positive.
+  final int utcOffsetSeconds;
+
+  /// The year (Gregorian) whose ingress, or whose first eclipse or conjunction after 1 January 0h UTC, is asked; or name `from`.
+  final int? year;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    if (event case final eventValue?) 'event': eventValue._wire,
+    if (from case final fromValue?) 'from': fromValue,
+    if (ingress case final ingressValue?) 'ingress': ingressValue.key,
+    'kind': kind.key,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+    'utcOffsetSeconds': utcOffsetSeconds,
+    if (year case final yearValue?) 'year': yearValue,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, event, from, ingress, kind, latitudeDeg, longitudeDeg, utcOffsetSeconds, year];
+}
+
 /// Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked.
 final class BatchAsked extends _Request {
   const BatchAsked({
@@ -1305,6 +1401,34 @@ final class BatchAsked extends _Request {
 
   @override
   List<Object?> get _fields => [baseline, periods];
+}
+
+/// A chart's instant recast at other places.
+final class RelocationRequest extends _Request {
+  const RelocationRequest({
+    this.houseSystem,
+    required this.instant,
+    required this.places,
+  });
+
+  /// The house division; the profile's Western override, else Placidus, when left out (C1157).
+  final HouseSystem? houseSystem;
+
+  /// The chart's instant, a Julian day (UTC).
+  final double instant;
+
+  /// The places, one to 256.
+  final List<RelocationPlace> places;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (houseSystem case final houseSystemValue?) 'houseSystem': houseSystemValue.key,
+    'instant': instant,
+    'places': [for (final e0 in places) e0._wire],
+  };
+
+  @override
+  List<Object?> get _fields => [houseSystem, instant, places];
 }
 
 /// What a caller asks to be written: a date in any calendar, and how.
@@ -2709,6 +2833,20 @@ enum AyanaReckoning implements _Keyed {
   final String key;
 }
 
+/// How a body is placed on the angles (C1155), written `"IN_MUNDO"` or `"ZODIACAL"`.
+enum Projection implements _Keyed {
+  /// The body where it stands, its ecliptic latitude kept, against the true horizon: the practice of astrocartography's maps.
+  inMundo('IN_MUNDO'),
+  /// The body's degree of the ecliptic, latitude zeroed: a point on a line has the body's longitude on the chart's own angle there.
+  zodiacal('ZODIACAL');
+
+  const Projection(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// A drawing: a layout of a divisional chart.
 final class DrawingAsked extends _Request {
   const DrawingAsked({
@@ -3182,6 +3320,34 @@ final class HouseRequest extends _Request {
   List<Object?> get _fields => [system];
 }
 
+/// An event on record, cast as given (`EVENT`).
+final class MundaneEvent extends _Request {
+  const MundaneEvent({
+    required this.instant,
+    required this.name,
+    required this.source,
+  });
+
+  /// When, a Julian day (UTC).
+  final double instant;
+
+  /// What happened.
+  final String name;
+
+  /// Where the record of it comes from, carried on the answer.
+  final String source;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'instant': instant,
+    'name': name,
+    'source': source,
+  };
+
+  @override
+  List<Object?> get _fields => [instant, name, source];
+}
+
 /// The period a score is weighed for, which sets the Moon's weight.
 enum BaselinePeriod implements _Keyed {
   /// A day: the Moon weighs 5.
@@ -3251,6 +3417,34 @@ final class PeriodAsked extends _Request {
 
   @override
   List<Object?> get _fields => [altitudeM, calendar, events, first, last, latitudeDeg, longitudeDeg, snapshot, spells, utcOffsetSeconds];
+}
+
+/// A place a chart is recast at.
+final class RelocationPlace extends _Request {
+  const RelocationPlace({
+    this.altitudeM = 0.0,
+    required this.latitudeDeg,
+    required this.longitudeDeg,
+  });
+
+  /// Altitude, metres.
+  final double altitudeM;
+
+  /// Latitude, degrees, north positive.
+  final double latitudeDeg;
+
+  /// Longitude, degrees, east positive.
+  final double longitudeDeg;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'latitudeDeg': latitudeDeg,
+    'longitudeDeg': longitudeDeg,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg];
 }
 
 /// A day in any calendar as a request writes it: the date without how it was resolved, which only an answer can say.
