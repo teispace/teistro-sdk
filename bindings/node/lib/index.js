@@ -8503,6 +8503,44 @@ export class AlmanacArea extends Area {
   }
 
   /**
+   * **A building's measure read by remainders** under one vastu text
+   * (`03-design/aayadi.md`): `system` is `MAYAMATA`, `MANASARA`,
+   * `SAMARANGANA` or `CHINTAMANI`, `length` and `breadth` the two sides in
+   * whole units of the caller's choosing (1 to 1 000 000), `owner` the
+   * owner's star for the clauses that read it, and `measure`, for
+   * `MANASARA` only, the measure its six reckonings take. It answers each
+   * quantity the system reckons, the vyaya's kind and the tara where it
+   * reads them, and each clause it judges, never one verdict. It reads no
+   * sky.
+   *
+   * @example
+   * const reading = ctx.almanac.aayadi({ system: 'CHINTAMANI', length: 29, breadth: 7, owner: 'nakshatra.ANURADHA' });
+   * reading.quantities[5].nakshatra; // 'nakshatra.ROHINI'
+   *
+   * @param {object} asked `{ system, length, breadth, owner?, measure? }`
+   * @returns {object}
+   */
+  aayadi(asked) {
+    if (asked === null || typeof asked !== 'object') {
+      throw new TypeError("aayadi: expected { system, length, breadth }, e.g. { system: 'CHINTAMANI', length: 29, breadth: 7 }");
+    }
+    const read = JSON.parse(run(this, (inner) => inner.aayadi(JSON.stringify(asked))));
+    const keyed = (kind, key) => (key == null ? null : `${kind}.${key}`);
+    return deepFreeze({
+      ...read,
+      quantities: read.quantities.map((reckoned) => ({
+        ...reckoned,
+        yoni: keyed('vastu_yoni', reckoned.yoni),
+        nakshatra: keyed('nakshatra', reckoned.nakshatra),
+        vara: keyed('vara', reckoned.vara),
+        tithi: keyed('tithi', reckoned.tithi),
+        yoga: keyed('yoga', reckoned.yoga),
+      })),
+      vyaya: keyed('vyaya_kind', read.vyaya),
+    });
+  }
+
+  /**
    * **Where this context's reckoning and another's disagree**, and why
    * (`03-design/setup-disagreements.md`): the official day an app shows
    * beside the modern one. `days` holds only the days on which some

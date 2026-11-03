@@ -6002,6 +6002,33 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// A building's measure read under one system: `{"system", "quantities",
+    /// "vyaya", "tara", "clauses", "unjudged"}`, each quantity `{"quantity",
+    /// "measure", "value", "multiplier", "divisor", "quotient", "remainder",
+    /// "count", "yoni", "nakshatra", "vara", "tithi", "yoga", "source"}` and
+    /// each clause `{"clause", "holds", "source"}` (C1190 to C1199).
+    ///
+    /// `request_json` is `{"system", "length", "breadth", "owner"?,
+    /// "measure"?}`: `MAYAMATA`, `MANASARA`, `SAMARANGANA` or `CHINTAMANI`,
+    /// the two sides in whole units (1 to 1 000 000), the owner's nakshatra
+    /// key, and for `MANASARA` only the measure. A key the record does not
+    /// read, a side out of range or a measure asked of another system is
+    /// `INVALID_ARG`, named under `aayadi`.
+    #[wasm_bindgen(js_name = aayadi)]
+    pub fn aayadi(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::aayadi::ts_aayadi(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Every claim a text makes of the time, each judged against what
     /// `almanac.sankalpa` computes at the instant and the place
     /// (`03-design/lexicon.md` §3), answered with `{value, provenance}` as

@@ -1881,6 +1881,36 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a measure reads into its aayadi without a sky", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
+                // Muhurta Chintamani XII v. 3 with Mahidhara's gloss: Anuradha's owner,
+                // Rohini and the lion give 203, 29 by 7 hastas.
+                Aayadi reading = sky.almanac().aayadi(com.teispace.teistro.request.AayadiSystem.CHINTAMANI, 29, 7,
+                        Nakshatra.ANURADHA, null);
+                same(List.of(3, 7, 3, 4, 1, 4, 4, 2, 64, 4),
+                        reading.quantities().stream().map(AayadiReckoned::count).toList(), "v. 11's ten counts");
+                AayadiReckoned aaya = reading.get(AayadiQuantity.AAYA);
+                same(203L, aaya.value(), "the area");
+                same(VastuYoni.SIMHA, aaya.yoni(), "the lion");
+                same(Nakshatra.ROHINI, reading.get(AayadiQuantity.NAKSHATRA).nakshatra(), "Rohini");
+                same(Vara.SHANIVARA, reading.get(AayadiQuantity.VARA).vara(), "Saturday");
+                check(reading.get(AayadiQuantity.YONI) == null, "no yoni of its own");
+                same(com.teispace.teistro.request.Tara.SADHANA, reading.tara(), "Anuradha to Rohini");
+                same(Boolean.TRUE, reading.holds(AayadiClauseKey.AAYA_ODD), "an odd aaya");
+                check(reading.holds(AayadiClauseKey.YONI_GOOD) == null, "a clause it does not judge");
+                Aayadi samarangana = sky.almanac().aayadi(com.teispace.teistro.request.AayadiSystem.SAMARANGANA, 29, 7,
+                        null, null);
+                same(VyayaKind.RAKSHASA, samarangana.vyaya(), "a greater vyaya");
+                check(samarangana.unjudged().contains(AayadiUnjudged.AMSHA), "the amsha unjudged");
+                same("aayadi.length", refusal(() -> sky.almanac().aayadi(
+                        com.teispace.teistro.request.AayadiSystem.MAYAMATA, 0, 7, null, null)).field(), "a zero side");
+                same("aayadi.measure", refusal(() -> sky.almanac().aayadi(
+                        com.teispace.teistro.request.AayadiSystem.MAYAMATA, 7, 7, null,
+                        com.teispace.teistro.request.ManasaraMeasure.SUM)).field(), "a measure Mayamata does not take");
+                same("system", refusal(() -> sky.almanac().aayadi(null, 7, 7, null, null)).field(), "a null system");
+            }
+        });
+
         tests.put("the areas beside the chart answer", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.BUILTIN).build())) {

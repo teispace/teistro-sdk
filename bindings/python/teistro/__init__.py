@@ -540,6 +540,7 @@ from ._requests import (
     NamingSuggestRequest as NamingSuggestRequest,
     NamingSyllablesRequest as NamingSyllablesRequest,
     NavataraRequest as NavataraRequest,
+    AayadiRequest as AayadiRequest,
     NasalInitial as NasalInitial,
     SuggestFilter as SuggestFilter,
     SyllablesOf as SyllablesOf,
@@ -855,8 +856,12 @@ from ._requests import (
     MonthWithSun as MonthWithSun,
     GhataRow as GhataRow,
     Tara as Tara,
+    AayadiSystem as AayadiSystem,
+    ManasaraMeasure as ManasaraMeasure,
 )
 from .catalogue import (
+    VastuYoni,
+    VyayaKind,
     FestivalKind,
     FastKind,
     Tradition,
@@ -1467,6 +1472,13 @@ __all__ = [
     "NumerologyProfile",
     "NavataraRow",
     "SpecialStar",
+    "Aayadi",
+    "AayadiReckoned",
+    "AayadiClause",
+    "AayadiQuantity",
+    "AayadiMeasure",
+    "AayadiClauseKey",
+    "AayadiUnjudged",
     "NamingArea",
     "Birth",
     "Book",
@@ -2193,6 +2205,8 @@ __all__ = [
     "State",
     "Tatwa",
     "Tridosha",
+    "VastuYoni",
+    "VyayaKind",
     "Tithi",
     "TithiClass",
     "Vara",
@@ -4367,6 +4381,36 @@ class AlmanacArea(_Area):
         """
         read = json.loads(self._context.inner.navatara(json.dumps({"birth": _member_key(birth)})))
         return tuple(NavataraRow._of(row) for row in read)
+
+    def aayadi(
+        self,
+        system: "AayadiSystem",
+        length: int,
+        breadth: int,
+        *,
+        owner: Union[Nakshatra, str, None] = None,
+        measure: Optional["ManasaraMeasure"] = None,
+    ) -> "Aayadi":
+        """**A building's measure read by remainders** under one vastu
+        text (`03-design/aayadi.md`): `MAYAMATA`, `MANASARA`, `SAMARANGANA`
+        or `CHINTAMANI`, the two sides in whole units of the caller's
+        choosing (1 to 1 000 000), the owner's star for the clauses that
+        read it, and for `MANASARA` only the measure (the split by
+        default). It answers each quantity the system reckons, the vyaya's
+        kind and the tara where it reads them, and each clause it judges,
+        never one verdict. It reads no sky. A side out of range is refused
+        as `aayadi.length` or `aayadi.breadth`, a measure asked of another
+        system as `aayadi.measure`.
+
+        >>> # reading = ctx.almanac.aayadi("CHINTAMANI", 29, 7, owner=Nakshatra.ANURADHA)
+        >>> # reading.get("NAKSHATRA").nakshatra  # Nakshatra.ROHINI
+        """
+        asked: Dict[str, Any] = {"system": system, "length": length, "breadth": breadth}
+        if owner is not None:
+            asked["owner"] = _member_key(owner)
+        if measure is not None:
+            asked["measure"] = measure
+        return Aayadi._of(json.loads(self._context.inner.aayadi(json.dumps(asked))))
 
     def disagreements(
         self,
@@ -9411,6 +9455,132 @@ class NavataraRow:
             tara=raw["tara"],
             cycle=raw["cycle"],
             special=raw["special"],
+        )
+
+
+AayadiQuantity = Literal["AAYA", "VYAYA", "YONI", "NAKSHATRA", "VARA", "TITHI", "AMSHA", "DHANA", "RINA", "YOGA", "AYU"]
+"""What an aayadi reckoning's remainder names (`03-design/aayadi.md`)."""
+
+AayadiMeasure = Literal["SUM", "LENGTH", "BREADTH", "PERIMETER", "AREA", "HOUSE_STAR"]
+"""The measure a reckoning starts from: the sum of the sides, a side, the
+perimeter, the area, or the house's nakshatra count (the vyaya of
+*Samarangana* and *Muhurta Chintamani*)."""
+
+AayadiClauseKey = Literal[
+    "YONI_GOOD",
+    "AAYA_EXCEEDS_VYAYA",
+    "VARA_GOOD",
+    "VYAYA_LESS_THAN_AAYA",
+    "VYAYA_PRESENT",
+    "TARA_NOT_AVOIDED",
+    "GANA_SAME",
+    "AAYA_ODD",
+    "DHANA_EXCEEDS_RINA",
+    "TITHI_NOT_RIKTA",
+    "OWNER_STAR_DIFFERS",
+]
+"""A condition a vastu text judges a measure by."""
+
+AayadiUnjudged = Literal[
+    "OWNER_STARS", "NAKSHATRA_AGAINST_OWNER", "AMSHA", "HOUSE_NAME", "SIGNS", "LIFE", "KARANAS", "NEW_MOON", "YOGAS"
+]
+"""What a text asks of a measure that the reckoning is not given."""
+
+
+@dataclass(frozen=True)
+class AayadiReckoned:
+    """One reckoning: a measure times a multiplier, divided by the size of
+    a series, and the member its remainder names."""
+
+    quantity: AayadiQuantity
+    measure: AayadiMeasure
+    value: int
+    multiplier: int
+    divisor: int
+    quotient: int
+    """The quotient: *Mayamata* IX v. 22 reads the nakshatra's as the
+    building's age."""
+
+    remainder: int
+    count: int
+    """The member's place, 1 to the divisor: a remainder of 0 counts as
+    the last (crux C1192)."""
+
+    yoni: Optional[VastuYoni]
+    nakshatra: Optional[Nakshatra]
+    vara: Optional[Vara]
+    tithi: Optional[Tithi]
+    yoga: Optional[Yoga]
+    source: str
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "AayadiReckoned":
+        def maybe(kind: Any, key: Optional[str]) -> Any:
+            return None if key is None else _member(kind, key)
+
+        return AayadiReckoned(
+            quantity=raw["quantity"],
+            measure=raw["measure"],
+            value=raw["value"],
+            multiplier=raw["multiplier"],
+            divisor=raw["divisor"],
+            quotient=raw["quotient"],
+            remainder=raw["remainder"],
+            count=raw["count"],
+            yoni=maybe(VastuYoni, raw["yoni"]),
+            nakshatra=maybe(Nakshatra, raw["nakshatra"]),
+            vara=maybe(Vara, raw["vara"]),
+            tithi=maybe(Tithi, raw["tithi"]),
+            yoga=maybe(Yoga, raw["yoga"]),
+            source=raw["source"],
+        )
+
+
+@dataclass(frozen=True)
+class AayadiClause:
+    """A clause a text judges, and whether it holds (the good reading)."""
+
+    clause: AayadiClauseKey
+    holds: bool
+    source: str
+
+
+@dataclass(frozen=True)
+class Aayadi:
+    """A measure read by one system (`03-design/aayadi.md`)."""
+
+    system: "AayadiSystem"
+    quantities: Tuple[AayadiReckoned, ...]
+    vyaya: Optional[VyayaKind]
+    """*Samarangana*'s vyaya by its size beside the aaya, for that system
+    alone."""
+
+    tara: Optional[Tara]
+    """The tara from the owner's star to the house's, where read."""
+
+    clauses: Tuple[AayadiClause, ...]
+    unjudged: Tuple[AayadiUnjudged, ...]
+
+    def get(self, quantity: AayadiQuantity) -> Optional[AayadiReckoned]:
+        """The reckoning of a quantity, if the system names it."""
+        return next((reckoned for reckoned in self.quantities if reckoned.quantity == quantity), None)
+
+    def holds(self, clause: AayadiClauseKey) -> Optional[bool]:
+        """Whether a clause holds, if the system judged it."""
+        return next((judged.holds for judged in self.clauses if judged.clause == clause), None)
+
+    @staticmethod
+    def _of(raw: Mapping[str, Any]) -> "Aayadi":
+        return Aayadi(
+            system=raw["system"],
+            quantities=tuple(AayadiReckoned._of(reckoned) for reckoned in raw["quantities"]),
+            vyaya=None if raw["vyaya"] is None else _member(VyayaKind, raw["vyaya"]),
+            tara=raw["tara"],
+            clauses=tuple(
+                AayadiClause(clause=judged["clause"], holds=judged["holds"], source=judged["source"])
+                for judged in raw["clauses"]
+            ),
+            unjudged=tuple(raw["unjudged"]),
         )
 
 

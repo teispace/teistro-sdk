@@ -10,6 +10,7 @@ import java.util.function.Function;
 /** Each record entry point's request type, by the entry point's name. */
 public final class Requests {
     private static final Map<String, Function<Object, RequestJson>> READERS = Map.ofEntries(
+            Map.entry("almanac.aayadi", AayadiRequest::of),
             Map.entry("almanac.anniversaries", AnniversariesRequest::of),
             Map.entry("almanac.ashauch", AshauchQuery::of),
             Map.entry("almanac.ashauchKin", KinQuery::of),

@@ -141,6 +141,18 @@ days are unchanged; `GAUDIYA`'s answer gains the five festivals.
   `check-dossier-tokens` in fast-check: the dossier's tokens in keys and in each shipped locale's names over the
   corpus, by a documented dependency-free approximation (C1165).
 
+**Aayadi: a building's measure read by remainders.**
+**Numbers:** none: a new answer, and nothing it reads moves.
+- `AlmanacArea::aayadi`, the record `almanac.aayadi` (`AayadiRequest`, an agent server tool), `ts_aayadi` at
+  the C boundary (the `muhurta` family) and `almanac.aayadi` in every binding: a length and a breadth read
+  under *Mayamata* IX, *Manasara* IX, *Samarangana Sutradhara* XXVI or *Muhurta Chintamani* XII, each
+  quantity the text names (aaya, vyaya, yoni, nakshatra, weekday, tithi, and the Chintamani's amsha, wealth,
+  debt, yoga and age) with its measure, multiplier, divisor, remainder and member, Samarangana's vyaya kind,
+  the owner's tara, and every clause the text judges as holding or not, never one verdict; what a text asks
+  that the reckoning is not given is listed unjudged. `teistro_muhurta::aayadi::chintamani_area` runs
+  *Muhurta Chintamani* XII v. 3 backwards. Catalogue kinds 160 `vastu_yoni` and 161 `vyaya_kind` in en-Latn,
+  ne-Deva-NP and hi-Deva-IN (SR-35, `03-design/aayadi.md`, C1190 to C1199).
+
 **The navatara chakra.**
 **Numbers:** none: a new answer, and nothing it reads moves.
 - `AlmanacArea::navatara(birth)`, the record `almanac.navatara` (`NavataraRequest`, an agent server tool),

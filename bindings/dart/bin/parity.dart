@@ -3867,6 +3867,26 @@ void main() {
             '${row.special?.key ?? '-'}',
     ].join(' '),
   );
+  // The gloss's 29 by 7 hastas under Muhurta Chintamani and Samarangana:
+  // each quantity `QUANTITY:count`, the vyaya's kind, the tara, then each
+  // clause `CLAUSE:holds` (`03-design/aayadi.md`).
+  for (final (line, system, owner) in [
+    ('aayadi_chintamani', AayadiSystem.chintamani, Nakshatra.anuradha),
+    ('aayadi_samarangana', AayadiSystem.samarangana, Nakshatra.bharani),
+  ]) {
+    final reading = ctx.almanac.aayadi(system, 29, 7, owner: owner);
+    put(
+      line,
+      [
+        for (final reckoned in reading.quantities)
+          '${reckoned.quantity.key}:${reckoned.count}',
+        'vyaya:${reading.vyaya?.fullKey ?? '-'}',
+        'tara:${reading.tara?.key ?? '-'}',
+        for (final judged in reading.clauses)
+          '${judged.clause.key}:${judged.holds}',
+      ].join(' '),
+    );
+  }
   final eclipses =
       builtin.almanac
           .of(
@@ -4030,6 +4050,7 @@ void main() {
     ('almanac.ashauch', ctx.almanac.ashauch),
     ('almanac.first_year', ctx.almanac.firstYear),
     ('almanac.navatara', ctx.almanac.navatara),
+    ('almanac.aayadi', ctx.almanac.aayadi),
     ('almanac.published_reasons', ctx.almanac.publishedReasons),
     ('almanac.published_from_signed', ctx.almanac.publishedFromSigned),
     ('almanac.changes', ctx.almanac.changes),

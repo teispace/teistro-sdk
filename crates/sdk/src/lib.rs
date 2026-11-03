@@ -97,6 +97,8 @@ pub use area::{
 pub use area::{DaySentence, DaySentences, SentencesRequest};
 pub use area::{PackForm, PackListing, PackRequest, PackRow};
 pub use teistro_panchanga::festival::NextKind;
+#[cfg(feature = "muhurta")]
+mod aayadi_request;
 #[cfg(feature = "western")]
 mod antiscia;
 mod ashauch_request;
@@ -389,6 +391,9 @@ pub use crate::muhurta_request::{Activity, MuhurtaRequest};
 // The navatara chakra of a birth star (`03-design/navatara-chakra.md`).
 #[cfg(feature = "muhurta")]
 pub use crate::navatara_request::NavataraRequest;
+// A building's measure read by remainders (`03-design/aayadi.md`).
+#[cfg(feature = "muhurta")]
+pub use crate::aayadi_request::AayadiRequest;
 pub use crate::time_request::{
     AddRequest, BetweenRequest, CalendarReading, CalendarRequest, CivilReading, CivilRequest,
     ResolveRequest, ScaleRequest,

@@ -2469,6 +2469,26 @@ put(
   put('sky-view-ascendant', `${number(ascendant.longitudeDeg)} ${number(ascendant.azimuthDeg)}`);
 }
 
+// ── Aayadi ─────────────────────────────────────────────────────────────
+// The gloss's 29 by 7 hastas under Muhurta Chintamani and Samarangana:
+// each quantity `QUANTITY:count`, the vyaya's kind, the tara, then each
+// clause `CLAUSE:holds` (`03-design/aayadi.md`).
+for (const [line, system, owner] of [
+  ['aayadi_chintamani', 'CHINTAMANI', 'ANURADHA'],
+  ['aayadi_samarangana', 'SAMARANGANA', 'BHARANI'],
+]) {
+  const reading = ctx.almanac.aayadi({ system, length: 29, breadth: 7, owner });
+  put(
+    line,
+    [
+      ...reading.quantities.map((reckoned) => `${reckoned.quantity}:${reckoned.count}`),
+      `vyaya:${reading.vyaya ?? '-'}`,
+      `tara:${reading.tara ?? '-'}`,
+      ...reading.clauses.map((judged) => `${judged.clause}:${judged.holds}`),
+    ].join(' '),
+  );
+}
+
 // ── The eclipses ───────────────────────────────────────────────────────
 // September 2025 at Kathmandu over the built-in sky, which the test
 // provider cannot complete: a total lunar eclipse seen whole and a
@@ -2589,6 +2609,7 @@ for (const [path, member] of [
   ['almanac.ashauch', shape.almanac.ashauch],
   ['almanac.first_year', shape.almanac.firstYear],
   ['almanac.navatara', shape.almanac.navatara],
+  ['almanac.aayadi', shape.almanac.aayadi],
   ['almanac.published_reasons', shape.almanac.publishedReasons],
   ['almanac.published_from_signed', shape.almanac.publishedFromSigned],
   ['almanac.changes', shape.almanac.changes],

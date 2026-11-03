@@ -2260,6 +2260,44 @@ final class AlmanacArea extends _Area {
       NavataraRow._of(row! as Map<String, Object?>),
   ]);
 
+  /// **A building's measure read by remainders** under one vastu text
+  /// (`03-design/aayadi.md`): [length] and [breadth] in whole units of the
+  /// caller's choosing (1 to 1 000 000), [owner] the owner's star for the
+  /// clauses that read it, and [measure], for [AayadiSystem.manasara]
+  /// only, the measure its six reckonings take. It answers each quantity
+  /// the system reckons, the vyaya's kind and the tara where it reads
+  /// them, and each clause it judges, never one verdict. It reads no sky.
+  /// A side out of range is refused as `aayadi.length` or
+  /// `aayadi.breadth`, a measure asked of another system as
+  /// `aayadi.measure`.
+  ///
+  /// ```dart
+  /// final reading = sdk.almanac.aayadi(AayadiSystem.chintamani, 29, 7, owner: Nakshatra.anuradha);
+  /// reading.quantities[5].nakshatra; // Nakshatra.rohini
+  /// ```
+  Aayadi aayadi(
+    AayadiSystem system,
+    int length,
+    int breadth, {
+    Nakshatra? owner,
+    ManasaraMeasure? measure,
+  }) => Aayadi._of(
+    jsonDecode(
+          _context._guarded(
+            () => _context._inner.aayadi(
+              jsonEncode(<String, Object?>{
+                'system': system.key,
+                'length': length,
+                'breadth': breadth,
+                if (owner != null) 'owner': owner.key,
+                if (measure != null) 'measure': measure.key,
+              }),
+            ),
+          ),
+        )
+        as Map<String, Object?>,
+  );
+
   /// **Where this context's reckoning and [other]'s disagree**, and why
   /// (`03-design/setup-disagreements.md`): the official day an app shows
   /// beside the modern one. [Disagreements.days] holds only the days on
@@ -12302,6 +12340,373 @@ enum SpecialStar implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// What an aayadi reckoning's remainder names (`03-design/aayadi.md`).
+enum AayadiQuantity implements _Keyed {
+  /// The income.
+  aaya('AAYA'),
+
+  /// The expense.
+  vyaya('VYAYA'),
+
+  /// The eight from the banner.
+  yoni('YONI'),
+
+  /// The house's star.
+  nakshatra('NAKSHATRA'),
+
+  /// The weekday.
+  vara('VARA'),
+
+  /// The tithi.
+  tithi('TITHI'),
+
+  /// *Muhurta Chintamani*'s share.
+  amsha('AMSHA'),
+
+  /// Wealth.
+  dhana('DHANA'),
+
+  /// Debt.
+  rina('RINA'),
+
+  /// The yoga.
+  yoga('YOGA'),
+
+  /// The age.
+  ayu('AYU');
+
+  const AayadiQuantity(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The measure an aayadi reckoning starts from.
+enum AayadiMeasure implements _Keyed {
+  /// The length and the breadth together.
+  sum('SUM'),
+
+  /// The length.
+  length('LENGTH'),
+
+  /// The breadth.
+  breadth('BREADTH'),
+
+  /// Twice the sum.
+  perimeter('PERIMETER'),
+
+  /// The length times the breadth.
+  area('AREA'),
+
+  /// The house's nakshatra count (the vyaya of *Samarangana* and *Muhurta
+  /// Chintamani*).
+  houseStar('HOUSE_STAR');
+
+  const AayadiMeasure(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// A condition a vastu text judges a measure by.
+enum AayadiClauseKey implements _Keyed {
+  /// The yoni or eightfold aaya is a good one.
+  yoniGood('YONI_GOOD'),
+
+  /// The aaya's count above the vyaya's.
+  aayaExceedsVyaya('AAYA_EXCEEDS_VYAYA'),
+
+  /// A good weekday.
+  varaGood('VARA_GOOD'),
+
+  /// *Samarangana*'s lesser vyaya.
+  vyayaLessThanAaya('VYAYA_LESS_THAN_AAYA'),
+
+  /// *Samarangana*'s vyaya is not none.
+  vyayaPresent('VYAYA_PRESENT'),
+
+  /// The tara is not the 3rd, 5th or 7th.
+  taraNotAvoided('TARA_NOT_AVOIDED'),
+
+  /// The house's gana the owner's.
+  ganaSame('GANA_SAME'),
+
+  /// An odd aaya.
+  aayaOdd('AAYA_ODD'),
+
+  /// Wealth above debt.
+  dhanaExceedsRina('DHANA_EXCEEDS_RINA'),
+
+  /// Not a rikta tithi.
+  tithiNotRikta('TITHI_NOT_RIKTA'),
+
+  /// The house's star is not the owner's own.
+  ownerStarDiffers('OWNER_STAR_DIFFERS');
+
+  const AayadiClauseKey(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// What a vastu text asks of a measure that the reckoning is not given.
+enum AayadiUnjudged implements _Keyed {
+  /// The owner's and the site's stars (*Mayamata* IX v. 19).
+  ownerStars('OWNER_STARS'),
+
+  /// The nakshatra against the owner's (*Manasara* IX).
+  nakshatraAgainstOwner('NAKSHATRA_AGAINST_OWNER'),
+
+  /// Indra, Yama or Raja (crux C1196).
+  amsha('AMSHA'),
+
+  /// The house's name against the owner's.
+  houseName('HOUSE_NAME'),
+
+  /// The signs of the two stars (crux C1198).
+  signs('SIGNS'),
+
+  /// *Samarangana*'s life (crux C1197).
+  life('LIFE'),
+
+  /// The six good karanas.
+  karanas('KARANAS'),
+
+  /// The new moon among the fifteen tithis.
+  newMoon('NEW_MOON'),
+
+  /// The yogas the gloss does not list.
+  yogas('YOGAS');
+
+  const AayadiUnjudged(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// One reckoning: a measure times a multiplier over a series, and the
+/// member its remainder names.
+final class AayadiReckoned extends _Value {
+  const AayadiReckoned({
+    required this.quantity,
+    required this.measure,
+    required this.value,
+    required this.multiplier,
+    required this.divisor,
+    required this.quotient,
+    required this.remainder,
+    required this.count,
+    required this.yoni,
+    required this.nakshatra,
+    required this.vara,
+    required this.tithi,
+    required this.yoga,
+    required this.source,
+  });
+
+  /// What the remainder names.
+  final AayadiQuantity quantity;
+
+  /// The measure it starts from.
+  final AayadiMeasure measure;
+
+  /// The measure's value.
+  final int value;
+
+  /// The multiplier.
+  final int multiplier;
+
+  /// The divisor, the size of the series.
+  final int divisor;
+
+  /// The quotient: *Mayamata* IX v. 22 reads the nakshatra's as the
+  /// building's age.
+  final int quotient;
+
+  /// The remainder, 0 to the divisor less one.
+  final int remainder;
+
+  /// The member's place, 1 to the divisor: a remainder of 0 counts as the
+  /// last (crux C1192).
+  final int count;
+
+  /// The member of the banner series, for an eightfold aaya or a yoni.
+  final VastuYoni? yoni;
+
+  /// The nakshatra, for the nakshatra.
+  final Nakshatra? nakshatra;
+
+  /// The weekday, for the weekday.
+  final Vara? vara;
+
+  /// The tithi, for a thirtyfold tithi.
+  final Tithi? tithi;
+
+  /// The yoga, for the yoga.
+  final Yoga? yoga;
+
+  /// The verse.
+  final String source;
+
+  static AayadiReckoned _of(Map<String, Object?> raw) => AayadiReckoned(
+    quantity: _keyed(AayadiQuantity.values, raw['quantity']),
+    measure: _keyed(AayadiMeasure.values, raw['measure']),
+    value: raw['value']! as int,
+    multiplier: raw['multiplier']! as int,
+    divisor: raw['divisor']! as int,
+    quotient: raw['quotient']! as int,
+    remainder: raw['remainder']! as int,
+    count: raw['count']! as int,
+    yoni:
+        raw['yoni'] == null
+            ? null
+            : _key(raw['yoni'], VastuYoni.byKey, VastuYoni.unknown),
+    nakshatra:
+        raw['nakshatra'] == null
+            ? null
+            : _key(raw['nakshatra'], Nakshatra.byKey, Nakshatra.unknown),
+    vara:
+        raw['vara'] == null
+            ? null
+            : _key(raw['vara'], Vara.byKey, Vara.unknown),
+    tithi:
+        raw['tithi'] == null
+            ? null
+            : _key(raw['tithi'], Tithi.byKey, Tithi.unknown),
+    yoga:
+        raw['yoga'] == null
+            ? null
+            : _key(raw['yoga'], Yoga.byKey, Yoga.unknown),
+    source: raw['source']! as String,
+  );
+
+  @override
+  List<Object?> get _fields => [
+    quantity,
+    measure,
+    value,
+    multiplier,
+    divisor,
+    quotient,
+    remainder,
+    count,
+    yoni,
+    nakshatra,
+    vara,
+    tithi,
+    yoga,
+    source,
+  ];
+}
+
+/// A clause a vastu text judges, and whether it holds (the good reading).
+final class AayadiClause extends _Value {
+  const AayadiClause({
+    required this.clause,
+    required this.holds,
+    required this.source,
+  });
+
+  /// The condition.
+  final AayadiClauseKey clause;
+
+  /// Whether it holds.
+  final bool holds;
+
+  /// The verse or gloss that judges it.
+  final String source;
+
+  @override
+  List<Object?> get _fields => [clause, holds, source];
+}
+
+/// A measure read by one system (`03-design/aayadi.md`).
+final class Aayadi extends _Value {
+  const Aayadi({
+    required this.system,
+    required this.quantities,
+    required this.vyaya,
+    required this.tara,
+    required this.clauses,
+    required this.unjudged,
+  });
+
+  /// The system.
+  final AayadiSystem system;
+
+  /// Every reckoning the system names, in its text's order.
+  final List<AayadiReckoned> quantities;
+
+  /// *Samarangana*'s vyaya by its size beside the aaya, for that system
+  /// alone.
+  final VyayaKind? vyaya;
+
+  /// The tara from the owner's star to the house's, where read.
+  final Tara? tara;
+
+  /// Each clause the system judges, in its text's order.
+  final List<AayadiClause> clauses;
+
+  /// What the system asks that is not judged.
+  final List<AayadiUnjudged> unjudged;
+
+  /// The reckoning of [quantity], if the system names it.
+  AayadiReckoned? get(AayadiQuantity quantity) {
+    for (final reckoned in quantities) {
+      if (reckoned.quantity == quantity) return reckoned;
+    }
+    return null;
+  }
+
+  /// Whether [clause] holds, if the system judged it.
+  bool? holds(AayadiClauseKey clause) {
+    for (final judged in clauses) {
+      if (judged.clause == clause) return judged.holds;
+    }
+    return null;
+  }
+
+  static Aayadi _of(Map<String, Object?> raw) => Aayadi(
+    system: _keyed(AayadiSystem.values, raw['system']),
+    quantities: List.unmodifiable([
+      for (final reckoned in raw['quantities']! as List<Object?>)
+        AayadiReckoned._of(reckoned! as Map<String, Object?>),
+    ]),
+    vyaya:
+        raw['vyaya'] == null
+            ? null
+            : _key(raw['vyaya'], VyayaKind.byKey, VyayaKind.unknown),
+    tara: raw['tara'] == null ? null : _keyed(Tara.values, raw['tara']),
+    clauses: List.unmodifiable([
+      for (final judged
+          in (raw['clauses']! as List<Object?>).cast<Map<String, Object?>>())
+        AayadiClause(
+          clause: _keyed(AayadiClauseKey.values, judged['clause']),
+          holds: judged['holds']! as bool,
+          source: judged['source']! as String,
+        ),
+    ]),
+    unjudged: List.unmodifiable([
+      for (final key in raw['unjudged']! as List<Object?>)
+        _keyed(AayadiUnjudged.values, key),
+    ]),
+  );
+
+  @override
+  List<Object?> get _fields => [
+    system,
+    quantities,
+    vyaya,
+    tara,
+    clauses,
+    unjudged,
+  ];
 }
 
 /// A star of the navatara chakra (`03-design/navatara-chakra.md`).

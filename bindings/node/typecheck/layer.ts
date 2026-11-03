@@ -151,6 +151,8 @@ import type {
   ContextInit,
   NavataraRow,
   SpecialStar,
+  Aayadi,
+  AayadiReckoned,
   Tara,
   DashaPeriod,
   EphemerisProvider,
@@ -317,6 +319,8 @@ import type {
   Vara,
   Tithi,
   Nakshatra,
+  VastuYoni,
+  VyayaKind,
 } from '../lib/catalogue.js';
 import type { CalendarDate, Confidence, PolarDay, Provenance, Step } from '../lib/index.js';
 import { ashauchRunning, decodeProvenance, returnsRequest } from '../lib/index.js';
@@ -1549,6 +1553,18 @@ function theNavatara(ctx: Context): string {
   return `${karma} ${tara} ${star} ${chakra[0]?.cycle}`;
 }
 void theNavatara;
+
+// Aayadi: the request typed, the members keys or null.
+function theAayadi(ctx: Context): string {
+  const reading: Aayadi = ctx.almanac.aayadi({ system: 'CHINTAMANI', length: 29, breadth: 7, owner: 'nakshatra.ANURADHA' });
+  const aaya: AayadiReckoned | undefined = reading.quantities[0];
+  const yoni: VastuYoni | null | undefined = aaya?.yoni;
+  const vyaya: VyayaKind | null = ctx.almanac.aayadi({ system: 'SAMARANGANA', length: 29, breadth: 7 }).vyaya;
+  // @ts-expect-error the system is one of the four
+  ctx.almanac.aayadi({ system: 'BRIHAT_SAMHITA', length: 29, breadth: 7 });
+  return `${yoni} ${vyaya} ${reading.tara}`;
+}
+void theAayadi;
 
 // A Tibetan year's names by their catalogue types.
 function theTibetanYear(ctx: Context): string {

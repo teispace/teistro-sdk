@@ -1760,6 +1760,32 @@ final class Calls {
     }
 
     /**
+     * `ts_aayadi`: A building's measure read under one system: `{"system", "quantities",
+     * "vyaya", "tara", "clauses", "unjudged"}`, each quantity `{"quantity",
+     * "measure", "value", "multiplier", "divisor", "quotient", "remainder",
+     * "count", "yoni", "nakshatra", "vara", "tithi", "yoga", "source"}` and
+     * each clause `{"clause", "holds", "source"}` (C1190 to C1199).
+     *
+     * `request_json` is `{"system", "length", "breadth", "owner"?,
+     * "measure"?}`: `MAYAMATA`, `MANASARA`, `SAMARANGANA` or `CHINTAMANI`,
+     * the two sides in whole units (1 to 1 000 000), the owner's nakshatra
+     * key, and for `MANASARA` only the measure. A key the record does not
+     * read, a side out of range or a measure asked of another system is
+     * `INVALID_ARG`, named under `aayadi`.
+     */
+    static String aayadi(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_aayadi.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_verify_claims`: Every claim a text makes of the time, each judged against what
      * `almanac.sankalpa` computes at the instant and the place
      * (`03-design/lexicon.md` §3), answered with `{value, provenance}` as

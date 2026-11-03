@@ -6632,6 +6632,84 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('a measure reads into its aayadi without a sky', () {
+    final ctx = teistro.context(
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    // Muhurta Chintamani XII v. 3 with Mahidhara's gloss: Anuradha's
+    // owner, Rohini and the lion give 203, 29 by 7 hastas.
+    final reading = ctx.almanac.aayadi(
+      AayadiSystem.chintamani,
+      29,
+      7,
+      owner: Nakshatra.anuradha,
+    );
+    expect(reading.system, AayadiSystem.chintamani);
+    expect(
+      [for (final reckoned in reading.quantities) reckoned.count],
+      [3, 7, 3, 4, 1, 4, 4, 2, 64, 4],
+    );
+    final aaya = reading.get(AayadiQuantity.aaya)!;
+    expect(
+      [aaya.value, aaya.multiplier, aaya.divisor, aaya.yoni],
+      [203, 9, 8, VastuYoni.simha],
+    );
+    expect(reading.get(AayadiQuantity.vara)!.vara, Vara.shanivara);
+    expect(reading.get(AayadiQuantity.nakshatra)!.nakshatra, Nakshatra.rohini);
+    expect(reading.get(AayadiQuantity.yoni), isNull);
+    expect(reading.tara, Tara.sadhana);
+    expect(reading.holds(AayadiClauseKey.aayaOdd), isTrue);
+    expect(reading.holds(AayadiClauseKey.yoniGood), isNull);
+    expect(
+      ctx.almanac.aayadi(
+        AayadiSystem.chintamani,
+        29,
+        7,
+        owner: Nakshatra.anuradha,
+      ),
+      reading,
+    );
+    final samarangana = ctx.almanac.aayadi(AayadiSystem.samarangana, 29, 7);
+    expect(samarangana.vyaya, VyayaKind.rakshasa);
+    expect(samarangana.unjudged, contains(AayadiUnjudged.amsha));
+    final whole = ctx.almanac.aayadi(
+      AayadiSystem.manasara,
+      29,
+      7,
+      measure: ManasaraMeasure.sum,
+    );
+    expect(
+      {for (final reckoned in whole.quantities) reckoned.measure},
+      {AayadiMeasure.sum},
+    );
+    expect(
+      () => ctx.almanac.aayadi(AayadiSystem.mayamata, 0, 7),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'aayadi.length',
+        ),
+      ),
+    );
+    expect(
+      () => ctx.almanac.aayadi(
+        AayadiSystem.mayamata,
+        7,
+        7,
+        measure: ManasaraMeasure.sum,
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'aayadi.measure',
+        ),
+      ),
+    );
+    ctx.dispose();
+  });
+
   test('a name and a birth date read under numerology without a chart', () {
     // Balliett pp. 18-19: Henry 34/7, Elder 26/8, the name 15/6; born
     // 17 January 1872, 1 + 8 + 9 = 18 = 9. Cheiro p. 70: Henry 18/9 and

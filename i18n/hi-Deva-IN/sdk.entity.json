@@ -3182,5 +3182,64 @@
       "name": "घटना",
       "prose": "घटना"
     }
+  },
+  "vastu_yoni": {
+    "DHVAJA": {
+      "name": "ध्वज",
+      "prose": "ध्वज",
+      "iast": "Dhvaja"
+    },
+    "DHUMA": {
+      "name": "धूम",
+      "prose": "धूम",
+      "iast": "Dhūma"
+    },
+    "SIMHA": {
+      "name": "सिंह",
+      "prose": "सिंह",
+      "iast": "Siṃha"
+    },
+    "SHVAN": {
+      "name": "श्वान",
+      "prose": "श्वान",
+      "iast": "Śvan"
+    },
+    "VRISHA": {
+      "name": "वृष",
+      "prose": "वृष",
+      "iast": "Vṛṣa"
+    },
+    "KHARA": {
+      "name": "खर",
+      "prose": "खर",
+      "iast": "Khara"
+    },
+    "GAJA": {
+      "name": "गज",
+      "prose": "गज",
+      "iast": "Gaja"
+    },
+    "KAKA": {
+      "name": "काक",
+      "prose": "काक",
+      "iast": "Kāka"
+    }
+  },
+  "vyaya_kind": {
+    "PISHACHA": {
+      "name": "पिशाच",
+      "prose": "पिशाच",
+      "iast": "Piśāca"
+    },
+    "RAKSHASA": {
+      "name": "राक्षस",
+      "prose": "राक्षस",
+      "iast": "Rākṣasa"
+    },
+    "YAKSHA": {
+      "name": "यक्ष",
+      "prose": "यक्ष",
+      "iast": "Yakṣa"
+    }
   }
 }

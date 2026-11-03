@@ -21,6 +21,7 @@ from typing import Any, Iterable, Optional, Sequence, cast
 import json
 
 from teistro import (
+    AayadiSystem,
     decode_digest,
     DatedRule,
     FestivalRule,
@@ -3265,6 +3266,20 @@ def main() -> None:
         ),
     )
 
+    # The gloss's 29 by 7 hastas under Muhurta Chintamani and Samarangana:
+    # each quantity `QUANTITY:count`, the vyaya's kind, the tara, then each
+    # clause `CLAUSE:holds` (`03-design/aayadi.md`).
+    def aayadi(system: AayadiSystem, owner: str) -> str:
+        reading = ctx.almanac.aayadi(system, 29, 7, owner=owner)
+        return " ".join(
+            [f"{reckoned.quantity}:{reckoned.count}" for reckoned in reading.quantities]
+            + [f"vyaya:{'-' if reading.vyaya is None else reading.vyaya.full_key}", f"tara:{reading.tara or '-'}"]
+            + [f"{judged.clause}:{str(judged.holds).lower()}" for judged in reading.clauses]
+        )
+
+    put("aayadi_chintamani", aayadi("CHINTAMANI", "ANURADHA"))
+    put("aayadi_samarangana", aayadi("SAMARANGANA", "BHARANI"))
+
     def eclipse_moment(m: Optional[EclipseMoment]) -> str:
         return "-" if m is None else f"{number(m.at)}@{number(m.altitude_deg)}"
 
@@ -3393,6 +3408,7 @@ def main() -> None:
         ("almanac.ashauch", ctx.almanac.ashauch),
         ("almanac.first_year", ctx.almanac.first_year),
         ("almanac.navatara", ctx.almanac.navatara),
+        ("almanac.aayadi", ctx.almanac.aayadi),
         ("almanac.published_reasons", ctx.almanac.published_reasons),
         ("almanac.published_from_signed", ctx.almanac.published_from_signed),
         ("almanac.changes", ctx.almanac.changes),

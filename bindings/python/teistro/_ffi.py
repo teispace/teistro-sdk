@@ -192,7 +192,9 @@ from .catalogue import (
     Varna,
     VarsheshaChosen,
     VashyaRelation,
+    VastuYoni,
     VimshopakaScoring,
+    VyayaKind,
     Way,
     WesternAspect,
     YearOffice,
@@ -4571,6 +4573,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_navatara.restype = ctypes.c_int32
+        self.ts_aayadi: Any = library.ts_aayadi
+        self.ts_aayadi.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_aayadi.restype = ctypes.c_int32
         self.ts_verify_claims: Any = library.ts_verify_claims
         self.ts_verify_claims.argtypes = [
             ctypes.POINTER(_Context),
@@ -6708,6 +6717,36 @@ class TeistroContext:
             owned.append(_request_json)
             _out_json = _StringStruct()
             status = Status(self._lib.ts_navatara(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def aayadi(self, request_json: str) -> str:
+        """A building's measure read under one system: `{"system", "quantities",
+        "vyaya", "tara", "clauses", "unjudged"}`, each quantity `{"quantity",
+        "measure", "value", "multiplier", "divisor", "quotient", "remainder",
+        "count", "yoni", "nakshatra", "vara", "tithi", "yoga", "source"}` and
+        each clause `{"clause", "holds", "source"}` (C1190 to C1199).
+
+        `request_json` is `{"system", "length", "breadth", "owner"?,
+        "measure"?}`: `MAYAMATA`, `MANASARA`, `SAMARANGANA` or `CHINTAMANI`,
+        the two sides in whole units (1 to 1 000 000), the owner's nakshatra
+        key, and for `MANASARA` only the measure. A key the record does not
+        read, a side out of range or a measure asked of another system is
+        `INVALID_ARG`, named under `aayadi`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_aayadi(
                 self._raw,
                 _request_json,
                 ctypes.byref(_out_json),

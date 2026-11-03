@@ -7,6 +7,8 @@
 // decode on first use, and the error.
 
 import type {
+  VastuYoni,
+  VyayaKind,
   Ayanamsha,
   Balance,
   Ephemeris,
@@ -295,6 +297,8 @@ import type {
   SahamRules,
   SahamStrengthReadings,
   SaitRule,
+  AayadiRequest,
+  AayadiSystem,
   SarvatobhadraRequest,
   SarvatobhadraRules,
   Tara,
@@ -8126,6 +8130,19 @@ export declare class AlmanacArea {
    */
   navatara(birth: Member<Nakshatra>): readonly NavataraRow[];
   /**
+   * **A building's measure read by remainders** under one vastu text
+   * (`03-design/aayadi.md`): each quantity the system reckons, the vyaya's
+   * kind and the tara where it reads them, and each clause it judges,
+   * never one verdict. It reads no sky. A side out of range is refused as
+   * `aayadi.length` or `aayadi.breadth`, a measure asked of a system other
+   * than `MANASARA` as `aayadi.measure`.
+   *
+   * @example
+   * const reading = ctx.almanac.aayadi({ system: 'CHINTAMANI', length: 29, breadth: 7, owner: 'nakshatra.ANURADHA' });
+   * reading.quantities[5].nakshatra; // 'nakshatra.ROHINI'
+   */
+  aayadi(asked: AayadiRequest): Aayadi;
+  /**
    * **Where this context's reckoning and another's disagree**, and why
    * (`03-design/setup-disagreements.md`): the days on which some limb's
    * member at sunrise differs, with the instant the two members meet
@@ -8966,6 +8983,108 @@ export type UnaBar = 'NANDA' | 'FRIDAY' | 'CHATURDASHI' | 'KRITTIKA';
  * Chintamani*, Nakshatra-prakarana v. 43).
  */
 export type SpecialStar = 'JANMA' | 'KARMA' | 'SANGHATIKA' | 'SAMUDAYA' | 'VAINASHIKA' | 'MANASA';
+
+/** What an aayadi reckoning's remainder names (`03-design/aayadi.md`). */
+export type AayadiQuantity =
+  | 'AAYA'
+  | 'VYAYA'
+  | 'YONI'
+  | 'NAKSHATRA'
+  | 'VARA'
+  | 'TITHI'
+  | 'AMSHA'
+  | 'DHANA'
+  | 'RINA'
+  | 'YOGA'
+  | 'AYU';
+
+/**
+ * The measure a reckoning starts from: the sum of the sides, a side, the
+ * perimeter, the area, or the house's nakshatra count (the vyaya of
+ * *Samarangana* and *Muhurta Chintamani*).
+ */
+export type AayadiMeasure = 'SUM' | 'LENGTH' | 'BREADTH' | 'PERIMETER' | 'AREA' | 'HOUSE_STAR';
+
+/** A condition a vastu text judges a measure by. */
+export type AayadiClauseKey =
+  | 'YONI_GOOD'
+  | 'AAYA_EXCEEDS_VYAYA'
+  | 'VARA_GOOD'
+  | 'VYAYA_LESS_THAN_AAYA'
+  | 'VYAYA_PRESENT'
+  | 'TARA_NOT_AVOIDED'
+  | 'GANA_SAME'
+  | 'AAYA_ODD'
+  | 'DHANA_EXCEEDS_RINA'
+  | 'TITHI_NOT_RIKTA'
+  | 'OWNER_STAR_DIFFERS';
+
+/** What a vastu text asks of a measure that the reckoning is not given. */
+export type AayadiUnjudged =
+  | 'OWNER_STARS'
+  | 'NAKSHATRA_AGAINST_OWNER'
+  | 'AMSHA'
+  | 'HOUSE_NAME'
+  | 'SIGNS'
+  | 'LIFE'
+  | 'KARANAS'
+  | 'NEW_MOON'
+  | 'YOGAS';
+
+/** One reckoning: a measure times a multiplier over a series, and the member its remainder names. */
+export interface AayadiReckoned {
+  /** What the remainder names. */
+  readonly quantity: AayadiQuantity;
+  /** The measure it starts from. */
+  readonly measure: AayadiMeasure;
+  /** The measure's value. */
+  readonly value: number;
+  /** The multiplier. */
+  readonly multiplier: number;
+  /** The divisor, the size of the series. */
+  readonly divisor: number;
+  /** The quotient: *Mayamata* IX v. 22 reads the nakshatra's as the building's age. */
+  readonly quotient: number;
+  /** The remainder, 0 to the divisor less one. */
+  readonly remainder: number;
+  /** The member's place, 1 to the divisor: a remainder of 0 counts as the last (crux C1192). */
+  readonly count: number;
+  /** The member of the banner series, for an eightfold aaya or a yoni. */
+  readonly yoni: VastuYoni | null;
+  /** The nakshatra, for the nakshatra. */
+  readonly nakshatra: Nakshatra | null;
+  /** The weekday, for the weekday. */
+  readonly vara: Vara | null;
+  /** The tithi, for a thirtyfold tithi. */
+  readonly tithi: Tithi | null;
+  /** The yoga, for the yoga. */
+  readonly yoga: Yoga | null;
+  /** The verse. */
+  readonly source: string;
+}
+
+/** A clause a text judges, and whether it holds (the good reading). */
+export interface AayadiClause {
+  readonly clause: AayadiClauseKey;
+  readonly holds: boolean;
+  readonly source: string;
+}
+
+/** A measure read by one system (`03-design/aayadi.md`). */
+export interface Aayadi {
+  /** The system. */
+  readonly system: AayadiSystem;
+  /** Every reckoning the system names, in its text's order. */
+  readonly quantities: readonly AayadiReckoned[];
+  /** *Samarangana*'s vyaya by its size beside the aaya, for that system alone. */
+  readonly vyaya: VyayaKind | null;
+  /** The tara from the owner's star to the house's, where read. */
+  readonly tara: Tara | null;
+  /** Each clause the system judges, in its text's order. */
+  readonly clauses: readonly AayadiClause[];
+  /** What the system asks that is not judged. */
+  readonly unjudged: readonly AayadiUnjudged[];
+}
 
 /** A star of the navatara chakra (`03-design/navatara-chakra.md`). */
 export interface NavataraRow {

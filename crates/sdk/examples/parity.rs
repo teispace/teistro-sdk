@@ -825,6 +825,7 @@ fn the_surface(report: &mut Report) {
         ("almanac.ashauch", "present"),
         ("almanac.first_year", "present"),
         ("almanac.navatara", "present"),
+        ("almanac.aayadi", "present"),
         ("almanac.published_reasons", "present"),
         ("almanac.published_from_signed", "present"),
         ("calendar.tibetan_year", "present"),
@@ -7686,6 +7687,54 @@ fn sky_view(report: &mut Report) {
     );
 }
 
+/// The gloss's 29 by 7 hastas under *Muhurta Chintamani* for Anuradha's
+/// owner and under *Samarangana* for Bharani's: each quantity
+/// `QUANTITY:count`, then `vyaya:` its kind and `tara:` the owner's tara
+/// (`-` where none), then each clause `CLAUSE:holds`
+/// (`03-design/aayadi.md`).
+fn aayadi(report: &mut Report, sdk: &Context) {
+    use teistro::muhurta::aayadi::AayadiSystem;
+    let read = |system, owner| {
+        let asked = teistro::AayadiRequest {
+            system,
+            length: 29,
+            breadth: 7,
+            owner: Some(owner),
+            measure: None,
+        };
+        let reading = sdk.almanac().aayadi(&asked).expect("a measure in range");
+        let quantities = reading
+            .quantities
+            .iter()
+            .map(|reckoned| format!("{}:{}", tag(&reckoned.quantity), reckoned.count));
+        let clauses = reading
+            .clauses
+            .iter()
+            .map(|judged| format!("{}:{}", tag(&judged.clause), judged.holds));
+        let vyaya = reading
+            .vyaya
+            .map_or_else(|| String::from("-"), |kind| kind.full_key().to_owned());
+        let tara = reading
+            .tara
+            .map_or_else(|| String::from("-"), |counted| tag(&counted));
+        quantities
+            .chain([format!("vyaya:{vyaya}"), format!("tara:{tara}")])
+            .chain(clauses)
+            .collect::<Vec<_>>()
+            .join(" ")
+    };
+    put(
+        report,
+        "aayadi_chintamani",
+        read(AayadiSystem::Chintamani, Nakshatra::Anuradha),
+    );
+    put(
+        report,
+        "aayadi_samarangana",
+        read(AayadiSystem::Samarangana, Nakshatra::Bharani),
+    );
+}
+
 /// The eclipses a panchanga request carries, as the report prints them.
 ///
 /// September 2025 at Kathmandu over the built-in sky, which the test
@@ -8423,6 +8472,7 @@ fn main() {
     markers(&mut report, &place, offset);
     navatara(&mut report, &geo);
     sky_view(&mut report);
+    aayadi(&mut report, &geo);
     the_lilith(&mut report, &place, offset);
     the_zones(&mut report, &place, offset);
 

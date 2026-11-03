@@ -1203,6 +1203,35 @@ impl<'a> AlmanacArea<'a> {
         teistro_muhurta::tara::navatara(birth)
     }
 
+    /// A building's measure read by remainders under one vastu text
+    /// (`03-design/aayadi.md`): each quantity the system reckons, the
+    /// vyaya's kind and the owner's tara where it reads them, and each
+    /// clause it judges, never one verdict. It reads no sky, so it asks
+    /// nothing of the context.
+    ///
+    /// ```
+    /// use teistro::{AayadiRequest, Context};
+    /// use teistro::catalogue::{Nakshatra, VastuYoni};
+    /// use teistro::muhurta::aayadi::AayadiSystem;
+    ///
+    /// let sdk = Context::builder().build()?;
+    /// let asked = AayadiRequest { system: AayadiSystem::Chintamani, length: 29, breadth: 7, owner: None, measure: None };
+    /// let reading = sdk.almanac().aayadi(&asked)?;
+    /// assert_eq!((reading.yoni(), reading.nakshatra()), (Some(VastuYoni::Simha), Some(Nakshatra::Rohini)));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`AayadiRequest::answer`](crate::AayadiRequest::answer).
+    #[cfg(feature = "muhurta")]
+    pub fn aayadi(
+        self,
+        asked: &crate::AayadiRequest,
+    ) -> Result<teistro_muhurta::aayadi::Aayadi, Error> {
+        asked.answer()
+    }
+
     /// A publisher's set read from a signed pack, as
     /// [`PublishedSet::from_signed`] reads it: under the almanac, where
     /// every binding finds it, beside the festivals the set corrects

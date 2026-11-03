@@ -55,6 +55,7 @@
     )
 )]
 
+pub mod aayadi;
 pub mod blob;
 pub mod calendar;
 #[cfg(feature = "chart")]
