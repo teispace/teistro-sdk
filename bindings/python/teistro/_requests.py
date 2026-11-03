@@ -40,9 +40,12 @@ __all__ = [
     "AddAsked",
     "BetweenAsked",
     "CalendarAsked",
+    "AstrocartographyRequest",
     "ChartDisagreementsRequest",
     "ChartFoundRequest",
+    "MundaneRequest",
     "BatchAsked",
+    "RelocationRequest",
     "DateTextRequest",
     "DatesRequest",
     "InWordsRequest",
@@ -91,6 +94,7 @@ __all__ = [
     "PakshiRules",
     "ReckonedPlace",
     "AyanaReckoning",
+    "Projection",
     "AntisciaRequest",
     "ConsiderationRules",
     "DignityRequest",
@@ -123,8 +127,10 @@ __all__ = [
     "WesternAspectRequest",
     "ConfigurationRequest",
     "HouseRequest",
+    "MundaneEvent",
     "BaselinePeriod",
     "PeriodAsked",
+    "RelocationPlace",
     "CalendarDay",
     "WordsDigits",
     "DateStyle",
@@ -1235,6 +1241,25 @@ class CalendarAsked(TypedDict, total=False):
     into: Required[Union[_catalogue.Calendar, str]]
 
 
+class AstrocartographyRequest(TypedDict, total=False):
+    """The lines of a map at one instant."""
+
+    bodies: Sequence[Union[_catalogue.Graha, str]]
+    """The bodies, in the order their lines are answered; none for the seven and whichever outer planets the profile places."""
+
+    instant: Required[float]
+    """The instant, a Julian day (UTC)."""
+
+    latitudeLimitDeg: float
+    """The furthest latitude sampled north and south, degrees, above zero and below ninety; eighty by default."""
+
+    projection: Projection
+    """In mundo, the default, or zodiacal (C1155)."""
+
+    stepDeg: float
+    """The step of latitude between a line's points, degrees, above zero and at most ten; one by default."""
+
+
 class ChartDisagreementsRequest(TypedDict, total=False):
     """Two charts compared: `first` founded under the call's context, `second` (the first's birth again when left out) under the other's, and `at` the UTC Julian day the running dasha lords are compared at (each birth's own when left out)."""
 
@@ -1362,12 +1387,52 @@ class ChartFoundRequest(TypedDict, total=False):
     westernHouses: HouseRequest
 
 
+# A mundane chart as a binding asks for it: a kind, when to look from (a `year` or an instant `from`), or the `event` an `EVENT` casts, and the place the chart is cast for.
+MundaneRequest = TypedDict(
+    "MundaneRequest",
+    {
+        # The place's altitude, metres.
+        "altitudeM": "float",
+        # For an `EVENT`, the event on record.
+        "event": "Optional[MundaneEvent]",
+        # The instant the search starts at, a Julian day (UTC): the first ingress, eclipse or conjunction at or after it.
+        "from": "Optional[float]",
+        # For a lunation, the ingress it precedes; `MESHA_SANKRANTI` when left out, the new moon that opens Chaitra (C1151).
+        "ingress": "Optional[Union[_catalogue.MundaneKind, str]]",
+        # Which chart.
+        "kind": "Required[Union[_catalogue.MundaneKind, str]]",
+        # The place's latitude, degrees, north positive (C1152).
+        "latitudeDeg": "Required[float]",
+        # The place's longitude, degrees, east positive.
+        "longitudeDeg": "Required[float]",
+        # The local clock's offset from UTC, seconds, east positive.
+        "utcOffsetSeconds": "int",
+        # The year (Gregorian) whose ingress, or whose first eclipse or conjunction after 1 January 0h UTC, is asked; or name `from`.
+        "year": "Optional[int]",
+    },
+    total=False,
+)
+
+
 class BatchAsked(TypedDict, total=False):
     """Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked."""
 
     baseline: Optional[BaselinePeriod]
 
     periods: Required[Sequence[PeriodAsked]]
+
+
+class RelocationRequest(TypedDict, total=False):
+    """A chart's instant recast at other places."""
+
+    houseSystem: Optional[Union[_catalogue.HouseSystem, str]]
+    """The house division; the profile's Western override, else Placidus, when left out (C1157)."""
+
+    instant: Required[float]
+    """The chart's instant, a Julian day (UTC)."""
+
+    places: Required[Sequence[RelocationPlace]]
+    """The places, one to 256."""
 
 
 class DateTextRequest(TypedDict, total=False):
@@ -2168,6 +2233,14 @@ AyanaReckoning: TypeAlias = Literal['SIDEREAL', 'TROPICAL']
 """
 
 
+Projection: TypeAlias = Literal['IN_MUNDO', 'ZODIACAL']
+"""How a body is placed on the angles (C1155), written `"IN_MUNDO"` or `"ZODIACAL"`.
+
+`IN_MUNDO`: The body where it stands, its ecliptic latitude kept, against the true horizon: the practice of astrocartography's maps.
+`ZODIACAL`: The body's degree of the ecliptic, latitude zeroed: a point on a line has the body's longitude on the chart's own angle there.
+"""
+
+
 class AntisciaRequest(TypedDict, total=False):
     """What the antiscia are asked: the orbs a pair is read under, and whether a reflection is read on the cusps."""
 
@@ -2682,6 +2755,19 @@ class HouseRequest(TypedDict, total=False):
     """The division to read, or the module's own when `None`: the profile's `houses.module_overrides.western`, else `LEO_HOUSE_SYSTEM`."""
 
 
+class MundaneEvent(TypedDict, total=False):
+    """An event on record, cast as given (`EVENT`)."""
+
+    instant: Required[float]
+    """When, a Julian day (UTC)."""
+
+    name: Required[str]
+    """What happened."""
+
+    source: Required[str]
+    """Where the record of it comes from, carried on the answer."""
+
+
 BaselinePeriod: TypeAlias = Literal['DAILY', 'WEEKLY', 'MONTHLY', 'YEARLY']
 """The period a score is weighed for, which sets the Moon's weight.
 
@@ -2714,6 +2800,19 @@ class PeriodAsked(TypedDict, total=False):
     spells: Optional[Sequence[int]]
 
     utcOffsetSeconds: Required[int]
+
+
+class RelocationPlace(TypedDict, total=False):
+    """A place a chart is recast at."""
+
+    altitudeM: float
+    """Altitude, metres."""
+
+    latitudeDeg: Required[float]
+    """Latitude, degrees, north positive."""
+
+    longitudeDeg: Required[float]
+    """Longitude, degrees, east positive."""
 
 
 class CalendarDay(TypedDict, total=False):

@@ -24,6 +24,8 @@
     "crates/ffi/src/positions.rs",
     "crates/ffi/src/panchanga.rs",
     "crates/ffi/src/naam.rs",
+    "crates/ffi/src/mapping.rs",
+    "crates/ffi/src/mundane.rs",
     "crates/ffi/src/naming.rs",
     "crates/ffi/src/navatara.rs",
     "crates/ffi/src/verify.rs",
@@ -725,6 +727,12 @@
           "value": 91,
           "doc": "The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).",
           "key": "tridosha"
+        },
+        {
+          "name": "MundaneKind",
+          "value": 130,
+          "doc": "Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).",
+          "key": "mundane_kind"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -3827,6 +3835,12 @@
           "value": 6,
           "doc": "Composite",
           "key": "COMPOSITE"
+        },
+        {
+          "name": "Mundane",
+          "value": 7,
+          "doc": "Mundane: a chart of a year, a lunation, an eclipse or a conjunction, cast for a place (`03-design/mundane-charts.md`)",
+          "key": "MUNDANE"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -7142,6 +7156,93 @@
           "value": 2,
           "doc": "Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis",
           "key": "KAPHA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "MundaneKind",
+      "doc": "Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_MUNDANE_KIND << 16) | member`.",
+      "repr": "u16",
+      "kind": "mundane_kind",
+      "values": [
+        {
+          "name": "MeshaSankranti",
+          "value": 0,
+          "doc": "The Sun's entry into sidereal Mesha, which opens the solar year and names its minister (C1150)",
+          "key": "MESHA_SANKRANTI"
+        },
+        {
+          "name": "MakaraSankranti",
+          "value": 1,
+          "doc": "The Sun's entry into sidereal Makara, the turn to the northern course (uttarayana) (C1150)",
+          "key": "MAKARA_SANKRANTI"
+        },
+        {
+          "name": "AriesIngress",
+          "value": 2,
+          "doc": "The Sun at tropical 0°, the spring equinox, the starting point Ptolemy prefers (C1150)",
+          "key": "ARIES_INGRESS"
+        },
+        {
+          "name": "CancerIngress",
+          "value": 3,
+          "doc": "The Sun at tropical 90°, the summer solstice, one of Ptolemy's four starting points (C1150)",
+          "key": "CANCER_INGRESS"
+        },
+        {
+          "name": "LibraIngress",
+          "value": 4,
+          "doc": "The Sun at tropical 180°, the autumn equinox, one of Ptolemy's four starting points (C1150)",
+          "key": "LIBRA_INGRESS"
+        },
+        {
+          "name": "CapricornIngress",
+          "value": 5,
+          "doc": "The Sun at tropical 270°, the winter solstice, one of Ptolemy's four starting points (C1150)",
+          "key": "CAPRICORN_INGRESS"
+        },
+        {
+          "name": "NewMoonBeforeIngress",
+          "value": 6,
+          "doc": "The last new moon before an ingress: before Mesha, the new moon that opens Chaitra, whose weekday's lord rules the year (C1151)",
+          "key": "NEW_MOON_BEFORE_INGRESS"
+        },
+        {
+          "name": "FullMoonBeforeIngress",
+          "value": 7,
+          "doc": "The last full moon before an ingress (C1151)",
+          "key": "FULL_MOON_BEFORE_INGRESS"
+        },
+        {
+          "name": "SyzygyBeforeIngress",
+          "value": 8,
+          "doc": "Whichever of the new and the full moon most nearly precedes an ingress, Ptolemy's own reading (C1151)",
+          "key": "SYZYGY_BEFORE_INGRESS"
+        },
+        {
+          "name": "SolarEclipse",
+          "value": 9,
+          "doc": "The next solar eclipse, at its greatest (C1154)",
+          "key": "SOLAR_ECLIPSE"
+        },
+        {
+          "name": "LunarEclipse",
+          "value": 10,
+          "doc": "The next lunar eclipse, at its greatest (C1154)",
+          "key": "LUNAR_ECLIPSE"
+        },
+        {
+          "name": "GreatConjunction",
+          "value": 11,
+          "doc": "The next conjunction of Jupiter and Saturn in geocentric longitude, the first of a triple one (C1153)",
+          "key": "GREAT_CONJUNCTION"
+        },
+        {
+          "name": "Event",
+          "value": 12,
+          "doc": "An event on record: a name, an instant and a place, cast as given, its source carried on the answer",
+          "key": "EVENT"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -18520,6 +18621,159 @@
         "blob": "naam"
       },
       "source": "crates/ffi/src/naam.rs"
+    },
+    {
+      "name": "ts_chart_relocated",
+      "doc": "**A chart recast at other places** (`03-design/astrocartography.md`):\neach place's ascendant, midheaven and twelve cusps at one instant, in\nthe context's zodiac, as `{value, provenance}` canonical JSON sealed by\nthe first place's chart with the request as its input.\n\n`value` is `{instant, obliquityDeg, places}`, each place\n`{latitudeDeg, longitudeDeg, altitudeM, ascendantDeg, midheavenDeg,\ncuspsDeg, houseSystem}` in the order asked, `cuspsDeg` twelve and\n`houseSystem` a `house_system` key.\n\n`request_json` is `{\"instant\", \"places\", \"houseSystem\"}`: `instant` a\nUTC Julian day; `places` one to 256 `{\"latitudeDeg\", \"longitudeDeg\",\n\"altitudeM\"}`; `houseSystem` a `house_system` key, the profile's\nWestern override else Placidus when left out (C1157). A key the record\ndoes not read, no place or too many, or a place out of range is\n`INVALID_ARG`, named under `relocated` (`relocated.places[1].latitudeDeg`);\na context without an ephemeris is `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/mapping.rs"
+    },
+    {
+      "name": "ts_chart_astrocartography",
+      "doc": "**The astrocartography lines** at an instant\n(`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC\nlines on the Earth, as `{value, provenance}` canonical JSON sealed by\nthe chart the bodies were read from, with the request as its input.\n\n`value` is `{instant, projection, stepDeg, latitudeLimitDeg,\ntoleranceDeg, greenwichRamcDeg, obliquityDeg, lines}`, each line\n`{body, angle, points, polarLimitDeg}`: `body` a `graha` key, `angle`\n`MC`, `IC`, `ASC` or `DSC`, `points` `[longitudeDeg, latitudeDeg]`\npairs from south to north, longitude east in `[-180, 180)`, and\n`polarLimitDeg` for a rising or setting line the latitude past which\nit does not run (C1156). Every point is on its angle, read back\nthrough a chart cast there, to `toleranceDeg`.\n\n`request_json` is `{\"instant\", \"bodies\", \"projection\", \"stepDeg\",\n\"latitudeLimitDeg\"}`: `instant` a UTC Julian day; `bodies` `graha`\nkeys, the seven and the outer planets the profile places when left\nout; `projection` `IN_MUNDO` (the default) or `ZODIACAL` (C1155);\n`stepDeg` above 0 and at most 10, 1 by default; `latitudeLimitDeg`\nabove 0 and below 90, 80 by default. A key the record does not read,\na value out of range or a body the chart does not place is\n`INVALID_ARG`, named under `astrocartography`; a context without an\nephemeris is `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/mapping.rs"
+    },
+    {
+      "name": "ts_chart_mundane",
+      "doc": "**The moment of a mundane chart** (`03-design/mundane-charts.md`): an\ningress, the lunation before one, an eclipse, a great conjunction or\nan event on record, and the place it is cast for, as `{value,\nprovenance}` canonical JSON sealed by the chart cast there, with the\nrequest as its input.\n\n`value` is `{kind, instant, latitudeDeg, longitudeDeg, altitudeM,\nutcOffsetSeconds, ingress, solarEclipse, lunarEclipse, name,\nsource}`: `kind` a `mundane_kind` key, `instant` the moment as a UTC\nJulian day; `ingress` `{kind, instant}` the ingress a lunation\nprecedes; `solarEclipse` or `lunarEclipse` an eclipse's kind; `name`\nand `source` an event's, as the record gave them. A field a kind does\nnot carry is absent.\n\n`request_json` is `{\"kind\", \"year\", \"from\", \"ingress\", \"event\",\n\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\"}`:\n`kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC\nJulian day) where the search starts, the first ingress, eclipse or\nconjunction at or after it; `ingress` the ingress a lunation precedes,\n`MESHA_SANKRANTI` by default (C1151); `event` `{\"name\", \"instant\",\n\"source\"}` for an `EVENT`, which reads neither `year` nor `from`. The\nsankrantis are read in the context's own zodiac, the four tropical\ningresses in the tropical one. A key the record does not read, a\nmissing or extra `year`, `from`, `ingress` or `event`, or a place out\nof range is `INVALID_ARG`, named under `mundane`; an eclipse over a\nclassical astronomy is `UNSUPPORTED` naming `kind`; a context without\nan ephemeris is `CAPABILITY`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/mundane.rs"
     },
     {
       "name": "ts_naming_syllables",

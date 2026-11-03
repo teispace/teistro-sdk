@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 92 entry points over 28 structs and 182 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 98 entry points over 28 structs and 183 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 
@@ -140,12 +140,26 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 | [`ts_almanac_anniversaries`](panchanga/ts_almanac_anniversaries) | Anniversaries kept by the tithi over a span of years, for many people in one call (`03-design/anniversary-span.md`), as canonical JSON `{value, provenance}`: `value` is a festival answer whose `anniversaries` hold each person's days in the order their tithis begin, each `{key, count, kind, origin, monthBy, dayRule, observance}` as a festival request's (`festivals_json`), `dayRule` being `{tithi, at, clause, source}`: the tithi `ORDINARY`, `KSHAYA` or `VRIDDHI`, the window read, the clause that chose the day and where it is stated. |
 | [`ts_almanac_festival_pack`](panchanga/ts_almanac_festival_pack) | Every rule of a festival pack with what it is (`03-design/festival-metadata.md` §3), as canonical JSON `{pack, rules}`: each row `{key, form, source, meta, unsourced}`, `form` how its day is found (`LUNAR`, `EKADASHI`, `FOLLOWING`, `DATED`, `PUBLISHED`), `meta` its kind, tradition, communities, regions and fast (each reading `{kind, ifUnable, start, end, source}`), `unsourced` the fields no source gives, and a published row's `subjectTo` and `lastYear`. |
 | [`ts_almanac_changes`](panchanga/ts_almanac_changes) | Every instant in a range at which something changes, as sealed JSON (`03-design/change-points.md`). |
+| [`ts_almanac_sky_view`](panchanga/ts_almanac_sky_view) | The sky at a place and an instant (`03-design/sky-view.md`), answered with `{value, provenance}` as canonical JSON. |
 
 ### Naam
 
 | entry point | what it does |
 |---|---|
 | [`ts_naam_milan`](naam/ts_naam_milan) | Matches two names star to star (naam milan) and answers with the `naam` blob: each name's first syllable in the śatapada cakra, the varga koota, and the Ashta Koota and the ten considerations of the two name stars (`03-design/matching.md`, C291 to C296). |
+
+### Mapping
+
+| entry point | what it does |
+|---|---|
+| [`ts_chart_relocated`](mapping/ts_chart_relocated) | **A chart recast at other places** (`03-design/astrocartography.md`): each place's ascendant, midheaven and twelve cusps at one instant, in the context's zodiac, as `{value, provenance}` canonical JSON sealed by the first place's chart with the request as its input. |
+| [`ts_chart_astrocartography`](mapping/ts_chart_astrocartography) | **The astrocartography lines** at an instant (`03-design/astrocartography.md`): each body's MC, IC, ASC and DSC lines on the Earth, as `{value, provenance}` canonical JSON sealed by the chart the bodies were read from, with the request as its input. |
+
+### Mundane
+
+| entry point | what it does |
+|---|---|
+| [`ts_chart_mundane`](mundane/ts_chart_mundane) | **The moment of a mundane chart** (`03-design/mundane-charts.md`): an ingress, the lunation before one, an eclipse, a great conjunction or an event on record, and the place it is cast for, as `{value, provenance}` canonical JSON sealed by the chart cast there, with the request as its input. |
 
 ### Naming
 
@@ -169,6 +183,8 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 | entry point | what it does |
 |---|---|
 | [`ts_verify_claims`](verify/ts_verify_claims) | Every claim a text makes of the time, each judged against what `almanac.sankalpa` computes at the instant and the place (`03-design/lexicon.md` §3), answered with `{value, provenance}` as canonical JSON. |
+| [`ts_verify_issue`](verify/ts_verify_issue) | A record answered with its receipt (`03-design/receipts-and-datasets.md` §1.2), answered as canonical JSON: `{answer, receipt}`. |
+| [`ts_verify_receipt`](verify/ts_verify_receipt) | A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its record answered again on this context under the receipt's own settings, locale and request, and the value's digest compared, answered as canonical JSON: `{verdict, record, moved, broken, issued, now, reason}`. |
 
 ### Numerology
 
@@ -250,6 +266,8 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 - `crates/ffi/src/positions.rs`
 - `crates/ffi/src/panchanga.rs`
 - `crates/ffi/src/naam.rs`
+- `crates/ffi/src/mapping.rs`
+- `crates/ffi/src/mundane.rs`
 - `crates/ffi/src/naming.rs`
 - `crates/ffi/src/navatara.rs`
 - `crates/ffi/src/verify.rs`

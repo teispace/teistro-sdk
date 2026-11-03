@@ -92,6 +92,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_RULER_DAY_RULE` | 84 | Which day an office's event takes its weekday from (`03-design/year-rulers.md` §2, C1070, C1072). |
 | `TS_KIND_PAYA` | 90 | The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107). |
 | `TS_KIND_TRIDOSHA` | 91 | The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110). |
+| `TS_KIND_MUNDANE_KIND` | 130 | Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`). |
 
 ## ts_graha
 
@@ -774,6 +775,7 @@ What a chart is a chart of. Members are the catalogue's ids; the full key id is 
 | `TS_CHART_KIND_RETURN` | 4 | Return |
 | `TS_CHART_KIND_RELOCATED` | 5 | Relocated |
 | `TS_CHART_KIND_COMPOSITE` | 6 | Composite |
+| `TS_CHART_KIND_MUNDANE` | 7 | Mundane: a chart of a year, a lunation, an eclipse or a conjunction, cast for a place (`03-design/mundane-charts.md`) |
 
 ## ts_point
 
@@ -1607,6 +1609,26 @@ The three doshas as classical jyotisha texts attribute them to the grahas (BPHS 
 | `TS_TRIDOSHA_VATA` | 0 | Vata, the windy humour, as a classical text attributes it to a graha; not a diagnosis |
 | `TS_TRIDOSHA_PITTA` | 1 | Pitta, the bilious humour, as a classical text attributes it to a graha; not a diagnosis |
 | `TS_TRIDOSHA_KAPHA` | 2 | Kapha, the phlegmatic humour, as a classical text attributes it to a graha; not a diagnosis |
+
+## ts_mundane_kind
+
+Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_MUNDANE_KIND << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_MUNDANE_KIND_MESHA_SANKRANTI` | 0 | The Sun's entry into sidereal Mesha, which opens the solar year and names its minister (C1150) |
+| `TS_MUNDANE_KIND_MAKARA_SANKRANTI` | 1 | The Sun's entry into sidereal Makara, the turn to the northern course (uttarayana) (C1150) |
+| `TS_MUNDANE_KIND_ARIES_INGRESS` | 2 | The Sun at tropical 0°, the spring equinox, the starting point Ptolemy prefers (C1150) |
+| `TS_MUNDANE_KIND_CANCER_INGRESS` | 3 | The Sun at tropical 90°, the summer solstice, one of Ptolemy's four starting points (C1150) |
+| `TS_MUNDANE_KIND_LIBRA_INGRESS` | 4 | The Sun at tropical 180°, the autumn equinox, one of Ptolemy's four starting points (C1150) |
+| `TS_MUNDANE_KIND_CAPRICORN_INGRESS` | 5 | The Sun at tropical 270°, the winter solstice, one of Ptolemy's four starting points (C1150) |
+| `TS_MUNDANE_KIND_NEW_MOON_BEFORE_INGRESS` | 6 | The last new moon before an ingress: before Mesha, the new moon that opens Chaitra, whose weekday's lord rules the year (C1151) |
+| `TS_MUNDANE_KIND_FULL_MOON_BEFORE_INGRESS` | 7 | The last full moon before an ingress (C1151) |
+| `TS_MUNDANE_KIND_SYZYGY_BEFORE_INGRESS` | 8 | Whichever of the new and the full moon most nearly precedes an ingress, Ptolemy's own reading (C1151) |
+| `TS_MUNDANE_KIND_SOLAR_ECLIPSE` | 9 | The next solar eclipse, at its greatest (C1154) |
+| `TS_MUNDANE_KIND_LUNAR_ECLIPSE` | 10 | The next lunar eclipse, at its greatest (C1154) |
+| `TS_MUNDANE_KIND_GREAT_CONJUNCTION` | 11 | The next conjunction of Jupiter and Saturn in geocentric longitude, the first of a triple one (C1153) |
+| `TS_MUNDANE_KIND_EVENT` | 12 | An event on record: a name, an instant and a place, cast as given, its source carried on the answer |
 
 ## ts_status
 

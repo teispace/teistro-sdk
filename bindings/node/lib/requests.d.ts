@@ -547,6 +547,32 @@ export interface CalendarAsked {
 }
 
 /**
+ * The lines of a map at one instant.
+ */
+export interface AstrocartographyRequest {
+  /**
+   * The bodies, in the order their lines are answered; none for the seven and whichever outer planets the profile places.
+   */
+  readonly bodies?: readonly Member<catalogue.Graha>[];
+  /**
+   * The instant, a Julian day (UTC).
+   */
+  readonly instant: number;
+  /**
+   * The furthest latitude sampled north and south, degrees, above zero and below ninety; eighty by default.
+   */
+  readonly latitudeLimitDeg?: number;
+  /**
+   * In mundo, the default, or zodiacal (C1155).
+   */
+  readonly projection?: Projection;
+  /**
+   * The step of latitude between a line's points, degrees, above zero and at most ten; one by default.
+   */
+  readonly stepDeg?: number;
+}
+
+/**
  * Two charts compared: `first` founded under the call's context, `second` (the first's birth again when left out) under the other's, and `at` the UTC Julian day the running dasha lords are compared at (each birth's own when left out).
  */
 export interface ChartDisagreementsRequest {
@@ -626,11 +652,71 @@ export interface ChartFoundRequest {
 }
 
 /**
+ * A mundane chart as a binding asks for it: a kind, when to look from (a `year` or an instant `from`), or the `event` an `EVENT` casts, and the place the chart is cast for.
+ */
+export interface MundaneRequest {
+  /**
+   * The place's altitude, metres.
+   */
+  readonly altitudeM?: number;
+  /**
+   * For an `EVENT`, the event on record.
+   */
+  readonly event?: MundaneEvent | null;
+  /**
+   * The instant the search starts at, a Julian day (UTC): the first ingress, eclipse or conjunction at or after it.
+   */
+  readonly from?: number | null;
+  /**
+   * For a lunation, the ingress it precedes; `MESHA_SANKRANTI` when left out, the new moon that opens Chaitra (C1151).
+   */
+  readonly ingress?: Member<catalogue.MundaneKind> | null;
+  /**
+   * Which chart.
+   */
+  readonly kind: Member<catalogue.MundaneKind>;
+  /**
+   * The place's latitude, degrees, north positive (C1152).
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees, east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The local clock's offset from UTC, seconds, east positive.
+   */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The year (Gregorian) whose ingress, or whose first eclipse or conjunction after 1 January 0h UTC, is asked; or name `from`.
+   */
+  readonly year?: number | null;
+}
+
+/**
  * Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked.
  */
 export interface BatchAsked {
   readonly baseline?: BaselinePeriod | null;
   readonly periods: readonly PeriodAsked[];
+}
+
+/**
+ * A chart's instant recast at other places.
+ */
+export interface RelocationRequest {
+  /**
+   * The house division; the profile's Western override, else Placidus, when left out (C1157).
+   */
+  readonly houseSystem?: Member<catalogue.HouseSystem> | null;
+  /**
+   * The chart's instant, a Julian day (UTC).
+   */
+  readonly instant: number;
+  /**
+   * The places, one to 256.
+   */
+  readonly places: readonly RelocationPlace[];
 }
 
 /**
@@ -1629,6 +1715,14 @@ export interface ReckonedPlace {
 export type AyanaReckoning = 'SIDEREAL' | 'TROPICAL';
 
 /**
+ * How a body is placed on the angles (C1155), written `"IN_MUNDO"` or `"ZODIACAL"`.
+ *
+ * `IN_MUNDO`: The body where it stands, its ecliptic latitude kept, against the true horizon: the practice of astrocartography's maps.
+ * `ZODIACAL`: The body's degree of the ecliptic, latitude zeroed: a point on a line has the body's longitude on the chart's own angle there.
+ */
+export type Projection = 'IN_MUNDO' | 'ZODIACAL';
+
+/**
  * What the antiscia are asked: the orbs a pair is read under, and whether a reflection is read on the cusps.
  */
 export interface AntisciaRequest {
@@ -2253,6 +2347,24 @@ export interface HouseRequest {
 }
 
 /**
+ * An event on record, cast as given (`EVENT`).
+ */
+export interface MundaneEvent {
+  /**
+   * When, a Julian day (UTC).
+   */
+  readonly instant: number;
+  /**
+   * What happened.
+   */
+  readonly name: string;
+  /**
+   * Where the record of it comes from, carried on the answer.
+   */
+  readonly source: string;
+}
+
+/**
  * The period a score is weighed for, which sets the Moon's weight.
  *
  * `DAILY`: A day: the Moon weighs 5.
@@ -2276,6 +2388,24 @@ export interface PeriodAsked {
   readonly snapshot?: Snapshot | null;
   readonly spells?: readonly number[] | null;
   readonly utcOffsetSeconds: number;
+}
+
+/**
+ * A place a chart is recast at.
+ */
+export interface RelocationPlace {
+  /**
+   * Altitude, metres.
+   */
+  readonly altitudeM?: number;
+  /**
+   * Latitude, degrees, north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * Longitude, degrees, east positive.
+   */
+  readonly longitudeDeg: number;
 }
 
 /**

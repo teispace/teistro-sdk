@@ -299,7 +299,8 @@ export type Kind =
   | 'ruler_text'
   | 'ruler_day_rule'
   | 'paya'
-  | 'tridosha';
+  | 'tridosha'
+  | 'mundane_kind';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -627,6 +628,10 @@ export declare const Kind: {
    * The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).
    */
   readonly Tridosha: 'tridosha';
+  /**
+   * Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).
+   */
+  readonly MundaneKind: 'mundane_kind';
 };
 
 /**
@@ -3394,6 +3399,7 @@ export type ChartKind =
   | 'chart_kind.RETURN'
   | 'chart_kind.RELOCATED'
   | 'chart_kind.COMPOSITE'
+  | 'chart_kind.MUNDANE'
   | 'unknown';
 
 /** Every ChartKind by name; the values are the strings the union accepts. */
@@ -3426,6 +3432,10 @@ export declare const ChartKind: {
    * Composite
    */
   readonly Composite: 'chart_kind.COMPOSITE';
+  /**
+   * Mundane: a chart of a year, a lunation, an eclipse or a conjunction, cast for a place (`03-design/mundane-charts.md`)
+   */
+  readonly Mundane: 'chart_kind.MUNDANE';
 };
 
 /**
@@ -6506,6 +6516,87 @@ export declare const Tridosha: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const TridoshaById: ReadonlyMap<number, Tridosha>;
+
+/**
+ * Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`). Members are the catalogue's ids; the full key id is `(TS_KIND_MUNDANE_KIND << 16) | member`.
+ */
+export type MundaneKind =
+  | 'mundane_kind.MESHA_SANKRANTI'
+  | 'mundane_kind.MAKARA_SANKRANTI'
+  | 'mundane_kind.ARIES_INGRESS'
+  | 'mundane_kind.CANCER_INGRESS'
+  | 'mundane_kind.LIBRA_INGRESS'
+  | 'mundane_kind.CAPRICORN_INGRESS'
+  | 'mundane_kind.NEW_MOON_BEFORE_INGRESS'
+  | 'mundane_kind.FULL_MOON_BEFORE_INGRESS'
+  | 'mundane_kind.SYZYGY_BEFORE_INGRESS'
+  | 'mundane_kind.SOLAR_ECLIPSE'
+  | 'mundane_kind.LUNAR_ECLIPSE'
+  | 'mundane_kind.GREAT_CONJUNCTION'
+  | 'mundane_kind.EVENT'
+  | 'unknown';
+
+/** Every MundaneKind by name; the values are the strings the union accepts. */
+export declare const MundaneKind: {
+  /**
+   * The Sun's entry into sidereal Mesha, which opens the solar year and names its minister (C1150)
+   */
+  readonly MeshaSankranti: 'mundane_kind.MESHA_SANKRANTI';
+  /**
+   * The Sun's entry into sidereal Makara, the turn to the northern course (uttarayana) (C1150)
+   */
+  readonly MakaraSankranti: 'mundane_kind.MAKARA_SANKRANTI';
+  /**
+   * The Sun at tropical 0°, the spring equinox, the starting point Ptolemy prefers (C1150)
+   */
+  readonly AriesIngress: 'mundane_kind.ARIES_INGRESS';
+  /**
+   * The Sun at tropical 90°, the summer solstice, one of Ptolemy's four starting points (C1150)
+   */
+  readonly CancerIngress: 'mundane_kind.CANCER_INGRESS';
+  /**
+   * The Sun at tropical 180°, the autumn equinox, one of Ptolemy's four starting points (C1150)
+   */
+  readonly LibraIngress: 'mundane_kind.LIBRA_INGRESS';
+  /**
+   * The Sun at tropical 270°, the winter solstice, one of Ptolemy's four starting points (C1150)
+   */
+  readonly CapricornIngress: 'mundane_kind.CAPRICORN_INGRESS';
+  /**
+   * The last new moon before an ingress: before Mesha, the new moon that opens Chaitra, whose weekday's lord rules the year (C1151)
+   */
+  readonly NewMoonBeforeIngress: 'mundane_kind.NEW_MOON_BEFORE_INGRESS';
+  /**
+   * The last full moon before an ingress (C1151)
+   */
+  readonly FullMoonBeforeIngress: 'mundane_kind.FULL_MOON_BEFORE_INGRESS';
+  /**
+   * Whichever of the new and the full moon most nearly precedes an ingress, Ptolemy's own reading (C1151)
+   */
+  readonly SyzygyBeforeIngress: 'mundane_kind.SYZYGY_BEFORE_INGRESS';
+  /**
+   * The next solar eclipse, at its greatest (C1154)
+   */
+  readonly SolarEclipse: 'mundane_kind.SOLAR_ECLIPSE';
+  /**
+   * The next lunar eclipse, at its greatest (C1154)
+   */
+  readonly LunarEclipse: 'mundane_kind.LUNAR_ECLIPSE';
+  /**
+   * The next conjunction of Jupiter and Saturn in geocentric longitude, the first of a triple one (C1153)
+   */
+  readonly GreatConjunction: 'mundane_kind.GREAT_CONJUNCTION';
+  /**
+   * An event on record: a name, an instant and a place, cast as given, its source carried on the answer
+   */
+  readonly Event: 'mundane_kind.EVENT';
+};
+
+/**
+ * Every MundaneKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const MundaneKindById: ReadonlyMap<number, MundaneKind>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

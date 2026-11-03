@@ -2659,6 +2659,18 @@
     }
   },
   {
+    "record": "chart.astrocartography",
+    "request": {
+      "bodies": [
+        "graha.MOON"
+      ],
+      "instant": 1.5,
+      "latitudeLimitDeg": 1.5,
+      "projection": "ZODIACAL",
+      "stepDeg": 1.5
+    }
+  },
+  {
     "record": "chart.disagreements",
     "request": {
       "at": 1.5,
@@ -4065,6 +4077,24 @@
     }
   },
   {
+    "record": "chart.mundane",
+    "request": {
+      "altitudeM": 1.5,
+      "event": {
+        "instant": 1.5,
+        "name": "x",
+        "source": "x"
+      },
+      "from": 1.5,
+      "ingress": "mundane_kind.MAKARA_SANKRANTI",
+      "kind": "mundane_kind.MAKARA_SANKRANTI",
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "utcOffsetSeconds": 1,
+      "year": 1
+    }
+  },
+  {
     "record": "chart.rashifal",
     "request": {
       "baseline": "WEEKLY",
@@ -4096,6 +4126,20 @@
             1
           ],
           "utcOffsetSeconds": 1
+        }
+      ]
+    }
+  },
+  {
+    "record": "chart.relocated",
+    "request": {
+      "houseSystem": "house_system.PLACIDUS",
+      "instant": 1.5,
+      "places": [
+        {
+          "altitudeM": 1.5,
+          "latitudeDeg": 1.5,
+          "longitudeDeg": 1.5
         }
       ]
     }
