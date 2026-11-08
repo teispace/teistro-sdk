@@ -6,13 +6,13 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 447 of 534 | 83.7% | 181 of 181 | 100.0% |
-| `hi-Deva-IN` | base | 333 of 534 | 62.4% | 74 of 181 | 40.9% |
-| `ne-Deva-NP` | strict | 447 of 534 | 83.7% | 181 of 181 | 100.0% |
-| `sa-Deva` | base | 332 of 534 | 62.2% | 68 of 181 | 37.6% |
-| `sa-Latn` | base | 332 of 534 | 62.2% | 0 of 181 | 0.0% |
+| `en-Latn` | strict | 447 of 535 | 83.6% | 181 of 181 | 100.0% |
+| `hi-Deva-IN` | base | 333 of 535 | 62.2% | 74 of 181 | 40.9% |
+| `ne-Deva-NP` | strict | 447 of 535 | 83.6% | 181 of 181 | 100.0% |
+| `sa-Deva` | base | 332 of 535 | 62.1% | 68 of 181 | 37.6% |
+| `sa-Latn` | base | 332 of 535 | 62.1% | 0 of 181 | 0.0% |
 
-534 members of 43 kinds, 181 messages.
+535 members of 43 kinds, 181 messages.
 
 `hi-Deva-IN` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
 
@@ -32,7 +32,7 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `avastha_sayanadi` | 12 | 12 | 0 | 12 | 0 | 0 |
 | `ayana` | 2 | 2 | 2 | 2 | 2 | 2 |
 | `ayanamsha` | 47 | 47 | 47 | 47 | 47 | 47 |
-| `calendar` | 14 | 0 | 0 | 0 | 0 | 0 |
+| `calendar` | 15 | 0 | 0 | 0 | 0 | 0 |
 | `chart_kind` | 8 | 0 | 0 | 0 | 0 | 0 |
 | `choghadiya` | 7 | 7 | 7 | 7 | 7 | 7 |
 | `dasha_system` | 45 | 29 | 18 | 29 | 18 | 18 |
