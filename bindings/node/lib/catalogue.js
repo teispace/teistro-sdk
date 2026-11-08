@@ -1916,6 +1916,7 @@ export const Calendar = /* @__PURE__ */ Object.freeze({
   BengalSolar: 'calendar.BENGAL_SOLAR',
   OdiaSolar: 'calendar.ODIA_SOLAR',
   MalayalamSolar: 'calendar.MALAYALAM_SOLAR',
+  TamilVakya: 'calendar.TAMIL_VAKYA',
 });
 
 /**
@@ -1937,6 +1938,7 @@ export const CalendarById = /* @__PURE__ */ new Map([
   [11, 'calendar.BENGAL_SOLAR'],
   [12, 'calendar.ODIA_SOLAR'],
   [13, 'calendar.MALAYALAM_SOLAR'],
+  [14, 'calendar.TAMIL_VAKYA'],
 ]);
 
 /** Every Era by name. */

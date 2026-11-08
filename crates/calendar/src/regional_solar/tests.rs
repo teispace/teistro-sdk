@@ -190,8 +190,10 @@ fn every_date_names_its_era_and_frame() {
 
 #[test]
 fn every_day_reads_back_and_years_abut() {
-    for region in REGIONS {
-        let system = calendar(region.calendar);
+    let ids = REGIONS.iter().map(|region| region.calendar);
+    for id in ids.chain([Calendar::TamilVakya]) {
+        let system = calendar(id);
+        let region = system.region();
         let (first, last) = system.capabilities().range;
         let (first_year, last_year) = system.years();
         assert_eq!(
@@ -271,4 +273,160 @@ fn the_engine_reproduces_the_shipped_rows_under_the_tables_rule() {
     assert_eq!((year, month), (2025, 8));
     assert!(row.days() == 365 || row.days() == 366);
     assert_eq!(MALAYALAM.engine(&text).year_start(), MALAYALAM.year_start);
+}
+
+/// The month beginnings the vakya almanacs print, as days of the month
+/// from Chittirai to Panguni, by the Gregorian year the Tamil year opens
+/// in: the Manonmani Vilasam suddha vakya almanac (archive.org
+/// `bqfm-manonmani-vilasa-suddha-vakya-panchangam-sarvajitt` for 1947 to
+/// 1962, `calw-manonmani-vilasa-suddha-vakkiya-panchangam-isvara-` for
+/// 1997 to 2021) and the Koviloor vakya almanac for 1978 (Tamil Digital
+/// Library `KMM1082`). A zero is a month not read.
+const VAKYA_PRINTED: [(i32, [u8; 12]); 42] = [
+    (1947, [14, 15, 15, 17, 17, 17, 18, 16, 16, 14, 13, 14]),
+    (1948, [13, 14, 14, 16, 16, 16, 17, 16, 15, 14, 12, 14]),
+    (1949, [13, 14, 14, 16, 17, 17, 17, 16, 16, 14, 12, 14]),
+    (1950, [13, 14, 15, 16, 17, 17, 17, 16, 16, 14, 13, 14]),
+    (1951, [14, 15, 15, 17, 17, 17, 18, 17, 16, 14, 13, 14]),
+    (1952, [13, 14, 14, 16, 16, 16, 17, 16, 15, 14, 12, 14]),
+    (1953, [13, 14, 15, 16, 17, 17, 17, 16, 16, 14, 12, 14]),
+    (1954, [13, 14, 15, 16, 17, 17, 17, 16, 16, 14, 13, 14]),
+    (1955, [14, 15, 15, 17, 17, 17, 18, 17, 16, 14, 13, 14]),
+    (1956, [13, 14, 14, 16, 16, 16, 17, 16, 15, 14, 12, 14]),
+    (1957, [13, 14, 15, 16, 17, 17, 17, 16, 16, 14, 12, 14]),
+    (1958, [14, 14, 15, 16, 17, 17, 17, 16, 16, 14, 13, 14]),
+    (1959, [14, 15, 15, 17, 17, 17, 18, 17, 16, 14, 13, 14]),
+    (1960, [13, 14, 14, 16, 16, 16, 17, 16, 15, 14, 12, 14]),
+    (1961, [13, 14, 15, 16, 17, 17, 17, 16, 16, 14, 12, 14]),
+    (1962, [14, 14, 15, 16, 0, 0, 0, 0, 0, 0, 0, 0]),
+    (1978, [14, 15, 15, 17, 17, 17, 18, 17, 16, 14, 13, 15]),
+    (1997, [14, 15, 15, 17, 17, 17, 18, 16, 16, 14, 13, 15]),
+    (1998, [14, 15, 15, 17, 17, 17, 18, 17, 16, 15, 13, 15]),
+    (1999, [14, 15, 15, 17, 18, 18, 18, 17, 16, 15, 13, 14]),
+    (2000, [13, 14, 15, 16, 17, 17, 17, 16, 16, 14, 13, 14]),
+    (2001, [14, 15, 15, 17, 17, 17, 18, 16, 16, 14, 13, 15]),
+    (2002, [14, 15, 15, 17, 17, 17, 18, 17, 16, 15, 13, 15]),
+    (2003, [14, 15, 15, 17, 18, 18, 18, 17, 16, 15, 13, 14]),
+    (2004, [13, 14, 15, 16, 17, 17, 17, 16, 16, 14, 13, 14]),
+    (2005, [14, 15, 15, 17, 17, 17, 18, 16, 16, 14, 13, 15]),
+    (2006, [14, 15, 15, 17, 17, 17, 18, 17, 16, 15, 13, 15]),
+    (2007, [14, 15, 15, 17, 18, 18, 18, 17, 17, 15, 13, 14]),
+    (2008, [13, 14, 15, 16, 17, 17, 17, 16, 16, 14, 13, 14]),
+    (2009, [14, 15, 15, 17, 17, 17, 18, 17, 16, 14, 13, 15]),
+    (2010, [14, 15, 15, 17, 17, 17, 18, 17, 16, 15, 13, 15]),
+    (2011, [14, 15, 16, 17, 18, 18, 18, 17, 17, 15, 13, 14]),
+    (2012, [13, 14, 15, 16, 17, 17, 17, 16, 16, 14, 13, 14]),
+    (2013, [14, 15, 15, 17, 17, 17, 18, 17, 16, 14, 13, 15]),
+    (2014, [14, 15, 15, 17, 17, 17, 18, 17, 16, 15, 13, 15]),
+    (2015, [14, 15, 16, 17, 18, 18, 18, 17, 17, 15, 13, 14]),
+    (2016, [14, 14, 15, 16, 17, 17, 17, 16, 16, 14, 13, 14]),
+    (2017, [14, 15, 15, 17, 17, 17, 18, 17, 16, 14, 13, 15]),
+    (2018, [14, 15, 15, 17, 17, 17, 18, 17, 16, 15, 13, 15]),
+    (2019, [14, 15, 16, 17, 18, 18, 18, 17, 17, 15, 13, 14]),
+    (2020, [14, 14, 15, 16, 17, 17, 17, 16, 16, 14, 13, 14]),
+    (2021, [14, 15, 15, 17, 17, 17, 18, 17, 16, 14, 13, 15]),
+];
+
+/// The Gregorian month each Tamil month begins in, Chittirai first.
+const TAMIL_GREGORIAN_MONTHS: [u8; 12] = [4, 5, 6, 7, 8, 9, 10, 11, 12, 1, 2, 3];
+
+#[test]
+fn vakya_months_begin_on_the_almanacs_days() {
+    let mut read = 0;
+    let mut parting = 0;
+    for (year, days) in VAKYA_PRINTED {
+        for ((month, day), gregorian_month) in (1..=12).zip(days).zip(TAMIL_GREGORIAN_MONTHS) {
+            if day == 0 {
+                continue;
+            }
+            let gregorian_year = if month <= 9 { year } else { year + 1 };
+            let printed = (gregorian_year, gregorian_month, day);
+            assert_eq!(
+                month_start(Calendar::TamilVakya, year, month),
+                printed,
+                "month {month} of {year}"
+            );
+            read += 1;
+            parting += usize::from(month_start(Calendar::TamilSolar, year, month) != printed);
+        }
+    }
+    // Every month read, and the drik calendar misses a fifth of them.
+    assert_eq!((read, parting), (496, 89));
+}
+
+#[test]
+fn vakya_months_turn_on_the_almanacs_daytime() {
+    // Kali 5101: the Kumbha sankranti at 29 nadis 41 vinadis after the
+    // sunrise of 12 February 2001, past that day's 29 nadis 7 vinadis of
+    // daylight: Masi begins on the 13th, as printed, where a thirty-nadi
+    // cutoff would give the 12th.
+    let kumbha = teistro_siddhanta::vakya::sankranti(5101, 10).unwrap();
+    assert_eq!(kumbha.since_sunrise().0, 29);
+    assert_eq!(month_start(Calendar::TamilVakya, 2000, 11), (2001, 2, 13));
+    // Saka 1869's Mesha sankranti at night: the year began on Monday.
+    assert_eq!(
+        vakya::month_start(1869, 0),
+        Some(fixed_from_gregorian(1947, 4, 14))
+    );
+    assert_eq!(vakya::month_start(1869, 12), None);
+}
+
+#[test]
+fn the_vakya_calendar_names_its_frame_and_keeps_the_tamil_year() {
+    let system = calendar(Calendar::TamilVakya);
+    assert_eq!(system.id(), Calendar::TamilVakya);
+    assert_eq!(system.region().calendar, Calendar::TamilSolar);
+    assert_eq!(system.years(), calendar(Calendar::TamilSolar).years());
+    let date = system.date_of(fixed_from_gregorian(2025, 1, 1)).unwrap();
+    assert_eq!(date.calendar, Calendar::TamilVakya);
+    assert_eq!(
+        date.era.map(|e| (e.era, e.year)),
+        Some((Era::Shaka, date.year))
+    );
+    let CalendarResolution::Computed { model } = &date.resolution else {
+        panic!("{:?}", date.resolution);
+    };
+    assert_eq!(model, vakya::FRAME);
+    assert!(
+        model.contains("Vakyakarana") && model.contains(&TAMIL.rule.key()),
+        "{model}"
+    );
+    let capabilities = system.capabilities();
+    assert!(!capabilities.needs_ephemeris && !capabilities.needs_place);
+    assert_eq!(capabilities.eras, [Era::Shaka]);
+    let (_, last) = system.years();
+    let refused = system.to_fixed_ymd(last + 1, 1, 1).unwrap_err();
+    assert!(refused.message.contains("Tamil vakya"), "{refused}");
+    let early = system
+        .date_of(system.capabilities().range.0.plus_days(-1))
+        .unwrap_err();
+    assert!(early.message.contains("Tamil vakya"), "{early}");
+    let marked =
+        CalendarDate::defined(Calendar::TamilVakya, 1946, 1, 1).with_leap(Some(crate::Leap::Day));
+    assert!(system.fixed_of(&marked).is_err());
+    assert!(system.to_fixed_ymd(1946, 13, 1).is_err());
+}
+
+#[test]
+fn the_schools_part_in_a_fifth_of_the_months() {
+    // Tamil years opening 1900 to 2100: the vakya month begins a day
+    // after the drik one in 450 months and a day before it in 74.
+    let (mut later, mut earlier) = (0, 0);
+    for year in 1900..=2100 {
+        for month in 1..=12 {
+            let vakya = fixed_from_gregorian_tuple(month_start(Calendar::TamilVakya, year, month));
+            let drik = fixed_from_gregorian_tuple(month_start(Calendar::TamilSolar, year, month));
+            match drik.days_until(vakya) {
+                1 => later += 1,
+                -1 => earlier += 1,
+                0 => {}
+                other => panic!("{year} month {month}: {other} days apart"),
+            }
+        }
+    }
+    assert_eq!((later, earlier), (450, 74));
+}
+
+fn fixed_from_gregorian_tuple((year, month, day): (i32, u8, u8)) -> FixedDay {
+    fixed_from_gregorian(year, month, day)
 }

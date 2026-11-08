@@ -2356,6 +2356,9 @@ class Calendar(Catalogued):
     MALAYALAM_SOLAR = 13
     """Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha"""
 
+    TAMIL_VAKYA = 14
+    """Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -6955,6 +6958,7 @@ _KEYS: dict[str, dict[int, str]] = {
         11: "BENGAL_SOLAR",
         12: "ODIA_SOLAR",
         13: "MALAYALAM_SOLAR",
+        14: "TAMIL_VAKYA",
         -1: "UNKNOWN",
     },
     "Era": {

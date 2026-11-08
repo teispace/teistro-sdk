@@ -26,6 +26,13 @@
 //! engine by `check-calendars`, so a date needs no ephemeris at run time
 //! and says which frame computed it.
 //!
+//! Tamil almanacs come in two schools. The thirukanitha (drik) almanacs
+//! reckon the modern Sun as above (`calendar.TAMIL_SOLAR`); the vakya
+//! almanacs reckon the Sun of the *Vakyakarana*
+//! (`calendar.TAMIL_VAKYA`, [`vakya`]), and begin a month a day later
+//! than the drik reckoning in about one month in five and a day earlier
+//! in about one in thirty.
+//!
 //! ```
 //! use teistro_calendar::regional_solar::RegionalSolar;
 //! use teistro_calendar::{CalendarSystem, Gregorian};
@@ -60,6 +67,7 @@ use crate::solar::{MonthStartRule, SolarModel};
 
 #[rustfmt::skip]
 mod generated;
+pub mod vakya;
 
 /// The Gregorian years the shipped tables' years begin in: every year
 /// opening from 1800 to 2398, so the last ends inside the built-in
@@ -296,6 +304,7 @@ pub struct Table {
 /// ```
 #[derive(Debug)]
 pub struct RegionalSolar {
+    calendar: Calendar,
     region: &'static Region,
     table: &'static Table,
     year_starts: Vec<FixedDay>,
@@ -309,6 +318,9 @@ static SHIPPED: [OnceLock<RegionalSolar>; 4] = [
     OnceLock::new(),
 ];
 
+/// The vakya school's Tamil calendar, built on first use.
+static VAKYA: OnceLock<RegionalSolar> = OnceLock::new();
+
 impl RegionalSolar {
     /// The shipped calendar a key names, or `None` for any other key.
     ///
@@ -317,10 +329,17 @@ impl RegionalSolar {
     /// use teistro_core::catalogue::Calendar;
     ///
     /// assert!(RegionalSolar::shipped(Calendar::OdiaSolar).is_some());
+    /// assert!(RegionalSolar::shipped(Calendar::TamilVakya).is_some());
     /// assert!(RegionalSolar::shipped(Calendar::BikramSambat).is_none());
     /// ```
     #[must_use]
     pub fn shipped(calendar: Calendar) -> Option<&'static RegionalSolar> {
+        if calendar == Calendar::TamilVakya {
+            return Some(VAKYA.get_or_init(|| RegionalSolar {
+                calendar,
+                ..RegionalSolar::over(&TAMIL, vakya::table())
+            }));
+        }
         let index = REGIONS
             .iter()
             .position(|region| region.calendar == calendar)?;
@@ -353,13 +372,17 @@ impl RegionalSolar {
     pub fn over(region: &'static Region, table: &'static Table) -> RegionalSolar {
         let (y, m, d) = table.first_start;
         RegionalSolar {
+            calendar: region.calendar,
             region,
             table,
             year_starts: year_starts(table.month_lengths, 0, fixed_from_gregorian(y, m, d)),
         }
     }
 
-    /// The definition.
+    /// The definition: the region whose months, years and era the
+    /// calendar keeps. The vakya school keeps the Tamil definition's
+    /// months and years and reckons its sankrantis from the
+    /// *Vakyakarana* instead of the definition's engine.
     ///
     /// ```
     /// use teistro_calendar::regional_solar::RegionalSolar;
@@ -367,6 +390,8 @@ impl RegionalSolar {
     ///
     /// let odia = RegionalSolar::shipped(Calendar::OdiaSolar).expect("shipped");
     /// assert_eq!(odia.region().place_name, "Bhubaneswar");
+    /// let vakya = RegionalSolar::shipped(Calendar::TamilVakya).expect("shipped");
+    /// assert_eq!(vakya.region().calendar, Calendar::TamilSolar);
     /// ```
     #[must_use]
     pub const fn region(&self) -> &'static Region {
@@ -442,6 +467,16 @@ impl RegionalSolar {
         self.region.sign_of_month(date.month)
     }
 
+    /// The calendar's name in a message: the region's, with the school
+    /// where it differs.
+    fn name(&self) -> &'static str {
+        if self.calendar == Calendar::TamilVakya {
+            "Tamil vakya"
+        } else {
+            self.region.name
+        }
+    }
+
     fn row(&self, year: i32) -> Result<&'static [u8; 12], Error> {
         let (first, last) = self.years();
         usize::try_from(year - first)
@@ -450,7 +485,7 @@ impl RegionalSolar {
             .ok_or_else(|| {
                 out_of_range(format!(
                     "the {} solar calendar covers {first} to {last}, not {year}",
-                    self.region.name
+                    self.name()
                 ))
                 .with_field("year")
             })
@@ -459,7 +494,7 @@ impl RegionalSolar {
 
 impl CalendarSystem for RegionalSolar {
     fn id(&self) -> Calendar {
-        self.region.calendar
+        self.calendar
     }
 
     fn capabilities(&self) -> CalendarCapabilities {
@@ -481,7 +516,7 @@ impl CalendarSystem for RegionalSolar {
 
     fn date_of(&self, fixed: FixedDay) -> Result<CalendarDate, Error> {
         let (first_year, last_year) = self.years();
-        let name = self.region.name;
+        let name = self.name();
         let index = match self.year_starts.binary_search(&fixed) {
             Ok(i) => i,
             Err(0) => {
@@ -505,7 +540,7 @@ impl CalendarSystem for RegionalSolar {
         let year = first_year + i32::try_from(index).unwrap_or(0);
         let label = BikramSambat::label(months, start.days_until(fixed)).ok_or_else(after)?;
         Ok(CalendarDate {
-            calendar: self.region.calendar,
+            calendar: self.calendar,
             year,
             month: label.month,
             day: label.day,
@@ -523,14 +558,7 @@ impl CalendarSystem for RegionalSolar {
     fn fixed_of(&self, date: &CalendarDate) -> Result<FixedDay, Error> {
         check_no_leap(date)?;
         let length = self.month_length(date.year, date.month)?;
-        check_day(
-            self.region.calendar,
-            date.year,
-            date.month,
-            date.day,
-            12,
-            length,
-        )?;
+        check_day(self.calendar, date.year, date.month, date.day, 12, length)?;
         let months = self.row(date.year)?;
         let start = self.year_start(date.year).unwrap_or_default();
         let before: i64 = months
@@ -547,7 +575,7 @@ impl CalendarSystem for RegionalSolar {
             .get(usize::from(month.saturating_sub(1)))
             .copied()
             .unwrap_or(0);
-        check_day(self.region.calendar, year, month, 1, 12, length)?;
+        check_day(self.calendar, year, month, 1, 12, length)?;
         Ok(length)
     }
 

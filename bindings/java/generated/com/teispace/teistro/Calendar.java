@@ -79,6 +79,11 @@ public enum Calendar implements Catalogued {
      */
     MALAYALAM_SOLAR(13, "MALAYALAM_SOLAR"),
 
+    /**
+     * Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha
+     */
+    TAMIL_VAKYA(14, "TAMIL_VAKYA"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

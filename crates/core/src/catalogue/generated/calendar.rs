@@ -51,9 +51,11 @@ pub enum Calendar {
     OdiaSolar = 12,
     /// Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha
     MalayalamSolar = 13,
+    /// Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha
+    TamilVakya = 14,
 }
 
-const BY_KEY: [(&str, Calendar); 14] = [
+const BY_KEY: [(&str, Calendar); 15] = [
     ("BANGLADESHI", Calendar::Bangladeshi),
     ("BENGAL_SOLAR", Calendar::BengalSolar),
     ("BIKRAM_SAMBAT", Calendar::BikramSambat),
@@ -67,6 +69,7 @@ const BY_KEY: [(&str, Calendar); 14] = [
     ("MIXED", Calendar::Mixed),
     ("ODIA_SOLAR", Calendar::OdiaSolar),
     ("TAMIL_SOLAR", Calendar::TamilSolar),
+    ("TAMIL_VAKYA", Calendar::TamilVakya),
     ("TIBETAN_PHUGPA", Calendar::TibetanPhugpa),
 ];
 
@@ -78,7 +81,7 @@ impl Calendar {
     pub const KIND: Kind = Kind::Calendar;
 
     /// Every member, in id order.
-    pub const ALL: [Calendar; 14] = [
+    pub const ALL: [Calendar; 15] = [
         Calendar::Gregorian,
         Calendar::Julian,
         Calendar::Mixed,
@@ -93,6 +96,7 @@ impl Calendar {
         Calendar::BengalSolar,
         Calendar::OdiaSolar,
         Calendar::MalayalamSolar,
+        Calendar::TamilVakya,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -119,6 +123,7 @@ impl Calendar {
             Calendar::BengalSolar => "BENGAL_SOLAR",
             Calendar::OdiaSolar => "ODIA_SOLAR",
             Calendar::MalayalamSolar => "MALAYALAM_SOLAR",
+            Calendar::TamilVakya => "TAMIL_VAKYA",
         }
     }
 
@@ -146,6 +151,7 @@ impl Calendar {
             Calendar::BengalSolar => "calendar.BENGAL_SOLAR",
             Calendar::OdiaSolar => "calendar.ODIA_SOLAR",
             Calendar::MalayalamSolar => "calendar.MALAYALAM_SOLAR",
+            Calendar::TamilVakya => "calendar.TAMIL_VAKYA",
         }
     }
 
@@ -173,6 +179,7 @@ impl Calendar {
             Calendar::BengalSolar => "Bengal solar: West Bengal's months, from the day after the sidereal sankranti's civil day, Bengali San years from Mesha",
             Calendar::OdiaSolar => "Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha",
             Calendar::MalayalamSolar => "Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha",
+            Calendar::TamilVakya => "Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha",
         }
     }
 
@@ -200,6 +207,7 @@ impl Calendar {
             Calendar::BengalSolar => None,
             Calendar::OdiaSolar => None,
             Calendar::MalayalamSolar => None,
+            Calendar::TamilVakya => None,
         }
     }
 
@@ -227,6 +235,7 @@ impl Calendar {
             Calendar::BengalSolar => Mark::Verified,
             Calendar::OdiaSolar => Mark::Verified,
             Calendar::MalayalamSolar => Mark::Verified,
+            Calendar::TamilVakya => Mark::Verified,
         }
     }
 
@@ -254,6 +263,7 @@ impl Calendar {
             Calendar::BengalSolar => false,
             Calendar::OdiaSolar => false,
             Calendar::MalayalamSolar => false,
+            Calendar::TamilVakya => false,
         }
     }
 
@@ -282,6 +292,7 @@ impl Calendar {
             Calendar::BengalSolar => &[Source { text: "Sewell and Dikshit, The Indian Calendar, 1896, arts. 28 and 71; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27", reference: "docs/calendars/regional-solar.md" }],
             Calendar::OdiaSolar => &[Source { text: "Sewell and Dikshit, The Indian Calendar, 1896, art. 28; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27", reference: "docs/calendars/regional-solar.md" }],
             Calendar::MalayalamSolar => &[Source { text: "Sewell and Dikshit, The Indian Calendar, 1896, arts. 28 and 71; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27", reference: "docs/calendars/regional-solar.md" }],
+            Calendar::TamilVakya => &[Source { text: "Vakyakarana, ed. T. S. Kuppanna Sastri and K. V. Sarma, 1962, I.2-4 and III.1, III.7-8; Manonmani Vilasam suddha vakya almanac, 1997-2021", reference: "docs/calendars/regional-solar.md" }],
         }
     }
 
@@ -309,6 +320,7 @@ impl Calendar {
             Calendar::BengalSolar => &[],
             Calendar::OdiaSolar => &[],
             Calendar::MalayalamSolar => &[],
+            Calendar::TamilVakya => &[],
         }
     }
 
@@ -357,7 +369,7 @@ impl Calendar {
     /// use teistro_core::catalogue::Calendar;
     ///
     /// assert_eq!(Calendar::from_id(0), Some(Calendar::Gregorian));
-    /// assert_eq!(Calendar::from_id(14), None);
+    /// assert_eq!(Calendar::from_id(15), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Calendar> {
@@ -376,6 +388,7 @@ impl Calendar {
             11 => Some(Calendar::BengalSolar),
             12 => Some(Calendar::OdiaSolar),
             13 => Some(Calendar::MalayalamSolar),
+            14 => Some(Calendar::TamilVakya),
             _ => None,
         }
     }

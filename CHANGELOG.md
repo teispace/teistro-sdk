@@ -19,6 +19,18 @@ the previous release, not by nobody having looked.
   Sareen's *Pancha Swara* for `PANCHASWARA`, and, for the tithi, yoga and karana seeds and
   `VARSHA_NARAYANA`, that no classical text is known (SR-43).
 
+**The Tamil vakya calendar.**
+**Numbers:** none move; `calendar.TAMIL_VAKYA` (id 14) is new, and `TAMIL_SOLAR` keeps its drik months.
+- `Calendar::TamilVakya`, the months the Tamil vakya almanacs print: the *Vakyakarana*'s Sun (its Kali year rule
+  and sankranti vakyas, I.2–4), a month beginning that day when the sankranti falls within the vakya daytime
+  (thirty nadis less the cara of III.7–8 for a shadow of 2¼ angulas, the precession of III.1 unreflected), the
+  next day otherwise; Saka years from Chittirai over `TAMIL_SOLAR`'s span. It agrees with every one of 496
+  printed months (the *Manonmani Vilasam* almanac, 1947 to 1962 and 1997 to 2021, and the Koviloor almanac of
+  1978), of which the drik calendar misses 89 (A2-9, `calendars/regional-solar.md`, C1200 to C1208).
+- `teistro_siddhanta::vakya`: the *Vakyakarana*'s solar arithmetic in exact quarter-vinadis (`mesha_sankranti`,
+  `sankranti`, `SANKRANTI_VAKYAS`, `KaliMoment`), its precession, cara and daytime (`precession_degrees`,
+  `cara_vinadis`, `day_length_vinadis`, `Palabha`).
+
 **The Gaudiya festivals, and Janmashtami's Vaishnava rule.**
 **Numbers:** `INDIA_CENTRAL`'s `JANMASHTAMI` day moves only in a year the 8th holds no sunrise, or two with
 Rohini at the later midnight only (none of 2021 to 2027); its parana is the text's one reading, the end of

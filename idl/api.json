@@ -4467,6 +4467,12 @@
           "value": 13,
           "doc": "Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha",
           "key": "MALAYALAM_SOLAR"
+        },
+        {
+          "name": "TamilVakya",
+          "value": 14,
+          "doc": "Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha",
+          "key": "TAMIL_VAKYA"
         }
       ],
       "source": "catalogue/catalogue.json"
