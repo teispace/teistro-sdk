@@ -632,6 +632,29 @@ impl SuryaSiddhanta {
             .longitude_deg
     }
 
+    /// The bhujantara at an instant (II.46), as a fraction of a day: the
+    /// Sun's equation of centre, true less mean, turned into time at four
+    /// minutes a degree. A sunrise carried by it is later when the true
+    /// Sun is ahead of the mean.
+    ///
+    /// ```
+    /// use teistro_siddhanta::SuryaSiddhanta;
+    ///
+    /// let text = SuryaSiddhanta::text();
+    /// // The Sun's equation never passes 2°15′, nine minutes of time.
+    /// for day in 0..365 {
+    ///     let shift = text.bhujantara_days(2_460_000.5 + f64::from(day));
+    ///     assert!(shift.abs() < 9.0 / 1440.0);
+    /// }
+    /// ```
+    #[must_use]
+    pub fn bhujantara_days(&self, jd_ut: f64) -> f64 {
+        let at = Ahargana::at(jd_ut, &self.params);
+        let equation =
+            self.manda_only(Planet::Sun, at).longitude_deg - self.mean_deg(Planet::Sun, at);
+        ((equation + 540.0).rem_euclid(360.0) - 180.0) / 360.0
+    }
+
     /// The Moon's place.
     ///
     /// ```

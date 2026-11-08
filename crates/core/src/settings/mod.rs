@@ -479,9 +479,9 @@ impl Siddhanta {
 /// take.
 ///
 /// The later commentators correct the text's counts and their sets
-/// differ; none is cited here yet (C28), so what ships is the text
-/// without one, the set **measured** from Nepal's national panchanga
-/// committee, and a consumer's own.
+/// differ (C28). What ships is the text without one, the set
+/// **measured** from Nepal's national panchanga committee, the set the
+/// Makarandasarini's tables print (C1221), and a consumer's own.
 ///
 /// ```
 /// use teistro_core::settings::{Bija, SuryaBija};
@@ -504,6 +504,9 @@ pub enum SuryaBija {
     /// revolutions fewer in an age, and nothing else moves
     /// ([`Bija::NEPAL_COMMITTEE`]).
     NepalCommittee,
+    /// The Makarandasarini's set, read from its daily-motion tables
+    /// ([`Bija::MAKARANDA`]): what Mithila's almanacs compute with.
+    Makaranda,
     /// A consumer's own set.
     Custom {
         /// The revolutions per age it adds to or takes from the text's.
@@ -519,12 +522,14 @@ impl SuryaBija {
     ///
     /// assert_eq!(SuryaBija::None.revolutions(), Bija::NONE);
     /// assert_eq!(SuryaBija::NepalCommittee.revolutions(), Bija::NEPAL_COMMITTEE);
+    /// assert_eq!(SuryaBija::Makaranda.revolutions(), Bija::MAKARANDA);
     /// ```
     #[must_use]
     pub const fn revolutions(self) -> Bija {
         match self {
             SuryaBija::None => Bija::NONE,
             SuryaBija::NepalCommittee => Bija::NEPAL_COMMITTEE,
+            SuryaBija::Makaranda => Bija::MAKARANDA,
             SuryaBija::Custom { revolutions } => revolutions,
         }
     }
@@ -600,6 +605,36 @@ impl Bija {
     pub const NEPAL_COMMITTEE: Bija = Bija {
         moon_apsis: -4,
         ..Bija::NONE
+    };
+
+    /// The Makarandasarini's set (1478), **read** from its own tables
+    /// (`03-design/makaranda.md`): each daily-motion table (*vatika*)
+    /// steps by the text's motion with whole revolutions added or taken
+    /// away in an age. The Moon's apsis makes four fewer (the Nepal
+    /// committee's measured set, here printed), its node four more,
+    /// Mercury's conjunction sixteen more, Jupiter eight fewer (the
+    /// footer's own "kalpa years over 1500, subtracted"), Venus's
+    /// conjunction twelve fewer and Saturn twelve more; the Sun, the
+    /// Moon and Mars keep the text's. Every count is a multiple of four,
+    /// so all the planets still meet at the first of Mesha when the Kali
+    /// age began (I.57).
+    ///
+    /// ```
+    /// use teistro_core::settings::Bija;
+    ///
+    /// let set = Bija::MAKARANDA;
+    /// assert_eq!((set.moon_apsis, set.moon_node, set.jupiter), (-4, 4, -8));
+    /// assert_eq!((set.moon, set.mars), (0, 0));
+    /// ```
+    pub const MAKARANDA: Bija = Bija {
+        moon: 0,
+        moon_apsis: -4,
+        moon_node: 4,
+        mars: 0,
+        mercury: 16,
+        jupiter: -8,
+        venus: -12,
+        saturn: 12,
     };
 }
 

@@ -1,13 +1,14 @@
 # The Makaranda and the Mithila panchang
 
-Status: `research`, 2026-11-08, for SR-16 and A2-8 (a `siddhanta`
-profile that reproduces the almanacs of Mithila). Written before any
-code (design page first). Section 3 is read from the sources. Section 4
-is measured against 90 printed days from three years. Section 5 is the
-proposed profile, and section 6 is why it is **not built yet**: the
-measured agreement is ±5 to ±10 minutes, the printer's sunrise needs a
-knob the SDK lacks, and two residuals have no source yet (C1223 to
-C1229).
+Status: `built`, 2026-11-08, for SR-16 and A2-8 (a `siddhanta` profile
+that reproduces the almanacs of Mithila). The research was written
+before any code (design page first). Section 3 is read from the sources.
+Section 4 is measured against 162 printed days over eight years, 1980 to
+2022. Section 5 is the profile as built, `mithila-makaranda`, and
+section 6 is what stays open. It reproduces every printed day's sunrise
+nakshatra and all but one sunrise tithi, and the printed ends within
+minutes (sd 4 to 6, the worst 23). The residual's two sources are
+shown, the Moon's anomaly and the Sun's, but not closed (C1225, C1226).
 
 ## 1. Purpose
 
@@ -104,241 +105,138 @@ rule over the text's own sky:
 
 ## 4. What the Mithila print computes, measured
 
-Ninety printed days were transcribed from the page images (§7):
-Jyeshtha (adhika) shukla 1980, Bhadra krishna 2012, and Shravana krishna
-to Bhadra shukla 2022. Each 1980 value was checked against its printed
-clock time. The 2022 ones were checked against their clock times where
-read. Every model below was run in a research script (exact
-trigonometry; the SDK's integer mean places, text epoch and
-precession), not yet in the SDK.
+One fortnight's page a year was transcribed for eight years, 162 printed
+days in all (§7): 1980, 1992, 1995, 1998, 2005, 2012, 2015 and 2022. Every
+end was checked against the clock time the page prints beside it. An end
+whose figure and clock disagree is written `?|?`, never guessed. That
+leaves 156 tithi ends and 150 nakshatra ends. The figures below come from
+a research script (exact trigonometry; the SDK's integer mean places,
+text epoch and precession). `crates/siddhanta/tests/mithila.rs` holds the
+SDK (the text's sine table) to bounds set from them.
 
-- **The Sun is the text's.** The printed Sun at *miśramāna* (the
-  printed 46|54 on 14 July 2022 is 30 ghatis + half the day, the
-  apparent midnight) is the text's Sun, without bija, at local mean
-  midnight on 85.48° E: 0.7 to 4.5 minutes of its motion over six days
-  read, July to September 2022 (C1229).
-- **The day length is the text's, at about 25¾° N.** The printed day
-  length matches the text's (obliquity 24°, II.28; ascensional
-  difference, II.61 to 63) at 25.7° to 25.8°: mean +0.2 to +0.4 palas,
-  sd 1.5. That is neither Darbhanga (26.15° N) nor Sitamarhi (26.6° N).
-  Modern obliquities fit worse. The almanac may well use a traditional
-  palabha (C1224).
+- **The place is the almanac's own.** Its front matter (2022-23) says
+  every Mithila panchang is computed for 85°30′ E, 26°35′ N, palabha 6
+  angula, "as from of old". Palabha 6 is 26°34′, and its charakhandas
+  (60, 48 and 20 palas) are the exact ascensional differences there to a
+  pala. At that latitude the text's day length (obliquity 24°) is the
+  printed one within 12 palas on all 162 days, mean +0.2 (C1224). The
+  Makaranda's own deshantara for Mithila agrees: 0;20,48 of the Moon's
+  motion (p. 17) and 0;0,8 of Jupiter's (p. 21) are both 1 ghati 35 palas,
+  9½° east of Ujjain.
+- **The Sun is the text's.** The printed Sun at *miśramāna* (the printed
+  46|54 on 14 July 2022 is 30 ghatis + half the day, the apparent
+  midnight) is the text's Sun, without bija, at local mean midnight on
+  85½° E: 0.7 to 4.5 minutes of its motion over six days read, July to
+  September 2022 (C1229).
 - **Tithi and nakshatra ends are the Makaranda's Moon, give or take
-  minutes.** Each end is solved in the sky named, from the sunrise named
-  at 25.75° N, 85.9° E. The table gives the model minus the print in
-  minutes, over the 88 tithi ends and 87 nakshatra ends printed:
+  minutes.** Each end is solved in the sky named, from the sunrise
+  named, at the stated place. Model minus print, minutes:
 
-  | Sky and sunrise | Tithi mean, sd, max | ≤ 2 / ≤ 5 / ≤ 10 min | Nakshatra mean, sd, max | ≤ 2 / ≤ 5 / ≤ 10 min |
+  | Sky and sunrise | Tithi mean, sd, max | ≤ 2 / ≤ 5 / ≤ 10 of 156 | Nakshatra mean, sd, max | ≤ 2 / ≤ 5 / ≤ 10 of 150 |
   | --- | --- | --- | --- | --- |
-  | modern (Lahiri), modern sunrise | +18, 146, 299 | 1 / 1 / 4 | −42, 133, 343 | 2 / 2 / 5 |
-  | the text, no bija, the text's sunrise | −3.8, 16.4, 34.6 | 5 / 13 / 30 | −7.2, 15.3, 31.9 | 6 / 14 / 37 |
-  | the text + Makaranda bija, the text's sunrise | −0.9, 9.7, 24.7 | 15 / 26 / 57 | −4.9, 7.5, 16.1 | 4 / 22 / 56 |
-  | the text + Makaranda bija, sunrise with bhujāntara | +2.9, 6.0, 24.1 | 23 / 58 / 75 | −0.9, 4.1, 9.9 | 32 / 66 / 87 |
-  | the text + Makaranda bija, modern sunrise (centre, refraction) | −0.8, 11.7, 31.8 | 5 / 28 / 56 | −4.6, 10.0, 23.2 | 6 / 16 / 47 |
+  | modern (Lahiri), modern sunrise | −3.9, 156, 369 | 2 / 2 / 8 | −49, 144, 363 | 1 / 4 / 9 |
+  | the text, no bija, sunrise with bhujāntara | −0.7, 13.6, 27.9 | 17 / 34 / 69 | −1.4, 13.6, 35.8 | 11 / 26 / 61 |
+  | the text + Makaranda bija, the text's sunrise | −2.7, 8.2, 24.5 | 38 / 66 / 112 | −3.5, 7.3, 20.0 | 23 / 67 / 111 |
+  | **the text + Makaranda bija, sunrise with bhujāntara** | **+0.1, 6.4, 23.1** | **43 / 81 / 139** | **−0.7, 4.1, 20.8** | **71 / 118 / 149** |
 
-  The best line by year: 1980 tithi +9.8 ± 5.0, nakshatra +3.4 ± 3.9;
-  2012 tithi +0.1 ± 6.9, nakshatra −2.7 ± 1.7; 2022 tithi +1.8 ± 4.6,
-  nakshatra −1.5 ± 3.9.
+  The last line by year (tithi; nakshatra; their difference):
 
-  The modern sky misses by up to five hours, so the print is siddhantic
+  | Year | Tithi | Nakshatra | Tithi − nakshatra |
+  | --- | --- | --- | --- |
+  | 1980 | +9.7 ± 4.9 | +3.4 ± 3.8 | +6.3 |
+  | 1992 | −1.2 ± 1.8 | +1.6 ± 2.4 | −2.8 |
+  | 1995 | −4.6 ± 4.1 | +1.5 ± 2.2 | −6.1 |
+  | 1998 | −8.7 ± 1.2 | +0.1 ± 5.9 | −8.8 |
+  | 2005 | +4.2 ± 3.0 | −2.5 ± 2.5 | +6.8 |
+  | 2012 | −1.0 ± 6.9 | −3.8 ± 1.7 | +2.8 |
+  | 2015 | −4.1 ± 2.4 | +0.6 ± 1.7 | −4.7 |
+  | 2022 | +1.4 ± 4.8 | −1.9 ± 3.9 | +3.3 |
+
+  The modern sky misses by up to six hours, so the print is siddhantic
   beyond doubt. The bija halves the scatter. The bhujāntara (the Sun's
-  equation of centre taken into the sunrise, II.46) halves it again. A
-  modern sunrise is worse than either text sunrise.
-- **What is left is not noise.** The nakshatra residual (the Moon
-  alone) follows the Moon's anomaly. Fitting it asks for the apsis
-  another 0.38° back and an equation 0.5% larger (an epicycle
-  +0.15°), which brings both limbs to rms 2.65 minutes. Neither is a
-  bija: the apsis would need −4.9 revolutions, which is not a multiple
-  of four. And neither is in the book: its Moon equation is the text's.
-  Tithis also run 3 to 6 minutes later than nakshatras, by a term that
-  follows the Sun (C1225, C1226). Separating the Moon's and the Sun's
-  parts as the tables do was measured too. It is *worse* (2022, the text's sunrise: tithi sd 10.9
-  minutes against 6.1 joint), so the table procedure as read above is
-  not yet the printer's.
+  equation of centre taken into the sunrise, II.46) takes it down by a
+  third again. The nakshatra's worst, 20.8, is 1998-12-28, a printed
+  end 54|55 after the one before it where its neighbours are 56|50 apart:
+  a printing slip, kept as printed. Without it the nakshatra's worst is
+  10.0.
+- **What is left is not noise, and its sources are shown, not closed.**
+  The nakshatra residual (the Moon alone) follows the Moon's anomaly.
+  Fitting it asks for the apsis another 0.38° back and an equation 0.5%
+  larger. Neither is a bija (−4.9 revolutions is not a multiple of four)
+  and neither is in the book, whose Moon equation is the text's (C1225).
+  The tithi's extra residual is the Sun's: tithi less nakshatra on the
+  same day is 0.1 + 6.1 cos(the Sun's mean anomaly) minutes, correlation
+  0.77 over 147 days. It is not the Sun's apogee: the Makaranda prints
+  2s 17°17′21″ (p. 28), the text's (C1226). Neither is fitted into the
+  profile.
+- **The book's procedure, end to end.** Rupa's worked example (Śaka
+  1891) gives the year's first tithi end, krishna 10, as Friday 55|34
+  after mean sunrise. The text with the bija gives Friday 53|59 after
+  6h local mean time at Ujjain. Add the Makaranda's Mithila deshantara
+  (1|35, above) and it is 55|34: Rupa's unexplained +1|35 over the sum
+  of the kanda cells is that deshantara. So the tables are the text plus
+  bija to the pala on this example, and their place is Mithila. The
+  printed days' residual is therefore not in the tables' reading of the
+  text. It lies in what the printer does beyond them (C1225, C1226).
 - **The star planets are not modern.** The printed Mars, Mercury,
   Jupiter, Venus and Saturn of 14 July 2022 are 1.5° to 11.6° from
   Lahiri's. This almanac, unlike Nepal's committee (C38), prints
   siddhantic planets. Whether it uses the text's four steps or the
   Makaranda's three (Rupa §9) is not yet measured (C1227).
-- **Day labels.** Over the 90 days the tithi and nakshatra at the model's
-  sunrise agree with the printed ones on every day, in both text skies
-  with the bija. A 10-minute residual decides a label only when an end
-  falls within 10 minutes of sunrise. None of the 90 did.
+- **Day labels.** The tithi and nakshatra at the model's sunrise agree
+  with the printed ones on 161 and 162 of the 162 days. The one tithi
+  that falls the other side ends minutes after sunrise.
 
-## 5. The profile, as proposed
+## 5. The profile
 
-`mithila-makaranda`, `Mark::Traditional`, base `surya-siddhanta`:
+`mithila-makaranda`, `Mark::Traditional`, base `surya-siddhanta` (the
+text's zodiac and its sunrise on the geometric horizon):
 
 ```rust
 patch.frame.siddhanta = Some(Siddhanta::Surya {
-    bija: SuryaBija::Makaranda,          // new member: Bija::MAKARANDA
-    sunrise: SuryaSunrise::TextBhujantara, // new member (C1223)
-    planets: SuryaPlanets::Text,         // siddhantic, C1227
+    bija: SuryaBija::Makaranda,      // Bija::MAKARANDA
+    sunrise: SuryaSunrise::Bhujantara,
+    planets: SuryaPlanets::Text,     // siddhantic, C1227
 });
-patch.frame.ayanamsha = Some(Ayanamsha::Suryasiddhanta.into());
-patch.day.sunrise = Some(Sunrise::CentreNoRefraction.into());
-```
 
-```rust
 pub const MAKARANDA: Bija = Bija {
-    moon_apsis: -4, mercury: 16, jupiter: -8, venus: -12, saturn: 12,
-    ..Bija::NONE   // moon 0, mars 0, moon_node: 0 until C1221 is read
+    moon: 0, moon_apsis: -4, moon_node: 4, mars: 0,
+    mercury: 16, jupiter: -8, venus: -12, saturn: 12,
 };
 ```
 
-- `SuryaSunrise::TextBhujantara` is the text's sunrise (six hours less
-  the ascensional difference, local mean time) plus the Sun's equation of
+- The node's +4 is read from the Ketu vatika (p. 24, "Rahu's name 30"):
+  its one-day cell is 59;59,28,12,30,50,2,56 of a 60-part circle, and 60
+  less that is the text's node motion with four revolutions more in an
+  age, to all seven sexagesimal places (C1221).
+- `SuryaSunrise::Bhujantara` is the text's sunrise (six hours less the
+  ascensional difference, local mean time) moved by the Sun's equation of
   centre as time: four minutes a degree, later when the true Sun is ahead
-  of the mean. That is the *bhujāntara* the text applies to a place
-  computed for mean sunrise (II.46). It changes no existing profile.
-  `TEXT` stays as built (C37).
-- The location is the consumer's. The print's own place fits 25.75° N,
-  85.9° E (C1224). The profile carries no place, as no profile does.
-- Provenance: `Deviation { model: "SURYA_SIDDHANTA", .. }` as now, with
-  the bija named in the stamp.
-- Gate: an `xtask makaranda` pass, like `nepal-day`, that reads the
-  transcribed days (§7, to be grown from the 35 scans) and generates a
-  measured page. `check-makaranda` holds its counts.
+  of the mean (`SuryaSiddhanta::bhujantara_days`,
+  `SiddhantaProvider::with_bhujantara`). It changes no existing profile;
+  `TEXT` stays as built (C37, C1223).
+- The location is the consumer's, as for every profile. The almanac's
+  own is 85°30′ E, 26°35′ N.
+- The check is `crates/siddhanta/tests/mithila.rs` over the data file:
+  the day length within 15 palas; tithi ends mean within 2 minutes, at
+  least 135 of 156 within 10 and all within 25; nakshatra ends mean
+  within 2, at least 147 of 150 within 10 and all within 22; at least 161
+  sunrise tithis and all 162 sunrise nakshatras; and the text without
+  the bija under 90 of either within 10.
 
-The fixed lists this touches (catalogue kinds, bindings' enum counts,
-`SHIPPED_PROFILES` 7→8, the profile loops in every binding's tests)
-are listed when it is built.
+## 6. What is open
 
-## 6. Why it is not built yet
-
-1. **Agreement.** The best sky reproduces the printed ends with sd 4 to
-   6 minutes and maximum 24. Nepal's committee profile was shipped at
-   1 039 of 1 138 within 1.5 minutes. A Mithila profile shipped now would
-   carry a known ±10-minute gap whose cause is unknown (C1225, C1226). It
-   would decide no day label in the 90 days measured, but would print
-   ends minutes from the almanac's.
-2. **The sunrise needs a new member** (C1223), and the evidence for it
-   points two ways. The ends ask for the bhujāntara, but the printed
-   midnight Sun drifts the other way across the same months (C1229).
-3. **Several years.** Three years and 90 days are measured. The scans
-   cover 35 years. The gate the consumer asked for (several years)
-   needs more of them transcribed: one fortnight's page a year from
-   1980 to 2022 at least, and the leap-month years.
-
-What would settle each is in its crux. In order:
-
-- read the Makaranda's Rahu and planet pages (C1221);
-- run the table procedure end to end on Rupa's Śaka 1891 example and on
-  the printed days (C1225, C1226);
-- transcribe the almanac's front matter for its stated palabha and
-  method (C1224);
-- grow the transcribed days.
+- C1225 and C1226: the printer's Moon and Sun beyond the text-plus-bija
+  tables. The next step is the printer's own method. The almanac's front
+  matter names the Makaranda and Narayana Daivajna but not the steps.
+- C1227: the star planets' steps.
+- C1229: the midnight Sun's drift against the bhujāntara.
+- More years: the scans cover 35. Every new fortnight goes into the
+  data file, and the test's counts move with it.
 
 ## 7. The printed days used
 
-Format: civil date, the row's tithi (1 to 30, krishna 1 = 16), its end in
-ghati|pala from sunrise (60|00 = no end that day), the row's nakshatra
-(1 = Ashvini), its end, the day length. Each row is read from the page
-image of the scan named.
-
-```text
-# 1980-81 scan p-005: first Jyeshtha (adhika) shukla, Saka 1902
-1980-05-15 1 25|47 3 12|46 33|16
-1980-05-16 2 22|15 4 10|53 33|19
-1980-05-17 3 19|35 5 09|52 33|22
-1980-05-18 4 18|07 6 10|01 33|25
-1980-05-19 5 17|54 7 11|23 33|28
-1980-05-20 6 19|00 8 14|03 33|30
-1980-05-21 7 21|20 9 17|54 33|32
-1980-05-22 8 24|47 10 22|53 33|34
-1980-05-23 9 29|07 11 28|42 33|36
-1980-05-24 10 34|07 12 35|09 33|38
-1980-05-25 11 39|14 13 41|44 33|40
-1980-05-26 12 44|10 14 48|05 33|42
-1980-05-27 13 48|22 15 53|47 33|44
-1980-05-28 14 51|38 16 58|35 33|45
-1980-05-29 15 53|48 17 60|00 33|46
-# 2012-13 scan p-005: Bhadrapada krishna
-2012-09-01 16 33|00 24 01|28 31|28
-2012-09-02 17 33|54 25 03|24 31|24
-2012-09-03 18 36|15 26 06|36 31|20
-2012-09-04 19 38|25 27 10|55 31|17
-2012-09-05 20 43|38 1 16|16 31|14
-2012-09-06 21 48|31 2 22|22 31|10
-2012-09-07 22 53|42 3 28|51 31|06
-2012-09-08 23 58|36 4 35|18 31|02
-2012-09-09 24 60|00 5 41|17 30|58
-2012-09-10 24 03|01 6 46|35 30|54
-2012-09-11 25 06|30 7 50|45 30|50
-2012-09-12 26 08|52 8 53|48 30|46
-2012-09-13 27 09|56 9 55|34 30|42
-2012-09-14 28 09|48 10 56|07 30|38
-2012-09-15 29 08|22 11 55|28 30|34
-2012-09-16 30 05|48 12 53|47 30|30
-# 2022-23 scan pp. 10-13: Shravana krishna to Bhadrapada shukla
-2022-07-14 16 41|21 21 43|28 33|48
-2022-07-15 17 35|34 22 39|36 33|46
-2022-07-16 18 30|27 23 36|22 33|45
-2022-07-17 19 25|39 24 33|51 33|44
-2022-07-18 20 21|53 25 32|21 33|43
-2022-07-19 21 19|07 26 31|31 33|42
-2022-07-20 22 17|31 27 32|04 33|41
-2022-07-21 23 17|21 1 33|50 33|40
-2022-07-22 24 18|09 2 36|53 33|38
-2022-07-23 25 20|21 3 41|02 33|36
-2022-07-24 26 23|41 4 46|29 33|34
-2022-07-25 27 27|53 5 52|28 33|32
-2022-07-26 28 32|47 6 58|47 33|30
-2022-07-27 29 37|50 7 60|00 33|27
-2022-07-28 30 42|39 7 05|26 33|24
-2022-07-29 1 46|51 8 11|22 33|20
-2022-07-30 2 50|09 9 16|48 33|17
-2022-07-31 3 52|21 10 21|10 33|14
-2022-08-01 4 53|16 11 24|26 33|11
-2022-08-02 5 52|53 12 26|23 33|08
-2022-08-03 6 51|41 13 27|05 33|05
-2022-08-04 7 48|30 14 26|36 33|02
-2022-08-05 8 44|45 15 25|03 32|59
-2022-08-06 9 40|08 16 22|42 32|56
-2022-08-07 10 34|51 17 19|32 32|53
-2022-08-08 11 29|02 18 15|52 32|50
-2022-08-09 12 22|56 19 11|49 32|47
-2022-08-10 13 16|44 20 07|37 32|44
-2022-08-11 14 10|37 21 03|12 32|41
-2022-08-12 15 04|47 23 56|12 32|38
-2022-08-13 17 54|50 24 53|29 32|35
-2022-08-14 18 51|03 25 51|39 32|32
-2022-08-15 19 48|13 26 50|41 32|29
-2022-08-16 20 46|35 27 50|54 32|26
-2022-08-17 21 46|10 1 52|23 32|23
-2022-08-18 22 47|03 2 55|05 32|20
-2022-08-19 23 49|14 3 58|58 32|16
-2022-08-20 24 52|32 4 60|00 32|13
-2022-08-21 25 56|43 4 03|49 32|10
-2022-08-22 26 60|00 5 09|48 32|07
-2022-08-23 26 01|38 6 16|13 32|04
-2022-08-24 27 06|41 7 22|45 32|01
-2022-08-25 28 11|37 8 28|57 31|58
-2022-08-26 29 15|54 9 34|31 31|54
-2022-08-27 30 19|23 10 39|08 31|50
-2022-08-28 1 21|39 11 42|39 31|46
-2022-08-29 2 22|43 12 44|55 31|42
-2022-08-30 3 22|29 13 45|53 31|38
-2022-08-31 4 21|00 14 45|39 31|34
-2022-09-01 5 18|18 15 44|20 31|30
-2022-09-02 6 14|39 16 42|12 31|26
-2022-09-03 7 10|08 17 39|10 31|22
-2022-09-04 8 04|54 18 35|35 31|18
-2022-09-05 10 53|10 19 31|33 31|14
-2022-09-06 11 46|58 20 27|21 31|10
-2022-09-07 12 40|54 21 23|11 31|07
-2022-09-08 13 35|06 22 19|13 31|04
-2022-09-09 14 29|50 23 15|40 31|00
-2022-09-10 15 25|12 24 12|43 30|56
-```
-
-Reading notes. Three scan fonts are involved:
-
-- In 2022, a glyph like a Latin "R" is १: the printed Sun of 21 July,
-  `03।04।R८।16`, is 3s 4°18′16″ by its neighbours.
-- In 1980, the glyph like ६ is ९, confirmed by the printed clock times.
-- One 2012 value (4 September, the tithi's 38|25) misses every model by
-  15 minutes and is probably misread.
-
-The 12 August 2022 row names Dhanishtha: Shravana ended before that
-sunrise.
+`crates/siddhanta/tests/data/vishwavidyalaya-panchang.txt`, one block a
+year, its source page named. Columns: civil date, the row's tithi (1 to
+30, krishna 1 = 16), its end in ghati|pala from sunrise (60|00 = no end
+that day), the row's nakshatra (1 = Ashvini), its end, the day length.

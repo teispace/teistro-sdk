@@ -51,6 +51,9 @@ pub struct SiddhantaProvider {
     /// The bija the model was built with, where this provider built it,
     /// so the stamp can name it; `None` for a model handed in whole.
     bija: Option<Bija>,
+    /// Whether sunrise and sunset are carried by the bhujantara
+    /// ([`SuryaSiddhanta::bhujantara_days`]).
+    bhujantara: bool,
 }
 
 impl SiddhantaProvider {
@@ -66,6 +69,7 @@ impl SiddhantaProvider {
         SiddhantaProvider {
             model: SuryaSiddhanta::text(),
             bija: Some(Bija::NONE),
+            bhujantara: false,
         }
     }
 
@@ -86,6 +90,7 @@ impl SiddhantaProvider {
         SiddhantaProvider {
             model: SuryaSiddhanta::new(Parameters::TEXT.with_bija(&bija), Trig::Table),
             bija: Some(bija),
+            bhujantara: false,
         }
     }
 
@@ -101,7 +106,30 @@ impl SiddhantaProvider {
     /// ```
     #[must_use]
     pub const fn new(model: SuryaSiddhanta) -> SiddhantaProvider {
-        SiddhantaProvider { model, bija: None }
+        SiddhantaProvider {
+            model,
+            bija: None,
+            bhujantara: false,
+        }
+    }
+
+    /// The same provider with its sunrise and sunset carried by the
+    /// bhujantara (II.46): each moves by the Sun's equation of centre
+    /// turned into time, as Mithila's almanacs count their day
+    /// (`03-design/makaranda.md`, C1223). The stamp says so.
+    ///
+    /// ```
+    /// use teistro_port_ephemeris::EphemerisProvider;
+    /// use teistro_siddhanta::{Bija, SiddhantaProvider};
+    ///
+    /// let mithila = SiddhantaProvider::with_bija(Bija::MAKARANDA).with_bhujantara();
+    /// let stamp = mithila.capabilities().identity.data_version;
+    /// assert!(stamp.contains("bhujantara") && stamp.contains("moon_node +4"), "{stamp}");
+    /// ```
+    #[must_use]
+    pub const fn with_bhujantara(mut self) -> SiddhantaProvider {
+        self.bhujantara = true;
+        self
     }
 
     /// The model.
@@ -239,11 +267,18 @@ impl SiddhantaProvider {
         Identity {
             name: String::from("surya-siddhanta"),
             version: String::from(env!("CARGO_PKG_VERSION")),
-            data_version: match self.bija {
-                Some(bija) if bija != Bija::NONE => {
-                    format!("{}, bija {}", self.model.describe(), described(&bija))
+            data_version: {
+                let model = match self.bija {
+                    Some(bija) if bija != Bija::NONE => {
+                        format!("{}, bija {}", self.model.describe(), described(&bija))
+                    }
+                    _ => self.model.describe(),
+                };
+                if self.bhujantara {
+                    format!("{model}, bhujantara sunrise")
+                } else {
+                    model
                 }
-                _ => self.model.describe(),
             },
             tier: None,
             data_hashes: Vec::new(),
@@ -414,10 +449,16 @@ impl EphemerisProvider for SiddhantaProvider {
         let days = (request.window_days.ceil() as u32).saturating_add(1);
         for _ in 0..days {
             if let Some(arc) = self.model.day_arc(midnight, latitude) {
-                let instant = match kind {
+                let mut instant = match kind {
                     HorizonEventKind::Rise => arc.sunrise,
                     _ => arc.sunset,
                 };
+                if self.bhujantara {
+                    let shift = self.model.bhujantara_days(instant.get());
+                    instant = instant
+                        .plus_days(shift)
+                        .map_err(|error| ProviderError::invalid(error.to_string()))?;
+                }
                 if instant.get() >= start && instant.get() < end {
                     return Ok(Some(instant));
                 }

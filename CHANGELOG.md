@@ -31,6 +31,10 @@ the previous release, not by nobody having looked.
   `sankranti`, `SANKRANTI_VAKYAS`, `KaliMoment`), its precession, cara and daytime (`precession_degrees`,
   `cara_vinadis`, `day_length_vinadis`, `Palabha`).
 
+**Mithila's almanacs: the Makaranda.**
+**Numbers:** none for any existing profile. `mithila-makaranda` is new.
+- The `mithila-makaranda` profile computes on the Surya Siddhanta under `SuryaBija::MAKARANDA` (`Bija::MAKARANDA`: the Moon's apsis −4, its node +4, Mercury +16, Jupiter −8, Venus −12, Saturn +12, read from the *Makarandasarini*'s own tables). Its day begins at the text's sunrise moved by the bhujantara, the new `SuryaSunrise::BHUJANTARA` (`SuryaSiddhanta::bhujantara_days`, `SiddhantaProvider::with_bhujantara`). Over 162 printed days of Darbhanga's *Vishwavidyalaya Panchang*, 1980 to 2022, its tithi ends are +0.1 ± 6.4 minutes and its nakshatra ends −0.7 ± 4.1. Every sunrise nakshatra and all but one sunrise tithi agree (SR-16, A2-8, `03-design/makaranda.md`, C1220 to C1229).
+
 **The Gaudiya festivals, and Janmashtami's Vaishnava rule.**
 **Numbers:** `INDIA_CENTRAL`'s `JANMASHTAMI` day moves only in a year the 8th holds no sunrise, or two with
 Rohini at the later midnight only (none of 2021 to 2027); its parana is the text's one reading, the end of
