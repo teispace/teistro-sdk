@@ -450,7 +450,7 @@ repository by hand.
 | locale | units | left to translate |
 |---|---:|---:|
 | `hi-Deva-IN` | 2901 | 984 |
-| `ne-Deva-NP` | 2901 | 10 |
+| `ne-Deva-NP` | 2901 | 8 |
 | `sa-Deva` | 2901 | 1429 |
 | `sa-Latn` | 2901 | 1497 |
 
