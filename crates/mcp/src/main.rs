@@ -12,7 +12,7 @@ use std::time::Duration;
 
 use teistro_mcp::http::{self, Http, MakeServer};
 use teistro_mcp::{
-    Adapter, Detail, Engine, Interrupt, LEGACY, Limits, MODERN, Server, TASK_PATIENCE,
+    Adapter, AnswerDetail, Detail, Engine, Interrupt, LEGACY, Limits, MODERN, Server, TASK_PATIENCE,
 };
 
 const USAGE: &str = "teistro-mcp: the Teistro SDK as Model Context Protocol tools, over stdio
@@ -53,6 +53,9 @@ usage: teistro-mcp [--ephemeris NAME] [--plugin PATH [--plugin-config JSON]]
                          answered by `schema.describe`, and no answer schema
                          is listed) or full (everything, for a client that
                          validates structured content)
+  --answers DETAIL       how much of its answer a record tool answers when a
+                         call names no `detail`: brief (the default; the
+                         fields a reader needs, and the answer key) or full
   --max-message-bytes N  the longest message read, 16777216 unless told; a
                          longer one is refused unread
   --max-items N          the most members of any array in a record, 1000
@@ -88,6 +91,8 @@ struct Options {
     plugin: Option<String>,
     plugin_config: Option<String>,
     detail: Detail,
+    /// The detail a record tool answers at when a call names none.
+    answers: AnswerDetail,
     limits: Limits,
     /// How long a call is waited on before it becomes a task (P7).
     patience: Option<Duration>,
@@ -310,6 +315,7 @@ fn serve_http(options: Options, address: &str, http: &Http) -> ExitCode {
 fn server(options: &Options) -> Result<Server, teistro::Error> {
     let mut server = engine(options)?
         .with_detail(options.detail)
+        .with_answers(options.answers)
         .with_limits(options.limits)
         .with_task_patience(options.patience);
     for (path, bytes) in &options.added.packs {
@@ -369,6 +375,7 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
     let mut engine = Engine::Builtin;
     let (mut plugin, mut plugin_config) = (None, None);
     let mut detail = Detail::default();
+    let mut answers = AnswerDetail::Brief;
     let mut limits = Limits::default();
     let mut patience = Some(TASK_PATIENCE);
     let (mut address, mut workers, mut origins) = (None, None, Vec::new());
@@ -389,28 +396,13 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
                 );
                 return Ok(None);
             }
-            "--ephemeris" => {
-                let name = args.next().ok_or("`--ephemeris` takes a name")?;
-                engine = Engine::from_name(&name).ok_or_else(|| {
-                    format!(
-                        "no ephemeris `{name}`; the names are {}",
-                        Engine::NAMES.join(", ")
-                    )
-                })?;
-            }
+            "--ephemeris" => engine = named(&arg, args.next())?,
             "--plugin" => plugin = Some(args.next().ok_or("`--plugin` takes a path")?),
             "--plugin-config" => {
                 plugin_config = Some(args.next().ok_or("`--plugin-config` takes JSON")?);
             }
-            "--schemas" => {
-                let name = args.next().ok_or("`--schemas` takes a detail")?;
-                detail = Detail::from_name(&name).ok_or_else(|| {
-                    format!(
-                        "no schema detail `{name}`; the details are {}",
-                        Detail::NAMES.join(", ")
-                    )
-                })?;
-            }
+            "--schemas" => detail = named(&arg, args.next())?,
+            "--answers" => answers = named(&arg, args.next())?,
             "--max-message-bytes" => limits.message_bytes = bound(&arg, args.next())?,
             "--max-items" => limits.items = bound(&arg, args.next())?,
             "--max-days" => limits.days = bound(&arg, args.next())?,
@@ -461,11 +453,64 @@ fn options(mut args: impl Iterator<Item = String>) -> Result<Option<Options>, St
         plugin,
         plugin_config,
         detail,
+        answers,
         limits,
         patience,
         http,
         added,
     }))
+}
+
+/// A set an option names one member of.
+trait Named: Sized {
+    /// The set, as the refusal names it.
+    const WHAT: &'static str;
+    /// The word for one name.
+    const TAKES: &'static str;
+    /// Every name the set answers to.
+    const NAMES: &'static [&'static str];
+    /// The member `name` names.
+    fn from_name(name: &str) -> Option<Self>;
+}
+
+impl Named for Engine {
+    const WHAT: &'static str = "ephemeris";
+    const TAKES: &'static str = "name";
+    const NAMES: &'static [&'static str] = &Engine::NAMES;
+    fn from_name(name: &str) -> Option<Self> {
+        Engine::from_name(name)
+    }
+}
+
+impl Named for Detail {
+    const WHAT: &'static str = "schema detail";
+    const TAKES: &'static str = "detail";
+    const NAMES: &'static [&'static str] = &Detail::NAMES;
+    fn from_name(name: &str) -> Option<Self> {
+        Detail::from_name(name)
+    }
+}
+
+impl Named for AnswerDetail {
+    const WHAT: &'static str = "answer detail";
+    const TAKES: &'static str = "detail";
+    const NAMES: &'static [&'static str] = &AnswerDetail::NAMES;
+    fn from_name(name: &str) -> Option<Self> {
+        AnswerDetail::from_name(name)
+    }
+}
+
+/// The member of a set `option` names, refused with the names there are.
+fn named<T: Named>(option: &str, value: Option<String>) -> Result<T, String> {
+    let name = value.ok_or_else(|| format!("`{option}` takes a {}", T::TAKES))?;
+    T::from_name(&name).ok_or_else(|| {
+        format!(
+            "no {} `{name}`; the {}s are {}",
+            T::WHAT,
+            T::TAKES,
+            T::NAMES.join(", ")
+        )
+    })
 }
 
 /// A bound as the command line writes it: a count, or `none`.

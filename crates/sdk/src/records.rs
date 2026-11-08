@@ -12,6 +12,12 @@ use teistro_core::error::Error;
 
 use crate::Context;
 
+mod detail;
+
+#[cfg(feature = "schema")]
+pub use detail::Narrowed;
+pub use detail::{Brief, Detail};
+
 /// One record entry point.
 ///
 /// ```
@@ -44,6 +50,8 @@ pub struct Record {
     /// that compares two (`chart.disagreements`): `run` is then the
     /// comparison of the context with itself.
     compares: Option<Compare>,
+    /// What its brief answer keeps of the full one.
+    brief: Brief,
     #[cfg_attr(
         not(feature = "schema"),
         expect(dead_code, reason = "read only by the `schema` feature's methods")
@@ -291,6 +299,109 @@ impl Record {
         }
     }
 
+    /// The record `json` answered under `context` at `detail`: the full
+    /// answer, as [`Record::answer`] gives it, or its brief
+    /// ([`Record::brief_of`]).
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// use teistro::records::Detail;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+    /// let asked = r#"{"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}"#;
+    /// let brief = convert.answer_at(&sdk, asked, Detail::Brief)?;
+    /// assert_eq!(brief.detail, Detail::Brief);
+    /// assert_eq!(brief.value, convert.brief().of(convert.answer(&sdk, asked)?.value));
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Record::answer`].
+    pub fn answer_at(
+        &self,
+        context: &Context,
+        json: &str,
+        detail: Detail,
+    ) -> Result<Answered, Error> {
+        let full = self.answer(context, json)?;
+        Ok(self.at(full, detail))
+    }
+
+    /// The record answered against `other` at `detail`, as
+    /// [`Record::answer_against`] and [`Record::answer_at`] together.
+    ///
+    /// # Errors
+    ///
+    /// As [`Record::answer_against`].
+    pub fn answer_against_at(
+        &self,
+        context: &Context,
+        other: &Context,
+        json: &str,
+        detail: Detail,
+    ) -> Result<Answered, Error> {
+        let full = self.answer_against(context, other, json)?;
+        Ok(self.at(full, detail))
+    }
+
+    /// What its brief answer keeps of the full one, as the record
+    /// declares it.
+    ///
+    /// ```
+    /// let records = teistro::records::records();
+    /// assert!(records.iter().any(|record| matches!(record.brief(), teistro::records::Brief::Keeps(_))));
+    /// ```
+    #[must_use]
+    pub const fn brief(&self) -> Brief {
+        self.brief
+    }
+
+    /// The brief of a full answer of this record's: its value projected
+    /// by [`Record::brief`], its provenance kept whole for the caller and
+    /// written by [`Brief::PROVENANCE`]. So an answer kept in full serves
+    /// a brief one without being asked again. An answer already brief is
+    /// answered as it is.
+    #[must_use]
+    pub fn brief_of(&self, full: Answered) -> Answered {
+        match full.detail {
+            Detail::Brief => full,
+            Detail::Full => Answered {
+                value: self.brief.of(full.value),
+                provenance: full.provenance,
+                detail: Detail::Brief,
+            },
+        }
+    }
+
+    fn at(&self, full: Answered, detail: Detail) -> Answered {
+        match detail {
+            Detail::Full => full,
+            Detail::Brief => self.brief_of(full),
+        }
+    }
+
+    /// The record's answer value as JSON Schema at `detail`, as
+    /// [`Record::answer_schema`] writes it; at [`Detail::Brief`] narrowed
+    /// ([`Brief::narrow`]) so that both a brief and a full answer hold to
+    /// it, with what narrowing found.
+    #[cfg(feature = "schema")]
+    #[must_use]
+    pub fn answer_schema_at(
+        &self,
+        generator: &mut schemars::SchemaGenerator,
+        detail: Detail,
+    ) -> Option<(serde_json::Value, Narrowed)> {
+        let mut schema = self.answer_schema(generator)?.to_value();
+        let narrowed = match detail {
+            Detail::Full => Narrowed::default(),
+            Detail::Brief => self.brief.narrow(&mut schema, generator.definitions()),
+        };
+        Some((schema, narrowed))
+    }
+
     /// The record's request as JSON Schema, written into `generator`:
     /// the reference to it, its definitions left in the generator. Never
     /// stricter than the reader, because it is derived from the type the
@@ -366,8 +477,11 @@ impl Record {
 pub struct Answered {
     /// The value, as serde writes it.
     pub value: serde_json::Value,
-    /// How it was produced.
+    /// How it was produced: whole, whichever the detail, so its answer
+    /// key identifies the full answer.
     pub provenance: Option<Provenance>,
+    /// Whether `value` is the full answer or its brief.
+    pub detail: Detail,
 }
 
 impl Answered {
@@ -375,6 +489,7 @@ impl Answered {
         Ok(Answered {
             value: written(&answer.value)?,
             provenance: Some(answer.provenance),
+            detail: Detail::Full,
         })
     }
 
@@ -382,6 +497,7 @@ impl Answered {
         Ok(Answered {
             value: written(value)?,
             provenance: None,
+            detail: Detail::Full,
         })
     }
 
@@ -405,10 +521,71 @@ impl Answered {
     /// ```
     #[must_use]
     pub fn json(&self) -> String {
-        match &self.provenance {
-            Some(provenance) => canonical_json(&Envelope::new(&self.value, provenance.clone())),
-            None => canonical_json(&self.value),
+        match (&self.provenance, self.detail) {
+            (Some(provenance), Detail::Full) => {
+                canonical_json(&Envelope::new(&self.value, provenance.clone()))
+            }
+            (Some(_), Detail::Brief) => match self.envelope() {
+                Ok(envelope) => canonical_json(&envelope),
+                // A provenance serde cannot write is a type defect, as
+                // `canonical_json` treats one: loud in a debug build.
+                Err(why) => {
+                    debug_assert!(false, "{why}");
+                    String::new()
+                }
+            },
+            (None, _) => canonical_json(&self.value),
         }
+    }
+
+    /// The answer as the envelope an agent reads: `{value, provenance}`,
+    /// `provenance` left out where the area seals none; at
+    /// [`Detail::Brief`], the provenance written by
+    /// [`Brief::PROVENANCE`] and `detail: "brief"` beside them, saying
+    /// that the answer key names the full answer this one is the brief of.
+    ///
+    /// ```
+    /// use teistro::records::{Answered, Detail};
+    /// use teistro_core::envelope::{Hash, Provenance, Version};
+    ///
+    /// let provenance = Provenance::new(
+    ///     Version::new(0, 1, 0), 1, 1, "nepali-drik",
+    ///     Hash::of(b"settings"), Hash::of(b"input"),
+    /// );
+    /// let key = provenance.answer_key().to_string();
+    /// let brief = Answered {
+    ///     value: serde_json::json!({"tithi": "SHUKLA_TRITIYA"}),
+    ///     provenance: Some(provenance),
+    ///     detail: Detail::Brief,
+    /// };
+    /// let envelope = brief.envelope()?;
+    /// assert_eq!(envelope["detail"], "brief");
+    /// assert_eq!(envelope["provenance"]["answer_key"], key);
+    /// assert!(envelope["provenance"].get("input_hash").is_none());
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INTERNAL` for a provenance serde cannot write, a type defect.
+    pub fn envelope(&self) -> Result<serde_json::Value, Error> {
+        let mut envelope = serde_json::Map::new();
+        envelope.insert(String::from("value"), self.value.clone());
+        if let Some(provenance) = &self.provenance {
+            let written = written(provenance)?;
+            let provenance = match self.detail {
+                Detail::Full => written,
+                Detail::Brief => Brief::PROVENANCE.of(written),
+            };
+            envelope.insert(String::from("provenance"), provenance);
+            if self.detail == Detail::Brief {
+                envelope.insert(
+                    String::from("detail"),
+                    serde_json::Value::from(Detail::Brief.name()),
+                );
+            }
+        }
+        Ok(serde_json::Value::Object(envelope))
     }
 }
 
@@ -432,16 +609,10 @@ fn written<T: serde::Serialize>(value: &T) -> Result<serde_json::Value, Error> {
         .map_err(|why| Error::internal(format!("an answer serde cannot write: {why}")))
 }
 
-/// Every record entry point this build carries, in name order.
-///
-/// ```
-/// let names: Vec<&str> = teistro::records::records().iter().map(|record| record.name).collect();
-/// assert!(names.contains(&"calendar.convert"));
-/// assert!(names.is_sorted());
-/// ```
-#[must_use]
-pub fn records() -> Vec<Record> {
-    let mut all: Vec<Record> = vec![
+/// The records that read one subject and no place's day: numerology,
+/// the navatara, the pakshi, the rashifal and a study.
+fn reading_records() -> Vec<Record> {
+    vec![
         #[cfg(feature = "numerology")]
         Record {
             name: "numerology.profile",
@@ -450,6 +621,7 @@ pub fn records() -> Vec<Record> {
             reads: None,
             run: |_, json| Answered::plain(&crate::NumerologyRequest::from_json(json)?.answer()?),
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::NumerologyRequest => teistro_numerology::Profile),
         },
         #[cfg(feature = "muhurta")]
@@ -470,6 +642,7 @@ pub fn records() -> Vec<Record> {
             reads: None,
             run: |_, json| Answered::plain(&crate::NavataraRequest::from_json(json)?.answer()),
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::NavataraRequest => Vec<teistro_muhurta::tara::NavataraRow>),
         },
         #[cfg(feature = "pakshi")]
@@ -483,6 +656,19 @@ pub fn records() -> Vec<Record> {
                 Answered::sealed(context.almanac().pakshi_request(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&[
+                "date",
+                "reading.day",
+                "reading.bird",
+                "reading.deathBird",
+                "reading.deadToday",
+                "reading.eaters",
+                "reading.yamas.half",
+                "reading.yamas.yama",
+                "reading.yamas.span",
+                "reading.yamas.activity",
+                "reading.yamas.quality",
+            ]),
             schemas: schemas!(crate::pakshi_request::RequestAsked => Vec<crate::PakshiDay>),
         },
         #[cfg(feature = "rashifal")]
@@ -496,6 +682,18 @@ pub fn records() -> Vec<Record> {
                 Answered::sealed(context.chart().rashifal_answers(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&[
+                "period.first",
+                "period.last",
+                "period.instant",
+                "period.transits",
+                "period.retrograde",
+                "period.panchanga",
+                "period.readings.rashi",
+                "period.readings.saturn",
+                "period.readings.events",
+                "baseline",
+            ]),
             schemas: schemas!(crate::rashifal_request::BatchAsked => Vec<crate::RashifalAnswer>),
         },
         #[cfg(feature = "research")]
@@ -512,9 +710,22 @@ pub fn records() -> Vec<Record> {
                 }
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::research_request::RequestAsked => crate::research_request::Studied),
         },
-    ];
+    ]
+}
+
+/// Every record entry point this build carries, in name order.
+///
+/// ```
+/// let names: Vec<&str> = teistro::records::records().iter().map(|record| record.name).collect();
+/// assert!(names.contains(&"calendar.convert"));
+/// assert!(names.is_sorted());
+/// ```
+#[must_use]
+pub fn records() -> Vec<Record> {
+    let mut all = reading_records();
     all.extend(map_records());
     all.extend(intl_records());
     #[cfg(feature = "chart")]
@@ -534,6 +745,73 @@ pub fn records() -> Vec<Record> {
     all
 }
 
+/// What `chart.found`'s brief keeps: every chart section but the
+/// foundation's working (its day, chalit, timing and steps) and each
+/// graha's components of strength, and every table asked but the
+/// batch's hashes, the KP cusps and the fortitudes' working.
+#[cfg(feature = "chart")]
+const FOUND_BRIEF: Brief = Brief::Keeps(&[
+    "charts.foundation.instant",
+    "charts.foundation.place",
+    "charts.foundation.kind",
+    "charts.foundation.zodiac",
+    "charts.foundation.lagna_deg",
+    "charts.foundation.houses",
+    "charts.foundation.grahas.graha",
+    "charts.foundation.grahas.longitude_deg",
+    "charts.foundation.grahas.speed_deg_per_day",
+    "charts.foundation.grahas.placement",
+    "charts.foundation.grahas.house",
+    "charts.panchanga",
+    "charts.vargas",
+    "charts.state",
+    "charts.aspects",
+    "charts.points",
+    "charts.houses",
+    "charts.ashtakavarga",
+    "charts.vimshopaka",
+    "charts.vaiseshikamsa",
+    "charts.shadbala.grahas.graha",
+    "charts.shadbala.grahas.rupas",
+    "charts.shadbala.grahas.required_rupas",
+    "charts.shadbala.grahas.strong",
+    "charts.bhava_bala",
+    "charts.dasha_phala",
+    "charts.jaimini",
+    "charts.avakahada",
+    "charts.moment",
+    "charts.drawings",
+    "charts.dashas",
+    "readings",
+    "plans",
+    "sade_sati",
+    "gochar",
+    "hits",
+    "sarvatobhadra",
+    "dossier",
+    "dignities",
+    "fortitudes.scores",
+    "fortitudes.planets",
+    "fortitudes.almutens",
+    "lots.sect",
+    "lots.lots",
+    "considerations",
+    "perfections",
+    "matchings",
+    "svgs",
+    "kp.chart.planets",
+    "kp.significators",
+    "kp.ruling",
+    "prashna",
+    "remedies",
+    "lalkitab",
+    "rectification",
+    "varsha",
+    "tithi_pravesha",
+    "masa_pravesha",
+    "western",
+]);
+
 /// The chart's records: founding, comparing, and matching two names.
 #[cfg(feature = "chart")]
 fn chart_records() -> [Record; 3] {
@@ -545,6 +823,7 @@ fn chart_records() -> [Record; 3] {
             reads: None,
             run: |_, json| Answered::plain(&crate::NaamRequest::from_json(json)?.answer()?),
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::NaamRequest => crate::NaamMilan),
         },
         Record {
@@ -561,9 +840,11 @@ fn chart_records() -> [Record; 3] {
                 Ok(Answered {
                     value: written(&composed)?,
                     provenance: Some(composed.founded.provenance.clone()),
+                    detail: Detail::Full,
                 })
             },
             compares: None,
+            brief: FOUND_BRIEF,
             schemas: schemas!(fn crate::found_request::schema => crate::Composed<'static>, parts: crate::ChartRecords::NAMES),
         },
         Record {
@@ -573,6 +854,16 @@ fn chart_records() -> [Record; 3] {
             reads: None,
             run: |context, json| disagreements(context, context, json),
             compares: Some(disagreements),
+            brief: Brief::Keeps(&[
+                "otherProfile",
+                "at",
+                "compared",
+                "lagna",
+                "grahas",
+                "nakshatra",
+                "dashas",
+                "yogas",
+            ]),
             schemas: schemas!(fn crate::area::disagreement_schema => crate::ChartDisagreements, parts: []),
         },
     ]
@@ -593,6 +884,7 @@ fn map_records() -> Vec<Record> {
                 Answered::sealed(context.chart().mundane_moment(&asked)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::MundaneRequest => crate::MundaneMoment),
         },
         #[cfg(feature = "western")]
@@ -606,6 +898,7 @@ fn map_records() -> Vec<Record> {
                 Answered::sealed(context.chart().relocated(&asked)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::RelocationRequest => crate::Relocation),
         },
         #[cfg(feature = "western")]
@@ -619,6 +912,7 @@ fn map_records() -> Vec<Record> {
                 Answered::sealed(context.chart().astrocartography(&asked)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::AstrocartographyRequest => crate::Astrocartography),
         },
     ]
@@ -640,6 +934,7 @@ fn intl_records() -> [Record; 6] {
                 )
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::InWordsRequest => crate::InWords),
         },
         Record {
@@ -655,6 +950,7 @@ fn intl_records() -> [Record; 6] {
                 )
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::TimeTextRequest => crate::CivilText),
         },
         Record {
@@ -670,6 +966,7 @@ fn intl_records() -> [Record; 6] {
                 )
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::DateTextRequest => crate::CivilText),
         },
         Record {
@@ -685,6 +982,7 @@ fn intl_records() -> [Record; 6] {
                 )
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::LexiconRequest => crate::Lexicon),
         },
         Record {
@@ -700,6 +998,7 @@ fn intl_records() -> [Record; 6] {
                 )
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::LookupRequest => crate::Lookup),
         },
         Record {
@@ -716,6 +1015,7 @@ fn intl_records() -> [Record; 6] {
                 )
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::DatesRequest => crate::FoundDates),
         },
     ]
@@ -736,6 +1036,7 @@ fn naming_records() -> [Record; 5] {
                 Answered::plain(&crate::NamingSyllablesRequest::from_json(json)?.answer(context)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::NamingSyllablesRequest => Vec<teistro_matching::PadaSyllable>),
         },
         Record {
@@ -747,6 +1048,7 @@ fn naming_records() -> [Record; 5] {
                 Answered::plain(&crate::NamingReadRequest::from_json(json)?.answer(context))
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::NamingReadRequest => Vec<crate::NameRead>),
         },
         Record {
@@ -758,6 +1060,7 @@ fn naming_records() -> [Record; 5] {
                 Answered::plain(&crate::NamingCheckRequest::from_json(json)?.answer(context)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::NamingCheckRequest => Vec<crate::NameChecked>),
         },
         Record {
@@ -769,6 +1072,7 @@ fn naming_records() -> [Record; 5] {
                 Answered::plain(&crate::NamingOfRequest::from_json(json)?.answer(context)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::NamingOfRequest => teistro_matching::Names),
         },
         Record {
@@ -780,6 +1084,7 @@ fn naming_records() -> [Record; 5] {
                 Answered::plain(&crate::NamingSuggestRequest::from_json(json)?.answer(context)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::NamingSuggestRequest => teistro_matching::Suggestions),
         },
     ]
@@ -800,6 +1105,21 @@ fn almanac_records() -> [Record; 4] {
                 Answered::sealed(context.almanac().anniversaries_in_full(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&[
+                "anniversaries.key",
+                "anniversaries.kind",
+                "anniversaries.origin",
+                "anniversaries.observance.rule",
+                "anniversaries.observance.day",
+                "anniversaries.observance.tithi",
+                "anniversaries.observance.month",
+                "anniversaries.observance.adhika",
+                "anniversaries.observance.case",
+                "anniversaries.observance.choice",
+                "ekadashis",
+                "observances",
+                "unjudged",
+            ]),
             schemas: schemas!(crate::area::AnniversariesAsked => teistro_panchanga::festival::Observances),
         },
         Record {
@@ -812,6 +1132,7 @@ fn almanac_records() -> [Record; 4] {
                 Answered::sealed(context.almanac().changes(&asked)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::area::ChangesAsked => crate::ChangePoints),
         },
         Record {
@@ -821,6 +1142,33 @@ fn almanac_records() -> [Record; 4] {
             reads: Some(crate::DaysRequest::DESCRIPTION),
             run: days,
             compares: None,
+            brief: Brief::Keeps(&[
+                "days.day",
+                "days.limbs",
+                "days.kaalas",
+                "days.durmuhurtas",
+                "days.month",
+                "days.moon",
+                "days.sun",
+                "days.omens",
+                "festivals.value",
+                "years.value",
+                "eclipses.value",
+                "nepalSambat.value",
+                "muhurta.value.windows.at",
+                "muhurta.value.windows.barredBy",
+                "muhurta.value.windows.score",
+                "muhurta.value.closed",
+                "muhurta.value.daysJudged",
+                "muhurta.value.daysCut",
+                "muhurta.value.windowsBlackedOut",
+                "muhurta.value.ranking",
+                "muhurta.value.unjudged",
+                "sky.value.from",
+                "sky.value.to",
+                "sky.value.sun.state",
+                "sky.value.moon.state",
+            ]),
             schemas: schemas!(fn crate::days_request::schema => crate::days_request::DaysWritten<'static>, parts: crate::days_request::PARTS),
         },
         Record {
@@ -830,6 +1178,7 @@ fn almanac_records() -> [Record; 4] {
             reads: None,
             run: festival_calendar,
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::area::FestivalCalendarAsked => String),
         },
     ]
@@ -849,6 +1198,7 @@ fn ashauch_records() -> [Record; 6] {
                 Answered::sealed(context.almanac().ashauch_query(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&["key", "kind", "relation", "start", "end", "length", "days"]),
             schemas: schemas!(crate::ashauch_request::AshauchAsked => crate::ashauch::Ashauch),
         },
         Record {
@@ -861,6 +1211,17 @@ fn ashauch_records() -> [Record; 6] {
                 Answered::sealed(context.almanac().household_query(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&[
+                "observers.key",
+                "observers.pureAt",
+                "observers.periods.key",
+                "observers.periods.kind",
+                "observers.periods.relation",
+                "observers.periods.start",
+                "observers.periods.end",
+                "observers.periods.length",
+                "observers.periods.days",
+            ]),
             schemas: schemas!(crate::ashauch_request::HouseholdAsked => crate::ashauch::HouseholdAnswer),
         },
         Record {
@@ -870,6 +1231,7 @@ fn ashauch_records() -> [Record; 6] {
             reads: None,
             run: |_, json| Answered::plain(&crate::KinQuery::from_json(json)?.answer()?),
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::KinQuery => crate::ashauch::Kin),
         },
         Record {
@@ -879,6 +1241,7 @@ fn ashauch_records() -> [Record; 6] {
             reads: None,
             run: |_, json| Answered::plain(&crate::RiteQuery::from_json(json)?.answer()?),
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::RiteQuery => crate::ashauch::RiteAnswer),
         },
         Record {
@@ -891,6 +1254,7 @@ fn ashauch_records() -> [Record; 6] {
                 Answered::sealed(context.almanac().death_time_query(&asked)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::ashauch_request::DeathTimeAsked => crate::death_time::DeathTime),
         },
         Record {
@@ -903,6 +1267,21 @@ fn ashauch_records() -> [Record; 6] {
                 Answered::sealed(context.almanac().first_year_query(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&[
+                "key",
+                "origin",
+                "dayOne",
+                "eleventhDay",
+                "sapindana",
+                "rites.rite",
+                "rites.place",
+                "rites.month",
+                "rites.adhika",
+                "rites.day",
+                "rites.form",
+                "rites.year",
+                "rites.observance.day",
+            ]),
             schemas: schemas!(crate::first_year_request::FirstYearAsked => crate::first_year::FirstYearSchedule),
         },
     ]
@@ -922,6 +1301,14 @@ fn almanac_lookup_records() -> [Record; 6] {
                 Answered::plain(&context.almanac().festival_pack(&asked))
             },
             compares: None,
+            brief: Brief::Keeps(&[
+                "pack",
+                "rules.key",
+                "rules.form",
+                "rules.meta",
+                "rules.subjectTo",
+                "rules.lastYear",
+            ]),
             schemas: schemas!(crate::area::PackAsked => crate::PackListing),
         },
         Record {
@@ -931,6 +1318,7 @@ fn almanac_lookup_records() -> [Record; 6] {
             reads: None,
             run: digest,
             compares: None,
+            brief: Brief::Keeps(&["format", "days", "size", "seal"]),
             schemas: schemas!(crate::area::DigestAsked => DigestWritten),
         },
         Record {
@@ -943,6 +1331,19 @@ fn almanac_lookup_records() -> [Record; 6] {
                 Answered::sealed(context.almanac().next_in_full(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&[
+                "day",
+                "keys",
+                "from",
+                "searchedDays",
+                "festivals.observances.rule",
+                "festivals.observances.day",
+                "festivals.observances.tithi",
+                "festivals.observances.month",
+                "festivals.observances.choice",
+                "festivals.ekadashis",
+                "festivals.unjudged",
+            ]),
             schemas: schemas!(crate::area::NextAsked => crate::NextOccurrence),
         },
         Record {
@@ -955,6 +1356,7 @@ fn almanac_lookup_records() -> [Record; 6] {
                 Answered::sealed(context.almanac().sentences(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&["sentences.text", "locale", "withheld", "draft"]),
             schemas: schemas!(crate::area::SentencesAsked => crate::DaySentences),
         },
         Record {
@@ -970,6 +1372,7 @@ fn almanac_lookup_records() -> [Record; 6] {
                 Answered::sealed(context.almanac().published_reasons_request(&[], &asked)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::area::ReasonsAsked => crate::PublishedReasons),
         },
         Record {
@@ -982,6 +1385,7 @@ fn almanac_lookup_records() -> [Record; 6] {
                 Answered::sealed(context.almanac().sankalpa_request(&asked)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::sankalpa_request::SankalpaAsked => crate::Sankalpa),
         },
     ]
@@ -999,6 +1403,7 @@ fn sky_view_record() -> Record {
             Answered::sealed(context.almanac().sky_view_query(&asked)?)
         },
         compares: None,
+        brief: Brief::Keeps(&["at", "grahas", "stars"]),
         schemas: schemas!(crate::sky_view_request::SkyViewAsked => crate::sky_view::SkyView),
     }
 }
@@ -1017,6 +1422,7 @@ fn verify_record() -> Record {
             Answered::sealed(context.verify().claims(&asked)?)
         },
         compares: None,
+        brief: Brief::Whole,
         schemas: schemas!(crate::area::verify::ClaimsAsked => crate::verify::Claims),
     }
 }
@@ -1036,6 +1442,14 @@ fn receipt_records() -> [Record; 2] {
                 Answered::plain(&context.verify().issue(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&[
+                "answer",
+                "receipt.format",
+                "receipt.record",
+                "receipt.requestDigest",
+                "receipt.outputDigest",
+                "receipt.digest",
+            ]),
             schemas: schemas!(crate::verify::IssueRequest => crate::verify::Issued),
         },
         Record {
@@ -1048,6 +1462,7 @@ fn receipt_records() -> [Record; 2] {
                 Answered::plain(&context.verify().receipt(&receipt))
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::verify::Receipt => crate::verify::ReceiptCheck),
         },
     ]
@@ -1093,6 +1508,21 @@ fn finder_records() -> Vec<Record> {
                 Answered::sealed(context.almanac().elect(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&[
+                "windows.rank",
+                "windows.at",
+                "windows.open",
+                "windows.holds.clause",
+                "windows.holds.grade",
+                "windows.fails.clause",
+                "windows.barredBy",
+                "closed",
+                "daysJudged",
+                "daysCut",
+                "windowsBlackedOut",
+                "ranking",
+                "unjudged",
+            ]),
             schemas: schemas!(crate::area::almanac::elect::ElectAsked => crate::finders::Elections, parts: ["muhurta"], examples: ELECT_EXAMPLES),
         },
         Record {
@@ -1105,6 +1535,29 @@ fn finder_records() -> Vec<Record> {
                 Answered::sealed(context.almanac().observance(&asked, None)?)
             },
             compares: Some(observance),
+            brief: Brief::Keeps(&[
+                "traditions.name",
+                "traditions.rule",
+                "traditions.reckoning",
+                "traditions.profile",
+                "occurrences.month",
+                "occurrences.adhika",
+                "occurrences.kept.tradition",
+                "occurrences.kept.day",
+                "occurrences.kept.fast.rule",
+                "occurrences.kept.fast.tithi",
+                "occurrences.kept.fast.month",
+                "occurrences.kept.fast.adhika",
+                "occurrences.kept.fast.choice",
+                "occurrences.kept.fast.day",
+                "occurrences.kept.fast.parana.day",
+                "occurrences.kept.fast.parana.kept.span",
+                "occurrences.agree",
+                "occurrences.differs",
+                "occurrences.reason",
+                "unjudged",
+                "parted",
+            ]),
             schemas: schemas!(crate::area::almanac::observance::ObservanceAsked => crate::finders::ObservanceFinding, examples: OBSERVANCE_EXAMPLES),
         },
         #[cfg(all(feature = "chart", feature = "muhurta"))]
@@ -1118,6 +1571,27 @@ fn finder_records() -> Vec<Record> {
                 Answered::sealed(context.almanac().people(&asked)?)
             },
             compares: None,
+            brief: Brief::Keeps(&[
+                "day",
+                "sunrise",
+                "nextSunrise",
+                "nakshatra",
+                "moonSign",
+                "dasha",
+                "people.name",
+                "people.birthStar",
+                "people.moonSign",
+                "people.lagna",
+                "people.dasha",
+                "people.tara",
+                "people.chandraHouse",
+                "people.chandrashtama",
+                "people.sadeSati",
+                "people.transits.graha",
+                "people.transits.house",
+                "people.transits.verdict",
+                "people.hits",
+            ]),
             schemas: schemas!(crate::area::almanac::people::PeopleAsked => crate::finders::PeopleDigest, examples: PEOPLE_EXAMPLES),
         },
     ]
@@ -1141,6 +1615,7 @@ fn engine_records() -> [Record; 2] {
                 engine_answer(context, &asked, &asked.name, value)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::EngineCall => serde_json::Value),
         },
         Record {
@@ -1154,6 +1629,7 @@ fn engine_records() -> [Record; 2] {
                 engine_answer(context, &asked, "manifest", written(&manifest)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::ManifestRequest => crate::NativeManifest),
         },
     ]
@@ -1189,6 +1665,7 @@ fn time_records() -> [Record; 6] {
                 Answered::plain(&context.time().resolve(&asked.civil, &asked.zone)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::time_request::ResolveAsked => crate::Resolved),
         },
         Record {
@@ -1205,6 +1682,7 @@ fn time_records() -> [Record; 6] {
                 Answered::plain(&crate::CivilReading { civil, zone })
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::time_request::CivilAsked => crate::CivilReading),
         },
         Record {
@@ -1217,6 +1695,7 @@ fn time_records() -> [Record; 6] {
                 Answered::plain(&context.time().convert(asked.jd, asked.from, asked.to)?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::ScaleRequest => crate::scale::Conversion),
         },
         Record {
@@ -1232,6 +1711,7 @@ fn time_records() -> [Record; 6] {
                 Answered::plain(&crate::CalendarReading { date, weekday })
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::time_request::CalendarAsked => crate::CalendarReading),
         },
         Record {
@@ -1247,6 +1727,7 @@ fn time_records() -> [Record; 6] {
                 Answered::plain(&crate::CalendarReading { date, weekday })
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::time_request::AddAsked => crate::CalendarReading),
         },
         Record {
@@ -1263,6 +1744,7 @@ fn time_records() -> [Record; 6] {
                 )?)
             },
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::time_request::BetweenAsked => crate::DateSpan),
         },
     ]
@@ -1364,5 +1846,6 @@ fn days(context: &Context, json: &str) -> Result<Answered, Error> {
     Ok(Answered {
         value,
         provenance: Some(answer.days.provenance),
+        detail: Detail::Full,
     })
 }

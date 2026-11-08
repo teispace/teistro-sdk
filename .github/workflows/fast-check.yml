@@ -315,6 +315,8 @@ jobs:
         run: cargo xtask check-dossier
       - name: Dossier tokens page (keys and each locale's names, tokens over the corpus)
         run: cargo xtask check-dossier-tokens
+      - name: Result detail page (each record's brief and full answers in tokens, every brief held to its answer schema)
+        run: cargo xtask check-detail-tokens
       - name: Batch page (the calls, widths and repeats a batch asks the ephemeris for)
         run: cargo xtask check-batching
       - name: Sade Sati page (every bound of a century's periods read back through the gochar, over the recorded births)

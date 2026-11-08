@@ -12,6 +12,20 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Brief and full answers (A2-2).**
+**Numbers:** none: an answer at `full`, the default everywhere but the agent server, is the same bytes.
+- Every record answers at a detail, `brief` or `full` (`teistro::records::Detail`, `Record::answer_at`,
+  `Record::brief_of`, `Answered::envelope`). Each record declares what its brief keeps beside its entry,
+  an explicit list of field paths (`Brief::Keeps`) or the whole value; a brief keeps each field's own
+  value unchanged, its provenance keeps the profile, confidence, fallbacks, warnings and the answer key,
+  and its envelope says `detail: "brief"` (`03-design/result-detail.md`).
+- The agent server's record tools take `detail` and answer **brief** when a call names none; `--answers
+  full` or `Server::with_answers` changes that. Each tool's `outputSchema` is narrowed so that both
+  details hold to it.
+- `cargo xtask detail-tokens` writes `result-detail-measured.md`, each record's example answered at both
+  details and counted in tokens, held by `check-detail-tokens` with every brief's paths held to its
+  answer schema.
+
 **What would settle each uncomputed dasha.**
 **Numbers:** none: a documentation column.
 - `dasha-coverage-measured.md` names, for each of the 8 catalogued dashas this build does not compute,

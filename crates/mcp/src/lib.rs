@@ -34,7 +34,7 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 use serde_json::{Map, Value, json};
-use teistro::records::{Answered, Record};
+use teistro::records::Record;
 use teistro::{Context, Ephemeris, Error, Loaded};
 use teistro_core::envelope::canonical_json;
 use teistro_core::settings::DEFAULT_PROFILE;
@@ -59,6 +59,9 @@ mod watch;
 
 pub use limits::Limits;
 pub use schemas::Detail;
+/// How much of its answer a record tool answers: the SDK's
+/// [`teistro::records::Detail`].
+pub use teistro::records::Detail as AnswerDetail;
 pub use tool::{Call, Handler, Tool};
 pub use watch::{Interrupt, Notify};
 
@@ -426,6 +429,8 @@ pub struct Server {
     plugin: Option<Plugin>,
     legacy: bool,
     detail: Detail,
+    /// The detail a record tool answers at when its call names none.
+    answers: AnswerDetail,
     limits: Limits,
     /// What a transport cancels a running call through, and what the
     /// engine's watch reads.
@@ -454,6 +459,7 @@ impl core::fmt::Debug for Server {
             .field("plugin", &self.plugin.as_ref().map(|p| p.name.as_str()))
             .field("legacy", &self.legacy)
             .field("detail", &self.detail)
+            .field("answers", &self.answers)
             .field("limits", &self.limits)
             .field("watch", &self.watch)
             .field("patience", &self.patience)
@@ -498,6 +504,7 @@ impl Server {
             plugin: None,
             legacy: false,
             detail: Detail::Lean,
+            answers: AnswerDetail::Brief,
             limits: Limits::default(),
             watch: watch::Shared::new(),
             tasks: tasks::Store::shared(),
@@ -770,6 +777,25 @@ impl Server {
     pub fn with_detail(self, detail: Detail) -> Server {
         Server {
             detail,
+            listed: None,
+            ..self
+        }
+    }
+
+    /// The same server, each record tool answering at `answers` when a
+    /// call names no `detail`: [`AnswerDetail::Brief`] unless set, the
+    /// fields a reader needs (`03-design/result-detail.md`).
+    ///
+    /// ```
+    /// use teistro_mcp::{AnswerDetail, Engine, Server};
+    ///
+    /// let server = Server::new(Engine::None).with_answers(AnswerDetail::Full);
+    /// assert!(format!("{server:?}").contains("answers: Full"));
+    /// ```
+    #[must_use]
+    pub fn with_answers(self, answers: AnswerDetail) -> Server {
+        Server {
+            answers,
             listed: None,
             ..self
         }
@@ -1362,9 +1388,12 @@ impl Server {
         }
         let (arguments, other) = tools::Arguments::other(record, arguments)?;
         let asked = tools::Arguments::read(&arguments)?;
+        let detail = asked.detail.unwrap_or(self.answers);
         let Some(other) = other else {
             let context = self.context(&asked)?;
-            return envelope(record.answer(context, &asked.request)?);
+            return record
+                .answer_at(context, &asked.request, detail)?
+                .envelope();
         };
         // Both built before either is borrowed; a full cache cleared by the
         // second leaves the first to be built again, and two fit.
@@ -1377,7 +1406,9 @@ impl Server {
         ) else {
             return Err(Error::internal("a context the server built is gone"));
         };
-        envelope(record.answer_against(context, compared, &asked.request)?)
+        record
+            .answer_against_at(context, compared, &asked.request, detail)?
+            .envelope()
     }
 
     /// The engine's own operations listed as tools; none without a
@@ -1407,9 +1438,13 @@ impl Server {
             profile: None,
             settings: None,
             locale: None,
+            detail: None,
         };
+        let detail = self.answers;
         let context = self.context(&asked)?;
-        envelope(record.answer(context, &asked.request)?)
+        record
+            .answer_at(context, &asked.request, detail)?
+            .envelope()
     }
 
     fn context(&mut self, asked: &tools::Arguments) -> Result<&Context, Error> {
@@ -1579,19 +1614,6 @@ fn complete(era: Era, mut result: Map<String, Value>) -> Value {
     Value::Object(result)
 }
 
-/// An answer as the bindings read it: `{value, provenance}`, the
-/// provenance absent where the area seals none.
-fn envelope(answered: Answered) -> Result<Value, Error> {
-    let mut envelope = Map::new();
-    envelope.insert(String::from("value"), answered.value);
-    if let Some(provenance) = answered.provenance {
-        let provenance = serde_json::to_value(provenance)
-            .map_err(|why| Error::internal(format!("a provenance serde cannot write: {why}")))?;
-        envelope.insert(String::from("provenance"), provenance);
-    }
-    Ok(Value::Object(envelope))
-}
-
 /// A refusal as structured content: the SDK's own error record, its
 /// status, field, message and hint (D7).
 fn refused(refusal: &Error) -> Value {
@@ -1635,6 +1657,7 @@ impl Server {
             engine: self.engine,
             plugin: self.plugin.clone(),
             detail: self.detail,
+            answers: self.answers,
             limits: self.limits,
             watch: watch::Shared::new(),
             tasks: Arc::clone(&self.tasks),
@@ -1810,6 +1833,7 @@ struct Fork {
     engine: Engine,
     plugin: Option<Plugin>,
     detail: Detail,
+    answers: AnswerDetail,
     limits: Limits,
     watch: Arc<watch::Shared>,
     tasks: Arc<tasks::Store>,
@@ -1824,6 +1848,7 @@ impl Fork {
             plugin: self.plugin,
             legacy: false,
             detail: self.detail,
+            answers: self.answers,
             limits: self.limits,
             watch: self.watch,
             tasks: self.tasks,

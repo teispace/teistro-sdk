@@ -18,11 +18,12 @@ use schemars::transform::RecursiveTransform;
 use schemars::{Schema, SchemaGenerator};
 use serde_json::{Map, Value, json};
 use teistro::Error;
-use teistro::records::Record;
+use teistro::records::{Brief, Record};
 use teistro_core::envelope::Provenance;
 use teistro_core::settings::{DEFAULT_PROFILE, PROFILE_ALIASES, SHIPPED_PROFILES};
 use teistro_idl::emit::without_rust_examples;
 
+use crate::AnswerDetail;
 use crate::tools::annotations;
 
 /// The tool answering a tool's schemas in full, or one part's.
@@ -131,6 +132,16 @@ pub(crate) fn input(record: &Record) -> Value {
     let mut properties = Map::new();
     properties.insert(String::from("request"), request);
     properties.extend(scope_properties());
+    properties.insert(
+        String::from(crate::tools::DETAIL),
+        json!({
+            "type": "string",
+            "enum": AnswerDetail::NAMES,
+            "description": "`brief`, the fields a reader needs, or `full`, the whole \
+                            answer; the server's own when left out, `brief` unless its \
+                            operator chose otherwise.",
+        }),
+    );
     if record.compares() {
         properties.insert(
             String::from(crate::tools::OTHER),
@@ -203,19 +214,38 @@ pub(crate) fn scope_properties() -> Map<String, Value> {
 }
 
 /// A record tool's structured content, the envelope: `value` the
-/// answer's own schema, and `provenance` where the area seals one. None
-/// where the answer's type carries no schema.
+/// answer's own schema, `provenance` where the area seals one, and
+/// `detail` on a brief answer. Each narrowed to the record's brief
+/// ([`teistro::records::Brief::narrow`]), so a brief answer and a full one
+/// both hold to it. None where the answer's type carries no schema.
 pub(crate) fn output(record: &Record) -> Option<Value> {
     let mut generator = generator();
-    let value = record.answer_schema(&mut generator)?.to_value();
-    let provenance = generator.subschema_for::<Provenance>().to_value();
+    let mut value = record.answer_schema(&mut generator)?.to_value();
+    let mut provenance = generator.subschema_for::<Provenance>().to_value();
+    // The definitions with the generator's transforms applied, so a copy
+    // inlined by narrowing is described as the definition is.
+    let definitions = generator.take_definitions(true);
+    let _ = record.brief().narrow(&mut value, &definitions);
+    let _ = Brief::PROVENANCE.narrow(&mut provenance, &definitions);
     let schema = json!({
         "type": "object",
-        "properties": { "value": value, "provenance": provenance },
+        "properties": {
+            "value": value,
+            "provenance": provenance,
+            "detail": {
+                "const": AnswerDetail::Brief.name(),
+                "description": "On a brief answer: the value is the brief of the full \
+                                answer the provenance's `answer_key` identifies.",
+            },
+        },
         "required": ["value"],
         "additionalProperties": false,
     });
-    Some(rooted(schema, &mut generator))
+    Some(if definitions.is_empty() {
+        schema
+    } else {
+        with(schema, "$defs", Value::Object(definitions))
+    })
 }
 
 /// The request's own properties: inline, or in the definition its

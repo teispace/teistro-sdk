@@ -334,6 +334,15 @@ a quarter, and the server builds it once and keeps it. Every example
 holds to both details, and every chart record its reader takes holds to
 the full schema and to the part `schema.describe` answers.
 
+*Answers, brief by default* (A2-2, `result-detail.md`). A record
+tool's arguments carry `detail` beside `request`, `profile`, `settings`
+and `locale`: `brief`, the fields the record declares a reader needs,
+or `full`. The server answers brief when a call names none, since an
+agent's context is what an answer spends, and `--answers full` changes
+that for a client that stores or validates whole answers. The listed
+`outputSchema` is narrowed so that both details hold to it, and a test
+holds every example's answer at each detail to it.
+
 **P2. Resources for what an agent reads rather than computes.** The
 catalogue (`teistro://catalogue/{kind}`, a resource template), the
 shipped profiles and the settings schema (`teistro://profiles/{id}`,

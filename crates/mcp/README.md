@@ -102,6 +102,14 @@ input and output schemas in full, or one part's:
 `--schemas full` lists every schema inline, answers included, for a
 client that validates structured content.
 
+Each record tool answers **brief** unless a call asks for `"detail":
+"full"`: the fields its record declares a reader needs, and of the
+provenance the profile, confidence, fallbacks, warnings and the
+`answer_key`, which identifies the full answer (`detail: "brief"` says
+so). `--answers full` makes full the server's own. What each brief
+keeps and saves is measured in
+`docs/03-design/result-detail-measured.md`.
+
 Beside the tools, the server answers resources, prompts and
 completions:
 

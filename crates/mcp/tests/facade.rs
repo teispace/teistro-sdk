@@ -14,7 +14,7 @@
 use serde_json::{Value, json};
 use teistro::{Context, Ephemeris};
 use teistro_idl::emit::without_rust_examples;
-use teistro_mcp::{Adapter, Detail, Engine, Server};
+use teistro_mcp::{Adapter, AnswerDetail, Detail, Engine, Server};
 
 /// The engine passthrough's tools ask an engine with operations of its
 /// own, which the built-in is not: they run over the test adapter.
@@ -48,24 +48,25 @@ fn over_the_test_adapter() -> (Server, Context) {
 }
 
 /// That the tool `name` answers `request` as the façade answers it under
-/// `context`: the value, and the provenance where it seals one.
-fn answers_as_the_facade(name: &str, result: &Value, context: &Context, request: &Value) {
+/// `context` at `detail`: the envelope whole, the value and the provenance
+/// where it seals one, and on a brief answer its `detail`.
+fn answers_as_the_facade(
+    name: &str,
+    result: &Value,
+    context: &Context,
+    request: &Value,
+    detail: AnswerDetail,
+) {
     assert_eq!(result["isError"], false, "{name}: {result}");
     let answered = teistro::records::record(name)
         .unwrap()
-        .answer(context, &request.to_string())
+        .answer_at(context, &request.to_string(), detail)
         .unwrap();
-    let structured = &result["structuredContent"];
-    assert_eq!(structured["value"], answered.value, "{name}");
-    match answered.provenance {
-        Some(provenance) => {
-            assert_eq!(
-                structured["provenance"],
-                serde_json::to_value(provenance).unwrap()
-            );
-        }
-        None => assert!(structured.get("provenance").is_none(), "{name}"),
-    }
+    assert_eq!(
+        result["structuredContent"],
+        answered.envelope().unwrap(),
+        "{name} at {detail:?}"
+    );
 }
 
 /// One request of each record's, from the fixture every binding's own
@@ -132,7 +133,7 @@ fn a_finder_tool_carries_examples_that_answer() {
         for example in examples {
             let request = example["request"].clone();
             let result = call(&mut server, name, &json!({"request": request}));
-            answers_as_the_facade(name, &result, &context, &request);
+            answers_as_the_facade(name, &result, &context, &request, AnswerDetail::Brief);
         }
     }
     // A record without examples shows none.
@@ -195,10 +196,42 @@ fn a_tool_answers_as_the_facade_does() {
             if let Some(profile) = profile {
                 arguments["profile"] = json!(profile);
             }
+            // The server's own detail, brief, and each named.
             let result = call(&mut server, name, &arguments);
-            answers_as_the_facade(name, &result, &context, &request);
+            answers_as_the_facade(name, &result, &context, &request, AnswerDetail::Brief);
+            for detail in AnswerDetail::NAMES {
+                arguments["detail"] = json!(detail);
+                let result = call(&mut server, name, &arguments);
+                let detail = AnswerDetail::from_name(detail).unwrap();
+                answers_as_the_facade(name, &result, &context, &request, detail);
+            }
         }
     }
+}
+
+/// A detail no record answers is refused, named under `arguments.detail`;
+/// a server set to answer in full answers so when a call names none.
+#[test]
+fn a_tool_refuses_an_unknown_detail_and_answers_at_the_servers_own() {
+    let mut server = Server::new(Engine::Builtin);
+    let (name, request) = examples()
+        .into_iter()
+        .find(|(name, _)| *name == "calendar.convert")
+        .unwrap();
+    let refused = call(
+        &mut server,
+        name,
+        &json!({"request": request, "detail": "short"}),
+    );
+    assert_eq!(refused["isError"], true, "{refused}");
+    assert_eq!(refused["structuredContent"]["field"], "arguments.detail");
+    let context = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    let mut full = Server::new(Engine::Builtin).with_answers(AnswerDetail::Full);
+    let result = call(&mut full, name, &json!({"request": request}));
+    answers_as_the_facade(name, &result, &context, &request, AnswerDetail::Full);
 }
 
 #[test]
@@ -207,14 +240,20 @@ fn an_engine_tool_answers_as_the_facade_does_over_a_loaded_adapter() {
     for (name, request) in examples() {
         if asks_an_engine(name) {
             let result = call(&mut server, name, &json!({"request": request}));
-            answers_as_the_facade(name, &result, &context, &request);
+            answers_as_the_facade(name, &result, &context, &request, AnswerDetail::Brief);
         }
     }
     // An operation's own tool is `engine.call` with its arguments.
     let arguments = json!({"values": [1, 2.5]});
     let result = call(&mut server, "engine.tp_sum", &arguments);
     let request = json!({"name": "tp_sum", "arguments": arguments});
-    answers_as_the_facade("engine.call", &result, &context, &request);
+    answers_as_the_facade(
+        "engine.call",
+        &result,
+        &context,
+        &request,
+        AnswerDetail::Brief,
+    );
     assert_eq!(result["structuredContent"]["value"]["total"], 3.5);
     // And the SDK's own tools compute on the adapter's sky.
     let found = call(
@@ -278,7 +317,7 @@ fn a_tool_reads_the_settings_and_the_locale_it_names() {
         let result = call(
             server,
             name,
-            &json!({"request": request, "settings": {"frame": {"centre": centre}}}),
+            &json!({"request": request, "detail": "full", "settings": {"frame": {"centre": centre}}}),
         );
         assert_eq!(result["isError"], false, "{result}");
         result["structuredContent"]["provenance"]["settings_hash"].clone()
@@ -366,7 +405,11 @@ fn a_chart_request_answers_its_charts_and_a_row_a_chart_of_each_table_asked() {
         .into_iter()
         .find(|(name, _)| *name == "chart.found")
         .unwrap();
-    let result = call(&mut server, name, &json!({"request": request}));
+    let result = call(
+        &mut server,
+        name,
+        &json!({"request": request, "detail": "full"}),
+    );
     let value = &result["structuredContent"]["value"];
     assert_eq!(value["charts"].as_array().unwrap().len(), 2);
     for asked in ["fortitudes", "lots", "kp", "varsha"] {
@@ -385,7 +428,11 @@ fn a_days_request_answers_its_days_and_each_section_sealed_as_the_boundary_seals
         .into_iter()
         .find(|(name, _)| *name == "almanac.days")
         .unwrap();
-    let result = call(&mut server, name, &json!({"request": request}));
+    let result = call(
+        &mut server,
+        name,
+        &json!({"request": request, "detail": "full"}),
+    );
     let value = &result["structuredContent"]["value"];
     assert_eq!(value["days"].as_array().unwrap().len(), 3);
     assert_eq!(value["dayHashes"].as_array().unwrap().len(), 3);
@@ -412,7 +459,11 @@ fn a_days_request_answers_its_days_and_each_section_sealed_as_the_boundary_seals
     ] {
         plain.as_object_mut().unwrap().remove(asked);
     }
-    let result = call(&mut server, name, &json!({"request": plain}));
+    let result = call(
+        &mut server,
+        name,
+        &json!({"request": plain, "detail": "full"}),
+    );
     let keys: Vec<&String> = result["structuredContent"]["value"]
         .as_object()
         .unwrap()
@@ -542,11 +593,18 @@ fn every_example_and_its_answer_hold_to_the_tools_schemas() {
         let leaner = lean.iter().find(|tool| tool["name"] == name).unwrap();
         holds(&leaner["inputSchema"], &arguments)
             .unwrap_or_else(|why| panic!("{name}'s arguments, lean: {why}"));
-        let result = call(server, name, &arguments);
-        assert_eq!(result["isError"], false, "{name}: {result}");
-        if let Some(output) = tool.get("outputSchema") {
-            holds(output, &result["structuredContent"])
-                .unwrap_or_else(|why| panic!("{name}'s answer: {why}"));
+        // Brief and full, each held to the one schema.
+        for detail in AnswerDetail::NAMES {
+            let mut arguments = arguments.clone();
+            arguments["detail"] = json!(detail);
+            holds(&tool["inputSchema"], &arguments)
+                .unwrap_or_else(|why| panic!("{name}'s arguments at {detail}: {why}"));
+            let result = call(server, name, &arguments);
+            assert_eq!(result["isError"], false, "{name}: {result}");
+            if let Some(output) = tool.get("outputSchema") {
+                holds(output, &result["structuredContent"])
+                    .unwrap_or_else(|why| panic!("{name}'s answer at {detail}: {why}"));
+            }
         }
     }
 }

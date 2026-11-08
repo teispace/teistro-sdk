@@ -39,7 +39,7 @@ fn call(server: &mut Server, name: &str, arguments: &Value) -> Value {
 /// A chart at Kathmandu under `profile` with its placements said: an
 /// answer whose words a pack shapes.
 fn said(profile: &str) -> Value {
-    json!({ "profile": profile, "request": {
+    json!({ "profile": profile, "detail": "full", "request": {
         "instant": 2_447_987.5, "latitudeDeg": 27.7, "longitudeDeg": 85.3,
         "utcOffsetSeconds": 20_700, "interpret": { "placements": true } } })
 }
@@ -78,7 +78,7 @@ fn a_zone_pack_is_read_by_every_context() {
     )];
     let pack = teistro::ZonePack::write("2099a", zones);
     let pack = std::sync::Arc::new(teistro::ZonePack::from_bytes(&pack).unwrap());
-    let asked = json!({ "profile": "nepali-drik", "request": {
+    let asked = json!({ "profile": "nepali-drik", "detail": "full", "request": {
         "first": { "year": 2026, "month": 11, "day": 1 },
         "latitudeDeg": 27.7, "longitudeDeg": 85.3,
         "zone": { "kind": "IANA", "zone": "Asia/Kathmandu" } } });
