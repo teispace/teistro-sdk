@@ -69,8 +69,11 @@ Three things in that table are checks rather than readings:
   0;4,59,8,48,56,31,30 gives 364 220.117 revolutions, which is not a
   whole number. The text's −8 gives 0;4,59,8,24,56,31,33: the same digits
   but one place, 48 for 24. Its bija is −8, as Rupa's revised count
-  (364 212.0116) says (C1221). The node's printed motion fits no whole
-  count, so it waits on the book's own Rahu page.
+  (364 212.0116) says (C1221). The book itself (p. 21) confirms it:
+  the Guru page prints the text's motion, and its footer subtracts the
+  years since the aeon began over 1500 as degrees, which is −8
+  revolutions an age. The node's printed motion fits no whole count, so
+  it waits on the book's own Rahu page.
 
 The Moon's apsis bija is the one the Nepal committee's almanac was
 measured to carry (`Bija::NEPAL_COMMITTEE`, C28). Both traditions'
