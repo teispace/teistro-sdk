@@ -231,7 +231,7 @@ void main() {
         targetOS: os,
         targetArchitecture: Architecture.arm64,
         targetAndroidNdkApi: api,
-        targetIOSVersion: ios,
+        iOSDeploymentVersion: AppleVersion(ios),
         mainMethod: (arguments) => build(arguments, (input, _) async {
           code = input.config.code;
         }),
@@ -248,7 +248,7 @@ void main() {
         targetOS: os,
         targetArchitecture: Architecture.arm64,
         targetAndroidNdkApi: api,
-        targetIOSVersion: ios,
+        iOSDeploymentVersion: AppleVersion(ios),
         mainMethod: (arguments) => build(arguments, (input, _) async {
           code = input.config.code;
         }),

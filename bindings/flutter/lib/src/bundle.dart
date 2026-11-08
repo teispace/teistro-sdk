@@ -180,7 +180,7 @@ void refuseFloor(CodeConfig code) {
       );
     }
   } else if (code.targetOS == OS.iOS) {
-    final version = code.iOS.targetVersion;
+    final version = code.iOS.deploymentVersion.major;
     if (version < iosFloor) {
       throw BuildError(
         message:
