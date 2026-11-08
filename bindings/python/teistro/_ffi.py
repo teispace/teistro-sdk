@@ -363,7 +363,7 @@ _SIZES_64: Final[dict[str, int]] = {
     "ts_frame": 16,
     "ts_date_span": 16,
     "ts_calendar_date": 24,
-    "ts_chart_request": 360,
+    "ts_chart_request": 368,
     "ts_civil_time": 12,
     "ts_civil_date_time": 44,
     "ts_zone_spec": 32,
@@ -836,6 +836,7 @@ class _ChartRequestStruct(ctypes.Structure):
         ("dossier_json", ctypes.c_char_p),
         ("masa_pravesha_json", ctypes.c_char_p),
         ("western_configurations_json", ctypes.c_char_p),
+        ("zone_json", ctypes.c_char_p),
     ]
 
 
@@ -2434,7 +2435,8 @@ class ChartRequest:
 
     utc_offset_seconds: int
     """The local clock's offset from UTC in seconds, east positive: the
-    clock the day's date is read in.
+    clock the day's date is read in. Not read when `zone_json` names a
+    zone.
     Unit: s. Range: [-64800,64800]. Example: 20700.
     """
 
@@ -3021,6 +3023,19 @@ class ChartRequest:
     Example: {"stelliumLeast":4}. May be null.
     """
 
+    zone_json: Optional[str] = None
+    """The zone the charts are founded on, as JSON, the record
+    `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+    "Asia/Kathmandu"}`. Each birth is then read at the zone's offset at
+    its own instant (Kathmandu +05:30 in 1985, +05:45 now; local mean
+    time before the first rule), `utc_offset_seconds` is not read, the
+    `cast` section's `utc_offset_seconds` says each chart's offset, and
+    the provenance names the first birth's offset, source, era and
+    database (`03-design/time-and-timezone.md` §3.4). Null for the
+    offset.
+    Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
+    """
+
     def _into(self, raw: _ChartRequestStruct, owned: list[Any]) -> None:
         """Writes this value into a C struct, which may be one held inside
         another rather than one of its own.
@@ -3153,6 +3168,9 @@ class ChartRequest:
         _western_configurations_json = None if self.western_configurations_json is None else self.western_configurations_json.encode("utf-8")
         owned.append(_western_configurations_json)
         raw.western_configurations_json = _western_configurations_json
+        _zone_json = None if self.zone_json is None else self.zone_json.encode("utf-8")
+        owned.append(_zone_json)
+        raw.zone_json = _zone_json
 
     def _to_c(self, owned: list[Any]) -> _ChartRequestStruct:
         """This value as a fresh C struct, ready to be passed by pointer."""
@@ -3221,6 +3239,7 @@ class ChartRequest:
             dossier_json=_text(raw.dossier_json),
             masa_pravesha_json=_text(raw.masa_pravesha_json),
             western_configurations_json=_text(raw.western_configurations_json),
+            zone_json=_text(raw.zone_json),
         )
 
 

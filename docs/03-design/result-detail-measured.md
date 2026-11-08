@@ -22,15 +22,15 @@ pays each figure twice.
 | every brief that keeps fields belongs to a record whose answer states a schema | **holds** | 0 of 18 disagree |
 | every record set aside here is a record, and refuses its example over the built-in ephemeris | **holds** | 0 of 2 disagree |
 
-## Over 51 records
+## Over 52 records
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 342 514 | 99 766 | 29.1% |
-| the value | 324 270 | 96 577 | 29.8% |
-| the provenance | 17 705 | 2390 | 13.5% |
+| the envelope | 343 676 | 100 654 | 29.3% |
+| the value | 325 151 | 97 458 | 30.0% |
+| the provenance | 17 979 | 2390 | 13.3% |
 
-18 of the 51 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
+18 of the 52 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
 13 of the 242 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
 
@@ -46,6 +46,7 @@ value.
 
 | record | full | brief | brief against full | the brief keeps |
 |---|---|---|---|---|
+| `almanac.aayadi` | 888 | 888 | 100.0% | the whole value |
 | `almanac.anniversaries` | 17 241 | 6370 | 36.9% | `anniversaries.key`, `anniversaries.kind`, `anniversaries.origin`, `anniversaries.observance.rule`, `anniversaries.observance.day`, `anniversaries.observance.tithi`, `anniversaries.observance.month`, `anniversaries.observance.adhika`, `anniversaries.observance.case`, `anniversaries.observance.choice`, `ekadashis`, `observances`, `unjudged` |
 | `almanac.ashauch` | 952 | 193 | 20.3% | `key`, `kind`, `relation`, `start`, `end`, `length`, `days` |
 | `almanac.ashauchKin` | 144 | 144 | 100.0% | the whole value |
@@ -71,12 +72,12 @@ value.
 | `calendar.add` | 149 | 149 | 100.0% | the whole value |
 | `calendar.between` | 28 | 28 | 100.0% | the whole value |
 | `calendar.convert` | 149 | 149 | 100.0% | the whole value |
-| `chart.astrocartography` | 4219 | 3693 | 87.5% | the whole value |
-| `chart.disagreements` | 1449 | 886 | 61.1% | `otherProfile`, `at`, `compared`, `lagna`, `grahas`, `nakshatra`, `dashas`, `yogas` |
-| `chart.found` | 33 149 | 17 360 | 52.4% | `charts.foundation.instant`, `charts.foundation.place`, `charts.foundation.kind`, `charts.foundation.zodiac`, `charts.foundation.lagna_deg`, `charts.foundation.houses`, `charts.foundation.grahas.graha`, `charts.foundation.grahas.longitude_deg`, `charts.foundation.grahas.speed_deg_per_day`, `charts.foundation.grahas.placement`, `charts.foundation.grahas.house`, `charts.panchanga`, `charts.vargas`, `charts.state`, `charts.aspects`, `charts.points`, `charts.houses`, `charts.ashtakavarga`, `charts.vimshopaka`, `charts.vaiseshikamsa`, `charts.shadbala.grahas.graha`, `charts.shadbala.grahas.rupas`, `charts.shadbala.grahas.required_rupas`, `charts.shadbala.grahas.strong`, `charts.bhava_bala`, `charts.dasha_phala`, `charts.jaimini`, `charts.avakahada`, `charts.moment`, `charts.drawings`, `charts.dashas`, `readings`, `plans`, `sade_sati`, `gochar`, `hits`, `sarvatobhadra`, `dossier`, `dignities`, `fortitudes.scores`, `fortitudes.planets`, `fortitudes.almutens`, `lots.sect`, `lots.lots`, `considerations`, `perfections`, `matchings`, `svgs`, `kp.chart.planets`, `kp.significators`, `kp.ruling`, `prashna`, `remedies`, `lalkitab`, `rectification`, `varsha`, `tithi_pravesha`, `masa_pravesha`, `western` |
-| `chart.mundane` | 706 | 182 | 25.8% | the whole value |
+| `chart.astrocartography` | 4264 | 3693 | 86.6% | the whole value |
+| `chart.disagreements` | 1495 | 886 | 59.3% | `otherProfile`, `at`, `compared`, `lagna`, `grahas`, `nakshatra`, `dashas`, `yogas` |
+| `chart.found` | 33 195 | 17 360 | 52.3% | `charts.foundation.instant`, `charts.foundation.place`, `charts.foundation.kind`, `charts.foundation.zodiac`, `charts.foundation.lagna_deg`, `charts.foundation.houses`, `charts.foundation.grahas.graha`, `charts.foundation.grahas.longitude_deg`, `charts.foundation.grahas.speed_deg_per_day`, `charts.foundation.grahas.placement`, `charts.foundation.grahas.house`, `charts.panchanga`, `charts.vargas`, `charts.state`, `charts.aspects`, `charts.points`, `charts.houses`, `charts.ashtakavarga`, `charts.vimshopaka`, `charts.vaiseshikamsa`, `charts.shadbala.grahas.graha`, `charts.shadbala.grahas.rupas`, `charts.shadbala.grahas.required_rupas`, `charts.shadbala.grahas.strong`, `charts.bhava_bala`, `charts.dasha_phala`, `charts.jaimini`, `charts.avakahada`, `charts.moment`, `charts.drawings`, `charts.dashas`, `readings`, `plans`, `sade_sati`, `gochar`, `hits`, `sarvatobhadra`, `dossier`, `dignities`, `fortitudes.scores`, `fortitudes.planets`, `fortitudes.almutens`, `lots.sect`, `lots.lots`, `considerations`, `perfections`, `matchings`, `svgs`, `kp.chart.planets`, `kp.significators`, `kp.ruling`, `prashna`, `remedies`, `lalkitab`, `rectification`, `varsha`, `tithi_pravesha`, `masa_pravesha`, `western` |
+| `chart.mundane` | 752 | 182 | 24.2% | the whole value |
 | `chart.rashifal` | 17 454 | 4641 | 26.6% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline` |
-| `chart.relocated` | 1008 | 494 | 49.0% | the whole value |
+| `chart.relocated` | 1053 | 494 | 46.9% | the whole value |
 | `intl.date` | 237 | 237 | 100.0% | the whole value |
 | `intl.dates` | 252 | 252 | 100.0% | the whole value |
 | `intl.inWords` | 210 | 210 | 100.0% | the whole value |
@@ -90,7 +91,7 @@ value.
 | `naming.suggest` | 584 | 584 | 100.0% | the whole value |
 | `naming.syllables` | 1323 | 1323 | 100.0% | the whole value |
 | `numerology.profile` | 889 | 889 | 100.0% | the whole value |
-| `research.study` | 1364 | 851 | 62.4% | the whole value |
+| `research.study` | 1410 | 851 | 60.4% | the whole value |
 | `time.civil` | 264 | 264 | 100.0% | the whole value |
 | `time.convert` | 104 | 104 | 100.0% | the whole value |
 | `time.resolve` | 210 | 210 | 100.0% | the whole value |
@@ -121,7 +122,7 @@ names it.
 - `almanac.sentences`: `sentences.key`, `sentences.params`.
 - `almanac.skyView`: `atmosphere`, `ecliptic`, `eclipticStepDeg`, `horizon`, `horizonStepDeg`, `obliquityDeg`, `siderealTimeDeg`.
 - `chart.disagreements`: `otherSettingsHash`.
-- `chart.found`: `charts.foundation.chalit`, `charts.foundation.day`, `charts.foundation.day_lagna_deg`, `charts.foundation.grahas.distance_au`, `charts.foundation.grahas.latitude_deg`, `charts.foundation.grahas.tropical_deg`, `charts.foundation.lilith`, `charts.foundation.outer`, `charts.foundation.steps`, `charts.foundation.timing`, `charts.shadbala.grahas.ashubha_rashmi`, `charts.shadbala.grahas.cheshta`, `charts.shadbala.grahas.dig`, `charts.shadbala.grahas.drik`, `charts.shadbala.grahas.ishta`, `charts.shadbala.grahas.kaala`, `charts.shadbala.grahas.kashta`, `charts.shadbala.grahas.naisargika`, `charts.shadbala.grahas.sthana`, `charts.shadbala.grahas.subha_rashmi`, `charts.shadbala.grahas.virupas`, `charts.shadbala.rules`, `fortitudes.dignities`, `fortitudes.rules`, `fortitudes.sky`, `hashes`, `kp.chart.cusps`, `kp.chart.system`, `lots.fortuneReversed`, `lots.request`.
+- `chart.found`: `charts.foundation.chalit`, `charts.foundation.clock`, `charts.foundation.day`, `charts.foundation.day_lagna_deg`, `charts.foundation.grahas.distance_au`, `charts.foundation.grahas.latitude_deg`, `charts.foundation.grahas.tropical_deg`, `charts.foundation.lilith`, `charts.foundation.outer`, `charts.foundation.steps`, `charts.foundation.timing`, `charts.shadbala.grahas.ashubha_rashmi`, `charts.shadbala.grahas.cheshta`, `charts.shadbala.grahas.dig`, `charts.shadbala.grahas.drik`, `charts.shadbala.grahas.ishta`, `charts.shadbala.grahas.kaala`, `charts.shadbala.grahas.kashta`, `charts.shadbala.grahas.naisargika`, `charts.shadbala.grahas.sthana`, `charts.shadbala.grahas.subha_rashmi`, `charts.shadbala.grahas.virupas`, `charts.shadbala.rules`, `fortitudes.dignities`, `fortitudes.rules`, `fortitudes.sky`, `hashes`, `kp.chart.cusps`, `kp.chart.system`, `lots.fortuneReversed`, `lots.request`.
 - `chart.rashifal`: `period.readings.gochar`, `period.reference`.
 - `verify.issue`: `receipt.calculationVersion`, `receipt.catalogueVersion`, `receipt.locale`, `receipt.packs`, `receipt.provider`, `receipt.request`, `receipt.sdkVersion`, `receipt.settings`, `receipt.tzdb`.
 
@@ -132,6 +133,7 @@ top-level fields (an answer that is a list, its items' fields summed)
 with their tokens, largest first; a field the brief keeps any of is
 marked.
 
+- `almanac.aayadi`: `quantities` 713 (kept), `clauses` 123 (kept), `unjudged` 18 (kept), `system` 9 (kept), `vyaya` 6 (kept), `tara` 5 (kept).
 - `almanac.anniversaries`: `anniversaries` 16 404 (kept), `ekadashis` 8 (kept), `observances` 8 (kept), `unjudged` 7 (kept).
 - `almanac.ashauch`: `dayOne` 83, `lastDay` 83, `clause` 64, `dayOneBy` 15, `length` 15 (kept), `end` 11 (kept), `start` 11 (kept), `table` 10, `key` 9 (kept), `relation` 9 (kept), `kind` 8 (kept), `days` 5 (kept).
 - `almanac.changes`: `points` 101 (kept), `window` 32 (kept).

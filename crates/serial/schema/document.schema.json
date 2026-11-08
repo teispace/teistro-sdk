@@ -1582,6 +1582,17 @@
           "$ref": "#/$defs/Bhavas",
           "description": "The bhavas of the chart's chalit, which is a different question and often a different answer."
         },
+        "clock": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ClockReading"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The clock the chart was founded on, read at its instant, for a chart founded on a zone or on local mean time: each chart of a batch has its own, since a zone's offset changes (Kathmandu was +05:30 in 1985 and is +05:45 now). Left out for a chart founded on an offset the caller stated, which the caller already holds (`03-design/time-and-timezone.md` §3.4)."
+        },
         "day": {
           "$ref": "#/$defs/ChartDay",
           "description": "The day it belongs to, which is not always its civil date."

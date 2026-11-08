@@ -2596,6 +2596,7 @@ void main() {
         vimshopaka: true,
         westernConfigurations: ConfigurationRequest(aspects: [WesternAspect.semiSextile], stelliumLeast: 1),
         westernHouses: HouseRequest(system: HouseSystem.placidus),
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });

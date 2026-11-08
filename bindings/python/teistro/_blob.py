@@ -386,6 +386,9 @@ class ChartsCast:
     Ragged because a chart's periods are its own: where Saturn crosses into them depends on where the natal Moon stands, and how often it steps back out depends on where its stations fall.
     """
 
+    utc_offset_seconds: memoryview[int]
+    """The clock the chart was founded on, in seconds east of UTC: a zone's offset at this birth, which differs between births across a clock change (Kathmandu +05:30 in 1985, +05:45 now), or the offset the caller stated (`03-design/time-and-timezone.md` §3.4)."""
+
     length: int
     """The number of rows every column holds."""
 
@@ -5170,6 +5173,9 @@ def decode_charts(raw: bytes) -> Charts:
             sade_sati_visit_count=blob.column(
                 at_cast, 11, 4, at_cast.count
             ).cast("I"),
+            utc_offset_seconds=blob.column(
+                at_cast, 12, 4, at_cast.count
+            ).cast("i"),
             length=at_cast.count,
         ),
         grahas=ChartsGrahas(

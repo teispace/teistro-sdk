@@ -1992,7 +1992,8 @@ pub struct ChartRequest {
     /// Unit: m. Range: `[-500,12000]`. Example: `1400`.
     pub altitude_m: f64,
     /// The local clock's offset from UTC in seconds, east positive: the
-    /// clock the day's date is read in.
+    /// clock the day's date is read in. Not read when `zone_json` names a
+    /// zone.
     /// Unit: s. Range: `[-64800,64800]`. Example: `20700`.
     pub utc_offset_seconds: i32,
     /// Which of the document's sections to compute beside the
@@ -2508,6 +2509,17 @@ pub struct ChartRequest {
     /// `westernConfigurations.stelliumLeast`.
     /// Example: `{"stelliumLeast":4}`. May be null.
     pub western_configurations_json: Option<String>,
+    /// The zone the charts are founded on, as JSON, the record
+    /// `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+    /// "Asia/Kathmandu"}`. Each birth is then read at the zone's offset at
+    /// its own instant (Kathmandu +05:30 in 1985, +05:45 now; local mean
+    /// time before the first rule), `utc_offset_seconds` is not read, the
+    /// `cast` section's `utc_offset_seconds` says each chart's offset, and
+    /// the provenance names the first birth's offset, source, era and
+    /// database (`03-design/time-and-timezone.md` §3.4). Null for the
+    /// offset.
+    /// Example: `{"kind":"IANA","zone":"Asia/Kathmandu"}`. May be null.
+    pub zone_json: Option<String>,
 }
 
 /// What a `ChartRequest` lends the C struct built from it: the buffers its
@@ -2555,6 +2567,7 @@ pub struct HeldChartRequest {
     dossier_json: Option<std::ffi::CString>,
     masa_pravesha_json: Option<std::ffi::CString>,
     western_configurations_json: Option<std::ffi::CString>,
+    zone_json: Option<std::ffi::CString>,
 }
 
 impl HeldChartRequest {
@@ -2688,6 +2701,7 @@ impl HeldChartRequest {
                 .western_configurations_json
                 .as_ref()
                 .map_or(ptr::null(), |s| s.as_ptr()),
+            zone_json: self.zone_json.as_ref().map_or(ptr::null(), |s| s.as_ptr()),
         }
     }
 }
@@ -2866,6 +2880,11 @@ impl ChartRequest {
                 .as_deref()
                 .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
                 .transpose()?,
+            zone_json: self
+                .zone_json
+                .as_deref()
+                .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+                .transpose()?,
         })
     }
 
@@ -2931,6 +2950,7 @@ impl ChartRequest {
             dossier_json: unsafe { lent_text(raw.dossier_json) },
             masa_pravesha_json: unsafe { lent_text(raw.masa_pravesha_json) },
             western_configurations_json: unsafe { lent_text(raw.western_configurations_json) },
+            zone_json: unsafe { lent_text(raw.zone_json) },
         }
     }
 }

@@ -274,6 +274,7 @@ export function decodeCharts(bytes) {
       natalSahamCount: column(blob, at, 9, 'u32', at.count),
       hitCount: column(blob, at, 10, 'u32', at.count),
       sadeSatiVisitCount: column(blob, at, 11, 'u32', at.count),
+      utcOffsetSeconds: column(blob, at, 12, 'i32', at.count),
       length: at.count,
     };
   }

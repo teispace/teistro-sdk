@@ -2121,11 +2121,12 @@ public final class Native {
             ADDRESS.withName("tithi_pravesha_json"),
             ADDRESS.withName("dossier_json"),
             ADDRESS.withName("masa_pravesha_json"),
-            ADDRESS.withName("western_configurations_json")
+            ADDRESS.withName("western_configurations_json"),
+            ADDRESS.withName("zone_json")
         ).withName("ts_chart_request");
 
         /** The size the C compiler gives the struct. */
-        public static final long SIZE = 360;
+        public static final long SIZE = 368;
 
         /** The struct's alignment. */
         public static final long ALIGN = 8;
@@ -2212,7 +2213,8 @@ public final class Native {
 
         /**
          * The offset of `utc_offset_seconds`. The local clock's offset from UTC in seconds, east positive: the
-         * clock the day's date is read in.
+         * clock the day's date is read in. Not read when `zone_json` names a
+         * zone.
          * Unit: s. Range: [-64800,64800]. Example: 20700.
          */
         public static final long UTC_OFFSET_SECONDS_OFFSET = 48;
@@ -2982,6 +2984,23 @@ public final class Native {
 
         /** The handle that reads and writes `western_configurations_json`: coordinates {@code (MemorySegment, long)}. */
         public static final VarHandle WESTERN_CONFIGURATIONS_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("western_configurations_json"));
+
+        /**
+         * The offset of `zone_json`. The zone the charts are founded on, as JSON, the record
+         * `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+         * "Asia/Kathmandu"}`. Each birth is then read at the zone's offset at
+         * its own instant (Kathmandu +05:30 in 1985, +05:45 now; local mean
+         * time before the first rule), `utc_offset_seconds` is not read, the
+         * `cast` section's `utc_offset_seconds` says each chart's offset, and
+         * the provenance names the first birth's offset, source, era and
+         * database (`03-design/time-and-timezone.md` §3.4). Null for the
+         * offset.
+         * Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
+         */
+        public static final long ZONE_JSON_OFFSET = 360;
+
+        /** The handle that reads and writes `zone_json`: coordinates {@code (MemorySegment, long)}. */
+        public static final VarHandle ZONE_JSON = LAYOUT.varHandle(MemoryLayout.PathElement.groupElement("zone_json"));
 
     }
 

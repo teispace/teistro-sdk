@@ -13613,7 +13613,7 @@
             "kind": "scalar",
             "scalar": "i32"
           },
-          "doc": "The local clock's offset from UTC in seconds, east positive: the\nclock the day's date is read in.",
+          "doc": "The local clock's offset from UTC in seconds, east positive: the\nclock the day's date is read in. Not read when `zone_json` names a\nzone.",
           "meta": {
             "unit": "s",
             "range": "[-64800,64800]",
@@ -14183,6 +14183,21 @@
           "doc": "The aspect configurations to find in every chart, as a JSON\nobject: optionally `aspects` and `orbs`, as `western_aspects_json`\nreads them (Leo's nine under his orbs by default), and\n`stelliumLeast`, the bodies in one tropical sign that make a\nstellium, three or more (three by default). The shapes come back in\nthe `western_configurations` section, made only of aspects the\nchart holds under those orbs. Null for none\n(`03-design/western-configurations.md`). Refusals are named from\nthe record every binding calls `westernConfigurations`, as\n`westernConfigurations.stelliumLeast`.",
           "meta": {
             "example": "{\"stelliumLeast\":4}",
+            "nullable": true
+          }
+        },
+        {
+          "name": "zone_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "doc": "The zone the charts are founded on, as JSON, the record\n`ts_time_resolve`'s zone is written as: `{\"kind\": \"IANA\", \"zone\":\n\"Asia/Kathmandu\"}`. Each birth is then read at the zone's offset at\nits own instant (Kathmandu +05:30 in 1985, +05:45 now; local mean\ntime before the first rule), `utc_offset_seconds` is not read, the\n`cast` section's `utc_offset_seconds` says each chart's offset, and\nthe provenance names the first birth's offset, source, era and\ndatabase (`03-design/time-and-timezone.md` §3.4). Null for the\noffset.",
+          "meta": {
+            "example": "{\"kind\":\"IANA\",\"zone\":\"Asia/Kathmandu\"}",
             "nullable": true
           }
         }
@@ -20556,6 +20571,11 @@
               "name": "sade_sati_visit_count",
               "scalar": "u32",
               "doc": "How many rows of the `sade_sati_visits` section belong to this chart. Zero when no Sade Sati was asked for.\n\nRagged because a chart's periods are its own: where Saturn crosses into them depends on where the natal Moon stands, and how often it steps back out depends on where its stations fall."
+            },
+            {
+              "name": "utc_offset_seconds",
+              "scalar": "i32",
+              "doc": "The clock the chart was founded on, in seconds east of UTC: a zone's offset at this birth, which differs between births across a clock change (Kathmandu +05:30 in 1985, +05:45 now), or the offset the caller stated (`03-design/time-and-timezone.md` §3.4)."
             }
           ]
         },

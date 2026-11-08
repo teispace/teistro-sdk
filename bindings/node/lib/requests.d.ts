@@ -789,7 +789,7 @@ export interface ChartFoundRequest {
   readonly synastry?: PartnerSynastry;
   readonly theme?: ThemePatch;
   readonly tithiPravesha?: TithiPraveshaRequest;
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
   readonly vaiseshikamsa?: boolean;
   readonly vargas?: readonly Member<catalogue.Varga>[];
   readonly varsha?: VarshaRequest;
@@ -797,6 +797,10 @@ export interface ChartFoundRequest {
   readonly westernAspects?: WesternAspectRequest;
   readonly westernConfigurations?: ConfigurationRequest;
   readonly westernHouses?: HouseRequest;
+  /**
+   * The zone, in place of `utcOffsetSeconds`: each birth read at the zone's offset then.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**

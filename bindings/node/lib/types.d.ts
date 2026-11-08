@@ -759,7 +759,8 @@ export interface ChartRequest {
   readonly altitudeM: number;
   /**
    * The local clock's offset from UTC in seconds, east positive: the
-   * clock the day's date is read in.
+   * clock the day's date is read in. Not read when `zone_json` names a
+   * zone.
    * @unit s
    * @range [-64800,64800]
    * @example 20700
@@ -1379,6 +1380,20 @@ export interface ChartRequest {
    * @nullable
    */
   readonly westernConfigurationsJson?: string;
+  /**
+   * The zone the charts are founded on, as JSON, the record
+   * `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+   * "Asia/Kathmandu"}`. Each birth is then read at the zone's offset at
+   * its own instant (Kathmandu +05:30 in 1985, +05:45 now; local mean
+   * time before the first rule), `utc_offset_seconds` is not read, the
+   * `cast` section's `utc_offset_seconds` says each chart's offset, and
+   * the provenance names the first birth's offset, source, era and
+   * database (`03-design/time-and-timezone.md` §3.4). Null for the
+   * offset.
+   * @example {"kind":"IANA","zone":"Asia/Kathmandu"}
+   * @nullable
+   */
+  readonly zoneJson?: string;
 }
 
 /**

@@ -1489,7 +1489,7 @@ class ChartFoundRequest(TypedDict, total=False):
 
     tithiPravesha: TithiPraveshaRequest
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
 
     vaiseshikamsa: bool
 
@@ -1504,6 +1504,9 @@ class ChartFoundRequest(TypedDict, total=False):
     westernConfigurations: ConfigurationRequest
 
     westernHouses: HouseRequest
+
+    zone: Optional[ZoneSpec]
+    """The zone, in place of `utcOffsetSeconds`: each birth read at the zone's offset then."""
 
 
 # A mundane chart as a binding asks for it: a kind, when to look from (a `year` or an instant `from`), or the `event` an `EVENT` casts, and the place the chart is cast for.

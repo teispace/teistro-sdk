@@ -900,7 +900,8 @@ final class ChartRequestStruct extends ffi.Struct {
   external double altitudeM;
 
   /// The local clock's offset from UTC in seconds, east positive: the
-  /// clock the day's date is read in.
+  /// clock the day's date is read in. Not read when `zone_json` names a
+  /// zone.
   /// Unit: s. Range: [-64800,64800]. Example: 20700.
   @ffi.Int32()
   external int utcOffsetSeconds;
@@ -1473,6 +1474,18 @@ final class ChartRequestStruct extends ffi.Struct {
   /// `westernConfigurations.stelliumLeast`.
   /// Example: {"stelliumLeast":4}. May be null.
   external ffi.Pointer<ffi.Char> westernConfigurationsJson;
+
+  /// The zone the charts are founded on, as JSON, the record
+  /// `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+  /// "Asia/Kathmandu"}`. Each birth is then read at the zone's offset at
+  /// its own instant (Kathmandu +05:30 in 1985, +05:45 now; local mean
+  /// time before the first rule), `utc_offset_seconds` is not read, the
+  /// `cast` section's `utc_offset_seconds` says each chart's offset, and
+  /// the provenance names the first birth's offset, source, era and
+  /// database (`03-design/time-and-timezone.md` §3.4). Null for the
+  /// offset.
+  /// Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
+  external ffi.Pointer<ffi.Char> zoneJson;
 
 }
 
@@ -4662,7 +4675,7 @@ final class CalendarDate {
 /// (`03-design/chart-at-the-boundary.md` §5).
 final class ChartRequest {
   /// A ChartRequest with every field named.
-  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson, this.sarvatobhadraJson, this.tithiPraveshaJson, this.dossierJson, this.masaPraveshaJson, this.westernConfigurationsJson});
+  const ChartRequest({required this.kind, required this.lilith, required this.instants, required this.latitudeDeg, required this.longitudeDeg, required this.altitudeM, required this.utcOffsetSeconds, required this.sections, required this.vargas, required this.drawings, required this.dashas, this.themeJson, this.rulesJson, this.interpretJson, this.varshaJson, this.gocharJson, this.hitsJson, this.sadeSatiJson, this.kpJson, this.dignitiesJson, this.fortitudesJson, this.lotsJson, this.considerationsJson, this.perfectionJson, this.progressionsJson, this.westernAspectsJson, this.synastryJson, this.parallelsJson, this.antisciaJson, this.midpointsJson, this.westernHousesJson, this.harmonicJson, this.matchingJson, this.prashnaJson, this.remediesJson, this.rectificationJson, this.lalkitabJson, this.sarvatobhadraJson, this.tithiPraveshaJson, this.dossierJson, this.masaPraveshaJson, this.westernConfigurationsJson, this.zoneJson});
 
   /// What kind of chart to found.
   /// Enum: ChartKind. Example: 0.
@@ -4699,7 +4712,8 @@ final class ChartRequest {
   final double altitudeM;
 
   /// The local clock's offset from UTC in seconds, east positive: the
-  /// clock the day's date is read in.
+  /// clock the day's date is read in. Not read when `zone_json` names a
+  /// zone.
   /// Unit: s. Range: [-64800,64800]. Example: 20700.
   final int utcOffsetSeconds;
 
@@ -5251,8 +5265,20 @@ final class ChartRequest {
   /// Example: {"stelliumLeast":4}. May be null.
   final String? westernConfigurationsJson;
 
+  /// The zone the charts are founded on, as JSON, the record
+  /// `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+  /// "Asia/Kathmandu"}`. Each birth is then read at the zone's offset at
+  /// its own instant (Kathmandu +05:30 in 1985, +05:45 now; local mean
+  /// time before the first rule), `utc_offset_seconds` is not read, the
+  /// `cast` section's `utc_offset_seconds` says each chart's offset, and
+  /// the provenance names the first birth's offset, source, era and
+  /// database (`03-design/time-and-timezone.md` §3.4). Null for the
+  /// offset.
+  /// Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
+  final String? zoneJson;
+
   /// This value with the fields given replaced, and the rest kept.
-  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson, String? sarvatobhadraJson, String? tithiPraveshaJson, String? dossierJson, String? masaPraveshaJson, String? westernConfigurationsJson}) => ChartRequest(
+  ChartRequest copyWith({ChartKind? kind, Lilith? lilith, List<double>? instants, double? latitudeDeg, double? longitudeDeg, double? altitudeM, int? utcOffsetSeconds, int? sections, List<Varga>? vargas, List<int>? drawings, List<int>? dashas, String? themeJson, String? rulesJson, String? interpretJson, String? varshaJson, String? gocharJson, String? hitsJson, String? sadeSatiJson, String? kpJson, String? dignitiesJson, String? fortitudesJson, String? lotsJson, String? considerationsJson, String? perfectionJson, String? progressionsJson, String? westernAspectsJson, String? synastryJson, String? parallelsJson, String? antisciaJson, String? midpointsJson, String? westernHousesJson, String? harmonicJson, String? matchingJson, String? prashnaJson, String? remediesJson, String? rectificationJson, String? lalkitabJson, String? sarvatobhadraJson, String? tithiPraveshaJson, String? dossierJson, String? masaPraveshaJson, String? westernConfigurationsJson, String? zoneJson}) => ChartRequest(
     kind: kind ?? this.kind,
     lilith: lilith ?? this.lilith,
     instants: instants ?? this.instants,
@@ -5295,6 +5321,7 @@ final class ChartRequest {
     dossierJson: dossierJson ?? this.dossierJson,
     masaPraveshaJson: masaPraveshaJson ?? this.masaPraveshaJson,
     westernConfigurationsJson: westernConfigurationsJson ?? this.westernConfigurationsJson,
+    zoneJson: zoneJson ?? this.zoneJson,
   );
 
   /// Writes this value into a C struct the call takes by pointer.
@@ -5430,6 +5457,9 @@ final class ChartRequest {
     raw.westernConfigurationsJson = westernConfigurationsJson == null
         ? ffi.nullptr
         : westernConfigurationsJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+    raw.zoneJson = zoneJson == null
+        ? ffi.nullptr
+        : zoneJson!.toNativeUtf8(allocator: arena).cast<ffi.Char>();
   }
 
   /// Reads the value a call filled in.
@@ -5549,6 +5579,9 @@ final class ChartRequest {
         westernConfigurationsJson: raw.westernConfigurationsJson == ffi.nullptr
             ? null
             : raw.westernConfigurationsJson.cast<pkg_ffi.Utf8>().toDartString(),
+        zoneJson: raw.zoneJson == ffi.nullptr
+            ? null
+            : raw.zoneJson.cast<pkg_ffi.Utf8>().toDartString(),
       );
 }
 
