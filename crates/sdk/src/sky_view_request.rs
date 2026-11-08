@@ -144,6 +144,7 @@ impl AlmanacArea<'_> {
     /// Rahu and Ketu are the node the settings name.
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// use teistro::{Context, Ephemeris, SkyViewRequest};
     /// use teistro::catalogue::Graha;
     ///
@@ -152,6 +153,7 @@ impl AlmanacArea<'_> {
     /// let view = sdk.almanac().sky_view(&asked)?;
     /// let moon = view.value.graha(Graha::Moon).expect("asked by default");
     /// println!("the Moon {:.1}° up at {:.1}°", moon.refracted_altitude_deg, moon.azimuth_deg);
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
@@ -213,12 +215,14 @@ impl AlmanacArea<'_> {
     /// catalogue member written as its full key.
     ///
     /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
     /// use teistro::{Context, Ephemeris, SkyViewRequest};
     ///
     /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
     /// let asked = SkyViewRequest::from_json(r#"{"latitudeDeg": 27.7172, "longitudeDeg": 85.324, "at": 2461345.25}"#)?;
     /// let written = sdk.almanac().sky_view_query(&asked)?;
     /// assert_eq!(written.value["grahas"][0]["graha"], "graha.SUN");
+    /// # }
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
