@@ -2085,6 +2085,12 @@ typedef TsVerifyIssueNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Point
 typedef TsVerifyIssueDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsVerifyReceiptNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsVerifyReceiptDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacElectNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacElectDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacObservanceNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacObservanceDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacPeopleNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacPeopleDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNumerologyProfileDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsPakshiNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2201,6 +2207,9 @@ final class TeistroLibrary {
         ts_verify_claims = library.lookupFunction<TsVerifyClaimsNative, TsVerifyClaimsDart>('ts_verify_claims'),
         ts_verify_issue = library.lookupFunction<TsVerifyIssueNative, TsVerifyIssueDart>('ts_verify_issue'),
         ts_verify_receipt = library.lookupFunction<TsVerifyReceiptNative, TsVerifyReceiptDart>('ts_verify_receipt'),
+        ts_almanac_elect = library.lookupFunction<TsAlmanacElectNative, TsAlmanacElectDart>('ts_almanac_elect'),
+        ts_almanac_observance = library.lookupFunction<TsAlmanacObservanceNative, TsAlmanacObservanceDart>('ts_almanac_observance'),
+        ts_almanac_people = library.lookupFunction<TsAlmanacPeopleNative, TsAlmanacPeopleDart>('ts_almanac_people'),
         ts_numerology_profile = library.lookupFunction<TsNumerologyProfileNative, TsNumerologyProfileDart>('ts_numerology_profile'),
         ts_pakshi = library.lookupFunction<TsPakshiNative, TsPakshiDart>('ts_pakshi'),
         ts_rashifal = library.lookupFunction<TsRashifalNative, TsRashifalDart>('ts_rashifal'),
@@ -3234,6 +3243,82 @@ final class TeistroLibrary {
   /// it does not have is `INVALID_ARG`, named under `receipt`; a format other
   /// than `teistro.receipt/1` is `SCHEMA_VERSION`, named `receipt.format`.
   final TsVerifyReceiptDart ts_verify_receipt;
+
+  /// The times a muhurta rule set leaves over a range at a place, ranked
+  /// best first (`03-design/election-search.md`), answered with `{value,
+  /// provenance}` as canonical JSON.
+  ///
+  /// `value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut,
+  /// ranking, unjudged}`, each window `{rank, at, open, holds, fails,
+  /// barredBy, score}`: `rank` 1 the best, `at` its UTC Julian days,
+  /// `holds` the clauses that count for the time over it and `fails` those
+  /// against it, each with the span it held over, and `barredBy` the rules'
+  /// bars that close it.
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "muhurta"}`: the days
+  /// as `{"year", "month", "day"}` in `calendar` (Gregorian when left out),
+  /// `last` the first when left out, and `muhurta` the rule set as
+  /// `almanac.days` reads it (`rules` an activity's name or rules spelt
+  /// out, `native`, `ranking`, `daysWithWindows`, `most`, `asta`,
+  /// `direction`). A key it does not read, a place or offset out of range or
+  /// a rule set its reader refuses is `INVALID_ARG`, named under `elect`; a
+  /// context without an ephemeris is `CAPABILITY`, as is a build without the
+  /// muhurta family.
+  final TsAlmanacElectDart ts_almanac_elect;
+
+  /// When an observance falls in a year or a window under each named
+  /// tradition (`03-design/observance-finder.md`), the occurrences paired
+  /// across them, answered with `{value, provenance}` as canonical JSON,
+  /// sealed by the first tradition's reckoning.
+  ///
+  /// `value` is `{traditions, occurrences, parted, unjudged}`: each
+  /// tradition `{name, rule, reckoning, profile, settingsHash, provider}`;
+  /// each occurrence `{month, adhika, kept, agree, differs, reason}`, `kept` a
+  /// tradition's `{tradition, day, observance}` or `{tradition, day, fast}`
+  /// in the request's order (no `day` where it keeps none), `differs` among
+  /// `ABSENT`, `DAY` and `MONTH`, and `reason` `RULE`, `SKY`,
+  /// `RULE_AND_SKY` or `PUBLISHED` where the days or months part.
+  ///
+  /// `request_json` is `{"calendar", "year", "first", "last",
+  /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds",
+  /// "traditions"}`: a `year` of `calendar` (Gregorian when left out) or
+  /// the days `first` to `last`; `traditions` 1 to 8, each `{"name",
+  /// "festivals", "rule", "reckoning"}`, `festivals` a festival request,
+  /// `rule` a key of it and `reckoning` `THIS` (the default) or `OTHER`,
+  /// which reckons it under `other`. `other` is null, or `context` itself,
+  /// when no tradition is reckoned `OTHER`. A key it does not read, a place
+  /// or offset out of range, a rule `festivals` does not carry, a name given
+  /// twice or an `OTHER` tradition with no other context is `INVALID_ARG`;
+  /// more than 8 traditions `LIMIT`; a dated rule `UNSUPPORTED`; each named
+  /// under `observance`.
+  final TsAlmanacObservanceDart ts_almanac_observance;
+
+  /// A day for many people at once (`03-design/people-digest.md`),
+  /// answered with `{value, provenance}` as canonical JSON, sealed by the
+  /// day's reckoning.
+  ///
+  /// `value` is `{day, sunrise, nextSunrise, nakshatra, moonSign, dasha,
+  /// people}`: the day's star and the Moon's sign at sunrise, and each
+  /// person `{name, birthStar, moonSign, lagna, dasha, dashaOpens, transits,
+  /// hits, tara, chandraHouse, chandrashtama, sadeSati}` in the request's
+  /// order: the dasha running at sunrise a period a level, the periods
+  /// opening before the next sunrise, every graha's gochar from their Moon,
+  /// the day's transit hits on their chart, the day's star counted from
+  /// their birth star, and the Moon's house from their Moon.
+  ///
+  /// `request_json` is `{"calendar", "day", "latitudeDeg", "longitudeDeg",
+  /// "altitudeM", "utcOffsetSeconds", "people", "dasha", "depth"}`: `day`
+  /// as `{"year", "month", "day"}` in `calendar` (Gregorian when left out)
+  /// at the place given; `people` 1 to 50, each `{"name", "instant",
+  /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`,
+  /// `instant` the birth's UTC Julian day; `dasha` `VIMSHOTTARI` and
+  /// `depth` 3 when left out. A key it does not read, a place, offset or
+  /// instant out of range, a name given twice or a depth past 1 to 6 is
+  /// `INVALID_ARG`, more than 50 people `LIMIT`, each named under `people`;
+  /// a context without an ephemeris is `CAPABILITY`, as is a build without
+  /// the chart or the muhurta family.
+  final TsAlmanacPeopleDart ts_almanac_people;
 
   /// Reads a name and a birth date under numerology's two systems and
   /// answers with the profile as canonical JSON: the name under each
@@ -7835,6 +7920,110 @@ final class TeistroContext implements ffi.Finalizable {
         final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
         final outJson = arena<StringStruct>();
         final status = _lib.ts_verify_receipt(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// The times a muhurta rule set leaves over a range at a place, ranked
+  /// best first (`03-design/election-search.md`), answered with `{value,
+  /// provenance}` as canonical JSON.
+  ///
+  /// `value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut,
+  /// ranking, unjudged}`, each window `{rank, at, open, holds, fails,
+  /// barredBy, score}`: `rank` 1 the best, `at` its UTC Julian days,
+  /// `holds` the clauses that count for the time over it and `fails` those
+  /// against it, each with the span it held over, and `barredBy` the rules'
+  /// bars that close it.
+  ///
+  /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+  /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "muhurta"}`: the days
+  /// as `{"year", "month", "day"}` in `calendar` (Gregorian when left out),
+  /// `last` the first when left out, and `muhurta` the rule set as
+  /// `almanac.days` reads it (`rules` an activity's name or rules spelt
+  /// out, `native`, `ranking`, `daysWithWindows`, `most`, `asta`,
+  /// `direction`). A key it does not read, a place or offset out of range or
+  /// a rule set its reader refuses is `INVALID_ARG`, named under `elect`; a
+  /// context without an ephemeris is `CAPABILITY`, as is a build without the
+  /// muhurta family.
+  String almanacElect(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_elect(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// When an observance falls in a year or a window under each named
+  /// tradition (`03-design/observance-finder.md`), the occurrences paired
+  /// across them, answered with `{value, provenance}` as canonical JSON,
+  /// sealed by the first tradition's reckoning.
+  ///
+  /// `value` is `{traditions, occurrences, parted, unjudged}`: each
+  /// tradition `{name, rule, reckoning, profile, settingsHash, provider}`;
+  /// each occurrence `{month, adhika, kept, agree, differs, reason}`, `kept` a
+  /// tradition's `{tradition, day, observance}` or `{tradition, day, fast}`
+  /// in the request's order (no `day` where it keeps none), `differs` among
+  /// `ABSENT`, `DAY` and `MONTH`, and `reason` `RULE`, `SKY`,
+  /// `RULE_AND_SKY` or `PUBLISHED` where the days or months part.
+  ///
+  /// `request_json` is `{"calendar", "year", "first", "last",
+  /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds",
+  /// "traditions"}`: a `year` of `calendar` (Gregorian when left out) or
+  /// the days `first` to `last`; `traditions` 1 to 8, each `{"name",
+  /// "festivals", "rule", "reckoning"}`, `festivals` a festival request,
+  /// `rule` a key of it and `reckoning` `THIS` (the default) or `OTHER`,
+  /// which reckons it under `other`. `other` is null, or `context` itself,
+  /// when no tradition is reckoned `OTHER`. A key it does not read, a place
+  /// or offset out of range, a rule `festivals` does not carry, a name given
+  /// twice or an `OTHER` tradition with no other context is `INVALID_ARG`;
+  /// more than 8 traditions `LIMIT`; a dated rule `UNSUPPORTED`; each named
+  /// under `observance`.
+  String almanacObservance(TeistroContext other, String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        other._alive();
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_observance(_handle, other._handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
+  /// A day for many people at once (`03-design/people-digest.md`),
+  /// answered with `{value, provenance}` as canonical JSON, sealed by the
+  /// day's reckoning.
+  ///
+  /// `value` is `{day, sunrise, nextSunrise, nakshatra, moonSign, dasha,
+  /// people}`: the day's star and the Moon's sign at sunrise, and each
+  /// person `{name, birthStar, moonSign, lagna, dasha, dashaOpens, transits,
+  /// hits, tara, chandraHouse, chandrashtama, sadeSati}` in the request's
+  /// order: the dasha running at sunrise a period a level, the periods
+  /// opening before the next sunrise, every graha's gochar from their Moon,
+  /// the day's transit hits on their chart, the day's star counted from
+  /// their birth star, and the Moon's house from their Moon.
+  ///
+  /// `request_json` is `{"calendar", "day", "latitudeDeg", "longitudeDeg",
+  /// "altitudeM", "utcOffsetSeconds", "people", "dasha", "depth"}`: `day`
+  /// as `{"year", "month", "day"}` in `calendar` (Gregorian when left out)
+  /// at the place given; `people` 1 to 50, each `{"name", "instant",
+  /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`,
+  /// `instant` the birth's UTC Julian day; `dasha` `VIMSHOTTARI` and
+  /// `depth` 3 when left out. A key it does not read, a place, offset or
+  /// instant out of range, a name given twice or a depth past 1 to 6 is
+  /// `INVALID_ARG`, more than 50 people `LIMIT`, each named under `people`;
+  /// a context without an ephemeris is `CAPABILITY`, as is a build without
+  /// the chart or the muhurta family.
+  String almanacPeople(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_people(_handle, rawrequestJson, outJson);
         if (status != 0) _fail(status);
         return _takeString(_lib, outJson);
     });

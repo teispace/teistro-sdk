@@ -6132,6 +6132,135 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// The times a muhurta rule set leaves over a range at a place, ranked
+    /// best first (`03-design/election-search.md`), answered with `{value,
+    /// provenance}` as canonical JSON.
+    ///
+    /// `value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut,
+    /// ranking, unjudged}`, each window `{rank, at, open, holds, fails,
+    /// barredBy, score}`: `rank` 1 the best, `at` its UTC Julian days,
+    /// `holds` the clauses that count for the time over it and `fails` those
+    /// against it, each with the span it held over, and `barredBy` the rules'
+    /// bars that close it.
+    ///
+    /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "muhurta"}`: the days
+    /// as `{"year", "month", "day"}` in `calendar` (Gregorian when left out),
+    /// `last` the first when left out, and `muhurta` the rule set as
+    /// `almanac.days` reads it (`rules` an activity's name or rules spelt
+    /// out, `native`, `ranking`, `daysWithWindows`, `most`, `asta`,
+    /// `direction`). A key it does not read, a place or offset out of range or
+    /// a rule set its reader refuses is `INVALID_ARG`, named under `elect`; a
+    /// context without an ephemeris is `CAPABILITY`, as is a build without the
+    /// muhurta family.
+    #[napi]
+    pub fn almanac_elect(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::finders::ts_almanac_elect(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// When an observance falls in a year or a window under each named
+    /// tradition (`03-design/observance-finder.md`), the occurrences paired
+    /// across them, answered with `{value, provenance}` as canonical JSON,
+    /// sealed by the first tradition's reckoning.
+    ///
+    /// `value` is `{traditions, occurrences, parted, unjudged}`: each
+    /// tradition `{name, rule, reckoning, profile, settingsHash, provider}`;
+    /// each occurrence `{month, adhika, kept, agree, differs, reason}`, `kept` a
+    /// tradition's `{tradition, day, observance}` or `{tradition, day, fast}`
+    /// in the request's order (no `day` where it keeps none), `differs` among
+    /// `ABSENT`, `DAY` and `MONTH`, and `reason` `RULE`, `SKY`,
+    /// `RULE_AND_SKY` or `PUBLISHED` where the days or months part.
+    ///
+    /// `request_json` is `{"calendar", "year", "first", "last",
+    /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds",
+    /// "traditions"}`: a `year` of `calendar` (Gregorian when left out) or
+    /// the days `first` to `last`; `traditions` 1 to 8, each `{"name",
+    /// "festivals", "rule", "reckoning"}`, `festivals` a festival request,
+    /// `rule` a key of it and `reckoning` `THIS` (the default) or `OTHER`,
+    /// which reckons it under `other`. `other` is null, or `context` itself,
+    /// when no tradition is reckoned `OTHER`. A key it does not read, a place
+    /// or offset out of range, a rule `festivals` does not carry, a name given
+    /// twice or an `OTHER` tradition with no other context is `INVALID_ARG`;
+    /// more than 8 traditions `LIMIT`; a dated rule `UNSUPPORTED`; each named
+    /// under `observance`.
+    #[napi]
+    pub fn almanac_observance(
+        &self,
+        env: Env,
+        other: &Context,
+        request_json: String,
+    ) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        other.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::finders::ts_almanac_observance(
+                self.handle,
+                other.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        let left = self.leave();
+        let other_left = other.leave();
+        left?;
+        other_left?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// A day for many people at once (`03-design/people-digest.md`),
+    /// answered with `{value, provenance}` as canonical JSON, sealed by the
+    /// day's reckoning.
+    ///
+    /// `value` is `{day, sunrise, nextSunrise, nakshatra, moonSign, dasha,
+    /// people}`: the day's star and the Moon's sign at sunrise, and each
+    /// person `{name, birthStar, moonSign, lagna, dasha, dashaOpens, transits,
+    /// hits, tara, chandraHouse, chandrashtama, sadeSati}` in the request's
+    /// order: the dasha running at sunrise a period a level, the periods
+    /// opening before the next sunrise, every graha's gochar from their Moon,
+    /// the day's transit hits on their chart, the day's star counted from
+    /// their birth star, and the Moon's house from their Moon.
+    ///
+    /// `request_json` is `{"calendar", "day", "latitudeDeg", "longitudeDeg",
+    /// "altitudeM", "utcOffsetSeconds", "people", "dasha", "depth"}`: `day`
+    /// as `{"year", "month", "day"}` in `calendar` (Gregorian when left out)
+    /// at the place given; `people` 1 to 50, each `{"name", "instant",
+    /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`,
+    /// `instant` the birth's UTC Julian day; `dasha` `VIMSHOTTARI` and
+    /// `depth` 3 when left out. A key it does not read, a place, offset or
+    /// instant out of range, a name given twice or a depth past 1 to 6 is
+    /// `INVALID_ARG`, more than 50 people `LIMIT`, each named under `people`;
+    /// a context without an ephemeris is `CAPABILITY`, as is a build without
+    /// the chart or the muhurta family.
+    #[napi]
+    pub fn almanac_people(&self, env: Env, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::finders::ts_almanac_people(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// Reads a name and a birth date under numerology's two systems and
     /// answers with the profile as canonical JSON: the name under each
     /// system, word by word with every reduction step, Balliett's birth

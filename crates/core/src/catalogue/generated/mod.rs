@@ -84,6 +84,8 @@ mod ruler_day_rule;
 mod paya;
 mod tridosha;
 mod mundane_kind;
+mod vastu_yoni;
+mod vyaya_kind;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -168,6 +170,8 @@ pub use ruler_day_rule::*;
 pub use paya::*;
 pub use tridosha::*;
 pub use mundane_kind::*;
+pub use vastu_yoni::*;
+pub use vyaya_kind::*;
 
 use crate::key::KeyId;
 
@@ -266,6 +270,8 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::Paya => Paya::from_key(key).map(Paya::key_id),
         Kind::Tridosha => Tridosha::from_key(key).map(Tridosha::key_id),
         Kind::MundaneKind => MundaneKind::from_key(key).map(MundaneKind::key_id),
+        Kind::VastuYoni => VastuYoni::from_key(key).map(VastuYoni::key_id),
+        Kind::VyayaKind => VyayaKind::from_key(key).map(VyayaKind::key_id),
         _ => None,
     }
 }
@@ -362,6 +368,8 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::Paya => Paya::from_id(id.id()).map(Paya::key),
         Kind::Tridosha => Tridosha::from_id(id.id()).map(Tridosha::key),
         Kind::MundaneKind => MundaneKind::from_id(id.id()).map(MundaneKind::key),
+        Kind::VastuYoni => VastuYoni::from_id(id.id()).map(VastuYoni::key),
+        Kind::VyayaKind => VyayaKind::from_id(id.id()).map(VyayaKind::key),
         _ => None,
     }
 }

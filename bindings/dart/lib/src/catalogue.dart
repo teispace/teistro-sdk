@@ -338,7 +338,11 @@ enum Kind {
   /// The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110).
   tridosha(91, 'tridosha'),
   /// Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).
-  mundaneKind(130, 'mundane_kind');
+  mundaneKind(130, 'mundane_kind'),
+  /// The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's.
+  vastuYoni(160, 'vastu_yoni'),
+  /// The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).
+  vyayaKind(161, 'vyaya_kind');
 
   const Kind(this.id, this.key);
 
@@ -5317,6 +5321,102 @@ enum MundaneKind implements KeyOf<MundaneKind> {
 
   /// The member with a key, or `null` for one this build does not know.
   static MundaneKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's. Members are the catalogue's ids; the full key id is `(TS_KIND_VASTU_YONI << 16) | member`.
+enum VastuYoni implements KeyOf<VastuYoni> {
+  /// The banner (dhvaja), the 1st: wealth (Samarangana XXVI v. 21)
+  dhvaja(0, 'DHVAJA'),
+  /// Smoke (dhūma), the 2nd: distress
+  dhuma(1, 'DHUMA'),
+  /// The lion (siṃha, hari), the 3rd: enjoyment
+  simha(2, 'SIMHA'),
+  /// The dog (śvan), the 4th: quarrel
+  shvan(3, 'SHVAN'),
+  /// The bull (vṛṣa, go), the 5th: wealth and grain
+  vrisha(4, 'VRISHA'),
+  /// The ass (khara, gardabha), the 6th: harm to women
+  khara(5, 'KHARA'),
+  /// The elephant (gaja, ibha, hastin), the 7th: blessings
+  gaja(6, 'GAJA'),
+  /// The crow (kāka, dhvāṅkṣa, vāyasa), the 8th: death
+  kaka(7, 'KAKA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const VastuYoni(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'vastu_yoni.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<VastuYoni> registered(String key) => Registered._('vastu_yoni.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static VastuYoni byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => VastuYoni.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static VastuYoni? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195). Members are the catalogue's ids; the full key id is `(TS_KIND_VYAYA_KIND << 16) | member`.
+enum VyayaKind implements KeyOf<VyayaKind> {
+  /// Piśāca, a vyaya equal to the aaya
+  pishacha(0, 'PISHACHA'),
+  /// Rākṣasa, a vyaya greater than the aaya
+  rakshasa(1, 'RAKSHASA'),
+  /// Yakṣa, a vyaya less than the aaya, the good one (v. 48)
+  yaksha(2, 'YAKSHA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const VyayaKind(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'vyaya_kind.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<VyayaKind> registered(String key) => Registered._('vyaya_kind.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static VyayaKind byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => VyayaKind.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static VyayaKind? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

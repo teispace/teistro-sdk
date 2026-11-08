@@ -23257,6 +23257,277 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "vastu_yoni",
+      "number": 160,
+      "version": 1,
+      "doc": "The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's.",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "DHVAJA",
+          "id": 0,
+          "doc": "The banner (dhvaja), the 1st: wealth (Samarangana XXVI v. 21)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 17-18, 21-22"
+            },
+            {
+              "text": "Mayamata, Trivandrum Sanskrit Series 65 (1919)",
+              "ref": "IX v. 21"
+            },
+            {
+              "text": "Muhurta Chintamani, Mahidhara's Hindi gloss (1892)",
+              "ref": "Vastu-prakarana XII vv. 4, 11"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "DHUMA",
+          "id": 1,
+          "doc": "Smoke (dhūma), the 2nd: distress",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 17-18, 21-22"
+            },
+            {
+              "text": "Mayamata, Trivandrum Sanskrit Series 65 (1919)",
+              "ref": "IX v. 21"
+            },
+            {
+              "text": "Muhurta Chintamani, Mahidhara's Hindi gloss (1892)",
+              "ref": "Vastu-prakarana XII vv. 4, 11"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SIMHA",
+          "id": 2,
+          "doc": "The lion (siṃha, hari), the 3rd: enjoyment",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 17-18, 21-22"
+            },
+            {
+              "text": "Mayamata, Trivandrum Sanskrit Series 65 (1919)",
+              "ref": "IX v. 21"
+            },
+            {
+              "text": "Muhurta Chintamani, Mahidhara's Hindi gloss (1892)",
+              "ref": "Vastu-prakarana XII vv. 4, 11"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SHVAN",
+          "id": 3,
+          "doc": "The dog (śvan), the 4th: quarrel",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 17-18, 21-22"
+            },
+            {
+              "text": "Mayamata, Trivandrum Sanskrit Series 65 (1919)",
+              "ref": "IX v. 21"
+            },
+            {
+              "text": "Muhurta Chintamani, Mahidhara's Hindi gloss (1892)",
+              "ref": "Vastu-prakarana XII vv. 4, 11"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "VRISHA",
+          "id": 4,
+          "doc": "The bull (vṛṣa, go), the 5th: wealth and grain",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 17-18, 21-22"
+            },
+            {
+              "text": "Mayamata, Trivandrum Sanskrit Series 65 (1919)",
+              "ref": "IX v. 21"
+            },
+            {
+              "text": "Muhurta Chintamani, Mahidhara's Hindi gloss (1892)",
+              "ref": "Vastu-prakarana XII vv. 4, 11"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KHARA",
+          "id": 5,
+          "doc": "The ass (khara, gardabha), the 6th: harm to women",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 17-18, 21-22"
+            },
+            {
+              "text": "Mayamata, Trivandrum Sanskrit Series 65 (1919)",
+              "ref": "IX v. 21"
+            },
+            {
+              "text": "Muhurta Chintamani, Mahidhara's Hindi gloss (1892)",
+              "ref": "Vastu-prakarana XII vv. 4, 11"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "GAJA",
+          "id": 6,
+          "doc": "The elephant (gaja, ibha, hastin), the 7th: blessings",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 17-18, 21-22"
+            },
+            {
+              "text": "Mayamata, Trivandrum Sanskrit Series 65 (1919)",
+              "ref": "IX v. 21"
+            },
+            {
+              "text": "Muhurta Chintamani, Mahidhara's Hindi gloss (1892)",
+              "ref": "Vastu-prakarana XII vv. 4, 11"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "KAKA",
+          "id": 7,
+          "doc": "The crow (kāka, dhvāṅkṣa, vāyasa), the 8th: death",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 17-18, 21-22"
+            },
+            {
+              "text": "Mayamata, Trivandrum Sanskrit Series 65 (1919)",
+              "ref": "IX v. 21"
+            },
+            {
+              "text": "Muhurta Chintamani, Mahidhara's Hindi gloss (1892)",
+              "ref": "Vastu-prakarana XII vv. 4, 11"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
+    },
+    {
+      "kind": "vyaya_kind",
+      "number": 161,
+      "version": 1,
+      "doc": "The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "PISHACHA",
+          "id": 0,
+          "doc": "Piśāca, a vyaya equal to the aaya",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 36-37, 48, 51"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "RAKSHASA",
+          "id": 1,
+          "doc": "Rākṣasa, a vyaya greater than the aaya",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 36-37, 48, 51"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "YAKSHA",
+          "id": 2,
+          "doc": "Yakṣa, a vyaya less than the aaya, the good one (v. 48)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Samarangana Sutradhara, Gaekwad's Oriental Series 25 (1924)",
+              "ref": "XXVI vv. 36-37, 48, 51"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

@@ -324,6 +324,12 @@ class Kind(Member):
     mundane_kind = 130
     """Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`)."""
 
+    vastu_yoni = 160
+    """The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's."""
+
+    vyaya_kind = 161
+    """The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195)."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -3949,6 +3955,57 @@ class MundaneKind(Catalogued):
     """
 
 
+class VastuYoni(Catalogued):
+    """The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's. Members are the catalogue's ids; the full key id is `(TS_KIND_VASTU_YONI << 16) | member`."""
+
+    DHVAJA = 0
+    """The banner (dhvaja), the 1st: wealth (Samarangana XXVI v. 21)"""
+
+    DHUMA = 1
+    """Smoke (dhūma), the 2nd: distress"""
+
+    SIMHA = 2
+    """The lion (siṃha, hari), the 3rd: enjoyment"""
+
+    SHVAN = 3
+    """The dog (śvan), the 4th: quarrel"""
+
+    VRISHA = 4
+    """The bull (vṛṣa, go), the 5th: wealth and grain"""
+
+    KHARA = 5
+    """The ass (khara, gardabha), the 6th: harm to women"""
+
+    GAJA = 6
+    """The elephant (gaja, ibha, hastin), the 7th: blessings"""
+
+    KAKA = 7
+    """The crow (kāka, dhvāṅkṣa, vāyasa), the 8th: death"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
+class VyayaKind(Catalogued):
+    """The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195). Members are the catalogue's ids; the full key id is `(TS_KIND_VYAYA_KIND << 16) | member`."""
+
+    PISHACHA = 0
+    """Piśāca, a vyaya equal to the aaya"""
+
+    RAKSHASA = 1
+    """Rākṣasa, a vyaya greater than the aaya"""
+
+    YAKSHA = 2
+    """Yakṣa, a vyaya less than the aaya, the good one (v. 48)"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -6220,6 +6277,8 @@ _KEYS: dict[str, dict[int, str]] = {
         90: "paya",
         91: "tridosha",
         130: "mundane_kind",
+        160: "vastu_yoni",
+        161: "vyaya_kind",
     },
     "Graha": {
         0: "SUN",
@@ -7429,6 +7488,23 @@ _KEYS: dict[str, dict[int, str]] = {
         12: "EVENT",
         -1: "UNKNOWN",
     },
+    "VastuYoni": {
+        0: "DHVAJA",
+        1: "DHUMA",
+        2: "SIMHA",
+        3: "SHVAN",
+        4: "VRISHA",
+        5: "KHARA",
+        6: "GAJA",
+        7: "KAKA",
+        -1: "UNKNOWN",
+    },
+    "VyayaKind": {
+        0: "PISHACHA",
+        1: "RAKSHASA",
+        2: "YAKSHA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -8201,4 +8277,6 @@ _KINDS: dict[str, str] = {
     "Paya": "paya",
     "Tridosha": "tridosha",
     "MundaneKind": "mundane_kind",
+    "VastuYoni": "vastu_yoni",
+    "VyayaKind": "vyaya_kind",
 }

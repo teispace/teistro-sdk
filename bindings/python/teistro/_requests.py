@@ -18,6 +18,7 @@ if TYPE_CHECKING:
     import teistro as _layer
 
 __all__ = [
+    "AayadiRequest",
     "AnniversariesRequest",
     "AshauchQuery",
     "KinQuery",
@@ -26,13 +27,16 @@ __all__ = [
     "AlmanacDaysRequest",
     "DeathTimeQuery",
     "DigestRequest",
+    "ElectRequest",
     "PackRequest",
     "FestivalCalendarRequest",
     "FirstYearQuery",
     "HouseholdQuery",
     "NavataraRequest",
     "NextRequest",
+    "ObservanceRequest",
     "PakshiRequest",
+    "PeopleRequest",
     "PublishedReasonsRequest",
     "SankalpaRequest",
     "SentencesRequest",
@@ -66,6 +70,8 @@ __all__ = [
     "ClaimsRequest",
     "IssueRequest",
     "Receipt",
+    "ManasaraMeasure",
+    "AayadiSystem",
     "Anniversary",
     "AshauchRequest",
     "AshauchTable",
@@ -90,8 +96,10 @@ __all__ = [
     "FirstYearRequest",
     "Household",
     "NextKind",
+    "ObservanceTradition",
     "NativeAsked",
     "PakshiRules",
+    "PeoplePerson",
     "ReckonedPlace",
     "AyanaReckoning",
     "Projection",
@@ -212,6 +220,7 @@ __all__ = [
     "UnaDay",
     "HouseholdEvent",
     "HouseholdObserver",
+    "ObservanceReckoning",
     "PakshiBird",
     "PakshiBirthRule",
     "PakshiClock",
@@ -223,6 +232,7 @@ __all__ = [
     "OrbModelByAspect",
     "DignityRules",
     "DignityScores",
+    "DossierNames",
     "DossierPreset",
     "AlmutenRules",
     "AccidentalRules",
@@ -755,6 +765,25 @@ __all__ = [
 ]
 
 
+class AayadiRequest(TypedDict, total=False):
+    """A building's two sides read under one system. Aayadi reads no sky, so this is the whole request."""
+
+    breadth: Required[int]
+    """The breadth, in the same unit."""
+
+    length: Required[int]
+    """The length, 1 to 1 000 000 whole units of the caller's choosing (hasta, kol, danda or angula)."""
+
+    measure: Optional[ManasaraMeasure]
+    """For `MANASARA` only: the measure its six reckonings take, the split by default (crux C1194)."""
+
+    owner: Optional[Union[_catalogue.Nakshatra, str]]
+    """The owner's star, for the clauses that read it (*Samarangana*'s tara and gana, *Muhurta Chintamani*'s own star and tara); without it those clauses are not judged."""
+
+    system: Required[AayadiSystem]
+    """The text whose reckoning is read."""
+
+
 class AnniversariesRequest(TypedDict, total=False):
     """The request as a binding writes it."""
 
@@ -946,6 +975,34 @@ class DigestRequest(TypedDict, total=False):
     """The zone, each day on its own offset; or `utcOffsetSeconds`, not both."""
 
 
+class ElectRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+    """The place's height above sea level in metres, 0 when left out."""
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+    """The calendar `first` and `last` are in; Gregorian when left out."""
+
+    first: Required[DayAsked]
+    """The first day searched."""
+
+    last: Optional[DayAsked]
+    """The last day searched, inclusive; the first when left out."""
+
+    latitudeDeg: Required[float]
+    """The place's latitude, degrees north positive."""
+
+    longitudeDeg: Required[float]
+    """The place's longitude, degrees east positive."""
+
+    muhurta: Required[MuhurtaRequest]
+    """The rule set: an activity's name or rules spelt out, the native, the ranking, how many days are cut and how many windows kept."""
+
+    utcOffsetSeconds: Required[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+
+
 class PackRequest(TypedDict, total=False):
     """`PackRequest` as the bindings write it."""
 
@@ -1081,6 +1138,37 @@ class NextRequest(TypedDict, total=False):
     utcOffsetSeconds: Required[int]
 
 
+class ObservanceRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+    """The place's height above sea level in metres, 0 when left out."""
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+    """The calendar the year or the days are in; Gregorian when left out."""
+
+    first: Optional[DayAsked]
+    """The first day; or `year`, not both."""
+
+    last: Optional[DayAsked]
+    """The last day, inclusive, with `first`; the first when left out."""
+
+    latitudeDeg: Required[float]
+    """The place's latitude, degrees north positive."""
+
+    longitudeDeg: Required[float]
+    """The place's longitude, degrees east positive."""
+
+    traditions: Required[Sequence[ObservanceTradition]]
+    """The traditions compared, 1 to 8, in the order the answer lists them."""
+
+    utcOffsetSeconds: Required[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+
+    year: Optional[int]
+    """A whole year of `calendar`, from its month 1, day 1; or `first`, not both."""
+
+
 class PakshiRequest(TypedDict, total=False):
     """The request as a binding writes it."""
 
@@ -1101,6 +1189,37 @@ class PakshiRequest(TypedDict, total=False):
     rules: PakshiRules
 
     utcOffsetSeconds: Required[int]
+
+
+class PeopleRequest(TypedDict, total=False):
+    """The request as a binding writes it."""
+
+    altitudeM: float
+    """Its height above sea level in metres, 0 when left out."""
+
+    calendar: Optional[Union[_catalogue.Calendar, str]]
+    """The calendar `day` is in; Gregorian when left out."""
+
+    dasha: Optional[Union[_catalogue.DashaSystem, str]]
+    """The dasha system read; `VIMSHOTTARI` when left out."""
+
+    day: Required[DayAsked]
+    """The day the digest is of."""
+
+    depth: Optional[int]
+    """How many of its levels are named, 1 to 6; 3 when left out."""
+
+    latitudeDeg: Required[float]
+    """The latitude of the place the day is reckoned at, degrees north positive."""
+
+    longitudeDeg: Required[float]
+    """Its longitude, degrees east positive."""
+
+    people: Required[Sequence[PeoplePerson]]
+    """The births, 1 to 50, in the order the answer lists them."""
+
+    utcOffsetSeconds: Required[int]
+    """The offset from UTC its civil day runs at, in seconds, east positive."""
 
 
 class PublishedReasonsRequest(TypedDict, total=False):
@@ -1766,6 +1885,27 @@ class Receipt(TypedDict, total=False):
     """The zone database's version."""
 
 
+ManasaraMeasure: TypeAlias = Literal['SPLIT', 'SUM', 'LENGTH', 'BREADTH', 'PERIMETER']
+"""The measure *Mānasāra* IX takes (crux C1194): the split "some" give, or one measure for all six reckonings.
+
+`SPLIT`: The aaya and nakshatra on the length, the vyaya and yoni on the breadth, the weekday and tithi on the perimeter.
+`SUM`: The sum of the sides for all six.
+`LENGTH`: The length for all six.
+`BREADTH`: The breadth for all six.
+`PERIMETER`: The perimeter for all six.
+"""
+
+
+AayadiSystem: TypeAlias = Literal['MAYAMATA', 'MANASARA', 'SAMARANGANA', 'CHINTAMANI']
+"""The text whose reckoning is read.
+
+`MAYAMATA`: *Mayamata* IX vv. 20–24: the sum of the sides for the aaya, vyaya, yoni and nakshatra, the perimeter for the tithi and the weekday.
+`MANASARA`: *Mānasāra* IX vv. 63–77: six reckonings, on the length, the breadth and the perimeter by default (`ManasaraMeasure`).
+`SAMARANGANA`: *Samarāṅgaṇa Sūtradhāra* XXVI: the area's aaya and nakshatra, the nakshatra's vyaya, and the owner's tara and gana.
+`CHINTAMANI`: *Muhūrta Cintāmaṇi* XII vv. 4–12: the area's nine reckonings and the nakshatra's vyaya.
+"""
+
+
 class Anniversary(TypedDict, total=False):
     """An anniversary a request asks the days of."""
 
@@ -2186,6 +2326,22 @@ NextKind: TypeAlias = Literal['EKADASHI', 'PURNIMA', 'AMAVASYA', 'SANKRANTI']
 """
 
 
+class ObservanceTradition(TypedDict, total=False):
+    """One tradition as a binding writes it."""
+
+    festivals: Required[FestivalRequest]
+    """The festival request whose rule it keeps: a pack by name, or rules spelt out."""
+
+    name: Required[str]
+    """What the answer calls it; each name once."""
+
+    reckoning: ObservanceReckoning
+    """Which context reckons it: `THIS`, the call's own, when left out, or `OTHER`, the second context a binding passes."""
+
+    rule: Required[str]
+    """The key of the rule in `festivals` whose days are found: a karmakala rule, an Ekadashi rule or one counted from another's day."""
+
+
 class NativeAsked(TypedDict, total=False):
     """Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha` with an optional `rule`."""
 
@@ -2209,6 +2365,28 @@ class PakshiRules(TypedDict, total=False):
 
     subs: PakshiSubLengths
     """How long the sub-periods run."""
+
+
+class PeoplePerson(TypedDict, total=False):
+    """One person as a binding writes them."""
+
+    altitudeM: float
+    """The birthplace's height above sea level in metres, 0 when left out."""
+
+    instant: Required[float]
+    """The birth, a UTC Julian day."""
+
+    latitudeDeg: Required[float]
+    """The birthplace's latitude, degrees north positive."""
+
+    longitudeDeg: Required[float]
+    """The birthplace's longitude, degrees east positive."""
+
+    name: Required[str]
+    """What the answer calls them; each name once."""
+
+    utcOffsetSeconds: Required[int]
+    """The offset from UTC of the birth's clock, in seconds, east positive."""
 
 
 class ReckonedPlace(TypedDict, total=False):
@@ -2285,6 +2463,12 @@ class DossierRequest(TypedDict, total=False):
 
     dropCategories: Sequence[str]
     """The categories whose rows a section with a category column (`RULES`) never writes, `marana` or `ayur`, each counted in `DROPPED`."""
+
+    locale: Optional[str]
+    """The locale whose names a `LOCALE` dossier is written in, the context's when left out. Read only with `names` `LOCALE`."""
+
+    names: DossierNames
+    """How members are written: catalogue keys, which read the same in every language, or a locale's names (`03-design/dossier.md`, "Names"). Keys when left out. This crate writes keys; the SDK writes the names."""
 
     preset: DossierPreset
     """The sections when `sections` is left out."""
@@ -3773,6 +3957,14 @@ class HouseholdObserver(TypedDict, total=False):
     """The events, in any order."""
 
 
+ObservanceReckoning: TypeAlias = Literal['THIS', 'OTHER']
+"""Which context reckons a tradition: the call's own, or the other one it was handed (`almanac.observance(request, other)`).
+
+`THIS`: The context the call is made on.
+`OTHER`: The other context the call is handed.
+"""
+
+
 PakshiBird: TypeAlias = Literal['VULTURE', 'OWL', 'CROW', 'COCK', 'PEACOCK']
 """The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
 
@@ -3880,6 +4072,14 @@ class DignityScores(TypedDict, total=False):
 
     triplicity: int
     """In its triplicity."""
+
+
+DossierNames: TypeAlias = Literal['KEYS', 'LOCALE']
+"""How a dossier writes catalogue members.
+
+`KEYS`: Catalogue keys (`JUPITER`, `ARIES`): one text in every language.
+`LOCALE`: A locale's names (`Jupiter`, `बृहस्पति`), where a key names one member of the dossier's kinds.
+"""
 
 
 DossierPreset: TypeAlias = Literal['FULL', 'FAMILY']
