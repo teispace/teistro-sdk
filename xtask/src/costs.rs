@@ -18,8 +18,9 @@
 //! - `cargo xtask check-costs` holds the page to the record and the record
 //!   to the entry points (the same names and requests, in order),
 //!   everywhere; with `--from FILE`, the benchmarks workflow holds a fresh
-//!   count to the record: a relative cost more than [`DRIFT`] from it is
-//!   stale, and the record is re-measured from that run's file.
+//!   count to the record: a relative cost more than [`DRIFT`] from it,
+//!   by more than [`NOISE`] of the unit, is stale, and the record is
+//!   re-measured from that run's file.
 
 use std::fmt::Write as _;
 use std::fs;
@@ -43,6 +44,14 @@ const SCHEMA: &str = "teistro-costs/1";
 /// another to the first figure or two, so a smaller move does not change
 /// what a reader plans by, and a larger one does.
 const DRIFT: f64 = 0.10;
+/// How far, as a share of the unit, a relative cost must also move before
+/// the record is stale: a hundredth of a plain chart. Callgrind's counts
+/// of one build differ from run to run by a few hundred thousand
+/// instructions in the context alone, which is a tenth or more of an
+/// entry point costing a hundredth of the unit: `almanac.ashauchKin`
+/// moved from 0.0233× to 0.0191× between two runs of the same code. No
+/// reader plans by a hundredth of a chart.
+const NOISE: f64 = 0.01;
 
 /// What one entry point costs, in instructions above the context alone.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
@@ -279,8 +288,9 @@ fn check_costs(root: &Path, from: Option<&Path>) -> Result<i32, String> {
         }
         if drifted.is_empty() {
             println!(
-                "ok    every relative cost within {:.0}% of {RECORD}",
-                DRIFT * 100.0
+                "ok    every relative cost within {:.0}% of {RECORD}, or within {} of the unit",
+                DRIFT * 100.0,
+                times(NOISE)
             );
         } else {
             println!(
@@ -331,7 +341,8 @@ fn covers(record: &Record, wanted: &[Entry]) -> i32 {
     1
 }
 
-/// Each relative cost of `fresh` more than [`DRIFT`] from the record's.
+/// Each relative cost of `fresh` more than [`DRIFT`] from the record's
+/// and more than [`NOISE`] of the unit away.
 fn drift(record: &Record, fresh: &Record) -> Result<Vec<String>, String> {
     let (unit_first, unit_again) = record.unit()?;
     let (fresh_first, fresh_again) = fresh.unit()?;
@@ -354,7 +365,7 @@ fn drift(record: &Record, fresh: &Record) -> Result<Vec<String>, String> {
             ),
         ] {
             let moved = if a > 0.0 { (b - a).abs() / a } else { b };
-            if moved > DRIFT {
+            if moved > DRIFT && (b - a).abs() > NOISE {
                 drifted.push(format!(
                     "`{}` {what}: {} the unit, recorded {}",
                     was.name,
@@ -423,8 +434,9 @@ fn render(record: &Record) -> Result<String, String> {
         "Status: `generated` by `cargo xtask costs --from FILE` from instructions counted under \
          callgrind (`cargo xtask costs --measure FILE`, Linux); `check-costs` holds this page to \
          [`costs.json`](costs.json), and the benchmarks workflow holds every pull request's count \
-         to it within {:.0}%. Do not edit.\n",
-        DRIFT * 100.0
+         to it within {:.0}%, or within {} the unit where that is more. Do not edit.\n",
+        DRIFT * 100.0,
+        times(NOISE)
     );
     let _ = writeln!(
         page,
@@ -519,6 +531,28 @@ mod tests {
         let found = drift(&was, &past).unwrap();
         assert_eq!(found.len(), 1, "{found:?}");
         assert!(found[0].contains("`a` first call"), "{found:?}");
+    }
+
+    #[test]
+    fn a_move_inside_the_noise_is_not_stale_however_large_a_share() {
+        // `a` costs 0.005 of the unit and moves by a fifth, 0.001 of the
+        // unit: inside the noise.
+        let was = record(vec![priced(UNIT, 100_000, 50_000), priced("a", 500, 250)]);
+        let noisy = record(vec![priced(UNIT, 100_000, 50_000), priced("a", 600, 300)]);
+        assert_eq!(drift(&was, &noisy).unwrap(), Vec::<String>::new());
+        // `b` costs 0.05 of the unit and moves by a fifth, 0.01 of the unit
+        // and a little more: stale.
+        let was = record(vec![
+            priced(UNIT, 100_000, 50_000),
+            priced("b", 5_000, 2_500),
+        ]);
+        let moved = record(vec![
+            priced(UNIT, 100_000, 50_000),
+            priced("b", 6_100, 2_500),
+        ]);
+        let found = drift(&was, &moved).unwrap();
+        assert_eq!(found.len(), 1, "{found:?}");
+        assert!(found[0].contains("`b` first call"), "{found:?}");
     }
 
     #[test]
