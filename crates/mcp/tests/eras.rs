@@ -247,6 +247,8 @@ fn the_command_line_loads_a_plugin_and_lists_its_operations() {
             "{}",
             "--ephemeris",
             "NONE",
+            "--answers",
+            "full",
         ],
         &[
             json!({"jsonrpc": "2.0", "id": 1, "method": "tools/call", "params": {"_meta": meta(),

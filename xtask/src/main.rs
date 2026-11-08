@@ -308,6 +308,7 @@ mod dasha_coverage;
 mod dasha_systems;
 mod dashas;
 mod declinations;
+mod detail_tokens;
 mod doc_examples;
 mod document_schema;
 mod doshas;
@@ -579,6 +580,11 @@ const PASSES: &[Pass] = &[
         "dossier-tokens",
         dossier_tokens::generate,
         dossier_tokens::check_generated,
+    ),
+    (
+        "detail-tokens",
+        detail_tokens::generate,
+        detail_tokens::check_generated,
     ),
     (
         "fortitudes",

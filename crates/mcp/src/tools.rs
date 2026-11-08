@@ -11,7 +11,7 @@ use teistro_core::settings::{
 };
 use teistro_port_ephemeris::native::{NativeFunction, NativeParam, Role};
 
-use crate::{Detail, schemas};
+use crate::{AnswerDetail, Detail, schemas};
 
 include!(concat!(env!("OUT_DIR"), "/boundary_docs.rs"));
 
@@ -22,7 +22,10 @@ pub(crate) const DESCRIBE: &str = "settings.describe";
 pub(crate) const ENGINE_PREFIX: &str = "engine.";
 
 /// The arguments a record tool reads beside its record.
-const ARGUMENTS: [&str; 4] = ["request", "profile", "settings", "locale"];
+const ARGUMENTS: [&str; 5] = ["request", "profile", "settings", "locale", DETAIL];
+
+/// The argument naming how much of its answer a record tool answers.
+pub(crate) const DETAIL: &str = "detail";
 
 /// The argument naming the context a comparing record's call is
 /// compared with.
@@ -341,6 +344,8 @@ pub(crate) struct Arguments {
     /// context.
     pub(crate) settings: Option<String>,
     pub(crate) locale: Option<String>,
+    /// The detail the call asks for; the server's when it names none.
+    pub(crate) detail: Option<AnswerDetail>,
 }
 
 impl Arguments {
@@ -354,6 +359,7 @@ impl Arguments {
             profile: text(arguments, "profile")?,
             settings: arguments.get("settings").map(canonical_json),
             locale: text(arguments, "locale")?,
+            detail: None,
         };
         let rest = arguments
             .iter()
@@ -415,11 +421,18 @@ impl Arguments {
                     .with_hint("the tool's description gives the record it reads"));
             }
         };
+        let detail = text(arguments, DETAIL)?
+            .map(|name| {
+                AnswerDetail::read(&name)
+                    .map_err(|why| why.with_field(format!("arguments.{DETAIL}")))
+            })
+            .transpose()?;
         Ok(Arguments {
             request,
             profile: text(arguments, "profile")?,
             settings: arguments.get("settings").map(canonical_json),
             locale: text(arguments, "locale")?,
+            detail,
         })
     }
 }
