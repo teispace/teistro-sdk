@@ -1,0 +1,262 @@
+//! The Vishwavidyalaya Panchang's printed days
+//! (`tests/data/vishwavidyalaya-panchang.txt`) against the text under the
+//! Makarandasarini's bija, its day counted from the text's sunrise carried
+//! by the bhujantara, at the place the almanac states: Mithila's almanacs
+//! as `mithila-makaranda` computes them (`docs/03-design/makaranda.md`).
+//!
+//! The bounds are the measured ones, not a claim of agreement to the
+//! minute: the residual follows the Moon's anomaly (C1225) and, in the
+//! tithi only, the Sun's (C1226), and neither is closed.
+
+#![allow(
+    clippy::panic,
+    clippy::unwrap_used,
+    clippy::expect_used,
+    clippy::indexing_slicing,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    clippy::cast_precision_loss,
+    reason = "tests fail by panicking and read a small data file"
+)]
+
+use std::path::Path;
+
+use teistro_calendar::gregorian::fixed_from_gregorian;
+use teistro_core::quantity::{JulianDay, Latitude, Longitude, Ut1};
+use teistro_port_ephemeris::EphemerisProvider;
+use teistro_siddhanta::{Bija, Parameters, SiddhantaProvider, SuryaSiddhanta, Trig};
+
+/// The place the almanac states every Mithila panchang is computed for
+/// (front matter, 2022-23): 85°30′ E, 26°35′ N, palabha 6 angula.
+const LONGITUDE_DEG: f64 = 85.5;
+const LATITUDE_DEG: f64 = 26.0 + 35.0 / 60.0;
+
+/// One printed day.
+struct Row {
+    date: String,
+    tithi: u32,
+    tithi_end: Option<f64>,
+    nakshatra: u32,
+    nakshatra_end: Option<f64>,
+    day_length: f64,
+}
+
+/// `ghati|pala` to ghatis; `?|?` is an end the page does not settle.
+fn ghatis(text: &str) -> Option<f64> {
+    if text.contains('?') {
+        return None;
+    }
+    let (g, p) = text.split_once('|').expect("ghati|pala");
+    Some(g.parse::<f64>().expect("ghatis") + p.parse::<f64>().expect("palas") / 60.0)
+}
+
+fn rows() -> Vec<Row> {
+    let path =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/vishwavidyalaya-panchang.txt");
+    std::fs::read_to_string(path)
+        .expect("the printed days")
+        .lines()
+        .filter(|line| !line.starts_with('#') && !line.trim().is_empty())
+        .map(|line| {
+            let f: Vec<&str> = line.split_whitespace().collect();
+            assert_eq!(f.len(), 6, "{line}");
+            Row {
+                date: f[0].to_string(),
+                tithi: f[1].parse().expect("a tithi"),
+                tithi_end: ghatis(f[2]),
+                nakshatra: f[3].parse().expect("a nakshatra"),
+                nakshatra_end: ghatis(f[4]),
+                day_length: ghatis(f[5]).expect("a day length"),
+            }
+        })
+        .collect()
+}
+
+/// The model `mithila-makaranda` opens, or the text without a bija.
+fn model(bija: &Bija) -> SuryaSiddhanta {
+    SuryaSiddhanta::new(Parameters::TEXT.with_bija(bija), Trig::Table)
+}
+
+/// The date's sunrise carried by the bhujantara, and its day length in
+/// ghatis.
+fn sunrise(model: &SuryaSiddhanta, date: &str) -> (f64, f64) {
+    let mut parts = date
+        .split('-')
+        .map(|p| p.parse::<i64>().expect("a date part"));
+    let (y, m, d) = (
+        parts.next().unwrap() as i32,
+        parts.next().unwrap() as u8,
+        parts.next().unwrap() as u8,
+    );
+    let midnight_ut = fixed_from_gregorian(y, m, d)
+        .jd_at_midnight()
+        .expect("a Julian day")
+        .get();
+    // Local noon of the civil date, then the local mean midnight before it.
+    let noon = JulianDay::<Ut1>::literal(midnight_ut + 0.5 - LONGITUDE_DEG / 360.0);
+    let midnight = SuryaSiddhanta::local_mean_midnight(noon, Longitude::literal(LONGITUDE_DEG));
+    let arc = model
+        .day_arc(midnight, Latitude::literal(LATITUDE_DEG))
+        .expect("the Sun rises in Mithila");
+    let rise = arc.sunrise.get() + model.bhujantara_days(arc.sunrise.get());
+    (rise, (arc.sunset.get() - arc.sunrise.get()) * 60.0)
+}
+
+fn moon(model: &SuryaSiddhanta, jd: f64) -> f64 {
+    model.moon(JulianDay::<Ut1>::literal(jd)).longitude.get()
+}
+
+fn elongation(model: &SuryaSiddhanta, jd: f64) -> f64 {
+    (moon(model, jd) - model.sun_longitude_deg(jd)).rem_euclid(360.0)
+}
+
+/// The instant near `guess` at which `angle` reaches `target`, by secant
+/// steps.
+fn when(angle: impl Fn(f64) -> f64, target: f64, guess: f64) -> f64 {
+    let off = |jd: f64| (angle(jd) - target + 540.0).rem_euclid(360.0) - 180.0;
+    let mut t = guess;
+    for _ in 0..20 {
+        let rate = (off(t + 0.01) - off(t)) / 0.01;
+        let step = off(t) / rate;
+        t -= step;
+        if step.abs() < 1e-7 {
+            break;
+        }
+    }
+    t
+}
+
+/// Each printed end less the model's, minutes (positive: the model later),
+/// and how many days' sunrise tithi and nakshatra agree with the rows'.
+struct Measured {
+    tithi: Vec<f64>,
+    nakshatra: Vec<f64>,
+    tithi_days: usize,
+    nakshatra_days: usize,
+}
+
+fn measure(bija: &Bija) -> Measured {
+    let model = model(bija);
+    let mut out = Measured {
+        tithi: Vec::new(),
+        nakshatra: Vec::new(),
+        tithi_days: 0,
+        nakshatra_days: 0,
+    };
+    for row in rows() {
+        let (rise, _) = sunrise(&model, &row.date);
+        if let Some(end) = row.tithi_end.filter(|g| *g < 60.0) {
+            let target = f64::from(row.tithi % 30) * 12.0;
+            let ours = when(|jd| elongation(&model, jd), target, rise + end / 60.0);
+            out.tithi.push((ours - rise) * 1440.0 - end * 24.0);
+        }
+        if let Some(end) = row.nakshatra_end.filter(|g| *g < 60.0) {
+            let target = f64::from(row.nakshatra % 27) * 360.0 / 27.0;
+            let ours = when(|jd| moon(&model, jd), target, rise + end / 60.0);
+            out.nakshatra.push((ours - rise) * 1440.0 - end * 24.0);
+        }
+        let tithi = (elongation(&model, rise) / 12.0) as u32 + 1;
+        let nakshatra = (moon(&model, rise).rem_euclid(360.0) * 27.0 / 360.0) as u32 + 1;
+        out.tithi_days += usize::from(tithi == row.tithi);
+        out.nakshatra_days += usize::from(nakshatra == row.nakshatra);
+    }
+    out
+}
+
+fn within(minutes: &[f64], bound: f64) -> usize {
+    minutes.iter().filter(|m| m.abs() <= bound).count()
+}
+
+#[test]
+fn the_data_is_eight_years_of_printed_days() {
+    assert_eq!(rows().len(), 162);
+    // One block a year, each headed by the almanac's year (`1998-99, ...`).
+    let path =
+        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/vishwavidyalaya-panchang.txt");
+    let text = std::fs::read_to_string(path).expect("the printed days");
+    let years: Vec<&str> = text
+        .lines()
+        .filter_map(|line| line.strip_prefix("# "))
+        .filter(|rest| {
+            rest.as_bytes().get(4) == Some(&b'-') && rest[..4].bytes().all(|b| b.is_ascii_digit())
+        })
+        .map(|rest| &rest[..7])
+        .collect();
+    assert_eq!(
+        years,
+        [
+            "1980-81", "1992-93", "1995-96", "1998-99", "2005-06", "2012-13", "2015-16", "2022-23"
+        ]
+    );
+}
+
+#[test]
+fn the_texts_day_at_palabha_six_is_the_printed_day_length() {
+    let model = model(&Bija::MAKARANDA);
+    for row in rows() {
+        let (_, length) = sunrise(&model, &row.date);
+        let palas = (length - row.day_length) * 60.0;
+        // Measured within 12.1 palas (under five minutes) either way.
+        assert!(palas.abs() <= 15.0, "{}: {palas:.1} palas", row.date);
+    }
+}
+
+#[test]
+fn mithilas_printed_ends_are_the_makarandas_within_measured_bounds() {
+    let m = measure(&Bija::MAKARANDA);
+    let (t, n) = (&m.tithi, &m.nakshatra);
+    assert_eq!((t.len(), n.len()), (156, 150));
+    let mean = |v: &[f64]| v.iter().sum::<f64>() / v.len() as f64;
+    // Measured (exact trigonometry): tithi +0.1 ± 6.4 minutes, 139 of 156
+    // within ten, the worst 23.1; nakshatra −0.7 ± 4.1, 149 of 150 within
+    // ten, the worst 20.8 (the 1998 slip the data file names).
+    assert!(
+        mean(t).abs() < 2.0 && mean(n).abs() < 2.0,
+        "{} {}",
+        mean(t),
+        mean(n)
+    );
+    assert!(
+        within(t, 10.0) >= 135,
+        "tithi within ten: {}",
+        within(t, 10.0)
+    );
+    assert!(
+        within(n, 10.0) >= 147,
+        "nakshatra within ten: {}",
+        within(n, 10.0)
+    );
+    assert_eq!(within(t, 25.0), t.len(), "{t:?}");
+    assert_eq!(within(n, 22.0), n.len(), "{n:?}");
+    // The day each row names: one sunrise tithi (an end printed minutes
+    // after sunrise) falls the other side.
+    assert!(m.tithi_days >= 161, "{}", m.tithi_days);
+    assert_eq!(m.nakshatra_days, 162);
+}
+
+#[test]
+fn without_the_bija_the_text_misses_by_a_quarter_of_an_hour() {
+    let m = measure(&Bija::NONE);
+    // Measured: 69 of 156 tithi ends and 61 of 150 nakshatra ends within
+    // ten minutes, each spread 13.6 minutes.
+    assert!(within(&m.tithi, 10.0) < 90, "{}", within(&m.tithi, 10.0));
+    assert!(
+        within(&m.nakshatra, 10.0) < 90,
+        "{}",
+        within(&m.nakshatra, 10.0)
+    );
+}
+
+#[test]
+fn the_provider_stamps_the_makaranda_and_its_sunrise() {
+    let provider = SiddhantaProvider::with_bija(Bija::MAKARANDA).with_bhujantara();
+    let stamp = provider.capabilities().identity.data_version;
+    for part in [
+        "moon_apsis -4",
+        "moon_node +4",
+        "jupiter -8",
+        "bhujantara sunrise",
+    ] {
+        assert!(stamp.contains(part), "{stamp}");
+    }
+}

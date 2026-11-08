@@ -12993,7 +12993,7 @@
             },
             "mutable": false
           },
-          "doc": "The shipped profile's id (`parashari-classical`, `nepali-drik`,\n`nepali-committee`, `surya-siddhanta`, `kp-default`,\n`western-tropical-default`, `conformance-baseline`).",
+          "doc": "The shipped profile's id (`parashari-classical`, `nepali-drik`,\n`nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,\n`kp-default`, `western-tropical-default`, `conformance-baseline`).",
           "meta": {
             "example": "parashari-classical",
             "nullable": true

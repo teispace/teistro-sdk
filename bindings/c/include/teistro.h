@@ -8574,8 +8574,8 @@ struct ts_context_options {
     uint32_t flags;
     /**
      * The shipped profile's id (`parashari-classical`, `nepali-drik`,
-     * `nepali-committee`, `surya-siddhanta`, `kp-default`,
-     * `western-tropical-default`, `conformance-baseline`).
+     * `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
+     * `kp-default`, `western-tropical-default`, `conformance-baseline`).
      * Example: parashari-classical. May be null.
      */
     const char * profile;

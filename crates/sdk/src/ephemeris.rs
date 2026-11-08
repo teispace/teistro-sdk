@@ -232,12 +232,13 @@ impl Ephemeris {
                     return Ok(Some(Box::new(SiddhantaProvider::text())));
                 };
                 let text = SiddhantaProvider::with_bija(bija.revolutions());
-                let modern_sunrise = match sunrise {
-                    SuryaSunrise::Text => false,
-                    SuryaSunrise::Modern => true,
+                let (text, modern_sunrise) = match sunrise {
+                    SuryaSunrise::Text => (text, false),
+                    SuryaSunrise::Bhujantara => (text.with_bhujantara(), false),
+                    SuryaSunrise::Modern => (text, true),
                     other => {
                         return Err(Error::unsupported(format!(
-                            "the {other} sunrise; this build knows TEXT and MODERN"
+                            "the {other} sunrise; this build knows TEXT, BHUJANTARA and MODERN"
                         ))
                         .with_field("settings.frame.siddhanta.sunrise"));
                     }

@@ -138,11 +138,12 @@ pub const DEFAULT_PROFILE: &str = "parashari-classical";
 ///     assert!(Profile::shipped(id).unwrap().resolve(&SettingsPatch::default()).is_ok(), "{id}");
 /// }
 /// ```
-pub const SHIPPED_PROFILES: [&str; 7] = [
+pub const SHIPPED_PROFILES: [&str; 8] = [
     "nepali-drik",
     "nepali-committee",
     "parashari-classical",
     "surya-siddhanta",
+    "mithila-makaranda",
     "kp-default",
     "western-tropical-default",
     "conformance-baseline",
@@ -674,6 +675,48 @@ fn surya_siddhanta() -> Profile {
     }
 }
 
+/// Mithila's almanacs as they are computed: the Surya Siddhanta under
+/// the Makarandasarini's (1478) bija, the day counted from the text's
+/// sunrise carried by the bhujantara (`03-design/makaranda.md`).
+///
+/// The Makaranda is the Surya Siddhanta in tables: its Sun is the text's,
+/// its Moon's equation and tithi corrections are the text's rules
+/// tabulated, and its daily-motion tables step by the text's motions with
+/// whole revolutions in an age added or taken away (`Bija::MAKARANDA`,
+/// C1221). The Vishwavidyalaya Panchang of Darbhanga says it is made from
+/// the Makaranda on the Surya Siddhanta; its printed days over eight
+/// years from 1980 to 2022, at the place it states (85°30′ E, 26°35′ N),
+/// are the acceptance values, held to measured bounds by
+/// `crates/siddhanta/tests/mithila.rs`: minutes where the text without
+/// the bija is a quarter of an hour off and the modern sky hours (C1225,
+/// C1226). Its star planets are the text's, as the print's are degrees
+/// from a modern sky (C1227). Based on `surya-siddhanta`, which already has the text's
+/// zodiac and its sunrise on the geometric horizon. The provider is
+/// declared, never chosen by the profile (ADR-0029): open the context
+/// over `SURYA_SIDDHANTA`.
+fn mithila_makaranda() -> Profile {
+    let mut patch = SettingsPatch::default();
+    patch.frame.siddhanta = Some(Siddhanta::Surya {
+        bija: SuryaBija::Makaranda,
+        sunrise: SuryaSunrise::Bhujantara,
+        planets: SuryaPlanets::Text,
+    });
+    let makaranda = |what: &'static str| Source::new("Makarandasarini", what);
+    Profile {
+        id: ProfileId::new("mithila-makaranda"),
+        version: 1,
+        base: Some(ProfileId::new("surya-siddhanta")),
+        patch,
+        sources: vec![Citation::new(
+            "frame.siddhanta",
+            makaranda(
+                "Makaranda, Makarandasarini (1478; Varanasi print 1923): the bija read from its daily-motion tables and footers, the bhujantara sunrise measured against 162 printed days of the Vishwavidyalaya Panchang, Darbhanga, 1980 to 2022; docs/03-design/makaranda.md",
+            ),
+        )],
+        mark: Mark::Traditional,
+    }
+}
+
 /// Every system's year: 365.25 days, but releasing's and the decennials'
 /// 360, the year Valens distributes in (*Anthologies* IV.9 and VI.5,
 /// `03-design/hellenistic-time-lords.md`, `hellenistic-decennials.md`), and
@@ -958,6 +1001,7 @@ impl Profile {
             "nepali-committee" => Some(nepali_committee()),
             "parashari-classical" => Some(parashari_classical()),
             "surya-siddhanta" => Some(surya_siddhanta()),
+            "mithila-makaranda" => Some(mithila_makaranda()),
             "kp-default" => Some(kp_default()),
             "western-tropical-default" => Some(western_tropical_default()),
             "conformance-baseline" => Some(conformance_baseline()),

@@ -1016,7 +1016,12 @@ knob!(
         #[default]
         Text = "TEXT", /// A modern ephemeris's, under `day.sunrise`: the next
         /// entry of the chain that opens, else the SDK's built-in one.
-        Modern = "MODERN" }
+        Modern = "MODERN", /// The text's, moved by the bhujantara (II.46):
+        /// the Sun's equation of centre turned into time, four minutes a
+        /// degree, later when the true Sun is ahead of the mean. Mithila's
+        /// almanacs count their day from it (C1223,
+        /// `03-design/makaranda.md`).
+        Bhujantara = "BHUJANTARA" }
 );
 knob!(
     /// The provider override policy (ADR-0013).

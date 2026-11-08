@@ -111,8 +111,8 @@ pub struct TsContextOptions {
     /// `api: example=0`
     pub flags: u32,
     /// The shipped profile's id (`parashari-classical`, `nepali-drik`,
-    /// `nepali-committee`, `surya-siddhanta`, `kp-default`,
-    /// `western-tropical-default`, `conformance-baseline`).
+    /// `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
+    /// `kp-default`, `western-tropical-default`, `conformance-baseline`).
     /// `api: nullable example=parashari-classical`
     pub profile: *const c_char,
     /// A JSON settings patch over the profile: an object whose groups and
