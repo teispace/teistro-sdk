@@ -11,9 +11,10 @@ use teistro_core::error::Error;
 use teistro_core::key::KeyId;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::strict;
+use teistro_time::ZoneSpec;
 
-use crate::asked::{offset_of, place_of};
-use crate::{ChartRecords, ChartRequest, KeysArea};
+use crate::asked::place_of;
+use crate::{ChartRecords, ChartRequest, DayClock, KeysArea};
 
 /// A section a chart request asks for by a `true` flag, and the request
 /// that reads it.
@@ -77,7 +78,7 @@ struct Unresolved {
 impl FoundRequest {
     /// What a JSON chart request is, for a caller choosing it by name (the
     /// agent server's `chart.found`).
-    pub const DESCRIPTION: &'static str = "`request` is a chart request: `instant` (a UTC Julian day) or `instants` (a batch, a chart each); `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`; optional `kind`, `vargas`, `dashas` and `drawings` (`{layout, varga}`) by their catalogue keys, bare or full (`varga.D9` or `D9`), a dasha system or layout the server registered by its key, and the `theme` the drawings are written as SVG in; a `true` flag for each section beside the foundation (`aspects`, `points`, `houses`, `ashtakavarga`, `vimshopaka`, `vaiseshikamsa`, `shadbala`, `bhavaBala`, `dashaPhala`, `jaimini`, `avakahada`, `moment`, `outerPlanets`, `state`); and a record for each table read off the charts, each the record its area reads (`rules`, `interpret`, `varsha`, `gochar`, `hits`, `sadeSati`, `kp`, `prashna`, `remedies`, `lalkitab`, `rectification`, `dignities`, `fortitudes`, `lots`, `considerations`, `perfection`, `progressions`, `westernAspects`, `synastry`, `parallels`, `antiscia`, `midpoints`, `westernHouses`, `harmonic`, `matching`, `sarvatobhadra`, `tithiPravesha`, `dossier`, `masaPravesha`, `westernConfigurations`). The answer's `charts` are the chart documents, and each table is a list with a row a chart, empty where its record was not sent.";
+    pub const DESCRIPTION: &'static str = "`request` is a chart request: `instant` (a UTC Julian day) or `instants` (a batch, a chart each); `latitudeDeg`, `longitudeDeg`, `altitudeM` (optional) and `utcOffsetSeconds`, or `zone`, a zone as `time.resolve` takes it, each birth then read at the offset the zone had then (Kathmandu +05:30 in 1985, +05:45 now) and each chart founded on a zone or local mean time carrying it as its foundation's `clock`; optional `kind`, `vargas`, `dashas` and `drawings` (`{layout, varga}`) by their catalogue keys, bare or full (`varga.D9` or `D9`), a dasha system or layout the server registered by its key, and the `theme` the drawings are written as SVG in; a `true` flag for each section beside the foundation (`aspects`, `points`, `houses`, `ashtakavarga`, `vimshopaka`, `vaiseshikamsa`, `shadbala`, `bhavaBala`, `dashaPhala`, `jaimini`, `avakahada`, `moment`, `outerPlanets`, `state`); and a record for each table read off the charts, each the record its area reads (`rules`, `interpret`, `varsha`, `gochar`, `hits`, `sadeSati`, `kp`, `prashna`, `remedies`, `lalkitab`, `rectification`, `dignities`, `fortitudes`, `lots`, `considerations`, `perfection`, `progressions`, `westernAspects`, `synastry`, `parallels`, `antiscia`, `midpoints`, `westernHouses`, `harmonic`, `matching`, `sarvatobhadra`, `tithiPravesha`, `dossier`, `masaPravesha`, `westernConfigurations`). The answer's `charts` are the chart documents, and each table is a list with a row a chart, empty where its record was not sent; its `provenance.time.clock` states the first birth's clock.";
 
     /// The sections beside the foundation a request asks for by a `true`
     /// flag, by the flag every binding writes (`shadbala`, `bhavaBala`).
@@ -92,7 +93,7 @@ impl FoundRequest {
 
     /// The request a binding writes as a chart request's options, read and
     /// checked: `instant` or `instants`; `latitudeDeg`, `longitudeDeg`,
-    /// `altitudeM` and `utcOffsetSeconds`; `kind`, `vargas`, `dashas` and
+    /// `altitudeM` and `utcOffsetSeconds` or a `zone`; `kind`, `vargas`, `dashas` and
     /// `drawings` by their catalogue keys, bare or full; a `true` flag a
     /// section (`shadbala`, `jaimini`, …); and each record by its name
     /// ([`ChartRecords::NAMES`]). A refusal names the field as written,
@@ -107,7 +108,8 @@ impl FoundRequest {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read, a value out of range, or two records asking for one table;
+    /// read, a value out of range, two records asking for one table, or
+    /// both `utcOffsetSeconds` and `zone` (named `zone`);
     /// `CAPABILITY` for a record of a family this build leaves out.
     pub fn from_json(text: &str) -> Result<FoundRequest, Error> {
         let Value::Object(mut fields) = strict::parse(text, "")? else {
@@ -134,9 +136,9 @@ impl FoundRequest {
         }
         let asked: Asked = strict::read_value(&Value::Object(fields), "")?;
         let instants = asked.instants()?;
-        let at = ChartRequest::at(
+        let at = ChartRequest::on(
             place_of(asked.latitude_deg, asked.longitude_deg, asked.altitude_m)?,
-            offset_of(asked.utc_offset_seconds)?,
+            DayClock::asked(asked.utc_offset_seconds, asked.zone)?,
         );
         let at = match asked.kind {
             Some(kind) => at.with_kind(kind),
@@ -350,7 +352,12 @@ pub(crate) struct Asked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    utc_offset_seconds: Option<i32>,
+    /// The zone, in place of `utcOffsetSeconds`: each birth read at the
+    /// zone's offset then.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    zone: Option<ZoneSpec>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     kind: Option<ChartKind>,
     #[serde(default)]

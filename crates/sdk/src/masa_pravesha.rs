@@ -13,13 +13,13 @@
 
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
-use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
 use teistro_tajika::{
     DinaPhala, DinaPravesha, Dinesha, MasaDasha, MasaDashaRules, MasaPhala, MasaPhalaRules,
     MasaPravesha, Masesha, MaseshaRules, MonthClock, Reading,
 };
 
+use crate::DayClock;
 use crate::area::ChartArea;
 use crate::reading::ChartRequest;
 use crate::varsha::AnnualPlace;
@@ -233,7 +233,8 @@ impl ChartArea<'_> {
     /// its first day, or the month's thirty days
     /// ([`ChartArea::masa_praveshas`], [`ChartArea::dina_praveshas`]).
     /// With a `place`, the year's chart and each month's are founded there
-    /// (the birth's own place on `clock` for `"birth"`), and each month
+    /// (the birth's own place on `clock` for `"birth"`, an offset or a zone
+    /// read at each chart's own instant), and each month
     /// carries its [`ChartArea::masesha`], its [`ChartArea::masa_phala`] and
     /// its [`ChartArea::masa_dasha`], beside the year's lord read on the
     /// year's chart. With a `month` as well, the year's, the month's and
@@ -250,7 +251,7 @@ impl ChartArea<'_> {
     pub fn masa_pravesha(
         self,
         birth: &Document,
-        clock: UtcOffset,
+        clock: impl Into<DayClock>,
         asked: &MasaPraveshaRequest,
     ) -> Result<Vec<MasaRow>, Error> {
         let bare = |entry: DinaPravesha| MasaRow {
@@ -262,7 +263,7 @@ impl ChartArea<'_> {
             day_results: None,
         };
         let request = asked.place.map(|place| match place {
-            AnnualPlace::Birth => ChartRequest::at(birth.foundation.place, clock),
+            AnnualPlace::Birth => ChartRequest::on(birth.foundation.place, clock.into()),
             AnnualPlace::At { place, offset } => ChartRequest::at(place, offset),
         });
         if let Some(month) = asked.month {

@@ -248,8 +248,9 @@ impl<'a> AlmanacArea<'a> {
         self.on(&clock).asked(from, to, place, offset, request)
     }
 
-    /// This area with every almanac on `clock`.
-    fn on<'c>(self, clock: &'c dyn LocalClock) -> AlmanacArea<'c>
+    /// This area with every almanac on `clock`: a zone's, for a chart's
+    /// day read on the zone it was founded on.
+    pub(crate) fn on<'c>(self, clock: &'c dyn LocalClock) -> AlmanacArea<'c>
     where
         'a: 'c,
     {

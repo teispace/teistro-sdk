@@ -4420,7 +4420,7 @@ fn the_synastry(
         .synastry_with(documents, &asked)
         .expect("one zodiac for both");
     let davisons = asked
-        .davisons(documents, clock)
+        .davisons(documents, &clock)
         .expect("valid births")
         .expect("the record asks for them");
     for ((index, one), davison) in read.iter().enumerate().zip(&davisons) {
@@ -7380,6 +7380,46 @@ fn lilith_line(lilith: Option<&teistro::LilithPosition>) -> String {
     )
 }
 
+/// Two Kathmandu noons on its zone: 1985 on +05:30 and 2026 on +05:45,
+/// each chart its own, and the provenance stating the first birth's clock.
+fn the_chart_in_zone(report: &mut Report, sky: &Context, place: &Place) {
+    let births = [
+        JulianDay::<Utc>::literal(2_446_217.770_833),
+        JulianDay::<Utc>::literal(2_461_192.760_417),
+    ];
+    let charts = sky
+        .chart()
+        .readings(
+            &births,
+            &ChartRequest::in_zone(*place, ZoneSpec::iana("Asia/Kathmandu")),
+        )
+        .expect("charts on a zone's clock");
+    let stated = charts
+        .provenance
+        .time
+        .clock
+        .as_ref()
+        .expect("a zone's clock");
+    let offsets: Vec<String> = charts
+        .value
+        .iter()
+        .map(|chart| {
+            let clock = chart.foundation.clock.as_ref().expect("a zone's clock");
+            clock.offset.seconds().to_string()
+        })
+        .collect();
+    put(
+        report,
+        "chart-in-zone",
+        format!(
+            "{} {} {}",
+            offsets.join(" "),
+            stated.offset.seconds(),
+            stated.tzdb_version
+        ),
+    );
+}
+
 /// The osculating Lilith of two charts over the built-in sky, which the
 /// test provider cannot place (`03-design/lilith.md`): the apogee with a
 /// latitude, a distance and a retrograde motion, so every column moves,
@@ -7405,6 +7445,8 @@ fn the_zones(report: &mut Report, place: &Place, offset: UtcOffset) {
         "time-zone-database",
         line(&sky.time().zone_database()),
     );
+    // Before the pack replaces the database.
+    the_chart_in_zone(report, &sky, place);
     let loaded = sky
         .time()
         .load_zones(

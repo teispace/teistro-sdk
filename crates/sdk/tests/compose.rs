@@ -31,7 +31,12 @@ fn kathmandu() -> ChartRequest {
         Longitude::literal(85.324),
         Altitude::literal(1400.0),
     );
-    ChartRequest::at(place, UtcOffset::try_from_seconds(20_700).unwrap())
+    ChartRequest::at(place, nepal())
+}
+
+/// The offset the Kathmandu request states.
+fn nepal() -> UtcOffset {
+    UtcOffset::try_from_seconds(20_700).unwrap()
 }
 
 /// Two births a year apart, so a section read per chart is two rows.
@@ -96,7 +101,7 @@ fn every_section_is_the_call_it_composes() {
                 .unwrap()
         );
         // A KP record naming no clock reads the request's own.
-        let kp = records.kp.unwrap().on_clock(request.offset());
+        let kp = records.kp.unwrap().on_clock(nepal());
         assert_eq!(
             composed.kp[at],
             sdk.chart().kp_reading(document, &kp).unwrap()
@@ -182,7 +187,7 @@ fn the_annual_charts_and_the_western_tables_are_the_calls_they_compose() {
     for (at, document) in composed.founded.value.iter().enumerate() {
         let direct = sdk
             .chart()
-            .varsha(document, request.offset(), records.varsha.as_ref().unwrap())
+            .varsha(document, nepal(), records.varsha.as_ref().unwrap())
             .unwrap();
         assert_eq!(
             format!("{:?}", composed.varsha[at]),

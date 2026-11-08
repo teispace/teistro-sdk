@@ -135,6 +135,17 @@ public final class Chart {
     }
 
     /**
+     * The clock the chart was founded on: a zone's offset at this birth, which
+     * differs between births across a clock change, or the offset the request
+     * stated ({@code 03-design/time-and-timezone.md} §3.4).
+     *
+     * @return seconds east of UTC
+     */
+    public int utcOffsetSeconds() {
+        return decoded().cast().utcOffsetSeconds(index);
+    }
+
+    /**
      * What kind of chart this is.
      *
      * @return the kind

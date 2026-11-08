@@ -3063,6 +3063,18 @@ def _zone_database(text: str) -> ZoneDatabase:
     )
 
 
+def _chart_clock(utc_offset_seconds: Optional[int], zone: Optional[ZoneSpec]) -> Tuple[int, Optional[str]]:
+    """A chart request's clock as the boundary reads it: the offset, or a
+    zone each birth is read on, never both."""
+    if zone is None:
+        if utc_offset_seconds is None:
+            raise TypeError("utc_offset_seconds: a chart names its clock, an offset or a zone")
+        return utc_offset_seconds, None
+    if utc_offset_seconds is not None:
+        raise TypeError("zone: a chart is on utc_offset_seconds or a zone, not both")
+    return 0, _zone_json(zone)
+
+
 def _zone_json(zone: ZoneSpec) -> str:
     """A zone as the record the boundary reads beside a range."""
     if zone.kind == ZoneKind.IANA:
@@ -3354,7 +3366,8 @@ class ChartArea(_Area):
         *,
         instant: float,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
         dashas: Sequence[Union[DashaSystem, str]] = (),
@@ -3418,11 +3431,16 @@ class ChartArea(_Area):
         A profile whose frame is topocentric needs a provider that
         answers topocentric natively; the completion's centre step is
         Phase 3's (`03-design/chart-at-the-boundary.md` §8).
+
+        The clock is `utc_offset_seconds` or a `zone`, never both: a zone
+        is read at the birth, so a Kathmandu birth of 1985 is on +05:30
+        and one today on +05:45, which `Chart.utc_offset_seconds` says.
         """
         return self.found_many(
             instants=[instant],
             place=place,
             utc_offset_seconds=utc_offset_seconds,
+            zone=zone,
             kind=kind,
             vargas=vargas,
             dashas=dashas,
@@ -3480,7 +3498,8 @@ class ChartArea(_Area):
         *,
         instants: Sequence[float],
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         kind: ChartKind = ChartKind.NATAL,
         vargas: Sequence[Varga] = (),
         dashas: Sequence[Union[DashaSystem, str]] = (),
@@ -3550,8 +3569,13 @@ class ChartArea(_Area):
         (`03-design/dasha-kernels.md`). `aspects` asks for the drishti.
         `lilith` names the lunar apogee to place beside the nine,
         `Lilith.MEAN` or `Lilith.OSCULATING`, each chart's read back as
-        `Chart.lilith` (`03-design/lilith.md`).
+        `Chart.lilith` (`03-design/lilith.md`). The clock is
+        `utc_offset_seconds` or a `zone`, never both; a zone is read at each
+        birth, so a batch across a clock change gives each chart its own
+        offset, `Chart.utc_offset_seconds` (`03-design/time-and-timezone.md`
+        §3.4).
         """
+        offset, zone_json = _chart_clock(utc_offset_seconds, zone)
         request = ChartRequest(
             kind=kind,
             lilith=_lilith_of(lilith),
@@ -3559,7 +3583,8 @@ class ChartArea(_Area):
             latitude_deg=place.latitude_deg,
             longitude_deg=place.longitude_deg,
             altitude_m=place.altitude_m,
-            utc_offset_seconds=utc_offset_seconds,
+            utc_offset_seconds=offset,
+            zone_json=zone_json,
             # The sections beside the foundation, which the SDK takes as
             # a bit set and nothing here writes as one
             # (`03-design/chart-reading.md` §5): a named argument each,
@@ -19551,6 +19576,14 @@ class Chart:
     def day_elapsed(self) -> float:
         """How far through that arc the instant is, 0 to 1."""
         return self.batch.decoded.cast.day_elapsed[self.index]
+
+    @property
+    def utc_offset_seconds(self) -> int:
+        """The clock the chart was founded on, in seconds east of UTC: a
+        zone's offset at this birth, which differs between births across a
+        clock change, or the offset the request stated
+        (`03-design/time-and-timezone.md` §3.4)."""
+        return self.batch.decoded.cast.utc_offset_seconds[self.index]
 
     @property
     def kind(self) -> ChartKind:

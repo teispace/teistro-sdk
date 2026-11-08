@@ -51,6 +51,22 @@ public final class ChartArea {
     }
 
     /**
+     * {@link #found(double, Observer, int, ChartOptions)} on a zone's clock: the
+     * birth read at the offset the zone had then, which
+     * {@link Chart#utcOffsetSeconds()} says ({@code 03-design/time-and-timezone.md}
+     * §3.4).
+     *
+     * @param instant the instant, a UTC Julian day
+     * @param place where
+     * @param zone the zone, from {@code Civil.ianaZone} and its neighbours
+     * @param options what to compute beside the foundation
+     * @return the chart
+     */
+    public Chart found(double instant, Observer place, ZoneSpec zone, ChartOptions options) {
+        return foundMany(new double[] {instant}, place, zone, options).at(0);
+    }
+
+    /**
      * Founds a chart at each of many instants, at one place, in one crossing:
      * the settings and the solar model are shared across the batch, so a
      * hundred instants cost one setup. A batch of none is empty.
@@ -62,12 +78,36 @@ public final class ChartArea {
      * @return the batch
      */
     public ChartBatch foundMany(double[] instants, Observer place, int utcOffsetSeconds, ChartOptions options) {
-        ChartRequest request = request(instants, place, utcOffsetSeconds, options);
+        return founded(request(instants, place, utcOffsetSeconds, null, options));
+    }
+
+    /**
+     * {@link #foundMany(double[], Observer, int, ChartOptions)} on a zone's clock:
+     * each birth read at the offset the zone had then, so a batch across a
+     * clock change gives each chart its own, {@link Chart#utcOffsetSeconds()},
+     * and the provenance states the first birth's
+     * ({@code 03-design/time-and-timezone.md} §3.4).
+     *
+     * @param instants the instants, UTC Julian days
+     * @param place where
+     * @param zone the zone, from {@code Civil.ianaZone} and its neighbours
+     * @param options what to compute beside the foundation
+     * @return the batch
+     */
+    public ChartBatch foundMany(double[] instants, Observer place, ZoneSpec zone, ChartOptions options) {
+        if (zone == null) {
+            throw Reads.invalid("zone is the clock the charts are founded on", "zone");
+        }
+        return founded(request(instants, place, 0, AlmanacArea.zoneJson(zone), options));
+    }
+
+    private ChartBatch founded(ChartRequest request) {
         return new ChartBatch(Charts.decode(context.locked((lib, raw) -> Calls.chartFound(lib, raw, request))),
                 context.dashaNames());
     }
 
-    private ChartRequest request(double[] instants, Observer place, int utcOffsetSeconds, ChartOptions options) {
+    private ChartRequest request(double[] instants, Observer place, int utcOffsetSeconds, String zoneJson,
+            ChartOptions options) {
         for (String field : options.readings().keySet()) {
             if (!READINGS.contains(field)) {
                 throw new IllegalArgumentException("`" + field.replaceFirst("_json$", "")
@@ -98,7 +138,7 @@ public final class ChartArea {
                 readings.get(15), readings.get(16), readings.get(17), readings.get(18), readings.get(19),
                 readings.get(20), readings.get(21), readings.get(22), readings.get(23), readings.get(24),
                 readings.get(25), readings.get(26), readings.get(27), readings.get(28), readings.get(29),
-                readings.get(30));
+                readings.get(30), zoneJson);
     }
 
     /**

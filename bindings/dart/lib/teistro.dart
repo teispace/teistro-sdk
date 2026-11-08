@@ -890,6 +890,26 @@ final class ZoneDatabase {
   final String bundled;
 }
 
+/// A chart request's offset as the boundary reads it: the one stated, or
+/// zero beside a [zone], which the boundary reads in its place; both, or
+/// neither, is refused.
+int _chartOffset(int? utcOffsetSeconds, ZoneSpec? zone) {
+  if (zone == null) {
+    if (utcOffsetSeconds == null) {
+      throw ArgumentError.notNull('utcOffsetSeconds');
+    }
+    return utcOffsetSeconds;
+  }
+  if (utcOffsetSeconds != null) {
+    throw ArgumentError.value(
+      utcOffsetSeconds,
+      'zone',
+      'a chart is on utcOffsetSeconds or a zone, not both',
+    );
+  }
+  return 0;
+}
+
 /// A zone as the record the boundary reads beside a range.
 String _zoneJson(ZoneSpec zone) => jsonEncode(switch (zone.kind) {
   ZoneKind.iana => {'kind': 'IANA', 'zone': zone.zone},
@@ -1127,7 +1147,8 @@ final class ChartArea extends _Area {
   Chart found({
     required double instant,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
     List<KeyOf<DashaSystem>> dashas = const <KeyOf<DashaSystem>>[],
@@ -1183,6 +1204,7 @@ final class ChartArea extends _Area {
     instants: <double>[instant],
     place: place,
     utcOffsetSeconds: utcOffsetSeconds,
+    zone: zone,
     kind: kind,
     vargas: vargas,
     dashas: dashas,
@@ -1251,11 +1273,15 @@ final class ChartArea extends _Area {
   /// context's locale, read back as `Drawing.svg`; none by default.
   /// `dashas` names the dasha systems to compute, their periods to the
   /// settings' `dasha.depth` (`03-design/dasha-kernels.md`).
-  /// `aspects` asks for the drishti.
+  /// `aspects` asks for the drishti. The clock is [utcOffsetSeconds] or a
+  /// [zone], never both: a zone is read at each birth, so a batch across a
+  /// clock change gives each chart its own offset, [Chart.utcOffsetSeconds]
+  /// (`03-design/time-and-timezone.md` §3.4).
   Charts foundMany({
     required List<double> instants,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     ChartKind kind = ChartKind.natal,
     List<Varga> vargas = const <Varga>[],
     List<KeyOf<DashaSystem>> dashas = const <KeyOf<DashaSystem>>[],
@@ -1318,7 +1344,8 @@ final class ChartArea extends _Area {
             latitudeDeg: place.latitudeDeg,
             longitudeDeg: place.longitudeDeg,
             altitudeM: place.altitudeM,
-            utcOffsetSeconds: utcOffsetSeconds,
+            utcOffsetSeconds: _chartOffset(utcOffsetSeconds, zone),
+            zoneJson: zone == null ? null : _zoneJson(zone),
             // The sections beside the foundation, which the SDK takes as
             // a bit set and nothing here writes as one
             // (`03-design/chart-reading.md` §5): a named argument each,
@@ -31440,6 +31467,12 @@ final class Chart {
 
   /// How far through that arc the instant is, 0 to 1.
   double get dayElapsed => batch.cast.dayElapsed[index];
+
+  /// The clock the chart was founded on, in seconds east of UTC: a zone's
+  /// offset at this birth, which differs between births across a clock
+  /// change, or the offset the request stated
+  /// (`03-design/time-and-timezone.md` §3.4).
+  int get utcOffsetSeconds => batch.cast.utcOffsetSeconds[index];
 
   /// What kind of chart this is.
   ChartKind get kind => ChartKind.byId(batch.kind);

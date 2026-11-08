@@ -218,7 +218,27 @@ it changed.
 
 A date with no clock has nothing to say: `calendar.convert`, `add` and
 `between` are arithmetic on dates. `time.resolve` and `time.civil` answered
-all of this already. Charts stay as they are until SR-10's P1 part.
+all of this already.
+
+**A chart asked by zone reads each birth on its own clock.** `chart.found` and
+every binding's chart call take `zone` in place of `utcOffsetSeconds`, giving
+both is refused naming `zone`, and Rust's `ChartRequest::in_zone` (or
+`ChartRequest::on` with a `DayClock`) is the same request. The zone becomes the
+same `LocalClock` over the context's database, read at each birth, so a batch
+of Kathmandu births founds 1985's on +05:30 and today's on +05:45. Everything a
+chart reads off the civil clock reads that offset: the chart's civil day, the
+Shadbala's civil day, the almanac section's day, the KP day lord, the dossier's
+printed time, rectification, Davison charts, and the annual and monthly charts
+cast on the birth's clock (which a zone reads at each return).
+
+A chart founded on a zone or local mean time carries the reading as its
+foundation's `clock`; one asked by a bare offset or a fixed zone leaves it out,
+so its document and content hash are byte for byte what they were (C1210). The
+provenance states the first birth's clock, `MANUAL` for a bare offset (C1211).
+At the boundary each chart's offset crosses as the cast column
+`utc_offset_seconds`, which every binding's chart answers as `utcOffsetSeconds`
+(`utc_offset_seconds` in Python). A synastry partner still takes its own
+stated offset.
 
 ## 4. Algorithms
 

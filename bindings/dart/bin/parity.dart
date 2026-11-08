@@ -3708,6 +3708,18 @@ void main() {
   String zonesLine(ZoneDatabase zones) =>
       '${zones.source} ${zones.version} ${zones.zones} ${zones.bundled}';
   put('time-zone-database', zonesLine(zoned.time.zoneDatabase()));
+  // Two Kathmandu noons on its zone, before the pack replaces the database:
+  // 1985 on +05:30 and 2026 on +05:45, each chart its own.
+  final zonedCharts = zoned.chart.foundMany(
+    instants: <double>[2446217.770833, 2461192.760417],
+    place: place,
+    zone: ianaZone('Asia/Kathmandu'),
+  );
+  final stated = zonedCharts.provenance.time.clock!;
+  final offsets = [
+    for (final chart in zonedCharts.each) chart.utcOffsetSeconds,
+  ].join(' ');
+  put('chart-in-zone', '$offsets ${stated.offset} ${stated.tzdbVersion}');
   final loaded = zoned.time.loadZones(
     Uint8List.fromList(
       utf8.encode(

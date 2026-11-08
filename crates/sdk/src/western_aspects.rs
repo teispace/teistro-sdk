@@ -6,7 +6,7 @@ use serde_json::{Map, Value};
 use teistro_chart::foundation::{ChartFoundation, GrahaPosition};
 use teistro_core::catalogue::Graha;
 use teistro_core::error::Error;
-use teistro_core::time::UtcOffset;
+use teistro_core::time::LocalClock;
 use teistro_serial::Document;
 use teistro_western::{
     AntiscionRow, AspectRequest, Composite, Configuration, ConfigurationRules, Placed, PlanetAt,
@@ -58,10 +58,11 @@ impl PartnerSynastry {
     }
 
     /// Each chart's **Davison birth** with the partner ([`Partner::davison`],
-    /// C248), the chart's birth read on `clock`, one a chart in the order
-    /// given; `None` unless [`PartnerSynastry::davison`] asked. A document
-    /// does not keep the clock it was founded on, so the caller gives it,
-    /// as the boundary gives the batch's.
+    /// C248), the chart's birth read on `clock` at its own instant, one a
+    /// chart in the order given; `None` unless [`PartnerSynastry::davison`]
+    /// asked. A document founded on a stated offset does not keep it, so
+    /// the caller gives the clock, as the boundary gives the batch's: an
+    /// offset, or a zone each birth is read on.
     ///
     /// ```
     /// use teistro::{Partner, PartnerSynastry, SynastryRequest, UtcOffset};
@@ -73,8 +74,8 @@ impl PartnerSynastry {
     ///     utc_offset: UtcOffset::UTC,
     /// };
     /// let asked = PartnerSynastry::new(hers, SynastryRequest::default());
-    /// assert_eq!(asked.davisons(&[], UtcOffset::UTC)?, None);
-    /// assert_eq!(asked.with_davison(true).davisons(&[], UtcOffset::UTC)?, Some(vec![]));
+    /// assert_eq!(asked.davisons(&[], &UtcOffset::UTC)?, None);
+    /// assert_eq!(asked.with_davison(true).davisons(&[], &UtcOffset::UTC)?, Some(vec![]));
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
@@ -85,7 +86,7 @@ impl PartnerSynastry {
     pub fn davisons(
         &self,
         charts: &[Document],
-        clock: UtcOffset,
+        clock: &dyn LocalClock,
     ) -> Result<Option<Vec<Partner>>, Error> {
         if !self.davison {
             return Ok(None);
@@ -97,7 +98,7 @@ impl PartnerSynastry {
                 Partner {
                     instant: chart.foundation.instant,
                     place: chart.foundation.place,
-                    utc_offset: clock,
+                    utc_offset: clock.offset_at(chart.foundation.instant),
                 }
                 .davison(&self.partner)
                 .map_err(|why| why.with_field("davison").with_hint(format!("chart {at}")))

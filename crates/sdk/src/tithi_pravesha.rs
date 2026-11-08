@@ -298,7 +298,7 @@ impl ChartArea<'_> {
             .1;
         let place = foundation.place;
         let phase = [Lattice::single(elongation_deg)];
-        self.founding(UtcOffset::UTC, |founder| {
+        self.founding(&UtcOffset::UTC, |founder| {
             returns
                 .iter()
                 .take_while(|one| one.at.get() + TITHI_WINDOW_DAYS < covered)

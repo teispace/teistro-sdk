@@ -15,14 +15,21 @@
 //! it a setter and its getter want the same word, and the codebase ends
 //! up with `kind` beside `chart_kind` for no reason a reader can see.
 
+use std::sync::Arc;
+
 use teistro_chart::{Apogee, Carried, OuterPlanets};
 #[cfg(doc)]
 use teistro_core::catalogue::ChartLayout;
 use teistro_core::catalogue::{Catalogued, ChartKind, Varga};
+use teistro_core::error::Error;
 use teistro_core::key::KeyId;
-use teistro_core::quantity::Place;
-use teistro_core::time::UtcOffset;
+use teistro_core::quantity::{JulianDay, Place, Utc};
+use teistro_core::time::{ClockReading, LocalClock, UtcOffset};
 use teistro_hellenistic::LotRequest;
+use teistro_time::{ProviderClock, TimeZoneProvider, ZoneSpec};
+
+use crate::DayClock;
+use crate::context::Context;
 
 /// Which sections of the document to compute, beside the foundation, as
 /// a set.
@@ -126,7 +133,7 @@ impl Sections {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ChartRequest {
     place: Place,
-    offset: UtcOffset,
+    clock: DayClock,
     kind: ChartKind,
     vargas: Vec<Varga>,
     drawings: Vec<(KeyId, Varga)>,
@@ -143,9 +150,46 @@ impl ChartRequest {
     /// nothing else.
     #[must_use]
     pub fn at(place: Place, offset: UtcOffset) -> ChartRequest {
+        ChartRequest::on(place, DayClock::Offset(offset))
+    }
+
+    /// A reading at a place on a zone's clock: each birth read at the
+    /// offset the zone had then, so a batch across a change gives each
+    /// chart its own, every chart founded on a zone or local mean time
+    /// carries its [`clock`](teistro_chart::foundation::ChartFoundation::clock),
+    /// and the provenance states the first birth's
+    /// (`03-design/time-and-timezone.md` §3.4). A birth instant is UTC, so
+    /// its local time is unique: no gap or overlap can make it ambiguous.
+    ///
+    /// ```
+    /// # #[cfg(feature = "builtin-ephemeris")] {
+    /// use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place};
+    /// use teistro::{ChartRequest, Context, Ephemeris, ZoneSpec};
+    ///
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// let kathmandu = Place::new(Latitude::try_new(27.7172)?, Longitude::try_new(85.324)?, Altitude::try_new(1400.0)?);
+    /// let request = ChartRequest::in_zone(kathmandu, ZoneSpec::iana("Asia/Kathmandu"));
+    /// // Noon in Kathmandu on 1 June 1985, and on 1 June 2026.
+    /// let births = [JulianDay::try_new(2_446_217.770_833)?, JulianDay::try_new(2_461_192.760_417)?];
+    /// let charts = sdk.chart().readings(&births, &request)?;
+    /// let offsets: Vec<i32> = charts.value.iter()
+    ///     .map(|chart| chart.foundation.clock.as_ref().map_or(0, |clock| clock.offset.seconds()))
+    ///     .collect();
+    /// assert_eq!(offsets, [19_800, 20_700]);
+    /// # }
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub fn in_zone(place: Place, zone: ZoneSpec) -> ChartRequest {
+        ChartRequest::on(place, DayClock::Zone(zone))
+    }
+
+    /// A reading at a place on either clock: an offset stated, or a zone.
+    #[must_use]
+    pub fn on(place: Place, clock: DayClock) -> ChartRequest {
         ChartRequest {
             place,
-            offset,
+            clock,
             kind: ChartKind::Natal,
             vargas: Vec::new(),
             drawings: Vec::new(),
@@ -701,7 +745,7 @@ impl ChartRequest {
     pub(crate) fn placed(&self, place: Place, offset: UtcOffset) -> ChartRequest {
         ChartRequest {
             place,
-            offset,
+            clock: DayClock::Offset(offset),
             ..self.clone()
         }
     }
@@ -712,10 +756,11 @@ impl ChartRequest {
         &self.place
     }
 
-    /// The local clock the day's date is read in.
+    /// The local clock the day's date is read in: an offset stated, or a
+    /// zone read at each birth.
     #[must_use]
-    pub const fn offset(&self) -> UtcOffset {
-        self.offset
+    pub const fn clock(&self) -> &DayClock {
+        &self.clock
     }
 
     /// What kind of chart this is.
@@ -781,5 +826,59 @@ impl RuleNeeds {
             }
         }
         needs
+    }
+}
+
+/// A request's [`DayClock`] read through a context's zone database, the
+/// zone looked up once: what a chart is founded on, each birth read at its
+/// own offset (`03-design/time-and-timezone.md` §3.4).
+#[derive(Clone)]
+pub(crate) enum ReadClock {
+    /// The offset stated.
+    Offset(UtcOffset),
+    /// The zone, over the database.
+    Zone(ProviderClock<Arc<dyn TimeZoneProvider>>),
+}
+
+impl ReadClock {
+    /// `clock` over `context`'s database.
+    ///
+    /// # Errors
+    ///
+    /// A zone the database does not have, on `zone`, with the nearest names.
+    pub(crate) fn of(clock: &DayClock, context: &Context) -> Result<ReadClock, Error> {
+        Ok(match clock {
+            DayClock::Offset(offset) => ReadClock::Offset(*offset),
+            DayClock::Zone(zone) => ReadClock::Zone(zone.clock(context.zones())?),
+        })
+    }
+}
+
+impl core::fmt::Debug for ReadClock {
+    fn fmt(&self, out: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        out.write_str(&self.describe())
+    }
+}
+
+impl LocalClock for ReadClock {
+    fn offset_at(&self, instant: JulianDay<Utc>) -> UtcOffset {
+        match self {
+            ReadClock::Offset(offset) => *offset,
+            ReadClock::Zone(zone) => zone.offset_at(instant),
+        }
+    }
+
+    fn describe(&self) -> String {
+        match self {
+            ReadClock::Offset(offset) => offset.describe(),
+            ReadClock::Zone(zone) => zone.describe(),
+        }
+    }
+
+    fn reading(&self, instant: JulianDay<Utc>) -> ClockReading {
+        match self {
+            ReadClock::Offset(offset) => offset.reading(instant),
+            ReadClock::Zone(zone) => zone.reading(instant),
+        }
     }
 }

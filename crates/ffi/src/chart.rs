@@ -29,7 +29,7 @@
 use core::ffi::c_char;
 
 use teistro::dasha::DashaName;
-use teistro::{ChartRecords, ChartRequest};
+use teistro::{ChartRecords, ChartRequest, DayClock};
 use teistro_aspect::drishti::Strength;
 use teistro_chart::bhava::Reading;
 use teistro_chart::foundation::ChartFoundation;
@@ -38,7 +38,7 @@ use teistro_core::envelope::Provenance;
 use teistro_core::error::{Error, Status};
 use teistro_core::key::KeyId;
 use teistro_core::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro_core::time::UtcOffset;
+use teistro_core::time::{ClockReading, UtcOffset};
 use teistro_houses::classify::Quadrant;
 use teistro_idl::blob::{ColumnData, FixedValue, Writer};
 use teistro_serial::Document;
@@ -5693,35 +5693,54 @@ pub(crate) fn graha_mask(grahas: &[teistro::catalogue::Graha]) -> u16 {
     })
 }
 
-/// One row per chart, in the order `cast` declares its columns.
+/// One row per chart, in the order `cast` declares its columns; `stated` is
+/// the clock the answer states, which a chart founded on an offset the
+/// caller gave was read on.
 #[must_use]
 fn chart_rows(
     charts: &[&ChartFoundation],
-    point_counts: &[u32],
-    aspect_counts: &[u32],
-    pravesha_counts: &[u32],
-    natal_saham_counts: &[u32],
-    hit_counts: &[u32],
-    sade_sati_counts: &[u32],
+    stated: Option<&ClockReading>,
+    by: &Sections,
+    searches: &Searches,
 ) -> Vec<Vec<FixedValue>> {
+    // The per-chart counts, in the columns' order.
+    let counts: [&[u32]; 6] = [
+        &by.points.counts,
+        &by.aspects.counts,
+        &by.years.counts,
+        &by.years.natal_counts,
+        &searches.hits.counts,
+        &searches.sade_sati.counts,
+    ];
     charts
         .iter()
         .enumerate()
         .map(|(at, chart)| {
-            vec![
+            let mut row: Vec<FixedValue> = vec![
                 chart.instant.get().into(),
                 chart.lagna_deg.into(),
                 chart.day_lagna_deg.into(),
                 chart.zodiac.offset_deg.into(),
                 (TsDayPart::from(chart.day.part) as u64).into(),
                 chart.day.elapsed.into(),
-                u64::from(point_counts.get(at).copied().unwrap_or(0)).into(),
-                u64::from(aspect_counts.get(at).copied().unwrap_or(0)).into(),
-                u64::from(pravesha_counts.get(at).copied().unwrap_or(0)).into(),
-                u64::from(natal_saham_counts.get(at).copied().unwrap_or(0)).into(),
-                u64::from(hit_counts.get(at).copied().unwrap_or(0)).into(),
-                u64::from(sade_sati_counts.get(at).copied().unwrap_or(0)).into(),
-            ]
+            ];
+            row.extend(
+                counts
+                    .iter()
+                    .map(|count| FixedValue::from(u64::from(count.get(at).copied().unwrap_or(0)))),
+            );
+            // The clock a zone read at this birth, or the offset stated.
+            row.push(
+                i64::from(
+                    chart
+                        .clock
+                        .as_ref()
+                        .or(stated)
+                        .map_or(0, |clock| clock.offset.seconds()),
+                )
+                .into(),
+            );
+            row
         })
         .collect()
 }
@@ -6302,15 +6321,7 @@ pub fn encode(
         writer.fixed("summary", &summary)?;
         writer.rows(
             "cast",
-            &chart_rows(
-                charts,
-                &by.points.counts,
-                &by.aspects.counts,
-                &by.years.counts,
-                &by.years.natal_counts,
-                &searches.hits.counts,
-                &searches.sade_sati.counts,
-            ),
+            &chart_rows(charts, provenance.time.clock.as_ref(), &by, &searches),
         )?;
         GrahaColumns::of(charts, |c| &c.grahas).write(&mut writer, "grahas")?;
         writer.fixed("readings", &once.readings)?;
@@ -7344,7 +7355,7 @@ unsafe fn chart_request_of(
     asked: &TsChartRequest,
     place: Place,
     kind: ChartKind,
-    clock: UtcOffset,
+    clock: DayClock,
 ) -> Result<ChartRequest, Error> {
     // SAFETY: the caller's contract, for `varga_count` readable `u16`s.
     let asked_vargas = unsafe { slice(asked.vargas, asked.varga_count, "vargas") }?;
@@ -7385,7 +7396,7 @@ unsafe fn chart_request_of(
     }
     let request = sections_of(
         asked.sections,
-        ChartRequest::at(place, clock).with_kind(kind),
+        ChartRequest::on(place, clock).with_kind(kind),
     )
     .with_vargas(vargas)
     .with_drawings(drawings)
@@ -7397,8 +7408,14 @@ unsafe fn chart_request_of(
 }
 
 /// Where a request casts its charts, of what kind, and against which
-/// clock — each refused by the field the caller wrote.
-fn where_and_when(asked: &TsChartRequest) -> Result<(Place, ChartKind, UtcOffset), Error> {
+/// clock — each refused by the field the caller wrote: the zone
+/// `zone_json` names, each birth read at its own offset, or else
+/// `utc_offset_seconds`.
+///
+/// # Safety
+///
+/// `asked.zone_json` null or a NUL-terminated string.
+unsafe fn where_and_when(asked: &TsChartRequest) -> Result<(Place, ChartKind, DayClock), Error> {
     let place = Place::new(
         Latitude::try_new(asked.latitude_deg)
             .map_err(|e| Error::from(e).with_field("latitude_deg"))?,
@@ -7413,8 +7430,17 @@ fn where_and_when(asked: &TsChartRequest) -> Result<(Place, ChartKind, UtcOffset
         )
         .with_field("kind")
     })?;
-    let clock = UtcOffset::try_from_seconds(asked.utc_offset_seconds)
-        .map_err(|e| Error::from(e).with_field("utc_offset_seconds"))?;
+    // SAFETY: the caller's contract.
+    let zone = unsafe { optional_text(asked.zone_json, "zone_json") }?
+        .map(|json| teistro_core::strict::read(json, "zone_json"))
+        .transpose()?;
+    let clock = match zone {
+        Some(zone) => DayClock::Zone(zone),
+        None => DayClock::Offset(
+            UtcOffset::try_from_seconds(asked.utc_offset_seconds)
+                .map_err(|e| Error::from(e).with_field("utc_offset_seconds"))?,
+        ),
+    };
     Ok((place, kind, clock))
 }
 
@@ -7601,7 +7627,9 @@ pub unsafe extern "C" fn ts_chart_found(
         // SAFETY: the caller promises a readable request; `read_in`
         // checks the handshake before anything else reads a field.
         let asked = *unsafe { read_in(request, "request") }?;
-        let (place, kind, clock) = where_and_when(&asked)?;
+        // SAFETY: the entry point's contract — `zone_json` null or a
+        // NUL-terminated string.
+        let (place, kind, clock) = unsafe { where_and_when(&asked) }?;
         // SAFETY: the entry point's contract — the caller promises
         // `instant_count` readable doubles at `instants`, or null and zero.
         let instants: Vec<JulianDay<Utc>> =

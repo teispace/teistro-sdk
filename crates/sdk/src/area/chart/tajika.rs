@@ -12,7 +12,6 @@ use teistro_core::error::Error;
 use teistro_core::house::House;
 use teistro_core::quantity::{JulianDay, Utc};
 use teistro_core::settings::Balance;
-use teistro_core::time::UtcOffset;
 use teistro_dasha::{Wheel, YearDasha, YearRing};
 use teistro_serial::Document;
 use teistro_state::state;
@@ -27,6 +26,7 @@ use teistro_tajika::{
 };
 
 use super::ChartArea;
+use crate::DayClock;
 use crate::ephemeris::no_ephemeris;
 use crate::reading::ChartRequest;
 use crate::varsha::{AnnualChart, AnnualPlace, VARSHA, Varsha, VarshaRequest, VarshaYear};
@@ -304,8 +304,10 @@ impl ChartArea<'_> {
     /// once, here; the parts are each a method of their own for a caller
     /// who wants one.
     ///
-    /// `clock` is the one the birth was cast under, which
-    /// [`AnnualPlace::Birth`] casts each year's chart under too.
+    /// `clock` is the one the birth was cast under, an offset or a zone,
+    /// which [`AnnualPlace::Birth`] casts each year's chart under too: a
+    /// zone's at each return's own instant, so a Kathmandu birth of 1985
+    /// (+05:30) has its returns since 1986 on +05:45.
     ///
     /// ```no_run
     /// # use teistro::{AnnualPlace, Asked, ChartRequest, Context, Document, Ephemeris, VarshaRequest};
@@ -315,7 +317,7 @@ impl ChartArea<'_> {
     /// let asked = VarshaRequest::through(40)
     ///     .at(AnnualPlace::Birth)
     ///     .with_sahams(Asked::All);
-    /// let varsha = sdk.chart().varsha(&birth, request.offset(), &asked)?;
+    /// let varsha = sdk.chart().varsha(&birth, request.clock().clone(), &asked)?;
     /// let fortieth = varsha.years.last().and_then(|year| year.annual.as_ref());
     /// # Ok(())
     /// # }
@@ -329,11 +331,11 @@ impl ChartArea<'_> {
     pub fn varsha(
         self,
         birth: &Document,
-        clock: UtcOffset,
+        clock: impl Into<DayClock>,
         asked: &VarshaRequest,
     ) -> Result<Varsha, Error> {
         asked.check()?;
-        self.varsha_of(birth, clock, asked)
+        self.varsha_of(birth, &clock.into(), asked)
             .map_err(|error| error.under(VARSHA))
     }
 
@@ -342,7 +344,7 @@ impl ChartArea<'_> {
     fn varsha_of(
         self,
         birth: &Document,
-        clock: UtcOffset,
+        clock: &DayClock,
         asked: &VarshaRequest,
     ) -> Result<Varsha, Error> {
         let years = self
@@ -388,13 +390,13 @@ impl ChartArea<'_> {
     fn annual_chart(
         self,
         birth: &Document,
-        clock: UtcOffset,
+        clock: &DayClock,
         place: AnnualPlace,
         asked: &VarshaRequest,
         pravesha: Pravesha,
     ) -> Result<AnnualChart, Error> {
         let request = match place {
-            AnnualPlace::Birth => ChartRequest::at(birth.foundation.place, clock),
+            AnnualPlace::Birth => ChartRequest::on(birth.foundation.place, clock.clone()),
             AnnualPlace::At { place, offset } => ChartRequest::at(place, offset),
         };
         let annual = self.reading(pravesha.at, &request)?.value;
