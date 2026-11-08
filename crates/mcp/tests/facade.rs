@@ -164,7 +164,11 @@ fn an_observance_reckons_another_tradition_under_other() {
     assert_eq!(traditions[1]["reckoning"], "OTHER");
     assert_eq!(traditions[1]["profile"], "kp-default");
     assert_eq!(traditions[0]["profile"], teistro::settings::DEFAULT_PROFILE);
-    let alone = call(&mut server, "almanac.observance", &json!({"request": request}));
+    let alone = call(
+        &mut server,
+        "almanac.observance",
+        &json!({"request": request}),
+    );
     assert_eq!(alone["isError"], true, "{alone}");
     assert!(
         alone["structuredContent"]["field"]
