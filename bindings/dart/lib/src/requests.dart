@@ -1348,7 +1348,7 @@ final class ChartFoundRequest extends _Request {
     this.synastry,
     this.theme,
     this.tithiPravesha,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
     this.vaiseshikamsa,
     this.vargas = const [],
     this.varsha,
@@ -1356,6 +1356,7 @@ final class ChartFoundRequest extends _Request {
     this.westernAspects,
     this.westernConfigurations,
     this.westernHouses,
+    this.zone,
   });
 
   final double altitudeM;
@@ -1452,7 +1453,7 @@ final class ChartFoundRequest extends _Request {
 
   final TithiPraveshaRequest? tithiPravesha;
 
-  final int utcOffsetSeconds;
+  final int? utcOffsetSeconds;
 
   final bool? vaiseshikamsa;
 
@@ -1467,6 +1468,9 @@ final class ChartFoundRequest extends _Request {
   final ConfigurationRequest? westernConfigurations;
 
   final HouseRequest? westernHouses;
+
+  /// The zone, in place of `utcOffsetSeconds`: each birth read at the zone's offset then.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -1517,7 +1521,7 @@ final class ChartFoundRequest extends _Request {
     if (synastry case final synastryValue?) 'synastry': synastryValue._wire,
     if (theme case final themeValue?) 'theme': themeValue._wire,
     if (tithiPravesha case final tithiPraveshaValue?) 'tithiPravesha': tithiPraveshaValue._wire,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
     if (vaiseshikamsa case final vaiseshikamsaValue?) 'vaiseshikamsa': vaiseshikamsaValue,
     'vargas': [for (final e0 in vargas) e0.key],
     if (varsha case final varshaValue?) 'varsha': varshaValue._wire,
@@ -1525,10 +1529,11 @@ final class ChartFoundRequest extends _Request {
     if (westernAspects case final westernAspectsValue?) 'westernAspects': westernAspectsValue._wire,
     if (westernConfigurations case final westernConfigurationsValue?) 'westernConfigurations': westernConfigurationsValue._wire,
     if (westernHouses case final westernHousesValue?) 'westernHouses': westernHousesValue._wire,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, dossier, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, latitudeDeg, longitudeDeg, lots, masaPravesha, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, utcOffsetSeconds, vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernConfigurations, westernHouses];
+  List<Object?> get _fields => [altitudeM, antiscia, ashtakavarga, aspects, avakahada, bhavaBala, considerations, dashaPhala, dashas, dignities, dossier, drawings, fortitudes, gochar, harmonic, hits, houses, instant, instants, interpret, jaimini, kind, kp, lalkitab, latitudeDeg, longitudeDeg, lots, masaPravesha, matching, midpoints, moment, outerPlanets, parallels, perfection, points, prashna, progressions, rectification, remedies, rules, sadeSati, sarvatobhadra, shadbala, state, synastry, theme, tithiPravesha, utcOffsetSeconds, vaiseshikamsa, vargas, varsha, vimshopaka, westernAspects, westernConfigurations, westernHouses, zone];
 }
 
 /// A mundane chart as a binding asks for it: a kind, when to look from (a `year` or an instant `from`), or the `event` an `EVENT` casts, and the place the chart is cast for.

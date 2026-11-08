@@ -8899,7 +8899,8 @@ struct ts_chart_request {
     double altitude_m;
     /**
      * The local clock's offset from UTC in seconds, east positive: the
-     * clock the day's date is read in.
+     * clock the day's date is read in. Not read when `zone_json` names a
+     * zone.
      * Unit: s. Range: [-64800,64800]. Example: 20700.
      */
     int32_t utc_offset_seconds;
@@ -9506,6 +9507,19 @@ struct ts_chart_request {
      * Example: {"stelliumLeast":4}. May be null.
      */
     const char * western_configurations_json;
+    /**
+     * The zone the charts are founded on, as JSON, the record
+     * `ts_time_resolve`'s zone is written as: `{"kind": "IANA", "zone":
+     * "Asia/Kathmandu"}`. Each birth is then read at the zone's offset at
+     * its own instant (Kathmandu +05:30 in 1985, +05:45 now; local mean
+     * time before the first rule), `utc_offset_seconds` is not read, the
+     * `cast` section's `utc_offset_seconds` says each chart's offset, and
+     * the provenance names the first birth's offset, source, era and
+     * database (`03-design/time-and-timezone.md` §3.4). Null for the
+     * offset.
+     * Example: {"kind":"IANA","zone":"Asia/Kathmandu"}. May be null.
+     */
+    const char * zone_json;
 };
 
 /**
@@ -11662,7 +11676,7 @@ _Static_assert(sizeof(ts_error) == 56, "ts_error is 56 bytes on 64-bit targets")
 _Static_assert(sizeof(ts_frame) == 16, "ts_frame is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_date_span) == 16, "ts_date_span is 16 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_calendar_date) == 24, "ts_calendar_date is 24 bytes on 64-bit targets");
-_Static_assert(sizeof(ts_chart_request) == 360, "ts_chart_request is 360 bytes on 64-bit targets");
+_Static_assert(sizeof(ts_chart_request) == 368, "ts_chart_request is 368 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_time) == 12, "ts_civil_time is 12 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_civil_date_time) == 44, "ts_civil_date_time is 44 bytes on 64-bit targets");
 _Static_assert(sizeof(ts_zone_spec) == 32, "ts_zone_spec is 32 bytes on 64-bit targets");

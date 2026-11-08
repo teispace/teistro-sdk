@@ -395,6 +395,7 @@ final class ChartsCast {
     required this.natalSahamCount,
     required this.hitCount,
     required this.sadeSatiVisitCount,
+    required this.utcOffsetSeconds,
     required this.length,
   });
 
@@ -443,6 +444,9 @@ final class ChartsCast {
   ///
   /// Ragged because a chart's periods are its own: where Saturn crosses into them depends on where the natal Moon stands, and how often it steps back out depends on where its stations fall.
   final Uint32List sadeSatiVisitCount;
+
+  /// The clock the chart was founded on, in seconds east of UTC: a zone's offset at this birth, which differs between births across a clock change (Kathmandu +05:30 in 1985, +05:45 now), or the offset the caller stated (`03-design/time-and-timezone.md` §3.4).
+  final Int32List utcOffsetSeconds;
 
   /// The number of rows every column holds.
   final int length;
@@ -6397,6 +6401,7 @@ Charts decodeCharts(Uint8List bytes) {
       natalSahamCount: blob.column(atCast, 9, 4, Uint32List.sublistView),
       hitCount: blob.column(atCast, 10, 4, Uint32List.sublistView),
       sadeSatiVisitCount: blob.column(atCast, 11, 4, Uint32List.sublistView),
+      utcOffsetSeconds: blob.column(atCast, 12, 4, Int32List.sublistView),
       length: atCast.count,
     ),
     grahas: ChartsGrahas(

@@ -1779,6 +1779,7 @@ public final class Charts {
         private final int natalSahamCountAt;
         private final int hitCountAt;
         private final int sadeSatiVisitCountAt;
+        private final int utcOffsetSecondsAt;
 
         Cast(BlobReader blob, int id, String name) {
             BlobReader.Section at = blob.section(id, name);
@@ -1796,6 +1797,7 @@ public final class Charts {
             this.natalSahamCountAt = blob.column(at, 9, 4);
             this.hitCountAt = blob.column(at, 10, 4);
             this.sadeSatiVisitCountAt = blob.column(at, 11, 4);
+            this.utcOffsetSecondsAt = blob.column(at, 12, 4);
         }
 
         /**
@@ -1949,6 +1951,17 @@ public final class Charts {
          */
         public long sadeSatiVisitCount(int row) {
             return Integer.toUnsignedLong(bytes.getInt(sadeSatiVisitCountAt + Objects.checkIndex(row, length) * 4));
+        }
+
+        /**
+         * The clock the chart was founded on, in seconds east of UTC: a zone's offset at this birth, which differs between births across a clock change (Kathmandu +05:30 in 1985, +05:45 now), or the offset the caller stated (`03-design/time-and-timezone.md` §3.4).
+         *
+         * @param row the row, from 0
+         * @return the value in that row
+         * @throws IndexOutOfBoundsException for a row the section does not hold
+         */
+        public int utcOffsetSeconds(int row) {
+            return bytes.getInt(utcOffsetSecondsAt + Objects.checkIndex(row, length) * 4);
         }
     }
 

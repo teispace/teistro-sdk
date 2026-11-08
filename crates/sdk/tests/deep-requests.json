@@ -4705,6 +4705,10 @@
       },
       "westernHouses": {
         "system": "house_system.PLACIDUS"
+      },
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
       }
     }
   },

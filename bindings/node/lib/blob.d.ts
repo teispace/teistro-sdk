@@ -250,6 +250,10 @@ export interface ChartsCast {
    * Ragged because a chart's periods are its own: where Saturn crosses into them depends on where the natal Moon stands, and how often it steps back out depends on where its stations fall.
    */
   readonly sadeSatiVisitCount: Uint32Array;
+  /**
+   * The clock the chart was founded on, in seconds east of UTC: a zone's offset at this birth, which differs between births across a clock change (Kathmandu +05:30 in 1985, +05:45 now), or the offset the caller stated (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly utcOffsetSeconds: Int32Array;
   /** The number of rows every column holds. */
   readonly length: number;
 }
