@@ -2868,6 +2868,8 @@ enum Calendar implements KeyOf<Calendar> {
   odiaSolar(12, 'ODIA_SOLAR'),
   /// Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha
   malayalamSolar(13, 'MALAYALAM_SOLAR'),
+  /// Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha
+  tamilVakya(14, 'TAMIL_VAKYA'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

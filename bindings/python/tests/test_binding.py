@@ -321,6 +321,13 @@ class TheCalendars(WithLibrary):
         assert chingam.era is not None
         self.assertEqual(chingam.era.key, "KOLLAM")
 
+    def test_18_october_2021_opens_aippasi_in_the_vakya_calendar_only(self) -> None:
+        day = date(Calendar.GREGORIAN, 2021, 10, 18)
+        vakya = self.ctx.calendar.convert(day, Calendar.TAMIL_VAKYA)
+        self.assertEqual((vakya.calendar, vakya.year, vakya.month, vakya.day), (Calendar.TAMIL_VAKYA, 1943, 7, 1))
+        drik = self.ctx.calendar.convert(day, Calendar.TAMIL_SOLAR)
+        self.assertEqual((drik.year, drik.month, drik.day), (1943, 7, 2))
+
     def test_the_first_of_ramadan_1446_is_1_march_2025_in_the_tabular_hijri_calendar(self) -> None:
         ramadan = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2025, 3, 1), Calendar.HIJRI_TABULAR)
         self.assertEqual((ramadan.year, ramadan.month, ramadan.day), (1446, 9, 1))

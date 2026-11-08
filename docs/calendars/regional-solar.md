@@ -4,7 +4,9 @@ Status: `built`, 2026-10-27. `Calendar::TamilSolar`, `BengalSolar`,
 `OdiaSolar`, `MalayalamSolar` (`calendar.TAMIL_SOLAR`, `BENGAL_SOLAR`,
 `ODIA_SOLAR`, `MALAYALAM_SOLAR`), `crates/calendar/src/regional_solar/`.
 P2-1 step 2. Assam's calendar waits on a crux (C765); Punjab's is not
-built (below).
+built (below). The Tamil vakya school, `Calendar::TamilVakya`
+(`calendar.TAMIL_VAKYA`), was added 2026-11-03 for consumer request A2-9
+([The two Tamil schools](#the-two-tamil-schools)).
 
 The solar calendars of Tamil Nadu, West Bengal, Odisha and Kerala begin
 each month at a sankranti, the Sun's entry into a sidereal sign. Bikram
@@ -149,7 +151,120 @@ Prokerala's Tamil calendar for Chennai (108 months, 2020–2028) was set
 against the Lahiri and the Surya Siddhanta sankrantis under every rule.
 No rule and no uniform shift fitted past 92 (Lahiri) or 110 (Siddhanta),
 and its misses could not be ordered by any cutoff: it is a third
-reckoning, most likely vakya, and not a drik corpus.
+reckoning, most likely vakya, and not a drik corpus. It has not been set
+against the vakya calendar below.
+
+## The two Tamil schools
+
+Tamil almanacs come in two schools. The **thirukanitha** (drik) almanacs
+reckon the modern Sun, as `TAMIL_SOLAR` does. The **vakya** almanacs
+reckon the Sun of the *Vakyakarana*, a Kanchi manual of about 1300 in the
+Aryabhata school, whose tables the temples and most household almanacs
+still compute from. Both put the month on the sankranti's day by the same
+rule (after sunrise and before sunset that day, otherwise the next), but
+the two Suns enter a sign up to several hours apart, so the schools
+disagree on the day a month starts. Over the Tamil years opening 1900 to
+2100 the vakya month begins a day after the drik month in 450 of the
+2,412 months, and a day before it in 74, never further apart (a test
+holds both counts). The vakya year is about 3⅓ minutes longer than the
+sidereal year, so its months drift later against the modern Sun, about a
+day in four centuries: in the 19th century the vakya month is more often
+the earlier, and after 2280 it begins two days after the drik month in 99
+months (C1206). The vakya calendar ships as `calendar.TAMIL_VAKYA`
+(id 14), a separate catalogue member rather than a knob on `TAMIL_SOLAR`,
+since a date names its calendar and the two schools' dates must not
+compare equal (C1200).
+
+**The arithmetic** (`teistro_siddhanta::vakya`), from the edition of
+Kuppanna Sastri and Sarma (1962):
+
+- *The year* (I.2–3). Kali years elapsed are the Saka years elapsed plus
+  3179. The Kali days to the Sun's entry into Mesha are 365 *y* + *y*/4 +
+  (5*y* − 1237)/576, counted from the mean sunrise at the Ujjain meridian
+  that began Kali day 1, a Friday. The year is Aryabhata's, 365 days
+  15 nadis 31¼ vinadis; the 1237/576 days are the equation of centre at
+  Mesha, a constant because the school holds the apsis fixed. The
+  arithmetic is exact in quarter-vinadis (1/14,400 of a day). Example 1
+  of the edition (Saka 1869: 18,43,823 days 40 nadis 19 vinadis, a night
+  sankranti, so the year began on Monday, 14 April 1947) is a doctest.
+- *The months* (I.4). Each later sankranti is the Mesha sankranti plus a
+  vakya: 30-55-32, 62-19-44, 93-56-22 days, nadis and vinadis, on to
+  334-55-10 for Mina, and the year 365-15-31. Aryabhata's rule (the
+  true Sun from a fixed-apsis equation) regenerates the vakyas only to
+  ±35 vinadis, so they are a table of their own and ship as printed
+  (C1204).
+- *The daytime* (III.1, III.7–8). The cara is 20, 16 and 6⅔ vinadis an
+  angula of equinoctial shadow for the first, second and third sign of
+  the sayana Sun's bhuja, negative in the northern half of the year; the
+  daytime is thirty nadis less the cara. The sayana Sun is the vakya Sun
+  plus the precession of III.1, (Kali years − 3600) less a 121st of
+  itself, over sixty, in degrees.
+
+**The rule** (`regional_solar::vakya::month_start`). A month begins on
+the Kali day that holds its sankranti when the sankranti's time after
+that day's sunrise is less than the day's daytime, and on the next day
+otherwise. The time is the *Vakyakarana*'s fraction of its day read as
+nadis after the local sunrise: the edition's introduction notes the
+vakya almanacs apply none of the corrections for the place's longitude
+(desantara), half the cara (carardha) or the equation of time
+(bhujantara) to the Sun (C1207). The daytime is the almanac's own
+(thirty nadis less the vakya cara) for a shadow of 2¼ angulas, with the
+Sun at the sign's first point (C1201, C1205). A fixed thirty-nadi cutoff
+is not the rule: Kumbha in Kali 5101 fell 29 nadis 41 vinadis after the
+sunrise of 12 February 2001, under thirty nadis but past that day's
+printed daytime of 29 nadis 7 vinadis, and Masi is printed from the 13th
+(C1202). The day count maps to the SDK's fixed days by Kali day 1,843,824
+= 13 April 1947.
+
+The calendar keeps `TAMIL_SOLAR`'s year (Chittirai first, Saka years
+elapsed, era `SHAKA`) and span (years opening 1800 to 2398, though the
+arithmetic needs no ephemeris and has no limit of its own, C1206). Its
+table is computed at first use rather than generated, since it is a few
+thousand integer steps; its dates' frame names the *Vakyakarana*, the
+unreflected precession, the rule and the shadow.
+
+### The vakya almanacs measured
+
+The *Manonmani Vilasam* suddha vakya almanac is on archive.org in two
+bound runs of annual editions, one from Sarvajit (1947–48) and one from
+Isvara (1997–98). Each month's page prints the Gregorian date of every
+day, from the 1950s the day's length (அகஸ், in nadis and vinadis), and
+the sankranti's time in nadis after sunrise on the day it falls. The
+almanac is published at Chennai (its back cover). The month beginnings
+were read by eye from cropped page images, and the Koviloor vakya
+almanac of 1978–79 was read the same way.
+
+| almanac | years | months read | the vakya calendar | `TAMIL_SOLAR` |
+|---|---|---:|---:|---:|
+| *Manonmani Vilasam* | 1947–48 to 1961–62, and 1962–63 to Adi | 184 | 184/184 | 155/184 |
+| Koviloor vakya | 1978–79 | 12 | 12/12 | 9/12 |
+| *Manonmani Vilasam* | 1997–98 to 2021–22 | 300 | 300/300 | 243/300 |
+
+Every month read agrees: 496 of 496, of which `TAMIL_SOLAR` misses 89,
+so the list tells the schools apart. No printed month's sankranti falls
+nearer the daytime's end than 3.6 vinadis, so the shadow is not pinned by
+a boundary case (C1201). The sankranti times the
+almanac prints on a month's first day agree with the *Vakyakarana*'s to
+the vinadi (twelve read, 1997 to 2009: for example Kataka 1997 at 32-43,
+Simha 1998 at 16-27 against 16-26.4, Tula 2007 at 5-40 against 5-39¾),
+and its printed day lengths fit the vakya cara for a shadow of 2¼
+angulas within two vinadis (root mean square about one vinadi) with the
+precession unreflected; reflected about 24°, as III.1 goes on to say,
+the fit is worse (C1203). The calendar's tests hold every
+month read (`VAKYA_PRINTED`, 1947 to 1962, 1978 and 1997 to 2021, by the
+Gregorian year the Tamil year opens in).
+
+**Thirukanitha almanacs.** Two were read for comparison. The Vasan
+thirukanitha almanac of 1983–84 matches both calendars, 12 of 12 (the
+schools do not part that year). The *Anandha Bodhini* thirukanitha
+almanac of 1978–79 matches the vakya calendar 12 of 12 and the drik one
+9 of 12: it begins Adi on 17 July, Aippasi on 18 October and Karthigai on
+17 November, where `TAMIL_SOLAR` gives the 16th, 17th and 16th, and it
+prints its own Tula sankranti at 8 nadis 38 vinadis on 17 October yet
+begins Aippasi on the 18th. That almanac computed its sky by the drik
+method and still printed the vakya months, which the civil Tamil calendar
+may have required then (C1208). `TAMIL_SOLAR` stays drik: the *Rashtriya
+Panchang*'s Tamil Nadu column fits it 120 of 120.
 
 ## Not built
 
@@ -180,3 +295,19 @@ reckoning, most likely vakya, and not a drik corpus.
   rank 1 for the month beginnings it prints.
 - *Indian Astronomical Ephemeris* 2018 (Positional Astronomy Centre), the
   beginning of Bengali San 1425.
+- *Vakyakarana*, with the *Laghuprakasika* of Sundararaja, ed. T. S.
+  Kuppanna Sastri and K. V. Sarma (Madras: Kuppuswami Sastri Research
+  Institute, 1962), I.2–4, III.1, III.6–8, the introduction and the
+  worked examples 1, 15, 16 and 19 to 21; archive.org
+  `vakyakaranawithlaghuparkasikasudararajaed.kuppannasastrit.s.sarmak.v._865_t`;
+  rank 1. The numbers are the text's; nothing of the translation is
+  copied.
+- *Manonmani Vilasam* suddha vakya panchangam (Chennai), annual editions
+  bound in two runs: from Sarvajit (1947–48), archive.org
+  `bqfm-manonmani-vilasa-suddha-vakya-panchangam-sarvajitt`, read to
+  Subhakrit (1962–63); and Isvara (1997–98) to Plava (2021–22),
+  archive.org `calw-manonmani-vilasa-suddha-vakkiya-panchangam-isvara-`;
+  rank 1 for the vakya months, sankranti times and day lengths it prints.
+- Koviloor vakya saiva panchangam, 1978–79 (Tamil Digital Library
+  `KMM1082`); *Anandha Bodhini* thirukanitha panchangam, 1978–79
+  (`KMM1084`); Vasan thirukanitha panchangam, 1983–84 (`KMM1087`).

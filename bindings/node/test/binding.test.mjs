@@ -845,8 +845,9 @@ test('every catalogue enum has a complete id table', () => {
   // `TsEra` gained `VIRA_NIRVANA`; 1531 since the mundane charts'
   // `TsMundaneKind`, thirteen, with its member of `TsKind`, and
   // `TsChartKind`'s `MUNDANE`; 1544 since aayadi's `TsVastuYoni`, eight,
-  // and `TsVyayaKind`, three, each with its member of `TsKind`.
-  assert.equal(entries, 1544, 'every member of every enum is in a table');
+  // and `TsVyayaKind`, three, each with its member of `TsKind`; 1545
+  // since `TsCalendar` gained `TAMIL_VAKYA`.
+  assert.equal(entries, 1545, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -5348,6 +5349,12 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   // 1 Chingam, Kollam 1201, in the Malayalam solar calendar: 17 August 2025.
   const chingam = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 8, day: 17 }, Calendar.MalayalamSolar);
   assert.deepEqual([chingam.era, chingam.year, chingam.month, chingam.day], ['era.KOLLAM', 1201, 1, 1]);
+  // 18 October 2021 opens Aippasi in the vakya almanacs and is its second day in the drik calendar.
+  const aippasi = { ...gregorian, year: 2021, eraYear: 2021, month: 10, day: 18 };
+  const vakya = ctx.calendar.convert(aippasi, Calendar.TamilVakya);
+  assert.deepEqual([vakya.calendar, vakya.era, vakya.year, vakya.month, vakya.day], ['calendar.TAMIL_VAKYA', 'era.SHAKA', 1943, 7, 1]);
+  const drik = ctx.calendar.convert(aippasi, Calendar.TamilSolar);
+  assert.deepEqual([drik.year, drik.month, drik.day], [1943, 7, 2]);
   // And the tabular Hijri calendar's: 1 Ramadan 1446 is 1 March 2025.
   const ramadan = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 3, day: 1 }, Calendar.HijriTabular);
   assert.deepEqual([ramadan.era, ramadan.year, ramadan.month, ramadan.day], ['era.HIJRI', 1446, 9, 1]);

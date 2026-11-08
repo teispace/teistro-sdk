@@ -3948,6 +3948,7 @@ export type Calendar =
   | 'calendar.BENGAL_SOLAR'
   | 'calendar.ODIA_SOLAR'
   | 'calendar.MALAYALAM_SOLAR'
+  | 'calendar.TAMIL_VAKYA'
   | 'unknown';
 
 /** Every Calendar by name; the values are the strings the union accepts. */
@@ -4008,6 +4009,10 @@ export declare const Calendar: {
    * Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha
    */
   readonly MalayalamSolar: 'calendar.MALAYALAM_SOLAR';
+  /**
+   * Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha
+   */
+  readonly TamilVakya: 'calendar.TAMIL_VAKYA';
 };
 
 /**

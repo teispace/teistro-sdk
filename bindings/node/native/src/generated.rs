@@ -295,6 +295,7 @@ pub fn calendar_from_str(value: &str) -> Result<u16> {
         "calendar.BENGAL_SOLAR" => Ok(11),
         "calendar.ODIA_SOLAR" => Ok(12),
         "calendar.MALAYALAM_SOLAR" => Ok(13),
+        "calendar.TAMIL_VAKYA" => Ok(14),
         other => Err(Error::from_reason(format!("`{other}` is not a Calendar"))),
     }
 }
@@ -317,6 +318,7 @@ pub fn calendar_to_str(value: u16) -> String {
         11 => "calendar.BENGAL_SOLAR",
         12 => "calendar.ODIA_SOLAR",
         13 => "calendar.MALAYALAM_SOLAR",
+        14 => "calendar.TAMIL_VAKYA",
         _ => "unknown",
     }
     .to_string()

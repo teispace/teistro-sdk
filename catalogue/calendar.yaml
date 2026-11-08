@@ -101,3 +101,10 @@ members:
       - text: "Sewell and Dikshit, The Indian Calendar, 1896, arts. 28 and 71; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27"
         ref: "docs/calendars/regional-solar.md"
     mark: V
+  - key: TAMIL_VAKYA
+    id: 14
+    doc: "Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha"
+    sources:
+      - text: "Vakyakarana, ed. T. S. Kuppanna Sastri and K. V. Sarma, 1962, I.2-4 and III.1, III.7-8; Manonmani Vilasam suddha vakya almanac, 1997-2021"
+        ref: "docs/calendars/regional-solar.md"
+    mark: V

@@ -24,6 +24,10 @@
 //! - [`provider`]: the model behind the ephemeris port, so the chart
 //!   layer reads it as it reads an engine.
 //!
+//! Beside the Surya Siddhanta, [`vakya`] carries the Sun of the
+//! *Vakyakarana*, the Aryabhata-school manual the Tamil vakya almanacs
+//! compute from: its year rule, its sankranti vakyas and its day length.
+//!
 //! The classical path ([`Trig::Table`]) uses only the table and
 //! elementary arithmetic, so its results are bit-identical on every
 //! platform; [`Trig::Exact`] substitutes the platform's sine for
@@ -54,6 +58,7 @@ pub mod modern;
 pub mod params;
 pub mod provider;
 pub mod trig;
+pub mod vakya;
 
 pub use equation::{Epicycle, SighraEquation};
 pub use lagna::{Lagna, RisingTimes};

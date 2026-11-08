@@ -347,7 +347,8 @@
             "TAMIL_SOLAR",
             "BENGAL_SOLAR",
             "ODIA_SOLAR",
-            "MALAYALAM_SOLAR"
+            "MALAYALAM_SOLAR",
+            "TAMIL_VAKYA"
           ],
           "type": "string"
         },
@@ -367,7 +368,8 @@
             "calendar.TAMIL_SOLAR",
             "calendar.BENGAL_SOLAR",
             "calendar.ODIA_SOLAR",
-            "calendar.MALAYALAM_SOLAR"
+            "calendar.MALAYALAM_SOLAR",
+            "calendar.TAMIL_VAKYA"
           ],
           "type": "string",
           "writeOnly": true

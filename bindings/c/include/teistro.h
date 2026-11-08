@@ -3097,6 +3097,10 @@ typedef enum ts_calendar {
      * Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha
      */
     TS_CALENDAR_MALAYALAM_SOLAR = 13,
+    /**
+     * Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha
+     */
+    TS_CALENDAR_TAMIL_VAKYA = 14,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_CALENDAR_UNKNOWN = -1,
 } ts_calendar;
