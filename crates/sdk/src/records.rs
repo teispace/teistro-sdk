@@ -632,6 +632,7 @@ fn reading_records() -> Vec<Record> {
             reads: None,
             run: |_, json| Answered::plain(&crate::AayadiRequest::from_json(json)?.answer()?),
             compares: None,
+            brief: Brief::Whole,
             schemas: schemas!(crate::AayadiRequest => teistro_muhurta::aayadi::Aayadi),
         },
         #[cfg(feature = "muhurta")]
