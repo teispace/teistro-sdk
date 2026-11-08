@@ -406,6 +406,10 @@ name = "lalkitab"
 required-features = ["builtin-ephemeris", "lalkitab"]
 
 [[test]]
+name = "chart_zone"
+required-features = ["builtin-ephemeris", "tajika"]
+
+[[test]]
 name = "compose"
 required-features = ["builtin-ephemeris", "kp", "prashna", "tajika", "western"]
 

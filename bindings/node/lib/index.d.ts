@@ -5317,6 +5317,11 @@ export declare class Chart {
   /** How far through that arc the instant is, 0 to 1. */
   readonly dayElapsed: number;
   /**
+   * The clock the chart was founded on, in seconds east of UTC: a zone's
+   * offset at this birth, or the offset the request stated.
+   */
+  readonly utcOffsetSeconds: number;
+  /**
    * The day the chart belongs to, which is not always its civil date:
    * the values the blob carries, with `vara` named.
    */
@@ -7136,8 +7141,13 @@ export interface ChartRequest {
   readonly instant: number;
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each birth is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** A chart kind; `ChartKind.Natal` by default. */
   readonly kind?: ChartKind;
   /**

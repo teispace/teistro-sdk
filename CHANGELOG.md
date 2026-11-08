@@ -26,6 +26,20 @@ the previous release, not by nobody having looked.
   details and counted in tokens, held by `check-detail-tokens` with every brief's paths held to its
   answer schema.
 
+**A chart asked by zone.**
+**Numbers:** none for a chart asked by an offset: its document and content hash are byte for byte what they were;
+its provenance gains `time.clock`, `MANUAL`.
+- `chart.found` and every binding's chart call take `zone` in place of `utcOffsetSeconds`, and Rust's
+  `ChartRequest::in_zone`; giving both is refused naming `zone`. Each birth is founded on the offset the zone had
+  then, so a Kathmandu batch reads 1985 on +05:30 and today on +05:45 (SR-10, `03-design/time-and-timezone.md`
+  §3.4, C1210, C1211).
+- Every reader of the civil clock reads the chart's own: its civil day, the Shadbala's, the almanac section, the KP
+  day lord, the dossier's time, rectification, Davison charts and the annual and monthly charts.
+- A chart on a zone carries the reading as `foundation.clock`; at the boundary each chart's offset is the cast column
+  `utc_offset_seconds`, a chart's `utcOffsetSeconds` in every binding.
+- `ChartRequest::offset()` is `ChartRequest::clock()`, a `DayClock`; `varsha` and `masa_pravesha` take
+  `impl Into<DayClock>` and `davisons` a `&dyn LocalClock`.
+
 **What would settle each uncomputed dasha.**
 **Numbers:** none: a documentation column.
 - `dasha-coverage-measured.md` names, for each of the 8 catalogued dashas this build does not compute,

@@ -4024,11 +4024,7 @@ impl<'a, P: EphemerisProvider + ?Sized> Almanac<'a, P> {
     ) -> Provenance {
         let mut provenance = self.provenance(input, frame);
         if let Some(instant) = instant {
-            let clock = self.clock.reading(instant);
-            if clock.source == ZoneSource::Iana {
-                provenance.time.tzdb_version.clone_from(&clock.tzdb_version);
-            }
-            provenance.time.clock = Some(clock);
+            provenance.time.state_clock(self.clock, instant);
         }
         provenance
     }

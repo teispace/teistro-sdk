@@ -698,7 +698,7 @@ impl ChartArea<'_> {
             .iter()
             .map(|&life| sky(life))
             .collect::<Result<_, _>>()?;
-        let mut rows = self.founding(UtcOffset::UTC, |founder| {
+        let mut rows = self.founding(&UtcOffset::UTC, |founder| {
             let read = |instants: &[JulianDay<Utc>], grahas: &[Graha]| {
                 founder.declinations_at(instants, &foundation.place, &foundation.zodiac, grahas)
             };
@@ -815,7 +815,7 @@ impl ChartArea<'_> {
             progression.sky_at(born, to)?,
         );
         let step = aspect_step_deg(&asked.aspects);
-        let found = self.founding(UtcOffset::UTC, |founder| {
+        let found = self.founding(&UtcOffset::UTC, |founder| {
             founder.separation_events(&foundation.place, &pairs, step, sky)
         })?;
         let mut contacts = Vec::new();

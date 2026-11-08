@@ -781,6 +781,16 @@ export class Chart {
   }
 
   /**
+   * The clock the chart was founded on, in seconds east of UTC: a zone's
+   * offset at this birth, which differs between births across a clock
+   * change, or the offset the request stated
+   * (`03-design/time-and-timezone.md` §3.4).
+   */
+  get utcOffsetSeconds() {
+    return this.#batch.decoded.cast.utcOffsetSeconds[this.#index];
+  }
+
+  /**
    * The day the chart belongs to, which is not always its civil date.
    *
    * `vara` is named; the rest are the values the blob carries.
@@ -2888,6 +2898,20 @@ export function tithiMonthNumber(tithi) {
   throw new TypeError(`tithi: expected a member of Tithi, not ${String(tithi)}`);
 }
 
+/**
+ * A chart request's clock as the boundary reads it: `utcOffsetSeconds`, or
+ * a `zone` each birth is read on, never both.
+ */
+function chartClock(request) {
+  if (request.zone === undefined || request.zone === null) {
+    return { utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds') };
+  }
+  if (request.utcOffsetSeconds !== undefined && request.utcOffsetSeconds !== null) {
+    throw new TypeError('zone: a chart is on utcOffsetSeconds or a zone, not both');
+  }
+  return { utcOffsetSeconds: 0, zoneJson: zoneJson(request.zone) };
+}
+
 /** A zone as the record the boundary reads beside a range. */
 function zoneJson(zone) {
   if (typeof zone !== 'object' || zone === null) {
@@ -3347,8 +3371,11 @@ export class ChartArea extends Area {
    *   days (UTC): one chart each
    * @param {object} request.place `{ latitude, longitude, altitude }` in
    *   degrees and metres
-   * @param {number} request.utcOffsetSeconds the local clock's offset
-   *   from UTC, east positive
+   * @param {number} [request.utcOffsetSeconds] the local clock's offset
+   *   from UTC, east positive; or `zone`, not both
+   * @param {object} [request.zone] the zone each birth is read on, at the
+   *   offset it had then, from `ianaZone`, `fixedZone` or `localMeanZone`;
+   *   each chart's `utcOffsetSeconds` says the offset it got
    * @param {string} [request.kind] a chart kind; `ChartKind.Natal` by default
    * @param {ReadonlyArray<string>} [request.vargas] the divisional
    *   charts to compute, as `Varga` keys, in the order to answer them;
@@ -3379,7 +3406,7 @@ export class ChartArea extends Area {
         latitudeDeg: finite(place.latitude, 'place.latitude'),
         longitudeDeg: finite(place.longitude, 'place.longitude'),
         altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-        utcOffsetSeconds: finite(request.utcOffsetSeconds, 'utcOffsetSeconds'),
+        ...chartClock(request),
         // The sections beside the foundation, which the SDK takes as a
         // bit set and nothing here writes as one
         // (`03-design/chart-reading.md` §5): a named option each, and

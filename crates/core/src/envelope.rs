@@ -683,6 +683,38 @@ pub struct TimeStamp {
     pub clock: Option<crate::time::ClockReading>,
 }
 
+impl TimeStamp {
+    /// States the clock an answer was reckoned on, read at one instant, and
+    /// the database release that gave it when the zone database did: what
+    /// an almanac stamps at its first day's noon and a chart at its first
+    /// birth (`docs/03-design/time-and-timezone.md` §3.4).
+    ///
+    /// ```
+    /// use teistro_core::envelope::TimeStamp;
+    /// use teistro_core::quantity::JulianDay;
+    /// use teistro_core::time::{LocalClock, UtcOffset, ZoneSource};
+    ///
+    /// let mut time = TimeStamp { tzdb_version: "2026a".into(), ..TimeStamp::default() };
+    /// time.state_clock(&UtcOffset::literal(5, 45, 0), JulianDay::J2000);
+    /// let clock = time.clock.as_ref().ok_or("a clock")?;
+    /// assert_eq!((clock.offset.seconds(), clock.source), (20_700, ZoneSource::Manual));
+    /// // A stated offset names no database, so the context's release stands.
+    /// assert_eq!(time.tzdb_version, "2026a");
+    /// # Ok::<(), &str>(())
+    /// ```
+    pub fn state_clock(
+        &mut self,
+        clock: &dyn crate::time::LocalClock,
+        at: crate::quantity::JulianDay<crate::quantity::Utc>,
+    ) {
+        let reading = clock.reading(at);
+        if reading.source == crate::time::ZoneSource::Iana {
+            self.tzdb_version.clone_from(&reading.tzdb_version);
+        }
+        self.clock = Some(reading);
+    }
+}
+
 /// How a calendar date was resolved (`docs/03-design/calendar-bikram-sambat.md`).
 ///
 /// The strings are borrowed when they name a shipped table, whose

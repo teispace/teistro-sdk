@@ -11,9 +11,11 @@
 use teistro_core::envelope::{Envelope, Hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Utc};
+use teistro_core::time::LocalClock;
 use teistro_serial::Document;
 
 use crate::gochar::GocharReading;
+use crate::reading::ReadClock;
 use crate::sade_sati::Report;
 use crate::{
     ChartArea, ChartRequest, ConsiderationRules, Considerations, Dignities, DignityRequest,
@@ -597,12 +599,15 @@ impl ChartArea<'_> {
             founded.push(chart.document);
         }
         let documents = founded.as_slice();
+        // The clock the charts were founded on, each birth read at its own
+        // offset: what every table read on a chart's local clock takes.
+        let clock = ReadClock::of(request.clock(), self.context())?;
         let fortitudes = each(documents, records.fortitudes.as_ref(), |document, asked| {
             self.fortitudes(document, asked)
         })?;
         Ok(Composed {
             // Before `readings` and `gochar`, which the literal moves.
-            dossier: self.dossier_of(documents, &readings, &gochar, records, request.offset())?,
+            dossier: self.dossier_of(documents, &readings, &gochar, records, &clock)?,
             hashes,
             readings,
             plans,
@@ -634,15 +639,13 @@ impl ChartArea<'_> {
                     .collect()
             })?,
             #[cfg(feature = "kp")]
-            kp: {
-                let asked = records.kp.map(|asked| match asked.clock() {
-                    Some(_) => asked,
-                    None => asked.on_clock(request.offset()),
-                });
-                each(documents, asked.as_ref(), |document, asked| {
-                    self.kp_reading(document, asked)
-                })?
-            },
+            kp: each(documents, records.kp.as_ref(), |document, asked| {
+                let asked = match asked.clock() {
+                    Some(_) => *asked,
+                    None => asked.on_clock(clock.offset_at(document.foundation.instant)),
+                };
+                self.kp_reading(document, &asked)
+            })?,
             #[cfg(feature = "prashna")]
             prashna: each(documents, records.prashna.as_ref(), |document, asked| {
                 self.prashna(document, asked)
@@ -659,7 +662,10 @@ impl ChartArea<'_> {
             rectification: each(
                 documents,
                 records.rectification.as_ref(),
-                |document, asked| self.rectification(document, request.offset(), asked),
+                |document, asked| {
+                    let offset = clock.offset_at(document.foundation.instant);
+                    self.rectification(document, offset, asked)
+                },
             )?,
             #[cfg(feature = "tajika")]
             varsha: self.varshas_of(documents, records.varsha.as_ref(), request)?,
@@ -668,7 +674,7 @@ impl ChartArea<'_> {
             #[cfg(feature = "tajika")]
             masa_pravesha: self.masa_praveshas_of(documents, records, request)?,
             #[cfg(feature = "western")]
-            western: self.western_of(documents, &records.western, request)?,
+            western: self.western_of(documents, &records.western, request, &clock)?,
             fortitudes,
             founded: Envelope::new(founded, read.provenance),
         })
@@ -683,10 +689,12 @@ impl ChartArea<'_> {
         documents: &[Document],
         records: &WesternRecords,
         request: &ChartRequest,
+        clock: &ReadClock,
     ) -> Result<WesternTables, Error> {
         // Progressions read against the request's own place, clock and
         // kind, not the sections its records widened it by.
-        let base = ChartRequest::at(*request.place(), request.offset()).with_kind(request.kind());
+        let base =
+            ChartRequest::on(*request.place(), request.clock().clone()).with_kind(request.kind());
         let (declinations, parallels) = match &records.parallels {
             None => (Vec::new(), Vec::new()),
             Some(asked) => documents
@@ -740,7 +748,7 @@ impl ChartArea<'_> {
             davisons: records
                 .synastry
                 .as_ref()
-                .map(|asked| asked.davisons(documents, request.offset()))
+                .map(|asked| asked.davisons(documents, clock))
                 .transpose()
                 .map_err(|error| error.under("synastry"))?
                 .flatten()
@@ -777,7 +785,7 @@ impl ChartArea<'_> {
         request: &ChartRequest,
     ) -> Result<Vec<crate::Varsha>, Error> {
         chart_by_chart(documents, asked, None, |document, asked| {
-            self.varsha(document, request.offset(), asked)
+            self.varsha(document, request.clock().clone(), asked)
         })
     }
 
@@ -793,7 +801,7 @@ impl ChartArea<'_> {
     ) -> Result<Vec<Vec<crate::MasaRow>>, Error> {
         let asked = records.masa_pravesha.as_ref();
         chart_by_chart(documents, asked, Some("masaPravesha"), |document, asked| {
-            self.masa_pravesha(document, request.offset(), asked)
+            self.masa_pravesha(document, request.clock().clone(), asked)
         })
     }
 
@@ -956,8 +964,8 @@ fn dossier_needs(asked: Option<&DossierOptions>, request: ChartRequest) -> Chart
 }
 
 impl ChartArea<'_> {
-    /// Every chart's dossier, on the request's clock unless the record named
-    /// one, with its `RULES` when the request read the charts under rules and
+    /// Every chart's dossier, on its own birth's offset on the request's
+    /// clock unless the record named one, with its `RULES` when the request read the charts under rules and
     /// its `GOCHAR` when it read their transits; a refusal is named under
     /// `dossier` and the chart it came from.
     fn dossier_of(
@@ -966,19 +974,22 @@ impl ChartArea<'_> {
         readings: &[RulesReading<'_>],
         gochar: &[Vec<GocharReading>],
         records: &ChartRecords,
-        clock: teistro_core::time::UtcOffset,
+        clock: &ReadClock,
     ) -> Result<Vec<String>, Error> {
         let Some(asked) = &records.dossier else {
             return Ok(Vec::new());
-        };
-        let options = DossierOptions {
-            utc_offset_seconds: asked.utc_offset_seconds.or(Some(clock.seconds())),
-            ..asked.clone()
         };
         documents
             .iter()
             .enumerate()
             .map(|(at, document)| {
+                // The record's own clock, or this chart's: a zone's batch
+                // reads each birth at its own offset.
+                let birth = clock.offset_at(document.foundation.instant);
+                let options = DossierOptions {
+                    utc_offset_seconds: asked.utc_offset_seconds.or(Some(birth.seconds())),
+                    ..asked.clone()
+                };
                 let reading = readings.get(at);
                 let rules = RulesSection::new(reading);
                 let spans = LongevitySection::new(reading);

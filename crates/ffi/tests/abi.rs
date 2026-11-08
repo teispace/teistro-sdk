@@ -7827,7 +7827,7 @@ fn a_chart_request_answers_a_synastrys_composites_and_davison_births() {
         .into_iter()
         .map(|one| one.composite.unwrap())
         .collect();
-    let davisons = asked.davisons(&charts, clock).unwrap().unwrap();
+    let davisons = asked.davisons(&charts, &clock).unwrap().unwrap();
     let bits = |section: &str, name: &str| -> Vec<u64> {
         reader
             .column(section, name)

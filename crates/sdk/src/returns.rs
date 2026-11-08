@@ -216,7 +216,7 @@ impl ChartArea<'_> {
         // The hit list's own search for one chart: the birth place, which
         // is the observer's under a topocentric frame.
         let place = birth.foundation.place;
-        let found = self.founding(UtcOffset::UTC, |founder| {
+        let found = self.founding(&UtcOffset::UTC, |founder| {
             founder.transit_events(&place, &grahas, &lattices, false, (from, to))
         })?;
         let mut returns: Vec<OffsetReturn> = found

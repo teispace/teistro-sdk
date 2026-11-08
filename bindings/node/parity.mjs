@@ -2378,6 +2378,16 @@ geo.dispose();
   const hex = (text) => Uint8Array.from(text.match(/../gu).map((pair) => Number.parseInt(pair, 16)));
   const zonesLine = (zones) => `${zones.source} ${zones.version} ${zones.zones} ${zones.bundled}`;
   put('time-zone-database', zonesLine(sky.time.zoneDatabase()));
+  // Two Kathmandu noons on its zone, before the pack replaces the database:
+  // 1985 on +05:30 and 2026 on +05:45, each chart its own.
+  const zonedCharts = sky.chart.foundMany({
+    instants: [2446217.770833, 2461192.760417],
+    place,
+    zone: ianaZone('Asia/Kathmandu'),
+  });
+  const stated = zonedCharts.provenance.time.clock;
+  const offsets = [...zonedCharts].map((chart) => chart.utcOffsetSeconds).join(' ');
+  put('chart-in-zone', `${offsets} ${stated.offset} ${stated.tzdbVersion}`);
   const loaded = sky.time.loadZones(
     new TextEncoder().encode(
       '{"format":"teistro.zones/1","version":"2099a","zones":{"Asia/Kathmandu":"VFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAVFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAAABD/////ofJ9hAAAAAAeGDCoAQIAAE/8AAAAAE1YAAQAAFDcAApMTVQAKzA1MzAAKzA1NDUACjwrMDU0NT4tNTo0NQo="},"links":{"Asia/Katmandu":"Asia/Kathmandu"}}',

@@ -29,7 +29,7 @@ use teistro_core::settings::{
     NaisargikaDivision, ReleasingSharedSign, StrongestGraha,
 };
 use teistro_core::settings::{Balance, BhavaBalaDivision, Centre, Resolved, TransitCentre};
-use teistro_core::time::UtcOffset;
+use teistro_core::time::{LocalClock, UtcOffset};
 use teistro_dasha::jaimini::{
     JaiminiReading, brahma, graha_arudhas, karaka_bhavas, karakamsha, pada_lord, pada_lords,
     sthira_karakas,
@@ -69,7 +69,7 @@ use crate::area::{drik_sun, system_of};
 use crate::context::Context;
 use crate::ephemeris::no_ephemeris;
 use crate::plan_request::{PlanInputs, PlanRequest};
-use crate::reading::{ChartRequest, Sections};
+use crate::reading::{ChartRequest, ReadClock, Sections};
 use crate::rule_request::{Longevity, Present, RuleSet, RulesReading};
 use crate::rules_bridge::RuleInputs;
 use teistro_rules::longevity::{Bindus, Computed, dasayus, span_choice};
@@ -295,7 +295,13 @@ impl<'a> ChartArea<'a> {
         offset: UtcOffset,
         kind: ChartKind,
     ) -> Result<Envelope<Vec<ChartFoundation>>, Error> {
-        self.founding(offset, |founder| founder.found(instants, place, kind))
+        self.founding(&offset, |founder| {
+            let mut founded = founder.found(instants, place, kind)?;
+            if let Some(first) = instants.first() {
+                founded.provenance.time.state_clock(&offset, *first);
+            }
+            Ok(founded)
+        })
     }
 
     /// Builds the founder this context's settings describe and hands it
@@ -314,10 +320,10 @@ impl<'a> ChartArea<'a> {
     /// ship, or whatever `work` refuses.
     pub(crate) fn founding<T>(
         self,
-        offset: UtcOffset,
+        clock: &dyn LocalClock,
         work: impl for<'f> FnOnce(&Founder<'f, dyn EphemerisProvider + 'f>) -> Result<T, Error>,
     ) -> Result<T, Error> {
-        self.founding_under(self.context.resolved(), offset, work)
+        self.founding_under(self.context.resolved(), clock, work)
     }
 
     /// [`ChartArea::founding`] for a transit: the founder stands where
@@ -336,11 +342,11 @@ impl<'a> ChartArea<'a> {
         let resolved = self.context.resolved();
         let centre = self.transit_centre();
         if centre == resolved.settings.frame.centre {
-            return self.founding_under(resolved, UtcOffset::UTC, work);
+            return self.founding_under(resolved, &UtcOffset::UTC, work);
         }
         let mut moved = resolved.clone();
         moved.settings.frame.centre = centre;
-        self.founding_under(&moved, UtcOffset::UTC, work)
+        self.founding_under(&moved, &UtcOffset::UTC, work)
     }
 
     /// The centre a transit is seen from (`gochar.transit_centre`).
@@ -367,7 +373,7 @@ impl<'a> ChartArea<'a> {
     fn founding_under<T>(
         self,
         resolved: &Resolved,
-        offset: UtcOffset,
+        clock: &dyn LocalClock,
         work: impl for<'f> FnOnce(&Founder<'f, dyn EphemerisProvider + 'f>) -> Result<T, Error>,
     ) -> Result<T, Error> {
         let provider = self.context.ephemeris().ok_or_else(no_ephemeris)?;
@@ -378,7 +384,7 @@ impl<'a> ChartArea<'a> {
             resolved,
             &model,
             calendar,
-            &offset,
+            clock,
             PrecessionModel::default(),
             self.context.delta_t(),
         ))
@@ -442,14 +448,21 @@ impl<'a> ChartArea<'a> {
         request: &ChartRequest,
     ) -> Result<Envelope<Vec<Document>>, Error> {
         let place = request.place();
-        self.founding(request.offset(), |founder| {
+        // The zone looked up once, and each birth read at its own offset
+        // (`03-design/time-and-timezone.md` §3.4).
+        let clock = ReadClock::of(request.clock(), self.context)?;
+        self.founding(&clock, |founder| {
             let founded =
                 founder.found_carrying(instants, place, request.kind(), request.carried())?;
             let mut documents = Vec::with_capacity(founded.value.len());
             for foundation in &founded.value {
-                documents.push(self.sections_of(founder, foundation, request)?);
+                documents.push(self.sections_of(founder, foundation, request, &clock)?);
             }
-            Ok(Envelope::new(documents, founded.provenance))
+            let mut provenance = founded.provenance;
+            if let Some(first) = instants.first() {
+                provenance.time.state_clock(&clock, *first);
+            }
+            Ok(Envelope::new(documents, provenance))
         })
     }
 
@@ -743,8 +756,11 @@ impl<'a> ChartArea<'a> {
         founder: &Founder<'_, dyn EphemerisProvider + '_>,
         foundation: &ChartFoundation,
         request: &ChartRequest,
+        clock: &ReadClock,
     ) -> Result<Document, Error> {
         let settings = self.context.settings();
+        // The offset at this birth, which a zone's batch reads chart by chart.
+        let offset = clock.offset_at(foundation.instant);
         let mut document = Document::of(foundation.clone());
         for varga in request.vargas() {
             document = document.with_varga(varga_chart(foundation, Axis::of(*varga))?);
@@ -768,17 +784,13 @@ impl<'a> ChartArea<'a> {
             document = document.with_vaiseshikamsa(Self::vaiseshikamsa_of(foundation, settings)?);
         }
         if request.sections.has(Sections::SHADBALA) {
-            document = document.with_shadbala(Self::shadbala_of(
-                founder,
-                foundation,
-                settings,
-                request.offset(),
-            )?);
+            document =
+                document.with_shadbala(Self::shadbala_of(founder, foundation, settings, offset)?);
         }
         if request.sections.has(Sections::BHAVA_BALA) {
             let shadbala = match document.shadbala.clone() {
                 Some(reading) => reading,
-                None => Self::shadbala_of(founder, foundation, settings, request.offset())?,
+                None => Self::shadbala_of(founder, foundation, settings, offset)?,
             };
             document =
                 document.with_bhava_bala(Self::bhava_bala_of(foundation, settings, &shadbala)?);
@@ -816,7 +828,7 @@ impl<'a> ChartArea<'a> {
         let stored = document.shadbala.clone();
         let shadbala = || match &stored {
             Some(reading) => Ok(reading.clone()),
-            None => Self::shadbala_of(founder, foundation, settings, request.offset()),
+            None => Self::shadbala_of(founder, foundation, settings, offset),
         };
         for (index, system) in request.dashas().iter().enumerate() {
             let dasha = self
@@ -828,11 +840,12 @@ impl<'a> ChartArea<'a> {
             // The day the **chart** belongs to, which before sunrise is
             // not the day of the instant's civil date -- so it is read
             // off the foundation rather than reckoned again from the
-            // instant.
-            let day = self.context.almanac().day(
+            // instant -- on the clock it was founded on, so a zone's day
+            // carries its own `clock`.
+            let day = self.context.almanac().on(clock).day(
                 &foundation.day.day.date,
                 &foundation.place,
-                request.offset(),
+                offset,
             )?;
             document = document.with_panchanga(day.value);
         }
@@ -2176,7 +2189,7 @@ impl<'a> ChartArea<'a> {
         }
         // The angles read no clock, so the zone the founder is given is
         // immaterial to them.
-        let angles = self.founding(UtcOffset::UTC, |founder| {
+        let angles = self.founding(&UtcOffset::UTC, |founder| {
             founder.providers_angles_at(foundation.instant, &foundation.place, &foundation.zodiac)
         })?;
         Ok(angles)
@@ -2472,7 +2485,7 @@ impl<'a> ChartArea<'a> {
         let foundation = &chart.foundation;
         let from = foundation.instant;
         let to = JulianDay::<Utc>::literal(from.get() + horizon);
-        let found = self.founding(UtcOffset::UTC, |founder| {
+        let found = self.founding(&UtcOffset::UTC, |founder| {
             founder.contact_events(
                 &foundation.place,
                 &CHALDEAN_ORDER,

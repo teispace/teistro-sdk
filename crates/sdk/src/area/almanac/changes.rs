@@ -1,6 +1,6 @@
 //! A range's change points as a request (`03-design/change-points.md`,
-//! SR-07), and the clock a range is asked on: a bare offset, or a zone
-//! (`03-design/time-and-timezone.md` §3.4).
+//! SR-07), and the clock a range or a chart is asked on: a bare offset, or
+//! a zone (`03-design/time-and-timezone.md` §3.4).
 
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
@@ -18,22 +18,30 @@ use crate::asked::{DayAsked, offset_of, place_of};
 /// The field a change-points request's refusals are named under.
 const CHANGES: &str = "changes";
 
-/// The clock a range is asked on.
+/// The clock a request is asked on: a range of days, or a chart's births.
 ///
 /// ```
-/// use teistro::{DayClock, ZoneSpec};
+/// use teistro::{DayClock, UtcOffset, ZoneSpec};
 ///
 /// let refused = DayClock::asked(Some(20_700), Some(ZoneSpec::iana("Asia/Kathmandu"))).unwrap_err();
 /// assert_eq!(refused.field(), Some("zone"));
 /// assert!(DayClock::asked(None, None).is_err());
+/// // An offset is the clock it states.
+/// assert_eq!(DayClock::from(UtcOffset::UTC), DayClock::Offset(UtcOffset::UTC));
 /// # Ok::<(), teistro::Error>(())
 /// ```
 #[derive(Clone, Debug, PartialEq)]
 pub enum DayClock {
     /// An offset the caller stated.
     Offset(UtcOffset),
-    /// A zone, each day on its own offset.
+    /// A zone, each day or birth on its own offset.
     Zone(ZoneSpec),
+}
+
+impl From<UtcOffset> for DayClock {
+    fn from(offset: UtcOffset) -> DayClock {
+        DayClock::Offset(offset)
+    }
 }
 
 impl DayClock {
@@ -48,11 +56,12 @@ impl DayClock {
             (Some(seconds), None) => Ok(DayClock::Offset(offset_of(seconds)?)),
             (None, Some(zone)) => Ok(DayClock::Zone(zone)),
             (Some(_), Some(_)) => Err(Error::invalid_arg(
-                "a range is on `utcOffsetSeconds` or a `zone`, not both",
+                "a request is on `utcOffsetSeconds` or a `zone`, not both",
             )
-            .with_field("zone")),
+            .with_field("zone")
+            .with_hint("write the zone and leave the offset out: each instant is read on its own")),
             (None, None) => Err(Error::invalid_arg(
-                "a range names its clock: `utcOffsetSeconds` or a `zone`",
+                "a request names its clock: `utcOffsetSeconds` or a `zone`",
             )
             .with_field("utcOffsetSeconds")),
         }

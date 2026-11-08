@@ -308,8 +308,8 @@ public final class AlmanacArea {
         return asked(fromDate, toDate, place, 0, zoneJson(zone), null, null, 0, 0);
     }
 
-    /** A zone as the record the boundary reads beside a range. */
-    private static String zoneJson(ZoneSpec zone) {
+    /** A zone as the record the boundary reads beside a range or a chart's births. */
+    static String zoneJson(ZoneSpec zone) {
         Map<String, Object> written = new java.util.LinkedHashMap<>();
         switch (zone.kind()) {
             case IANA -> {

@@ -37,7 +37,7 @@ use teistro_core::settings::{
     GhatiReckoning, HoraReckoning, LagnaTable, Node, OverridePolicy, PolarPolicy, Resolved,
     Settings, Zodiac,
 };
-use teistro_core::time::LocalClock;
+use teistro_core::time::{ClockReading, LocalClock, ZoneSource};
 use teistro_port_ephemeris::columns::{Cell, CellStatus};
 use teistro_port_ephemeris::{
     Angles, AnglesRequest, Astronomy, Body, EphemerisProvider, Frame, Overrides, PositionRequest,
@@ -459,6 +459,14 @@ pub struct ChartFoundation {
     /// it was not (`03-design/lilith.md`).
     #[serde(skip_serializing_if = "Option::is_none", default)]
     pub lilith: Option<LilithPosition>,
+    /// The clock the chart was founded on, read at its instant, for a chart
+    /// founded on a zone or on local mean time: each chart of a batch has
+    /// its own, since a zone's offset changes (Kathmandu was +05:30 in 1985
+    /// and is +05:45 now). Left out for a chart founded on an offset the
+    /// caller stated, which the caller already holds
+    /// (`03-design/time-and-timezone.md` §3.4).
+    #[serde(skip_serializing_if = "Option::is_none", default)]
+    pub clock: Option<ClockReading>,
     /// What the provider and the completion did, for the stamp.
     pub steps: Vec<String>,
 }
@@ -1013,6 +1021,8 @@ impl<'a, P: EphemerisProvider + ?Sized> Founder<'a, P> {
             grahas,
             outer,
             lilith,
+            clock: Some(self.clock.reading(instant))
+                .filter(|clock| clock.source != ZoneSource::Manual),
             steps,
         })
     }

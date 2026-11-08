@@ -1517,6 +1517,16 @@ public final class ParityRunner {
                 java.util.function.Function<ZoneDatabase, String> zonesLine = zones -> zones.source() + " "
                         + zones.version() + " " + zones.zones() + " " + zones.bundled();
                 put("time-zone-database", zonesLine.apply(zoned.time().zoneDatabase()));
+                // Two Kathmandu noons on its zone, before the pack replaces the
+                // database: 1985 on +05:30 and 2026 on +05:45, each chart its own.
+                ChartBatch zonedCharts = zoned.chart().foundMany(new double[] {2446217.770833, 2461192.760417},
+                        place, Civil.ianaZone("Asia/Kathmandu"), ChartOptions.builder().build());
+                var stated = zonedCharts.provenance().time().clock();
+                StringBuilder offsets = new StringBuilder();
+                for (Chart chart : zonedCharts) {
+                    offsets.append(chart.utcOffsetSeconds()).append(' ');
+                }
+                put("chart-in-zone", offsets + "" + stated.offset() + " " + stated.tzdbVersion());
                 java.util.HexFormat hex = java.util.HexFormat.of();
                 put("time-zone-pack", zonesLine.apply(zoned.time().loadZones(
                         "{\"format\":\"teistro.zones/1\",\"version\":\"2099a\",\"zones\":{\"Asia/Kathmandu\":\"VFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAVFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAAABD/////ofJ9hAAAAAAeGDCoAQIAAE/8AAAAAE1YAAQAAFDcAApMTVQAKzA1MzAAKzA1NDUACjwrMDU0NT4tNTo0NQo=\"},\"links\":{\"Asia/Katmandu\":\"Asia/Kathmandu\"}}"

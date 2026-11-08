@@ -3141,6 +3141,17 @@ def main() -> None:
 
     with teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as zoned:
         put("time-zone-database", zones_line(zoned.time.zone_database()))
+        # Two Kathmandu noons on its zone, before the pack replaces the
+        # database: 1985 on +05:30 and 2026 on +05:45, each chart its own.
+        zoned_charts = zoned.chart.found_many(
+            instants=[2446217.770833, 2461192.760417],
+            place=place,
+            zone=iana_zone("Asia/Kathmandu"),
+        )
+        stated = zoned_charts.provenance.time.clock
+        assert stated is not None
+        offsets = " ".join(str(zoned_charts.at(k).utc_offset_seconds) for k in range(len(zoned_charts)))
+        put("chart-in-zone", f"{offsets} {stated.offset} {stated.tzdb_version}")
         loaded = zoned.time.load_zones(
             '{"format":"teistro.zones/1","version":"2099a","zones":{"Asia/Kathmandu":"VFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAAAAEAAAAAAAAAVFppZjIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAwAAABD/////ofJ9hAAAAAAeGDCoAQIAAE/8AAAAAE1YAAQAAFDcAApMTVQAKzA1MzAAKzA1NDUACjwrMDU0NT4tNTo0NQo="},"links":{"Asia/Katmandu":"Asia/Kathmandu"}}'.encode(),
             bytes.fromhex("73a4a729d2d30fdf174da7411bf20d8ff297231d816d0004b7435b6e7b70449d2e128616f7fb7cdcb2d6d0aecab2e1a287f806da782520c99bfe770dd0b9b406"),

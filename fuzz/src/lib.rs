@@ -198,6 +198,7 @@ chart_slots!(
     dossier_json,
     masa_pravesha_json,
     western_configurations_json,
+    zone_json,
 );
 
 /// The entry points beside the chart request that read a caller's JSON,
@@ -562,6 +563,11 @@ pub const JSON_SEEDS: &[(&str, Seed, &str)] = &[
         "ts_almanac_sky_view",
         Seed::Answered,
         r#"{"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"at":2461345.25,"grahas":["MOON","graha.KETU"],"stars":["SPICA"],"eclipticStepDeg":30,"horizonStepDeg":45,"pressureHpa":0}"#,
+    ),
+    (
+        "zone_json",
+        Seed::Answered,
+        r#"{"kind":"IANA","zone":"Asia/Kathmandu"}"#,
     ),
 ];
 

@@ -449,7 +449,7 @@ fn a_synastry_makes_the_composite_and_the_davison_birth_when_asked() {
     assert_eq!(read[0].composite, None);
     assert_eq!(
         plain
-            .davisons(std::slice::from_ref(&george), UtcOffset::UTC)
+            .davisons(std::slice::from_ref(&george), &UtcOffset::UTC)
             .unwrap(),
         None
     );
@@ -473,7 +473,7 @@ fn a_synastry_makes_the_composite_and_the_davison_birth_when_asked() {
         utc_offset: UtcOffset::UTC,
     };
     assert_eq!(
-        asked.davisons(&[george], UtcOffset::UTC).unwrap(),
+        asked.davisons(&[george], &UtcOffset::UTC).unwrap(),
         Some(vec![george_birth.davison(&asked.partner).unwrap()])
     );
 

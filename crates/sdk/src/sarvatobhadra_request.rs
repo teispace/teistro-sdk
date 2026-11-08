@@ -397,7 +397,7 @@ impl ChartArea<'_> {
             let index = if let Some(index) = known {
                 index
             } else {
-                let found = self.founding(UtcOffset::UTC, |founder| {
+                let found = self.founding(&UtcOffset::UTC, |founder| {
                     founder.found(request.instants(), &place, kind)
                 })?;
                 let read = found

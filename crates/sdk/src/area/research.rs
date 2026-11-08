@@ -1007,7 +1007,7 @@ impl ResearchArea<'_> {
             let read = self
                 .context
                 .chart()
-                .founding(UtcOffset::UTC, |founder| founder.longitudes(at, &place))?;
+                .founding(&UtcOffset::UTC, |founder| founder.longitudes(at, &place))?;
             let sky: BTreeMap<u64, TransitSky> =
                 at.iter()
                     .zip(read.value)

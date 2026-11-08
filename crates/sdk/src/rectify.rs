@@ -370,7 +370,7 @@ impl ChartArea<'_> {
         // A whole-sign chalit's middles only count on from the lagna's
         // sign, so the sensitivity does not read them (C1141).
         let chalit = settings.houses.chalit_system != HouseSystem::WholeSign;
-        self.founding(offset, |founder| {
+        self.founding(&offset, |founder| {
             let chart = founder.found_one(founded_at, place, ChartKind::Natal)?;
             let sky = ChartSky {
                 founder,
