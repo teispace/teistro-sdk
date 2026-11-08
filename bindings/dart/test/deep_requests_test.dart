@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 402 of the examples' 414 members.
+/// The cases compare 478 of the examples' 493 members.
 library;
 
 import 'dart:convert';
@@ -26,6 +26,22 @@ import 'package:teistro/teistro.dart';
 import 'package:test/test.dart';
 
 void main() {
+  test('almanac.aayadi: AayadiRequest', () {
+    _holds(
+      'almanac.aayadi',
+      path: [],
+      dropping: [],
+      members: 1,
+      written: AayadiRequest(
+        breadth: 1,
+        length: 1,
+        measure: ManasaraMeasure.sum,
+        owner: Nakshatra.bharani,
+        system: AayadiSystem.manasara,
+      ).toJson(),
+    );
+  });
+
   test('almanac.anniversaries: AnniversariesRequest', () {
     _holds(
       'almanac.anniversaries',
@@ -902,6 +918,140 @@ void main() {
     );
   });
 
+  test('almanac.elect at first: DayAsked', () {
+    _holds(
+      'almanac.elect',
+      path: ['first'],
+      dropping: [],
+      members: 0,
+      written: DayAsked(day: 1, month: 1, year: 1).toJson(),
+    );
+  });
+
+  test('almanac.elect at last: DayAsked', () {
+    _holds(
+      'almanac.elect',
+      path: ['last'],
+      dropping: [],
+      members: 0,
+      written: DayAsked(day: 1, month: 1, year: 1).toJson(),
+    );
+  });
+
+  test('almanac.elect at muhurta.asta: MuhurtaRequestAsta', () {
+    _holds(
+      'almanac.elect',
+      path: ['muhurta', 'asta'],
+      dropping: [],
+      members: 0,
+      written: MuhurtaRequestAstaValue(CriterionTimeDegrees(
+        thresholds: ThresholdsCustom(
+          jupiter: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          mars: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          mercury: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          moon: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          neptune: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          pluto: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          saturn: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          uranus: MotionThresholds(direct: 1.5, retrograde: 1.5),
+          venus: MotionThresholds(direct: 1.5, retrograde: 1.5),
+        ),
+      )).toJson(),
+    );
+  });
+
+  test('almanac.elect at muhurta.native: MuhurtaNative', () {
+    _holds(
+      'almanac.elect',
+      path: ['muhurta', 'native'],
+      dropping: [],
+      members: 3,
+      written: MuhurtaNative(
+        lagna: Rashi.taurus,
+        moonSign: Rashi.taurus,
+        star: Nakshatra.bharani,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.elect at muhurta.rules: MuhurtaRequestRules', () {
+    _holds(
+      'almanac.elect',
+      path: ['muhurta', 'rules'],
+      dropping: [],
+      members: 33,
+      written: MuhurtaRequestRulesValue(ActivityRules(
+        bars: [
+          BarValue(<String, Object?>{'clause': 'TITHI', 'grade': 'MIDDLING', 'tithi': 'tithi.SHUKLA_DVITIYA'}),
+        ],
+        baseline: MuhurtaBaselineEvent(
+          abhijitForbidden: true,
+          avoidedVaras: [Vara.somavara],
+          favouredTithis: [Tithi.shuklaDvitiya],
+          favouredVaras: [Vara.somavara],
+          karakas: [Graha.moon],
+          seventhEmpty: true,
+          stars: [Nakshatra.bharani],
+        ),
+        day: DayRules(
+          chandrabala: ChandraBala(avoid: [1]),
+          karanas: GradedKarana(
+            best: [Karana.balava],
+            middling: [Karana.balava],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Karana.balava],
+          ),
+          nakshatras: GradedNakshatra(
+            best: [Nakshatra.bharani],
+            middling: [Nakshatra.bharani],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Nakshatra.bharani],
+          ),
+          tithis: GradedTithi(
+            best: [Tithi.shuklaDvitiya],
+            middling: [Tithi.shuklaDvitiya],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Tithi.shuklaDvitiya],
+          ),
+          varas: GradedVara(
+            best: [Vara.somavara],
+            middling: [Vara.somavara],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Vara.somavara],
+          ),
+          yogas: GradedYoga(
+            best: [Yoga.priti],
+            middling: [Yoga.priti],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Yoga.priti],
+          ),
+        ),
+        heeds: [BlackoutKind.adhikaMasa],
+        hours: Hours.daylight,
+        lagnas: GradedRashi(
+          best: [Rashi.taurus],
+          middling: [Rashi.taurus],
+          otherwise: MuhurtaGrade.middling,
+          rejected: [Rashi.taurus],
+        ),
+        months: MonthRuleLunar(
+          months: GradedMasa(
+            best: [Masa.vaishakha],
+            middling: [Masa.vaishakha],
+            otherwise: MuhurtaGrade.middling,
+            rejected: [Masa.vaishakha],
+          ),
+          withSun: [MonthWithSun(masa: Masa.vaishakha, sun: Rashi.taurus)],
+        ),
+        padas: [NakshatraPada(nakshatra: Nakshatra.bharani, pada: 1)],
+        shool: [Shool(afterGhatis: 1, vara: Vara.somavara)],
+        unjudged: [<String, Object?>{'what': 'x', 'why': 'x'}],
+        unwanted: [MuhurtaUnwanted(bars: true, grahas: [Graha.moon], houses: [1])],
+        vrishaVastu: true,
+      )).toJson(),
+    );
+  });
+
   test('almanac.festivalPack: PackRequest', () {
     _holds(
       'almanac.festivalPack',
@@ -1619,6 +1769,278 @@ void main() {
     );
   });
 
+  test('almanac.observance at first: DayAsked', () {
+    _holds(
+      'almanac.observance',
+      path: ['first'],
+      dropping: [],
+      members: 0,
+      written: DayAsked(day: 1, month: 1, year: 1).toJson(),
+    );
+  });
+
+  test('almanac.observance at last: DayAsked', () {
+    _holds(
+      'almanac.observance',
+      path: ['last'],
+      dropping: [],
+      members: 0,
+      written: DayAsked(day: 1, month: 1, year: 1).toJson(),
+    );
+  });
+
+  test('almanac.observance at traditions[0].festivals.only: MetaFilter', () {
+    _holds(
+      'almanac.observance',
+      path: ['traditions', 0, 'festivals', 'only'],
+      dropping: [],
+      members: 2,
+      written: MetaFilter(
+        communities: ['x'],
+        kinds: [FestivalKind.religiousCultural],
+        regions: ['x'],
+        traditions: [Tradition.buddhist],
+      ).toJson(),
+    );
+  });
+
+  test('almanac.observance at traditions[0].festivals.published[0]: PublishedSet', () {
+    _holds(
+      'almanac.observance',
+      path: ['traditions', 0, 'festivals', 'published', 0],
+      dropping: [['entries', 0, 'window']],
+      members: 5,
+      written: PublishedSet(
+        entries: [
+          PublishedEntryAdd(
+            day: CalendarDay(
+              calendar: Calendar.julian,
+              day: 1,
+              era: EraNumber(era: Era.shaka, year: 1),
+              leap: Leap.day,
+              month: 1,
+              year: 1,
+            ),
+            key: 'x',
+            meta: FestivalMeta(
+              communities: ['x'],
+              fast: [
+                VrataFast(
+                  end: FastEnd.night,
+                  ifUnable: true,
+                  kind: FastKind.ekabhakta,
+                  source: 'x',
+                  start: FastStart.morning,
+                ),
+              ],
+              kind: FestivalKind.religiousCultural,
+              optional: true,
+              regions: ['x'],
+              tradition: Tradition.buddhist,
+            ),
+            names: {'x': 'x'},
+            source: 'x',
+            subjectTo: SubjectTo.moonSighting,
+          ),
+        ],
+        format: 'x',
+        id: 'x',
+        publisher: 'x',
+        version: 1,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.observance at traditions[0].festivals.rules: FestivalRules', () {
+    _holds(
+      'almanac.observance',
+      path: ['traditions', 0, 'festivals', 'rules'],
+      dropping: [],
+      members: 30,
+      written: FestivalRulesValue([
+        FestivalRuleItemSaitRule(SaitRule(
+          choose: SaitChoice.latest,
+          rising: SaitRising(
+            freeOf: [Graha.moon],
+            modalities: [Modality.sthira],
+            of: RisingOf.lagna,
+          ),
+          rule: 'x',
+          source: 'x',
+          windows: [
+            SaitWindowRule(
+              avoid: [SaitAvoidNakshatra(nakshatra: Nakshatra.bharani, quarters: 1)],
+              within: SaitWindowDayMuhurta(from: 1, to: 1),
+            ),
+          ],
+        )),
+        FestivalRuleItemEkadashiRule(EkadashiRule(
+          key: 'x',
+          mahadvadashi: MahadvadashiRule(
+            joining: NakshatraJoining.outlastsTwelfth,
+            kinds: [MahadvadashiKind.vyanjuli],
+            sampurna: true,
+            trisprisha: TrisprishaAt.arunodaya,
+            vyanjuli: VyanjuliPast.halfMuhurta,
+          ),
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          parana: ParanaRule(
+            at: [WindowDayMuhurta(from: 1, to: 1)],
+            bars: [
+              <String, Object?>{'month': 'masa.VAISHAKHA', 'nakshatra': 'nakshatra.BHARANI', 'portion': <String, Object?>{'parts': 1, 'which': 1}, 'tithi': 'tithi.SHUKLA_DVITIYA'},
+            ],
+            hariVasara: true,
+          ),
+          source: 'x',
+          table: EkadashiTable(
+            pierced: EkadashiKinds(
+              both: FestivalWhich.later,
+              eleventh: FestivalWhich.later,
+              neither: FestivalWhich.later,
+              twelfth: FestivalWhich.later,
+            ),
+            pure: EkadashiKinds(
+              both: FestivalWhich.later,
+              eleventh: FestivalWhich.later,
+              neither: FestivalWhich.later,
+              twelfth: FestivalWhich.later,
+            ),
+          ),
+          vedha: EkadashiVedha.sunrise,
+        )),
+        FestivalRuleItemAnniversary(Anniversary(
+          firstYearAdhika: FirstYearAdhika.nija,
+          inSamsarpa: InSamsarpa.nija,
+          janma: JanmaOptions(nakshatraTie: true, twoMuhurtaFloor: true),
+          key: 'x',
+          kind: AnniversaryKind.ekoddishta,
+          origin: OriginLunar(
+            adhika: true,
+            at: 1.5,
+            half: TithiHalf.second,
+            month: Masa.vaishakha,
+            tithi: Tithi.shuklaDvitiya,
+          ),
+          window: WindowDayMuhurta(from: 1, to: 1),
+        )),
+        FestivalRuleItemFollowingRule(FollowingRule(
+          after: 'x',
+          days: 1,
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          source: 'x',
+        )),
+        FestivalRuleItemDatedRule(DatedRule(
+          civilDate: DatedRuleCivilDate(
+            calendar: Calendar.julian,
+            day: 1,
+            month: 1,
+            skipped: SkippedDay.after,
+          ),
+          civilWeekday: DatedRuleCivilWeekday(
+            calendar: Calendar.julian,
+            month: 1,
+            nth: 1,
+            weekday: Vara.somavara,
+          ),
+          easter: DatedRuleEaster(computus: Computus.julian, days: 1),
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          source: 'x',
+          sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
+        )),
+        FestivalRuleItemFestivalRule(FestivalRule(
+          at: WindowDayMuhurta(from: 1, to: 1),
+          convention: LunarMonth.purnimanta,
+          dayOfPaksha: 1,
+          decide: [
+            Guard(
+              choose: FestivalChoice.later,
+              when: [
+                PredicateJoined(
+                  at: WindowDayMuhurta(from: 1, to: 1),
+                  day: FestivalWhich.later,
+                  nakshatra: Nakshatra.bharani,
+                  portion: Portion(parts: 1, which: 1),
+                ),
+              ],
+            ),
+          ],
+          inAdhika: InAdhikaValue(true),
+          key: 'x',
+          meta: FestivalMeta(
+            communities: ['x'],
+            fast: [
+              VrataFast(
+                end: FastEnd.night,
+                ifUnable: true,
+                kind: FastKind.ekabhakta,
+                source: 'x',
+                start: FastStart.morning,
+              ),
+            ],
+            kind: FestivalKind.religiousCultural,
+            optional: true,
+            regions: ['x'],
+            tradition: Tradition.buddhist,
+          ),
+          month: Masa.vaishakha,
+          nakshatra: Nakshatra.bharani,
+          otherwise: FestivalChoice.later,
+          paksha: Paksha.krishna,
+          parana: [VrataParanaTithiEnd(nakshatra: Nakshatra.bharani, yamas: 1)],
+          source: 'x',
+          tithi: Tithi.shuklaDvitiya,
+        )),
+      ]).toJson(),
+    );
+  });
+
   test('almanac.pakshi: PakshiRequest', () {
     _holds(
       'almanac.pakshi',
@@ -1643,6 +2065,35 @@ void main() {
           relations: PakshiRelations.pulippani,
           subs: PakshiSubLengths.pulippani,
         ),
+        utcOffsetSeconds: 1,
+      ).toJson(),
+    );
+  });
+
+  test('almanac.people: PeopleRequest', () {
+    _holds(
+      'almanac.people',
+      path: [],
+      dropping: [],
+      members: 2,
+      written: PeopleRequest(
+        altitudeM: 1.5,
+        calendar: Calendar.julian,
+        dasha: DashaSystem.ashtottari,
+        day: DayAsked(day: 1, month: 1, year: 1),
+        depth: 1,
+        latitudeDeg: 1.5,
+        longitudeDeg: 1.5,
+        people: [
+          PeoplePerson(
+            altitudeM: 1.5,
+            instant: 1.5,
+            latitudeDeg: 1.5,
+            longitudeDeg: 1.5,
+            name: 'Asha',
+            utcOffsetSeconds: 1,
+          ),
+        ],
         utcOffsetSeconds: 1,
       ).toJson(),
     );

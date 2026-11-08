@@ -1243,6 +1243,241 @@
     }
   },
   {
+    "record": "almanac.elect",
+    "request": {
+      "altitudeM": 1.5,
+      "calendar": "calendar.JULIAN",
+      "first": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "last": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "muhurta": {
+        "asta": {
+          "kind": "TIME_DEGREES",
+          "thresholds": {
+            "kind": "CUSTOM",
+            "jupiter": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "mars": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "mercury": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "moon": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "neptune": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "pluto": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "saturn": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "uranus": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            },
+            "venus": {
+              "direct": 1.5,
+              "retrograde": 1.5
+            }
+          }
+        },
+        "daysWithWindows": 1,
+        "direction": "direction.WEST",
+        "most": 1,
+        "native": {
+          "lagna": "rashi.TAURUS",
+          "moonSign": "rashi.TAURUS",
+          "star": "nakshatra.BHARANI"
+        },
+        "ranking": "BASELINE",
+        "rules": {
+          "bars": [
+            {
+              "clause": "TITHI",
+              "grade": "MIDDLING",
+              "tithi": "tithi.SHUKLA_DVITIYA"
+            }
+          ],
+          "baseline": {
+            "abhijitForbidden": true,
+            "avoidedVaras": [
+              "vara.SOMAVARA"
+            ],
+            "favouredTithis": [
+              "tithi.SHUKLA_DVITIYA"
+            ],
+            "favouredVaras": [
+              "vara.SOMAVARA"
+            ],
+            "karakas": [
+              "graha.MOON"
+            ],
+            "seventhEmpty": true,
+            "stars": [
+              "nakshatra.BHARANI"
+            ]
+          },
+          "day": {
+            "chandrabala": {
+              "avoid": [
+                1
+              ]
+            },
+            "karanas": {
+              "best": [
+                "karana.BALAVA"
+              ],
+              "middling": [
+                "karana.BALAVA"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "karana.BALAVA"
+              ]
+            },
+            "nakshatras": {
+              "best": [
+                "nakshatra.BHARANI"
+              ],
+              "middling": [
+                "nakshatra.BHARANI"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "nakshatra.BHARANI"
+              ]
+            },
+            "tithis": {
+              "best": [
+                "tithi.SHUKLA_DVITIYA"
+              ],
+              "middling": [
+                "tithi.SHUKLA_DVITIYA"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "tithi.SHUKLA_DVITIYA"
+              ]
+            },
+            "varas": {
+              "best": [
+                "vara.SOMAVARA"
+              ],
+              "middling": [
+                "vara.SOMAVARA"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "vara.SOMAVARA"
+              ]
+            },
+            "yogas": {
+              "best": [
+                "yoga.PRITI"
+              ],
+              "middling": [
+                "yoga.PRITI"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "yoga.PRITI"
+              ]
+            }
+          },
+          "heeds": [
+            "blackout_kind.ADHIKA_MASA"
+          ],
+          "hours": "DAYLIGHT",
+          "lagnas": {
+            "best": [
+              "rashi.TAURUS"
+            ],
+            "middling": [
+              "rashi.TAURUS"
+            ],
+            "otherwise": "MIDDLING",
+            "rejected": [
+              "rashi.TAURUS"
+            ]
+          },
+          "months": {
+            "reckoning": "LUNAR",
+            "months": {
+              "best": [
+                "masa.VAISHAKHA"
+              ],
+              "middling": [
+                "masa.VAISHAKHA"
+              ],
+              "otherwise": "MIDDLING",
+              "rejected": [
+                "masa.VAISHAKHA"
+              ]
+            },
+            "withSun": [
+              {
+                "masa": "masa.VAISHAKHA",
+                "sun": "rashi.TAURUS"
+              }
+            ]
+          },
+          "padas": [
+            {
+              "nakshatra": "nakshatra.BHARANI",
+              "pada": 1
+            }
+          ],
+          "shool": [
+            {
+              "afterGhatis": 1,
+              "vara": "vara.SOMAVARA"
+            }
+          ],
+          "unjudged": [
+            {
+              "what": "x",
+              "why": "x"
+            }
+          ],
+          "unwanted": [
+            {
+              "bars": true,
+              "grahas": [
+                "graha.MOON"
+              ],
+              "houses": [
+                1
+              ]
+            }
+          ],
+          "vrishaVastu": true
+        }
+      },
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
     "record": "almanac.festivalPack",
     "request": {
       "pack": "INDIA_CENTRAL"
@@ -2189,6 +2424,364 @@
     }
   },
   {
+    "record": "almanac.observance",
+    "request": {
+      "altitudeM": 1.5,
+      "calendar": "calendar.JULIAN",
+      "first": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "last": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "traditions": [
+        {
+          "festivals": {
+            "hijriOffset": 1,
+            "only": {
+              "communities": [
+                "x"
+              ],
+              "kinds": [
+                "festival_kind.RELIGIOUS_CULTURAL"
+              ],
+              "regions": [
+                "x"
+              ],
+              "traditions": [
+                "tradition.BUDDHIST"
+              ]
+            },
+            "published": [
+              {
+                "entries": [
+                  {
+                    "action": "ADD",
+                    "day": {
+                      "calendar": "calendar.JULIAN",
+                      "day": 1,
+                      "era": {
+                        "era": "era.SHAKA",
+                        "year": 1
+                      },
+                      "leap": "DAY",
+                      "month": 1,
+                      "year": 1
+                    },
+                    "key": "x",
+                    "meta": {
+                      "communities": [
+                        "x"
+                      ],
+                      "fast": [
+                        {
+                          "end": "NIGHT",
+                          "ifUnable": true,
+                          "kind": "fast_kind.EKABHAKTA",
+                          "source": "x",
+                          "start": "MORNING"
+                        }
+                      ],
+                      "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                      "optional": true,
+                      "regions": [
+                        "x"
+                      ],
+                      "tradition": "tradition.BUDDHIST"
+                    },
+                    "names": {
+                      "x": "x"
+                    },
+                    "source": "x",
+                    "subject_to": "MOON_SIGHTING",
+                    "window": {
+                      "from": 1.5,
+                      "to": 1.5
+                    }
+                  }
+                ],
+                "format": "x",
+                "id": "x",
+                "publisher": "x",
+                "version": 1
+              }
+            ],
+            "rules": [
+              {
+                "choose": "LATEST",
+                "rising": {
+                  "freeOf": [
+                    "graha.MOON"
+                  ],
+                  "modalities": [
+                    "modality.STHIRA"
+                  ],
+                  "of": "LAGNA"
+                },
+                "rule": "x",
+                "source": "x",
+                "windows": [
+                  {
+                    "avoid": [
+                      {
+                        "avoid": "NAKSHATRA",
+                        "nakshatra": "nakshatra.BHARANI",
+                        "quarters": 1
+                      }
+                    ],
+                    "within": {
+                      "window": "DAY_MUHURTA",
+                      "from": 1,
+                      "to": 1
+                    }
+                  }
+                ]
+              },
+              {
+                "key": "x",
+                "mahadvadashi": {
+                  "joining": "OUTLASTS_TWELFTH",
+                  "kinds": [
+                    "VYANJULI"
+                  ],
+                  "sampurna": true,
+                  "trisprisha": "ARUNODAYA",
+                  "vyanjuli": "HALF_MUHURTA"
+                },
+                "meta": {
+                  "communities": [
+                    "x"
+                  ],
+                  "fast": [
+                    {
+                      "end": "NIGHT",
+                      "ifUnable": true,
+                      "kind": "fast_kind.EKABHAKTA",
+                      "source": "x",
+                      "start": "MORNING"
+                    }
+                  ],
+                  "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "optional": true,
+                  "regions": [
+                    "x"
+                  ],
+                  "tradition": "tradition.BUDDHIST"
+                },
+                "parana": {
+                  "at": [
+                    {
+                      "window": "DAY_MUHURTA",
+                      "from": 1,
+                      "to": 1
+                    }
+                  ],
+                  "bars": [
+                    {
+                      "month": "masa.VAISHAKHA",
+                      "nakshatra": "nakshatra.BHARANI",
+                      "portion": {
+                        "parts": 1,
+                        "which": 1
+                      },
+                      "tithi": "tithi.SHUKLA_DVITIYA"
+                    }
+                  ],
+                  "hariVasara": true
+                },
+                "source": "x",
+                "table": {
+                  "pierced": {
+                    "both": "LATER",
+                    "eleventh": "LATER",
+                    "neither": "LATER",
+                    "twelfth": "LATER"
+                  },
+                  "pure": {
+                    "both": "LATER",
+                    "eleventh": "LATER",
+                    "neither": "LATER",
+                    "twelfth": "LATER"
+                  }
+                },
+                "vedha": "SUNRISE"
+              },
+              {
+                "firstYearAdhika": "NIJA",
+                "inSamsarpa": "NIJA",
+                "janma": {
+                  "nakshatraTie": true,
+                  "twoMuhurtaFloor": true
+                },
+                "key": "x",
+                "kind": "EKODDISHTA",
+                "origin": {
+                  "by": "LUNAR",
+                  "adhika": true,
+                  "at": 1.5,
+                  "half": "SECOND",
+                  "month": "masa.VAISHAKHA",
+                  "tithi": "tithi.SHUKLA_DVITIYA"
+                },
+                "window": {
+                  "window": "DAY_MUHURTA",
+                  "from": 1,
+                  "to": 1
+                }
+              },
+              {
+                "after": "x",
+                "days": 1,
+                "key": "x",
+                "meta": {
+                  "communities": [
+                    "x"
+                  ],
+                  "fast": [
+                    {
+                      "end": "NIGHT",
+                      "ifUnable": true,
+                      "kind": "fast_kind.EKABHAKTA",
+                      "source": "x",
+                      "start": "MORNING"
+                    }
+                  ],
+                  "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "optional": true,
+                  "regions": [
+                    "x"
+                  ],
+                  "tradition": "tradition.BUDDHIST"
+                },
+                "source": "x"
+              },
+              {
+                "civilDate": {
+                  "calendar": "calendar.JULIAN",
+                  "day": 1,
+                  "month": 1,
+                  "skipped": "AFTER"
+                },
+                "civilWeekday": {
+                  "calendar": "calendar.JULIAN",
+                  "month": 1,
+                  "nth": 1,
+                  "weekday": "vara.SOMAVARA"
+                },
+                "easter": {
+                  "computus": "JULIAN",
+                  "days": 1
+                },
+                "key": "x",
+                "meta": {
+                  "communities": [
+                    "x"
+                  ],
+                  "fast": [
+                    {
+                      "end": "NIGHT",
+                      "ifUnable": true,
+                      "kind": "fast_kind.EKABHAKTA",
+                      "source": "x",
+                      "start": "MORNING"
+                    }
+                  ],
+                  "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "optional": true,
+                  "regions": [
+                    "x"
+                  ],
+                  "tradition": "tradition.BUDDHIST"
+                },
+                "source": "x",
+                "sunEnters": {
+                  "days": 1,
+                  "nakshatra": "nakshatra.BHARANI"
+                }
+              },
+              {
+                "at": {
+                  "window": "DAY_MUHURTA",
+                  "from": 1,
+                  "to": 1
+                },
+                "convention": "PURNIMANTA",
+                "dayOfPaksha": 1,
+                "decide": [
+                  {
+                    "choose": "LATER",
+                    "when": [
+                      {
+                        "is": "JOINED",
+                        "at": {
+                          "window": "DAY_MUHURTA",
+                          "from": 1,
+                          "to": 1
+                        },
+                        "day": "LATER",
+                        "nakshatra": "nakshatra.BHARANI",
+                        "portion": {
+                          "parts": 1,
+                          "which": 1
+                        }
+                      }
+                    ]
+                  }
+                ],
+                "inAdhika": true,
+                "key": "x",
+                "meta": {
+                  "communities": [
+                    "x"
+                  ],
+                  "fast": [
+                    {
+                      "end": "NIGHT",
+                      "ifUnable": true,
+                      "kind": "fast_kind.EKABHAKTA",
+                      "source": "x",
+                      "start": "MORNING"
+                    }
+                  ],
+                  "kind": "festival_kind.RELIGIOUS_CULTURAL",
+                  "optional": true,
+                  "regions": [
+                    "x"
+                  ],
+                  "tradition": "tradition.BUDDHIST"
+                },
+                "month": "masa.VAISHAKHA",
+                "nakshatra": "nakshatra.BHARANI",
+                "otherwise": "LATER",
+                "paksha": "paksha.KRISHNA",
+                "parana": [
+                  {
+                    "kind": "TITHI_END",
+                    "nakshatra": "nakshatra.BHARANI",
+                    "yamas": 1
+                  }
+                ],
+                "source": "x",
+                "tithi": "tithi.SHUKLA_DVITIYA"
+              }
+            ]
+          },
+          "name": "smarta",
+          "reckoning": "OTHER",
+          "rule": "EKADASHI_SMARTA"
+        }
+      ],
+      "utcOffsetSeconds": 1,
+      "year": 1
+    }
+  },
+  {
     "record": "almanac.pakshi",
     "request": {
       "altitudeM": 1.5,
@@ -2216,6 +2809,33 @@
         "relations": "PULIPPANI",
         "subs": "PULIPPANI"
       },
+      "utcOffsetSeconds": 1
+    }
+  },
+  {
+    "record": "almanac.people",
+    "request": {
+      "altitudeM": 1.5,
+      "calendar": "calendar.JULIAN",
+      "dasha": "dasha_system.ASHTOTTARI",
+      "day": {
+        "day": 1,
+        "month": 1,
+        "year": 1
+      },
+      "depth": 1,
+      "latitudeDeg": 1.5,
+      "longitudeDeg": 1.5,
+      "people": [
+        {
+          "altitudeM": 1.5,
+          "instant": 1.5,
+          "latitudeDeg": 1.5,
+          "longitudeDeg": 1.5,
+          "name": "Asha",
+          "utcOffsetSeconds": 1
+        }
+      ],
       "utcOffsetSeconds": 1
     }
   },
@@ -3039,6 +3659,8 @@
         "dropCategories": [
           "x"
         ],
+        "locale": "x",
+        "names": "LOCALE",
         "preset": "FAMILY",
         "sections": [
           "x"

@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 98 entry points over 28 structs and 183 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 102 entry points over 28 structs and 185 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 
@@ -178,6 +178,12 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 |---|---|
 | [`ts_navatara`](navatara/ts_navatara) | The navatara chakra of a birth star: the 27 stars in the order the count from the birth star reaches them, each `{"nakshatra", "count", "tara", "cycle", "special"}`, `cycle` the round of nine (1 janma, 2 anujanma, 3 trijanma) and `special` the star *Muhurta Chintamani* names at that count (`JANMA`, `KARMA`, `SANGHATIKA`, `SAMUDAYA`, `VAINASHIKA`, `MANASA`) or null (C1053). |
 
+### Aayadi
+
+| entry point | what it does |
+|---|---|
+| [`ts_aayadi`](aayadi/ts_aayadi) | A building's measure read under one system: `{"system", "quantities", "vyaya", "tara", "clauses", "unjudged"}`, each quantity `{"quantity", "measure", "value", "multiplier", "divisor", "quotient", "remainder", "count", "yoni", "nakshatra", "vara", "tithi", "yoga", "source"}` and each clause `{"clause", "holds", "source"}` (C1190 to C1199). |
+
 ### Verify
 
 | entry point | what it does |
@@ -185,6 +191,14 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 | [`ts_verify_claims`](verify/ts_verify_claims) | Every claim a text makes of the time, each judged against what `almanac.sankalpa` computes at the instant and the place (`03-design/lexicon.md` §3), answered with `{value, provenance}` as canonical JSON. |
 | [`ts_verify_issue`](verify/ts_verify_issue) | A record answered with its receipt (`03-design/receipts-and-datasets.md` §1.2), answered as canonical JSON: `{answer, receipt}`. |
 | [`ts_verify_receipt`](verify/ts_verify_receipt) | A receipt checked (`03-design/receipts-and-datasets.md` §1.3): its record answered again on this context under the receipt's own settings, locale and request, and the value's digest compared, answered as canonical JSON: `{verdict, record, moved, broken, issued, now, reason}`. |
+
+### Finders
+
+| entry point | what it does |
+|---|---|
+| [`ts_almanac_elect`](finders/ts_almanac_elect) | The times a muhurta rule set leaves over a range at a place, ranked best first (`03-design/election-search.md`), answered with `{value, provenance}` as canonical JSON. |
+| [`ts_almanac_observance`](finders/ts_almanac_observance) | When an observance falls in a year or a window under each named tradition (`03-design/observance-finder.md`), the occurrences paired across them, answered with `{value, provenance}` as canonical JSON, sealed by the first tradition's reckoning. |
+| [`ts_almanac_people`](finders/ts_almanac_people) | A day for many people at once (`03-design/people-digest.md`), answered with `{value, provenance}` as canonical JSON, sealed by the day's reckoning. |
 
 ### Numerology
 
@@ -270,7 +284,9 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 - `crates/ffi/src/mundane.rs`
 - `crates/ffi/src/naming.rs`
 - `crates/ffi/src/navatara.rs`
+- `crates/ffi/src/aayadi.rs`
 - `crates/ffi/src/verify.rs`
+- `crates/ffi/src/finders.rs`
 - `crates/ffi/src/numerology.rs`
 - `crates/ffi/src/pakshi.rs`
 - `crates/ffi/src/rashifal.rs`

@@ -93,6 +93,8 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_PAYA` | 90 | The birth paya, the metal of the foot a native is born on: read from the Moon's house counted from the lagna, or from the Moon's nakshatra, in the panchang's order of fruit, the best first (crux C1105 to C1107). |
 | `TS_KIND_TRIDOSHA` | 91 | The three doshas as classical jyotisha texts attribute them to the grahas (BPHS ch. 3): a traditional attribution, not health or medical advice (crux C1110). |
 | `TS_KIND_MUNDANE_KIND` | 130 | Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`). |
+| `TS_KIND_VASTU_YONI` | 160 | The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's. |
+| `TS_KIND_VYAYA_KIND` | 161 | The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195). |
 
 ## ts_graha
 
@@ -1629,6 +1631,31 @@ Which mundane chart a moment is found for: an ingress, the lunation before one, 
 | `TS_MUNDANE_KIND_LUNAR_ECLIPSE` | 10 | The next lunar eclipse, at its greatest (C1154) |
 | `TS_MUNDANE_KIND_GREAT_CONJUNCTION` | 11 | The next conjunction of Jupiter and Saturn in geocentric longitude, the first of a triple one (C1153) |
 | `TS_MUNDANE_KIND_EVENT` | 12 | An event on record: a name, an instant and a place, cast as given, its source carried on the answer |
+
+## ts_vastu_yoni
+
+The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's. Members are the catalogue's ids; the full key id is `(TS_KIND_VASTU_YONI << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_VASTU_YONI_DHVAJA` | 0 | The banner (dhvaja), the 1st: wealth (Samarangana XXVI v. 21) |
+| `TS_VASTU_YONI_DHUMA` | 1 | Smoke (dhūma), the 2nd: distress |
+| `TS_VASTU_YONI_SIMHA` | 2 | The lion (siṃha, hari), the 3rd: enjoyment |
+| `TS_VASTU_YONI_SHVAN` | 3 | The dog (śvan), the 4th: quarrel |
+| `TS_VASTU_YONI_VRISHA` | 4 | The bull (vṛṣa, go), the 5th: wealth and grain |
+| `TS_VASTU_YONI_KHARA` | 5 | The ass (khara, gardabha), the 6th: harm to women |
+| `TS_VASTU_YONI_GAJA` | 6 | The elephant (gaja, ibha, hastin), the 7th: blessings |
+| `TS_VASTU_YONI_KAKA` | 7 | The crow (kāka, dhvāṅkṣa, vāyasa), the 8th: death |
+
+## ts_vyaya_kind
+
+The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195). Members are the catalogue's ids; the full key id is `(TS_KIND_VYAYA_KIND << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_VYAYA_KIND_PISHACHA` | 0 | Piśāca, a vyaya equal to the aaya |
+| `TS_VYAYA_KIND_RAKSHASA` | 1 | Rākṣasa, a vyaya greater than the aaya |
+| `TS_VYAYA_KIND_YAKSHA` | 2 | Yakṣa, a vyaya less than the aaya, the good one (v. 48) |
 
 ## ts_status
 

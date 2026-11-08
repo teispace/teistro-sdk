@@ -28,7 +28,9 @@
     "crates/ffi/src/mundane.rs",
     "crates/ffi/src/naming.rs",
     "crates/ffi/src/navatara.rs",
+    "crates/ffi/src/aayadi.rs",
     "crates/ffi/src/verify.rs",
+    "crates/ffi/src/finders.rs",
     "crates/ffi/src/numerology.rs",
     "crates/ffi/src/pakshi.rs",
     "crates/ffi/src/rashifal.rs",
@@ -733,6 +735,18 @@
           "value": 130,
           "doc": "Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).",
           "key": "mundane_kind"
+        },
+        {
+          "name": "VastuYoni",
+          "value": 160,
+          "doc": "The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's.",
+          "key": "vastu_yoni"
+        },
+        {
+          "name": "VyayaKind",
+          "value": 161,
+          "doc": "The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).",
+          "key": "vyaya_kind"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -7243,6 +7257,90 @@
           "value": 12,
           "doc": "An event on record: a name, an instant and a place, cast as given, its source carried on the answer",
           "key": "EVENT"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "VastuYoni",
+      "doc": "The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's. Members are the catalogue's ids; the full key id is `(TS_KIND_VASTU_YONI << 16) | member`.",
+      "repr": "u16",
+      "kind": "vastu_yoni",
+      "values": [
+        {
+          "name": "Dhvaja",
+          "value": 0,
+          "doc": "The banner (dhvaja), the 1st: wealth (Samarangana XXVI v. 21)",
+          "key": "DHVAJA"
+        },
+        {
+          "name": "Dhuma",
+          "value": 1,
+          "doc": "Smoke (dhūma), the 2nd: distress",
+          "key": "DHUMA"
+        },
+        {
+          "name": "Simha",
+          "value": 2,
+          "doc": "The lion (siṃha, hari), the 3rd: enjoyment",
+          "key": "SIMHA"
+        },
+        {
+          "name": "Shvan",
+          "value": 3,
+          "doc": "The dog (śvan), the 4th: quarrel",
+          "key": "SHVAN"
+        },
+        {
+          "name": "Vrisha",
+          "value": 4,
+          "doc": "The bull (vṛṣa, go), the 5th: wealth and grain",
+          "key": "VRISHA"
+        },
+        {
+          "name": "Khara",
+          "value": 5,
+          "doc": "The ass (khara, gardabha), the 6th: harm to women",
+          "key": "KHARA"
+        },
+        {
+          "name": "Gaja",
+          "value": 6,
+          "doc": "The elephant (gaja, ibha, hastin), the 7th: blessings",
+          "key": "GAJA"
+        },
+        {
+          "name": "Kaka",
+          "value": 7,
+          "doc": "The crow (kāka, dhvāṅkṣa, vāyasa), the 8th: death",
+          "key": "KAKA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
+      "name": "VyayaKind",
+      "doc": "The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195). Members are the catalogue's ids; the full key id is `(TS_KIND_VYAYA_KIND << 16) | member`.",
+      "repr": "u16",
+      "kind": "vyaya_kind",
+      "values": [
+        {
+          "name": "Pishacha",
+          "value": 0,
+          "doc": "Piśāca, a vyaya equal to the aaya",
+          "key": "PISHACHA"
+        },
+        {
+          "name": "Rakshasa",
+          "value": 1,
+          "doc": "Rākṣasa, a vyaya greater than the aaya",
+          "key": "RAKSHASA"
+        },
+        {
+          "name": "Yaksha",
+          "value": 2,
+          "doc": "Yakṣa, a vyaya less than the aaya, the good one (v. 48)",
+          "key": "YAKSHA"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -19133,6 +19231,57 @@
       "source": "crates/ffi/src/navatara.rs"
     },
     {
+      "name": "ts_aayadi",
+      "doc": "A building's measure read under one system: `{\"system\", \"quantities\",\n\"vyaya\", \"tara\", \"clauses\", \"unjudged\"}`, each quantity `{\"quantity\",\n\"measure\", \"value\", \"multiplier\", \"divisor\", \"quotient\", \"remainder\",\n\"count\", \"yoni\", \"nakshatra\", \"vara\", \"tithi\", \"yoga\", \"source\"}` and\neach clause `{\"clause\", \"holds\", \"source\"}` (C1190 to C1199).\n\n`request_json` is `{\"system\", \"length\", \"breadth\", \"owner\"?,\n\"measure\"?}`: `MAYAMATA`, `MANASARA`, `SAMARANGANA` or `CHINTAMANI`,\nthe two sides in whole units (1 to 1 000 000), the owner's nakshatra\nkey, and for `MANASARA` only the measure. A key the record does not\nread, a side out of range or a measure asked of another system is\n`INVALID_ARG`, named under `aayadi`.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/aayadi.rs"
+    },
+    {
       "name": "ts_verify_claims",
       "doc": "Every claim a text makes of the time, each judged against what\n`almanac.sankalpa` computes at the instant and the place\n(`03-design/lexicon.md` §3), answered with `{value, provenance}` as\ncanonical JSON.\n\n`value` is `{claims}`, each claim `{start, end, text, kind, graha,\nclaimed, verdict, computed, reason}` in the text's order: the span\nnaming the member (counted in Unicode scalar values), the kind claimed,\nthe graha whose sign or nakshatra it is, every key the span may name,\n`HELD`, `CONTRADICTED` or `UNREAD`, the key computed on a claim judged,\nand on one unread why: `QUESTION`, `NEGATED`, `OTHER_TIME`,\n`NOT_COMPUTED` or `AMBIGUOUS`.\n\n`request_json` is `{\"text\", \"at\", \"latitudeDeg\", \"longitudeDeg\",\n\"altitudeM\", \"utcOffsetSeconds\", \"ayana\", \"locale\"}`: `at` a UTC Julian\nday, `altitudeM` 0 and `ayana` `SIDEREAL` when left out, and `locale`\nwhose names are searched, every loaded locale's when left out. A key it\ndoes not read or an instant, place or offset out of range is\n`INVALID_ARG`, named under `claims`; a locale no loaded one answers is\n`UNSUPPORTED`, named `claims.locale`; a context without an ephemeris is\n`CAPABILITY`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
@@ -19284,6 +19433,172 @@
       },
       "meta": {},
       "source": "crates/ffi/src/verify.rs"
+    },
+    {
+      "name": "ts_almanac_elect",
+      "doc": "The times a muhurta rule set leaves over a range at a place, ranked\nbest first (`03-design/election-search.md`), answered with `{value,\nprovenance}` as canonical JSON.\n\n`value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut,\nranking, unjudged}`, each window `{rank, at, open, holds, fails,\nbarredBy, score}`: `rank` 1 the best, `at` its UTC Julian days,\n`holds` the clauses that count for the time over it and `fails` those\nagainst it, each with the span it held over, and `barredBy` the rules'\nbars that close it.\n\n`request_json` is `{\"calendar\", \"first\", \"last\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\", \"muhurta\"}`: the days\nas `{\"year\", \"month\", \"day\"}` in `calendar` (Gregorian when left out),\n`last` the first when left out, and `muhurta` the rule set as\n`almanac.days` reads it (`rules` an activity's name or rules spelt\nout, `native`, `ranking`, `daysWithWindows`, `most`, `asta`,\n`direction`). A key it does not read, a place or offset out of range or\na rule set its reader refuses is `INVALID_ARG`, named under `elect`; a\ncontext without an ephemeris is `CAPABILITY`, as is a build without the\nmuhurta family.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/finders.rs"
+    },
+    {
+      "name": "ts_almanac_observance",
+      "doc": "When an observance falls in a year or a window under each named\ntradition (`03-design/observance-finder.md`), the occurrences paired\nacross them, answered with `{value, provenance}` as canonical JSON,\nsealed by the first tradition's reckoning.\n\n`value` is `{traditions, occurrences, parted, unjudged}`: each\ntradition `{name, rule, reckoning, profile, settingsHash, provider}`;\neach occurrence `{month, adhika, kept, agree, differs, reason}`, `kept` a\ntradition's `{tradition, day, observance}` or `{tradition, day, fast}`\nin the request's order (no `day` where it keeps none), `differs` among\n`ABSENT`, `DAY` and `MONTH`, and `reason` `RULE`, `SKY`,\n`RULE_AND_SKY` or `PUBLISHED` where the days or months part.\n\n`request_json` is `{\"calendar\", \"year\", \"first\", \"last\",\n\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\",\n\"traditions\"}`: a `year` of `calendar` (Gregorian when left out) or\nthe days `first` to `last`; `traditions` 1 to 8, each `{\"name\",\n\"festivals\", \"rule\", \"reckoning\"}`, `festivals` a festival request,\n`rule` a key of it and `reckoning` `THIS` (the default) or `OTHER`,\nwhich reckons it under `other`. `other` is null, or `context` itself,\nwhen no tradition is reckoned `OTHER`. A key it does not read, a place\nor offset out of range, a rule `festivals` does not carry, a name given\ntwice or an `OTHER` tradition with no other context is `INVALID_ARG`;\nmore than 8 traditions `LIMIT`; a dated rule `UNSUPPORTED`; each named\nunder `observance`.",
+      "safety": "`context` must be a live handle; `other` null or a live handle, which\nmay be `context`; `request_json` NUL-terminated; `out_json` valid for\na write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "other",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/finders.rs"
+    },
+    {
+      "name": "ts_almanac_people",
+      "doc": "A day for many people at once (`03-design/people-digest.md`),\nanswered with `{value, provenance}` as canonical JSON, sealed by the\nday's reckoning.\n\n`value` is `{day, sunrise, nextSunrise, nakshatra, moonSign, dasha,\npeople}`: the day's star and the Moon's sign at sunrise, and each\nperson `{name, birthStar, moonSign, lagna, dasha, dashaOpens, transits,\nhits, tara, chandraHouse, chandrashtama, sadeSati}` in the request's\norder: the dasha running at sunrise a period a level, the periods\nopening before the next sunrise, every graha's gochar from their Moon,\nthe day's transit hits on their chart, the day's star counted from\ntheir birth star, and the Moon's house from their Moon.\n\n`request_json` is `{\"calendar\", \"day\", \"latitudeDeg\", \"longitudeDeg\",\n\"altitudeM\", \"utcOffsetSeconds\", \"people\", \"dasha\", \"depth\"}`: `day`\nas `{\"year\", \"month\", \"day\"}` in `calendar` (Gregorian when left out)\nat the place given; `people` 1 to 50, each `{\"name\", \"instant\",\n\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\"}`,\n`instant` the birth's UTC Julian day; `dasha` `VIMSHOTTARI` and\n`depth` 3 when left out. A key it does not read, a place, offset or\ninstant out of range, a name given twice or a depth past 1 to 6 is\n`INVALID_ARG`, more than 50 people `LIMIT`, each named under `people`;\na context without an ephemeris is `CAPABILITY`, as is a build without\nthe chart or the muhurta family.",
+      "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/finders.rs"
     },
     {
       "name": "ts_numerology_profile",

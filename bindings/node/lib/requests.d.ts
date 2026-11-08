@@ -19,6 +19,32 @@ export type Bare<Full> = Full extends `${string}.${infer Key}` ? Key : never;
 export type Member<Full> = Full | Bare<Full>;
 
 /**
+ * A building's two sides read under one system. Aayadi reads no sky, so this is the whole request.
+ */
+export interface AayadiRequest {
+  /**
+   * The breadth, in the same unit.
+   */
+  readonly breadth: number;
+  /**
+   * The length, 1 to 1 000 000 whole units of the caller's choosing (hasta, kol, danda or angula).
+   */
+  readonly length: number;
+  /**
+   * For `MANASARA` only: the measure its six reckonings take, the split by default (crux C1194).
+   */
+  readonly measure?: ManasaraMeasure | null;
+  /**
+   * The owner's star, for the clauses that read it (*Samarangana*'s tara and gana, *Muhurta Chintamani*'s own star and tara); without it those clauses are not judged.
+   */
+  readonly owner?: Member<catalogue.Nakshatra> | null;
+  /**
+   * The text whose reckoning is read.
+   */
+  readonly system: AayadiSystem;
+}
+
+/**
  * The request as a binding writes it.
  */
 export interface AnniversariesRequest {
@@ -229,6 +255,44 @@ export interface DigestRequest {
 }
 
 /**
+ * The request as a binding writes it.
+ */
+export interface ElectRequest {
+  /**
+   * The place's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The calendar `first` and `last` are in; Gregorian when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  /**
+   * The first day searched.
+   */
+  readonly first: DayAsked;
+  /**
+   * The last day searched, inclusive; the first when left out.
+   */
+  readonly last?: DayAsked | null;
+  /**
+   * The place's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The rule set: an activity's name or rules spelt out, the native, the ranking, how many days are cut and how many windows kept.
+   */
+  readonly muhurta: MuhurtaRequest;
+  /**
+   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   */
+  readonly utcOffsetSeconds: number;
+}
+
+/**
  * [`PackRequest`] as the bindings write it.
  */
 export interface PackRequest {
@@ -390,6 +454,48 @@ export interface NextRequest {
 /**
  * The request as a binding writes it.
  */
+export interface ObservanceRequest {
+  /**
+   * The place's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The calendar the year or the days are in; Gregorian when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  /**
+   * The first day; or `year`, not both.
+   */
+  readonly first?: DayAsked | null;
+  /**
+   * The last day, inclusive, with `first`; the first when left out.
+   */
+  readonly last?: DayAsked | null;
+  /**
+   * The place's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The place's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The traditions compared, 1 to 8, in the order the answer lists them.
+   */
+  readonly traditions: readonly ObservanceTradition[];
+  /**
+   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   */
+  readonly utcOffsetSeconds: number;
+  /**
+   * A whole year of `calendar`, from its month 1, day 1; or `first`, not both.
+   */
+  readonly year?: number | null;
+}
+
+/**
+ * The request as a binding writes it.
+ */
 export interface PakshiRequest {
   readonly altitudeM?: number;
   readonly calendar?: Member<catalogue.Calendar> | null;
@@ -399,6 +505,48 @@ export interface PakshiRequest {
   readonly longitudeDeg: number;
   readonly native: NativeAsked;
   readonly rules?: PakshiRules;
+  readonly utcOffsetSeconds: number;
+}
+
+/**
+ * The request as a binding writes it.
+ */
+export interface PeopleRequest {
+  /**
+   * Its height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The calendar `day` is in; Gregorian when left out.
+   */
+  readonly calendar?: Member<catalogue.Calendar> | null;
+  /**
+   * The dasha system read; `VIMSHOTTARI` when left out.
+   */
+  readonly dasha?: Member<catalogue.DashaSystem> | null;
+  /**
+   * The day the digest is of.
+   */
+  readonly day: DayAsked;
+  /**
+   * How many of its levels are named, 1 to 6; 3 when left out.
+   */
+  readonly depth?: number | null;
+  /**
+   * The latitude of the place the day is reckoned at, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * Its longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The births, 1 to 50, in the order the answer lists them.
+   */
+  readonly people: readonly PeoplePerson[];
+  /**
+   * The offset from UTC its civil day runs at, in seconds, east positive.
+   */
   readonly utcOffsetSeconds: number;
 }
 
@@ -1137,6 +1285,27 @@ export interface Receipt {
 }
 
 /**
+ * The measure *Mānasāra* IX takes (crux C1194): the split "some" give, or one measure for all six reckonings.
+ *
+ * `SPLIT`: The aaya and nakshatra on the length, the vyaya and yoni on the breadth, the weekday and tithi on the perimeter.
+ * `SUM`: The sum of the sides for all six.
+ * `LENGTH`: The length for all six.
+ * `BREADTH`: The breadth for all six.
+ * `PERIMETER`: The perimeter for all six.
+ */
+export type ManasaraMeasure = 'SPLIT' | 'SUM' | 'LENGTH' | 'BREADTH' | 'PERIMETER';
+
+/**
+ * The text whose reckoning is read.
+ *
+ * `MAYAMATA`: *Mayamata* IX vv. 20–24: the sum of the sides for the aaya, vyaya, yoni and nakshatra, the perimeter for the tithi and the weekday.
+ * `MANASARA`: *Mānasāra* IX vv. 63–77: six reckonings, on the length, the breadth and the perimeter by default ([`ManasaraMeasure`]).
+ * `SAMARANGANA`: *Samarāṅgaṇa Sūtradhāra* XXVI: the area's aaya and nakshatra, the nakshatra's vyaya, and the owner's tara and gana.
+ * `CHINTAMANI`: *Muhūrta Cintāmaṇi* XII vv. 4–12: the area's nine reckonings and the nakshatra's vyaya.
+ */
+export type AayadiSystem = 'MAYAMATA' | 'MANASARA' | 'SAMARANGANA' | 'CHINTAMANI';
+
+/**
  * An anniversary a request asks the days of.
  */
 export interface Anniversary {
@@ -1668,6 +1837,28 @@ export interface Household {
 export type NextKind = 'EKADASHI' | 'PURNIMA' | 'AMAVASYA' | 'SANKRANTI';
 
 /**
+ * One tradition as a binding writes it.
+ */
+export interface ObservanceTradition {
+  /**
+   * The festival request whose rule it keeps: a pack by name, or rules spelt out.
+   */
+  readonly festivals: FestivalRequest;
+  /**
+   * What the answer calls it; each name once.
+   */
+  readonly name: string;
+  /**
+   * Which context reckons it: `THIS`, the call's own, when left out, or `OTHER`, the second context a binding passes.
+   */
+  readonly reckoning?: ObservanceReckoning;
+  /**
+   * The key of the rule in `festivals` whose days are found: a karmakala rule, an Ekadashi rule or one counted from another's day.
+   */
+  readonly rule: string;
+}
+
+/**
  * Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha` with an optional `rule`.
  */
 export interface NativeAsked {
@@ -1693,6 +1884,36 @@ export interface PakshiRules {
    * How long the sub-periods run.
    */
   readonly subs?: PakshiSubLengths;
+}
+
+/**
+ * One person as a binding writes them.
+ */
+export interface PeoplePerson {
+  /**
+   * The birthplace's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The birth, a UTC Julian day.
+   */
+  readonly instant: number;
+  /**
+   * The birthplace's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The birthplace's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * What the answer calls them; each name once.
+   */
+  readonly name: string;
+  /**
+   * The offset from UTC of the birth's clock, in seconds, east positive.
+   */
+  readonly utcOffsetSeconds: number;
 }
 
 /**
@@ -1779,6 +2000,14 @@ export interface DossierRequest {
    * The categories whose rows a section with a category column (`RULES`) never writes, `marana` or `ayur`, each counted in `DROPPED`.
    */
   readonly dropCategories?: readonly string[];
+  /**
+   * The locale whose names a `LOCALE` dossier is written in, the context's when left out. Read only with `names` `LOCALE`.
+   */
+  readonly locale?: string | null;
+  /**
+   * How members are written: catalogue keys, which read the same in every language, or a locale's names (`03-design/dossier.md`, "Names"). Keys when left out. This crate writes keys; the SDK writes the names.
+   */
+  readonly names?: DossierNames;
   /**
    * The sections when `sections` is left out.
    */
@@ -3579,6 +3808,14 @@ export interface HouseholdObserver {
 }
 
 /**
+ * Which context reckons a tradition: the call's own, or the other one it was handed (`almanac.observance(request, other)`).
+ *
+ * `THIS`: The context the call is made on.
+ * `OTHER`: The other context the call is handed.
+ */
+export type ObservanceReckoning = 'THIS' | 'OTHER';
+
+/**
  * The five birds, in the tradition's order (AY p. 102; AG p4 v. 5).
  *
  * `VULTURE`: *Vallūṟu*: Ayyar's hawk, the modern books' vulture.
@@ -3706,6 +3943,14 @@ export interface DignityScores {
    */
   readonly triplicity?: number;
 }
+
+/**
+ * How a dossier writes catalogue members.
+ *
+ * `KEYS`: Catalogue keys (`JUPITER`, `ARIES`): one text in every language.
+ * `LOCALE`: A locale's names (`Jupiter`, `बृहस्पति`), where a key names one member of the dossier's kinds.
+ */
+export type DossierNames = 'KEYS' | 'LOCALE';
 
 /**
  * A named list of sections; presets choose sections and never thin them.

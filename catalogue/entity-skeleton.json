@@ -1193,5 +1193,20 @@
     "LUNAR_ECLIPSE": {},
     "GREAT_CONJUNCTION": {},
     "EVENT": {}
+  },
+  "vastu_yoni": {
+    "DHVAJA": {},
+    "DHUMA": {},
+    "SIMHA": {},
+    "SHVAN": {},
+    "VRISHA": {},
+    "KHARA": {},
+    "GAJA": {},
+    "KAKA": {}
+  },
+  "vyaya_kind": {
+    "PISHACHA": {},
+    "RAKSHASA": {},
+    "YAKSHA": {}
   }
 }

@@ -188,9 +188,13 @@ pub enum Kind {
     Tridosha = 91,
     /// Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).
     MundaneKind = 130,
+    /// The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's.
+    VastuYoni = 160,
+    /// The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).
+    VyayaKind = 161,
 }
 
-const BY_NAME: [(&str, Kind); 86] = [
+const BY_NAME: [(&str, Kind); 88] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -274,6 +278,8 @@ const BY_NAME: [(&str, Kind); 86] = [
     ("vara", Kind::Vara),
     ("varga", Kind::Varga),
     ("varna", Kind::Varna),
+    ("vastu_yoni", Kind::VastuYoni),
+    ("vyaya_kind", Kind::VyayaKind),
     ("year_office", Kind::YearOffice),
     ("yoga", Kind::Yoga),
     ("yoni", Kind::Yoni),
@@ -281,7 +287,7 @@ const BY_NAME: [(&str, Kind); 86] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 86] = [
+    pub const ALL: [Kind; 88] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -368,6 +374,8 @@ impl Kind {
         Kind::Paya,
         Kind::Tridosha,
         Kind::MundaneKind,
+        Kind::VastuYoni,
+        Kind::VyayaKind,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -466,6 +474,8 @@ impl Kind {
             Kind::Paya => "paya",
             Kind::Tridosha => "tridosha",
             Kind::MundaneKind => "mundane_kind",
+            Kind::VastuYoni => "vastu_yoni",
+            Kind::VyayaKind => "vyaya_kind",
         }
     }
 
@@ -578,6 +588,8 @@ impl Kind {
             Kind::Paya => 4,
             Kind::Tridosha => 3,
             Kind::MundaneKind => 13,
+            Kind::VastuYoni => 8,
+            Kind::VyayaKind => 3,
         }
     }
 
@@ -691,6 +703,8 @@ impl Kind {
             90 => Some(Kind::Paya),
             91 => Some(Kind::Tridosha),
             130 => Some(Kind::MundaneKind),
+            160 => Some(Kind::VastuYoni),
+            161 => Some(Kind::VyayaKind),
             _ => None,
         }
     }

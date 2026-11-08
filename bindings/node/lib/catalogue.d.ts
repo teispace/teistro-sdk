@@ -300,7 +300,9 @@ export type Kind =
   | 'ruler_day_rule'
   | 'paya'
   | 'tridosha'
-  | 'mundane_kind';
+  | 'mundane_kind'
+  | 'vastu_yoni'
+  | 'vyaya_kind';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -632,6 +634,14 @@ export declare const Kind: {
    * Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).
    */
   readonly MundaneKind: 'mundane_kind';
+  /**
+   * The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's.
+   */
+  readonly VastuYoni: 'vastu_yoni';
+  /**
+   * The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).
+   */
+  readonly VyayaKind: 'vyaya_kind';
 };
 
 /**
@@ -6597,6 +6607,89 @@ export declare const MundaneKind: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const MundaneKindById: ReadonlyMap<number, MundaneKind>;
+
+/**
+ * The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's. Members are the catalogue's ids; the full key id is `(TS_KIND_VASTU_YONI << 16) | member`.
+ */
+export type VastuYoni =
+  | 'vastu_yoni.DHVAJA'
+  | 'vastu_yoni.DHUMA'
+  | 'vastu_yoni.SIMHA'
+  | 'vastu_yoni.SHVAN'
+  | 'vastu_yoni.VRISHA'
+  | 'vastu_yoni.KHARA'
+  | 'vastu_yoni.GAJA'
+  | 'vastu_yoni.KAKA'
+  | 'unknown';
+
+/** Every VastuYoni by name; the values are the strings the union accepts. */
+export declare const VastuYoni: {
+  /**
+   * The banner (dhvaja), the 1st: wealth (Samarangana XXVI v. 21)
+   */
+  readonly Dhvaja: 'vastu_yoni.DHVAJA';
+  /**
+   * Smoke (dhūma), the 2nd: distress
+   */
+  readonly Dhuma: 'vastu_yoni.DHUMA';
+  /**
+   * The lion (siṃha, hari), the 3rd: enjoyment
+   */
+  readonly Simha: 'vastu_yoni.SIMHA';
+  /**
+   * The dog (śvan), the 4th: quarrel
+   */
+  readonly Shvan: 'vastu_yoni.SHVAN';
+  /**
+   * The bull (vṛṣa, go), the 5th: wealth and grain
+   */
+  readonly Vrisha: 'vastu_yoni.VRISHA';
+  /**
+   * The ass (khara, gardabha), the 6th: harm to women
+   */
+  readonly Khara: 'vastu_yoni.KHARA';
+  /**
+   * The elephant (gaja, ibha, hastin), the 7th: blessings
+   */
+  readonly Gaja: 'vastu_yoni.GAJA';
+  /**
+   * The crow (kāka, dhvāṅkṣa, vāyasa), the 8th: death
+   */
+  readonly Kaka: 'vastu_yoni.KAKA';
+};
+
+/**
+ * Every VastuYoni by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VastuYoniById: ReadonlyMap<number, VastuYoni>;
+
+/**
+ * The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195). Members are the catalogue's ids; the full key id is `(TS_KIND_VYAYA_KIND << 16) | member`.
+ */
+export type VyayaKind = 'vyaya_kind.PISHACHA' | 'vyaya_kind.RAKSHASA' | 'vyaya_kind.YAKSHA' | 'unknown';
+
+/** Every VyayaKind by name; the values are the strings the union accepts. */
+export declare const VyayaKind: {
+  /**
+   * Piśāca, a vyaya equal to the aaya
+   */
+  readonly Pishacha: 'vyaya_kind.PISHACHA';
+  /**
+   * Rākṣasa, a vyaya greater than the aaya
+   */
+  readonly Rakshasa: 'vyaya_kind.RAKSHASA';
+  /**
+   * Yakṣa, a vyaya less than the aaya, the good one (v. 48)
+   */
+  readonly Yaksha: 'vyaya_kind.YAKSHA';
+};
+
+/**
+ * Every VyayaKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const VyayaKindById: ReadonlyMap<number, VyayaKind>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

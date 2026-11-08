@@ -417,7 +417,17 @@ public enum Kind implements Member {
     /**
      * Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`).
      */
-    MUNDANE_KIND(130, "mundane_kind");
+    MUNDANE_KIND(130, "mundane_kind"),
+
+    /**
+     * The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's.
+     */
+    VASTU_YONI(160, "vastu_yoni"),
+
+    /**
+     * The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).
+     */
+    VYAYA_KIND(161, "vyaya_kind");
 
     private static final Kind[] MEMBERS = values();
 

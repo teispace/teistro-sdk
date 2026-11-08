@@ -24,6 +24,44 @@ abstract base class _Request extends _Value {
   Object? toJson() => _wire;
 }
 
+/// A building's two sides read under one system. Aayadi reads no sky, so this is the whole request.
+final class AayadiRequest extends _Request {
+  const AayadiRequest({
+    required this.breadth,
+    required this.length,
+    this.measure,
+    this.owner,
+    required this.system,
+  });
+
+  /// The breadth, in the same unit.
+  final int breadth;
+
+  /// The length, 1 to 1 000 000 whole units of the caller's choosing (hasta, kol, danda or angula).
+  final int length;
+
+  /// For `MANASARA` only: the measure its six reckonings take, the split by default (crux C1194).
+  final ManasaraMeasure? measure;
+
+  /// The owner's star, for the clauses that read it (*Samarangana*'s tara and gana, *Muhurta Chintamani*'s own star and tara); without it those clauses are not judged.
+  final Nakshatra? owner;
+
+  /// The text whose reckoning is read.
+  final AayadiSystem system;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'breadth': breadth,
+    'length': length,
+    if (measure case final measureValue?) 'measure': measureValue.key,
+    if (owner case final ownerValue?) 'owner': ownerValue.key,
+    'system': system.key,
+  };
+
+  @override
+  List<Object?> get _fields => [breadth, length, measure, owner, system];
+}
+
 /// The request as a binding writes it.
 final class AnniversariesRequest extends _Request {
   const AnniversariesRequest({
@@ -2287,6 +2325,44 @@ final class Receipt extends _Request {
 
   @override
   List<Object?> get _fields => [calculationVersion, catalogueVersion, digest, format, locale, outputDigest, packs, provider, record, request, requestDigest, sdkVersion, settings, tzdb];
+}
+
+/// The measure *Mānasāra* IX takes (crux C1194): the split "some" give, or one measure for all six reckonings.
+enum ManasaraMeasure implements _Keyed {
+  /// The aaya and nakshatra on the length, the vyaya and yoni on the breadth, the weekday and tithi on the perimeter.
+  split('SPLIT'),
+  /// The sum of the sides for all six.
+  sum('SUM'),
+  /// The length for all six.
+  length('LENGTH'),
+  /// The breadth for all six.
+  breadth('BREADTH'),
+  /// The perimeter for all six.
+  perimeter('PERIMETER');
+
+  const ManasaraMeasure(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// The text whose reckoning is read.
+enum AayadiSystem implements _Keyed {
+  /// *Mayamata* IX vv. 20–24: the sum of the sides for the aaya, vyaya, yoni and nakshatra, the perimeter for the tithi and the weekday.
+  mayamata('MAYAMATA'),
+  /// *Mānasāra* IX vv. 63–77: six reckonings, on the length, the breadth and the perimeter by default ([`ManasaraMeasure`]).
+  manasara('MANASARA'),
+  /// *Samarāṅgaṇa Sūtradhāra* XXVI: the area's aaya and nakshatra, the nakshatra's vyaya, and the owner's tara and gana.
+  samarangana('SAMARANGANA'),
+  /// *Muhūrta Cintāmaṇi* XII vv. 4–12: the area's nine reckonings and the nakshatra's vyaya.
+  chintamani('CHINTAMANI');
+
+  const AayadiSystem(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
 }
 
 /// An anniversary a request asks the days of.

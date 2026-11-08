@@ -15,11 +15,13 @@ import java.util.Objects;
  * @param dashaDepth How many levels a dasha timeline is written to, one up; every level computed when left out. Null leaves the SDK's default.
  * @param drop The sections never written, by key, built in or the reader's own (`LONGEVITY`, `MARAKAS`): a policy, written into the dossier as its `DROPPED` section, so the text, and any hash of it, says what was kept out. A section both named in `sections` and dropped is refused. Null leaves the SDK's default.
  * @param dropCategories The categories whose rows a section with a category column (`RULES`) never writes, `marana` or `ayur`, each counted in `DROPPED`. Null leaves the SDK's default.
+ * @param locale The locale whose names a `LOCALE` dossier is written in, the context's when left out. Read only with `names` `LOCALE`. Null leaves the SDK's default.
+ * @param names How members are written: catalogue keys, which read the same in every language, or a locale's names (`03-design/dossier.md`, "Names"). Keys when left out. This crate writes keys; the SDK writes the names. Null leaves the SDK's default.
  * @param preset The sections when `sections` is left out. Null leaves the SDK's default.
  * @param sections The sections to write, by key, in the dossier's own order; the preset's when left out. Every one named must be carried. Null leaves the SDK's default.
  * @param utcOffsetSeconds The clock instants are written in, seconds east of UTC; UTC when left out, and a chart request's own clock for its `dossier` record. Null leaves the SDK's default.
  */
-public record DossierRequest(Double at, Integer dashaDepth, List<String> drop, List<String> dropCategories, DossierPreset preset, List<String> sections, Integer utcOffsetSeconds) implements RequestJson {
+public record DossierRequest(Double at, Integer dashaDepth, List<String> drop, List<String> dropCategories, String locale, DossierNames names, DossierPreset preset, List<String> sections, Integer utcOffsetSeconds) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -42,7 +44,7 @@ public record DossierRequest(Double at, Integer dashaDepth, List<String> drop, L
      *
      */
     public DossierRequest() {
-        this(null, null, null, null, null, null, null);
+        this(null, null, null, null, null, null, null, null, null);
     }
 
     /**
@@ -61,6 +63,8 @@ public record DossierRequest(Double at, Integer dashaDepth, List<String> drop, L
         private Integer dashaDepth;
         private List<String> drop;
         private List<String> dropCategories;
+        private String locale;
+        private DossierNames names;
         private DossierPreset preset;
         private List<String> sections;
         private Integer utcOffsetSeconds;
@@ -112,6 +116,28 @@ public record DossierRequest(Double at, Integer dashaDepth, List<String> drop, L
         }
 
         /**
+         * Sets {@code locale}.
+         *
+         * @param locale The locale whose names a `LOCALE` dossier is written in, the context's when left out. Read only with `names` `LOCALE`. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder locale(String locale) {
+            this.locale = locale;
+            return this;
+        }
+
+        /**
+         * Sets {@code names}.
+         *
+         * @param names How members are written: catalogue keys, which read the same in every language, or a locale's names (`03-design/dossier.md`, "Names"). Keys when left out. This crate writes keys; the SDK writes the names. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder names(DossierNames names) {
+            this.names = names;
+            return this;
+        }
+
+        /**
          * Sets {@code preset}.
          *
          * @param preset The sections when `sections` is left out. Null leaves the SDK's default.
@@ -151,7 +177,7 @@ public record DossierRequest(Double at, Integer dashaDepth, List<String> drop, L
          * @throws NullPointerException naming a required field left unset
          */
         public DossierRequest build() {
-            return new DossierRequest(at, dashaDepth, drop, dropCategories, preset, sections, utcOffsetSeconds);
+            return new DossierRequest(at, dashaDepth, drop, dropCategories, locale, names, preset, sections, utcOffsetSeconds);
         }
     }
 
@@ -169,6 +195,8 @@ public record DossierRequest(Double at, Integer dashaDepth, List<String> drop, L
             Read.orNull(json.get("dashaDepth"), present -> Read.int32(present, "DossierRequest.dashaDepth")),
             Read.orNull(json.get("drop"), present -> Read.list(present, "DossierRequest.drop", item0 -> Read.text(item0, "DossierRequest.drop"))),
             Read.orNull(json.get("dropCategories"), present -> Read.list(present, "DossierRequest.dropCategories", item0 -> Read.text(item0, "DossierRequest.dropCategories"))),
+            Read.orNull(json.get("locale"), present -> Read.text(present, "DossierRequest.locale")),
+            Read.orNull(json.get("names"), present -> Read.member(present, "DossierRequest.names", DossierNames::byKey)),
             Read.orNull(json.get("preset"), present -> Read.member(present, "DossierRequest.preset", DossierPreset::byKey)),
             Read.orNull(json.get("sections"), present -> Read.list(present, "DossierRequest.sections", item0 -> Read.text(item0, "DossierRequest.sections"))),
             Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "DossierRequest.utcOffsetSeconds")));
@@ -188,6 +216,12 @@ public record DossierRequest(Double at, Integer dashaDepth, List<String> drop, L
         }
         if (dropCategories != null) {
             json.put("dropCategories", dropCategories);
+        }
+        if (locale != null) {
+            json.put("locale", locale);
+        }
+        if (names != null) {
+            json.put("names", names.toJson());
         }
         if (preset != null) {
             json.put("preset", preset.toJson());

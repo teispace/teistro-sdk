@@ -300,6 +300,8 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   Paya: 'paya',
   Tridosha: 'tridosha',
   MundaneKind: 'mundane_kind',
+  VastuYoni: 'vastu_yoni',
+  VyayaKind: 'vyaya_kind',
 });
 
 /**
@@ -389,6 +391,8 @@ export const KindById = /* @__PURE__ */ new Map([
   [90, 'paya'],
   [91, 'tridosha'],
   [130, 'mundane_kind'],
+  [160, 'vastu_yoni'],
+  [161, 'vyaya_kind'],
 ]);
 
 /** Every Graha by name. */
@@ -3215,6 +3219,50 @@ export const MundaneKindById = /* @__PURE__ */ new Map([
   [10, 'mundane_kind.LUNAR_ECLIPSE'],
   [11, 'mundane_kind.GREAT_CONJUNCTION'],
   [12, 'mundane_kind.EVENT'],
+]);
+
+/** Every VastuYoni by name. */
+export const VastuYoni = /* @__PURE__ */ Object.freeze({
+  Dhvaja: 'vastu_yoni.DHVAJA',
+  Dhuma: 'vastu_yoni.DHUMA',
+  Simha: 'vastu_yoni.SIMHA',
+  Shvan: 'vastu_yoni.SHVAN',
+  Vrisha: 'vastu_yoni.VRISHA',
+  Khara: 'vastu_yoni.KHARA',
+  Gaja: 'vastu_yoni.GAJA',
+  Kaka: 'vastu_yoni.KAKA',
+});
+
+/**
+ * Every VastuYoni by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VastuYoniById = /* @__PURE__ */ new Map([
+  [0, 'vastu_yoni.DHVAJA'],
+  [1, 'vastu_yoni.DHUMA'],
+  [2, 'vastu_yoni.SIMHA'],
+  [3, 'vastu_yoni.SHVAN'],
+  [4, 'vastu_yoni.VRISHA'],
+  [5, 'vastu_yoni.KHARA'],
+  [6, 'vastu_yoni.GAJA'],
+  [7, 'vastu_yoni.KAKA'],
+]);
+
+/** Every VyayaKind by name. */
+export const VyayaKind = /* @__PURE__ */ Object.freeze({
+  Pishacha: 'vyaya_kind.PISHACHA',
+  Rakshasa: 'vyaya_kind.RAKSHASA',
+  Yaksha: 'vyaya_kind.YAKSHA',
+});
+
+/**
+ * Every VyayaKind by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const VyayaKindById = /* @__PURE__ */ new Map([
+  [0, 'vyaya_kind.PISHACHA'],
+  [1, 'vyaya_kind.RAKSHASA'],
+  [2, 'vyaya_kind.YAKSHA'],
 ]);
 
 /** Every Status by name. */
