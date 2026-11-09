@@ -34,44 +34,10 @@ jobs:
           fetch-depth: 0
       - uses: dtolnay/rust-toolchain@stable
       - uses: Swatinem/rust-cache@v2
-      - name: Valgrind
-        # Only the Ubuntu archive, not every list the runner image has
-        # added. A third-party repository the job does not use (Chrome's,
-        # in the run that prompted the first version of this) can serve a
-        # mismatched index and fail `apt-get update` for everyone.
-        #
-        # THE FIRST VERSION DID THAT BY IGNORING `sources.list.d`
-        # ENTIRELY, and that is where this broke: on noble the Ubuntu
-        # archive itself is `sources.list.d/ubuntu.sources`, so the
-        # update skipped the one index it needed and left the image's
-        # pre-baked one — which named a `libc6-dbg` the pool no longer
-        # carries, and `valgrind` depends on it. Four runs failed with a
-        # 404 on a file every mirror had already superseded.
-        #
-        # So: remove the third-party `.list` files, which is what those
-        # repositories use, and keep `ubuntu.sources`, which is the
-        # archive. Then update for real. A second attempt follows a
-        # failure because a mirror mid-publish is a minute's problem and
-        # not a branch's.
-        run: |
-          sudo rm -f /etc/apt/sources.list.d/*.list
-          sudo apt-get update -qq
-          sudo apt-get install -y --no-install-recommends valgrind \
-            || { sleep 15; sudo apt-get update -qq; \
-                 sudo apt-get install -y --no-install-recommends valgrind; }
-          valgrind --version
+      - uses: ./.github/actions/valgrind
 
       - name: What this branch costs
         run: cargo xtask bench head.tsv | tee head.txt
-
-      - name: What each entry point costs, against the record
-        # Every record entry point priced against a plain chart (SR-54),
-        # and the page's record held to it: a relative cost more than a
-        # tenth from the record fails, and the record is re-measured from
-        # this run's `entry-costs.json` (`cargo xtask costs --from FILE`).
-        run: |
-          cargo xtask costs --measure entry-costs.json
-          cargo xtask check-costs --from entry-costs.json
 
       - name: What the base commit costs
         if: github.event_name == 'pull_request'
@@ -131,6 +97,35 @@ jobs:
           path: |
             head.tsv
             base.tsv
-            entry-costs.json
+          if-no-files-found: warn
+          retention-days: 7
+
+  # The entry points' costs (SR-54) on their own runner, beside the
+  # bench: in one job they ran after it, 13 of the job's 26 minutes and
+  # every PR's longest path (2026-11-09). Its record is re-measured from
+  # this job's `entry-costs` artifact (`cargo xtask costs --from FILE`).
+  entry-costs:
+    name: entry costs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: ./.github/actions/valgrind
+      - name: What each entry point costs, against the record
+        # Every record entry point priced against a plain chart (SR-54),
+        # and the page's record held to it: a relative cost more than a
+        # tenth from the record fails, and the record is re-measured from
+        # this run's `entry-costs.json` (`cargo xtask costs --from FILE`).
+        run: |
+          cargo xtask costs --measure entry-costs.json
+          cargo xtask check-costs --from entry-costs.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: entry-costs
+          path: entry-costs.json
           if-no-files-found: warn
           retention-days: 7
