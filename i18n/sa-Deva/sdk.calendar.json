@@ -103,7 +103,10 @@
     "day": ".input {$n :number} .match $n 1 {{{$n} दिनम्}} 2 {{{$n} दिने}} * {{{$n} दिनानि}}",
     "hour": ".input {$n :number} .match $n 1 {{{$n} होरा}} 2 {{{$n} होरे}} * {{{$n} होराः}}",
     "minute": ".input {$n :number} .match $n 1 {{{$n} निमेषः}} 2 {{{$n} निमेषौ}} * {{{$n} निमेषाः}}",
-    "second": ".input {$n :number} .match $n 1 {{{$n} क्षणः}} 2 {{{$n} क्षणौ}} * {{{$n} क्षणाः}}"
+    "second": ".input {$n :number} .match $n 1 {{{$n} क्षणः}} 2 {{{$n} क्षणौ}} * {{{$n} क्षणाः}}",
+    "daysHours": "{$seconds :duration unit=second into=|day,hour| round=hour list=unit}",
+    "hoursMinutes": "{$seconds :duration unit=second into=|hour,minute| round=minute list=unit}",
+    "hoursMinutesSeconds": "{$seconds :duration unit=second into=|hour,minute,second| round=second list=unit}"
   },
   "dayPeriod": {
     "am": "पूर्वाह्णे",

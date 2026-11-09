@@ -12,6 +12,34 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**A clock on the minute reads that minute (SR-77).**
+**Numbers:** `civil_of` and `time().civil_of` move a reading by at most four of the Julian day's last bits
+(about 0.19 ms in the present era) when it lies that close to a whole second, onto the second. No
+computed instant moves.
+- An `f64` Julian day is exact to about 40 µs now, so an instant computed as 02:30:00 often lands
+  microseconds short, and `civil_of` rounded the day's fraction to the microsecond and kept them:
+  02:29:59.999 98, whose truncated seconds read 02:29. A reading within four last bits of a whole second
+  is now that second; anything farther keeps its microseconds, so a civil time resolved and read back is
+  unchanged. Every minute of three days near both ends of the range, at three offsets, reads as itself.
+  `intl`'s own clock already rounded to the millisecond and is unchanged.
+
+**A duration in more than one unit (SR-78).**
+**Numbers:** none.
+- `:duration` takes `round=<unit>`, which rounds the whole length to a unit before splitting it so the
+  last part is whole and a remainder carries (59.6 minutes is an hour), and `list=unit`, which joins the
+  parts with the locale's new `unit` list pattern, CLDR's for a measure in several units: ", " in English
+  and Nepali, "और" in Hindi, "तथा" in Sanskrit. `list=and`, the prose pattern, stays the default.
+- Every locale ships `sdk.calendar.duration.hoursMinutes`, `hoursMinutesSeconds` and `daysHours`, each
+  over `$seconds`, with typed accessors in every binding: "11 hours, 3 minutes", "११ घंटे और ३ मिनट".
+
+**`sa-Latn` writes its dates in Sanskrit (SR-79, SR-80).**
+**Numbers:** none.
+- `derive` transliterates `sa-Deva`'s `sdk.calendar` into `sa-Latn` beside the entities: each run of
+  Devanagari in a message in IAST and the syntax kept, the names (weekdays, months) capitalised, and the
+  namespace still marked draft. A Latin-script Sanskrit date read "Sunday" from the English fallback and
+  now reads `Ravivāsaraḥ`. A test holds every shipped locale to its own weekday and month names, parts of
+  the day, full dates in both calendars and twelve-hour clock, with no Latin letter in a Devanagari one.
+
 **Mithila's star planets are the text's four steps (C1227).**
 **Numbers:** none. No computation changed; `mithila-makaranda` keeps `SuryaPlanets::TEXT`.
 - The Makaranda's three steps for Mars to Saturn are the text's four folded: its manda tables print the

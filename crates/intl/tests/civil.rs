@@ -228,13 +228,24 @@ fn a_locale_without_the_text_falls_back_and_says_so() {
             .is_fallback
         );
     }
-    let derived = time(
-        &intl,
-        r#"{"at": {"hour": 1, "minute": 2}, "hour12": true, "locale": "sa-Latn"}"#,
-    );
-    assert!(derived.is_fallback);
-    assert_eq!(derived.resolved_from, "en-Latn");
-    assert_eq!(derived.locale, "sa-Latn");
+    // `sa-Latn` carries its calendar, derived from `sa-Deva` and still a
+    // draft (SR-79).
+    let request = r#"{"at": {"hour": 1, "minute": 2}, "hour12": true, "locale": "sa-Latn"}"#;
+    let derived = time(&intl, request);
+    assert!(!derived.is_fallback && derived.is_draft);
+    assert_eq!(derived.resolved_from, "sa-Latn");
+    // Without it, the locale answers from its fallback and says so.
+    let mut tree = Tree::load(&sdk_root()).expect("the sources");
+    tree.locales
+        .get_mut("sa-Latn")
+        .expect("the derived locale")
+        .namespaces
+        .remove("sdk.calendar");
+    let bare = Intl::from_tree(&tree).expect("the engine");
+    let fallen = time(&bare, request);
+    assert!(fallen.is_fallback);
+    assert_eq!(fallen.resolved_from, "en-Latn");
+    assert_eq!(fallen.locale, "sa-Latn");
 }
 
 #[test]
@@ -325,4 +336,87 @@ fn a_datetime_in_full_shows_a_time() {
         .unwrap();
     assert_eq!(full.text, "Saturday, 31 October 2026, 06:05:09");
     assert!(full.warnings.is_empty(), "{:?}", full.warnings);
+}
+
+/// SR-79 and SR-80: every shipped locale names the weekdays, the months
+/// of both calendars a date is written in, and the parts of the day in
+/// its own words, and writes a whole date and a twelve-hour clock with no
+/// English in them. A locale in Devanagari has no Latin letter anywhere;
+/// one in Latin script differs from English wherever it names something.
+#[test]
+fn every_shipped_locale_writes_its_dates_in_its_own_words() {
+    let intl = intl();
+    let english = |key: &str, params: &teistro_intl::Params| intl.render(key, params).text;
+    let tags: Vec<String> = intl.locales().map(|l| l.tag.clone()).collect();
+    assert!(tags.len() >= 5, "{tags:?}");
+    for tag in tags.iter().filter(|tag| *tag != "en-Latn") {
+        let mut local = crate::intl();
+        local.set_locale(tag).unwrap();
+        let devanagari = tag.contains("-Deva");
+        let own = |what: &str, text: &str, english: &str| {
+            assert_ne!(text, english, "{tag} {what} is English");
+            if devanagari {
+                assert!(
+                    !text.chars().any(|c| c.is_ascii_alphabetic()),
+                    "{tag} {what}: {text}"
+                );
+            }
+        };
+        let mut named = Vec::new();
+        for weekday in 0..7_i64 {
+            named.push((
+                String::from("sdk.calendar.weekdayName"),
+                teistro_intl::params([("weekday", teistro_intl::Value::Int(weekday))]),
+            ));
+        }
+        for calendar in ["BIKRAM_SAMBAT", "GREGORIAN"] {
+            for month in 1..=12_i64 {
+                named.push((
+                    format!("sdk.calendar.{calendar}.monthName"),
+                    teistro_intl::params([("month", teistro_intl::Value::Int(month))]),
+                ));
+            }
+        }
+        for period in ["am", "pm"] {
+            named.push((
+                format!("sdk.calendar.dayPeriod.{period}"),
+                teistro_intl::Params::new(),
+            ));
+        }
+        for (key, params) in &named {
+            let rendered = local.render(key, params);
+            assert!(
+                !rendered.is_fallback,
+                "{tag} {key} falls back to {:?}",
+                rendered.resolved_from
+            );
+            own(key, &rendered.text, &english(key, params));
+        }
+        for calendar in ["BIKRAM_SAMBAT", "GREGORIAN"] {
+            for month in 1..=12 {
+                let request = |locale: &str| {
+                    format!(
+                        r#"{{"at": {{"calendar": "calendar.{calendar}", "year": 2083, "month": {month}, "day": 16}}, "style": "FULL", "locale": "{locale}"}}"#
+                    )
+                };
+                own(
+                    &format!("{calendar} {month} date"),
+                    &date(&intl, &request(tag)).text,
+                    &date(&intl, &request("en-Latn")).text,
+                );
+            }
+        }
+        for hour in [6, 18] {
+            let request = |locale: &str| {
+                format!(
+                    r#"{{"at": {{"hour": {hour}, "minute": 30}}, "hour12": true, "locale": "{locale}"}}"#
+                )
+            };
+            own(
+                &format!("{hour}:30 on a twelve-hour clock"),
+                &time(&intl, &request(tag)).text,
+                &time(&intl, &request("en-Latn")).text,
+            );
+        }
+    }
 }

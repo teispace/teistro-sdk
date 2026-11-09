@@ -117,7 +117,8 @@ i18n/<locale>/<namespace>.json     one file per namespace, nested objects
   is exported imports back unchanged.
 - **`derive`** writes a locale in another script from one already
   written: `teistro-intl derive --from sa-Deva --to sa-Latn` transliterates
-  every entity's forms, keeps the `iast` form because it is already in
+  every entity's forms and the messages of `sdk.calendar`
+  (`DERIVED_MESSAGES`), keeps the `iast` form because it is already in
   the target's script, gives each word the capital a Latin-script name
   carries, and applies the target's `_overrides.json` last, so
   regenerating never loses a correction; an override that matches nothing
@@ -236,7 +237,7 @@ panics (two property tests).
 | `:time` | a time of day | `style=numeric\|long`, `hour12=true`, `pattern` | | time |
 | `:datetime` | a date with a time | `calendar`, `style`, `hour12=true`, `pattern` | | date and time |
 | `:ghati` | a ghati-pala count | `style=numeric\|long`, `pattern` | | ghati |
-| `:duration` | number | `unit=day\|hour\|minute\|second`, `into=\|hour,minute,second\|` | | number |
+| `:duration` | number | `unit=day\|hour\|minute\|second`, `into=\|hour,minute,second\|`, `round=<unit>`, `list=and\|unit` | | number |
 
 Numbers render in the locale's numbering system, grouping and
 separators; angles in the same digits. `:zodiac` looks the sign name up
@@ -285,6 +286,20 @@ remainder rather than rounding it away; and a negative duration is
 negative once, on its first part, rather than on each. The bars are the
 grammar's: a comma cannot sit in an option value unless the value is
 quoted.
+
+`round=` names a unit the whole length is rounded to first, half away
+from zero, so the last part is whole and a remainder carries: a day of
+11 h 2 min 37 s read `into=|hour,minute| round=minute` is 11 hours and 3
+minutes, and 59.6 minutes is an hour. `list=unit` joins the parts with
+the locale's `unit` list pattern, CLDR's pattern for a measure in several
+units (`listPattern-type-unit`, which `Intl.DurationFormat` joins with),
+rather than the prose `and`: ", " in English and Nepali, "और" in Hindi,
+"तथा" in Sanskrit. Every locale ships three messages built on them, each
+over `$seconds` (SR-78): `sdk.calendar.duration.hoursMinutes` ("11 hours,
+3 minutes", a day's length or a muhurta's), `hoursMinutesSeconds` ("1
+hour, 2 minutes, 5 seconds", an "ends in" line) and `daysHours` ("1 day,
+4 hours"). A part that is zero is dropped as before, so 48 minutes reads
+"48 minutes", not "0 hours, 48 minutes".
 
 **An instant in a zone.** A value may be an instant, the SDK's own (a
 Julian day in UTC, `{"$instant": 2460000.25}` on the wire), and `:date`,
@@ -512,9 +527,19 @@ consumer to show, hide or refuse. The consumer's answer to SR-75, to ship
 marked rather than wait, reads the same way; the addendum asks them to
 confirm it for Nepali.
 
-**`sa-Latn` carries no `sdk.calendar`.** It is derived for names; a
-transliterated Sanskrit date for a Latin reader is a design of its own,
-and a derived locale says it inherits no draft by dropping the field.
+**`sa-Latn` carries `sdk.calendar`, transliterated.** It used to carry
+none and fell back to English, so a Latin-script Sanskrit app read
+"Sunday" inside a Sanskrit date. A consumer asked that every shipped
+locale name its weekdays and months and write its dates in its own words
+(SR-79, SR-80), and a Latin reader of Sanskrit reads them in IAST
+(`Ravivāsaraḥ, 16 Kārtika vi.saṃ. 2083`), which is what `derive` writes
+from `sa-Deva`: each run of Devanagari in a message transliterated and the
+syntax kept, a name's message (`weekdayName`, `monthName`,
+`nepalSambatMonth` and their short forms, listed in `NAMED_MESSAGES`,
+since the source script has no case) capitalised where a run opens it or
+a variant, and the source's `draft` mark carried with the namespace,
+because transliterating a draft does not review it. A namespace the
+derivation does not carry is not marked.
 
 **Sources.** `hi` and `sa` follow CLDR 48 (rank 1) for the Gregorian
 months, the weekdays, the date order (`d MMMM y`, `EEEE, d MMMM y`) and

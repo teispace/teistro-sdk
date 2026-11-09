@@ -1,4 +1,4 @@
-# Reply to the consumer's addenda 2, 3, 4 and 5
+# Reply to the consumer's addenda 2 to 6
 
 Addendum 3 (2026-10-29) asks for 58 general features, SR-01 to SR-58, and sends
 addendum 2 (A2-1 to A2-10) with it, now approved. This page answers each by number:
@@ -7,7 +7,8 @@ lives or will live, and any **question**. It was checked against `main` at `0b69
 The schedule is in `07-roadmap/00-roadmap.md`, "Addendum 3". Addendum 4 (2026-10-29) answered
 this page's questions and added SR-59 to SR-62; its answers are folded into the rows below and its
 requests are in §10. Addendum 5 (2026-10-31) added SR-63 to SR-76 and moved SR-58; its requests
-are in §11, each checked against `batch/2026-10-31a` (PR #423).
+are in §11, each checked against `batch/2026-10-31a` (PR #423). Addendum 6 (2026-11-09) added
+SR-77 to SR-83, built on `8da446e2`; its requests are in §12.
 
 **Order.** The v1.0 release candidate comes first and keeps its scope. After it come the
 consumer's P0 requests, then P1, P2, and P3 and later. A request is done when it is
@@ -159,7 +160,7 @@ cause of two differs from what the addendum read.
 | SR-72 | P1 | done | Teimeris `examples/apps/flutter_panchanga/pubspec.lock` | Reproduced, and not by the update: a fresh `git submodule update` of `3f169fc` was clean (no `.gitattributes`, the lock LF in the index and the tree). The first `flutter pub get`, which an editor runs on opening the folder, rewrote one line: the lock was written by a pre-release Flutter, whose pub recorded the SDK floor as `>=3.18.0-18.0.pre.54`, and pub on Flutter 3.47.9 writes `>=3.41.0` from the same packages. The lock now says what pub writes; the same steps on the new commit, update then `pub get`, leave the submodule clean. A Flutter whose SDK pins other package versions would still rewrite it, as it would any app's lock. |
 | SR-73 | P1 | done | `almanac.inZone`, `AlmanacArea::in_zone`, `03-design/digest-format.md` | Accepted, and the offset is added. Every binding's day says `utcOffsetSeconds`, from a new `days` column of the panchanga blob. The digest, which is what `bindings/c/digest` reads, takes `zone`, and format 1.1 adds a `clock` section that the reader gives as `ts_digest_day.utc_offset_seconds`; it still reads format 1.0. The offset is the one at the day's opening (C1010). |
 | SR-74 | P2 | teistro's part withdrawn | Teimeris | `proc-macro2`, `md-5` and `serde_bytes` are in use and are ignored with reasons in the manifests, as is the spike's `diplomat-runtime`. Only Teimeris's `swisseph-rs` remains. |
-| SR-75 | P0 | built, unreviewed | `i18n/hi-Deva-IN`, `i18n/sa-Deva`; `03-design/intl-engine-and-packs.md` | Both locales carry the whole of `sdk.calendar` (68 messages), drafted by hand from CLDR 48 and standard usage, and ship marked: `_meta.json` `draft`, `isDraft` on every render and on `intl.time` and `intl.date`, held by `check-intl`, a strict locale refused one. By the consumer's answer it does not wait on Q42; the consumer verifies it later. Read first: Sanskrit's Hijri months, `निमेषः` and `क्षणः`, `वङ्गाब्दः`, `होरा`, `शकाब्दः`, and Hindi's Hijri months and `वृद्धि तिथि`. `sa-Latn` carries none of it and falls back, saying so. |
+| SR-75 | P0 | built, unreviewed | `i18n/hi-Deva-IN`, `i18n/sa-Deva`; `03-design/intl-engine-and-packs.md` | Both locales carry the whole of `sdk.calendar` (68 messages), drafted by hand from CLDR 48 and standard usage, and ship marked: `_meta.json` `draft`, `isDraft` on every render and on `intl.time` and `intl.date`, held by `check-intl`, a strict locale refused one. By the consumer's answer it does not wait on Q42; the consumer verifies it later. Read first: Sanskrit's Hijri months, `निमेषः` and `क्षणः`, `वङ्गाब्दः`, `होरा`, `शकाब्दः`, and Hindi's Hijri months and `वृद्धि तिथि`. `sa-Latn` carried none of it and fell back; it now derives it from `sa-Deva` (SR-79, §12). |
 | SR-76 | P0 | built | `intl`, `IntlArea::time`, `IntlArea::date` | `intl.time` and `intl.date` in every binding and MCP: the locale's pattern and parts of the day, `style`, `hour12`, `digits` and `locale`, answering text, typed parts that join to it, the locale that answered and `isDraft`. A calendar with no pattern (the regional solar ones) is refused. |
 
 **The polar note.** `NEAREST_EVENT`'s span is the intended reading: the day runs from the last
@@ -168,3 +169,19 @@ and that `CIVIL_MIDNIGHT` is what a calendar shows. The consumer keeps `CIVIL_MI
 
 **Order, by the consumer's answer of 2026-10-31.** SR-63, SR-75 and SR-76 unblock its Today screen
 and come first.
+
+## 12. Addendum 6's requests
+
+Checked against `main`, which is 144 commits past the `8da446e2` the addendum was built on: SR-79
+and SR-80 were met there for `hi-Deva-IN` and `sa-Deva` (drafts, SR-75) and are now met for every
+shipped locale and tested so.
+
+| SR | Wave | Status | Where | Note or question |
+|---|---|---|---|---|
+| SR-77 | P1 | done | `time/src/zone/mod.rs`, `micros_of_day` | Reproduced, and the cause is finer than the request: `civil_of` already rounded to the microsecond, but an `f64` Julian day is exact to about 40 µs now, so 02:30 arrived as 02:29:59.999 98. A reading within four of the Julian day's last bits of a whole second (0.19 ms now) is that second; one farther keeps its microseconds, so a resolved civil time reads back unchanged. Every minute of a day at JD 2378496.5, 2461345.5 and 2597640.5, at UTC, +05:45 and −03:30, reads as itself, the addendum's instant included; before, 12,672 of those 12,960 readings carried stray microseconds. `intl`'s clock already rounded to the millisecond. |
+| SR-78 | P1 | done | `intl/src/render.rs` `:duration`; `sdk.calendar.duration.*`; `_meta.json` `listPatterns.unit` | `sdk.calendar.duration.hoursMinutes`, `hoursMinutesSeconds` and `daysHours`, each over `$seconds`, in every locale and every binding's typed messages: rounded to the last unit with carry (`round=`), zero parts dropped ("48 minutes"), and joined by the locale's `unit` list pattern from CLDR 48 (`list=unit`): "11 hours, 3 minutes", "११ घण्टा, ३ मिनेट", "११ घंटे और ३ मिनट", "२ होरे तथा ३ निमेषाः", each locale's plural (Sanskrit's dual) on each part. Any other split is one `:duration` expression away. |
+| SR-79 | P1 | done | `i18n/*/sdk.calendar.json`; `intl/tests/civil.rs` | Met on `main` for `hi` (रविवार…) and `sa` (रविवासरः…), drafts from CLDR 48. `sa-Latn`, which fell back to English, now derives its calendar from `sa-Deva` (`Ravivāsaraḥ`). `every_shipped_locale_writes_its_dates_in_its_own_words` holds every locale's weekday and month names to being its own and not a fallback. |
+| SR-80 | P1 | done | as SR-79; `sdk.calendar.datetime.join`, `dayPeriod.am`/`.pm` | Met on `main`: both calendars' month names and `date.long`/`.full` in `hi` and `sa` (`१६ कार्तिक वि.सं. २०८३`), `पूर्वाह्न`/`अपराह्न` and `पूर्वाह्णे`/`अपराह्णे`, and a locale's own `datetime.join`. The same test renders every month of both calendars as a full date and a twelve-hour clock in every locale: no Latin letter in a Devanagari one, none equal to English. The forms stay drafts for the consumer's review (SR-75). |
+| SR-81 | P1 | in progress | `crates/sdk/build.rs`, `crates/ffi/build.rs`, a package gate | Reproduced from `cargo package --list`: the build scripts read `i18n/` beside the crates. The fix ships what each build reads inside its crate and adds a gate that builds every published crate from its `.crate` alone. |
+| SR-82 | – | withdrawn, met | `SunriseConvention::Custom` | As the addendum says. |
+| SR-83 | – | withdrawn, met | `sdk.calendar.time.numeric12` | As the addendum says. |

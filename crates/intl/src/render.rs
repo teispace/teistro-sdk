@@ -660,6 +660,9 @@ pub fn engine_params(key: &str) -> &'static [&'static str] {
         "numeric" | "long" | "full" if rest.contains(".date.") => DATE,
         "monthName" | "monthShort" | "weekdayName" | "weekdayShort" => DATE,
         _ if rest.starts_with("ghati.") => &["ghati", "pala", "vipala"],
+        "daysHours" | "hoursMinutes" | "hoursMinutesSeconds" if rest.starts_with("duration.") => {
+            &["seconds"]
+        }
         _ if rest.starts_with("duration.") => &["n"],
         _ => &[],
     }
@@ -2643,7 +2646,10 @@ impl<'a> Eval<'a> {
     /// than as a number of minutes they have to divide in their head. The
     /// units may be named in any order; the decomposition always walks
     /// them longest first. The bars are the grammar's: a comma cannot sit
-    /// in an option value unless the value is quoted.
+    /// in an option value unless the value is quoted. `round=minute`
+    /// rounds the length to a unit first, so the last part is whole, and
+    /// `list=unit` joins the parts with the locale's unit pattern rather
+    /// than its prose `and`.
     fn duration(&mut self, operand: Option<&Val>, options: &BTreeMap<String, String>) -> Formatted {
         let Some(value) = self.numeric(operand) else {
             return Formatted {
@@ -2660,17 +2666,49 @@ impl<'a> Eval<'a> {
         let text = match (into.as_slice(), unit_seconds(unit)) {
             ([], _) | (_, None) => self.duration_text(unit, value),
             (units, Some(size)) => {
-                let parts: Vec<String> = decompose(value * size, units)
+                let seconds = self.duration_rounded(value * size, options.get("round"));
+                let list = self.duration_list(options.get("list"));
+                let parts: Vec<String> = decompose(seconds, units)
                     .into_iter()
                     .map(|(name, count)| self.duration_text(name, count))
                     .collect();
-                self.join_list(&parts, "and")
+                self.join_list(&parts, list)
             }
         };
         Formatted {
             value: Self::source_value(operand),
             parts: text_parts(text),
             keys: Keys::None,
+        }
+    }
+
+    /// A length in seconds rounded, half away from zero, to the unit a
+    /// `round=` option names, so a day of 11 h 2 min 37 s read in hours and
+    /// minutes is 11 hours and 3 minutes, and 59.6 minutes carries into an
+    /// hour. Without the option the length is left as it is.
+    fn duration_rounded(&mut self, seconds: f64, round: Option<&String>) -> f64 {
+        let Some(round) = round else {
+            return seconds;
+        };
+        let Some(size) = unit_seconds(round) else {
+            self.warn(format!("`round={round}` is not a duration unit"));
+            return seconds;
+        };
+        (seconds / size).round() * size
+    }
+
+    /// The list pattern a `list=` option names for joining a duration's
+    /// parts: `and` (the default, prose: "1 hour, 2 minutes and 5
+    /// seconds") or `unit`, the locale's pattern for a measure in several
+    /// units, as CLDR's unit list and `Intl.DurationFormat` join them.
+    fn duration_list(&mut self, list: Option<&String>) -> &'static str {
+        match list.map(String::as_str) {
+            None | Some("and") => "and",
+            Some("unit") => "unit",
+            Some(other) => {
+                self.warn(format!("`list={other}` is not `and` or `unit`"));
+                "and"
+            }
         }
     }
 

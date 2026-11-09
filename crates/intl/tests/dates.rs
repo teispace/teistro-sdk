@@ -553,6 +553,86 @@ fn a_duration_breaks_into_the_units_a_message_names() {
     );
 }
 
+/// SR-78: a length in more than one unit, rounded to its last unit and
+/// joined by the locale's own pattern for a measure in several units.
+#[test]
+fn a_duration_rounds_to_its_last_unit_and_joins_as_a_measure() {
+    let english = engine("en-Latn");
+    // 11 h 2 min 37 s to the minute is 11 h 3 min; 59.6 minutes carries.
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration unit=second into=|hour,minute| round=minute}",
+            Value::Int(39_757)
+        ),
+        "11 hours and 3 minutes"
+    );
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration unit=second into=|hour,minute| round=minute}",
+            Value::Num(3_597.6)
+        ),
+        "1 hour"
+    );
+    // Rounding is of the whole length, its sign kept on the first part.
+    assert_eq!(
+        text(
+            &english,
+            "{$v :duration unit=second into=|hour,minute| round=minute list=unit}",
+            Value::Int(-3_725)
+        ),
+        "-1 hour, 2 minutes"
+    );
+    // An unknown option value is reported, and the defaults stand.
+    let rendered = english
+        .render_source(
+            "{$v :duration unit=second into=|minute,second| round=week list=or}",
+            &params([("v", Value::Int(90))]),
+        )
+        .unwrap();
+    assert_eq!(rendered.text, "1 minute and 30 seconds");
+    let said = &rendered.warnings;
+    assert!(said.iter().any(|w| w.contains("`round=week`")), "{said:?}");
+    assert!(said.iter().any(|w| w.contains("`list=or`")), "{said:?}");
+
+    // The shipped messages, in each locale's words and joiner: CLDR's
+    // unit list is ", " in English and Nepali, "और" in Hindi and "तथा"
+    // in Sanskrit, whose dual the hours keep.
+    for (locale, key, seconds, expected) in [
+        ("en-Latn", "hoursMinutes", 39_757, "11 hours, 3 minutes"),
+        ("en-Latn", "hoursMinutes", 2_880, "48 minutes"),
+        ("en-Latn", "daysHours", 99_000, "1 day, 4 hours"),
+        (
+            "en-Latn",
+            "hoursMinutesSeconds",
+            3_725,
+            "1 hour, 2 minutes, 5 seconds",
+        ),
+        ("ne-Deva-NP", "hoursMinutes", 39_757, "११ घण्टा, ३ मिनेट"),
+        ("hi-Deva-IN", "hoursMinutes", 39_757, "११ घंटे और ३ मिनट"),
+        (
+            "hi-Deva-IN",
+            "hoursMinutesSeconds",
+            3_725,
+            "१ घंटा, २ मिनट और ५ सेकंड",
+        ),
+        ("sa-Deva", "hoursMinutes", 7_380, "२ होरे तथा ३ निमेषाः"),
+    ] {
+        let intl = engine(locale);
+        let rendered = intl.render(
+            &format!("sdk.calendar.duration.{key}"),
+            &params([("seconds", Value::Int(seconds))]),
+        );
+        assert!(
+            rendered.warnings.is_empty(),
+            "{locale} {key}: {:?}",
+            rendered.warnings
+        );
+        assert_eq!(rendered.text, expected, "{locale} {key} {seconds}");
+    }
+}
+
 /// The civil value an instant should read as, in the Gregorian calendar.
 fn civil(year: i32, month: u8, day: u8, time: ClockTime) -> Value {
     Value::DateTime(
