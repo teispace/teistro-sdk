@@ -260,6 +260,33 @@ impl<'a> AlmanacArea<'a> {
         }
     }
 
+    /// Runs `work` on a request's clock (`03-design/time-and-timezone.md`
+    /// §3.4): a stated offset exactly as it always ran, or a zone over this
+    /// context's database, every almanac then reading each instant at the
+    /// zone's offset then. `work` is handed the offset at `at`, the
+    /// instant the request is anchored on, for what reckons on one; `at`
+    /// is only reckoned for a zone.
+    ///
+    /// # Errors
+    ///
+    /// A zone the database does not have, on `zone`; what `at` and `work`
+    /// refuse.
+    pub(crate) fn clocked<T>(
+        self,
+        clock: &crate::DayClock,
+        at: impl FnOnce() -> Result<JulianDay<Utc>, Error>,
+        work: impl FnOnce(AlmanacArea<'_>, UtcOffset) -> Result<T, Error>,
+    ) -> Result<T, Error> {
+        match clock {
+            crate::DayClock::Offset(offset) => work(self, *offset),
+            crate::DayClock::Zone(zone) => {
+                let read = zone.clock(self.context.zones())?;
+                let offset = read.offset_at(at()?);
+                work(self.on(&read), offset)
+            }
+        }
+    }
+
     /// The offset a range's sections reckon on: the first day's. Sections
     /// take one offset, so over a change they are refused unless no
     /// section was asked.
@@ -271,10 +298,8 @@ impl<'a> AlmanacArea<'a> {
     ) -> Result<UtcOffset, Error> {
         let calendar = system_of(from.calendar)?;
         let (first, last) = (calendar.fixed_of(from)?, calendar.fixed_of(to)?);
-        let noon = |day: FixedDay| -> Result<UtcOffset, Error> {
-            let at = day.jd_at_midnight()?.get() + 0.5;
-            Ok(clock.offset_at(JulianDay::try_new(at)?))
-        };
+        let noon =
+            |day: FixedDay| -> Result<UtcOffset, Error> { Ok(clock.offset_at(noon_of(day)?)) };
         let offset = noon(first)?;
         if !days_alone {
             for step in 1..=first.days_until(last) {
@@ -289,6 +314,13 @@ impl<'a> AlmanacArea<'a> {
             }
         }
         Ok(offset)
+    }
+
+    /// The noon of a date's day, in UTC: the instant a range's clock is
+    /// read at, away from any midnight change.
+    #[cfg(feature = "pakshi")]
+    pub(crate) fn noon_of_date(date: &CalendarDate) -> Result<JulianDay<Utc>, Error> {
+        noon_of(system_of(date.calendar)?.fixed_of(date)?)
     }
 
     /// Runs `work` over this context's almanac for a range written in
@@ -1818,4 +1850,10 @@ fn with_vedhas(
         }
     }
     Ok(())
+}
+
+/// The noon of a day, in UTC: where a day's clock is read, away from any
+/// midnight change (`03-design/time-and-timezone.md` §3.4).
+pub(crate) fn noon_of(day: FixedDay) -> Result<JulianDay<Utc>, Error> {
+    Ok(JulianDay::try_new(day.jd_at_midnight()?.get() + 0.5)?)
 }

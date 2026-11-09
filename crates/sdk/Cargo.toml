@@ -410,6 +410,10 @@ name = "chart_zone"
 required-features = ["builtin-ephemeris", "tajika"]
 
 [[test]]
+name = "zone_requests"
+required-features = ["builtin-ephemeris", "full"]
+
+[[test]]
 name = "compose"
 required-features = ["builtin-ephemeris", "kp", "prashna", "tajika", "western"]
 

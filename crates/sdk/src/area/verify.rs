@@ -16,9 +16,10 @@ use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_intl::lexicon::{LookupMatch, LookupRequest, fold};
 use teistro_panchanga::sankalpa::AyanaReckoning;
+use teistro_time::ZoneSpec;
 
-use crate::SankalpaRequest;
 use crate::context::Context;
+use crate::{DayClock, SankalpaRequest};
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -183,8 +184,13 @@ pub(crate) struct ClaimsAsked {
     #[serde(default)]
     altitude_m: f64,
     /// The offset from UTC the place's civil days run at, in seconds,
-    /// east positive.
-    utc_offset_seconds: i32,
+    /// east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// How the ayana is reckoned: `SIDEREAL`, at Makara and Karka
     /// sankranti, when left out.
     #[serde(default)]
@@ -198,7 +204,7 @@ pub(crate) struct ClaimsAsked {
 impl ClaimsRequest {
     /// The record a binding sends, as JSON: `text`; `at`, a UTC Julian
     /// day; `latitudeDeg`, `longitudeDeg`, `altitudeM` (0 when left out)
-    /// and `utcOffsetSeconds`; `ayana`, `SIDEREAL` when left out; and
+    /// and `utcOffsetSeconds` or a `zone`; `ayana`, `SIDEREAL` when left out; and
     /// `locale`, every loaded locale's names when left out.
     ///
     /// ```
@@ -216,8 +222,8 @@ impl ClaimsRequest {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read, or an instant, place or offset out of range, each named
-    /// under `claims`.
+    /// read, an instant, place or offset out of range, or both or neither
+    /// of `utcOffsetSeconds` and `zone`, each named under `claims`.
     pub fn from_json(text: &str) -> Result<ClaimsRequest, Error> {
         let asked: ClaimsAsked = teistro_core::strict::read(text, CLAIMS)?;
         asked.request().map_err(|why| why.under(CLAIMS))
@@ -226,14 +232,14 @@ impl ClaimsRequest {
 
 impl ClaimsAsked {
     fn request(self) -> Result<ClaimsRequest, Error> {
-        use crate::asked::{instant, offset_of, place_of};
+        use crate::asked::{instant, place_of};
         Ok(ClaimsRequest {
             text: self.text,
             locale: self.locale,
             at: SankalpaRequest {
                 at: instant(self.at, "at")?,
                 place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-                offset: offset_of(self.utc_offset_seconds)?,
+                clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
                 ayana: self.ayana,
             },
         })

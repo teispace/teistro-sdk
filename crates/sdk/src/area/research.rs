@@ -7,6 +7,7 @@
 //! grouped by place and clock and each group is read in one crossing, so
 //! a study of many births at a few places costs a few crossings.
 
+use std::borrow::Cow;
 use std::collections::BTreeMap;
 
 use serde::Serialize;
@@ -15,7 +16,7 @@ use teistro_core::envelope::{Envelope, Hash, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::key::KeyId;
 use teistro_core::quantity::{Depth, JulianDay, Place, Utc};
-use teistro_core::time::UtcOffset;
+use teistro_core::time::{LocalClock as _, UtcOffset};
 use teistro_dasha::{DashaCursor, DashaName, Timeline};
 use teistro_research::{
     Cell, Counts, Design, EventTest, GroupTest, MAX_INSTANTS, MAX_REPLICATES, MatchedMatrix,
@@ -24,6 +25,7 @@ use teistro_research::{
 };
 use teistro_rules::{Evaluator, NetStatus, Rule, RuleResult, TransitSky};
 use teistro_serial::Document;
+use teistro_time::ZoneSpec;
 
 use crate::context::Context;
 use crate::reading::ChartRequest;
@@ -60,9 +62,12 @@ pub const DEFAULT_UNCERTAINTY_STEP_MINUTES: f64 = 2.0;
 /// let birth = Birth::new(JulianDay::<Utc>::literal(2_447_000.25), kathmandu, offset)
 ///     .uncertain_by(30.0);
 /// assert_eq!(birth.uncertainty_minutes, 30.0);
+/// // A birth on a zone is read at the offset the zone had then.
+/// let zoned = Birth::in_zone(JulianDay::<Utc>::literal(2_446_217.770_833), kathmandu, teistro::ZoneSpec::iana("Asia/Kathmandu"));
+/// assert!(zoned.zone.is_some());
 /// # Ok::<(), Box<dyn std::error::Error>>(())
 /// ```
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Birth {
@@ -70,8 +75,13 @@ pub struct Birth {
     pub instant: JulianDay<Utc>,
     /// Where.
     pub place: Place,
-    /// The local clock's offset from UTC.
+    /// The local clock's offset from UTC: for a birth on a `zone`, the
+    /// zone's offset at the instant, which a study sets as it reads it.
     pub offset: UtcOffset,
+    /// The zone the birth is read on, at the offset it had then
+    /// (`03-design/time-and-timezone.md` §3.4); none for a stated offset.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub zone: Option<ZoneSpec>,
     /// How far either side of `instant` the recorded time may be wrong,
     /// in minutes; zero when it is trusted. A rule whose answer at either
     /// edge differs from its answer at the instant is counted unstable on
@@ -87,6 +97,31 @@ impl Birth {
             instant,
             place,
             offset,
+            zone: None,
+            uncertainty_minutes: 0.0,
+        }
+    }
+
+    /// A birth on a zone's clock, whose recorded time is trusted: a study
+    /// reads it at the offset the zone had at the instant.
+    ///
+    /// ```
+    /// use teistro::ZoneSpec;
+    /// use teistro::quantity::{JulianDay, Place};
+    /// use teistro::research::Birth;
+    ///
+    /// let place = Place::try_from_degrees(27.7172, 85.324, 1400.0)?;
+    /// let birth = Birth::in_zone(JulianDay::literal(2_446_217.770_833), place, ZoneSpec::iana("Asia/Kathmandu"));
+    /// assert_eq!(birth.zone, Some(ZoneSpec::iana("Asia/Kathmandu")));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
+    #[must_use]
+    pub const fn in_zone(instant: JulianDay<Utc>, place: Place, zone: ZoneSpec) -> Birth {
+        Birth {
+            instant,
+            place,
+            offset: UtcOffset::UTC,
+            zone: Some(zone),
             uncertainty_minutes: 0.0,
         }
     }
@@ -225,6 +260,11 @@ impl<'a> ResearchArea<'a> {
     ///
     /// As [`ResearchArea::compare`] refuses a study and a design.
     pub fn counts(self, study: Study<'_>, design: &Design) -> Result<Envelope<Counts>, Error> {
+        let births = self.on_their_clocks(study.births)?;
+        let study = Study {
+            births: &births,
+            ..study
+        };
         let (matrix, read) = self.matrix(study)?;
         let value = counts(&matrix, design)?;
         Ok(seal(value, read, study, design, None::<&GroupTest>))
@@ -248,9 +288,46 @@ impl<'a> ResearchArea<'a> {
         design: &Design,
         test: &GroupTest,
     ) -> Result<Envelope<Tested>, Error> {
+        let births = self.on_their_clocks(study.births)?;
+        let study = Study {
+            births: &births,
+            ..study
+        };
         let (matrix, read) = self.matrix(study)?;
         let value = compare(&matrix, design, test)?;
         Ok(seal(value, read, study, design, Some(&test.registered())))
+    }
+
+    /// The births on their own clocks: each on a zone given the offset the
+    /// zone had at its instant, so births across a change group and reckon
+    /// apart (`03-design/time-and-timezone.md` §3.4). Borrowed as given
+    /// when none names a zone.
+    ///
+    /// # Errors
+    ///
+    /// A zone the database does not have, on `births[i].zone`.
+    fn on_their_clocks(self, births: &[Birth]) -> Result<Cow<'_, [Birth]>, Error> {
+        if births.iter().all(|birth| birth.zone.is_none()) {
+            return Ok(Cow::Borrowed(births));
+        }
+        let zones = self.context.zones();
+        births
+            .iter()
+            .enumerate()
+            .map(|(index, birth)| {
+                let Some(zone) = &birth.zone else {
+                    return Ok(birth.clone());
+                };
+                let clock = zone
+                    .clock(&zones)
+                    .map_err(|why| why.under(&format!("births[{index}]")))?;
+                Ok(Birth {
+                    offset: clock.offset_at(birth.instant),
+                    ..birth.clone()
+                })
+            })
+            .collect::<Result<Vec<_>, Error>>()
+            .map(Cow::Owned)
     }
 
     /// Every rule on every chart, the births read a place at a time.
@@ -600,7 +677,7 @@ fn by_place(births: &[Birth]) -> Vec<Vec<usize>> {
 
 /// One subject of an event study: a birth and the dated event of its life
 /// the study is about.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 pub struct Subject {
@@ -854,7 +931,8 @@ impl ResearchArea<'_> {
         strata: Option<&[u32]>,
         test: &EventTest,
     ) -> Result<Envelope<Tested>, Error> {
-        let births: Vec<Birth> = study.subjects.iter().map(|s| s.birth).collect();
+        let births: Vec<Birth> = study.subjects.iter().map(|s| s.birth.clone()).collect();
+        let births = self.on_their_clocks(&births)?.into_owned();
         for (index, subject) in study.subjects.iter().enumerate() {
             if subject.event.get() < subject.birth.instant.get() {
                 return Err(Error::invalid_arg(
@@ -1124,6 +1202,11 @@ impl ResearchArea<'_> {
         control: &Recombine,
         test: &ReplicateTest,
     ) -> Result<Envelope<Tested>, Error> {
+        let births = self.on_their_clocks(study.births)?;
+        let study = Study {
+            births: &births,
+            ..study
+        };
         let n = study.births.len();
         if control.strata.as_ref().is_some_and(|s| s.len() != n) {
             return Err(Error::invalid_arg(format!(
@@ -1146,7 +1229,7 @@ impl ResearchArea<'_> {
         let mut replicates = Vec::new();
         for r in 0..control.replicates {
             let births = recombined(study.births, control, r);
-            let trusted: Vec<Birth> = births.iter().map(|b| b.uncertain_by(0.0)).collect();
+            let trusted: Vec<Birth> = births.iter().map(|b| b.clone().uncertain_by(0.0)).collect();
             let (matrix, _) = self.matrix(Study {
                 births: &trusted,
                 ..study
@@ -1360,7 +1443,7 @@ fn recombined(births: &[Birth], control: &Recombine, r: u32) -> Vec<Birth> {
                 - f64::from(birth.offset.seconds()) / 86_400.0;
             Birth {
                 instant: JulianDay::literal(at),
-                ..*birth
+                ..birth.clone()
             }
         })
         .collect()

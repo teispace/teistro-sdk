@@ -126,7 +126,10 @@ fn a_rule_that_flips_inside_the_uncertainty_is_unstable() {
     assert_eq!(unstable(&trusted), 0);
     // Two hours either side moves every lagna at least a sign, and some
     // yoga counted from it with it.
-    let rounded: Vec<Birth> = trusted.iter().map(|b| b.uncertain_by(120.0)).collect();
+    let rounded: Vec<Birth> = trusted
+        .iter()
+        .map(|b| b.clone().uncertain_by(120.0))
+        .collect();
     assert!(unstable(&rounded) > 0);
 }
 
@@ -405,17 +408,17 @@ fn every_study_refusal_names_its_field() {
             .map(str::to_owned)
     };
     assert_eq!(field(&[], &Design::new(vec![])).as_deref(), Some("births"));
-    births[2] = births[2].uncertain_by(721.0);
+    births[2] = births[2].clone().uncertain_by(721.0);
     assert_eq!(
         field(&births, &design).as_deref(),
         Some("births[2].uncertaintyMinutes")
     );
-    births[2] = births[2].uncertain_by(-1.0);
+    births[2] = births[2].clone().uncertain_by(-1.0);
     assert_eq!(
         field(&births, &design).as_deref(),
         Some("births[2].uncertaintyMinutes")
     );
-    births[2] = births[2].uncertain_by(0.0);
+    births[2] = births[2].clone().uncertain_by(0.0);
     assert_eq!(
         field(&births, &Design::new(vec![0, 1])).as_deref(),
         Some("groups")
@@ -684,7 +687,10 @@ fn a_study_sent_as_a_record_answers_as_the_call_does() {
     let direct = sdk.research().counts(study, &design).unwrap();
     assert_eq!(counted, ResearchAnswer::Counts(direct));
 
-    let uncertain: Vec<Birth> = births.iter().map(|b| b.uncertain_by(30.0)).collect();
+    let uncertain: Vec<Birth> = births
+        .iter()
+        .map(|b| b.clone().uncertain_by(30.0))
+        .collect();
     let stepped = sent(
         &sdk,
         &serde_json::json!({"study": "COUNTS", "rules": rules, "holds": "FORMED",
@@ -1079,7 +1085,7 @@ fn a_transit_is_read_at_each_event_and_its_cost_is_chosen() {
 
     // Where no instant is read, a transit rule is refused rather than
     // silently absent.
-    let births: Vec<Birth> = subjects.iter().map(|s| s.birth).collect();
+    let births: Vec<Birth> = subjects.iter().map(|s| s.birth.clone()).collect();
     let natal = sdk
         .chart()
         .readings_with_rules(&[births[0].instant], &request, &set)

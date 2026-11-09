@@ -662,10 +662,9 @@ impl ChartArea<'_> {
             rectification: each(
                 documents,
                 records.rectification.as_ref(),
-                |document, asked| {
-                    let offset = clock.offset_at(document.foundation.instant);
-                    self.rectification(document, offset, asked)
-                },
+                // The request's own clock, so a window across a zone's
+                // change reads each instant at its own offset.
+                |document, asked| self.rectification(document, request.clock().clone(), asked),
             )?,
             #[cfg(feature = "tajika")]
             varsha: self.varshas_of(documents, records.varsha.as_ref(), request)?,
@@ -748,7 +747,17 @@ impl ChartArea<'_> {
             davisons: records
                 .synastry
                 .as_ref()
-                .map(|asked| asked.davisons(documents, clock))
+                .map(|asked| {
+                    // A partner on a zone is fixed to the offset it had then.
+                    let fixed = crate::PartnerSynastry {
+                        partner: asked
+                            .partner
+                            .fixed(self.context())
+                            .map_err(|why| why.under("partner"))?,
+                        ..asked.clone()
+                    };
+                    fixed.davisons(documents, clock)
+                })
                 .transpose()
                 .map_err(|error| error.under("synastry"))?
                 .flatten()

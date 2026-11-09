@@ -48,7 +48,8 @@ fn partner(birth: &Birth) -> Partner {
     Partner {
         instant: foundation.instant,
         place: foundation.place,
-        utc_offset: birth.offset,
+        utc_offset: Some(birth.offset),
+        zone: None,
     }
 }
 
@@ -71,7 +72,8 @@ fn read_pair(
     let chart = area
         .reading(
             between.instant,
-            &teistro::ChartRequest::at(between.place, between.utc_offset).with_outer_planets(),
+            &teistro::ChartRequest::on(between.place, between.clock().map_err(named)?)
+                .with_outer_planets(),
         )
         .map_err(named)?
         .value;

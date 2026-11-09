@@ -12,13 +12,15 @@ use teistro_core::key::is_key_name;
 use teistro_core::quantity::{Depth, JulianDay, Utc};
 use teistro_dasha::DashaName;
 use teistro_research::{Counts, Design, EventTest, GroupTest, ReplicateTest, Tested};
+use teistro_time::ZoneSpec;
 
+use crate::DayClock;
 use crate::area::ResearchArea;
 use crate::area::research::{
     Birth, DEFAULT_UNCERTAINTY_STEP_MINUTES, EventShuffle, EventStudy, Holds, Recombine, Referents,
     Study, Subject,
 };
-use crate::asked::{offset_of, place_of};
+use crate::asked::place_of;
 use crate::reading::ChartRequest;
 use crate::rule_request::{RuleRequest, RuleSet};
 
@@ -129,7 +131,7 @@ enum StudyKind {
 }
 
 /// A birth as a binding writes it.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 struct BirthAsked {
@@ -138,13 +140,20 @@ struct BirthAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The offset from UTC the place's civil days run at, in seconds,
+    /// east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     #[serde(default)]
     uncertainty_minutes: f64,
 }
 
 /// A subject as a binding writes it.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
 #[cfg_attr(feature = "schema", schemars(rename = "ResearchSubject"))]
@@ -194,16 +203,17 @@ impl BirthAsked {
         let instant = JulianDay::<Utc>::try_new(self.instant)
             .map_err(|why| Error::from(why).with_field("instant"))?;
         let place = place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?;
-        Ok(
-            Birth::new(instant, place, offset_of(self.utc_offset_seconds)?)
-                .uncertain_by(self.uncertainty_minutes),
-        )
+        let birth = match DayClock::asked(self.utc_offset_seconds, self.zone)? {
+            DayClock::Offset(offset) => Birth::new(instant, place, offset),
+            DayClock::Zone(zone) => Birth::in_zone(instant, place, zone),
+        };
+        Ok(birth.uncertain_by(self.uncertainty_minutes))
     }
 }
 
 /// Each element read by `read`, a refusal named by its index under
 /// `field`.
-fn each<A: Copy, T>(
+fn each<A: Clone, T>(
     field: &str,
     asked: &[A],
     read: impl Fn(A) -> Result<T, Error>,
@@ -211,7 +221,9 @@ fn each<A: Copy, T>(
     asked
         .iter()
         .enumerate()
-        .map(|(index, &one)| read(one).map_err(|why| why.under(&format!("{field}[{index}]"))))
+        .map(|(index, one)| {
+            read(one.clone()).map_err(|why| why.under(&format!("{field}[{index}]")))
+        })
         .collect()
 }
 
@@ -269,7 +281,8 @@ impl ResearchRequest {
     /// in place of strata. A birth is
     /// `{instant, latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
     /// uncertaintyMinutes}`, the instant a Julian day in UTC and the last
-    /// and the altitude optional, and a subject `{birth, event}`. A study
+    /// and the altitude optional, a `zone` in place of the offset reading
+    /// the birth at the offset the zone had then, and a subject `{birth, event}`. A study
     /// of `births` also takes `uncertaintyStepMinutes`, how far apart an
     /// uncertain birth's window is read, 2 unless it says. A seed is a
     /// number or a decimal string.
@@ -302,7 +315,8 @@ impl ResearchRequest {
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
     /// read, a field the study does not read or one it reads and is
-    /// missing, a birth's place, offset or instant out of range, a depth
+    /// missing, a birth's place, offset or instant out of range or its
+    /// offset beside a zone (`research.births[2].zone`), a depth
     /// outside 1 to 6, and whatever the rules, the design and the test
     /// refuse, each named under `research`, as `research.births[2].instant`.
     pub fn from_json(text: &str) -> Result<ResearchRequest, Error> {

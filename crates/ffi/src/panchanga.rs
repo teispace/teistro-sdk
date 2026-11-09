@@ -1498,7 +1498,7 @@ pub unsafe extern "C" fn ts_almanac_published_reasons(
 /// signs as they stand at the instant.
 ///
 /// `request_json` is `{"at", "latitudeDeg", "longitudeDeg", "altitudeM",
-/// "utcOffsetSeconds", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
+/// "utcOffsetSeconds" or "zone", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
 /// and `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when
 /// left out, or `TROPICAL` (at the solstices). A key it does not read or
 /// an instant, place or offset out of range is `INVALID_ARG`, named under
@@ -1573,7 +1573,7 @@ pub unsafe extern "C" fn ts_almanac_sankalpa(
 /// when the mother of a birth may take part in rites again.
 ///
 /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-/// "utcOffsetSeconds", "table", "tradition", "request"}`: `table` the
+/// "utcOffsetSeconds" or "zone", "table", "tradition", "request"}`: `table` the
 /// *Dharmasindhu*'s when left out, every row data, or `tradition` a
 /// shipped table by name (`DHARMASINDHU`, `MITAKSHARA`), never both;
 /// `request` `{key,
@@ -1646,7 +1646,7 @@ pub unsafe extern "C" fn ts_almanac_ashauch(
 /// the instant the last ends.
 ///
 /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-/// "utcOffsetSeconds", "table", "tradition", "household"}`: `household`
+/// "utcOffsetSeconds" or "zone", "table", "tradition", "household"}`: `household`
 /// `{events, observers}`, an event `{key, event}` and an observer `{key,
 /// ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,
 /// fireGiver}`. A household that does not hold together, or a key it
@@ -1838,7 +1838,7 @@ pub unsafe extern "C" fn ts_almanac_ashauch_rite(
 /// is taken to fall as the death did.
 ///
 /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-/// "utcOffsetSeconds", "at", "crematedAt", "table"}`, the instants UTC
+/// "utcOffsetSeconds" or "zone", "at", "crematedAt", "table"}`, the instants UTC
 /// Julian days and `table` the *Dharmasindhu*'s lists when left out. A
 /// cremation before the death, or a key it does not read, is
 /// `INVALID_ARG` named under `deathTime`; a context without an ephemeris
@@ -1908,7 +1908,7 @@ pub unsafe extern "C" fn ts_almanac_death_time(
 /// for.
 ///
 /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-/// "utcOffsetSeconds", "request"}`: `request` `{key, at, night,
+/// "utcOffsetSeconds" or "zone", "request"}`: `request` `{key, at, night,
 /// firstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death
 /// as a UTC Julian day and every reading the *Dharmasindhu*'s when left
 /// out. A key it does not read or an empty `key` is `INVALID_ARG` named

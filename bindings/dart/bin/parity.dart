@@ -993,6 +993,24 @@ void putRites(Context geo) {
     '${ymd(recited.date)} ${recited.vara.fullKey} ${recited.paksha.fullKey} '
         '${recited.tithi.fullKey} ${recited.nakshatra.fullKey}',
   );
+  // The same rite asked on Kathmandu's zone in 1985 and in 2026: each
+  // instant read at the offset the zone had then.
+  put(
+    'requests-in-zone',
+    [
+      for (final at in const <double>[2446217.770833, 2461055.59375])
+        geo.almanac
+            .sankalpa(
+              at: at,
+              place: kathmandu,
+              zone: ianaZone('Asia/Kathmandu'),
+            )
+            .provenance
+            .time
+            .clock!
+            .offset,
+    ].join(' '),
+  );
 
   final ashauch = geo.almanac.ashauch(
     request: const AshauchRequest(

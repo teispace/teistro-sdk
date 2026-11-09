@@ -9,6 +9,13 @@
 //! that zodiac too, the
 //! day by [`Founder::day_at`] and the ishtakaal by the settings' ghati
 //! reckoning, so a judged instant never reckons a second day (X9).
+//!
+//! Every reading takes a clock: an offset stated, or a zone each instant
+//! is read on at its own offset, so a window across a change reads either
+//! side on its own (`03-design/time-and-timezone.md` §3.4). The input hash
+//! seals the offset at the instant founded and the zone when one was
+//! asked, and the provenance states the clock there; a zone the database
+//! does not have is refused on `zone`.
 
 use std::cell::Cell;
 
@@ -19,7 +26,7 @@ use teistro_core::catalogue::{ChartKind, Graha, HouseSystem};
 use teistro_core::envelope::{Envelope, content_hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::time::UtcOffset;
+use teistro_core::time::LocalClock as _;
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_rectification::baseline::{self, BaselineAnswer, BaselineRequest};
 use teistro_rectification::sensitivity::{
@@ -30,9 +37,12 @@ use teistro_rectification::{
     Facts, Rules, Sky, Svarodaya, SvarodayaRun, Window, circumstance, conception, narrow,
     svarodaya, svarodaya_runs,
 };
+use teistro_time::ZoneSpec;
 use teistro_time::ghati::Reckoning;
 
+use crate::DayClock;
 use crate::area::ChartArea;
+use crate::reading::ReadClock;
 
 impl ChartArea<'_> {
     /// The parts of a birth window that the purifier of BPHS ch. 2
@@ -72,18 +82,21 @@ impl ChartArea<'_> {
         self,
         window: Window,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
         rules: &Rules,
     ) -> Result<Envelope<Answer>, Error> {
         rules.check()?;
         let middle = JulianDay::try_new(f64::midpoint(window.from.get(), window.to.get()))?;
+        let clock = clock.into();
+        let read = ReadClock::of(&clock, self.context())?;
         let input = RectifyInput {
             window,
             place: *place,
-            utc_offset_seconds: offset.seconds(),
+            utc_offset_seconds: read.offset_at(middle).seconds(),
+            zone: clock.zone(),
             rules,
         };
-        self.over_sky(middle, place, offset, &input, |sky| {
+        self.over_sky(middle, place, &read, &input, |sky| {
             narrow(window, sky, rules)
         })
     }
@@ -123,17 +136,20 @@ impl ChartArea<'_> {
         self,
         at: JulianDay<Utc>,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
         rules: &ConceptionRules,
     ) -> Result<Envelope<Conception>, Error> {
         rules.purifier.check()?;
+        let clock = clock.into();
+        let read = ReadClock::of(&clock, self.context())?;
         let input = ConceptionInput {
             at,
             place: *place,
-            utc_offset_seconds: offset.seconds(),
+            utc_offset_seconds: read.offset_at(at).seconds(),
+            zone: clock.zone(),
             rules,
         };
-        self.over_sky(at, place, offset, &input, |sky| {
+        self.over_sky(at, place, &read, &input, |sky| {
             conception(sky, at, rules, |conceived| sky.refounded(conceived))
         })
     }
@@ -168,18 +184,21 @@ impl ChartArea<'_> {
         self,
         at: JulianDay<Utc>,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
         facts: &Facts,
         rules: &CircumstanceRules,
     ) -> Result<Envelope<Circumstance>, Error> {
+        let clock = clock.into();
+        let read = ReadClock::of(&clock, self.context())?;
         let input = CircumstanceInput {
             at,
             place: *place,
-            utc_offset_seconds: offset.seconds(),
+            utc_offset_seconds: read.offset_at(at).seconds(),
+            zone: clock.zone(),
             facts,
             rules,
         };
-        self.over_sky(at, place, offset, &input, |sky| {
+        self.over_sky(at, place, &read, &input, |sky| {
             circumstance(sky, at, facts, *rules)
         })
     }
@@ -213,15 +232,18 @@ impl ChartArea<'_> {
         self,
         at: JulianDay<Utc>,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
     ) -> Result<Envelope<Svarodaya>, Error> {
+        let clock = clock.into();
+        let read = ReadClock::of(&clock, self.context())?;
         let input = SvarodayaInput {
             window: None,
             at: Some(at),
             place: *place,
-            utc_offset_seconds: offset.seconds(),
+            utc_offset_seconds: read.offset_at(at).seconds(),
+            zone: clock.zone(),
         };
-        self.over_sky(at, place, offset, &input, |sky| svarodaya(sky, at))
+        self.over_sky(at, place, &read, &input, |sky| svarodaya(sky, at))
     }
 
     /// Every run of the Shiva Svarodaya's nadi and tattva inside a birth
@@ -235,16 +257,19 @@ impl ChartArea<'_> {
         self,
         window: Window,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
     ) -> Result<Envelope<Vec<SvarodayaRun>>, Error> {
+        let clock = clock.into();
+        let read = ReadClock::of(&clock, self.context())?;
+        let middle = JulianDay::literal(window.from.get() + window.days() / 2.0);
         let input = SvarodayaInput {
             window: Some(window),
             at: None,
             place: *place,
-            utc_offset_seconds: offset.seconds(),
+            utc_offset_seconds: read.offset_at(middle).seconds(),
+            zone: clock.zone(),
         };
-        let middle = JulianDay::literal(window.from.get() + window.days() / 2.0);
-        self.over_sky(middle, place, offset, &input, |sky| {
+        self.over_sky(middle, place, &read, &input, |sky| {
             svarodaya_runs(sky, window)
         })
     }
@@ -288,18 +313,21 @@ impl ChartArea<'_> {
         birth: JulianDay<Utc>,
         span: Window,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
         rules: &SensitivityRules,
     ) -> Result<Envelope<Sensitivity>, Error> {
         rules.check()?;
+        let clock = clock.into();
+        let read = ReadClock::of(&clock, self.context())?;
         let input = SensitivityInput {
             birth,
             span,
             place: *place,
-            utc_offset_seconds: offset.seconds(),
+            utc_offset_seconds: read.offset_at(birth).seconds(),
+            zone: clock.zone(),
             rules,
         };
-        self.over_sky(birth, place, offset, &input, |sky| {
+        self.over_sky(birth, place, &read, &input, |sky| {
             sensitivity(birth, span, sky, rules)
         })
     }
@@ -340,17 +368,20 @@ impl ChartArea<'_> {
     pub fn rectify_baseline(
         self,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
         request: &BaselineRequest,
     ) -> Result<Envelope<BaselineAnswer>, Error> {
         request.check()?;
-        let minutes = offset.seconds().div_euclid(60);
+        let clock = clock.into();
+        let read = ReadClock::of(&clock, self.context())?;
+        let minutes = read.offset_at(request.reported).seconds().div_euclid(60);
         let input = BaselineInput {
             place: *place,
-            utc_offset_seconds: offset.seconds(),
+            utc_offset_seconds: read.offset_at(request.reported).seconds(),
+            zone: clock.zone(),
             request,
         };
-        self.over_sky(request.reported, place, offset, &input, |sky| {
+        self.over_sky(request.reported, place, &read, &input, |sky| {
             baseline::rectify(sky, request, minutes)
         })
     }
@@ -361,7 +392,7 @@ impl ChartArea<'_> {
         self,
         founded_at: JulianDay<Utc>,
         place: &Place,
-        offset: UtcOffset,
+        clock: &ReadClock,
         input: &I,
         read: impl FnOnce(&ChartSky<'_, '_>) -> Result<T, Error>,
     ) -> Result<Envelope<T>, Error> {
@@ -370,7 +401,7 @@ impl ChartArea<'_> {
         // A whole-sign chalit's middles only count on from the lagna's
         // sign, so the sensitivity does not read them (C1141).
         let chalit = settings.houses.chalit_system != HouseSystem::WholeSign;
-        self.founding(&offset, |founder| {
+        self.founding(clock, |founder| {
             let chart = founder.found_one(founded_at, place, ChartKind::Natal)?;
             let sky = ChartSky {
                 founder,
@@ -383,6 +414,7 @@ impl ChartArea<'_> {
             let answer = read(&sky)?;
             let mut provenance = chart.provenance;
             provenance.input_hash = content_hash(input);
+            provenance.time.state_clock(clock, founded_at);
             Ok(Envelope::sealing(answer, provenance))
         })
     }
@@ -392,10 +424,12 @@ impl ChartArea<'_> {
 #[derive(Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct RectifyInput<'r> {
+struct RectifyInput<'r, 'z> {
     window: Window,
     place: Place,
     utc_offset_seconds: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    zone: Option<&'z ZoneSpec>,
     rules: &'r Rules,
 }
 
@@ -403,11 +437,13 @@ struct RectifyInput<'r> {
 #[derive(Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct SensitivityInput<'r> {
+struct SensitivityInput<'r, 'z> {
     birth: JulianDay<Utc>,
     span: Window,
     place: Place,
     utc_offset_seconds: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    zone: Option<&'z ZoneSpec>,
     rules: &'r SensitivityRules,
 }
 
@@ -415,10 +451,12 @@ struct SensitivityInput<'r> {
 #[derive(Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct ConceptionInput<'r> {
+struct ConceptionInput<'r, 'z> {
     at: JulianDay<Utc>,
     place: Place,
     utc_offset_seconds: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    zone: Option<&'z ZoneSpec>,
     rules: &'r ConceptionRules,
 }
 
@@ -426,9 +464,11 @@ struct ConceptionInput<'r> {
 #[derive(Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct BaselineInput<'r> {
+struct BaselineInput<'r, 'z> {
     place: Place,
     utc_offset_seconds: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    zone: Option<&'z ZoneSpec>,
     request: &'r BaselineRequest,
 }
 
@@ -436,23 +476,27 @@ struct BaselineInput<'r> {
 #[derive(Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct SvarodayaInput {
+struct SvarodayaInput<'z> {
     #[serde(skip_serializing_if = "Option::is_none")]
     window: Option<Window>,
     #[serde(skip_serializing_if = "Option::is_none")]
     at: Option<JulianDay<Utc>>,
     place: Place,
     utc_offset_seconds: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    zone: Option<&'z ZoneSpec>,
 }
 
 /// What a circumstance report was asked, which its input hash seals.
 #[derive(Serialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
-struct CircumstanceInput<'r> {
+struct CircumstanceInput<'r, 'z> {
     at: JulianDay<Utc>,
     place: Place,
     utc_offset_seconds: i32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    zone: Option<&'z ZoneSpec>,
     facts: &'r Facts,
     rules: &'r CircumstanceRules,
 }

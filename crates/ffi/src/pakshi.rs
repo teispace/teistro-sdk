@@ -29,7 +29,7 @@ use crate::support::with_context;
 /// a day the Sun does not both rise and set.
 ///
 /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-/// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+/// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "native", "rules"}`:
 /// the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
 /// `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
 /// place, the offset and `native` optional. A key it does not read, a

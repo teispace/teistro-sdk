@@ -1109,6 +1109,14 @@ def put_rites(geo: Context) -> None:
         "rites-sankalpa",
         f"{civil(said.date)} {said.vara.full_key} {said.paksha.full_key} {said.tithi.full_key} {said.nakshatra.full_key}",
     )
+    # The same rite asked on Kathmandu's zone in 1985 and in 2026: each
+    # instant read at the offset the zone had then.
+    zoned_offsets = []
+    for at in (2446217.770833, 2461055.59375):
+        clock = geo.almanac.sankalpa(at=at, place=kathmandu, zone=iana_zone("Asia/Kathmandu")).provenance.time.clock
+        assert clock is not None
+        zoned_offsets.append(str(clock.offset))
+    put("requests-in-zone", " ".join(zoned_offsets))
 
     asked_ashauch: AshauchRequest = {
         "key": "grandfather",

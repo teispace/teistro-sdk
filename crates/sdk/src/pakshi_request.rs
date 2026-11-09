@@ -13,10 +13,10 @@ use teistro_core::time::UtcOffset;
 use teistro_pakshi::{Bird, BirthBird, Day, Reading, Rules, birth_bird, read_day};
 use teistro_panchanga::almanac::Panchanga;
 use teistro_serial::Document;
-use teistro_time::DayState;
+use teistro_time::{DayState, ZoneSpec};
 
-use crate::asked::{DayAsked, offset_of, place_of};
-use crate::{AlmanacArea, ChartArea};
+use crate::asked::{DayAsked, place_of};
+use crate::{AlmanacArea, ChartArea, DayClock};
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -81,8 +81,9 @@ pub struct PakshiRequest {
     pub last: CalendarDate,
     /// The place.
     pub place: Place,
-    /// The offset its civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// day is read on at its own offset.
+    pub clock: DayClock,
     /// Whose bird.
     pub native: PakshiNative,
     /// What the days are read under.
@@ -116,7 +117,14 @@ pub(crate) struct RequestAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The offset from UTC the place's civil days run at, in seconds,
+    /// east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     native: NativeAsked,
     #[serde(default)]
     rules: Rules,
@@ -163,7 +171,7 @@ impl PakshiRequest {
     /// The record a binding sends, as JSON: `first` (and `last`, the first
     /// when left out) as `{"year", "month", "day"}` in `calendar`
     /// (Gregorian when left out), `latitudeDeg`, `longitudeDeg`,
-    /// `altitudeM` and `utcOffsetSeconds`; `native`, either `{"bird"}` or
+    /// `altitudeM` and `utcOffsetSeconds` or a `zone`; `native`, either `{"bird"}` or
     /// `{"nakshatra", "paksha", "rule"}` with `rule` optional; and `rules`,
     /// optional.
     ///
@@ -190,8 +198,9 @@ impl PakshiRequest {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read, a place or offset out of range, or a native that is neither a
-    /// bird nor a birth star and paksha, each named under `pakshi`.
+    /// read, a place or offset out of range, both or neither of
+    /// `utcOffsetSeconds` and `zone`, or a native that is neither a bird
+    /// nor a birth star and paksha, each named under `pakshi`.
     pub fn from_json(text: &str) -> Result<PakshiRequest, Error> {
         let asked: RequestAsked = teistro_core::strict::read(text, PAKSHI)?;
         asked.request().map_err(|why| why.under(PAKSHI))
@@ -205,7 +214,7 @@ impl RequestAsked {
             first: self.first.in_calendar(calendar),
             last: self.last.unwrap_or(self.first).in_calendar(calendar),
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             native: self.native.native().map_err(|why| why.under("native"))?,
             rules: self.rules,
         })
@@ -272,16 +281,19 @@ impl AlmanacArea<'_> {
     ///
     /// # Errors
     ///
-    /// As [`AlmanacArea::pakshi_days`].
+    /// As [`AlmanacArea::pakshi_days`]; a zone the database does not have.
     pub fn pakshi_request(self, asked: &PakshiRequest) -> Result<Envelope<Vec<PakshiDay>>, Error> {
-        self.pakshi_days(
-            &asked.first,
-            &asked.last,
-            &asked.place,
-            asked.offset,
-            asked.native,
-            &asked.rules,
-        )
+        let noon = || AlmanacArea::noon_of_date(&asked.first);
+        self.clocked(&asked.clock, noon, |almanac, offset| {
+            almanac.pakshi_days(
+                &asked.first,
+                &asked.last,
+                &asked.place,
+                offset,
+                asked.native,
+                &asked.rules,
+            )
+        })
     }
 
     /// One day of [`AlmanacArea::pakshi_days`].

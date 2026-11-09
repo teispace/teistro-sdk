@@ -67,6 +67,24 @@ impl DayClock {
         }
     }
 
+    /// The zone, when this clock is one: what an input hash seals beside
+    /// the offset it read.
+    ///
+    /// ```
+    /// use teistro::{DayClock, UtcOffset, ZoneSpec};
+    ///
+    /// assert_eq!(DayClock::from(UtcOffset::UTC).zone(), None);
+    /// let nepal = ZoneSpec::iana("Asia/Kathmandu");
+    /// assert_eq!(DayClock::Zone(nepal.clone()).zone(), Some(&nepal));
+    /// ```
+    #[must_use]
+    pub const fn zone(&self) -> Option<&ZoneSpec> {
+        match self {
+            DayClock::Offset(_) => None,
+            DayClock::Zone(zone) => Some(zone),
+        }
+    }
+
     /// The range on this clock, and what is asked beside it.
     pub(crate) fn asked_on(
         &self,

@@ -310,6 +310,34 @@ public final class AlmanacArea {
 
     /** A zone as the record the boundary reads beside a range or a chart's births. */
     static String zoneJson(ZoneSpec zone) {
+        return Json.write(zoneRecord(zone));
+    }
+
+    /**
+     * A request's clock as the SDK reads it, an offset: the one field the
+     * request's JSON carries for it.
+     */
+    static Map<String, Object> clock(int utcOffsetSeconds) {
+        Map<String, Object> written = new java.util.LinkedHashMap<>();
+        written.put("utcOffsetSeconds", utcOffsetSeconds);
+        return written;
+    }
+
+    /**
+     * A request's clock as the SDK reads it, a zone read at each instant's
+     * offset then ({@code 03-design/time-and-timezone.md} §3.4).
+     */
+    static Map<String, Object> clock(ZoneSpec zone) {
+        if (zone == null) {
+            throw Reads.invalid("zone is a ZoneSpec", "zone");
+        }
+        Map<String, Object> written = new java.util.LinkedHashMap<>();
+        written.put("zone", zoneRecord(zone));
+        return written;
+    }
+
+    /** A zone as the record the SDK reads in a request's JSON. */
+    static Map<String, Object> zoneRecord(ZoneSpec zone) {
         Map<String, Object> written = new java.util.LinkedHashMap<>();
         switch (zone.kind()) {
             case IANA -> {
@@ -325,7 +353,7 @@ public final class AlmanacArea {
                 written.put("longitude", zone.longitudeDeg().value());
             }
         }
-        return Json.write(written);
+        return written;
     }
 
     /**
@@ -487,6 +515,27 @@ public final class AlmanacArea {
      */
     public SankalpaAnswer sankalpa(double at, Observer place, int utcOffsetSeconds,
             com.teispace.teistro.request.AyanaReckoning ayana) {
+        return sankalpa(at, place, clock(utcOffsetSeconds), ayana);
+    }
+
+    /**
+     * {@link #sankalpa(double, Observer, int, com.teispace.teistro.request.AyanaReckoning)} on a zone's
+     * clock: the day and the instant read at the offset the zone had then.
+     *
+     * @param at the instant of the rite, a UTC Julian day
+     * @param place where it is performed
+     * @param zone the zone each instant is read on, at its offset then, from {@code Civil.ianaZone} and its
+     *     neighbours
+     * @param ayana how the ayana turns; null for {@code SIDEREAL}
+     * @return the time recited, sealed
+     */
+    public SankalpaAnswer sankalpa(double at, Observer place, ZoneSpec zone,
+            com.teispace.teistro.request.AyanaReckoning ayana) {
+        return sankalpa(at, place, clock(zone), ayana);
+    }
+
+    private SankalpaAnswer sankalpa(double at, Observer place, Map<String, Object> clock,
+            com.teispace.teistro.request.AyanaReckoning ayana) {
         if (place == null) {
             throw Reads.invalid("place is an Observer", "place");
         }
@@ -495,7 +544,7 @@ public final class AlmanacArea {
         asked.put("latitudeDeg", place.latitudeDeg().value());
         asked.put("longitudeDeg", place.longitudeDeg().value());
         asked.put("altitudeM", place.altitudeM().value());
-        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.putAll(clock);
         if (ayana != null) {
             asked.put("ayana", ayana.key());
         }
@@ -527,7 +576,24 @@ public final class AlmanacArea {
      */
     public AshauchAnswer ashauch(com.teispace.teistro.request.AshauchRequest request, Observer place,
             int utcOffsetSeconds, com.teispace.teistro.request.AshauchTable table) {
-        return ashauch(request, place, utcOffsetSeconds, "table", table);
+        return ashauch(request, place, clock(utcOffsetSeconds), "table", table);
+    }
+
+    /**
+     * {@link #ashauch(com.teispace.teistro.request.AshauchRequest, Observer, int,
+     * com.teispace.teistro.request.AshauchTable)} on a zone's clock: each instant read at the offset the
+     * zone had then.
+     *
+     * @param request the event, the observer and the periods already running
+     * @param place where the days are counted
+     * @param zone the zone each instant is read on, at its offset then, from {@code Civil.ianaZone} and its
+     *     neighbours
+     * @param table the tradition's table; null for the <i>Dharmasindhu</i>'s
+     * @return the period, sealed
+     */
+    public AshauchAnswer ashauch(com.teispace.teistro.request.AshauchRequest request, Observer place,
+            ZoneSpec zone, com.teispace.teistro.request.AshauchTable table) {
+        return ashauch(request, place, clock(zone), "table", table);
     }
 
     /**
@@ -541,7 +607,7 @@ public final class AlmanacArea {
      */
     public AshauchAnswer ashauch(com.teispace.teistro.request.AshauchRequest request, Observer place,
             int utcOffsetSeconds) {
-        return ashauch(request, place, utcOffsetSeconds, "table", null);
+        return ashauch(request, place, clock(utcOffsetSeconds), "table", null);
     }
 
     /**
@@ -558,11 +624,11 @@ public final class AlmanacArea {
         if (tradition == null) {
             throw Reads.invalid("tradition is an AshauchTradition", "tradition");
         }
-        return ashauch(request, place, utcOffsetSeconds, "tradition", tradition);
+        return ashauch(request, place, clock(utcOffsetSeconds), "tradition", tradition);
     }
 
     private AshauchAnswer ashauch(com.teispace.teistro.request.AshauchRequest request, Observer place,
-            int utcOffsetSeconds, String key, Object table) {
+            Map<String, Object> clock, String key, Object table) {
         if (request == null) {
             throw Reads.invalid("request is an AshauchRequest", "request");
         }
@@ -573,7 +639,7 @@ public final class AlmanacArea {
         asked.put("latitudeDeg", place.latitudeDeg().value());
         asked.put("longitudeDeg", place.longitudeDeg().value());
         asked.put("altitudeM", place.altitudeM().value());
-        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.putAll(clock);
         if (table != null) {
             asked.put(key, table);
         }
@@ -680,6 +746,27 @@ public final class AlmanacArea {
      */
     public HouseholdAnswer household(com.teispace.teistro.request.Household household, Observer place,
             int utcOffsetSeconds, com.teispace.teistro.request.AshauchTable table) {
+        return household(household, place, clock(utcOffsetSeconds), table);
+    }
+
+    /**
+     * {@link #household(com.teispace.teistro.request.Household, Observer, int, com.teispace.teistro.request.AshauchTable)}
+     * on a zone's clock: each instant read at the offset the zone had then.
+     *
+     * @param household the events and the observers
+     * @param place where the days are counted
+     * @param zone the zone each instant is read on, at its offset then, from {@code Civil.ianaZone} and its
+     *     neighbours
+     * @param table the tradition's table; null for the <i>Dharmasindhu</i>'s
+     * @return each observer's periods, sealed
+     */
+    public HouseholdAnswer household(com.teispace.teistro.request.Household household, Observer place,
+            ZoneSpec zone, com.teispace.teistro.request.AshauchTable table) {
+        return household(household, place, clock(zone), table);
+    }
+
+    private HouseholdAnswer household(com.teispace.teistro.request.Household household, Observer place,
+            Map<String, Object> clock, com.teispace.teistro.request.AshauchTable table) {
         if (household == null) {
             throw Reads.invalid("household is a Household", "household");
         }
@@ -690,7 +777,7 @@ public final class AlmanacArea {
         asked.put("latitudeDeg", place.latitudeDeg().value());
         asked.put("longitudeDeg", place.longitudeDeg().value());
         asked.put("altitudeM", place.altitudeM().value());
-        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.putAll(clock);
         if (table != null) {
             asked.put("table", table);
         }
@@ -766,6 +853,28 @@ public final class AlmanacArea {
      */
     public DeathTimeAnswer deathTime(double at, Double crematedAt, Observer place, int utcOffsetSeconds,
             com.teispace.teistro.request.DeathTimeTable table) {
+        return deathTime(at, crematedAt, place, clock(utcOffsetSeconds), table);
+    }
+
+    /**
+     * {@link #deathTime(double, Double, Observer, int, com.teispace.teistro.request.DeathTimeTable)}
+     * on a zone's clock: each instant read at the offset the zone had then.
+     *
+     * @param at the death, a UTC Julian day
+     * @param crematedAt the burning, a UTC Julian day; null when it falls as the death did
+     * @param place where the day and the sky are read
+     * @param zone the zone each instant is read on, at its offset then, from {@code Civil.ianaZone} and its
+     *     neighbours
+     * @param table the tradition's lists; null for the <i>Dharmasindhu</i>'s
+     * @return the readings and the rites, sealed
+     */
+    public DeathTimeAnswer deathTime(double at, Double crematedAt, Observer place, ZoneSpec zone,
+            com.teispace.teistro.request.DeathTimeTable table) {
+        return deathTime(at, crematedAt, place, clock(zone), table);
+    }
+
+    private DeathTimeAnswer deathTime(double at, Double crematedAt, Observer place, Map<String, Object> clock,
+            com.teispace.teistro.request.DeathTimeTable table) {
         if (place == null) {
             throw Reads.invalid("place is an Observer", "place");
         }
@@ -773,7 +882,7 @@ public final class AlmanacArea {
         asked.put("latitudeDeg", place.latitudeDeg().value());
         asked.put("longitudeDeg", place.longitudeDeg().value());
         asked.put("altitudeM", place.altitudeM().value());
-        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.putAll(clock);
         asked.put("at", at);
         if (crematedAt != null) {
             asked.put("crematedAt", crematedAt);
@@ -862,6 +971,26 @@ public final class AlmanacArea {
      */
     public FirstYearAnswer firstYear(com.teispace.teistro.request.FirstYearRequest request, Observer place,
             int utcOffsetSeconds) {
+        return firstYear(request, place, clock(utcOffsetSeconds));
+    }
+
+    /**
+     * {@link #firstYear(com.teispace.teistro.request.FirstYearRequest, Observer, int)}
+     * on a zone's clock: each instant read at the offset the zone had then.
+     *
+     * @param request the death, a UTC Julian day, and the readings
+     * @param place where the days are kept
+     * @param zone the zone each instant is read on, at its offset then, from {@code Civil.ianaZone} and its
+     *     neighbours
+     * @return the schedule, sealed
+     */
+    public FirstYearAnswer firstYear(com.teispace.teistro.request.FirstYearRequest request, Observer place,
+            ZoneSpec zone) {
+        return firstYear(request, place, clock(zone));
+    }
+
+    private FirstYearAnswer firstYear(com.teispace.teistro.request.FirstYearRequest request, Observer place,
+            Map<String, Object> clock) {
         if (request == null) {
             throw Reads.invalid("request is a FirstYearRequest", "request");
         }
@@ -872,7 +1001,7 @@ public final class AlmanacArea {
         asked.put("latitudeDeg", place.latitudeDeg().value());
         asked.put("longitudeDeg", place.longitudeDeg().value());
         asked.put("altitudeM", place.altitudeM().value());
-        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.putAll(clock);
         asked.put("request", request);
         String json = Json.write(asked);
         return AlmanacReads.firstYearAnswer(context.locked((lib, raw) -> Calls.almanacFirstYear(lib, raw, json)));

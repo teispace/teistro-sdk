@@ -2135,6 +2135,15 @@ for (const [name, rules, published, hijriOffset] of [
     const { date: day, vara, paksha, tithi, nakshatra } = sankalpa.value;
     put('rites-sankalpa', `${ymd(day)} ${vara} ${paksha} ${tithi} ${nakshatra}`);
   }
+  // The same rite asked on Kathmandu's zone in 1985 and in 2026: each
+  // instant read at the offset the zone had then.
+  put(
+    'requests-in-zone',
+    [2446217.770833, 2461055.59375]
+      .map((at) => geo.almanac.sankalpa({ at, place: { ...kathmandu, altitude: 1400 }, zone: ianaZone('Asia/Kathmandu') }))
+      .map((answer) => answer.provenance.time.clock.offset)
+      .join(' '),
+  );
   const ashauch = geo.almanac.ashauch({
     place: kathmandu,
     utcOffsetSeconds: 20700,

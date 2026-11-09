@@ -682,7 +682,8 @@ fn every_chart_record_the_reader_takes_the_schema_takes() {
             Longitude::literal(85.324),
             Altitude::literal(1400.0),
         ),
-        utc_offset: UtcOffset::try_from_seconds(20_700).unwrap(),
+        utc_offset: Some(UtcOffset::try_from_seconds(20_700).unwrap()),
+        zone: None,
     })
     .unwrap();
     let least = |name: &str| match name {

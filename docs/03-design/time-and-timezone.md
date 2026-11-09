@@ -237,8 +237,41 @@ so its document and content hash are byte for byte what they were (C1210). The
 provenance states the first birth's clock, `MANUAL` for a bare offset (C1211).
 At the boundary each chart's offset crosses as the cast column
 `utc_offset_seconds`, which every binding's chart answers as `utcOffsetSeconds`
-(`utc_offset_seconds` in Python). A synastry partner still takes its own
-stated offset.
+(`utc_offset_seconds` in Python).
+
+**Every other request with a clock takes a zone too.** A sankalpa, the three
+ashauch requests (`almanac.ashauch`, `household`, `deathTime`), the first
+year after a death, the pakshi days, a rashifal period, a mundane chart, a
+rectification (its window and every reading under it), each birth of a
+research study and a matching or synastry partner take `zone` in place of
+`utcOffsetSeconds`, the same pair as a chart. Giving both is refused naming
+`zone`, giving neither naming `utcOffsetSeconds`, except where the offset
+already had a default: a mundane chart and a partner are on UTC when neither
+is given. Rust has `DayClock` on each request type (`SankalpaRequest::clock`,
+`RashifalRequest::clock`, `Partner::in_zone`, `Birth::in_zone`), and the
+rectification calls take `impl Into<DayClock>`, so a `UtcOffset` still
+compiles.
+
+Each instant is read at the zone's offset then. The almanac requests run
+through one helper, `AlmanacArea::clocked`, which reads the zone at the
+request's own instant (the rite, the death, the first event, the first day's
+noon) and puts the almanac on the zone's clock, so a range that crosses a
+change still reads each day on its own offset. A rashifal period reads each
+civil day's midnight at that day's offset. A rectification, a mundane chart
+and a partner's chart are founded as a chart asked by zone is. A study reads
+each birth at its own instant before anything is counted, so a Kathmandu study
+counts 1985's births on +05:30 and today's on +05:45.
+
+The provenance states the clock, `MANUAL` for a bare offset, as the almanac's
+and a chart's do (C1211); a rashifal batch and a rectification state their
+first instant's. Asked by a bare offset, every one of these answers is what it
+was: the request's input hash leaves `zone` out when it is not given, and a
+mundane chart asked with neither still seals `"utcOffsetSeconds":0`. A study
+seals its births as asked, so the same births by zone and by offset count the
+same and seal differently (C1250). A Davison birth is the mean of two stated
+clocks (C248), so a partner asked by zone is first fixed to its offset at its
+instant (`Partner::fixed`), and `davison` given a partner still on a zone is
+refused naming `zone` (C1251).
 
 ## 4. Algorithms
 

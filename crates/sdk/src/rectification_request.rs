@@ -14,7 +14,6 @@ use teistro_core::quantity::{Depth, JulianDay, Utc};
 use teistro_core::settings::{
     AfterCycle, AshtottariGrouping, Balance, BirthPeriod, SeedOverflow, YearLength,
 };
-use teistro_core::time::UtcOffset;
 use teistro_rectification::baseline::{
     Accuracy, BaselineAnswer, BaselineRequest, LifeEvent, Sex, baseline_dasha_rules,
 };
@@ -26,7 +25,7 @@ use teistro_rectification::{
 use teistro_serial::Document;
 use teistro_vargas::Scheme;
 
-use crate::ChartArea;
+use crate::{ChartArea, DayClock};
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -399,8 +398,10 @@ pub struct Rectification {
 impl ChartArea<'_> {
     /// A founded chart read as a birth time to rectify
     /// (`03-design/rectification.md`, step 8): each reading the request
-    /// names, around the chart's instant and at its place, on the clock
-    /// `offset` east of UTC.
+    /// names, around the chart's instant and at its place, on `clock`: an
+    /// offset east of UTC, or a zone each instant of a window is read on at
+    /// its own offset, so a window across a change reads either side on
+    /// its own (`03-design/time-and-timezone.md` §3.4).
     ///
     /// # Errors
     ///
@@ -411,9 +412,10 @@ impl ChartArea<'_> {
     pub fn rectification(
         self,
         document: &Document,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
         asked: &RectificationRequest,
     ) -> Result<Rectification, Error> {
+        let clock: DayClock = clock.into();
         let at = document.foundation.instant;
         let place = &document.foundation.place;
         let read = || -> Result<Rectification, Error> {
@@ -424,28 +426,29 @@ impl ChartArea<'_> {
                         .check()
                         .map_err(|error| rebased(error, "purify.rules"))?;
                     let window = window_around(at, purify.minutes, "purify.minutes")?;
-                    let read = self.rectify(window, place, offset, &purify.rules);
+                    let read = self.rectify(window, place, clock.clone(), &purify.rules);
                     Some(read.map_err(|error| rebased(error, "purify"))?.value)
                 }
                 None => None,
             };
             let conception = match asked.conception {
                 Some(rules) => {
-                    let read = self.conception(at, place, offset, &rules);
+                    let read = self.conception(at, place, clock.clone(), &rules);
                     Some(read.map_err(|error| rebased(error, "conception"))?.value)
                 }
                 None => None,
             };
             let circumstance = match asked.circumstance {
                 Some(asked) => {
-                    let read = self.circumstance(at, place, offset, &asked.facts, &asked.rules);
+                    let read =
+                        self.circumstance(at, place, clock.clone(), &asked.facts, &asked.rules);
                     Some(read.map_err(|error| rebased(error, "circumstance"))?.value)
                 }
                 None => None,
             };
             let baseline = match &asked.baseline {
                 Some(asked) => {
-                    let read = self.rectify_baseline(place, offset, &asked.at(at));
+                    let read = self.rectify_baseline(place, clock.clone(), &asked.at(at));
                     Some(read.map_err(|error| rebased(error, "baseline"))?.value)
                 }
                 None => None,
@@ -453,13 +456,15 @@ impl ChartArea<'_> {
             let svarodaya = match asked.svarodaya {
                 Some(asked) => {
                     let window = window_around(at, asked.minutes, "svarodaya.minutes")?;
-                    let reading = self.svarodaya(at, place, offset).and_then(|reading| {
-                        let runs = self.svarodaya_runs(window, place, offset)?;
-                        Ok(SvarodayaAround {
-                            at: reading.value,
-                            runs: runs.value,
-                        })
-                    });
+                    let reading = self
+                        .svarodaya(at, place, clock.clone())
+                        .and_then(|reading| {
+                            let runs = self.svarodaya_runs(window, place, clock.clone())?;
+                            Ok(SvarodayaAround {
+                                at: reading.value,
+                                runs: runs.value,
+                            })
+                        });
                     Some(reading.map_err(|error| rebased(error, "svarodaya"))?)
                 }
                 None => None,
@@ -478,7 +483,7 @@ impl ChartArea<'_> {
                     let settings = &self.context().resolved().settings.dasha;
                     let read = asked.rules(&carried, settings).and_then(|rules| {
                         let span = window_around(at, asked.minutes, "minutes")?;
-                        self.sensitivity(at, span, place, offset, &rules)
+                        self.sensitivity(at, span, place, clock.clone(), &rules)
                     });
                     Some(read.map_err(|error| rebased(error, "sensitivity"))?.value)
                 }

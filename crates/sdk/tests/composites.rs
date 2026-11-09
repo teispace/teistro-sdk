@@ -73,12 +73,13 @@ fn partner((jd, latitude, longitude): (f64, f64, f64)) -> Partner {
             Longitude::literal(longitude),
             Altitude::literal(0.0),
         ),
-        utc_offset: UtcOffset::UTC,
+        utc_offset: Some(UtcOffset::UTC),
+        zone: None,
     }
 }
 
 fn born(sdk: &Context, birth: &Partner, outer: bool) -> Document {
-    let request = ChartRequest::at(birth.place, birth.utc_offset);
+    let request = ChartRequest::on(birth.place, birth.clock().unwrap());
     let request = if outer {
         request.with_outer_planets()
     } else {
@@ -191,12 +192,12 @@ fn the_davison_chart_is_the_recast_cast_at_the_midpoint_birth() {
 #[test]
 fn a_davison_birth_takes_the_shorter_way_round_and_the_mean_clock() {
     let east = Partner {
-        utc_offset: UtcOffset::try_from_seconds(12 * 3600).unwrap(),
+        utc_offset: Some(UtcOffset::try_from_seconds(12 * 3600).unwrap()),
         place: Place::try_from_degrees(-36.85, 174.76, 10.0).unwrap(),
         ..partner(GEORGE)
     };
     let west = Partner {
-        utc_offset: UtcOffset::try_from_seconds(-10 * 3600).unwrap(),
+        utc_offset: Some(UtcOffset::try_from_seconds(-10 * 3600).unwrap()),
         place: Place::try_from_degrees(21.31, -157.86, 20.0).unwrap(),
         ..partner(MARY)
     };
@@ -205,7 +206,7 @@ fn a_davison_birth_takes_the_shorter_way_round_and_the_mean_clock() {
     assert!((between.place.longitude.get() + 171.55).abs() < 1e-9);
     assert!((between.place.latitude.get() + 7.77).abs() < 1e-9);
     assert!((between.place.altitude.get() - 15.0).abs() < 1e-9);
-    assert_eq!(between.utc_offset.seconds(), 3600);
+    assert_eq!(between.utc_offset.map(UtcOffset::seconds), Some(3600));
     // The same birth, either way round.
     assert_eq!(west.davison(&east).unwrap(), between);
 }

@@ -275,7 +275,10 @@ impl DavisonColumns {
             columns.latitude_deg.push(birth.place.latitude.get());
             columns.longitude_deg.push(birth.place.longitude.get());
             columns.altitude_m.push(birth.place.altitude.get());
-            columns.utc_offset_seconds.push(birth.utc_offset.seconds());
+            // A Davison birth always states its mean clock.
+            columns
+                .utc_offset_seconds
+                .push(birth.utc_offset.map_or(0, teistro_core::UtcOffset::seconds));
         }
         Ok(columns)
     }

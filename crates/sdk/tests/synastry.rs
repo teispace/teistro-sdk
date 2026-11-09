@@ -314,7 +314,7 @@ fn a_batch_read_against_one_partner_is_each_chart_read_against_it() {
     let far = PartnerSynastry::new(
         Partner {
             instant: JulianDay::<Utc>::try_new(9_000_000.0).unwrap(),
-            ..asked.partner
+            ..asked.partner.clone()
         },
         asked.request.clone(),
     );
@@ -470,7 +470,8 @@ fn a_synastry_makes_the_composite_and_the_davison_birth_when_asked() {
     let george_birth = Partner {
         instant: george.foundation.instant,
         place: george.foundation.place,
-        utc_offset: UtcOffset::UTC,
+        utc_offset: Some(UtcOffset::UTC),
+        zone: None,
     };
     assert_eq!(
         asked.davisons(&[george], &UtcOffset::UTC).unwrap(),

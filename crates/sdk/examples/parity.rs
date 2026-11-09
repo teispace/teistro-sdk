@@ -4563,7 +4563,7 @@ fn put_one_chart(
             number(davison.place.latitude.get()),
             number(davison.place.longitude.get()),
             number(davison.place.altitude.get()),
-            davison.utc_offset.seconds()
+            davison.utc_offset.map_or(0, teistro::UtcOffset::seconds)
         ),
     );
 }
@@ -7190,6 +7190,22 @@ fn the_rites(report: &mut Report, geo: &Context) {
             written_keys(&sankalpa.value, &["vara", "paksha", "tithi", "nakshatra"])
         ),
     );
+    // The same rite asked on Kathmandu's zone in 1985 and in 2026: each
+    // instant read at the offset the zone had then.
+    let zoned: Vec<String> = [2_446_217.770_833_f64, 2_461_055.593_75]
+        .iter()
+        .map(|at| {
+            let asked = format!(
+                r#"{{"at":{at},"latitudeDeg":27.7172,"longitudeDeg":85.324,"altitudeM":1400,"zone":{{"kind":"IANA","zone":"Asia/Kathmandu"}}}}"#
+            );
+            let answer = almanac
+                .sankalpa_request(&teistro::SankalpaRequest::from_json(&asked).expect("a request"))
+                .expect("a sankalpa on a zone");
+            let clock = answer.provenance.time.clock.as_ref().expect("a zone's clock");
+            clock.offset.seconds().to_string()
+        })
+        .collect();
+    put(report, "requests-in-zone", zoned.join(" "));
     let ashauch = almanac
         .ashauch_query(&teistro::AshauchQuery::from_json(ASHAUCH_ASKED).expect("a query"))
         .expect("an ashauch");

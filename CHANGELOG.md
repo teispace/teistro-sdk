@@ -78,6 +78,24 @@ its provenance gains `time.clock`, `MANUAL`.
 - `ChartRequest::offset()` is `ChartRequest::clock()`, a `DayClock`; `varsha` and `masa_pravesha` take
   `impl Into<DayClock>` and `davisons` a `&dyn LocalClock`.
 
+**Every request with a clock asked by zone.**
+**Numbers:** none for a request asked by an offset: its answer and input hash are byte for byte what they were; a
+rashifal and a rectification's provenance gains `time.clock`, `MANUAL`.
+- A sankalpa, `almanac.ashauch`, `household`, `deathTime`, `firstYear`, `pakshi`, a rashifal period, a mundane chart,
+  a rectification, a research study's births and a matching or synastry partner take `zone` in place of
+  `utcOffsetSeconds`; giving both is refused naming `zone`. Each instant is read at the zone's offset then, so a
+  Kathmandu study counts 1985's births on +05:30 and today's on +05:45 (SR-10, `03-design/time-and-timezone.md`
+  §3.4, C1250, C1251).
+- Rust: `SankalpaRequest`, `AshauchQuery`, `HouseholdQuery`, `DeathTimeQuery`, `FirstYearQuery` and `PakshiRequest`
+  hold a `clock: DayClock` in place of `offset`; `RashifalRequest::clock()` replaces `offset()`;
+  `RashifalRequest::between`, `day`, the rectification calls and `found`/`found_many` take `impl Into<DayClock>`;
+  `Partner` and `Birth` gain `zone` and `in_zone`, `Partner::utc_offset` is an `Option`, and neither is `Copy`.
+- A Davison of a partner by zone fixes the partner to its offset first (`Partner::fixed`); `davison` refuses a
+  partner still on a zone.
+- Node, Python and Dart take `zone` on each of these calls and records; Java takes a `ZoneSpec` overload of
+  `sankalpa`, `ashauch`, `household`, `deathTime` and `firstYear`, and a partner's `zone` through its request.
+  Parity line `requests-in-zone`.
+
 **What would settle each uncomputed dasha.**
 **Numbers:** none: a documentation column.
 - `dasha-coverage-measured.md` names, for each of the 8 catalogued dashas this build does not compute,

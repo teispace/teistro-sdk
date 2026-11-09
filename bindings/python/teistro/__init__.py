@@ -3075,6 +3075,19 @@ def _chart_clock(utc_offset_seconds: Optional[int], zone: Optional[ZoneSpec]) ->
     return 0, _zone_json(zone)
 
 
+def _clock_fields(utc_offset_seconds: Optional[int], zone: Optional[ZoneSpec]) -> Dict[str, Any]:
+    """A request's clock as the SDK reads it: `utcOffsetSeconds`, or `zone`
+    read at each instant's offset then. Both cross when both are given, and
+    the SDK refuses them naming `zone`; neither is refused naming
+    `utcOffsetSeconds`."""
+    clock: Dict[str, Any] = {}
+    if utc_offset_seconds is not None:
+        clock["utcOffsetSeconds"] = utc_offset_seconds
+    if zone is not None:
+        clock["zone"] = json.loads(_zone_json(zone))
+    return clock
+
+
 def _zone_json(zone: ZoneSpec) -> str:
     """A zone as the record the boundary reads beside a range."""
     if zone.kind == ZoneKind.IANA:
@@ -3696,20 +3709,22 @@ class ChartArea(_Area):
         from_instant: Optional[float] = None,
         ingress: Optional[Union[MundaneKind, str]] = None,
         event: Optional["MundaneEvent"] = None,
-        utc_offset_seconds: int = 0,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
     ) -> "MundaneChart":
         """A mundane chart (`03-design/mundane-charts.md`): the moment its
         kind names (an ingress, the lunation before one, an eclipse, a great
         conjunction, or an event on record), found by the SDK's own
         searches, and the chart cast for it at `place`, `ChartKind.MUNDANE`
         (`ChartKind.EVENT` for an event). The moment is sealed by the
-        chart cast there, with the request as its input."""
+        chart cast there, with the request as its input. The clock is
+        `utc_offset_seconds`, 0 by default, or a `zone` read at the moment."""
         asked: Dict[str, Any] = {
             "kind": _member_key(kind),
             "latitudeDeg": float(place.latitude_deg),
             "longitudeDeg": float(place.longitude_deg),
             "altitudeM": float(place.altitude_m),
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(0 if zone is None and utc_offset_seconds is None else utc_offset_seconds, zone),
         }
         if year is not None:
             asked["year"] = year
@@ -4077,7 +4092,8 @@ class AlmanacArea(_Area):
         *,
         from_date: CalendarDate,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         native: Union[PakshiBirdNative, PakshiStarNative],
         to_date: Optional[CalendarDate] = None,
         rules: Optional[PakshiRules] = None,
@@ -4091,6 +4107,9 @@ class AlmanacArea(_Area):
         refused as `pakshi.native.bird` or `pakshi.native.nakshatra`. The
         answer is the envelope: the days, and the provenance that sealed the
         request.
+
+        The clock is `utc_offset_seconds` or a `zone`, never both; a zone
+        is read at each instant's offset then.
 
         >>> # days = ctx.almanac.pakshi(from_date=date, place=madras, utc_offset_seconds=19800,
         >>> #     native={"nakshatra": Nakshatra.UTTARA_ASHADHA, "paksha": Paksha.SHUKLA})
@@ -4110,7 +4129,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
             "native": whose,
         }
         if to_date is not None:
@@ -4129,7 +4148,8 @@ class AlmanacArea(_Area):
         *,
         at: float,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         ayana: Literal["SIDEREAL", "TROPICAL"] = "SIDEREAL",
     ) -> "SankalpaAnswer":
         """**The time a sankalpa recites** at the instant `at`, a UTC
@@ -4141,6 +4161,9 @@ class AlmanacArea(_Area):
         turns at Makara and Karka sankranti (`"SIDEREAL"`) or at the
         solstices (`"TROPICAL"`).
 
+        The clock is `utc_offset_seconds` or a `zone`, never both; a zone
+        is read at each instant's offset then.
+
         >>> # found = ctx.almanac.sankalpa(at=2461055.59375, place=kathmandu, utc_offset_seconds=20700)
         >>> # found.value.tithi  # Tithi.KRISHNA_DWADASHI
         """
@@ -4149,7 +4172,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
             "ayana": ayana,
         }
         answered = self._context._through_provider(lambda: self._context.inner.almanac_sankalpa(json.dumps(asked)))
@@ -4159,7 +4182,8 @@ class AlmanacArea(_Area):
         self,
         *,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         request: "AshauchRequest",
         table: Optional["AshauchTable"] = None,
         tradition: Optional["AshauchTradition"] = None,
@@ -4175,6 +4199,9 @@ class AlmanacArea(_Area):
         never beside `table`; a period already running goes in `request["during"]`, each
         one an earlier answer's `value.running()`.
 
+        The clock is `utc_offset_seconds` or a `zone`, never both; a zone
+        is read at each instant's offset then.
+
         >>> # found = ctx.almanac.ashauch(place=kathmandu, utc_offset_seconds=20700, request={
         >>> #     "key": "grandfather", "relation": "SAPINDA",
         >>> #     "event": {"event": "DEATH", "at": 2461051.677083}})  # 2026-01-11 10:00 in Kathmandu
@@ -4184,7 +4211,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
             "request": request,
         }
         if table is not None:
@@ -4198,7 +4225,8 @@ class AlmanacArea(_Area):
         self,
         *,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         household: "Household",
         table: Optional["AshauchTable"] = None,
         tradition: Optional["AshauchTradition"] = None,
@@ -4212,6 +4240,9 @@ class AlmanacArea(_Area):
         `household`, `table` and `tradition` cross as written, so a key the
         SDK does not read is refused by name under `household`.
 
+        The clock is `utc_offset_seconds` or a `zone`, never both; a zone
+        is read at each instant's offset then.
+
         >>> # found = ctx.almanac.household(place=kathmandu, utc_offset_seconds=20700, household={
         >>> #     "events": [{"key": "grandfather", "event": {"event": "DEATH", "at": 2461051.677083}}],
         >>> #     "observers": [{"key": "son", "ties": [{"event": "grandfather", "relation": "CHILD"}]}]})
@@ -4221,7 +4252,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
             "household": household,
         }
         if table is not None:
@@ -4286,7 +4317,8 @@ class AlmanacArea(_Area):
         self,
         *,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         at: float,
         cremated_at: Optional[float] = None,
         table: Optional["DeathTimeTable"] = None,
@@ -4299,6 +4331,9 @@ class AlmanacArea(_Area):
         the burning is taken to fall as the death did; one before the
         death is refused as `deathTime.crematedAt`.
 
+        The clock is `utc_offset_seconds` or a `zone`, never both; a zone
+        is read at each instant's offset then.
+
         >>> # found = ctx.almanac.death_time(place=kathmandu, utc_offset_seconds=20700, at=2461051.677083)
         >>> # found.value.death.panchaka  # False
         """
@@ -4306,7 +4341,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
             "at": at,
         }
         if cremated_at is not None:
@@ -4367,7 +4402,8 @@ class AlmanacArea(_Area):
         self,
         *,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         request: "FirstYearRequest",
     ) -> "FirstYearAnswer":
         """**A death's first year** at a place (`03-design/shraddha.md`
@@ -4379,6 +4415,9 @@ class AlmanacArea(_Area):
         *Dharmasindhu*'s when left out, so a key the SDK does not read is
         refused by name under `firstYear.request`.
 
+        The clock is `utc_offset_seconds` or a `zone`, never both; a zone
+        is read at each instant's offset then.
+
         >>> # found = ctx.almanac.first_year(place=kathmandu, utc_offset_seconds=20700, request={
         >>> #     "key": "GRANDFATHER", "at": 2461051.677083})  # 2026-01-11 10:00 in Kathmandu
         >>> # found.value.rites[0].rite  # "ADYA_MASIKA"
@@ -4387,7 +4426,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
             "request": request,
         }
         answered = self._context._through_provider(lambda: self._context.inner.almanac_first_year(json.dumps(asked)))
@@ -5093,8 +5132,12 @@ class ResearchBirth:
 
     instant: float
     place: Observer
-    utc_offset_seconds: int
+    utc_offset_seconds: Optional[int] = None
+    """The clock, seconds east of UTC; or `zone`, never both."""
     uncertainty_minutes: float = 0.0
+    zone: Optional[ZoneSpec] = None
+    """The zone the birth is read on, at its offset then; or
+    `utc_offset_seconds`."""
 
 
 @dataclass(frozen=True)
@@ -5642,7 +5685,7 @@ class ResearchArea(_Area):
                 "latitudeDeg": given.place.latitude_deg,
                 "longitudeDeg": given.place.longitude_deg,
                 "altitudeM": given.place.altitude_m,
-                "utcOffsetSeconds": given.utc_offset_seconds,
+                **_clock_fields(given.utc_offset_seconds, given.zone),
                 "uncertaintyMinutes": given.uncertainty_minutes,
             }
 
@@ -9750,7 +9793,7 @@ class ParallelRow:
 
 class SynastryPartner(TypedDict, total=False):
     """The partner every chart is read against: a birth's instant, its
-    observer, and its clock, UTC when left out.
+    observer, and its clock, an offset or a zone, UTC when left out.
 
     >>> mary: SynastryPartner = {"instant": 2403113.4993, "observer": Observer(
     ...     latitude_deg=Latitude(51.5058), longitude_deg=Longitude(-0.1878), altitude_m=Altitude(0))}
@@ -9759,6 +9802,9 @@ class SynastryPartner(TypedDict, total=False):
     instant: Required[float]
     observer: Required[Observer]
     utc_offset_seconds: int
+    zone: ZoneSpec
+    """The zone the birth is read on, at its offset then; or
+    `utc_offset_seconds`, never both."""
 
 
 class SynastryRequest(WesternAspectRequest, total=False):
@@ -12516,7 +12562,8 @@ RashifalRequest = TypedDict(
         "first": Required[CalendarDate],
         "last": CalendarDate,
         "place": Required[Observer],
-        "utcOffsetSeconds": Required[int],
+        "utcOffsetSeconds": int,
+        "zone": ZoneSpec,
         "snapshot": Mapping[str, Any],
         "events": Sequence[Union[Graha, str]],
         "spells": Sequence[int],
@@ -12525,7 +12572,8 @@ RashifalRequest = TypedDict(
 )
 """A period of civil days at a place, to read for each of the twelve signs
 (`03-design/rashifal.md`): `first` and `last` (the first when left out) in
-the first's calendar, `place`, `utcOffsetSeconds`; optionally `snapshot`,
+the first's calendar, `place`, `utcOffsetSeconds` or a `zone` (each day
+on the zone's offset then); optionally `snapshot`,
 `{"at": "SUNRISE"}` by default or `{"at": "CLOCK", "hour": 6, "minute": 0}`
 (C358), `events`, the grahas whose ingresses and stations are reported
 (every one but the Moon by default, C360), and `spells`, Saturn's smaller
@@ -16375,8 +16423,9 @@ def _synastry_json(asked: Optional[SynastryRequest]) -> Optional[str]:
 
 def _partner_wire(partner: Mapping[str, Any], root: str) -> Dict[str, Any]:
     """A partner's birth as the boundary reads it: the observer as the
-    place a chart is founded at, and the clock as `utcOffsetSeconds`."""
-    rest = {key: value for key, value in partner.items() if key not in ("observer", "utc_offset_seconds")}
+    place a chart is founded at, and the clock as `utcOffsetSeconds` or a
+    `zone`."""
+    rest = {key: value for key, value in partner.items() if key not in ("observer", "utc_offset_seconds", "zone")}
     observer = partner.get("observer")
     if not isinstance(observer, Observer):
         raise TypeError(f"{root}['partner']['observer']: expected an Observer")
@@ -16387,7 +16436,9 @@ def _partner_wire(partner: Mapping[str, Any], root: str) -> Dict[str, Any]:
             "longitude": float(observer.longitude_deg),
             "altitude": float(observer.altitude_m),
         },
-        "utcOffsetSeconds": partner.get("utc_offset_seconds", 0),
+        **_clock_fields(
+            partner.get("utc_offset_seconds", 0 if partner.get("zone") is None else None), partner.get("zone")
+        ),
     }
 
 
@@ -16517,7 +16568,7 @@ def _rashifal_period_asked(request: Any) -> Dict[str, Any]:
             "a rashifal period is a mapping, such as {'first': date, 'place': place, 'utcOffsetSeconds': 20700}",
             field="rashifal",
         )
-    rest = {key: value for key, value in request.items() if key not in ("first", "last", "place")}
+    rest = {key: value for key, value in request.items() if key not in ("first", "last", "place", "zone")}
 
     def day(date: Any, what: str) -> CalendarDate:
         if not isinstance(date, CalendarDate):
@@ -16539,6 +16590,8 @@ def _rashifal_period_asked(request: Any) -> Dict[str, Any]:
         "longitudeDeg": place.longitude_deg,
         "altitudeM": place.altitude_m,
     }
+    if request.get("zone") is not None:
+        asked["zone"] = json.loads(_zone_json(request["zone"]))
     if request.get("last") is not None:
         asked["last"] = parts(day(request["last"], "last"))
     if "events" in rest:

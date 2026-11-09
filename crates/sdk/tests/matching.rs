@@ -48,7 +48,8 @@ fn partner(instant: f64) -> Partner {
     Partner {
         instant: JulianDay::<Utc>::try_new(instant).unwrap(),
         place: kathmandu(),
-        utc_offset: UtcOffset::UTC,
+        utc_offset: Some(UtcOffset::UTC),
+        zone: None,
     }
 }
 

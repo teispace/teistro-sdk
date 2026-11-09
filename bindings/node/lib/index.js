@@ -1402,7 +1402,8 @@ export class Chart {
   /**
    * The Western aspects between this chart and the partner's
    * (`synastry: { partner: { instant, place, utcOffsetSeconds }, aspects,
-   * orbs, lagna, zodiac }`, Leo's nine under his orbs in the tropical
+   * orbs, lagna, zodiac }`, the partner's clock `utcOffsetSeconds` or a
+   * `zone` such as `ianaZone('Asia/Kathmandu')`, Leo's nine under his orbs in the tropical
    * zodiac by default); `null` unless asked for
    * (`03-design/western-synastry.md`).
    *
@@ -3235,7 +3236,7 @@ export class ChartArea extends Area {
    * @param {string} [request.ingress] for a lunation, the ingress it precedes; Mesha's by default
    * @param {object} [request.event] for an `EVENT`, `{ name, instant, source }`
    * @param {object} request.place `{ latitude, longitude, altitude }`
-   * @param {number} [request.utcOffsetSeconds] the local clock's offset, 0 by default
+   * @param {number} [request.utcOffsetSeconds] the local clock's offset, 0 by default; or `request.zone`
    * @returns {object} the moment, its `chart` and its `provenance`
    */
   mundane(request) {
@@ -3248,7 +3249,7 @@ export class ChartArea extends Area {
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(request.utcOffsetSeconds ?? 0, 'utcOffsetSeconds'),
+      ...clockOf(request.zone == null ? request.utcOffsetSeconds ?? 0 : request.utcOffsetSeconds, request.zone),
     };
     for (const key of ['year', 'from', 'ingress', 'event']) {
       if (request[key] !== undefined && request[key] !== null) asked[key] = request[key];
@@ -3542,7 +3543,7 @@ export class ChartArea extends Area {
           "a rectification request record, e.g. { purify: { minutes: 30 } } or { baseline: { uncertaintyMinutes: 60, sex: 'MALE' } }",
         ),
         matchingJson: recordJson(
-          request.matching,
+          partnered(request.matching),
           'matching',
           "a matching request record, e.g. { partner: { instant: 2447892.5, place: { latitude, longitude, altitude } }, partnerRole: 'BRIDE' }",
         ),
@@ -3552,7 +3553,7 @@ export class ChartArea extends Area {
           'a midpoints request record, e.g. {} or { orbDeg: 1 }',
         ),
         synastryJson: recordJson(
-          request.synastry,
+          partnered(request.synastry),
           'synastry',
           'a synastry request record, e.g. { partner: { instant: 2460676.5, place: { latitude, longitude, altitude } } }',
         ),
@@ -3579,7 +3580,7 @@ export class ChartArea extends Area {
    * const leo = week.period.readings.find((r) => r.rashi === 'rashi.LEO');
    * const sealed = week.provenance.inputHash;
    *
-   * @param {object} request the period: `first`, `last`, `place`, `utcOffsetSeconds`, and optionally `snapshot`, `events` and `spells`
+   * @param {object} request the period: `first`, `last`, `place`, `utcOffsetSeconds` (or `zone`), and optionally `snapshot`, `events` and `spells`
    * @param {string} [baseline] `'DAILY'`, `'WEEKLY'`, `'MONTHLY'` or `'YEARLY'`, for the baseline engine's score
    * @returns {object} the period's answer with its `provenance` beside it
    */
@@ -3631,7 +3632,7 @@ function rashifalPeriodAsked(request) {
   });
   // Everything else crosses as written, so a key the SDK does not read is
   // refused by name there rather than dropped here.
-  const { first: given, last, place: where, utcOffsetSeconds, ...rest } = request;
+  const { first: given, last, place: where, utcOffsetSeconds, zone, ...rest } = request;
   const place = where ?? {};
   const first = given ?? {};
   const asked = {
@@ -3640,7 +3641,7 @@ function rashifalPeriodAsked(request) {
     latitudeDeg: finite(place.latitude, 'place.latitude'),
     longitudeDeg: finite(place.longitude, 'place.longitude'),
     altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-    utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    ...clockOf(utcOffsetSeconds, zone),
   };
   if (first.calendar !== undefined) asked.calendar = first.calendar;
   if (last !== undefined && last !== null) asked.last = day(last, 'last');
@@ -6874,6 +6875,16 @@ function annualPlace(place) {
  * @param {string} example
  * @returns {string|undefined}
  */
+/**
+ * A matching or synastry record with its partner's `zone`, a `ZoneSpec`,
+ * written as the SDK reads one; anything else crosses as given.
+ */
+function partnered(record) {
+  const zone = record?.partner?.zone;
+  if (zone === undefined || zone === null) return record;
+  return { ...record, partner: { ...record.partner, zone: JSON.parse(zoneJson(zone)) } };
+}
+
 function recordJson(value, field, example) {
   if (value === undefined || value === null) return undefined;
   if (typeof value === 'object' && !Array.isArray(value)) return JSON.stringify(value);
@@ -7815,7 +7826,8 @@ export class NamingArea extends Area {
  * study's pre-registration, published before its data are collected.
  *
  * A birth is `{ instant, place, utcOffsetSeconds, uncertaintyMinutes }`,
- * the instant a Julian day in UTC and the last optional. A seed is a
+ * the instant a Julian day in UTC and the last optional; `zone` in place
+ * of `utcOffsetSeconds` reads each birth at the zone's offset then. A seed is a
  * number or, past `Number.MAX_SAFE_INTEGER`, a `bigint`.
  */
 export class ResearchArea extends Area {
@@ -7908,8 +7920,11 @@ function researchOf(study, request, cross) {
       latitudeDeg: finite(place.latitude, `${what}.place.latitude`),
       longitudeDeg: finite(place.longitude, `${what}.place.longitude`),
       altitudeM: finite(place.altitude ?? 0, `${what}.place.altitude`),
-      utcOffsetSeconds: finite(given?.utcOffsetSeconds, `${what}.utcOffsetSeconds`),
     };
+    if (given?.zone !== undefined && given?.zone !== null) out.zone = JSON.parse(zoneJson(given.zone));
+    if ((given?.utcOffsetSeconds !== undefined && given?.utcOffsetSeconds !== null) || out.zone === undefined) {
+      out.utcOffsetSeconds = finite(given?.utcOffsetSeconds, `${what}.utcOffsetSeconds`);
+    }
     if (given?.uncertaintyMinutes !== undefined) {
       out.uncertaintyMinutes = finite(given.uncertaintyMinutes, `${what}.uncertaintyMinutes`);
     }
@@ -8126,7 +8141,7 @@ export class AlmanacArea extends Area {
    * @param {object} request.from the first day, as `date(...)` builds one
    * @param {object} [request.to] the last day, both ends included; `from` when left out
    * @param {object} request.place `{ latitude, longitude, altitude }`
-   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} [request.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `request.zone`, each instant read at the zone's offset then
    * @param {object} request.native `{ bird }`, or `{ nakshatra, paksha, rule }` with `rule` optional
    * @param {object} [request.rules] `{ clock, subs, relations }`, each optional
    * @returns {{ value: object[], provenance: object }}
@@ -8142,7 +8157,7 @@ export class AlmanacArea extends Area {
     });
     // Everything else crosses as written, so a key the SDK does not read is
     // refused by name there rather than dropped here.
-    const { from: given, to, place: where, utcOffsetSeconds, ...rest } = request;
+    const { from: given, to, place: where, utcOffsetSeconds, zone, ...rest } = request;
     const place = where ?? {};
     const from = given ?? {};
     const asked = {
@@ -8151,7 +8166,7 @@ export class AlmanacArea extends Area {
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      ...clockOf(utcOffsetSeconds, zone),
     };
     if (from.calendar !== undefined) asked.calendar = from.calendar;
     if (to !== undefined && to !== null) asked.last = day(to, 'to');
@@ -8184,7 +8199,7 @@ export class AlmanacArea extends Area {
    * @param {object} request
    * @param {number} request.at the instant of the rite, a UTC Julian day
    * @param {object} request.place `{ latitude, longitude, altitude }`
-   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} [request.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `request.zone`, each instant read at the zone's offset then
    * @param {'SIDEREAL' | 'TROPICAL'} [request.ayana] how the ayana turns: at
    *   Makara and Karka sankranti, or at the solstices; `'SIDEREAL'` when left out
    * @returns {{ value: object, provenance: object }}
@@ -8195,7 +8210,7 @@ export class AlmanacArea extends Area {
     }
     // Everything else crosses as written, so a key the SDK does not read is
     // refused by name there rather than dropped here.
-    const { at, place: where, utcOffsetSeconds, ...rest } = request;
+    const { at, place: where, utcOffsetSeconds, zone, ...rest } = request;
     const place = where ?? {};
     const asked = {
       ...rest,
@@ -8203,7 +8218,7 @@ export class AlmanacArea extends Area {
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      ...clockOf(utcOffsetSeconds, zone),
     };
     const { value, provenance } = JSON.parse(
       run(this, (inner) => inner.almanacSankalpa(JSON.stringify(asked))),
@@ -8243,7 +8258,7 @@ export class AlmanacArea extends Area {
    *
    * @param {object} query
    * @param {object} query.place `{ latitude, longitude, altitude }`
-   * @param {number} query.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} [query.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `query.zone`, each instant read at the zone's offset then
    * @param {object} query.request `{ key, event, relation, heardAt, abroad, nearness, fullDays, during }`,
    *   its instants UTC Julian days
    * @param {object} [query.table] the tradition's table, every row data
@@ -8256,14 +8271,14 @@ export class AlmanacArea extends Area {
     // The request, the table and anything else cross as written, so a key
     // the SDK does not read is refused by name there rather than dropped
     // here.
-    const { place: where, utcOffsetSeconds, ...rest } = query;
+    const { place: where, utcOffsetSeconds, zone, ...rest } = query;
     const place = where ?? {};
     const asked = {
       ...rest,
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      ...clockOf(utcOffsetSeconds, zone),
     };
     const { value, provenance } = JSON.parse(
       run(this, (inner) => inner.almanacAshauch(JSON.stringify(asked))),
@@ -8295,7 +8310,7 @@ export class AlmanacArea extends Area {
    *
    * @param {object} query
    * @param {object} query.place `{ latitude, longitude, altitude }`
-   * @param {number} query.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} [query.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `query.zone`, each instant read at the zone's offset then
    * @param {object} query.household `{ events, observers }`, an event `{ key, event }`, an observer
    *   `{ key, ties }`, a tie `{ event, relation, heardAt, abroad, nearness, fullDays, fireGiver }`
    * @param {object} [query.table] the tradition's table, every row data
@@ -8377,7 +8392,7 @@ export class AlmanacArea extends Area {
    *
    * @param {object} query
    * @param {object} query.place `{ latitude, longitude, altitude }`
-   * @param {number} query.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} [query.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `query.zone`, each instant read at the zone's offset then
    * @param {number} query.at the death, a UTC Julian day
    * @param {number} [query.crematedAt] the burning, a UTC Julian day
    * @param {object} [query.table] the tradition's lists, every one data
@@ -8466,7 +8481,7 @@ export class AlmanacArea extends Area {
    *
    * @param {object} query
    * @param {object} query.place `{ latitude, longitude, altitude }`
-   * @param {number} query.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} [query.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `query.zone`, each instant read at the zone's offset then
    * @param {object} query.request `{ key, at, night, firstAbdika, firstYearAdhika, sapindana, una, window }`,
    *   `at` the death as a UTC Julian day
    * @returns {{ value: object, provenance: object }}
@@ -8477,14 +8492,14 @@ export class AlmanacArea extends Area {
     }
     // The request and anything else cross as written, so a key the SDK
     // does not read is refused by name there rather than dropped here.
-    const { place: where, utcOffsetSeconds, ...rest } = query;
+    const { place: where, utcOffsetSeconds, zone, ...rest } = query;
     const place = where ?? {};
     const asked = {
       ...rest,
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      ...clockOf(utcOffsetSeconds, zone),
     };
     const { value, provenance } = JSON.parse(
       run(this, (inner) => inner.almanacFirstYear(JSON.stringify(asked))),
@@ -9822,15 +9837,30 @@ function located(query, name, shape) {
   if (typeof query !== 'object' || query === null || Array.isArray(query)) {
     throw new TypeError(`${name}: expected a query, e.g. ${shape}`);
   }
-  const { place: where, utcOffsetSeconds, ...rest } = query;
+  const { place: where, utcOffsetSeconds, zone, ...rest } = query;
   const place = where ?? {};
   return {
     ...rest,
     latitudeDeg: finite(place.latitude, 'place.latitude'),
     longitudeDeg: finite(place.longitude, 'place.longitude'),
     altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-    utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+    ...clockOf(utcOffsetSeconds, zone),
   };
+}
+
+/**
+ * A request's clock as the SDK reads it: `utcOffsetSeconds`, or `zone`
+ * (an `ianaZone`, `fixedZone` or `localMeanZone`) read at each instant's
+ * offset then. Both cross when both are given, and the SDK refuses them
+ * naming `zone`.
+ */
+function clockOf(utcOffsetSeconds, zone) {
+  const clock = {};
+  if (zone !== undefined && zone !== null) clock.zone = JSON.parse(zoneJson(zone));
+  if ((utcOffsetSeconds !== undefined && utcOffsetSeconds !== null) || clock.zone === undefined) {
+    clock.utcOffsetSeconds = finite(utcOffsetSeconds, 'utcOffsetSeconds');
+  }
+  return clock;
 }
 
 /** A query that needs no place, sent as written; its answer's text. */

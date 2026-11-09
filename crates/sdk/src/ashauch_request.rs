@@ -7,15 +7,15 @@ use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::quantity::Place;
 use teistro_core::quantity::{JulianDay, Utc};
-use teistro_core::time::UtcOffset;
 use teistro_panchanga::ashauch::{
     AshauchRequest, AshauchTable, Household, Kin, KinAsked, KinTable, RiteAnswer, RiteAsked,
     RiteTable,
 };
 use teistro_panchanga::death_time::DeathTimeTable;
+use teistro_time::ZoneSpec;
 
-use crate::AlmanacArea;
-use crate::asked::{offset_of, place_of};
+use crate::asked::place_of;
+use crate::{AlmanacArea, DayClock};
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -34,8 +34,9 @@ const DEATH_TIME: &str = "deathTime";
 pub struct AshauchQuery {
     /// The place whose sunrises count the days.
     pub place: Place,
-    /// The offset its civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read on.
+    pub clock: DayClock,
     /// The tradition's table.
     pub table: AshauchTable,
     /// The event, the observer and what is already running.
@@ -56,8 +57,13 @@ pub(crate) struct AshauchAsked {
     #[serde(default)]
     altitude_m: f64,
     /// The offset from UTC the place's civil days run at, in seconds,
-    /// east positive.
-    utc_offset_seconds: i32,
+    /// east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The tradition's table, every row data; the *Dharmasindhu*'s when
     /// left out.
     #[serde(default)]
@@ -82,7 +88,8 @@ pub(crate) enum AshauchTradition {
 
 impl AshauchQuery {
     /// The record a binding sends, as JSON: `latitudeDeg`, `longitudeDeg`,
-    /// `altitudeM` (0 when left out) and `utcOffsetSeconds`; `table`, the
+    /// `altitudeM` (0 when left out) and `utcOffsetSeconds` or a `zone`
+    /// (each instant then read at the zone's offset then); `table`, the
     /// *Dharmasindhu*'s when left out, or `tradition`, a shipped table by
     /// its name (`DHARMASINDHU`, `MITAKSHARA`); and `request`, its instants
     /// UTC Julian days.
@@ -119,8 +126,9 @@ impl AshauchQuery {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read, a place or offset out of range, or a table or request that
-    /// cannot be counted ([`AshauchTable::check`],
+    /// read, a place or offset out of range, both or neither of
+    /// `utcOffsetSeconds` and `zone`, or a table or request that cannot be
+    /// counted ([`AshauchTable::check`],
     /// [`AshauchRequest::check`]), each named under `ashauch`.
     pub fn from_json(text: &str) -> Result<AshauchQuery, Error> {
         let asked: AshauchAsked = teistro_core::strict::read(text, ASHAUCH)?;
@@ -155,7 +163,7 @@ impl AshauchAsked {
         self.request.check().map_err(|why| why.under("request"))?;
         Ok(AshauchQuery {
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             table,
             request: self.request,
         })
@@ -171,17 +179,18 @@ impl AlmanacArea<'_> {
     ///
     /// # Errors
     ///
-    /// As [`AlmanacArea::ashauch`].
+    /// As [`AlmanacArea::ashauch`]; a zone the database does not have, on
+    /// `zone`.
     pub fn ashauch_query(self, asked: &AshauchQuery) -> Result<Envelope<serde_json::Value>, Error> {
-        let Envelope { value, provenance } = self
-            .ashauch(&asked.table, &asked.request, &asked.place, asked.offset)
-            .map_err(|why| {
-                if why.field().is_some_and(|field| !field.is_empty()) {
-                    why.under("request").under(ASHAUCH)
-                } else {
-                    why
-                }
-            })?;
+        let Envelope { value, provenance } = self.clocked(
+            &asked.clock,
+            || Ok(asked.request.event.at()),
+            |almanac, offset| {
+                almanac
+                    .ashauch(&asked.table, &asked.request, &asked.place, offset)
+                    .map_err(|why| named_under(why, "ashauch.request"))
+            },
+        )?;
         Ok(Envelope::sealing(value.in_full()?, provenance))
     }
 }
@@ -201,8 +210,9 @@ fn named_under(why: Error, root: &str) -> Error {
 pub struct HouseholdQuery {
     /// The place whose sunrises count the days.
     pub place: Place,
-    /// The offset its civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read on.
+    pub clock: DayClock,
     /// The tradition's table.
     pub table: AshauchTable,
     /// The events and observers.
@@ -223,8 +233,13 @@ pub(crate) struct HouseholdAsked {
     #[serde(default)]
     altitude_m: f64,
     /// The offset from UTC the place's civil days run at, in seconds,
-    /// east positive.
-    utc_offset_seconds: i32,
+    /// east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The tradition's table, every row data; the *Dharmasindhu*'s when
     /// left out.
     #[serde(default)]
@@ -256,8 +271,9 @@ impl HouseholdQuery {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a place or offset
-    /// out of range, or a household that does not hold together, each
-    /// named under `household`.
+    /// out of range, both or neither of `utcOffsetSeconds` and `zone`, or
+    /// a household that does not hold together, each named under
+    /// `household`.
     pub fn from_json(text: &str) -> Result<HouseholdQuery, Error> {
         let asked: HouseholdAsked = teistro_core::strict::read(text, HOUSEHOLD)?;
         asked.query().map_err(|why| why.under(HOUSEHOLD))
@@ -270,7 +286,7 @@ impl HouseholdAsked {
         self.household.check().map_err(|why| why.under(HOUSEHOLD))?;
         Ok(HouseholdQuery {
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             table,
             household: self.household,
         })
@@ -391,8 +407,9 @@ impl RiteQuery {
 pub struct DeathTimeQuery {
     /// The place, whose day and sky are read.
     pub place: Place,
-    /// The offset its civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read on.
+    pub clock: DayClock,
     /// The death's instant.
     pub at: JulianDay<Utc>,
     /// The cremation's instant.
@@ -415,8 +432,13 @@ pub(crate) struct DeathTimeAsked {
     #[serde(default)]
     altitude_m: f64,
     /// The offset from UTC the place's civil days run at, in seconds,
-    /// east positive.
-    utc_offset_seconds: i32,
+    /// east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The death's instant, a UTC Julian day.
     at: JulianDay<Utc>,
     /// The cremation's instant, a UTC Julian day.
@@ -444,8 +466,8 @@ impl DeathTimeQuery {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a place or offset
-    /// out of range, or a cremation before the death, named under
-    /// `deathTime`.
+    /// out of range, both or neither of `utcOffsetSeconds` and `zone`, or
+    /// a cremation before the death, named under `deathTime`.
     pub fn from_json(text: &str) -> Result<DeathTimeQuery, Error> {
         let asked: DeathTimeAsked = teistro_core::strict::read(text, DEATH_TIME)?;
         if asked
@@ -457,11 +479,16 @@ impl DeathTimeQuery {
                 .under(DEATH_TIME));
         }
         let located = place_of(asked.latitude_deg, asked.longitude_deg, asked.altitude_m)
-            .and_then(|place| Ok((place, offset_of(asked.utc_offset_seconds)?)))
+            .and_then(|place| {
+                Ok((
+                    place,
+                    DayClock::asked(asked.utc_offset_seconds, asked.zone)?,
+                ))
+            })
             .map_err(|why| why.under(DEATH_TIME))?;
         Ok(DeathTimeQuery {
             place: located.0,
-            offset: located.1,
+            clock: located.1,
             at: asked.at,
             cremated_at: asked.cremated_at,
             table: asked.table.unwrap_or_else(DeathTimeTable::dharmasindhu),
@@ -475,14 +502,27 @@ impl AlmanacArea<'_> {
     ///
     /// # Errors
     ///
-    /// As [`AlmanacArea::household`], named under `household`.
+    /// As [`AlmanacArea::household`], named under `household`; a zone the
+    /// database does not have, on `zone`.
     pub fn household_query(
         self,
         asked: &HouseholdQuery,
     ) -> Result<Envelope<serde_json::Value>, Error> {
-        let Envelope { value, provenance } = self
-            .household(&asked.table, &asked.household, &asked.place, asked.offset)
-            .map_err(|why| named_under(why, "household.household"))?;
+        // The almanac reads a zone at each instant; the offset it is handed
+        // is the first event's.
+        let first = || {
+            Ok(asked
+                .household
+                .events
+                .first()
+                .map_or(JulianDay::J2000, |event| event.event.at()))
+        };
+        let Envelope { value, provenance } =
+            self.clocked(&asked.clock, first, |almanac, offset| {
+                almanac
+                    .household(&asked.table, &asked.household, &asked.place, offset)
+                    .map_err(|why| named_under(why, "household.household"))
+            })?;
         Ok(Envelope::sealing(value.in_full()?, provenance))
     }
 
@@ -491,17 +531,23 @@ impl AlmanacArea<'_> {
     ///
     /// # Errors
     ///
-    /// As [`AlmanacArea::death_time`].
+    /// As [`AlmanacArea::death_time`]; a zone the database does not have.
     pub fn death_time_query(
         self,
         asked: &DeathTimeQuery,
     ) -> Result<Envelope<serde_json::Value>, Error> {
-        let Envelope { value, provenance } = self.death_time(
-            &asked.table,
-            asked.at,
-            asked.cremated_at,
-            &asked.place,
-            asked.offset,
+        let Envelope { value, provenance } = self.clocked(
+            &asked.clock,
+            || Ok(asked.at),
+            |almanac, offset| {
+                almanac.death_time(
+                    &asked.table,
+                    asked.at,
+                    asked.cremated_at,
+                    &asked.place,
+                    offset,
+                )
+            },
         )?;
         Ok(Envelope::sealing(value.in_full()?, provenance))
     }
