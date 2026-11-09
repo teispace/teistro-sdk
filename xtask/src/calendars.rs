@@ -759,10 +759,12 @@ fn regional_model(provider: &Builtin) -> (DrikSun<'_, Builtin>, String) {
     (model, stamp)
 }
 
-/// Renders every regional calendar's table from the engine.
+/// Renders every regional calendar's table from the engine, over the
+/// calendar's sky: the drik model or the Surya Siddhanta's text.
 fn render_regional() -> String {
     let provider = Builtin::new();
-    let (model, stamp) = regional_model(&provider);
+    let (drik, stamp) = regional_model(&provider);
+    let text = SuryaSiddhanta::text();
     let (first_gregorian, last_gregorian) = regional_solar::GREGORIAN_SPAN;
     let mut out = String::new();
     let _ = writeln!(
@@ -771,12 +773,13 @@ fn render_regional() -> String {
     );
     let _ = writeln!(
         out,
-        "//! built-in ephemeris (`crate::regional_solar`); never hand-edited:"
+        "//! built-in ephemeris or the Surya Siddhanta's text, each calendar's sky"
     );
     let _ = writeln!(
         out,
-        "//! `cargo xtask check-calendars` regenerates and compares."
+        "//! (`crate::regional_solar::Sky`); never hand-edited: `cargo xtask"
     );
+    let _ = writeln!(out, "//! check-calendars` regenerates and compares.");
     let _ = writeln!(out, "//!");
     let _ = writeln!(
         out,
@@ -792,8 +795,18 @@ fn render_regional() -> String {
     let _ = writeln!(out);
     let mut statics = Vec::new();
     for region in regional_solar::REGIONS {
-        let engine = region.engine(&model);
-        let frame = engine.describe().replacen(&model.describe(), &stamp, 1);
+        let (engine, frame) = match region.sky {
+            regional_solar::Sky::Drik => {
+                let engine = region.engine(&drik);
+                let frame = engine.describe().replacen(&drik.describe(), &stamp, 1);
+                (engine, frame)
+            }
+            regional_solar::Sky::SuryaSiddhanta => {
+                let engine = region.engine(&text);
+                let frame = engine.describe();
+                (engine, frame)
+            }
+        };
         let first = first_gregorian - region.year_start.gregorian_offset;
         let last = last_gregorian - region.year_start.gregorian_offset;
         let rows = engine

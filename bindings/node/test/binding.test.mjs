@@ -847,8 +847,9 @@ test('every catalogue enum has a complete id table', () => {
   // `TsChartKind`'s `MUNDANE`; 1544 since aayadi's `TsVastuYoni`, eight,
   // and `TsVyayaKind`, three, each with its member of `TsKind`; 1545
   // since `TsCalendar` gained `TAMIL_VAKYA`; 1546 since `TsTradition`
-  // gained `ZOROASTRIAN`; 1548 since a record call's `TsDetail`, two.
-  assert.equal(entries, 1548, 'every member of every enum is in a table');
+  // gained `ZOROASTRIAN`; 1548 since a record call's `TsDetail`, two;
+  // 1550 since `TsCalendar` gained `ASSAM_SOLAR` and `TsEra` `BHASKARABDA`.
+  assert.equal(entries, 1550, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -5420,6 +5421,9 @@ test('a chart\'s day is the almanac\'s, and its date is one calendar.convert tak
   assert.deepEqual([vakya.calendar, vakya.era, vakya.year, vakya.month, vakya.day], ['calendar.TAMIL_VAKYA', 'era.SHAKA', 1943, 7, 1]);
   const drik = ctx.calendar.convert(aippasi, Calendar.TamilSolar);
   assert.deepEqual([drik.year, drik.month, drik.day], [1943, 7, 2]);
+  // 15 April 2025 opened Bhaskarabda 1432 in the Assamese calendar, 1 Bohag.
+  const bohag = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 4, day: 15 }, Calendar.AssamSolar);
+  assert.deepEqual([bohag.calendar, bohag.era, bohag.year, bohag.month, bohag.day], ['calendar.ASSAM_SOLAR', 'era.BHASKARABDA', 1432, 1, 1]);
   // And the tabular Hijri calendar's: 1 Ramadan 1446 is 1 March 2025.
   const ramadan = ctx.calendar.convert({ ...gregorian, year: 2025, eraYear: 2025, month: 3, day: 1 }, Calendar.HijriTabular);
   assert.deepEqual([ramadan.era, ramadan.year, ramadan.month, ramadan.day], ['era.HIJRI', 1446, 9, 1]);

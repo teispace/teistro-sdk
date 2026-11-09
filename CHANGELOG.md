@@ -85,6 +85,25 @@ calendar's Kali-day offset is now the shared `vakya::KALI_DAY_JD`, the same day.
 - The forms chosen where the grammar allows two wait on the consumer's reviewer: C1310 to C1319
   (`docs/03-design/amounts-in-words.md` §5).
 
+**Assam's solar calendar, and Kerala's held to its gazette (SR-15).**
+**Numbers:** none for any existing calendar: `MALAYALAM_SOLAR`'s table and every other table are unchanged. `calendar.ASSAM_SOLAR` (id 15) and `era.BHASKARABDA` (id 11) are new.
+- `calendar.ASSAM_SOLAR` is Assam's civil solar calendar: Bengal's rule (the civil day after the
+  sankranti's) over the Surya Siddhanta's Sun, the text's, at Guwahati on IST, years from Bohag (Mesha)
+  in the Bhaskarabda (CE − 593). It meets all 27 month beginnings the Government of Assam's lists of
+  holidays for 2023 and 2025 print in Bhaskarabda dates; the same rule over the drik Sun meets 16
+  (C1300). The gazette's three rows nearest midnight fall after IST midnight on the SDK's own text
+  (C1302). `regional_solar::Sky` names the Sun a regional table is computed over; the other four stay
+  drik. Month names in en-Latn (the gazette's spellings: Bohag to Chot) and, as the months' Sanskrit
+  names, in ne-Deva-NP, hi-Deva-IN and sa-Deva; the era is named in en-Latn and ne-Deva-NP.
+- `MALAYALAM_SOLAR` is held to the Kerala Gazette's holiday notifications for 2021 to 2026: 73 printed
+  Malayalam Era dates pin 61 month beginnings and the calendar gives all 61, Medam by the Malabar rule
+  in every year (C764 closed). The *Rashtriya Panchang*'s Simha 2023 (18 August) is its slip; the
+  gazette prints the 17th, the SDK's day. Over the Surya Siddhanta's Sun the same rule misses 22 of the 61 months, which pins the gazette to the modern Sun.
+- Vishu, the first civil day whose sunrise follows the Mesha sankranti, meets the gazette's six years
+  (`crates/ephemeris-builtin/tests/vishu.rs`) but ships as no festival rule: the rule language keeps the
+  Sun's entry by its civil day (C1301). No Kerala or Assam holiday pack is built (C1303, C1304).
+- Cruxes C1300 to C1309 record what stays open; C765 is closed for Assam's civil calendar.
+
 **Mithila's star planets are the text's four steps (C1227).**
 **Numbers:** none. No computation changed; `mithila-makaranda` keeps `SuryaPlanets::TEXT`.
 - The Makaranda's three steps for Mars to Saturn are the text's four folded: its manda tables print the

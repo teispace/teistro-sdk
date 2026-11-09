@@ -85,6 +85,15 @@
    "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} Bangabda"
   }
  },
+ "ASSAM_SOLAR": {
+  "monthName": ".input {$month :integer} .match $month 1 {{Bohag}} 2 {{Jeth}} 3 {{Ahar}} 4 {{Saon}} 5 {{Bhado}} 6 {{Ahin}} 7 {{Kati}} 8 {{Aghun}} 9 {{Puh}} 10 {{Magh}} 11 {{Phagun}} 12 {{Chot}} * {{{$month}}}",
+  "monthShort": "{sdk.calendar.ASSAM_SOLAR.monthName :msg}",
+  "date": {
+   "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} Bhaskarabda",
+   "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} Bhaskarabda",
+   "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} Bhaskarabda"
+  }
+ },
  "time": {
   "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
   "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}",

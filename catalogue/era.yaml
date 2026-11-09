@@ -82,3 +82,10 @@ members:
       - text: "Jinasena, Harivamsha (783 CE): 605 years and 5 months before the Shaka era"
         ref: "docs/03-design/vira-nirvana-and-jain-festivals.md"
     mark: V
+  - key: BHASKARABDA
+    id: 11
+    doc: "Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name"
+    sources:
+      - text: "Government of Assam, General Administration Department, list of holidays for 2025 (1 Bohag 1432 = 15 April 2025)"
+        ref: "docs/calendars/regional-solar.md"
+    mark: V

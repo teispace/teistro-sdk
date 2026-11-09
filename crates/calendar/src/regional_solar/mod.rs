@@ -1,5 +1,5 @@
-//! The regional solar calendars of India: Tamil, Bengal, Odia and
-//! Malayalam (`docs/calendars/regional-solar.md`).
+//! The regional solar calendars of India: Tamil, Bengal, Odia, Malayalam
+//! and Assamese (`docs/calendars/regional-solar.md`).
 //!
 //! Each begins its months at a sankranti, the Sun's entry into a sidereal
 //! sign, and differs from the others only in the civil day it puts that
@@ -17,14 +17,23 @@
 //! | Odia | sunrise to sunrise | Bhubaneswar | Saka, from Mesha | 117/120 |
 //! | Malayalam | before three fifths of the daylight | Thiruvananthapuram | Kollam, from Simha | 109/110 (Mesha aside) |
 //!
-//! The sankrantis are the modern Sun's under Lahiri's ayanamsha on the
-//! true basis (with the nutation), as the *Rashtriya Panchang* reckons
-//! them, on Indian Standard Time; the days
-//! are Gregorian civil days. The tables are computed once by the solar
+//! The Kerala Gazette's holiday notifications for 2021 to 2026 print 61
+//! Malayalam month beginnings, and the Malayalam calendar gives all 61,
+//! Medam included (crux C764). Assam's calendar is not in the *Rashtriya
+//! Panchang*'s columns: the Government of Assam's holiday lists for 2023
+//! and 2025 print 27 Bhaskarabda month beginnings, which the Bengal rule
+//! gives over the Surya Siddhanta's Sun, 27 of 27, and over the modern
+//! Sun 16.
+//!
+//! The sankrantis are a calendar's [`Sky`]: for the first four the modern
+//! Sun's under Lahiri's ayanamsha on the true basis (with the nutation),
+//! as the *Rashtriya Panchang* reckons them, and for Assam's the Surya
+//! Siddhanta's, the text's; all on Indian Standard Time. The days are
+//! Gregorian civil days. The tables are computed once by the solar
 //! engine ([`Engine`] with a [`YearStart`]) over the SDK's built-in
-//! ephemeris, written by `cargo xtask gen calendars` and held to the
-//! engine by `check-calendars`, so a date needs no ephemeris at run time
-//! and says which frame computed it.
+//! ephemeris or the text, written by `cargo xtask gen calendars` and held
+//! to the engine by `check-calendars`, so a date needs no ephemeris at run
+//! time and says which frame computed it.
 //!
 //! Tamil almanacs come in two schools. The thirukanitha (drik) almanacs
 //! reckon the modern Sun as above (`calendar.TAMIL_SOLAR`); the vakya
@@ -64,6 +73,26 @@ use crate::date::{
 use crate::fixed::FixedDay;
 use crate::gregorian::fixed_from_gregorian;
 use crate::solar::{MonthStartRule, SolarModel};
+
+/// The Sun a calendar's sankrantis are reckoned from, which `cargo xtask
+/// gen calendars` computes its table over.
+///
+/// ```
+/// use teistro_calendar::regional_solar::{ASSAM, MALAYALAM, Sky};
+///
+/// assert_eq!(MALAYALAM.sky, Sky::Drik);
+/// assert_eq!(ASSAM.sky, Sky::SuryaSiddhanta);
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Sky {
+    /// The modern Sun over the SDK's built-in ephemeris, Lahiri's
+    /// ayanamsha on the true basis, as the *Rashtriya Panchang* reckons
+    /// its regional columns.
+    Drik,
+    /// The Surya Siddhanta's Sun, the text's parameters and sine table
+    /// (`SuryaSiddhanta::text()`), the sky of the Bikram Sambat table.
+    SuryaSiddhanta,
+}
 
 #[rustfmt::skip]
 mod generated;
@@ -108,6 +137,8 @@ pub struct Region {
     pub year_start: YearStart,
     /// The era the years count.
     pub era: Era,
+    /// The Sun its sankrantis are reckoned from.
+    pub sky: Sky,
 }
 
 impl Region {
@@ -197,6 +228,7 @@ pub static TAMIL: Region = Region {
         gregorian_offset: 78,
     },
     era: Era::Shaka,
+    sky: Sky::Drik,
 };
 
 /// The Bengal calendar, West Bengal's: a month begins on the civil day
@@ -218,6 +250,7 @@ pub static BENGAL: Region = Region {
         gregorian_offset: 593,
     },
     era: Era::Bengali,
+    sky: Sky::Drik,
 };
 
 /// The Odia calendar: a month begins on the day, sunrise to sunrise at
@@ -237,12 +270,14 @@ pub static ODIA: Region = Region {
         gregorian_offset: 78,
     },
     era: Era::Shaka,
+    sky: Sky::Drik,
 };
 
 /// The Malayalam calendar, South Malabar's: a sankranti in the first three
 /// fifths of the daylight at Thiruvananthapuram begins its month that
 /// day, later the next (Sewell and Dikshit's Malabar rule, art. 28), for
-/// every sign, Mesha included (crux C764). The year opens at Simha
+/// every sign, Mesha included, as the Kerala Gazette prints Medam (crux
+/// C764, closed). The year opens at Simha
 /// (Chingam) and counts the Kollam era: Kollam 1070 was A.D. 1894–95
 /// (art. 71, p. 45), so Kollam = CE − 824 from Chingam.
 pub static MALAYALAM: Region = Region {
@@ -256,10 +291,40 @@ pub static MALAYALAM: Region = Region {
         gregorian_offset: 824,
     },
     era: Era::Kollam,
+    sky: Sky::Drik,
 };
 
-/// The four calendars, in the catalogue's order.
-pub static REGIONS: [&Region; 4] = [&TAMIL, &BENGAL, &ODIA, &MALAYALAM];
+/// Guwahati, the place the Assamese calendar is printed for; its rule
+/// reads no sunrise, so the place names the calendar and moves nothing.
+pub const GUWAHATI: Place = Place::new(
+    Latitude::literal(26.1445),
+    Longitude::literal(91.7362),
+    Altitude::literal(0.0),
+);
+
+/// The Assamese calendar: a month begins on the civil day after the
+/// sankranti's, Bengal's rule, over the Surya Siddhanta's Sun, the text's.
+/// The Government of Assam's holiday lists for 2023 and 2025 print 27
+/// month beginnings in Bhaskarabda dates: this gives all 27, the modern
+/// Sun 16 (`docs/calendars/regional-solar.md`). The year opens at Mesha
+/// (Bohag) and counts the Bhaskarabda: 1 Bohag 1432 was 15 April 2025, so
+/// Bhaskarabda = CE − 593, the Bengali San's count.
+pub static ASSAM: Region = Region {
+    calendar: Calendar::AssamSolar,
+    name: "Assamese",
+    place_name: "Guwahati",
+    place: GUWAHATI,
+    rule: MonthStartRule::FollowingDay,
+    year_start: YearStart {
+        sign: 0,
+        gregorian_offset: 593,
+    },
+    era: Era::Bhaskarabda,
+    sky: Sky::SuryaSiddhanta,
+};
+
+/// The five calendars, in the catalogue's order.
+pub static REGIONS: [&Region; 5] = [&TAMIL, &BENGAL, &ODIA, &MALAYALAM, &ASSAM];
 
 /// A calendar's table: what `cargo xtask gen calendars` writes from the
 /// engine and `check-calendars` holds to it.
@@ -311,7 +376,8 @@ pub struct RegionalSolar {
 }
 
 /// The shipped calendars, built on first use, in [`REGIONS`]' order.
-static SHIPPED: [OnceLock<RegionalSolar>; 4] = [
+static SHIPPED: [OnceLock<RegionalSolar>; 5] = [
+    OnceLock::new(),
     OnceLock::new(),
     OnceLock::new(),
     OnceLock::new(),
