@@ -48,6 +48,7 @@ import type {
   CompositePlanet,
   CuspAntiscion,
   Partner,
+  DavisonBirth,
   Declinations,
   MidpointRequest,
   MidpointRow,
@@ -2065,7 +2066,10 @@ function theWesternAspects(ctx: Context): string {
   const equal: SynastryMidpointRow | undefined = chart.synastryMidpoints?.[0];
   const composite: Composite | null = chart.synastryComposite;
   const middle: CompositePlanet | undefined = composite?.planets[0];
-  const davison: Required<Partner> | null = chart.synastryDavison;
+  const davison: DavisonBirth | null = chart.synastryDavison;
+  // A Davison birth is a partner as it stands, its clock an offset.
+  const asPartner: Partner | null = davison;
+  void asPartner;
   const between: Chart | null = davison === null ? null : ctx.chart.found({ ...davison });
   return [
     own?.first ?? 'none',

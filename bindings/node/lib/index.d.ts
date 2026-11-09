@@ -2686,6 +2686,13 @@ export interface SynastryRequest extends WesternAspectRequest {
   readonly davison?: boolean;
 }
 
+/**
+ * A Davison birth as a chart answers it: a partner's shape with its clock
+ * resolved to an offset, which is what the mean of two clocks is, so it
+ * founds a chart as it stands (`ctx.chart.found({ ...davison })`).
+ */
+export type DavisonBirth = Pick<Partner, 'instant' | 'place'> & { readonly utcOffsetSeconds: number };
+
 /** A planet of a composite chart. */
 export interface CompositePlanet {
   readonly graha: Graha | 'unknown';
@@ -5563,7 +5570,7 @@ export declare class Chart {
    * The Davison birth of this chart and the partner; `null` unless
    * `synastry` asked for `davison` (`03-design/western-composites.md`).
    */
-  readonly synastryDavison: Required<Partner> | null;
+  readonly synastryDavison: DavisonBirth | null;
   /**
    * The chart's distances from the equator; `null` unless `parallels`
    * asked (`03-design/western-declinations.md`).
