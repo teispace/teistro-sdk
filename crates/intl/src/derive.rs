@@ -490,6 +490,15 @@ mod tests {
         assert_eq!(super::sentence_cased(""), "");
     }
 
+    /// A derived file's text by its name.
+    fn file<'a>(derived: &'a super::Derived, name: &str) -> &'a str {
+        derived
+            .files
+            .iter()
+            .find(|(path, _)| path.ends_with(name))
+            .map_or_else(|| panic!("no {name} derived"), |(_, text)| text.as_str())
+    }
+
     #[test]
     fn a_latin_locale_is_derived_from_the_devanagari_one() {
         let derived = derive(
@@ -500,7 +509,8 @@ mod tests {
             Casing::Names,
         )
         .unwrap_or_else(|e| panic!("{e}"));
-        assert_eq!(derived.files.len(), 2);
+        // The metadata, the calendar's messages and the entities.
+        assert_eq!(derived.files.len(), 3);
         assert_eq!(
             derived.entities, 444,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
@@ -508,15 +518,25 @@ mod tests {
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 
-        let entities = &derived.files[1].1;
+        let entities = file(&derived, "sdk.entity.json");
         assert!(entities.contains("\"name\": \"Sūrya\""), "the Sun's name");
         assert!(
             entities.contains("\"iast\": \"Sūrya\""),
             "the iast form stands"
         );
         assert!(entities.contains("\"glyph\": \"☉\""));
-        let meta = &derived.files[0].1;
+        let calendar = file(&derived, "sdk.calendar.json");
+        assert!(
+            calendar.contains("{{Ravivāsaraḥ}}"),
+            "a name's message is capitalised"
+        );
+        assert!(calendar.contains("{$day :integer}"), "the syntax is kept");
+        let meta = file(&derived, "_meta.json");
         assert!(meta.contains("\"locale\": \"sa-Latn\""));
+        assert!(
+            meta.contains("\"sdk.calendar\""),
+            "the derived draft stays a draft"
+        );
         assert!(meta.contains("\"numberingSystem\": \"latn\""));
         assert!(meta.contains("tathā"), "the list pattern is transliterated");
         // 261 before the vetted name tables' import, and 48 of the 114
@@ -547,7 +567,7 @@ mod tests {
             .unwrap_or_else(|e| panic!("{e}"));
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
         assert_eq!(derived.overridden, 2 * overrides.len());
-        let entities = &derived.files[1].1;
+        let entities = file(&derived, "sdk.entity.json");
         assert!(entities.contains("\"name\": \"Placidus\""));
         assert!(entities.contains("\"name\": \"Fagan-Bradley\""));
         assert!(
@@ -573,7 +593,7 @@ mod tests {
             .unwrap_or_else(|e| panic!("{e}"));
         assert_eq!(derived.overridden, 1);
         assert_eq!(derived.stale, vec![String::from("graha.VULCAN")]);
-        assert!(derived.files[1].1.contains("\"name\": \"Sūrya\""));
+        assert!(file(&derived, "sdk.entity.json").contains("\"name\": \"Sūrya\""));
     }
 
     #[test]
