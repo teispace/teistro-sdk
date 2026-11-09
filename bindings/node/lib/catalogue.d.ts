@@ -6181,6 +6181,7 @@ export type Tradition =
   | 'tradition.SIKH'
   | 'tradition.ISLAMIC'
   | 'tradition.CHRISTIAN'
+  | 'tradition.ZOROASTRIAN'
   | 'unknown';
 
 /** Every Tradition by name; the values are the strings the union accepts. */
@@ -6209,6 +6210,10 @@ export declare const Tradition: {
    * Christian
    */
   readonly Christian: 'tradition.CHRISTIAN';
+  /**
+   * Zoroastrian
+   */
+  readonly Zoroastrian: 'tradition.ZOROASTRIAN';
 };
 
 /**

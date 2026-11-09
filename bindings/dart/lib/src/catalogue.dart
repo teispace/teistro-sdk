@@ -4853,6 +4853,8 @@ enum Tradition implements KeyOf<Tradition> {
   islamic(4, 'ISLAMIC'),
   /// Christian
   christian(5, 'CHRISTIAN'),
+  /// Zoroastrian
+  zoroastrian(6, 'ZOROASTRIAN'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

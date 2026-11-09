@@ -6852,6 +6852,12 @@
           "value": 5,
           "doc": "Christian",
           "key": "CHRISTIAN"
+        },
+        {
+          "name": "Zoroastrian",
+          "value": 6,
+          "doc": "Zoroastrian",
+          "key": "ZOROASTRIAN"
         }
       ],
       "source": "catalogue/catalogue.json"

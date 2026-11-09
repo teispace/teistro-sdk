@@ -9,10 +9,10 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * An observance on the day a number of civil days after another rule's.
+ * An observance on the day a number of civil days after another rule's, or before it.
  *
  * @param after The key of the karmakala rule whose day it counts from.
- * @param days How many civil days after that day, 0 for the same day, at most `FollowingRule::MOST_DAYS`.
+ * @param days How many civil days after that day, 0 for the same day and a negative count for the days before it, at most `FollowingRule::MOST_DAYS` either way.
  * @param key The rule's key in its pack, `"HOLI_TERAI"`.
  * @param meta What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out. Null leaves the SDK's default.
  * @param source Where the rule is stated.
@@ -27,7 +27,7 @@ public record FollowingRule(String after, int days, String key, FestivalMeta met
      */
     public FollowingRule {
         Objects.requireNonNull(after, "`FollowingRule.after` is required");
-        Read.range(days, "FollowingRule.days", 0L, 255L);
+        Read.range(days, "FollowingRule.days", -128L, 127L);
         Objects.requireNonNull(key, "`FollowingRule.key` is required");
         Objects.requireNonNull(source, "`FollowingRule.source` is required");
     }
@@ -37,7 +37,7 @@ public record FollowingRule(String after, int days, String key, FestivalMeta met
      * default stands.
      *
      * @param after The key of the karmakala rule whose day it counts from.
-     * @param days How many civil days after that day, 0 for the same day, at most `FollowingRule::MOST_DAYS`.
+     * @param days How many civil days after that day, 0 for the same day and a negative count for the days before it, at most `FollowingRule::MOST_DAYS` either way.
      * @param key The rule's key in its pack, `"HOLI_TERAI"`.
      * @param source Where the rule is stated.
      */
@@ -79,7 +79,7 @@ public record FollowingRule(String after, int days, String key, FestivalMeta met
         /**
          * Sets {@code days}.
          *
-         * @param days How many civil days after that day, 0 for the same day, at most `FollowingRule::MOST_DAYS`.
+         * @param days How many civil days after that day, 0 for the same day and a negative count for the days before it, at most `FollowingRule::MOST_DAYS` either way.
          * @return this builder
          */
         public Builder days(int days) {

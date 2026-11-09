@@ -31,6 +31,12 @@ public sealed interface FestivalRules extends RequestJson permits FestivalRules.
     /** {@code JAIN}. */
     FestivalRules JAIN = Key.JAIN;
 
+    /** {@code MITHILA}. */
+    FestivalRules MITHILA = Key.MITHILA;
+
+    /** {@code INDIA_MAHARASHTRA}. */
+    FestivalRules INDIA_MAHARASHTRA = Key.INDIA_MAHARASHTRA;
+
     /**
      * The value, as a {@code FestivalRules}.
      *
@@ -92,7 +98,15 @@ public sealed interface FestivalRules extends RequestJson permits FestivalRules.
         /**
          * {@code JAIN}.
          */
-        JAIN("JAIN");
+        JAIN("JAIN"),
+        /**
+         * {@code MITHILA}.
+         */
+        MITHILA("MITHILA"),
+        /**
+         * {@code INDIA_MAHARASHTRA}.
+         */
+        INDIA_MAHARASHTRA("INDIA_MAHARASHTRA");
 
         private final String key;
 

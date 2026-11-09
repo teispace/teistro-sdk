@@ -2999,6 +2999,7 @@ export const Tradition = /* @__PURE__ */ Object.freeze({
   Sikh: 'tradition.SIKH',
   Islamic: 'tradition.ISLAMIC',
   Christian: 'tradition.CHRISTIAN',
+  Zoroastrian: 'tradition.ZOROASTRIAN',
 });
 
 /**
@@ -3012,6 +3013,7 @@ export const TraditionById = /* @__PURE__ */ new Map([
   [3, 'tradition.SIKH'],
   [4, 'tradition.ISLAMIC'],
   [5, 'tradition.CHRISTIAN'],
+  [6, 'tradition.ZOROASTRIAN'],
 ]);
 
 /** Every DayMarker by name. */

@@ -22136,6 +22136,23 @@
           ],
           "mark": "V",
           "unverified": []
+        },
+        {
+          "key": "ZOROASTRIAN",
+          "id": 6,
+          "doc": "Zoroastrian",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Government of Maharashtra, General Administration Department, public holidays notifications: Parsi New Year (Shahenshahi)",
+              "ref": "`03-design/maharashtra-holidays.md` §3"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
         }
       ]
     },

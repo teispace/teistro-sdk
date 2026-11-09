@@ -5389,6 +5389,28 @@ final class FestivalRulesJain extends FestivalRules {
   List<Object?> get _fields => const [];
 }
 
+/// `MITHILA`.
+final class FestivalRulesMithila extends FestivalRules {
+  const FestivalRulesMithila();
+
+  @override
+  Object? get _wire => 'MITHILA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_MAHARASHTRA`.
+final class FestivalRulesIndiaMaharashtra extends FestivalRules {
+  const FestivalRulesIndiaMaharashtra();
+
+  @override
+  Object? get _wire => 'INDIA_MAHARASHTRA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
 /// The value itself.
 final class FestivalRulesValue extends FestivalRules {
   const FestivalRulesValue(this.value);
@@ -7662,6 +7684,28 @@ final class FestivalRuleItemJain extends FestivalRuleItem {
 
   @override
   Object? get _wire => 'JAIN';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `MITHILA`.
+final class FestivalRuleItemMithila extends FestivalRuleItem {
+  const FestivalRuleItemMithila();
+
+  @override
+  Object? get _wire => 'MITHILA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_MAHARASHTRA`.
+final class FestivalRuleItemIndiaMaharashtra extends FestivalRuleItem {
+  const FestivalRuleItemIndiaMaharashtra();
+
+  @override
+  Object? get _wire => 'INDIA_MAHARASHTRA';
 
   @override
   List<Object?> get _fields => const [];
@@ -11252,7 +11296,7 @@ final class EkadashiRule extends _Request {
   List<Object?> get _fields => [key, mahadvadashi, meta, parana, source, table, vedha];
 }
 
-/// An observance on the day a number of civil days after another rule's.
+/// An observance on the day a number of civil days after another rule's, or before it.
 final class FollowingRule extends _Request {
   const FollowingRule({
     required this.after,
@@ -11265,7 +11309,7 @@ final class FollowingRule extends _Request {
   /// The key of the karmakala rule whose day it counts from.
   final String after;
 
-  /// How many civil days after that day, 0 for the same day, at most [`FollowingRule::MOST_DAYS`].
+  /// How many civil days after that day, 0 for the same day and a negative count for the days before it, at most [`FollowingRule::MOST_DAYS`] either way.
   final int days;
 
   /// The rule's key in its pack, `"HOLI_TERAI"`.
