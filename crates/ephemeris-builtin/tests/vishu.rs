@@ -27,10 +27,13 @@ use teistro_core::catalogue::{Ayanamsha, Calendar};
 use teistro_core::settings::{AyanamshaBasis, OverridePolicy, Sunrise};
 use teistro_ephemeris_builtin::provider::Builtin;
 
+/// A Gregorian date: year, month, day.
+type Ymd = (i32, u8, u8);
+
 /// The gazette's Vishu, from the Kerala Gazette's public holiday
 /// notifications for 2021 to 2026 (G.O.(P) No. 16/2020 to 14/2025/GAD),
 /// with its Medam 1 the same notification prints.
-const PRINTED: [(i32, (i32, u8, u8), (i32, u8, u8)); 6] = [
+const PRINTED: [(i32, Ymd, Ymd); 6] = [
     (2021, (2021, 4, 14), (2021, 4, 14)),
     (2022, (2022, 4, 15), (2022, 4, 14)),
     (2023, (2023, 4, 15), (2023, 4, 15)),
