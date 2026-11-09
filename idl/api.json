@@ -38,6 +38,7 @@
     "crates/ffi/src/ephemeris.rs",
     "crates/ffi/src/provider.rs",
     "crates/ffi/src/published.rs",
+    "crates/ffi/src/record.rs",
     "crates/ffi/src/recorded.rs"
   ],
   "constants": [
@@ -11078,6 +11079,26 @@
         }
       ],
       "source": "crates/ffi/src/naam.rs"
+    },
+    {
+      "name": "TsDetail",
+      "doc": "How much of its answer a record call asks for.",
+      "repr": "u32",
+      "values": [
+        {
+          "name": "Full",
+          "value": 0,
+          "doc": "The whole answer, as serde writes it.",
+          "key": "FULL"
+        },
+        {
+          "name": "Brief",
+          "value": 1,
+          "doc": "The fields a reader needs, as the record declares them, with the\nprovenance's answer key and none of its hashes.",
+          "key": "BRIEF"
+        }
+      ],
+      "source": "crates/ffi/src/record.rs"
     }
   ],
   "opaques": [
@@ -17929,7 +17950,7 @@
     },
     {
       "name": "ts_almanac_sankalpa",
-      "doc": "The time a sankalpa recites at an instant and a place\n(`03-design/sankalpa.md`), answered with `{value, provenance}` as\ncanonical JSON, every catalogue member a full key.\n\n`value` is `{at, day, year, ayana, ayanaReckoning, ritu,\nrituReckoning, month, paksha, tithi, nakshatra, yoga, karana, sun,\nmoon, jupiter}`: `day` the civil day whose sunrise the instant follows,\nso a rite before dawn is the day before's; `year`, `ayana`, `ritu`\nand `month` as that day's sunrise has them, the lunar year with its\nsamvatsara, Vikrama and Shaka numbers and the month under both\nconventions; the limbs and the Sun's, Moon's and Jupiter's sidereal\nsigns as they stand at the instant.\n\n`request_json` is `{\"at\", \"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"ayana\"}`: `at` a UTC Julian day, `altitudeM` 0\nand `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when\nleft out, or `TROPICAL` (at the solstices). A key it does not read or\nan instant, place or offset out of range is `INVALID_ARG`, named under\n`sankalpa`; a context without an ephemeris is `CAPABILITY`, and an\ninstant in no day's window (a polar day the policy leaves undefined)\n`OUT_OF_RANGE`.",
+      "doc": "The time a sankalpa recites at an instant and a place\n(`03-design/sankalpa.md`), answered with `{value, provenance}` as\ncanonical JSON, every catalogue member a full key.\n\n`value` is `{at, day, year, ayana, ayanaReckoning, ritu,\nrituReckoning, month, paksha, tithi, nakshatra, yoga, karana, sun,\nmoon, jupiter}`: `day` the civil day whose sunrise the instant follows,\nso a rite before dawn is the day before's; `year`, `ayana`, `ritu`\nand `month` as that day's sunrise has them, the lunar year with its\nsamvatsara, Vikrama and Shaka numbers and the month under both\nconventions; the limbs and the Sun's, Moon's and Jupiter's sidereal\nsigns as they stand at the instant.\n\n`request_json` is `{\"at\", \"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\" or \"zone\", \"ayana\"}`: `at` a UTC Julian day, `altitudeM` 0\nand `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when\nleft out, or `TROPICAL` (at the solstices). A key it does not read or\nan instant, place or offset out of range is `INVALID_ARG`, named under\n`sankalpa`; a context without an ephemeris is `CAPABILITY`, and an\ninstant in no day's window (a polar day the policy leaves undefined)\n`OUT_OF_RANGE`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -17980,7 +18001,7 @@
     },
     {
       "name": "ts_almanac_ashauch",
-      "doc": "The period of impurity after a birth or a death at a place\n(`03-design/ashauch.md`), answered with `{value, provenance}` as\ncanonical JSON.\n\n`value` is `{key, kind, relation, sex, start, dayOne, dayOneBy, end,\nlastDay, length, days, clause, overlap, ritesFrom, table}`: `start`\nthe instant counted from (the event, the cremation, or the hearing),\n`dayOne` the civil day counted as the first and `dayOneBy` why\n(daylight, or the night rule that gave it), `end` the instant it ends\n(a sunrise, a nightfall, or `start` for a bath), `lastDay` the last\nday it touches, `clause` the table's row or the rule (`REMAINDER`,\n`LATE`, `ROW_HEARD_LATE`, `BIRTH_PERIOD_RUNS` and the rest) with its\ntext, `overlap` what a period already running did, and `ritesFrom`\nwhen the mother of a birth may take part in rites again.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"table\", \"tradition\", \"request\"}`: `table` the\n*Dharmasindhu*'s when left out, every row data, or `tradition` a\nshipped table by name (`DHARMASINDHU`, `MITAKSHARA`), never both;\n`request` `{key,\nevent, relation, heardAt, abroad, at, fullDays, during}`, its\ninstants UTC Julian days and `fullDays` ten when left out. A key it\ndoes not read, or a table or request that cannot be counted, is\n`INVALID_ARG` named under `ashauch`, as is a fact of the deceased a\nband needs and the request leaves out; a relation the table names no\nrow for is `UNSUPPORTED`; a context without an ephemeris is\n`CAPABILITY`, and a polar day `OUT_OF_RANGE`.",
+      "doc": "The period of impurity after a birth or a death at a place\n(`03-design/ashauch.md`), answered with `{value, provenance}` as\ncanonical JSON.\n\n`value` is `{key, kind, relation, sex, start, dayOne, dayOneBy, end,\nlastDay, length, days, clause, overlap, ritesFrom, table}`: `start`\nthe instant counted from (the event, the cremation, or the hearing),\n`dayOne` the civil day counted as the first and `dayOneBy` why\n(daylight, or the night rule that gave it), `end` the instant it ends\n(a sunrise, a nightfall, or `start` for a bath), `lastDay` the last\nday it touches, `clause` the table's row or the rule (`REMAINDER`,\n`LATE`, `ROW_HEARD_LATE`, `BIRTH_PERIOD_RUNS` and the rest) with its\ntext, `overlap` what a period already running did, and `ritesFrom`\nwhen the mother of a birth may take part in rites again.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\" or \"zone\", \"table\", \"tradition\", \"request\"}`: `table` the\n*Dharmasindhu*'s when left out, every row data, or `tradition` a\nshipped table by name (`DHARMASINDHU`, `MITAKSHARA`), never both;\n`request` `{key,\nevent, relation, heardAt, abroad, at, fullDays, during}`, its\ninstants UTC Julian days and `fullDays` ten when left out. A key it\ndoes not read, or a table or request that cannot be counted, is\n`INVALID_ARG` named under `ashauch`, as is a fact of the deceased a\nband needs and the request leaves out; a relation the table names no\nrow for is `UNSUPPORTED`; a context without an ephemeris is\n`CAPABILITY`, and a polar day `OUT_OF_RANGE`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -18031,7 +18052,7 @@
     },
     {
       "name": "ts_almanac_household",
-      "doc": "Several births and deaths and several observers at a place\n(`03-design/ashauch.md` §11), answered with `{value, provenance}` as\ncanonical JSON.\n\n`value` is `{observers}`, each `{key, periods, pureAt}`: `periods` an\nashauch answer for each tie, in the order the news reached that\nobserver, each overlap resolved against those before it, and `pureAt`\nthe instant the last ends.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"table\", \"tradition\", \"household\"}`: `household`\n`{events, observers}`, an event `{key, event}` and an observer `{key,\nties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,\nfireGiver}`. A household that does not hold together, or a key it\ndoes not read, is `INVALID_ARG` named under `household`; a relation\nthe table names no row for is `UNSUPPORTED`; a context without an\nephemeris is `CAPABILITY`.",
+      "doc": "Several births and deaths and several observers at a place\n(`03-design/ashauch.md` §11), answered with `{value, provenance}` as\ncanonical JSON.\n\n`value` is `{observers}`, each `{key, periods, pureAt}`: `periods` an\nashauch answer for each tie, in the order the news reached that\nobserver, each overlap resolved against those before it, and `pureAt`\nthe instant the last ends.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\" or \"zone\", \"table\", \"tradition\", \"household\"}`: `household`\n`{events, observers}`, an event `{key, event}` and an observer `{key,\nties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,\nfireGiver}`. A household that does not hold together, or a key it\ndoes not read, is `INVALID_ARG` named under `household`; a relation\nthe table names no row for is `UNSUPPORTED`; a context without an\nephemeris is `CAPABILITY`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -18184,7 +18205,7 @@
     },
     {
       "name": "ts_almanac_death_time",
-      "doc": "The death-time check at a place (`03-design/death-time.md`), answered\nwith `{value, provenance}` as canonical JSON.\n\n`value` is `{death, cremation, rites, table}`: `death` and `cremation`\neach `{at, nakshatra, tithi, vara, moon, panchaka, feet, pushkara}`,\n`rites` each `{rite, clause}`. With no cremation given, the cremation\nis taken to fall as the death did.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"at\", \"crematedAt\", \"table\"}`, the instants UTC\nJulian days and `table` the *Dharmasindhu*'s lists when left out. A\ncremation before the death, or a key it does not read, is\n`INVALID_ARG` named under `deathTime`; a context without an ephemeris\nis `CAPABILITY`.",
+      "doc": "The death-time check at a place (`03-design/death-time.md`), answered\nwith `{value, provenance}` as canonical JSON.\n\n`value` is `{death, cremation, rites, table}`: `death` and `cremation`\neach `{at, nakshatra, tithi, vara, moon, panchaka, feet, pushkara}`,\n`rites` each `{rite, clause}`. With no cremation given, the cremation\nis taken to fall as the death did.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\" or \"zone\", \"at\", \"crematedAt\", \"table\"}`, the instants UTC\nJulian days and `table` the *Dharmasindhu*'s lists when left out. A\ncremation before the death, or a key it does not read, is\n`INVALID_ARG` named under `deathTime`; a context without an ephemeris\nis `CAPABILITY`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -18235,7 +18256,7 @@
     },
     {
       "name": "ts_almanac_first_year",
-      "doc": "A death's first year at a place (`03-design/shraddha.md` §3.3),\nanswered with `{value, provenance}` as canonical JSON.\n\n`value` is `{key, origin, dayOne, dayOneBy, eleventhDay, sapindana,\nrites}`: `origin` the death's lunar date, `dayOne` the ashauch's first\nday and `dayOneBy` why, and `rites` each of the *Dharmasindhu*'s\nsixteen, the first abdika and the sapindana as `{rite, place, month,\nyear, adhika, day, form, drawnTo, bars, observance, clause}`, in the\norder of their days: `place` its place among the sixteen, `month` the\nmonth a monthly closes, `year` which yearly shraddha, `form`\n`EKODDISHTA` or `PARVANA`, `drawnTo` the sapindana's day when it is\nfirst done there, and `bars` what the text bars an *ūna* rite's day\nfor.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"request\"}`: `request` `{key, at, night,\nfirstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death\nas a UTC Julian day and every reading the *Dharmasindhu*'s when left\nout. A key it does not read or an empty `key` is `INVALID_ARG` named\nunder `firstYear`; a context without an ephemeris is `CAPABILITY`, and\na polar day `OUT_OF_RANGE`.",
+      "doc": "A death's first year at a place (`03-design/shraddha.md` §3.3),\nanswered with `{value, provenance}` as canonical JSON.\n\n`value` is `{key, origin, dayOne, dayOneBy, eleventhDay, sapindana,\nrites}`: `origin` the death's lunar date, `dayOne` the ashauch's first\nday and `dayOneBy` why, and `rites` each of the *Dharmasindhu*'s\nsixteen, the first abdika and the sapindana as `{rite, place, month,\nyear, adhika, day, form, drawnTo, bars, observance, clause}`, in the\norder of their days: `place` its place among the sixteen, `month` the\nmonth a monthly closes, `year` which yearly shraddha, `form`\n`EKODDISHTA` or `PARVANA`, `drawnTo` the sapindana's day when it is\nfirst done there, and `bars` what the text bars an *ūna* rite's day\nfor.\n\n`request_json` is `{\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\" or \"zone\", \"request\"}`: `request` `{key, at, night,\nfirstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death\nas a UTC Julian day and every reading the *Dharmasindhu*'s when left\nout. A key it does not read or an empty `key` is `INVALID_ARG` named\nunder `firstYear`; a context without an ephemeris is `CAPABILITY`, and\na polar day `OUT_OF_RANGE`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -18851,7 +18872,7 @@
     },
     {
       "name": "ts_chart_mundane",
-      "doc": "**The moment of a mundane chart** (`03-design/mundane-charts.md`): an\ningress, the lunation before one, an eclipse, a great conjunction or\nan event on record, and the place it is cast for, as `{value,\nprovenance}` canonical JSON sealed by the chart cast there, with the\nrequest as its input.\n\n`value` is `{kind, instant, latitudeDeg, longitudeDeg, altitudeM,\nutcOffsetSeconds, ingress, solarEclipse, lunarEclipse, name,\nsource}`: `kind` a `mundane_kind` key, `instant` the moment as a UTC\nJulian day; `ingress` `{kind, instant}` the ingress a lunation\nprecedes; `solarEclipse` or `lunarEclipse` an eclipse's kind; `name`\nand `source` an event's, as the record gave them. A field a kind does\nnot carry is absent.\n\n`request_json` is `{\"kind\", \"year\", \"from\", \"ingress\", \"event\",\n\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\"}`:\n`kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC\nJulian day) where the search starts, the first ingress, eclipse or\nconjunction at or after it; `ingress` the ingress a lunation precedes,\n`MESHA_SANKRANTI` by default (C1151); `event` `{\"name\", \"instant\",\n\"source\"}` for an `EVENT`, which reads neither `year` nor `from`. The\nsankrantis are read in the context's own zodiac, the four tropical\ningresses in the tropical one. A key the record does not read, a\nmissing or extra `year`, `from`, `ingress` or `event`, or a place out\nof range is `INVALID_ARG`, named under `mundane`; an eclipse over a\nclassical astronomy is `UNSUPPORTED` naming `kind`; a context without\nan ephemeris is `CAPABILITY`.",
+      "doc": "**The moment of a mundane chart** (`03-design/mundane-charts.md`): an\ningress, the lunation before one, an eclipse, a great conjunction or\nan event on record, and the place it is cast for, as `{value,\nprovenance}` canonical JSON sealed by the chart cast there, with the\nrequest as its input.\n\n`value` is `{kind, instant, latitudeDeg, longitudeDeg, altitudeM,\nutcOffsetSeconds, ingress, solarEclipse, lunarEclipse, name,\nsource}`: `kind` a `mundane_kind` key, `instant` the moment as a UTC\nJulian day; `ingress` `{kind, instant}` the ingress a lunation\nprecedes; `solarEclipse` or `lunarEclipse` an eclipse's kind; `name`\nand `source` an event's, as the record gave them. A field a kind does\nnot carry is absent.\n\n`request_json` is `{\"kind\", \"year\", \"from\", \"ingress\", \"event\",\n\"latitudeDeg\", \"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\" or \"zone\"}`:\n`kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC\nJulian day) where the search starts, the first ingress, eclipse or\nconjunction at or after it; `ingress` the ingress a lunation precedes,\n`MESHA_SANKRANTI` by default (C1151); `event` `{\"name\", \"instant\",\n\"source\"}` for an `EVENT`, which reads neither `year` nor `from`. The\nsankrantis are read in the context's own zodiac, the four tropical\ningresses in the tropical one. A key the record does not read, a\nmissing or extra `year`, `from`, `ingress` or `event`, or a place out\nof range is `INVALID_ARG`, named under `mundane`; an eclipse over a\nclassical astronomy is `UNSUPPORTED` naming `kind`; a context without\nan ephemeris is `CAPABILITY`.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -19680,7 +19701,7 @@
     },
     {
       "name": "ts_pakshi",
-      "doc": "Reads a native's bird over each civil day of a range at a place and\nanswers with `{value, provenance}` as canonical JSON, `value` an array\nof `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset\nand next sunrise, each `{half, yama, span, activity, quality, subs}`\nwith every sub-period's activity, owner, span and how the native\nregards its owner, beside the day's `{sunrise, sunset, nextSunrise,\nvara, paksha}`, the bird, its death bird and the first eaters; null on\na day the Sun does not both rise and set.\n\n`request_json` is `{\"calendar\", \"first\", \"last\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\", \"native\", \"rules\"}`:\nthe days as `{\"year\", \"month\", \"day\"}`, `native` either `{\"bird\"}` or\n`{\"nakshatra\", \"paksha\", \"rule\"}`, and everything but `first`, the\nplace, the offset and `native` optional. A key it does not read, a\nplace or offset out of range or a native that is neither is\n`INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context\nwithout an ephemeris is `CAPABILITY`, as is a build that leaves the\n`pakshi` family out.",
+      "doc": "Reads a native's bird over each civil day of a range at a place and\nanswers with `{value, provenance}` as canonical JSON, `value` an array\nof `{date, reading}`, one per day: `reading` the day's ten yamas from the almanac's sunrise, sunset\nand next sunrise, each `{half, yama, span, activity, quality, subs}`\nwith every sub-period's activity, owner, span and how the native\nregards its owner, beside the day's `{sunrise, sunset, nextSunrise,\nvara, paksha}`, the bird, its death bird and the first eaters; null on\na day the Sun does not both rise and set.\n\n`request_json` is `{\"calendar\", \"first\", \"last\", \"latitudeDeg\",\n\"longitudeDeg\", \"altitudeM\", \"utcOffsetSeconds\" or \"zone\", \"native\", \"rules\"}`:\nthe days as `{\"year\", \"month\", \"day\"}`, `native` either `{\"bird\"}` or\n`{\"nakshatra\", \"paksha\", \"rule\"}`, and everything but `first`, the\nplace, the offset and `native` optional. A key it does not read, a\nplace or offset out of range or a native that is neither is\n`INVALID_ARG`, named under `pakshi`, as `pakshi.native.bird`. A context\nwithout an ephemeris is `CAPABILITY`, as is a build that leaves the\n`pakshi` family out.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -19731,7 +19752,7 @@
     },
     {
       "name": "ts_rashifal",
-      "doc": "Reads periods of civil days at a place for each of the twelve signs and\nanswers with `{value, provenance}` as canonical JSON, `value` an array\nof `{period, baseline}`, one per period: the\nsky at the reference day's sunrise (or a clock time), each sign's\ngochar from Phaladeepika ch. 26, Saturn's standing, and every ingress\nand station of the period counted from each sign; `baseline` the\nbaseline engine's score of each sign when the request names a period\nfor it, absent otherwise.\n\n`request_json` is `{\"periods\", \"baseline\"}`: each period `{\"calendar\",\n\"first\", \"last\", \"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\", \"snapshot\", \"events\", \"spells\"}`, the days as\n`{\"year\", \"month\", \"day\"}` and everything but `first`, the place and\nthe offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`\nand `YEARLY`. A key it does not read, a last day before the first, a\nclock off the clock or a graha named twice is `INVALID_ARG`, named\nunder `rashifal`. A context without an ephemeris is `CAPABILITY`, as is\na build that leaves the `rashifal` family out.",
+      "doc": "Reads periods of civil days at a place for each of the twelve signs and\nanswers with `{value, provenance}` as canonical JSON, `value` an array\nof `{period, baseline}`, one per period: the\nsky at the reference day's sunrise (or a clock time), each sign's\ngochar from Phaladeepika ch. 26, Saturn's standing, and every ingress\nand station of the period counted from each sign; `baseline` the\nbaseline engine's score of each sign when the request names a period\nfor it, absent otherwise.\n\n`request_json` is `{\"periods\", \"baseline\"}`: each period `{\"calendar\",\n\"first\", \"last\", \"latitudeDeg\", \"longitudeDeg\", \"altitudeM\",\n\"utcOffsetSeconds\" or \"zone\", \"snapshot\", \"events\", \"spells\"}`, the days as\n`{\"year\", \"month\", \"day\"}` and everything but `first`, the place and\nthe offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`\nand `YEARLY`. A key it does not read, a last day before the first, a\nclock off the clock or a graha named twice is `INVALID_ARG`, named\nunder `rashifal`. A context without an ephemeris is `CAPABILITY`, as is\na build that leaves the `rashifal` family out.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -19782,7 +19803,7 @@
     },
     {
       "name": "ts_research",
-      "doc": "Runs a study over a batch of births and answers with `{value,\nprovenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`\nstudy, each row `{predicate, counts}` with every group's `{present,\nabsent, unreadable, unstable}`; for any other study it is `{rows,\npermutations, resolution, shuffle}`, each row adding `observed`, `p`\n(`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,\nbonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last\nfour only where they apply. `provenance.input_hash` seals the study\nand is what a study publishes before its data are collected.\n\n`request_json` is `{\"study\", \"rules\", \"holds\", ...}`: `study` one of\n`COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart\nrequest's rules are, and what the study reads: `births` and `design`\n(and a `test` for `COMPARE`); `births`, `control` and an optional\n`test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and\noptionally `depth` and `strata` for `TIMED`. A birth is `{instant,\nlatitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,\nuncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a\nnumber or a decimal string. A key it does not read, a field the study\ndoes not read or misses, or a value out of range is `INVALID_ARG`,\nnamed under `research`, as `research.test.seed`; what the study\nrefuses once it runs is named as the façade names it. A context\nwithout an ephemeris is `CAPABILITY`, as is a build that leaves the\n`research` family out.",
+      "doc": "Runs a study over a batch of births and answers with `{value,\nprovenance}` as canonical JSON. `value` is `{rows}` for a `COUNTS`\nstudy, each row `{predicate, counts}` with every group's `{present,\nabsent, unreadable, unstable}`; for any other study it is `{rows,\npermutations, resolution, shuffle}`, each row adding `observed`, `p`\n(`{exceed, value, low, high}`), `exact`, `adjusted` (`{maxT, holm,\nbonferroni, bh, by}`), `effect`, `expected` and `underAlpha`, the last\nfour only where they apply. `provenance.input_hash` seals the study\nand is what a study publishes before its data are collected.\n\n`request_json` is `{\"study\", \"rules\", \"holds\", ...}`: `study` one of\n`COUNTS`, `COMPARE`, `EXPECTED` and `TIMED`, `rules` the record a chart\nrequest's rules are, and what the study reads: `births` and `design`\n(and a `test` for `COMPARE`); `births`, `control` and an optional\n`test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and\noptionally `depth` and `strata` for `TIMED`. A birth is `{instant,\nlatitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,\nuncertaintyMinutes}`, its instant a Julian day in UTC; `zone` in place\nof `utcOffsetSeconds` reads it at the zone's offset then. A seed is a\nnumber or a decimal string. A key it does not read, a field the study\ndoes not read or misses, or a value out of range is `INVALID_ARG`,\nnamed under `research`, as `research.test.seed`; what the study\nrefuses once it runs is named as the façade names it. A context\nwithout an ephemeris is `CAPABILITY`, as is a build that leaves the\n`research` family out.",
       "safety": "`context` must be a live handle; `request_json` NUL-terminated;\n`out_json` valid for a write.",
       "params": [
         {
@@ -20207,6 +20228,96 @@
       },
       "meta": {},
       "source": "crates/ffi/src/published.rs"
+    },
+    {
+      "name": "ts_record_answer",
+      "doc": "Answers the record entry point `name` (`almanac.days`, `chart.found`)\nfor `request_json`, its request as the record's own reader takes it,\nas canonical JSON: the envelope `{value, provenance}`, or the value\nalone for a record that seals no provenance.\n\n`detail` is `FULL` for the whole answer, and `BRIEF` for the fields a\nreader needs, the provenance written with its answer key and none of\nits hashes, and `\"detail\": \"brief\"` beside them. `fields_json`, when\nnot null, is a caller's own mask, a JSON list of field paths\n(`[\"date.year\", \"weekday\"]`) of the full answer to keep, each checked\nagainst the record's answer schema; the envelope then carries\n`\"fields\"` beside the brief provenance. A mask selects from the full\nanswer, so it is refused beside `BRIEF` (crux C1260).\n\n`INVALID_ARG` on `name` for a record this build does not carry, on\n`detail` for another number, on `fields_json` for a mask that is no\nlist of strings or is named beside `BRIEF`, and on `fields[i]` for a\npath the answer does not have; `CAPABILITY` on `fields_json` for a\nbuild without the answer schemas a mask is checked against (the\n`fields` feature, which a wasm module leaves out); and whatever the\nrecord's reader and its area refuse.",
+      "safety": "`context` must be a live handle; `name` and `request_json`\nNUL-terminated; `fields_json` null or NUL-terminated; `out_json` valid\nfor a write.",
+      "params": [
+        {
+          "name": "context",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "opaque",
+              "name": "TsContext"
+            },
+            "mutable": false
+          },
+          "role": "handle",
+          "meta": {}
+        },
+        {
+          "name": "name",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "request_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {}
+        },
+        {
+          "name": "detail",
+          "ty": {
+            "kind": "scalar",
+            "scalar": "u32"
+          },
+          "role": "value",
+          "meta": {
+            "example": "1",
+            "enum": "TsDetail"
+          }
+        },
+        {
+          "name": "fields_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "char"
+            },
+            "mutable": false
+          },
+          "role": "string_in",
+          "meta": {
+            "example": "[\"weekday\"]",
+            "nullable": true
+          }
+        },
+        {
+          "name": "out_json",
+          "ty": {
+            "kind": "pointer",
+            "to": {
+              "kind": "struct",
+              "name": "TsString"
+            },
+            "mutable": true
+          },
+          "role": "string_out",
+          "meta": {}
+        }
+      ],
+      "returns": {
+        "kind": "enum",
+        "name": "Status"
+      },
+      "meta": {},
+      "source": "crates/ffi/src/record.rs"
     },
     {
       "name": "ts_recorded_settings",

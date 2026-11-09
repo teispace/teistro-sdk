@@ -830,6 +830,26 @@ pub fn delta_t_source_to_str(value: u8) -> String {
     .to_string()
 }
 
+/// A `Detail` from the string `catalogue.js` names it by.
+pub fn detail_from_str(value: &str) -> Result<u32> {
+    match value {
+        "FULL" => Ok(0),
+        "BRIEF" => Ok(1),
+        other => Err(Error::from_reason(format!("`{other}` is not a Detail"))),
+    }
+}
+
+/// The string for a `Detail`; a value from a newer library is
+/// `unknown`.
+pub fn detail_to_str(value: u32) -> String {
+    match value {
+        0 => "FULL",
+        1 => "BRIEF",
+        _ => "unknown",
+    }
+    .to_string()
+}
+
 /// A C observer: degrees and metres, validated into a `Place` on the
 /// way in.
 #[napi(object)]
@@ -5183,7 +5203,7 @@ impl Context {
     /// signs as they stand at the instant.
     ///
     /// `request_json` is `{"at", "latitudeDeg", "longitudeDeg", "altitudeM",
-    /// "utcOffsetSeconds", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
+    /// "utcOffsetSeconds" or "zone", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
     /// and `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when
     /// left out, or `TROPICAL` (at the solstices). A key it does not read or
     /// an instant, place or offset out of range is `INVALID_ARG`, named under
@@ -5225,7 +5245,7 @@ impl Context {
     /// when the mother of a birth may take part in rites again.
     ///
     /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-    /// "utcOffsetSeconds", "table", "tradition", "request"}`: `table` the
+    /// "utcOffsetSeconds" or "zone", "table", "tradition", "request"}`: `table` the
     /// *Dharmasindhu*'s when left out, every row data, or `tradition` a
     /// shipped table by name (`DHARMASINDHU`, `MITAKSHARA`), never both;
     /// `request` `{key,
@@ -5265,7 +5285,7 @@ impl Context {
     /// the instant the last ends.
     ///
     /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-    /// "utcOffsetSeconds", "table", "tradition", "household"}`: `household`
+    /// "utcOffsetSeconds" or "zone", "table", "tradition", "household"}`: `household`
     /// `{events, observers}`, an event `{key, event}` and an observer `{key,
     /// ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,
     /// fireGiver}`. A household that does not hold together, or a key it
@@ -5364,7 +5384,7 @@ impl Context {
     /// is taken to fall as the death did.
     ///
     /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-    /// "utcOffsetSeconds", "at", "crematedAt", "table"}`, the instants UTC
+    /// "utcOffsetSeconds" or "zone", "at", "crematedAt", "table"}`, the instants UTC
     /// Julian days and `table` the *Dharmasindhu*'s lists when left out. A
     /// cremation before the death, or a key it does not read, is
     /// `INVALID_ARG` named under `deathTime`; a context without an ephemeris
@@ -5403,7 +5423,7 @@ impl Context {
     /// for.
     ///
     /// `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-    /// "utcOffsetSeconds", "request"}`: `request` `{key, at, night,
+    /// "utcOffsetSeconds" or "zone", "request"}`: `request` `{key, at, night,
     /// firstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death
     /// as a UTC Julian day and every reading the *Dharmasindhu*'s when left
     /// out. A key it does not read or an empty `key` is `INVALID_ARG` named
@@ -5812,7 +5832,7 @@ impl Context {
     /// not carry is absent.
     ///
     /// `request_json` is `{"kind", "year", "from", "ingress", "event",
-    /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`:
+    /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone"}`:
     /// `kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC
     /// Julian day) where the search starts, the first ingress, eclipse or
     /// conjunction at or after it; `ingress` the ingress a lunation precedes,
@@ -6324,7 +6344,7 @@ impl Context {
     /// a day the Sun does not both rise and set.
     ///
     /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "native", "rules"}`:
     /// the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
     /// `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
     /// place, the offset and `native` optional. A key it does not read, a
@@ -6358,7 +6378,7 @@ impl Context {
     ///
     /// `request_json` is `{"periods", "baseline"}`: each period `{"calendar",
     /// "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM",
-    /// "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as
+    /// "utcOffsetSeconds" or "zone", "snapshot", "events", "spells"}`, the days as
     /// `{"year", "month", "day"}` and everything but `first`, the place and
     /// the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
     /// and `YEARLY`. A key it does not read, a last day before the first, a
@@ -6397,7 +6417,8 @@ impl Context {
     /// `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
     /// optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
     /// latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
-    /// uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+    /// uncertaintyMinutes}`, its instant a Julian day in UTC; `zone` in place
+    /// of `utcOffsetSeconds` reads it at the zone's offset then. A seed is a
     /// number or a decimal string. A key it does not read, a field the study
     /// does not read or misses, or a value out of range is `INVALID_ARG`,
     /// named under `research`, as `research.test.seed`; what the study
@@ -6513,6 +6534,62 @@ impl Context {
                 key.as_ptr(),
                 key.len(),
                 at_least as u32,
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(&env, status)?;
+        Ok(take_string(&mut out_json))
+    }
+
+    /// Answers the record entry point `name` (`almanac.days`, `chart.found`)
+    /// for `request_json`, its request as the record's own reader takes it,
+    /// as canonical JSON: the envelope `{value, provenance}`, or the value
+    /// alone for a record that seals no provenance.
+    ///
+    /// `detail` is `FULL` for the whole answer, and `BRIEF` for the fields a
+    /// reader needs, the provenance written with its answer key and none of
+    /// its hashes, and `"detail": "brief"` beside them. `fields_json`, when
+    /// not null, is a caller's own mask, a JSON list of field paths
+    /// (`["date.year", "weekday"]`) of the full answer to keep, each checked
+    /// against the record's answer schema; the envelope then carries
+    /// `"fields"` beside the brief provenance. A mask selects from the full
+    /// answer, so it is refused beside `BRIEF` (crux C1260).
+    ///
+    /// `INVALID_ARG` on `name` for a record this build does not carry, on
+    /// `detail` for another number, on `fields_json` for a mask that is no
+    /// list of strings or is named beside `BRIEF`, and on `fields[i]` for a
+    /// path the answer does not have; `CAPABILITY` on `fields_json` for a
+    /// build without the answer schemas a mask is checked against (the
+    /// `fields` feature, which a wasm module leaves out); and whatever the
+    /// record's reader and its area refuse.
+    #[napi]
+    pub fn record_answer(
+        &self,
+        env: Env,
+        name: String,
+        request_json: String,
+        detail: String,
+        fields_json: Option<String>,
+    ) -> Result<String> {
+        let name = std::ffi::CString::new(name).map_err(|e| Error::from_reason(e.to_string()))?;
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let detail = detail_from_str(&detail)? as u32;
+        let fields_json = fields_json
+            .map(|s| std::ffi::CString::new(s).map_err(|e| Error::from_reason(e.to_string())))
+            .transpose()?;
+        let fields_json = fields_json.as_ref().map_or(ptr::null(), |s| s.as_ptr());
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter(env);
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::record::ts_record_answer(
+                self.handle,
+                name.as_ptr(),
+                request_json.as_ptr(),
+                detail,
+                fields_json,
                 &raw mut out_json,
             )
         };

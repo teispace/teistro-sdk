@@ -17,9 +17,10 @@ import java.util.Objects;
  * @param longitudeDeg The place's longitude, degrees east positive.
  * @param table The tradition's table, every row data; the *Dharmasindhu*'s when left out. Null leaves the SDK's default.
  * @param tradition A shipped table by its name, in place of `table`. Null leaves the SDK's default.
- * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+ * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record HouseholdQuery(Double altitudeM, Household household, double latitudeDeg, double longitudeDeg, AshauchTable table, AshauchTradition tradition, int utcOffsetSeconds) implements RequestJson {
+public record HouseholdQuery(Double altitudeM, Household household, double latitudeDeg, double longitudeDeg, AshauchTable table, AshauchTradition tradition, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -38,10 +39,9 @@ public record HouseholdQuery(Double altitudeM, Household household, double latit
      * @param household The events and observers.
      * @param latitudeDeg The place's latitude, degrees north positive.
      * @param longitudeDeg The place's longitude, degrees east positive.
-     * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
      */
-    public HouseholdQuery(Household household, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
-        this(null, household, latitudeDeg, longitudeDeg, null, null, utcOffsetSeconds);
+    public HouseholdQuery(Household household, double latitudeDeg, double longitudeDeg) {
+        this(null, household, latitudeDeg, longitudeDeg, null, null, null, null);
     }
 
     /**
@@ -63,6 +63,7 @@ public record HouseholdQuery(Double altitudeM, Household household, double latit
         private AshauchTable table;
         private AshauchTradition tradition;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -135,11 +136,22 @@ public record HouseholdQuery(Double altitudeM, Household household, double latit
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -150,7 +162,7 @@ public record HouseholdQuery(Double altitudeM, Household household, double latit
          * @throws NullPointerException naming a required field left unset
          */
         public HouseholdQuery build() {
-            return new HouseholdQuery(altitudeM, household, Objects.requireNonNull(latitudeDeg, "`HouseholdQuery.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`HouseholdQuery.longitudeDeg` is required"), table, tradition, Objects.requireNonNull(utcOffsetSeconds, "`HouseholdQuery.utcOffsetSeconds` is required"));
+            return new HouseholdQuery(altitudeM, household, Objects.requireNonNull(latitudeDeg, "`HouseholdQuery.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`HouseholdQuery.longitudeDeg` is required"), table, tradition, utcOffsetSeconds, zone);
         }
     }
 
@@ -170,7 +182,8 @@ public record HouseholdQuery(Double altitudeM, Household household, double latit
             Read.number(Read.required(json.get("longitudeDeg"), "HouseholdQuery.longitudeDeg"), "HouseholdQuery.longitudeDeg"),
             Read.orNull(json.get("table"), present -> AshauchTable.of(present)),
             Read.orNull(json.get("tradition"), present -> Read.member(present, "HouseholdQuery.tradition", AshauchTradition::byKey)),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "HouseholdQuery.utcOffsetSeconds"), "HouseholdQuery.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "HouseholdQuery.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -188,7 +201,12 @@ public record HouseholdQuery(Double altitudeM, Household household, double latit
         if (tradition != null) {
             json.put("tradition", tradition.toJson());
         }
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

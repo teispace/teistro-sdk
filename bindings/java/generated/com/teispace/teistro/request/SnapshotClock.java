@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * A clock time on the reference day at the request's offset: the baseline engine's is 06:00.
+ * A clock time on the reference day on the request's clock: the baseline engine's is 06:00.
  *
  * @param hour The hour, 0 to 23.
  * @param minute The minute, 0 to 59.

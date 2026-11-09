@@ -16,9 +16,10 @@ import java.util.Objects;
  * @param latitudeDeg The {@code latitudeDeg} field.
  * @param longitudeDeg The {@code longitudeDeg} field.
  * @param uncertaintyMinutes The {@code uncertaintyMinutes} field. Null leaves the SDK's default.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record BirthAsked(Double altitudeM, double instant, double latitudeDeg, double longitudeDeg, Double uncertaintyMinutes, int utcOffsetSeconds) implements RequestJson {
+public record BirthAsked(Double altitudeM, double instant, double latitudeDeg, double longitudeDeg, Double uncertaintyMinutes, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -26,10 +27,9 @@ public record BirthAsked(Double altitudeM, double instant, double latitudeDeg, d
      * @param instant The {@code instant} field.
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
-    public BirthAsked(double instant, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
-        this(null, instant, latitudeDeg, longitudeDeg, null, utcOffsetSeconds);
+    public BirthAsked(double instant, double latitudeDeg, double longitudeDeg) {
+        this(null, instant, latitudeDeg, longitudeDeg, null, null, null);
     }
 
     /**
@@ -50,6 +50,7 @@ public record BirthAsked(Double altitudeM, double instant, double latitudeDeg, d
         private Double longitudeDeg;
         private Double uncertaintyMinutes;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -111,11 +112,22 @@ public record BirthAsked(Double altitudeM, double instant, double latitudeDeg, d
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -126,7 +138,7 @@ public record BirthAsked(Double altitudeM, double instant, double latitudeDeg, d
          * @throws NullPointerException naming a required field left unset
          */
         public BirthAsked build() {
-            return new BirthAsked(altitudeM, Objects.requireNonNull(instant, "`BirthAsked.instant` is required"), Objects.requireNonNull(latitudeDeg, "`BirthAsked.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`BirthAsked.longitudeDeg` is required"), uncertaintyMinutes, Objects.requireNonNull(utcOffsetSeconds, "`BirthAsked.utcOffsetSeconds` is required"));
+            return new BirthAsked(altitudeM, Objects.requireNonNull(instant, "`BirthAsked.instant` is required"), Objects.requireNonNull(latitudeDeg, "`BirthAsked.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`BirthAsked.longitudeDeg` is required"), uncertaintyMinutes, utcOffsetSeconds, zone);
         }
     }
 
@@ -145,7 +157,8 @@ public record BirthAsked(Double altitudeM, double instant, double latitudeDeg, d
             Read.number(Read.required(json.get("latitudeDeg"), "BirthAsked.latitudeDeg"), "BirthAsked.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "BirthAsked.longitudeDeg"), "BirthAsked.longitudeDeg"),
             Read.orNull(json.get("uncertaintyMinutes"), present -> Read.number(present, "BirthAsked.uncertaintyMinutes")),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "BirthAsked.utcOffsetSeconds"), "BirthAsked.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "BirthAsked.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -160,7 +173,12 @@ public record BirthAsked(Double altitudeM, double instant, double latitudeDeg, d
         if (uncertaintyMinutes != null) {
             json.put("uncertaintyMinutes", uncertaintyMinutes);
         }
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

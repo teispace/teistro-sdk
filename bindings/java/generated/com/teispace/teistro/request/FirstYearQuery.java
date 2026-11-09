@@ -15,9 +15,10 @@ import java.util.Objects;
  * @param latitudeDeg The place's latitude, degrees north positive.
  * @param longitudeDeg The place's longitude, degrees east positive.
  * @param request The death, a UTC Julian day, and the readings.
- * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+ * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record FirstYearQuery(Double altitudeM, double latitudeDeg, double longitudeDeg, FirstYearRequest request, int utcOffsetSeconds) implements RequestJson {
+public record FirstYearQuery(Double altitudeM, double latitudeDeg, double longitudeDeg, FirstYearRequest request, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -36,10 +37,9 @@ public record FirstYearQuery(Double altitudeM, double latitudeDeg, double longit
      * @param latitudeDeg The place's latitude, degrees north positive.
      * @param longitudeDeg The place's longitude, degrees east positive.
      * @param request The death, a UTC Julian day, and the readings.
-     * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
      */
-    public FirstYearQuery(double latitudeDeg, double longitudeDeg, FirstYearRequest request, int utcOffsetSeconds) {
-        this(null, latitudeDeg, longitudeDeg, request, utcOffsetSeconds);
+    public FirstYearQuery(double latitudeDeg, double longitudeDeg, FirstYearRequest request) {
+        this(null, latitudeDeg, longitudeDeg, request, null, null);
     }
 
     /**
@@ -59,6 +59,7 @@ public record FirstYearQuery(Double altitudeM, double latitudeDeg, double longit
         private Double longitudeDeg;
         private FirstYearRequest request;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -109,11 +110,22 @@ public record FirstYearQuery(Double altitudeM, double latitudeDeg, double longit
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -124,7 +136,7 @@ public record FirstYearQuery(Double altitudeM, double latitudeDeg, double longit
          * @throws NullPointerException naming a required field left unset
          */
         public FirstYearQuery build() {
-            return new FirstYearQuery(altitudeM, Objects.requireNonNull(latitudeDeg, "`FirstYearQuery.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`FirstYearQuery.longitudeDeg` is required"), request, Objects.requireNonNull(utcOffsetSeconds, "`FirstYearQuery.utcOffsetSeconds` is required"));
+            return new FirstYearQuery(altitudeM, Objects.requireNonNull(latitudeDeg, "`FirstYearQuery.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`FirstYearQuery.longitudeDeg` is required"), request, utcOffsetSeconds, zone);
         }
     }
 
@@ -142,7 +154,8 @@ public record FirstYearQuery(Double altitudeM, double latitudeDeg, double longit
             Read.number(Read.required(json.get("latitudeDeg"), "FirstYearQuery.latitudeDeg"), "FirstYearQuery.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "FirstYearQuery.longitudeDeg"), "FirstYearQuery.longitudeDeg"),
             FirstYearRequest.of(Read.required(json.get("request"), "FirstYearQuery.request")),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "FirstYearQuery.utcOffsetSeconds"), "FirstYearQuery.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "FirstYearQuery.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -154,7 +167,12 @@ public record FirstYearQuery(Double altitudeM, double latitudeDeg, double longit
         json.put("latitudeDeg", latitudeDeg);
         json.put("longitudeDeg", longitudeDeg);
         json.put("request", request.toJson());
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

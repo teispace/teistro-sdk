@@ -7,7 +7,7 @@ A death's first year at a place (`03-design/shraddha.md` §3.3), answered with `
 
 `value` is `{key, origin, dayOne, dayOneBy, eleventhDay, sapindana, rites}`: `origin` the death's lunar date, `dayOne` the ashauch's first day and `dayOneBy` why, and `rites` each of the *Dharmasindhu*'s sixteen, the first abdika and the sapindana as `{rite, place, month, year, adhika, day, form, drawnTo, bars, observance, clause}`, in the order of their days: `place` its place among the sixteen, `month` the month a monthly closes, `year` which yearly shraddha, `form` `EKODDISHTA` or `PARVANA`, `drawnTo` the sapindana's day when it is first done there, and `bars` what the text bars an *ūna* rite's day for.
 
-`request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "request"}`: `request` `{key, at, night, firstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death as a UTC Julian day and every reading the *Dharmasindhu*'s when left out. A key it does not read or an empty `key` is `INVALID_ARG` named under `firstYear`; a context without an ephemeris is `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
+`request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "request"}`: `request` `{key, at, night, firstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death as a UTC Julian day and every reading the *Dharmasindhu*'s when left out. A key it does not read or an empty `key` is `INVALID_ARG` named under `firstYear`; a context without an ephemeris is `CAPABILITY`, and a polar day `OUT_OF_RANGE`.
 
 <Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
 <Tab value="Node">

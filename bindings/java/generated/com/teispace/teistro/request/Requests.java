@@ -63,6 +63,162 @@ public final class Requests {
             Map.entry("verify.issue", IssueRequest::of),
             Map.entry("verify.receipt", Receipt::of));
 
+    /** {@code almanac.aayadi}, whose request is {@link AayadiRequest}. */
+    public static final RecordOf<AayadiRequest> ALMANAC_AAYADI = new RecordOf<>("almanac.aayadi");
+
+    /** {@code almanac.anniversaries}, whose request is {@link AnniversariesRequest}. */
+    public static final RecordOf<AnniversariesRequest> ALMANAC_ANNIVERSARIES = new RecordOf<>("almanac.anniversaries");
+
+    /** {@code almanac.ashauch}, whose request is {@link AshauchQuery}. */
+    public static final RecordOf<AshauchQuery> ALMANAC_ASHAUCH = new RecordOf<>("almanac.ashauch");
+
+    /** {@code almanac.ashauchKin}, whose request is {@link KinQuery}. */
+    public static final RecordOf<KinQuery> ALMANAC_ASHAUCH_KIN = new RecordOf<>("almanac.ashauchKin");
+
+    /** {@code almanac.ashauchRite}, whose request is {@link RiteQuery}. */
+    public static final RecordOf<RiteQuery> ALMANAC_ASHAUCH_RITE = new RecordOf<>("almanac.ashauchRite");
+
+    /** {@code almanac.changes}, whose request is {@link ChangesRequest}. */
+    public static final RecordOf<ChangesRequest> ALMANAC_CHANGES = new RecordOf<>("almanac.changes");
+
+    /** {@code almanac.days}, whose request is {@link AlmanacDaysRequest}. */
+    public static final RecordOf<AlmanacDaysRequest> ALMANAC_DAYS = new RecordOf<>("almanac.days");
+
+    /** {@code almanac.deathTime}, whose request is {@link DeathTimeQuery}. */
+    public static final RecordOf<DeathTimeQuery> ALMANAC_DEATH_TIME = new RecordOf<>("almanac.deathTime");
+
+    /** {@code almanac.digest}, whose request is {@link DigestRequest}. */
+    public static final RecordOf<DigestRequest> ALMANAC_DIGEST = new RecordOf<>("almanac.digest");
+
+    /** {@code almanac.elect}, whose request is {@link ElectRequest}. */
+    public static final RecordOf<ElectRequest> ALMANAC_ELECT = new RecordOf<>("almanac.elect");
+
+    /** {@code almanac.festivalPack}, whose request is {@link PackRequest}. */
+    public static final RecordOf<PackRequest> ALMANAC_FESTIVAL_PACK = new RecordOf<>("almanac.festivalPack");
+
+    /** {@code almanac.festival_calendar}, whose request is {@link FestivalCalendarRequest}. */
+    public static final RecordOf<FestivalCalendarRequest> ALMANAC_FESTIVAL_CALENDAR = new RecordOf<>("almanac.festival_calendar");
+
+    /** {@code almanac.firstYear}, whose request is {@link FirstYearQuery}. */
+    public static final RecordOf<FirstYearQuery> ALMANAC_FIRST_YEAR = new RecordOf<>("almanac.firstYear");
+
+    /** {@code almanac.household}, whose request is {@link HouseholdQuery}. */
+    public static final RecordOf<HouseholdQuery> ALMANAC_HOUSEHOLD = new RecordOf<>("almanac.household");
+
+    /** {@code almanac.navatara}, whose request is {@link NavataraRequest}. */
+    public static final RecordOf<NavataraRequest> ALMANAC_NAVATARA = new RecordOf<>("almanac.navatara");
+
+    /** {@code almanac.next}, whose request is {@link NextRequest}. */
+    public static final RecordOf<NextRequest> ALMANAC_NEXT = new RecordOf<>("almanac.next");
+
+    /** {@code almanac.observance}, whose request is {@link ObservanceRequest}. */
+    public static final RecordOf<ObservanceRequest> ALMANAC_OBSERVANCE = new RecordOf<>("almanac.observance");
+
+    /** {@code almanac.pakshi}, whose request is {@link PakshiRequest}. */
+    public static final RecordOf<PakshiRequest> ALMANAC_PAKSHI = new RecordOf<>("almanac.pakshi");
+
+    /** {@code almanac.people}, whose request is {@link PeopleRequest}. */
+    public static final RecordOf<PeopleRequest> ALMANAC_PEOPLE = new RecordOf<>("almanac.people");
+
+    /** {@code almanac.publishedReasons}, whose request is {@link PublishedReasonsRequest}. */
+    public static final RecordOf<PublishedReasonsRequest> ALMANAC_PUBLISHED_REASONS = new RecordOf<>("almanac.publishedReasons");
+
+    /** {@code almanac.sankalpa}, whose request is {@link SankalpaRequest}. */
+    public static final RecordOf<SankalpaRequest> ALMANAC_SANKALPA = new RecordOf<>("almanac.sankalpa");
+
+    /** {@code almanac.sentences}, whose request is {@link SentencesRequest}. */
+    public static final RecordOf<SentencesRequest> ALMANAC_SENTENCES = new RecordOf<>("almanac.sentences");
+
+    /** {@code almanac.skyView}, whose request is {@link SkyViewRequest}. */
+    public static final RecordOf<SkyViewRequest> ALMANAC_SKY_VIEW = new RecordOf<>("almanac.skyView");
+
+    /** {@code calendar.add}, whose request is {@link AddAsked}. */
+    public static final RecordOf<AddAsked> CALENDAR_ADD = new RecordOf<>("calendar.add");
+
+    /** {@code calendar.between}, whose request is {@link BetweenAsked}. */
+    public static final RecordOf<BetweenAsked> CALENDAR_BETWEEN = new RecordOf<>("calendar.between");
+
+    /** {@code calendar.convert}, whose request is {@link CalendarAsked}. */
+    public static final RecordOf<CalendarAsked> CALENDAR_CONVERT = new RecordOf<>("calendar.convert");
+
+    /** {@code chart.astrocartography}, whose request is {@link AstrocartographyRequest}. */
+    public static final RecordOf<AstrocartographyRequest> CHART_ASTROCARTOGRAPHY = new RecordOf<>("chart.astrocartography");
+
+    /** {@code chart.disagreements}, whose request is {@link ChartDisagreementsRequest}. */
+    public static final RecordOf<ChartDisagreementsRequest> CHART_DISAGREEMENTS = new RecordOf<>("chart.disagreements");
+
+    /** {@code chart.found}, whose request is {@link ChartFoundRequest}. */
+    public static final RecordOf<ChartFoundRequest> CHART_FOUND = new RecordOf<>("chart.found");
+
+    /** {@code chart.mundane}, whose request is {@link MundaneRequest}. */
+    public static final RecordOf<MundaneRequest> CHART_MUNDANE = new RecordOf<>("chart.mundane");
+
+    /** {@code chart.rashifal}, whose request is {@link BatchAsked}. */
+    public static final RecordOf<BatchAsked> CHART_RASHIFAL = new RecordOf<>("chart.rashifal");
+
+    /** {@code chart.relocated}, whose request is {@link RelocationRequest}. */
+    public static final RecordOf<RelocationRequest> CHART_RELOCATED = new RecordOf<>("chart.relocated");
+
+    /** {@code intl.date}, whose request is {@link DateTextRequest}. */
+    public static final RecordOf<DateTextRequest> INTL_DATE = new RecordOf<>("intl.date");
+
+    /** {@code intl.dates}, whose request is {@link DatesRequest}. */
+    public static final RecordOf<DatesRequest> INTL_DATES = new RecordOf<>("intl.dates");
+
+    /** {@code intl.inWords}, whose request is {@link InWordsRequest}. */
+    public static final RecordOf<InWordsRequest> INTL_IN_WORDS = new RecordOf<>("intl.inWords");
+
+    /** {@code intl.lexicon}, whose request is {@link LexiconRequest}. */
+    public static final RecordOf<LexiconRequest> INTL_LEXICON = new RecordOf<>("intl.lexicon");
+
+    /** {@code intl.lookup}, whose request is {@link LookupRequest}. */
+    public static final RecordOf<LookupRequest> INTL_LOOKUP = new RecordOf<>("intl.lookup");
+
+    /** {@code intl.time}, whose request is {@link TimeTextRequest}. */
+    public static final RecordOf<TimeTextRequest> INTL_TIME = new RecordOf<>("intl.time");
+
+    /** {@code matching.naam}, whose request is {@link NaamRequest}. */
+    public static final RecordOf<NaamRequest> MATCHING_NAAM = new RecordOf<>("matching.naam");
+
+    /** {@code naming.check}, whose request is {@link NamingCheckRequest}. */
+    public static final RecordOf<NamingCheckRequest> NAMING_CHECK = new RecordOf<>("naming.check");
+
+    /** {@code naming.of}, whose request is {@link NamingOfRequest}. */
+    public static final RecordOf<NamingOfRequest> NAMING_OF = new RecordOf<>("naming.of");
+
+    /** {@code naming.read}, whose request is {@link NamingReadRequest}. */
+    public static final RecordOf<NamingReadRequest> NAMING_READ = new RecordOf<>("naming.read");
+
+    /** {@code naming.suggest}, whose request is {@link NamingSuggestRequest}. */
+    public static final RecordOf<NamingSuggestRequest> NAMING_SUGGEST = new RecordOf<>("naming.suggest");
+
+    /** {@code naming.syllables}, whose request is {@link NamingSyllablesRequest}. */
+    public static final RecordOf<NamingSyllablesRequest> NAMING_SYLLABLES = new RecordOf<>("naming.syllables");
+
+    /** {@code numerology.profile}, whose request is {@link NumerologyRequest}. */
+    public static final RecordOf<NumerologyRequest> NUMEROLOGY_PROFILE = new RecordOf<>("numerology.profile");
+
+    /** {@code research.study}, whose request is {@link ResearchRequest}. */
+    public static final RecordOf<ResearchRequest> RESEARCH_STUDY = new RecordOf<>("research.study");
+
+    /** {@code time.civil}, whose request is {@link CivilAsked}. */
+    public static final RecordOf<CivilAsked> TIME_CIVIL = new RecordOf<>("time.civil");
+
+    /** {@code time.convert}, whose request is {@link ScaleRequest}. */
+    public static final RecordOf<ScaleRequest> TIME_CONVERT = new RecordOf<>("time.convert");
+
+    /** {@code time.resolve}, whose request is {@link ResolveAsked}. */
+    public static final RecordOf<ResolveAsked> TIME_RESOLVE = new RecordOf<>("time.resolve");
+
+    /** {@code verify.claims}, whose request is {@link ClaimsRequest}. */
+    public static final RecordOf<ClaimsRequest> VERIFY_CLAIMS = new RecordOf<>("verify.claims");
+
+    /** {@code verify.issue}, whose request is {@link IssueRequest}. */
+    public static final RecordOf<IssueRequest> VERIFY_ISSUE = new RecordOf<>("verify.issue");
+
+    /** {@code verify.receipt}, whose request is {@link Receipt}. */
+    public static final RecordOf<Receipt> VERIFY_RECEIPT = new RecordOf<>("verify.receipt");
+
     private Requests() {}
 
     /**

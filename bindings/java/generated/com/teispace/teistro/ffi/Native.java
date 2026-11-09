@@ -4154,6 +4154,7 @@ public final class Native {
         "ts_context_new_with_provider",
         "ts_provider_free",
         "ts_published_verify",
+        "ts_record_answer",
         "ts_recorded_settings"
     );
 
@@ -4768,7 +4769,7 @@ public final class Native {
      * signs as they stand at the instant.
      *
      * `request_json` is `{"at", "latitudeDeg", "longitudeDeg", "altitudeM",
-     * "utcOffsetSeconds", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
+     * "utcOffsetSeconds" or "zone", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
      * and `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when
      * left out, or `TROPICAL` (at the solstices). A key it does not read or
      * an instant, place or offset out of range is `INVALID_ARG`, named under
@@ -4795,7 +4796,7 @@ public final class Native {
      * when the mother of a birth may take part in rites again.
      *
      * `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-     * "utcOffsetSeconds", "table", "tradition", "request"}`: `table` the
+     * "utcOffsetSeconds" or "zone", "table", "tradition", "request"}`: `table` the
      * *Dharmasindhu*'s when left out, every row data, or `tradition` a
      * shipped table by name (`DHARMASINDHU`, `MITAKSHARA`), never both;
      * `request` `{key,
@@ -4820,7 +4821,7 @@ public final class Native {
      * the instant the last ends.
      *
      * `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-     * "utcOffsetSeconds", "table", "tradition", "household"}`: `household`
+     * "utcOffsetSeconds" or "zone", "table", "tradition", "household"}`: `household`
      * `{events, observers}`, an event `{key, event}` and an observer `{key,
      * ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,
      * fireGiver}`. A household that does not hold together, or a key it
@@ -4874,7 +4875,7 @@ public final class Native {
      * is taken to fall as the death did.
      *
      * `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-     * "utcOffsetSeconds", "at", "crematedAt", "table"}`, the instants UTC
+     * "utcOffsetSeconds" or "zone", "at", "crematedAt", "table"}`, the instants UTC
      * Julian days and `table` the *Dharmasindhu*'s lists when left out. A
      * cremation before the death, or a key it does not read, is
      * `INVALID_ARG` named under `deathTime`; a context without an ephemeris
@@ -4898,7 +4899,7 @@ public final class Native {
      * for.
      *
      * `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-     * "utcOffsetSeconds", "request"}`: `request` `{key, at, night,
+     * "utcOffsetSeconds" or "zone", "request"}`: `request` `{key, at, night,
      * firstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death
      * as a UTC Julian day and every reading the *Dharmasindhu*'s when left
      * out. A key it does not read or an empty `key` is `INVALID_ARG` named
@@ -5143,7 +5144,7 @@ public final class Native {
      * not carry is absent.
      *
      * `request_json` is `{"kind", "year", "from", "ingress", "event",
-     * "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`:
+     * "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone"}`:
      * `kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC
      * Julian day) where the search starts, the first ingress, eclipse or
      * conjunction at or after it; `ingress` the ingress a lunation precedes,
@@ -5461,7 +5462,7 @@ public final class Native {
      * a day the Sun does not both rise and set.
      *
      * `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-     * "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+     * "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "native", "rules"}`:
      * the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
      * `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
      * place, the offset and `native` optional. A key it does not read, a
@@ -5484,7 +5485,7 @@ public final class Native {
      *
      * `request_json` is `{"periods", "baseline"}`: each period `{"calendar",
      * "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM",
-     * "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as
+     * "utcOffsetSeconds" or "zone", "snapshot", "events", "spells"}`, the days as
      * `{"year", "month", "day"}` and everything but `first`, the place and
      * the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
      * and `YEARLY`. A key it does not read, a last day before the first, a
@@ -5512,7 +5513,8 @@ public final class Native {
      * `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
      * optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
      * latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
-     * uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+     * uncertaintyMinutes}`, its instant a Julian day in UTC; `zone` in place
+     * of `utcOffsetSeconds` reads it at the zone's offset then. A seed is a
      * number or a decimal string. A key it does not read, a field the study
      * does not read or misses, or a value out of range is `INVALID_ARG`,
      * named under `research`, as `research.test.seed`; what the study
@@ -5604,6 +5606,31 @@ public final class Native {
      * `signed-packs` answers `CAPABILITY`.
      */
     public final MethodHandle ts_published_verify;
+
+    /**
+     * Answers the record entry point `name` (`almanac.days`, `chart.found`)
+     * for `request_json`, its request as the record's own reader takes it,
+     * as canonical JSON: the envelope `{value, provenance}`, or the value
+     * alone for a record that seals no provenance.
+     *
+     * `detail` is `FULL` for the whole answer, and `BRIEF` for the fields a
+     * reader needs, the provenance written with its answer key and none of
+     * its hashes, and `"detail": "brief"` beside them. `fields_json`, when
+     * not null, is a caller's own mask, a JSON list of field paths
+     * (`["date.year", "weekday"]`) of the full answer to keep, each checked
+     * against the record's answer schema; the envelope then carries
+     * `"fields"` beside the brief provenance. A mask selects from the full
+     * answer, so it is refused beside `BRIEF` (crux C1260).
+     *
+     * `INVALID_ARG` on `name` for a record this build does not carry, on
+     * `detail` for another number, on `fields_json` for a mask that is no
+     * list of strings or is named beside `BRIEF`, and on `fields[i]` for a
+     * path the answer does not have; `CAPABILITY` on `fields_json` for a
+     * build without the answer schemas a mask is checked against (the
+     * `fields` feature, which a wasm module leaves out); and whatever the
+     * record's reader and its area refuse.
+     */
+    public final MethodHandle ts_record_answer;
 
     /**
      * Translates a stored baseline settings snapshot and answers with the
@@ -5736,6 +5763,7 @@ public final class Native {
         ts_context_new_with_provider = linker.downcallHandle(symbols.find("ts_context_new_with_provider").orElseThrow(() -> missing("ts_context_new_with_provider")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, ADDRESS));
         ts_provider_free = linker.downcallHandle(symbols.find("ts_provider_free").orElseThrow(() -> missing("ts_provider_free")), FunctionDescriptor.ofVoid(ADDRESS));
         ts_published_verify = linker.downcallHandle(symbols.find("ts_published_verify").orElseThrow(() -> missing("ts_published_verify")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, JAVA_LONG, ADDRESS, JAVA_LONG, ADDRESS, JAVA_LONG, JAVA_INT, ADDRESS));
+        ts_record_answer = linker.downcallHandle(symbols.find("ts_record_answer").orElseThrow(() -> missing("ts_record_answer")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS, JAVA_INT, ADDRESS, ADDRESS));
         ts_recorded_settings = linker.downcallHandle(symbols.find("ts_recorded_settings").orElseThrow(() -> missing("ts_recorded_settings")), FunctionDescriptor.of(JAVA_INT, ADDRESS, ADDRESS, ADDRESS));
     }
 

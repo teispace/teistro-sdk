@@ -17,9 +17,10 @@ import java.util.Objects;
  * @param latitudeDeg The place's latitude, degrees north positive.
  * @param longitudeDeg The place's longitude, degrees east positive.
  * @param table The tradition's lists; the *Dharmasindhu*'s when left out. Null leaves the SDK's default.
- * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+ * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record DeathTimeQuery(Double altitudeM, double at, Double crematedAt, double latitudeDeg, double longitudeDeg, DeathTimeTable table, int utcOffsetSeconds) implements RequestJson {
+public record DeathTimeQuery(Double altitudeM, double at, Double crematedAt, double latitudeDeg, double longitudeDeg, DeathTimeTable table, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -27,10 +28,9 @@ public record DeathTimeQuery(Double altitudeM, double at, Double crematedAt, dou
      * @param at The death's instant, a UTC Julian day.
      * @param latitudeDeg The place's latitude, degrees north positive.
      * @param longitudeDeg The place's longitude, degrees east positive.
-     * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
      */
-    public DeathTimeQuery(double at, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
-        this(null, at, null, latitudeDeg, longitudeDeg, null, utcOffsetSeconds);
+    public DeathTimeQuery(double at, double latitudeDeg, double longitudeDeg) {
+        this(null, at, null, latitudeDeg, longitudeDeg, null, null, null);
     }
 
     /**
@@ -52,6 +52,7 @@ public record DeathTimeQuery(Double altitudeM, double at, Double crematedAt, dou
         private Double longitudeDeg;
         private DeathTimeTable table;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -124,11 +125,22 @@ public record DeathTimeQuery(Double altitudeM, double at, Double crematedAt, dou
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -139,7 +151,7 @@ public record DeathTimeQuery(Double altitudeM, double at, Double crematedAt, dou
          * @throws NullPointerException naming a required field left unset
          */
         public DeathTimeQuery build() {
-            return new DeathTimeQuery(altitudeM, Objects.requireNonNull(at, "`DeathTimeQuery.at` is required"), crematedAt, Objects.requireNonNull(latitudeDeg, "`DeathTimeQuery.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`DeathTimeQuery.longitudeDeg` is required"), table, Objects.requireNonNull(utcOffsetSeconds, "`DeathTimeQuery.utcOffsetSeconds` is required"));
+            return new DeathTimeQuery(altitudeM, Objects.requireNonNull(at, "`DeathTimeQuery.at` is required"), crematedAt, Objects.requireNonNull(latitudeDeg, "`DeathTimeQuery.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`DeathTimeQuery.longitudeDeg` is required"), table, utcOffsetSeconds, zone);
         }
     }
 
@@ -159,7 +171,8 @@ public record DeathTimeQuery(Double altitudeM, double at, Double crematedAt, dou
             Read.number(Read.required(json.get("latitudeDeg"), "DeathTimeQuery.latitudeDeg"), "DeathTimeQuery.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "DeathTimeQuery.longitudeDeg"), "DeathTimeQuery.longitudeDeg"),
             Read.orNull(json.get("table"), present -> DeathTimeTable.of(present)),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "DeathTimeQuery.utcOffsetSeconds"), "DeathTimeQuery.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "DeathTimeQuery.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -177,7 +190,12 @@ public record DeathTimeQuery(Double altitudeM, double at, Double crematedAt, dou
         if (table != null) {
             json.put("table", table.toJson());
         }
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

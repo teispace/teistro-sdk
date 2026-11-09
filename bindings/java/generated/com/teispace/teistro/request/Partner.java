@@ -13,9 +13,10 @@ import java.util.Objects;
  *
  * @param instant The birth's instant.
  * @param place Where it happened.
- * @param utcOffsetSeconds Its civil clock, which a chart's day is reckoned by; UTC when left out. Null leaves the SDK's default.
+ * @param utcOffsetSeconds Its civil clock, which a chart's day is reckoned by; or `zone`, not both; UTC when neither is given. Null leaves the SDK's default.
+ * @param zone The zone the birth is read on, at the offset it had then (`03-design/time-and-timezone.md` §3.4); or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record Partner(double instant, GeoPlace place, Integer utcOffsetSeconds) implements RequestJson {
+public record Partner(double instant, GeoPlace place, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -35,7 +36,7 @@ public record Partner(double instant, GeoPlace place, Integer utcOffsetSeconds) 
      * @param place Where it happened.
      */
     public Partner(double instant, GeoPlace place) {
-        this(instant, place, null);
+        this(instant, place, null, null);
     }
 
     /**
@@ -53,6 +54,7 @@ public record Partner(double instant, GeoPlace place, Integer utcOffsetSeconds) 
         private Double instant;
         private GeoPlace place;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -81,11 +83,22 @@ public record Partner(double instant, GeoPlace place, Integer utcOffsetSeconds) 
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds Its civil clock, which a chart's day is reckoned by; UTC when left out. Null leaves the SDK's default.
+         * @param utcOffsetSeconds Its civil clock, which a chart's day is reckoned by; or `zone`, not both; UTC when neither is given. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone the birth is read on, at the offset it had then (`03-design/time-and-timezone.md` §3.4); or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -96,7 +109,7 @@ public record Partner(double instant, GeoPlace place, Integer utcOffsetSeconds) 
          * @throws NullPointerException naming a required field left unset
          */
         public Partner build() {
-            return new Partner(Objects.requireNonNull(instant, "`Partner.instant` is required"), place, utcOffsetSeconds);
+            return new Partner(Objects.requireNonNull(instant, "`Partner.instant` is required"), place, utcOffsetSeconds, zone);
         }
     }
 
@@ -112,7 +125,8 @@ public record Partner(double instant, GeoPlace place, Integer utcOffsetSeconds) 
         return new Partner(
             Read.number(Read.required(json.get("instant"), "Partner.instant"), "Partner.instant"),
             GeoPlace.of(Read.required(json.get("place"), "Partner.place")),
-            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "Partner.utcOffsetSeconds")));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "Partner.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -122,6 +136,9 @@ public record Partner(double instant, GeoPlace place, Integer utcOffsetSeconds) 
         json.put("place", place.toJson());
         if (utcOffsetSeconds != null) {
             json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
         }
         return json;
     }

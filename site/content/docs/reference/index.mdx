@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 102 entry points over 28 structs and 185 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 103 entry points over 28 structs and 186 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 
@@ -245,6 +245,12 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 |---|---|
 | [`ts_published_verify`](published/ts_published_verify) | Verifies a signed pack and answers with its published set as canonical JSON. |
 
+### Record
+
+| entry point | what it does |
+|---|---|
+| [`ts_record_answer`](record/ts_record_answer) | Answers the record entry point `name` (`almanac.days`, `chart.found`) for `request_json`, its request as the record's own reader takes it, as canonical JSON: the envelope `{value, provenance}`, or the value alone for a record that seals no provenance. |
+
 ### Recorded
 
 | entry point | what it does |
@@ -294,4 +300,5 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 - `crates/ffi/src/ephemeris.rs`
 - `crates/ffi/src/provider.rs`
 - `crates/ffi/src/published.rs`
+- `crates/ffi/src/record.rs`
 - `crates/ffi/src/recorded.rs`

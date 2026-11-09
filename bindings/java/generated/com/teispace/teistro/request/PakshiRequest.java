@@ -19,9 +19,10 @@ import java.util.Objects;
  * @param longitudeDeg The {@code longitudeDeg} field.
  * @param nativeValue Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha` with an optional `rule`.
  * @param rules What a day is read under. Null leaves the SDK's default.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record PakshiRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, NativeAsked nativeValue, PakshiRules rules, int utcOffsetSeconds) implements RequestJson {
+public record PakshiRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, NativeAsked nativeValue, PakshiRules rules, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -42,10 +43,9 @@ public record PakshiRequest(Double altitudeM, com.teispace.teistro.Calendar cale
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
      * @param nativeValue Whose bird, as a binding writes it: `bird`, or `nakshatra` and `paksha` with an optional `rule`.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
-    public PakshiRequest(DayAsked first, double latitudeDeg, double longitudeDeg, NativeAsked nativeValue, int utcOffsetSeconds) {
-        this(null, null, first, null, latitudeDeg, longitudeDeg, nativeValue, null, utcOffsetSeconds);
+    public PakshiRequest(DayAsked first, double latitudeDeg, double longitudeDeg, NativeAsked nativeValue) {
+        this(null, null, first, null, latitudeDeg, longitudeDeg, nativeValue, null, null, null);
     }
 
     /**
@@ -69,6 +69,7 @@ public record PakshiRequest(Double altitudeM, com.teispace.teistro.Calendar cale
         private NativeAsked nativeValue;
         private PakshiRules rules;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -163,11 +164,22 @@ public record PakshiRequest(Double altitudeM, com.teispace.teistro.Calendar cale
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -178,7 +190,7 @@ public record PakshiRequest(Double altitudeM, com.teispace.teistro.Calendar cale
          * @throws NullPointerException naming a required field left unset
          */
         public PakshiRequest build() {
-            return new PakshiRequest(altitudeM, calendar, first, last, Objects.requireNonNull(latitudeDeg, "`PakshiRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`PakshiRequest.longitudeDeg` is required"), nativeValue, rules, Objects.requireNonNull(utcOffsetSeconds, "`PakshiRequest.utcOffsetSeconds` is required"));
+            return new PakshiRequest(altitudeM, calendar, first, last, Objects.requireNonNull(latitudeDeg, "`PakshiRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`PakshiRequest.longitudeDeg` is required"), nativeValue, rules, utcOffsetSeconds, zone);
         }
     }
 
@@ -200,7 +212,8 @@ public record PakshiRequest(Double altitudeM, com.teispace.teistro.Calendar cale
             Read.number(Read.required(json.get("longitudeDeg"), "PakshiRequest.longitudeDeg"), "PakshiRequest.longitudeDeg"),
             NativeAsked.of(Read.required(json.get("native"), "PakshiRequest.native")),
             Read.orNull(json.get("rules"), present -> PakshiRules.of(present)),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "PakshiRequest.utcOffsetSeconds"), "PakshiRequest.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "PakshiRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -222,7 +235,12 @@ public record PakshiRequest(Double altitudeM, com.teispace.teistro.Calendar cale
         if (rules != null) {
             json.put("rules", rules.toJson());
         }
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

@@ -2902,3 +2902,12 @@ Mirrors `teistro::matching::VargaRelation` through an **exhaustive** match.
 | `TS_VARGA_RELATION_ENEMY` | 1 | Each the 5th from the other, eater and eaten. |
 | `TS_VARGA_RELATION_NEUTRAL` | 2 | Neither. |
 
+## ts_detail
+
+How much of its answer a record call asks for.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_DETAIL_FULL` | 0 | The whole answer, as serde writes it. |
+| `TS_DETAIL_BRIEF` | 1 | The fields a reader needs, as the record declares them, with the provenance's answer key and none of its hashes. |
+

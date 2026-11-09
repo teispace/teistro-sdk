@@ -10,7 +10,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Required, Sequence, Tuple, TypeAlias, TypedDict, Union
+from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Required, Sequence, Tuple, TypeAlias, TypedDict, Union, overload
 
 from . import catalogue as _catalogue
 
@@ -76,16 +76,16 @@ __all__ = [
     "AshauchRequest",
     "AshauchTable",
     "AshauchTradition",
+    "ZoneSpec",
+    "ZoneSpecIana",
+    "ZoneSpecLocalMean",
+    "ZoneSpecFixed",
     "KinAsked",
     "KinTable",
     "AshauchRiteAsked",
     "AshauchRiteTable",
     "DayAsked",
     "ChangeKind",
-    "ZoneSpec",
-    "ZoneSpecIana",
-    "ZoneSpecLocalMean",
-    "ZoneSpecFixed",
     "FestivalRequest",
     "MuhurtaRequest",
     "DeathTimeTable",
@@ -762,6 +762,8 @@ __all__ = [
     "FestivalCase",
     "DayEdge",
     "Tara",
+    "RecordName",
+    "RecordCalls",
 ]
 
 
@@ -828,8 +830,11 @@ class AshauchQuery(TypedDict, total=False):
     tradition: Optional[AshauchTradition]
     """A shipped table by its name, in place of `table`."""
 
-    utcOffsetSeconds: Required[int]
-    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class KinQuery(TypedDict, total=False):
@@ -944,8 +949,11 @@ class DeathTimeQuery(TypedDict, total=False):
     table: Optional[DeathTimeTable]
     """The tradition's lists; the *Dharmasindhu*'s when left out."""
 
-    utcOffsetSeconds: Required[int]
-    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class DigestRequest(TypedDict, total=False):
@@ -1073,8 +1081,11 @@ class FirstYearQuery(TypedDict, total=False):
     request: Required[FirstYearRequest]
     """The death, a UTC Julian day, and the readings."""
 
-    utcOffsetSeconds: Required[int]
-    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class HouseholdQuery(TypedDict, total=False):
@@ -1098,8 +1109,11 @@ class HouseholdQuery(TypedDict, total=False):
     tradition: Optional[AshauchTradition]
     """A shipped table by its name, in place of `table`."""
 
-    utcOffsetSeconds: Required[int]
-    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class NavataraRequest(TypedDict, total=False):
@@ -1188,7 +1202,11 @@ class PakshiRequest(TypedDict, total=False):
 
     rules: PakshiRules
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class PeopleRequest(TypedDict, total=False):
@@ -1263,8 +1281,11 @@ class SankalpaRequest(TypedDict, total=False):
     longitudeDeg: Required[float]
     """The place's longitude, degrees east positive."""
 
-    utcOffsetSeconds: Required[int]
-    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class SentencesRequest(TypedDict, total=False):
@@ -1527,10 +1548,12 @@ MundaneRequest = TypedDict(
         "latitudeDeg": "Required[float]",
         # The place's longitude, degrees, east positive.
         "longitudeDeg": "Required[float]",
-        # The local clock's offset from UTC, seconds, east positive.
-        "utcOffsetSeconds": "int",
+        # The local clock's offset from UTC, seconds, east positive; or `zone`, not both; UTC when neither is given.
+        "utcOffsetSeconds": "Optional[int]",
         # The year (Gregorian) whose ingress, or whose first eclipse or conjunction after 1 January 0h UTC, is asked; or name `from`.
         "year": "Optional[int]",
+        # The zone the moment is read on, at the offset it had then (`03-design/time-and-timezone.md` §3.4); or `utcOffsetSeconds`, not both.
+        "zone": "Optional[ZoneSpec]",
     },
     total=False,
 )
@@ -1828,8 +1851,11 @@ class ClaimsRequest(TypedDict, total=False):
     text: Required[str]
     """The text whose claims are checked."""
 
-    utcOffsetSeconds: Required[int]
-    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class IssueRequest(TypedDict, total=False):
@@ -2007,6 +2033,37 @@ AshauchTradition: TypeAlias = Literal['DHARMASINDHU', 'MITAKSHARA']
 """
 
 
+ZoneSpec: TypeAlias = "Union[ZoneSpecIana, ZoneSpecLocalMean, ZoneSpecFixed]"
+"""How a zone is given."""
+
+
+class ZoneSpecIana(TypedDict, total=False):
+    """A zone of the database, by its IANA name."""
+
+    kind: Required[Literal['IANA']]
+
+    zone: Required[str]
+    """The name (`Asia/Kathmandu`)."""
+
+
+class ZoneSpecLocalMean(TypedDict, total=False):
+    """Local mean time at a longitude: four minutes a degree."""
+
+    kind: Required[Literal['LOCAL_MEAN']]
+
+    longitude: Required[float]
+    """The longitude, east positive."""
+
+
+class ZoneSpecFixed(TypedDict, total=False):
+    """A fixed offset the consumer states."""
+
+    kind: Required[Literal['FIXED']]
+
+    offset: Required[int]
+    """The offset."""
+
+
 class KinAsked(TypedDict, total=False):
     """What is asked: the path from the observer to the person the event is of, the one who died or was born."""
 
@@ -2113,37 +2170,6 @@ ChangeKind: TypeAlias = Literal['TITHI', 'NAKSHATRA', 'YOGA', 'KARANA', 'MOON_SI
 `SUN_SIGN`: The Sun's sign: the sankranti.
 `VARA`: The vara, at sunrise.
 """
-
-
-ZoneSpec: TypeAlias = "Union[ZoneSpecIana, ZoneSpecLocalMean, ZoneSpecFixed]"
-"""How a zone is given."""
-
-
-class ZoneSpecIana(TypedDict, total=False):
-    """A zone of the database, by its IANA name."""
-
-    kind: Required[Literal['IANA']]
-
-    zone: Required[str]
-    """The name (`Asia/Kathmandu`)."""
-
-
-class ZoneSpecLocalMean(TypedDict, total=False):
-    """Local mean time at a longitude: four minutes a degree."""
-
-    kind: Required[Literal['LOCAL_MEAN']]
-
-    longitude: Required[float]
-    """The longitude, east positive."""
-
-
-class ZoneSpecFixed(TypedDict, total=False):
-    """A fixed offset the consumer states."""
-
-    kind: Required[Literal['FIXED']]
-
-    offset: Required[int]
-    """The offset."""
 
 
 class FestivalRequest(TypedDict, total=False):
@@ -2986,7 +3012,11 @@ class PeriodAsked(TypedDict, total=False):
 
     spells: Optional[Sequence[int]]
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class RelocationPlace(TypedDict, total=False):
@@ -3217,7 +3247,11 @@ class BirthAsked(TypedDict, total=False):
 
     uncertaintyMinutes: float
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class ResearchDesign(TypedDict, total=False):
@@ -4297,8 +4331,11 @@ class Partner(TypedDict, total=False):
     place: Required[GeoPlace]
     """Where it happened."""
 
-    utcOffsetSeconds: int
-    """Its civil clock, which a chart's day is reckoned by; UTC when left out."""
+    utcOffsetSeconds: Optional[int]
+    """Its civil clock, which a chart's day is reckoned by; or `zone`, not both; UTC when neither is given."""
+
+    zone: Optional[ZoneSpec]
+    """The zone the birth is read on, at the offset it had then (`03-design/time-and-timezone.md` §3.4); or `utcOffsetSeconds`, not both."""
 
 
 class PoruthamRules(TypedDict, total=False):
@@ -4813,7 +4850,7 @@ class SnapshotSunrise(TypedDict, total=False):
 
 
 class SnapshotClock(TypedDict, total=False):
-    """A clock time on the reference day at the request's offset: the baseline engine's is 06:00."""
+    """A clock time on the reference day on the request's clock: the baseline engine's is 06:00."""
 
     at: Required[Literal['CLOCK']]
 
@@ -10189,3 +10226,177 @@ Tara: TypeAlias = Literal['JANMA', 'SAMPAT', 'VIPAT', 'KSHEMA', 'PRATYAK', 'SADH
 `MITRA`: 8, good.
 `PARAMA_MITRA`: 9, very favourable.
 """
+
+
+RecordName: TypeAlias = Literal['almanac.aayadi', 'almanac.anniversaries', 'almanac.ashauch', 'almanac.ashauchKin', 'almanac.ashauchRite', 'almanac.changes', 'almanac.days', 'almanac.deathTime', 'almanac.digest', 'almanac.elect', 'almanac.festivalPack', 'almanac.festival_calendar', 'almanac.firstYear', 'almanac.household', 'almanac.navatara', 'almanac.next', 'almanac.observance', 'almanac.pakshi', 'almanac.people', 'almanac.publishedReasons', 'almanac.sankalpa', 'almanac.sentences', 'almanac.skyView', 'calendar.add', 'calendar.between', 'calendar.convert', 'chart.astrocartography', 'chart.disagreements', 'chart.found', 'chart.mundane', 'chart.rashifal', 'chart.relocated', 'intl.date', 'intl.dates', 'intl.inWords', 'intl.lexicon', 'intl.lookup', 'intl.time', 'matching.naam', 'naming.check', 'naming.of', 'naming.read', 'naming.suggest', 'naming.syllables', 'numerology.profile', 'research.study', 'time.civil', 'time.convert', 'time.resolve', 'verify.claims', 'verify.issue', 'verify.receipt']
+"""A record entry point's name, `area.operation`, whose request is typed."""
+
+
+class RecordCalls:
+    """Every record entry point by its name, its request typed by the name: the context's `record`."""
+
+    @overload
+    def record(self, name: Literal['almanac.aayadi'], request: AayadiRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.anniversaries'], request: AnniversariesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.ashauch'], request: AshauchQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.ashauchKin'], request: KinQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.ashauchRite'], request: RiteQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.changes'], request: ChangesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.days'], request: AlmanacDaysRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.deathTime'], request: DeathTimeQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.digest'], request: DigestRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.elect'], request: ElectRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.festivalPack'], request: PackRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.festival_calendar'], request: FestivalCalendarRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.firstYear'], request: FirstYearQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.household'], request: HouseholdQuery, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.navatara'], request: NavataraRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.next'], request: NextRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.observance'], request: ObservanceRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.pakshi'], request: PakshiRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.people'], request: PeopleRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.publishedReasons'], request: PublishedReasonsRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.sankalpa'], request: SankalpaRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.sentences'], request: SentencesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['almanac.skyView'], request: SkyViewRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['calendar.add'], request: AddAsked, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['calendar.between'], request: BetweenAsked, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['calendar.convert'], request: CalendarAsked, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['chart.astrocartography'], request: AstrocartographyRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['chart.disagreements'], request: ChartDisagreementsRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['chart.found'], request: ChartFoundRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['chart.mundane'], request: MundaneRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['chart.rashifal'], request: BatchAsked, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['chart.relocated'], request: RelocationRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['intl.date'], request: DateTextRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['intl.dates'], request: DatesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['intl.inWords'], request: InWordsRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['intl.lexicon'], request: LexiconRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['intl.lookup'], request: LookupRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['intl.time'], request: TimeTextRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['matching.naam'], request: NaamRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['naming.check'], request: NamingCheckRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['naming.of'], request: NamingOfRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['naming.read'], request: NamingReadRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['naming.suggest'], request: NamingSuggestRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['naming.syllables'], request: NamingSyllablesRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['numerology.profile'], request: NumerologyRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['research.study'], request: ResearchRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['time.civil'], request: CivilAsked, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['time.convert'], request: ScaleRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['time.resolve'], request: ResolveAsked, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['verify.claims'], request: ClaimsRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['verify.issue'], request: IssueRequest, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    @overload
+    def record(self, name: Literal['verify.receipt'], request: Receipt, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...
+
+    def record(self, name: str, request: Any, *, detail: _catalogue.Detail = _catalogue.Detail.FULL, fields: Optional[Sequence[str]] = None) -> Any:
+        """The record entry point `name` answered for `request`, as the parsed envelope `{value, provenance}`, or the value alone where the record seals no provenance.
+
+        `detail` is `Detail.FULL` for the whole answer and `Detail.BRIEF` for the fields a reader needs, the provenance written with its answer key and none of its hashes. `fields` is a caller's own mask, the paths of the full answer to keep (`["date.year"]`), each checked against the record's answer schema; it is refused beside `Detail.BRIEF`.
+        """
+        return self._record_answer(name, request, detail, fields)
+
+    def _record_answer(self, name: str, request: Any, detail: _catalogue.Detail, fields: Optional[Sequence[str]]) -> Any:
+        raise NotImplementedError
