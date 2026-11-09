@@ -39,6 +39,11 @@ public enum Tradition implements Catalogued {
      */
     CHRISTIAN(5, "CHRISTIAN"),
 
+    /**
+     * Zoroastrian
+     */
+    ZOROASTRIAN(6, "ZOROASTRIAN"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 

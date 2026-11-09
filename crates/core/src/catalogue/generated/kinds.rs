@@ -578,7 +578,7 @@ impl Kind {
             Kind::BhadraVasa => 3,
             Kind::ShivaVasa => 7,
             Kind::FestivalKind => 4,
-            Kind::Tradition => 6,
+            Kind::Tradition => 7,
             Kind::DayMarker => 3,
             Kind::Gowri => 8,
             Kind::FastKind => 7,

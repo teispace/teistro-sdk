@@ -3866,7 +3866,7 @@ class PublishedSet(TypedDict, total=False):
     """Its version; a correction is a higher one."""
 
 
-FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN'], Sequence[FestivalRuleItem]]"
+FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA'], Sequence[FestivalRuleItem]]"
 """The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key."""
 
 
@@ -5201,7 +5201,7 @@ class PublishedEntryWithdraw(TypedDict, total=False):
     """Where the publisher says it."""
 
 
-FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
+FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
 """A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule."""
 
 
@@ -8246,13 +8246,13 @@ class EkadashiRule(TypedDict, total=False):
 
 
 class FollowingRule(TypedDict, total=False):
-    """An observance on the day a number of civil days after another rule's."""
+    """An observance on the day a number of civil days after another rule's, or before it."""
 
     after: Required[str]
     """The key of the karmakala rule whose day it counts from."""
 
     days: Required[int]
-    """How many civil days after that day, 0 for the same day, at most `FollowingRule::MOST_DAYS`."""
+    """How many civil days after that day, 0 for the same day and a negative count for the days before it, at most `FollowingRule::MOST_DAYS` either way."""
 
     key: Required[str]
     """The rule's key in its pack, `"HOLI_TERAI"`."""

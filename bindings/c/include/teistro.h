@@ -4757,6 +4757,10 @@ typedef enum ts_tradition {
      * Christian
      */
     TS_TRADITION_CHRISTIAN = 5,
+    /**
+     * Zoroastrian
+     */
+    TS_TRADITION_ZOROASTRIAN = 6,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_TRADITION_UNKNOWN = -1,
 } ts_tradition;

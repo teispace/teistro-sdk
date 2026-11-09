@@ -35,15 +35,18 @@ pub enum Tradition {
     Islamic = 4,
     /// Christian
     Christian = 5,
+    /// Zoroastrian
+    Zoroastrian = 6,
 }
 
-const BY_KEY: [(&str, Tradition); 6] = [
+const BY_KEY: [(&str, Tradition); 7] = [
     ("BUDDHIST", Tradition::Buddhist),
     ("CHRISTIAN", Tradition::Christian),
     ("HINDU", Tradition::Hindu),
     ("ISLAMIC", Tradition::Islamic),
     ("JAIN", Tradition::Jain),
     ("SIKH", Tradition::Sikh),
+    ("ZOROASTRIAN", Tradition::Zoroastrian),
 ];
 
 const ALIASES: [(&str, Tradition); 0] = [
@@ -54,13 +57,14 @@ impl Tradition {
     pub const KIND: Kind = Kind::Tradition;
 
     /// Every member, in id order.
-    pub const ALL: [Tradition; 6] = [
+    pub const ALL: [Tradition; 7] = [
         Tradition::Hindu,
         Tradition::Buddhist,
         Tradition::Jain,
         Tradition::Sikh,
         Tradition::Islamic,
         Tradition::Christian,
+        Tradition::Zoroastrian,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -79,6 +83,7 @@ impl Tradition {
             Tradition::Sikh => "SIKH",
             Tradition::Islamic => "ISLAMIC",
             Tradition::Christian => "CHRISTIAN",
+            Tradition::Zoroastrian => "ZOROASTRIAN",
         }
     }
 
@@ -98,6 +103,7 @@ impl Tradition {
             Tradition::Sikh => "tradition.SIKH",
             Tradition::Islamic => "tradition.ISLAMIC",
             Tradition::Christian => "tradition.CHRISTIAN",
+            Tradition::Zoroastrian => "tradition.ZOROASTRIAN",
         }
     }
 
@@ -117,6 +123,7 @@ impl Tradition {
             Tradition::Sikh => "Sikh",
             Tradition::Islamic => "Islamic",
             Tradition::Christian => "Christian",
+            Tradition::Zoroastrian => "Zoroastrian",
         }
     }
 
@@ -136,6 +143,7 @@ impl Tradition {
             Tradition::Sikh => None,
             Tradition::Islamic => None,
             Tradition::Christian => None,
+            Tradition::Zoroastrian => None,
         }
     }
 
@@ -155,6 +163,7 @@ impl Tradition {
             Tradition::Sikh => Mark::Verified,
             Tradition::Islamic => Mark::Verified,
             Tradition::Christian => Mark::Verified,
+            Tradition::Zoroastrian => Mark::Verified,
         }
     }
 
@@ -174,6 +183,7 @@ impl Tradition {
             Tradition::Sikh => false,
             Tradition::Islamic => false,
             Tradition::Christian => false,
+            Tradition::Zoroastrian => false,
         }
     }
 
@@ -194,6 +204,7 @@ impl Tradition {
             Tradition::Sikh => &[Source { text: "`03-design/festival-classification.md` §4", reference: "the community Sikh" }],
             Tradition::Islamic => &[Source { text: "`03-design/festival-classification.md` §4", reference: "the community Muslim" }],
             Tradition::Christian => &[Source { text: "`03-design/festival-classification.md` §4", reference: "the community Christian" }],
+            Tradition::Zoroastrian => &[Source { text: "Government of Maharashtra, General Administration Department, public holidays notifications: Parsi New Year (Shahenshahi)", reference: "`03-design/maharashtra-holidays.md` §3" }],
         }
     }
 
@@ -213,6 +224,7 @@ impl Tradition {
             Tradition::Sikh => &[],
             Tradition::Islamic => &[],
             Tradition::Christian => &[],
+            Tradition::Zoroastrian => &[],
         }
     }
 
@@ -261,7 +273,7 @@ impl Tradition {
     /// use teistro_core::catalogue::Tradition;
     ///
     /// assert_eq!(Tradition::from_id(0), Some(Tradition::Hindu));
-    /// assert_eq!(Tradition::from_id(6), None);
+    /// assert_eq!(Tradition::from_id(7), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Tradition> {
@@ -272,6 +284,7 @@ impl Tradition {
             3 => Some(Tradition::Sikh),
             4 => Some(Tradition::Islamic),
             5 => Some(Tradition::Christian),
+            6 => Some(Tradition::Zoroastrian),
             _ => None,
         }
     }

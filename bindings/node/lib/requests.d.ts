@@ -3704,7 +3704,7 @@ export interface PublishedSet {
 /**
  * The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.
  */
-export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | readonly FestivalRuleItem[];
+export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | readonly FestivalRuleItem[];
 
 /**
  * How asta is seen: a criterion the SDK names, or one spelt out.
@@ -5289,7 +5289,7 @@ export interface PublishedEntryWithdraw {
 /**
  * A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.
  */
-export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
+export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
 
 /**
  * How visibility is decided.
@@ -7716,7 +7716,7 @@ export interface EkadashiRule {
 }
 
 /**
- * An observance on the day a number of civil days after another rule's.
+ * An observance on the day a number of civil days after another rule's, or before it.
  */
 export interface FollowingRule {
   /**
@@ -7724,7 +7724,7 @@ export interface FollowingRule {
    */
   readonly after: string;
   /**
-   * How many civil days after that day, 0 for the same day, at most [`FollowingRule::MOST_DAYS`].
+   * How many civil days after that day, 0 for the same day and a negative count for the days before it, at most [`FollowingRule::MOST_DAYS`] either way.
    */
   readonly days: number;
   /**

@@ -3706,6 +3706,9 @@ class Tradition(Catalogued):
     CHRISTIAN = 5
     """Christian"""
 
+    ZOROASTRIAN = 6
+    """Zoroastrian"""
+
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
     registered at run time.
@@ -7408,6 +7411,7 @@ _KEYS: dict[str, dict[int, str]] = {
         3: "SIKH",
         4: "ISLAMIC",
         5: "CHRISTIAN",
+        6: "ZOROASTRIAN",
         -1: "UNKNOWN",
     },
     "DayMarker": {
