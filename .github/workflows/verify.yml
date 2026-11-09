@@ -142,8 +142,6 @@ jobs:
         env:
           TEISTRO_BINDING_COVERAGE: ""
         run: cargo xtask check-java
-      - name: The Rust facade's examples and its own tests
-        run: cargo xtask check-rust
       - name: The bindings against each other, value by value (and the wasm package, where built)
         run: cargo xtask check-parity
       - name: The packages installed into throwaway projects and run
@@ -170,6 +168,32 @@ jobs:
   # (`xtask/alpine.sh`): every binding a musl host can run, and the
   # packages installed. Dart has no musl build, and the parity check
   # compares every runner, Dart's among them, so neither runs here.
+  # The Rust façade needs no shared library (`xtask/src/rust_binding.rs`),
+  # so its examples and release-mode tests run beside the bindings rather
+  # than after them: in a bindings row they were 17 of win32-x64's 70
+  # minutes, the run's longest path (2026-11-09).
+  rust:
+    name: rust (${{ matrix.platform }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, platform: linux-x64 }
+          - { os: ubuntu-24.04-arm, platform: linux-arm64 }
+          - { os: macos-latest, platform: darwin-arm64 }
+          - { os: macos-15-intel, platform: darwin-x64 }
+          - { os: windows-latest, platform: win32-x64 }
+          - { os: windows-11-arm, platform: win32-arm64 }
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: The Rust facade's examples and its own tests
+        run: cargo xtask check-rust
+
   musl:
     name: bindings (${{ matrix.platform }})
     runs-on: ${{ matrix.os }}
