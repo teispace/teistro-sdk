@@ -205,11 +205,110 @@ mod tests {
         clippy::panic,
         clippy::expect_used,
         clippy::unwrap_used,
+        clippy::indexing_slicing,
         reason = "a test fails by panicking"
     )]
 
-    use super::TsDetail;
+    use core::ffi::CStr;
+
+    use super::{TsDetail, ts_record_answer};
+    use crate::context::{OptionTexts, TsContext};
+    use crate::string::{TsString, ts_string_free};
     use teistro::records::Detail;
+    use teistro_core::Status;
+
+    const REQUEST: &CStr =
+        c"{\"date\": {\"year\": 2026, \"month\": 10, \"day\": 10}, \"into\": \"calendar.BIKRAM_SAMBAT\"}";
+
+    /// One call: its status, and its answer read and freed.
+    fn call(name: &CStr, detail: u32, fields: Option<&CStr>) -> (Status, String) {
+        let ctx = TsContext::build(&OptionTexts::default(), teistro::Ephemeris::None)
+            .expect("the default profile");
+        let mut out = TsString::empty();
+        let mask = fields.map_or(core::ptr::null(), CStr::as_ptr);
+        // SAFETY: a live context, NUL-terminated strings or a null mask,
+        // and a writable slot.
+        let status = unsafe {
+            ts_record_answer(
+                &raw const ctx,
+                name.as_ptr(),
+                REQUEST.as_ptr(),
+                detail,
+                mask,
+                &raw mut out,
+            )
+        };
+        let text = if out.data.is_null() {
+            String::new()
+        } else {
+            // SAFETY: the library wrote `len` bytes of UTF-8 at `data`.
+            String::from_utf8_lossy(unsafe { core::slice::from_raw_parts(out.data, out.len) })
+                .into_owned()
+        };
+        // SAFETY: a descriptor the library wrote, freed once.
+        unsafe { ts_string_free(&raw mut out) };
+        (status, text)
+    }
+
+    #[test]
+    fn a_record_is_answered_whole_brief_or_masked() {
+        let (status, full) = call(c"calendar.convert", TsDetail::Full as u32, None);
+        assert_eq!(status, Status::Ok);
+        let full: serde_json::Value = serde_json::from_str(&full).unwrap();
+        assert_eq!(full["weekday"], "SATURDAY");
+
+        let (status, brief) = call(c"calendar.convert", TsDetail::Brief as u32, None);
+        assert_eq!(status, Status::Ok);
+        assert!(
+            brief.len() <= serde_json::to_string(&full).unwrap().len(),
+            "{brief}"
+        );
+
+        let masked = call(
+            c"calendar.convert",
+            TsDetail::Full as u32,
+            Some(c"[\"weekday\"]"),
+        );
+        if cfg!(feature = "fields") {
+            assert_eq!(
+                masked,
+                (Status::Ok, String::from(r#"{"weekday":"SATURDAY"}"#))
+            );
+        } else {
+            assert_eq!(masked.0, Status::Capability);
+        }
+    }
+
+    #[test]
+    fn a_call_it_cannot_answer_is_refused() {
+        // A record this build does not carry, and a detail with no name.
+        assert_eq!(call(c"calendar.nothing", 0, None).0, Status::InvalidArg);
+        assert_eq!(call(c"calendar.convert", 2, None).0, Status::InvalidArg);
+        // A mask beside `BRIEF`, which selects from the full answer.
+        assert_eq!(
+            call(
+                c"calendar.convert",
+                TsDetail::Brief as u32,
+                Some(c"[\"weekday\"]")
+            )
+            .0,
+            Status::InvalidArg
+        );
+        // A mask that is no list of paths, and a path the answer lacks.
+        let refused = if cfg!(feature = "fields") {
+            Status::InvalidArg
+        } else {
+            Status::Capability
+        };
+        assert_eq!(
+            call(c"calendar.convert", 0, Some(c"{\"weekday\": 1}")).0,
+            refused
+        );
+        assert_eq!(
+            call(c"calendar.convert", 0, Some(c"[\"nowhere\"]")).0,
+            refused
+        );
+    }
 
     #[test]
     fn a_detail_crosses_as_its_number_and_another_is_refused() {
