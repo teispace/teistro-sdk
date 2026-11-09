@@ -175,10 +175,6 @@ jobs:
         run: cargo xtask check-rashi-dashas
       - name: Dasha coverage page (the catalogue against the build, every system it does not compute listed with its blocker and its refusal measured)
         run: cargo xtask check-dasha-coverage
-      - name: Muntha page (the birth lagna progressed a sign a year, held over every recorded birth against the recording's lagna, with its margin, its rival and its two degree readings)
-        run: cargo xtask check-muntha
-      - name: Research page (each correction's error rate on null labellings, the Gauquelin artefact, and null event studies under each shuffle)
-        run: cargo xtask check-research
       - name: Terms page (the Egyptian, Chaldean and Ptolemaic terms of the Tetrabiblos and Lilly's table, each held to its printing, its stated totals and its rule)
         run: cargo xtask check-terms
       - name: Review sheets (every Pancha Pakshi and Lal Kitab table cell, from the kernels, for a reader to vet)
@@ -227,6 +223,12 @@ jobs:
         run: cargo xtask check-accuracy
       - name: Intl gate (the i18n/ sources validate and reproduce the checked-in typed messages)
         run: cargo xtask check-intl
+      # Moved from pages (1 of 3), which ran 33 minutes to this shard's 16
+      # (2026-11-09): these two were 7.5 of them.
+      - name: Muntha page (the birth lagna progressed a sign a year, held over every recorded birth against the recording's lagna, with its margin, its rival and its two degree readings)
+        run: cargo xtask check-muntha
+      - name: Research page (each correction's error rate on null labellings, the Gauquelin artefact, and null event studies under each shuffle)
+        run: cargo xtask check-research
       - name: Locale coverage page (each locale's share of the catalogue members and base messages, held to its floor)
         run: cargo xtask check-locale-coverage
       - name: State tables page (the recorded dignities, orbs and avasthas reproduce)
