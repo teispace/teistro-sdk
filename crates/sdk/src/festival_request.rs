@@ -73,6 +73,14 @@ pub enum FestivalPack {
     /// reckon it over the `mithila-makaranda` profile, whose sky is the
     /// print's.
     Mithila,
+    /// Maharashtra's public holidays (`03-design/maharashtra-holidays.md`,
+    /// [`FestivalRule::india_maharashtra`]): the General Administration
+    /// Department's yearly list by rule, each day the central list also
+    /// holds by [`FestivalPack::IndiaCentral`]'s rule, the state's fixed
+    /// days, Bhaubeej, and the days the notifications print rather than
+    /// reckon: the four set by the moon, marked subject to the sighting,
+    /// and the Parsi New Year (Shahenshahi).
+    IndiaMaharashtra,
 }
 
 /// Puts each rule's sourced values on it, from `of` its key.
@@ -94,7 +102,7 @@ fn by_text(key: &str) -> FestivalMeta {
 
 impl FestivalPack {
     /// Every pack the SDK ships.
-    pub const ALL: [FestivalPack; 8] = [
+    pub const ALL: [FestivalPack; 9] = [
         FestivalPack::Dharmasindhu,
         FestivalPack::Nepal,
         FestivalPack::NepalPanchanga,
@@ -103,6 +111,7 @@ impl FestivalPack {
         FestivalPack::IndiaCentral,
         FestivalPack::Jain,
         FestivalPack::Mithila,
+        FestivalPack::IndiaMaharashtra,
     ];
 
     /// Its key, as a request names it.
@@ -117,6 +126,7 @@ impl FestivalPack {
             FestivalPack::IndiaCentral => "INDIA_CENTRAL",
             FestivalPack::Jain => "JAIN",
             FestivalPack::Mithila => "MITHILA",
+            FestivalPack::IndiaMaharashtra => "INDIA_MAHARASHTRA",
         }
     }
 
@@ -136,6 +146,7 @@ impl FestivalPack {
             FestivalPack::IndiaCentral => FestivalRule::india_central(),
             FestivalPack::Jain => FestivalRule::jain(),
             FestivalPack::Mithila => FestivalRule::mithila(),
+            FestivalPack::IndiaMaharashtra => FestivalRule::india_maharashtra(),
         }
     }
 
@@ -150,7 +161,8 @@ impl FestivalPack {
             FestivalPack::PitriPaksha
             | FestivalPack::IndiaCentral
             | FestivalPack::Jain
-            | FestivalPack::Mithila => Vec::new(),
+            | FestivalPack::Mithila
+            | FestivalPack::IndiaMaharashtra => Vec::new(),
             FestivalPack::Gaudiya => stamped(vec![EkadashiRule::hari_bhakti_vilasa()], by_text),
         }
     }
@@ -169,6 +181,7 @@ impl FestivalPack {
             }
             FestivalPack::IndiaCentral => DatedRule::india_central(),
             FestivalPack::Mithila => DatedRule::mithila(),
+            FestivalPack::IndiaMaharashtra => DatedRule::india_maharashtra(),
         }
     }
 
@@ -182,7 +195,8 @@ impl FestivalPack {
             | FestivalPack::Gaudiya
             | FestivalPack::IndiaCentral
             | FestivalPack::Jain
-            | FestivalPack::Mithila => Vec::new(),
+            | FestivalPack::Mithila
+            | FestivalPack::IndiaMaharashtra => Vec::new(),
             FestivalPack::Nepal => SaitRule::nepal(),
             FestivalPack::NepalPanchanga => {
                 let mut saits = SaitRule::nepal();
@@ -208,6 +222,7 @@ impl FestivalPack {
             FestivalPack::IndiaCentral => FollowingRule::india_central(),
             FestivalPack::Jain => FollowingRule::jain(),
             FestivalPack::Mithila => FollowingRule::mithila(),
+            FestivalPack::IndiaMaharashtra => FollowingRule::india_maharashtra(),
         }
     }
 
@@ -216,6 +231,7 @@ impl FestivalPack {
     pub fn published(self) -> Vec<PublishedSet> {
         match self {
             FestivalPack::IndiaCentral => vec![PublishedSet::india_central()],
+            FestivalPack::IndiaMaharashtra => vec![PublishedSet::india_maharashtra()],
             _ => Vec::new(),
         }
     }

@@ -4546,6 +4546,22 @@
     "JUR_SITAL": {
       "name": "जुडशीतल",
       "prose": "जुडशीतल"
+    },
+    "CHHATRAPATI_SHIVAJI_JAYANTI": {
+      "name": "छत्रपति शिवाजी महाराज जयन्ती",
+      "prose": "छत्रपति शिवाजी महाराज जयन्ती"
+    },
+    "AMBEDKAR_JAYANTI": {
+      "name": "डा. बाबासाहेब आम्बेडकर जयन्ती",
+      "prose": "डा. बाबासाहेब आम्बेडकर जयन्ती"
+    },
+    "MAHARASHTRA_DAY": {
+      "name": "महाराष्ट्र दिवस",
+      "prose": "महाराष्ट्र दिवस"
+    },
+    "BANK_ACCOUNTS_CLOSING": {
+      "name": "बैंक खाताको वार्षिक बन्दी",
+      "prose": "बैंक खाताको वार्षिक बन्दी"
     }
   },
   "agni_vasa": {
@@ -4683,6 +4699,10 @@
     "CHRISTIAN": {
       "name": "क्रिस्चियन",
       "prose": "क्रिस्चियन"
+    },
+    "ZOROASTRIAN": {
+      "name": "पारसी",
+      "prose": "पारसी"
     }
   },
   "day_marker": {

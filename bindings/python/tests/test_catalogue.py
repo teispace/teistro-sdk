@@ -160,6 +160,8 @@ class TheCatalogue(unittest.TestCase):
             # UNKNOWN and its member of `Kind`.
             + 9 + 1 + 4 + 1
             # `Calendar`'s `TAMIL_VAKYA`.
+            + 1
+            # `Tradition`'s `ZOROASTRIAN`.
             + 1,
         )
 

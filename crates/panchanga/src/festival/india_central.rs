@@ -39,35 +39,40 @@ const MEMORANDA: [(i32, &str); 7] = [
     (2027, "F.No.12/2/2023-JCA of 16 July 2026"),
 ];
 
-/// A day set by the moon, as [`SIGHTED`] holds it.
-type Sighted = (&'static str, &'static str, &'static str, [(u8, u8); 7]);
+/// A day a list prints rather than reckons: its key, English name, Nepali
+/// name, and the days the notices print, as (month, day), one for each
+/// notice in order.
+pub(super) type Printed<'a> = (&'a str, &'a str, &'a str, &'a [(u8, u8)]);
+
+/// A day moved after its notice: key, year, the day, and the order.
+pub(super) type Declared = (&'static str, i32, (u8, u8), &'static str);
 
 /// The days set by the moon: key, English name, Nepali name, and the days
-/// the notices print, as (month, day) in the order of [`MEMORANDA`].
-const SIGHTED: [Sighted; 4] = [
+/// the notices print, in the order of [`MEMORANDA`].
+pub(super) const SIGHTED: [Printed<'static>; 4] = [
     (
         "EID_AL_FITR",
         "Id-ul-Fitr",
         "ईद उल फित्र",
-        [(5, 14), (5, 3), (4, 22), (4, 11), (3, 31), (3, 21), (3, 10)],
+        &[(5, 14), (5, 3), (4, 22), (4, 11), (3, 31), (3, 21), (3, 10)],
     ),
     (
         "EID_AL_ADHA",
         "Id-ul-Zuha (Bakrid)",
         "बकर ईद",
-        [(7, 21), (7, 10), (6, 29), (6, 17), (6, 7), (5, 27), (5, 17)],
+        &[(7, 21), (7, 10), (6, 29), (6, 17), (6, 7), (5, 27), (5, 17)],
     ),
     (
         "MUHARRAM",
         "Muharram",
         "मोहर्रम",
-        [(8, 19), (8, 9), (7, 29), (7, 17), (7, 6), (6, 26), (6, 16)],
+        &[(8, 19), (8, 9), (7, 29), (7, 17), (7, 6), (6, 26), (6, 16)],
     ),
     (
         "MAWLID",
         "Milad-un-Nabi or Id-e-Milad",
         "मोहम्मद जयन्ती",
-        [
+        &[
             (10, 19),
             (10, 9),
             (9, 28),
@@ -81,7 +86,7 @@ const SIGHTED: [Sighted; 4] = [
 
 /// The days the Department moved once the moon was seen, each a day it
 /// declared: key, year, the day, and the memorandum.
-const DECLARED: [(&str, i32, (u8, u8), &str); 2] = [
+const DECLARED: [Declared; 2] = [
     (
         "MUHARRAM",
         2021,
@@ -108,17 +113,98 @@ fn gregorian(year: i32, (month, day): (u8, u8)) -> CalendarDay {
     }
 }
 
-/// The values of a rule of the list: `tradition` as the rule's own text
-/// or the notice's name says, in India. The list names no fast; a rule
-/// taken from a text gains that text's with [`FestivalMeta::with_fast`].
-fn listed(tradition: Option<Tradition>, optional: bool) -> FestivalMeta {
+/// A list's day on a Gregorian date `(month, day)`, citing `source`.
+pub(super) fn on_civil_date(
+    key: &str,
+    (month, day): (u8, i8),
+    source: &str,
+    meta: FestivalMeta,
+) -> DatedRule {
+    DatedRule {
+        key: key.to_owned(),
+        source: source.to_owned(),
+        on: Dated::CivilDate {
+            calendar: Calendar::Gregorian,
+            month,
+            day,
+            skipped: None,
+        },
+        meta,
+    }
+}
+
+/// The values of a rule of a government's list kept in `regions`:
+/// `tradition` as the rule's own text or the notice's name says. A list
+/// names no fast; a rule taken from a text gains that text's with
+/// [`FestivalMeta::with_fast`].
+pub(super) fn gazetted(
+    tradition: Option<Tradition>,
+    regions: &[&str],
+    optional: bool,
+) -> FestivalMeta {
     FestivalMeta {
         kind: Some(FestivalKind::Gazetted),
         tradition,
         communities: Vec::new(),
-        regions: vec!["IN".to_owned()],
+        regions: regions.iter().map(|&region| region.to_owned()).collect(),
         optional,
         fast: Vec::new(),
+    }
+}
+
+/// The values of a rule of the central list, kept in India.
+fn listed(tradition: Option<Tradition>, optional: bool) -> FestivalMeta {
+    gazetted(tradition, &["IN"], optional)
+}
+
+/// How a list's printed days stand: the notices they come from, the days
+/// moved after them, what a printed day is subject to, and the values and
+/// source each entry carries.
+pub(super) struct PrintedDays<'a> {
+    /// Each year's notice, in the order of a row's days.
+    pub(super) notices: &'a [(i32, &'a str)],
+    /// The days moved after the notice, each standing unmarked on the day
+    /// declared and citing its order.
+    pub(super) declared: &'a [Declared],
+    /// What a printed day is subject to.
+    pub(super) subject_to: Option<SubjectTo>,
+    /// Every entry's values.
+    pub(super) meta: FestivalMeta,
+    /// A printed day's source, from its year's notice.
+    pub(super) cite: fn(&str) -> String,
+}
+
+impl PrintedDays<'_> {
+    /// An `ADD` entry for each day of each row, a year of
+    /// [`PrintedDays::notices`] apiece.
+    pub(super) fn entries(&self, rows: &[Printed<'_>]) -> Vec<PublishedEntry> {
+        rows.iter()
+            .flat_map(|&(key, en, ne, days)| {
+                self.notices
+                    .iter()
+                    .zip(days)
+                    .map(move |(&(year, notice), &day)| (key, en, ne, year, notice, day))
+            })
+            .map(|(key, en, ne, year, notice, day)| {
+                let declared = self
+                    .declared
+                    .iter()
+                    .find(|row| row.0 == key && row.1 == year);
+                PublishedEntry::Add {
+                    key: key.to_owned(),
+                    day: gregorian(year, declared.map_or(day, |row| row.2)),
+                    names: [
+                        ("en-Latn".to_owned(), en.to_owned()),
+                        ("ne-Deva-NP".to_owned(), ne.to_owned()),
+                    ]
+                    .into(),
+                    window: None,
+                    source: declared.map_or_else(|| (self.cite)(notice), |row| row.3.to_owned()),
+                    subject_to: self.subject_to.filter(|_| declared.is_none()),
+                    meta: self.meta.clone(),
+                }
+            })
+            .collect()
     }
 }
 
@@ -231,16 +317,8 @@ impl DatedRule {
     /// ```
     #[must_use]
     pub fn india_central() -> Vec<DatedRule> {
-        let civil = |key: &str, month: u8, day: i8, tradition: Option<Tradition>| DatedRule {
-            key: key.to_owned(),
-            source: NOTICE.to_owned(),
-            on: Dated::CivilDate {
-                calendar: Calendar::Gregorian,
-                month,
-                day,
-                skipped: None,
-            },
-            meta: listed(tradition, false),
+        let civil = |key: &str, month: u8, day: i8, tradition: Option<Tradition>| {
+            on_civil_date(key, (month, day), NOTICE, listed(tradition, false))
         };
         vec![
             civil("INDIA_REPUBLIC_DAY", 1, 26, None),
@@ -277,35 +355,16 @@ impl PublishedSet {
     /// ```
     #[must_use]
     pub fn india_central() -> PublishedSet {
-        let entry = |key: &str, en: &str, ne: &str, year: i32, memorandum: &str, day| {
-            let declared = DECLARED.iter().find(|row| row.0 == key && row.1 == year);
-            PublishedEntry::Add {
-                key: key.to_owned(),
-                day: gregorian(year, declared.map_or(day, |row| row.2)),
-                names: [
-                    ("en-Latn".to_owned(), en.to_owned()),
-                    ("ne-Deva-NP".to_owned(), ne.to_owned()),
-                ]
-                .into(),
-                window: None,
-                source: declared.map_or_else(
-                    || format!("DoPT O.M. {memorandum}, Annexure I, its day subject to para 5.1"),
-                    |row| row.3.to_owned(),
-                ),
-                subject_to: declared.is_none().then_some(SubjectTo::MoonSighting),
-                meta: listed(Some(Tradition::Islamic), false),
-            }
-        };
-        let entries = SIGHTED
-            .iter()
-            .flat_map(|&(key, en, ne, days)| {
-                MEMORANDA
-                    .iter()
-                    .zip(days)
-                    .map(move |(&(year, memorandum), day)| (key, en, ne, year, memorandum, day))
-            })
-            .map(|(key, en, ne, year, memorandum, day)| entry(key, en, ne, year, memorandum, day))
-            .collect();
+        let entries = PrintedDays {
+            notices: &MEMORANDA,
+            declared: &DECLARED,
+            subject_to: Some(SubjectTo::MoonSighting),
+            meta: listed(Some(Tradition::Islamic), false),
+            cite: |memorandum| {
+                format!("DoPT O.M. {memorandum}, Annexure I, its day subject to para 5.1")
+            },
+        }
+        .entries(&SIGHTED);
         PublishedSet {
             format: PUBLISHED_FORMAT.to_owned(),
             publisher: "Government of India, Department of Personnel and Training".to_owned(),
