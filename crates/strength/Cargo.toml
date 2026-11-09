@@ -17,10 +17,10 @@ publish = false
 schema = ["dep:schemars", "teistro-core/schema", "teistro-state/schema", "teistro-aspect/schema"]
 
 [dependencies]
-teistro-aspect = { path = "../aspect" }
-teistro-core = { path = "../core" }
-teistro-state = { path = "../state" }
-teistro-vargas = { path = "../vargas" }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.1" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
+teistro-state = { path = "../state", version = "=1.0.0-rc.1" }
+teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.1" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 

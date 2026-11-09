@@ -304,6 +304,7 @@ mod conformance;
 mod consumer;
 mod costs;
 mod coverage;
+mod crate_packages;
 mod dart_binding;
 mod dasha_coverage;
 mod dasha_systems;
@@ -743,6 +744,7 @@ fn binding_gate(command: &str, args: &[String]) -> Option<i32> {
         "check-rust" => rust_binding::check(&root),
         "check-parity" => parity::check(&root),
         "check-package" => consumer::check(&root),
+        "check-packages" => crate_packages::check(&root),
         "check-site" => site::check(&root),
         "check-guides" => guides::check(&root),
         "check-teimeris-adapter" => teimeris_adapter::check(&root),
@@ -879,7 +881,7 @@ fn usage() -> i32 {
          check-dco BASE HEAD | check-fixtures | check-catalogue | check-calendars | \
          check-time | check-accuracy | check-intl | check-ffi | check-c | check-node | check-asan [node|python] | check-wasm | \
          check-dart | check-flutter [android|ios|ios-simulator|android-emulator] | check-pub [--dist DIR] | check-published VERSION | check-python | check-java | check-rust | check-parity | check-lints | \
-         check-versions | zone-pack --from DIR --version V --out FILE | measure-mobile [ROW...] | measure-ffi-cost | measure-micro | measure-ab | app-speed-device ROW | \
+         check-versions | check-packages | zone-pack --from DIR --version V --out FILE | measure-mobile [ROW...] | measure-ffi-cost | measure-micro | measure-ab | app-speed-device ROW | \
          conformance --from DIR | check-conformance --from DIR | \
          check-package | sizes --from DIR [--why SENTENCE] | sizes --measure | sizes --render | check-sizes [--from DIR] | coverage --from FILE | coverage --bindings DIR | check-coverage [--from FILE] [--bindings DIR] | check-doc-examples | mutants --from DIR | mutants --matrix | check-mutants [--from DIR] | check-abi [--against REF] | check-site | check-guides | check-teimeris-adapter | relock-teimeris-adapter | check-properties | check-tag TAG | version [X] | changelog-entry X | \
          package [TARGET] | package wasm | package stage [--partial] | \

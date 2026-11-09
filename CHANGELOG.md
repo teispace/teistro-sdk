@@ -104,6 +104,18 @@ calendar's Kali-day offset is now the shared `vakya::KALI_DAY_JD`, the same day.
   Sun's entry by its civil day (C1301). No Kerala or Assam holiday pack is built (C1303, C1304).
 - Cruxes C1300 to C1309 record what stays open; C765 is closed for Assam's civil calendar.
 
+**Every published crate builds from its own package (SR-81).**
+**Numbers:** none. No computation changed; the locale bundles are built from the same sources.
+- The SDK's locale sources moved from `i18n/` to `crates/intl/i18n/`, inside `teistro-intl`, which ships
+  them; `teistro_intl::sdk_root()` names them there. `teistro`'s build script compiled them from
+  `../../i18n`, which no package carries, so a build from the published crates failed.
+- `teistro-ffi`'s build script reads the commit from `.cargo_vcs_info.json` when built from its package,
+  and runs git only in a checkout.
+- Every internal dependency carries the workspace's version beside its path (`=1.0.0-rc.1`), which
+  `cargo package` requires; `check-versions` holds them and `cargo xtask version` moves them.
+- `cargo xtask check-packages` (verify) packages the crates `teistro` and `teistro-ffi` reach, unpacks
+  them outside the repository and builds them from there alone.
+
 **Mithila's star planets are the text's four steps (C1227).**
 **Numbers:** none. No computation changed; `mithila-makaranda` keeps `SuryaPlanets::TEXT`.
 - The Makaranda's three steps for Mars to Saturn are the text's four folded: its manda tables print the

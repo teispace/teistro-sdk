@@ -29,7 +29,7 @@ load = ["dep:libloading"]
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sha2 = "0.11"
-teistro-core = { path = "../core" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
 schemars = { version = "1.2", optional = true }
 
 [target.'cfg(not(target_family = "wasm"))'.dependencies]

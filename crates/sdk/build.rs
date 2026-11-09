@@ -2,6 +2,11 @@
 //! consumer needs no files to render the SDK's own messages (ADR-0010).
 //! `bundles.rs` lists them for `include_bytes!`.
 //!
+//! The sources are `teistro-intl`'s own files (`crates/intl/i18n`), found
+//! through [`teistro_intl::sdk_root`], so this script reads nothing
+//! outside the packages a consumer compiles: `cargo xtask check-packages`
+//! builds this crate from its `.crate` alone and fails if it reaches out.
+//!
 //! **The same thirty lines as `crates/ffi/build.rs`, knowingly**, and for
 //! as long as the order of work in `03-design/rust-consumer-surface.md`
 //! says: a build script cannot use the crate it builds, so `teistro-intl`

@@ -17,7 +17,7 @@ publish = false
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-teistro-port-ephemeris = { path = "../port-ephemeris" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.1" }
 
 # `export_provider!` writes the three plugin entry points, which are
 # `no_mangle` C functions: unsafe attributes and blocks expanded here.

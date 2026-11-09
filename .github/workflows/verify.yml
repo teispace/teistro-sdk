@@ -428,6 +428,26 @@ jobs:
       - name: Every body's shortest run bounds its scan, and the scan is the fine one's to the bit
         run: cargo xtask check-stations
 
+  # Every crate a consumer compiles builds from its own package: `cargo
+  # package` verifies each `.crate` unpacked outside the checkout, its
+  # sibling crates from the packages beside it, so a build script or an
+  # embedded file that reaches into the repository fails here
+  # (`xtask/src/crate_packages.rs`). Here and not in fast-check: it is one
+  # fresh debug build of every published crate, minutes on four cores,
+  # with nothing from the cache, and a branch that moves a crate's files
+  # or its build script dispatches this workflow before it merges.
+  packages:
+    name: crates from their packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - name: Every published crate builds from its .crate alone
+        run: cargo xtask check-packages
+
   # Rules holding on exactly the same charts are probable duplicates; this
   # evaluates every shipped rule over 6 000 charts the SDK computes and
   # fails on a group of one text nothing explains

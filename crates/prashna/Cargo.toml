@@ -18,9 +18,9 @@ publish = false
 schema = ["dep:schemars", "teistro-core/schema", "teistro-aspect/schema", "teistro-tajika/schema"]
 
 [dependencies]
-teistro-aspect = { path = "../aspect" }
-teistro-core = { path = "../core" }
-teistro-tajika = { path = "../tajika" }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.1" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
+teistro-tajika = { path = "../tajika", version = "=1.0.0-rc.1" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 
