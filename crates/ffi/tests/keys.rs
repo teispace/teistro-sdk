@@ -57,7 +57,7 @@ fn api() -> Api {
 
 /// The closed enums whose members no Rust type serialises, each with why
 /// its key is the only spelling there is.
-const UNSERIALISED: [(&str, &str); 6] = [
+const UNSERIALISED: [(&str, &str); 7] = [
     (
         "TsDigestSpan",
         "a number in the digest's file, never JSON (`03-design/digest-format.md`)",
@@ -81,6 +81,10 @@ const UNSERIALISED: [(&str, &str); 6] = [
     (
         "TsMoonEvent",
         "which of two event lists a row came from; the Rust day holds the lists",
+    ),
+    (
+        "TsDetail",
+        "a record call's detail, never in an answer; the Rust `Detail` carries no serde",
     ),
 ];
 
