@@ -3568,7 +3568,9 @@ export class ChartArea extends Area {
    * `snapshot`'s clock time; each sign's gochar from Phaladeepika ch. 26,
    * Saturn's standing from it, and every ingress and station of the period
    * counted from it. With `baseline`, each sign's score as the baseline
-   * engine reckons it, `BASELINE` and unsourced (C361).
+   * engine reckons it, `BASELINE` and unsourced (C361). With `plans`, each
+   * sign's reading in words: twelve plans, Aries to Pisces, each an array of
+   * `{ key, params }` that `sdk.intl.render(item.key, item.params)` says.
    *
    * @example
    * const week = ctx.chart.rashifal({
@@ -3582,10 +3584,11 @@ export class ChartArea extends Area {
    *
    * @param {object} request the period: `first`, `last`, `place`, `utcOffsetSeconds` (or `zone`), and optionally `snapshot`, `events` and `spells`
    * @param {string} [baseline] `'DAILY'`, `'WEEKLY'`, `'MONTHLY'` or `'YEARLY'`, for the baseline engine's score
+   * @param {boolean} [plans] `true` for each sign's reading in words
    * @returns {object} the period's answer with its `provenance` beside it
    */
-  rashifal(request, baseline) {
-    const { value: [one], provenance } = this.rashifalMany([request], baseline);
+  rashifal(request, baseline, plans) {
+    const { value: [one], provenance } = this.rashifalMany([request], baseline, plans);
     return Object.freeze({ ...one, provenance });
   }
 
@@ -3596,14 +3599,16 @@ export class ChartArea extends Area {
    *
    * @param {object[]} requests
    * @param {string} [baseline]
+   * @param {boolean} [plans]
    * @returns {{ value: object[], provenance: object }}
    */
-  rashifalMany(requests, baseline) {
+  rashifalMany(requests, baseline, plans) {
     if (!Array.isArray(requests)) {
       throw new TypeError('requests: expected an array of rashifal periods');
     }
     const asked = { periods: requests.map(rashifalPeriodAsked) };
     if (baseline !== undefined && baseline !== null) asked.baseline = baseline;
+    if (plans !== undefined && plans !== null) asked.plans = plans;
     const { value, provenance } = JSON.parse(
       run(this, (inner) => inner.rashifal(JSON.stringify(asked))),
     );
@@ -3652,10 +3657,10 @@ function rashifalPeriodAsked(request) {
  * One period's answer as `ts_rashifal` spells it, every catalogue member
  * by its full key as the rest of the layer answers.
  *
- * @param {{ period: object, baseline?: object[] }} answer
+ * @param {{ period: object, baseline?: object[], plans?: object[][] }} answer
  * @returns {object}
  */
-function rashifalAnswerFrom({ period, baseline }) {
+function rashifalAnswerFrom({ period, baseline, plans }) {
   const graha = (key) => `graha.${key}`;
   const rashi = (key) => `rashi.${key}`;
   const transit = (one) => ({ sign: rashi(one.sign), degrees: one.degrees });
@@ -3715,6 +3720,8 @@ function rashifalAnswerFrom({ period, baseline }) {
       readings: period.readings.map(reading),
     },
     baseline: baseline === undefined ? null : baseline.map(score),
+    // A plan's slots are already the record `intl.render` takes.
+    plans: plans === undefined ? null : plans,
   };
 }
 

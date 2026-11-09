@@ -1422,7 +1422,7 @@ final class ChartArea extends _Area {
   /// Phaladeepika ch. 26, Saturn's standing from it, and every ingress and
   /// station of the period counted from it. With [baseline], each sign's
   /// score as the baseline engine reckons it, `BASELINE` and unsourced
-  /// (C361).
+  /// (C361). With [plans], each sign's reading in words, Aries to Pisces.
   ///
   /// ```dart
   /// final week = ctx.chart.rashifal(
@@ -1432,12 +1432,17 @@ final class ChartArea extends _Area {
   /// final leo = week.period.readings[Rashi.leo.id];
   /// final sealed = week.provenance.inputHash;
   /// ```
-  RashifalSealed rashifal(RashifalRequest request, {BaselinePeriod? baseline}) {
-    final many = rashifalMany([request], baseline: baseline);
+  RashifalSealed rashifal(
+    RashifalRequest request, {
+    BaselinePeriod? baseline,
+    bool plans = false,
+  }) {
+    final many = rashifalMany([request], baseline: baseline, plans: plans);
     final one = many.value.single;
     return RashifalSealed(
       period: one.period,
       baseline: one.baseline,
+      plans: one.plans,
       provenance: many.provenance,
     );
   }
@@ -1448,6 +1453,7 @@ final class ChartArea extends _Area {
   RashifalAnswers rashifalMany(
     List<RashifalRequest> requests, {
     BaselinePeriod? baseline,
+    bool plans = false,
   }) {
     final envelope =
         jsonDecode(
@@ -1456,6 +1462,7 @@ final class ChartArea extends _Area {
                   jsonEncode(<String, Object?>{
                     'periods': [for (final one in requests) one._record],
                     if (baseline case final baseline?) 'baseline': baseline.key,
+                    if (plans) 'plans': true,
                   }),
                 ),
               ),
@@ -5307,16 +5314,25 @@ final class BaselineScore {
   final LuckyElements lucky;
 }
 
-/// One period's answer: the reading, and the baseline's twelve scores when
-/// asked.
+/// One period's answer: the reading, the baseline's twelve scores and the
+/// twelve plans when asked.
 final class RashifalAnswer {
-  const RashifalAnswer({required this.period, required this.baseline});
+  const RashifalAnswer({
+    required this.period,
+    required this.baseline,
+    required this.plans,
+  });
 
   /// The reading.
   final RashifalPeriod period;
 
   /// Aries to Pisces; null unless a baseline period was asked.
   final List<BaselineScore>? baseline;
+
+  /// Each sign's reading in words, Aries to Pisces: each plan a list of
+  /// `{key, params}` that `ctx.intl.render(item['key'], item['params'])`
+  /// says. Null unless `plans` was asked.
+  final List<List<Map<String, Object?>>>? plans;
 }
 
 /// One period's answer as [ChartArea.rashifal] hands it out, with what
@@ -5325,6 +5341,7 @@ final class RashifalSealed extends RashifalAnswer {
   const RashifalSealed({
     required super.period,
     required super.baseline,
+    required super.plans,
     required this.provenance,
   });
 
@@ -17500,6 +17517,7 @@ RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
 
   final limbs = period['panchanga']! as Map<String, Object?>;
   final baseline = raw['baseline'] as List<Object?>?;
+  final plans = raw['plans'] as List<Object?>?;
   return RashifalAnswer(
     period: RashifalPeriod(
       first: _serdeDate(period['first']! as Map<String, Object?>),
@@ -17526,6 +17544,13 @@ RashifalAnswer _rashifalAnswer(Map<String, Object?> raw) {
             ? null
             : List<BaselineScore>.unmodifiable([
               for (final one in baseline) score(one! as Map<String, Object?>),
+            ]),
+    plans:
+        plans == null
+            ? null
+            : List<List<Map<String, Object?>>>.unmodifiable([
+              for (final plan in plans)
+                List<Map<String, Object?>>.unmodifiable(rows(plan)),
             ]),
   );
 }

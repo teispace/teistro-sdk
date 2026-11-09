@@ -47,6 +47,8 @@ use serde::{Deserialize, Serialize};
 use teistro_intl::messages::sdk::reason::dasha;
 use teistro_intl::messages::sdk::reason::panchanga as panchanga_messages;
 use teistro_intl::messages::sdk::{aspect, condition, karaka, reading, reason};
+// The composer below is `rashifal` too, behind its family's feature.
+use teistro_intl::messages::sdk::rashifal as rashifal_messages;
 // The composer below is `phala` too, so the message module is named in
 // full where its keys are listed.
 use teistro_intl::messages::sdk::phala as phala_messages;
@@ -64,6 +66,8 @@ mod panchanga;
 mod phala;
 mod placements;
 mod positions;
+#[cfg(feature = "rashifal")]
+mod rashifal;
 mod readings;
 mod sade_sati;
 mod states;
@@ -82,6 +86,8 @@ pub use panchanga::panchanga;
 pub use phala::phala;
 pub use placements::placements;
 pub use positions::positions;
+#[cfg(feature = "rashifal")]
+pub use rashifal::rashifal;
 pub use readings::readings;
 pub use sade_sati::sade_sati;
 pub use states::states;
@@ -95,8 +101,9 @@ pub use weights::{bhava_bala, vimshopaka};
 /// `check-interpret` holds the list against the packs and against what the
 /// composers emit over the corpus, both ways: a key no locale carries would
 /// render as a visible fallback, and a key nothing emits is a message nobody
-/// reads.
-pub const KEYS: [&str; 75] = [
+/// reads. The rashifal's keys are listed whether or not its composer is
+/// built, since they are the packs' keys either way.
+pub const KEYS: [&str; 78] = [
     <reason::PointInRashi as TypedMessage>::KEY,
     <reason::GrahaInRashi as TypedMessage>::KEY,
     <reason::GrahaInBhava as TypedMessage>::KEY,
@@ -172,6 +179,9 @@ pub const KEYS: [&str; 75] = [
     <reason::gochar::Vedha as TypedMessage>::KEY,
     <reason::gochar::Fruition as TypedMessage>::KEY,
     <reason::gochar::Ashtakavarga as TypedMessage>::KEY,
+    <rashifal_messages::Saturn as TypedMessage>::KEY,
+    <rashifal_messages::Ingress as TypedMessage>::KEY,
+    <rashifal_messages::Station as TypedMessage>::KEY,
 ];
 
 /// One thing to say: a message key and the slots it is said with.

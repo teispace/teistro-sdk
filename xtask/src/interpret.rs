@@ -1300,6 +1300,22 @@ fn the_founded_plan(sdk: &teistro::Context) -> Result<Plan, String> {
     for reading in &transits.value {
         plan.items.extend(interpret().gochar(reading));
     }
+    // A year's rashifal for the twelve signs: Saturn stands in every one of
+    // its phases and spells from some sign, and a year holds ingresses and
+    // stations.
+    let year = teistro::RashifalRequest::between(
+        teistro::CalendarDate::defined(teistro::catalogue::Calendar::Gregorian, 2026, 1, 1),
+        teistro::CalendarDate::defined(teistro::catalogue::Calendar::Gregorian, 2026, 12, 31),
+        place,
+        offset,
+    );
+    let rashifal = sdk
+        .chart()
+        .rashifal(&year)
+        .map_err(|why| format!("reading a year's rashifal: {why}"))?;
+    for reading in &rashifal.value.readings {
+        plan.items.extend(interpret().rashifal(reading));
+    }
     let set = teistro::RuleRequest::shipped([])
         .with_rules(every.clone())
         .rule_set()

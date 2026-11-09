@@ -10351,6 +10351,24 @@ void _engineTests() {
       expect(score.areas, hasLength(8));
     }
     expect(ctx.chart.rashifal(week).baseline, isNull);
+    expect(read.plans, isNull, reason: 'words only when asked for');
+
+    // Each sign's reading in words (SR-37), rendered by the context.
+    final said = ctx.chart.rashifal(week, plans: true);
+    expect(said.baseline, isNull);
+    expect(said.plans, hasLength(12));
+    for (final plan in said.plans!) {
+      expect(plan.first['key'], 'sdk.reason.gochar.from');
+      final saturn = plan.firstWhere(
+        (item) => item['key'] == 'sdk.rashifal.saturn',
+      );
+      final rendered = ctx.intl.render(
+        saturn['key']! as String,
+        saturn['params']! as Map<String, Object?>,
+      );
+      expect(rendered.text, isNotEmpty);
+      expect(rendered.fallback, isFalse);
+    }
 
     // 06:00 at +05:45 is 00:15 UTC on the reference day.
     final six = ctx.chart.rashifal(like(snapshot: const AtClock(hour: 6)));

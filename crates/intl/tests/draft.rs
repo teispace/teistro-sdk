@@ -31,7 +31,10 @@ fn errors(tree: &Tree) -> Vec<String> {
 #[test]
 fn hindi_and_sanskrit_calendar_text_ships_marked() {
     let tree = tree();
-    assert_eq!(tree.locales["hi-Deva-IN"].meta.draft, ["sdk.calendar"]);
+    assert_eq!(
+        tree.locales["hi-Deva-IN"].meta.draft,
+        ["sdk.calendar", "sdk.rashifal", "sdk.reason"]
+    );
     // Sanskrit's currency words (SR-49) too, and sa-Latn, derived from
     // sa-Deva, carries both still marked (SR-79).
     for tag in ["sa-Deva", "sa-Latn"] {
@@ -41,11 +44,11 @@ fn hindi_and_sanskrit_calendar_text_ships_marked() {
             "{tag}"
         );
     }
-    // The strict locale drafts its day sentences and its rites' names (SR-31),
-    // not its calendar words.
+    // The strict locale drafts its day sentences, its rashifal (SR-37) and
+    // its rites' names (SR-31), not its calendar words.
     assert_eq!(
         tree.locales["ne-Deva-NP"].meta.draft,
-        ["sdk.day", "sdk.rite"]
+        ["sdk.day", "sdk.rashifal", "sdk.rite"]
     );
     assert_eq!(tree.locales["en-Latn"].meta.draft, Vec::<String>::new());
     let report = Intl::from_tree(&tree).unwrap().report();
@@ -54,7 +57,7 @@ fn hindi_and_sanskrit_calendar_text_ships_marked() {
         .iter()
         .find(|l| l.tag == "hi-Deva-IN")
         .unwrap();
-    assert_eq!(hindi.draft, ["sdk.calendar"]);
+    assert_eq!(hindi.draft, ["sdk.calendar", "sdk.rashifal", "sdk.reason"]);
 }
 
 #[test]
@@ -75,8 +78,12 @@ fn a_render_says_when_draft_text_answered() {
             .is_draft
     );
     assert!(
+        intl.render_in("hi-Deva-IN", "sdk.reason.appName", &Params::new())
+            .is_draft
+    );
+    assert!(
         !intl
-            .render_in("hi-Deva-IN", "sdk.reason.appName", &Params::new())
+            .render_in("ne-Deva-NP", "sdk.reason.appName", &Params::new())
             .is_draft
     );
 
@@ -148,7 +155,7 @@ fn the_mark_travels_in_a_bundle_and_a_reviewers_pack_lifts_it() {
         .iter()
         .find(|l| l.tag == "hi-Deva-IN")
         .unwrap();
-    assert_eq!(loaded.draft, ["sdk.calendar"]);
+    assert_eq!(loaded.draft, ["sdk.calendar", "sdk.rashifal", "sdk.reason"]);
 
     // The same namespace, signed off, carried by a pack with metadata.
     let mut reviewed = hindi.clone();

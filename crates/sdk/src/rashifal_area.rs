@@ -171,7 +171,8 @@ impl ChartArea<'_> {
 
     /// A batch as a binding asks it ([`RashifalBatch`]): each period read
     /// as [`ChartArea::rashifal_many`] reads it, with the baseline engine's
-    /// score of each sign beside it when the batch names a period for it.
+    /// score of each sign beside it when the batch names a period for it,
+    /// and each sign's plan when the batch asks for words.
     ///
     /// # Errors
     ///
@@ -181,9 +182,17 @@ impl ChartArea<'_> {
         batch: &RashifalBatch,
     ) -> Result<Envelope<Vec<RashifalAnswer>>, Error> {
         let Envelope { value, provenance } = self.rashifal_many(&batch.periods)?;
+        let interpret = self.context().interpret();
         let answers = value
             .into_iter()
             .map(|period| RashifalAnswer {
+                plans: batch.plans.then(|| {
+                    period
+                        .readings
+                        .iter()
+                        .map(|reading| interpret.rashifal(reading))
+                        .collect()
+                }),
                 baseline: batch.baseline.map(|asked| {
                     period
                         .readings

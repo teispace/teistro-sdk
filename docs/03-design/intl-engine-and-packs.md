@@ -526,8 +526,10 @@ would ship with no mark at all, since `ne-Deva-NP` is strict, which says
 less than the truth. Strict and draft answer different questions: strict
 that every key is present, so no reader meets a fallback; draft that no
 one has read them. A strict locale therefore drafts a namespace it holds
-whole (`ne-Deva-NP` drafts `sdk.day`), and every render says so, for the
-consumer to show, hide or refuse. The consumer's answer to SR-75, to ship
+whole (`ne-Deva-NP` drafts `sdk.day` and `sdk.rashifal`), and every
+render says so, for the consumer to show, hide or refuse. Hindi drafts its
+`sdk.reason` and `sdk.rashifal` beside `sdk.calendar` (SR-37,
+`rashifal.md`, "Said in words"). The consumer's answer to SR-75, to ship
 marked rather than wait, reads the same way; the addendum asks them to
 confirm it for Nepali.
 

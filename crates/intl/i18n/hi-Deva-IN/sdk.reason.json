@@ -1,0 +1,48 @@
+{
+  "appName": "टेइस्ट्रो",
+  "welcome": "{sdk.reason.appName :msg} में आपका स्वागत है",
+  "grahaInBhava": ".input {$graha :entity kind=graha} .input {$bhava :integer select=ordinal} .match $bhava 1 {{{$graha} पहले भाव में}} 2 {{{$graha} दूसरे भाव में}} 3 {{{$graha} तीसरे भाव में}} 4 {{{$graha} चौथे भाव में}} 6 {{{$graha} छठे भाव में}} * {{{$graha} {$bhava}वें भाव में}}",
+  "bhavaInRashi": ".input {$bhava :integer select=ordinal} .input {$rashi :entity kind=rashi} .match $bhava 1 {{पहला भाव {$rashi} में}} 2 {{दूसरा भाव {$rashi} में}} 3 {{तीसरा भाव {$rashi} में}} 4 {{चौथा भाव {$rashi} में}} 6 {{छठा भाव {$rashi} में}} * {{{$bhava}वाँ भाव {$rashi} में}}",
+  "chalitShift": "{$graha :entity kind=graha} राशि से {$bhava :integer} भाव में, चलित से {$chalit :integer} भाव में",
+  "grahaInRashi": "{$graha :entity kind=graha} {$rashi :entity kind=rashi} में",
+  "pointInRashi": "{$point :entity kind=point} {$rashi :entity kind=rashi} में",
+  "grahaAt": "{$graha :entity kind=graha} {$longitude :zodiac form=degree-in-sign} पर",
+  "pointAt": "{$point :entity kind=point} {$longitude :zodiac form=degree-in-sign} पर",
+  "exactLongitude": "{$longitude :dms precision=sec}",
+  "conjunction": ".input {$count :integer} .input {$graha :entity kind=graha form=prose} .match $count 0 {{{$graha} के साथ कोई ग्रह नहीं है}} 1 {{{$graha} के साथ एक ग्रह है}} * {{{$graha} के साथ {$count} ग्रह हैं}}",
+  "rashiNature": ".input {$rashi :entity kind=rashi} .match $rashi m {{{$rashi} पुरुष राशि है}} f {{{$rashi} स्त्री राशि है}} * {{{$rashi} राशि है}}",
+  "greeting": ".input {$gender :string} .match $gender * {{प्रिय {$name} जी, आपकी कुंडली तैयार है।}}",
+  "lordship": "{#b}{$graha :entity kind=graha}{/b} {$bhava :integer} भाव का स्वामी है",
+  "occupants": "{$rashi :entity kind=rashi} में {$grahas :list type=and}",
+  "strength": {
+    "score": "{$graha :entity kind=graha} को {$score :number minimumFractionDigits=2} रूपा मिलते हैं",
+    "meets": ".input {$graha :entity kind=graha} .input {$required :number minimumFractionDigits=2} .input {$reaches :string} .match $reaches yes {{{$graha} आवश्यक {$required} रूपा तक पहुँचता है}} * {{{$graha} आवश्यक {$required} रूपा तक नहीं पहुँचता}}",
+    "rank": ".input {$rank :integer select=ordinal} .match $rank 1 {{{$rank}ला}} 2 {{{$rank}रा}} 3 {{{$rank}रा}} 4 {{{$rank}था}} 6 {{{$rank}ठा}} * {{{$rank}वाँ}}"
+  },
+  "dasha": {
+    "phase": ".input {$graha :entity kind=graha} .input {$phase :string} .match $phase commencement {{{$graha} की दशा आरंभ में फल देती है}} middle {{{$graha} की दशा मध्य में फल देती है}} * {{{$graha} की दशा अंत में फल देती है}}",
+    "place": ".input {$graha :entity kind=graha} .input {$nature :string} .match $nature BENEFIC {{{$graha} शुभ स्थान में है}} MALEFIC {{{$graha} अशुभ स्थान में है}} * {{{$graha} सम स्थान में है}}",
+    "points": "{$graha :entity kind=graha} के शुभांक {$subhanka :number minimumFractionDigits=0} और अशुभांक {$asubhanka :number minimumFractionDigits=0}",
+    "favour": ".input {$graha :entity kind=graha} .input {$favour :string} .match $favour favourable {{{$graha} का स्थान दशा को शुभ बनाता है}} unfavourable {{{$graha} का स्थान दशा को अशुभ बनाता है}} * {{{$graha} का स्थान दशा को एक साथ शुभ और अशुभ बनाता है}}"
+  },
+  "panchanga": {
+    "tithi": "तिथि {$paksha :entity kind=paksha} पक्ष की {$tithi :entity kind=tithi} है",
+    "vara": "वार {$vara :entity kind=vara} है",
+    "nakshatra": "नक्षत्र {$nakshatra :entity kind=nakshatra} है",
+    "pada": ".input {$pada :integer select=ordinal} .input {$nakshatra :entity kind=nakshatra} .match $pada 1 {{चंद्रमा {$nakshatra} के पहले पाद में है}} 2 {{चंद्रमा {$nakshatra} के दूसरे पाद में है}} 3 {{चंद्रमा {$nakshatra} के तीसरे पाद में है}} 4 {{चंद्रमा {$nakshatra} के चौथे पाद में है}} * {{चंद्रमा {$nakshatra} के {$pada}वें पाद में है}}",
+    "yoga": "योग {$yoga :entity kind=yoga} है",
+    "karana": "करण {$karana :entity kind=karana} है",
+    "byDay": ".input {$byDay :string} .match $byDay yes {{जन्म दिन में हुआ}} * {{जन्म रात में हुआ}}"
+  },
+  "bhavaBala": ".input {$bhava :integer select=ordinal} .input {$virupas :number minimumFractionDigits=2} .match $bhava 1 {{पहले भाव का बल {$virupas} विरूपा}} 2 {{दूसरे भाव का बल {$virupas} विरूपा}} 3 {{तीसरे भाव का बल {$virupas} विरूपा}} 4 {{चौथे भाव का बल {$virupas} विरूपा}} 6 {{छठे भाव का बल {$virupas} विरूपा}} * {{{$bhava}वें भाव का बल {$virupas} विरूपा}}",
+  "vimshopaka": ".input {$graha :entity kind=graha} .input {$score :number minimumFractionDigits=2} .input {$scheme :string} .match $scheme shadvarga {{{$graha} को षड्वर्ग में {$score} विंशोपक मिलते हैं}} saptavarga {{{$graha} को सप्तवर्ग में {$score} विंशोपक मिलते हैं}} dashavarga {{{$graha} को दशवर्ग में {$score} विंशोपक मिलते हैं}} * {{{$graha} को षोडशवर्ग में {$score} विंशोपक मिलते हैं}}",
+  "ashtakavarga": "{$graha :entity kind=graha} को {$rashi :entity kind=rashi} में {$bindus :integer} बिंदु मिले हैं",
+  "sarvashtakavarga": "{$rashi :entity kind=rashi} का सर्वाष्टकवर्ग {$bindus :integer} बिंदु",
+  "gochar": {
+    "from": ".input {$from :string} .input {$rashi :entity kind=rashi} .match $from LAGNA {{लग्न {$rashi} से गिना गया गोचर}} * {{जन्म राशि {$rashi} से गिना गया गोचर}}",
+    "transit": ".input {$graha :entity kind=graha} .input {$house :integer select=ordinal} .input {$verdict :string} .match $verdict $house GOOD 1 {{{$graha} का पहले भाव में गोचर: शुभ}} GOOD 2 {{{$graha} का दूसरे भाव में गोचर: शुभ}} GOOD 3 {{{$graha} का तीसरे भाव में गोचर: शुभ}} GOOD 4 {{{$graha} का चौथे भाव में गोचर: शुभ}} GOOD 6 {{{$graha} का छठे भाव में गोचर: शुभ}} GOOD * {{{$graha} का {$house}वें भाव में गोचर: शुभ}} OBSTRUCTED 1 {{{$graha} का पहले भाव में गोचर: शुभ, पर वेध से बाधित}} OBSTRUCTED 2 {{{$graha} का दूसरे भाव में गोचर: शुभ, पर वेध से बाधित}} OBSTRUCTED 3 {{{$graha} का तीसरे भाव में गोचर: शुभ, पर वेध से बाधित}} OBSTRUCTED 4 {{{$graha} का चौथे भाव में गोचर: शुभ, पर वेध से बाधित}} OBSTRUCTED 6 {{{$graha} का छठे भाव में गोचर: शुभ, पर वेध से बाधित}} OBSTRUCTED * {{{$graha} का {$house}वें भाव में गोचर: शुभ, पर वेध से बाधित}} NOT_GOOD 1 {{{$graha} का पहले भाव में गोचर: अशुभ}} NOT_GOOD 2 {{{$graha} का दूसरे भाव में गोचर: अशुभ}} NOT_GOOD 3 {{{$graha} का तीसरे भाव में गोचर: अशुभ}} NOT_GOOD 4 {{{$graha} का चौथे भाव में गोचर: अशुभ}} NOT_GOOD 6 {{{$graha} का छठे भाव में गोचर: अशुभ}} NOT_GOOD * {{{$graha} का {$house}वें भाव में गोचर: अशुभ}} * 1 {{{$graha} का पहले भाव में गोचर}} * 2 {{{$graha} का दूसरे भाव में गोचर}} * 3 {{{$graha} का तीसरे भाव में गोचर}} * 4 {{{$graha} का चौथे भाव में गोचर}} * 6 {{{$graha} का छठे भाव में गोचर}} * * {{{$graha} का {$house}वें भाव में गोचर}}",
+    "vedha": ".input {$house :integer select=ordinal} .match $house 1 {{पहले भाव में स्थित {$grahas :list type=and} से वेध}} 2 {{दूसरे भाव में स्थित {$grahas :list type=and} से वेध}} 3 {{तीसरे भाव में स्थित {$grahas :list type=and} से वेध}} 4 {{चौथे भाव में स्थित {$grahas :list type=and} से वेध}} 6 {{छठे भाव में स्थित {$grahas :list type=and} से वेध}} * {{{$house}वें भाव में स्थित {$grahas :list type=and} से वेध}}",
+    "fruition": ".input {$graha :entity kind=graha} .input {$part :string} .input {$now :string} .match $part $now FIRST yes {{{$graha} अपनी राशि के पहले दस अंशों में है, जहाँ उसका गोचर फल देता है}} FIRST * {{{$graha} का गोचर राशि के पहले दस अंशों में फल देता है}} MIDDLE yes {{{$graha} अपनी राशि के बीच के दस अंशों में है, जहाँ उसका गोचर फल देता है}} MIDDLE * {{{$graha} का गोचर राशि के बीच के दस अंशों में फल देता है}} LAST yes {{{$graha} अपनी राशि के अंतिम दस अंशों में है, जहाँ उसका गोचर फल देता है}} LAST * {{{$graha} का गोचर राशि के अंतिम दस अंशों में फल देता है}} * * {{{$graha} का गोचर पूरी राशि में फल देता है}}",
+    "ashtakavarga": ".input {$graha :entity kind=graha} .input {$bindus :integer} .input {$good :string} .match $good yes {{{$graha} को गोचर की राशि में {$bindus} बिंदु मिले हैं: शुभ}} * {{{$graha} को गोचर की राशि में {$bindus} बिंदु मिले हैं: अशुभ}}"
+  }
+}

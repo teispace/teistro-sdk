@@ -2349,6 +2349,19 @@ class AnEngine(WithLibrary):
                 self.assertEqual(len(score.areas), 8)
                 self.assertIsInstance(score.lucky.day, Vara)
             self.assertIsNone(ctx.chart.rashifal(week).baseline)
+            self.assertIsNone(read.plans, "words only when asked for")
+
+            # Each sign's reading in words (SR-37), rendered by the context.
+            said = ctx.chart.rashifal(week, plans=True)
+            self.assertIsNone(said.baseline)
+            assert said.plans is not None
+            self.assertEqual(len(said.plans), 12)
+            for plan in said.plans:
+                self.assertEqual(plan[0]["key"], "sdk.reason.gochar.from")
+                saturn = next(item for item in plan if item["key"] == "sdk.rashifal.saturn")
+                rendered = ctx.intl.render(saturn["key"], saturn["params"])
+                self.assertTrue(rendered.text)
+                self.assertFalse(rendered.is_fallback)
 
             # 06:00 at +05:45 is 00:15 UTC on the reference day.
             six = ctx.chart.rashifal({**week, "snapshot": {"at": "CLOCK", "hour": 6, "minute": 0}})

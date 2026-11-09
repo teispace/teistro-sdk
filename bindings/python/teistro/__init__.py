@@ -3666,7 +3666,9 @@ class ChartArea(_Area):
         )
 
 
-    def rashifal(self, request: "RashifalRequest", baseline: Optional[str] = None) -> "RashifalSealed":
+    def rashifal(
+        self, request: "RashifalRequest", baseline: Optional[str] = None, plans: bool = False
+    ) -> "RashifalSealed":
         """One period of civil days at a place read for each of the twelve
         signs (`03-design/rashifal.md`): the sky at sunrise on the middle
         day, or at `snapshot`'s clock time; each sign's gochar from
@@ -3674,17 +3676,22 @@ class ChartArea(_Area):
         and station of the period counted from it. With `baseline`
         (`"DAILY"`, `"WEEKLY"`, `"MONTHLY"` or `"YEARLY"`), each sign's score
         as the baseline engine reckons it, `BASELINE` and unsourced (C361).
+        With `plans`, each sign's reading in words: twelve plans, Aries to
+        Pisces, each a list of `PlanItem` that `sdk.intl.render(item["key"],
+        item["params"])` says.
 
         >>> # week = ctx.chart.rashifal({"first": first, "last": last, "place": place, "utcOffsetSeconds": 20700}, "WEEKLY")
         >>> # leo = next(r for r in week.period.readings if r.rashi is Rashi.LEO)
         >>> # sealed = week.provenance.input_hash
         """
-        many = self.rashifal_many([request], baseline)
+        many = self.rashifal_many([request], baseline, plans)
         one = many.value[0]
-        return RashifalSealed(period=one.period, baseline=one.baseline, provenance=many.provenance)
+        return RashifalSealed(
+            period=one.period, baseline=one.baseline, plans=one.plans, provenance=many.provenance
+        )
 
     def rashifal_many(
-        self, requests: Sequence["RashifalRequest"], baseline: Optional[str] = None
+        self, requests: Sequence["RashifalRequest"], baseline: Optional[str] = None, plans: bool = False
     ) -> "RashifalAnswers":
         """Many periods, each read as `rashifal` reads it alone, under one
         founder, as the envelope: the answers in the requests' order and the
@@ -3698,6 +3705,8 @@ class ChartArea(_Area):
         asked: Dict[str, Any] = {"periods": [_rashifal_period_asked(one) for one in requests]}
         if baseline is not None:
             asked["baseline"] = baseline
+        if plans:
+            asked["plans"] = True
         answered = self._context._through_provider(lambda: self._context.inner.rashifal(json.dumps(asked)))
         envelope = json.loads(answered)
         return RashifalAnswers(
@@ -12759,12 +12768,15 @@ class BaselineScore:
 
 @dataclass(frozen=True)
 class RashifalAnswer:
-    """One period's answer: the reading, and the baseline's twelve scores
-    when asked."""
+    """One period's answer: the reading, the baseline's twelve scores and
+    the twelve plans when asked."""
 
     period: RashifalPeriod
     baseline: Optional[Tuple[BaselineScore, ...]]
     """Aries to Pisces; `None` unless a baseline period was asked."""
+    plans: "Optional[Tuple[List[PlanItem], ...]]"
+    """Each sign's reading in words, Aries to Pisces; `None` unless `plans`
+    was asked."""
 
 
 @dataclass(frozen=True)
@@ -16746,6 +16758,7 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
 
     limbs = period["panchanga"]
     baseline = raw.get("baseline")
+    plans = raw.get("plans")
     return RashifalAnswer(
         period=RashifalPeriod(
             first=_serde_date(period["first"]),
@@ -16762,6 +16775,7 @@ def _rashifal_answer(raw: Mapping[str, Any]) -> RashifalAnswer:
             readings=tuple(reading(one) for one in period["readings"]),
         ),
         baseline=None if baseline is None else tuple(score(one) for one in baseline),
+        plans=None if plans is None else tuple(plans),
     )
 
 

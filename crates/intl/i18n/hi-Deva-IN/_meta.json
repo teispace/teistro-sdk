@@ -38,6 +38,8 @@
     }
   },
   "draft": [
-    "sdk.calendar"
+    "sdk.calendar",
+    "sdk.rashifal",
+    "sdk.reason"
   ]
 }

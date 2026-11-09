@@ -15,7 +15,8 @@ use teistro::gochar::{GocharRules, Reference, Transit, gochar};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rashifal::baseline::Period;
 use teistro::{
-    CalendarDate, Context, Ephemeris, RashifalPeriod, RashifalRequest, Snapshot, UtcOffset,
+    CalendarDate, Context, Ephemeris, RashifalBatch, RashifalPeriod, RashifalRequest, Snapshot,
+    UtcOffset,
 };
 
 fn context() -> Context {
@@ -267,4 +268,60 @@ fn a_batch_reads_each_period_as_it_reads_alone() {
         sdk.chart().rashifal_many(&[]).unwrap_err().field(),
         Some("requests")
     );
+}
+
+/// SR-37: each sign's reading in words, through the batch a binding sends,
+/// said in every locale that carries the messages and marked draft where
+/// no reviewer has read them (Q42).
+#[test]
+fn a_batch_asked_for_words_says_each_sign_in_each_locale() {
+    let sdk = context();
+    let year = r#"{"periods": [{"first": {"year": 2026, "month": 1, "day": 1},
+        "last": {"year": 2026, "month": 12, "day": 31},
+        "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "altitudeM": 1400,
+        "utcOffsetSeconds": 20700}], "plans": true}"#;
+    let asked = RashifalBatch::from_json(year).unwrap();
+    assert!(asked.plans);
+    let answers = sdk.chart().rashifal_answers(&asked).unwrap().value;
+    let answer = &answers[0];
+    assert_eq!(answer.baseline, None);
+    let plans = answer.plans.as_ref().expect("words were asked for");
+    assert_eq!(plans.len(), 12);
+    for (plan, reading) in plans.iter().zip(&answer.period.readings) {
+        assert_eq!(*plan, sdk.interpret().rashifal(reading));
+    }
+    // A year holds both kinds of event, and Saturn's standing for each sign.
+    let keys: Vec<&str> = plans.iter().flat_map(|plan| plan.keys()).collect();
+    for key in [
+        "sdk.rashifal.saturn",
+        "sdk.rashifal.ingress",
+        "sdk.rashifal.station",
+    ] {
+        assert!(keys.contains(&key), "{key}");
+    }
+    for (tag, draft) in [
+        ("en-Latn", false),
+        ("ne-Deva-NP", true),
+        ("hi-Deva-IN", true),
+    ] {
+        sdk.intl().set_locale(tag).unwrap();
+        for plan in plans {
+            for item in plan {
+                let said = sdk.intl().render(&item.key, &item.params);
+                assert!(
+                    !said.is_fallback && said.warnings.is_empty() && !said.text.is_empty(),
+                    "{tag} {}: {said:?}",
+                    item.key
+                );
+                if item.key.starts_with("sdk.rashifal.") {
+                    assert_eq!(said.is_draft, draft, "{tag} {}", item.key);
+                }
+            }
+        }
+    }
+    // Without the flag the answer carries no words.
+    let plain = RashifalBatch::from_json(&year.replace(r#", "plans": true"#, "")).unwrap();
+    assert!(!plain.plans);
+    let read = sdk.chart().rashifal_answers(&plain).unwrap().value;
+    assert_eq!(read[0].plans, None);
 }
