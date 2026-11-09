@@ -37,7 +37,8 @@ coverage-in-docs step comes with the docs site.
 
 ## For the SDK team (shipping a new core language)
 
-Everything above, plus: the sources go under `i18n/<tag>/`, the locale
+Everything above, plus: the sources go under `crates/intl/i18n/<tag>/`
+(inside the crate that ships them), the locale
 joins the shipped list (`strict` completeness gated for every key), gets a
 baked feature in the binding packaging, has a native reviewer sign-off
 recorded in the pull request, and appears in the coverage report in the

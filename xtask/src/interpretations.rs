@@ -237,7 +237,7 @@ fn embedded_bytes(root: &Path) -> usize {
         }
     }
     let mut total = 0;
-    under(&root.join("i18n"), &mut total);
+    under(&root.join(crate::intl::SOURCES), &mut total);
     total
 }
 

@@ -1,4 +1,4 @@
-//! The intl generator and its gate: `i18n/` in, the SDK's typed messages
+//! The intl generator and its gate: `crates/intl/i18n/` in, the SDK's typed messages
 //! (`crates/intl/src/messages.rs`) out. `gen intl` validates the sources
 //! and writes the accessors; `check-intl` validates and regenerates in
 //! memory, failing on any validation error or any difference, so the
@@ -18,6 +18,16 @@ use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::validate;
 
 use crate::generated::{Output, check, write};
+
+/// The SDK's locale sources, repository-relative. They live inside the
+/// crate that ships them, so `teistro-intl`'s package carries them and
+/// `teistro`'s build script compiles them from that package alone
+/// (`docs/06-cicd/03-release-process.md`, "Every crate builds from its
+/// own package"). Every pass here names them by this constant.
+pub(crate) const SOURCES: &str = "crates/intl/i18n";
+/// Where the sources lived before they moved into the crate: a tree
+/// there again is a stray nothing compiles, so `check-intl` refuses it.
+const FORMER_SOURCES: &str = "i18n";
 
 const MESSAGES: &str = "crates/intl/src/messages.rs";
 /// The typed accessors each binding ships: the same model, in the shape
@@ -163,7 +173,7 @@ fn spellout_rules(xml: &str) -> Option<&str> {
 }
 
 fn outputs(root: &Path) -> Vec<Output> {
-    let tree = Tree::load(&root.join("i18n")).expect("the i18n/ sources load");
+    let tree = Tree::load(&root.join(SOURCES)).expect("the i18n/ sources load");
     let report = validate::validate(&tree);
     if report.passed() {
         eprintln!("{}", report.markdown().lines().next().unwrap_or_default());
@@ -172,13 +182,13 @@ fn outputs(root: &Path) -> Vec<Output> {
         panic!("the i18n/ sources do not validate");
     }
     let model = Model::of_tree(&tree).expect("every message parses");
-    let overrides = overrides_of(&root.join("i18n"), DERIVED.1)
+    let overrides = overrides_of(&root.join(SOURCES), DERIVED.1)
         .unwrap_or_else(|e| panic!("the derived locale's overrides load: {e}"));
     let derived = derive(&tree, DERIVED.0, DERIVED.1, &overrides, Casing::Names)
         .unwrap_or_else(|e| panic!("{} derives from {}: {e}", DERIVED.1, DERIVED.0));
     if !derived.stale.is_empty() {
         println!(
-            "FAIL  i18n/{}/_overrides.json corrects entities the sources no longer have: {}",
+            "FAIL  {SOURCES}/{}/_overrides.json corrects entities the sources no longer have: {}",
             DERIVED.1,
             derived.stale.join(", ")
         );
@@ -186,7 +196,7 @@ fn outputs(root: &Path) -> Vec<Output> {
     let mut outputs: Vec<Output> = derived
         .files
         .iter()
-        .map(|(path, text)| Output::new(format!("i18n/{}", path.display()), text.clone()))
+        .map(|(path, text)| Output::new(format!("{SOURCES}/{}", path.display()), text.clone()))
         .collect();
     outputs.push(Output::new(WORD_RULES, word_rules(root)));
     outputs.push(Output::new(DRAFTED_RULES, drafted_rules(root)));
@@ -208,13 +218,35 @@ pub(crate) fn generate(root: &Path) -> i32 {
 pub(crate) fn check_generated(root: &Path) -> i32 {
     let written = outputs(root);
     let failures = check(root, &written, "cargo xtask gen intl");
-    let tree = Tree::load(&root.join("i18n")).expect("the i18n/ sources load");
+    let tree = Tree::load(&root.join(SOURCES)).expect("the i18n/ sources load");
     let unnamed = unnamed_members(&tree, &catalogue_kinds());
     let naming = named_or_listed(&unnamed, UNNAMED);
     let festivals = every_festival_is_named(&tree);
     let keywords = dart_parses(&written);
     let declared = every_key_type_is_declared(&written);
-    i32::from(failures != 0 || naming != 0 || festivals != 0 || keywords != 0 || declared != 0)
+    let stray = no_former_sources(root);
+    i32::from(
+        failures != 0
+            || naming != 0
+            || festivals != 0
+            || keywords != 0
+            || declared != 0
+            || stray != 0,
+    )
+}
+
+/// That nothing is back at the sources' former place: a branch cut before
+/// they moved can merge a new locale file into `i18n/`, where no build
+/// reads it and every other gate stays green.
+fn no_former_sources(root: &Path) -> usize {
+    let former = root.join(FORMER_SOURCES);
+    if !former.exists() {
+        return 0;
+    }
+    println!(
+        "FAIL  {FORMER_SOURCES}/ exists: the locale sources are {SOURCES}/, which `teistro-intl` ships; move what is in {FORMER_SOURCES}/ there"
+    );
+    1
 }
 
 /// That every rule key a shipped festival pack answers with is named in

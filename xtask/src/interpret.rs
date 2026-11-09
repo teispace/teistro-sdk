@@ -1334,7 +1334,7 @@ fn what_each_reader_gets(
     plan: &Plan,
     root: &Path,
 ) -> Result<(), String> {
-    let tree = Tree::load(&root.join("i18n")).map_err(|err| err.to_string())?;
+    let tree = Tree::load(&root.join(crate::intl::SOURCES)).map_err(|err| err.to_string())?;
     let mut rows: Vec<(String, &'static str, usize, usize, usize)> = Vec::new();
     // The base locale's rendering of each item, to compare the rest with.
     sdk.intl()
@@ -2202,7 +2202,7 @@ fn load_readings(root: &Path, intl: &mut Intl) -> Result<(), String> {
 }
 
 fn page(root: &Path) -> Result<String, String> {
-    let tree = Tree::load(&root.join("i18n")).map_err(|err| err.to_string())?;
+    let tree = Tree::load(&root.join(crate::intl::SOURCES)).map_err(|err| err.to_string())?;
     let strict: Vec<String> = tree
         .locales
         .values()

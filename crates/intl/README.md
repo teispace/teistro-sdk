@@ -4,7 +4,9 @@ Teistro Intl, the SDK's localisation layer
 (`docs/03-design/intl-engine-and-packs.md`, ADR-0010): one standard for
 every string the SDK renders and for the applications that adopt it.
 
-- **Sources** under `i18n/<locale>/`: `_meta.json` (direction, numbering
+- **Sources** under `i18n/<locale>/`; the SDK's own are this crate's
+  `i18n/`, shipped in its package so `teistro`'s build script compiles
+  them from the published crates alone (`sdk_root()`): `_meta.json` (direction, numbering
   system, grouping, fallback chain, contexts, list patterns) and one JSON
   file per namespace; `en-Latn` is the base locale, the source of every
   key and parameter; `sdk.entity` holds entity records whose keys are the

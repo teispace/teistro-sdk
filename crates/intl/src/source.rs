@@ -1354,18 +1354,22 @@ fn entity(
     Ok(entity)
 }
 
-/// The SDK's own sources, `i18n/` at the repository root: what the tests,
-/// the gate and the command line read by default.
+/// The SDK's own sources, `i18n/` inside this crate: what the tests, the
+/// gate, the command line and `teistro`'s build script read by default.
+///
+/// They are this crate's files, so its package carries them and a
+/// build from the published crates alone finds them where a checkout
+/// does; a path out of the crate would name a directory no package has.
 ///
 /// ```
 /// use teistro_intl::sdk_root;
 ///
-/// // The SDK's own `i18n/`, beside the crates.
+/// // The SDK's own `i18n/`, shipped inside `teistro-intl`.
 /// assert!(sdk_root().join("en-Latn").join("sdk.entity.json").is_file());
 /// ```
 #[must_use]
 pub fn sdk_root() -> PathBuf {
-    Path::new(env!("CARGO_MANIFEST_DIR")).join("../../i18n")
+    Path::new(env!("CARGO_MANIFEST_DIR")).join("i18n")
 }
 
 #[cfg(test)]

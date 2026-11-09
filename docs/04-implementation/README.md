@@ -30,12 +30,12 @@ teistro-sdk/
                                the directory by `check-lints`. Among them: core (the catalogue, settings and
                                profiles, the envelope), port-ephemeris and port-timezone (the ports), astro,
                                siddhanta, ephemeris-builtin (the built-in tiers), time, calendar, the chart
-                               modules, intl (with the teistro-intl command line), serial, idl, ffi (the C ABI),
+                               modules, intl (with the teistro-intl command line and, in crates/intl/i18n/, the
+                               SDK's own messages per locale, gated by `check-intl`), serial, idl, ffi (the C ABI),
                                sdk (the Rust façade), mcp (the teistro-mcp server), ephemeris-kit (the provider
                                conformance kit), scenario, test-allocator and test-adapter
   catalogue/                   entity catalogue YAML, generated into crates/core by `cargo xtask gen catalogue`
                                and gated by `check-catalogue`
-  i18n/                        the SDK's own messages per locale, gated by `check-intl`
   packs/                       the reading corpora (readings/, states/) per locale, with the README that tells a
                                consumer how to build one
   idl/                         api.json, the extracted API description (`cargo xtask gen ffi`, gated by `check-ffi`)
