@@ -264,7 +264,7 @@ fn hold(tree: &Tree, floors: &BTreeMap<String, (usize, usize)>) -> usize {
 }
 
 fn load(root: &Path) -> Result<Tree, String> {
-    Tree::load(&root.join("i18n")).map_err(|e| format!("the i18n/ sources: {e}"))
+    Tree::load(&root.join(crate::intl::SOURCES)).map_err(|e| format!("the i18n/ sources: {e}"))
 }
 
 pub(crate) fn generate(root: &Path) -> i32 {

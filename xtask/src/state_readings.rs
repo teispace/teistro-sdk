@@ -919,7 +919,8 @@ fn what_it_leaves_open(
 /// An engine carrying every locale of `i18n/` with both corpora loaded
 /// over it, which is the consumer that wants the words and the readings.
 fn engine_with_both(root: &Path) -> Result<(teistro_intl::Intl, Vec<String>), String> {
-    let tree = Tree::load(&root.join("i18n")).map_err(|why| format!("i18n: {why}"))?;
+    let tree =
+        Tree::load(&root.join(crate::intl::SOURCES)).map_err(|why| format!("i18n: {why}"))?;
     let strict: Vec<String> = tree
         .locales
         .values()

@@ -14,7 +14,11 @@ crate (`crates/intl`, `teistro-intl`) and its command line were built
 from the spike: the SDK's catalogue became the authority for every entity
 key, the locale bundle and the Rust accessors were added, the sources
 moved to `i18n/` at the repository root and are gated by `cargo xtask
-check-intl`. Derives from `02-architecture/03-localization-architecture.md`,
+check-intl`; revised 2026-11-10 when they moved again, into
+`crates/intl/i18n/`, so `teistro-intl`'s package carries them and
+`teistro` builds from the published crates alone
+(`06-cicd/03-release-process.md`, "Every crate builds from its own
+package"). Derives from `02-architecture/03-localization-architecture.md`,
 ADR-0010, ADR-0020 and ADR-0023.
 
 ## 1. Purpose and scope
