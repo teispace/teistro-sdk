@@ -229,6 +229,44 @@ impl<'a> InterpretArea<'a> {
         say_gochar(reading)
     }
 
+    /// What one sign's rashifal says: its transits as
+    /// [`InterpretArea::gochar`] says them, Saturn's standing from the sign
+    /// with its Sade Sati phase or smaller spell, and each ingress and
+    /// station of the period, the house it falls in and whether that house
+    /// is good (`03-design/rashifal.md`, "Said in words").
+    ///
+    /// It takes one of the twelve readings
+    /// [`ChartArea::rashifal`](crate::ChartArea::rashifal) gives, and needs
+    /// no corpus. A binding asks for the twelve plans with the batch's
+    /// `plans: true`.
+    ///
+    /// ```no_run
+    /// # #[cfg(feature = "builtin-ephemeris")] {
+    /// # use teistro::CalendarDate;
+    /// # use teistro::catalogue::{Calendar, Rashi};
+    /// # use teistro::quantity::{Altitude, Latitude, Longitude, Place};
+    /// # use teistro::{Context, Ephemeris, RashifalRequest, UtcOffset};
+    /// let sdk = Context::builder().ephemeris([Ephemeris::Builtin]).build()?;
+    /// # let kathmandu = Place::new(Latitude::literal(27.7172), Longitude::literal(85.324), Altitude::literal(1400.0));
+    /// let day = RashifalRequest::day(
+    ///     CalendarDate::defined(Calendar::Gregorian, 2026, 10, 4),
+    ///     kathmandu,
+    ///     UtcOffset::literal(5, 45, 0),
+    /// );
+    /// let read = sdk.chart().rashifal(&day)?.value;
+    /// let plan = sdk.interpret().rashifal(read.of(Rashi::Leo));
+    /// for item in &plan {
+    ///     println!("{}", sdk.intl().render(&item.key, &item.params).text);
+    /// }
+    /// # }
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    #[cfg(feature = "rashifal")]
+    #[must_use]
+    pub fn rashifal(self, reading: &teistro_rashifal::RashiReading) -> Plan {
+        teistro_interpret::rashifal(reading)
+    }
+
     /// Each bhava's strength in virupas, the first house first.
     ///
     /// # Errors

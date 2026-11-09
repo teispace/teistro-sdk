@@ -1,6 +1,7 @@
 # Rashifal: a period read for each sign (the `rashifal` module)
 
-Status: `built`, 2026-10-08; every step of the order of work built.
+Status: `built`, 2026-10-08; every step of the order of work built, the
+fifth (said in words) on 2026-11-10.
 Written from the text and from the baseline engine's code before any of
 this module's code; the building is expected to correct it.
 
@@ -192,3 +193,66 @@ ingress on the last evening is the period's. A batch form,
    baseline's scores beside the reading when a baseline period is asked.
    A refusal names the period, `rashifal.periods[i]`, and the field in
    it.
+5. Said in words (SR-37): **done**, 2026-11-10. See below.
+
+## Said in words
+
+A consumer asked for a composed reading of each sign and period in
+English, Nepali and Hindi (SR-37, `consumers/addendum-3.md`). A reading
+crossed every binding as houses and flags, and nothing turned it into a
+sentence. `teistro_interpret::rashifal(&RashiReading) -> Plan` does, and
+`sdk.interpret().rashifal(&reading)` reaches it.
+
+- **What it says**, in the order a reader takes it in:
+  - the transits, said by `gochar`'s own composer (`gochar.md` §7): the
+    sign counted from, each graha's house and verdict, who obstructs it
+    and where in its sign it bears fruit;
+  - Saturn's standing from the sign (`sdk.rashifal.saturn`): its house,
+    and the Sade Sati phase when it is the 12th, 1st or 2nd, or the
+    smaller spell when the rules count that house. The 4th is named
+    Kantaka Shani and the 8th Ashtama Shani; another house the request
+    counts is "one of its smaller spells";
+  - each event of the period, in the events' order: an ingress
+    (`sdk.rashifal.ingress`) or a station (`sdk.rashifal.station`), the
+    sign, the house it is from this one and whether v. 2 makes that house
+    good.
+- **It judges nothing.** The verdicts, the phase, the spell and the good
+  house are the reading's, so a sentence neither softens nor sharpens
+  them, and it needs no corpus.
+- **One plan a sign.** A period is read for twelve signs and a reader
+  reads one. The façade composes the twelve, Aries to Pisces.
+- **Left unsaid**, on purpose:
+  - an event's date: the instant is UTC, and the plan has no clock to
+    date it by. The n-th event item is the reading's n-th event, so a
+    consumer dates it from `events[n].event.hit.instant` on its own
+    clock;
+  - an ingress's direction: the nodes always move backwards, and "Rahu
+    enters Aquarius retrograde" tells a reader nothing;
+  - the baseline's score, which is a number of the baseline's (C361) and
+    not a reading.
+
+**The words.** `sdk.rashifal` is a namespace of its own, in `en-Latn`,
+`ne-Deva-NP` and `hi-Deva-IN`. Nepali's `sdk.reason` is reviewed, so the
+rashifal's three messages could not sit in it without the mark covering
+reviewed text. Nepali and Hindi drafts are unreviewed (Q42) and ship
+marked draft: `ne-Deva-NP` drafts `sdk.day` and `sdk.rashifal`, and
+`hi-Deva-IN` drafts `sdk.calendar`, `sdk.rashifal` and `sdk.reason`. Hindi
+had no `sdk.reason`, so it read the gochar's sentences in English. A
+drafted namespace must be whole (`intl-engine-and-packs.md`, "Text not
+yet reviewed"), so Hindi's `sdk.reason` carries every reason, not only
+the five the gochar says. `crates/intl/tests/draft.rs` pins the lists.
+
+**At the boundary.** The batch `ts_rashifal` reads takes `"plans": true`,
+false when left out, and each period's answer then carries `plans`:
+twelve plans, Aries to Pisces, beside `baseline`. Node, Python, Dart and
+Java take it as a third argument (`plans` in Python, a named `plans` in
+Dart), and the generated `chart.rashifal` record carries it in every
+binding. A brief answer keeps the plans.
+
+**Measured.** `interpret-measured.md`'s founded chart says a year's
+rashifal (2026, Kathmandu) for the twelve signs, which emits every phase
+and both spells, ingresses and stations, and renders each item in every
+strict locale with no fallback and no warning. A façade test
+(`crates/sdk/tests/rashifal.rs`) holds the batch's plans to the composer
+and renders each in English, Nepali and Hindi, the Nepali and Hindi
+marked draft.

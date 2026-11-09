@@ -15,7 +15,11 @@ publish = false
 # Derives `schemars::JsonSchema` on every type this crate serialises,
 # so the agent server states its tools' answers (`03-design/mcp-server.md`
 # §7, P1).
-schema = ["dep:schemars", "dep:serde_json", "teistro-aspect/schema", "teistro-chart/schema", "teistro-core/schema", "teistro-gochar/schema", "teistro-houses/schema", "teistro-rules/schema", "teistro-state/schema", "teistro-strength/schema"]
+schema = ["dep:schemars", "dep:serde_json", "teistro-aspect/schema", "teistro-chart/schema", "teistro-core/schema", "teistro-gochar/schema", "teistro-houses/schema", "teistro-rashifal?/schema", "teistro-rules/schema", "teistro-state/schema", "teistro-strength/schema"]
+# The rashifal's composer (`03-design/rashifal.md`, "Said in words"),
+# which reads a `RashiReading`: on with the façade's `rashifal` family, so
+# a build that leaves the family out leaves its crate out here too.
+rashifal = ["dep:teistro-rashifal"]
 
 [dependencies]
 teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.1" }
@@ -23,6 +27,7 @@ teistro-chart = { path = "../chart", version = "=1.0.0-rc.1" }
 teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
 teistro-gochar = { path = "../gochar", version = "=1.0.0-rc.1" }
 teistro-houses = { path = "../houses", version = "=1.0.0-rc.1" }
+teistro-rashifal = { path = "../rashifal", version = "=1.0.0-rc.1", optional = true }
 teistro-intl = { path = "../intl", version = "=1.0.0-rc.1", default-features = false }
 teistro-rules = { path = "../rules", version = "=1.0.0-rc.1" }
 teistro-state = { path = "../state", version = "=1.0.0-rc.1" }

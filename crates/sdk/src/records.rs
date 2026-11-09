@@ -793,7 +793,7 @@ const PAKSHI_BRIEF: Brief = Brief::Keeps(&[
     "reading.yamas.quality",
 ]);
 
-/// What a rashifal answer keeps in brief: the period, its sky and each sign's readings.
+/// What a rashifal answer keeps in brief: the period, its sky, each sign's readings and their words.
 #[cfg(feature = "rashifal")]
 const RASHIFAL_BRIEF: Brief = Brief::Keeps(&[
     "period.first",
@@ -806,6 +806,7 @@ const RASHIFAL_BRIEF: Brief = Brief::Keeps(&[
     "period.readings.saturn",
     "period.readings.events",
     "baseline",
+    "plans",
 ]);
 
 /// The records that read one subject and no place's day: numerology,

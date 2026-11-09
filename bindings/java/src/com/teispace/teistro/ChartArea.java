@@ -262,7 +262,7 @@ public final class ChartArea {
      * @return the reading, with what sealed it
      */
     public RashifalSealed rashifal(RashifalRequest request) {
-        return RashifalReads.rashifal(context, request, null);
+        return RashifalReads.rashifal(context, request, null, false);
     }
 
     /**
@@ -274,7 +274,21 @@ public final class ChartArea {
      * @return the reading, with what sealed it
      */
     public RashifalSealed rashifal(RashifalRequest request, String baseline) {
-        return RashifalReads.rashifal(context, request, baseline);
+        return RashifalReads.rashifal(context, request, baseline, false);
+    }
+
+    /**
+     * One period read for each of the twelve signs, with each sign's reading
+     * in words beside it when {@code plans} asks ({@code 03-design/rashifal.md},
+     * "Said in words").
+     *
+     * @param request the period, its place and what to read
+     * @param baseline the baseline's name, or null for none
+     * @param plans whether each sign's reading is said in words
+     * @return the reading, with what sealed it
+     */
+    public RashifalSealed rashifal(RashifalRequest request, String baseline, boolean plans) {
+        return RashifalReads.rashifal(context, request, baseline, plans);
     }
 
     /**
@@ -285,7 +299,20 @@ public final class ChartArea {
      * @return one reading per request, in order, with the batch's provenance
      */
     public RashifalAnswers rashifalMany(List<RashifalRequest> requests, String baseline) {
-        return RashifalReads.rashifalMany(context, requests, baseline);
+        return RashifalReads.rashifalMany(context, requests, baseline, false);
+    }
+
+    /**
+     * Several periods read in one call, each sign's reading in words beside
+     * each when {@code plans} asks.
+     *
+     * @param requests the periods
+     * @param baseline the baseline's name, or null for none
+     * @param plans whether each sign's reading is said in words
+     * @return one reading per request, in order, with the batch's provenance
+     */
+    public RashifalAnswers rashifalMany(List<RashifalRequest> requests, String baseline, boolean plans) {
+        return RashifalReads.rashifalMany(context, requests, baseline, plans);
     }
 
     /**

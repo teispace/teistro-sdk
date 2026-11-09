@@ -2451,6 +2451,18 @@ public final class BindingTest {
                         sky.chart().rashifalMany(List.of(RashifalRequest.of(first, kathmandu, 20_700)), null)
                                 .provenance().inputHash(),
                         "a batch of one seals as the one does");
+                check(read.plans() == null, "words only when asked for");
+                RashifalSealed said = sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700), null, true);
+                same(12, said.plans().size(), "a plan a sign (SR-37)");
+                for (List<Map<String, Object>> plan : said.plans()) {
+                    same("sdk.reason.gochar.from", plan.get(0).get("key"), "the transits first");
+                    Map<String, Object> saturn = plan.stream()
+                            .filter(item -> "sdk.rashifal.saturn".equals(item.get("key"))).findFirst().orElseThrow();
+                    IntlRender rendered = sky.intl().render("sdk.rashifal.saturn",
+                            JsonRead.object(saturn.get("params")));
+                    check(!rendered.text().isEmpty(), "Saturn's standing said");
+                    same(0, rendered.isFallback(), "the locale carries it");
+                }
                 same(Status.UNSUPPORTED, refusal(() -> sky.engine().names()).status(),
                         "the built-in engine describes no operations of its own");
             }

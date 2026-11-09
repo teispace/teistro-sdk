@@ -23,14 +23,16 @@ final class RashifalReads {
      * With {@code baseline} ({@code "DAILY"}, {@code "WEEKLY"},
      * {@code "MONTHLY"} or {@code "YEARLY"}), each sign's score as the
      * baseline engine reckons it, {@code BASELINE} and unsourced (C361).
+     * With {@code plans}, each sign's reading in words, Aries to Pisces.
      *
      * @param context the context to read it under
      * @param request the period
      * @param baseline the baseline period to score; may be null for none
+     * @param plans whether each sign's reading is said in words
      * @return the answer, with what sealed it
      */
-    static RashifalSealed rashifal(Context context, RashifalRequest request, String baseline) {
-        RashifalAnswers many = rashifalMany(context, List.of(request), baseline);
+    static RashifalSealed rashifal(Context context, RashifalRequest request, String baseline, boolean plans) {
+        RashifalAnswers many = rashifalMany(context, List.of(request), baseline, plans);
         return new RashifalSealed(many.value().get(0), many.provenance());
     }
 
@@ -40,9 +42,11 @@ final class RashifalReads {
      * @param context the context to read them under
      * @param requests the periods
      * @param baseline the baseline period to score; may be null for none
+     * @param plans whether each sign's reading is said in words
      * @return one answer a period, in their order, with the batch's provenance
      */
-    static RashifalAnswers rashifalMany(Context context, List<RashifalRequest> requests, String baseline) {
+    static RashifalAnswers rashifalMany(Context context, List<RashifalRequest> requests, String baseline,
+            boolean plans) {
         if (requests == null) {
             throw Reads.invalid("requests is a list of rashifal periods, such as "
                     + "List.of(RashifalRequest.of(date, place, 20_700))", "requests");
@@ -55,6 +59,9 @@ final class RashifalReads {
         asked.put("periods", periods);
         if (baseline != null) {
             asked.put("baseline", baseline);
+        }
+        if (plans) {
+            asked.put("plans", true);
         }
         String json = Json.write(asked);
         String answered = context.locked((lib, raw) -> Calls.rashifal(lib, raw, json));
@@ -210,6 +217,7 @@ final class RashifalReads {
         Map<?, ?> limbs = Reads.object(period, "panchanga");
         double instant = Reads.number(period, "instant");
         Object baseline = raw.get("baseline");
+        Object plans = raw.get("plans");
         return new RashifalAnswer(
                 new RashifalPeriod(
                         Reads.serdeDate(Reads.field(period, "first")),
@@ -226,6 +234,9 @@ final class RashifalReads {
                         new RashifalPanchanga(member(limbs, "tithi", "Tithi", Tithi::byKey),
                                 member(limbs, "yoga", "Yoga", Yoga::byKey), Reads.integer(limbs, "muhurtaYogas")),
                         Reads.each(period, "readings", one -> reading(one, instant))),
-                baseline == null ? null : Reads.array(baseline).stream().map(RashifalReads::score).toList());
+                baseline == null ? null : Reads.array(baseline).stream().map(RashifalReads::score).toList(),
+                plans == null ? null : JsonRead.list(plans).stream()
+                        .map(plan -> JsonRead.list(plan).stream().map(JsonRead::object).toList())
+                        .toList());
     }
 }

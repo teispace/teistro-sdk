@@ -1359,11 +1359,13 @@ export interface BaselineScore {
   readonly lucky: { readonly colour: string; readonly number: number; readonly day: Vara | 'unknown'; readonly direction: Direction | 'unknown' };
 }
 
-/** One period's answer: the reading, and the baseline's twelve scores when asked. */
+/** One period's answer: the reading, the baseline's twelve scores and the twelve plans when asked. */
 export interface RashifalAnswer {
   readonly period: RashifalPeriod;
   /** Aries to Pisces; `null` unless a baseline period was asked. */
   readonly baseline: readonly BaselineScore[] | null;
+  /** Each sign's reading in words, Aries to Pisces; `null` unless `plans` was asked. */
+  readonly plans: readonly (readonly PlanItem[])[] | null;
 }
 
 /** One period's answer as `rashifal` hands it out, with what sealed it. */
@@ -7975,16 +7977,20 @@ export declare class ChartArea {
   /**
    * One period of civil days at a place read for each of the twelve signs
    * (`03-design/rashifal.md`); with `baseline`, the baseline engine's score
-   * of each sign for that period.
+   * of each sign for that period; with `plans`, each sign's reading in words.
    *
    * @example
    * const week = ctx.chart.rashifal({ first, last, place, utcOffsetSeconds: 20700 }, 'WEEKLY');
    * const leo = week.period.readings.find((r) => r.rashi === 'rashi.LEO');
    * const sealed = week.provenance.inputHash;
    */
-  rashifal(request: RashifalRequest, baseline?: BaselinePeriod): RashifalSealed;
+  rashifal(request: RashifalRequest, baseline?: BaselinePeriod | null, plans?: boolean): RashifalSealed;
   /** Many periods, each read as `rashifal` reads it alone, under one founder. */
-  rashifalMany(requests: readonly RashifalRequest[], baseline?: BaselinePeriod): RashifalAnswers;
+  rashifalMany(
+    requests: readonly RashifalRequest[],
+    baseline?: BaselinePeriod | null,
+    plans?: boolean,
+  ): RashifalAnswers;
 }
 
 /**

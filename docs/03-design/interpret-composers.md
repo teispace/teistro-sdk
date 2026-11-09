@@ -800,6 +800,13 @@ a test that a plan round-trips through JSON.
     and `gochar` in the plan request beside the gochar request it needs
     (`gochar.md` §7). Before it a reading crossed every binding as codes
     and an application could print only those.
+17. The **rashifal**, said in words. **Built** (2026-11-10, SR-37):
+    `teistro_interpret::rashifal` over a `RashiReading`, the gochar
+    composer's plan followed by Saturn's standing and the period's events,
+    three messages under a namespace of their own, `sdk.rashifal`, in
+    English, Nepali and Hindi, the Nepali and Hindi marked draft. It
+    crosses as `ts_rashifal`'s `plans`, one plan a sign
+    (`rashifal.md`, "Said in words").
 
 ## 8. What this design does not settle
 

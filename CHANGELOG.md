@@ -21,6 +21,19 @@ the previous release, not by nobody having looked.
   Nepali ships marked draft until a reviewer signs it off (Q42), as `sdk.day` does. A unit test lists
   each enum under a `match` with no wildcard and holds both locales to its spellings both ways.
 
+**A rashifal said in words (SR-37).**
+**Numbers:** none.
+- `teistro_interpret::rashifal` and `sdk.interpret().rashifal(&reading)` compose one sign's reading into a
+  plan: its transits as the gochar composer says them, Saturn's standing from the sign (its house, the
+  Sade Sati phase or the smaller spell, Kantaka and Ashtama Shani named), and each ingress and station of
+  the period with its house from the sign and whether v. 2 makes that house good. It judges nothing.
+- `ts_rashifal`'s batch takes `"plans": true`, and each period's answer carries `plans`, twelve plans
+  Aries to Pisces. Node, Python, Dart and Java take it beside `baseline`; a brief answer keeps it.
+- The three messages live in a new namespace, `sdk.rashifal`, in English, Nepali and Hindi. Hindi gains
+  `sdk.reason` whole, so the gochar's sentences read in Hindi instead of English. The Nepali and Hindi
+  text is unreviewed (Q42) and ships marked draft: `ne-Deva-NP` drafts `sdk.rashifal`, and `hi-Deva-IN`
+  drafts `sdk.rashifal` and `sdk.reason`.
+
 **A clock on the minute reads that minute (SR-77).**
 **Numbers:** `civil_of` and `time().civil_of` move a reading by at most four of the Julian day's last bits
 (about 0.19 ms in the present era) when it lies that close to a whole second, onto the second. No

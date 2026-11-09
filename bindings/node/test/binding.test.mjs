@@ -6676,6 +6676,20 @@ test('a rashifal period is read for each of the twelve signs', () => {
     assert.ok(score.lucky.day.startsWith('vara.') && score.lucky.direction.startsWith('direction.'));
   }
   assert.equal(ctx.chart.rashifal(week).baseline, null);
+  assert.equal(read.plans, null, 'words only when asked for');
+
+  // Each sign's reading in words (SR-37), rendered by the context.
+  const said = ctx.chart.rashifal(week, null, true);
+  assert.equal(said.baseline, null);
+  assert.equal(said.plans.length, 12);
+  for (const plan of said.plans) {
+    assert.equal(plan[0].key, 'sdk.reason.gochar.from');
+    const saturn = plan.find((item) => item.key === 'sdk.rashifal.saturn');
+    assert.ok(saturn, 'Saturn is said for every sign');
+    const rendered = ctx.intl.render(saturn.key, saturn.params);
+    assert.ok(rendered.text.length > 0 && !rendered.isFallback, saturn.key);
+    assert.deepEqual(rendered.warnings, []);
+  }
 
   // 06:00 at +05:45 is 00:15 UTC on the reference day.
   const six = ctx.chart.rashifal({ ...week, snapshot: { at: 'CLOCK', hour: 6, minute: 0 } });

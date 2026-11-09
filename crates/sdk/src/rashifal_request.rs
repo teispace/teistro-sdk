@@ -322,8 +322,9 @@ struct PeriodAsked {
     spells: Option<Vec<u8>>,
 }
 
-/// Many periods as a binding writes them, and the period the baseline
-/// engine's score is read for, when it is asked.
+/// Many periods as a binding writes them, the period the baseline
+/// engine's score is read for, when it is asked, and whether each sign's
+/// reading is said in words.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -331,17 +332,23 @@ pub(crate) struct BatchAsked {
     periods: Vec<PeriodAsked>,
     #[serde(default)]
     baseline: Option<Period>,
+    /// Whether each sign's reading is composed into a narrative plan.
+    #[serde(default)]
+    plans: bool,
 }
 
 /// Periods to read, as a binding asks them: each a [`RashifalRequest`],
 /// and the baseline engine's score for each sign when `baseline` names
-/// the period it is read for.
+/// the period it is read for, and each sign's plan when `plans` asks.
 #[derive(Clone, Debug, PartialEq)]
 pub struct RashifalBatch {
     /// The periods, in the order they are answered.
     pub periods: Vec<RashifalRequest>,
     /// The period the baseline's score is read for, or none.
     pub baseline: Option<Period>,
+    /// Whether each sign's reading is said in words, as
+    /// [`InterpretArea::rashifal`](crate::InterpretArea::rashifal) says it.
+    pub plans: bool,
 }
 
 impl RashifalBatch {
@@ -352,7 +359,8 @@ impl RashifalBatch {
     /// optionally
     /// `snapshot`, `events` and `spells`; and `baseline`, a
     /// [`Period`](teistro_rashifal::baseline::Period), when the baseline
-    /// engine's score is wanted.
+    /// engine's score is wanted; and `plans: true` for each sign's reading
+    /// in words.
     ///
     /// ```
     /// use teistro::{RashifalBatch, Snapshot};
@@ -366,6 +374,7 @@ impl RashifalBatch {
     /// )?;
     /// assert_eq!(asked.periods[0].snapshot(), Snapshot::Clock { hour: 6, minute: 0 });
     /// assert_eq!(asked.periods[0].events().len(), 2);
+    /// assert!(!asked.plans, "words only when asked for");
     /// let typo = RashifalBatch::from_json(
     ///     r#"{"periods": [{"first": {"year": 2026, "month": 10, "day": 4},
     ///         "latitudeDeg": 27.7, "longitudeDeg": 85.3, "utcOffsetSeconds": 20700, "spell": [4]}]}"#,
@@ -400,6 +409,7 @@ impl RashifalBatch {
         Ok(RashifalBatch {
             periods,
             baseline: asked.baseline,
+            plans: asked.plans,
         })
     }
 }
@@ -426,9 +436,9 @@ impl PeriodAsked {
     }
 }
 
-/// One period's answer as a binding reads it: the period, and the
-/// baseline engine's score of each sign, Aries to Pisces, when it was
-/// asked.
+/// One period's answer as a binding reads it: the period, the baseline
+/// engine's score of each sign, Aries to Pisces, when it was asked, and
+/// each sign's plan, Aries to Pisces, when that was.
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
@@ -438,4 +448,9 @@ pub struct RashifalAnswer {
     /// The baseline engine's score of each sign, `BASELINE` (C361).
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub baseline: Option<Vec<BaselineScore>>,
+    /// What each sign's reading says, Aries to Pisces: one plan a sign,
+    /// its message keys and slots, which `sdk.intl` renders in any locale
+    /// (`03-design/rashifal.md`, "Said in words").
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub plans: Option<Vec<crate::Plan>>,
 }
