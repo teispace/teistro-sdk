@@ -307,7 +307,7 @@ fn variant_keys(message: &str) -> BTreeSet<String> {
 
 #[test]
 fn every_member_an_answer_carries_is_named_and_nothing_else() {
-    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../i18n");
+    let root = Path::new(env!("CARGO_MANIFEST_DIR")).join("../intl/i18n");
     for locale in LOCALES {
         let path = root.join(locale).join("sdk.rite.json");
         let text = std::fs::read_to_string(&path).expect("the pack is read");
