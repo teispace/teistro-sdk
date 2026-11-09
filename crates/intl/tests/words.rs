@@ -359,14 +359,14 @@ fn every_refusal_is_typed_and_named() {
     let intl = intl();
     for (json, status, field) in [
         (
-            r#"{"number": 1, "locale": "sa-Deva"}"#,
+            r#"{"number": 1, "locale": "sa-Deva", "grouping": "INTERNATIONAL"}"#,
             Status::Unsupported,
-            "inWords.locale",
+            "inWords.grouping",
         ),
         (
-            r#"{"number": 1, "locale": "sa-Latn"}"#,
+            r#"{"number": 1, "locale": "sa-Latn", "style": "VERBOSE"}"#,
             Status::Unsupported,
-            "inWords.locale",
+            "inWords.style",
         ),
         (
             r#"{"number": 1, "locale": "xx-Latn"}"#,
@@ -442,8 +442,6 @@ fn every_refusal_is_typed_and_named() {
             "{json}: {refused}"
         );
     }
-    let sanskrit = asked(&intl, r#"{"number": 1, "locale": "sa-Deva"}"#).unwrap_err();
-    assert!(sanskrit.message.contains("unreviewed"), "{sanskrit}");
     // A negative amount cannot be written: its count is unsigned.
     assert!(
         InWordsRequest::from_json(r#"{"amount": {"currency": "NPR", "value": {"minor": -1}}}"#)

@@ -295,8 +295,9 @@ pub unsafe extern "C" fn ts_intl_has(
 /// value is `{"minor": units}` or `{"decimal": "1234.56"}`, never a float.
 /// A key it does not read, both or neither of `number` and `amount`, or
 /// a malformed decimal or code is `INVALID_ARG`, named under `inWords`;
-/// Sanskrit (not yet reviewed), a grouping or style the language's rules
-/// lack, or a currency the locale names no units for is `UNSUPPORTED`.
+/// a grouping or style the language's rules lack, or a currency the locale
+/// names no units for is `UNSUPPORTED`. Sanskrit is spelt by the SDK's
+/// drafted rules, and its answer's `isDraft` is true.
 ///
 /// ```
 /// # use teistro_ffi::context::{OptionTexts, TsContext};

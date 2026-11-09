@@ -3518,9 +3518,16 @@ test('a number and an amount in words, by CLDR, in every language it has', () =>
   assert.equal(ctx.intl.inWords({ number: 150000, grouping: 'INDIAN' }).text, 'one lakh fifty thousand');
   assert.equal(ctx.intl.inWords({ number: 1500000 }).text, 'one million five hundred thousand');
   const hindi = ctx.intl.inWords({ number: 10000000, locale: 'hi-Deva-IN' });
-  assert.deepEqual([hindi.text, hindi.rules, hindi.amount], ['एक करोड़', 'cldr-48/hi/spellout-cardinal', null]);
+  assert.deepEqual([hindi.text, hindi.rules, hindi.amount, hindi.isDraft], ['एक करोड़', 'cldr-48/hi/spellout-cardinal', null, false]);
+  // Sanskrit by the SDK's drafted rules, marked unreviewed (Kale §161's 1892).
+  const sanskrit = ctx.intl.inWords({ number: 1892, locale: 'sa-Deva' });
+  assert.deepEqual(
+    [sanskrit.text, sanskrit.rules, sanskrit.isDraft],
+    ['द्वानवत्यधिकाष्टशताधिकसहस्रम्', 'draft/sa/spellout-cardinal', true],
+  );
   for (const [request, field] of [
-    [{ number: 1, locale: 'sa-Deva' }, 'inWords.locale'],
+    [{ number: 1, locale: 'sa-Deva', grouping: 'INTERNATIONAL' }, 'inWords.grouping'],
+    [{ number: 1, locale: 'xx-Latn' }, 'inWords.locale'],
     [{ number: 1, locale: 'ne-Deva-NP', grouping: 'INTERNATIONAL' }, 'inWords.grouping'],
     [{ amount: { currency: 'USD', value: { minor: 1 } } }, 'inWords.amount.currency'],
     [{ amount: { currency: 'NPR', value: { decimal: '1.005' }, rounding: 'EXACT' } }, 'inWords.amount.value.decimal'],

@@ -597,9 +597,15 @@ class TheLocaleEngine(WithLibrary):
         assert words.amount is not None
         self.assertEqual((words.amount.major, words.amount.minor, words.amount.rounded), (1234, 56, False))
         lakh = self.ctx.intl.in_words({"number": 150000, "locale": "en-Latn", "grouping": "INDIAN"})
-        self.assertEqual((lakh.text, lakh.amount), ("one lakh fifty thousand", None))
+        self.assertEqual((lakh.text, lakh.amount, lakh.is_draft), ("one lakh fifty thousand", None, False))
+        # Sanskrit by the SDK's drafted rules, marked unreviewed (Kale §161's 1892).
+        sanskrit = self.ctx.intl.in_words({"number": 1892, "locale": "sa-Deva"})
+        self.assertEqual(
+            (sanskrit.text, sanskrit.rules, sanskrit.is_draft),
+            ("द्वानवत्यधिकाष्टशताधिकसहस्रम्", "draft/sa/spellout-cardinal", True),
+        )
         cases: List[Tuple[InWordsRequest, str]] = [
-            ({"number": 1, "locale": "sa-Deva"}, "inWords.locale"),
+            ({"number": 1, "locale": "sa-Deva", "grouping": "INTERNATIONAL"}, "inWords.grouping"),
             ({"number": 1, "locale": "ne-Deva-NP", "grouping": "INTERNATIONAL"}, "inWords.grouping"),
             ({"amount": {"currency": "USD", "value": {"minor": 1}}, "locale": "en-Latn"}, "inWords.amount.currency"),
         ]

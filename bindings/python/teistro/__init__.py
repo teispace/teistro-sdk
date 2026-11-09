@@ -9512,13 +9512,20 @@ class InWords:
     """The figures, grouped, in the digits asked for."""
 
     rules: str
-    """Where the words came from: `cldr-<release>/<file>/<rule set>`."""
+    """Where the words came from: `cldr-<release>/<file>/<rule set>`, or
+    `draft/<file>/<rule set>` (with `/iast` in a Latin-script locale) for
+    the SDK's own unreviewed rules."""
 
     locale: str
     """The locale the words and units are in."""
 
     amount: Optional[AmountInWords]
     """An amount's parts; None for a number."""
+
+    is_draft: bool
+    """Whether any of the text is unreviewed: words from the SDK's drafted
+    rules (Sanskrit), or a unit word from a namespace its locale marks
+    draft."""
 
     @staticmethod
     def _of(raw: Mapping[str, Any]) -> "InWords":
@@ -9540,6 +9547,7 @@ class InWords:
                 minor_unit=amount["minorUnit"],
                 rounded=amount["rounded"],
             ),
+            is_draft=raw["isDraft"],
         )
 
 

@@ -13235,6 +13235,7 @@ final class InWords extends _Value {
     required this.rules,
     required this.locale,
     required this.amount,
+    required this.isDraft,
   });
 
   /// The whole, in words.
@@ -13243,7 +13244,9 @@ final class InWords extends _Value {
   /// The figures, grouped, in the digits asked for.
   final String figure;
 
-  /// Where the words came from: `cldr-<release>/<file>/<rule set>`.
+  /// Where the words came from: `cldr-<release>/<file>/<rule set>`, or
+  /// `draft/<file>/<rule set>` (with `/iast` in a Latin-script locale) for
+  /// the SDK's own unreviewed rules.
   final String rules;
 
   /// The locale the words and units are in.
@@ -13251,6 +13254,11 @@ final class InWords extends _Value {
 
   /// An amount's parts; null for a number.
   final AmountInWords? amount;
+
+  /// Whether any of the text is unreviewed: words from the SDK's drafted
+  /// rules (Sanskrit), or a unit word from a namespace its locale marks
+  /// draft.
+  final bool isDraft;
 
   static InWords _of(Map<String, Object?> raw) {
     final amount = raw['amount'] as Map<String, Object?>?;
@@ -13272,11 +13280,12 @@ final class InWords extends _Value {
                 minorUnit: amount['minorUnit'] as String?,
                 rounded: amount['rounded']! as bool,
               ),
+      isDraft: raw['isDraft']! as bool,
     );
   }
 
   @override
-  List<Object?> get _fields => [text, figure, rules, locale, amount];
+  List<Object?> get _fields => [text, figure, rules, locale, amount, isDraft];
 }
 
 /// An amount's parts, for an application that composes them its own way.

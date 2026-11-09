@@ -66,6 +66,25 @@ calendar's Kali-day offset is now the shared `vakya::KALI_DAY_JD`, the same day.
   2023 at Chennai is 18 September under `tamil-vakya`, as Tamil Nadu declared, and 19 September by the
   modern sky (C1296). The planets and Rahu by vakya are not built (C1297). `docs/calendars/vakya.md`.
 
+**Sanskrit numbers and amounts in words, drafted (SR-49).**
+**Numbers:** none changed. Nepali, Hindi and English spell as before; Sanskrit, refused until now, is new.
+- `intl.inWords` spells Sanskrit in `sa-Deva`, and in `sa-Latn` transliterated into IAST, where it was
+  refused. CLDR 48 has no Sanskrit rules, so the SDK drafts them in RBNF's own syntax in the hand-kept
+  `crates/intl/drafts/rbnf/sa.txt`, from M. R. Kale's *A Higher Sanskrit Grammar* §§159–161 and
+  W. D. Whitney's *Sanskrit Grammar* §§475–486; `cargo xtask gen intl` writes them to
+  `crates/intl/src/words/drafted.rs` and `check-intl` holds them. A number is one compound by
+  *adhika*, as Kale's 1892 (द्वानवत्यधिकाष्टशताधिकसहस्रम्), in the Indian grouping's *śata*, *sahasra*,
+  *lakṣa* and *koṭi*, crores counted past 99 (Whitney §475 d), so every `i64` is spelt.
+- Sanskrit's currency words (`sdk.amount` in `sa-Deva`: रूप्यकम्, पैसा, च, मात्रम्) are marked `draft`, and
+  `sa-Latn` now derives `sdk.amount` from `sa-Deva`, still marked.
+- The answer carries `isDraft` in Rust and every binding (Node, Python, Dart, Java): true for the drafted
+  Sanskrit words and for a unit word from a namespace its locale marks draft. `rules` reads
+  `draft/sa/spellout-cardinal` (with `/iast` in `sa-Latn`).
+- A language whose words count only in the Indian grouping (Nepali, Hindi, Sanskrit) takes it when the
+  request leaves the grouping out, whatever its locale's figures use.
+- The forms chosen where the grammar allows two wait on the consumer's reviewer: C1310 to C1319
+  (`docs/03-design/amounts-in-words.md` §5).
+
 **Mithila's star planets are the text's four steps (C1227).**
 **Numbers:** none. No computation changed; `mithila-makaranda` keeps `SuryaPlanets::TEXT`.
 - The Makaranda's three steps for Mars to Saturn are the text's four folded: its manda tables print the
