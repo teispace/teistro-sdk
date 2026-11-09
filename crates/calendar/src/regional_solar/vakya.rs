@@ -30,9 +30,9 @@ use crate::gregorian::gregorian_from_fixed;
 /// latitude 10° 37′ N, the Kaveri delta's.
 pub const PALABHA: Palabha = Palabha::from_vyangulas(135);
 
-/// The Kali days from the *Vakyakarana*'s epoch to the SDK's fixed day 0:
-/// Kali day 1,843,824 is 13 April 1947.
-const KALI_DAY_OF_FIXED_ZERO: i64 = 1_132_960;
+/// The Kali days from the *Vakyakarana*'s epoch to the SDK's fixed day 0,
+/// whose noon is Julian day 1,721,425: Kali day 1,843,824 is 13 April 1947.
+const KALI_DAY_OF_FIXED_ZERO: i64 = 1_721_425 - vakya::KALI_DAY_JD;
 
 /// The frame the vakya calendar's dates name.
 pub const FRAME: &str = "Vakyakarana (Kuppanna Sastri and Sarma, 1962): \

@@ -19,9 +19,24 @@
 //!   the cara is the daytime ([`cara_vinadis`], [`day_length_vinadis`]),
 //!   with the precession of III.1 ([`precession_degrees`]).
 //!
+//! And the Moon, with what the almanacs print from it:
+//!
+//! - **the true Sun** (I.4b–5a): the days since the Mesha sankranti as
+//!   degrees, less a table of minutes for each ten days ([`true_sun`]);
+//! - **the true Moon** (I.9–14a): the Kali days cast out by three khandas
+//!   of 12,372, 3,031 and 248 days, their dhruvas, the 248 candravakyas
+//!   of Vararuci for the days left, and a correction for the khandas'
+//!   slip ([`CANDRA_VAKYAS`], [`true_moon`]);
+//! - **the manyadi**, the almanac makers' minutes for the Moon at each
+//!   sign's beginning (the introduction, p. xvi; [`almanac_moon`]);
+//! - **the tithi and the nakshatra**: the places at two sunrises joined
+//!   by proportion ([`tithi_ends`], [`nakshatra_ends`]), and the same sky
+//!   behind the ephemeris port ([`VakyaSky`]).
+//!
 //! The almanacs make none of the corrections from the Ujjain mean sunrise
-//! to a place's sunrise (the edition's introduction, p. xvi): a moment's
-//! fraction of its Kali day is read as the nadis after the day's sunrise.
+//! to a place's sunrise to the Sun (the edition's introduction, p. xvi):
+//! a moment's fraction of its Kali day is read as the nadis after the
+//! day's sunrise. The Moon's manyadi alone carries a place's.
 //!
 //! ```
 //! use teistro_siddhanta::vakya;
@@ -33,6 +48,17 @@
 //! assert_eq!(mesha.day(), 1_843_824);
 //! assert_eq!(mesha.since_sunrise(), (40, 18, 3));
 //! ```
+
+mod limbs;
+mod moon;
+mod sky;
+
+pub use limbs::{LimbEnd, elongation, nakshatra_ends, tithi_ends};
+pub use moon::{
+    ARC_PER_CIRCLE, ARC_PER_DEGREE, Arc, CANDRA_VAKYAS, KHANDAS, MANYADI_MINUTES, MOON_EPOCH_DAYS,
+    MOON_EPOCH_DHRUVA, SUN_DEDUCTIONS, almanac_moon, manyadi, true_moon, true_sun,
+};
+pub use sky::{CHENNAI, KALI_DAY_JD, VakyaSky};
 
 /// Parts of a day the arithmetic counts in: a quarter of a vinadi
 /// (1/14,400 of a day), the least unit that both the year rule's 576ths
@@ -199,6 +225,22 @@ pub const fn mesha_sankranti(kali_years: i64) -> KaliMoment {
     // 365 + 1/4 + 5/576 days a year, less 1237/576: (210,389 y - 1237)/576
     // days, and 14,400 / 576 = 25 parts to a 576th.
     KaliMoment::from_parts(25 * (210_389 * kali_years - 1_237))
+}
+
+/// The Kali years elapsed at a moment: the year whose Mesha sankranti
+/// ([`mesha_sankranti`]) is the last at or before it.
+///
+/// ```
+/// use teistro_siddhanta::vakya::{self, KaliMoment};
+///
+/// let mesha = vakya::mesha_sankranti(5048);
+/// assert_eq!(vakya::year_at(mesha), 5048);
+/// assert_eq!(vakya::year_at(KaliMoment::from_parts(mesha.parts() - 1)), 5047);
+/// ```
+#[must_use]
+pub const fn year_at(moment: KaliMoment) -> i64 {
+    // mesha(y) <= t exactly when 25 × 210,389 y <= t + 25 × 1237.
+    (moment.parts() + 25 * 1_237).div_euclid(25 * 210_389)
 }
 
 /// The Sun's entry into a sign, 0 for Mesha, in a Kali year (I.4): the

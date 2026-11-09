@@ -1056,9 +1056,10 @@ fn astronomy_coherence(
     let capabilities = provider.capabilities();
     let classical = capabilities.astronomy == Astronomy::Classical;
     match (settings.settings.frame.siddhanta, classical) {
-        (Siddhanta::Surya { .. }, false) => Err(Error::unsupported(format!(
-            "the settings name the Surya Siddhanta's astronomy and the ephemeris, {}, is a \
+        (Siddhanta::Surya { .. } | Siddhanta::Vakya, false) => Err(Error::unsupported(format!(
+            "the settings name a classical astronomy, {}, and the ephemeris, {}, is a \
              modern one, so the chart would be neither",
+            classical_name(settings.settings.frame.siddhanta),
             capabilities.identity.name
         ))
         .with_field("settings.frame.siddhanta")
@@ -1080,6 +1081,14 @@ fn astronomy_coherence(
             Ok(())
         }
         _ => Ok(()),
+    }
+}
+
+/// The classical astronomy the settings name, as a refusal says it.
+fn classical_name(siddhanta: Siddhanta) -> &'static str {
+    match siddhanta {
+        Siddhanta::Vakya => "the Vakyakarana's",
+        _ => "the Surya Siddhanta's",
     }
 }
 

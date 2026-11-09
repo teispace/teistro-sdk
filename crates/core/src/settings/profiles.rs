@@ -138,12 +138,13 @@ pub const DEFAULT_PROFILE: &str = "parashari-classical";
 ///     assert!(Profile::shipped(id).unwrap().resolve(&SettingsPatch::default()).is_ok(), "{id}");
 /// }
 /// ```
-pub const SHIPPED_PROFILES: [&str; 8] = [
+pub const SHIPPED_PROFILES: [&str; 9] = [
     "nepali-drik",
     "nepali-committee",
     "parashari-classical",
     "surya-siddhanta",
     "mithila-makaranda",
+    "tamil-vakya",
     "kp-default",
     "western-tropical-default",
     "conformance-baseline",
@@ -719,6 +720,39 @@ fn mithila_makaranda() -> Profile {
     }
 }
 
+/// Tamil Nadu's vakya almanacs as they are computed: the *Vakyakarana*'s
+/// Sun and Moon, the Moon with the almanac makers' manyadi, joined
+/// between sunrises by proportion (`docs/calendars/vakya.md`).
+///
+/// The Manonmani Vilasam suddha vakya almanac's printed tithi and
+/// nakshatra ends, 127 of them over 1956, 1998 and 2015, are the model's within
+/// 10 vinadis (`crates/siddhanta/tests/vakya.rs`), and its Vinayakar
+/// Chathurthi of 2023 is the 18 September Tamil Nadu declared, where the
+/// modern sky gives the 19th. The day is counted from the Sun's upper
+/// limb rising with standard refraction, the Tamil solar calendars'
+/// sunrise. Based on `surya-siddhanta`, whose zodiac, star planets and
+/// angles stand. The provider is declared, never chosen by the profile
+/// (ADR-0029): open the context over `SURYA_SIDDHANTA`.
+fn tamil_vakya() -> Profile {
+    let mut patch = SettingsPatch::default();
+    patch.frame.siddhanta = Some(Siddhanta::Vakya);
+    patch.day.sunrise = Some(Sunrise::UpperLimbRefraction.into());
+    let vakyakarana = |what: &'static str| Source::new("Vakyakarana", what);
+    Profile {
+        id: ProfileId::new("tamil-vakya"),
+        version: 1,
+        base: Some(ProfileId::new("surya-siddhanta")),
+        patch,
+        sources: vec![Citation::new(
+            "frame.siddhanta",
+            vakyakarana(
+                "Vakyakarana, ed. Kuppanna Sastri and Sarma (Madras, 1962): the Sun of I.4-5, the Moon of I.9-14 and the 248 candravakyas of Appendix II, the almanacs' manyadi from the introduction, p. xvi; measured against 127 printed ends of the Manonmani Vilasam suddha vakya panchangam, 1956, 1998 and 2015; docs/calendars/vakya.md",
+            ),
+        )],
+        mark: Mark::Traditional,
+    }
+}
+
 /// Every system's year: 365.25 days, but releasing's and the decennials'
 /// 360, the year Valens distributes in (*Anthologies* IV.9 and VI.5,
 /// `03-design/hellenistic-time-lords.md`, `hellenistic-decennials.md`), and
@@ -1004,6 +1038,7 @@ impl Profile {
             "parashari-classical" => Some(parashari_classical()),
             "surya-siddhanta" => Some(surya_siddhanta()),
             "mithila-makaranda" => Some(mithila_makaranda()),
+            "tamil-vakya" => Some(tamil_vakya()),
             "kp-default" => Some(kp_default()),
             "western-tropical-default" => Some(western_tropical_default()),
             "conformance-baseline" => Some(conformance_baseline()),

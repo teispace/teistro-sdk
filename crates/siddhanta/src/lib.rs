@@ -26,7 +26,9 @@
 //!
 //! Beside the Surya Siddhanta, [`vakya`] carries the Sun of the
 //! *Vakyakarana*, the Aryabhata-school manual the Tamil vakya almanacs
-//! compute from: its year rule, its sankranti vakyas and its day length.
+//! compute from: its year rule, its sankranti vakyas and its day length,
+//! its true Sun and Moon, the tithis and nakshatras the almanacs print
+//! from them, and that sky behind the ephemeris port.
 //!
 //! The classical path ([`Trig::Table`]) uses only the table and
 //! elementary arithmetic, so its results are bit-identical on every

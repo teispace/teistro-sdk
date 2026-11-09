@@ -374,16 +374,19 @@ pub struct Air {
     pub temperature_c: f64,
 }
 
-/// Which astronomy: modern, or the Surya Siddhanta under a bija.
+/// Which astronomy: modern, the Surya Siddhanta under a bija, or the
+/// *Vakyakarana*'s Sun and Moon as the Tamil vakya almanacs print them.
 ///
 /// The settings **ask** and the ephemeris chain **supplies** (ADR-0029):
-/// `SURYA` needs a context opened over `SURYA_SIDDHANTA`, and the model
-/// that entry opens is the text with this bija applied.
+/// `SURYA` and `VAKYA` need a context opened over `SURYA_SIDDHANTA`, and
+/// the model that entry opens is the text with this bija applied, or the
+/// vakya sky beside it.
 ///
 /// ```
 /// use teistro_core::settings::{Siddhanta, SuryaBija};
 ///
 /// assert_eq!(serde_json::to_value(Siddhanta::Drik).unwrap(), serde_json::json!({"kind": "DRIK"}));
+/// assert_eq!(serde_json::to_value(Siddhanta::Vakya).unwrap(), serde_json::json!({"kind": "VAKYA"}));
 /// // The text's sunrise and planets are the defaults, so a document may leave them out.
 /// let surya: Siddhanta = serde_json::from_str(r#"{"kind": "SURYA", "bija": {"kind": "NEPAL_COMMITTEE"}}"#).unwrap();
 /// assert_eq!(surya, Siddhanta::surya(SuryaBija::NepalCommittee));
@@ -407,6 +410,13 @@ pub enum Siddhanta {
         #[serde(default)]
         planets: SuryaPlanets,
     },
+    /// The *Vakyakarana*'s Sun and its Moon with the almanac makers'
+    /// manyadi, as the Tamil vakya almanacs reckon the tithi and the
+    /// nakshatra (`docs/calendars/vakya.md`): their places at each
+    /// sunrise at Chennai, joined between sunrises by proportion, the day
+    /// counted from a modern ephemeris's sunrise under `day.sunrise`. The
+    /// star planets, the angles and the zodiac are the Surya Siddhanta's.
+    Vakya,
 }
 
 /// Where the Surya Siddhanta's star planets and node come from (crux
@@ -1712,7 +1722,10 @@ fn coherence(s: &Settings) -> Vec<Diagnostic> {
             &["houses.polar_policy", "houses.placement_system"],
         ));
     }
-    if matches!(s.frame.siddhanta, Siddhanta::Surya { .. }) && s.frame.centre == Centre::Topocentric
+    if matches!(
+        s.frame.siddhanta,
+        Siddhanta::Surya { .. } | Siddhanta::Vakya
+    ) && s.frame.centre == Centre::Topocentric
     {
         out.push(Diagnostic::warning(
             "siddhanta-topocentric",
@@ -2177,7 +2190,7 @@ mod tests {
         .unwrap_or_else(|e| panic!("{e}"));
         let revolutions = |siddhanta: Siddhanta| match siddhanta {
             Siddhanta::Surya { bija, .. } => bija.revolutions(),
-            Siddhanta::Drik => panic!("not the text"),
+            Siddhanta::Drik | Siddhanta::Vakya => panic!("not the text"),
         };
         assert_eq!(revolutions(named), revolutions(counted));
         assert_eq!(revolutions(named), Bija::NEPAL_COMMITTEE);

@@ -675,3 +675,7 @@ required-features = ["builtin-ephemeris"]
 [[test]]
 name = "research"
 required-features = ["builtin-ephemeris", "research"]
+
+[[test]]
+name = "vakya"
+required-features = ["builtin-ephemeris"]
