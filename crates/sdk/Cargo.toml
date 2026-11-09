@@ -115,8 +115,14 @@ western = ["chart", "dep:teistro-western"]
 # from the types serde reads and writes (`03-design/mcp-server.md` §7,
 # P1): what the agent server's tools state. A family left out of the
 # build contributes nothing (`?`).
+# A caller's field mask, checked against the answer schemas `xtask` writes
+# into `src/records/answers.json`: the shapes alone, so a library answers a
+# mask without linking schemars and every type's schema (`fields` in
+# `teistro-ffi`).
+masks = []
 schema = [
     "dep:schemars",
+    "masks",
     "teistro-aspect/schema",
     "teistro-astro/schema",
     "teistro-calendar/schema",

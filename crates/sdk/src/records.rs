@@ -12,9 +12,11 @@ use teistro_core::error::Error;
 
 use crate::Context;
 
+#[cfg(feature = "masks")]
+mod answers;
 mod detail;
 
-#[cfg(feature = "schema")]
+#[cfg(feature = "masks")]
 pub use detail::Narrowed;
 pub use detail::{Brief, Detail, Fields};
 
@@ -431,20 +433,18 @@ impl Record {
     /// for a path that is not property names joined by `.` or that names
     /// a field the answer does not have; `UNSUPPORTED` for a record that
     /// states no answer schema.
-    #[cfg(feature = "schema")]
+    #[cfg(feature = "masks")]
     pub fn fields<I, S>(&self, paths: I) -> Result<Fields, Error>
     where
         I: IntoIterator<Item = S>,
         S: Into<String>,
     {
-        let mut generator = schemars::generate::SchemaSettings::draft2020_12().into_generator();
-        let schema = self
-            .answer_schema(&mut generator)
-            .map(|schema| (schema.to_value(), generator.take_definitions(true)));
+        let answers = answers::shapes();
         Fields::checked(
             self.name,
             paths.into_iter().map(Into::into).collect(),
-            schema,
+            answers.of(self.name),
+            answers.definitions(),
         )
     }
 
