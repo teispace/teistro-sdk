@@ -260,3 +260,66 @@ fn the_provider_stamps_the_makaranda_and_its_sunrise() {
         assert!(stamp.contains(part), "{stamp}");
     }
 }
+
+/// The print's clock (C1229 a): local apparent time, its sunrise 12 hours
+/// less half the printed day length, as the front matter (2022-23, PDF p.
+/// 45) says and every sunrise cell read agrees. The R-shaped glyph is a 1,
+/// so 14 July 2022's "५।R४" is 05:14, not 05:24.
+#[test]
+fn the_printed_clock_is_local_apparent_time() {
+    // Minutes after local apparent midnight of a sunrise whose daylight is
+    // `ghatis` long.
+    let sunrise = |ghatis: f64| 720.0 - ghatis * 12.0;
+    // 14 July 2022: day length 33|48, sunrise printed 05:14 (PDF p. 11).
+    let july = sunrise(33.0 + 48.0 / 60.0);
+    assert_eq!(july.floor(), 5.0 * 60.0 + 14.0);
+    // Its tithi ends at 41|21, printed "रा. ०९।४६": 21:46.
+    assert_eq!(
+        (july + (41.0 + 21.0 / 60.0) * 24.0).floor(),
+        21.0 * 60.0 + 46.0
+    );
+    // 31 October 2022: day length 27|39, sunrise printed 06:28. The front
+    // matter's worked example takes it to standard time: less the
+    // velantara (the equation of time, 16 minutes that day) and less the
+    // standard meridian's deshantara, (85.5° − 82.5°) at four minutes a
+    // degree, 06:00 IST.
+    let october = sunrise(27.0 + 39.0 / 60.0);
+    assert_eq!(october.floor(), 6.0 * 60.0 + 28.0);
+    let deshantara = (LONGITUDE_DEG - 82.5) * 4.0;
+    assert_eq!((october - 16.0 - deshantara).floor(), 6.0 * 60.0);
+}
+
+/// The ingresses the 2022-23 print gives in ghatis after its sunrise:
+/// civil date, the sidereal longitude the Sun reaches, and the printed
+/// ghati|pala.
+const INGRESSES: [(&str, f64, f64); 4] = [
+    // "कर्के रविः १४।४० मु." (PDF p. 11).
+    ("2022-07-17", 90.0, 14.0 + 40.0 / 60.0),
+    // Kanya (PDF p. 15).
+    ("2022-09-17", 150.0, 42.0 + 35.0 / 60.0),
+    // The Sun into Vishakha, 15 × 13°20′ (PDF p. 18).
+    ("2022-11-07", 200.0, 6.0 + 29.0 / 60.0),
+    // Mesha (PDF p. 29, read in the OCR).
+    ("2023-04-14", 0.0, 29.0 + 20.0 / 60.0),
+];
+
+#[test]
+fn the_printed_ingresses_are_the_makarandas_sun() {
+    let model = model(&Bija::MAKARANDA);
+    for (date, target, printed) in INGRESSES {
+        let (rise, _) = sunrise(&model, date);
+        let ours = when(
+            |jd| model.sun_longitude_deg(jd),
+            target,
+            rise + printed / 60.0,
+        );
+        let after = (ours - rise) * 60.0;
+        let minutes = (after - printed) * 24.0;
+        // The ingress falls on the civil day the print gives it.
+        assert!((0.0..60.0).contains(&after), "{date}: {after}");
+        // Measured, model less print: Karka +6.2, Kanya +14.0, Vishakha
+        // +11.9 and Mesha -10.2 minutes, about half an arcminute of the
+        // Sun at most. Not fitted (C1229 b).
+        assert!(minutes.abs() <= 15.0, "{date}: {minutes:+.2} minutes");
+    }
+}

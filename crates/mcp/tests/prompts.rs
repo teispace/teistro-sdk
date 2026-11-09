@@ -245,7 +245,8 @@ fn a_prompts_argument_completes_from_its_table() {
             "PITRI_PAKSHA",
             "GAUDIYA",
             "INDIA_CENTRAL",
-            "JAIN"
+            "JAIN",
+            "MITHILA"
         ])
     );
     let date = complete("birth-chart", "date", "1990");

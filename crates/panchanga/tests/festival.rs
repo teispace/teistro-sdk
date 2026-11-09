@@ -1304,7 +1304,14 @@ fn a_following_rule_that_cannot_be_judged_is_refused_by_its_field() {
         ),
         (
             FollowingRule {
-                days: FollowingRule::MOST_DAYS + 1,
+                days: 16,
+                ..terai.clone()
+            },
+            "days",
+        ),
+        (
+            FollowingRule {
+                days: -16,
                 ..terai.clone()
             },
             "days",

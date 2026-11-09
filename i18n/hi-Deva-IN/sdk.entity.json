@@ -3080,6 +3080,55 @@
     "ANANTA_CHATURDASHI": {
       "name": "अनंत चतुर्दशी",
       "prose": "अनंत चतुर्दशी"
+    },
+    "MAUNA_PANCHAMI": {
+      "name": "मौना पंचमी",
+      "prose": "मौना पंचमी",
+      "iast": "Maunā Pañcamī"
+    },
+    "MADHUSHRAVANI_ARAMBHA": {
+      "name": "मधुश्रावणी आरंभ",
+      "prose": "मधुश्रावणी आरंभ",
+      "iast": "Madhuśrāvaṇī Ārambha"
+    },
+    "MADHUSHRAVANI_SAMAPTI": {
+      "name": "मधुश्रावणी समापन",
+      "prose": "मधुश्रावणी समापन",
+      "iast": "Madhuśrāvaṇī Samāpti"
+    },
+    "CHAURCHAN": {
+      "name": "चौरचन",
+      "prose": "चौरचन",
+      "iast": "Cauṭhacandra"
+    },
+    "OTHGAN": {
+      "name": "ओठगन",
+      "prose": "ओठगन"
+    },
+    "SAMA_CHAKEVA_ARAMBHA": {
+      "name": "सामा-चकेवा आरंभ",
+      "prose": "सामा-चकेवा आरंभ"
+    },
+    "SAMA_CHAKEVA_VISARJANA": {
+      "name": "सामा-चकेवा विसर्जन",
+      "prose": "सामा-चकेवा विसर्जन"
+    },
+    "VIDYAPATI_SMRITI_DIVAS": {
+      "name": "विद्यापति स्मृति दिवस",
+      "prose": "विद्यापति स्मृति दिवस",
+      "iast": "Vidyāpati Smṛti Divasa"
+    },
+    "JUR_SITAL": {
+      "name": "जुड़ शीतल",
+      "prose": "जुड़ शीतल"
+    },
+    "JITIYA": {
+      "name": "जितिया",
+      "prose": "जितिया"
+    },
+    "CHHATH": {
+      "name": "छठ",
+      "prose": "छठ"
     }
   },
   "era": {

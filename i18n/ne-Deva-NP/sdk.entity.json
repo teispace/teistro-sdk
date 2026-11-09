@@ -4505,6 +4505,47 @@
       "name": "पर्व तिथि: अमावस्या",
       "prose": "पर्व तिथि: अमावस्या",
       "iast": "Parva Tithi"
+    },
+    "MAUNA_PANCHAMI": {
+      "name": "मौना पञ्चमी",
+      "prose": "मौना पञ्चमी",
+      "iast": "Maunā Pañcamī"
+    },
+    "MADHUSHRAVANI_ARAMBHA": {
+      "name": "मधुश्रावणी आरम्भ",
+      "prose": "मधुश्रावणी आरम्भ",
+      "iast": "Madhuśrāvaṇī Ārambha"
+    },
+    "MADHUSHRAVANI_SAMAPTI": {
+      "name": "मधुश्रावणी समाप्ति",
+      "prose": "मधुश्रावणी समाप्ति",
+      "iast": "Madhuśrāvaṇī Samāpti"
+    },
+    "CHAURCHAN": {
+      "name": "चौठचन्द्र",
+      "prose": "चौठचन्द्र",
+      "iast": "Cauṭhacandra"
+    },
+    "OTHGAN": {
+      "name": "ओठगन",
+      "prose": "ओठगन"
+    },
+    "SAMA_CHAKEVA_ARAMBHA": {
+      "name": "सामा-चकेवा आरम्भ",
+      "prose": "सामा-चकेवा आरम्भ"
+    },
+    "SAMA_CHAKEVA_VISARJANA": {
+      "name": "सामा-चकेवा विसर्जन",
+      "prose": "सामा-चकेवा विसर्जन"
+    },
+    "VIDYAPATI_SMRITI_DIVAS": {
+      "name": "विद्यापति स्मृति दिवस",
+      "prose": "विद्यापति स्मृति दिवस",
+      "iast": "Vidyāpati Smṛti Divasa"
+    },
+    "JUR_SITAL": {
+      "name": "जुडशीतल",
+      "prose": "जुडशीतल"
     }
   },
   "agni_vasa": {

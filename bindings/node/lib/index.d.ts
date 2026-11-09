@@ -6177,7 +6177,7 @@ export interface AnniversaryDayRule {
  * the panchanga prints, each rule fitted to the committee's editions and
  * citing its page (§10).
  */
-export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN';
+export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA';
 
 /**
  * An observance kept on a date of a calendar

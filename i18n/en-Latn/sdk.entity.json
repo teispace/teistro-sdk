@@ -4495,6 +4495,47 @@
     "JAIN_PARVA_AMAVASYA": {
       "name": "Parva tithi: the new moon",
       "prose": "Parva tithi: the new moon"
+    },
+    "MAUNA_PANCHAMI": {
+      "name": "Mauna Panchami",
+      "prose": "Mauna Panchami",
+      "iast": "Maunā Pañcamī"
+    },
+    "MADHUSHRAVANI_ARAMBHA": {
+      "name": "Madhushravani Begins",
+      "prose": "Madhushravani Begins",
+      "iast": "Madhuśrāvaṇī Ārambha"
+    },
+    "MADHUSHRAVANI_SAMAPTI": {
+      "name": "Madhushravani Ends",
+      "prose": "Madhushravani Ends",
+      "iast": "Madhuśrāvaṇī Samāpti"
+    },
+    "CHAURCHAN": {
+      "name": "Chaurchan",
+      "prose": "Chaurchan",
+      "iast": "Cauṭhacandra"
+    },
+    "OTHGAN": {
+      "name": "Othgan",
+      "prose": "Othgan"
+    },
+    "SAMA_CHAKEVA_ARAMBHA": {
+      "name": "Sama-Chakeva Begins",
+      "prose": "Sama-Chakeva Begins"
+    },
+    "SAMA_CHAKEVA_VISARJANA": {
+      "name": "Sama-Chakeva Immersion",
+      "prose": "Sama-Chakeva Immersion"
+    },
+    "VIDYAPATI_SMRITI_DIVAS": {
+      "name": "Vidyapati Smriti Divas",
+      "prose": "Vidyapati Smriti Divas",
+      "iast": "Vidyāpati Smṛti Divasa"
+    },
+    "JUR_SITAL": {
+      "name": "Jur Sital",
+      "prose": "Jur Sital"
     }
   },
   "agni_vasa": {
