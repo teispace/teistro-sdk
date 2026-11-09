@@ -3199,6 +3199,14 @@ public final class ParityRunner {
         Sankalpa recited = sankalpa.value();
         put("rites-sankalpa", String.join(" ", ymd(recited.date()), recited.vara().fullKey(),
                 recited.paksha().fullKey(), recited.tithi().fullKey(), recited.nakshatra().fullKey()));
+        // The same rite asked on Kathmandu's zone in 1985 and in 2026: each
+        // instant read at the offset the zone had then.
+        StringBuilder zonedOffsets = new StringBuilder();
+        for (double at : new double[] {2_446_217.770_833, 2_461_055.593_75}) {
+            SankalpaAnswer zoned = geo.almanac().sankalpa(at, kathmandu, Civil.ianaZone("Asia/Kathmandu"), null);
+            zonedOffsets.append(zonedOffsets.isEmpty() ? "" : " ").append(zoned.provenance().time().clock().offset());
+        }
+        put("requests-in-zone", zonedOffsets.toString());
 
         AshauchAnswer ashauch = geo.almanac().ashauch(AshauchRequest.builder()
                 .key("grandfather").relation(AshauchRelation.SAPINDA)

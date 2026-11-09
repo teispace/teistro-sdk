@@ -26,13 +26,17 @@ use teistro_core::envelope::{Envelope, Provenance, content_hash};
 use teistro_core::error::{Error, Status};
 use teistro_core::quantity::{JulianDay, Place, Tt, Ut1, Utc};
 use teistro_core::settings::Settings;
+use teistro_core::time::{LocalClock as _, UtcOffset};
 use teistro_port_ephemeris::{
     Astronomy, Body, Centre, EphemerisProvider, Frame, Zodiac as FrameZodiac,
 };
+use teistro_time::ZoneSpec;
 
+use crate::DayClock;
 use crate::area::ChartArea;
-use crate::asked::{instant, offset_of, place_of};
+use crate::asked::{instant, place_of};
 use crate::ephemeris::no_ephemeris;
+use crate::reading::ReadClock;
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -123,9 +127,15 @@ pub struct MundaneRequest {
     /// The place's altitude, metres.
     #[serde(default)]
     pub altitude_m: f64,
-    /// The local clock's offset from UTC, seconds, east positive.
-    #[serde(default)]
-    pub utc_offset_seconds: i32,
+    /// The local clock's offset from UTC, seconds, east positive; or
+    /// `zone`, not both; UTC when neither is given.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub utc_offset_seconds: Option<i32>,
+    /// The zone the moment is read on, at the offset it had then
+    /// (`03-design/time-and-timezone.md` §3.4); or `utcOffsetSeconds`, not
+    /// both.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub zone: Option<ZoneSpec>,
 }
 
 /// The ingress a lunation was found before.
@@ -154,7 +164,8 @@ pub struct MundaneMoment {
     pub longitude_deg: f64,
     /// The place's altitude, metres.
     pub altitude_m: f64,
-    /// The local clock's offset from UTC, seconds.
+    /// The local clock's offset from UTC at the moment, seconds: a zone's
+    /// offset then.
     pub utc_offset_seconds: i32,
     /// For a lunation, the ingress it precedes.
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -233,6 +244,40 @@ impl MundaneRequest {
         Ok(asked)
     }
 
+    /// The clock the chart is cast on: the offset stated, the zone, or UTC
+    /// when neither is given.
+    ///
+    /// ```
+    /// use teistro::{DayClock, MundaneRequest, UtcOffset, ZoneSpec};
+    ///
+    /// let utc = MundaneRequest::from_json(r#"{"kind": "MESHA_SANKRANTI", "year": 2026, "latitudeDeg": 27.7172, "longitudeDeg": 85.324}"#)?;
+    /// assert_eq!(utc.clock()?, DayClock::Offset(UtcOffset::UTC));
+    /// let zoned = MundaneRequest::from_json(r#"{"kind": "MESHA_SANKRANTI", "year": 2026, "latitudeDeg": 27.7172, "longitudeDeg": 85.324, "zone": {"kind": "IANA", "zone": "Asia/Kathmandu"}}"#)?;
+    /// assert_eq!(zoned.clock()?, DayClock::Zone(ZoneSpec::iana("Asia/Kathmandu")));
+    /// # Ok::<(), teistro::Error>(())
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on `zone` for both, on `utcOffsetSeconds` for an
+    /// offset out of range.
+    pub fn clock(&self) -> Result<DayClock, Error> {
+        match (self.utc_offset_seconds, &self.zone) {
+            (None, None) => Ok(DayClock::Offset(UtcOffset::UTC)),
+            (seconds, zone) => DayClock::asked(seconds, zone.clone()),
+        }
+    }
+
+    /// The request as its input hash seals it: an offset left out is the
+    /// UTC it stands for, as the hash has always read it.
+    fn sealed(&self) -> MundaneRequest {
+        let mut sealed = self.clone();
+        if sealed.zone.is_none() {
+            sealed.utc_offset_seconds.get_or_insert(0);
+        }
+        sealed
+    }
+
     /// Whether the request can be answered, before any sky is read.
     ///
     /// # Errors
@@ -241,10 +286,10 @@ impl MundaneRequest {
     /// another kind; `year` and `from` both or neither named for a kind
     /// that searches, or either named for an `EVENT`; `ingress` for a kind
     /// that is not a lunation, or naming a kind that is not an ingress; a
-    /// place or an offset out of range.
+    /// place or an offset out of range; `zone` beside an offset.
     pub fn check(&self) -> Result<(), Error> {
         place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?;
-        offset_of(self.utc_offset_seconds)?;
+        self.clock()?;
         let event = self.kind == MundaneKind::Event;
         match (&self.event, event) {
             (None, true) => {
@@ -411,14 +456,15 @@ impl ChartArea<'_> {
     ) -> Result<(MundaneMoment, ChartFoundation, Provenance), Error> {
         asked.check()?;
         let place = place_of(asked.latitude_deg, asked.longitude_deg, asked.altitude_m)?;
-        let offset = offset_of(asked.utc_offset_seconds)?;
+        let clock = asked.clock()?;
+        let read = ReadClock::of(&clock, self.context())?;
         let mut moment = MundaneMoment {
             kind: asked.kind,
             instant: JulianDay::<Utc>::literal(0.0),
             latitude_deg: asked.latitude_deg,
             longitude_deg: asked.longitude_deg,
             altitude_m: asked.altitude_m,
-            utc_offset_seconds: asked.utc_offset_seconds,
+            utc_offset_seconds: 0,
             ingress: None,
             solar_eclipse: None,
             lunar_eclipse: None,
@@ -434,11 +480,12 @@ impl ChartArea<'_> {
             self.search(asked, &place, &mut moment)?;
             ChartKind::Mundane
         };
+        moment.utc_offset_seconds = read.offset_at(moment.instant).seconds();
         let Envelope {
             value: chart,
             mut provenance,
-        } = self.found(moment.instant, &place, offset, chart_kind)?;
-        provenance.input_hash = content_hash(asked);
+        } = self.found(moment.instant, &place, clock, chart_kind)?;
+        provenance.input_hash = content_hash(&asked.sealed());
         Ok((moment, chart, provenance))
     }
 

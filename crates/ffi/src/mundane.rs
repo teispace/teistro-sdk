@@ -31,7 +31,7 @@ use crate::support::with_context;
 /// not carry is absent.
 ///
 /// `request_json` is `{"kind", "year", "from", "ingress", "event",
-/// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`:
+/// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone"}`:
 /// `kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC
 /// Julian day) where the search starts, the first ingress, eclipse or
 /// conjunction at or after it; `ingress` the ingress a lunation precedes,

@@ -910,6 +910,16 @@ int _chartOffset(int? utcOffsetSeconds, ZoneSpec? zone) {
   return 0;
 }
 
+/// A request's clock as the SDK reads it: `utcOffsetSeconds`, or `zone`
+/// read at each instant's offset then. Both cross when both are given, and
+/// the SDK refuses them naming `zone`; neither is refused naming
+/// `utcOffsetSeconds`.
+Map<String, Object?> _clockFields(int? utcOffsetSeconds, ZoneSpec? zone) =>
+    <String, Object?>{
+      if (utcOffsetSeconds != null) 'utcOffsetSeconds': utcOffsetSeconds,
+      if (zone != null) 'zone': jsonDecode(_zoneJson(zone)),
+    };
+
 /// A zone as the record the boundary reads beside a range.
 String _zoneJson(ZoneSpec zone) => jsonEncode(switch (zone.kind) {
   ZoneKind.iana => {'kind': 'IANA', 'zone': zone.zone},
@@ -1468,6 +1478,9 @@ final class ChartArea extends _Area {
   /// and the chart cast for it at [place], [ChartKind.mundane]
   /// ([ChartKind.event] for an event). Give [year] or [from]; a lunation
   /// precedes [ingress], Mesha's by default.
+  ///
+  /// The clock is [utcOffsetSeconds], 0 by default, or a [zone] read at
+  /// the moment, never both.
   MundaneChart mundane({
     required MundaneKind kind,
     required Observer place,
@@ -1475,7 +1488,8 @@ final class ChartArea extends _Area {
     double? from,
     MundaneKind? ingress,
     MundaneEvent? event,
-    int utcOffsetSeconds = 0,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
   }) {
     final envelope =
         jsonDecode(
@@ -1486,7 +1500,10 @@ final class ChartArea extends _Area {
                     'latitudeDeg': place.latitudeDeg,
                     'longitudeDeg': place.longitudeDeg,
                     'altitudeM': place.altitudeM,
-                    'utcOffsetSeconds': utcOffsetSeconds,
+                    ..._clockFields(
+                      zone == null ? utcOffsetSeconds ?? 0 : utcOffsetSeconds,
+                      zone,
+                    ),
                     if (year case final year?) 'year': year,
                     if (from case final from?) 'from': from,
                     if (ingress case final ingress?) 'ingress': ingress.key,
@@ -1960,11 +1977,15 @@ final class AlmanacArea extends _Area {
   /// );
   /// final second = days.value.first.reading?.yamas[1].activity; // sleeping
   /// ```
+  ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both; a zone is
+  /// read at each instant's offset then.
   PakshiDays pakshi({
     required CalendarDate from,
     CalendarDate? to,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     required PakshiNative native,
     PakshiRules rules = const PakshiRules(),
   }) {
@@ -1979,7 +2000,7 @@ final class AlmanacArea extends _Area {
                     'latitudeDeg': place.latitudeDeg,
                     'longitudeDeg': place.longitudeDeg,
                     'altitudeM': place.altitudeM,
-                    'utcOffsetSeconds': utcOffsetSeconds,
+                    ..._clockFields(utcOffsetSeconds, zone),
                     'native': native._record,
                     'rules': rules._wire,
                   }),
@@ -2011,10 +2032,14 @@ final class AlmanacArea extends _Area {
   /// );
   /// final name = found.value.year.samvatsara; // Samvatsara.siddharthi
   /// ```
+  ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both; a zone is
+  /// read at each instant's offset then.
   SankalpaAnswer sankalpa({
     required double at,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     AyanaReckoning ayana = AyanaReckoning.sidereal,
   }) {
     final asked = jsonEncode(<String, Object?>{
@@ -2022,7 +2047,7 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      ..._clockFields(utcOffsetSeconds, zone),
       'ayana': ayana.key,
     });
     return _sankalpa(
@@ -2051,10 +2076,14 @@ final class AlmanacArea extends _Area {
   /// );
   /// final days = found.value.days; // 10
   /// ```
+  ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both; a zone is
+  /// read at each instant's offset then.
   AshauchAnswer ashauch({
     required AshauchRequest request,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     Map<String, Object?>? table,
     AshauchTradition? tradition,
   }) {
@@ -2062,7 +2091,7 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      ..._clockFields(utcOffsetSeconds, zone),
       if (table != null) 'table': table,
       if (tradition != null) 'tradition': tradition.key,
       'request': request._wire,
@@ -2091,10 +2120,14 @@ final class AlmanacArea extends _Area {
   /// );
   /// final pure = found.value.observers.first.pureAt;
   /// ```
+  ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both; a zone is
+  /// read at each instant's offset then.
   HouseholdAnswer household({
     required Household household,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     AshauchTable? table,
     AshauchTradition? tradition,
   }) {
@@ -2102,7 +2135,7 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      ..._clockFields(utcOffsetSeconds, zone),
       if (table != null) 'table': table._wire,
       if (tradition != null) 'tradition': tradition.key,
       'household': household._wire,
@@ -2166,10 +2199,14 @@ final class AlmanacArea extends _Area {
   /// );
   /// final panchaka = found.value.death.panchaka;
   /// ```
+  ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both; a zone is
+  /// read at each instant's offset then.
   DeathTimeAnswer deathTime({
     required double at,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     double? crematedAt,
     DeathTimeTable? table,
   }) {
@@ -2177,7 +2214,7 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      ..._clockFields(utcOffsetSeconds, zone),
       'at': at,
       if (crematedAt != null) 'crematedAt': crematedAt,
       if (table != null) 'table': table._wire,
@@ -2247,16 +2284,20 @@ final class AlmanacArea extends _Area {
   /// );
   /// final first = found.value.rites.first.rite; // Rite.adyaMasika
   /// ```
+  ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both; a zone is
+  /// read at each instant's offset then.
   FirstYearAnswer firstYear({
     required FirstYearRequest request,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
   }) {
     final asked = jsonEncode(<String, Object?>{
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      ..._clockFields(utcOffsetSeconds, zone),
       'request': request._record,
     });
     return _firstYear(
@@ -4959,7 +5000,8 @@ final class RashifalRequest {
     required this.first,
     this.last,
     required this.place,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
     this.snapshot,
     this.events,
     this.spells,
@@ -4974,8 +5016,12 @@ final class RashifalRequest {
   /// Where the days are kept.
   final Observer place;
 
-  /// The civil clock's offset from UTC, in seconds.
-  final int utcOffsetSeconds;
+  /// The civil clock's offset from UTC, in seconds; or [zone], not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each day is read on, at its offset then; or
+  /// [utcOffsetSeconds], not both (`03-design/time-and-timezone.md` §3.4).
+  final ZoneSpec? zone;
 
   /// The instant read; sunrise on the middle day when null.
   final RashifalSnapshot? snapshot;
@@ -4994,7 +5040,7 @@ final class RashifalRequest {
     'latitudeDeg': place.latitudeDeg,
     'longitudeDeg': place.longitudeDeg,
     'altitudeM': place.altitudeM,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    ..._clockFields(utcOffsetSeconds, zone),
     if (snapshot case final snapshot?) 'snapshot': snapshot._record,
     if (events case final events?)
       'events': [for (final graha in events) graha.key],
@@ -14658,7 +14704,8 @@ final class Partner extends _Facade {
   const Partner({
     required this.instant,
     required this.place,
-    this.utcOffsetSeconds = 0,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The birth's instant, a Julian day in UTC.
@@ -14667,8 +14714,13 @@ final class Partner extends _Facade {
   /// Where it happened.
   final Observer place;
 
-  /// The partner's clock, seconds east of UTC; UTC by default.
-  final int utcOffsetSeconds;
+  /// The partner's clock, seconds east of UTC; UTC when neither it nor
+  /// [zone] is given.
+  final int? utcOffsetSeconds;
+
+  /// The zone the birth is read on, at its offset then; or
+  /// [utcOffsetSeconds], not both.
+  final ZoneSpec? zone;
 
   Map<String, Object?> get _record => <String, Object?>{
     'instant': instant,
@@ -14677,7 +14729,10 @@ final class Partner extends _Facade {
       'longitude': place.longitudeDeg,
       'altitude': place.altitudeM,
     },
-    'utcOffsetSeconds': utcOffsetSeconds,
+    ..._clockFields(
+      zone == null ? utcOffsetSeconds ?? 0 : utcOffsetSeconds,
+      zone,
+    ),
   };
 
   /// Its JSON, as the SDK reads it.
@@ -28309,21 +28364,28 @@ final class ResearchBirth extends _Value {
   const ResearchBirth({
     required this.instant,
     required this.place,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
     this.uncertaintyMinutes = 0,
+    this.zone,
   });
 
   final double instant;
   final Observer place;
-  final int utcOffsetSeconds;
+
+  /// The clock, seconds east of UTC; or [zone], not both.
+  final int? utcOffsetSeconds;
   final double uncertaintyMinutes;
+
+  /// The zone the birth is read on, at its offset then; or
+  /// [utcOffsetSeconds], not both.
+  final ZoneSpec? zone;
 
   Map<String, Object?> get _record => <String, Object?>{
     'instant': instant,
     'latitudeDeg': place.latitudeDeg,
     'longitudeDeg': place.longitudeDeg,
     'altitudeM': place.altitudeM,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    ..._clockFields(utcOffsetSeconds, zone),
     'uncertaintyMinutes': uncertaintyMinutes,
   };
 
@@ -28333,6 +28395,7 @@ final class ResearchBirth extends _Value {
     place,
     utcOffsetSeconds,
     uncertaintyMinutes,
+    zone,
   ];
 }
 

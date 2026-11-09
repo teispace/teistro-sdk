@@ -1274,8 +1274,13 @@ export interface RashifalRequest {
   readonly last?: { readonly year: number; readonly month: number; readonly day: number };
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The civil days' offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The civil days' offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each instant is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** Sunrise on the middle day by default (C358, C359). */
   readonly snapshot?: RashifalSnapshot;
   /** The grahas whose ingresses and stations are reported; every one but the Moon by default (C360). */
@@ -2619,8 +2624,10 @@ export interface SynastryRequest extends WesternAspectRequest {
   readonly partner: {
     readonly instant: number;
     readonly place: GeoPlace;
-    /** The partner's clock, seconds east of UTC; 0 when absent. */
+    /** The partner's clock, seconds east of UTC; 0 when absent and no `zone`. */
     readonly utcOffsetSeconds?: number;
+    /** The zone the partner's birth is read on, at its offset then; or `utcOffsetSeconds`, not both. */
+    readonly zone?: ZoneSpec;
   };
   /**
    * Whether each chart's lagna joins its planets; true by default. It
@@ -6972,8 +6979,13 @@ export interface PakshiRequest {
   readonly to?: CalendarDate;
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each instant is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** The bird itself, or the birth star and paksha that give it under `rule` (P1). */
   readonly native:
     | { readonly bird: PakshiBird }
@@ -7064,8 +7076,10 @@ export interface MundaneQuery {
   readonly event?: MundaneEvent;
   /** Where the chart is cast. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive; 0 by default. */
+  /** The local clock's offset from UTC in seconds, east positive; 0 by default, or `zone`, not both. */
   readonly utcOffsetSeconds?: number;
+  /** The zone the moment is read on, at its offset then; or `utcOffsetSeconds`, not both. */
+  readonly zone?: ZoneSpec;
 }
 
 /** A mundane moment and the chart cast for it. */
@@ -8606,8 +8620,13 @@ export interface SankalpaRequest {
   readonly at: number;
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each instant is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** How the ayana turns: at Makara and Karka sankranti, or at the solstices; `'SIDEREAL'` when left out. */
   readonly ayana?: 'SIDEREAL' | 'TROPICAL';
 }
@@ -8666,8 +8685,13 @@ export interface Sankalpa {
 export interface AshauchQuery {
   /** Where, in degrees and metres: the place whose sunrises count the days. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each instant is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** The tradition's table, every row data; the *Dharmasindhu*'s when left out. */
   readonly table?: AshauchTable;
   /** A table the SDK ships, by its name; never beside `table`. */
@@ -8761,8 +8785,13 @@ export type AshauchOverlapped =
 export interface HouseholdAsked {
   /** Where, in degrees and metres: the place whose sunrises count the days. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each instant is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** The tradition's table, every row data; the *Dharmasindhu*'s when left out. */
   readonly table?: AshauchTable;
   /** A table the SDK ships, by its name; never beside `table`. */
@@ -8825,8 +8854,13 @@ export interface AshauchRiteAnswer {
 export interface DeathTimeAsked {
   /** Where, in degrees and metres: the place whose day and sky are read. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each instant is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** The death, a UTC Julian day. */
   readonly at: number;
   /** The burning, a UTC Julian day; it falls as the death did when left out. */
@@ -8964,8 +8998,13 @@ export interface DeathTimeAnswer {
 export interface FirstYearQuery {
   /** Where, in degrees and metres: the place whose sunrises count the days. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each instant is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** The death and the readings. */
   readonly request: FirstYearRequest;
 }
@@ -9542,8 +9581,13 @@ export interface ResearchBirth {
   readonly instant: number;
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each instant is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /**
    * How far either side the recorded time may be wrong, 0 to 720 minutes; a
    * rule whose answer differs anywhere in that window, read every step of

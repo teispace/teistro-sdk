@@ -20,6 +20,7 @@ use crate::hit_request::{motion, station};
 use crate::rashifal_request::{
     RashifalAnswer, RashifalBatch, RashifalPeriod, RashifalRequest, Snapshot,
 };
+use crate::reading::ReadClock;
 
 /// How far apart the two places that tell a graha's motion are, in days:
 /// a minute, well inside the shortest stationary spell of any graha.
@@ -122,6 +123,8 @@ impl ChartArea<'_> {
                 .collect::<Result<Vec<_>, Error>>()
         })?;
         let gochar = GocharRules::of(self.context().settings());
+        // The provenance states the first period's clock at its instant.
+        let stated = prepared.first().map(|one| (one.clock.clone(), one.instant));
         let mut provenance = None;
         let mut periods = Vec::with_capacity(prepared.len());
         for (one, (places, events)) in prepared.into_iter().zip(searched) {
@@ -158,8 +161,11 @@ impl ChartArea<'_> {
                 readings,
             });
         }
-        let provenance =
+        let mut provenance =
             provenance.ok_or_else(|| Error::internal("a batch of periods was read in no group"))?;
+        if let Some((clock, at)) = stated {
+            provenance.time.state_clock(&clock, at);
+        }
         Ok(Envelope::sealing(periods, self.transit_stamped(provenance)))
     }
 
@@ -199,10 +205,13 @@ impl ChartArea<'_> {
         let (first, last, days) = request.days()?;
         let middle = first.plus_days(i64::from(reference_day(days)));
         let reference = calendar.date_of(middle)?;
-        let midnight = |day: FixedDay| local_midnight(day, request.offset());
+        // A zone is read at each day's own offset (`03-design/time-and-timezone.md` §3.4).
+        let clock = ReadClock::of(request.clock(), self.context())?;
+        let midnight = |day: FixedDay| local_midnight(day, clock.offset_on(day)?);
 
         let almanac = AlmanacArea::of_context(self.context())
-            .day(&reference, request.place(), request.offset())?
+            .on(&clock)
+            .day(&reference, request.place(), clock.offset_on(middle)?)?
             .value;
         let sunrise = almanac.day.sunrise;
         let instant = match request.snapshot() {
@@ -223,12 +232,14 @@ impl ChartArea<'_> {
                 .member,
             muhurta_yogas: u8::try_from(almanac.omens.yogas.len()).unwrap_or(u8::MAX),
         };
+        let window = (midnight(first)?, midnight(last.plus_days(1))?);
         Ok(Prepared {
             request,
+            clock,
             reference,
             instant,
             limbs,
-            window: (midnight(first)?, midnight(last.plus_days(1))?),
+            window,
         })
     }
 }
@@ -236,6 +247,8 @@ impl ChartArea<'_> {
 /// A period ready for its sky ([`ChartArea::prepared`]).
 struct Prepared<'r> {
     request: &'r RashifalRequest,
+    /// The clock its days are read on.
+    clock: ReadClock,
     reference: CalendarDate,
     instant: JulianDay<Utc>,
     limbs: Limbs,

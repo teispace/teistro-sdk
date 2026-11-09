@@ -6,12 +6,14 @@ use teistro_calendar::{CalendarDate, FixedDay};
 use teistro_core::catalogue::{Calendar, Graha, Rashi};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::time::UtcOffset;
 use teistro_gochar::Transit;
 use teistro_rashifal::RashiReading;
 use teistro_rashifal::baseline::{BaselineScore, Panchanga, Period};
 
-use crate::asked::{DayAsked, offset_of, place_of};
+use teistro_time::ZoneSpec;
+
+use crate::DayClock;
+use crate::asked::{DayAsked, place_of};
 
 /// The instant a period's sky is read at (C358).
 #[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
@@ -22,7 +24,7 @@ pub enum Snapshot {
     /// it.
     #[default]
     Sunrise,
-    /// A clock time on the reference day at the request's offset: the
+    /// A clock time on the reference day on the request's clock: the
     /// baseline engine's is 06:00.
     Clock {
         /// The hour, 0 to 23.
@@ -74,7 +76,7 @@ pub struct RashifalRequest {
     first: CalendarDate,
     last: CalendarDate,
     place: Place,
-    offset: UtcOffset,
+    clock: DayClock,
     snapshot: Snapshot,
     events: Vec<Graha>,
     spells: Vec<u8>,
@@ -82,20 +84,21 @@ pub struct RashifalRequest {
 
 impl RashifalRequest {
     /// The days from `first` to `last`, inclusive, at `place`, whose civil
-    /// days run at `offset`: read at sunrise on the middle day, with every
-    /// graha's events but the Moon's and C149's spells.
+    /// days run on `clock`, an offset or a zone each day is read on: read
+    /// at sunrise on the middle day, with every graha's events but the
+    /// Moon's and C149's spells.
     #[must_use]
     pub fn between(
         first: CalendarDate,
         last: CalendarDate,
         place: Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
     ) -> RashifalRequest {
         RashifalRequest {
             first,
             last,
             place,
-            offset,
+            clock: clock.into(),
             snapshot: Snapshot::Sunrise,
             events: EVENT_GRAHAS.to_vec(),
             spells: teistro_gochar::sade_sati::DEFAULT_SPELLS.to_vec(),
@@ -104,8 +107,8 @@ impl RashifalRequest {
 
     /// One day.
     #[must_use]
-    pub fn day(date: CalendarDate, place: Place, offset: UtcOffset) -> RashifalRequest {
-        RashifalRequest::between(date.clone(), date, place, offset)
+    pub fn day(date: CalendarDate, place: Place, clock: impl Into<DayClock>) -> RashifalRequest {
+        RashifalRequest::between(date.clone(), date, place, clock)
     }
 
     /// Read at another instant than sunrise.
@@ -147,10 +150,23 @@ impl RashifalRequest {
         &self.place
     }
 
-    /// The offset the civil days run at.
+    /// The clock the civil days run on: an offset stated, or a zone.
+    ///
+    /// ```
+    /// use teistro::CalendarDate;
+    /// use teistro::catalogue::Calendar;
+    /// use teistro::quantity::Place;
+    /// use teistro::{DayClock, RashifalRequest, ZoneSpec};
+    ///
+    /// let place = Place::try_from_degrees(27.7172, 85.324, 1400.0)?;
+    /// let day = CalendarDate::defined(Calendar::Gregorian, 2026, 10, 4);
+    /// let zoned = RashifalRequest::day(day, place, DayClock::Zone(ZoneSpec::iana("Asia/Kathmandu")));
+    /// assert_eq!(zoned.clock().zone(), Some(&ZoneSpec::iana("Asia/Kathmandu")));
+    /// # Ok::<(), Box<dyn std::error::Error>>(())
+    /// ```
     #[must_use]
-    pub const fn offset(&self) -> UtcOffset {
-        self.offset
+    pub const fn clock(&self) -> &DayClock {
+        &self.clock
     }
 
     /// The instant the sky is read at.
@@ -290,7 +306,14 @@ struct PeriodAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The offset from UTC the place's civil days run at, in seconds,
+    /// east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     #[serde(default)]
     snapshot: Option<Snapshot>,
     #[serde(default)]
@@ -325,7 +348,8 @@ impl RashifalBatch {
     /// The record a binding sends, as JSON: `periods`, each with `first`
     /// (and `last`, the first when left out) as `{"year", "month",
     /// "day"}` in `calendar` (Gregorian when left out), `latitudeDeg`,
-    /// `longitudeDeg`, `altitudeM` and `utcOffsetSeconds`, and optionally
+    /// `longitudeDeg`, `altitudeM` and `utcOffsetSeconds` or a `zone`, and
+    /// optionally
     /// `snapshot`, `events` and `spells`; and `baseline`, a
     /// [`Period`](teistro_rashifal::baseline::Period), when the baseline
     /// engine's score is wanted.
@@ -354,8 +378,8 @@ impl RashifalBatch {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read, no period at all, a place or offset out of range, and
-    /// whatever [`RashifalRequest::check`] refuses, each named under
+    /// read, no period at all, a place or offset out of range, both or
+    /// neither of `utcOffsetSeconds` and `zone`, and whatever [`RashifalRequest::check`] refuses, each named under
     /// `rashifal`.
     pub fn from_json(text: &str) -> Result<RashifalBatch, Error> {
         let asked: BatchAsked = teistro_core::strict::read(text, RASHIFAL)?;
@@ -387,7 +411,7 @@ impl PeriodAsked {
             self.first.in_calendar(calendar),
             self.last.unwrap_or(self.first).in_calendar(calendar),
             place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset_of(self.utc_offset_seconds)?,
+            DayClock::asked(self.utc_offset_seconds, self.zone)?,
         );
         if let Some(snapshot) = self.snapshot {
             request = request.at(snapshot);

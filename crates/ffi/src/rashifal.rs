@@ -31,7 +31,7 @@ use crate::support::with_context;
 ///
 /// `request_json` is `{"periods", "baseline"}`: each period `{"calendar",
 /// "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM",
-/// "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as
+/// "utcOffsetSeconds" or "zone", "snapshot", "events", "spells"}`, the days as
 /// `{"year", "month", "day"}` and everything but `first`, the place and
 /// the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
 /// and `YEARLY`. A key it does not read, a last day before the first, a

@@ -852,6 +852,20 @@ impl ReadClock {
             DayClock::Zone(zone) => ReadClock::Zone(zone.clock(context.zones())?),
         })
     }
+
+    /// The offset a civil day runs at: a stated offset's own, or the
+    /// zone's at the day's noon, away from any midnight change.
+    ///
+    /// # Errors
+    ///
+    /// A day whose noon is no Julian day.
+    #[cfg(feature = "rashifal")]
+    pub(crate) fn offset_on(&self, day: teistro_calendar::FixedDay) -> Result<UtcOffset, Error> {
+        match self {
+            ReadClock::Offset(offset) => Ok(*offset),
+            ReadClock::Zone(zone) => Ok(zone.offset_at(crate::area::almanac::noon_of(day)?)),
+        }
+    }
 }
 
 impl core::fmt::Debug for ReadClock {

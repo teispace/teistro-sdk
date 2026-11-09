@@ -9,6 +9,7 @@ use teistro_core::time::UtcOffset;
 use teistro_serial::Document;
 use teistro_western::{ChartPoints, Composite, HouseRequest, Placed, SynastryZodiac, composite};
 
+use crate::DayClock;
 use crate::area::ChartArea;
 use crate::partner::Partner;
 use crate::western_aspects::{angle_in, planets_in};
@@ -79,22 +80,23 @@ impl Partner {
     /// latitudes and of the two altitudes; the mean of the two longitudes
     /// the shorter way round; and the mean of the two clocks, to the
     /// second, which names only the civil day. Any chart request founds it,
-    /// so a Davison chart takes every reading a natal chart does.
+    /// so a Davison chart takes every reading a natal chart does. A birth
+    /// on a zone is fixed to its offset first ([`Partner::fixed`]).
     ///
     /// ```
     /// use teistro::{Partner, UtcOffset};
     /// use teistro::quantity::{JulianDay, Place, Utc};
     ///
-    /// let his = Partner {
-    ///     instant: JulianDay::<Utc>::literal(2_402_390.554_166_667),
-    ///     place: Place::try_from_degrees(51.5045, -0.1366, 0.0)?,
-    ///     utc_offset: UtcOffset::UTC,
-    /// };
-    /// let hers = Partner {
-    ///     instant: JulianDay::<Utc>::literal(2_403_113.499_305_556),
-    ///     place: Place::try_from_degrees(51.5058, -0.1878, 0.0)?,
-    ///     utc_offset: UtcOffset::UTC,
-    /// };
+    /// let his = Partner::at(
+    ///     JulianDay::<Utc>::literal(2_402_390.554_166_667),
+    ///     Place::try_from_degrees(51.5045, -0.1366, 0.0)?,
+    ///     UtcOffset::UTC,
+    /// );
+    /// let hers = Partner::at(
+    ///     JulianDay::<Utc>::literal(2_403_113.499_305_556),
+    ///     Place::try_from_degrees(51.5058, -0.1878, 0.0)?,
+    ///     UtcOffset::UTC,
+    /// );
     /// let between = his.davison(&hers)?;
     /// assert!((between.instant.get() - 2_402_752.026_736_111).abs() < 1e-9);
     /// assert!((between.place.longitude.get() + 0.1622).abs() < 1e-9);
@@ -103,11 +105,13 @@ impl Partner {
     ///
     /// # Errors
     ///
-    /// None for two valid births; the result is checked as a birth is.
+    /// None for two valid births on stated offsets; the result is checked
+    /// as a birth is. `INVALID_ARG` on `zone` for a birth on a zone, which
+    /// [`Partner::fixed`] fixes first.
     pub fn davison(&self, other: &Partner) -> Result<Partner, Error> {
         let (a, b) = (&self.place, &other.place);
-        let offset =
-            (i64::from(self.utc_offset.seconds()) + i64::from(other.utc_offset.seconds())) / 2;
+        let offset = i64::from(stated(self)?.seconds()) + i64::from(stated(other)?.seconds());
+        let offset = offset / 2;
         let longitude = near_midpoint_deg(a.longitude.get(), b.longitude.get());
         Ok(Partner {
             instant: JulianDay::<Utc>::try_new(f64::midpoint(
@@ -123,11 +127,25 @@ impl Partner {
                 },
                 f64::midpoint(a.altitude.get(), b.altitude.get()),
             )?,
-            utc_offset: UtcOffset::try_from_seconds(
+            utc_offset: Some(UtcOffset::try_from_seconds(
                 i32::try_from(offset)
                     .map_err(|_| Error::internal("a mean of two clocks overflowed"))?,
-            )?,
+            )?),
+            zone: None,
         })
+    }
+}
+
+/// The offset a birth states, UTC when it states none; a zone's is read
+/// through a context first.
+fn stated(birth: &Partner) -> Result<UtcOffset, Error> {
+    match birth.clock()? {
+        DayClock::Offset(offset) => Ok(offset),
+        DayClock::Zone(_) => Err(Error::invalid_arg(
+            "a Davison birth means two stated clocks, and this birth is on a zone",
+        )
+        .with_field("zone")
+        .with_hint("fix the birth to its offset with Partner::fixed")),
     }
 }
 

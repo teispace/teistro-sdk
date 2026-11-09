@@ -6,25 +6,26 @@ use serde::{Deserialize, Serialize};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::time::UtcOffset;
 use teistro_panchanga::sankalpa::AyanaReckoning;
+use teistro_time::ZoneSpec;
 
-use crate::AlmanacArea;
-use crate::asked::{instant, offset_of, place_of};
+use crate::asked::{instant, place_of};
+use crate::{AlmanacArea, DayClock};
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
 const SANKALPA: &str = "sankalpa";
 
 /// A sankalpa's instant and place, as a binding asks it.
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct SankalpaRequest {
     /// The instant of the rite.
     pub at: JulianDay<Utc>,
     /// The place.
     pub place: Place,
-    /// The offset its civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone read
+    /// at the instant.
+    pub clock: DayClock,
     /// How the ayana is reckoned.
     pub ayana: AyanaReckoning,
 }
@@ -45,8 +46,13 @@ pub(crate) struct SankalpaAsked {
     #[serde(default)]
     altitude_m: f64,
     /// The offset from UTC the place's civil days run at, in seconds,
-    /// east positive.
-    utc_offset_seconds: i32,
+    /// east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// How the ayana is reckoned: `SIDEREAL`, at Makara and Karka
     /// sankranti, when left out.
     #[serde(default)]
@@ -56,7 +62,7 @@ pub(crate) struct SankalpaAsked {
 impl SankalpaRequest {
     /// The record a binding sends, as JSON: `at`, a UTC Julian day;
     /// `latitudeDeg`, `longitudeDeg`, `altitudeM` (0 when left out) and
-    /// `utcOffsetSeconds`; and `ayana`, `SIDEREAL` or `TROPICAL`,
+    /// `utcOffsetSeconds` or a `zone`; and `ayana`, `SIDEREAL` or `TROPICAL`,
     /// `SIDEREAL` when left out.
     ///
     /// ```
@@ -79,8 +85,8 @@ impl SankalpaRequest {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read, or an instant, place or offset out of range, each named
-    /// under `sankalpa`.
+    /// read, an instant, place or offset out of range, or both or neither
+    /// of `utcOffsetSeconds` and `zone`, each named under `sankalpa`.
     pub fn from_json(text: &str) -> Result<SankalpaRequest, Error> {
         let asked: SankalpaAsked = teistro_core::strict::read(text, SANKALPA)?;
         asked.request().map_err(|why| why.under(SANKALPA))
@@ -92,7 +98,7 @@ impl SankalpaAsked {
         Ok(SankalpaRequest {
             at: instant(self.at, "at")?,
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             ayana: self.ayana,
         })
     }
@@ -105,13 +111,16 @@ impl AlmanacArea<'_> {
     ///
     /// # Errors
     ///
-    /// As [`AlmanacArea::sankalpa`].
+    /// As [`AlmanacArea::sankalpa`]; a zone the database does not have.
     pub fn sankalpa_request(
         self,
         asked: &SankalpaRequest,
     ) -> Result<Envelope<serde_json::Value>, Error> {
-        let Envelope { value, provenance } =
-            self.sankalpa(asked.at, &asked.place, asked.offset, asked.ayana)?;
+        let Envelope { value, provenance } = self.clocked(
+            &asked.clock,
+            || Ok(asked.at),
+            |almanac, offset| almanac.sankalpa(asked.at, &asked.place, offset, asked.ayana),
+        )?;
         Ok(Envelope::sealing(value.in_full()?, provenance))
     }
 }

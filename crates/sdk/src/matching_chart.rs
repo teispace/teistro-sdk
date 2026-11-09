@@ -23,7 +23,7 @@ const MATCHING: &str = "matching";
 /// A match against a partner's birth, as a binding asks it: the partner,
 /// the side the partner stands on, every chart of the batch on the other,
 /// and the rules of each system.
-#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(rename_all = "camelCase")]
 #[cfg_attr(feature = "schema", schemars(rename = "MatchingRequest"))]
@@ -72,8 +72,8 @@ impl Matched {
 
 impl PartnerMatching {
     /// The record a binding sends, as JSON: `partner`, `{"instant": jd,
-    /// "place": {"latitude", "longitude", "altitude"}, "utcOffsetSeconds"}`,
-    /// `partnerRole`, `"BRIDE"` or `"GROOM"`, `rules`, the [`KootaRules`]
+    /// "place": {"latitude", "longitude", "altitude"}, "utcOffsetSeconds"}`
+    /// or a `zone` in place of the offset, `partnerRole`, `"BRIDE"` or `"GROOM"`, `rules`, the [`KootaRules`]
     /// with every field optional, `porutham`, the [`PoruthamRules`]
     /// likewise, and `kuja`, the [`KujaRules`] likewise.
     ///
@@ -103,9 +103,15 @@ impl PartnerMatching {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read and a value out of its bounds, each named under `matching`.
+    /// read, a value out of its bounds and a partner's offset beside a zone
+    /// (`matching.partner.zone`), each named under `matching`.
     pub fn from_json(text: &str) -> Result<PartnerMatching, Error> {
-        teistro_core::strict::read(text, MATCHING)
+        let asked: PartnerMatching = teistro_core::strict::read(text, MATCHING)?;
+        asked
+            .partner
+            .clock()
+            .map_err(|why| why.under("partner").under(MATCHING))?;
+        Ok(asked)
     }
 }
 
@@ -235,13 +241,10 @@ impl ChartArea<'_> {
         charts: &[Document],
         asked: &PartnerMatching,
     ) -> Result<Vec<Matched>, Error> {
-        let Partner {
-            instant,
-            place,
-            utc_offset,
-        } = asked.partner;
+        let Partner { instant, place, .. } = asked.partner;
+        let clock = asked.partner.clock().map_err(|why| why.under("partner"))?;
         let partner = self
-            .reading(instant, &ChartRequest::at(place, utc_offset))
+            .reading(instant, &ChartRequest::on(place, clock))
             .map_err(|why| why.with_field("partner"))?
             .value;
         let theirs = natives(&partner, "partner")?;

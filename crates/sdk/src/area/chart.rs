@@ -64,6 +64,7 @@ use teistro_strength::{
 };
 use teistro_vargas::chart::{Axis, chart as varga_chart};
 
+use crate::DayClock;
 use crate::area::{Answers, Plans};
 use crate::area::{drik_sun, system_of};
 use crate::context::Context;
@@ -260,17 +261,21 @@ impl<'a> ChartArea<'a> {
     ///
     /// The envelope's provenance is one stamp over the batch: the
     /// settings, the provider and the steps are the same for every chart
-    /// in it, and the input hash is of the whole request.
+    /// in it, and the input hash is of the whole request. The clock is an
+    /// offset, or a zone each birth is read on at its own offset, every
+    /// chart then carrying its foundation's `clock`
+    /// (`03-design/time-and-timezone.md` §3.4).
     ///
     /// # Errors
     ///
     /// A context with no ephemeris, a civil calendar the SDK does not
-    /// ship, or the first instant the founder refuses.
+    /// ship, a zone the database does not have, or the first instant the
+    /// founder refuses.
     pub fn found_many(
         self,
         instants: &[JulianDay<Utc>],
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
         kind: ChartKind,
     ) -> Result<Envelope<Vec<ChartFoundation>>, Error> {
         // **Sealed here**, because this is where the value is published:
@@ -281,7 +286,8 @@ impl<'a> ChartArea<'a> {
         // canonical serialisation for a field many discard, and the
         // instruction-count gate put `panchanga` 8.8% over its base
         // (`serial-and-the-envelope.md` §8).
-        let founded = self.founded(instants, place, offset, kind)?;
+        let clock = ReadClock::of(&clock.into(), self.context)?;
+        let founded = self.founded(instants, place, &clock, kind)?;
         Ok(Envelope::sealing(founded.value, founded.provenance))
     }
 
@@ -292,13 +298,13 @@ impl<'a> ChartArea<'a> {
         self,
         instants: &[JulianDay<Utc>],
         place: &Place,
-        offset: UtcOffset,
+        clock: &ReadClock,
         kind: ChartKind,
     ) -> Result<Envelope<Vec<ChartFoundation>>, Error> {
-        self.founding(&offset, |founder| {
+        self.founding(clock, |founder| {
             let mut founded = founder.found(instants, place, kind)?;
             if let Some(first) = instants.first() {
-                founded.provenance.time.state_clock(&offset, *first);
+                founded.provenance.time.state_clock(clock, *first);
             }
             Ok(founded)
         })
@@ -399,10 +405,11 @@ impl<'a> ChartArea<'a> {
         self,
         instant: JulianDay<Utc>,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
         kind: ChartKind,
     ) -> Result<Envelope<ChartFoundation>, Error> {
-        let Envelope { value, provenance } = self.founded(&[instant], place, offset, kind)?;
+        let clock = ReadClock::of(&clock.into(), self.context)?;
+        let Envelope { value, provenance } = self.founded(&[instant], place, &clock, kind)?;
         let Some(one) = value.into_iter().next() else {
             return Err(Error::internal(
                 "a batch of one instant founded no chart, which cannot happen",

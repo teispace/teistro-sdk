@@ -68,11 +68,11 @@ impl PartnerSynastry {
     /// use teistro::{Partner, PartnerSynastry, SynastryRequest, UtcOffset};
     /// use teistro::quantity::{JulianDay, Place, Utc};
     ///
-    /// let hers = Partner {
-    ///     instant: JulianDay::<Utc>::literal(2_403_113.499_305_556),
-    ///     place: Place::try_from_degrees(51.5058, -0.1878, 0.0)?,
-    ///     utc_offset: UtcOffset::UTC,
-    /// };
+    /// let hers = Partner::at(
+    ///     JulianDay::<Utc>::literal(2_403_113.499_305_556),
+    ///     Place::try_from_degrees(51.5058, -0.1878, 0.0)?,
+    ///     UtcOffset::UTC,
+    /// );
     /// let asked = PartnerSynastry::new(hers, SynastryRequest::default());
     /// assert_eq!(asked.davisons(&[], &UtcOffset::UTC)?, None);
     /// assert_eq!(asked.with_davison(true).davisons(&[], &UtcOffset::UTC)?, Some(vec![]));
@@ -82,7 +82,8 @@ impl PartnerSynastry {
     /// # Errors
     ///
     /// What [`Partner::davison`] refuses, hinted with the chart's place in
-    /// the list.
+    /// the list: a partner on a zone is fixed to its offset first
+    /// ([`Partner::fixed`]).
     pub fn davisons(
         &self,
         charts: &[Document],
@@ -95,11 +96,11 @@ impl PartnerSynastry {
             .iter()
             .enumerate()
             .map(|(at, chart)| {
-                Partner {
-                    instant: chart.foundation.instant,
-                    place: chart.foundation.place,
-                    utc_offset: clock.offset_at(chart.foundation.instant),
-                }
+                Partner::at(
+                    chart.foundation.instant,
+                    chart.foundation.place,
+                    clock.offset_at(chart.foundation.instant),
+                )
                 .davison(&self.partner)
                 .map_err(|why| why.with_field("davison").with_hint(format!("chart {at}")))
             })
@@ -108,8 +109,8 @@ impl PartnerSynastry {
     }
 
     /// The record a binding sends, as JSON: `partner`, `{"instant": jd,
-    /// "place": {"latitude", "longitude", "altitude"}, "utcOffsetSeconds"}`,
-    /// and every field of [`SynastryRequest::from_json`] beside it.
+    /// "place": {"latitude", "longitude", "altitude"}, "utcOffsetSeconds"}`
+    /// or a `zone` in place of the offset, and every field of [`SynastryRequest::from_json`] beside it.
     ///
     /// ```
     /// use teistro::PartnerSynastry;
@@ -136,7 +137,8 @@ impl PartnerSynastry {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read, a value out of its bounds, and whatever
+    /// read, a value out of its bounds, a partner's offset beside a zone
+    /// (named `synastry.partner.zone`), and whatever
     /// [`SynastryRequest::check`] refuses, each named under `synastry`.
     pub fn from_json(text: &str) -> Result<PartnerSynastry, Error> {
         let given: Map<String, Value> = teistro_core::strict::read(text, SYNASTRY)?;
@@ -160,8 +162,10 @@ impl PartnerSynastry {
             .map(|davison| teistro_core::strict::read_value(&davison, &format!("{root}.davison")))
             .transpose()?
             .unwrap_or(false);
+        let partner: Partner = teistro_core::strict::read_value(&partner, &at)?;
+        partner.clock().map_err(|why| why.under(&at))?;
         Ok(PartnerSynastry {
-            partner: teistro_core::strict::read_value(&partner, &at)?,
+            partner,
             request: teistro_core::strict::read_value(&Value::Object(given), root)?,
             davison,
         })
@@ -345,12 +349,9 @@ impl ChartArea<'_> {
         asked: &PartnerSynastry,
     ) -> Result<Vec<PartnerReading>, Error> {
         asked.request.check()?;
-        let Partner {
-            instant,
-            place,
-            utc_offset,
-        } = asked.partner;
-        let request = ChartRequest::at(place, utc_offset);
+        let partner = &asked.partner;
+        let clock = partner.clock().map_err(|why| why.under("partner"))?;
+        let request = ChartRequest::on(partner.place, clock);
         let request = if charts
             .iter()
             .any(|chart| !chart.foundation.outer.is_empty())
@@ -360,7 +361,7 @@ impl ChartArea<'_> {
             request
         };
         let partner = self
-            .reading(instant, &request)
+            .reading(partner.instant, &request)
             .map_err(|why| why.with_field("partner"))?
             .value;
         let reflections = crate::antiscia::reflected(&partner.foundation);

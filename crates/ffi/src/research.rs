@@ -37,7 +37,8 @@ use crate::support::with_context;
 /// `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
 /// optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
 /// latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
-/// uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+/// uncertaintyMinutes}`, its instant a Julian day in UTC; `zone` in place
+/// of `utcOffsetSeconds` reads it at the zone's offset then. A seed is a
 /// number or a decimal string. A key it does not read, a field the study
 /// does not read or misses, or a value out of range is `INVALID_ARG`,
 /// named under `research`, as `research.test.seed`; what the study

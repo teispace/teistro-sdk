@@ -5,11 +5,11 @@ use serde::{Deserialize, Serialize};
 use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::quantity::Place;
-use teistro_core::time::UtcOffset;
 use teistro_panchanga::first_year::FirstYear;
+use teistro_time::ZoneSpec;
 
-use crate::AlmanacArea;
-use crate::asked::{offset_of, place_of};
+use crate::asked::place_of;
+use crate::{AlmanacArea, DayClock};
 
 /// The record's name where a binding sends it, which a refusal is named
 /// under.
@@ -20,8 +20,9 @@ const FIRST_YEAR: &str = "firstYear";
 pub struct FirstYearQuery {
     /// The place whose sunrises count the days.
     pub place: Place,
-    /// The offset its civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read on.
+    pub clock: DayClock,
     /// The death and the readings.
     pub request: FirstYear,
 }
@@ -40,15 +41,21 @@ pub(crate) struct FirstYearAsked {
     #[serde(default)]
     altitude_m: f64,
     /// The offset from UTC the place's civil days run at, in seconds,
-    /// east positive.
-    utc_offset_seconds: i32,
+    /// east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The death, a UTC Julian day, and the readings.
     request: FirstYear,
 }
 
 impl FirstYearQuery {
     /// The record a binding sends, as JSON: `latitudeDeg`, `longitudeDeg`,
-    /// `altitudeM` (0 when left out), `utcOffsetSeconds` and `request`,
+    /// `altitudeM` (0 when left out), `utcOffsetSeconds` or a `zone`, and
+    /// `request`,
     /// whose `at` is a UTC Julian day and whose readings are the
     /// *Dharmasindhu*'s when left out.
     ///
@@ -74,8 +81,9 @@ impl FirstYearQuery {
     /// # Errors
     ///
     /// `INVALID_ARG` on text that is not the record, a key it does not
-    /// read, a place or offset out of range, or a request
-    /// [`FirstYear::check`] refuses, each named under `firstYear`.
+    /// read, a place or offset out of range, both or neither of
+    /// `utcOffsetSeconds` and `zone`, or a request [`FirstYear::check`]
+    /// refuses, each named under `firstYear`.
     pub fn from_json(text: &str) -> Result<FirstYearQuery, Error> {
         let asked: FirstYearAsked = teistro_core::strict::read(text, FIRST_YEAR)?;
         asked.query().map_err(|why| why.under(FIRST_YEAR))
@@ -87,7 +95,7 @@ impl FirstYearAsked {
         self.request.check().map_err(|why| why.under("request"))?;
         Ok(FirstYearQuery {
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             request: self.request,
         })
     }
@@ -100,13 +108,16 @@ impl AlmanacArea<'_> {
     ///
     /// # Errors
     ///
-    /// As [`AlmanacArea::first_year`].
+    /// As [`AlmanacArea::first_year`]; a zone the database does not have.
     pub fn first_year_query(
         self,
         asked: &FirstYearQuery,
     ) -> Result<Envelope<serde_json::Value>, Error> {
-        let Envelope { value, provenance } =
-            self.first_year(&asked.request, &asked.place, asked.offset)?;
+        let Envelope { value, provenance } = self.clocked(
+            &asked.clock,
+            || Ok(asked.request.at),
+            |almanac, offset| almanac.first_year(&asked.request, &asked.place, offset),
+        )?;
         Ok(Envelope::sealing(value.in_full()?, provenance))
     }
 }
