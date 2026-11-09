@@ -1,6 +1,7 @@
 //! A locale derived from another by transliteration: `sa-Latn` from
 //! `sa-Deva`, so a Latin-script reader of Sanskrit terms gets every
-//! entity without anyone writing them twice
+//! entity, and the calendar's weekdays, months and dates, without anyone
+//! writing them twice
 //! (`02-architecture/03-localization-architecture.md`, "Axes that are not
 //! the language").
 //!
@@ -14,7 +15,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::{Map, Value as Json, json};
 
-use crate::source::{ENTITY_NAMESPACE, Entity, Entry, META_FILE, Tree};
+use crate::source::{ENTITY_NAMESPACE, Entity, Entry, LocaleSource, META_FILE, Namespace, Tree};
 use crate::translit::{Script, transliterate};
 
 /// The file a derived locale keeps its hand corrections in.
@@ -145,30 +146,22 @@ pub fn derive(
     let mut used: BTreeMap<&String, bool> = overrides.keys().map(|key| (key, false)).collect();
 
     // The metadata: the source's, in the target's script.
-    let mut meta: Json =
-        serde_json::to_value(&source.meta).map_err(|e| format!("{from}'s metadata: {e}"))?;
-    if let Some(object) = meta.as_object_mut() {
-        object.insert(String::from("locale"), json!(to));
-        object.insert(String::from("numberingSystem"), json!("latn"));
-        object.insert(String::from("grouping"), json!([3]));
-        // Derived for names alone: the source's drafts are not here.
-        object.remove("draft");
-        if let Some(Json::Object(patterns)) = object.get_mut("listPatterns") {
-            for pattern in patterns.values_mut() {
-                if let Json::Object(parts) = pattern {
-                    for part in parts.values_mut() {
-                        if let Json::String(text) = part {
-                            *part = json!(latin(text)?);
-                        }
-                    }
-                }
-            }
-        }
-    }
+    let meta = derived_meta(source, from, to, &latin)?;
     out.files.push((
         PathBuf::from(to).join(META_FILE),
         format!("{}\n", pretty(&meta)?),
     ));
+
+    // The messages: each source's Devanagari in the target's script and
+    // its syntax as it was.
+    for name in DERIVED_MESSAGES {
+        if let Some(namespace) = source.namespaces.get(name) {
+            out.files.push((
+                PathBuf::from(to).join(format!("{name}.json")),
+                format!("{}\n", pretty(&derived_messages(namespace, &latin)?)?),
+            ));
+        }
+    }
 
     // The entities: every form transliterated, `iast` kept because it is
     // already in the target's script, and an override last.
@@ -228,6 +221,142 @@ pub fn derive(
         format!("{}\n", pretty(&Json::Object(document))?),
     ));
     Ok(out)
+}
+
+/// The message namespaces a derived locale carries beside its entities,
+/// so a Latin-script reader of Sanskrit gets its weekdays, months and
+/// dates in Sanskrit rather than in the fallback's English.
+///
+/// ```
+/// use teistro_intl::derive::DERIVED_MESSAGES;
+///
+/// assert_eq!(DERIVED_MESSAGES, ["sdk.calendar"]);
+/// ```
+pub const DERIVED_MESSAGES: [&str; 1] = ["sdk.calendar"];
+
+/// The keys whose messages are names (a weekday, a month), which a Latin
+/// script capitalises; the rest are patterns and phrases, left as the
+/// transliteration writes them. Listed, because the source script has no
+/// case to read it from.
+const NAMED_MESSAGES: [&str; 5] = [
+    "weekdayName",
+    "weekdayShort",
+    "monthName",
+    "monthShort",
+    "nepalSambatMonth",
+];
+
+/// A namespace of messages, each transliterated, nested by its dotted
+/// keys as a source file writes it.
+fn derived_messages(
+    namespace: &Namespace,
+    latin: &dyn Fn(&str) -> Result<String, String>,
+) -> Result<Json, String> {
+    let mut document = Map::new();
+    for key in &namespace.order {
+        let Some(Entry::Message(text)) = namespace.entries.get(key) else {
+            continue;
+        };
+        let named = key
+            .rsplit('.')
+            .next()
+            .is_some_and(|last| NAMED_MESSAGES.contains(&last));
+        let mut path: Vec<&str> = key.split('.').collect();
+        let Some(leaf) = path.pop() else {
+            continue;
+        };
+        let mut at = &mut document;
+        for part in path {
+            let next = at
+                .entry(part.to_string())
+                .or_insert_with(|| Json::Object(Map::new()));
+            let Json::Object(next) = next else {
+                return Err(format!("`{key}` is both a message and a group"));
+            };
+            at = next;
+        }
+        at.insert(
+            leaf.to_string(),
+            json!(transliterated_message(text, named, latin)?),
+        );
+    }
+    Ok(Json::Object(document))
+}
+
+/// A `MessageFormat 2` source with each run of Devanagari transliterated
+/// and everything else, the syntax and its placeholders, kept. In a name's
+/// message a run that opens a variant, or the message, is capitalised.
+fn transliterated_message(
+    text: &str,
+    named: bool,
+    latin: &dyn Fn(&str) -> Result<String, String>,
+) -> Result<String, String> {
+    let devanagari = |c: &char| matches!(c, '\u{0900}'..='\u{097F}' | '\u{A8E0}'..='\u{A8FF}' | '\u{1CD0}'..='\u{1CFF}');
+    let mut out = String::with_capacity(text.len());
+    let mut chars = text.chars().peekable();
+    while let Some(&c) = chars.peek() {
+        if devanagari(&c) {
+            // A run opens the message or a variant when nothing but its
+            // `{` comes before it.
+            let opens = out.chars().next_back().is_none_or(|before| before == '{');
+            let mut run = String::new();
+            while let Some(c) = chars.next_if(devanagari) {
+                run.push(c);
+            }
+            let written = latin(&run)?;
+            out.push_str(&if named && opens {
+                capitalised(&written)
+            } else {
+                written
+            });
+        } else {
+            out.push(c);
+            chars.next();
+        }
+    }
+    Ok(out)
+}
+
+/// A derived locale's metadata: the source's, its tag, digits and
+/// grouping the target's, its list patterns transliterated, and only the
+/// drafts of the namespaces the derivation carries.
+fn derived_meta(
+    source: &LocaleSource,
+    from: &str,
+    to: &str,
+    latin: &dyn Fn(&str) -> Result<String, String>,
+) -> Result<Json, String> {
+    let mut meta: Json =
+        serde_json::to_value(&source.meta).map_err(|e| format!("{from}'s metadata: {e}"))?;
+    if let Some(object) = meta.as_object_mut() {
+        object.insert(String::from("locale"), json!(to));
+        object.insert(String::from("numberingSystem"), json!("latn"));
+        object.insert(String::from("grouping"), json!([3]));
+        // The source's drafts that the derivation carries stay drafts:
+        // transliterating a draft does not review it.
+        if let Some(Json::Array(drafts)) = object.get_mut("draft") {
+            drafts.retain(|name| {
+                name.as_str().is_some_and(|name| {
+                    DERIVED_MESSAGES.contains(&name) && source.namespaces.contains_key(name)
+                })
+            });
+            if drafts.is_empty() {
+                object.remove("draft");
+            }
+        }
+        if let Some(Json::Object(patterns)) = object.get_mut("listPatterns") {
+            for pattern in patterns.values_mut() {
+                if let Json::Object(parts) = pattern {
+                    for part in parts.values_mut() {
+                        if let Json::String(text) = part {
+                            *part = json!(latin(text)?);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Ok(meta)
 }
 
 /// The overrides beside a derived locale, or none when it has no file.

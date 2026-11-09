@@ -103,7 +103,10 @@
     "day": "{$n :number} दिन",
     "hour": ".input {$n :number} .match $n one {{{$n} घंटा}} * {{{$n} घंटे}}",
     "minute": "{$n :number} मिनट",
-    "second": "{$n :number} सेकंड"
+    "second": "{$n :number} सेकंड",
+    "daysHours": "{$seconds :duration unit=second into=|day,hour| round=hour list=unit}",
+    "hoursMinutes": "{$seconds :duration unit=second into=|hour,minute| round=minute list=unit}",
+    "hoursMinutesSeconds": "{$seconds :duration unit=second into=|hour,minute,second| round=second list=unit}"
   },
   "dayPeriod": {
     "am": "पूर्वाह्न",

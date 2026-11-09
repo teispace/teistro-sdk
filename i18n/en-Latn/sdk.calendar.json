@@ -103,7 +103,10 @@
   "day": ".input {$n :number} .match $n one {{{$n} day}} * {{{$n} days}}",
   "hour": ".input {$n :number} .match $n one {{{$n} hour}} * {{{$n} hours}}",
   "minute": ".input {$n :number} .match $n one {{{$n} minute}} * {{{$n} minutes}}",
-  "second": ".input {$n :number} .match $n one {{{$n} second}} * {{{$n} seconds}}"
+  "second": ".input {$n :number} .match $n one {{{$n} second}} * {{{$n} seconds}}",
+  "daysHours": "{$seconds :duration unit=second into=|day,hour| round=hour list=unit}",
+  "hoursMinutes": "{$seconds :duration unit=second into=|hour,minute| round=minute list=unit}",
+  "hoursMinutesSeconds": "{$seconds :duration unit=second into=|hour,minute,second| round=second list=unit}"
  },
  "dayPeriod": {
   "am": "am",

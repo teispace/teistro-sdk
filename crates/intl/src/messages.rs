@@ -2204,6 +2204,36 @@ pub mod sdk {
                 }
             }
 
+            /// The message `sdk.calendar.duration.daysHours`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::DaysHours;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = DaysHours { seconds: 2.5 };
+            /// assert_eq!(DaysHours::KEY, "sdk.calendar.duration.daysHours");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct DaysHours {
+                /// The `seconds` parameter.
+                pub seconds: f64,
+            }
+
+            impl crate::TypedMessage for DaysHours {
+                const KEY: &'static str = "sdk.calendar.duration.daysHours";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("seconds", crate::Value::Num(self.seconds)),
+                    ])
+                }
+            }
+
             /// The message `sdk.calendar.duration.hour`.
             ///
             /// ```
@@ -2230,6 +2260,66 @@ pub mod sdk {
                 fn params(&self) -> crate::Params {
                     crate::params([
                         ("n", crate::Value::Num(self.n)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.duration.hoursMinutes`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::HoursMinutes;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = HoursMinutes { seconds: 2.5 };
+            /// assert_eq!(HoursMinutes::KEY, "sdk.calendar.duration.hoursMinutes");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct HoursMinutes {
+                /// The `seconds` parameter.
+                pub seconds: f64,
+            }
+
+            impl crate::TypedMessage for HoursMinutes {
+                const KEY: &'static str = "sdk.calendar.duration.hoursMinutes";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("seconds", crate::Value::Num(self.seconds)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.duration.hoursMinutesSeconds`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::duration::HoursMinutesSeconds;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = HoursMinutesSeconds { seconds: 2.5 };
+            /// assert_eq!(HoursMinutesSeconds::KEY, "sdk.calendar.duration.hoursMinutesSeconds");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct HoursMinutesSeconds {
+                /// The `seconds` parameter.
+                pub seconds: f64,
+            }
+
+            impl crate::TypedMessage for HoursMinutesSeconds {
+                const KEY: &'static str = "sdk.calendar.duration.hoursMinutesSeconds";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("seconds", crate::Value::Num(self.seconds)),
                     ])
                 }
             }
