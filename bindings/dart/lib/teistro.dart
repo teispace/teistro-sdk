@@ -17488,6 +17488,7 @@ enum FestivalPack {
   /// pack it replaces that pack's rules of the same key
   /// (`03-design/makaranda.md` §8).
   mithila('MITHILA'),
+
   /// Maharashtra's public holidays: the rules of the days its General
   /// Administration Department lists, each day the central list also
   /// holds by [indiaCentral]'s rule, the state's fixed days, and the days
