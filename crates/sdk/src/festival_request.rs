@@ -62,6 +62,17 @@ pub enum FestivalPack {
     /// naming the sect and gaccha that keep it as a community, so a
     /// [`MetaFilter`] keeps one tradition's days.
     Jain,
+    /// The days Mithila's almanac keeps by its own rules
+    /// ([`FestivalRule::mithila`], [`FollowingRule::mithila`],
+    /// [`DatedRule::mithila`], `03-design/makaranda.md` §8), each citing
+    /// the Vishwavidyalaya Panchang's page: Jitiya on the dark 8th held at
+    /// pradosha, Othgan the day before, Mauna Panchami and Madhushravani,
+    /// Chaurchan, Chhath and Sama-Chakeva, Vidyapati's day and Jur Sital.
+    /// Named after another pack, it replaces that pack's rules of the same
+    /// key, so `["NEPAL_PANCHANGA", "MITHILA"]` keeps the print's Jitiya;
+    /// reckon it over the `mithila-makaranda` profile, whose sky is the
+    /// print's.
+    Mithila,
 }
 
 /// Puts each rule's sourced values on it, from `of` its key.
@@ -83,7 +94,7 @@ fn by_text(key: &str) -> FestivalMeta {
 
 impl FestivalPack {
     /// Every pack the SDK ships.
-    pub const ALL: [FestivalPack; 7] = [
+    pub const ALL: [FestivalPack; 8] = [
         FestivalPack::Dharmasindhu,
         FestivalPack::Nepal,
         FestivalPack::NepalPanchanga,
@@ -91,6 +102,7 @@ impl FestivalPack {
         FestivalPack::Gaudiya,
         FestivalPack::IndiaCentral,
         FestivalPack::Jain,
+        FestivalPack::Mithila,
     ];
 
     /// Its key, as a request names it.
@@ -104,6 +116,7 @@ impl FestivalPack {
             FestivalPack::Gaudiya => "GAUDIYA",
             FestivalPack::IndiaCentral => "INDIA_CENTRAL",
             FestivalPack::Jain => "JAIN",
+            FestivalPack::Mithila => "MITHILA",
         }
     }
 
@@ -122,6 +135,7 @@ impl FestivalPack {
             FestivalPack::Gaudiya => stamped(FestivalRule::hari_bhakti_vilasa(), by_text),
             FestivalPack::IndiaCentral => FestivalRule::india_central(),
             FestivalPack::Jain => FestivalRule::jain(),
+            FestivalPack::Mithila => FestivalRule::mithila(),
         }
     }
 
@@ -133,9 +147,10 @@ impl FestivalPack {
             FestivalPack::Nepal | FestivalPack::NepalPanchanga => {
                 stamped(EkadashiRule::dharmasindhu(), FestivalMeta::nepal)
             }
-            FestivalPack::PitriPaksha | FestivalPack::IndiaCentral | FestivalPack::Jain => {
-                Vec::new()
-            }
+            FestivalPack::PitriPaksha
+            | FestivalPack::IndiaCentral
+            | FestivalPack::Jain
+            | FestivalPack::Mithila => Vec::new(),
             FestivalPack::Gaudiya => stamped(vec![EkadashiRule::hari_bhakti_vilasa()], by_text),
         }
     }
@@ -153,6 +168,7 @@ impl FestivalPack {
                 stamped(DatedRule::nepal_panchanga(), FestivalMeta::nepal)
             }
             FestivalPack::IndiaCentral => DatedRule::india_central(),
+            FestivalPack::Mithila => DatedRule::mithila(),
         }
     }
 
@@ -165,7 +181,8 @@ impl FestivalPack {
             | FestivalPack::PitriPaksha
             | FestivalPack::Gaudiya
             | FestivalPack::IndiaCentral
-            | FestivalPack::Jain => Vec::new(),
+            | FestivalPack::Jain
+            | FestivalPack::Mithila => Vec::new(),
             FestivalPack::Nepal => SaitRule::nepal(),
             FestivalPack::NepalPanchanga => {
                 let mut saits = SaitRule::nepal();
@@ -190,6 +207,7 @@ impl FestivalPack {
             }
             FestivalPack::IndiaCentral => FollowingRule::india_central(),
             FestivalPack::Jain => FollowingRule::jain(),
+            FestivalPack::Mithila => FollowingRule::mithila(),
         }
     }
 
@@ -770,7 +788,7 @@ impl FestivalRequest {
     pub fn reach(&self) -> u8 {
         self.following
             .iter()
-            .map(|rule| rule.days)
+            .map(FollowingRule::reach)
             .chain(self.dated.iter().map(DatedRule::reach))
             .chain(self.ekadashis.iter().map(EkadashiRule::reach))
             .max()

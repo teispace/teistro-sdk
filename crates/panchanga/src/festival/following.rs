@@ -6,14 +6,17 @@
 //! after, on the pratipada" (*Dharmasindhu* p. 95), and Nepal's committee
 //! prints the Terai's Holi on the day after the hills' (VS 2082 and 2083),
 //! though the full moon still holds that day's sunrise. A rule of the tithi
-//! would miss it by a day; this one counts days.
+//! would miss it by a day; this one counts days. It counts back as well:
+//! the Mithila print keeps Othgan, the meal before dawn, on the day before
+//! the Jitiya fast (Vishwavidyalaya Panchang 2022-23, PDF p. 15).
 
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 
 use super::{Decided, FestivalDay, FestivalMeta, Observance, Observances, Unjudged};
 
-/// An observance on the day a number of civil days after another rule's.
+/// An observance on the day a number of civil days after another rule's,
+/// or before it.
 ///
 /// ```
 /// use teistro_panchanga::festival::FollowingRule;
@@ -32,9 +35,10 @@ pub struct FollowingRule {
     pub source: String,
     /// The key of the karmakala rule whose day it counts from.
     pub after: String,
-    /// How many civil days after that day, 0 for the same day, at most
-    /// [`FollowingRule::MOST_DAYS`].
-    pub days: u8,
+    /// How many civil days after that day, 0 for the same day and a
+    /// negative count for the days before it, at most
+    /// [`FollowingRule::MOST_DAYS`] either way.
+    pub days: i8,
     /// What the rule's festival is, as sourced (`03-design/festival-metadata.md`);
     /// a field no source gives stays unset, and a rule with none leaves it out.
     #[serde(default, skip_serializing_if = "FestivalMeta::is_empty")]
@@ -42,12 +46,30 @@ pub struct FollowingRule {
 }
 
 impl FollowingRule {
-    /// The most days a rule may count: a fortnight, past which the next
-    /// fortnight's tithis would name the day better than a count.
+    /// The most days a rule may count either way: a fortnight, past which
+    /// the next fortnight's tithis would name the day better than a count.
     pub const MOST_DAYS: u8 = 15;
 
+    /// How many days the rule counts, either way: the days a range is
+    /// widened by so that a counted day and the day it counts from both
+    /// fall in what is reckoned.
+    ///
+    /// ```
+    /// use teistro_panchanga::festival::FollowingRule;
+    ///
+    /// let mut terai = FollowingRule::nepal().remove(1);
+    /// assert_eq!(terai.reach(), 1);
+    /// terai.days = -2;
+    /// assert_eq!(terai.reach(), 2);
+    /// ```
+    #[must_use]
+    pub fn reach(&self) -> u8 {
+        self.days.unsigned_abs()
+    }
+
     /// Refuses a rule that could not be judged: an empty key or `after`,
-    /// a rule following itself, or a count past [`FollowingRule::MOST_DAYS`].
+    /// a rule following itself, or a count past [`FollowingRule::MOST_DAYS`]
+    /// either way.
     ///
     /// # Errors
     ///
@@ -63,9 +85,9 @@ impl FollowingRule {
             ))
             .with_field("after"));
         }
-        if self.days > FollowingRule::MOST_DAYS {
+        if self.reach() > FollowingRule::MOST_DAYS {
             return Err(Error::invalid_arg(format!(
-                "{}: a rule counts at most {} days from another's, not {}; past a fortnight, name the day by its tithi",
+                "{}: a rule counts at most {} days either way from another's, not {}; past a fortnight, name the day by its tithi",
                 self.key,
                 FollowingRule::MOST_DAYS,
                 self.days
@@ -124,7 +146,8 @@ pub fn following(
             let counted = days
                 .iter()
                 .position(|day| day.date == observance.day)
-                .and_then(|at| days.get(at + usize::from(rule.days)));
+                .and_then(|at| at.checked_add_signed(isize::from(rule.days)))
+                .and_then(|at| days.get(at));
             match counted {
                 Some(day) => answer.observances.push(Observance {
                     rule: rule.key.clone(),
@@ -142,8 +165,10 @@ pub fn following(
                     rule: rule.key.clone(),
                     tithi: observance.tithi,
                     why: format!(
-                        "the days do not reach {} days after {}'s day",
-                        rule.days, observance.rule
+                        "the days do not reach {} days {} {}'s day",
+                        rule.reach(),
+                        if rule.days < 0 { "before" } else { "after" },
+                        observance.rule
                     ),
                 }),
             }

@@ -39,6 +39,7 @@ mod india_central;
 mod jain;
 mod mahalaya;
 mod meta;
+mod mithila;
 mod nepal_panchanga;
 mod next;
 mod published;
@@ -2433,8 +2434,8 @@ pub enum Decided {
     After {
         /// The key of the rule counted from.
         rule: String,
-        /// How many days after its day.
-        days: u8,
+        /// How many days after its day, negative for the days before it.
+        days: i8,
     },
 }
 

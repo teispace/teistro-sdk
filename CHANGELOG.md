@@ -12,6 +12,28 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Mithila's festival days: the `MITHILA` pack.**
+**Numbers:** none for any existing pack. `MITHILA` is new; a `FollowingRule` may now count back.
+- The `MITHILA` pack (`FestivalPack::Mithila`, `FestivalRule::mithila`, `FollowingRule::mithila`,
+  `DatedRule::mithila`) keeps the days the Vishwavidyalaya Panchang (KSDSU Darbhanga) gives by its own
+  rules, each citing the print's page. Jitiya falls on the dark 8th held at pradosha: the earlier day
+  only when it alone holds it, the later on a tie or when neither does. Othgan is the day before.
+  Mauna Panchami begins Madhushravani, which ends on Shravana's bright 3rd. Chaurchan is the evening
+  4th. Sama-Chakeva runs from the day after Chhath to Kartika's full moon at pradosha. Vidyapati's
+  day is Kartika's bright 13th, and Jur Sital the day after the Sun enters Mesha. Over
+  `mithila-makaranda` at the print's place, all 14 dated days of its 2022-23 and 2009-10 editions agree
+  (`crates/sdk/tests/mithila.rs`). Named after another pack, it replaces that pack's rules of the same
+  key: the committee's udaya `JITIYA` still gives 18 September 2022, and `MITHILA` the print's 17th.
+- `FollowingRule.days` and `Decided::After.days` are signed (`i8`, at most 15 either way), and
+  `FollowingRule::reach` gives the count either way.
+- Names in en-Latn, ne-Deva-NP and hi-Deva-IN.
+- The print's clock is local apparent time, its sunrise 12 hours less half the day (C1229 a, closed).
+  Its four printed ingresses are now tests of the Makaranda's Sun and the bhujantara sunrise
+  (`crates/siddhanta/tests/mithila.rs`). Each falls on its printed day, the model within 15 minutes
+  (+6.2, +14.0, +11.9, −10.2).
+- Cruxes C1230 to C1232 record what waits: a night Mesha ingress's civil day, Madhushravani in an
+  adhika Shravana, and Kojagara at pradosha or nishitha (`03-design/makaranda.md` §8).
+
 **Brief and full answers (A2-2).**
 **Numbers:** none: an answer at `full`, the default everywhere but the agent server, is the same bytes.
 - Every record answers at a detail, `brief` or `full` (`teistro::records::Detail`, `Record::answer_at`,

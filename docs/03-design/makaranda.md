@@ -1,6 +1,7 @@
 # The Makaranda and the Mithila panchang
 
-Status: `built`, 2026-11-08, for SR-16 and A2-8 (a `siddhanta` profile
+Status: `built`, 2026-11-08, for SR-16 and A2-8; the festival pack
+(§8) 2026-11-09 (a `siddhanta` profile
 that reproduces the almanacs of Mithila). The research was written
 before any code (design page first). Section 3 is read from the sources.
 Section 4 is measured against 162 printed days over eight years, 1980 to
@@ -128,6 +129,16 @@ SDK (the text's sine table) to bounds set from them.
   midnight) is the text's Sun, without bija, at local mean midnight on
   85½° E: 0.7 to 4.5 minutes of its motion over six days read, July to
   September 2022 (C1229).
+- **The clock is local apparent time** (C1229 a). Every sunrise cell is
+  12 hours less half the printed day length, and the front matter (PDF
+  p. 45) calls the sunrise local: 31 October 2022's 06:28 less the
+  equation of time (16 minutes) and the standard meridian's 12 minutes is
+  06:00 IST. The print's R-shaped numeral is a 1, so 14 July's sunrise is
+  05:14, not 05:24. The four ingresses printed in ghatis after sunrise
+  fall on their printed days in the profile's sky, the model later by
+  6.2 (Karka, 17 July 2022), 14.0 (Kanya, 17 September) and 11.9
+  minutes (the Sun into Vishakha, 7 November) and earlier by 10.2
+  (Mesha, 14 April 2023); `mithila.rs` holds them within 15.
 - **Tithi and nakshatra ends are the Makaranda's Moon, give or take
   minutes.** Each end is solved in the sky named, from the sunrise
   named, at the stated place. Model minus print, minutes:
@@ -230,7 +241,14 @@ pub const MAKARANDA: Bija = Bija {
   tables. The next step is the printer's own method. The almanac's front
   matter names the Makaranda and Narayana Daivajna but not the steps.
 - C1227: the star planets' steps.
-- C1229: the midnight Sun's drift against the bhujāntara.
+- C1229 (b): the midnight Sun's drift against the bhujāntara, now 2″ to
+  11″ of longitude, the size of table rounding. Part (a), the clock, is
+  closed: §4.
+- C1227's next step is a planet mode with the Makaranda's three steps,
+  the manda equation in Balachandra Rao, Rupa and Venugopal's form
+  (*Gaṇita Bhāratī* 35, 2013, §§3–5), held against the print's five
+  planets of 14 July 2022 and then a fortnight within 1′. Not built.
+- C1230 to C1232: the festival rules' open points (§8).
 - More years: the scans cover 35. Every new fortnight goes into the
   data file, and the test's counts move with it.
 
@@ -240,3 +258,55 @@ pub const MAKARANDA: Bija = Bija {
 year, its source page named. Columns: civil date, the row's tithi (1 to
 30, krishna 1 = 16), its end in ghati|pala from sunrise (60|00 = no end
 that day), the row's nakshatra (1 = Ashvini), its end, the day length.
+
+## 8. Mithila's festival rules: the `MITHILA` pack
+
+The print states some rules of its own, and the SDK's Nepal rules give
+other days for them. The `MITHILA` pack (`FestivalRule::mithila`,
+`FollowingRule::mithila`, `DatedRule::mithila`,
+`crates/panchanga/src/festival/mithila.rs`) holds each rule as the print
+gives it. Every rule cites its PDF page in the Internet Archive item
+(pp. 11–18 are also the almanac's own page numbers). Each is decided by
+one of the fits the Nepal rules use (`festival-rules.md` §10), so the
+same decision reads the same way. The research behind the table is in
+the lane notes of 2026-11-09.
+
+A request may name the pack alone or after another. A rule replaces the
+one with its key, so `["NEPAL_PANCHANGA", "MITHILA"]` keeps the
+committee's days with the print's Jitiya and Chhath in their place.
+Reckon it over `mithila-makaranda`, whose sky is the print's ("a printed
+day follows the printer's sky").
+
+| Key | Rule | Print (PDF page) | Acceptance |
+| --- | --- | --- | --- |
+| `JITIYA` | amanta Bhadrapada krishna 8 at pradosha: the earlier day only when it alone holds it, the later on a tie or when neither does (`EarlierAlone(Pradosha)`) | 2022-23 p. 15, the boxed rule, after the *Vishnudharmottara* and *Bhavishya* | 17 Sep 2022, 11 Sep 2009 |
+| `OTHGAN` | the day before Jitiya (a count of −1) | 2022-23 p. 15 | 16 Sep 2022, 10 Sep 2009 |
+| `MAUNA_PANCHAMI` | amanta Ashadha krishna 5, udaya | 2022-23 p. 11 | 18 Jul 2022 |
+| `MADHUSHRAVANI_ARAMBHA` | Mauna Panchami's day | 2022-23 p. 11 | 18 Jul 2022 |
+| `MADHUSHRAVANI_SAMAPTI` | Shravana shukla 3, udaya; an adhika Shravana is C1231 | 2022-23 p. 12 | 31 Jul 2022 |
+| `CHAURCHAN` | Bhadrapada shukla 4 in the evening: the earlier day when its pradosha holds the 4th, alone or with the later (`EarlierHolds(Pradosha)`); the tie is read from the two days, not printed | 2022-23 p. 14; 2009-10 p. 14 | 30 Aug 2022, 23 Aug 2009 |
+| `CHHATH` | Kartika shukla 6, udaya, as the committee's | 2022-23 p. 18 | 30 Oct 2022 |
+| `SAMA_CHAKEVA_ARAMBHA` | the day after Chhath, its dawn arghya | 2022-23 p. 18 | 31 Oct 2022 |
+| `SAMA_CHAKEVA_VISARJANA` | Kartika purnima at pradosha, the earlier only when it alone holds it | 2022-23 p. 18 | 7 Nov 2022 |
+| `VIDYAPATI_SMRITI_DIVAS` | Kartika shukla 13, udaya (one printed day) | 2022-23 p. 18 | 6 Nov 2022 |
+| `JUR_SITAL` | the civil day after the Sun enters Mesha, the first of Ashvini (`SunEnters { ASHWINI, 1 }`); a night entry is C1230 | 2022-23 p. 29 (OCR) | 15 Apr 2023 |
+
+`crates/sdk/tests/mithila.rs` holds the acceptance days, at the print's
+place on India's clock. It also checks that the committee's udaya
+`JITIYA` still gives 18 September 2022 and that naming `MITHILA` after it
+gives the 17th. A counted day may now fall before the day it counts
+from: `FollowingRule.days` is signed, at most 15 either way, which
+Othgan needs.
+
+Not built:
+
+- **Kojagara** keeps the *Dharmasindhu* rule (nishitha). The print
+  agrees in 2022, and 2024 is the test of pradosha against nishitha
+  (C1232).
+- **Hartalika**: the print takes the 3rd joined with the 4th. That is not
+  yet held against the committee's rule.
+- **Karma-Dharma ekadashi** and **Kushi amavasya** are the existing
+  ekadashi and `KUSHE_AUNSI` under Mithila names.
+- **Jitiya's parana**: the print breaks the fast the next day after the
+  8th ends. It is not yet a parana reading.
+- **Satuain**, the Mesha ingress day itself.

@@ -17479,7 +17479,15 @@ enum FestivalPack {
   /// reckonings, Das Lakshana, the Ayambil Olis and the monthly parva
   /// tithis, each naming the sect and gaccha that keep it
   /// (`03-design/vira-nirvana-and-jain-festivals.md`).
-  jain('JAIN');
+  jain('JAIN'),
+
+  /// The days Mithila's almanac keeps by its own rules, each citing the
+  /// Vishwavidyalaya Panchang's page: Jitiya on the dark 8th held at
+  /// pradosha, Othgan, Mauna Panchami and Madhushravani, Chaurchan, Chhath
+  /// and Sama-Chakeva, Vidyapati's day and Jur Sital. Named after another
+  /// pack it replaces that pack's rules of the same key
+  /// (`03-design/makaranda.md` §8).
+  mithila('MITHILA');
 
   const FestivalPack(this.key);
 

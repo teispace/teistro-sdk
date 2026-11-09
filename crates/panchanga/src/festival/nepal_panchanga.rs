@@ -54,9 +54,10 @@ const SAYAHNA: Window = Window::Part {
     part: DayPart::Sayahna,
 };
 
-/// How a fitted rule decides between its two days.
+/// How a fitted rule decides between its two days; the Mithila pack
+/// reads its print's rules through the same fits.
 #[derive(Clone, Copy)]
-enum Fit {
+pub(super) enum Fit {
     /// The day whose sunrise holds the tithi, the earlier when both do.
     Udaya,
     /// The later of two sunrises, the earlier day when none holds it.
@@ -80,7 +81,7 @@ enum Fit {
 impl Fit {
     /// The window, the guards and the fallback the fit stands for, and
     /// the words its source ends with.
-    fn decide(self) -> (Window, Vec<Guard>, Choice, String) {
+    pub(super) fn decide(self) -> (Window, Vec<Guard>, Choice, String) {
         use Choice::{Earlier, Later};
         match self {
             Fit::Udaya => (
@@ -145,6 +146,32 @@ impl Fit {
                     ),
                 )
             }
+        }
+    }
+
+    /// The amanta rule on `occurs` in `month` (every month when `None`)
+    /// that this fit decides, its source `cited` and then the fit's words.
+    pub(super) fn rule(
+        self,
+        key: &str,
+        month: Option<Masa>,
+        occurs: Occurs,
+        in_adhika: InAdhika,
+        cited: &str,
+    ) -> FestivalRule {
+        let (at, decide, otherwise, reading) = self.decide();
+        FestivalRule {
+            key: key.to_owned(),
+            source: format!("{cited}: {reading}"),
+            month,
+            convention: Convention::Amanta,
+            occurs,
+            in_adhika,
+            at,
+            decide,
+            otherwise,
+            parana: Vec::new(),
+            meta: super::FestivalMeta::default(),
         }
     }
 
@@ -1890,20 +1917,13 @@ impl FestivalRule {
             .chain(monthly)
             .chain(by_text)
             .map(|(key, month, occurs, fit, printed, how)| {
-                let (at, decide, otherwise, reading) = fit.decide();
-                FestivalRule {
-                    key: key.to_owned(),
-                    source: format!("{printed}; {how}: {reading}"),
+                fit.rule(
+                    key,
                     month,
-                    convention: Convention::Amanta,
                     occurs,
-                    in_adhika: in_adhika(key, month),
-                    at,
-                    decide,
-                    otherwise,
-                    parana: Vec::new(),
-                    meta: super::FestivalMeta::default(),
-                }
+                    in_adhika(key, month),
+                    &format!("{printed}; {how}"),
+                )
             })
             .collect()
     }

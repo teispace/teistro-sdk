@@ -10329,7 +10329,7 @@ class MuhurtaAnswer:
     instant among the applied conventions, and the hash of the value."""
 
 
-FestivalPack = Literal["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA", "GAUDIYA", "INDIA_CENTRAL", "JAIN"]
+FestivalPack = Literal["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA", "GAUDIYA", "INDIA_CENTRAL", "JAIN", "MITHILA"]
 """A pack of festival rules the SDK ships: *Dharmasindhu*'s; those as
 Nepal's national panchanga keeps them (a rite of the daylight on the day
 whose sunrise holds its tithi) with the days it counts from them
