@@ -20,9 +20,10 @@ import java.util.Objects;
  * @param limitDays 1 to 3660; 400 when left out. Null leaves the SDK's default.
  * @param longitudeDeg The {@code longitudeDeg} field.
  * @param rule A rule's key in `festivals`; or `kind`, not both. Null leaves the SDK's default.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record NextRequest(double after, Double altitudeM, com.teispace.teistro.Calendar calendar, FestivalRequest festivals, NextKind kind, double latitudeDeg, Long limitDays, double longitudeDeg, String rule, int utcOffsetSeconds) implements RequestJson {
+public record NextRequest(double after, Double altitudeM, com.teispace.teistro.Calendar calendar, FestivalRequest festivals, NextKind kind, double latitudeDeg, Long limitDays, double longitudeDeg, String rule, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -43,10 +44,9 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
      * @param after The instant, a UTC Julian day.
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
-    public NextRequest(double after, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
-        this(after, null, null, null, null, latitudeDeg, null, longitudeDeg, null, utcOffsetSeconds);
+    public NextRequest(double after, double latitudeDeg, double longitudeDeg) {
+        this(after, null, null, null, null, latitudeDeg, null, longitudeDeg, null, null, null);
     }
 
     /**
@@ -71,6 +71,7 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
         private Double longitudeDeg;
         private String rule;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -176,11 +177,22 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -191,7 +203,7 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
          * @throws NullPointerException naming a required field left unset
          */
         public NextRequest build() {
-            return new NextRequest(Objects.requireNonNull(after, "`NextRequest.after` is required"), altitudeM, calendar, festivals, kind, Objects.requireNonNull(latitudeDeg, "`NextRequest.latitudeDeg` is required"), limitDays, Objects.requireNonNull(longitudeDeg, "`NextRequest.longitudeDeg` is required"), rule, Objects.requireNonNull(utcOffsetSeconds, "`NextRequest.utcOffsetSeconds` is required"));
+            return new NextRequest(Objects.requireNonNull(after, "`NextRequest.after` is required"), altitudeM, calendar, festivals, kind, Objects.requireNonNull(latitudeDeg, "`NextRequest.latitudeDeg` is required"), limitDays, Objects.requireNonNull(longitudeDeg, "`NextRequest.longitudeDeg` is required"), rule, utcOffsetSeconds, zone);
         }
     }
 
@@ -214,7 +226,8 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
             Read.orNull(json.get("limitDays"), present -> Read.integer(present, "NextRequest.limitDays")),
             Read.number(Read.required(json.get("longitudeDeg"), "NextRequest.longitudeDeg"), "NextRequest.longitudeDeg"),
             Read.orNull(json.get("rule"), present -> Read.text(present, "NextRequest.rule")),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "NextRequest.utcOffsetSeconds"), "NextRequest.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "NextRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -241,7 +254,12 @@ public record NextRequest(double after, Double altitudeM, com.teispace.teistro.C
         if (rule != null) {
             json.put("rule", rule);
         }
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

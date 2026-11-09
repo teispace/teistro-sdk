@@ -7,7 +7,7 @@ The times a muhurta rule set leaves over a range at a place, ranked best first (
 
 `value` is `{windows, closed, daysJudged, daysCut, windowsBlackedOut, ranking, unjudged}`, each window `{rank, at, open, holds, fails, barredBy, score}`: `rank` 1 the best, `at` its UTC Julian days, `holds` the clauses that count for the time over it and `fails` those against it, each with the span it held over, and `barredBy` the rules' bars that close it.
 
-`request_json` is `{"calendar", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "muhurta"}`: the days as `{"year", "month", "day"}` in `calendar` (Gregorian when left out), `last` the first when left out, and `muhurta` the rule set as `almanac.days` reads it (`rules` an activity's name or rules spelt out, `native`, `ranking`, `daysWithWindows`, `most`, `asta`, `direction`). A key it does not read, a place or offset out of range or a rule set its reader refuses is `INVALID_ARG`, named under `elect`; a context without an ephemeris is `CAPABILITY`, as is a build without the muhurta family.
+`request_json` is `{"calendar", "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "muhurta"}`: the days as `{"year", "month", "day"}` in `calendar` (Gregorian when left out), `last` the first when left out, and `muhurta` the rule set as `almanac.days` reads it (`rules` an activity's name or rules spelt out, `native`, `ranking`, `daysWithWindows`, `most`, `asta`, `direction`). A key it does not read, a place or offset out of range or a rule set its reader refuses is `INVALID_ARG`, named under `elect`; a context without an ephemeris is `CAPABILITY`, as is a build without the muhurta family.
 
 <Tabs items={['C']}>
 <Tab value="C">

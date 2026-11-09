@@ -26,8 +26,8 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 343 722 | 100 654 | 29.3% |
-| the value | 325 151 | 97 458 | 30.0% |
+| the envelope | 343 721 | 100 653 | 29.3% |
+| the value | 325 150 | 97 457 | 30.0% |
 | the provenance | 18 025 | 2390 | 13.3% |
 
 18 of the 52 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
@@ -92,7 +92,7 @@ value.
 | `naming.syllables` | 1323 | 1323 | 100.0% | the whole value |
 | `numerology.profile` | 889 | 889 | 100.0% | the whole value |
 | `research.study` | 1410 | 851 | 60.4% | the whole value |
-| `time.civil` | 264 | 264 | 100.0% | the whole value |
+| `time.civil` | 263 | 263 | 100.0% | the whole value |
 | `time.convert` | 104 | 104 | 100.0% | the whole value |
 | `time.resolve` | 210 | 210 | 100.0% | the whole value |
 | `verify.claims` | 905 | 412 | 45.5% | the whole value |

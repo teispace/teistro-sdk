@@ -29,6 +29,14 @@
       "pair": "{0} vā {1}",
       "middle": "{0}, {1}",
       "end": "{0} vā {1}"
+    },
+    "unit": {
+      "pair": "{0} tathā {1}",
+      "middle": "{0}, {1}",
+      "end": "{0}, tathā {1}"
     }
-  }
+  },
+  "draft": [
+    "sdk.calendar"
+  ]
 }

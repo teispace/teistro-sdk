@@ -16,9 +16,10 @@ import java.util.Objects;
  * @param latitudeDeg The birthplace's latitude, degrees north positive.
  * @param longitudeDeg The birthplace's longitude, degrees east positive.
  * @param name What the answer calls them; each name once.
- * @param utcOffsetSeconds The offset from UTC of the birth's clock, in seconds, east positive.
+ * @param utcOffsetSeconds The offset from UTC of the birth's clock, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record PeoplePerson(Double altitudeM, double instant, double latitudeDeg, double longitudeDeg, String name, int utcOffsetSeconds) implements RequestJson {
+public record PeoplePerson(Double altitudeM, double instant, double latitudeDeg, double longitudeDeg, String name, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -38,10 +39,9 @@ public record PeoplePerson(Double altitudeM, double instant, double latitudeDeg,
      * @param latitudeDeg The birthplace's latitude, degrees north positive.
      * @param longitudeDeg The birthplace's longitude, degrees east positive.
      * @param name What the answer calls them; each name once.
-     * @param utcOffsetSeconds The offset from UTC of the birth's clock, in seconds, east positive.
      */
-    public PeoplePerson(double instant, double latitudeDeg, double longitudeDeg, String name, int utcOffsetSeconds) {
-        this(null, instant, latitudeDeg, longitudeDeg, name, utcOffsetSeconds);
+    public PeoplePerson(double instant, double latitudeDeg, double longitudeDeg, String name) {
+        this(null, instant, latitudeDeg, longitudeDeg, name, null, null);
     }
 
     /**
@@ -62,6 +62,7 @@ public record PeoplePerson(Double altitudeM, double instant, double latitudeDeg,
         private Double longitudeDeg;
         private String name;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -123,11 +124,22 @@ public record PeoplePerson(Double altitudeM, double instant, double latitudeDeg,
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The offset from UTC of the birth's clock, in seconds, east positive.
+         * @param utcOffsetSeconds The offset from UTC of the birth's clock, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -138,7 +150,7 @@ public record PeoplePerson(Double altitudeM, double instant, double latitudeDeg,
          * @throws NullPointerException naming a required field left unset
          */
         public PeoplePerson build() {
-            return new PeoplePerson(altitudeM, Objects.requireNonNull(instant, "`PeoplePerson.instant` is required"), Objects.requireNonNull(latitudeDeg, "`PeoplePerson.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`PeoplePerson.longitudeDeg` is required"), name, Objects.requireNonNull(utcOffsetSeconds, "`PeoplePerson.utcOffsetSeconds` is required"));
+            return new PeoplePerson(altitudeM, Objects.requireNonNull(instant, "`PeoplePerson.instant` is required"), Objects.requireNonNull(latitudeDeg, "`PeoplePerson.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`PeoplePerson.longitudeDeg` is required"), name, utcOffsetSeconds, zone);
         }
     }
 
@@ -157,7 +169,8 @@ public record PeoplePerson(Double altitudeM, double instant, double latitudeDeg,
             Read.number(Read.required(json.get("latitudeDeg"), "PeoplePerson.latitudeDeg"), "PeoplePerson.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "PeoplePerson.longitudeDeg"), "PeoplePerson.longitudeDeg"),
             Read.text(Read.required(json.get("name"), "PeoplePerson.name"), "PeoplePerson.name"),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "PeoplePerson.utcOffsetSeconds"), "PeoplePerson.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "PeoplePerson.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -170,7 +183,12 @@ public record PeoplePerson(Double altitudeM, double instant, double latitudeDeg,
         json.put("latitudeDeg", latitudeDeg);
         json.put("longitudeDeg", longitudeDeg);
         json.put("name", name);
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

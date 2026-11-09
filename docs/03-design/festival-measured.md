@@ -1183,3 +1183,381 @@ The days the notifications print are not reckoned: the four set by the moon, eac
 | 2026 | MAWLID | 8/26 | subject to sighting |
 | 2026 | PARSI_NEW_YEAR | 8/15 | printed |
 
+## 11. West Bengal's public holidays against the notifications
+
+`INDIA_WEST_BENGAL` at Kolkata on India's clock, against each year's Lists I to III of the Finance (Audit) Department's notifications and the note naming the occasions that fall on a Sunday. 302 of 311 rows agree.
+
+- 2019: Nos. 6812-F(P2) to 6815-F(P2), 5 November 2018: rank 1, a copy giving their numbers and tables
+- 2020: Nos. 5962-F(P2) to 5965-F(P2), 1 November 2019: rank 1, a copy giving their numbers and tables
+- 2021: No. 3100-F(P2), 5 November 2020, Muharram moved by No. 2365-F: rank 1, a copy giving its number and tables
+- 2022: No. 3640-F(P2), 26 November 2021: rank 1, a copy giving its number and tables
+- 2023: No. 4331-F(P2), 21 October 2022, Mahavir Jayanti moved by No. 1430-F(P2) of 25 March 2023: rank 1, a copy giving its number and tables
+- 2024: No. 6112-F(P2), 9 November 2023: rank 1, a copy giving its number and tables
+- 2025: No. 4712-F(P2), 22 November 2024: rank 1, a copy giving its number and tables
+- 2026: No. 4188-F(P2), 27 November 2025: rank 1, a copy giving its number and tables
+
+| year | rule | listed | found |
+| --- | --- | --- | --- |
+| 2019 | BASANTA_PANCHAMI | 2/10 | 2/10 |
+| 2019 | SHIVARATRI | 3/4 | 3/4 |
+| 2019 | DOLA_YATRA | 3/21 | 3/21 |
+| 2019 | HOLI | 3/22 | 3/22 |
+| 2019 | POHELA_BOISHAKH | 4/15 | 4/15 |
+| 2019 | MAHAVIR_JAYANTI | 4/17 | 4/17 |
+| 2019 | GOOD_FRIDAY | 4/19 | 4/19 |
+| 2019 | EASTER_SATURDAY | 4/20 | 4/20 |
+| 2019 | RABINDRA_JAYANTI | 5/9 | 5/9 |
+| 2019 | BUDDHA_JAYANTI | 5/18 | 5/18 |
+| 2019 | JANMASHTAMI | 8/23 | 8/23 |
+| 2019 | AMAVASYA_SHRADDHA | 9/28 | 9/28 |
+| 2019 | DURGA_PANCHAMI | 10/3 | 10/3 |
+| 2019 | DURGA_SHASHTHI | 10/4 | 10/4 |
+| 2019 | PHULPATI | 10/5 | 10/5 |
+| 2019 | MAHA_ASHTAMI | 10/6 | 10/6 |
+| 2019 | MAHA_NAVAMI | 10/7 | 10/7 |
+| 2019 | VIJAYA_DASHAMI | 10/8 | 10/8 |
+| 2019 | KOJAGRAT_PURNIMA | 10/13 | 10/13 |
+| 2019 | KALI_PUJA | 10/27 | 10/27 |
+| 2019 | YAMA_DWITIYA | 10/29 | 10/29 |
+| 2019 | CHHATH | 11/2 | 11/2 |
+| 2019 | GURU_NANAK_JAYANTI | 11/12 | 11/12 |
+| 2020 | BASANTA_PANCHAMI | 1/30 | 1/30 |
+| 2020 | SHIVARATRI | 2/21 | 2/21 |
+| 2020 | DOLA_YATRA | 3/9 | 3/9 |
+| 2020 | HOLI | 3/10 | 3/10 |
+| 2020 | MAHAVIR_JAYANTI | 4/6 | 4/6 |
+| 2020 | GOOD_FRIDAY | 4/10 | 4/10 |
+| 2020 | EASTER_SATURDAY | 4/11 | 4/11 |
+| 2020 | POHELA_BOISHAKH | 4/14 | 4/14 |
+| 2020 | BUDDHA_JAYANTI | 5/7 | 5/7 |
+| 2020 | RABINDRA_JAYANTI | 5/8 | 5/8 |
+| 2020 | JANMASHTAMI | 8/11 | 8/11 |
+| 2020 | AMAVASYA_SHRADDHA | 9/17 | 9/17 |
+| 2020 | DURGA_CHATURTHI | 10/20 | 10/20 |
+| 2020 | DURGA_PANCHAMI | 10/21 | 10/21 |
+| 2020 | DURGA_SHASHTHI | 10/22 | 10/22 |
+| 2020 | PHULPATI | 10/23 | 10/23 |
+| 2020 | MAHA_ASHTAMI | 10/24 | 10/24 |
+| 2020 | MAHA_NAVAMI | 10/25 | 10/25 |
+| 2020 | VIJAYA_DASHAMI | 10/26 | 10/26 |
+| 2020 | KOJAGRAT_PURNIMA | 10/30 | 10/30 |
+| 2020 | KALI_PUJA | 11/14 | 11/14 |
+| 2020 | YAMA_DWITIYA | 11/16 | 11/16 |
+| 2020 | CHHATH | 11/20 | 11/20 |
+| 2020 | GURU_NANAK_JAYANTI | 11/30 | 11/30 |
+| 2021 | BASANTA_PANCHAMI | 2/16 | 2/16 |
+| 2021 | SHIVARATRI | 3/11 | 3/11 |
+| 2021 | DOLA_YATRA | 3/28 | 3/28 |
+| 2021 | HOLI | 3/29 | 3/29 |
+| 2021 | GOOD_FRIDAY | 4/2 | 4/2 |
+| 2021 | EASTER_SATURDAY | 4/3 | 4/3 |
+| 2021 | POHELA_BOISHAKH | 4/15 | 4/15 |
+| 2021 | MAHAVIR_JAYANTI | 4/25 | 4/25 |
+| 2021 | RABINDRA_JAYANTI | 5/9 | 5/9 |
+| 2021 | BUDDHA_JAYANTI | 5/26 | 5/26 |
+| 2021 | JAGANNATH_RATH_JATRA | 7/12 | 7/12 |
+| 2021 | JANMASHTAMI | 8/30 | 8/30 |
+| 2021 | AMAVASYA_SHRADDHA | 10/6 | 10/6 |
+| 2021 | DURGA_SHASHTHI | 10/11 | 10/11 |
+| 2021 | PHULPATI | 10/12 | 10/12 |
+| 2021 | MAHA_ASHTAMI | 10/13 | 10/13 |
+| 2021 | MAHA_NAVAMI | 10/14 | 10/14 |
+| 2021 | VIJAYA_DASHAMI | 10/15 | 10/15 |
+| 2021 | KOJAGRAT_PURNIMA | 10/20 | 10/19 ✗ |
+| 2021 | KALI_PUJA | 11/4 | 11/4 |
+| 2021 | YAMA_DWITIYA | 11/6 | 11/6 |
+| 2021 | CHHATH | 11/10 | 11/10 |
+| 2021 | GURU_NANAK_JAYANTI | 11/19 | 11/19 |
+| 2022 | BASANTA_PANCHAMI | 2/5 | 2/5 |
+| 2022 | THAKUR_PANCHANAN_BARMA_JAYANTI | 2/14 | 2/14 |
+| 2022 | SHIVARATRI | 3/1 | 3/1 |
+| 2022 | DOLA_YATRA | 3/18 | 3/18 |
+| 2022 | HOLI | 3/19 | 3/19 |
+| 2022 | MAHAVIR_JAYANTI | 4/14 | 4/14 |
+| 2022 | GOOD_FRIDAY | 4/15 | 4/15 |
+| 2022 | POHELA_BOISHAKH | 4/15 | 4/15 |
+| 2022 | EASTER_SATURDAY | 4/16 | 4/16 |
+| 2022 | RABINDRA_JAYANTI | 5/9 | 5/9 |
+| 2022 | BUDDHA_JAYANTI | 5/16 | 5/16 |
+| 2022 | JAGANNATH_RATH_JATRA | 7/1 | 7/1 |
+| 2022 | JANMASHTAMI | 8/19 | 8/18 ✗ |
+| 2022 | AMAVASYA_SHRADDHA | 9/25 | 9/25 |
+| 2022 | DURGA_PANCHAMI | 9/30 | 9/30 |
+| 2022 | DURGA_SHASHTHI | 10/1 | 10/1 |
+| 2022 | PHULPATI | 10/2 | 10/2 |
+| 2022 | MAHA_ASHTAMI | 10/3 | 10/3 |
+| 2022 | MAHA_NAVAMI | 10/4 | 10/4 |
+| 2022 | VIJAYA_DASHAMI | 10/5 | 10/5 |
+| 2022 | KOJAGRAT_PURNIMA | 10/9 | 10/9 |
+| 2022 | KALI_PUJA | 10/24 | 10/24 |
+| 2022 | YAMA_DWITIYA | 10/27 | 10/27 |
+| 2022 | CHHATH | 10/30 | 10/30 |
+| 2022 | GURU_NANAK_JAYANTI | 11/8 | 11/8 |
+| 2022 | BIRSA_MUNDA_JAYANTI | 11/15 | 11/15 |
+| 2023 | BASANTA_PANCHAMI | 1/26 | 1/26 |
+| 2023 | THAKUR_PANCHANAN_BARMA_JAYANTI | 2/14 | 2/14 |
+| 2023 | SHIVARATRI | 2/18 | 2/18 |
+| 2023 | DOLA_YATRA | 3/7 | 3/7 |
+| 2023 | HOLI | 3/8 | 3/8 |
+| 2023 | HARICHAND_THAKUR_JAYANTI | 3/19 | 3/19 |
+| 2023 | MAHAVIR_JAYANTI | 4/3 | 4/4 ✗ |
+| 2023 | GOOD_FRIDAY | 4/7 | 4/7 |
+| 2023 | EASTER_SATURDAY | 4/8 | 4/8 |
+| 2023 | POHELA_BOISHAKH | 4/15 | 4/15 |
+| 2023 | BUDDHA_JAYANTI | 5/5 | 5/5 |
+| 2023 | RABINDRA_JAYANTI | 5/9 | 5/9 |
+| 2023 | JAGANNATH_RATH_JATRA | 6/20 | 6/20 |
+| 2023 | RAKSHABANDHAN | 8/30 | 8/30 |
+| 2023 | JANMASHTAMI | 9/6 | 9/6 |
+| 2023 | AMAVASYA_SHRADDHA | 10/14 | 10/14 |
+| 2023 | DURGA_CHATURTHI | 10/18 | 10/18 |
+| 2023 | DURGA_PANCHAMI | 10/19 | 10/19 |
+| 2023 | DURGA_SHASHTHI | 10/20 | 10/20 |
+| 2023 | PHULPATI | 10/21 | 10/21 |
+| 2023 | MAHA_ASHTAMI | 10/22 | 10/22 |
+| 2023 | MAHA_NAVAMI | 10/23 | 10/23 |
+| 2023 | VIJAYA_DASHAMI | 10/24 | 10/24 |
+| 2023 | KOJAGRAT_PURNIMA | 10/28 | 10/28 |
+| 2023 | KALI_PUJA | 11/12 | 11/12 |
+| 2023 | BIRSA_MUNDA_JAYANTI | 11/15 | 11/15 |
+| 2023 | YAMA_DWITIYA | 11/15 | 11/15 |
+| 2023 | CHHATH | 11/19 | 11/19 |
+| 2023 | GURU_NANAK_JAYANTI | 11/27 | 11/27 |
+| 2024 | BASANTA_PANCHAMI | 2/14 | 2/14 |
+| 2024 | THAKUR_PANCHANAN_BARMA_JAYANTI | 2/14 | 2/14 |
+| 2024 | SHIVARATRI | 3/8 | 3/8 |
+| 2024 | DOLA_YATRA | 3/25 | 3/25 |
+| 2024 | HOLI | 3/26 | 3/26 |
+| 2024 | GOOD_FRIDAY | 3/29 | 3/29 |
+| 2024 | EASTER_SATURDAY | 3/30 | 3/30 |
+| 2024 | HARICHAND_THAKUR_JAYANTI | 4/6 | 4/7 ✗ |
+| 2024 | POHELA_BOISHAKH | 4/14 | 4/14 |
+| 2024 | MAHAVIR_JAYANTI | 4/21 | 4/21 |
+| 2024 | RABINDRA_JAYANTI | 5/8 | 5/8 |
+| 2024 | BUDDHA_JAYANTI | 5/23 | 5/23 |
+| 2024 | JAGANNATH_RATH_JATRA | 7/7 | 7/7 |
+| 2024 | RAKSHABANDHAN | 8/19 | 8/19 |
+| 2024 | JANMASHTAMI | 8/26 | 8/26 |
+| 2024 | AMAVASYA_SHRADDHA | 10/2 | 10/2 |
+| 2024 | DURGA_CHATURTHI | 10/7 | 10/7 |
+| 2024 | DURGA_PANCHAMI | 10/8 | 10/8 |
+| 2024 | DURGA_SHASHTHI | 10/9 | 10/9 |
+| 2024 | PHULPATI | 10/10 | 10/10 |
+| 2024 | MAHA_ASHTAMI | 10/11 | 10/11 |
+| 2024 | MAHA_NAVAMI | 10/11 | 10/12 ✗ |
+| 2024 | VIJAYA_DASHAMI | 10/12 | 10/13 ✗ |
+| 2024 | KOJAGRAT_PURNIMA | 10/16 | 10/16 |
+| 2024 | KALI_PUJA | 10/31 | 10/31 |
+| 2024 | YAMA_DWITIYA | 11/3 | 11/3 |
+| 2024 | CHHATH | 11/7 | 11/7 |
+| 2024 | BIRSA_MUNDA_JAYANTI | 11/15 | 11/15 |
+| 2024 | GURU_NANAK_JAYANTI | 11/15 | 11/15 |
+| 2025 | BASANTA_PANCHAMI | 2/2 | 2/3 ✗ |
+| 2025 | THAKUR_PANCHANAN_BARMA_JAYANTI | 2/14 | 2/14 |
+| 2025 | SHIVARATRI | 2/26 | 2/26 |
+| 2025 | DOLA_YATRA | 3/14 | 3/14 |
+| 2025 | HOLI | 3/15 | 3/15 |
+| 2025 | HARICHAND_THAKUR_JAYANTI | 3/27 | 3/27 |
+| 2025 | RAMA_NAVAMI | 4/6 | 4/6 |
+| 2025 | MAHAVIR_JAYANTI | 4/10 | 4/10 |
+| 2025 | POHELA_BOISHAKH | 4/15 | 4/15 |
+| 2025 | GOOD_FRIDAY | 4/18 | 4/18 |
+| 2025 | EASTER_SATURDAY | 4/19 | 4/19 |
+| 2025 | RABINDRA_JAYANTI | 5/9 | 5/9 |
+| 2025 | BUDDHA_JAYANTI | 5/12 | 5/12 |
+| 2025 | JAGANNATH_RATH_JATRA | 6/27 | 6/27 |
+| 2025 | RAKSHABANDHAN | 8/9 | 8/9 |
+| 2025 | JANMASHTAMI | 8/15 | 8/16 ✗ |
+| 2025 | AMAVASYA_SHRADDHA | 9/21 | 9/21 |
+| 2025 | DURGA_CHATURTHI | 9/26 | 9/26 |
+| 2025 | DURGA_PANCHAMI | 9/27 | 9/27 |
+| 2025 | DURGA_SHASHTHI | 9/28 | 9/28 |
+| 2025 | PHULPATI | 9/29 | 9/29 |
+| 2025 | MAHA_ASHTAMI | 9/30 | 9/30 |
+| 2025 | MAHA_NAVAMI | 10/1 | 10/1 |
+| 2025 | VIJAYA_DASHAMI | 10/2 | 10/2 |
+| 2025 | KOJAGRAT_PURNIMA | 10/6 | 10/6 |
+| 2025 | KALI_PUJA | 10/20 | 10/20 |
+| 2025 | YAMA_DWITIYA | 10/23 | 10/23 |
+| 2025 | CHHATH | 10/27 | 10/28 ✗ |
+| 2025 | GURU_NANAK_JAYANTI | 11/5 | 11/5 |
+| 2025 | BIRSA_MUNDA_JAYANTI | 11/15 | 11/15 |
+| 2026 | BASANTA_PANCHAMI | 1/23 | 1/23 |
+| 2026 | THAKUR_PANCHANAN_BARMA_JAYANTI | 2/14 | 2/14 |
+| 2026 | SHIVARATRI | 2/15 | 2/15 |
+| 2026 | DOLA_YATRA | 3/3 | 3/3 |
+| 2026 | HOLI | 3/4 | 3/4 |
+| 2026 | HARICHAND_THAKUR_JAYANTI | 3/17 | 3/17 |
+| 2026 | RAMA_NAVAMI | 3/26 | 3/26 |
+| 2026 | MAHAVIR_JAYANTI | 3/31 | 3/31 |
+| 2026 | GOOD_FRIDAY | 4/3 | 4/3 |
+| 2026 | EASTER_SATURDAY | 4/4 | 4/4 |
+| 2026 | POHELA_BOISHAKH | 4/15 | 4/15 |
+| 2026 | BUDDHA_JAYANTI | 5/1 | 5/1 |
+| 2026 | RABINDRA_JAYANTI | 5/9 | 5/9 |
+| 2026 | JAGANNATH_RATH_JATRA | 7/16 | 7/16 |
+| 2026 | RAKSHABANDHAN | 8/28 | 8/28 |
+| 2026 | JANMASHTAMI | 9/4 | 9/4 |
+| 2026 | VISHWAKARMA_PUJA | 9/17 | 9/17 |
+| 2026 | AMAVASYA_SHRADDHA | 10/10 | 10/10 |
+| 2026 | DURGA_CHATURTHI | 10/15 | 10/15 |
+| 2026 | DURGA_PANCHAMI | 10/16 | 10/16 |
+| 2026 | DURGA_SHASHTHI | 10/17 | 10/17 |
+| 2026 | PHULPATI | 10/18 | 10/18 |
+| 2026 | MAHA_ASHTAMI | 10/19 | 10/19 |
+| 2026 | MAHA_NAVAMI | 10/20 | 10/20 |
+| 2026 | VIJAYA_DASHAMI | 10/21 | 10/21 |
+| 2026 | KOJAGRAT_PURNIMA | 10/25 | 10/25 |
+| 2026 | KALI_PUJA | 11/8 | 11/8 |
+| 2026 | YAMA_DWITIYA | 11/11 | 11/11 |
+| 2026 | BIRSA_MUNDA_JAYANTI | 11/15 | 11/15 |
+| 2026 | CHHATH | 11/15 | 11/15 |
+| 2026 | GURU_NANAK_JAYANTI | 11/24 | 11/24 |
+
+The 12 civil days stand on their date in all 8 years.
+
+- 2021 KOJAGRAT_PURNIMA: the full moon holds the earlier nishitha alone, so *Dharmasindhu* p. 74's rule takes the 19th; the notice lists the 20th, and no one window meets both 2020 and 2021 (C1271)
+- 2022 JANMASHTAMI: the rule takes the 18th by the 8th at nishitha; the notice lists the 19th (C1275)
+- 2023 MAHAVIR_JAYANTI: the rule takes the 4th at Kolkata, the day the notice first listed; No. 1430-F(P2) declared the 3rd, the day the 13th began (C1277, C1242)
+- 2024 HARICHAND_THAKUR_JAYANTI: the 13th runs from 10:19 on 6 April to 06:54 on the 7th, past a sunrise of 05:23, so the sunrise reading takes the 7th; the notice lists the 6th (C1274)
+- 2024 MAHA_NAVAMI: the 9th runs from 12:07 on 11 October to 10:59 on the 12th, so the sunrise reading takes the 12th; the notice lists Maha Astami and Maha Nabami together on the 11th (C1270)
+- 2024 VIJAYA_DASHAMI: counted from the Navami's 12th, the rule takes the 13th; the 10th runs from 10:59 on 12 October to 09:09 on the 13th, and the notice lists the 12th (C1270)
+- 2025 BASANTA_PANCHAMI: the 5th runs from 09:14 on 2 February to 06:52 on the 3rd, so the sunrise reading takes the 3rd; the note lists Sree Panchami on Sunday the 2nd (C1272)
+- 2025 JANMASHTAMI: the 8th begins at 23:50 on 15 August, after Kolkata's nishitha, so the rule takes the 16th; the notice lists the 15th (C1275)
+- 2025 CHHATH: the 6th begins at 06:05 on 27 October, after sunrise, and ends at 08:00 on the 28th, so the sunrise reading takes the 28th; the notice lists the 27th, the evening arghya's day (C1273)
+
+The Durga Puja's Chaturthi, Panchami and Shashthi are counted back from the Saptami, and stand in every year listed, where the tithis would part in 2026 (the 6th holds both sunrises). Dol, Kali Puja and Holi as the day after Dol stand in all eight years.
+
+The days the notifications print are not reckoned: the five set by the moon, each marked but Muharram 2021, which an order moved; the days added around a festival; and the sectional days of a year or a few. 2031, with no notification, holds none.
+
+| year | key | day | stands as |
+| --- | --- | --- | --- |
+| 2019 | EID_AL_FITR | 6/5 | subject to sighting |
+| 2019 | EID_AL_ADHA | 8/12 | subject to sighting |
+| 2019 | MUHARRAM | 9/10 | subject to sighting |
+| 2019 | MAWLID | 11/10 | subject to sighting |
+| 2019 | SHAB_E_BARAT | 4/21 | subject to sighting |
+| 2019 | SARASWATI_PUJA_ADDITIONAL_DAY | 2/11 | printed |
+| 2019 | DURGA_PUJA_ADDITIONAL_DAY_1 | 10/9 | printed |
+| 2019 | DURGA_PUJA_ADDITIONAL_DAY_2 | 10/10 | printed |
+| 2019 | DURGA_PUJA_ADDITIONAL_DAY_3 | 10/11 | printed |
+| 2019 | DURGA_PUJA_ADDITIONAL_DAY_4 | 10/12 | printed |
+| 2019 | KOJAGRAT_PURNIMA_ADDITIONAL_DAY_1 | 10/14 | printed |
+| 2019 | KOJAGRAT_PURNIMA_ADDITIONAL_DAY_2 | 10/15 | printed |
+| 2019 | KALI_PUJA_ADDITIONAL_DAY_1 | 10/28 | printed |
+| 2019 | YAMA_DWITIYA_ADDITIONAL_DAY | 10/30 | printed |
+| 2019 | BAISAKHI | 4/14 | printed |
+| 2020 | EID_AL_FITR | 5/25 | subject to sighting |
+| 2020 | EID_AL_ADHA | 8/1 | subject to sighting |
+| 2020 | MUHARRAM | 8/30 | subject to sighting |
+| 2020 | MAWLID | 10/30 | subject to sighting |
+| 2020 | SHAB_E_BARAT | 4/9 | subject to sighting |
+| 2020 | SARASWATI_PUJA_ADDITIONAL_DAY | 1/31 | printed |
+| 2020 | DURGA_TRITIYA | 10/19 | printed |
+| 2020 | DURGA_PUJA_ADDITIONAL_DAY_1 | 10/27 | printed |
+| 2020 | DURGA_PUJA_ADDITIONAL_DAY_2 | 10/28 | printed |
+| 2020 | DURGA_PUJA_ADDITIONAL_DAY_3 | 10/29 | printed |
+| 2020 | YAMA_DWITIYA_ADDITIONAL_DAY | 11/17 | printed |
+| 2020 | CHHATH_ADDITIONAL_DAY | 11/19 | printed |
+| 2020 | EID_AL_FITR_ADDITIONAL_DAY | 5/26 | printed |
+| 2020 | BAISAKHI | 4/14 | printed |
+| 2021 | EID_AL_FITR | 5/14 | subject to sighting |
+| 2021 | EID_AL_ADHA | 7/21 | subject to sighting |
+| 2021 | MUHARRAM | 8/20 | printed |
+| 2021 | MAWLID | 10/19 | subject to sighting |
+| 2021 | SHAB_E_BARAT | 3/30 | subject to sighting |
+| 2021 | SARASWATI_PUJA_ADDITIONAL_DAY | 2/17 | printed |
+| 2021 | DURGA_PUJA_ADDITIONAL_DAY_1 | 10/18 | printed |
+| 2021 | KOJAGRAT_PURNIMA_ADDITIONAL_DAY_1 | 10/21 | printed |
+| 2021 | KOJAGRAT_PURNIMA_ADDITIONAL_DAY_2 | 10/22 | printed |
+| 2021 | KALI_PUJA_ADDITIONAL_DAY_1 | 11/5 | printed |
+| 2021 | CHHATH_ADDITIONAL_DAY | 11/9 | printed |
+| 2021 | EID_AL_FITR_ADDITIONAL_DAY | 5/15 | printed |
+| 2022 | EID_AL_FITR | 5/3 | subject to sighting |
+| 2022 | EID_AL_ADHA | 7/10 | subject to sighting |
+| 2022 | MUHARRAM | 8/9 | subject to sighting |
+| 2022 | MAWLID | 10/9 | subject to sighting |
+| 2022 | SHAB_E_BARAT | 3/19 | subject to sighting |
+| 2022 | SARASWATI_PUJA_ADDITIONAL_DAY | 2/4 | printed |
+| 2022 | DURGA_PUJA_ADDITIONAL_DAY_1 | 10/6 | printed |
+| 2022 | DURGA_PUJA_ADDITIONAL_DAY_2 | 10/7 | printed |
+| 2022 | DURGA_PUJA_ADDITIONAL_DAY_3 | 10/8 | printed |
+| 2022 | KOJAGRAT_PURNIMA_ADDITIONAL_DAY_1 | 10/10 | printed |
+| 2022 | KALI_PUJA_ADDITIONAL_DAY_1 | 10/25 | printed |
+| 2022 | KALI_PUJA_ADDITIONAL_DAY_2 | 10/26 | printed |
+| 2022 | CHHATH_ADDITIONAL_DAY | 10/31 | printed |
+| 2022 | EID_AL_FITR_ADDITIONAL_DAY | 5/4 | printed |
+| 2022 | GURU_RAVIDAS_JAYANTI | 2/16 | printed |
+| 2022 | RAGHUNATH_MURMU_JAYANTI | 5/16 | printed |
+| 2023 | EID_AL_FITR | 4/22 | subject to sighting |
+| 2023 | EID_AL_ADHA | 6/29 | subject to sighting |
+| 2023 | MUHARRAM | 7/29 | subject to sighting |
+| 2023 | MAWLID | 9/28 | subject to sighting |
+| 2023 | SHAB_E_BARAT | 3/8 | subject to sighting |
+| 2023 | SARASWATI_PUJA_ADDITIONAL_DAY | 1/25 | printed |
+| 2023 | DURGA_PUJA_ADDITIONAL_DAY_1 | 10/25 | printed |
+| 2023 | DURGA_PUJA_ADDITIONAL_DAY_2 | 10/26 | printed |
+| 2023 | DURGA_PUJA_ADDITIONAL_DAY_3 | 10/27 | printed |
+| 2023 | KALI_PUJA_ADDITIONAL_DAY_1 | 11/13 | printed |
+| 2023 | KALI_PUJA_ADDITIONAL_DAY_2 | 11/14 | printed |
+| 2023 | YAMA_DWITIYA_ADDITIONAL_DAY | 11/16 | printed |
+| 2023 | CHHATH_ADDITIONAL_DAY | 11/20 | printed |
+| 2023 | EID_AL_FITR_ADDITIONAL_DAY | 4/21 | printed |
+| 2023 | GURU_RAVIDAS_JAYANTI | 2/5 | printed |
+| 2023 | RAGHUNATH_MURMU_JAYANTI | 5/5 | printed |
+| 2024 | EID_AL_FITR | 4/11 | subject to sighting |
+| 2024 | EID_AL_ADHA | 6/17 | subject to sighting |
+| 2024 | MUHARRAM | 7/17 | subject to sighting |
+| 2024 | MAWLID | 9/16 | subject to sighting |
+| 2024 | SHAB_E_BARAT | 2/26 | subject to sighting |
+| 2024 | SARASWATI_PUJA_ADDITIONAL_DAY | 2/13 | printed |
+| 2024 | DURGA_PUJA_ADDITIONAL_DAY_1 | 10/14 | printed |
+| 2024 | DURGA_PUJA_ADDITIONAL_DAY_2 | 10/15 | printed |
+| 2024 | KOJAGRAT_PURNIMA_ADDITIONAL_DAY_1 | 10/17 | printed |
+| 2024 | KOJAGRAT_PURNIMA_ADDITIONAL_DAY_2 | 10/18 | printed |
+| 2024 | KALI_PUJA_ADDITIONAL_DAY_1 | 11/1 | printed |
+| 2024 | YAMA_DWITIYA_ADDITIONAL_DAY | 11/4 | printed |
+| 2024 | CHHATH_ADDITIONAL_DAY | 11/8 | printed |
+| 2024 | EID_AL_FITR_ADDITIONAL_DAY | 4/10 | printed |
+| 2024 | PARSHWANATH_RATH_YATRA | 11/15 | printed |
+| 2024 | GURU_RAVIDAS_JAYANTI | 2/24 | printed |
+| 2024 | RAGHUNATH_MURMU_JAYANTI | 5/23 | printed |
+| 2025 | EID_AL_FITR | 3/31 | subject to sighting |
+| 2025 | EID_AL_ADHA | 6/7 | subject to sighting |
+| 2025 | MUHARRAM | 7/6 | subject to sighting |
+| 2025 | MAWLID | 9/5 | subject to sighting |
+| 2025 | SHAB_E_BARAT | 2/14 | subject to sighting |
+| 2025 | SARASWATI_PUJA_ADDITIONAL_DAY | 2/3 | printed |
+| 2025 | DURGA_PUJA_ADDITIONAL_DAY_1 | 10/3 | printed |
+| 2025 | DURGA_PUJA_ADDITIONAL_DAY_2 | 10/4 | printed |
+| 2025 | KOJAGRAT_PURNIMA_ADDITIONAL_DAY_1 | 10/7 | printed |
+| 2025 | KALI_PUJA_ADDITIONAL_DAY_1 | 10/21 | printed |
+| 2025 | KALI_PUJA_ADDITIONAL_DAY_2 | 10/22 | printed |
+| 2025 | YAMA_DWITIYA_ADDITIONAL_DAY | 10/24 | printed |
+| 2025 | CHHATH_ADDITIONAL_DAY | 10/28 | printed |
+| 2025 | EID_AL_FITR_ADDITIONAL_DAY | 4/1 | printed |
+| 2025 | EID_AL_ADHA_ADDITIONAL_DAY | 6/6 | printed |
+| 2025 | GURU_GOBIND_SINGH_JAYANTI | 1/6 | printed |
+| 2025 | PARSHWANATH_RATH_YATRA | 11/5 | printed |
+| 2025 | GURU_RAVIDAS_JAYANTI | 2/12 | printed |
+| 2025 | RAGHUNATH_MURMU_JAYANTI | 5/12 | printed |
+| 2026 | EID_AL_FITR | 3/21 | subject to sighting |
+| 2026 | EID_AL_ADHA | 5/27 | subject to sighting |
+| 2026 | MUHARRAM | 6/26 | subject to sighting |
+| 2026 | MAWLID | 8/26 | subject to sighting |
+| 2026 | SHAB_E_BARAT | 2/4 | subject to sighting |
+| 2026 | SARASWATI_PUJA_ADDITIONAL_DAY | 1/22 | printed |
+| 2026 | DURGA_PUJA_ADDITIONAL_DAY_1 | 10/22 | printed |
+| 2026 | DURGA_PUJA_ADDITIONAL_DAY_2 | 10/23 | printed |
+| 2026 | DURGA_PUJA_ADDITIONAL_DAY_3 | 10/24 | printed |
+| 2026 | KOJAGRAT_PURNIMA_ADDITIONAL_DAY_1 | 10/26 | printed |
+| 2026 | KALI_PUJA_ADDITIONAL_DAY_1 | 11/9 | printed |
+| 2026 | KALI_PUJA_ADDITIONAL_DAY_2 | 11/10 | printed |
+| 2026 | YAMA_DWITIYA_ADDITIONAL_DAY | 11/12 | printed |
+| 2026 | CHHATH_ADDITIONAL_DAY | 11/16 | printed |
+| 2026 | EID_AL_FITR_ADDITIONAL_DAY | 3/20 | printed |
+| 2026 | EID_AL_ADHA_ADDITIONAL_DAY | 5/26 | printed |
+| 2026 | PARSHWANATH_RATH_YATRA | 11/24 | printed |
+| 2026 | RAGHUNATH_MURMU_JAYANTI | 5/1 | printed |
+| 2026 | BIR_CHILARAI_JAYANTI | 2/1 | printed |
+

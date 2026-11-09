@@ -19,9 +19,10 @@ import java.util.Objects;
  * @param latitudeDeg The {@code latitudeDeg} field.
  * @param longitudeDeg The {@code longitudeDeg} field.
  * @param places A place as a binding writes one. Null leaves the SDK's default.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record PublishedReasonsRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, FestivalRequest festivals, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, List<ReckonedPlace> places, int utcOffsetSeconds) implements RequestJson {
+public record PublishedReasonsRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, FestivalRequest festivals, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, List<ReckonedPlace> places, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -43,10 +44,9 @@ public record PublishedReasonsRequest(Double altitudeM, com.teispace.teistro.Cal
      * @param first A civil day as a request names it.
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
-    public PublishedReasonsRequest(FestivalRequest festivals, DayAsked first, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
-        this(null, null, festivals, first, null, latitudeDeg, longitudeDeg, null, utcOffsetSeconds);
+    public PublishedReasonsRequest(FestivalRequest festivals, DayAsked first, double latitudeDeg, double longitudeDeg) {
+        this(null, null, festivals, first, null, latitudeDeg, longitudeDeg, null, null, null);
     }
 
     /**
@@ -70,6 +70,7 @@ public record PublishedReasonsRequest(Double altitudeM, com.teispace.teistro.Cal
         private Double longitudeDeg;
         private List<ReckonedPlace> places;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -164,11 +165,22 @@ public record PublishedReasonsRequest(Double altitudeM, com.teispace.teistro.Cal
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -179,7 +191,7 @@ public record PublishedReasonsRequest(Double altitudeM, com.teispace.teistro.Cal
          * @throws NullPointerException naming a required field left unset
          */
         public PublishedReasonsRequest build() {
-            return new PublishedReasonsRequest(altitudeM, calendar, festivals, first, last, Objects.requireNonNull(latitudeDeg, "`PublishedReasonsRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`PublishedReasonsRequest.longitudeDeg` is required"), places, Objects.requireNonNull(utcOffsetSeconds, "`PublishedReasonsRequest.utcOffsetSeconds` is required"));
+            return new PublishedReasonsRequest(altitudeM, calendar, festivals, first, last, Objects.requireNonNull(latitudeDeg, "`PublishedReasonsRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`PublishedReasonsRequest.longitudeDeg` is required"), places, utcOffsetSeconds, zone);
         }
     }
 
@@ -201,7 +213,8 @@ public record PublishedReasonsRequest(Double altitudeM, com.teispace.teistro.Cal
             Read.number(Read.required(json.get("latitudeDeg"), "PublishedReasonsRequest.latitudeDeg"), "PublishedReasonsRequest.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "PublishedReasonsRequest.longitudeDeg"), "PublishedReasonsRequest.longitudeDeg"),
             Read.orNull(json.get("places"), present -> Read.list(present, "PublishedReasonsRequest.places", item0 -> ReckonedPlace.of(item0))),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "PublishedReasonsRequest.utcOffsetSeconds"), "PublishedReasonsRequest.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "PublishedReasonsRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -223,7 +236,12 @@ public record PublishedReasonsRequest(Double altitudeM, com.teispace.teistro.Cal
         if (places != null) {
             json.put("places", places.stream().map(item0 -> item0.toJson()).toList());
         }
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

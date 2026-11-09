@@ -15,9 +15,10 @@ import java.util.Objects;
  * @param latitudeDeg The {@code latitudeDeg} field.
  * @param longitudeDeg The {@code longitudeDeg} field.
  * @param name The {@code name} field.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record ReckonedPlace(Double altitudeM, double latitudeDeg, double longitudeDeg, String name, int utcOffsetSeconds) implements RequestJson {
+public record ReckonedPlace(Double altitudeM, double latitudeDeg, double longitudeDeg, String name, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -36,10 +37,9 @@ public record ReckonedPlace(Double altitudeM, double latitudeDeg, double longitu
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
      * @param name The {@code name} field.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
-    public ReckonedPlace(double latitudeDeg, double longitudeDeg, String name, int utcOffsetSeconds) {
-        this(null, latitudeDeg, longitudeDeg, name, utcOffsetSeconds);
+    public ReckonedPlace(double latitudeDeg, double longitudeDeg, String name) {
+        this(null, latitudeDeg, longitudeDeg, name, null, null);
     }
 
     /**
@@ -59,6 +59,7 @@ public record ReckonedPlace(Double altitudeM, double latitudeDeg, double longitu
         private Double longitudeDeg;
         private String name;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -109,11 +110,22 @@ public record ReckonedPlace(Double altitudeM, double latitudeDeg, double longitu
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -124,7 +136,7 @@ public record ReckonedPlace(Double altitudeM, double latitudeDeg, double longitu
          * @throws NullPointerException naming a required field left unset
          */
         public ReckonedPlace build() {
-            return new ReckonedPlace(altitudeM, Objects.requireNonNull(latitudeDeg, "`ReckonedPlace.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ReckonedPlace.longitudeDeg` is required"), name, Objects.requireNonNull(utcOffsetSeconds, "`ReckonedPlace.utcOffsetSeconds` is required"));
+            return new ReckonedPlace(altitudeM, Objects.requireNonNull(latitudeDeg, "`ReckonedPlace.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ReckonedPlace.longitudeDeg` is required"), name, utcOffsetSeconds, zone);
         }
     }
 
@@ -142,7 +154,8 @@ public record ReckonedPlace(Double altitudeM, double latitudeDeg, double longitu
             Read.number(Read.required(json.get("latitudeDeg"), "ReckonedPlace.latitudeDeg"), "ReckonedPlace.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "ReckonedPlace.longitudeDeg"), "ReckonedPlace.longitudeDeg"),
             Read.text(Read.required(json.get("name"), "ReckonedPlace.name"), "ReckonedPlace.name"),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "ReckonedPlace.utcOffsetSeconds"), "ReckonedPlace.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "ReckonedPlace.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -154,7 +167,12 @@ public record ReckonedPlace(Double altitudeM, double latitudeDeg, double longitu
         json.put("latitudeDeg", latitudeDeg);
         json.put("longitudeDeg", longitudeDeg);
         json.put("name", name);
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

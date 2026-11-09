@@ -60,11 +60,18 @@ export interface AnniversariesRequest {
   readonly fromYear: number;
   readonly latitudeDeg: number;
   readonly longitudeDeg: number;
-  readonly utcOffsetSeconds: number;
+  /**
+   * The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
   /**
    * 1 to 100: the span ends the day before month 1 of the year after.
    */
   readonly years: number;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -295,9 +302,13 @@ export interface ElectRequest {
    */
   readonly muhurta: MuhurtaRequest;
   /**
-   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
    */
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -355,7 +366,14 @@ export interface FestivalCalendarRequest {
    */
   readonly refreshMinutes?: number | null;
   readonly stampUnixSeconds: number;
-  readonly utcOffsetSeconds: number;
+  /**
+   * The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -464,7 +482,14 @@ export interface NextRequest {
    * A rule's key in `festivals`; or `kind`, not both.
    */
   readonly rule?: string | null;
-  readonly utcOffsetSeconds: number;
+  /**
+   * The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -500,13 +525,17 @@ export interface ObservanceRequest {
    */
   readonly traditions: readonly ObservanceTradition[];
   /**
-   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
    */
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
   /**
    * A whole year of `calendar`, from its month 1, day 1; or `first`, not both.
    */
   readonly year?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -568,9 +597,13 @@ export interface PeopleRequest {
    */
   readonly people: readonly PeoplePerson[];
   /**
-   * The offset from UTC its civil day runs at, in seconds, east positive.
+   * The offset from UTC its civil day runs at, in seconds, east positive; or `zone`, not both.
    */
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -588,7 +621,14 @@ export interface PublishedReasonsRequest {
   readonly latitudeDeg: number;
   readonly longitudeDeg: number;
   readonly places?: readonly ReckonedPlace[];
-  readonly utcOffsetSeconds: number;
+  /**
+   * The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -641,7 +681,14 @@ export interface SentencesRequest {
    */
   readonly locale?: string | null;
   readonly longitudeDeg: number;
-  readonly utcOffsetSeconds: number;
+  /**
+   * The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -1379,6 +1426,44 @@ export interface Anniversary {
 }
 
 /**
+ * How a zone is given.
+ */
+export type ZoneSpec = ZoneSpecIana | ZoneSpecLocalMean | ZoneSpecFixed;
+
+/**
+ * A zone of the database, by its IANA name.
+ */
+export interface ZoneSpecIana {
+  readonly kind: 'IANA';
+  /**
+   * The name (`Asia/Kathmandu`).
+   */
+  readonly zone: string;
+}
+
+/**
+ * Local mean time at a longitude: four minutes a degree.
+ */
+export interface ZoneSpecLocalMean {
+  readonly kind: 'LOCAL_MEAN';
+  /**
+   * The longitude, east positive.
+   */
+  readonly longitude: number;
+}
+
+/**
+ * A fixed offset the consumer states.
+ */
+export interface ZoneSpecFixed {
+  readonly kind: 'FIXED';
+  /**
+   * The offset.
+   */
+  readonly offset: number;
+}
+
+/**
  * One request: one event, one observer.
  */
 export interface AshauchRequest {
@@ -1473,44 +1558,6 @@ export interface AshauchTable {
  * `MITAKSHARA`: [`AshauchTable::mitakshara`].
  */
 export type AshauchTradition = 'DHARMASINDHU' | 'MITAKSHARA';
-
-/**
- * How a zone is given.
- */
-export type ZoneSpec = ZoneSpecIana | ZoneSpecLocalMean | ZoneSpecFixed;
-
-/**
- * A zone of the database, by its IANA name.
- */
-export interface ZoneSpecIana {
-  readonly kind: 'IANA';
-  /**
-   * The name (`Asia/Kathmandu`).
-   */
-  readonly zone: string;
-}
-
-/**
- * Local mean time at a longitude: four minutes a degree.
- */
-export interface ZoneSpecLocalMean {
-  readonly kind: 'LOCAL_MEAN';
-  /**
-   * The longitude, east positive.
-   */
-  readonly longitude: number;
-}
-
-/**
- * A fixed offset the consumer states.
- */
-export interface ZoneSpecFixed {
-  readonly kind: 'FIXED';
-  /**
-   * The offset.
-   */
-  readonly offset: number;
-}
 
 /**
  * What is asked: the path from the observer to the person the event is of, the one who died or was born.
@@ -1950,9 +1997,13 @@ export interface PeoplePerson {
    */
   readonly name: string;
   /**
-   * The offset from UTC of the birth's clock, in seconds, east positive.
+   * The offset from UTC of the birth's clock, in seconds, east positive; or `zone`, not both.
    */
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -1963,7 +2014,14 @@ export interface ReckonedPlace {
   readonly latitudeDeg: number;
   readonly longitudeDeg: number;
   readonly name: string;
-  readonly utcOffsetSeconds: number;
+  /**
+   * The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -3753,7 +3811,7 @@ export interface PublishedSet {
 /**
  * The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.
  */
-export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | readonly FestivalRuleItem[];
+export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | readonly FestivalRuleItem[];
 
 /**
  * How asta is seen: a criterion the SDK names, or one spelt out.
@@ -5342,7 +5400,7 @@ export interface PublishedEntryWithdraw {
 /**
  * A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.
  */
-export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
+export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
 
 /**
  * How visibility is decided.

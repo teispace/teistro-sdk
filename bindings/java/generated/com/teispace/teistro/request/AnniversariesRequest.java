@@ -17,10 +17,11 @@ import java.util.Objects;
  * @param fromYear The first year, in `calendar`: the span begins on its month 1, day 1.
  * @param latitudeDeg The {@code latitudeDeg} field.
  * @param longitudeDeg The {@code longitudeDeg} field.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
  * @param years 1 to 100: the span ends the day before month 1 of the year after.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record AnniversariesRequest(Double altitudeM, List<Anniversary> anniversaries, com.teispace.teistro.Calendar calendar, int fromYear, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds, int years) implements RequestJson {
+public record AnniversariesRequest(Double altitudeM, List<Anniversary> anniversaries, com.teispace.teistro.Calendar calendar, int fromYear, double latitudeDeg, double longitudeDeg, Integer utcOffsetSeconds, int years, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -42,11 +43,10 @@ public record AnniversariesRequest(Double altitudeM, List<Anniversary> anniversa
      * @param fromYear The first year, in `calendar`: the span begins on its month 1, day 1.
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      * @param years 1 to 100: the span ends the day before month 1 of the year after.
      */
-    public AnniversariesRequest(List<Anniversary> anniversaries, int fromYear, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds, int years) {
-        this(null, anniversaries, null, fromYear, latitudeDeg, longitudeDeg, utcOffsetSeconds, years);
+    public AnniversariesRequest(List<Anniversary> anniversaries, int fromYear, double latitudeDeg, double longitudeDeg, int years) {
+        this(null, anniversaries, null, fromYear, latitudeDeg, longitudeDeg, null, years, null);
     }
 
     /**
@@ -69,6 +69,7 @@ public record AnniversariesRequest(Double altitudeM, List<Anniversary> anniversa
         private Double longitudeDeg;
         private Integer utcOffsetSeconds;
         private Integer years;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -141,7 +142,7 @@ public record AnniversariesRequest(Double altitudeM, List<Anniversary> anniversa
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
@@ -161,13 +162,24 @@ public record AnniversariesRequest(Double altitudeM, List<Anniversary> anniversa
         }
 
         /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public AnniversariesRequest build() {
-            return new AnniversariesRequest(altitudeM, anniversaries, calendar, Objects.requireNonNull(fromYear, "`AnniversariesRequest.fromYear` is required"), Objects.requireNonNull(latitudeDeg, "`AnniversariesRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`AnniversariesRequest.longitudeDeg` is required"), Objects.requireNonNull(utcOffsetSeconds, "`AnniversariesRequest.utcOffsetSeconds` is required"), Objects.requireNonNull(years, "`AnniversariesRequest.years` is required"));
+            return new AnniversariesRequest(altitudeM, anniversaries, calendar, Objects.requireNonNull(fromYear, "`AnniversariesRequest.fromYear` is required"), Objects.requireNonNull(latitudeDeg, "`AnniversariesRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`AnniversariesRequest.longitudeDeg` is required"), utcOffsetSeconds, Objects.requireNonNull(years, "`AnniversariesRequest.years` is required"), zone);
         }
     }
 
@@ -187,8 +199,9 @@ public record AnniversariesRequest(Double altitudeM, List<Anniversary> anniversa
             Read.int32(Read.required(json.get("fromYear"), "AnniversariesRequest.fromYear"), "AnniversariesRequest.fromYear"),
             Read.number(Read.required(json.get("latitudeDeg"), "AnniversariesRequest.latitudeDeg"), "AnniversariesRequest.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "AnniversariesRequest.longitudeDeg"), "AnniversariesRequest.longitudeDeg"),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "AnniversariesRequest.utcOffsetSeconds"), "AnniversariesRequest.utcOffsetSeconds"),
-            Read.int32(Read.required(json.get("years"), "AnniversariesRequest.years"), "AnniversariesRequest.years"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "AnniversariesRequest.utcOffsetSeconds")),
+            Read.int32(Read.required(json.get("years"), "AnniversariesRequest.years"), "AnniversariesRequest.years"),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -204,8 +217,13 @@ public record AnniversariesRequest(Double altitudeM, List<Anniversary> anniversa
         json.put("fromYear", fromYear);
         json.put("latitudeDeg", latitudeDeg);
         json.put("longitudeDeg", longitudeDeg);
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
         json.put("years", years);
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

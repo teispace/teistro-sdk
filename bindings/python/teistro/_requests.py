@@ -73,13 +73,13 @@ __all__ = [
     "ManasaraMeasure",
     "AayadiSystem",
     "Anniversary",
-    "AshauchRequest",
-    "AshauchTable",
-    "AshauchTradition",
     "ZoneSpec",
     "ZoneSpecIana",
     "ZoneSpecLocalMean",
     "ZoneSpecFixed",
+    "AshauchRequest",
+    "AshauchTable",
+    "AshauchTradition",
     "KinAsked",
     "KinTable",
     "AshauchRiteAsked",
@@ -803,10 +803,14 @@ class AnniversariesRequest(TypedDict, total=False):
 
     longitudeDeg: Required[float]
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both."""
 
     years: Required[int]
     """1 to 100: the span ends the day before month 1 of the year after."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class AshauchQuery(TypedDict, total=False):
@@ -1007,8 +1011,11 @@ class ElectRequest(TypedDict, total=False):
     muhurta: Required[MuhurtaRequest]
     """The rule set: an activity's name or rules spelt out, the native, the ranking, how many days are cut and how many windows kept."""
 
-    utcOffsetSeconds: Required[int]
-    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class PackRequest(TypedDict, total=False):
@@ -1063,7 +1070,11 @@ class FestivalCalendarRequest(TypedDict, total=False):
 
     stampUnixSeconds: Required[int]
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class FirstYearQuery(TypedDict, total=False):
@@ -1149,7 +1160,11 @@ class NextRequest(TypedDict, total=False):
     rule: Optional[str]
     """A rule's key in `festivals`; or `kind`, not both."""
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class ObservanceRequest(TypedDict, total=False):
@@ -1176,11 +1191,14 @@ class ObservanceRequest(TypedDict, total=False):
     traditions: Required[Sequence[ObservanceTradition]]
     """The traditions compared, 1 to 8, in the order the answer lists them."""
 
-    utcOffsetSeconds: Required[int]
-    """The offset from UTC the place's civil days run at, in seconds, east positive."""
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both."""
 
     year: Optional[int]
     """A whole year of `calendar`, from its month 1, day 1; or `first`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class PakshiRequest(TypedDict, total=False):
@@ -1236,8 +1254,11 @@ class PeopleRequest(TypedDict, total=False):
     people: Required[Sequence[PeoplePerson]]
     """The births, 1 to 50, in the order the answer lists them."""
 
-    utcOffsetSeconds: Required[int]
-    """The offset from UTC its civil day runs at, in seconds, east positive."""
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC its civil day runs at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class PublishedReasonsRequest(TypedDict, total=False):
@@ -1260,7 +1281,11 @@ class PublishedReasonsRequest(TypedDict, total=False):
 
     places: Sequence[ReckonedPlace]
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class SankalpaRequest(TypedDict, total=False):
@@ -1305,7 +1330,11 @@ class SentencesRequest(TypedDict, total=False):
 
     longitudeDeg: Required[float]
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class SkyViewRequest(TypedDict, total=False):
@@ -1960,6 +1989,37 @@ class Anniversary(TypedDict, total=False):
     """The rite's time, in place of the kind's (`AnniversaryKind::window`): `{"window": "PART", "part": "MADHYAHNA"}` is DS's madhyahna, the 7th to 9th muhurtas (C662)."""
 
 
+ZoneSpec: TypeAlias = "Union[ZoneSpecIana, ZoneSpecLocalMean, ZoneSpecFixed]"
+"""How a zone is given."""
+
+
+class ZoneSpecIana(TypedDict, total=False):
+    """A zone of the database, by its IANA name."""
+
+    kind: Required[Literal['IANA']]
+
+    zone: Required[str]
+    """The name (`Asia/Kathmandu`)."""
+
+
+class ZoneSpecLocalMean(TypedDict, total=False):
+    """Local mean time at a longitude: four minutes a degree."""
+
+    kind: Required[Literal['LOCAL_MEAN']]
+
+    longitude: Required[float]
+    """The longitude, east positive."""
+
+
+class ZoneSpecFixed(TypedDict, total=False):
+    """A fixed offset the consumer states."""
+
+    kind: Required[Literal['FIXED']]
+
+    offset: Required[int]
+    """The offset."""
+
+
 class AshauchRequest(TypedDict, total=False):
     """One request: one event, one observer."""
 
@@ -2031,37 +2091,6 @@ AshauchTradition: TypeAlias = Literal['DHARMASINDHU', 'MITAKSHARA']
 `DHARMASINDHU`: `AshauchTable::dharmasindhu`, the default.
 `MITAKSHARA`: `AshauchTable::mitakshara`.
 """
-
-
-ZoneSpec: TypeAlias = "Union[ZoneSpecIana, ZoneSpecLocalMean, ZoneSpecFixed]"
-"""How a zone is given."""
-
-
-class ZoneSpecIana(TypedDict, total=False):
-    """A zone of the database, by its IANA name."""
-
-    kind: Required[Literal['IANA']]
-
-    zone: Required[str]
-    """The name (`Asia/Kathmandu`)."""
-
-
-class ZoneSpecLocalMean(TypedDict, total=False):
-    """Local mean time at a longitude: four minutes a degree."""
-
-    kind: Required[Literal['LOCAL_MEAN']]
-
-    longitude: Required[float]
-    """The longitude, east positive."""
-
-
-class ZoneSpecFixed(TypedDict, total=False):
-    """A fixed offset the consumer states."""
-
-    kind: Required[Literal['FIXED']]
-
-    offset: Required[int]
-    """The offset."""
 
 
 class KinAsked(TypedDict, total=False):
@@ -2414,8 +2443,11 @@ class PeoplePerson(TypedDict, total=False):
     name: Required[str]
     """What the answer calls them; each name once."""
 
-    utcOffsetSeconds: Required[int]
-    """The offset from UTC of the birth's clock, in seconds, east positive."""
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC of the birth's clock, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 class ReckonedPlace(TypedDict, total=False):
@@ -2429,7 +2461,11 @@ class ReckonedPlace(TypedDict, total=False):
 
     name: Required[str]
 
-    utcOffsetSeconds: Required[int]
+    utcOffsetSeconds: Optional[int]
+    """The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both."""
+
+    zone: Optional[ZoneSpec]
+    """The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both."""
 
 
 AyanaReckoning: TypeAlias = Literal['SIDEREAL', 'TROPICAL']
@@ -3900,7 +3936,7 @@ class PublishedSet(TypedDict, total=False):
     """Its version; a correction is a higher one."""
 
 
-FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA'], Sequence[FestivalRuleItem]]"
+FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL'], Sequence[FestivalRuleItem]]"
 """The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key."""
 
 
@@ -5238,7 +5274,7 @@ class PublishedEntryWithdraw(TypedDict, total=False):
     """Where the publisher says it."""
 
 
-FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
+FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
 """A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule."""
 
 

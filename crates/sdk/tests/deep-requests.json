@@ -43,7 +43,11 @@
       "latitudeDeg": 1.5,
       "longitudeDeg": 1.5,
       "utcOffsetSeconds": 1,
-      "years": 1
+      "years": 1,
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
     }
   },
   {
@@ -1482,7 +1486,11 @@
           "vrishaVastu": true
         }
       },
-      "utcOffsetSeconds": 1
+      "utcOffsetSeconds": 1,
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
     }
   },
   {
@@ -1917,7 +1925,11 @@
       "product": "x",
       "refreshMinutes": 1,
       "stampUnixSeconds": 1,
-      "utcOffsetSeconds": 1
+      "utcOffsetSeconds": 1,
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
     }
   },
   {
@@ -2436,7 +2448,11 @@
       "limitDays": 1,
       "longitudeDeg": 1.5,
       "rule": "VIJAYA_DASHAMI",
-      "utcOffsetSeconds": 1
+      "utcOffsetSeconds": 1,
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
     }
   },
   {
@@ -2794,7 +2810,11 @@
         }
       ],
       "utcOffsetSeconds": 1,
-      "year": 1
+      "year": 1,
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
     }
   },
   {
@@ -2853,10 +2873,18 @@
           "latitudeDeg": 1.5,
           "longitudeDeg": 1.5,
           "name": "Asha",
-          "utcOffsetSeconds": 1
+          "utcOffsetSeconds": 1,
+          "zone": {
+            "kind": "IANA",
+            "zone": "x"
+          }
         }
       ],
-      "utcOffsetSeconds": 1
+      "utcOffsetSeconds": 1,
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
     }
   },
   {
@@ -3212,10 +3240,18 @@
           "latitudeDeg": 1.5,
           "longitudeDeg": 1.5,
           "name": "Kathmandu",
-          "utcOffsetSeconds": 1
+          "utcOffsetSeconds": 1,
+          "zone": {
+            "kind": "IANA",
+            "zone": "x"
+          }
         }
       ],
-      "utcOffsetSeconds": 1
+      "utcOffsetSeconds": 1,
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
     }
   },
   {
@@ -3246,7 +3282,11 @@
       "latitudeDeg": 1.5,
       "locale": "ne-Deva-NP",
       "longitudeDeg": 1.5,
-      "utcOffsetSeconds": 1
+      "utcOffsetSeconds": 1,
+      "zone": {
+        "kind": "IANA",
+        "zone": "x"
+      }
     }
   },
   {
