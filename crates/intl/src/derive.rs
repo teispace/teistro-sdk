@@ -166,7 +166,6 @@ pub fn derive(
     // The entities: every form transliterated, `iast` kept because it is
     // already in the target's script, and an override last.
     let Some(namespace) = source.namespaces.get(ENTITY_NAMESPACE) else {
-        out.files.extend(messages);
         return Ok(out);
     };
     let mut document = Map::new();
@@ -221,7 +220,6 @@ pub fn derive(
         PathBuf::from(to).join(format!("{ENTITY_NAMESPACE}.json")),
         format!("{}\n", pretty(&Json::Object(document))?),
     ));
-    out.files.extend(messages);
     Ok(out)
 }
 
