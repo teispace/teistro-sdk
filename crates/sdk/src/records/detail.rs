@@ -146,7 +146,7 @@ impl Brief {
 /// from a brief one (crux C1260).
 ///
 /// ```
-/// # #[cfg(feature = "schema")] {
+/// # #[cfg(feature = "masks")] {
 /// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
 /// let mask = convert.fields(["date.year", "weekday"]).expect("both are the answer's");
 /// assert_eq!(mask.record(), "calendar.convert");
@@ -183,13 +183,14 @@ impl Fields {
     }
 
     /// `paths` as a mask over the answer `schema` describes, whose
-    /// definitions are `definitions`; `None` for a record that states no
-    /// answer schema.
-    #[cfg(feature = "schema")]
+    /// definitions are `definitions`; `schema` is `None` for a record that
+    /// states no answer schema.
+    #[cfg(feature = "masks")]
     pub(crate) fn checked(
         record: &'static str,
         paths: Vec<String>,
-        schema: Option<(Value, Map<String, Value>)>,
+        schema: Option<Value>,
+        definitions: &Map<String, Value>,
     ) -> Result<Fields, Error> {
         if paths.is_empty() {
             return Err(Error::invalid_arg("a field mask names at least one field")
@@ -204,14 +205,14 @@ impl Fields {
                 .with_field(format!("fields[{index}]")));
             }
         }
-        let Some((mut schema, definitions)) = schema else {
+        let Some(mut schema) = schema else {
             return Err(Error::unsupported(format!(
                 "`{record}` states no answer schema, so no mask can be checked against it"
             ))
             .with_field("fields"));
         };
         let named: Vec<&str> = paths.iter().map(String::as_str).collect();
-        let found = narrowed_to(&named, &mut schema, &definitions);
+        let found = narrowed_to(&named, &mut schema, definitions);
         if let Some(unknown) = found.unknown.first() {
             let index = paths.iter().position(|path| path == unknown).unwrap_or(0);
             return Err(Error::invalid_arg(format!(
@@ -259,7 +260,7 @@ fn kept(value: Value, paths: &[&str]) -> Value {
 /// leaves open (a section held as any JSON), and each tag a `oneOf`
 /// branch would lose, where an instance without it could match two
 /// branches or none.
-#[cfg(feature = "schema")]
+#[cfg(feature = "masks")]
 #[derive(Clone, Debug, Default, PartialEq, Eq)]
 pub struct Narrowed {
     /// Paths the schema has no property for.
@@ -275,7 +276,7 @@ pub struct Narrowed {
     pub left_out: Vec<String>,
 }
 
-#[cfg(feature = "schema")]
+#[cfg(feature = "masks")]
 impl Brief {
     /// `schema`, written by a generator whose definitions are
     /// `definitions`, narrowed so that a brief answer holds to it: every
@@ -310,7 +311,7 @@ impl Brief {
 
 /// `schema` narrowed to `paths` in place, as [`Brief::narrow`] narrows it
 /// to a brief's, with what narrowing found.
-#[cfg(feature = "schema")]
+#[cfg(feature = "masks")]
 fn narrowed_to(paths: &[&str], schema: &mut Value, definitions: &Map<String, Value>) -> Narrowed {
     let mut narrowed = Narrowed::default();
     if paths.is_empty() {
@@ -338,12 +339,12 @@ fn narrowed_to(paths: &[&str], schema: &mut Value, definitions: &Map<String, Val
 
 /// How deep a path may follow definitions into one another: far beyond
 /// any brief's paths, and a stop for a schema that refers to itself.
-#[cfg(feature = "schema")]
+#[cfg(feature = "masks")]
 const DEPTH: usize = 64;
 
 /// The keywords by which a schema states something of a value; one with
 /// none of them admits any JSON.
-#[cfg(feature = "schema")]
+#[cfg(feature = "masks")]
 const STATING: [&str; 10] = [
     "type",
     "properties",
@@ -359,7 +360,7 @@ const STATING: [&str; 10] = [
 
 /// The paths a narrowing reached, relative to where it began: those a
 /// property was found for, and those that ran into an open value.
-#[cfg(feature = "schema")]
+#[cfg(feature = "masks")]
 #[derive(Default)]
 struct Reached {
     found: std::collections::BTreeSet<String>,
@@ -367,7 +368,7 @@ struct Reached {
     left_out: std::collections::BTreeSet<String>,
 }
 
-#[cfg(feature = "schema")]
+#[cfg(feature = "masks")]
 impl Reached {
     fn extend(&mut self, other: Reached) {
         self.found.extend(other.found);
@@ -389,13 +390,13 @@ impl Reached {
     }
 }
 
-#[cfg(feature = "schema")]
+#[cfg(feature = "masks")]
 struct Walk<'a> {
     definitions: &'a Map<String, Value>,
     untagged: Vec<String>,
 }
 
-#[cfg(feature = "schema")]
+#[cfg(feature = "masks")]
 impl Walk<'_> {
     /// `schema` narrowed to `paths` in place.
     fn narrow(

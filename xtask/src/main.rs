@@ -275,6 +275,7 @@ mod absence;
 mod accuracy;
 mod agreement;
 mod almanac;
+mod answers;
 mod antiscia;
 mod app_speed;
 mod app_speed_device;
@@ -445,6 +446,7 @@ type Pass = (&'static str, fn(&Path) -> i32, fn(&Path) -> i32);
 /// gone stale on three passes, which is the whole argument. A slice and
 /// not an array, so that adding a row is one line and not two.
 const PASSES: &[Pass] = &[
+    ("answers", answers::generate, answers::check_generated),
     (
         "conformance",
         conformance::generate,
