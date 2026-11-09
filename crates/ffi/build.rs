@@ -14,12 +14,12 @@
     reason = "a build script"
 )]
 
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// What `git` says about the tree this is built from, or `None` when the
 /// build is not from a checkout (a published crate, a vendored source).
-fn commit(root: &std::path::Path) -> Option<(String, bool)> {
+fn commit(root: &Path) -> Option<(String, bool)> {
     let git = |args: &[&str]| -> Option<String> {
         let output = Command::new("git")
             .args(args)
@@ -39,8 +39,8 @@ fn commit(root: &std::path::Path) -> Option<(String, bool)> {
 /// The build's identity as the JSON `ts_build_info` hands out. Written
 /// here rather than assembled at run time, so it costs nothing and cannot
 /// disagree with the library it is compiled into.
-fn build_info(out: &std::path::Path, root: &std::path::Path) {
-    let (commit, dirty) = commit(root).unwrap_or_else(|| (String::from("unknown"), false));
+fn build_info(out: &Path, identity: Option<(String, bool)>) {
+    let (commit, dirty) = identity.unwrap_or_else(|| (String::from("unknown"), false));
     let profile = std::env::var("PROFILE").unwrap_or_else(|_| String::from("unknown"));
     let target = std::env::var("TARGET").unwrap_or_else(|_| String::from("unknown"));
     let debug = std::env::var("DEBUG").is_ok_and(|v| v != "false");
@@ -70,6 +70,31 @@ fn build_info(out: &std::path::Path, root: &std::path::Path) {
     std::fs::write(&path, &json).unwrap_or_else(|e| panic!("{}: {e}", path.display()));
 }
 
+/// The file `cargo package` writes into a crate packaged from a git
+/// checkout: the commit and whether the tree was dirty.
+const VCS_INFO: &str = ".cargo_vcs_info.json";
+
+/// The commit a packaged crate was cut from, as its [`VCS_INFO`] records
+/// it, or `None` when this is not a packaged crate (or one packaged
+/// outside git). Read with no JSON parser, so the script keeps no build
+/// dependency: `"sha1": "<hex>"`, and `"dirty": true` only when it was.
+fn packaged(manifest: &Path) -> Option<(String, bool)> {
+    let text = std::fs::read_to_string(manifest.join(VCS_INFO)).ok()?;
+    let sha1 = text
+        .split_once("\"sha1\"")?
+        .1
+        .split('"')
+        .nth(1)?
+        .to_string();
+    let dirty = text.split_once("\"dirty\"").is_some_and(|(_, rest)| {
+        rest.trim_start()
+            .trim_start_matches(':')
+            .trim_start()
+            .starts_with("true")
+    });
+    Some((sha1, dirty))
+}
+
 fn main() {
     let out = PathBuf::from(std::env::var_os("OUT_DIR").expect("cargo sets OUT_DIR"));
     // **The locale bundles are the façade's now.** This script used to
@@ -78,19 +103,34 @@ fn main() {
     // (ADR-0010), through the context it now composes with. What is left
     // here is what only the C library has: which build a binding is
     // talking to.
-    // The repository, from this crate's own manifest: `crates/ffi` is
-    // two levels down. Derived rather than asked of `teistro-intl`,
-    // which this script no longer needs now that the bundles are the
-    // façade's -- so it has no build dependency at all.
     let manifest = PathBuf::from(
         std::env::var_os("CARGO_MANIFEST_DIR").expect("cargo sets CARGO_MANIFEST_DIR"),
     );
+    // Built from its package (a registry, a vendored source, the bundle
+    // `cargo xtask check-packages` builds), the crate says which commit it
+    // was cut from, and nothing outside the crate is read: its parent is
+    // whatever directory the package was unpacked into, which may be
+    // someone else's checkout.
+    if let Some(identity) = packaged(&manifest) {
+        println!(
+            "cargo:rerun-if-changed={}",
+            manifest.join(VCS_INFO).display()
+        );
+        build_info(&out, Some(identity));
+        return;
+    }
+    // In the repository, `crates/ffi` is two levels down, and git says
+    // what the tree is. Anything else is a source with no history to ask.
     let repository = manifest
         .parent()
-        .and_then(std::path::Path::parent)
-        .map_or_else(|| manifest.clone(), std::path::Path::to_path_buf);
-    watch(&repository);
-    build_info(&out, &repository);
+        .and_then(Path::parent)
+        .filter(|root| manifest.ends_with("crates/ffi") && root.join("Cargo.toml").is_file());
+    let Some(repository) = repository else {
+        build_info(&out, None);
+        return;
+    };
+    watch(repository);
+    build_info(&out, commit(repository));
 }
 
 /// Tells cargo when the stamp goes stale, so it is written again. HEAD
@@ -98,7 +138,7 @@ fn main() {
 /// ref, staging moves the index, and an edit to what the library is
 /// built from changes the tree without touching git at all, so each is
 /// watched. Git names its own paths, which a worktree keeps elsewhere.
-fn watch(root: &std::path::Path) {
+fn watch(root: &Path) {
     let git = |args: &[&str]| -> Option<PathBuf> {
         let output = Command::new("git")
             .args(args)
@@ -123,7 +163,7 @@ fn watch(root: &std::path::Path) {
         .filter_map(|name| git(&["rev-parse", "--git-path", name]))
         .collect();
     paths.extend(
-        ["crates", "catalogue", "i18n", "Cargo.toml", "Cargo.lock"]
+        ["crates", "catalogue", "Cargo.toml", "Cargo.lock"]
             .into_iter()
             .map(|source| root.join(source)),
     );
