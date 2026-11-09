@@ -284,7 +284,7 @@ impl AlmanacArea<'_> {
     /// As [`AlmanacArea::pakshi_days`]; a zone the database does not have.
     pub fn pakshi_request(self, asked: &PakshiRequest) -> Result<Envelope<Vec<PakshiDay>>, Error> {
         let noon = || AlmanacArea::noon_of_date(&asked.first);
-        self.clocked(&asked.clock, noon, |almanac, offset| {
+        self.clocked_sealed(&asked.clock, noon, |almanac, offset| {
             almanac.pakshi_days(
                 &asked.first,
                 &asked.last,

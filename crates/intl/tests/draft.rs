@@ -30,14 +30,13 @@ fn errors(tree: &Tree) -> Vec<String> {
 #[test]
 fn hindi_and_sanskrit_calendar_text_ships_marked() {
     let tree = tree();
-    for tag in ["hi-Deva-IN", "sa-Deva"] {
+    // sa-Latn is derived from sa-Deva and keeps its mark.
+    for tag in ["hi-Deva-IN", "sa-Deva", "sa-Latn"] {
         assert_eq!(tree.locales[tag].meta.draft, ["sdk.calendar"], "{tag}");
     }
     // The strict locale drafts its day sentences, not its calendar words.
     assert_eq!(tree.locales["ne-Deva-NP"].meta.draft, ["sdk.day"]);
-    for tag in ["en-Latn", "sa-Latn"] {
-        assert!(tree.locales[tag].meta.draft.is_empty(), "{tag}");
-    }
+    assert!(tree.locales["en-Latn"].meta.draft.is_empty());
     let report = Intl::from_tree(&tree).unwrap().report();
     let hindi = report
         .locales

@@ -1,11 +1,11 @@
 {
   "schema": "teistro-pack-budgets/1",
-  "why": "Each locale's bundle, as `crates/sdk/build.rs` compiles it from `i18n/` into every artefact, in bytes. `crates/intl/tests/pack_budgets.rs` holds each both ways: a bundle over its budget fails, and so does a budget more than a quarter over its bundle, a locale with no budget and a budget with no locale. A budget moves by hand, in the change that needs it, with the reason in the commit. Set 2026-10-23 about a tenth over the bundles measured then: en-Latn 107,795, hi-Deva-IN 70,714, ne-Deva-NP 143,491, sa-Deva 50,528, sa-Latn 39,702. Raised 2026-10-31 for hi-Deva-IN and sa-Deva, which gained the whole of `sdk.calendar` (SR-75). Raised 2026-11-02 for en-Latn and ne-Deva-NP, about a tenth over 121,709 and 163,005, after the lexicon, the chart disagreements, the paya, the doshas and the Jain calendar named their keys (SR-41, SR-32, SR-48, SR-59). Raised 2026-11-03 for hi-Deva-IN, about a tenth over 89,696, after the mundane kinds named their keys (SR-45).",
+  "why": "Each locale's bundle, as `crates/sdk/build.rs` compiles it from `i18n/` into every artefact, in bytes. `crates/intl/tests/pack_budgets.rs` holds each both ways: a bundle over its budget fails, and so does a budget more than a quarter over its bundle, a locale with no budget and a budget with no locale. A budget moves by hand, in the change that needs it, with the reason in the commit. Set 2026-10-23 about a tenth over the bundles measured then: en-Latn 107,795, hi-Deva-IN 70,714, ne-Deva-NP 143,491, sa-Deva 50,528, sa-Latn 39,702. Raised 2026-10-31 for hi-Deva-IN and sa-Deva, which gained the whole of `sdk.calendar` (SR-75). Raised 2026-11-02 for en-Latn and ne-Deva-NP, about a tenth over 121,709 and 163,005, after the lexicon, the chart disagreements, the paya, the doshas and the Jain calendar named their keys (SR-41, SR-32, SR-48, SR-59). Raised 2026-11-03 for hi-Deva-IN, about a tenth over 89,696, after the mundane kinds named their keys (SR-45). Raised 2026-11-10 for sa-Latn, about a tenth over 51,297, after it gained `sdk.calendar` derived from sa-Deva (SR-79).",
   "budgets": {
     "en-Latn": 134000,
     "hi-Deva-IN": 99000,
     "ne-Deva-NP": 180000,
     "sa-Deva": 66000,
-    "sa-Latn": 44000
+    "sa-Latn": 57000
   }
 }

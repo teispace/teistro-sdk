@@ -198,13 +198,11 @@ impl AlmanacArea<'_> {
     /// the templates, which a fallback does not answer; otherwise as
     /// [`AlmanacArea::day`].
     pub fn sentences(self, asked: &SentencesRequest) -> Result<Envelope<DaySentences>, Error> {
-        let mut answer = self.unclocked().clocked(
+        self.unclocked().clocked_sealed(
             &asked.clock,
             || Self::noon_of_date(&asked.date),
             |almanac, offset| almanac.sentences_on(asked, offset),
-        )?;
-        asked.clock.seal_answer(&mut answer.provenance);
-        Ok(answer)
+        )
     }
 
     /// [`AlmanacArea::sentences`] on `offset`, or on the zone this area

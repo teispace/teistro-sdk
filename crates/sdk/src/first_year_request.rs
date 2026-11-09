@@ -113,7 +113,7 @@ impl AlmanacArea<'_> {
         self,
         asked: &FirstYearQuery,
     ) -> Result<Envelope<serde_json::Value>, Error> {
-        let Envelope { value, provenance } = self.clocked(
+        let Envelope { value, provenance } = self.clocked_sealed(
             &asked.clock,
             || Ok(asked.request.at),
             |almanac, offset| almanac.first_year(&asked.request, &asked.place, offset),
