@@ -223,6 +223,8 @@ jobs:
         run: cargo xtask check-accuracy
       - name: Intl gate (the i18n/ sources validate and reproduce the checked-in typed messages)
         run: cargo xtask check-intl
+      - name: Answer shapes (the field masks' embedded answer schemas reproduce from the records)
+        run: cargo xtask check-answers
       # Moved from pages (1 of 3), which ran 33 minutes to this shard's 16
       # (2026-11-09): these two were 7.5 of them.
       - name: Muntha page (the birth lagna progressed a sign a year, held over every recorded birth against the recording's lagna, with its margin, its rival and its two degree readings)
