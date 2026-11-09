@@ -26,6 +26,7 @@
 //! - [`time`]: civil times to instants with the zone metadata, the scales;
 //! - [`intl`]: the locale engine over the embedded bundles and loaded packs;
 //! - [`positions`]: positions over the ephemeris port, completed;
+//! - [`record`]: any record entry point by name, brief, full or masked;
 //! - [`string`] and [`blob`]: the owned and borrowed result carriers;
 //! - [`schemas`]: the result blob schemas, read by the generators.
 //!
@@ -87,6 +88,7 @@ pub mod positions;
 pub mod provider;
 pub mod published;
 pub mod rashifal;
+pub mod record;
 pub mod recorded;
 pub mod research;
 pub mod schemas;

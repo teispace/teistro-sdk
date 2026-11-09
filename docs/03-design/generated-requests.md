@@ -25,6 +25,14 @@ of each request, so a request is typed as serde reads it) and checked by
 | Python | `bindings/python/teistro/_requests.py` | an object a `TypedDict(total=False)` with `Required[...]` for a required field and `Optional[...]` where it takes null, in the call form where a key is a keyword (`from`); a key set a `Literal[...]`, or `Union[TheEnum, Literal[...]]` for a boundary enum (the keys alone for a catalogue kind's); a tagged union a `Union` of `TypedDict`s; external tagging the bare keys' `Literal` and a private one-key `TypedDict` per variant with data; a catalogue member `Union[TheEnum, str]`; a record the layer also answers with (`PY_TAKEN_BACK`: `NatalPoint`, `AlmutenRules`, …) that record or the layer's answer class |
 | Dart | `bindings/dart/lib/src/requests.dart`, a `part` of `teistro.dart` | an object a `final class` with a `const` constructor: `required` where serde requires the field, the schema's default where Dart can write it as a constant (an enum member, a number, a list, a record built of those), and nullable and left off the wire otherwise, so serde gives its own; a key set an `enum` with its `key`, implementing the layer's `_Keyed` so its decoders read it; a tagged, external or or-named union a `sealed class` of one `final class` per variant; a catalogue member the catalogue's enum, written as its key, and a registered key `KeyOf<T>`, written in full. Every record writes its JSON as `_wire` and compares field by field (`_Value`) |
 
+Each file also types every record entry point's request by its name, from
+the description's request roots, for the context's `record`, which
+answers any record brief, full or by a caller's mask
+(`result-detail.md` D5): Node's `RecordRequests` and `RecordName`,
+Python's `RecordName` and `RecordCalls` (one `@overload` a name), Dart's
+`Records` constants of `RecordOf<R>`, and Java's `RecordOf<R>` constants
+on `Requests`.
+
 Docs come from the schema's descriptions, which are the Rust doc comments
 (`a-doc-comment-has-generated-readers`), so a request documents itself
 once, in Rust.

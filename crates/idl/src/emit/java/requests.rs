@@ -52,6 +52,10 @@ pub(super) fn files(api: &Api) -> Vec<File> {
             path: format!("{dir}/Requests.java"),
             text: requests(api),
         },
+        File {
+            path: format!("{dir}/RecordOf.java"),
+            text: format!("{}{RECORD_OF}", preamble(api, REQUEST_PACKAGE)),
+        },
     ];
     for record in &api.requests.records {
         if api.requests.enums.contains_key(&record.name) {
@@ -152,13 +156,57 @@ fn requests(api: &Api) -> String {
             )
         })
         .collect();
+    let mut constants = String::new();
+    for root in &api.requests.roots {
+        let _ = write!(
+            constants,
+            "    /** {{@code {}}}, whose request is {{@link {}}}. */\n    public static final RecordOf<{}> {} = new RecordOf<>({});\n\n",
+            root.record,
+            root.name,
+            root.name,
+            crate::names::screaming(&pascal(&root.record.replace('.', "_"))),
+            literal(&root.record)
+        );
+    }
     let _ = writeln!(
         out,
-        "/** Each record entry point's request type, by the entry point's name. */\npublic final class Requests {{\n    private static final Map<String, Function<Object, RequestJson>> READERS = Map.ofEntries(\n{});\n\n    private Requests() {{}}\n\n    /**\n     * The record entry points whose request is typed here; an engine's own\n     * operations stay a JSON value.\n     *\n     * @return the entry points' names\n     */\n    public static Set<String> records() {{\n        return READERS.keySet();\n    }}\n\n    /**\n     * A record entry point's request from its JSON, as {{@code Json.read}}\n     * answers it.\n     *\n     * @param record the entry point's name ({{@code chart.found}})\n     * @param raw the request's JSON value\n     * @return the typed request\n     * @throws IllegalArgumentException for an entry point with no typed\n     *     request, or JSON that is not its request, naming the field\n     */\n    public static RequestJson read(String record, Object raw) {{\n        Function<Object, RequestJson> reader = READERS.get(record);\n        if (reader == null) {{\n            throw new IllegalArgumentException(\"no typed request for the record \" + record);\n        }}\n        return reader.apply(raw);\n    }}\n}}",
+        "/** Each record entry point's request type, by the entry point's name. */\npublic final class Requests {{\n    private static final Map<String, Function<Object, RequestJson>> READERS = Map.ofEntries(\n{});\n\n{constants}    private Requests() {{}}\n\n    /**\n     * The record entry points whose request is typed here; an engine's own\n     * operations stay a JSON value.\n     *\n     * @return the entry points' names\n     */\n    public static Set<String> records() {{\n        return READERS.keySet();\n    }}\n\n    /**\n     * A record entry point's request from its JSON, as {{@code Json.read}}\n     * answers it.\n     *\n     * @param record the entry point's name ({{@code chart.found}})\n     * @param raw the request's JSON value\n     * @return the typed request\n     * @throws IllegalArgumentException for an entry point with no typed\n     *     request, or JSON that is not its request, naming the field\n     */\n    public static RequestJson read(String record, Object raw) {{\n        Function<Object, RequestJson> reader = READERS.get(record);\n        if (reader == null) {{\n            throw new IllegalArgumentException(\"no typed request for the record \" + record);\n        }}\n        return reader.apply(raw);\n    }}\n}}",
         entries.join(",\n")
     );
     out
 }
+
+/// A record entry point typed by its request, as the constants of
+/// `Requests` name each: what `Context.record` takes beside the request.
+const RECORD_OF: &str = "/**
+ * A record entry point, by its name, typed by the request it takes: a
+ * constant of {@link Requests}, which {@code Context.record} takes beside
+ * a request of that type only.
+ *
+ * @param <R> the request it takes
+ */
+public final class RecordOf<R extends RequestJson> {
+    private final String name;
+
+    RecordOf(String name) {
+        this.name = name;
+    }
+
+    /**
+     * Its name, {@code area.operation}.
+     *
+     * @return the name
+     */
+    public String name() {
+        return name;
+    }
+
+    @Override
+    public String toString() {
+        return name;
+    }
+}
+";
 
 /// A variant of a union tagged by a field: the union, the field, and the
 /// variant's key.

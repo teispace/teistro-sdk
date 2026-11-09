@@ -567,6 +567,93 @@ fn every_deep_example_holds_to_its_tools_schema() {
     }
 }
 
+/// The first field of an answer's value, the first item's where it is a
+/// list: a path every answer of the record's could carry. None for an
+/// answer with no fields (a text, an empty list).
+fn first_field(value: &Value) -> Option<String> {
+    match value {
+        Value::Object(fields) => fields.keys().next().cloned(),
+        Value::Array(items) => items.first().and_then(first_field),
+        _ => None,
+    }
+}
+
+/// **A caller's mask** (C1260): every tool answers the field a call names
+/// as the façade's mask over its full answer selects it, and the masked
+/// envelope holds to the tool's own `outputSchema`.
+#[test]
+fn every_tool_answers_a_mask_as_the_facade_does() {
+    let mut server = Server::new(Engine::Builtin).with_detail(Detail::Full);
+    let tools = listed(&mut server);
+    let context = Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap();
+    for (name, request) in examples() {
+        if asks_an_engine(name) {
+            continue;
+        }
+        let record = teistro::records::record(name).unwrap();
+        let full = record.answer(&context, &request.to_string()).unwrap();
+        let Some(path) = first_field(&full.value) else {
+            continue;
+        };
+        let mask = record.fields([path.as_str()]).unwrap();
+        let expected = record.fields_of(full, &mask).unwrap().envelope().unwrap();
+        let result = call(
+            &mut server,
+            name,
+            &json!({"request": request, "fields": [path]}),
+        );
+        assert_eq!(result["isError"], false, "{name}: {result}");
+        assert_eq!(result["structuredContent"], expected, "{name}");
+        let tool = tools.iter().find(|tool| tool["name"] == name).unwrap();
+        if let Some(output) = tool.get("outputSchema") {
+            holds(output, &result["structuredContent"])
+                .unwrap_or_else(|why| panic!("{name}'s masked answer: {why}"));
+        }
+    }
+}
+
+/// A mask is refused by the path it gets wrong, as a whole when it is no
+/// list, and beside `detail: brief`, which it does not compose with.
+#[test]
+fn a_tool_refuses_a_mask_by_its_path() {
+    let mut server = Server::new(Engine::Builtin);
+    let (name, request) = examples()
+        .into_iter()
+        .find(|(name, _)| *name == "calendar.convert")
+        .unwrap();
+    for (fields, detail, field) in [
+        (json!(["weekday", "date.yaer"]), None, "arguments.fields[1]"),
+        (json!("weekday"), None, "arguments.fields"),
+        (json!([]), None, "arguments.fields"),
+        (json!(["weekday"]), Some("brief"), "arguments.fields"),
+    ] {
+        let mut arguments = json!({"request": request, "fields": fields});
+        if let Some(detail) = detail {
+            arguments["detail"] = json!(detail);
+        }
+        let refused = call(&mut server, name, &arguments);
+        assert_eq!(refused["isError"], true, "{arguments}: {refused}");
+        assert_eq!(
+            refused["structuredContent"]["status"], "INVALID_ARG",
+            "{refused}"
+        );
+        assert_eq!(refused["structuredContent"]["field"], field, "{arguments}");
+    }
+    // Beside `full` it is the mask over the full answer.
+    let answered = call(
+        &mut server,
+        name,
+        &json!({"request": request, "fields": ["weekday"], "detail": "full"}),
+    );
+    assert_eq!(
+        answered["structuredContent"]["value"],
+        json!({"weekday": "SATURDAY"})
+    );
+}
+
 /// **What a schema says, the tool takes and answers** (P1): every
 /// example's arguments hold to its tool's `inputSchema`, and its answer
 /// to the `outputSchema`, over the built-in and over a loaded adapter,

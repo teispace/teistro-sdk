@@ -343,6 +343,13 @@ that for a client that stores or validates whole answers. The listed
 `outputSchema` is narrowed so that both details hold to it, and a test
 holds every example's answer at each detail to it.
 
+A call may name `fields` instead, a caller's own mask of the full
+answer's paths, each checked against the answer's schema
+(`result-detail.md` D6). The `outputSchema` holds a masked value to
+nothing narrower than a value (`if` the envelope carries `fields`), since
+its shape is the call's, and every other answer to the narrowed schema;
+a test holds each example's masked answer to it.
+
 **P2. Resources for what an agent reads rather than computes.** The
 catalogue (`teistro://catalogue/{kind}`, a resource template), the
 shipped profiles and the settings schema (`teistro://profiles/{id}`,

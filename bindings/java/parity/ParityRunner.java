@@ -3196,6 +3196,12 @@ public final class ParityRunner {
         put("rites-digest-seal", com.teispace.teistro.blob.Digest.decode(digest).seal());
         SankalpaAnswer sankalpa = geo.almanac().sankalpa(2_461_055.593_75, kathmandu, 20_700, AyanaReckoning.TROPICAL);
         put("rites-sankalpa-hash", sankalpa.provenance().contentHash());
+        // The same request by name: its brief keeps the answer key. A mask is each binding's own test, since
+        // the wasm module carries no schema to check one against.
+        SankalpaRequest asked = SankalpaRequest.of(Json.read("{\"at\": 2461055.59375, \"latitudeDeg\": 27.7172, "
+                + "\"longitudeDeg\": 85.324, \"altitudeM\": 1400, \"utcOffsetSeconds\": 20700, \"ayana\": \"TROPICAL\"}"));
+        Map<?, ?> brief = (Map<?, ?>) geo.record(Requests.ALMANAC_SANKALPA, asked, Detail.BRIEF);
+        put("rites-record-brief-key", ((Map<?, ?>) brief.get("provenance")).get("answer_key"));
         Sankalpa recited = sankalpa.value();
         put("rites-sankalpa", String.join(" ", ymd(recited.date()), recited.vara().fullKey(),
                 recited.paksha().fullKey(), recited.tithi().fullKey(), recited.nakshatra().fullKey()));

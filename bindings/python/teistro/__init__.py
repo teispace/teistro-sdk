@@ -469,6 +469,8 @@ from ._requests import (
     ClaimsRequest as ClaimsRequest,
     IssueRequest as IssueRequest,
     Receipt as Receipt,
+    RecordCalls as RecordCalls,
+    RecordName as RecordName,
     ReceiptProvider as ReceiptProvider,
     SettingsSnapshot as SettingsSnapshot,
     ElectRequest as ElectRequest,
@@ -993,6 +995,7 @@ from .catalogue import (
     Chosen,
     DayState,
     DeltaTSource,
+    Detail,
     DistanceUnit,
     Dst,
     Equinox,
@@ -1124,6 +1127,8 @@ __all__ = [
     "Sunrises",
     "Resolution",
     "Scale",
+    "Detail",
+    "RecordName",
     "Overflow",
     "DateSpan",
     "ChangePoint",
@@ -5709,12 +5714,16 @@ class ResearchArea(_Area):
         return decoded
 
 
-class Context:
+class Context(RecordCalls):
     """A context, and everything a consumer asks of one.
 
     A context frees its native memory when it is collected, so `close` is
     the explicit form rather than the only one (ADR-0007); `with` is the
     idiomatic one.
+
+    Any record entry point is also answered by name, as the agent server
+    answers it (`record`, typed by the generated `RecordCalls`): brief,
+    full, or the fields a caller names (`03-design/result-detail.md`).
     """
 
     def __init__(
@@ -5854,6 +5863,28 @@ class Context:
     def settings_hash(self) -> str:
         """The settings hash, as the hexadecimal every result stamps."""
         return self.inner.settings_hash().bytes.hex()
+
+    def _record_answer(
+        self,
+        name: str,
+        request: Any,
+        detail: Detail,
+        fields: Optional[Sequence[str]],
+    ) -> Any:
+        if isinstance(request, str):
+            text = request
+        elif isinstance(request, Mapping):
+            text = json.dumps(_written(request))
+        else:
+            raise TypeError(
+                f"request: expected the record's request, e.g. {{'date': ...}} for {name}"
+            )
+        if fields is not None and (
+            isinstance(fields, str) or not all(isinstance(path, str) for path in fields)
+        ):
+            raise TypeError("fields: expected a list of field paths, e.g. ['date.year']")
+        mask = None if fields is None else json.dumps(list(fields))
+        return json.loads(self.inner.record_answer(name, text, detail, mask))
 
     def recorded_settings(self, snapshot: Union[Mapping[str, Any], str]) -> Any:
         """A stored baseline settings snapshot translated into what a

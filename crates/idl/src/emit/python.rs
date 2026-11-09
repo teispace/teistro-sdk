@@ -1086,6 +1086,19 @@ fn marshal(api: &Api, f: &FunctionDef, lib: &str, receiver: Option<&str>) -> Mar
     finish(api, f, lib, signature, setup, args, owns)
 }
 
+/// A text parameter's Python type and its encoding: a nullable one is
+/// `None` across the boundary, its null.
+fn text_in(name: &str, nullable: bool) -> (&'static str, String) {
+    if nullable {
+        (
+            "Optional[str]",
+            format!("None if {name} is None else {name}.encode(\"utf-8\")"),
+        )
+    } else {
+        ("str", format!("{name}.encode(\"utf-8\")"))
+    }
+}
+
 /// The arms, one per role, so the whole of the marshalling reads as the
 /// list of roles the pass counted.
 fn parameter(
@@ -1166,9 +1179,11 @@ fn parameter(
                 setup.push(format!("_{name} = {}()", blob_struct(api)));
                 args.push(format!("ctypes.byref(_{name})"));
             }
+            // A nullable text is `None` across the boundary, its null.
             Role::StringIn => {
-                let _ = write!(signature, ", {name}: str");
-                setup.push(format!("_{name} = {name}.encode(\"utf-8\")"));
+                let (ty, encoded) = text_in(&name, p.meta.nullable);
+                let _ = write!(signature, ", {name}: {ty}");
+                setup.push(format!("_{name} = {encoded}"));
                 setup.push(format!("owned.append(_{name})"));
                 args.push(format!("_{name}"));
                 owns = true;

@@ -375,7 +375,74 @@ pub fn typescript_declarations(api: &Api) -> String {
             }
         }
     }
+    ts_record_names(&mut out, api);
     out
+}
+
+/// TypeScript: each record entry point's request by its name, which the
+/// context's `record` reads to type a call by the name it is given.
+fn ts_record_names(out: &mut String, api: &Api) {
+    if api.requests.roots.is_empty() {
+        return;
+    }
+    out.push('\n');
+    out.push_str(&block_comment(
+        "Each record entry point's request, by the entry point's name: what `Context.record` takes beside the name.",
+        "",
+    ));
+    out.push_str("export interface RecordRequests {\n");
+    for root in &api.requests.roots {
+        let _ = writeln!(out, "  readonly '{}': {};", root.record, root.name);
+    }
+    out.push_str("}\n\n");
+    out.push_str(&block_comment(
+        "A record entry point's name, `area.operation`, whose request is typed.",
+        "",
+    ));
+    out.push_str("export type RecordName = keyof RecordRequests;\n");
+}
+
+/// Python: every record entry point's name, and the context's `record`
+/// typed by it, one overload a name, so a request of another record's is
+/// refused by mypy before the call.
+fn py_record_calls(body: &mut String, api: &Api, types: &Types<'_>) {
+    let names: Vec<String> = api
+        .requests
+        .roots
+        .iter()
+        .map(|root| root.record.clone())
+        .collect();
+    body.push_str("\n\n");
+    let _ = writeln!(
+        body,
+        "RecordName: TypeAlias = {}",
+        Types::py_literal(&names)
+    );
+    body.push_str(&python::docstring(
+        "A record entry point's name, `area.operation`, whose request is typed.",
+        "",
+    ));
+    body.push_str("\n\nclass RecordCalls:\n");
+    body.push_str(&python::docstring(
+        "Every record entry point by its name, its request typed by the name: the context's `record`.",
+        "    ",
+    ));
+    for root in &api.requests.roots {
+        let _ = write!(
+            body,
+            "\n    @overload\n    def record(self, name: Literal['{}'], request: {}, *, detail: _catalogue.Detail = ..., fields: Optional[Sequence[str]] = ...) -> Any: ...\n",
+            root.record,
+            types.py_record(&root.name)
+        );
+    }
+    body.push_str("\n    def record(self, name: str, request: Any, *, detail: _catalogue.Detail = _catalogue.Detail.FULL, fields: Optional[Sequence[str]] = None) -> Any:\n");
+    body.push_str(&python::docstring(
+        "The record entry point `name` answered for `request`, as the parsed envelope `{value, provenance}`, or the value alone where the record seals no provenance.\n\n`detail` is `Detail.FULL` for the whole answer and `Detail.BRIEF` for the fields a reader needs, the provenance written with its answer key and none of its hashes. `fields` is a caller's own mask, the paths of the full answer to keep (`[\"date.year\"]`), each checked against the record's answer schema; it is refused beside `Detail.BRIEF`.",
+        "        ",
+    ));
+    body.push_str("        return self._record_answer(name, request, detail, fields)\n\n");
+    body.push_str("    def _record_answer(self, name: str, request: Any, detail: _catalogue.Detail, fields: Optional[Sequence[str]]) -> Any:\n");
+    body.push_str("        raise NotImplementedError\n");
 }
 
 /// Python: a key that a class body can declare, which is neither a keyword
@@ -693,7 +760,7 @@ impl Types<'_> {
 pub fn python_declarations(api: &Api) -> String {
     let types = Types::of(api);
     let mut out = python::preamble(api, PY_ABOUT);
-    out.push_str("from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Required, Sequence, Tuple, TypeAlias, TypedDict, Union\n\nfrom . import catalogue as _catalogue\n\nif TYPE_CHECKING:\n    import teistro as _layer\n");
+    out.push_str("from typing import TYPE_CHECKING, Any, Literal, Mapping, Optional, Required, Sequence, Tuple, TypeAlias, TypedDict, Union, overload\n\nfrom . import catalogue as _catalogue\n\nif TYPE_CHECKING:\n    import teistro as _layer\n");
     let mut exported: Vec<String> = Vec::new();
     let mut body = String::new();
     for record in &api.requests.records {
@@ -770,6 +837,10 @@ pub fn python_declarations(api: &Api) -> String {
                 body.push_str(&python::docstring(&record.doc, ""));
             }
         }
+    }
+    if !api.requests.roots.is_empty() {
+        exported.extend(["RecordName".to_owned(), "RecordCalls".to_owned()]);
+        py_record_calls(&mut body, api, &types);
     }
     let listed: Vec<String> = exported
         .iter()

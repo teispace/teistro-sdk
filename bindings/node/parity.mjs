@@ -2131,6 +2131,11 @@ for (const [name, rules, published, hijriOffset] of [
     ayana: 'TROPICAL',
   });
   put('rites-sankalpa-hash', sankalpa.provenance.contentHash);
+  // The same request by name: its brief keeps the answer key. A mask is
+  // each binding's own test, since the wasm module carries no schema to
+  // check one against.
+  const asked = { at: 2461055.59375, latitudeDeg: 27.7172, longitudeDeg: 85.324, altitudeM: 1400, utcOffsetSeconds: 20700, ayana: 'TROPICAL' };
+  put('rites-record-brief-key', geo.record('almanac.sankalpa', asked, { detail: 'BRIEF' }).provenance.answer_key);
   {
     const { date: day, vara, paksha, tithi, nakshatra } = sankalpa.value;
     put('rites-sankalpa', `${ymd(day)} ${vara} ${paksha} ${tithi} ${nakshatra}`);

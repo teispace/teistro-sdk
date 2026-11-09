@@ -9363,6 +9363,40 @@ export class Context {
   }
 
   /**
+   * Any record entry point answered by its name, as the agent server
+   * answers it (`03-design/result-detail.md`): the envelope
+   * `{ value, provenance }`, or the value alone where the record seals no
+   * provenance.
+   *
+   * `options.detail` is `'FULL'` (the default) for the whole answer and
+   * `'BRIEF'` for the fields a reader needs, the provenance written with
+   * its answer key and none of its hashes. `options.fields` is a caller's
+   * own mask, the paths of the full answer to keep (`['date.year']`), each
+   * checked against the record's answer schema; it is refused beside
+   * `'BRIEF'` (C1260).
+   *
+   * @param {string} name the record, `area.operation`
+   * @param {object|string} request its request, or the request's JSON
+   * @param {{ detail?: string, fields?: readonly string[] }} [options]
+   * @returns {object}
+   */
+  record(name, request, options = {}) {
+    if (typeof name !== 'string') {
+      throw new TypeError("name: expected a record's name, e.g. 'calendar.convert'");
+    }
+    if (typeof request !== 'string' && (typeof request !== 'object' || request === null || Array.isArray(request))) {
+      throw new TypeError(`request: expected the request of ${name}, as an object or its JSON`);
+    }
+    const { detail = 'FULL', fields } = options;
+    if (fields !== undefined && (!Array.isArray(fields) || fields.some((path) => typeof path !== 'string'))) {
+      throw new TypeError("fields: expected a list of field paths, e.g. ['date.year']");
+    }
+    const json = typeof request === 'string' ? request : JSON.stringify(request);
+    const mask = fields === undefined ? null : JSON.stringify(fields);
+    return deepFreeze(JSON.parse(this.#call(() => this.#inner.recordAnswer(name, json, detail, mask))));
+  }
+
+  /**
    * A stored baseline settings snapshot translated into what a context
    * opens with (`03-design/compat-shim.md` §4): `natal`, `kp` and
    * `muhurta` (the natal one from the Earth's centre with the true node,

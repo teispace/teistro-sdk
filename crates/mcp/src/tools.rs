@@ -22,10 +22,14 @@ pub(crate) const DESCRIBE: &str = "settings.describe";
 pub(crate) const ENGINE_PREFIX: &str = "engine.";
 
 /// The arguments a record tool reads beside its record.
-const ARGUMENTS: [&str; 5] = ["request", "profile", "settings", "locale", DETAIL];
+const ARGUMENTS: [&str; 6] = ["request", "profile", "settings", "locale", DETAIL, FIELDS];
 
 /// The argument naming how much of its answer a record tool answers.
 pub(crate) const DETAIL: &str = "detail";
+
+/// The argument naming the fields of the full answer a call keeps, a
+/// caller's own mask beside the two details.
+pub(crate) const FIELDS: &str = "fields";
 
 /// The argument naming the context a comparing record's call is
 /// compared with.
@@ -346,6 +350,9 @@ pub(crate) struct Arguments {
     pub(crate) locale: Option<String>,
     /// The detail the call asks for; the server's when it names none.
     pub(crate) detail: Option<AnswerDetail>,
+    /// The paths of the full answer the call keeps, unchecked until the
+    /// record checks them against its answer schema.
+    pub(crate) fields: Option<Vec<String>>,
 }
 
 impl Arguments {
@@ -360,6 +367,7 @@ impl Arguments {
             settings: arguments.get("settings").map(canonical_json),
             locale: text(arguments, "locale")?,
             detail: None,
+            fields: None,
         };
         let rest = arguments
             .iter()
@@ -433,6 +441,7 @@ impl Arguments {
             settings: arguments.get("settings").map(canonical_json),
             locale: text(arguments, "locale")?,
             detail,
+            fields: paths(arguments, FIELDS)?,
         })
     }
 }
@@ -451,6 +460,27 @@ pub(crate) fn of_other(why: Error) -> Error {
     } else {
         why.with_field(format!("{root}.{field}"))
     }
+}
+
+/// A list of strings under `key`, refused as a whole when it is not one.
+fn paths(arguments: &Map<String, Value>, key: &str) -> Result<Option<Vec<String>>, Error> {
+    let Some(value) = arguments.get(key) else {
+        return Ok(None);
+    };
+    value
+        .as_array()
+        .and_then(|items| {
+            items
+                .iter()
+                .map(|item| item.as_str().map(str::to_owned))
+                .collect::<Option<Vec<String>>>()
+        })
+        .map(Some)
+        .ok_or_else(|| {
+            Error::invalid_arg(format!("`{key}` is a list of field paths"))
+                .with_field(format!("arguments.{key}"))
+                .with_hint("each path is property names joined by `.`, as `date.year`")
+        })
 }
 
 fn text(arguments: &Map<String, Value>, key: &str) -> Result<Option<String>, Error> {

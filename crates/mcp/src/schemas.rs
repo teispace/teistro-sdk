@@ -142,6 +142,17 @@ pub(crate) fn input(record: &Record) -> Value {
                             operator chose otherwise.",
         }),
     );
+    properties.insert(
+        String::from(crate::tools::FIELDS),
+        json!({
+            "type": "array",
+            "items": { "type": "string" },
+            "minItems": 1,
+            "description": "The fields of the full answer to keep, each a path of property \
+                            names joined by `.` (`date.year`), checked against the answer's \
+                            schema; not with `detail: brief`.",
+        }),
+    );
     if record.compares() {
         properties.insert(
             String::from(crate::tools::OTHER),
@@ -214,10 +225,13 @@ pub(crate) fn scope_properties() -> Map<String, Value> {
 }
 
 /// A record tool's structured content, the envelope: `value` the
-/// answer's own schema, `provenance` where the area seals one, and
-/// `detail` on a brief answer. Each narrowed to the record's brief
+/// answer's own schema, `provenance` where the area seals one, `detail`
+/// on a brief answer and `fields` on one a caller's mask selected. The
+/// value and provenance are narrowed to the record's brief
 /// ([`teistro::records::Brief::narrow`]), so a brief answer and a full one
-/// both hold to it. None where the answer's type carries no schema.
+/// both hold to it; a masked value is held to nothing narrower than a
+/// value, since its shape is the call's (C1260), and its provenance is the
+/// brief one. None where the answer's type carries no schema.
 pub(crate) fn output(record: &Record) -> Option<Value> {
     let mut generator = generator();
     let mut value = record.answer_schema(&mut generator)?.to_value();
@@ -230,16 +244,27 @@ pub(crate) fn output(record: &Record) -> Option<Value> {
     let schema = json!({
         "type": "object",
         "properties": {
-            "value": value,
+            "value": {
+                "description": "The answer, or its brief; under `fields`, the fields of the \
+                                full answer the call named.",
+            },
             "provenance": provenance,
             "detail": {
                 "const": AnswerDetail::Brief.name(),
                 "description": "On a brief answer: the value is the brief of the full \
                                 answer the provenance's `answer_key` identifies.",
             },
+            "fields": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "On an answer a caller's mask selected: the paths of the full \
+                                answer it kept.",
+            },
         },
         "required": ["value"],
         "additionalProperties": false,
+        "if": { "required": [crate::tools::FIELDS] },
+        "else": { "properties": { "value": value } },
     });
     Some(if definitions.is_empty() {
         schema

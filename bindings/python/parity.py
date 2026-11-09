@@ -21,6 +21,8 @@ from typing import Any, Iterable, Optional, Sequence, cast
 import json
 
 from teistro import (
+    Detail,
+    SankalpaRequest,
     AayadiSystem,
     decode_digest,
     DatedRule,
@@ -1104,6 +1106,18 @@ def put_rites(geo: Context) -> None:
     put("rites-digest-seal", decode_digest(digest).seal)
     sankalpa = geo.almanac.sankalpa(at=2461055.59375, place=kathmandu, utc_offset_seconds=20700, ayana="TROPICAL")
     put("rites-sankalpa-hash", sankalpa.provenance.content_hash)
+    # The same request by name: its brief keeps the answer key. A mask is
+    # each binding's own test, since the wasm module carries no schema to
+    # check one against.
+    asked: SankalpaRequest = {
+        "at": 2461055.59375,
+        "latitudeDeg": 27.7172,
+        "longitudeDeg": 85.324,
+        "altitudeM": 1400,
+        "utcOffsetSeconds": 20700,
+        "ayana": "TROPICAL",
+    }
+    put("rites-record-brief-key", geo.record("almanac.sankalpa", asked, detail=Detail.BRIEF)["provenance"]["answer_key"])
     said = sankalpa.value
     put(
         "rites-sankalpa",

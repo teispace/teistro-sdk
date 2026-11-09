@@ -656,5 +656,63 @@ pub fn dart_declarations(api: &Api) -> String {
             }
         }
     }
+    dart_records(&mut out, api);
     out
+}
+
+/// Every record entry point whose request is a generated class, as a
+/// constant typed by that class: `Records.calendarConvert(request)` is a
+/// call `Context.record` answers, and a request of another record's is
+/// refused by the analyser.
+fn dart_records(out: &mut String, api: &Api) {
+    let roots: Vec<_> = api
+        .requests
+        .roots
+        .iter()
+        .filter(|root| {
+            let name = root.name.as_str();
+            !api.requests.enums.contains_key(name)
+                && !is_facade(name)
+                && !DART_SHADOWED.contains(&name)
+        })
+        .collect();
+    if roots.is_empty() {
+        return;
+    }
+    out.push('\n');
+    out.push_str(&doc(
+        "A record entry point, by its name, and the request it takes: calling it with one is a call [Context.record] answers.",
+        "",
+    ));
+    out.push_str("final class RecordOf<R extends Object> {\n  const RecordOf._(this.name);\n\n  /// Its name, `area.operation`.\n  final String name;\n\n  /// This record asked with [request].\n  RecordAsked call(R request) => RecordAsked._(name, request);\n\n  @override\n  String toString() => name;\n}\n\n");
+    out.push_str(&doc(
+        "A record entry point asked with its request, made by [RecordOf].",
+        "",
+    ));
+    out.push_str("final class RecordAsked {\n  const RecordAsked._(this.name, this.request);\n\n  /// The record's name, `area.operation`.\n  final String name;\n\n  /// The request, written as its JSON.\n  final Object request;\n}\n\n");
+    out.push_str(&doc(
+        "Every record entry point whose request is a class of its own, by name.",
+        "",
+    ));
+    out.push_str("abstract final class Records {\n");
+    for root in &roots {
+        let constant = crate::names::camel(&root.record.replace('.', "_"));
+        let _ = writeln!(
+            out,
+            "  /// `{}`, whose request is [{}].\n  static const {constant} = RecordOf<{}>._({});\n",
+            root.record,
+            root.name,
+            root.name,
+            quoted(&root.record)
+        );
+    }
+    let all: Vec<String> = roots
+        .iter()
+        .map(|root| crate::names::camel(&root.record.replace('.', "_")))
+        .collect();
+    let _ = writeln!(
+        out,
+        "  /// Every one of them, in name order.\n  static const List<RecordOf<Object>> all = [\n    {},\n  ];\n}}",
+        all.join(",\n    ")
+    );
 }

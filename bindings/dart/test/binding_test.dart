@@ -6525,6 +6525,72 @@ void _engineTests() {
     ctx.dispose();
   });
 
+  test('any record is answered by its name, brief, full or masked (C1260)', () {
+    final ctx = context();
+    final sankalpa = Records.almanacSankalpa(
+      const SankalpaRequest(
+        at: 2461055.59375,
+        latitudeDeg: 27.7172,
+        longitudeDeg: 85.324,
+        altitudeM: 1400,
+        utcOffsetSeconds: 20700,
+        ayana: AyanaReckoning.tropical,
+      ),
+    );
+    final full = ctx.record(sankalpa)! as Map<String, Object?>;
+    final provenance = full['provenance']! as Map<String, Object?>;
+    expect(provenance.containsKey('input_hash'), isTrue);
+    expect(full.containsKey('detail'), isFalse);
+    final brief =
+        ctx.record(sankalpa, detail: Detail.brief)! as Map<String, Object?>;
+    final briefProvenance = brief['provenance']! as Map<String, Object?>;
+    expect(brief['detail'], 'brief');
+    expect(briefProvenance['answer_key'], provenance['answer_key']);
+    expect(briefProvenance.containsKey('input_hash'), isFalse);
+    final masked =
+        ctx.record(sankalpa, fields: ['tithi'])! as Map<String, Object?>;
+    final value = full['value']! as Map<String, Object?>;
+    expect(masked['value'], {'tithi': value['tithi']});
+    expect(masked['fields'], ['tithi']);
+    // A record that seals nothing answers its value alone.
+    expect(
+      ctx.record(
+        Records.calendarConvert(
+          const CalendarAsked(
+            date: DayAsked(year: 2026, month: 10, day: 10),
+            into: Calendar.bikramSambat,
+          ),
+        ),
+        fields: ['weekday'],
+      ),
+      {'weekday': 'SATURDAY'},
+    );
+    String? field(void Function() call) {
+      try {
+        call();
+      } on TeistroException catch (error) {
+        return error.field;
+      }
+      return null;
+    }
+
+    expect(
+      field(() => ctx.record(sankalpa, fields: ['tithi', 'tithii'])),
+      'fields[1]',
+    );
+    expect(
+      field(
+        () => ctx.record(sankalpa, detail: Detail.brief, fields: ['tithi']),
+      ),
+      'fields_json',
+    );
+    expect(
+      Records.all.map((record) => record.name),
+      contains('almanac.sankalpa'),
+    );
+    ctx.dispose();
+  });
+
   test(
     'a stored baseline settings snapshot translates into the contexts it opens',
     () {

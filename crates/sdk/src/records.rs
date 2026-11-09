@@ -16,7 +16,7 @@ mod detail;
 
 #[cfg(feature = "schema")]
 pub use detail::Narrowed;
-pub use detail::{Brief, Detail};
+pub use detail::{Brief, Detail, Fields};
 
 /// One record entry point.
 ///
@@ -376,8 +376,8 @@ impl Record {
     /// The brief of a full answer of this record's: its value projected
     /// by [`Record::brief`], its provenance kept whole for the caller and
     /// written by [`Brief::PROVENANCE`]. So an answer kept in full serves
-    /// a brief one without being asked again. An answer already brief is
-    /// answered as it is.
+    /// a brief one without being asked again. An answer already brief, or
+    /// already selected by a caller's mask, is answered as it is.
     ///
     /// ```
     /// # use teistro::{Context, Ephemeris};
@@ -395,12 +395,13 @@ impl Record {
     /// ```
     #[must_use]
     pub fn brief_of(&self, full: Answered) -> Answered {
-        match full.detail {
-            Detail::Brief => full,
-            Detail::Full => Answered {
+        match (full.detail, &full.fields) {
+            (Detail::Brief, _) | (Detail::Full, Some(_)) => full,
+            (Detail::Full, None) => Answered {
                 value: self.brief.of(full.value),
                 provenance: full.provenance,
                 detail: Detail::Brief,
+                fields: None,
             },
         }
     }
@@ -410,6 +411,125 @@ impl Record {
             Detail::Full => full,
             Detail::Brief => self.brief_of(full),
         }
+    }
+
+    /// `paths` as a caller's field mask over this record's full answer,
+    /// each checked against its answer schema ([`Fields`]).
+    ///
+    /// ```
+    /// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+    /// assert!(convert.fields(["weekday"]).is_ok());
+    /// let refused = convert.fields(["date.yaer"]).unwrap_err();
+    /// assert_eq!(refused.status, teistro::Status::InvalidArg);
+    /// assert_eq!(refused.field(), Some("fields[0]"));
+    /// assert!(refused.message.contains("date.yaer"), "{}", refused.message);
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on `fields` for no path at all, and on `fields[i]`
+    /// for a path that is not property names joined by `.` or that names
+    /// a field the answer does not have; `UNSUPPORTED` for a record that
+    /// states no answer schema.
+    #[cfg(feature = "schema")]
+    pub fn fields<I, S>(&self, paths: I) -> Result<Fields, Error>
+    where
+        I: IntoIterator<Item = S>,
+        S: Into<String>,
+    {
+        let mut generator = schemars::generate::SchemaSettings::draft2020_12().into_generator();
+        let schema = self
+            .answer_schema(&mut generator)
+            .map(|schema| (schema.to_value(), generator.take_definitions(true)));
+        Fields::checked(
+            self.name,
+            paths.into_iter().map(Into::into).collect(),
+            schema,
+        )
+    }
+
+    /// The record `json` answered under `context`, its value selected by
+    /// a caller's mask ([`Record::fields_of`]).
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # #[cfg(feature = "schema")] {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+    /// let mask = convert.fields(["weekday"])?;
+    /// let asked = r#"{"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}"#;
+    /// let answered = convert.answer_fields(&sdk, asked, &mask)?;
+    /// assert_eq!(answered.value, serde_json::json!({"weekday": "SATURDAY"}));
+    /// assert_eq!(answered.fields, Some(mask));
+    /// # }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// As [`Record::answer`], and as [`Record::fields_of`].
+    pub fn answer_fields(
+        &self,
+        context: &Context,
+        json: &str,
+        fields: &Fields,
+    ) -> Result<Answered, Error> {
+        let full = self.answer(context, json)?;
+        self.fields_of(full, fields)
+    }
+
+    /// The fields of a full answer of this record's a caller's mask keeps:
+    /// its value projected by `fields`, its provenance kept whole for the
+    /// caller and written as a brief one's ([`Answered::envelope`]).
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// use teistro::records::Detail;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// # #[cfg(feature = "schema")] {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+    /// let asked = r#"{"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}"#;
+    /// let mask = convert.fields(["date.year"])?;
+    /// let masked = convert.fields_of(convert.answer(&sdk, asked)?, &mask)?;
+    /// assert_eq!(masked.value, serde_json::json!({"date": {"year": 2083}}));
+    /// // Never of a brief answer: a mask selects from the full one.
+    /// let brief = convert.answer_at(&sdk, asked, Detail::Brief)?;
+    /// assert!(convert.fields_of(brief, &mask).is_err());
+    /// # }
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// # Errors
+    ///
+    /// `INVALID_ARG` on `fields` for a mask made for another record, and
+    /// for an answer that is not the full one: a brief answer, or one
+    /// already masked (crux C1260).
+    pub fn fields_of(&self, full: Answered, fields: &Fields) -> Result<Answered, Error> {
+        if fields.record() != self.name {
+            return Err(Error::invalid_arg(format!(
+                "the mask was checked against `{}`, not `{}`",
+                fields.record(),
+                self.name
+            ))
+            .with_field("fields"));
+        }
+        if full.detail != Detail::Full || full.fields.is_some() {
+            return Err(Error::invalid_arg(
+                "a field mask selects from the full answer, not from a brief or masked one",
+            )
+            .with_field("fields")
+            .with_hint("ask for the full answer, or leave the mask out for the brief one"));
+        }
+        Ok(Answered {
+            value: fields.of(full.value),
+            provenance: full.provenance,
+            detail: Detail::Full,
+            fields: Some(fields.clone()),
+        })
     }
 
     /// The record's answer value as JSON Schema at `detail`, as
@@ -511,6 +631,10 @@ pub struct Answered {
     pub provenance: Option<Provenance>,
     /// Whether `value` is the full answer or its brief.
     pub detail: Detail,
+    /// The caller's mask `value` was selected by from the full answer,
+    /// if one was named; `detail` is then [`Detail::Full`], the answer
+    /// the mask selects from.
+    pub fields: Option<Fields>,
 }
 
 impl Answered {
@@ -519,6 +643,7 @@ impl Answered {
             value: written(&answer.value)?,
             provenance: Some(answer.provenance),
             detail: Detail::Full,
+            fields: None,
         })
     }
 
@@ -527,6 +652,7 @@ impl Answered {
             value: written(value)?,
             provenance: None,
             detail: Detail::Full,
+            fields: None,
         })
     }
 
@@ -550,11 +676,11 @@ impl Answered {
     /// ```
     #[must_use]
     pub fn json(&self) -> String {
-        match (&self.provenance, self.detail) {
-            (Some(provenance), Detail::Full) => {
+        match &self.provenance {
+            Some(provenance) if self.detail == Detail::Full && self.fields.is_none() => {
                 canonical_json(&Envelope::new(&self.value, provenance.clone()))
             }
-            (Some(_), Detail::Brief) => match self.envelope() {
+            Some(_) => match self.envelope() {
                 Ok(envelope) => canonical_json(&envelope),
                 // A provenance serde cannot write is a type defect, as
                 // `canonical_json` treats one: loud in a debug build.
@@ -563,7 +689,7 @@ impl Answered {
                     String::new()
                 }
             },
-            (None, _) => canonical_json(&self.value),
+            None => canonical_json(&self.value),
         }
     }
 
@@ -571,7 +697,9 @@ impl Answered {
     /// `provenance` left out where the area seals none; at
     /// [`Detail::Brief`], the provenance written by
     /// [`Brief::PROVENANCE`] and `detail: "brief"` beside them, saying
-    /// that the answer key names the full answer this one is the brief of.
+    /// that the answer key names the full answer this one is the brief of;
+    /// under a caller's mask, the same provenance and `fields`, the paths
+    /// the value was selected by, written even where no provenance is.
     ///
     /// ```
     /// use teistro::records::{Answered, Detail};
@@ -586,6 +714,7 @@ impl Answered {
     ///     value: serde_json::json!({"tithi": "SHUKLA_TRITIYA"}),
     ///     provenance: Some(provenance),
     ///     detail: Detail::Brief,
+    ///     fields: None,
     /// };
     /// let envelope = brief.envelope()?;
     /// assert_eq!(envelope["detail"], "brief");
@@ -602,9 +731,11 @@ impl Answered {
         envelope.insert(String::from("value"), self.value.clone());
         if let Some(provenance) = &self.provenance {
             let written = written(provenance)?;
-            let provenance = match self.detail {
-                Detail::Full => written,
-                Detail::Brief => Brief::PROVENANCE.of(written),
+            let whole = self.detail == Detail::Full && self.fields.is_none();
+            let provenance = if whole {
+                written
+            } else {
+                Brief::PROVENANCE.of(written)
             };
             envelope.insert(String::from("provenance"), provenance);
             if self.detail == Detail::Brief {
@@ -613,6 +744,14 @@ impl Answered {
                     serde_json::Value::from(Detail::Brief.name()),
                 );
             }
+        }
+        // A masked value is marked whether or not it is sealed: its shape
+        // is the call's, which nothing else in the envelope says.
+        if let Some(fields) = &self.fields {
+            envelope.insert(
+                String::from("fields"),
+                serde_json::Value::from(fields.paths()),
+            );
         }
         Ok(serde_json::Value::Object(envelope))
     }
@@ -879,6 +1018,7 @@ fn chart_records() -> [Record; 3] {
                     value: written(&composed)?,
                     provenance: Some(composed.founded.provenance.clone()),
                     detail: Detail::Full,
+                    fields: None,
                 })
             },
             compares: None,
@@ -1885,5 +2025,6 @@ fn days(context: &Context, json: &str) -> Result<Answered, Error> {
         value,
         provenance: Some(answer.days.provenance),
         detail: Detail::Full,
+        fields: None,
     })
 }

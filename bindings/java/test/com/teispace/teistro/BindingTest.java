@@ -1836,6 +1836,36 @@ public final class BindingTest {
             }
         });
 
+        tests.put("any record is answered by its name, brief, full or masked (C1260)", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                SankalpaRequest sankalpa = SankalpaRequest.of(Json.read("{\"at\": 2461055.59375, "
+                        + "\"latitudeDeg\": 27.7172, \"longitudeDeg\": 85.324, \"altitudeM\": 1400, "
+                        + "\"utcOffsetSeconds\": 20700, \"ayana\": \"TROPICAL\"}"));
+                Map<?, ?> full = (Map<?, ?>) sky.record(Requests.ALMANAC_SANKALPA, sankalpa);
+                Map<?, ?> provenance = (Map<?, ?>) full.get("provenance");
+                check(provenance.containsKey("input_hash") && !full.containsKey("detail"), "the full answer");
+                Map<?, ?> brief = (Map<?, ?>) sky.record(Requests.ALMANAC_SANKALPA, sankalpa, Detail.BRIEF);
+                Map<?, ?> briefProvenance = (Map<?, ?>) brief.get("provenance");
+                same("brief", brief.get("detail"), "a brief answer says so");
+                same(provenance.get("answer_key"), briefProvenance.get("answer_key"), "one answer key");
+                check(!briefProvenance.containsKey("input_hash"), "no hash a brief reader cannot check");
+                Map<?, ?> masked = (Map<?, ?>) sky.record(Requests.ALMANAC_SANKALPA, sankalpa, List.of("tithi"));
+                same(Map.of("tithi", ((Map<?, ?>) full.get("value")).get("tithi")), masked.get("value"),
+                        "the field named, the full answer's own");
+                same(List.of("tithi"), masked.get("fields"), "the mask, echoed");
+                CalendarAsked convert = CalendarAsked.of(Json.read(
+                        "{\"date\": {\"year\": 2026, \"month\": 10, \"day\": 10}, \"into\": \"calendar.BIKRAM_SAMBAT\"}"));
+                same(Map.of("weekday", "SATURDAY"),
+                        sky.record(Requests.CALENDAR_CONVERT, convert, List.of("weekday")),
+                        "a record that seals nothing answers its value alone");
+                TeistroException unknown = refusal(
+                        () -> sky.record(Requests.ALMANAC_SANKALPA, sankalpa, List.of("tithi", "tithii")));
+                same(Status.INVALID_ARG, unknown.status(), "an unknown path is refused");
+                same("fields[1]", unknown.field(), "by its place in the mask");
+            }
+        });
+
         tests.put("a stored baseline settings snapshot translates into the contexts it opens", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
                     .ephemeris(Ephemeris.NONE).build())) {
