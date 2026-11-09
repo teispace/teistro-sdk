@@ -12,6 +12,15 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Names for the ashauch, rite and first-year answers (SR-31).**
+**Numbers:** none.
+- A new namespace, `sdk.rite`, names every member those answers carry, each message a `.match` on the
+  member's serde spelling: the ashauch's kind, length and clause, the relation, a rite and its verdict
+  and beginning, what a kin keeps, the first-year rites and their form, the sapindana's day, and an
+  anniversary's kind (94 members in 12 messages, and `ashauchDays` for a count). English ships;
+  Nepali ships marked draft until a reviewer signs it off (Q42), as `sdk.day` does. A unit test lists
+  each enum under a `match` with no wildcard and holds both locales to its spellings both ways.
+
 **A clock on the minute reads that minute (SR-77).**
 **Numbers:** `civil_of` and `time().civil_of` move a reading by at most four of the Julian day's last bits
 (about 0.19 ms in the present era) when it lies that close to a whole second, onto the second. No

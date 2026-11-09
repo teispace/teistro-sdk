@@ -3798,6 +3798,39 @@ final class MessagesSdkReason {
   String welcome() => _r.render('sdk.reason.welcome');
 }
 
+final class MessagesSdkRite {
+  const MessagesSdkRite(this._r);
+
+  final Renderer _r;
+
+  String anniversaryKind({required String kind}) =>
+      _r.render('sdk.rite.anniversaryKind', {'kind': kind});
+  String ashauchDays({required num days}) =>
+      _r.render('sdk.rite.ashauchDays', {'days': days});
+  String ashauchKind({required String kind}) =>
+      _r.render('sdk.rite.ashauchKind', {'kind': kind});
+  String ashauchLength({required String length}) =>
+      _r.render('sdk.rite.ashauchLength', {'length': length});
+  String clause({required String clause}) =>
+      _r.render('sdk.rite.clause', {'clause': clause});
+  String firstYearRite({required String rite}) =>
+      _r.render('sdk.rite.firstYearRite', {'rite': rite});
+  String kinKeeps({required String keeps}) =>
+      _r.render('sdk.rite.kinKeeps', {'keeps': keeps});
+  String relation({required String relation}) =>
+      _r.render('sdk.rite.relation', {'relation': relation});
+  String rite({required String rite}) =>
+      _r.render('sdk.rite.rite', {'rite': rite});
+  String riteBeginning({required String beginning}) =>
+      _r.render('sdk.rite.riteBeginning', {'beginning': beginning});
+  String riteForm({required String form}) =>
+      _r.render('sdk.rite.riteForm', {'form': form});
+  String riteVerdict({required String verdict}) =>
+      _r.render('sdk.rite.riteVerdict', {'verdict': verdict});
+  String sapindanaAt({required String at}) =>
+      _r.render('sdk.rite.sapindanaAt', {'at': at});
+}
+
 final class MessagesSdk {
   const MessagesSdk(this._r);
 
@@ -3814,6 +3847,7 @@ final class MessagesSdk {
   MessagesSdkPhala get phala => MessagesSdkPhala(_r);
   MessagesSdkReading get reading => MessagesSdkReading(_r);
   MessagesSdkReason get reason => MessagesSdkReason(_r);
+  MessagesSdkRite get rite => MessagesSdkRite(_r);
 }
 
 final class Messages {

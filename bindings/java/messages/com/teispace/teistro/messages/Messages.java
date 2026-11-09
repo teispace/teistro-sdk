@@ -15949,6 +15949,155 @@ public final class Messages {
             }
         }
 
+
+        /**
+         * The messages under `rite`.
+         *
+         * @return the group
+         */
+        public SdkRite rite() {
+            return new SdkRite(r);
+        }
+
+        /** The messages under `SdkRite`, each rendered by its own key. */
+        public static final class SdkRite {
+            private final Renderer r;
+
+            SdkRite(Renderer r) {
+                this.r = r;
+            }
+
+            /**
+             * `sdk.rite.anniversaryKind`
+             *
+             * @param kind `kind`
+             * @return the text
+             */
+            public String anniversaryKind(String kind) {
+                return r.render("sdk.rite.anniversaryKind", Map.ofEntries(Map.entry("kind", kind)));
+            }
+
+            /**
+             * `sdk.rite.ashauchDays`
+             *
+             * @param days `days`
+             * @return the text
+             */
+            public String ashauchDays(double days) {
+                return r.render("sdk.rite.ashauchDays", Map.ofEntries(Map.entry("days", days)));
+            }
+
+            /**
+             * `sdk.rite.ashauchKind`
+             *
+             * @param kind `kind`
+             * @return the text
+             */
+            public String ashauchKind(String kind) {
+                return r.render("sdk.rite.ashauchKind", Map.ofEntries(Map.entry("kind", kind)));
+            }
+
+            /**
+             * `sdk.rite.ashauchLength`
+             *
+             * @param length `length`
+             * @return the text
+             */
+            public String ashauchLength(String length) {
+                return r.render("sdk.rite.ashauchLength", Map.ofEntries(Map.entry("length", length)));
+            }
+
+            /**
+             * `sdk.rite.clause`
+             *
+             * @param clause `clause`
+             * @return the text
+             */
+            public String clause(String clause) {
+                return r.render("sdk.rite.clause", Map.ofEntries(Map.entry("clause", clause)));
+            }
+
+            /**
+             * `sdk.rite.firstYearRite`
+             *
+             * @param rite `rite`
+             * @return the text
+             */
+            public String firstYearRite(String rite) {
+                return r.render("sdk.rite.firstYearRite", Map.ofEntries(Map.entry("rite", rite)));
+            }
+
+            /**
+             * `sdk.rite.kinKeeps`
+             *
+             * @param keeps `keeps`
+             * @return the text
+             */
+            public String kinKeeps(String keeps) {
+                return r.render("sdk.rite.kinKeeps", Map.ofEntries(Map.entry("keeps", keeps)));
+            }
+
+            /**
+             * `sdk.rite.relation`
+             *
+             * @param relation `relation`
+             * @return the text
+             */
+            public String relation(String relation) {
+                return r.render("sdk.rite.relation", Map.ofEntries(Map.entry("relation", relation)));
+            }
+
+            /**
+             * `sdk.rite.rite`
+             *
+             * @param rite `rite`
+             * @return the text
+             */
+            public String rite(String rite) {
+                return r.render("sdk.rite.rite", Map.ofEntries(Map.entry("rite", rite)));
+            }
+
+            /**
+             * `sdk.rite.riteBeginning`
+             *
+             * @param beginning `beginning`
+             * @return the text
+             */
+            public String riteBeginning(String beginning) {
+                return r.render("sdk.rite.riteBeginning", Map.ofEntries(Map.entry("beginning", beginning)));
+            }
+
+            /**
+             * `sdk.rite.riteForm`
+             *
+             * @param form `form`
+             * @return the text
+             */
+            public String riteForm(String form) {
+                return r.render("sdk.rite.riteForm", Map.ofEntries(Map.entry("form", form)));
+            }
+
+            /**
+             * `sdk.rite.riteVerdict`
+             *
+             * @param verdict `verdict`
+             * @return the text
+             */
+            public String riteVerdict(String verdict) {
+                return r.render("sdk.rite.riteVerdict", Map.ofEntries(Map.entry("verdict", verdict)));
+            }
+
+            /**
+             * `sdk.rite.sapindanaAt`
+             *
+             * @param at `at`
+             * @return the text
+             */
+            public String sapindanaAt(String at) {
+                return r.render("sdk.rite.sapindanaAt", Map.ofEntries(Map.entry("at", at)));
+            }
+        }
+
     }
 
 }
