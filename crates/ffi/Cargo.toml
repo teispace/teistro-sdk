@@ -58,10 +58,14 @@ teistro-port-ephemeris = { path = "../port-ephemeris", features = ["load"] }
 # own rule, so asking for `builtin-full` beside the default leaves `full`
 # in force rather than a conflict.
 [features]
-default = ["builtin-standard", "full", "signed-packs"]
+default = ["builtin-standard", "full", "signed-packs", "fields"]
 # `ts_published_verify`; a build without it answers `CAPABILITY`. Not a
 # module family (it turns on no crate), so the default names it.
 signed-packs = ["teistro/signed-packs"]
+# A caller's field mask at `ts_record_answer`, checked against each
+# record's answer schema: the façade's schemas, which a wasm module leaves
+# out for its size, where a mask answers `CAPABILITY`. Not a module family.
+fields = ["teistro/schema"]
 # The façade's module families, forwarded (`03-design/wasm-profiles.md`):
 # an entry point into one this build leaves out answers `CAPABILITY`.
 full = ["teistro/full", "chart", "kp", "lalkitab", "muhurta", "numerology", "pakshi", "prashna", "rashifal", "rectification", "remedies", "research", "svg", "tajika", "western"]

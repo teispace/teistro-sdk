@@ -13,6 +13,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import com.teispace.teistro.blob.Positions;
 import com.teispace.teistro.ffi.Native;
+import com.teispace.teistro.request.RecordOf;
+import com.teispace.teistro.request.RequestJson;
 
 /**
  * A context: a profile, its settings and a locale, over an ephemeris. Every
@@ -376,6 +378,64 @@ public final class Context implements AutoCloseable {
      */
     public String settingsHash() {
         return HexFormat.of().formatHex(locked(Calls::settingsHash).bytes());
+    }
+
+    /**
+     * Any record entry point answered in full by its name, as the agent
+     * server answers it ({@code 03-design/result-detail.md}): the envelope
+     * {@code {value, provenance}}, or the value alone where the record
+     * seals no provenance.
+     *
+     * @param <R> the request the record takes
+     * @param record the record, a constant of {@code Requests}
+     *     ({@code Requests.CALENDAR_CONVERT})
+     * @param request its request
+     * @return the answer as {@code Json.read} reads it
+     * @throws TeistroException whatever the record's reader and its area
+     *     refuse
+     */
+    public <R extends RequestJson> Object record(RecordOf<R> record, R request) {
+        return record(record, request, Detail.FULL);
+    }
+
+    /**
+     * Any record entry point answered by its name at {@code detail}:
+     * {@code FULL}, the whole answer, or {@code BRIEF}, the fields a reader
+     * needs with the provenance's answer key and none of its hashes.
+     *
+     * @param <R> the request the record takes
+     * @param record the record, a constant of {@code Requests}
+     * @param request its request
+     * @param detail how much of the answer to keep
+     * @return the answer as {@code Json.read} reads it
+     * @throws TeistroException whatever the record's reader and its area
+     *     refuse
+     */
+    public <R extends RequestJson> Object record(RecordOf<R> record, R request, Detail detail) {
+        return answered(record, request, detail, null);
+    }
+
+    /**
+     * Any record entry point by its name, its full answer kept to the
+     * fields a caller names: each a path of the answer's properties
+     * ({@code date.year}), checked against its schema. A mask selects from
+     * the full answer, so it takes no detail (C1260).
+     *
+     * @param <R> the request the record takes
+     * @param record the record, a constant of {@code Requests}
+     * @param request its request
+     * @param fields the paths of the full answer to keep
+     * @return the answer as {@code Json.read} reads it, with {@code fields}
+     * @throws TeistroException {@code INVALID_ARG} on {@code fields[i]} for
+     *     a path the answer does not have, and whatever the record refuses
+     */
+    public <R extends RequestJson> Object record(RecordOf<R> record, R request, List<String> fields) {
+        return answered(record, request, Detail.FULL, Json.write(List.copyOf(fields)));
+    }
+
+    private Object answered(RecordOf<?> record, RequestJson request, Detail detail, String fields) {
+        String json = Json.write(request.toJson());
+        return Json.read(locked((lib, raw) -> Calls.recordAnswer(lib, raw, record.name(), json, detail, fields)));
     }
 
     /**

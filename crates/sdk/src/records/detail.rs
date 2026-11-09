@@ -137,6 +137,93 @@ impl Brief {
     }
 }
 
+/// A caller's own field mask over a record's full answer: the paths they
+/// chose, kept as [`Brief::Keeps`] keeps a brief's, but named at call
+/// time (`03-design/result-detail.md` D6). Made only by
+/// [`Record::fields`](crate::records::Record::fields), which checks every
+/// path against the record's answer schema, so a mask in hand names no
+/// field its record lacks. A mask selects from the full answer, never
+/// from a brief one (crux C1260).
+///
+/// ```
+/// # #[cfg(feature = "schema")] {
+/// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+/// let mask = convert.fields(["date.year", "weekday"]).expect("both are the answer's");
+/// assert_eq!(mask.record(), "calendar.convert");
+/// assert_eq!(mask.paths(), ["date.year", "weekday"]);
+/// let full = serde_json::json!({"date": {"year": 2083, "month": 6}, "weekday": "SATURDAY", "fixed": 1});
+/// assert_eq!(mask.of(full), serde_json::json!({"date": {"year": 2083}, "weekday": "SATURDAY"}));
+/// # }
+/// ```
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct Fields {
+    record: &'static str,
+    paths: Vec<String>,
+}
+
+impl Fields {
+    /// The record whose answer the mask was checked against.
+    #[must_use]
+    pub const fn record(&self) -> &'static str {
+        self.record
+    }
+
+    /// The paths it keeps, as the caller named them.
+    #[must_use]
+    pub fn paths(&self) -> &[String] {
+        &self.paths
+    }
+
+    /// The fields of `full` it keeps, each the full answer's own value,
+    /// unchanged; a field the full answer leaves out is left out.
+    #[must_use]
+    pub fn of(&self, full: Value) -> Value {
+        let paths: Vec<&str> = self.paths.iter().map(String::as_str).collect();
+        kept(full, &paths)
+    }
+
+    /// `paths` as a mask over the answer `schema` describes, whose
+    /// definitions are `definitions`; `None` for a record that states no
+    /// answer schema.
+    #[cfg(feature = "schema")]
+    pub(crate) fn checked(
+        record: &'static str,
+        paths: Vec<String>,
+        schema: Option<(Value, Map<String, Value>)>,
+    ) -> Result<Fields, Error> {
+        if paths.is_empty() {
+            return Err(Error::invalid_arg("a field mask names at least one field")
+                .with_field("fields")
+                .with_hint("leave the mask out for the whole answer"));
+        }
+        for (index, path) in paths.iter().enumerate() {
+            if path.split('.').any(str::is_empty) {
+                return Err(Error::invalid_arg(format!(
+                    "`{path}` is no field path; a path is property names joined by `.`"
+                ))
+                .with_field(format!("fields[{index}]")));
+            }
+        }
+        let Some((mut schema, definitions)) = schema else {
+            return Err(Error::unsupported(format!(
+                "`{record}` states no answer schema, so no mask can be checked against it"
+            ))
+            .with_field("fields"));
+        };
+        let named: Vec<&str> = paths.iter().map(String::as_str).collect();
+        let found = narrowed_to(&named, &mut schema, &definitions);
+        if let Some(unknown) = found.unknown.first() {
+            let index = paths.iter().position(|path| path == unknown).unwrap_or(0);
+            return Err(Error::invalid_arg(format!(
+                "the answer of `{record}` has no field `{unknown}`"
+            ))
+            .with_field(format!("fields[{index}]"))
+            .with_hint("a path names the answer's own properties, as its schema states them"));
+        }
+        Ok(Fields { record, paths })
+    }
+}
+
 /// `value` with only `paths` kept, a list's items each kept alike.
 fn kept(value: Value, paths: &[&str]) -> Value {
     match value {
@@ -217,30 +304,36 @@ impl Brief {
     /// ```
     #[must_use]
     pub fn narrow(self, schema: &mut Value, definitions: &Map<String, Value>) -> Narrowed {
-        let paths = self.paths();
-        let mut narrowed = Narrowed::default();
-        if paths.is_empty() {
-            return narrowed;
-        }
-        let mut walk = Walk {
-            definitions,
-            untagged: Vec::new(),
-        };
-        let reached = walk.narrow(schema, paths, false, 0);
-        narrowed.unknown = paths
-            .iter()
-            .filter(|path| !reached.found.contains(**path) && !reached.open.contains(**path))
-            .map(|path| (*path).to_owned())
-            .collect();
-        narrowed.open = paths
-            .iter()
-            .filter(|path| reached.open.contains(**path) && !reached.found.contains(**path))
-            .map(|path| (*path).to_owned())
-            .collect();
-        narrowed.untagged = walk.untagged;
-        narrowed.left_out = reached.left_out.into_iter().collect();
-        narrowed
+        narrowed_to(self.paths(), schema, definitions)
     }
+}
+
+/// `schema` narrowed to `paths` in place, as [`Brief::narrow`] narrows it
+/// to a brief's, with what narrowing found.
+#[cfg(feature = "schema")]
+fn narrowed_to(paths: &[&str], schema: &mut Value, definitions: &Map<String, Value>) -> Narrowed {
+    let mut narrowed = Narrowed::default();
+    if paths.is_empty() {
+        return narrowed;
+    }
+    let mut walk = Walk {
+        definitions,
+        untagged: Vec::new(),
+    };
+    let reached = walk.narrow(schema, paths, false, 0);
+    narrowed.unknown = paths
+        .iter()
+        .filter(|path| !reached.found.contains(**path) && !reached.open.contains(**path))
+        .map(|path| (*path).to_owned())
+        .collect();
+    narrowed.open = paths
+        .iter()
+        .filter(|path| reached.open.contains(**path) && !reached.found.contains(**path))
+        .map(|path| (*path).to_owned())
+        .collect();
+    narrowed.untagged = walk.untagged;
+    narrowed.left_out = reached.left_out.into_iter().collect();
+    narrowed
 }
 
 /// How deep a path may follow definitions into one another: far beyond

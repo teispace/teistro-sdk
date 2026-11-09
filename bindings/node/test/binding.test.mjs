@@ -847,8 +847,8 @@ test('every catalogue enum has a complete id table', () => {
   // `TsChartKind`'s `MUNDANE`; 1544 since aayadi's `TsVastuYoni`, eight,
   // and `TsVyayaKind`, three, each with its member of `TsKind`; 1545
   // since `TsCalendar` gained `TAMIL_VAKYA`; 1546 since `TsTradition`
-  // gained `ZOROASTRIAN`.
-  assert.equal(entries, 1546, 'every member of every enum is in a table');
+  // gained `ZOROASTRIAN`; 1548 since a record call's `TsDetail`, two.
+  assert.equal(entries, 1548, 'every member of every enum is in a table');
 });
 
 test('a birth with no time is refused, or reported, but never guessed', () => {
@@ -3635,6 +3635,39 @@ test('a measure reads into its aayadi without a sky', () => {
     );
   }
   assert.throws(() => ctx.almanac.aayadi(null), TypeError);
+  ctx.dispose();
+});
+
+test('any record is answered by its name, brief, full or masked (C1260)', () => {
+  const ctx = context();
+  const sankalpa = { at: 2461055.59375, latitudeDeg: 27.7172, longitudeDeg: 85.324, altitudeM: 1400, utcOffsetSeconds: 20700, ayana: 'TROPICAL' };
+  const full = ctx.record('almanac.sankalpa', sankalpa);
+  assert.ok('input_hash' in full.provenance);
+  assert.equal(full.detail, undefined);
+  const brief = ctx.record('almanac.sankalpa', sankalpa, { detail: 'BRIEF' });
+  assert.equal(brief.detail, 'brief');
+  assert.equal(brief.provenance.answer_key, full.provenance.answer_key);
+  assert.ok(!('input_hash' in brief.provenance));
+  const masked = ctx.record('almanac.sankalpa', JSON.stringify(sankalpa), { fields: ['tithi'] });
+  assert.deepEqual(masked.value, { tithi: full.value.tithi });
+  assert.deepEqual(masked.fields, ['tithi']);
+  // A record that seals nothing answers its value alone.
+  assert.deepEqual(
+    ctx.record('calendar.convert', { date: { year: 2026, month: 10, day: 10 }, into: 'calendar.BIKRAM_SAMBAT' }, { fields: ['weekday'] }),
+    { weekday: 'SATURDAY' },
+  );
+  for (const [name, options, field] of [
+    ['almanac.sankalpa', { fields: ['tithi', 'tithii'] }, 'fields[1]'],
+    ['almanac.sankalpa', { detail: 'BRIEF', fields: ['tithi'] }, 'fields_json'],
+    ['calendar.nothing', {}, 'name'],
+  ]) {
+    assert.throws(
+      () => ctx.record(name, sankalpa, options),
+      (error) => error instanceof TeistroError && error.status === 'INVALID_ARG' && error.field === field,
+    );
+  }
+  assert.throws(() => ctx.record('almanac.sankalpa', sankalpa, { fields: 'tithi' }), TypeError);
+  assert.throws(() => ctx.record('almanac.sankalpa', null), TypeError);
   ctx.dispose();
 });
 

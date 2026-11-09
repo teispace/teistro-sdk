@@ -245,6 +245,19 @@ static void a_sankalpa_is_answered_as_json(void) {
     ts_string_free(&answer);
 }
 
+/* Any record by its name, brief: the provenance keeps its answer key and
+ * says the value is the brief of the full answer (C1260). */
+static void a_record_is_answered_brief_by_name(void) {
+    ts_string answer;
+    memset(&answer, 0, sizeof answer);
+    check(ts_record_answer(ctx, "almanac.sankalpa", "{\"at\":2461055.59375,\"latitudeDeg\":27.7172,\"longitudeDeg\":85.324,\"altitudeM\":1400,\"utcOffsetSeconds\":20700,\"ayana\":\"TROPICAL\"}",
+                           TS_DETAIL_BRIEF, NULL, &answer), "record");
+    expect(answer.data != NULL && strstr((const char *)answer.data, "\"detail\":\"brief\"") != NULL
+               && strstr((const char *)answer.data, "\"input_hash\"") == NULL,
+           "the brief answer says so and carries no hash");
+    ts_string_free(&answer);
+}
+
 /* The published pack the parity runners verify, signed by a test key made
  * from a fixed seed: verified against that key, and refused for a version
  * newer than it carries. */
@@ -330,6 +343,7 @@ int main(void) {
     a_chart_is_founded_from_its_struct();
     a_week_of_days_comes_back();
     a_sankalpa_is_answered_as_json();
+    a_record_is_answered_brief_by_name();
     a_signed_pack_is_verified();
     a_refusal_names_its_field_and_hints();
     ts_context_free(ctx);

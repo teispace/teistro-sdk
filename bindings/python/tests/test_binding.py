@@ -15,6 +15,8 @@ import unittest
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 from teistro import (
+    Detail,
+    SankalpaRequest,
     decode_digest,
     ActivityRules,
     EkadashiRule,
@@ -4418,6 +4420,50 @@ class AnEngine(WithLibrary):
             self.assertEqual(caught.exception.field, "snapshot.nodeType")
             with self.assertRaises(TypeError):
                 ctx.recorded_settings([1])  # type: ignore[arg-type]
+
+    def test_any_record_is_answered_by_name_brief_full_or_masked(self) -> None:
+        """`record` answers any record entry point as the agent server does:
+        in full by default, brief on asking, or the fields a caller names,
+        each path checked against the answer's schema
+        (`03-design/result-detail.md`, C1260)."""
+        sankalpa: SankalpaRequest = {
+            "at": 2461055.59375,
+            "latitudeDeg": 27.7172,
+            "longitudeDeg": 85.324,
+            "altitudeM": 1400,
+            "utcOffsetSeconds": 20700,
+            "ayana": "TROPICAL",
+        }
+        with self.teistro.context(test_provider=True) as ctx:
+            full = ctx.record("almanac.sankalpa", sankalpa)
+            self.assertIn("input_hash", full["provenance"])
+            self.assertNotIn("detail", full)
+            brief = ctx.record("almanac.sankalpa", sankalpa, detail=Detail.BRIEF)
+            self.assertEqual(brief["detail"], "brief")
+            self.assertEqual(brief["provenance"]["answer_key"], full["provenance"]["answer_key"])
+            self.assertNotIn("input_hash", brief["provenance"])
+            masked = ctx.record("almanac.sankalpa", sankalpa, fields=["tithi"])
+            self.assertEqual(masked["value"], {"tithi": full["value"]["tithi"]})
+            self.assertEqual(masked["fields"], ["tithi"])
+            # A record that seals nothing answers its value alone.
+            converted = ctx.record(
+                "calendar.convert",
+                {"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"},
+                fields=["weekday"],
+            )
+            self.assertEqual(converted, {"weekday": "SATURDAY"})
+            for name, fields, detail, field in [
+                ("almanac.sankalpa", ["tithi", "tithii"], Detail.FULL, "fields[1]"),
+                ("almanac.sankalpa", ["tithi"], Detail.BRIEF, "fields_json"),
+                ("calendar.nothing", None, Detail.FULL, "name"),
+            ]:
+                with self.assertRaises(TeistroError) as caught:
+                    ctx.record(name, sankalpa, detail=detail, fields=fields)  # type: ignore[call-overload]
+                self.assertEqual(
+                    (caught.exception.status, caught.exception.field), (Status.INVALID_ARG, field)
+                )
+            with self.assertRaises(TypeError):
+                ctx.record("almanac.sankalpa", sankalpa, fields="tithi")
 
     def test_a_rule_set_the_sdk_ships_whole_is_asked_by_its_name(self) -> None:
         """`"BASELINE"` names every reading the baseline engine takes, and

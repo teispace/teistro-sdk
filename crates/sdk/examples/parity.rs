@@ -7181,6 +7181,22 @@ fn the_rites(report: &mut Report, geo: &Context) {
         "rites-sankalpa-hash",
         sankalpa.provenance.content_hash.to_string(),
     );
+    // The same request by name, brief: it keeps the answer key.
+    let brief = teistro::records::record("almanac.sankalpa")
+        .expect("every build carries it")
+        .answer_at(geo, SANKALPA_ASKED, teistro::records::Detail::Brief)
+        .expect("a brief sankalpa")
+        .envelope()
+        .expect("an envelope");
+    put(
+        report,
+        "rites-record-brief-key",
+        brief
+            .pointer("/provenance/answer_key")
+            .and_then(serde_json::Value::as_str)
+            .expect("a brief keeps its answer key")
+            .to_owned(),
+    );
     put(
         report,
         "rites-sankalpa",

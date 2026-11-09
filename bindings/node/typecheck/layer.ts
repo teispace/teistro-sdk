@@ -2451,6 +2451,21 @@ function theFinders(ctx: Context, official: Context): string {
 
 void theFinders;
 
+// Any record by its name, its request typed by the name (C1260).
+function theRecordCall(ctx: Context): unknown {
+  const asked = { date: { year: 2026, month: 10, day: 10 }, into: 'calendar.BIKRAM_SAMBAT' } as const;
+  ctx.record('calendar.convert', asked, { detail: 'BRIEF' });
+  // @ts-expect-error a request of another record's is refused
+  ctx.record('naming.of', asked);
+  // @ts-expect-error no record of that name
+  ctx.record('calendar.nothing', asked);
+  // @ts-expect-error a mask is never asked brief
+  ctx.record('calendar.convert', asked, { detail: 'BRIEF', fields: ['weekday'] });
+  return ctx.record('calendar.convert', asked, { fields: ['weekday'] });
+}
+
+void theRecordCall;
+
 // A stored baseline snapshot translated into the contexts to open.
 function theRecordedSettings(ctx: Context): string {
   const translated: RecordedSettings = ctx.recordedSettings({ ayanamsaId: 1, houseSystem: 'placidus' });

@@ -987,6 +987,26 @@ void putRites(Context geo) {
     ayana: AyanaReckoning.tropical,
   );
   put('rites-sankalpa-hash', sankalpa.provenance.contentHash);
+  // The same request by name: its brief keeps the answer key. A mask is
+  // each binding's own test, since the wasm module carries no schema to
+  // check one against.
+  final asked = Records.almanacSankalpa(
+    const SankalpaRequest(
+      at: 2461055.59375,
+      latitudeDeg: 27.7172,
+      longitudeDeg: 85.324,
+      altitudeM: 1400,
+      utcOffsetSeconds: 20700,
+      ayana: AyanaReckoning.tropical,
+    ),
+  );
+  final brief =
+      geo.record(asked, detail: Detail.brief)! as Map<String, Object?>;
+  put(
+    'rites-record-brief-key',
+    (brief['provenance']! as Map<String, Object?>)['answer_key'],
+  );
+
   final recited = sankalpa.value;
   put(
     'rites-sankalpa',

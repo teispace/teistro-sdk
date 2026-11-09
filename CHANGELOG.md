@@ -75,6 +75,21 @@ the previous release, not by nobody having looked.
 - `cargo xtask detail-tokens` writes `result-detail-measured.md`, each record's example answered at both
   details and counted in tokens, held by `check-detail-tokens` with every brief's paths held to its
   answer schema.
+- **Any record by name in every binding, brief, full or masked.** `ts_record_answer` answers any record
+  entry point as the agent server's envelope, at `TS_DETAIL_FULL` (0, a zeroed call's) or `TS_DETAIL_BRIEF`.
+  Node's `ctx.record(name, request, { detail, fields })`, Python's `ctx.record(name, request, detail=,
+  fields=)`, Dart's `ctx.record(Records.calendarConvert(request), detail:, fields:)` and Java's
+  `ctx.record(Requests.CALENDAR_CONVERT, request, Detail.BRIEF)` type the request by the record's name from
+  generated tables (`RecordRequests`, `RecordCalls`, `Records`, `Requests`'s `RecordOf` constants), so a
+  request of another record's fails to compile. The wasm module reaches it through the Node layer.
+- **A caller's own field mask** (`Record::fields`, `Record::answer_fields`, `Record::fields_of`, `Fields`;
+  the agent server's `fields` argument; `fields` in every binding): the paths of the full answer to keep,
+  each checked against the record's answer schema and refused by its place (`fields[1]`) when the answer has
+  no such field. A mask selects from the full answer, never a brief one, so naming both is refused (C1260);
+  the envelope then carries `fields` and the brief provenance. A build without the answer schemas (the C
+  library's `fields` feature, which the wasm module leaves out) refuses a mask as `CAPABILITY`.
+- Python's generated `ctypes` layer types a nullable text parameter `Optional[str]` and passes `None` as
+  its null.
 
 **A chart asked by zone.**
 **Numbers:** none for a chart asked by an offset: its document and content hash are byte for byte what they were;

@@ -183,6 +183,18 @@ import type {
 } from './requests.js';
 import type { EntityForms, Messages } from './messages.js';
 import type { Provenance, Step } from './records.js';
+// Each record entry point's request by its name, for `Context.record`.
+import type { RecordName, RecordRequests } from './requests.js';
+import type { Detail } from './catalogue.js';
+
+/**
+ * How much of its answer `Context.record` asks for: a detail, or a
+ * caller's mask of the full answer's fields, which is never asked brief.
+ */
+export type RecordOptions =
+  | { readonly detail?: Detail; readonly fields?: undefined }
+  | { readonly detail?: 'FULL'; readonly fields: readonly string[] };
+
 // The request records, generated from the façade's own schemas of them
 // (`03-design/generated-requests.md`).
 import type {
@@ -9851,6 +9863,21 @@ export declare class Context {
   /** The SHA-256 of the canonical settings, in hex. */
   readonly settingsHash: string;
   /**
+   * Any record entry point answered by its name, its request typed by the
+   * name (`RecordRequests`, generated), as the agent server answers it:
+   * the envelope `{ value, provenance }`, or the value alone where the
+   * record seals no provenance. `detail` is `'FULL'` (the default) or
+   * `'BRIEF'`; `fields` is a caller's own mask of the full answer's
+   * paths, checked against its schema and never beside `'BRIEF'` (C1260).
+   */
+  record<N extends RecordName>(
+    name: N,
+    request: RecordRequests[N] | string,
+    options?: RecordOptions,
+  ): unknown;
+  /**
+   * A stored baseline settings snapshot translated into what a context
+   * opens with; reads none of this context's settings.  /**
    * A stored baseline settings snapshot translated into what a context
    * opens with; reads none of this context's settings. A field the
    * translation does not know is `INVALID_ARG`, one it decided not to

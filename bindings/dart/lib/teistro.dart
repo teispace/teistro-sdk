@@ -3708,6 +3708,38 @@ final class Context {
   /// it, and two runs that agree on it are comparable.
   String get settingsHash => _hex(_inner.settingsHash().bytes);
 
+  /// Any record entry point answered by its name, as the agent server
+  /// answers it (`03-design/result-detail.md`): the envelope
+  /// `{value, provenance}`, or the value alone where the record seals no
+  /// provenance. [asked] is a [Records] constant called with its request,
+  /// so a request of another record's is refused by the analyser.
+  ///
+  /// [detail] is [Detail.full] for the whole answer and [Detail.brief] for
+  /// the fields a reader needs, the provenance written with its answer key
+  /// and none of its hashes. [fields] is a caller's own mask, the paths of
+  /// the full answer to keep (`['date.year']`), each checked against the
+  /// record's answer schema; it is refused beside [Detail.brief] (C1260).
+  ///
+  /// ```dart
+  /// final asked = Records.calendarConvert(const CalendarAsked(
+  ///   date: DayAsked(year: 2026, month: 10, day: 10),
+  ///   into: Calendar.bikramSambat,
+  /// ));
+  /// print(sdk.record(asked, fields: ['weekday']));
+  /// ```
+  Object? record(
+    RecordAsked asked, {
+    Detail detail = Detail.full,
+    List<String>? fields,
+  }) => jsonDecode(
+    _inner.recordAnswer(
+      asked.name,
+      jsonEncode(asked.request),
+      detail,
+      fields == null ? null : jsonEncode(fields),
+    ),
+  );
+
   /// A stored baseline settings snapshot translated into what a context
   /// opens with (`03-design/compat-shim.md` §4): `natal`, `kp` and
   /// `muhurta` (the natal one from the Earth's centre with the true node,

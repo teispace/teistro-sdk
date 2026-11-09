@@ -1388,27 +1388,57 @@ impl Server {
         }
         let (arguments, other) = tools::Arguments::other(record, arguments)?;
         let asked = tools::Arguments::read(&arguments)?;
-        let detail = asked.detail.unwrap_or(self.answers);
-        let Some(other) = other else {
-            let context = self.context(&asked)?;
-            return record
-                .answer_at(context, &asked.request, detail)?
-                .envelope();
+        let full = match other {
+            None => {
+                let context = self.context(&asked)?;
+                record.answer(context, &asked.request)?
+            }
+            Some(other) => {
+                // Both built before either is borrowed; a full cache cleared
+                // by the second leaves the first to be built again, and two
+                // fit.
+                self.context(&asked)?;
+                self.context(&other).map_err(tools::of_other)?;
+                self.context(&asked)?;
+                let (Some(context), Some(compared)) = (
+                    self.contexts.get(&context_key(&asked)),
+                    self.contexts.get(&context_key(&other)),
+                ) else {
+                    return Err(Error::internal("a context the server built is gone"));
+                };
+                record.answer_against(context, compared, &asked.request)?
+            }
         };
-        // Both built before either is borrowed; a full cache cleared by the
-        // second leaves the first to be built again, and two fit.
-        self.context(&asked)?;
-        self.context(&other).map_err(tools::of_other)?;
-        self.context(&asked)?;
-        let (Some(context), Some(compared)) = (
-            self.contexts.get(&context_key(&asked)),
-            self.contexts.get(&context_key(&other)),
-        ) else {
-            return Err(Error::internal("a context the server built is gone"));
+        self.selected(record, full, &asked)?.envelope()
+    }
+
+    /// A full answer as the call asks for it: selected by its mask, or at
+    /// its detail, the server's when it names none. A mask selects from
+    /// the full answer, so a call naming one at `brief` is refused (C1260).
+    fn selected(
+        &self,
+        record: Record,
+        full: teistro::records::Answered,
+        asked: &tools::Arguments,
+    ) -> Result<teistro::records::Answered, Error> {
+        let Some(paths) = &asked.fields else {
+            return Ok(match asked.detail.unwrap_or(self.answers) {
+                AnswerDetail::Full => full,
+                AnswerDetail::Brief => record.brief_of(full),
+            });
         };
-        record
-            .answer_against_at(context, compared, &asked.request, detail)?
-            .envelope()
+        if asked.detail == Some(AnswerDetail::Brief) {
+            return Err(Error::invalid_arg(
+                "a field mask selects from the full answer, so it is not asked at `brief`",
+            )
+            .with_field(format!("arguments.{}", tools::FIELDS))
+            .with_hint("leave `detail` out, or name `full`, beside `fields`"));
+        }
+        let mask = record.fields(paths.iter().cloned()).map_err(|why| {
+            let field = why.field().unwrap_or(tools::FIELDS).to_owned();
+            why.with_field(format!("arguments.{field}"))
+        })?;
+        record.fields_of(full, &mask)
     }
 
     /// The engine's own operations listed as tools; none without a
@@ -1439,6 +1469,7 @@ impl Server {
             settings: None,
             locale: None,
             detail: None,
+            fields: None,
         };
         let detail = self.answers;
         let context = self.context(&asked)?;

@@ -1,6 +1,7 @@
 # Brief and full answers
 
-Status: `built`, 2026-11-08. Consumer request A2-2
+Status: `built`, 2026-11-08; every binding and the caller's field mask
+(D5, D6) 2026-11-09. Consumer request A2-2
 (`docs/consumers/addendum-3.md`): "`detail: brief | full` on results,
 with token sizes measured and documented". Every record entry point
 (`crates/sdk/src/records.rs`) answers at either detail
@@ -93,8 +94,8 @@ carries beside its result. The page lists every large answer's fields
 with their tokens and marks what each brief keeps, so a list is chosen
 against its cost.
 
-A caller's own field mask is not built. It can come later as a third
-mechanism beside the two views without changing them.
+A caller's own field mask came later as a third mechanism beside the two
+views, without changing them (D6).
 
 ### D3. A brief is a projection, held to the full schema
 
@@ -164,19 +165,66 @@ is written as its value alone at either detail, as it was.
   operation tool answers at the server's detail, since its arguments are
   the engine's and carry no `detail`.
 - **The bindings** (C, Node, Python, Dart, Java) keep their typed
-  answers whole. A typed answer is read by field name in code, where a
+  answers whole: a typed answer is read by field name in code, where a
   field left out costs nothing to skip and a partial type would double
-  every answer class; tokens matter where an answer becomes a model's
-  text, which is the agent server's place. A binding that hands answers
-  to a model it drives itself has no SDK call for the brief yet; it is
-  listed under *Open*.
+  every answer class. Beside them, one boundary function,
+  `ts_record_answer`, answers any record by name as the envelope the
+  agent server writes, at `TS_DETAIL_FULL` (0, so a zeroed call asks for
+  the whole answer) or `TS_DETAIL_BRIEF`, or by a caller's mask (D6).
+  It is the door for an application that hands answers to a model it
+  drives itself. Each binding reads it as one method, `record`, whose
+  request is typed by the record's name from tables generated out of the
+  description's request roots (`api.requests.roots`), so nothing is
+  copied per binding and a request of another record's fails to
+  compile:
+
+  | Binding | Call | Typed by |
+  |---|---|---|
+  | Node (and the wasm package, which reuses its layer) | `ctx.record('calendar.convert', request, { detail: 'BRIEF' })` | `RecordRequests[N]`, `RecordName` in `requests.d.ts` |
+  | Python | `ctx.record("calendar.convert", request, detail=Detail.BRIEF)` | one `@overload` a name in `_requests.py`'s `RecordCalls` |
+  | Dart | `ctx.record(Records.calendarConvert(request), detail: Detail.brief)` | `RecordOf<R>` constants in `requests.dart` |
+  | Java | `ctx.record(Requests.CALENDAR_CONVERT, request, Detail.BRIEF)` | `RecordOf<R>` constants in `Requests.java` |
+
+  Detail stays an argument of the call, never a field of a request
+  (D1), and `full` is every binding's default, so an existing call's
+  bytes are unchanged.
+
+### D6. A caller's field mask, beside the two views
+
+A caller who knows the answer's schema names the fields they want:
+`Record::fields(["date.year", "weekday"])` checks each path against the
+record's answer schema (`Brief::narrow`'s walk, so a path follows a
+list's items and a reference's definition as a brief's does) and answers
+a `Fields` mask, or refuses the first unknown path by its place,
+`fields[1]`, as `INVALID_ARG`. A mask in hand therefore names no field
+its record lacks, and it carries its record's name, so a mask made for
+one record is refused by another. `Record::fields_of` keeps the mask's
+fields of a full answer, each value unchanged, as `Brief::of` keeps a
+brief's; the envelope writes the brief provenance and `fields`, the
+paths kept, whether or not the record seals a provenance, since the
+value's shape is the call's.
+
+A mask selects from the **full** answer, never from a brief one, and a
+call naming both is refused (crux C1260). Composing them would either
+intersect, silently dropping a path the caller named because the
+record's brief leaves it out, or unite, so that the mask no longer says
+what comes back; neither is what a caller writing a mask asked for. In
+Rust the two are separate methods, so the combination cannot be written;
+Java's `record` has one overload for a detail and one for a mask; the
+agent server, the C function and the other bindings refuse it on
+`fields`.
+
+The check reads the answer's JSON Schema, which only a build with the
+façade's `schema` feature carries. The C library turns it on by default
+(its `fields` feature); the wasm module leaves it out for its size, and
+there a mask is refused as `CAPABILITY` while both details still answer.
 
 ## Open
 
-- A binding's brief: one generic boundary function answering any record
-  by name at a detail, as canonical JSON, read by every binding as an
-  untyped JSON value (the agent server's door, offered to applications
-  that drive a model themselves). Not built; nothing asks for it yet.
-- A caller's own field mask beside the two views (D2).
+- A comparing record (`chart.disagreements`) answers through
+  `ts_record_answer` against the call's own context only; a second
+  context at the boundary is the typed entry points' for now.
+- A mask's paths are property names: a field under a map keyed by data
+  (a day's date) cannot be named below its key.
 - The tokens are the dependency-free approximation's (C1165), a ruler
   for comparing the two details, not a model's bill.

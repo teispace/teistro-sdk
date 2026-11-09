@@ -110,6 +110,13 @@ so). `--answers full` makes full the server's own. What each brief
 keeps and saves is measured in
 `docs/03-design/result-detail-measured.md`.
 
+A call may instead name the fields it wants, `"fields": ["date.year",
+"weekday"]`: the paths of the full answer to keep, each checked against
+the answer's schema and refused by its place (`arguments.fields[1]`)
+when the answer has no such field. A mask selects from the full answer,
+so it is refused beside `"detail": "brief"` (crux C1260); the answer
+carries `fields` beside the brief provenance.
+
 Beside the tools, the server answers resources, prompts and
 completions:
 
