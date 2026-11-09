@@ -23,7 +23,7 @@ schema = ["dep:schemars", "teistro-core/schema"]
 
 [dependencies]
 serde = { version = "1", features = ["derive"] }
-teistro-core = { path = "../core" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
 schemars = { version = "1.2", optional = true }
 
 [dev-dependencies]

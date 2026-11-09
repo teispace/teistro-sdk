@@ -18,12 +18,12 @@ publish = false
 schema = ["dep:schemars", "teistro-aspect/schema", "teistro-core/schema", "teistro-dasha/schema", "teistro-points/schema", "teistro-state/schema", "teistro-strength/schema"]
 
 [dependencies]
-teistro-aspect = { path = "../aspect" }
-teistro-core = { path = "../core" }
-teistro-dasha = { path = "../dasha" }
-teistro-points = { path = "../points" }
-teistro-state = { path = "../state" }
-teistro-strength = { path = "../strength" }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.1" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
+teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.1" }
+teistro-points = { path = "../points", version = "=1.0.0-rc.1" }
+teistro-state = { path = "../state", version = "=1.0.0-rc.1" }
+teistro-strength = { path = "../strength", version = "=1.0.0-rc.1" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = { version = "1.2", optional = true }

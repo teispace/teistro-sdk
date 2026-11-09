@@ -229,6 +229,50 @@ An air-gapped machine has two ways in: `dart run teistro:install --from
 builds from source needs neither: `cargo build --release -p teistro-ffi`,
 and both loaders find `target/release`.
 
+## Every crate builds from its own package
+
+A consumer may compile the SDK from what `cargo package` ships rather than
+from a checkout: a registry, a vendored source, or a bundle trimmed to
+each crate's `cargo package --list`. So nothing a crate needs to build may
+live outside it. A build script, an `include_str!` or an
+`env!("CARGO_MANIFEST_DIR")` path that climbs out of its crate builds here
+and nowhere else.
+
+- **Data a build reads belongs to the crate that ships it.** The SDK's
+  locale sources are `crates/intl/i18n/`, inside `teistro-intl`, and
+  `teistro`'s build script reaches them through `teistro_intl::sdk_root()`,
+  which names that crate's own directory; a build from the packages finds
+  them in `teistro-intl`'s package. One copy, so nothing has to be kept
+  equal to anything, and `check-intl` refuses a tree back at the old
+  `i18n/`. No symlink: `cargo package` resolves one differently by
+  platform, and not at all on Windows.
+- **A build script that wants the repository asks whether it is in one.**
+  `crates/ffi/build.rs` stamps the commit into `ts_build_info`: from a
+  package it reads `.cargo_vcs_info.json`, which `cargo package` writes,
+  and only in a checkout (`crates/ffi` two levels below a `Cargo.toml`)
+  does it run git.
+- **Every internal dependency carries a version**, exactly the
+  workspace's (`version = "=1.0.0-rc.1"` beside the `path`), because a
+  package drops the path. `check-versions` holds each, and `cargo xtask
+  version` moves them with the workspace.
+
+`cargo xtask check-packages` (`xtask/src/crate_packages.rs`, in
+`verify.yml`'s `packages` job) is the gate. It takes the crates `teistro`
+and `teistro-ffi` reach through normal and build dependencies from `cargo
+metadata`, packages them with `cargo package --no-verify
+--exclude-lockfile`, unpacks every `.crate` into a temporary directory
+outside the repository, and builds them there as one workspace whose
+`[patch.crates-io]` sends each sibling to its unpacked package, from the
+repository's `Cargo.lock`. Cargo's own verification would do the same
+through a local-registry overlay, but the overlay leaves out every
+`publish = false` crate, which is every crate until the first release. It
+is in verify and not the fast check: one fresh build of every published
+crate, about a minute and a half on four cores. `teistro-mcp` is not among
+them: it ships as a program (the release archives and `@teistro/mcp`),
+and its build script reads `idl/api.json` and `catalogue/catalogue.json`
+from the repository, which its manifest already says a published crate
+would have to carry.
+
 ## Withdrawing
 
 There is no un-publish. A release that is wrong is followed by another

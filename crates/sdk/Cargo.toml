@@ -18,48 +18,48 @@ publish = false
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = { version = "1.2", optional = true }
-teistro-aspect = { path = "../aspect" }
-teistro-astro = { path = "../astro" }
-teistro-calendar = { path = "../calendar" }
-teistro-chart = { path = "../chart" }
-teistro-core = { path = "../core" }
-teistro-dasha = { path = "../dasha", optional = true }
-teistro-hellenistic = { path = "../hellenistic", optional = true }
-teistro-matching = { path = "../matching", optional = true }
-teistro-lalkitab = { path = "../lalkitab", optional = true }
-teistro-pakshi = { path = "../pakshi", optional = true }
-teistro-numerology = { path = "../numerology", optional = true }
-teistro-research = { path = "../research", optional = true }
-teistro-prashna = { path = "../prashna", optional = true }
-teistro-remedies = { path = "../remedies", optional = true }
-teistro-rashifal = { path = "../rashifal", optional = true }
-teistro-rectification = { path = "../rectification", optional = true }
-teistro-houses = { path = "../houses" }
-teistro-interpret = { path = "../interpret", optional = true }
-teistro-intl = { path = "../intl", default-features = false }
-teistro-idl = { path = "../idl", default-features = false }
-teistro-panchanga = { path = "../panchanga" }
-teistro-points = { path = "../points" }
-teistro-rules = { path = "../rules", optional = true }
-teistro-strength = { path = "../strength", optional = true }
-teistro-tajika = { path = "../tajika", optional = true }
-teistro-gochar = { path = "../gochar", optional = true }
-teistro-kp = { path = "../kp", optional = true }
-teistro-muhurta = { path = "../muhurta", optional = true }
-teistro-port-ephemeris = { path = "../port-ephemeris" }
-teistro-serial = { path = "../serial", optional = true }
-teistro-siddhanta = { path = "../siddhanta" }
-teistro-geometry = { path = "../geometry" }
-teistro-render-svg = { path = "../render-svg", optional = true }
-teistro-state = { path = "../state" }
-teistro-test-allocator = { path = "../test-allocator" }
-teistro-time = { path = "../time" }
-teistro-vargas = { path = "../vargas" }
-teistro-western = { path = "../western", optional = true }
-teistro-ephemeris-builtin = { path = "../ephemeris-builtin", optional = true, default-features = false }
+teistro-aspect = { path = "../aspect", version = "=1.0.0-rc.1" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.1" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.1" }
+teistro-chart = { path = "../chart", version = "=1.0.0-rc.1" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
+teistro-dasha = { path = "../dasha", version = "=1.0.0-rc.1", optional = true }
+teistro-hellenistic = { path = "../hellenistic", version = "=1.0.0-rc.1", optional = true }
+teistro-matching = { path = "../matching", version = "=1.0.0-rc.1", optional = true }
+teistro-lalkitab = { path = "../lalkitab", version = "=1.0.0-rc.1", optional = true }
+teistro-pakshi = { path = "../pakshi", version = "=1.0.0-rc.1", optional = true }
+teistro-numerology = { path = "../numerology", version = "=1.0.0-rc.1", optional = true }
+teistro-research = { path = "../research", version = "=1.0.0-rc.1", optional = true }
+teistro-prashna = { path = "../prashna", version = "=1.0.0-rc.1", optional = true }
+teistro-remedies = { path = "../remedies", version = "=1.0.0-rc.1", optional = true }
+teistro-rashifal = { path = "../rashifal", version = "=1.0.0-rc.1", optional = true }
+teistro-rectification = { path = "../rectification", version = "=1.0.0-rc.1", optional = true }
+teistro-houses = { path = "../houses", version = "=1.0.0-rc.1" }
+teistro-interpret = { path = "../interpret", version = "=1.0.0-rc.1", optional = true }
+teistro-intl = { path = "../intl", version = "=1.0.0-rc.1", default-features = false }
+teistro-idl = { path = "../idl", version = "=1.0.0-rc.1", default-features = false }
+teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.1" }
+teistro-points = { path = "../points", version = "=1.0.0-rc.1" }
+teistro-rules = { path = "../rules", version = "=1.0.0-rc.1", optional = true }
+teistro-strength = { path = "../strength", version = "=1.0.0-rc.1", optional = true }
+teistro-tajika = { path = "../tajika", version = "=1.0.0-rc.1", optional = true }
+teistro-gochar = { path = "../gochar", version = "=1.0.0-rc.1", optional = true }
+teistro-kp = { path = "../kp", version = "=1.0.0-rc.1", optional = true }
+teistro-muhurta = { path = "../muhurta", version = "=1.0.0-rc.1", optional = true }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.1" }
+teistro-serial = { path = "../serial", version = "=1.0.0-rc.1", optional = true }
+teistro-siddhanta = { path = "../siddhanta", version = "=1.0.0-rc.1" }
+teistro-geometry = { path = "../geometry", version = "=1.0.0-rc.1" }
+teistro-render-svg = { path = "../render-svg", version = "=1.0.0-rc.1", optional = true }
+teistro-state = { path = "../state", version = "=1.0.0-rc.1" }
+teistro-test-allocator = { path = "../test-allocator", version = "=1.0.0-rc.1" }
+teistro-time = { path = "../time", version = "=1.0.0-rc.1" }
+teistro-vargas = { path = "../vargas", version = "=1.0.0-rc.1" }
+teistro-western = { path = "../western", version = "=1.0.0-rc.1", optional = true }
+teistro-ephemeris-builtin = { path = "../ephemeris-builtin", version = "=1.0.0-rc.1", optional = true, default-features = false }
 
 [build-dependencies]
-teistro-intl = { path = "../intl", default-features = false }
+teistro-intl = { path = "../intl", version = "=1.0.0-rc.1", default-features = false }
 
 # The SDK's own ephemeris, so a consumer who installs nothing else still
 # computes a chart (ADR-0008, ADR-0028) — the same feature the boundary

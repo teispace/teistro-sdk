@@ -18,8 +18,8 @@ publish = false
 schema = ["dep:schemars", "teistro-core/schema", "teistro-gochar/schema"]
 
 [dependencies]
-teistro-core = { path = "../core" }
-teistro-gochar = { path = "../gochar" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
+teistro-gochar = { path = "../gochar", version = "=1.0.0-rc.1" }
 serde = { version = "1", features = ["derive"] }
 schemars = { version = "1.2", optional = true }
 

@@ -170,6 +170,7 @@ pub(crate) fn check(root: &Path) -> i32 {
     failures.extend(check_api(root, &wanted));
     failures.extend(check_registry_entry(root, &wanted));
     failures.extend(check_changelog(root, &wanted, released));
+    failures.extend(crate::crate_packages::check_requirements(root, &wanted));
 
     for failure in &failures {
         println!("FAIL  {failure}");
@@ -481,6 +482,11 @@ pub(crate) fn set(root: &Path, wanted: &str) -> i32 {
         1,
     );
     write(&manifest, &updated, &mut written, root);
+    // Each crate takes its siblings at exactly the workspace's version,
+    // which `cargo package` keeps once the path is dropped.
+    for path in crate::crate_packages::set_requirements(root, &current, wanted) {
+        written.push(crate::rel(root, &path));
+    }
 
     for (path, package) in NPM_MANIFESTS {
         set_node(root, path, package, wanted, released, &mut written);

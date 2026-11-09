@@ -17,14 +17,14 @@ publish = false
 schema = ["dep:schemars", "teistro-astro/schema", "teistro-calendar/schema", "teistro-chart/schema", "teistro-core/schema", "teistro-panchanga/schema", "teistro-port-ephemeris/schema"]
 
 [dependencies]
-teistro-astro = { path = "../astro" }
-teistro-calendar = { path = "../calendar" }
-teistro-chart = { path = "../chart" }
-teistro-core = { path = "../core" }
-teistro-matching = { path = "../matching" }
-teistro-panchanga = { path = "../panchanga" }
-teistro-port-ephemeris = { path = "../port-ephemeris" }
-teistro-time = { path = "../time" }
+teistro-astro = { path = "../astro", version = "=1.0.0-rc.1" }
+teistro-calendar = { path = "../calendar", version = "=1.0.0-rc.1" }
+teistro-chart = { path = "../chart", version = "=1.0.0-rc.1" }
+teistro-core = { path = "../core", version = "=1.0.0-rc.1" }
+teistro-matching = { path = "../matching", version = "=1.0.0-rc.1" }
+teistro-panchanga = { path = "../panchanga", version = "=1.0.0-rc.1" }
+teistro-port-ephemeris = { path = "../port-ephemeris", version = "=1.0.0-rc.1" }
+teistro-time = { path = "../time", version = "=1.0.0-rc.1" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 schemars = { version = "1.2", optional = true }
