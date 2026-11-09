@@ -689,9 +689,11 @@ fn surya_siddhanta() -> Profile {
 /// are the acceptance values, held to measured bounds by
 /// `crates/siddhanta/tests/mithila.rs`: minutes where the text without
 /// the bija is a quarter of an hour off and the modern sky hours (C1225,
-/// C1226). Its star planets are the text's, as the print's are degrees
-/// from a modern sky (C1227). Based on `surya-siddhanta`, which already has the text's
-/// zodiac and its sunrise on the geometric horizon. The provider is
+/// C1226). Its star planets are the text's four steps, which the
+/// Makaranda's three fold: the print's Mars to Saturn on five Thursdays
+/// of 2022 are the model's within 1.4′ (C1227). Based on
+/// `surya-siddhanta`, which already has the text's zodiac and its sunrise
+/// on the geometric horizon. The provider is
 /// declared, never chosen by the profile (ADR-0029): open the context
 /// over `SURYA_SIDDHANTA`.
 fn mithila_makaranda() -> Profile {
@@ -710,7 +712,7 @@ fn mithila_makaranda() -> Profile {
         sources: vec![Citation::new(
             "frame.siddhanta",
             makaranda(
-                "Makaranda, Makarandasarini (1478; Varanasi print 1923): the bija read from its daily-motion tables and footers, the bhujantara sunrise measured against 162 printed days of the Vishwavidyalaya Panchang, Darbhanga, 1980 to 2022; docs/03-design/makaranda.md",
+                "Makaranda, Makarandasarini (1478; Varanasi print 1923): the bija read from its daily-motion tables and footers, the bhujantara sunrise measured against 162 printed days of the Vishwavidyalaya Panchang, Darbhanga, 1980 to 2022, and its star planets against 25 printed places of 2022; docs/03-design/makaranda.md",
             ),
         )],
         mark: Mark::Traditional,

@@ -172,6 +172,11 @@ pub fn sighra_equation(trig: Trig, epicycle: Epicycle, kendra_deg: f64) -> Sighr
 /// whole manda equation of that, to the original mean place; the whole
 /// sighra equation of that, to it.
 ///
+/// The Makaranda's three steps are these four. Its manda tables (pp.
+/// 14 to 15) print the equation at the anomaly moved by half of itself,
+/// which is the second and third steps folded into one (Balachandra Rao,
+/// Rupa and Venugopal, *Gaṇita Bhāratī* 35, 2013, §5; C1227).
+///
 /// ```
 /// use teistro_siddhanta::{Parameters, Planet, Trig};
 /// use teistro_siddhanta::equation::four_step;
@@ -523,6 +528,34 @@ mod tests {
         let a = four_step(Trig::Table, manda, sighra, 200.0, 130.0, 20.0).true_deg;
         let b = four_step(Trig::Table, manda, sighra, 200.1, 130.0, 20.1).true_deg;
         assert!((0.0..360.0).contains(&a) && (a - b).abs() < 1.0);
+    }
+
+    #[test]
+    fn the_makarandas_one_manda_step_is_the_texts_second_and_third() {
+        // Balachandra Rao, Rupa and Venugopal (Ganita Bharati 35, 2013,
+        // §5, Table 5.1) rebuild the Makaranda's tabulated manda equation
+        // (pp. 14-15) as the text's equation at the anomaly moved by half
+        // of itself, applied once to the mean planet, and match the book's
+        // whole arcminutes. That is the four steps' second and third
+        // (C1227): with the conjunction on the mean place the first step
+        // is nothing, and step three's equation is the table's cell.
+        let manda = Parameters::TEXT.manda_epicycle(Planet::Mars);
+        let sighra = Parameters::TEXT.sighra_epicycle(Planet::Mars).unwrap();
+        for (anomaly, revised, book) in [
+            (15.0, 165.3442, 165.0),
+            (30.0, 320.4618, 320.0),
+            (60.0, 569.9568, 570.0),
+            (90.0, 688.8117, 689.0),
+            (96.0, 692.2105, 692.0),
+            (105.0, 683.1411, 683.0),
+            (150.0, 381.6481, 381.0),
+            (165.0, 201.5603, 202.0),
+        ] {
+            let steps = four_step(Trig::Exact, manda, sighra, 0.0, anomaly, 0.0);
+            let minutes = steps.manda_equation_deg * 60.0;
+            assert!((minutes - revised).abs() < 1e-3, "{anomaly}: {minutes}");
+            assert!((minutes - book).abs() < 1.0, "{anomaly}: {minutes}");
+        }
     }
 
     #[test]
