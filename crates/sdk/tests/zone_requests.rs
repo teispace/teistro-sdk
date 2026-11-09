@@ -88,6 +88,20 @@ fn stated<T>(answer: &Envelope<T>) -> (i32, bool) {
 
 /// A JSON answer and the façade's own answer, sealed over the same value,
 /// are one answer byte for byte.
+/// That a request by zone and one by the offset the zone kept answer the
+/// same and seal apart: the zone is part of what was asked (C1252).
+fn sealed_apart<T: PartialEq + std::fmt::Debug>(
+    zoned: &Envelope<T>,
+    stated: &Envelope<T>,
+    what: &str,
+) {
+    assert_eq!(zoned.value, stated.value, "{what}");
+    assert_ne!(
+        zoned.provenance.input_hash, stated.provenance.input_hash,
+        "{what}: the zone is sealed"
+    );
+}
+
 fn same_bytes(sent: &Envelope<Value>, direct: Value) {
     let direct = Envelope::sealing(direct, sent.provenance.clone());
     assert_eq!(
@@ -146,7 +160,7 @@ fn a_sankalpa_on_a_zone_reads_each_instant_on_its_own_offset() {
         let stated_offset =
             SankalpaRequest::from_json(&sankalpa_record(jd, Some(seconds))).unwrap();
         let stated_offset = sdk.almanac().sankalpa_request(&stated_offset).unwrap();
-        assert_eq!(zoned.value, stated_offset.value, "{jd}");
+        sealed_apart(&zoned, &stated_offset, &format!("sankalpa {jd}"));
         assert_eq!(stated(&zoned), (seconds, true));
     }
 }
@@ -200,7 +214,7 @@ fn a_first_year_on_a_zone_reads_each_death_on_its_own_offset() {
             sdk.almanac().first_year_query(&asked).unwrap()
         };
         let zoned = read(None);
-        assert_eq!(zoned.value, read(Some(seconds)).value, "{jd}");
+        sealed_apart(&zoned, &read(Some(seconds)), &format!("first year {jd}"));
         assert_eq!(stated(&zoned).0, seconds);
     }
 }
@@ -272,25 +286,25 @@ fn an_ashauch_on_a_zone_reads_each_death_on_its_own_offset() {
             almanac.ashauch_query(&asked).unwrap()
         };
         let zoned = ashauch(None);
-        assert_eq!(zoned.value, ashauch(Some(seconds)).value, "{jd}");
+        sealed_apart(&zoned, &ashauch(Some(seconds)), &format!("ashauch {jd}"));
         assert_eq!(stated(&zoned), (seconds, true));
         let household = |seconds| {
             let asked = HouseholdQuery::from_json(&household_record(jd, seconds)).unwrap();
             almanac.household_query(&asked).unwrap()
         };
-        assert_eq!(
-            household(None).value,
-            household(Some(seconds)).value,
-            "{jd}"
+        sealed_apart(
+            &household(None),
+            &household(Some(seconds)),
+            &format!("household {jd}"),
         );
         let death_time = |seconds| {
             let asked = DeathTimeQuery::from_json(&death_time_record(jd, seconds)).unwrap();
             almanac.death_time_query(&asked).unwrap()
         };
-        assert_eq!(
-            death_time(None).value,
-            death_time(Some(seconds)).value,
-            "{jd}"
+        sealed_apart(
+            &death_time(None),
+            &death_time(Some(seconds)),
+            &format!("death time {jd}"),
         );
     }
 }
@@ -359,7 +373,7 @@ fn a_pakshi_on_a_zone_reads_each_day_on_its_own_offset() {
             sdk.almanac().pakshi_request(&asked).unwrap()
         };
         let zoned = read(None);
-        assert_eq!(zoned.value, read(Some(seconds)).value, "{year}");
+        sealed_apart(&zoned, &read(Some(seconds)), &format!("pakshi {year}"));
         assert_eq!(stated(&zoned), (seconds, true));
     }
     refuses_both(

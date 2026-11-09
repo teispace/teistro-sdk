@@ -182,7 +182,7 @@ impl AlmanacArea<'_> {
     /// As [`AlmanacArea::ashauch`]; a zone the database does not have, on
     /// `zone`.
     pub fn ashauch_query(self, asked: &AshauchQuery) -> Result<Envelope<serde_json::Value>, Error> {
-        let Envelope { value, provenance } = self.clocked(
+        let Envelope { value, provenance } = self.clocked_sealed(
             &asked.clock,
             || Ok(asked.request.event.at()),
             |almanac, offset| {
@@ -518,7 +518,7 @@ impl AlmanacArea<'_> {
                 .map_or(JulianDay::J2000, |event| event.event.at()))
         };
         let Envelope { value, provenance } =
-            self.clocked(&asked.clock, first, |almanac, offset| {
+            self.clocked_sealed(&asked.clock, first, |almanac, offset| {
                 almanac
                     .household(&asked.table, &asked.household, &asked.place, offset)
                     .map_err(|why| named_under(why, "household.household"))
@@ -536,7 +536,7 @@ impl AlmanacArea<'_> {
         self,
         asked: &DeathTimeQuery,
     ) -> Result<Envelope<serde_json::Value>, Error> {
-        let Envelope { value, provenance } = self.clocked(
+        let Envelope { value, provenance } = self.clocked_sealed(
             &asked.clock,
             || Ok(asked.at),
             |almanac, offset| {

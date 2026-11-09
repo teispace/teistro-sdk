@@ -287,6 +287,25 @@ impl<'a> AlmanacArea<'a> {
         }
     }
 
+    /// [`AlmanacArea::clocked`] for an answer: a zone is joined to the
+    /// input hash the reckoning wrote on the one offset it was handed, so a
+    /// request by zone and one by that offset seal apart, and a stated
+    /// offset leaves the hash as it was (C1252).
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::clocked`].
+    pub(crate) fn clocked_sealed<T>(
+        self,
+        clock: &crate::DayClock,
+        at: impl FnOnce() -> Result<JulianDay<Utc>, Error>,
+        work: impl FnOnce(AlmanacArea<'_>, UtcOffset) -> Result<Envelope<T>, Error>,
+    ) -> Result<Envelope<T>, Error> {
+        let mut answer = self.clocked(clock, at, work)?;
+        clock.seal_answer(&mut answer.provenance);
+        Ok(answer)
+    }
+
     /// This area with no clock of its own, as a request on its own clock
     /// starts: a stated offset is then read as stated.
     pub(crate) const fn unclocked(self) -> AlmanacArea<'a> {
