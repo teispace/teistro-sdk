@@ -249,7 +249,9 @@ pub enum MigrateSource {
         /// The exporter's document (`fixtures/baseline/names.json`).
         #[arg(long)]
         dump: PathBuf,
-        /// The catalogue's entity skeleton, for glyphs and genders.
+        /// The catalogue's entity skeleton, for glyphs and genders; by
+        /// default the `catalogue/` beside the root, or the repository's for
+        /// the SDK's own sources.
         #[arg(long)]
         skeleton: Option<PathBuf>,
         /// Replace records the locales already have.
@@ -340,6 +342,16 @@ fn apply_migration(
     Ok(report.passed() && migration.report.unknown_keys.is_empty())
 }
 
+/// The catalogue's entity skeleton a root is migrated with when none is
+/// named: a `catalogue/` beside the root, or, for the SDK's own sources
+/// (`crates/intl/i18n`), the repository's, three levels up.
+fn default_skeleton(root: &Path) -> Option<PathBuf> {
+    ["..", "../../.."]
+        .into_iter()
+        .map(|up| root.join(up).join("catalogue/entity-skeleton.json"))
+        .find(|path| path.is_file())
+}
+
 /// Reads a migration's source, plans it and applies it to its root.
 ///
 /// The three sources differ in what they read and where they write and in
@@ -354,7 +366,7 @@ fn run_migrate(tree: &Tree, source: MigrateSource) -> Result<bool, Box<dyn std::
         } => {
             let dump = crate::migrate::read_dump(&dump)?;
             let skeleton = skeleton
-                .or_else(|| Some(tree.root.join("../catalogue/entity-skeleton.json")))
+                .or_else(|| default_skeleton(&tree.root))
                 .and_then(|path| crate::migrate::read_skeleton(&path));
             let mut migration = crate::migrate::plan(&dump, skeleton.as_ref());
             apply_migration(&mut migration, &tree.root, overwrite)

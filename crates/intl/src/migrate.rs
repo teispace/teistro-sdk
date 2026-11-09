@@ -834,8 +834,15 @@ mod tests {
     use crate::source::sdk_root;
     use crate::validate::validate;
 
+    /// The repository, two levels above this crate: the exporter's
+    /// document and the catalogue's skeleton are the repository's files,
+    /// not this crate's (and these tests are not in its package's build).
+    fn repository() -> std::path::PathBuf {
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..")
+    }
+
     fn dump() -> Dump {
-        let path = sdk_root().join("../fixtures/baseline/names.json");
+        let path = repository().join("fixtures/baseline/names.json");
         read_dump(&path).unwrap_or_else(|e| panic!("{e}"))
     }
 
@@ -872,7 +879,7 @@ mod tests {
     #[test]
     fn the_dump_plans_into_resolving_records_for_four_locales() {
         let dump = dump();
-        let skeleton = read_skeleton(&sdk_root().join("../catalogue/entity-skeleton.json"));
+        let skeleton = read_skeleton(&repository().join("catalogue/entity-skeleton.json"));
         assert!(skeleton.is_some());
         let migration = plan(&dump, skeleton.as_ref());
         assert!(every_record_resolves(&migration));

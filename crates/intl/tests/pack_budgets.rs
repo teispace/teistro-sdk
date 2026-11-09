@@ -19,10 +19,9 @@ use teistro_intl::source::Tree;
 fn every_locale_pack_is_within_its_budget() {
     let root = teistro_intl::sdk_root();
     let tree = Tree::load(&root).unwrap();
-    let page = root
-        .parent()
-        .unwrap()
-        .join("docs/05-testing/pack-budgets.json");
+    // The budgets are the repository's page, two levels above this crate.
+    let page = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../docs/05-testing/pack-budgets.json");
     let record: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(&page).unwrap()).unwrap();
     let budgets: BTreeMap<String, u64> =
