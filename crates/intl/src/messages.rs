@@ -6685,5 +6685,399 @@ pub mod sdk {
 
     }
 
+    /// The `rite` group.
+    pub mod rite {
+        /// The message `sdk.rite.anniversaryKind`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::AnniversaryKind;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = AnniversaryKind { kind: String::from("kind") };
+        /// assert_eq!(AnniversaryKind::KEY, "sdk.rite.anniversaryKind");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct AnniversaryKind {
+            /// The `kind` parameter.
+            pub kind: String,
+        }
+
+        impl crate::TypedMessage for AnniversaryKind {
+            const KEY: &'static str = "sdk.rite.anniversaryKind";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("kind", crate::Value::Str(self.kind.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.ashauchDays`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::AshauchDays;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = AshauchDays { days: 2.5 };
+        /// assert_eq!(AshauchDays::KEY, "sdk.rite.ashauchDays");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct AshauchDays {
+            /// The `days` parameter.
+            pub days: f64,
+        }
+
+        impl crate::TypedMessage for AshauchDays {
+            const KEY: &'static str = "sdk.rite.ashauchDays";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("days", crate::Value::Num(self.days)),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.ashauchKind`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::AshauchKind;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = AshauchKind { kind: String::from("kind") };
+        /// assert_eq!(AshauchKind::KEY, "sdk.rite.ashauchKind");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct AshauchKind {
+            /// The `kind` parameter.
+            pub kind: String,
+        }
+
+        impl crate::TypedMessage for AshauchKind {
+            const KEY: &'static str = "sdk.rite.ashauchKind";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("kind", crate::Value::Str(self.kind.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.ashauchLength`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::AshauchLength;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = AshauchLength { length: String::from("length") };
+        /// assert_eq!(AshauchLength::KEY, "sdk.rite.ashauchLength");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct AshauchLength {
+            /// The `length` parameter.
+            pub length: String,
+        }
+
+        impl crate::TypedMessage for AshauchLength {
+            const KEY: &'static str = "sdk.rite.ashauchLength";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("length", crate::Value::Str(self.length.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.clause`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::Clause;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Clause { clause: String::from("clause") };
+        /// assert_eq!(Clause::KEY, "sdk.rite.clause");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Clause {
+            /// The `clause` parameter.
+            pub clause: String,
+        }
+
+        impl crate::TypedMessage for Clause {
+            const KEY: &'static str = "sdk.rite.clause";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("clause", crate::Value::Str(self.clause.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.firstYearRite`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::FirstYearRite;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = FirstYearRite { rite: String::from("rite") };
+        /// assert_eq!(FirstYearRite::KEY, "sdk.rite.firstYearRite");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct FirstYearRite {
+            /// The `rite` parameter.
+            pub rite: String,
+        }
+
+        impl crate::TypedMessage for FirstYearRite {
+            const KEY: &'static str = "sdk.rite.firstYearRite";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("rite", crate::Value::Str(self.rite.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.kinKeeps`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::KinKeeps;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = KinKeeps { keeps: String::from("keeps") };
+        /// assert_eq!(KinKeeps::KEY, "sdk.rite.kinKeeps");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct KinKeeps {
+            /// The `keeps` parameter.
+            pub keeps: String,
+        }
+
+        impl crate::TypedMessage for KinKeeps {
+            const KEY: &'static str = "sdk.rite.kinKeeps";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("keeps", crate::Value::Str(self.keeps.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.relation`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::Relation;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Relation { relation: String::from("relation") };
+        /// assert_eq!(Relation::KEY, "sdk.rite.relation");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Relation {
+            /// The `relation` parameter.
+            pub relation: String,
+        }
+
+        impl crate::TypedMessage for Relation {
+            const KEY: &'static str = "sdk.rite.relation";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("relation", crate::Value::Str(self.relation.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.rite`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::Rite;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Rite { rite: String::from("rite") };
+        /// assert_eq!(Rite::KEY, "sdk.rite.rite");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Rite {
+            /// The `rite` parameter.
+            pub rite: String,
+        }
+
+        impl crate::TypedMessage for Rite {
+            const KEY: &'static str = "sdk.rite.rite";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("rite", crate::Value::Str(self.rite.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.riteBeginning`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::RiteBeginning;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = RiteBeginning { beginning: String::from("beginning") };
+        /// assert_eq!(RiteBeginning::KEY, "sdk.rite.riteBeginning");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct RiteBeginning {
+            /// The `beginning` parameter.
+            pub beginning: String,
+        }
+
+        impl crate::TypedMessage for RiteBeginning {
+            const KEY: &'static str = "sdk.rite.riteBeginning";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("beginning", crate::Value::Str(self.beginning.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.riteForm`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::RiteForm;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = RiteForm { form: String::from("form") };
+        /// assert_eq!(RiteForm::KEY, "sdk.rite.riteForm");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct RiteForm {
+            /// The `form` parameter.
+            pub form: String,
+        }
+
+        impl crate::TypedMessage for RiteForm {
+            const KEY: &'static str = "sdk.rite.riteForm";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("form", crate::Value::Str(self.form.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.riteVerdict`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::RiteVerdict;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = RiteVerdict { verdict: String::from("verdict") };
+        /// assert_eq!(RiteVerdict::KEY, "sdk.rite.riteVerdict");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct RiteVerdict {
+            /// The `verdict` parameter.
+            pub verdict: String,
+        }
+
+        impl crate::TypedMessage for RiteVerdict {
+            const KEY: &'static str = "sdk.rite.riteVerdict";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("verdict", crate::Value::Str(self.verdict.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rite.sapindanaAt`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rite::SapindanaAt;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = SapindanaAt { at: String::from("at") };
+        /// assert_eq!(SapindanaAt::KEY, "sdk.rite.sapindanaAt");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct SapindanaAt {
+            /// The `at` parameter.
+            pub at: String,
+        }
+
+        impl crate::TypedMessage for SapindanaAt {
+            const KEY: &'static str = "sdk.rite.sapindanaAt";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("at", crate::Value::Str(self.at.clone())),
+                ])
+            }
+        }
+
+    }
+
 }
 

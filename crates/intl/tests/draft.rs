@@ -34,8 +34,12 @@ fn hindi_and_sanskrit_calendar_text_ships_marked() {
     for tag in ["hi-Deva-IN", "sa-Deva", "sa-Latn"] {
         assert_eq!(tree.locales[tag].meta.draft, ["sdk.calendar"], "{tag}");
     }
-    // The strict locale drafts its day sentences, not its calendar words.
-    assert_eq!(tree.locales["ne-Deva-NP"].meta.draft, ["sdk.day"]);
+    // The strict locale drafts its day sentences and its rites' names (SR-31),
+    // not its calendar words.
+    assert_eq!(
+        tree.locales["ne-Deva-NP"].meta.draft,
+        ["sdk.day", "sdk.rite"]
+    );
     assert!(tree.locales["en-Latn"].meta.draft.is_empty());
     let report = Intl::from_tree(&tree).unwrap().report();
     let hindi = report
@@ -160,5 +164,33 @@ fn the_mark_travels_in_a_bundle_and_a_reviewers_pack_lifts_it() {
     assert!(
         intl.render_in("hi-Deva-IN", "sdk.calendar.lunarMonth", &day)
             .is_draft
+    );
+}
+
+/// SR-31: a rite's name in Nepali says it is a draft; in English it does not,
+/// and a day count takes its plural.
+#[test]
+fn a_rites_name_renders_and_the_nepali_says_it_is_a_draft() {
+    let intl = Intl::from_tree(&tree()).unwrap();
+    let verdict = params([("verdict", Value::Str("GOES_ON".into()))]);
+    let english = intl.render_in("en-Latn", "sdk.rite.riteVerdict", &verdict);
+    assert_eq!(english.text, "goes on");
+    assert!(!english.is_draft);
+    let nepali = intl.render_in("ne-Deva-NP", "sdk.rite.riteVerdict", &verdict);
+    assert_eq!(nepali.text, "चल्छ");
+    assert!(nepali.is_draft);
+    let days = |n: i64| {
+        let count = params([("days", Value::Int(n))]);
+        intl.render_in("en-Latn", "sdk.rite.ashauchDays", &count)
+            .text
+    };
+    assert_eq!(days(1), "1 day");
+    assert_eq!(days(10), "10 days");
+    let unknown = params([("verdict", Value::Str("NOT_A_MEMBER".into()))]);
+    assert_eq!(
+        intl.render_in("en-Latn", "sdk.rite.riteVerdict", &unknown)
+            .text,
+        "NOT_A_MEMBER",
+        "a member no message names prints its own spelling"
     );
 }

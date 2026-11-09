@@ -1434,6 +1434,21 @@ export function messages(r) {
         vimshopaka: (p) => r.render('sdk.reason.vimshopaka', { graha: { '$entity': p.graha }, scheme: p.scheme, score: p.score }),
         welcome: () => r.render('sdk.reason.welcome'),
       },
+      rite: {
+        anniversaryKind: (p) => r.render('sdk.rite.anniversaryKind', { kind: p.kind }),
+        ashauchDays: (p) => r.render('sdk.rite.ashauchDays', { days: p.days }),
+        ashauchKind: (p) => r.render('sdk.rite.ashauchKind', { kind: p.kind }),
+        ashauchLength: (p) => r.render('sdk.rite.ashauchLength', { length: p.length }),
+        clause: (p) => r.render('sdk.rite.clause', { clause: p.clause }),
+        firstYearRite: (p) => r.render('sdk.rite.firstYearRite', { rite: p.rite }),
+        kinKeeps: (p) => r.render('sdk.rite.kinKeeps', { keeps: p.keeps }),
+        relation: (p) => r.render('sdk.rite.relation', { relation: p.relation }),
+        rite: (p) => r.render('sdk.rite.rite', { rite: p.rite }),
+        riteBeginning: (p) => r.render('sdk.rite.riteBeginning', { beginning: p.beginning }),
+        riteForm: (p) => r.render('sdk.rite.riteForm', { form: p.form }),
+        riteVerdict: (p) => r.render('sdk.rite.riteVerdict', { verdict: p.verdict }),
+        sapindanaAt: (p) => r.render('sdk.rite.sapindanaAt', { at: p.at }),
+      },
     },
   };
 }

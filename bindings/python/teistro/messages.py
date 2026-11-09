@@ -1554,6 +1554,110 @@ class MessagesSdk:
         """The messages under `reason`."""
         return MessagesSdkReason(self._r)
 
+    @property
+    def rite(self) -> MessagesSdkRite:
+        """The messages under `rite`."""
+        return MessagesSdkRite(self._r)
+
+
+class MessagesSdkRite:
+    """The messages under `MessagesSdkRite`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def anniversary_kind(self, *, kind: str) -> str:
+        """`sdk.rite.anniversaryKind`"""
+        return self._r.render(
+            "sdk.rite.anniversaryKind",
+            {"kind": kind},
+        )
+
+    def ashauch_days(self, *, days: float) -> str:
+        """`sdk.rite.ashauchDays`"""
+        return self._r.render(
+            "sdk.rite.ashauchDays",
+            {"days": days},
+        )
+
+    def ashauch_kind(self, *, kind: str) -> str:
+        """`sdk.rite.ashauchKind`"""
+        return self._r.render(
+            "sdk.rite.ashauchKind",
+            {"kind": kind},
+        )
+
+    def ashauch_length(self, *, length: str) -> str:
+        """`sdk.rite.ashauchLength`"""
+        return self._r.render(
+            "sdk.rite.ashauchLength",
+            {"length": length},
+        )
+
+    def clause(self, *, clause: str) -> str:
+        """`sdk.rite.clause`"""
+        return self._r.render(
+            "sdk.rite.clause",
+            {"clause": clause},
+        )
+
+    def first_year_rite(self, *, rite: str) -> str:
+        """`sdk.rite.firstYearRite`"""
+        return self._r.render(
+            "sdk.rite.firstYearRite",
+            {"rite": rite},
+        )
+
+    def kin_keeps(self, *, keeps: str) -> str:
+        """`sdk.rite.kinKeeps`"""
+        return self._r.render(
+            "sdk.rite.kinKeeps",
+            {"keeps": keeps},
+        )
+
+    def relation(self, *, relation: str) -> str:
+        """`sdk.rite.relation`"""
+        return self._r.render(
+            "sdk.rite.relation",
+            {"relation": relation},
+        )
+
+    def rite(self, *, rite: str) -> str:
+        """`sdk.rite.rite`"""
+        return self._r.render(
+            "sdk.rite.rite",
+            {"rite": rite},
+        )
+
+    def rite_beginning(self, *, beginning: str) -> str:
+        """`sdk.rite.riteBeginning`"""
+        return self._r.render(
+            "sdk.rite.riteBeginning",
+            {"beginning": beginning},
+        )
+
+    def rite_form(self, *, form: str) -> str:
+        """`sdk.rite.riteForm`"""
+        return self._r.render(
+            "sdk.rite.riteForm",
+            {"form": form},
+        )
+
+    def rite_verdict(self, *, verdict: str) -> str:
+        """`sdk.rite.riteVerdict`"""
+        return self._r.render(
+            "sdk.rite.riteVerdict",
+            {"verdict": verdict},
+        )
+
+    def sapindana_at(self, *, at: str) -> str:
+        """`sdk.rite.sapindanaAt`"""
+        return self._r.render(
+            "sdk.rite.sapindanaAt",
+            {"at": at},
+        )
+
 
 class MessagesSdkReason:
     """The messages under `MessagesSdkReason`, each rendered by its own key."""

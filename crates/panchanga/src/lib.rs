@@ -53,6 +53,9 @@ pub mod omen;
 pub mod period;
 pub mod punya;
 pub mod rising;
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod rite_names;
 pub mod rulers;
 pub mod sankalpa;
 pub mod sky;

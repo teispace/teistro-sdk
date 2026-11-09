@@ -16,5 +16,5 @@
     "or": { "pair": "{0} वा {1}", "middle": "{0}, {1}", "end": "{0} वा {1}" },
     "unit": { "pair": "{0}, {1}", "middle": "{0}, {1}", "end": "{0}, {1}" }
   },
-  "draft": ["sdk.day"]
+  "draft": ["sdk.day", "sdk.rite"]
 }

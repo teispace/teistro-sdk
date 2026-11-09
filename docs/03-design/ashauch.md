@@ -878,3 +878,45 @@ Not built here: the exceptions by person (ascetics, students), which turn
 on who the observer is and are `OF_ASCETIC`'s kind of question; goods (DS
 §42, not a rite); and the death's own cause (§43, C724, kept out on
 purpose, §8).
+
+## 13. Names for the answers (SR-31)
+
+An ashauch, rite, kin or first-year answer carries its members by their
+serde spelling (`DEATH`, `GOES_ON`, `ADYA_MASIKA`), and a reader needs
+words for them. `sdk.rite` holds them: one message for each answer's
+vocabulary, each a `.match` on the spelling, the way `sdk.reading.lifeClass`
+names a class of life (Q38: a value a consumer needs only to name crosses as
+the key it already has, and needs no catalogue kind).
+
+| Message | Selects on | Members |
+|---|---|---|
+| `ashauchKind` | `$kind`, an `AshauchKind` | 2 |
+| `ashauchLength` | `$length`, a `Length`'s tag | 5 |
+| `ashauchDays` | `$days`, a `Length::Days` count | plural |
+| `relation` | `$relation`, a `Relation` | 28 |
+| `clause` | `$clause`, a `Clause`'s tag | 10 |
+| `rite` | `$rite`, an ashauch `Rite` | 20 |
+| `riteVerdict` | `$verdict`, a `RiteVerdict` | 3 |
+| `riteBeginning` | `$beginning`, a `RiteBeginning` | 4 |
+| `kinKeeps` | `$keeps`, a `KinKeeps` | 3 |
+| `firstYearRite` | `$rite`, a first-year `Rite` | 8 |
+| `riteForm` | `$form`, a `RiteForm` | 2 |
+| `sapindanaAt` | `$at`, a `SapindanaAt` | 4 |
+| `anniversaryKind` | `$kind`, an `AnniversaryKind` | 5 |
+
+A member no message names prints its own spelling, never another member's
+words. A unit test in `teistro-panchanga` (`rite_names.rs`) lists each enum
+under a `match` with no wildcard, so a new member fails the build until it is
+listed, and then asserts that each locale's message names exactly the listed
+members by their serde spelling.
+
+`relation` names the tie as the tables name it: the observer's role where
+the row is the observer's (`MOTHER`, `PUPIL, for the acharya`), the
+deceased's where the row is the deceased's (`MATERNAL_UNCLE`).
+
+English ships. Nepali ships **marked draft** (`_meta.json` `draft`), as
+`sdk.day` and the SR-75 calendars do: the terms are the texts' own
+(*jananāśauca*, *sapiṇḍīkaraṇa*, *ūnābdika*) or plain Nepali, and they wait
+on Q42's reviewer, who is named in QUESTIONS when found. A strict locale
+refuses a draft, so an app that wants only reviewed text gets none of it
+until then.
