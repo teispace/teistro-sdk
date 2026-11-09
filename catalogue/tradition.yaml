@@ -45,3 +45,10 @@ members:
       - text: "`03-design/festival-classification.md` §4"
         ref: "the community Christian"
     mark: V
+  - key: ZOROASTRIAN
+    id: 6
+    doc: "Zoroastrian"
+    sources:
+      - text: "Government of Maharashtra, General Administration Department, public holidays notifications: Parsi New Year (Shahenshahi)"
+        ref: "`03-design/maharashtra-holidays.md` §3"
+    mark: V

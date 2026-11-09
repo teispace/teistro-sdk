@@ -4536,6 +4536,22 @@
     "JUR_SITAL": {
       "name": "Jur Sital",
       "prose": "Jur Sital"
+    },
+    "CHHATRAPATI_SHIVAJI_JAYANTI": {
+      "name": "Chhatrapati Shivaji Maharaj Jayanti",
+      "prose": "Chhatrapati Shivaji Maharaj Jayanti"
+    },
+    "AMBEDKAR_JAYANTI": {
+      "name": "Dr Babasaheb Ambedkar Jayanti",
+      "prose": "Dr Babasaheb Ambedkar Jayanti"
+    },
+    "MAHARASHTRA_DAY": {
+      "name": "Maharashtra Day",
+      "prose": "Maharashtra Day"
+    },
+    "BANK_ACCOUNTS_CLOSING": {
+      "name": "Yearly closing of bank accounts",
+      "prose": "Yearly closing of bank accounts"
     }
   },
   "agni_vasa": {
@@ -4673,6 +4689,10 @@
     "CHRISTIAN": {
       "name": "Christian",
       "prose": "Christian"
+    },
+    "ZOROASTRIAN": {
+      "name": "Zoroastrian",
+      "prose": "Zoroastrian"
     }
   },
   "day_marker": {

@@ -11,6 +11,7 @@
 use std::fmt::Write as _;
 
 use teistro::festival::{Observances, SubjectTo};
+use teistro::quantity::Place;
 use teistro::{CalendarDate, Context, Ephemeris, FestivalPack, FestivalRequest, UtcOffset};
 
 use super::{MonthDay, date, place};
@@ -136,9 +137,44 @@ const PARTS: [(i32, &str, &str); 5] = [
     ),
 ];
 
-/// What the pass measured: the rows, and each day set by the moon as its
-/// year, key, day and whether it stands marked.
+/// What the pass measured: the rows, and each printed day as its year,
+/// key, day and whether it stands marked subject to the sighting.
 pub(super) type Measured = (Vec<Row>, Vec<(i32, String, MonthDay, bool)>);
+
+/// A government's list held to its pack.
+pub(super) struct Notices {
+    /// The pack.
+    pub(super) pack: FestivalPack,
+    /// Where the list is measured, on India's clock.
+    pub(super) place: Place,
+    /// Each year's notice.
+    pub(super) years: &'static [(i32, &'static str)],
+    /// Each year's reckoned days.
+    pub(super) listed: &'static [(i32, &'static str, MonthDay)],
+    /// The days every notice lists on one date.
+    pub(super) civil: &'static [(&'static str, MonthDay)],
+    /// Why a rule parts from a notice, per (year, rule). The pass fails on
+    /// a parting with no entry, and on an entry whose row agrees.
+    pub(super) parts: &'static [(i32, &'static str, &'static str)],
+    /// The days each year's notice prints rather than reckons.
+    pub(super) printed: usize,
+    /// A year with no notice, which holds no printed day.
+    pub(super) unnoticed: i32,
+}
+
+/// The central list.
+fn central() -> Notices {
+    Notices {
+        pack: FestivalPack::IndiaCentral,
+        place: place(),
+        years: &NOTICES,
+        listed: &LISTED,
+        civil: &CIVIL,
+        parts: &PARTS,
+        printed: 4,
+        unnoticed: 2031,
+    }
+}
 
 /// A year's outcome: one row of the page.
 pub(super) struct Row {
@@ -149,7 +185,7 @@ pub(super) struct Row {
 }
 
 impl Row {
-    fn agrees(&self) -> bool {
+    pub(super) fn agrees(&self) -> bool {
         self.found
             .as_ref()
             .is_some_and(|day| (day.month, day.day) == self.listed)
@@ -172,82 +208,156 @@ fn day_of(answer: &Observances, rule: &str) -> Option<CalendarDate> {
         })
 }
 
-/// Every year's rows, and a problem for every parting no entry names.
-pub(super) fn compare(problems: &mut Vec<String>) -> Result<Measured, String> {
-    let context = Context::builder()
-        .ephemeris([Ephemeris::Builtin])
-        .build()
-        .map_err(|e| e.to_string())?;
-    let request = FestivalRequest::from(FestivalPack::IndiaCentral);
-    let offset = UtcOffset::literal(5, 30, 0);
-    let mut rows = Vec::new();
-    let mut sighted = Vec::new();
-    for (year, _) in NOTICES {
-        let answer = context
+impl Notices {
+    /// A year's answer.
+    fn year(&self, context: &Context, year: i32) -> Result<Observances, String> {
+        context
             .almanac()
             .festivals(
                 &date(year, (1, 1)),
                 &date(year, (12, 31)),
-                &place(),
-                offset,
-                &request,
+                &self.place,
+                UtcOffset::literal(5, 30, 0),
+                &FestivalRequest::from(self.pack),
             )
-            .map_err(|e| e.to_string())?
-            .value;
-        let civil = CIVIL.iter().map(|&(rule, day)| (year, rule, day));
-        let lists = LISTED.iter().copied().filter(|row| row.0 == year);
+            .map(|answer| answer.value)
+            .map_err(|e| e.to_string())
+    }
+
+    /// A year's rows, and a problem for every parting no entry names.
+    fn rows(&self, year: i32, answer: &Observances, problems: &mut Vec<String>) -> Vec<Row> {
+        let civil = self.civil.iter().map(|&(rule, day)| (year, rule, day));
+        let lists = self.listed.iter().copied().filter(|row| row.0 == year);
+        let mut rows = Vec::new();
         for (year, rule, listed) in lists.chain(civil) {
             let row = Row {
                 year,
                 rule,
                 listed,
-                found: day_of(&answer, rule),
+                found: day_of(answer, rule),
             };
-            let excused = PARTS.iter().any(|part| part.0 == year && part.1 == rule);
+            let excused = self
+                .parts
+                .iter()
+                .any(|part| part.0 == year && part.1 == rule);
             if !row.agrees() && !excused {
                 problems.push(format!(
-                    "{year} {rule}: the notice lists {listed:?}, the rule gives {:?}",
+                    "{} {year} {rule}: the notice lists {listed:?}, the rule gives {:?}",
+                    self.pack.key(),
                     row.found.as_ref().map(|day| (day.month, day.day))
                 ));
             }
             if row.agrees() && excused {
-                problems.push(format!("{year} {rule} agrees and is excused in PARTS"));
+                problems.push(format!(
+                    "{} {year} {rule} agrees and is excused in PARTS",
+                    self.pack.key()
+                ));
             }
             rows.push(row);
         }
-        if answer.added.len() != 4 {
+        rows
+    }
+
+    /// Every year's rows and printed days, and a problem for every
+    /// parting no entry names.
+    pub(super) fn compare(&self, problems: &mut Vec<String>) -> Result<Measured, String> {
+        let context = Context::builder()
+            .ephemeris([Ephemeris::Builtin])
+            .build()
+            .map_err(|e| e.to_string())?;
+        let mut rows = Vec::new();
+        let mut printed = Vec::new();
+        for &(year, _) in self.years {
+            let answer = self.year(&context, year)?;
+            rows.extend(self.rows(year, &answer, problems));
+            if answer.added.len() != self.printed {
+                problems.push(format!(
+                    "{} {year}: {} printed days, not {}",
+                    self.pack.key(),
+                    answer.added.len(),
+                    self.printed
+                ));
+            }
+            for added in &answer.added {
+                let marked = added.published.subject_to == Some(SubjectTo::MoonSighting);
+                printed.push((
+                    year,
+                    added.key.clone(),
+                    (added.day.month, added.day.day),
+                    marked,
+                ));
+            }
+        }
+        if !self.year(&context, self.unnoticed)?.added.is_empty() {
             problems.push(format!(
-                "{year}: {} days set by the moon, not 4",
-                answer.added.len()
+                "{} {} has no notice and holds a printed day",
+                self.pack.key(),
+                self.unnoticed
             ));
         }
-        for added in &answer.added {
-            let marked = added.published.subject_to == Some(SubjectTo::MoonSighting);
-            sighted.push((
-                year,
-                added.key.clone(),
-                (added.day.month, added.day.day),
-                marked,
-            ));
-        }
+        Ok((rows, printed))
     }
-    let past = context
-        .almanac()
-        .festivals(
-            &date(2031, (1, 1)),
-            &date(2031, (12, 31)),
-            &place(),
-            offset,
-            &request,
-        )
-        .map_err(|e| e.to_string())?
-        .value;
-    if !past.added.is_empty() {
-        problems.push(String::from(
-            "2031 has no notice and holds a day set by the moon",
-        ));
+
+    /// The rows' table, less the fixed days, and the parting's causes.
+    pub(super) fn rows_table(&self, rows: &[Row]) -> String {
+        let body: Vec<Vec<String>> = rows
+            .iter()
+            .filter(|row| !self.civil.iter().any(|civil| civil.0 == row.rule))
+            .map(|row| {
+                let found = row.found.as_ref().map_or_else(
+                    || String::from("none"),
+                    |day| format!("{}/{}", day.month, day.day),
+                );
+                vec![
+                    row.year.to_string(),
+                    row.rule.to_owned(),
+                    format!("{}/{}", row.listed.0, row.listed.1),
+                    if row.agrees() {
+                        found
+                    } else {
+                        format!("{found} ✗")
+                    },
+                ]
+            })
+            .collect();
+        table(&["year", "rule", "listed", "found"], &body)
     }
-    Ok((rows, sighted))
+
+    /// Each parting, as a list item with its cause.
+    pub(super) fn parts_list(&self) -> String {
+        self.parts
+            .iter()
+            .fold(String::new(), |mut out, &(year, rule, why)| {
+                let _ = writeln!(out, "- {year} {rule}: {why}");
+                out
+            })
+    }
+}
+
+/// The printed days' table, an unmarked day standing `unmarked`.
+pub(super) fn printed_table(printed: &[(i32, String, MonthDay, bool)], unmarked: &str) -> String {
+    let body: Vec<Vec<String>> = printed
+        .iter()
+        .map(|(year, key, day, marked)| {
+            vec![
+                year.to_string(),
+                key.clone(),
+                format!("{}/{}", day.0, day.1),
+                String::from(if *marked {
+                    "subject to sighting"
+                } else {
+                    unmarked
+                }),
+            ]
+        })
+        .collect();
+    table(&["year", "key", "day", "stands as"], &body)
+}
+
+/// Every year's rows of the central list, and a problem for every parting
+/// no entry names.
+pub(super) fn compare(problems: &mut Vec<String>) -> Result<Measured, String> {
+    central().compare(problems)
 }
 
 /// A Markdown table.
@@ -264,6 +374,7 @@ fn table(heads: &[&str], rows: &[Vec<String>]) -> String {
 
 /// §9 of the page.
 pub(super) fn render(out: &mut String, (rows, sighted): &Measured) {
+    let notices = central();
     let parted = rows.iter().filter(|row| !row.agrees()).count();
     let _ = writeln!(
         out,
@@ -276,59 +387,18 @@ pub(super) fn render(out: &mut String, (rows, sighted): &Measured) {
     for (year, memorandum) in NOTICES {
         let _ = writeln!(out, "- {year}: {memorandum}");
     }
-    let body: Vec<Vec<String>> = rows
-        .iter()
-        .filter(|row| !CIVIL.iter().any(|civil| civil.0 == row.rule))
-        .map(|row| {
-            let found = row.found.as_ref().map_or_else(
-                || String::from("none"),
-                |day| format!("{}/{}", day.month, day.day),
-            );
-            vec![
-                row.year.to_string(),
-                row.rule.to_owned(),
-                format!("{}/{}", row.listed.0, row.listed.1),
-                if row.agrees() {
-                    found
-                } else {
-                    format!("{found} ✗")
-                },
-            ]
-        })
-        .collect();
-    let _ = writeln!(
-        out,
-        "\n{}",
-        table(&["year", "rule", "listed", "found"], &body)
-    );
+    let _ = writeln!(out, "\n{}", notices.rows_table(rows));
     let _ = writeln!(
         out,
         "The four civil days stand on their date in all {} years.\n",
         NOTICES.len()
     );
-    for &(year, rule, why) in &PARTS {
-        let _ = writeln!(out, "- {year} {rule}: {why}");
-    }
-    let body: Vec<Vec<String>> = sighted
-        .iter()
-        .map(|(year, key, day, marked)| {
-            vec![
-                year.to_string(),
-                key.clone(),
-                format!("{}/{}", day.0, day.1),
-                String::from(if *marked {
-                    "subject to sighting"
-                } else {
-                    "declared"
-                }),
-            ]
-        })
-        .collect();
+    out.push_str(&notices.parts_list());
     let _ = writeln!(
         out,
         "\nThe days set by the moon are not reckoned. Para 5.1 leaves each to the sighting, so \
          the pack carries the notice's day, marked; two the Department moved stand on the \
          day it declared; 2031, with no notice, holds none.\n\n{}",
-        table(&["year", "key", "day", "stands as"], &body)
+        printed_table(sighted, "declared")
     );
 }

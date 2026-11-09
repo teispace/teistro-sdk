@@ -34,6 +34,22 @@ the previous release, not by nobody having looked.
 - Cruxes C1230 to C1232 record what waits: a night Mesha ingress's civil day, Madhushravani in an
   adhika Shravana, and Kojagara at pradosha or nishitha (`03-design/makaranda.md` §8).
 
+**Maharashtra's public holidays (SR-03, the first state set).**
+**Numbers:** none: a new pack, and the catalogue's `tradition` gains a member; every other pack answers as it did.
+- The pack `INDIA_MAHARASHTRA` (`FestivalPack::IndiaMaharashtra`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_maharashtra`) holds the General Administration Department's yearly list under s. 25 of the
+  Negotiable Instruments Act, Bhaubeej from its own notification, and the bank-only 1 April. Every reckoned day reuses
+  a shipped rule, and a day the central list also holds is `INDIA_CENTRAL`'s rule, kept in `["IN", "MAHARASHTRA"]`
+  (`03-design/maharashtra-holidays.md`).
+- The four days set by the moon ship as each notification prints them, marked `MOON_SIGHTING`; the Parsi New Year
+  (Shahenshahi) ships as printed. `tradition.ZOROASTRIAN` is new, and `CHHATRAPATI_SHIVAJI_JAYANTI`,
+  `AMBEDKAR_JAYANTI`, `MAHARASHTRA_DAY` and `BANK_ACCOUNTS_CLOSING` are named in en-Latn, ne-Deva-NP and hi-Deva-IN.
+- `festival-measured.md` §10 holds it at Mumbai to seven years of notifications (2020 and 2022 to 2024 at rank 1,
+  2021, 2025 and 2026 from press lists): 75 of 80 reckoned rows meet the print. The five that part are named, none
+  fitted: Diwali Amavasya 2024 and 2025 (C1240), Bali Pratipada 2020 (C1241), Dasara 2022 (C855) and Mahavir Jayanti
+  2023 (C1242). The state's list sides with the shipped rules against the central list on Holi (C854) and on Diwali
+  2024 (C856). C1243 and C1244 record the Parsi calendar and the years still to read at rank 1.
+
 **Brief and full answers (A2-2).**
 **Numbers:** none: an answer at `full`, the default everywhere but the agent server, is the same bytes.
 - Every record answers at a detail, `brief` or `full` (`teistro::records::Detail`, `Record::answer_at`,

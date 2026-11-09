@@ -36,6 +36,7 @@ mod ekadashi;
 mod following;
 mod gaudiya;
 mod india_central;
+mod india_maharashtra;
 mod jain;
 mod mahalaya;
 mod meta;

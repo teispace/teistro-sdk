@@ -124,6 +124,41 @@ fn a_pack_listing_is_read_from_its_name() -> Result<(), teistro::Error> {
 }
 
 #[test]
+fn the_state_pack_lists_the_central_rules_it_shares_in_the_state() -> Result<(), teistro::Error> {
+    let asked = PackRequest::from_json(r#"{"pack": "INDIA_MAHARASHTRA"}"#)?;
+    let listed = asked.pack.listing();
+    let central = FestivalPack::IndiaCentral.listing();
+    let row =
+        |rows: &[teistro::PackRow], key: &str| rows.iter().find(|row| row.key == key).cloned();
+    let holi = row(&listed.rules, "HOLI").unwrap();
+    assert_eq!(holi.form, PackForm::Following);
+    assert!(!holi.meta.optional && row(&central.rules, "HOLI").unwrap().meta.optional);
+    assert_eq!(holi.source, row(&central.rules, "HOLI").unwrap().source);
+    assert_eq!(
+        row(&listed.rules, "MAHARASHTRA_DAY").unwrap().form,
+        PackForm::Dated
+    );
+    let parsi = row(&listed.rules, "PARSI_NEW_YEAR").unwrap();
+    assert_eq!(parsi.form, PackForm::Published);
+    assert_eq!(parsi.meta.tradition, Some(Tradition::Zoroastrian));
+    assert!(row(&listed.rules, "JANMASHTAMI").is_none());
+    let state = MetaFilter {
+        regions: vec!["MAHARASHTRA".to_owned()],
+        ..MetaFilter::default()
+    };
+    assert!(
+        listed
+            .rules
+            .iter()
+            .filter(|row| row.key != "HOLIKA")
+            .all(|row| state.admits(&row.meta)),
+        "every day of the state's list is kept in the state"
+    );
+    assert!(!central.rules.iter().any(|row| state.admits(&row.meta)));
+    Ok(())
+}
+
+#[test]
 fn a_request_reads_its_filter_and_a_rule_keeps_its_values_on_the_wire() -> Result<(), teistro::Error>
 {
     let meta = FestivalMeta::nepal("GAI_JATRA");

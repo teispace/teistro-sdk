@@ -15,7 +15,8 @@
 //!   the fitted rules of the `NEPAL_PANCHANGA` pack against the further
 //!   days it printed ([`panchanga`]);
 //! - the `INDIA_CENTRAL` pack against the Government of India's notices
-//!   ([`india`]).
+//!   ([`india`]), and the `INDIA_MAHARASHTRA` pack against the Government
+//!   of Maharashtra's at Mumbai ([`maharashtra`]).
 //!
 //! Only the seasons the karmakala rules live in are founded, February to
 //! May and August to November, since a year of almanac is what the pass
@@ -38,6 +39,7 @@ use crate::measure::{Claim, table};
 
 mod ekadashi;
 mod india;
+mod maharashtra;
 mod nepal;
 mod panchanga;
 mod purnima;
@@ -455,6 +457,7 @@ fn page() -> Result<String, String> {
     let laid = panchanga::laid(&mut problems)?;
     let saits = sait::compare(&mut problems)?;
     let india = india::compare(&mut problems)?;
+    let state = maharashtra::compare(&mut problems)?;
     if !problems.is_empty() {
         return Err(problems.join("\n      "));
     }
@@ -466,6 +469,7 @@ fn page() -> Result<String, String> {
     panchanga::render_laid(&mut out, &laid);
     sait::render(&mut out, &saits);
     india::render(&mut out, &india);
+    maharashtra::render(&mut out, &state);
     Ok(out)
 }
 
