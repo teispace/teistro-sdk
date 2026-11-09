@@ -44,6 +44,12 @@ const MEMORANDA: [(i32, &str); 7] = [
 /// notice in order.
 pub(super) type Printed<'a> = (&'a str, &'a str, &'a str, &'a [(u8, u8)]);
 
+/// A printed day's key, English name and Nepali name.
+pub(super) type Named<'a> = (&'a str, &'a str, &'a str);
+
+/// A day one year's notice prints: its year, key and (month, day).
+pub(super) type OnDay<'a> = (i32, &'a str, (u8, u8));
+
 /// A day moved after its notice: key, year, the day, and the order.
 pub(super) type Declared = (&'static str, i32, (u8, u8), &'static str);
 
@@ -183,29 +189,154 @@ impl PrintedDays<'_> {
                 self.notices
                     .iter()
                     .zip(days)
-                    .map(move |(&(year, notice), &day)| (key, en, ne, year, notice, day))
-            })
-            .map(|(key, en, ne, year, notice, day)| {
-                let declared = self
-                    .declared
-                    .iter()
-                    .find(|row| row.0 == key && row.1 == year);
-                PublishedEntry::Add {
-                    key: key.to_owned(),
-                    day: gregorian(year, declared.map_or(day, |row| row.2)),
-                    names: [
-                        ("en-Latn".to_owned(), en.to_owned()),
-                        ("ne-Deva-NP".to_owned(), ne.to_owned()),
-                    ]
-                    .into(),
-                    window: None,
-                    source: declared.map_or_else(|| (self.cite)(notice), |row| row.3.to_owned()),
-                    subject_to: self.subject_to.filter(|_| declared.is_none()),
-                    meta: self.meta.clone(),
-                }
+                    .map(move |(&(year, notice), &day)| {
+                        self.entry((key, en, ne), year, notice, day)
+                    })
             })
             .collect()
     }
+
+    /// An `ADD` entry for each of `days`, a day a year's notice prints
+    /// once or more and other years not at all: its year, key and day,
+    /// named from `names` by its key. A day whose year has no notice or
+    /// whose key no name is left out.
+    pub(super) fn on_days(&self, names: &[Named<'_>], days: &[OnDay<'_>]) -> Vec<PublishedEntry> {
+        days.iter()
+            .filter_map(|&(year, key, day)| {
+                let found = names.iter().find(|row| row.0 == key)?;
+                let notice = self.notices.iter().find(|row| row.0 == year)?;
+                Some(self.entry(*found, year, notice.1, day))
+            })
+            .collect()
+    }
+
+    /// The entry of `key` on `day` of `year`, from its `notice` or the
+    /// order that moved it.
+    fn entry(
+        &self,
+        (key, en, ne): Named<'_>,
+        year: i32,
+        notice: &str,
+        day: (u8, u8),
+    ) -> PublishedEntry {
+        let declared = self
+            .declared
+            .iter()
+            .find(|row| row.0 == key && row.1 == year);
+        PublishedEntry::Add {
+            key: key.to_owned(),
+            day: gregorian(year, declared.map_or(day, |row| row.2)),
+            names: [
+                ("en-Latn".to_owned(), en.to_owned()),
+                ("ne-Deva-NP".to_owned(), ne.to_owned()),
+            ]
+            .into(),
+            window: None,
+            source: declared.map_or_else(|| (self.cite)(notice), |row| row.3.to_owned()),
+            subject_to: self.subject_to.filter(|_| declared.is_none()),
+            meta: self.meta.clone(),
+        }
+    }
+}
+
+/// The first of `rules` with `key`.
+pub(super) fn find(rules: &[FestivalRule], key: &str) -> Option<FestivalRule> {
+    rules.iter().find(|rule| rule.key == key).cloned()
+}
+
+/// A state's list of public holidays, kept in its regions: the values of
+/// its days, and the rules it takes from the central list and the shipped
+/// texts, so a state pack and the packs it draws on cannot drift apart.
+pub(super) struct StateList {
+    /// Where the list is kept: India, then the state.
+    pub(super) regions: &'static [&'static str],
+}
+
+impl StateList {
+    /// The values of a day of the list.
+    pub(super) fn listed(&self, tradition: Option<Tradition>, optional: bool) -> FestivalMeta {
+        gazetted(tradition, self.regions, optional)
+    }
+
+    /// A rule of the central list, kept in the state: the same rule and
+    /// values, the state's regions, and on every year's list.
+    pub(super) fn kept(&self, meta: FestivalMeta) -> FestivalMeta {
+        FestivalMeta {
+            regions: self
+                .regions
+                .iter()
+                .map(|&region| region.to_owned())
+                .collect(),
+            optional: false,
+            ..meta
+        }
+    }
+
+    /// The central list's lunar rules but those keyed in `left`, kept in
+    /// the state.
+    pub(super) fn central(&self, left: &[&str]) -> Vec<FestivalRule> {
+        FestivalRule::india_central()
+            .into_iter()
+            .filter(|rule| !left.contains(&rule.key.as_str()))
+            .map(|rule| FestivalRule {
+                meta: self.kept(rule.meta),
+                ..rule
+            })
+            .collect()
+    }
+
+    /// The central list's civil days, kept in the state and citing its
+    /// `notice`.
+    pub(super) fn central_dated(&self, notice: &str) -> Vec<DatedRule> {
+        DatedRule::india_central()
+            .into_iter()
+            .map(|rule| DatedRule {
+                source: notice.to_owned(),
+                meta: self.kept(rule.meta),
+                ..rule
+            })
+            .collect()
+    }
+
+    /// *Dharmasindhu*'s rule of each `(key, optional)`, on the list with
+    /// the fast the text gives it.
+    pub(super) fn by_text(&self, keys: &[(&str, bool)]) -> Vec<FestivalRule> {
+        let text = FestivalRule::dharmasindhu();
+        keys.iter()
+            .filter_map(|&(key, optional)| {
+                find(&text, key).map(|rule| FestivalRule {
+                    meta: self.listed(Some(Tradition::Hindu), optional).with_fast(key),
+                    ..rule
+                })
+            })
+            .collect()
+    }
+
+    /// Nepal's printed panchanga's rule of each key, on the list.
+    pub(super) fn by_print(&self, keys: &[&str]) -> Vec<FestivalRule> {
+        let print = FestivalRule::nepal_panchanga();
+        keys.iter()
+            .filter_map(|&key| {
+                find(&print, key).map(|rule| FestivalRule {
+                    meta: self.listed(Some(Tradition::Hindu), false),
+                    ..rule
+                })
+            })
+            .collect()
+    }
+}
+
+/// The central list's day set by the moon of each key, with the days a
+/// state's notices print, in their order.
+pub(super) fn sighted<'a>(rows: &[(&str, &'a [(u8, u8)])]) -> Vec<Printed<'a>> {
+    rows.iter()
+        .filter_map(|&(key, days)| {
+            SIGHTED
+                .iter()
+                .find(|row| row.0 == key)
+                .map(|&(key, en, ne, _)| (key, en, ne, days))
+        })
+        .collect()
 }
 
 impl FestivalRule {
@@ -225,8 +356,7 @@ impl FestivalRule {
     /// ```
     #[must_use]
     pub fn india_central() -> Vec<FestivalRule> {
-        let of =
-            |key: &str, rules: &[FestivalRule]| rules.iter().find(|rule| rule.key == key).cloned();
+        let of = |key: &str, rules: &[FestivalRule]| find(rules, key);
         let text = FestivalRule::dharmasindhu();
         let print = FestivalRule::nepal_panchanga();
         let hindu = Some(Tradition::Hindu);

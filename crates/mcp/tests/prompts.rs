@@ -247,7 +247,8 @@ fn a_prompts_argument_completes_from_its_table() {
             "INDIA_CENTRAL",
             "JAIN",
             "MITHILA",
-            "INDIA_MAHARASHTRA"
+            "INDIA_MAHARASHTRA",
+            "INDIA_WEST_BENGAL"
         ])
     );
     let date = complete("birth-chart", "date", "1990");

@@ -4552,6 +4552,62 @@
     "BANK_ACCOUNTS_CLOSING": {
       "name": "Yearly closing of bank accounts",
       "prose": "Yearly closing of bank accounts"
+    },
+    "VIVEKANANDA_JAYANTI": {
+      "name": "Swami Vivekananda Jayanti",
+      "prose": "Swami Vivekananda Jayanti"
+    },
+    "NETAJI_JAYANTI": {
+      "name": "Netaji Subhas Chandra Bose Jayanti",
+      "prose": "Netaji Subhas Chandra Bose Jayanti"
+    },
+    "THAKUR_PANCHANAN_BARMA_JAYANTI": {
+      "name": "Thakur Panchanan Barma Jayanti",
+      "prose": "Thakur Panchanan Barma Jayanti"
+    },
+    "DOLA_YATRA": {
+      "name": "Dol Jatra",
+      "prose": "Dol Jatra"
+    },
+    "HARICHAND_THAKUR_JAYANTI": {
+      "name": "Harichand Thakur Jayanti",
+      "prose": "Harichand Thakur Jayanti"
+    },
+    "EASTER_SATURDAY": {
+      "name": "Easter Saturday",
+      "prose": "Easter Saturday"
+    },
+    "POHELA_BOISHAKH": {
+      "name": "Pohela Boishakh (Bengali New Year)",
+      "prose": "Pohela Boishakh (Bengali New Year)"
+    },
+    "RABINDRA_JAYANTI": {
+      "name": "Rabindranath Tagore Jayanti",
+      "prose": "Rabindranath Tagore Jayanti"
+    },
+    "HUL_DIWAS": {
+      "name": "Hul Diwas",
+      "prose": "Hul Diwas"
+    },
+    "DURGA_CHATURTHI": {
+      "name": "Durga Puja: Maha Chaturthi",
+      "prose": "Durga Puja: Maha Chaturthi"
+    },
+    "DURGA_PANCHAMI": {
+      "name": "Durga Puja: Maha Panchami",
+      "prose": "Durga Puja: Maha Panchami"
+    },
+    "DURGA_SHASHTHI": {
+      "name": "Durga Puja: Maha Shashthi",
+      "prose": "Durga Puja: Maha Shashthi"
+    },
+    "KALI_PUJA": {
+      "name": "Kali Puja",
+      "prose": "Kali Puja"
+    },
+    "BIRSA_MUNDA_JAYANTI": {
+      "name": "Birsa Munda Jayanti",
+      "prose": "Birsa Munda Jayanti"
     }
   },
   "agni_vasa": {

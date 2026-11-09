@@ -204,7 +204,7 @@ fn maharashtra() -> Notices {
         listed: &LISTED,
         civil: &CIVIL,
         parts: &PARTS,
-        printed: 5,
+        printed: &[5; 7],
         unnoticed: 2031,
     }
 }

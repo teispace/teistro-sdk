@@ -81,6 +81,16 @@ pub enum FestivalPack {
     /// reckon: the four set by the moon, marked subject to the sighting,
     /// and the Parsi New Year (Shahenshahi).
     IndiaMaharashtra,
+    /// West Bengal's public holidays (`03-design/west-bengal-holidays.md`,
+    /// [`FestivalRule::india_west_bengal`]): the Finance (Audit)
+    /// Department's yearly Lists I to III by rule, each day the central
+    /// list also holds by [`FestivalPack::IndiaCentral`]'s rule, Bengal's
+    /// own days (Dol, Kali Puja, the Durga Puja counted from its Saptami,
+    /// and Bengali New Year on the Bengal solar calendar), and the days the
+    /// notifications print rather than reckon: the five set by the moon,
+    /// marked subject to the sighting, and the days added around a
+    /// festival.
+    IndiaWestBengal,
 }
 
 /// Puts each rule's sourced values on it, from `of` its key.
@@ -102,7 +112,7 @@ fn by_text(key: &str) -> FestivalMeta {
 
 impl FestivalPack {
     /// Every pack the SDK ships.
-    pub const ALL: [FestivalPack; 9] = [
+    pub const ALL: [FestivalPack; 10] = [
         FestivalPack::Dharmasindhu,
         FestivalPack::Nepal,
         FestivalPack::NepalPanchanga,
@@ -112,6 +122,7 @@ impl FestivalPack {
         FestivalPack::Jain,
         FestivalPack::Mithila,
         FestivalPack::IndiaMaharashtra,
+        FestivalPack::IndiaWestBengal,
     ];
 
     /// Its key, as a request names it.
@@ -127,6 +138,7 @@ impl FestivalPack {
             FestivalPack::Jain => "JAIN",
             FestivalPack::Mithila => "MITHILA",
             FestivalPack::IndiaMaharashtra => "INDIA_MAHARASHTRA",
+            FestivalPack::IndiaWestBengal => "INDIA_WEST_BENGAL",
         }
     }
 
@@ -147,6 +159,7 @@ impl FestivalPack {
             FestivalPack::Jain => FestivalRule::jain(),
             FestivalPack::Mithila => FestivalRule::mithila(),
             FestivalPack::IndiaMaharashtra => FestivalRule::india_maharashtra(),
+            FestivalPack::IndiaWestBengal => FestivalRule::india_west_bengal(),
         }
     }
 
@@ -162,7 +175,8 @@ impl FestivalPack {
             | FestivalPack::IndiaCentral
             | FestivalPack::Jain
             | FestivalPack::Mithila
-            | FestivalPack::IndiaMaharashtra => Vec::new(),
+            | FestivalPack::IndiaMaharashtra
+            | FestivalPack::IndiaWestBengal => Vec::new(),
             FestivalPack::Gaudiya => stamped(vec![EkadashiRule::hari_bhakti_vilasa()], by_text),
         }
     }
@@ -182,6 +196,7 @@ impl FestivalPack {
             FestivalPack::IndiaCentral => DatedRule::india_central(),
             FestivalPack::Mithila => DatedRule::mithila(),
             FestivalPack::IndiaMaharashtra => DatedRule::india_maharashtra(),
+            FestivalPack::IndiaWestBengal => DatedRule::india_west_bengal(),
         }
     }
 
@@ -196,7 +211,8 @@ impl FestivalPack {
             | FestivalPack::IndiaCentral
             | FestivalPack::Jain
             | FestivalPack::Mithila
-            | FestivalPack::IndiaMaharashtra => Vec::new(),
+            | FestivalPack::IndiaMaharashtra
+            | FestivalPack::IndiaWestBengal => Vec::new(),
             FestivalPack::Nepal => SaitRule::nepal(),
             FestivalPack::NepalPanchanga => {
                 let mut saits = SaitRule::nepal();
@@ -223,6 +239,7 @@ impl FestivalPack {
             FestivalPack::Jain => FollowingRule::jain(),
             FestivalPack::Mithila => FollowingRule::mithila(),
             FestivalPack::IndiaMaharashtra => FollowingRule::india_maharashtra(),
+            FestivalPack::IndiaWestBengal => FollowingRule::india_west_bengal(),
         }
     }
 
@@ -232,6 +249,7 @@ impl FestivalPack {
         match self {
             FestivalPack::IndiaCentral => vec![PublishedSet::india_central()],
             FestivalPack::IndiaMaharashtra => vec![PublishedSet::india_maharashtra()],
+            FestivalPack::IndiaWestBengal => vec![PublishedSet::india_west_bengal()],
             _ => Vec::new(),
         }
     }

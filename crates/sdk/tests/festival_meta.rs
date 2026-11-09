@@ -159,6 +159,45 @@ fn the_state_pack_lists_the_central_rules_it_shares_in_the_state() -> Result<(),
 }
 
 #[test]
+fn west_bengal_counts_its_puja_days_and_keeps_its_new_year_by_the_sun() -> Result<(), teistro::Error>
+{
+    let asked = PackRequest::from_json(r#"{"pack": "INDIA_WEST_BENGAL"}"#)?;
+    let listed = asked.pack.listing();
+    let row =
+        |rows: &[teistro::PackRow], key: &str| rows.iter().find(|row| row.key == key).cloned();
+    for key in ["HOLI", "DURGA_SHASHTHI", "VIJAYA_DASHAMI"] {
+        assert_eq!(
+            row(&listed.rules, key).unwrap().form,
+            PackForm::Following,
+            "{key}"
+        );
+    }
+    assert_eq!(
+        row(&listed.rules, "KALI_PUJA").unwrap().form,
+        PackForm::Lunar
+    );
+    assert_eq!(
+        row(&listed.rules, "POHELA_BOISHAKH").unwrap().form,
+        PackForm::Dated
+    );
+    let shab = row(&listed.rules, "SHAB_E_BARAT").unwrap();
+    assert_eq!(shab.form, PackForm::Published);
+    assert_eq!(shab.meta.tradition, Some(Tradition::Islamic));
+    // Diwali is Kali Puja here, and the central Holika is on no list.
+    assert!(row(&listed.rules, "LAKSHMI_PUJA").is_none());
+    assert!(row(&listed.rules, "HOLIKA").is_none());
+    let state = MetaFilter {
+        regions: vec!["WEST_BENGAL".to_owned()],
+        ..MetaFilter::default()
+    };
+    assert!(
+        listed.rules.iter().all(|row| state.admits(&row.meta)),
+        "every day of the state's list is kept in the state"
+    );
+    Ok(())
+}
+
+#[test]
 fn a_request_reads_its_filter_and_a_rule_keeps_its_values_on_the_wire() -> Result<(), teistro::Error>
 {
     let meta = FestivalMeta::nepal("GAI_JATRA");

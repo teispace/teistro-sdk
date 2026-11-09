@@ -156,8 +156,9 @@ pub(super) struct Notices {
     /// Why a rule parts from a notice, per (year, rule). The pass fails on
     /// a parting with no entry, and on an entry whose row agrees.
     pub(super) parts: &'static [(i32, &'static str, &'static str)],
-    /// The days each year's notice prints rather than reckons.
-    pub(super) printed: usize,
+    /// The days each year's notice prints rather than reckons, in the
+    /// order of [`Notices::years`].
+    pub(super) printed: &'static [usize],
     /// A year with no notice, which holds no printed day.
     pub(super) unnoticed: i32,
 }
@@ -171,7 +172,7 @@ fn central() -> Notices {
         listed: &LISTED,
         civil: &CIVIL,
         parts: &PARTS,
-        printed: 4,
+        printed: &[4; 7],
         unnoticed: 2031,
     }
 }
@@ -267,15 +268,14 @@ impl Notices {
             .map_err(|e| e.to_string())?;
         let mut rows = Vec::new();
         let mut printed = Vec::new();
-        for &(year, _) in self.years {
+        for (&(year, _), &expected) in self.years.iter().zip(self.printed) {
             let answer = self.year(&context, year)?;
             rows.extend(self.rows(year, &answer, problems));
-            if answer.added.len() != self.printed {
+            if answer.added.len() != expected {
                 problems.push(format!(
-                    "{} {year}: {} printed days, not {}",
+                    "{} {year}: {} printed days, not {expected}",
                     self.pack.key(),
                     answer.added.len(),
-                    self.printed
                 ));
             }
             for added in &answer.added {

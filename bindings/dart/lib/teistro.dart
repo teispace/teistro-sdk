@@ -17598,7 +17598,15 @@ enum FestivalPack {
   /// holds by [indiaCentral]'s rule, the state's fixed days, and the days
   /// the notifications print rather than reckon, those set by the moon
   /// marked so (`03-design/maharashtra-holidays.md`).
-  indiaMaharashtra('INDIA_MAHARASHTRA');
+  indiaMaharashtra('INDIA_MAHARASHTRA'),
+
+  /// West Bengal's public holidays: the Finance (Audit) Department's
+  /// Lists I to III by rule, each day the central list also holds by
+  /// [indiaCentral]'s rule, Bengal's own days (Dol, Kali Puja, the Durga
+  /// Puja counted from its Saptami, Bengali New Year on the Bengal solar
+  /// calendar), and the days the notifications print rather than reckon,
+  /// those set by the moon marked so (`03-design/west-bengal-holidays.md`).
+  indiaWestBengal('INDIA_WEST_BENGAL');
 
   const FestivalPack(this.key);
 

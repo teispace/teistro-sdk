@@ -54,8 +54,8 @@ const SAYAHNA: Window = Window::Part {
     part: DayPart::Sayahna,
 };
 
-/// How a fitted rule decides between its two days; the Mithila pack
-/// reads its print's rules through the same fits.
+/// How a fitted rule decides between its two days; the Mithila and West
+/// Bengal packs read their rules through the same fits.
 #[derive(Clone, Copy)]
 pub(super) enum Fit {
     /// The day whose sunrise holds the tithi, the earlier when both do.
@@ -76,6 +76,9 @@ pub(super) enum Fit {
     /// with the later, the later otherwise: the Sankashta chaturthi's
     /// decision at moonrise.
     EarlierHolds(Window),
+    /// The later day only when it alone holds the tithi at a window, the
+    /// earlier otherwise: Kali Puja's new moon at nishitha in Bengal.
+    LaterAlone(Window),
 }
 
 impl Fit {
@@ -127,6 +130,15 @@ impl Fit {
                 Later,
                 format!(
                     "{}: the earlier day when it holds the tithi there, alone or with the later, the later otherwise",
+                    Fit::name(window)
+                ),
+            ),
+            Fit::LaterAlone(window) => (
+                window,
+                vec![Guard::new([case(Case::LaterOnly)], Later)],
+                Earlier,
+                format!(
+                    "{}: the later day only when it alone holds the tithi there, the earlier otherwise",
                     Fit::name(window)
                 ),
             ),

@@ -173,12 +173,20 @@ fn under(answer: &Observances, of: &Moved) -> Option<CalendarDate> {
 }
 
 /// The request with `pack`'s rule of `key` in place of its own, or `None`
-/// when the pack has no rule of that key or the same one.
+/// when the pack has no rule of that key or the same one, or one the
+/// request cannot hold: West Bengal's Holi counts from its Dol, which a
+/// Nepal request lacks, so it is no change to try there.
 fn with_packs_rule(
     request: &FestivalRequest,
     pack: FestivalPack,
     key: &str,
 ) -> Option<FestivalRequest> {
+    packs_rule(request, pack, key).filter(|other| other.check().is_ok())
+}
+
+/// The request with `pack`'s rule of `key` in place of its own, or `None`
+/// when the pack has no rule of that key or the same one.
+fn packs_rule(request: &FestivalRequest, pack: FestivalPack, key: &str) -> Option<FestivalRequest> {
     if let Some(rule) = pack.rules().into_iter().find(|r| r.key == key) {
         let own = request.rules().iter().find(|r| r.key == key);
         return (own != Some(&rule)).then(|| request.clone().with_rule(rule));
