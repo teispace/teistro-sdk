@@ -18,9 +18,10 @@ import java.util.Objects;
  * @param locale The locale whose names are searched (a BCP 47 tag, by RFC 4647 lookup); every loaded locale's when left out. Null leaves the SDK's default.
  * @param longitudeDeg The place's longitude, degrees east positive.
  * @param text The text whose claims are checked.
- * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+ * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record ClaimsRequest(Double altitudeM, double at, AyanaReckoning ayana, double latitudeDeg, String locale, double longitudeDeg, String text, int utcOffsetSeconds) implements RequestJson {
+public record ClaimsRequest(Double altitudeM, double at, AyanaReckoning ayana, double latitudeDeg, String locale, double longitudeDeg, String text, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -40,10 +41,9 @@ public record ClaimsRequest(Double altitudeM, double at, AyanaReckoning ayana, d
      * @param latitudeDeg The place's latitude, degrees north positive.
      * @param longitudeDeg The place's longitude, degrees east positive.
      * @param text The text whose claims are checked.
-     * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
      */
-    public ClaimsRequest(double at, double latitudeDeg, double longitudeDeg, String text, int utcOffsetSeconds) {
-        this(null, at, null, latitudeDeg, null, longitudeDeg, text, utcOffsetSeconds);
+    public ClaimsRequest(double at, double latitudeDeg, double longitudeDeg, String text) {
+        this(null, at, null, latitudeDeg, null, longitudeDeg, text, null, null);
     }
 
     /**
@@ -66,6 +66,7 @@ public record ClaimsRequest(Double altitudeM, double at, AyanaReckoning ayana, d
         private Double longitudeDeg;
         private String text;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -149,11 +150,22 @@ public record ClaimsRequest(Double altitudeM, double at, AyanaReckoning ayana, d
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -164,7 +176,7 @@ public record ClaimsRequest(Double altitudeM, double at, AyanaReckoning ayana, d
          * @throws NullPointerException naming a required field left unset
          */
         public ClaimsRequest build() {
-            return new ClaimsRequest(altitudeM, Objects.requireNonNull(at, "`ClaimsRequest.at` is required"), ayana, Objects.requireNonNull(latitudeDeg, "`ClaimsRequest.latitudeDeg` is required"), locale, Objects.requireNonNull(longitudeDeg, "`ClaimsRequest.longitudeDeg` is required"), text, Objects.requireNonNull(utcOffsetSeconds, "`ClaimsRequest.utcOffsetSeconds` is required"));
+            return new ClaimsRequest(altitudeM, Objects.requireNonNull(at, "`ClaimsRequest.at` is required"), ayana, Objects.requireNonNull(latitudeDeg, "`ClaimsRequest.latitudeDeg` is required"), locale, Objects.requireNonNull(longitudeDeg, "`ClaimsRequest.longitudeDeg` is required"), text, utcOffsetSeconds, zone);
         }
     }
 
@@ -185,7 +197,8 @@ public record ClaimsRequest(Double altitudeM, double at, AyanaReckoning ayana, d
             Read.orNull(json.get("locale"), present -> Read.text(present, "ClaimsRequest.locale")),
             Read.number(Read.required(json.get("longitudeDeg"), "ClaimsRequest.longitudeDeg"), "ClaimsRequest.longitudeDeg"),
             Read.text(Read.required(json.get("text"), "ClaimsRequest.text"), "ClaimsRequest.text"),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "ClaimsRequest.utcOffsetSeconds"), "ClaimsRequest.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "ClaimsRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -204,7 +217,12 @@ public record ClaimsRequest(Double altitudeM, double at, AyanaReckoning ayana, d
         }
         json.put("longitudeDeg", longitudeDeg);
         json.put("text", text);
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

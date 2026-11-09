@@ -5343,3 +5343,18 @@ export const VargaRelationById = /* @__PURE__ */ new Map([
   [2, 'NEUTRAL'],
 ]);
 
+/** Every Detail by name. */
+export const Detail = /* @__PURE__ */ Object.freeze({
+  Full: 'FULL',
+  Brief: 'BRIEF',
+});
+
+/**
+ * Every Detail by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const DetailById = /* @__PURE__ */ new Map([
+  [0, 'FULL'],
+  [1, 'BRIEF'],
+]);
+

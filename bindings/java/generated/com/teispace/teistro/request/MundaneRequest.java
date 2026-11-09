@@ -18,10 +18,11 @@ import java.util.Objects;
  * @param kind Which chart.
  * @param latitudeDeg The place's latitude, degrees, north positive (C1152).
  * @param longitudeDeg The place's longitude, degrees, east positive.
- * @param utcOffsetSeconds The local clock's offset from UTC, seconds, east positive. Null leaves the SDK's default.
+ * @param utcOffsetSeconds The local clock's offset from UTC, seconds, east positive; or `zone`, not both; UTC when neither is given. Null leaves the SDK's default.
  * @param year The year (Gregorian) whose ingress, or whose first eclipse or conjunction after 1 January 0h UTC, is asked; or name `from`. Null leaves the SDK's default.
+ * @param zone The zone the moment is read on, at the offset it had then (`03-design/time-and-timezone.md` §3.4); or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record MundaneRequest(Double altitudeM, MundaneEvent event, Double from, com.teispace.teistro.MundaneKind ingress, com.teispace.teistro.MundaneKind kind, double latitudeDeg, double longitudeDeg, Integer utcOffsetSeconds, Integer year) implements RequestJson {
+public record MundaneRequest(Double altitudeM, MundaneEvent event, Double from, com.teispace.teistro.MundaneKind ingress, com.teispace.teistro.MundaneKind kind, double latitudeDeg, double longitudeDeg, Integer utcOffsetSeconds, Integer year, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -42,7 +43,7 @@ public record MundaneRequest(Double altitudeM, MundaneEvent event, Double from, 
      * @param longitudeDeg The place's longitude, degrees, east positive.
      */
     public MundaneRequest(com.teispace.teistro.MundaneKind kind, double latitudeDeg, double longitudeDeg) {
-        this(null, null, null, null, kind, latitudeDeg, longitudeDeg, null, null);
+        this(null, null, null, null, kind, latitudeDeg, longitudeDeg, null, null, null);
     }
 
     /**
@@ -66,6 +67,7 @@ public record MundaneRequest(Double altitudeM, MundaneEvent event, Double from, 
         private Double longitudeDeg;
         private Integer utcOffsetSeconds;
         private Integer year;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -149,7 +151,7 @@ public record MundaneRequest(Double altitudeM, MundaneEvent event, Double from, 
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The local clock's offset from UTC, seconds, east positive. Null leaves the SDK's default.
+         * @param utcOffsetSeconds The local clock's offset from UTC, seconds, east positive; or `zone`, not both; UTC when neither is given. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
@@ -169,13 +171,24 @@ public record MundaneRequest(Double altitudeM, MundaneEvent event, Double from, 
         }
 
         /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone the moment is read on, at the offset it had then (`03-design/time-and-timezone.md` §3.4); or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public MundaneRequest build() {
-            return new MundaneRequest(altitudeM, event, from, ingress, kind, Objects.requireNonNull(latitudeDeg, "`MundaneRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`MundaneRequest.longitudeDeg` is required"), utcOffsetSeconds, year);
+            return new MundaneRequest(altitudeM, event, from, ingress, kind, Objects.requireNonNull(latitudeDeg, "`MundaneRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`MundaneRequest.longitudeDeg` is required"), utcOffsetSeconds, year, zone);
         }
     }
 
@@ -197,7 +210,8 @@ public record MundaneRequest(Double altitudeM, MundaneEvent event, Double from, 
             Read.number(Read.required(json.get("latitudeDeg"), "MundaneRequest.latitudeDeg"), "MundaneRequest.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "MundaneRequest.longitudeDeg"), "MundaneRequest.longitudeDeg"),
             Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "MundaneRequest.utcOffsetSeconds")),
-            Read.orNull(json.get("year"), present -> Read.int32(present, "MundaneRequest.year")));
+            Read.orNull(json.get("year"), present -> Read.int32(present, "MundaneRequest.year")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -223,6 +237,9 @@ public record MundaneRequest(Double altitudeM, MundaneEvent event, Double from, 
         }
         if (year != null) {
             json.put("year", year);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
         }
         return json;
     }

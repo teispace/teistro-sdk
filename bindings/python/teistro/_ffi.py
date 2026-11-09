@@ -69,6 +69,7 @@ from .catalogue import (
     Degeneracy,
     Deity,
     DeltaTSource,
+    Detail,
     DhinamRule,
     DigestSpan,
     Dignity,
@@ -4718,6 +4719,16 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_published_verify.restype = ctypes.c_int32
+        self.ts_record_answer: Any = library.ts_record_answer
+        self.ts_record_answer.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.c_char_p,
+            ctypes.c_uint32,
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_record_answer.restype = ctypes.c_int32
         self.ts_recorded_settings: Any = library.ts_recorded_settings
         self.ts_recorded_settings.argtypes = [
             ctypes.POINTER(_Context),
@@ -5713,7 +5724,7 @@ class TeistroContext:
             json = _lent_string(_out_json)
             return json
 
-    def intl_render(self, key: str, params_json: str) -> bytes:
+    def intl_render(self, key: str, params_json: Optional[str]) -> bytes:
         """Renders a message with parameters given as a JSON object: a string, an
         integer, a number or an array is itself; an entity is
         `{"$entity": "graha.SUN"}`; a date `{"$date": {"calendar": "GREGORIAN",
@@ -5729,7 +5740,7 @@ class TeistroContext:
             owned: list[Any] = []
             _key = key.encode("utf-8")
             owned.append(_key)
-            _params_json = params_json.encode("utf-8")
+            _params_json = None if params_json is None else params_json.encode("utf-8")
             owned.append(_params_json)
             _out_blob = _BlobStruct()
             status = Status(self._lib.ts_intl_render(
@@ -5910,7 +5921,7 @@ class TeistroContext:
         signs as they stand at the instant.
 
         `request_json` is `{"at", "latitudeDeg", "longitudeDeg", "altitudeM",
-        "utcOffsetSeconds", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
+        "utcOffsetSeconds" or "zone", "ayana"}`: `at` a UTC Julian day, `altitudeM` 0
         and `ayana` `SIDEREAL` (turning at Makara and Karka sankranti) when
         left out, or `TROPICAL` (at the solstices). A key it does not read or
         an instant, place or offset out of range is `INVALID_ARG`, named under
@@ -5951,7 +5962,7 @@ class TeistroContext:
         when the mother of a birth may take part in rites again.
 
         `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-        "utcOffsetSeconds", "table", "tradition", "request"}`: `table` the
+        "utcOffsetSeconds" or "zone", "table", "tradition", "request"}`: `table` the
         *Dharmasindhu*'s when left out, every row data, or `tradition` a
         shipped table by name (`DHARMASINDHU`, `MITAKSHARA`), never both;
         `request` `{key,
@@ -5990,7 +6001,7 @@ class TeistroContext:
         the instant the last ends.
 
         `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-        "utcOffsetSeconds", "table", "tradition", "household"}`: `household`
+        "utcOffsetSeconds" or "zone", "table", "tradition", "household"}`: `household`
         `{events, observers}`, an event `{key, event}` and an observer `{key,
         ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays,
         fireGiver}`. A household that does not hold together, or a key it
@@ -6086,7 +6097,7 @@ class TeistroContext:
         is taken to fall as the death did.
 
         `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-        "utcOffsetSeconds", "at", "crematedAt", "table"}`, the instants UTC
+        "utcOffsetSeconds" or "zone", "at", "crematedAt", "table"}`, the instants UTC
         Julian days and `table` the *Dharmasindhu*'s lists when left out. A
         cremation before the death, or a key it does not read, is
         `INVALID_ARG` named under `deathTime`; a context without an ephemeris
@@ -6124,7 +6135,7 @@ class TeistroContext:
         for.
 
         `request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM",
-        "utcOffsetSeconds", "request"}`: `request` `{key, at, night,
+        "utcOffsetSeconds" or "zone", "request"}`: `request` `{key, at, night,
         firstAbdika, firstYearAdhika, sapindana, una, window}`, `at` the death
         as a UTC Julian day and every reading the *Dharmasindhu*'s when left
         out. A key it does not read or an empty `key` is `INVALID_ARG` named
@@ -6537,7 +6548,7 @@ class TeistroContext:
         not carry is absent.
 
         `request_json` is `{"kind", "year", "from", "ingress", "event",
-        "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`:
+        "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone"}`:
         `kind` a `mundane_kind` key; `year` (Gregorian) or `from` (a UTC
         Julian day) where the search starts, the first ingress, eclipse or
         conjunction at or after it; `ingress` the ingress a lunation precedes,
@@ -7080,7 +7091,7 @@ class TeistroContext:
         a day the Sun does not both rise and set.
 
         `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-        "longitudeDeg", "altitudeM", "utcOffsetSeconds", "native", "rules"}`:
+        "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "native", "rules"}`:
         the days as `{"year", "month", "day"}`, `native` either `{"bird"}` or
         `{"nakshatra", "paksha", "rule"}`, and everything but `first`, the
         place, the offset and `native` optional. A key it does not read, a
@@ -7117,7 +7128,7 @@ class TeistroContext:
 
         `request_json` is `{"periods", "baseline"}`: each period `{"calendar",
         "first", "last", "latitudeDeg", "longitudeDeg", "altitudeM",
-        "utcOffsetSeconds", "snapshot", "events", "spells"}`, the days as
+        "utcOffsetSeconds" or "zone", "snapshot", "events", "spells"}`, the days as
         `{"year", "month", "day"}` and everything but `first`, the place and
         the offset optional; `baseline` one of `DAILY`, `WEEKLY`, `MONTHLY`
         and `YEARLY`. A key it does not read, a last day before the first, a
@@ -7159,7 +7170,8 @@ class TeistroContext:
         `test` for `EXPECTED`; `subjects`, `dasha`, `shuffle`, `test` and
         optionally `depth` and `strata` for `TIMED`. A birth is `{instant,
         latitudeDeg, longitudeDeg, altitudeM, utcOffsetSeconds,
-        uncertaintyMinutes}`, its instant a Julian day in UTC. A seed is a
+        uncertaintyMinutes}`, its instant a Julian day in UTC; `zone` in place
+        of `utcOffsetSeconds` reads it at the zone's offset then. A seed is a
         number or a decimal string. A key it does not read, a field the study
         does not read or misses, or a value out of range is `INVALID_ARG`,
         named under `research`, as `research.test.seed`; what the study
@@ -7270,6 +7282,52 @@ class TeistroContext:
                 _key,
                 len(key),
                 _c_value(at_least),
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
+    def record_answer(self, name: str, request_json: str, detail: Detail, fields_json: Optional[str]) -> str:
+        """Answers the record entry point `name` (`almanac.days`, `chart.found`)
+        for `request_json`, its request as the record's own reader takes it,
+        as canonical JSON: the envelope `{value, provenance}`, or the value
+        alone for a record that seals no provenance.
+
+        `detail` is `FULL` for the whole answer, and `BRIEF` for the fields a
+        reader needs, the provenance written with its answer key and none of
+        its hashes, and `"detail": "brief"` beside them. `fields_json`, when
+        not null, is a caller's own mask, a JSON list of field paths
+        (`["date.year", "weekday"]`) of the full answer to keep, each checked
+        against the record's answer schema; the envelope then carries
+        `"fields"` beside the brief provenance. A mask selects from the full
+        answer, so it is refused beside `BRIEF` (crux C1260).
+
+        `INVALID_ARG` on `name` for a record this build does not carry, on
+        `detail` for another number, on `fields_json` for a mask that is no
+        list of strings or is named beside `BRIEF`, and on `fields[i]` for a
+        path the answer does not have; `CAPABILITY` on `fields_json` for a
+        build without the answer schemas a mask is checked against (the
+        `fields` feature, which a wasm module leaves out); and whatever the
+        record's reader and its area refuse.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _name = name.encode("utf-8")
+            owned.append(_name)
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _fields_json = None if fields_json is None else fields_json.encode("utf-8")
+            owned.append(_fields_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_record_answer(
+                self._raw,
+                _name,
+                _request_json,
+                _c_value(detail),
+                _fields_json,
                 ctypes.byref(_out_json),
             ))
             if status != Status.OK:

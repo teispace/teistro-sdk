@@ -10597,3 +10597,27 @@ export declare const VargaRelation: {
  */
 export declare const VargaRelationById: ReadonlyMap<number, VargaRelation>;
 
+/**
+ * How much of its answer a record call asks for.
+ */
+export type Detail = 'FULL' | 'BRIEF';
+
+/** Every Detail by name; the values are the strings the union accepts. */
+export declare const Detail: {
+  /**
+   * The whole answer, as serde writes it.
+   */
+  readonly Full: 'FULL';
+  /**
+   * The fields a reader needs, as the record declares them, with the
+   * provenance's answer key and none of its hashes.
+   */
+  readonly Brief: 'BRIEF';
+};
+
+/**
+ * Every Detail by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const DetailById: ReadonlyMap<number, Detail>;
+

@@ -20,9 +20,10 @@ import java.util.Objects;
  * @param longitudeDeg The {@code longitudeDeg} field.
  * @param snapshot The instant a period's sky is read at (C358). Null leaves the SDK's default.
  * @param spells The {@code spells} field. Null leaves the SDK's default.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record PeriodAsked(Double altitudeM, com.teispace.teistro.Calendar calendar, List<com.teispace.teistro.Graha> events, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, Snapshot snapshot, List<Integer> spells, int utcOffsetSeconds) implements RequestJson {
+public record PeriodAsked(Double altitudeM, com.teispace.teistro.Calendar calendar, List<com.teispace.teistro.Graha> events, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, Snapshot snapshot, List<Integer> spells, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -43,10 +44,9 @@ public record PeriodAsked(Double altitudeM, com.teispace.teistro.Calendar calend
      * @param first A civil day as a request names it.
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
-    public PeriodAsked(DayAsked first, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
-        this(null, null, null, first, null, latitudeDeg, longitudeDeg, null, null, utcOffsetSeconds);
+    public PeriodAsked(DayAsked first, double latitudeDeg, double longitudeDeg) {
+        this(null, null, null, first, null, latitudeDeg, longitudeDeg, null, null, null, null);
     }
 
     /**
@@ -71,6 +71,7 @@ public record PeriodAsked(Double altitudeM, com.teispace.teistro.Calendar calend
         private Snapshot snapshot;
         private List<Integer> spells;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -176,11 +177,22 @@ public record PeriodAsked(Double altitudeM, com.teispace.teistro.Calendar calend
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -191,7 +203,7 @@ public record PeriodAsked(Double altitudeM, com.teispace.teistro.Calendar calend
          * @throws NullPointerException naming a required field left unset
          */
         public PeriodAsked build() {
-            return new PeriodAsked(altitudeM, calendar, events, first, last, Objects.requireNonNull(latitudeDeg, "`PeriodAsked.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`PeriodAsked.longitudeDeg` is required"), snapshot, spells, Objects.requireNonNull(utcOffsetSeconds, "`PeriodAsked.utcOffsetSeconds` is required"));
+            return new PeriodAsked(altitudeM, calendar, events, first, last, Objects.requireNonNull(latitudeDeg, "`PeriodAsked.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`PeriodAsked.longitudeDeg` is required"), snapshot, spells, utcOffsetSeconds, zone);
         }
     }
 
@@ -214,7 +226,8 @@ public record PeriodAsked(Double altitudeM, com.teispace.teistro.Calendar calend
             Read.number(Read.required(json.get("longitudeDeg"), "PeriodAsked.longitudeDeg"), "PeriodAsked.longitudeDeg"),
             Read.orNull(json.get("snapshot"), present -> Snapshot.of(present)),
             Read.orNull(json.get("spells"), present -> Read.list(present, "PeriodAsked.spells", item0 -> Read.int32(item0, "PeriodAsked.spells"))),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "PeriodAsked.utcOffsetSeconds"), "PeriodAsked.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "PeriodAsked.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -241,7 +254,12 @@ public record PeriodAsked(Double altitudeM, com.teispace.teistro.Calendar calend
         if (spells != null) {
             json.put("spells", spells);
         }
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

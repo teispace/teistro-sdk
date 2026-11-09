@@ -7,7 +7,7 @@ Several births and deaths and several observers at a place (`03-design/ashauch.m
 
 `value` is `{observers}`, each `{key, periods, pureAt}`: `periods` an ashauch answer for each tie, in the order the news reached that observer, each overlap resolved against those before it, and `pureAt` the instant the last ends.
 
-`request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "table", "tradition", "household"}`: `household` `{events, observers}`, an event `{key, event}` and an observer `{key, ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays, fireGiver}`. A household that does not hold together, or a key it does not read, is `INVALID_ARG` named under `household`; a relation the table names no row for is `UNSUPPORTED`; a context without an ephemeris is `CAPABILITY`.
+`request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "table", "tradition", "household"}`: `household` `{events, observers}`, an event `{key, event}` and an observer `{key, ties}`, a tie `{event, relation, heardAt, abroad, nearness, fullDays, fireGiver}`. A household that does not hold together, or a key it does not read, is `INVALID_ARG` named under `household`; a relation the table names no row for is `UNSUPPORTED`; a context without an ephemeris is `CAPABILITY`.
 
 <Tabs items={['C']}>
 <Tab value="C">

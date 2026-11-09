@@ -1,0 +1,43 @@
+---
+title: ts_record_answer
+description: "Answers the record entry point `name` (`almanac.days`, `chart.found`) for `request_json`, its request as the record's own reader takes it, as canonical JSON: the envelope `{value, provenance}`, or the value alone for a record that seals no provenance."
+---
+
+Answers the record entry point `name` (`almanac.days`, `chart.found`) for `request_json`, its request as the record's own reader takes it, as canonical JSON: the envelope `{value, provenance}`, or the value alone for a record that seals no provenance.
+
+`detail` is `FULL` for the whole answer, and `BRIEF` for the fields a reader needs, the provenance written with its answer key and none of its hashes, and `"detail": "brief"` beside them. `fields_json`, when not null, is a caller's own mask, a JSON list of field paths (`["date.year", "weekday"]`) of the full answer to keep, each checked against the record's answer schema; the envelope then carries `"fields"` beside the brief provenance. A mask selects from the full answer, so it is refused beside `BRIEF` (crux C1260).
+
+`INVALID_ARG` on `name` for a record this build does not carry, on `detail` for another number, on `fields_json` for a mask that is no list of strings or is named beside `BRIEF`, and on `fields[i]` for a path the answer does not have; `CAPABILITY` on `fields_json` for a build without the answer schemas a mask is checked against (the `fields` feature, which a wasm module leaves out); and whatever the record's reader and its area refuse.
+
+<Tabs items={['C']}>
+<Tab value="C">
+
+```c
+ts_status ts_record_answer(const ts_context * context, const char * name, const char * request_json, uint32_t detail, const char * fields_json, ts_string * out_json);
+```
+
+</Tab>
+</Tabs>
+
+Reached from `(root).record` on the surface; [the surface](/docs/surface) says how each binding spells a path.
+
+## Parameters
+
+| name | type | role | what it carries |
+|---|---|---|---|
+| `context` | `const ts_context *` | the handle | — |
+| `name` | `const char *` | a string read | — |
+| `request_json` | `const char *` | a string read | — |
+| `detail` | `uint32_t` | a value | One of `ts_detail`. For example `1`. |
+| `fields_json` | `const char *` | a string read | For example `["weekday"]`. May be null. |
+| `out_json` | `ts_string *` | receives a string | — |
+
+## What it hands back
+
+`json`. The call returns a status; a status other than `TS_STATUS_OK` means nothing was written.
+
+## Safety
+
+`context` must be a live handle; `name` and `request_json` NUL-terminated; `fields_json` null or NUL-terminated; `out_json` valid for a write.
+
+Declared in `crates/ffi/src/record.rs`.

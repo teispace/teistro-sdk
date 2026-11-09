@@ -6197,6 +6197,18 @@ class VargaRelation(Member):
     """Neither."""
 
 
+class Detail(Member):
+    """How much of its answer a record call asks for."""
+
+    FULL = 0
+    """The whole answer, as serde writes it."""
+
+    BRIEF = 1
+    """The fields a reader needs, as the record declares them, with the
+    provenance's answer key and none of its hashes.
+    """
+
+
 # The key of every member, by enum and id, and the kind of every
 # catalogued enum. The two bases above read them; nothing else should.
 _KEYS: dict[str, dict[int, str]] = {
@@ -8199,6 +8211,10 @@ _KEYS: dict[str, dict[int, str]] = {
         0: "SAME",
         1: "ENEMY",
         2: "NEUTRAL",
+    },
+    "Detail": {
+        0: "FULL",
+        1: "BRIEF",
     },
 }
 

@@ -96,9 +96,13 @@ export interface AshauchQuery {
    */
   readonly tradition?: AshauchTradition | null;
   /**
-   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
    */
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -219,9 +223,13 @@ export interface DeathTimeQuery {
    */
   readonly table?: DeathTimeTable | null;
   /**
-   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
    */
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -371,9 +379,13 @@ export interface FirstYearQuery {
    */
   readonly request: FirstYearRequest;
   /**
-   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
    */
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -405,9 +417,13 @@ export interface HouseholdQuery {
    */
   readonly tradition?: AshauchTradition | null;
   /**
-   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
    */
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -505,7 +521,14 @@ export interface PakshiRequest {
   readonly longitudeDeg: number;
   readonly native: NativeAsked;
   readonly rules?: PakshiRules;
-  readonly utcOffsetSeconds: number;
+  /**
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -593,9 +616,13 @@ export interface SankalpaRequest {
    */
   readonly longitudeDeg: number;
   /**
-   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
    */
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -836,13 +863,17 @@ export interface MundaneRequest {
    */
   readonly longitudeDeg: number;
   /**
-   * The local clock's offset from UTC, seconds, east positive.
+   * The local clock's offset from UTC, seconds, east positive; or `zone`, not both; UTC when neither is given.
    */
-  readonly utcOffsetSeconds?: number;
+  readonly utcOffsetSeconds?: number | null;
   /**
    * The year (Gregorian) whose ingress, or whose first eclipse or conjunction after 1 January 0h UTC, is asked; or name `from`.
    */
   readonly year?: number | null;
+  /**
+   * The zone the moment is read on, at the offset it had then (`03-design/time-and-timezone.md` §3.4); or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -1207,9 +1238,13 @@ export interface ClaimsRequest {
    */
   readonly text: string;
   /**
-   * The offset from UTC the place's civil days run at, in seconds, east positive.
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
    */
-  readonly utcOffsetSeconds: number;
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -1440,6 +1475,44 @@ export interface AshauchTable {
 export type AshauchTradition = 'DHARMASINDHU' | 'MITAKSHARA';
 
 /**
+ * How a zone is given.
+ */
+export type ZoneSpec = ZoneSpecIana | ZoneSpecLocalMean | ZoneSpecFixed;
+
+/**
+ * A zone of the database, by its IANA name.
+ */
+export interface ZoneSpecIana {
+  readonly kind: 'IANA';
+  /**
+   * The name (`Asia/Kathmandu`).
+   */
+  readonly zone: string;
+}
+
+/**
+ * Local mean time at a longitude: four minutes a degree.
+ */
+export interface ZoneSpecLocalMean {
+  readonly kind: 'LOCAL_MEAN';
+  /**
+   * The longitude, east positive.
+   */
+  readonly longitude: number;
+}
+
+/**
+ * A fixed offset the consumer states.
+ */
+export interface ZoneSpecFixed {
+  readonly kind: 'FIXED';
+  /**
+   * The offset.
+   */
+  readonly offset: number;
+}
+
+/**
  * What is asked: the path from the observer to the person the event is of, the one who died or was born.
  */
 export interface KinAsked {
@@ -1576,44 +1649,6 @@ export interface DayAsked {
  * `VARA`: The vara, at sunrise.
  */
 export type ChangeKind = 'TITHI' | 'NAKSHATRA' | 'YOGA' | 'KARANA' | 'MOON_SIGN' | 'SUN_SIGN' | 'VARA';
-
-/**
- * How a zone is given.
- */
-export type ZoneSpec = ZoneSpecIana | ZoneSpecLocalMean | ZoneSpecFixed;
-
-/**
- * A zone of the database, by its IANA name.
- */
-export interface ZoneSpecIana {
-  readonly kind: 'IANA';
-  /**
-   * The name (`Asia/Kathmandu`).
-   */
-  readonly zone: string;
-}
-
-/**
- * Local mean time at a longitude: four minutes a degree.
- */
-export interface ZoneSpecLocalMean {
-  readonly kind: 'LOCAL_MEAN';
-  /**
-   * The longitude, east positive.
-   */
-  readonly longitude: number;
-}
-
-/**
- * A fixed offset the consumer states.
- */
-export interface ZoneSpecFixed {
-  readonly kind: 'FIXED';
-  /**
-   * The offset.
-   */
-  readonly offset: number;
-}
 
 /**
  * Festival rules to reckon over an almanac's days (`03-design/festival-rules.md` §7), and the published days laid over their answer.
@@ -2620,7 +2655,14 @@ export interface PeriodAsked {
   readonly longitudeDeg: number;
   readonly snapshot?: Snapshot | null;
   readonly spells?: readonly number[] | null;
-  readonly utcOffsetSeconds: number;
+  /**
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -2903,7 +2945,14 @@ export interface BirthAsked {
   readonly latitudeDeg: number;
   readonly longitudeDeg: number;
   readonly uncertaintyMinutes?: number;
-  readonly utcOffsetSeconds: number;
+  /**
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -4198,9 +4247,13 @@ export interface Partner {
    */
   readonly place: GeoPlace;
   /**
-   * Its civil clock, which a chart's day is reckoned by; UTC when left out.
+   * Its civil clock, which a chart's day is reckoned by; or `zone`, not both; UTC when neither is given.
    */
-  readonly utcOffsetSeconds?: number;
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone the birth is read on, at the offset it had then (`03-design/time-and-timezone.md` §3.4); or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
 }
 
 /**
@@ -4833,7 +4886,7 @@ export interface SnapshotSunrise {
 }
 
 /**
- * A clock time on the reference day at the request's offset: the baseline engine's is 06:00.
+ * A clock time on the reference day on the request's clock: the baseline engine's is 06:00.
  */
 export interface SnapshotClock {
   readonly at: 'CLOCK';
@@ -10024,3 +10077,66 @@ export type DayEdge = 'SUNRISE' | 'SUNSET';
  * `PARAMA_MITRA`: 9, very favourable.
  */
 export type Tara = 'JANMA' | 'SAMPAT' | 'VIPAT' | 'KSHEMA' | 'PRATYAK' | 'SADHANA' | 'NAIDHANA' | 'MITRA' | 'PARAMA_MITRA';
+
+/**
+ * Each record entry point's request, by the entry point's name: what `Context.record` takes beside the name.
+ */
+export interface RecordRequests {
+  readonly 'almanac.aayadi': AayadiRequest;
+  readonly 'almanac.anniversaries': AnniversariesRequest;
+  readonly 'almanac.ashauch': AshauchQuery;
+  readonly 'almanac.ashauchKin': KinQuery;
+  readonly 'almanac.ashauchRite': RiteQuery;
+  readonly 'almanac.changes': ChangesRequest;
+  readonly 'almanac.days': AlmanacDaysRequest;
+  readonly 'almanac.deathTime': DeathTimeQuery;
+  readonly 'almanac.digest': DigestRequest;
+  readonly 'almanac.elect': ElectRequest;
+  readonly 'almanac.festivalPack': PackRequest;
+  readonly 'almanac.festival_calendar': FestivalCalendarRequest;
+  readonly 'almanac.firstYear': FirstYearQuery;
+  readonly 'almanac.household': HouseholdQuery;
+  readonly 'almanac.navatara': NavataraRequest;
+  readonly 'almanac.next': NextRequest;
+  readonly 'almanac.observance': ObservanceRequest;
+  readonly 'almanac.pakshi': PakshiRequest;
+  readonly 'almanac.people': PeopleRequest;
+  readonly 'almanac.publishedReasons': PublishedReasonsRequest;
+  readonly 'almanac.sankalpa': SankalpaRequest;
+  readonly 'almanac.sentences': SentencesRequest;
+  readonly 'almanac.skyView': SkyViewRequest;
+  readonly 'calendar.add': AddAsked;
+  readonly 'calendar.between': BetweenAsked;
+  readonly 'calendar.convert': CalendarAsked;
+  readonly 'chart.astrocartography': AstrocartographyRequest;
+  readonly 'chart.disagreements': ChartDisagreementsRequest;
+  readonly 'chart.found': ChartFoundRequest;
+  readonly 'chart.mundane': MundaneRequest;
+  readonly 'chart.rashifal': BatchAsked;
+  readonly 'chart.relocated': RelocationRequest;
+  readonly 'intl.date': DateTextRequest;
+  readonly 'intl.dates': DatesRequest;
+  readonly 'intl.inWords': InWordsRequest;
+  readonly 'intl.lexicon': LexiconRequest;
+  readonly 'intl.lookup': LookupRequest;
+  readonly 'intl.time': TimeTextRequest;
+  readonly 'matching.naam': NaamRequest;
+  readonly 'naming.check': NamingCheckRequest;
+  readonly 'naming.of': NamingOfRequest;
+  readonly 'naming.read': NamingReadRequest;
+  readonly 'naming.suggest': NamingSuggestRequest;
+  readonly 'naming.syllables': NamingSyllablesRequest;
+  readonly 'numerology.profile': NumerologyRequest;
+  readonly 'research.study': ResearchRequest;
+  readonly 'time.civil': CivilAsked;
+  readonly 'time.convert': ScaleRequest;
+  readonly 'time.resolve': ResolveAsked;
+  readonly 'verify.claims': ClaimsRequest;
+  readonly 'verify.issue': IssueRequest;
+  readonly 'verify.receipt': Receipt;
+}
+
+/**
+ * A record entry point's name, `area.operation`, whose request is typed.
+ */
+export type RecordName = keyof RecordRequests;

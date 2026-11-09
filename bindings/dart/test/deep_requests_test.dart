@@ -643,6 +643,7 @@ void main() {
           twoMakeDvipushkara: true,
         ),
         utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });
@@ -2066,6 +2067,7 @@ void main() {
           subs: PakshiSubLengths.pulippani,
         ),
         utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });
@@ -2384,6 +2386,7 @@ void main() {
         latitudeDeg: 1.5,
         longitudeDeg: 1.5,
         utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });
@@ -3193,6 +3196,7 @@ void main() {
         longitudeDeg: 1.5,
         utcOffsetSeconds: 1,
         year: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });
@@ -3217,6 +3221,7 @@ void main() {
             snapshot: SnapshotClock(hour: 1, minute: 1),
             spells: [1],
             utcOffsetSeconds: 1,
+            zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
           ),
         ],
       ).toJson(),
@@ -3488,6 +3493,7 @@ void main() {
             longitudeDeg: 1.5,
             uncertaintyMinutes: 1.5,
             utcOffsetSeconds: 1,
+            zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
           ),
         ],
         dasha: 'x',
@@ -3515,6 +3521,7 @@ void main() {
         longitudeDeg: 1.5,
         uncertaintyMinutes: 1.5,
         utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });
@@ -3573,6 +3580,7 @@ void main() {
         longitudeDeg: 1.5,
         text: 'आज एकादशी हो। The Moon is in Rohini. Jupiter is in Gemini.',
         utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });

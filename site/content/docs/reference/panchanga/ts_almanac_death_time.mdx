@@ -7,7 +7,7 @@ The death-time check at a place (`03-design/death-time.md`), answered with `{val
 
 `value` is `{death, cremation, rites, table}`: `death` and `cremation` each `{at, nakshatra, tithi, vara, moon, panchaka, feet, pushkara}`, `rites` each `{rite, clause}`. With no cremation given, the cremation is taken to fall as the death did.
 
-`request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds", "at", "crematedAt", "table"}`, the instants UTC Julian days and `table` the *Dharmasindhu*'s lists when left out. A cremation before the death, or a key it does not read, is `INVALID_ARG` named under `deathTime`; a context without an ephemeris is `CAPABILITY`.
+`request_json` is `{"latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "at", "crematedAt", "table"}`, the instants UTC Julian days and `table` the *Dharmasindhu*'s lists when left out. A cremation before the death, or a key it does not read, is `INVALID_ARG` named under `deathTime`; a context without an ephemeris is `CAPABILITY`.
 
 <Tabs items={['C']}>
 <Tab value="C">

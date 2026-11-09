@@ -9619,3 +9619,38 @@ enum VargaRelation {
   }
 }
 
+/// How much of its answer a record call asks for.
+enum Detail {
+  /// The whole answer, as serde writes it.
+  full(0, 'FULL'),
+  /// The fields a reader needs, as the record declares them, with the
+  /// provenance's answer key and none of its hashes.
+  brief(1, 'BRIEF');
+
+  const Detail(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The member with an id.
+  ///
+  /// Throws [ArgumentError] for an id this build does not know, because
+  /// a value outside a closed set is a fault, not a state.
+  static Detail byId(int id) => values.firstWhere(
+        (member) => member.id == id,
+        orElse: () => throw ArgumentError.value(id, 'id', 'not a Detail'),
+      );
+
+  /// The member with a key, or `null` for one this build does not know.
+  static Detail? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+

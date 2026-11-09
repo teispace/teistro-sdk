@@ -16,9 +16,10 @@ import java.util.Objects;
  * @param ayana How the ayana is reckoned: `SIDEREAL`, at Makara and Karka sankranti, when left out. Null leaves the SDK's default.
  * @param latitudeDeg The place's latitude, degrees north positive.
  * @param longitudeDeg The place's longitude, degrees east positive.
- * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+ * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record SankalpaRequest(Double altitudeM, double at, AyanaReckoning ayana, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) implements RequestJson {
+public record SankalpaRequest(Double altitudeM, double at, AyanaReckoning ayana, double latitudeDeg, double longitudeDeg, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * The required fields alone: every optional field is left out, and the SDK's
      * default stands.
@@ -26,10 +27,9 @@ public record SankalpaRequest(Double altitudeM, double at, AyanaReckoning ayana,
      * @param at The instant of the rite, a UTC Julian day.
      * @param latitudeDeg The place's latitude, degrees north positive.
      * @param longitudeDeg The place's longitude, degrees east positive.
-     * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
      */
-    public SankalpaRequest(double at, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
-        this(null, at, null, latitudeDeg, longitudeDeg, utcOffsetSeconds);
+    public SankalpaRequest(double at, double latitudeDeg, double longitudeDeg) {
+        this(null, at, null, latitudeDeg, longitudeDeg, null, null);
     }
 
     /**
@@ -50,6 +50,7 @@ public record SankalpaRequest(Double altitudeM, double at, AyanaReckoning ayana,
         private Double latitudeDeg;
         private Double longitudeDeg;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -111,11 +112,22 @@ public record SankalpaRequest(Double altitudeM, double at, AyanaReckoning ayana,
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -126,7 +138,7 @@ public record SankalpaRequest(Double altitudeM, double at, AyanaReckoning ayana,
          * @throws NullPointerException naming a required field left unset
          */
         public SankalpaRequest build() {
-            return new SankalpaRequest(altitudeM, Objects.requireNonNull(at, "`SankalpaRequest.at` is required"), ayana, Objects.requireNonNull(latitudeDeg, "`SankalpaRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`SankalpaRequest.longitudeDeg` is required"), Objects.requireNonNull(utcOffsetSeconds, "`SankalpaRequest.utcOffsetSeconds` is required"));
+            return new SankalpaRequest(altitudeM, Objects.requireNonNull(at, "`SankalpaRequest.at` is required"), ayana, Objects.requireNonNull(latitudeDeg, "`SankalpaRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`SankalpaRequest.longitudeDeg` is required"), utcOffsetSeconds, zone);
         }
     }
 
@@ -145,7 +157,8 @@ public record SankalpaRequest(Double altitudeM, double at, AyanaReckoning ayana,
             Read.orNull(json.get("ayana"), present -> Read.member(present, "SankalpaRequest.ayana", AyanaReckoning::byKey)),
             Read.number(Read.required(json.get("latitudeDeg"), "SankalpaRequest.latitudeDeg"), "SankalpaRequest.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "SankalpaRequest.longitudeDeg"), "SankalpaRequest.longitudeDeg"),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "SankalpaRequest.utcOffsetSeconds"), "SankalpaRequest.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "SankalpaRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -160,7 +173,12 @@ public record SankalpaRequest(Double altitudeM, double at, AyanaReckoning ayana,
         }
         json.put("latitudeDeg", latitudeDeg);
         json.put("longitudeDeg", longitudeDeg);
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

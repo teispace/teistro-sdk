@@ -119,7 +119,8 @@ final class AshauchQuery extends _Request {
     required this.request,
     this.table,
     this.tradition,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The place's height above sea level in metres, 0 when left out.
@@ -140,8 +141,11 @@ final class AshauchQuery extends _Request {
   /// A shipped table by its name, in place of `table`.
   final AshauchTradition? tradition;
 
-  /// The offset from UTC the place's civil days run at, in seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -151,11 +155,12 @@ final class AshauchQuery extends _Request {
     'request': request._wire,
     if (table case final tableValue?) 'table': tableValue._wire,
     if (tradition case final traditionValue?) 'tradition': traditionValue.key,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg, request, table, tradition, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg, request, table, tradition, utcOffsetSeconds, zone];
 }
 
 /// A relation path and the table it is read under, as a binding asks it (`03-design/ashauch.md` §10).
@@ -358,7 +363,8 @@ final class DeathTimeQuery extends _Request {
     required this.latitudeDeg,
     required this.longitudeDeg,
     this.table,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The place's height above sea level in metres, 0 when left out.
@@ -379,8 +385,11 @@ final class DeathTimeQuery extends _Request {
   /// The tradition's lists; the *Dharmasindhu*'s when left out.
   final DeathTimeTable? table;
 
-  /// The offset from UTC the place's civil days run at, in seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -390,11 +399,12 @@ final class DeathTimeQuery extends _Request {
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
     if (table case final tableValue?) 'table': tableValue._wire,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, at, crematedAt, latitudeDeg, longitudeDeg, table, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, at, crematedAt, latitudeDeg, longitudeDeg, table, utcOffsetSeconds, zone];
 }
 
 /// The request as a binding writes it.
@@ -622,7 +632,8 @@ final class FirstYearQuery extends _Request {
     required this.latitudeDeg,
     required this.longitudeDeg,
     required this.request,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The place's height above sea level in metres, 0 when left out.
@@ -637,8 +648,11 @@ final class FirstYearQuery extends _Request {
   /// The death, a UTC Julian day, and the readings.
   final FirstYearRequest request;
 
-  /// The offset from UTC the place's civil days run at, in seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -646,11 +660,12 @@ final class FirstYearQuery extends _Request {
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
     'request': request._wire,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg, request, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, latitudeDeg, longitudeDeg, request, utcOffsetSeconds, zone];
 }
 
 /// The query as a binding writes it.
@@ -662,7 +677,8 @@ final class HouseholdQuery extends _Request {
     required this.longitudeDeg,
     this.table,
     this.tradition,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The place's height above sea level in metres, 0 when left out.
@@ -683,8 +699,11 @@ final class HouseholdQuery extends _Request {
   /// A shipped table by its name, in place of `table`.
   final AshauchTradition? tradition;
 
-  /// The offset from UTC the place's civil days run at, in seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -694,11 +713,12 @@ final class HouseholdQuery extends _Request {
     'longitudeDeg': longitudeDeg,
     if (table case final tableValue?) 'table': tableValue._wire,
     if (tradition case final traditionValue?) 'tradition': traditionValue.key,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, household, latitudeDeg, longitudeDeg, table, tradition, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, household, latitudeDeg, longitudeDeg, table, tradition, utcOffsetSeconds, zone];
 }
 
 /// A birth star, whose navatara chakra is asked. The chakra reads no sky, so this is the whole request.
@@ -846,7 +866,8 @@ final class PakshiRequest extends _Request {
     required this.longitudeDeg,
     required this.native,
     this.rules = const PakshiRules(clock: PakshiClock.stretched, subs: PakshiSubLengths.agastya, relations: PakshiRelations.agastya),
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   final double altitudeM;
@@ -865,7 +886,11 @@ final class PakshiRequest extends _Request {
 
   final PakshiRules rules;
 
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -877,11 +902,12 @@ final class PakshiRequest extends _Request {
     'longitudeDeg': longitudeDeg,
     'native': native._wire,
     'rules': rules._wire,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, first, last, latitudeDeg, longitudeDeg, native, rules, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, calendar, first, last, latitudeDeg, longitudeDeg, native, rules, utcOffsetSeconds, zone];
 }
 
 /// The request as a binding writes it.
@@ -1000,7 +1026,8 @@ final class SankalpaRequest extends _Request {
     this.ayana = AyanaReckoning.sidereal,
     required this.latitudeDeg,
     required this.longitudeDeg,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The place's height above sea level in metres, 0 when left out.
@@ -1018,8 +1045,11 @@ final class SankalpaRequest extends _Request {
   /// The place's longitude, degrees east positive.
   final double longitudeDeg;
 
-  /// The offset from UTC the place's civil days run at, in seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -1028,11 +1058,12 @@ final class SankalpaRequest extends _Request {
     'ayana': ayana.key,
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, longitudeDeg, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, longitudeDeg, utcOffsetSeconds, zone];
 }
 
 /// The request as a binding writes it.
@@ -1546,8 +1577,9 @@ final class MundaneRequest extends _Request {
     required this.kind,
     required this.latitudeDeg,
     required this.longitudeDeg,
-    this.utcOffsetSeconds = 0,
+    this.utcOffsetSeconds,
     this.year,
+    this.zone,
   });
 
   /// The place's altitude, metres.
@@ -1571,11 +1603,14 @@ final class MundaneRequest extends _Request {
   /// The place's longitude, degrees, east positive.
   final double longitudeDeg;
 
-  /// The local clock's offset from UTC, seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The local clock's offset from UTC, seconds, east positive; or `zone`, not both; UTC when neither is given.
+  final int? utcOffsetSeconds;
 
   /// The year (Gregorian) whose ingress, or whose first eclipse or conjunction after 1 January 0h UTC, is asked; or name `from`.
   final int? year;
+
+  /// The zone the moment is read on, at the offset it had then (`03-design/time-and-timezone.md` §3.4); or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -1586,12 +1621,13 @@ final class MundaneRequest extends _Request {
     'kind': kind.key,
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
     if (year case final yearValue?) 'year': yearValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, event, from, ingress, kind, latitudeDeg, longitudeDeg, utcOffsetSeconds, year];
+  List<Object?> get _fields => [altitudeM, event, from, ingress, kind, latitudeDeg, longitudeDeg, utcOffsetSeconds, year, zone];
 }
 
 /// Many periods as a binding writes them, and the period the baseline engine's score is read for, when it is asked.
@@ -2183,7 +2219,8 @@ final class ClaimsRequest extends _Request {
     this.locale,
     required this.longitudeDeg,
     required this.text,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The place's height above sea level in metres, 0 when left out.
@@ -2207,8 +2244,11 @@ final class ClaimsRequest extends _Request {
   /// The text whose claims are checked.
   final String text;
 
-  /// The offset from UTC the place's civil days run at, in seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -2219,11 +2259,12 @@ final class ClaimsRequest extends _Request {
     if (locale case final localeValue?) 'locale': localeValue,
     'longitudeDeg': longitudeDeg,
     'text': text,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, locale, longitudeDeg, text, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, locale, longitudeDeg, text, utcOffsetSeconds, zone];
 }
 
 /// A record to answer with a receipt: its name and its request.
@@ -3704,7 +3745,8 @@ final class PeriodAsked extends _Request {
     required this.longitudeDeg,
     this.snapshot,
     this.spells,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   final double altitudeM;
@@ -3725,7 +3767,11 @@ final class PeriodAsked extends _Request {
 
   final List<int>? spells;
 
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -3738,11 +3784,12 @@ final class PeriodAsked extends _Request {
     'longitudeDeg': longitudeDeg,
     if (snapshot case final snapshotValue?) 'snapshot': snapshotValue._wire,
     if (spells case final spellsValue?) 'spells': spellsValue,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, events, first, last, latitudeDeg, longitudeDeg, snapshot, spells, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, calendar, events, first, last, latitudeDeg, longitudeDeg, snapshot, spells, utcOffsetSeconds, zone];
 }
 
 /// A place a chart is recast at.
@@ -4189,7 +4236,8 @@ final class BirthAsked extends _Request {
     required this.latitudeDeg,
     required this.longitudeDeg,
     this.uncertaintyMinutes = 0.0,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   final double altitudeM;
@@ -4202,7 +4250,11 @@ final class BirthAsked extends _Request {
 
   final double uncertaintyMinutes;
 
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -4211,11 +4263,12 @@ final class BirthAsked extends _Request {
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
     'uncertaintyMinutes': uncertaintyMinutes,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, instant, latitudeDeg, longitudeDeg, uncertaintyMinutes, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, instant, latitudeDeg, longitudeDeg, uncertaintyMinutes, utcOffsetSeconds, zone];
 }
 
 /// When a rule counts as holding on a chart.
@@ -6974,7 +7027,7 @@ final class SnapshotSunrise extends Snapshot {
   List<Object?> get _fields => [];
 }
 
-/// A clock time on the reference day at the request's offset: the baseline engine's is 06:00.
+/// A clock time on the reference day on the request's clock: the baseline engine's is 06:00.
 final class SnapshotClock extends Snapshot {
   const SnapshotClock({
     required this.hour,
@@ -14704,4 +14757,244 @@ enum Tara implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// A record entry point, by its name, and the request it takes: calling it with one is a call [Context.record] answers.
+final class RecordOf<R extends Object> {
+  const RecordOf._(this.name);
+
+  /// Its name, `area.operation`.
+  final String name;
+
+  /// This record asked with [request].
+  RecordAsked call(R request) => RecordAsked._(name, request);
+
+  @override
+  String toString() => name;
+}
+
+/// A record entry point asked with its request, made by [RecordOf].
+final class RecordAsked {
+  const RecordAsked._(this.name, this.request);
+
+  /// The record's name, `area.operation`.
+  final String name;
+
+  /// The request, written as its JSON.
+  final Object request;
+}
+
+/// Every record entry point whose request is a class of its own, by name.
+abstract final class Records {
+  /// `almanac.aayadi`, whose request is [AayadiRequest].
+  static const almanacAayadi = RecordOf<AayadiRequest>._('almanac.aayadi');
+
+  /// `almanac.anniversaries`, whose request is [AnniversariesRequest].
+  static const almanacAnniversaries = RecordOf<AnniversariesRequest>._('almanac.anniversaries');
+
+  /// `almanac.ashauch`, whose request is [AshauchQuery].
+  static const almanacAshauch = RecordOf<AshauchQuery>._('almanac.ashauch');
+
+  /// `almanac.ashauchKin`, whose request is [KinQuery].
+  static const almanacAshauchKin = RecordOf<KinQuery>._('almanac.ashauchKin');
+
+  /// `almanac.ashauchRite`, whose request is [RiteQuery].
+  static const almanacAshauchRite = RecordOf<RiteQuery>._('almanac.ashauchRite');
+
+  /// `almanac.changes`, whose request is [ChangesRequest].
+  static const almanacChanges = RecordOf<ChangesRequest>._('almanac.changes');
+
+  /// `almanac.days`, whose request is [AlmanacDaysRequest].
+  static const almanacDays = RecordOf<AlmanacDaysRequest>._('almanac.days');
+
+  /// `almanac.deathTime`, whose request is [DeathTimeQuery].
+  static const almanacDeathTime = RecordOf<DeathTimeQuery>._('almanac.deathTime');
+
+  /// `almanac.digest`, whose request is [DigestRequest].
+  static const almanacDigest = RecordOf<DigestRequest>._('almanac.digest');
+
+  /// `almanac.elect`, whose request is [ElectRequest].
+  static const almanacElect = RecordOf<ElectRequest>._('almanac.elect');
+
+  /// `almanac.festivalPack`, whose request is [PackRequest].
+  static const almanacFestivalPack = RecordOf<PackRequest>._('almanac.festivalPack');
+
+  /// `almanac.festival_calendar`, whose request is [FestivalCalendarRequest].
+  static const almanacFestivalCalendar = RecordOf<FestivalCalendarRequest>._('almanac.festival_calendar');
+
+  /// `almanac.firstYear`, whose request is [FirstYearQuery].
+  static const almanacFirstYear = RecordOf<FirstYearQuery>._('almanac.firstYear');
+
+  /// `almanac.household`, whose request is [HouseholdQuery].
+  static const almanacHousehold = RecordOf<HouseholdQuery>._('almanac.household');
+
+  /// `almanac.navatara`, whose request is [NavataraRequest].
+  static const almanacNavatara = RecordOf<NavataraRequest>._('almanac.navatara');
+
+  /// `almanac.next`, whose request is [NextRequest].
+  static const almanacNext = RecordOf<NextRequest>._('almanac.next');
+
+  /// `almanac.observance`, whose request is [ObservanceRequest].
+  static const almanacObservance = RecordOf<ObservanceRequest>._('almanac.observance');
+
+  /// `almanac.pakshi`, whose request is [PakshiRequest].
+  static const almanacPakshi = RecordOf<PakshiRequest>._('almanac.pakshi');
+
+  /// `almanac.people`, whose request is [PeopleRequest].
+  static const almanacPeople = RecordOf<PeopleRequest>._('almanac.people');
+
+  /// `almanac.publishedReasons`, whose request is [PublishedReasonsRequest].
+  static const almanacPublishedReasons = RecordOf<PublishedReasonsRequest>._('almanac.publishedReasons');
+
+  /// `almanac.sankalpa`, whose request is [SankalpaRequest].
+  static const almanacSankalpa = RecordOf<SankalpaRequest>._('almanac.sankalpa');
+
+  /// `almanac.sentences`, whose request is [SentencesRequest].
+  static const almanacSentences = RecordOf<SentencesRequest>._('almanac.sentences');
+
+  /// `almanac.skyView`, whose request is [SkyViewRequest].
+  static const almanacSkyView = RecordOf<SkyViewRequest>._('almanac.skyView');
+
+  /// `calendar.add`, whose request is [AddAsked].
+  static const calendarAdd = RecordOf<AddAsked>._('calendar.add');
+
+  /// `calendar.between`, whose request is [BetweenAsked].
+  static const calendarBetween = RecordOf<BetweenAsked>._('calendar.between');
+
+  /// `calendar.convert`, whose request is [CalendarAsked].
+  static const calendarConvert = RecordOf<CalendarAsked>._('calendar.convert');
+
+  /// `chart.astrocartography`, whose request is [AstrocartographyRequest].
+  static const chartAstrocartography = RecordOf<AstrocartographyRequest>._('chart.astrocartography');
+
+  /// `chart.disagreements`, whose request is [ChartDisagreementsRequest].
+  static const chartDisagreements = RecordOf<ChartDisagreementsRequest>._('chart.disagreements');
+
+  /// `chart.found`, whose request is [ChartFoundRequest].
+  static const chartFound = RecordOf<ChartFoundRequest>._('chart.found');
+
+  /// `chart.mundane`, whose request is [MundaneRequest].
+  static const chartMundane = RecordOf<MundaneRequest>._('chart.mundane');
+
+  /// `chart.rashifal`, whose request is [BatchAsked].
+  static const chartRashifal = RecordOf<BatchAsked>._('chart.rashifal');
+
+  /// `chart.relocated`, whose request is [RelocationRequest].
+  static const chartRelocated = RecordOf<RelocationRequest>._('chart.relocated');
+
+  /// `intl.date`, whose request is [DateTextRequest].
+  static const intlDate = RecordOf<DateTextRequest>._('intl.date');
+
+  /// `intl.dates`, whose request is [DatesRequest].
+  static const intlDates = RecordOf<DatesRequest>._('intl.dates');
+
+  /// `intl.inWords`, whose request is [InWordsRequest].
+  static const intlInWords = RecordOf<InWordsRequest>._('intl.inWords');
+
+  /// `intl.lexicon`, whose request is [LexiconRequest].
+  static const intlLexicon = RecordOf<LexiconRequest>._('intl.lexicon');
+
+  /// `intl.lookup`, whose request is [LookupRequest].
+  static const intlLookup = RecordOf<LookupRequest>._('intl.lookup');
+
+  /// `intl.time`, whose request is [TimeTextRequest].
+  static const intlTime = RecordOf<TimeTextRequest>._('intl.time');
+
+  /// `matching.naam`, whose request is [NaamRequest].
+  static const matchingNaam = RecordOf<NaamRequest>._('matching.naam');
+
+  /// `naming.check`, whose request is [NamingCheckRequest].
+  static const namingCheck = RecordOf<NamingCheckRequest>._('naming.check');
+
+  /// `naming.of`, whose request is [NamingOfRequest].
+  static const namingOf = RecordOf<NamingOfRequest>._('naming.of');
+
+  /// `naming.read`, whose request is [NamingReadRequest].
+  static const namingRead = RecordOf<NamingReadRequest>._('naming.read');
+
+  /// `naming.suggest`, whose request is [NamingSuggestRequest].
+  static const namingSuggest = RecordOf<NamingSuggestRequest>._('naming.suggest');
+
+  /// `naming.syllables`, whose request is [NamingSyllablesRequest].
+  static const namingSyllables = RecordOf<NamingSyllablesRequest>._('naming.syllables');
+
+  /// `numerology.profile`, whose request is [NumerologyRequest].
+  static const numerologyProfile = RecordOf<NumerologyRequest>._('numerology.profile');
+
+  /// `research.study`, whose request is [ResearchRequest].
+  static const researchStudy = RecordOf<ResearchRequest>._('research.study');
+
+  /// `time.civil`, whose request is [CivilAsked].
+  static const timeCivil = RecordOf<CivilAsked>._('time.civil');
+
+  /// `time.convert`, whose request is [ScaleRequest].
+  static const timeConvert = RecordOf<ScaleRequest>._('time.convert');
+
+  /// `time.resolve`, whose request is [ResolveAsked].
+  static const timeResolve = RecordOf<ResolveAsked>._('time.resolve');
+
+  /// `verify.claims`, whose request is [ClaimsRequest].
+  static const verifyClaims = RecordOf<ClaimsRequest>._('verify.claims');
+
+  /// `verify.issue`, whose request is [IssueRequest].
+  static const verifyIssue = RecordOf<IssueRequest>._('verify.issue');
+
+  /// `verify.receipt`, whose request is [Receipt].
+  static const verifyReceipt = RecordOf<Receipt>._('verify.receipt');
+
+  /// Every one of them, in name order.
+  static const List<RecordOf<Object>> all = [
+    almanacAayadi,
+    almanacAnniversaries,
+    almanacAshauch,
+    almanacAshauchKin,
+    almanacAshauchRite,
+    almanacChanges,
+    almanacDays,
+    almanacDeathTime,
+    almanacDigest,
+    almanacElect,
+    almanacFestivalPack,
+    almanacFestivalCalendar,
+    almanacFirstYear,
+    almanacHousehold,
+    almanacNavatara,
+    almanacNext,
+    almanacObservance,
+    almanacPakshi,
+    almanacPeople,
+    almanacPublishedReasons,
+    almanacSankalpa,
+    almanacSentences,
+    almanacSkyView,
+    calendarAdd,
+    calendarBetween,
+    calendarConvert,
+    chartAstrocartography,
+    chartDisagreements,
+    chartFound,
+    chartMundane,
+    chartRashifal,
+    chartRelocated,
+    intlDate,
+    intlDates,
+    intlInWords,
+    intlLexicon,
+    intlLookup,
+    intlTime,
+    matchingNaam,
+    namingCheck,
+    namingOf,
+    namingRead,
+    namingSuggest,
+    namingSyllables,
+    numerologyProfile,
+    researchStudy,
+    timeCivil,
+    timeConvert,
+    timeResolve,
+    verifyClaims,
+    verifyIssue,
+    verifyReceipt,
+  ];
 }

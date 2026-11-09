@@ -26,9 +26,9 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 343 676 | 100 654 | 29.3% |
+| the envelope | 343 722 | 100 654 | 29.3% |
 | the value | 325 151 | 97 458 | 30.0% |
-| the provenance | 17 979 | 2390 | 13.3% |
+| the provenance | 18 025 | 2390 | 13.3% |
 
 18 of the 52 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
@@ -76,7 +76,7 @@ value.
 | `chart.disagreements` | 1495 | 886 | 59.3% | `otherProfile`, `at`, `compared`, `lagna`, `grahas`, `nakshatra`, `dashas`, `yogas` |
 | `chart.found` | 33 195 | 17 360 | 52.3% | `charts.foundation.instant`, `charts.foundation.place`, `charts.foundation.kind`, `charts.foundation.zodiac`, `charts.foundation.lagna_deg`, `charts.foundation.houses`, `charts.foundation.grahas.graha`, `charts.foundation.grahas.longitude_deg`, `charts.foundation.grahas.speed_deg_per_day`, `charts.foundation.grahas.placement`, `charts.foundation.grahas.house`, `charts.panchanga`, `charts.vargas`, `charts.state`, `charts.aspects`, `charts.points`, `charts.houses`, `charts.ashtakavarga`, `charts.vimshopaka`, `charts.vaiseshikamsa`, `charts.shadbala.grahas.graha`, `charts.shadbala.grahas.rupas`, `charts.shadbala.grahas.required_rupas`, `charts.shadbala.grahas.strong`, `charts.bhava_bala`, `charts.dasha_phala`, `charts.jaimini`, `charts.avakahada`, `charts.moment`, `charts.drawings`, `charts.dashas`, `readings`, `plans`, `sade_sati`, `gochar`, `hits`, `sarvatobhadra`, `dossier`, `dignities`, `fortitudes.scores`, `fortitudes.planets`, `fortitudes.almutens`, `lots.sect`, `lots.lots`, `considerations`, `perfections`, `matchings`, `svgs`, `kp.chart.planets`, `kp.significators`, `kp.ruling`, `prashna`, `remedies`, `lalkitab`, `rectification`, `varsha`, `tithi_pravesha`, `masa_pravesha`, `western` |
 | `chart.mundane` | 752 | 182 | 24.2% | the whole value |
-| `chart.rashifal` | 17 454 | 4641 | 26.6% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline` |
+| `chart.rashifal` | 17 500 | 4641 | 26.5% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline` |
 | `chart.relocated` | 1053 | 494 | 46.9% | the whole value |
 | `intl.date` | 237 | 237 | 100.0% | the whole value |
 | `intl.dates` | 252 | 252 | 100.0% | the whole value |
