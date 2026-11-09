@@ -333,6 +333,20 @@ impl Record {
     /// The record answered against `other` at `detail`, as
     /// [`Record::answer_against`] and [`Record::answer_at`] together.
     ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// use teistro::records::Detail;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+    /// let asked = r#"{"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}"#;
+    /// // A record that compares nothing answers under the first context alone.
+    /// let brief = convert.answer_against_at(&sdk, &sdk, asked, Detail::Brief)?;
+    /// assert_eq!(brief.value, convert.answer_at(&sdk, asked, Detail::Brief)?.value);
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
     /// # Errors
     ///
     /// As [`Record::answer_against`].
@@ -364,6 +378,21 @@ impl Record {
     /// written by [`Brief::PROVENANCE`]. So an answer kept in full serves
     /// a brief one without being asked again. An answer already brief is
     /// answered as it is.
+    ///
+    /// ```
+    /// # use teistro::{Context, Ephemeris};
+    /// use teistro::records::Detail;
+    /// # fn main() -> Result<(), teistro::Error> {
+    /// let sdk = Context::builder().ephemeris([Ephemeris::None]).build()?;
+    /// let convert = teistro::records::record("calendar.convert").expect("every build carries it");
+    /// let asked = r#"{"date": {"year": 2026, "month": 10, "day": 10}, "into": "calendar.BIKRAM_SAMBAT"}"#;
+    /// let full = convert.answer(&sdk, asked)?;
+    /// let brief = convert.brief_of(full);
+    /// assert_eq!(brief.detail, Detail::Brief);
+    /// assert_eq!(brief.value, convert.answer_at(&sdk, asked, Detail::Brief)?.value);
+    /// # Ok(())
+    /// # }
+    /// ```
     #[must_use]
     pub fn brief_of(&self, full: Answered) -> Answered {
         match full.detail {
@@ -609,6 +638,37 @@ fn written<T: serde::Serialize>(value: &T) -> Result<serde_json::Value, Error> {
         .map_err(|why| Error::internal(format!("an answer serde cannot write: {why}")))
 }
 
+/// What a pakshi day keeps in brief: the bird, its death bird and each yama's activity.
+#[cfg(feature = "pakshi")]
+const PAKSHI_BRIEF: Brief = Brief::Keeps(&[
+    "date",
+    "reading.day",
+    "reading.bird",
+    "reading.deathBird",
+    "reading.deadToday",
+    "reading.eaters",
+    "reading.yamas.half",
+    "reading.yamas.yama",
+    "reading.yamas.span",
+    "reading.yamas.activity",
+    "reading.yamas.quality",
+]);
+
+/// What a rashifal answer keeps in brief: the period, its sky and each sign's readings.
+#[cfg(feature = "rashifal")]
+const RASHIFAL_BRIEF: Brief = Brief::Keeps(&[
+    "period.first",
+    "period.last",
+    "period.instant",
+    "period.transits",
+    "period.retrograde",
+    "period.panchanga",
+    "period.readings.rashi",
+    "period.readings.saturn",
+    "period.readings.events",
+    "baseline",
+]);
+
 /// The records that read one subject and no place's day: numerology,
 /// the navatara, the pakshi, the rashifal and a study.
 fn reading_records() -> Vec<Record> {
@@ -657,19 +717,7 @@ fn reading_records() -> Vec<Record> {
                 Answered::sealed(context.almanac().pakshi_request(&asked)?)
             },
             compares: None,
-            brief: Brief::Keeps(&[
-                "date",
-                "reading.day",
-                "reading.bird",
-                "reading.deathBird",
-                "reading.deadToday",
-                "reading.eaters",
-                "reading.yamas.half",
-                "reading.yamas.yama",
-                "reading.yamas.span",
-                "reading.yamas.activity",
-                "reading.yamas.quality",
-            ]),
+            brief: PAKSHI_BRIEF,
             schemas: schemas!(crate::pakshi_request::RequestAsked => Vec<crate::PakshiDay>),
         },
         #[cfg(feature = "rashifal")]
@@ -683,18 +731,7 @@ fn reading_records() -> Vec<Record> {
                 Answered::sealed(context.chart().rashifal_answers(&asked)?)
             },
             compares: None,
-            brief: Brief::Keeps(&[
-                "period.first",
-                "period.last",
-                "period.instant",
-                "period.transits",
-                "period.retrograde",
-                "period.panchanga",
-                "period.readings.rashi",
-                "period.readings.saturn",
-                "period.readings.events",
-                "baseline",
-            ]),
+            brief: RASHIFAL_BRIEF,
             schemas: schemas!(crate::rashifal_request::BatchAsked => Vec<crate::RashifalAnswer>),
         },
         #[cfg(feature = "research")]
