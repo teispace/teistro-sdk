@@ -18,12 +18,15 @@
 
 use teistro_core::catalogue::Tradition;
 
-use super::india_central::{Printed, PrintedDays, SIGHTED, gazetted, on_civil_date};
+use super::india_central::{Printed, PrintedDays, StateList, on_civil_date, sighted};
 use super::published::{PUBLISHED_FORMAT, SubjectTo};
 use super::{DatedRule, FestivalMeta, FestivalRule, FollowingRule, PublishedSet};
 
 /// Where the list is kept: India, then the state the notice names.
 const REGIONS: [&str; 2] = ["IN", "MAHARASHTRA"];
+
+/// The state's list.
+const STATE: StateList = StateList { regions: &REGIONS };
 
 /// The notification the list and its fixed days are read from, the first
 /// whose gazette page was read whole.
@@ -114,17 +117,7 @@ const PARSI_NEW_YEAR: Printed<'static> = (
 
 /// The values of a day of the list.
 fn listed(tradition: Option<Tradition>, optional: bool) -> FestivalMeta {
-    gazetted(tradition, &REGIONS, optional)
-}
-
-/// A rule of the central list's, kept in Maharashtra: the same rule and
-/// values, the state's region, and on every year's list.
-fn kept_here(meta: FestivalMeta) -> FestivalMeta {
-    FestivalMeta {
-        regions: REGIONS.iter().map(|&region| region.to_owned()).collect(),
-        optional: false,
-        ..meta
-    }
+    STATE.listed(tradition, optional)
 }
 
 impl FestivalRule {
@@ -153,35 +146,10 @@ impl FestivalRule {
     /// ```
     #[must_use]
     pub fn india_maharashtra() -> Vec<FestivalRule> {
-        let of =
-            |key: &str, rules: &[FestivalRule]| rules.iter().find(|rule| rule.key == key).cloned();
-        let hindu = Some(Tradition::Hindu);
-        let central = FestivalRule::india_central()
-            .into_iter()
-            .filter(|rule| rule.key != "JANMASHTAMI")
-            .map(|rule| FestivalRule {
-                meta: kept_here(rule.meta),
-                ..rule
-            });
-        let text = FestivalRule::dharmasindhu();
-        let by_text = [("BALI_PRATIPADA", false), ("YAMA_DWITIYA", true)]
-            .into_iter()
-            .filter_map(|(key, optional)| {
-                of(key, &text).map(|rule| FestivalRule {
-                    meta: listed(hindu, optional).with_fast(key),
-                    ..rule
-                })
-            });
-        let print = FestivalRule::nepal_panchanga();
-        let printed = ["SAMVATSARA_ARAMBHA", "GANESHA_CHATURTHI"]
-            .into_iter()
-            .filter_map(|key| {
-                of(key, &print).map(|rule| FestivalRule {
-                    meta: listed(hindu, false),
-                    ..rule
-                })
-            });
-        central.chain(by_text).chain(printed).collect()
+        let mut rules = STATE.central(&["JANMASHTAMI"]);
+        rules.extend(STATE.by_text(&[("BALI_PRATIPADA", false), ("YAMA_DWITIYA", true)]));
+        rules.extend(STATE.by_print(&["SAMVATSARA_ARAMBHA", "GANESHA_CHATURTHI"]));
+        rules
     }
 }
 
@@ -201,7 +169,7 @@ impl FollowingRule {
         FollowingRule::india_central()
             .into_iter()
             .map(|rule| FollowingRule {
-                meta: kept_here(rule.meta),
+                meta: STATE.kept(rule.meta),
                 ..rule
             })
             .collect()
@@ -226,13 +194,7 @@ impl DatedRule {
     /// ```
     #[must_use]
     pub fn india_maharashtra() -> Vec<DatedRule> {
-        let central = DatedRule::india_central()
-            .into_iter()
-            .map(|rule| DatedRule {
-                source: NOTICE.to_owned(),
-                meta: kept_here(rule.meta),
-                ..rule
-            });
+        let mut rules = STATE.central_dated(NOTICE);
         let state = [
             ("CHHATRAPATI_SHIVAJI_JAYANTI", (2, 19), Vec::new()),
             ("AMBEDKAR_JAYANTI", (4, 14), Vec::new()),
@@ -247,7 +209,8 @@ impl DatedRule {
             };
             on_civil_date(key, day, NOTICE, meta)
         });
-        central.chain(state).collect()
+        rules.extend(state);
+        rules
     }
 }
 
@@ -270,15 +233,6 @@ impl PublishedSet {
     /// ```
     #[must_use]
     pub fn india_maharashtra() -> PublishedSet {
-        let sighted: Vec<Printed<'_>> = SIGHTED_HERE
-            .iter()
-            .filter_map(|(key, days)| {
-                SIGHTED
-                    .iter()
-                    .find(|row| row.0 == *key)
-                    .map(|&(key, en, ne, _)| (key, en, ne, *days))
-            })
-            .collect();
         let mut entries = PrintedDays {
             notices: &NOTIFICATIONS,
             declared: &[],
@@ -290,7 +244,7 @@ impl PublishedSet {
                 )
             },
         }
-        .entries(&sighted);
+        .entries(&sighted(&SIGHTED_HERE));
         entries.extend(
             PrintedDays {
                 notices: &NOTIFICATIONS,

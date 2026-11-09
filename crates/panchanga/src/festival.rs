@@ -37,6 +37,7 @@ mod following;
 mod gaudiya;
 mod india_central;
 mod india_maharashtra;
+mod india_west_bengal;
 mod jain;
 mod mahalaya;
 mod meta;

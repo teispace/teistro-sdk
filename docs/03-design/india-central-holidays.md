@@ -83,8 +83,9 @@ to meet them. C199's clause looked like Holi's answer and measuring it ruled tha
 ## 4. What is not here
 
 - **State sets and para 3.1's other eight occasions.** Each is one gated pack per
-  state, from that state's own notice. Maharashtra's is built
-  (`maharashtra-holidays.md`) and reuses this pack's rules.
-- **Diwali on Naraka Chaturdasi** (para 6): a state's choice, for its pack.
+  state, from that state's own notice. Maharashtra's and West Bengal's are built
+  (`maharashtra-holidays.md`, `west-bengal-holidays.md`) and reuse this pack's rules.
+- **Diwali on Naraka Chaturdasi** (para 6): a state's choice, for its pack. West
+  Bengal keeps Kali Puja instead.
 - **Annexure II**, the restricted list: it applies to no one's day off by itself.
 - **Which three a year chose** (§2).

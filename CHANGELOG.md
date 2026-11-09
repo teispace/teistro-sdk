@@ -90,6 +90,31 @@ computed instant moves.
   2023 (C1242). The state's list sides with the shipped rules against the central list on Holi (C854) and on Diwali
   2024 (C856). C1243 and C1244 record the Parsi calendar and the years still to read at rank 1.
 
+**West Bengal's public holidays (SR-03, the second state set).**
+**Numbers:** none for any existing pack: a new pack, and the shared state-list helpers `INDIA_MAHARASHTRA` now reads
+through give its rules as before.
+- The pack `INDIA_WEST_BENGAL` (`FestivalPack::IndiaWestBengal`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_west_bengal`) holds the Finance (Audit) Department's yearly Lists I to III and the occasions
+  its note names as falling on a Sunday, from eight notifications, 2019 to 2026. A day the central list also holds is
+  `INDIA_CENTRAL`'s rule, kept in `["IN", "WEST_BENGAL"]`; Rakhi Bandhan, Janmastami and Bhratridwitiya are
+  *Dharmasindhu*'s, and Saraswati Puja, Rathayatra, Mahalaya, the Puja's Saptami and Ashtami, Lakshmi Puja and Chhat
+  Puja are the Nepal panchanga's (`03-design/west-bengal-holidays.md`).
+- Bengal's own days are new rules: Dol on Phalguna's full moon at sunrise, Kali Puja on the new moon at nishitha (the
+  later day only when it alone holds it), the Puja's Navami at sunrise, and Harichand Thakur's birthday on the tithi
+  the notice names. Holi is the day after Dol; the Puja's Chaturthi, Panchami and Shashthi are the three days before
+  its Saptami and its Dasami the day after its Navami, as the notices count them. Bengali New Year, Tagore's
+  birthday and Viswakarma Puja are days of the Bengal solar calendar.
+- The five days set by the moon ship as printed, marked `MOON_SIGHTING`, Muharram 2021 on the day an order declared;
+  the days added around a festival and the sectional days of a year or a few ship as printed, unmarked.
+- Names in en-Latn, ne-Deva-NP and hi-Deva-IN for the fourteen new keys.
+- `festival-measured.md` §11 holds it at Kolkata: 206 of the 215 rows beside the twelve every-year dates meet the
+  print. The nine that part are named, none fitted: the Navami and Dasami 2024 (C1270), Lakshmi Puja 2021 (C1271),
+  Saraswati Puja 2025 (C1272), Chhat Puja 2025 (C1273), Harichand Thakur 2024 (C1274), Janmastami 2022 and 2025
+  (C1275) and Mahavir Jayanti 2023 (C1277). C1276, C1278 and C1279 record the panjika's school, which the built-in
+  ephemeris cannot test, the panjika citation for Dol and Kali Puja, and the copies read.
+- The Dart binding's `FestivalPack` enum ends its `mithila` member with a comma, not a semicolon, so the members
+  after it parse.
+
 **Brief and full answers (A2-2).**
 **Numbers:** none: an answer at `full`, the default everywhere but the agent server, is the same bytes.
 - Every record answers at a detail, `brief` or `full` (`teistro::records::Detail`, `Record::answer_at`,

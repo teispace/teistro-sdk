@@ -102,8 +102,9 @@ and the Department another.
 
 ## 5. What is not here
 
-- **The other states.** West Bengal and Tamil Nadu are next (the research's §5); each
-  needs vocabulary this pack did not.
+- **The other states.** West Bengal's is built (`west-bengal-holidays.md`), with a
+  count back from the Saptami this pack did not need; Tamil Nadu is next (the
+  research's §5).
 - **The Saka dates** the notification prints beside each row. They are Indian National
   calendar dates and could check a transcription against `Calendar::IndianNational`.
 - **Part (C)'s weekend days** as a separate class: a day on a Saturday or a Sunday is
