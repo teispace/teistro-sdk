@@ -1041,15 +1041,7 @@ pub fn civil_of_with(
     }
     let local = instant.get() + offset.days();
     let (mut day, fraction) = FixedDay::from_local_jd(local);
-    // The day's fraction to the nearest microsecond, which is what an
-    // `f64` Julian day resolves in the present era.
-    let micros = (fraction * f64::from(SECONDS_PER_DAY) * 1e6).round();
-    #[allow(
-        clippy::cast_possible_truncation,
-        clippy::cast_sign_loss,
-        reason = "a rounded fraction of a day in microseconds"
-    )]
-    let mut micros = micros as u64;
+    let mut micros = micros_of_day(fraction, local);
     if micros >= u64::from(SECONDS_PER_DAY) * 1_000_000 {
         micros = 0;
         day = day.plus_days(1);
@@ -1071,6 +1063,37 @@ pub fn civil_of_with(
             warnings,
         },
     ))
+}
+
+/// A day's fraction in microseconds, read to what the Julian day it came
+/// from can hold.
+///
+/// An `f64` Julian day in the present era is exact to about 40 µs (its
+/// last bit), so an instant computed as 02:30:00 often lands a few tens of
+/// microseconds short, and a clock that truncates its seconds would read
+/// 02:29. A reading within a few of the Julian day's last bits of a whole
+/// second is that second; anything farther keeps its microseconds, so a
+/// time resolved from a civil clock and read back is unchanged.
+#[allow(
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss,
+    reason = "a rounded, non-negative fraction of a day in microseconds"
+)]
+fn micros_of_day(fraction: f64, local: f64) -> u64 {
+    const PER_SECOND: f64 = 1e6;
+    // Four last bits: the caller's own rounding, the offset's addition,
+    // the epoch subtraction and the scaling each contribute up to half.
+    const BITS: f64 = 4.0;
+    let micros = fraction * f64::from(SECONDS_PER_DAY) * PER_SECOND;
+    let tolerance =
+        (BITS * local.abs() * f64::EPSILON * f64::from(SECONDS_PER_DAY) * PER_SECOND).max(0.5);
+    let second = (micros / PER_SECOND).round() * PER_SECOND;
+    let read = if (micros - second).abs() <= tolerance {
+        second
+    } else {
+        micros.round()
+    };
+    read.max(0.0) as u64
 }
 
 /// The date of an instant under a clock, in a calendar: the civil day
@@ -1107,7 +1130,77 @@ pub fn date_of(
 mod tests {
     #![allow(clippy::unwrap_used, reason = "tests fail by panicking")]
 
-    use super::ZoneSource;
+    use super::{ZoneSource, ZoneSpec, civil_of};
+    use crate::EmbeddedTzdb;
+    use teistro_core::quantity::{JulianDay, Utc};
+    use teistro_core::time::UtcOffset;
+
+    /// Every minute of a day, computed in floating point as a consumer
+    /// computes a muhurta's end, reads as that minute and not the one
+    /// before (SR-77: 02:30 read 02:29), at offsets with and without
+    /// whole hours, near the range's both ends.
+    #[test]
+    fn a_clock_on_the_minute_reads_that_minute() {
+        for base in [2_378_496.5, 2_461_345.5, 2_597_640.5] {
+            for offset in [
+                UtcOffset::UTC,
+                UtcOffset::literal(5, 45, 0),
+                UtcOffset::literal(-3, 30, 0),
+            ] {
+                let zone = ZoneSpec::Fixed { offset };
+                for minute in 0..1440_u32 {
+                    let instant = JulianDay::<Utc>::try_new(
+                        base + f64::from(minute) / 1440.0 - offset.days(),
+                    )
+                    .unwrap();
+                    let (civil, _) = civil_of(instant, &zone, EmbeddedTzdb::shared()).unwrap();
+                    let time = civil.time.unwrap();
+                    assert_eq!(
+                        (
+                            u32::from(time.hour()),
+                            u32::from(time.minute()),
+                            time.second(),
+                            time.nanos()
+                        ),
+                        (minute / 60, minute % 60, 0, 0),
+                        "minute {minute} at {base} {offset:?}"
+                    );
+                }
+            }
+        }
+        // The consumer's own instant.
+        let instant = JulianDay::<Utc>::try_new(2_461_345.5 + 7.5 / 24.0).unwrap();
+        let utc = ZoneSpec::Fixed {
+            offset: UtcOffset::UTC,
+        };
+        let time = civil_of(instant, &utc, EmbeddedTzdb::shared())
+            .unwrap()
+            .0
+            .time
+            .unwrap();
+        assert_eq!((time.hour(), time.minute(), time.second()), (7, 30, 0));
+    }
+
+    /// A reading away from a whole second keeps the part the Julian day
+    /// holds: a quarter of a second stays a quarter.
+    #[test]
+    fn a_fraction_of_a_second_is_kept() {
+        let instant = JulianDay::<Utc>::try_new(2_461_345.5 + 3600.25 / 86_400.0).unwrap();
+        let utc = ZoneSpec::Fixed {
+            offset: UtcOffset::UTC,
+        };
+        let time = civil_of(instant, &utc, EmbeddedTzdb::shared())
+            .unwrap()
+            .0
+            .time
+            .unwrap();
+        assert_eq!((time.hour(), time.minute(), time.second()), (1, 0, 0));
+        assert!(
+            (i64::from(time.nanos()) - 250_000_000).abs() <= 50_000,
+            "{}",
+            time.nanos()
+        );
+    }
 
     /// A source's key is its serialised spelling, so a program matching on
     /// either reads the same word.
