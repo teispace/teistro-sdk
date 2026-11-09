@@ -191,7 +191,7 @@ impl SiddhantaProvider {
 
     /// The UT1 instant of a request's instant: a TT instant through the
     /// SDK's Delta T, since the text reckons in mean solar time.
-    fn ut1_of(jd: f64, scale: TimeScale) -> Result<JulianDay<Ut1>, ProviderError> {
+    pub(crate) fn ut1_of(jd: f64, scale: TimeScale) -> Result<JulianDay<Ut1>, ProviderError> {
         let invalid = |error: &dyn core::fmt::Display| ProviderError::invalid(error.to_string());
         match scale {
             TimeScale::Ut1 => JulianDay::try_new(jd).map_err(|e| invalid(&e)),

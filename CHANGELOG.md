@@ -49,6 +49,23 @@ computed instant moves.
   now reads `Ravivāsaraḥ`. A test holds every shipped locale to its own weekday and month names, parts of
   the day, full dates in both calendars and twelve-hour clock, with no Latin letter in a Devanagari one.
 
+**The vakya Moon, tithi and nakshatra: the `tamil-vakya` profile (C1290–C1297).**
+**Numbers:** none for an existing profile. `tamil-vakya` and `Siddhanta::Vakya` are new; the vakya
+calendar's Kali-day offset is now the shared `vakya::KALI_DAY_JD`, the same day.
+- `teistro_siddhanta::vakya` computes the *Vakyakarana*'s true Sun (I.4–5, with its ten-day deductions)
+  and true Moon (I.9–14, the 248 candravakyas of Appendix II and the khandas 12,372, 3,031 and 248) in
+  whole arithmetic, the almanac makers' manyadi on the Moon (`almanac_moon`, from the edition's
+  introduction), and a Kali day's tithi and nakshatra ends as nadis after sunrise (`tithi_ends`,
+  `nakshatra_ends`). The edition's Examples 2 and 3 are tests; vakya 148 is the sentence's 27′, not the
+  printed 17′, as the edition's own check rule needs (C1290).
+- The `tamil-vakya` profile opens the `SURYA_SIDDHANTA` entry under `Siddhanta::Vakya`: the Sun and Moon
+  are the vakya ones (`VakyaSky`, reckoned from the sunrise at Chennai, C1294), everything else the Surya
+  Siddhanta's, so the panchanga and the festival rules read the vakya tithi and nakshatra.
+- Measured against 127 printed ends of the *Manonmani Vilasam* suddha vakya panchangam (1956, 1998,
+  2015): within 9.7 vinadis, rms 2.9, held at 12 (C1295); one print slip (C1291). Vinayakar Chaturthi
+  2023 at Chennai is 18 September under `tamil-vakya`, as Tamil Nadu declared, and 19 September by the
+  modern sky (C1296). The planets and Rahu by vakya are not built (C1297). `docs/calendars/vakya.md`.
+
 **Mithila's star planets are the text's four steps (C1227).**
 **Numbers:** none. No computation changed; `mithila-makaranda` keeps `SuryaPlanets::TEXT`.
 - The Makaranda's three steps for Mars to Saturn are the text's four folded: its manda tables print the

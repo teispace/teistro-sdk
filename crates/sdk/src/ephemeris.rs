@@ -7,6 +7,7 @@ use teistro_core::error::Error;
 use teistro_core::settings::recorded::RequiredEphemeris;
 use teistro_core::settings::{Siddhanta, SuryaPlanets, SuryaSunrise};
 use teistro_port_ephemeris::{Astronomy, EphemerisProvider, TestProvider};
+use teistro_siddhanta::vakya::VakyaSky;
 use teistro_siddhanta::{ModernParts, SiddhantaProvider};
 
 /// One entry of the chain: an ephemeris the SDK carries, or one a
@@ -191,9 +192,10 @@ impl Ephemeris {
     /// # Ok::<(), teistro::Error>(())
     /// ```
     ///
-    /// A day at a modern sunrise (`SuryaSunrise::Modern`) and modern star
-    /// planets (`SuryaPlanets::Modern`) take them from the entries after
-    /// this one in a context's chain; opened alone, as here, there are
+    /// A day at a modern sunrise (`SuryaSunrise::Modern`), modern star
+    /// planets (`SuryaPlanets::Modern`) and the vakya sky
+    /// (`Siddhanta::Vakya`, whose days are counted from a modern sunrise)
+    /// take them from the entries after this one in a context's chain; opened alone, as here, there are
     /// none, so they take the built-in ephemeris's, and refuse without
     /// that feature.
     ///
@@ -223,6 +225,13 @@ impl Ephemeris {
                 teistro_ephemeris_builtin::provider::Builtin::new(),
             ))),
             Ephemeris::SuryaSiddhanta => {
+                if siddhanta == Siddhanta::Vakya {
+                    let modern = modern_entry(rest, "settings.frame.siddhanta")?;
+                    let parts = ModernParts::new(SiddhantaProvider::text(), modern)
+                        .with_delta_t(delta_t)
+                        .with_sunrise();
+                    return Ok(Some(Box::new(VakyaSky::with_parts(parts))));
+                }
                 let Siddhanta::Surya {
                     bija,
                     sunrise,

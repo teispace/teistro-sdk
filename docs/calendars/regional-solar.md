@@ -175,6 +175,11 @@ months (C1206). The vakya calendar ships as `calendar.TAMIL_VAKYA`
 since a date names its calendar and the two schools' dates must not
 compare equal (C1200).
 
+The vakya almanacs' tithi and nakshatra come from the same text's Moon,
+with the almanac makers' correction to it; that Moon, its measurement
+against the print and the `tamil-vakya` profile are in
+[`vakya.md`](vakya.md).
+
 **The arithmetic** (`teistro_siddhanta::vakya`), from the edition of
 Kuppanna Sastri and Sarma (1962):
 
