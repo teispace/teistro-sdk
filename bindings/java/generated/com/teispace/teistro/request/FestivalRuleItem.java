@@ -37,6 +37,9 @@ public sealed interface FestivalRuleItem extends RequestJson permits FestivalRul
     /** {@code INDIA_MAHARASHTRA}. */
     FestivalRuleItem INDIA_MAHARASHTRA = Key.INDIA_MAHARASHTRA;
 
+    /** {@code INDIA_WEST_BENGAL}. */
+    FestivalRuleItem INDIA_WEST_BENGAL = Key.INDIA_WEST_BENGAL;
+
     /**
      * The value, as a {@code FestivalRuleItem}.
      *
@@ -173,7 +176,11 @@ public sealed interface FestivalRuleItem extends RequestJson permits FestivalRul
         /**
          * {@code INDIA_MAHARASHTRA}.
          */
-        INDIA_MAHARASHTRA("INDIA_MAHARASHTRA");
+        INDIA_MAHARASHTRA("INDIA_MAHARASHTRA"),
+        /**
+         * {@code INDIA_WEST_BENGAL}.
+         */
+        INDIA_WEST_BENGAL("INDIA_WEST_BENGAL");
 
         private final String key;
 

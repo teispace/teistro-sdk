@@ -1,0 +1,119 @@
+{
+  "weekdayName": ".input {$weekday :integer} .match $weekday 0 {{Ravivāsaraḥ}} 1 {{Somavāsaraḥ}} 2 {{Maṅgalavāsaraḥ}} 3 {{Budhavāsaraḥ}} 4 {{Guruvāsaraḥ}} 5 {{Śukravāsaraḥ}} 6 {{Śanivāsaraḥ}} * {{{$weekday}}}",
+  "weekdayShort": ".input {$weekday :integer} .match $weekday 0 {{Ravi}} 1 {{Soma}} 2 {{Maṅgala}} 3 {{Budha}} 4 {{Guru}} 5 {{Śukra}} 6 {{Śani}} * {{{$weekday}}}",
+  "lunarMonth": ".input {$masa :entity kind=masa} .input {$kind :string} .match $kind ADHIKA {{adhika-{$masa}}} KSHAYA {{kṣaya-{$masa}}} * {{{$masa}}}",
+  "nepalSambatMonth": ".input {$month :integer} .input {$kind :string} .match $kind $month ADHIKA * {{Analā}} * 1 {{Kachalā}} * 2 {{Thiṃllā}} * 3 {{Pohelā}} * 4 {{Sillā}} * 5 {{Cillā}} * 6 {{Caulā}} * 7 {{Vachalā}} * 8 {{Tachalā}} * 9 {{Dillā}} * 10 {{Guṃlā}} * 11 {{Ñam̐lā}} * 12 {{Kaulā}} * * {{{$month}}}",
+  "nepalSambatHalf": ".input {$paksha :string} .match $paksha SHUKLA {{thva}} paksha.SHUKLA {{thva}} KRISHNA {{gā}} paksha.KRISHNA {{gā}} * {{{$paksha}}}",
+  "nepalSambatDate": ".input {$year :integer} .input {$month :integer} .input {$kind :string} .input {$paksha :string} {{ne.saṃ. {$year :integer useGrouping=false} {sdk.calendar.nepalSambatMonth :msg}{sdk.calendar.nepalSambatHalf :msg}}}",
+  "parana": ".input {$fast :string} {{pāraṇam: {$fast}}}",
+  "GREGORIAN": {
+    "monthName": ".input {$month :integer} .match $month 1 {{Janavarīmāsaḥ}} 2 {{Pharavarīmāsaḥ}} 3 {{Mārcamāsaḥ}} 4 {{Aprailamāsaḥ}} 5 {{Maīmāsaḥ}} 6 {{Jūnamāsaḥ}} 7 {{Julāīmāsaḥ}} 8 {{Agastamāsaḥ}} 9 {{Sitambaramāsaḥ}} 10 {{Aktūbaramāsaḥ}} 11 {{Navambaramāsaḥ}} 12 {{Disambaramāsaḥ}} * {{{$month}}}",
+    "monthShort": ".input {$month :integer} .match $month 1 {{Janavarī}} 2 {{Pharavarī}} 3 {{Mārca}} 4 {{Apraila}} 5 {{Maī}} 6 {{Jūna}} 7 {{Julāī}} 8 {{Agasta}} 9 {{Sitambara}} 10 {{Aktūbara}} 11 {{Navambara}} 12 {{Disambara}} * {{{$month}}}",
+    "date": {
+      "numeric": "{$day :integer minimumIntegerDigits=2}/{$month :integer minimumIntegerDigits=2}/{$year :integer useGrouping=false}",
+      "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false}",
+      "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false}"
+    }
+  },
+  "JULIAN": {
+    "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
+    "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+    "date": {
+      "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
+      "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
+      "full": "{sdk.calendar.GREGORIAN.date.full :msg}"
+    }
+  },
+  "MIXED": {
+    "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
+    "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+    "date": {
+      "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
+      "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
+      "full": "{sdk.calendar.GREGORIAN.date.full :msg}"
+    }
+  },
+  "ISO_WEEK": {
+    "date": {
+      "numeric": "{$year :integer useGrouping=false}-W{$month :integer minimumIntegerDigits=2}-{$day :integer}",
+      "long": "{$year :integer useGrouping=false} saptāhaḥ {$month :integer}, dinam {$day :integer}",
+      "full": "{sdk.calendar.ISO_WEEK.date.long :msg}"
+    }
+  },
+  "BIKRAM_SAMBAT": {
+    "monthName": ".input {$month :integer} .match $month 1 {{Vaiśākha}} 2 {{Jyeṣṭha}} 3 {{Āṣāḍha}} 4 {{Śrāvaṇa}} 5 {{Bhādrapada}} 6 {{Āśvina}} 7 {{Kārtika}} 8 {{Mārgaśīrṣa}} 9 {{Pauṣa}} 10 {{Māgha}} 11 {{Phālguna}} 12 {{Caitra}} * {{{$month}}}",
+    "monthShort": "{sdk.calendar.BIKRAM_SAMBAT.monthName :msg}",
+    "date": {
+      "numeric": "vi.saṃ. {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
+      "long": "{$day :integer} {$monthName} vi.saṃ. {$year :integer useGrouping=false}",
+      "full": "{$weekdayName}, {$day :integer} {$monthName} vi.saṃ. {$year :integer useGrouping=false}"
+    }
+  },
+  "INDIAN_NATIONAL": {
+    "monthName": ".input {$month :integer} .match $month 1 {{Caitra}} 2 {{Vaiśākha}} 3 {{Jyeṣṭha}} 4 {{Āṣāḍha}} 5 {{Śrāvaṇa}} 6 {{Bhādra}} 7 {{Āśvina}} 8 {{Kārtika}} 9 {{Agrahāyaṇa}} 10 {{Pauṣa}} 11 {{Māgha}} 12 {{Phālguna}} * {{{$month}}}",
+    "monthShort": "{sdk.calendar.INDIAN_NATIONAL.monthName :msg}",
+    "date": {
+      "numeric": "śakābdaḥ {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
+      "long": "{$day :integer} {$monthName} śakābdaḥ {$year :integer useGrouping=false}",
+      "full": "{$weekdayName}, {$day :integer} {$monthName} śakābdaḥ {$year :integer useGrouping=false}"
+    }
+  },
+  "HIJRI_TABULAR": {
+    "monthName": ".input {$month :integer} .match $month 1 {{Muharrama}} 2 {{Saphara}} 3 {{Rabī-ula-avvala}} 4 {{Rabī-usa-sānī}} 5 {{Jumādā-ula-avvala}} 6 {{Jumādā-usa-sānī}} 7 {{Rajaba}} 8 {{Śābāna}} 9 {{Ramajāna}} 10 {{Śavvāla}} 11 {{Jī-kādā}} 12 {{Jī-hijjā}} * {{{$month}}}",
+    "monthShort": "{sdk.calendar.HIJRI_TABULAR.monthName :msg}",
+    "date": {
+      "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} hijarī",
+      "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} hijarī",
+      "full": "{$weekdayName}, {$day :integer} {$monthName} {$year :integer useGrouping=false} hijarī"
+    }
+  },
+  "TIBETAN_PHUGPA": {
+    "monthName": ".input {$leap :string} .match $leap MONTH {{Adhikamāsaḥ {$month :integer}}} MONTH_AND_DAY {{Adhikamāsaḥ {$month :integer}}} * {{Māsaḥ {$month :integer}}}",
+    "monthShort": ".input {$leap :string} .match $leap MONTH {{Adhika {$month :integer}}} MONTH_AND_DAY {{Adhika {$month :integer}}} * {{{$month :integer}}}",
+    "date": {
+      "numeric": ".input {$leap :string} .match $leap MONTH {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (adhikamāsaḥ)}} DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (vṛddhitithiḥ)}} MONTH_AND_DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (adhikamāsaḥ, vṛddhitithiḥ)}} * {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}}}",
+      "long": ".input {$leap :string} .match $leap DAY {{{$monthName}, tithiḥ {$day :integer} (vṛddhitithiḥ), {$year :integer useGrouping=false}}} MONTH_AND_DAY {{{$monthName}, tithiḥ {$day :integer} (vṛddhitithiḥ), {$year :integer useGrouping=false}}} * {{{$monthName}, tithiḥ {$day :integer}, {$year :integer useGrouping=false}}}",
+      "full": ".input {$leap :string} .match $leap DAY {{{$weekdayName}, {$monthName}, tithiḥ {$day :integer} (vṛddhitithiḥ), {$year :integer useGrouping=false}}} MONTH_AND_DAY {{{$weekdayName}, {$monthName}, tithiḥ {$day :integer} (vṛddhitithiḥ), {$year :integer useGrouping=false}}} * {{{$weekdayName}, {$monthName}, tithiḥ {$day :integer}, {$year :integer useGrouping=false}}}"
+    }
+  },
+  "BANGLADESHI": {
+    "monthName": ".input {$month :integer} .match $month 1 {{Vaiśākha}} 2 {{Jyeṣṭha}} 3 {{Āṣāḍha}} 4 {{Śrāvaṇa}} 5 {{Bhādra}} 6 {{Āśvina}} 7 {{Kārtika}} 8 {{Agrahāyaṇa}} 9 {{Pauṣa}} 10 {{Māgha}} 11 {{Phālguna}} 12 {{Caitra}} * {{{$month}}}",
+    "monthShort": "{sdk.calendar.BANGLADESHI.monthName :msg}",
+    "date": {
+      "numeric": "vaṅgābdaḥ {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
+      "long": "{$day :integer} {$monthName} vaṅgābdaḥ {$year :integer useGrouping=false}",
+      "full": "{$weekdayName}, {$day :integer} {$monthName} vaṅgābdaḥ {$year :integer useGrouping=false}"
+    }
+  },
+  "time": {
+    "numeric": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}",
+    "long": "{$hour :integer minimumIntegerDigits=2}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}",
+    "numeric12": "{$dayPeriod} {$hour12 :integer}:{$minute :integer minimumIntegerDigits=2}",
+    "long12": "{$dayPeriod} {$hour12 :integer}:{$minute :integer minimumIntegerDigits=2}:{$second :integer minimumIntegerDigits=2}"
+  },
+  "datetime": {
+    "join": "{$date}, {$time}",
+    "inZone": "{$at :datetime timeZone=$zone}"
+  },
+  "ghati": {
+    "numeric": "{$ghati :integer minimumIntegerDigits=2}-{$pala :integer minimumIntegerDigits=2}",
+    "long": "{$ghati :integer} ghaṭī {$pala :integer} pala"
+  },
+  "duration": {
+    "day": ".input {$n :number} .match $n 1 {{{$n} dinam}} 2 {{{$n} dine}} * {{{$n} dināni}}",
+    "hour": ".input {$n :number} .match $n 1 {{{$n} horā}} 2 {{{$n} hore}} * {{{$n} horāḥ}}",
+    "minute": ".input {$n :number} .match $n 1 {{{$n} nimeṣaḥ}} 2 {{{$n} nimeṣau}} * {{{$n} nimeṣāḥ}}",
+    "second": ".input {$n :number} .match $n 1 {{{$n} kṣaṇaḥ}} 2 {{{$n} kṣaṇau}} * {{{$n} kṣaṇāḥ}}",
+    "daysHours": "{$seconds :duration unit=second into=|day,hour| round=hour list=unit}",
+    "hoursMinutes": "{$seconds :duration unit=second into=|hour,minute| round=minute list=unit}",
+    "hoursMinutesSeconds": "{$seconds :duration unit=second into=|hour,minute,second| round=second list=unit}"
+  },
+  "dayPeriod": {
+    "am": "pūrvāhṇe",
+    "pm": "aparāhṇe",
+    "morning": "prātaḥ",
+    "afternoon": "aparāhṇe",
+    "evening": "sāyam",
+    "night": "rātrau"
+  }
+}

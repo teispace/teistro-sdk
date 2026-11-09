@@ -28,9 +28,10 @@ import java.util.Objects;
  * @param product The {@code product} field. Null leaves the SDK's default.
  * @param refreshMinutes A day when left out; zero writes none. Null leaves the SDK's default.
  * @param stampUnixSeconds The {@code stampUnixSeconds} field.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record FestivalCalendarRequest(FeedAlarm alarm, Double altitudeM, com.teispace.teistro.Calendar calendar, List<String> categories, String color, List<SuppliedEvent> events, FestivalRequest festivals, DayAsked first, List<FeedHint> hints, DayAsked last, double latitudeDeg, double longitudeDeg, String name, List<FeedSelector> only, String product, Long refreshMinutes, long stampUnixSeconds, int utcOffsetSeconds) implements RequestJson {
+public record FestivalCalendarRequest(FeedAlarm alarm, Double altitudeM, com.teispace.teistro.Calendar calendar, List<String> categories, String color, List<SuppliedEvent> events, FestivalRequest festivals, DayAsked first, List<FeedHint> hints, DayAsked last, double latitudeDeg, double longitudeDeg, String name, List<FeedSelector> only, String product, Long refreshMinutes, long stampUnixSeconds, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -59,10 +60,9 @@ public record FestivalCalendarRequest(FeedAlarm alarm, Double altitudeM, com.tei
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
      * @param stampUnixSeconds The {@code stampUnixSeconds} field.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
-    public FestivalCalendarRequest(FestivalRequest festivals, DayAsked first, double latitudeDeg, double longitudeDeg, long stampUnixSeconds, int utcOffsetSeconds) {
-        this(null, null, null, null, null, null, festivals, first, null, null, latitudeDeg, longitudeDeg, null, null, null, null, stampUnixSeconds, utcOffsetSeconds);
+    public FestivalCalendarRequest(FestivalRequest festivals, DayAsked first, double latitudeDeg, double longitudeDeg, long stampUnixSeconds) {
+        this(null, null, null, null, null, null, festivals, first, null, null, latitudeDeg, longitudeDeg, null, null, null, null, stampUnixSeconds, null, null);
     }
 
     /**
@@ -95,6 +95,7 @@ public record FestivalCalendarRequest(FeedAlarm alarm, Double altitudeM, com.tei
         private Long refreshMinutes;
         private Long stampUnixSeconds;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -288,11 +289,22 @@ public record FestivalCalendarRequest(FeedAlarm alarm, Double altitudeM, com.tei
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -303,7 +315,7 @@ public record FestivalCalendarRequest(FeedAlarm alarm, Double altitudeM, com.tei
          * @throws NullPointerException naming a required field left unset
          */
         public FestivalCalendarRequest build() {
-            return new FestivalCalendarRequest(alarm, altitudeM, calendar, categories, color, events, festivals, first, hints, last, Objects.requireNonNull(latitudeDeg, "`FestivalCalendarRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`FestivalCalendarRequest.longitudeDeg` is required"), name, only, product, refreshMinutes, Objects.requireNonNull(stampUnixSeconds, "`FestivalCalendarRequest.stampUnixSeconds` is required"), Objects.requireNonNull(utcOffsetSeconds, "`FestivalCalendarRequest.utcOffsetSeconds` is required"));
+            return new FestivalCalendarRequest(alarm, altitudeM, calendar, categories, color, events, festivals, first, hints, last, Objects.requireNonNull(latitudeDeg, "`FestivalCalendarRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`FestivalCalendarRequest.longitudeDeg` is required"), name, only, product, refreshMinutes, Objects.requireNonNull(stampUnixSeconds, "`FestivalCalendarRequest.stampUnixSeconds` is required"), utcOffsetSeconds, zone);
         }
     }
 
@@ -334,7 +346,8 @@ public record FestivalCalendarRequest(FeedAlarm alarm, Double altitudeM, com.tei
             Read.orNull(json.get("product"), present -> Read.text(present, "FestivalCalendarRequest.product")),
             Read.orNull(json.get("refreshMinutes"), present -> Read.integer(present, "FestivalCalendarRequest.refreshMinutes")),
             Read.integer(Read.required(json.get("stampUnixSeconds"), "FestivalCalendarRequest.stampUnixSeconds"), "FestivalCalendarRequest.stampUnixSeconds"),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "FestivalCalendarRequest.utcOffsetSeconds"), "FestivalCalendarRequest.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "FestivalCalendarRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -381,7 +394,12 @@ public record FestivalCalendarRequest(FeedAlarm alarm, Double altitudeM, com.tei
             json.put("refreshMinutes", refreshMinutes);
         }
         json.put("stampUnixSeconds", stampUnixSeconds);
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

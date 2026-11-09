@@ -18,9 +18,10 @@ import java.util.Objects;
  * @param latitudeDeg The place's latitude, degrees north positive.
  * @param longitudeDeg The place's longitude, degrees east positive.
  * @param muhurta The rule set: an activity's name or rules spelt out, the native, the ranking, how many days are cut and how many windows kept.
- * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+ * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record ElectRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, MuhurtaRequest muhurta, int utcOffsetSeconds) implements RequestJson {
+public record ElectRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, MuhurtaRequest muhurta, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -41,10 +42,9 @@ public record ElectRequest(Double altitudeM, com.teispace.teistro.Calendar calen
      * @param latitudeDeg The place's latitude, degrees north positive.
      * @param longitudeDeg The place's longitude, degrees east positive.
      * @param muhurta The rule set: an activity's name or rules spelt out, the native, the ranking, how many days are cut and how many windows kept.
-     * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
      */
-    public ElectRequest(DayAsked first, double latitudeDeg, double longitudeDeg, MuhurtaRequest muhurta, int utcOffsetSeconds) {
-        this(null, null, first, null, latitudeDeg, longitudeDeg, muhurta, utcOffsetSeconds);
+    public ElectRequest(DayAsked first, double latitudeDeg, double longitudeDeg, MuhurtaRequest muhurta) {
+        this(null, null, first, null, latitudeDeg, longitudeDeg, muhurta, null, null);
     }
 
     /**
@@ -67,6 +67,7 @@ public record ElectRequest(Double altitudeM, com.teispace.teistro.Calendar calen
         private Double longitudeDeg;
         private MuhurtaRequest muhurta;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -150,11 +151,22 @@ public record ElectRequest(Double altitudeM, com.teispace.teistro.Calendar calen
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -165,7 +177,7 @@ public record ElectRequest(Double altitudeM, com.teispace.teistro.Calendar calen
          * @throws NullPointerException naming a required field left unset
          */
         public ElectRequest build() {
-            return new ElectRequest(altitudeM, calendar, first, last, Objects.requireNonNull(latitudeDeg, "`ElectRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ElectRequest.longitudeDeg` is required"), muhurta, Objects.requireNonNull(utcOffsetSeconds, "`ElectRequest.utcOffsetSeconds` is required"));
+            return new ElectRequest(altitudeM, calendar, first, last, Objects.requireNonNull(latitudeDeg, "`ElectRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ElectRequest.longitudeDeg` is required"), muhurta, utcOffsetSeconds, zone);
         }
     }
 
@@ -186,7 +198,8 @@ public record ElectRequest(Double altitudeM, com.teispace.teistro.Calendar calen
             Read.number(Read.required(json.get("latitudeDeg"), "ElectRequest.latitudeDeg"), "ElectRequest.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "ElectRequest.longitudeDeg"), "ElectRequest.longitudeDeg"),
             MuhurtaRequest.of(Read.required(json.get("muhurta"), "ElectRequest.muhurta")),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "ElectRequest.utcOffsetSeconds"), "ElectRequest.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "ElectRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -205,7 +218,12 @@ public record ElectRequest(Double altitudeM, com.teispace.teistro.Calendar calen
         json.put("latitudeDeg", latitudeDeg);
         json.put("longitudeDeg", longitudeDeg);
         json.put("muhurta", muhurta.toJson());
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

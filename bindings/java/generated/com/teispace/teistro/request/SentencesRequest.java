@@ -17,9 +17,10 @@ import java.util.Objects;
  * @param latitudeDeg The {@code latitudeDeg} field.
  * @param locale The locale to say the day in; the context's when left out. Null leaves the SDK's default.
  * @param longitudeDeg The {@code longitudeDeg} field.
- * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+ * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record SentencesRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, DayAsked date, double latitudeDeg, String locale, double longitudeDeg, int utcOffsetSeconds) implements RequestJson {
+public record SentencesRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, DayAsked date, double latitudeDeg, String locale, double longitudeDeg, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -38,10 +39,9 @@ public record SentencesRequest(Double altitudeM, com.teispace.teistro.Calendar c
      * @param date A civil day as a request names it.
      * @param latitudeDeg The {@code latitudeDeg} field.
      * @param longitudeDeg The {@code longitudeDeg} field.
-     * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
      */
-    public SentencesRequest(DayAsked date, double latitudeDeg, double longitudeDeg, int utcOffsetSeconds) {
-        this(null, null, date, latitudeDeg, null, longitudeDeg, utcOffsetSeconds);
+    public SentencesRequest(DayAsked date, double latitudeDeg, double longitudeDeg) {
+        this(null, null, date, latitudeDeg, null, longitudeDeg, null, null);
     }
 
     /**
@@ -63,6 +63,7 @@ public record SentencesRequest(Double altitudeM, com.teispace.teistro.Calendar c
         private String locale;
         private Double longitudeDeg;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -135,11 +136,22 @@ public record SentencesRequest(Double altitudeM, com.teispace.teistro.Calendar c
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The {@code utcOffsetSeconds} field.
+         * @param utcOffsetSeconds The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -150,7 +162,7 @@ public record SentencesRequest(Double altitudeM, com.teispace.teistro.Calendar c
          * @throws NullPointerException naming a required field left unset
          */
         public SentencesRequest build() {
-            return new SentencesRequest(altitudeM, calendar, date, Objects.requireNonNull(latitudeDeg, "`SentencesRequest.latitudeDeg` is required"), locale, Objects.requireNonNull(longitudeDeg, "`SentencesRequest.longitudeDeg` is required"), Objects.requireNonNull(utcOffsetSeconds, "`SentencesRequest.utcOffsetSeconds` is required"));
+            return new SentencesRequest(altitudeM, calendar, date, Objects.requireNonNull(latitudeDeg, "`SentencesRequest.latitudeDeg` is required"), locale, Objects.requireNonNull(longitudeDeg, "`SentencesRequest.longitudeDeg` is required"), utcOffsetSeconds, zone);
         }
     }
 
@@ -170,7 +182,8 @@ public record SentencesRequest(Double altitudeM, com.teispace.teistro.Calendar c
             Read.number(Read.required(json.get("latitudeDeg"), "SentencesRequest.latitudeDeg"), "SentencesRequest.latitudeDeg"),
             Read.orNull(json.get("locale"), present -> Read.text(present, "SentencesRequest.locale")),
             Read.number(Read.required(json.get("longitudeDeg"), "SentencesRequest.longitudeDeg"), "SentencesRequest.longitudeDeg"),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "SentencesRequest.utcOffsetSeconds"), "SentencesRequest.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "SentencesRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -188,7 +201,12 @@ public record SentencesRequest(Double altitudeM, com.teispace.teistro.Calendar c
             json.put("locale", locale);
         }
         json.put("longitudeDeg", longitudeDeg);
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

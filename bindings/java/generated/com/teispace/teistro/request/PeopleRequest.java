@@ -19,9 +19,10 @@ import java.util.Objects;
  * @param latitudeDeg The latitude of the place the day is reckoned at, degrees north positive.
  * @param longitudeDeg Its longitude, degrees east positive.
  * @param people The births, 1 to 50, in the order the answer lists them.
- * @param utcOffsetSeconds The offset from UTC its civil day runs at, in seconds, east positive.
+ * @param utcOffsetSeconds The offset from UTC its civil day runs at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record PeopleRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, com.teispace.teistro.DashaSystem dasha, DayAsked day, Integer depth, double latitudeDeg, double longitudeDeg, List<PeoplePerson> people, int utcOffsetSeconds) implements RequestJson {
+public record PeopleRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, com.teispace.teistro.DashaSystem dasha, DayAsked day, Integer depth, double latitudeDeg, double longitudeDeg, List<PeoplePerson> people, Integer utcOffsetSeconds, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -46,10 +47,9 @@ public record PeopleRequest(Double altitudeM, com.teispace.teistro.Calendar cale
      * @param latitudeDeg The latitude of the place the day is reckoned at, degrees north positive.
      * @param longitudeDeg Its longitude, degrees east positive.
      * @param people The births, 1 to 50, in the order the answer lists them.
-     * @param utcOffsetSeconds The offset from UTC its civil day runs at, in seconds, east positive.
      */
-    public PeopleRequest(DayAsked day, double latitudeDeg, double longitudeDeg, List<PeoplePerson> people, int utcOffsetSeconds) {
-        this(null, null, null, day, null, latitudeDeg, longitudeDeg, people, utcOffsetSeconds);
+    public PeopleRequest(DayAsked day, double latitudeDeg, double longitudeDeg, List<PeoplePerson> people) {
+        this(null, null, null, day, null, latitudeDeg, longitudeDeg, people, null, null);
     }
 
     /**
@@ -73,6 +73,7 @@ public record PeopleRequest(Double altitudeM, com.teispace.teistro.Calendar cale
         private Double longitudeDeg;
         private List<PeoplePerson> people;
         private Integer utcOffsetSeconds;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -167,11 +168,22 @@ public record PeopleRequest(Double altitudeM, com.teispace.teistro.Calendar cale
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The offset from UTC its civil day runs at, in seconds, east positive.
+         * @param utcOffsetSeconds The offset from UTC its civil day runs at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
             this.utcOffsetSeconds = utcOffsetSeconds;
+            return this;
+        }
+
+        /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
             return this;
         }
 
@@ -182,7 +194,7 @@ public record PeopleRequest(Double altitudeM, com.teispace.teistro.Calendar cale
          * @throws NullPointerException naming a required field left unset
          */
         public PeopleRequest build() {
-            return new PeopleRequest(altitudeM, calendar, dasha, day, depth, Objects.requireNonNull(latitudeDeg, "`PeopleRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`PeopleRequest.longitudeDeg` is required"), people, Objects.requireNonNull(utcOffsetSeconds, "`PeopleRequest.utcOffsetSeconds` is required"));
+            return new PeopleRequest(altitudeM, calendar, dasha, day, depth, Objects.requireNonNull(latitudeDeg, "`PeopleRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`PeopleRequest.longitudeDeg` is required"), people, utcOffsetSeconds, zone);
         }
     }
 
@@ -204,7 +216,8 @@ public record PeopleRequest(Double altitudeM, com.teispace.teistro.Calendar cale
             Read.number(Read.required(json.get("latitudeDeg"), "PeopleRequest.latitudeDeg"), "PeopleRequest.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "PeopleRequest.longitudeDeg"), "PeopleRequest.longitudeDeg"),
             Read.list(Read.required(json.get("people"), "PeopleRequest.people"), "PeopleRequest.people", item0 -> PeoplePerson.of(item0)),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "PeopleRequest.utcOffsetSeconds"), "PeopleRequest.utcOffsetSeconds"));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "PeopleRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -226,7 +239,12 @@ public record PeopleRequest(Double altitudeM, com.teispace.teistro.Calendar cale
         json.put("latitudeDeg", latitudeDeg);
         json.put("longitudeDeg", longitudeDeg);
         json.put("people", people.stream().map(item0 -> item0.toJson()).toList());
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
+        }
         return json;
     }
 }

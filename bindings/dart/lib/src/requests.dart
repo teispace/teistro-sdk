@@ -71,8 +71,9 @@ final class AnniversariesRequest extends _Request {
     required this.fromYear,
     required this.latitudeDeg,
     required this.longitudeDeg,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
     required this.years,
+    this.zone,
   });
 
   final double altitudeM;
@@ -89,10 +90,14 @@ final class AnniversariesRequest extends _Request {
 
   final double longitudeDeg;
 
-  final int utcOffsetSeconds;
+  /// The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
 
   /// 1 to 100: the span ends the day before month 1 of the year after.
   final int years;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -102,12 +107,13 @@ final class AnniversariesRequest extends _Request {
     'fromYear': fromYear,
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
     'years': years,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, anniversaries, calendar, fromYear, latitudeDeg, longitudeDeg, utcOffsetSeconds, years];
+  List<Object?> get _fields => [altitudeM, anniversaries, calendar, fromYear, latitudeDeg, longitudeDeg, utcOffsetSeconds, years, zone];
 }
 
 /// The query as a binding writes it.
@@ -471,7 +477,8 @@ final class ElectRequest extends _Request {
     required this.latitudeDeg,
     required this.longitudeDeg,
     required this.muhurta,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The place's height above sea level in metres, 0 when left out.
@@ -495,8 +502,11 @@ final class ElectRequest extends _Request {
   /// The rule set: an activity's name or rules spelt out, the native, the ranking, how many days are cut and how many windows kept.
   final MuhurtaRequest muhurta;
 
-  /// The offset from UTC the place's civil days run at, in seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -507,11 +517,12 @@ final class ElectRequest extends _Request {
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
     'muhurta': muhurta._wire,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, first, last, latitudeDeg, longitudeDeg, muhurta, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, calendar, first, last, latitudeDeg, longitudeDeg, muhurta, utcOffsetSeconds, zone];
 }
 
 /// [`PackRequest`] as the bindings write it.
@@ -552,7 +563,8 @@ final class FestivalCalendarRequest extends _Request {
     this.product,
     this.refreshMinutes,
     required this.stampUnixSeconds,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The alarm on every event no hint or event of its own gives another.
@@ -597,7 +609,11 @@ final class FestivalCalendarRequest extends _Request {
 
   final int stampUnixSeconds;
 
-  final int utcOffsetSeconds;
+  /// The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -618,11 +634,12 @@ final class FestivalCalendarRequest extends _Request {
     if (product case final productValue?) 'product': productValue,
     if (refreshMinutes case final refreshMinutesValue?) 'refreshMinutes': refreshMinutesValue,
     'stampUnixSeconds': stampUnixSeconds,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [alarm, altitudeM, calendar, categories, color, events, festivals, first, hints, last, latitudeDeg, longitudeDeg, name, only, product, refreshMinutes, stampUnixSeconds, utcOffsetSeconds];
+  List<Object?> get _fields => [alarm, altitudeM, calendar, categories, color, events, festivals, first, hints, last, latitudeDeg, longitudeDeg, name, only, product, refreshMinutes, stampUnixSeconds, utcOffsetSeconds, zone];
 }
 
 /// The query as a binding writes it.
@@ -751,7 +768,8 @@ final class NextRequest extends _Request {
     this.limitDays,
     required this.longitudeDeg,
     this.rule,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The instant, a UTC Julian day.
@@ -777,7 +795,11 @@ final class NextRequest extends _Request {
   /// A rule's key in `festivals`; or `kind`, not both.
   final String? rule;
 
-  final int utcOffsetSeconds;
+  /// The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -790,11 +812,12 @@ final class NextRequest extends _Request {
     if (limitDays case final limitDaysValue?) 'limitDays': limitDaysValue,
     'longitudeDeg': longitudeDeg,
     if (rule case final ruleValue?) 'rule': ruleValue,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [after, altitudeM, calendar, festivals, kind, latitudeDeg, limitDays, longitudeDeg, rule, utcOffsetSeconds];
+  List<Object?> get _fields => [after, altitudeM, calendar, festivals, kind, latitudeDeg, limitDays, longitudeDeg, rule, utcOffsetSeconds, zone];
 }
 
 /// The request as a binding writes it.
@@ -807,8 +830,9 @@ final class ObservanceRequest extends _Request {
     required this.latitudeDeg,
     required this.longitudeDeg,
     required this.traditions,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
     this.year,
+    this.zone,
   });
 
   /// The place's height above sea level in metres, 0 when left out.
@@ -832,11 +856,14 @@ final class ObservanceRequest extends _Request {
   /// The traditions compared, 1 to 8, in the order the answer lists them.
   final List<ObservanceTradition> traditions;
 
-  /// The offset from UTC the place's civil days run at, in seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
 
   /// A whole year of `calendar`, from its month 1, day 1; or `first`, not both.
   final int? year;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -847,12 +874,13 @@ final class ObservanceRequest extends _Request {
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
     'traditions': [for (final e0 in traditions) e0._wire],
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
     if (year case final yearValue?) 'year': yearValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, first, last, latitudeDeg, longitudeDeg, traditions, utcOffsetSeconds, year];
+  List<Object?> get _fields => [altitudeM, calendar, first, last, latitudeDeg, longitudeDeg, traditions, utcOffsetSeconds, year, zone];
 }
 
 /// The request as a binding writes it.
@@ -921,7 +949,8 @@ final class PeopleRequest extends _Request {
     required this.latitudeDeg,
     required this.longitudeDeg,
     required this.people,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// Its height above sea level in metres, 0 when left out.
@@ -948,8 +977,11 @@ final class PeopleRequest extends _Request {
   /// The births, 1 to 50, in the order the answer lists them.
   final List<PeoplePerson> people;
 
-  /// The offset from UTC its civil day runs at, in seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The offset from UTC its civil day runs at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -961,11 +993,12 @@ final class PeopleRequest extends _Request {
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
     'people': [for (final e0 in people) e0._wire],
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, dasha, day, depth, latitudeDeg, longitudeDeg, people, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, calendar, dasha, day, depth, latitudeDeg, longitudeDeg, people, utcOffsetSeconds, zone];
 }
 
 /// The request as a binding writes it.
@@ -979,7 +1012,8 @@ final class PublishedReasonsRequest extends _Request {
     required this.latitudeDeg,
     required this.longitudeDeg,
     this.places = const [],
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   final double altitudeM;
@@ -999,7 +1033,11 @@ final class PublishedReasonsRequest extends _Request {
 
   final List<ReckonedPlace> places;
 
-  final int utcOffsetSeconds;
+  /// The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -1011,11 +1049,12 @@ final class PublishedReasonsRequest extends _Request {
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
     'places': [for (final e0 in places) e0._wire],
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, festivals, first, last, latitudeDeg, longitudeDeg, places, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, calendar, festivals, first, last, latitudeDeg, longitudeDeg, places, utcOffsetSeconds, zone];
 }
 
 /// The request as a binding writes it.
@@ -1075,7 +1114,8 @@ final class SentencesRequest extends _Request {
     required this.latitudeDeg,
     this.locale,
     required this.longitudeDeg,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   final double altitudeM;
@@ -1092,7 +1132,11 @@ final class SentencesRequest extends _Request {
 
   final double longitudeDeg;
 
-  final int utcOffsetSeconds;
+  /// The offset from UTC the civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -1102,11 +1146,12 @@ final class SentencesRequest extends _Request {
     'latitudeDeg': latitudeDeg,
     if (locale case final localeValue?) 'locale': localeValue,
     'longitudeDeg': longitudeDeg,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, calendar, date, latitudeDeg, locale, longitudeDeg, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, calendar, date, latitudeDeg, locale, longitudeDeg, utcOffsetSeconds, zone];
 }
 
 /// The request as a binding writes it.
@@ -3151,7 +3196,8 @@ final class PeoplePerson extends _Request {
     required this.latitudeDeg,
     required this.longitudeDeg,
     required this.name,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// The birthplace's height above sea level in metres, 0 when left out.
@@ -3169,8 +3215,11 @@ final class PeoplePerson extends _Request {
   /// What the answer calls them; each name once.
   final String name;
 
-  /// The offset from UTC of the birth's clock, in seconds, east positive.
-  final int utcOffsetSeconds;
+  /// The offset from UTC of the birth's clock, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
@@ -3179,11 +3228,12 @@ final class PeoplePerson extends _Request {
     'latitudeDeg': latitudeDeg,
     'longitudeDeg': longitudeDeg,
     'name': name,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
   };
 
   @override
-  List<Object?> get _fields => [altitudeM, instant, latitudeDeg, longitudeDeg, name, utcOffsetSeconds];
+  List<Object?> get _fields => [altitudeM, instant, latitudeDeg, longitudeDeg, name, utcOffsetSeconds, zone];
 }
 
 /// How the half of the year is reckoned.
@@ -5459,6 +5509,17 @@ final class FestivalRulesIndiaMaharashtra extends FestivalRules {
 
   @override
   Object? get _wire => 'INDIA_MAHARASHTRA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_WEST_BENGAL`.
+final class FestivalRulesIndiaWestBengal extends FestivalRules {
+  const FestivalRulesIndiaWestBengal();
+
+  @override
+  Object? get _wire => 'INDIA_WEST_BENGAL';
 
   @override
   List<Object?> get _fields => const [];
@@ -7759,6 +7820,17 @@ final class FestivalRuleItemIndiaMaharashtra extends FestivalRuleItem {
 
   @override
   Object? get _wire => 'INDIA_MAHARASHTRA';
+
+  @override
+  List<Object?> get _fields => const [];
+}
+
+/// `INDIA_WEST_BENGAL`.
+final class FestivalRuleItemIndiaWestBengal extends FestivalRuleItem {
+  const FestivalRuleItemIndiaWestBengal();
+
+  @override
+  Object? get _wire => 'INDIA_WEST_BENGAL';
 
   @override
   List<Object?> get _fields => const [];

@@ -6,19 +6,21 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 447 of 535 | 83.6% | 181 of 181 | 100.0% |
-| `hi-Deva-IN` | base | 333 of 535 | 62.2% | 74 of 181 | 40.9% |
-| `ne-Deva-NP` | strict | 447 of 535 | 83.6% | 181 of 181 | 100.0% |
-| `sa-Deva` | base | 332 of 535 | 62.1% | 68 of 181 | 37.6% |
-| `sa-Latn` | base | 332 of 535 | 62.1% | 0 of 181 | 0.0% |
+| `en-Latn` | strict | 447 of 535 | 83.6% | 184 of 184 | 100.0% |
+| `hi-Deva-IN` | base | 333 of 535 | 62.2% | 77 of 184 | 41.8% |
+| `ne-Deva-NP` | strict | 447 of 535 | 83.6% | 184 of 184 | 100.0% |
+| `sa-Deva` | base | 332 of 535 | 62.1% | 71 of 184 | 38.6% |
+| `sa-Latn` | base | 332 of 535 | 62.1% | 71 of 184 | 38.6% |
 
-535 members of 43 kinds, 181 messages.
+535 members of 43 kinds, 184 messages.
 
 `hi-Deva-IN` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
 
 `ne-Deva-NP` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.day`.
 
 `sa-Deva` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
+
+`sa-Latn` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
 
 ## By kind
 

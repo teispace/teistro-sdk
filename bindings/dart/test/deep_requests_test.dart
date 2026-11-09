@@ -73,6 +73,7 @@ void main() {
         longitudeDeg: 1.5,
         utcOffsetSeconds: 1,
         years: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });
@@ -1514,6 +1515,7 @@ void main() {
         longitudeDeg: 1.5,
         rule: 'VIJAYA_DASHAMI',
         utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });
@@ -2094,9 +2096,11 @@ void main() {
             longitudeDeg: 1.5,
             name: 'Asha',
             utcOffsetSeconds: 1,
+            zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
           ),
         ],
         utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });
@@ -2405,6 +2409,7 @@ void main() {
         locale: 'ne-Deva-NP',
         longitudeDeg: 1.5,
         utcOffsetSeconds: 1,
+        zone: <String, Object?>{'kind': 'IANA', 'zone': 'x'},
       ).toJson(),
     );
   });

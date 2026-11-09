@@ -744,6 +744,20 @@ class FestivalKey(enum.StrEnum):
     AMBEDKAR_JAYANTI = "festival.AMBEDKAR_JAYANTI"
     MAHARASHTRA_DAY = "festival.MAHARASHTRA_DAY"
     BANK_ACCOUNTS_CLOSING = "festival.BANK_ACCOUNTS_CLOSING"
+    VIVEKANANDA_JAYANTI = "festival.VIVEKANANDA_JAYANTI"
+    NETAJI_JAYANTI = "festival.NETAJI_JAYANTI"
+    THAKUR_PANCHANAN_BARMA_JAYANTI = "festival.THAKUR_PANCHANAN_BARMA_JAYANTI"
+    DOLA_YATRA = "festival.DOLA_YATRA"
+    HARICHAND_THAKUR_JAYANTI = "festival.HARICHAND_THAKUR_JAYANTI"
+    EASTER_SATURDAY = "festival.EASTER_SATURDAY"
+    POHELA_BOISHAKH = "festival.POHELA_BOISHAKH"
+    RABINDRA_JAYANTI = "festival.RABINDRA_JAYANTI"
+    HUL_DIWAS = "festival.HUL_DIWAS"
+    DURGA_CHATURTHI = "festival.DURGA_CHATURTHI"
+    DURGA_PANCHAMI = "festival.DURGA_PANCHAMI"
+    DURGA_SHASHTHI = "festival.DURGA_SHASHTHI"
+    KALI_PUJA = "festival.KALI_PUJA"
+    BIRSA_MUNDA_JAYANTI = "festival.BIRSA_MUNDA_JAYANTI"
 
 
 class FestivalKindKey(enum.StrEnum):
@@ -5092,6 +5106,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.BILVA_NIMANTRAN")
 
     @property
+    def birsa_munda_jayanti(self) -> EntityForms:
+        """The forms of `festival.BIRSA_MUNDA_JAYANTI` in the current locale."""
+        return self._r.entity("festival.BIRSA_MUNDA_JAYANTI")
+
+    @property
     def bishalnagar_vaishnavi_devi_jatra(self) -> EntityForms:
         """The forms of `festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA` in the current locale."""
         return self._r.entity("festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA")
@@ -5347,9 +5366,29 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.DILLA_PUNHI")
 
     @property
+    def dola_yatra(self) -> EntityForms:
+        """The forms of `festival.DOLA_YATRA` in the current locale."""
+        return self._r.entity("festival.DOLA_YATRA")
+
+    @property
     def drona_navami(self) -> EntityForms:
         """The forms of `festival.DRONA_NAVAMI` in the current locale."""
         return self._r.entity("festival.DRONA_NAVAMI")
+
+    @property
+    def durga_chaturthi(self) -> EntityForms:
+        """The forms of `festival.DURGA_CHATURTHI` in the current locale."""
+        return self._r.entity("festival.DURGA_CHATURTHI")
+
+    @property
+    def durga_panchami(self) -> EntityForms:
+        """The forms of `festival.DURGA_PANCHAMI` in the current locale."""
+        return self._r.entity("festival.DURGA_PANCHAMI")
+
+    @property
+    def durga_shashthi(self) -> EntityForms:
+        """The forms of `festival.DURGA_SHASHTHI` in the current locale."""
+        return self._r.entity("festival.DURGA_SHASHTHI")
 
     @property
     def durva_ashtami(self) -> EntityForms:
@@ -5375,6 +5414,11 @@ class MessagesSdkEntityFestival:
     def earthquake_safety_day(self) -> EntityForms:
         """The forms of `festival.EARTHQUAKE_SAFETY_DAY` in the current locale."""
         return self._r.entity("festival.EARTHQUAKE_SAFETY_DAY")
+
+    @property
+    def easter_saturday(self) -> EntityForms:
+        """The forms of `festival.EASTER_SATURDAY` in the current locale."""
+        return self._r.entity("festival.EASTER_SATURDAY")
 
     @property
     def ekadashi_gaudiya(self) -> EntityForms:
@@ -5587,6 +5631,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.HARIBODHINI_EKADASHI")
 
     @property
+    def harichand_thakur_jayanti(self) -> EntityForms:
+        """The forms of `festival.HARICHAND_THAKUR_JAYANTI` in the current locale."""
+        return self._r.entity("festival.HARICHAND_THAKUR_JAYANTI")
+
+    @property
     def hariparivartini_ekadashi(self) -> EntityForms:
         """The forms of `festival.HARIPARIVARTINI_EKADASHI` in the current locale."""
         return self._r.entity("festival.HARIPARIVARTINI_EKADASHI")
@@ -5640,6 +5689,11 @@ class MessagesSdkEntityFestival:
     def holi_terai(self) -> EntityForms:
         """The forms of `festival.HOLI_TERAI` in the current locale."""
         return self._r.entity("festival.HOLI_TERAI")
+
+    @property
+    def hul_diwas(self) -> EntityForms:
+        """The forms of `festival.HUL_DIWAS` in the current locale."""
+        return self._r.entity("festival.HUL_DIWAS")
 
     @property
     def human_rights_day(self) -> EntityForms:
@@ -5785,6 +5839,11 @@ class MessagesSdkEntityFestival:
     def kag_tihar(self) -> EntityForms:
         """The forms of `festival.KAG_TIHAR` in the current locale."""
         return self._r.entity("festival.KAG_TIHAR")
+
+    @property
+    def kali_puja(self) -> EntityForms:
+        """The forms of `festival.KALI_PUJA` in the current locale."""
+        return self._r.entity("festival.KALI_PUJA")
 
     @property
     def kali_yugadi(self) -> EntityForms:
@@ -6177,6 +6236,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.NEPAL_SAMBAT_NEW_YEAR")
 
     @property
+    def netaji_jayanti(self) -> EntityForms:
+        """The forms of `festival.NETAJI_JAYANTI` in the current locale."""
+        return self._r.entity("festival.NETAJI_JAYANTI")
+
+    @property
     def new_year_s_day_ad(self) -> EntityForms:
         """The forms of `festival.NEW_YEAR_S_DAY_AD` in the current locale."""
         return self._r.entity("festival.NEW_YEAR_S_DAY_AD")
@@ -6292,6 +6356,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.PISHACHAMOCHANA_SHRADDHA")
 
     @property
+    def pohela_boishakh(self) -> EntityForms:
+        """The forms of `festival.POHELA_BOISHAKH` in the current locale."""
+        return self._r.entity("festival.POHELA_BOISHAKH")
+
+    @property
     def pradosha_vrata(self) -> EntityForms:
         """The forms of `festival.PRADOSHA_VRATA` in the current locale."""
         return self._r.entity("festival.PRADOSHA_VRATA")
@@ -6315,6 +6384,11 @@ class MessagesSdkEntityFestival:
     def purnima_vrata(self) -> EntityForms:
         """The forms of `festival.PURNIMA_VRATA` in the current locale."""
         return self._r.entity("festival.PURNIMA_VRATA")
+
+    @property
+    def rabindra_jayanti(self) -> EntityForms:
+        """The forms of `festival.RABINDRA_JAYANTI` in the current locale."""
+        return self._r.entity("festival.RABINDRA_JAYANTI")
 
     @property
     def radhashtami(self) -> EntityForms:
@@ -6602,6 +6676,11 @@ class MessagesSdkEntityFestival:
         return self._r.entity("festival.TAMU_LHOSAR")
 
     @property
+    def thakur_panchanan_barma_jayanti(self) -> EntityForms:
+        """The forms of `festival.THAKUR_PANCHANAN_BARMA_JAYANTI` in the current locale."""
+        return self._r.entity("festival.THAKUR_PANCHANAN_BARMA_JAYANTI")
+
+    @property
     def thankot_mahalaxmi_jatra(self) -> EntityForms:
         """The forms of `festival.THANKOT_MAHALAXMI_JATRA` in the current locale."""
         return self._r.entity("festival.THANKOT_MAHALAXMI_JATRA")
@@ -6760,6 +6839,11 @@ class MessagesSdkEntityFestival:
     def vivah_panchami(self) -> EntityForms:
         """The forms of `festival.VIVAH_PANCHAMI` in the current locale."""
         return self._r.entity("festival.VIVAH_PANCHAMI")
+
+    @property
+    def vivekananda_jayanti(self) -> EntityForms:
+        """The forms of `festival.VIVEKANANDA_JAYANTI` in the current locale."""
+        return self._r.entity("festival.VIVEKANANDA_JAYANTI")
 
     @property
     def vrishabha_sankranti(self) -> EntityForms:
@@ -8517,11 +8601,32 @@ class MessagesSdkCalendarDuration:
             {"n": n},
         )
 
+    def days_hours(self, *, seconds: float) -> str:
+        """`sdk.calendar.duration.daysHours`"""
+        return self._r.render(
+            "sdk.calendar.duration.daysHours",
+            {"seconds": seconds},
+        )
+
     def hour(self, *, n: float) -> str:
         """`sdk.calendar.duration.hour`"""
         return self._r.render(
             "sdk.calendar.duration.hour",
             {"n": n},
+        )
+
+    def hours_minutes(self, *, seconds: float) -> str:
+        """`sdk.calendar.duration.hoursMinutes`"""
+        return self._r.render(
+            "sdk.calendar.duration.hoursMinutes",
+            {"seconds": seconds},
+        )
+
+    def hours_minutes_seconds(self, *, seconds: float) -> str:
+        """`sdk.calendar.duration.hoursMinutesSeconds`"""
+        return self._r.render(
+            "sdk.calendar.duration.hoursMinutesSeconds",
+            {"seconds": seconds},
         )
 
     def minute(self, *, n: float) -> str:

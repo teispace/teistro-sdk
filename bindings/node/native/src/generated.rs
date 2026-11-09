@@ -5095,7 +5095,7 @@ impl Context {
     /// festival answer gives, or null.
     ///
     /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "days",
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "days",
     /// "festivals"}`: the days as `{"year", "month", "day"}`, `days` true
     /// when left out, `festivals` a festival request, and everything but
     /// `first`, the place and the offset optional. A key it does not read, a
@@ -5151,7 +5151,7 @@ impl Context {
     /// of the key differs).
     ///
     /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "festivals",
     /// "places"}`: the days as `{"year", "month", "day"}`, `festivals` a
     /// festival request with its `published` sets, and `places` the places
     /// the publisher may have reckoned at, each `{"name", "latitudeDeg",
@@ -5455,7 +5455,7 @@ impl Context {
     /// provenance, and its `UID` stable for the rule, the day and the place.
     ///
     /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "festivals",
     /// "stampUnixSeconds", "name", "product", "refreshMinutes"}`: the days as
     /// `{"year", "month", "day"}`, `festivals` a festival request,
     /// `stampUnixSeconds` every event's `DTSTAMP`, and `calendar`, `last`,
@@ -5522,7 +5522,7 @@ impl Context {
     /// reckoned, every catalogue member a full key.
     ///
     /// `request_json` is `{"after", "latitudeDeg", "longitudeDeg",
-    /// "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule",
+    /// "altitudeM", "utcOffsetSeconds" or "zone", "calendar", "kind", "rule",
     /// "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind`
     /// (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules
     /// the SDK states) or `rule`, a key of `festivals`, a festival request;
@@ -5556,7 +5556,7 @@ impl Context {
     /// elsewhere.
     ///
     /// `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
-    /// altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+    /// altitudeM?, utcOffsetSeconds or zone, locale?}`. A key it does not read, or a
     /// place or offset out of range, is `INVALID_ARG`, named under
     /// `sentences`; a locale not loaded, or one without the templates, is
     /// `UNSUPPORTED` on `locale`; a context without an ephemeris is
@@ -5591,7 +5591,7 @@ impl Context {
     /// Occurrences no day could judge are in `unjudged`.
     ///
     /// `request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg",
-    /// "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`:
+    /// "altitudeM", "utcOffsetSeconds" or "zone", "calendar", "anniversaries"}`:
     /// `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when
     /// left out, the span running from month 1, day 1 of the first year to the
     /// day before month 1 of the year after the last; `altitudeM` optional;
@@ -6186,7 +6186,7 @@ impl Context {
     /// bars that close it.
     ///
     /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "muhurta"}`: the days
+    /// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "muhurta"}`: the days
     /// as `{"year", "month", "day"}` in `calendar` (Gregorian when left out),
     /// `last` the first when left out, and `muhurta` the rule set as
     /// `almanac.days` reads it (`rules` an activity's name or rules spelt
@@ -6224,7 +6224,7 @@ impl Context {
     /// `RULE_AND_SKY` or `PUBLISHED` where the days or months part.
     ///
     /// `request_json` is `{"calendar", "year", "first", "last",
-    /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds",
+    /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone",
     /// "traditions"}`: a `year` of `calendar` (Gregorian when left out) or
     /// the days `first` to `last`; `traditions` 1 to 8, each `{"name",
     /// "festivals", "rule", "reckoning"}`, `festivals` a festival request,
@@ -6278,7 +6278,7 @@ impl Context {
     /// their birth star, and the Moon's house from their Moon.
     ///
     /// `request_json` is `{"calendar", "day", "latitudeDeg", "longitudeDeg",
-    /// "altitudeM", "utcOffsetSeconds", "people", "dasha", "depth"}`: `day`
+    /// "altitudeM", "utcOffsetSeconds" or "zone", "people", "dasha", "depth"}`: `day`
     /// as `{"year", "month", "day"}` in `calendar` (Gregorian when left out)
     /// at the place given; `people` 1 to 50, each `{"name", "instant",
     /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`,

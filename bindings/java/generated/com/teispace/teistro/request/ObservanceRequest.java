@@ -18,10 +18,11 @@ import java.util.Objects;
  * @param latitudeDeg The place's latitude, degrees north positive.
  * @param longitudeDeg The place's longitude, degrees east positive.
  * @param traditions The traditions compared, 1 to 8, in the order the answer lists them.
- * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+ * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
  * @param year A whole year of `calendar`, from its month 1, day 1; or `first`, not both. Null leaves the SDK's default.
+ * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
  */
-public record ObservanceRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, List<ObservanceTradition> traditions, int utcOffsetSeconds, Integer year) implements RequestJson {
+public record ObservanceRequest(Double altitudeM, com.teispace.teistro.Calendar calendar, DayAsked first, DayAsked last, double latitudeDeg, double longitudeDeg, List<ObservanceTradition> traditions, Integer utcOffsetSeconds, Integer year, ZoneSpec zone) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -41,10 +42,9 @@ public record ObservanceRequest(Double altitudeM, com.teispace.teistro.Calendar 
      * @param latitudeDeg The place's latitude, degrees north positive.
      * @param longitudeDeg The place's longitude, degrees east positive.
      * @param traditions The traditions compared, 1 to 8, in the order the answer lists them.
-     * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
      */
-    public ObservanceRequest(double latitudeDeg, double longitudeDeg, List<ObservanceTradition> traditions, int utcOffsetSeconds) {
-        this(null, null, null, null, latitudeDeg, longitudeDeg, traditions, utcOffsetSeconds, null);
+    public ObservanceRequest(double latitudeDeg, double longitudeDeg, List<ObservanceTradition> traditions) {
+        this(null, null, null, null, latitudeDeg, longitudeDeg, traditions, null, null, null);
     }
 
     /**
@@ -68,6 +68,7 @@ public record ObservanceRequest(Double altitudeM, com.teispace.teistro.Calendar 
         private List<ObservanceTradition> traditions;
         private Integer utcOffsetSeconds;
         private Integer year;
+        private ZoneSpec zone;
 
         private Builder() {}
 
@@ -151,7 +152,7 @@ public record ObservanceRequest(Double altitudeM, com.teispace.teistro.Calendar 
         /**
          * Sets {@code utcOffsetSeconds}.
          *
-         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive.
+         * @param utcOffsetSeconds The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder utcOffsetSeconds(int utcOffsetSeconds) {
@@ -171,13 +172,24 @@ public record ObservanceRequest(Double altitudeM, com.teispace.teistro.Calendar 
         }
 
         /**
+         * Sets {@code zone}.
+         *
+         * @param zone The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder zone(ZoneSpec zone) {
+            this.zone = zone;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public ObservanceRequest build() {
-            return new ObservanceRequest(altitudeM, calendar, first, last, Objects.requireNonNull(latitudeDeg, "`ObservanceRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ObservanceRequest.longitudeDeg` is required"), traditions, Objects.requireNonNull(utcOffsetSeconds, "`ObservanceRequest.utcOffsetSeconds` is required"), year);
+            return new ObservanceRequest(altitudeM, calendar, first, last, Objects.requireNonNull(latitudeDeg, "`ObservanceRequest.latitudeDeg` is required"), Objects.requireNonNull(longitudeDeg, "`ObservanceRequest.longitudeDeg` is required"), traditions, utcOffsetSeconds, year, zone);
         }
     }
 
@@ -198,8 +210,9 @@ public record ObservanceRequest(Double altitudeM, com.teispace.teistro.Calendar 
             Read.number(Read.required(json.get("latitudeDeg"), "ObservanceRequest.latitudeDeg"), "ObservanceRequest.latitudeDeg"),
             Read.number(Read.required(json.get("longitudeDeg"), "ObservanceRequest.longitudeDeg"), "ObservanceRequest.longitudeDeg"),
             Read.list(Read.required(json.get("traditions"), "ObservanceRequest.traditions"), "ObservanceRequest.traditions", item0 -> ObservanceTradition.of(item0)),
-            Read.int32(Read.required(json.get("utcOffsetSeconds"), "ObservanceRequest.utcOffsetSeconds"), "ObservanceRequest.utcOffsetSeconds"),
-            Read.orNull(json.get("year"), present -> Read.int32(present, "ObservanceRequest.year")));
+            Read.orNull(json.get("utcOffsetSeconds"), present -> Read.int32(present, "ObservanceRequest.utcOffsetSeconds")),
+            Read.orNull(json.get("year"), present -> Read.int32(present, "ObservanceRequest.year")),
+            Read.orNull(json.get("zone"), present -> ZoneSpec.of(present)));
     }
 
     @Override
@@ -220,9 +233,14 @@ public record ObservanceRequest(Double altitudeM, com.teispace.teistro.Calendar 
         json.put("latitudeDeg", latitudeDeg);
         json.put("longitudeDeg", longitudeDeg);
         json.put("traditions", traditions.stream().map(item0 -> item0.toJson()).toList());
-        json.put("utcOffsetSeconds", utcOffsetSeconds);
+        if (utcOffsetSeconds != null) {
+            json.put("utcOffsetSeconds", utcOffsetSeconds);
+        }
         if (year != null) {
             json.put("year", year);
+        }
+        if (zone != null) {
+            json.put("zone", zone.toJson());
         }
         return json;
     }
