@@ -11,13 +11,14 @@ use teistro_core::envelope::Envelope;
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::Place;
-use teistro_core::time::UtcOffset;
 use teistro_muhurta::activity::Unjudged;
 use teistro_muhurta::search::ClosedDay;
 use teistro_muhurta::{Answer, Bar, Clause, Judgement, Ranking, Score};
+use teistro_time::ZoneSpec;
 
 use super::AlmanacArea;
-use crate::asked::{DayAsked, offset_of, place_of};
+use crate::DayClock;
+use crate::asked::{DayAsked, place_of};
 use crate::muhurta_request::MuhurtaRequest;
 
 /// The field an election request's refusals are named under.
@@ -51,8 +52,9 @@ pub struct ElectRequest {
     pub last: CalendarDate,
     /// Where the days are reckoned.
     pub place: Place,
-    /// The offset their civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
     /// The rule set, and how the windows are ranked and kept.
     pub muhurta: MuhurtaRequest,
 }
@@ -78,8 +80,14 @@ pub(crate) struct ElectAsked {
     /// The place's height above sea level in metres, 0 when left out.
     #[serde(default)]
     altitude_m: f64,
-    /// The offset from UTC the place's civil days run at, in seconds, east positive.
-    utc_offset_seconds: i32,
+    /// The offset from UTC the place's civil days run at, in seconds, east positive;
+    /// or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The rule set: an activity's name or rules spelt out, the native, the ranking, how many days are cut and how many windows kept.
     #[cfg_attr(feature = "schema", schemars(with = "crate::muhurta_request::Asked"))]
     muhurta: Value,
@@ -109,7 +117,7 @@ impl ElectAsked {
             first: self.first.in_calendar(calendar),
             last: self.last.unwrap_or(self.first).in_calendar(calendar),
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             muhurta: MuhurtaRequest::from_json(&self.muhurta.to_string())?,
         })
     }
@@ -228,13 +236,23 @@ impl AlmanacArea<'_> {
     /// the wrong way round or longer than the search reads, or what the
     /// search refuses.
     pub fn elect(self, request: &ElectRequest) -> Result<Envelope<Elections>, Error> {
-        let Envelope { value, provenance } = self.muhurta(
-            &request.first,
-            &request.last,
-            &request.place,
-            request.offset,
-            &request.muhurta,
+        let Envelope {
+            value,
+            mut provenance,
+        } = self.unclocked().clocked_steady(
+            &request.clock,
+            (&request.first, &request.last),
+            |almanac, offset| {
+                almanac.muhurta(
+                    &request.first,
+                    &request.last,
+                    &request.place,
+                    offset,
+                    &request.muhurta,
+                )
+            },
         )?;
+        request.clock.seal_answer(&mut provenance);
         Ok(Envelope::sealing(Elections::from(value), provenance))
     }
 }

@@ -9,13 +9,15 @@ use teistro_core::catalogue::Calendar;
 use teistro_core::envelope::{Envelope, Hash, canonical_json};
 use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::time::UtcOffset;
+use teistro_core::time::{LocalClock, UtcOffset};
 use teistro_intl::messages::sdk::calendar::Parana;
 use teistro_panchanga::festival::{Published, PublishedStatus};
+use teistro_time::ZoneSpec;
 
 use super::AlmanacArea;
+use crate::DayClock;
 use crate::area::system_of;
-use crate::asked::{DayAsked, offset_of, place_of};
+use crate::asked::{DayAsked, place_of};
 use crate::festival_request::FestivalRequest;
 
 /// The field a feed request's refusals are named under.
@@ -23,6 +25,9 @@ const FESTIVAL_CALENDAR: &str = "festivalCalendar";
 
 /// The fixed day of 1970-01-01.
 const UNIX_EPOCH_DAY: i64 = 719_163;
+
+/// The Julian day of the Unix epoch, 1970-01-01 00:00 UTC.
+const UNIX_EPOCH_JD: f64 = 2_440_587.5;
 
 /// What a feed says of itself: its name, the product that wrote it, how
 /// often a subscriber fetches it again, and the instant every event is
@@ -234,8 +239,9 @@ pub struct FestivalCalendarRequest {
     pub to: CalendarDate,
     /// The place.
     pub place: Place,
-    /// The offset the civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
     /// The festivals.
     pub festivals: FestivalRequest,
     /// What the feed says of itself.
@@ -257,7 +263,14 @@ pub(crate) struct FestivalCalendarAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The offset from UTC the civil days run at, in seconds, east
+    /// positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The festivals, as a festival request.
     #[cfg_attr(feature = "schema", schemars(with = "crate::festival_request::Asked"))]
     festivals: Value,
@@ -460,7 +473,7 @@ impl FestivalCalendarAsked {
             from: self.first.in_calendar(calendar),
             to: self.last.unwrap_or(self.first).in_calendar(calendar),
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             festivals,
             feed,
         })
@@ -587,15 +600,26 @@ fn refuse_unclassified(drafts: &[Draft], options: &FeedOptions) -> Result<(), Er
     Ok(())
 }
 
+/// The UTC instant a count of Unix seconds names.
+fn unix_instant(seconds: i64) -> JulianDay<Utc> {
+    #[expect(
+        clippy::cast_precision_loss,
+        reason = "a feed's seconds are well inside f64's exact integers"
+    )]
+    let days = seconds as f64 / 86_400.0;
+    JulianDay::literal(UNIX_EPOCH_JD + days)
+}
+
 /// A supplied event as a draft: a span on the civil day its start falls
-/// on at `offset`.
-fn supplied_draft(supplied: &SuppliedEvent, place: &Place, offset: UtcOffset) -> Draft {
+/// on at `clock`'s offset then.
+fn supplied_draft(supplied: &SuppliedEvent, place: &Place, clock: &dyn LocalClock) -> Draft {
     let (day, start, hashed) = match supplied.when {
         When::Day(day) => (day, None, format!("SUPPLIED|{}", supplied.summary)),
         When::Span {
             from_unix_seconds,
             to_unix_seconds,
         } => {
+            let offset = clock.offset_at(unix_instant(from_unix_seconds));
             let local = from_unix_seconds.saturating_add(i64::from(offset.seconds()));
             (
                 FixedDay::new(UNIX_EPOCH_DAY + local.div_euclid(86_400)),
@@ -636,12 +660,12 @@ fn merged(
     mut drafts: Vec<Draft>,
     options: &FeedOptions,
     place: &Place,
-    offset: UtcOffset,
+    clock: &dyn LocalClock,
 ) -> Result<Vec<Event>, Error> {
     let supplied: Vec<Draft> = options
         .events
         .iter()
-        .map(|event| supplied_draft(event, place, offset))
+        .map(|event| supplied_draft(event, place, clock))
         .collect();
     drafts.retain(|draft| {
         !supplied
@@ -754,6 +778,27 @@ impl AlmanacArea<'_> {
         from: &CalendarDate,
         to: &CalendarDate,
         place: &Place,
+        clock: impl Into<DayClock>,
+        festivals: &FestivalRequest,
+        options: &FeedOptions,
+    ) -> Result<Envelope<String>, Error> {
+        let clock = clock.into();
+        self.unclocked()
+            .clocked_from(&clock, from, |almanac, offset| {
+                almanac.festival_calendar_on((from, to), place, offset, festivals, options)
+            })
+            .map(|mut answer| {
+                clock.seal_answer(&mut answer.provenance);
+                answer
+            })
+    }
+
+    /// [`AlmanacArea::festival_calendar`] on `offset`, or on the zone this
+    /// area is on.
+    fn festival_calendar_on(
+        self,
+        (from, to): (&CalendarDate, &CalendarDate),
+        place: &Place,
         offset: UtcOffset,
         festivals: &FestivalRequest,
         options: &FeedOptions,
@@ -820,7 +865,7 @@ impl AlmanacArea<'_> {
             stamp_unix_seconds: options.stamp_unix_seconds,
             categories: options.categories.clone(),
             color: options.color,
-            events: merged(drafts, options, place, offset)?,
+            events: merged(drafts, options, place, self.clock_or(&offset))?,
         };
         Ok(Envelope::sealing(ical::write(&feed)?, provenance))
     }
@@ -902,7 +947,7 @@ impl AlmanacArea<'_> {
             &asked.from,
             &asked.to,
             &asked.place,
-            asked.offset,
+            asked.clock.clone(),
             &asked.festivals,
             &asked.feed,
         )

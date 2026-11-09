@@ -14,10 +14,12 @@ use teistro_core::error::{Error, Status};
 use teistro_core::quantity::Place;
 use teistro_core::time::UtcOffset;
 use teistro_panchanga::festival::{Anniversary, Observances};
+use teistro_time::ZoneSpec;
 
 use super::{AlmanacArea, event_convention, without_printed};
+use crate::DayClock;
 use crate::area::system_of;
-use crate::asked::{offset_of, place_of};
+use crate::asked::place_of;
 
 /// The field an anniversaries request's refusals are named under.
 const ANNIVERSARIES: &str = "anniversaries";
@@ -59,8 +61,9 @@ pub struct AnniversariesRequest {
     pub years: u16,
     /// The place every day is judged at.
     pub place: Place,
-    /// The offset the civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
     /// The calendar the years are counted in and the days written in.
     pub calendar: Calendar,
     /// The anniversaries, each key once.
@@ -81,7 +84,14 @@ pub(crate) struct AnniversariesAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The offset from UTC the civil days run at, in seconds, east
+    /// positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     #[serde(default)]
     calendar: Option<Calendar>,
     /// Up to 1000, each key once.
@@ -146,7 +156,7 @@ impl AnniversariesAsked {
             from_year: self.from_year,
             years: self.years,
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             calendar: self.calendar.unwrap_or(Calendar::Gregorian),
             anniversaries: self.anniversaries,
         })
@@ -189,9 +199,23 @@ impl AlmanacArea<'_> {
         self,
         request: &AnniversariesRequest,
     ) -> Result<Envelope<Observances>, Error> {
+        let first = CalendarDate::defined(request.calendar, request.from_year, 1, 1);
+        self.unclocked()
+            .clocked_from(&request.clock, &first, |almanac, offset| {
+                almanac.anniversaries_on(request, offset)
+            })
+    }
+
+    /// [`AlmanacArea::anniversaries`] on `offset`, the days on the zone
+    /// this area is on when it is.
+    fn anniversaries_on(
+        self,
+        request: &AnniversariesRequest,
+        offset: UtcOffset,
+    ) -> Result<Envelope<Observances>, Error> {
         check_size(request.years, request.anniversaries.len())
             .map_err(|why| why.under(ANNIVERSARIES))?;
-        let (calendar, offset, place) = (request.calendar, request.offset, &request.place);
+        let (calendar, place) = (request.calendar, &request.place);
         let system = system_of(calendar)?;
         let first_of = |year| system.fixed_of(&CalendarDate::defined(calendar, year, 1, 1));
         let first = first_of(request.from_year)?;
@@ -236,14 +260,15 @@ impl AlmanacArea<'_> {
             start.is_some_and(|day| unjudged.tithi.to.get() > day.sunrise.get())
                 && end.is_some_and(|day| unjudged.tithi.from.get() < day.next_sunrise.get())
         });
-        provenance.input_hash = content_hash(&serde_json::json!({
+        let mut input = serde_json::json!({
             "fromYear": request.from_year,
             "years": request.years,
             "place": request.place,
-            "utcOffsetSeconds": request.offset.seconds(),
             "calendar": request.calendar,
             "anniversaries": request.anniversaries,
-        }));
+        });
+        request.clock.seal_into(&mut input);
+        provenance.input_hash = content_hash(&input);
         event_convention(&mut provenance, &request.anniversaries);
         provenance.applied_conventions.push(Convention {
             knob: String::from("anniversary.span"),

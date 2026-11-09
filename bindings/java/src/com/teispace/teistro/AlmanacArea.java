@@ -471,7 +471,7 @@ public final class AlmanacArea {
      */
     public PakshiDays pakshi(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
             PakshiNative whose) {
-        return PakshiReads.pakshi(context, from, to, place, utcOffsetSeconds, whose, null);
+        return PakshiReads.pakshi(context, from, to, place, clock(utcOffsetSeconds), whose, null);
     }
 
     /**
@@ -492,7 +492,46 @@ public final class AlmanacArea {
      */
     public PakshiDays pakshi(CalendarDate from, CalendarDate to, Observer place, int utcOffsetSeconds,
             PakshiNative whose, com.teispace.teistro.request.PakshiRules rules) {
-        return PakshiReads.pakshi(context, from, to, place, utcOffsetSeconds, whose, rules);
+        return PakshiReads.pakshi(context, from, to, place, clock(utcOffsetSeconds), whose, rules);
+    }
+
+    /**
+     * {@link #pakshi(CalendarDate, CalendarDate, Observer, int, PakshiNative)} on a zone's clock: each
+     * day read at the offset the zone had then ({@code 03-design/time-and-timezone.md} §3.4).
+     *
+     * <pre>{@code
+     * PakshiDays days = sky.almanac().pakshi(date, date, madras, Civil.ianaZone("Asia/Kolkata"),
+     *         PakshiNative.bird("OWL"));
+     * }</pre>
+     *
+     * @param from the first day
+     * @param to the last day, both ends included
+     * @param place where
+     * @param zone the zone each day is read on, from {@code Civil.ianaZone} and its neighbours
+     * @param whose the native, by bird or by birth star and paksha
+     * @return one entry a day, in order, with the provenance that sealed the request
+     */
+    public PakshiDays pakshi(CalendarDate from, CalendarDate to, Observer place, ZoneSpec zone,
+            PakshiNative whose) {
+        return PakshiReads.pakshi(context, from, to, place, clock(zone), whose, null);
+    }
+
+    /**
+     * {@link #pakshi(CalendarDate, CalendarDate, Observer, int, PakshiNative,
+     * com.teispace.teistro.request.PakshiRules)} on a zone's clock: each day read at the offset the
+     * zone had then.
+     *
+     * @param from the first day
+     * @param to the last day, both ends included
+     * @param place where
+     * @param zone the zone each day is read on, from {@code Civil.ianaZone} and its neighbours
+     * @param whose the native, by bird or by birth star and paksha
+     * @param rules what the days are read under
+     * @return one entry a day, in order, with the provenance that sealed the request
+     */
+    public PakshiDays pakshi(CalendarDate from, CalendarDate to, Observer place, ZoneSpec zone,
+            PakshiNative whose, com.teispace.teistro.request.PakshiRules rules) {
+        return PakshiReads.pakshi(context, from, to, place, clock(zone), whose, rules);
     }
 
     /**
@@ -1033,6 +1072,35 @@ public final class AlmanacArea {
      */
     public Disagreements disagreements(Context other, CalendarDate from, CalendarDate to, Observer place,
             int utcOffsetSeconds, boolean days, com.teispace.teistro.request.FestivalRequest festivals) {
+        return disagreements(other, from, to, place, clock(utcOffsetSeconds), days, festivals);
+    }
+
+    /**
+     * {@link #disagreements(Context, CalendarDate, CalendarDate, Observer, int, boolean,
+     * com.teispace.teistro.request.FestivalRequest)} on a zone's clock: each day read at the offset the
+     * zone had then ({@code 03-design/time-and-timezone.md} §3.4).
+     *
+     * <pre>{@code
+     * Disagreements found = official.almanac().disagreements(modern, first, last, kathmandu,
+     *         Civil.ianaZone("Asia/Kathmandu"), true, null);
+     * }</pre>
+     *
+     * @param other the reckoning compared with this one
+     * @param from the first day
+     * @param to the last day, both ends included
+     * @param place where both are reckoned
+     * @param zone the zone each day is read on, from {@code Civil.ianaZone} and its neighbours
+     * @param days whether the days are compared
+     * @param festivals the festival rules compared, or null for none
+     * @return each comparison asked, sealed by this context's provenance
+     */
+    public Disagreements disagreements(Context other, CalendarDate from, CalendarDate to, Observer place,
+            ZoneSpec zone, boolean days, com.teispace.teistro.request.FestivalRequest festivals) {
+        return disagreements(other, from, to, place, clock(zone), days, festivals);
+    }
+
+    private Disagreements disagreements(Context other, CalendarDate from, CalendarDate to, Observer place,
+            Map<String, Object> clock, boolean days, com.teispace.teistro.request.FestivalRequest festivals) {
         if (other == null) {
             throw Reads.invalid("other is the Context compared with this one", "other");
         }
@@ -1049,7 +1117,7 @@ public final class AlmanacArea {
         asked.put("latitudeDeg", place.latitudeDeg().value());
         asked.put("longitudeDeg", place.longitudeDeg().value());
         asked.put("altitudeM", place.altitudeM().value());
-        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.putAll(clock);
         asked.put("days", days);
         if (festivals != null) {
             asked.put("festivals", festivals);
@@ -1304,6 +1372,35 @@ public final class AlmanacArea {
      */
     public NextOccurrence next(double after, Observer place, int utcOffsetSeconds, String kind, String rule,
             com.teispace.teistro.request.FestivalRequest festivals, Calendar calendar, Integer limitDays) {
+        return next(after, place, clock(utcOffsetSeconds), kind, rule, festivals, calendar, limitDays);
+    }
+
+    /**
+     * {@link #next(double, Observer, int, String, String, com.teispace.teistro.request.FestivalRequest,
+     * Calendar, Integer)} on a zone's clock: each day read at the offset the zone had then.
+     *
+     * <pre>{@code
+     * NextOccurrence next = sdk.almanac().next(2461345.5, kathmandu, Civil.ianaZone("Asia/Kathmandu"),
+     *         "EKADASHI", null, null, null, null);
+     * }</pre>
+     *
+     * @param after the instant, a UTC Julian day
+     * @param place where the days are reckoned
+     * @param zone the zone each day is read on, from {@code Civil.ianaZone} and its neighbours
+     * @param kind a kind of day, or null with a rule
+     * @param rule a rule's key in {@code festivals}, or null with a kind
+     * @param festivals the festival rules carrying {@code rule}, null with a kind
+     * @param calendar the calendar the days are written in, null for Gregorian
+     * @param limitDays how many days to look ahead, null for 400
+     * @return the day found
+     */
+    public NextOccurrence next(double after, Observer place, ZoneSpec zone, String kind, String rule,
+            com.teispace.teistro.request.FestivalRequest festivals, Calendar calendar, Integer limitDays) {
+        return next(after, place, clock(zone), kind, rule, festivals, calendar, limitDays);
+    }
+
+    private NextOccurrence next(double after, Observer place, Map<String, Object> clock, String kind, String rule,
+            com.teispace.teistro.request.FestivalRequest festivals, Calendar calendar, Integer limitDays) {
         if (place == null) {
             throw Reads.invalid("place is an Observer", "place");
         }
@@ -1312,7 +1409,7 @@ public final class AlmanacArea {
         asked.put("latitudeDeg", place.latitudeDeg().value());
         asked.put("longitudeDeg", place.longitudeDeg().value());
         asked.put("altitudeM", place.altitudeM().value());
-        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.putAll(clock);
         if (calendar != null) {
             asked.put("calendar", calendar.key());
         }
@@ -1360,6 +1457,28 @@ public final class AlmanacArea {
      * @throws TeistroException {@code UNSUPPORTED} naming {@code locale} for a locale without the templates
      */
     public DaySentences sentences(CalendarDate date, Observer place, int utcOffsetSeconds, String locale) {
+        return sentences(date, place, clock(utcOffsetSeconds), locale);
+    }
+
+    /**
+     * {@link #sentences(CalendarDate, Observer, int, String)} on a zone's clock: the day read at the
+     * offset the zone had then.
+     *
+     * <pre>{@code
+     * DaySentences day = sdk.almanac().sentences(date, kathmandu, Civil.ianaZone("Asia/Kathmandu"), "en-Latn");
+     * }</pre>
+     *
+     * @param date the day
+     * @param place where the day is reckoned
+     * @param zone the zone the day is read on, from {@code Civil.ianaZone} and its neighbours
+     * @param locale the locale, null for the context's
+     * @return the sentences
+     */
+    public DaySentences sentences(CalendarDate date, Observer place, ZoneSpec zone, String locale) {
+        return sentences(date, place, clock(zone), locale);
+    }
+
+    private DaySentences sentences(CalendarDate date, Observer place, Map<String, Object> clock, String locale) {
         if (date == null) {
             throw Reads.invalid("date is a CalendarDate", "date");
         }
@@ -1376,7 +1495,7 @@ public final class AlmanacArea {
         asked.put("latitudeDeg", place.latitudeDeg().value());
         asked.put("longitudeDeg", place.longitudeDeg().value());
         asked.put("altitudeM", place.altitudeM().value());
-        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.putAll(clock);
         if (locale != null) {
             asked.put("locale", locale);
         }

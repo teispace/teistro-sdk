@@ -1321,7 +1321,7 @@ pub unsafe extern "C" fn ts_panchanga_days(
 /// festival answer gives, or null.
 ///
 /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-/// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "days",
+/// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "days",
 /// "festivals"}`: the days as `{"year", "month", "day"}`, `days` true
 /// when left out, `festivals` a festival request, and everything but
 /// `first`, the place and the offset optional. A key it does not read, a
@@ -1411,7 +1411,7 @@ pub unsafe extern "C" fn ts_almanac_disagreements(
 /// of the key differs).
 ///
 /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-/// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+/// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "festivals",
 /// "places"}`: the days as `{"year", "month", "day"}`, `festivals` a
 /// festival request with its `published` sets, and `places` the places
 /// the publisher may have reckoned at, each `{"name", "latitudeDeg",
@@ -1973,7 +1973,7 @@ pub unsafe extern "C" fn ts_almanac_first_year(
 /// provenance, and its `UID` stable for the rule, the day and the place.
 ///
 /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-/// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "festivals",
+/// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "festivals",
 /// "stampUnixSeconds", "name", "product", "refreshMinutes"}`: the days as
 /// `{"year", "month", "day"}`, `festivals` a festival request,
 /// `stampUnixSeconds` every event's `DTSTAMP`, and `calendar`, `last`,
@@ -2150,7 +2150,7 @@ pub unsafe extern "C" fn ts_almanac_digest(
 /// reckoned, every catalogue member a full key.
 ///
 /// `request_json` is `{"after", "latitudeDeg", "longitudeDeg",
-/// "altitudeM", "utcOffsetSeconds", "calendar", "kind", "rule",
+/// "altitudeM", "utcOffsetSeconds" or "zone", "calendar", "kind", "rule",
 /// "festivals", "limitDays"}`: `after` a UTC Julian day; either `kind`
 /// (`EKADASHI`, `PURNIMA`, `AMAVASYA` or `SANKRANTI`, each read by rules
 /// the SDK states) or `rule`, a key of `festivals`, a festival request;
@@ -2221,7 +2221,7 @@ pub unsafe extern "C" fn ts_almanac_next(
 /// elsewhere.
 ///
 /// `request_json` is `{date, calendar?, latitudeDeg, longitudeDeg,
-/// altitudeM?, utcOffsetSeconds, locale?}`. A key it does not read, or a
+/// altitudeM?, utcOffsetSeconds or zone, locale?}`. A key it does not read, or a
 /// place or offset out of range, is `INVALID_ARG`, named under
 /// `sentences`; a locale not loaded, or one without the templates, is
 /// `UNSUPPORTED` on `locale`; a context without an ephemeris is
@@ -2286,7 +2286,7 @@ pub unsafe extern "C" fn ts_almanac_sentences(
 /// Occurrences no day could judge are in `unjudged`.
 ///
 /// `request_json` is `{"fromYear", "years", "latitudeDeg", "longitudeDeg",
-/// "altitudeM", "utcOffsetSeconds", "calendar", "anniversaries"}`:
+/// "altitudeM", "utcOffsetSeconds" or "zone", "calendar", "anniversaries"}`:
 /// `fromYear` and `years` (1 to 100) counted in `calendar`, Gregorian when
 /// left out, the span running from month 1, day 1 of the first year to the
 /// day before month 1 of the year after the last; `altitudeM` optional;

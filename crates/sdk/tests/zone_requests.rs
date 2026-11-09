@@ -14,15 +14,18 @@
 
 use serde_json::{Value, json};
 use teistro::catalogue::Calendar;
+use teistro::finders::{ElectRequest, ObservanceRequest, PeopleRequest};
 use teistro::first_year::FirstYear;
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
 use teistro::rectification::{Rules, Window};
 use teistro::verify::ClaimsRequest;
 use teistro::{
-    AshauchQuery, AyanaReckoning, CalendarDate, ChartRequest, Context, DayClock, DeathTimeQuery,
-    Envelope, Ephemeris, FirstYearQuery, HouseholdQuery, MundaneRequest, PakshiRequest,
-    PartnerMatching, PartnerSynastry, RashifalBatch, RectificationRequest, ResearchAnswer,
-    ResearchRequest, SankalpaRequest, UtcOffset, ZoneSource, ZoneSpec, content_hash,
+    AnniversariesRequest, AshauchQuery, AyanaReckoning, CalendarDate, ChartRequest, Context,
+    DayClock, DeathTimeQuery, DisagreementRequest, Envelope, Ephemeris, FestivalCalendarRequest,
+    FestivalRequest, FirstYearQuery, HouseholdQuery, MuhurtaRequest, MundaneRequest, NextRequest,
+    PakshiRequest, PartnerMatching, PartnerSynastry, PublishedReasonsRequest, RashifalBatch,
+    RectificationRequest, ResearchAnswer, ResearchRequest, SankalpaRequest, SentencesRequest,
+    UtcOffset, ZoneSource, ZoneSpec, content_hash,
 };
 
 fn context() -> Context {
@@ -200,6 +203,10 @@ fn a_first_year_on_a_zone_reads_each_death_on_its_own_offset() {
         assert_eq!(zoned.value, read(Some(seconds)).value, "{jd}");
         assert_eq!(stated(&zoned).0, seconds);
     }
+}
+
+#[test]
+fn a_first_year_refuses_both_clocks() {
     refuses_both(
         FirstYearQuery::from_json,
         &format!(r#"{{{PLACE}, CLOCK, "request": {{"key": "K", "at": {NOON_2026}}}}}"#),
@@ -601,4 +608,406 @@ fn a_partner_on_a_zone_is_read_on_the_birth_s_offset() {
     let fixed = zoned.fixed(&sdk).unwrap();
     assert_eq!(fixed.utc_offset, Some(offset(19_800)));
     assert_eq!(zoned.davison(&fixed).unwrap_err().field(), Some("zone"));
+}
+
+// ---- the almanac's range requests: the days on the zone ---------------------
+
+/// Each year asked and the offset Nepal kept through the months read.
+const YEARS: [(i32, i32); 2] = [(1985, 19_800), (2026, 20_700)];
+
+/// A request on a zone answers what the offset Nepal kept then answers,
+/// and seals the zone into what it was asked.
+fn twins<T: PartialEq + std::fmt::Debug>(read: impl Fn(i32, Option<i32>) -> Envelope<T>) {
+    for (year, seconds) in YEARS {
+        let zoned = read(year, None);
+        let stated_offset = read(year, Some(seconds));
+        assert_eq!(zoned.value, stated_offset.value, "{year}");
+        assert_ne!(
+            zoned.provenance.input_hash, stated_offset.provenance.input_hash,
+            "{year}: the zone is sealed"
+        );
+    }
+}
+
+/// A day of `year` as a record writes it.
+fn day(year: i32, month: u8, day: u8) -> String {
+    format!(r#"{{"year": {year}, "month": {month}, "day": {day}}}"#)
+}
+
+/// The same request with each clock field a record carries replaced.
+fn clocked(record: &str, seconds: Option<i32>) -> String {
+    record.replace("CLOCK", &clock(seconds))
+}
+
+fn sentences_record(year: i32) -> String {
+    format!(r#"{{"date": {}, {PLACE}, CLOCK}}"#, day(year, 6, 1))
+}
+
+#[test]
+fn sentences_on_a_zone_read_the_day_on_its_own_offset() {
+    let sdk = context();
+    twins(|year, seconds| {
+        let asked = SentencesRequest::from_json(&clocked(&sentences_record(year), seconds));
+        sdk.almanac().sentences(&asked.unwrap()).unwrap()
+    });
+    refuses_both(
+        SentencesRequest::from_json,
+        &sentences_record(2026),
+        "sentences",
+    );
+}
+
+fn next_record(jd: f64) -> String {
+    format!(r#"{{"after": {jd}, {PLACE}, CLOCK, "kind": "EKADASHI"}}"#)
+}
+
+#[test]
+fn the_next_occurrence_on_a_zone_is_read_on_its_own_offset() {
+    let sdk = context();
+    twins(|year, seconds| {
+        let after = if year == 1985 { NOON_1985 } else { NOON_2026 };
+        let asked = NextRequest::from_json(&clocked(&next_record(after), seconds));
+        sdk.almanac().next(&asked.unwrap()).unwrap()
+    });
+    refuses_both(NextRequest::from_json, &next_record(NOON_2026), "next");
+}
+
+fn elect_record(first: &str, last: &str) -> String {
+    format!(
+        r#"{{"first": {first}, "last": {last}, {PLACE}, CLOCK,
+            "muhurta": {{"rules": "RAMAN_MARRIAGE", "most": 5}}}}"#
+    )
+}
+
+#[test]
+fn an_election_on_a_zone_searches_on_the_range_s_offset() {
+    let sdk = context();
+    twins(|year, seconds| {
+        let record = elect_record(&day(year, 11, 20), &day(year, 11, 30));
+        let asked = ElectRequest::from_json(&clocked(&record, seconds)).unwrap();
+        sdk.almanac().elect(&asked).unwrap()
+    });
+    // A search reckons on one offset, so a range across Nepal's change
+    // is refused rather than searched on either (C1252).
+    let across = elect_record(&day(1985, 12, 25), &day(1986, 1, 5));
+    let asked = ElectRequest::from_json(&clocked(&across, None)).unwrap();
+    assert!(sdk.almanac().elect(&asked).is_err());
+    refuses_both(
+        ElectRequest::from_json,
+        &elect_record(&day(2026, 11, 20), &day(2026, 11, 30)),
+        "elect",
+    );
+}
+
+fn people_record(year: i32) -> String {
+    format!(
+        r#"{{"day": {}, {PLACE}, CLOCK,
+            "people": [{{"name": "Asha", "instant": {NOON_1985}, {PLACE}, BIRTH}}]}}"#,
+        day(year, 6, 1)
+    )
+}
+
+#[test]
+fn a_people_digest_on_a_zone_reads_the_day_and_each_birth_on_its_own_offset() {
+    let sdk = context();
+    twins(|year, seconds| {
+        // The birth is in 1985 either way: +05:30 stated, or the zone.
+        let birth = clock(seconds.map(|_| 19_800));
+        let record = clocked(&people_record(year), seconds).replace("BIRTH", &birth);
+        sdk.almanac()
+            .people(&PeopleRequest::from_json(&record).unwrap())
+            .unwrap()
+    });
+    let day_both = people_record(2026).replace("BIRTH", &clock(Some(20_700)));
+    refuses_both(PeopleRequest::from_json, &day_both, "people");
+    let birth_both = people_record(2026)
+        .replacen("CLOCK", &clock(Some(20_700)), 1)
+        .replace("BIRTH", "CLOCK");
+    refuses_both(PeopleRequest::from_json, &birth_both, "people.people[0]");
+}
+
+fn anniversaries_record(year: i32) -> String {
+    format!(
+        r#"{{"fromYear": {year}, "years": 1, {PLACE}, CLOCK, "anniversaries": [{{"key": "GRANDFATHER",
+            "origin": {{"by": "LUNAR", "month": "KARTIKA", "tithi": "SHUKLA_DASHAMI"}}}}]}}"#
+    )
+}
+
+#[test]
+fn anniversaries_on_a_zone_read_each_year_on_its_own_offset() {
+    let sdk = context();
+    twins(|year, seconds| {
+        let asked = AnniversariesRequest::from_json(&clocked(&anniversaries_record(year), seconds));
+        sdk.almanac().anniversaries(&asked.unwrap()).unwrap()
+    });
+    refuses_both(
+        AnniversariesRequest::from_json,
+        &anniversaries_record(2026),
+        "anniversaries",
+    );
+}
+
+fn observance_record(year: i32) -> String {
+    format!(
+        r#"{{"first": {}, "last": {}, {PLACE}, CLOCK, "traditions": [
+            {{"name": "smarta", "festivals": {{"rules": "DHARMASINDHU"}}, "rule": "EKADASHI_SMARTA"}}]}}"#,
+        day(year, 11, 1),
+        day(year, 11, 30)
+    )
+}
+
+#[test]
+fn an_observance_on_a_zone_reads_the_days_on_their_own_offset() {
+    let sdk = context();
+    twins(|year, seconds| {
+        let asked = ObservanceRequest::from_json(&clocked(&observance_record(year), seconds));
+        sdk.almanac().observance(&asked.unwrap(), None).unwrap()
+    });
+    refuses_both(
+        ObservanceRequest::from_json,
+        &observance_record(2026),
+        "observance",
+    );
+}
+
+fn reasons_record(year: i32) -> String {
+    format!(
+        r#"{{"first": {}, "last": {}, {PLACE}, CLOCK, "festivals": {{"rules": "NEPAL"}},
+            "places": [{{"name": "Kathmandu", {PLACE}, CLOCK}}]}}"#,
+        day(year, 10, 1),
+        day(year, 10, 31)
+    )
+}
+
+#[test]
+fn published_reasons_on_an_offset_answer_as_before() {
+    let sdk = context();
+    let asked = PublishedReasonsRequest::from_json(&clocked(&reasons_record(2026), Some(20_700)));
+    let asked = asked.unwrap();
+    let sent = sdk
+        .almanac()
+        .published_reasons_request(&[], &asked)
+        .unwrap();
+    let direct = sdk
+        .almanac()
+        .published_reasons(
+            (&asked.from, &asked.to),
+            (&kathmandu(), offset(20_700)),
+            &asked.festivals,
+            &asked.places,
+            &[],
+        )
+        .unwrap();
+    same_bytes(&sent, direct.value.in_full().unwrap());
+}
+
+#[test]
+fn published_reasons_on_a_zone_read_the_days_on_their_own_offset() {
+    let sdk = context();
+    twins(|year, seconds| {
+        let asked = PublishedReasonsRequest::from_json(&clocked(&reasons_record(year), seconds));
+        sdk.almanac()
+            .published_reasons_request(&[], &asked.unwrap())
+            .unwrap()
+    });
+    let record = reasons_record(2026);
+    refuses_both(
+        PublishedReasonsRequest::from_json,
+        &record.replacen("CLOCK", &clock(Some(20_700)), 1),
+        "publishedReasons.places[0]",
+    );
+    let main = record
+        .replacen("CLOCK", "MAIN", 1)
+        .replace("CLOCK", &clock(Some(20_700)));
+    refuses_both(
+        PublishedReasonsRequest::from_json,
+        &main.replace("MAIN", "CLOCK"),
+        "publishedReasons",
+    );
+}
+
+/// The feed's stamp: noon UTC on 1 June of `year`, in the year read
+/// so a zone and the offset of then stamp it alike.
+const fn stamp(year: i32) -> i64 {
+    if year == 1985 {
+        486_475_200
+    } else {
+        1_780_315_200
+    }
+}
+
+fn feed_record(year: i32) -> String {
+    format!(
+        r#"{{"first": {}, "last": {}, {PLACE}, CLOCK, "festivals": {{"rules": "NEPAL"}},
+            "stampUnixSeconds": {}, "name": "Nepal", "refreshMinutes": 0}}"#,
+        day(year, 10, 1),
+        day(year, 10, 31),
+        stamp(year)
+    )
+}
+
+#[test]
+fn a_festival_calendar_on_an_offset_answers_as_before() {
+    let sdk = context();
+    let asked = FestivalCalendarRequest::from_json(&clocked(&feed_record(2026), Some(20_700)));
+    let asked = asked.unwrap();
+    let sent = sdk.almanac().festival_calendar_request(&asked).unwrap();
+    let direct = sdk
+        .almanac()
+        .festival_calendar(
+            &asked.from,
+            &asked.to,
+            &kathmandu(),
+            offset(20_700),
+            &asked.festivals,
+            &asked.feed,
+        )
+        .unwrap();
+    assert_eq!(sent, direct);
+}
+
+#[test]
+fn a_festival_calendar_on_a_zone_reads_the_days_on_their_own_offset() {
+    let sdk = context();
+    twins(|year, seconds| {
+        let asked = FestivalCalendarRequest::from_json(&clocked(&feed_record(year), seconds));
+        sdk.almanac()
+            .festival_calendar_request(&asked.unwrap())
+            .unwrap()
+    });
+    refuses_both(
+        FestivalCalendarRequest::from_json,
+        &feed_record(2026),
+        "festivalCalendar",
+    );
+}
+
+fn disagreement_record(year: i32) -> String {
+    format!(
+        r#"{{"first": {}, "last": {}, {PLACE}, CLOCK, "days": true, "festivals": {{"rules": "NEPAL"}}}}"#,
+        day(year, 10, 1),
+        day(year, 10, 31)
+    )
+}
+
+/// The other almanac a comparison reads beside Nepal's: the default one.
+fn other() -> Context {
+    Context::builder()
+        .ephemeris([Ephemeris::Builtin])
+        .build()
+        .unwrap()
+}
+
+#[test]
+fn disagreements_on_an_offset_answer_as_before() {
+    let (sdk, other) = (context(), other());
+    let asked = DisagreementRequest::from_json(&clocked(&disagreement_record(2026), Some(20_700)));
+    let asked = asked.unwrap();
+    let sent = sdk.almanac().disagreements_request(&other, &asked).unwrap();
+    let direct = sdk
+        .almanac()
+        .disagreements(&other, &asked.from, &asked.to, &kathmandu(), offset(20_700))
+        .unwrap();
+    same_bytes(&sent.days.unwrap(), direct.value.in_full().unwrap());
+}
+
+#[test]
+fn disagreements_on_a_zone_read_both_almanacs_on_their_own_offset() {
+    let (sdk, other) = (context(), other());
+    let read = |year: i32, seconds: Option<i32>| {
+        let asked = DisagreementRequest::from_json(&clocked(&disagreement_record(year), seconds));
+        sdk.almanac()
+            .disagreements_request(&other, &asked.unwrap())
+            .unwrap()
+    };
+    twins(|year, seconds| read(year, seconds).days.unwrap());
+    twins(|year, seconds| read(year, seconds).festivals.unwrap());
+    refuses_both(
+        DisagreementRequest::from_json,
+        &disagreement_record(2026),
+        "disagreements",
+    );
+}
+
+/// A zone's days with the clock each says set aside, each that says one
+/// having said `seconds`: a day asked by a bare offset leaves its clock out
+/// (§3.4), and a search on one offset reads its days on that offset.
+fn unclocked(days: &[teistro::Panchanga], seconds: i32) -> Vec<teistro::Panchanga> {
+    days.iter()
+        .map(|day| {
+            let mut day = day.clone();
+            if let Some(clock) = day.clock.take() {
+                assert_eq!(clock.offset.seconds(), seconds);
+            }
+            day
+        })
+        .collect()
+}
+
+/// October of `year` as a range.
+fn october(year: i32) -> (CalendarDate, CalendarDate) {
+    let gregorian =
+        |day| CalendarDate::defined(teistro::catalogue::Calendar::Gregorian, year, 10, day);
+    (gregorian(1), gregorian(31))
+}
+
+#[test]
+fn festival_and_muhurta_days_on_a_zone_read_each_day_on_its_own_offset() {
+    let sdk = context();
+    let festivals = FestivalRequest::from_json(r#"{"rules": "NEPAL"}"#).unwrap();
+    let muhurta = MuhurtaRequest::from_json(r#"{"rules": "RAMAN_MARRIAGE", "most": 5}"#).unwrap();
+    for (year, seconds) in YEARS {
+        let (from, to) = october(year);
+        let read = |clock: DayClock| {
+            let almanac = sdk.almanac();
+            (
+                almanac
+                    .festivals_with_days(&from, &to, &kathmandu(), clock.clone(), &festivals)
+                    .unwrap(),
+                almanac
+                    .muhurta_with_days(&from, &to, &kathmandu(), clock, &muhurta)
+                    .unwrap(),
+            )
+        };
+        let (zoned, stated_offset) = (read(DayClock::Zone(nepal())), read(offset(seconds).into()));
+        assert_eq!(
+            unclocked(&zoned.0.days.value, seconds),
+            stated_offset.0.days.value,
+            "{year}"
+        );
+        assert_eq!(zoned.0.answer.value, stated_offset.0.answer.value, "{year}");
+        assert_eq!(
+            unclocked(&zoned.1.days.value, seconds),
+            stated_offset.1.days.value,
+            "{year}"
+        );
+        assert_eq!(zoned.1.answer.value, stated_offset.1.answer.value, "{year}");
+    }
+    // The search reckons on one offset: a range across the change is refused.
+    let from = CalendarDate::defined(teistro::catalogue::Calendar::Gregorian, 1985, 12, 25);
+    let to = CalendarDate::defined(teistro::catalogue::Calendar::Gregorian, 1986, 1, 5);
+    let across = sdk.almanac().muhurta_with_days(
+        &from,
+        &to,
+        &kathmandu(),
+        DayClock::Zone(nepal()),
+        &muhurta,
+    );
+    assert!(across.is_err());
+}
+
+#[test]
+fn festival_days_on_an_offset_answer_as_the_festivals_do() {
+    let sdk = context();
+    let festivals = FestivalRequest::from_json(r#"{"rules": "NEPAL"}"#).unwrap();
+    let (from, to) = october(2026);
+    let with_days = sdk
+        .almanac()
+        .festivals_with_days(&from, &to, &kathmandu(), offset(20_700), &festivals)
+        .unwrap();
+    let alone = sdk
+        .almanac()
+        .festivals(&from, &to, &kathmandu(), offset(20_700), &festivals)
+        .unwrap();
+    assert_eq!(with_days.answer, alone);
 }

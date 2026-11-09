@@ -8215,12 +8215,16 @@ export declare class AlmanacArea {
     readonly from: CalendarDate;
     readonly to?: CalendarDate;
     readonly place: AlmanacRequest['place'];
-    readonly utcOffsetSeconds: number;
+    /** The offset from UTC in seconds, east positive; or `zone`, not both. */
+    readonly utcOffsetSeconds?: number;
+    /** The zone each day is read on, at the offset it had then; or `utcOffsetSeconds`. */
+    readonly zone?: ZoneSpec;
     readonly festivals: FestivalRequest;
     readonly places?: readonly {
       readonly name: string;
       readonly place: AlmanacRequest['place'];
-      readonly utcOffsetSeconds: number;
+      readonly utcOffsetSeconds?: number;
+      readonly zone?: ZoneSpec;
     }[];
     readonly sky?: Context;
   }): PublishedReasons;
@@ -8490,8 +8494,13 @@ export interface DaySentencesAsked {
   readonly date: { readonly year: number; readonly month: number; readonly day: number };
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each day is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** The date's calendar; Gregorian when left out. */
   readonly calendar?: Calendar;
   /** The locale; the context's when left out. */
@@ -8526,8 +8535,13 @@ export interface NextRequest {
   readonly after: number;
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each day is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** The calendar the answer's days are written in; Gregorian when left out. */
   readonly calendar?: Calendar;
   /** A kind of day; or `rule`, not both. */
@@ -8588,8 +8602,13 @@ export interface FestivalCalendarRequest {
   readonly to?: CalendarDate;
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each day is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** The festivals. */
   readonly festivals: FestivalRequest;
   /** Every event's `DTSTAMP`, in seconds since 1970; now when left out. */
@@ -9228,8 +9247,13 @@ export interface DisagreementRequest {
   readonly to?: CalendarDate;
   /** Where, in degrees and metres. */
   readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
-  /** The local clock's offset from UTC in seconds, east positive. */
-  readonly utcOffsetSeconds: number;
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /**
+   * The zone each day is read on, at the offset it had then; or
+   * `utcOffsetSeconds`, not both (`03-design/time-and-timezone.md` §3.4).
+   */
+  readonly zone?: ZoneSpec;
   /** Whether the days are compared; true when left out. */
   readonly days?: boolean;
   /** The festivals compared, when asked. */

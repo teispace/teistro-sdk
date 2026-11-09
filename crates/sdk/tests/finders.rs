@@ -39,7 +39,7 @@ fn an_election_is_the_muhurta_search_ranked_and_split() {
             &asked.first,
             &asked.last,
             &asked.place,
-            asked.offset,
+            asked.clock.offset().unwrap(),
             &asked.muhurta,
         )
         .unwrap()
@@ -69,7 +69,7 @@ fn festival_days(sdk: &Context, asked: &ObservanceRequest, at: usize) -> Vec<Val
             &asked.first,
             &asked.last,
             &asked.place,
-            asked.offset,
+            asked.clock.offset().unwrap(),
             &tradition.festivals,
         )
         .unwrap()
@@ -176,7 +176,12 @@ fn a_people_digest_is_each_persons_gochar_and_hits_over_the_day() {
     let digest = sdk.almanac().people(&asked).unwrap().value;
     let day = sdk
         .almanac()
-        .of(&asked.day, &asked.day, &asked.place, asked.offset)
+        .of(
+            &asked.day,
+            &asked.day,
+            &asked.place,
+            asked.clock.offset().unwrap(),
+        )
         .unwrap()
         .value;
     assert_eq!(digest.sunrise, day[0].day.sunrise);
@@ -188,7 +193,8 @@ fn a_people_digest_is_each_persons_gochar_and_hits_over_the_day() {
             .chart()
             .reading(
                 person.instant,
-                &ChartRequest::at(person.place, person.offset).with_dashas([asked.dasha]),
+                &ChartRequest::at(person.place, person.clock.offset().unwrap())
+                    .with_dashas([asked.dasha]),
             )
             .unwrap()
             .value;

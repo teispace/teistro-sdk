@@ -23,9 +23,11 @@ use teistro_gochar::hits::Hit;
 use teistro_muhurta::tara::{TaraReading, chandra_house, tara};
 use teistro_panchanga::span::Span;
 use teistro_serial::Document;
+use teistro_time::ZoneSpec;
 
 use super::AlmanacArea;
-use crate::asked::{DayAsked, instant, offset_of, place_of};
+use crate::DayClock;
+use crate::asked::{DayAsked, instant, place_of};
 use crate::{ChartRequest, GocharRequest, HitRequest};
 
 /// The field a people digest's refusals are named under.
@@ -47,8 +49,9 @@ pub struct Person {
     pub instant: JulianDay<Utc>,
     /// Where they were born.
     pub place: Place,
-    /// The clock of their birth.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
 }
 
 /// A people digest: the day and the place it is reckoned at, the births,
@@ -78,8 +81,9 @@ pub struct PeopleRequest {
     pub day: CalendarDate,
     /// Where it is reckoned: its sunrise, its star and its sky.
     pub place: Place,
-    /// The offset its civil day runs at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
     /// The births, in the order the answer lists them.
     pub people: Vec<Person>,
     /// The dasha system read.
@@ -105,8 +109,13 @@ pub(crate) struct PersonAsked {
     /// The birthplace's height above sea level in metres, 0 when left out.
     #[serde(default)]
     altitude_m: f64,
-    /// The offset from UTC of the birth's clock, in seconds, east positive.
-    utc_offset_seconds: i32,
+    /// The offset from UTC of the birth's clock, in seconds, east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
 }
 
 /// The request as a binding writes it.
@@ -127,8 +136,13 @@ pub(crate) struct PeopleAsked {
     /// Its height above sea level in metres, 0 when left out.
     #[serde(default)]
     altitude_m: f64,
-    /// The offset from UTC its civil day runs at, in seconds, east positive.
-    utc_offset_seconds: i32,
+    /// The offset from UTC its civil day runs at, in seconds, east positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The births, 1 to 50, in the order the answer lists them.
     people: Vec<PersonAsked>,
     /// The dasha system read; `VIMSHOTTARI` when left out.
@@ -189,7 +203,7 @@ impl PeopleAsked {
                     name: one.name.clone(),
                     instant: instant(one.instant, "instant")?,
                     place: place_of(one.latitude_deg, one.longitude_deg, one.altitude_m)?,
-                    offset: offset_of(one.utc_offset_seconds)?,
+                    clock: DayClock::asked(one.utc_offset_seconds, one.zone.clone())?,
                 })
             };
             let person = read().map_err(|why| why.under(&format!("people[{at}]")))?;
@@ -200,7 +214,7 @@ impl PeopleAsked {
                 .day
                 .in_calendar(self.calendar.unwrap_or(Calendar::Gregorian)),
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             people,
             dasha: self.dasha.unwrap_or(DashaSystem::Vimshottari),
             depth,
@@ -358,10 +372,24 @@ impl AlmanacArea<'_> {
     /// not reach; a dasha system whose reading needs more than a natal
     /// chart (named `people.dasha`).
     pub fn people(self, request: &PeopleRequest) -> Result<Envelope<PeopleDigest>, Error> {
+        self.unclocked().clocked(
+            &request.clock,
+            || Self::noon_of_date(&request.day),
+            |almanac, offset| almanac.people_on(request, offset),
+        )
+    }
+
+    /// [`AlmanacArea::people`] with the day on `offset`, or on the zone
+    /// this area is on; each birth on its own clock.
+    fn people_on(
+        self,
+        request: &PeopleRequest,
+        offset: UtcOffset,
+    ) -> Result<Envelope<PeopleDigest>, Error> {
         let Envelope {
             value: days,
             mut provenance,
-        } = self.of(&request.day, &request.day, &request.place, request.offset)?;
+        } = self.of(&request.day, &request.day, &request.place, offset)?;
         let Some(today) = days.first() else {
             return Err(Error::internal("a day asked of the almanac answered none"));
         };
@@ -381,8 +409,8 @@ impl AlmanacArea<'_> {
             .iter()
             .enumerate()
             .map(|(at, person)| {
-                let asked =
-                    ChartRequest::at(person.place, person.offset).with_dashas([request.dasha]);
+                let asked = ChartRequest::on(person.place, person.clock.clone())
+                    .with_dashas([request.dasha]);
                 chart
                     .reading(person.instant, &asked)
                     .map(|read| read.value)
@@ -408,19 +436,23 @@ impl AlmanacArea<'_> {
             .zip(hits)
             .map(|((person, natal), hits)| self.person_day(person, natal, hits, &sky))
             .collect::<Result<Vec<_>, _>>()?;
-        provenance.input_hash = content_hash(&serde_json::json!({
+        let mut input = serde_json::json!({
             "day": request.day.to_string(),
             "place": request.place,
-            "utcOffsetSeconds": request.offset.seconds(),
             "dasha": request.dasha,
             "depth": request.depth,
-            "people": request.people.iter().map(|person| serde_json::json!({
-                "name": person.name,
-                "instant": person.instant,
-                "place": person.place,
-                "utcOffsetSeconds": person.offset.seconds(),
-            })).collect::<Vec<_>>(),
-        }));
+            "people": request.people.iter().map(|person| {
+                let mut one = serde_json::json!({
+                    "name": person.name,
+                    "instant": person.instant,
+                    "place": person.place,
+                });
+                person.clock.seal_into(&mut one);
+                one
+            }).collect::<Vec<_>>(),
+        });
+        request.clock.seal_into(&mut input);
+        provenance.input_hash = content_hash(&input);
         Ok(Envelope::sealing(
             PeopleDigest {
                 day: request.day.clone(),

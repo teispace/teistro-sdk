@@ -87,7 +87,8 @@ final class RashifalReads {
             throw Reads.invalid("place is an Observer", "place");
         }
         Map<String, Object> asked = new LinkedHashMap<>();
-        asked.put("utcOffsetSeconds", request.utcOffsetSeconds());
+        asked.putAll(request.zone() == null ? AlmanacArea.clock(request.utcOffsetSeconds())
+                : AlmanacArea.clock(request.zone()));
         if (request.snapshot() != null) {
             asked.put("snapshot", request.snapshot());
         }

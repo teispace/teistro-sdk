@@ -42,13 +42,15 @@ impl AlmanacArea<'_> {
         let (precession, delta_t) = (PrecessionModel::default(), self.context.delta_t());
         let system = system_of(calendar)?;
         let model = drik_sun(self.context, provider);
+        // A zone's days read each instant at its own offset (C1252).
+        let clock = self.clock_or(&offset);
         let almanac = Almanac::new(
-            provider, resolved, &model, system, &offset, precession, delta_t,
+            provider, resolved, &model, system, clock, precession, delta_t,
         );
         let settings = &resolved.settings;
         let completion = Completion::new(provider, settings.provider.overrides, delta_t);
         let founder = Founder::new(
-            provider, resolved, &model, system, &offset, precession, delta_t,
+            provider, resolved, &model, system, clock, precession, delta_t,
         );
         for observance in &mut found.observances {
             let Some(rule) = request

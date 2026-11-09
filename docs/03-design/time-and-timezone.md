@@ -273,6 +273,29 @@ clocks (C248), so a partner asked by zone is first fixed to its offset at its
 instant (`Partner::fixed`), and `davison` given a partner still on a zone is
 refused naming `zone` (C1251).
 
+**The almanac's range requests take a zone too.** The sentences of a day, the
+next occurrence, an election, a people digest, the anniversaries, an
+observance, the published reasons (the request and each place tried), the
+festival feed, the disagreements, and Rust's `festivals_with_days` and
+`muhurta_with_days` take `zone` in place of `utcOffsetSeconds`, refused as the
+others are. Each request type holds a `DayClock` in `clock` where it held
+`offset`, and the Rust calls take `impl Into<DayClock>`, so a `UtcOffset`
+still compiles; `DayClock::offset` gives back the offset a request stated.
+
+The days of a range are read on the zone, each on its own offset, so a
+festival range across a change is answered as the day answer is. What
+reckons on one offset reckons on the first day's noon (C1252): a festival
+reckoning's saits and a feed's stamp read the zone. A muhurta search, an
+election and `muhurta_with_days` search on one offset, so a range across a
+change is refused rather than searched on either, as a day section across one
+is. A people digest reads each birth at its own instant, as a chart does.
+
+The input hash seals the request as asked (C1252). A request whose hash is
+its own record writes `zone` where it wrote `utcOffsetSeconds`; one whose
+hash a reckoning inside it wrote (a festival range, a search) has the zone
+sealed over that hash. Asked by a bare offset, every one of these answers,
+its input hash included, is byte for byte what it was.
+
 ## 4. Algorithms
 
 **Zone resolution.** For `Iana`, ask the provider for the offsets at

@@ -97,6 +97,12 @@ final class WesternTest {
                 MundaneChart event = sky.chart().mundane(MundaneKind.EVENT, kathmandu, null, null, null,
                         new MundaneEvent("A founding", 2_451_545, "a record"), 20_700);
                 same(ChartKind.EVENT, event.chart().kind(), "an event chart");
+                MundaneChart zoned = sky.chart().mundane(MundaneKind.ARIES_INGRESS, kathmandu, 2024, null, null, null,
+                        Civil.ianaZone("Asia/Kathmandu"));
+                MundaneChart stated = sky.chart().mundane(MundaneKind.ARIES_INGRESS, kathmandu, 2024, null, null, null,
+                        20_700);
+                same(stated.instant(), zoned.instant(), "the ingress on Nepal's zone");
+                same(stated.chart().kind(), zoned.chart().kind(), "cast as on the offset");
                 same("a record", event.source(), "the source carried");
                 check(refusedField(() -> sky.chart().mundane(MundaneKind.EVENT, kathmandu, 2024, null, null, null, 0))
                         .startsWith("mundane."), "an event's year refused");

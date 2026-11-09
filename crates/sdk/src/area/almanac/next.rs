@@ -13,10 +13,12 @@ use teistro_core::error::Error;
 use teistro_core::quantity::{JulianDay, Place, Utc};
 use teistro_core::time::UtcOffset;
 use teistro_panchanga::festival::{NextKind, Observances, PublishedStatus, limit_days, windows};
+use teistro_time::ZoneSpec;
 
 use super::AlmanacArea;
+use crate::DayClock;
 use crate::area::system_of;
-use crate::asked::{instant, offset_of, place_of};
+use crate::asked::{instant, place_of};
 use crate::festival_request::FestivalRequest;
 
 /// The field a next-occurrence request's refusals are named under.
@@ -62,8 +64,9 @@ pub struct NextRequest {
     pub after: JulianDay<Utc>,
     /// The place.
     pub place: Place,
-    /// The offset the civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
     /// The calendar the days are written in.
     pub calendar: Calendar,
     /// What is looked for.
@@ -86,7 +89,14 @@ pub(crate) struct NextAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The offset from UTC the civil days run at, in seconds, east
+    /// positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     #[serde(default)]
     calendar: Option<Calendar>,
     /// A kind of day; or `rule`, not both.
@@ -165,7 +175,7 @@ impl NextAsked {
         Ok(NextRequest {
             after: instant(self.after, "after")?,
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             calendar: self.calendar.unwrap_or(Calendar::Gregorian),
             target,
             festivals,
@@ -353,6 +363,20 @@ impl AlmanacArea<'_> {
     /// limit, with the limit's most as a hint; and as
     /// [`AlmanacArea::festivals`].
     pub fn next(self, request: &NextRequest) -> Result<Envelope<NextOccurrence>, Error> {
+        self.unclocked().clocked(
+            &request.clock,
+            || Ok(request.after),
+            |almanac, offset| almanac.next_on(request, offset),
+        )
+    }
+
+    /// [`AlmanacArea::next`] on `offset`, the clock's at the instant, the
+    /// days on the zone this area is on when it is.
+    fn next_on(
+        self,
+        request: &NextRequest,
+        offset: UtcOffset,
+    ) -> Result<Envelope<NextOccurrence>, Error> {
         let (festivals, keys) = match &request.target {
             NextTarget::Kind(kind) => {
                 let read = kind.rules();
@@ -381,17 +405,17 @@ impl AlmanacArea<'_> {
         };
         festivals.check()?;
         let calendar = system_of(request.calendar)?;
-        let local = request.after.get() + f64::from(request.offset.seconds()) / 86_400.0;
+        let local = request.after.get() + f64::from(offset.seconds()) / 86_400.0;
         let (start, _) = FixedDay::from_local_jd(local);
         let first = calendar.date_of(start)?;
         let mut searched = 0;
-        for (offset, days) in windows(request.limit_days) {
-            let from = calendar.date_of(start.plus_days(i64::from(offset)))?;
-            let to = calendar.date_of(start.plus_days(i64::from(offset + days) - 1))?;
+        for (ahead, days) in windows(request.limit_days) {
+            let from = calendar.date_of(start.plus_days(i64::from(ahead)))?;
+            let to = calendar.date_of(start.plus_days(i64::from(ahead + days) - 1))?;
             let Envelope {
                 value,
                 mut provenance,
-            } = self.festivals(&from, &to, &request.place, request.offset, &festivals)?;
+            } = self.festivals(&from, &to, &request.place, offset, &festivals)?;
             searched += days;
             let Some((_, day)) = earliest(&value, &keys, calendar)? else {
                 continue;
@@ -399,15 +423,16 @@ impl AlmanacArea<'_> {
             let (found, held) = on_the_day(value, &keys, &day);
             // What the provenance hashes: the request, not the window that
             // held the day.
-            provenance.input_hash = content_hash(&serde_json::json!({
+            let mut input = serde_json::json!({
                 "after": request.after.get(),
                 "place": request.place,
-                "utcOffsetSeconds": request.offset.seconds(),
                 "calendar": request.calendar,
                 "target": request.target,
                 "festivals": festivals,
                 "limitDays": request.limit_days,
-            }));
+            });
+            request.clock.seal_into(&mut input);
+            provenance.input_hash = content_hash(&input);
             provenance.applied_conventions.push(Convention {
                 knob: String::from("festival.next"),
                 value: format!("{first}+{searched}d"),

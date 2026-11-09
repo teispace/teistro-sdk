@@ -8610,7 +8610,7 @@ export class AlmanacArea extends Area {
    * @param {object} request.from the first day, as `date(...)` builds one
    * @param {object} [request.to] the last day, both ends included; `from` when left out
    * @param {object} request.place `{ latitude, longitude, altitude }`
-   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} [request.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `request.zone`, each instant read at the zone's offset then
    * @param {boolean} [request.days] whether the days are compared; true when left out
    * @param {object} [request.festivals] a festivals request record, e.g. `{ rules: 'NEPAL' }`
    * @returns {{ days: object | null, festivals: object | null }}
@@ -8628,7 +8628,7 @@ export class AlmanacArea extends Area {
       month: finite(given?.month, `${what}.month`),
       day: finite(given?.day, `${what}.day`),
     });
-    const { from: given, to, place: where, utcOffsetSeconds, festivals, ...rest } = request;
+    const { from: given, to, place: where, utcOffsetSeconds, zone, festivals, ...rest } = request;
     const place = where ?? {};
     const from = given ?? {};
     const asked = {
@@ -8637,7 +8637,7 @@ export class AlmanacArea extends Area {
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      ...clockOf(utcOffsetSeconds, zone),
     };
     if (from.calendar !== undefined) asked.calendar = from.calendar;
     if (to !== undefined && to !== null) asked.last = day(to, 'to');
@@ -8664,14 +8664,15 @@ export class AlmanacArea extends Area {
    *
    * @param {object} request `{ from, to, place, utcOffsetSeconds,
    *   festivals, places, sky }`, `places` each `{ name, place,
-   *   utcOffsetSeconds }`
+   *   utcOffsetSeconds }`; `zone` in place of either offset reads each
+   *   day at the offset the zone had then
    * @returns {object} `{ reasons, provenance }`
    */
   publishedReasons(request) {
     if (typeof request !== 'object' || request === null || Array.isArray(request)) {
       throw new TypeError('publishedReasons: expected a request, e.g. { from, to, place, utcOffsetSeconds, festivals }');
     }
-    const { from: given, to, place: where, utcOffsetSeconds, festivals, places = [], sky } = request;
+    const { from: given, to, place: where, utcOffsetSeconds, zone, festivals, places = [], sky } = request;
     let theirs;
     if (sky !== undefined && sky !== null) {
       theirs = natives.get(sky);
@@ -8691,14 +8692,14 @@ export class AlmanacArea extends Area {
     const asked = {
       first: day(from, 'from'),
       ...at(where, 'place'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      ...clockOf(utcOffsetSeconds, zone),
       festivals: JSON.parse(
         recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }") ?? 'null',
       ),
       places: places.map((p, k) => ({
         name: String(p?.name),
         ...at(p?.place, `places[${k}].place`),
-        utcOffsetSeconds: finite(p?.utcOffsetSeconds, `places[${k}].utcOffsetSeconds`),
+        ...clockOf(p?.utcOffsetSeconds, p?.zone),
       })),
     };
     if (from.calendar !== undefined) asked.calendar = from.calendar;
@@ -8744,7 +8745,7 @@ export class AlmanacArea extends Area {
    * @param {object} request.from the first day, as `date(...)` builds one
    * @param {object} [request.to] the last day, both ends included; `from` when left out
    * @param {object} request.place `{ latitude, longitude, altitude }`
-   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} [request.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `request.zone`, each instant read at the zone's offset then
    * @param {object} request.festivals a festivals request record, e.g. `{ rules: 'NEPAL' }`
    * @param {number} [request.stampUnixSeconds] every event's `DTSTAMP`; now when left out
    * @param {string} [request.name] the calendar's name; "Festivals" when left out
@@ -8769,7 +8770,7 @@ export class AlmanacArea extends Area {
       month: finite(given?.month, `${what}.month`),
       day: finite(given?.day, `${what}.day`),
     });
-    const { from: given, to, place: where, utcOffsetSeconds, festivals, stampUnixSeconds, ...rest } = request;
+    const { from: given, to, place: where, utcOffsetSeconds, zone, festivals, stampUnixSeconds, ...rest } = request;
     const place = where ?? {};
     const from = given ?? {};
     const asked = {
@@ -8778,7 +8779,7 @@ export class AlmanacArea extends Area {
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      ...clockOf(utcOffsetSeconds, zone),
       stampUnixSeconds:
         stampUnixSeconds === undefined ? Math.floor(Date.now() / 1000) : finite(stampUnixSeconds, 'stampUnixSeconds'),
     };
@@ -8895,7 +8896,7 @@ export class AlmanacArea extends Area {
    * @param {object} request
    * @param {number} request.after the instant, a UTC Julian day
    * @param {object} request.place `{ latitude, longitude, altitude }`
-   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} [request.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `request.zone`, each instant read at the zone's offset then
    * @param {string} [request.calendar] the answer's days' calendar; Gregorian when left out
    * @param {string} [request.kind] a kind of day, or else `rule`
    * @param {string} [request.rule] a key of `festivals`, or else `kind`
@@ -8907,7 +8908,7 @@ export class AlmanacArea extends Area {
     if (typeof request !== 'object' || request === null || Array.isArray(request)) {
       throw new TypeError("next: expected a request, e.g. { after, place, utcOffsetSeconds, kind: 'EKADASHI' }");
     }
-    const { after, place: where, utcOffsetSeconds, festivals, limitDays, ...rest } = request;
+    const { after, place: where, utcOffsetSeconds, zone, festivals, limitDays, ...rest } = request;
     const place = where ?? {};
     const asked = {
       ...rest,
@@ -8915,7 +8916,7 @@ export class AlmanacArea extends Area {
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      ...clockOf(utcOffsetSeconds, zone),
     };
     if (limitDays !== undefined) asked.limitDays = finite(limitDays, 'limitDays');
     const record = recordJson(festivals, 'festivals', "a festivals request record, e.g. { rules: 'NEPAL' }");
@@ -8950,7 +8951,7 @@ export class AlmanacArea extends Area {
    * @param {object} request
    * @param {{year: number, month: number, day: number}} request.date the day
    * @param {object} request.place `{ latitude, longitude, altitude }`
-   * @param {number} request.utcOffsetSeconds the local clock's offset from UTC, east positive
+   * @param {number} [request.utcOffsetSeconds] the local clock's offset from UTC, east positive; or `request.zone`, each instant read at the zone's offset then
    * @param {string} [request.calendar] the date's calendar; Gregorian when left out
    * @param {string} [request.locale] the locale; the context's when left out
    * @returns {object} `{ locale, draft, sentences, withheld }`
@@ -8959,7 +8960,7 @@ export class AlmanacArea extends Area {
     if (typeof request !== 'object' || request === null || Array.isArray(request)) {
       throw new TypeError('sentences: expected a request, e.g. { date, place, utcOffsetSeconds }');
     }
-    const { date, place: where, utcOffsetSeconds, ...rest } = request;
+    const { date, place: where, utcOffsetSeconds, zone, ...rest } = request;
     const place = where ?? {};
     const asked = {
       ...rest,
@@ -8971,7 +8972,7 @@ export class AlmanacArea extends Area {
       latitudeDeg: finite(place.latitude, 'place.latitude'),
       longitudeDeg: finite(place.longitude, 'place.longitude'),
       altitudeM: finite(place.altitude ?? 0, 'place.altitude'),
-      utcOffsetSeconds: finite(utcOffsetSeconds, 'utcOffsetSeconds'),
+      ...clockOf(utcOffsetSeconds, zone),
     };
     const { value } = JSON.parse(run(this, (inner) => inner.almanacSentences(JSON.stringify(asked))));
     return deepFreeze(value);

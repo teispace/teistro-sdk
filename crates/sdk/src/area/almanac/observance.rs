@@ -14,13 +14,14 @@ use teistro_core::envelope::{Envelope, Hash, ProviderStamp, content_hash};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::Place;
-use teistro_core::time::UtcOffset;
 use teistro_panchanga::festival::{EkadashiFast, Observance, Observances};
+use teistro_time::ZoneSpec;
 
 use super::AlmanacArea;
 use super::disagreement::overlap;
+use crate::DayClock;
 use crate::area::system_of;
-use crate::asked::{DayAsked, offset_of, place_of};
+use crate::asked::{DayAsked, place_of};
 use crate::context::Context;
 use crate::festival_request::FestivalRequest;
 
@@ -88,8 +89,9 @@ pub struct ObservanceRequest {
     pub last: CalendarDate,
     /// Where the days are reckoned.
     pub place: Place,
-    /// The offset their civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
     /// The traditions, in the order the answer lists them.
     pub traditions: Vec<Tradition>,
 }
@@ -137,8 +139,14 @@ pub(crate) struct ObservanceAsked {
     /// The place's height above sea level in metres, 0 when left out.
     #[serde(default)]
     altitude_m: f64,
-    /// The offset from UTC the place's civil days run at, in seconds, east positive.
-    utc_offset_seconds: i32,
+    /// The offset from UTC the place's civil days run at, in seconds, east positive;
+    /// or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The traditions compared, 1 to 8, in the order the answer lists them.
     traditions: Vec<TraditionAsked>,
 }
@@ -199,7 +207,7 @@ impl ObservanceAsked {
             first,
             last,
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             traditions: traditions(self.traditions)?,
         })
     }
@@ -635,12 +643,18 @@ impl AlmanacArea<'_> {
             } else {
                 context.almanac()
             };
-            let Envelope { value, provenance } = area.festivals(
+            let Envelope { value, provenance } = area.unclocked().clocked_from(
+                &request.clock,
                 &request.first,
-                &request.last,
-                &request.place,
-                request.offset,
-                &tradition.festivals,
+                |almanac, offset| {
+                    almanac.festivals(
+                        &request.first,
+                        &request.last,
+                        &request.place,
+                        offset,
+                        &tradition.festivals,
+                    )
+                },
             )?;
             unjudged.extend(
                 value
@@ -675,11 +689,10 @@ impl AlmanacArea<'_> {
                 "a checked request names a tradition, so one was reckoned",
             ));
         };
-        provenance.input_hash = content_hash(&serde_json::json!({
+        let mut input = serde_json::json!({
             "first": request.first.to_string(),
             "last": request.last.to_string(),
             "place": request.place,
-            "utcOffsetSeconds": request.offset.seconds(),
             "traditions": request.traditions.iter().map(|one| serde_json::json!({
                 "name": one.name,
                 "rule": one.rule,
@@ -687,7 +700,9 @@ impl AlmanacArea<'_> {
                 "festivals": one.festivals,
             })).collect::<Vec<_>>(),
             "skies": skies,
-        }));
+        });
+        request.clock.seal_into(&mut input);
+        provenance.input_hash = content_hash(&input);
         let parted = occurrences.iter().filter(|one| !one.agree).count();
         Ok(Envelope::sealing(
             ObservanceFinding {

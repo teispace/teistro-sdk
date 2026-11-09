@@ -4487,7 +4487,8 @@ class AlmanacArea(_Area):
         *,
         from_date: CalendarDate,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         to_date: Optional[CalendarDate] = None,
         days: bool = True,
         festivals: Optional[FestivalRequest] = None,
@@ -4501,6 +4502,9 @@ class AlmanacArea(_Area):
         or month differs, or which one side alone gives, with each side's
         observance or fast. Each is `None` when not asked; a request
         comparing nothing is refused as `disagreements.days`.
+
+        The clock is `utc_offset_seconds` or a `zone`, never both; a zone
+        is read at each day's offset then.
 
         >>> # official = Context(**nepal_official(teimeris()))
         >>> # modern = Context(profile="nepali-drik", ephemeris=teimeris())
@@ -4521,7 +4525,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
             "days": days,
         }
         if to_date is not None:
@@ -4540,13 +4544,17 @@ class AlmanacArea(_Area):
         *,
         date: CalendarDate,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         locale: Optional[str] = None,
     ) -> "DaySentences":
         """**A day in sentences** (`03-design/day-in-sentences.md`): one
         date's facts as short sentences from templates, every value from
         the day's answer. A locale without the templates raises
         `UNSUPPORTED` on `locale`.
+
+        The clock is `utc_offset_seconds` or a `zone`, never both; a zone
+        is read at each day's offset then.
 
         >>> # day = ctx.almanac.sentences(date=day, place=kathmandu,
         >>> #     utc_offset_seconds=20700, locale="ne-Deva-NP")
@@ -4558,7 +4566,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
         }
         if locale is not None:
             asked["locale"] = locale
@@ -4576,7 +4584,8 @@ class AlmanacArea(_Area):
         *,
         after: float,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         kind: Optional[str] = None,
         rule: Optional[str] = None,
         festivals: Optional[FestivalRequest] = None,
@@ -4591,6 +4600,9 @@ class AlmanacArea(_Area):
         `festivals`. The search looks `limit_days` ahead, 400 when left out
         and at most 3660; nothing within it raises `LIMIT` on `limitDays`.
 
+        The clock is `utc_offset_seconds` or a `zone`, never both; a zone
+        is read at each day's offset then.
+
         >>> # next = ctx.almanac.next(after=2461345.5, place=kathmandu,
         >>> #     utc_offset_seconds=20700, kind="EKADASHI")
         >>> # next.day, next.keys
@@ -4600,7 +4612,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
         }
         if calendar is not None:
             asked["calendar"] = calendar.key
@@ -4683,7 +4695,8 @@ class AlmanacArea(_Area):
         *,
         from_date: CalendarDate,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         festivals: FestivalRequest,
         to_date: Optional[CalendarDate] = None,
         places: Sequence[ReckonedPlace] = (),
@@ -4696,7 +4709,10 @@ class AlmanacArea(_Area):
         (another context: the committee's Surya Siddhanta beside a modern
         sky), then each shipped pack's rule of the same key. The first
         change whose rule's day is the published one is the reason, else
-        `PUBLISHER`; every change tried is listed with the day it gave."""
+        `PUBLISHER`; every change tried is listed with the day it gave.
+        The clock is `utc_offset_seconds` or a `zone`, never both, for the
+        request and for each of `places`; a zone is read at each day's
+        offset then."""
         if sky is not None and not isinstance(sky, Context):
             raise TeistroError(Status.INVALID_ARG, "the publisher's sky is another Context", field="sky")
 
@@ -4709,7 +4725,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
             "festivals": json.loads(_festivals_json(festivals) or "null"),
             "places": [
                 {
@@ -4717,7 +4733,7 @@ class AlmanacArea(_Area):
                     "latitudeDeg": at.place.latitude_deg,
                     "longitudeDeg": at.place.longitude_deg,
                     "altitudeM": at.place.altitude_m,
-                    "utcOffsetSeconds": at.utc_offset_seconds,
+                    **_clock_fields(at.utc_offset_seconds, at.zone),
                 }
                 for at in places
             ],
@@ -4741,7 +4757,8 @@ class AlmanacArea(_Area):
         *,
         from_date: CalendarDate,
         place: Observer,
-        utc_offset_seconds: int,
+        utc_offset_seconds: Optional[int] = None,
+        zone: Optional[ZoneSpec] = None,
         festivals: FestivalRequest,
         to_date: Optional[CalendarDate] = None,
         stamp_unix_seconds: Optional[int] = None,
@@ -4766,6 +4783,9 @@ class AlmanacArea(_Area):
         `events` merges the caller's own, `only` filters, `hints`, `alarm`,
         `categories` and `color` say more (`03-design/icalendar.md` §6).
 
+        The clock is `utc_offset_seconds` or a `zone`, never both; a zone
+        is read at each day's offset then.
+
         >>> # ics = sdk.almanac.festival_calendar(from_date=..., to_date=..., place=kathmandu,
         >>> #     utc_offset_seconds=20700, festivals={"rules": "NEPAL_PANCHANGA"}, name="Nepal 2026")
         >>> # Path("nepal-2026.ics").write_bytes(ics.encode())
@@ -4780,7 +4800,7 @@ class AlmanacArea(_Area):
             "latitudeDeg": place.latitude_deg,
             "longitudeDeg": place.longitude_deg,
             "altitudeM": place.altitude_m,
-            "utcOffsetSeconds": utc_offset_seconds,
+            **_clock_fields(utc_offset_seconds, zone),
             "stampUnixSeconds": int(time.time()) if stamp_unix_seconds is None else stamp_unix_seconds,
             "refreshMinutes": 0 if refresh_minutes is None else refresh_minutes,
         }
@@ -11185,8 +11205,11 @@ class ReckonedPlace:
     """What the answer calls it."""
 
     place: "Observer"
-    utc_offset_seconds: int
-    """The clock its civil days run on."""
+    utc_offset_seconds: Optional[int] = None
+    """The clock its civil days run on: this offset, or `zone`, not both."""
+
+    zone: Optional["ZoneSpec"] = None
+    """The zone its civil days are read on, at the offset it had then."""
 
 
 @dataclass(frozen=True)

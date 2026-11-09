@@ -36,7 +36,7 @@ final class PakshiReads {
     }
 
     static PakshiDays pakshi(Context context, CalendarDate from, CalendarDate to, Observer place,
-            int utcOffsetSeconds, PakshiNative whose, com.teispace.teistro.request.PakshiRules rules) {
+            Map<String, Object> clock, PakshiNative whose, com.teispace.teistro.request.PakshiRules rules) {
         if (from == null) {
             throw Reads.invalid("from is a CalendarDate", "from");
         }
@@ -55,7 +55,7 @@ final class PakshiReads {
         asked.put("latitudeDeg", place.latitudeDeg().value());
         asked.put("longitudeDeg", place.longitudeDeg().value());
         asked.put("altitudeM", place.altitudeM().value());
-        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.putAll(clock);
         asked.put("native", whose(whose));
         if (rules != null) {
             asked.put("rules", rules);
