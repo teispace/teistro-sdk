@@ -484,6 +484,12 @@
       "name": "Vira Nirvana Samvat",
       "prose": "the Vira Nirvana Samvat",
       "iast": "Vīra Nirvāṇa Saṃvat"
+    },
+    "BHASKARABDA": {
+      "short": "BB",
+      "name": "Bhaskarabda",
+      "prose": "the Bhaskarabda",
+      "iast": "Bhāskarābda"
     }
   },
   "avastha_baladi": {

@@ -330,6 +330,12 @@ class TheCalendars(WithLibrary):
         drik = self.ctx.calendar.convert(day, Calendar.TAMIL_SOLAR)
         self.assertEqual((drik.year, drik.month, drik.day), (1943, 7, 2))
 
+    def test_15_april_2025_opens_bhaskarabda_1432_in_the_assamese_calendar(self) -> None:
+        bohag = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2025, 4, 15), Calendar.ASSAM_SOLAR)
+        self.assertEqual((bohag.calendar, bohag.year, bohag.month, bohag.day), (Calendar.ASSAM_SOLAR, 1432, 1, 1))
+        assert bohag.era is not None
+        self.assertEqual(bohag.era.key, "BHASKARABDA")
+
     def test_the_first_of_ramadan_1446_is_1_march_2025_in_the_tabular_hijri_calendar(self) -> None:
         ramadan = self.ctx.calendar.convert(date(Calendar.GREGORIAN, 2025, 3, 1), Calendar.HIJRI_TABULAR)
         self.assertEqual((ramadan.year, ramadan.month, ramadan.day), (1446, 9, 1))

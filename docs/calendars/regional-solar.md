@@ -1,14 +1,19 @@
-# The regional solar calendars: Tamil, Bengal, Odia and Malayalam
+# The regional solar calendars: Tamil, Bengal, Odia, Malayalam and Assamese
 
 Status: `built`, 2026-10-27. `Calendar::TamilSolar`, `BengalSolar`,
 `OdiaSolar`, `MalayalamSolar` (`calendar.TAMIL_SOLAR`, `BENGAL_SOLAR`,
 `ODIA_SOLAR`, `MALAYALAM_SOLAR`), `crates/calendar/src/regional_solar/`.
-P2-1 step 2. Assam's calendar waits on a crux (C765); Punjab's is not
-built (below). The Tamil vakya school, `Calendar::TamilVakya`
-(`calendar.TAMIL_VAKYA`), was added 2026-11-03 for consumer request A2-9
-([The two Tamil schools](#the-two-tamil-schools)).
+P2-1 step 2. Punjab's is not built (below). The Tamil vakya school,
+`Calendar::TamilVakya` (`calendar.TAMIL_VAKYA`), was added 2026-11-03 for
+consumer request A2-9 ([The two Tamil schools](#the-two-tamil-schools)).
+On 2026-11-09, for a consumer's SR-15, the Malayalam calendar was held to
+the Kerala Gazette's own Malayalam Era dates (61 months, C764 closed,
+[Kerala's own print](#keralas-own-print)), and Assam's calendar was
+built as `Calendar::AssamSolar` (`calendar.ASSAM_SOLAR`, id 15) from the
+Government of Assam's Bhaskarabda dates
+([The Assamese calendar](#the-assamese-calendar)).
 
-The solar calendars of Tamil Nadu, West Bengal, Odisha and Kerala begin
+The solar calendars of Tamil Nadu, West Bengal, Odisha, Kerala and Assam begin
 each month at a sankranti, the Sun's entry into a sidereal sign. Bikram
 Sambat does the same. What differs between them is the civil day the
 sankranti is placed on, the place that day is reckoned at, the sign the
@@ -53,6 +58,11 @@ limb with standard refraction.
 | `BENGAL_SOLAR` | `FOLLOWING_DAY` | Kolkata, 22.5726°N 88.3639°E | Mesha (Vaisakha) | `BENGALI` | CE − 593 |
 | `ODIA_SOLAR` | `SUNRISE_TO_SUNRISE` | Bhubaneswar, 20.2961°N 85.8245°E | Mesha | `SHAKA` | CE − 78 |
 | `MALAYALAM_SOLAR` | `BEFORE_APARAHNA` | Thiruvananthapuram, 8.5241°N 76.9366°E | Simha (Chingam) | `KOLLAM` | CE − 824 |
+| `ASSAM_SOLAR` | `FOLLOWING_DAY` | Guwahati, 26.1445°N 91.7362°E | Mesha (Bohag) | `BHASKARABDA` | CE − 593 |
+
+The first four reckon the drik Sun above; `ASSAM_SOLAR` reckons the
+Surya Siddhanta's, the text's (`regional_solar::Sky`), the sky its
+state's own print fits ([The Assamese calendar](#the-assamese-calendar)).
 
 The place is part of the definition: a rule that reads a sunrise or a
 sunset reads it there. The Bengal rule reads none, so Kolkata names the
@@ -61,10 +71,15 @@ calendar and moves no day.
 Month 1 is the month of the year's first sign, and every month is named
 by the sign entered (`RegionalSolar::sign`, `Region::sign_of_month`): the
 regions' own names (Chittirai, Vaisakha, Chingam and the rest) are labels
-of those signs. No locale names them yet: no vetted Nepali source for the
-four calendars' month names has been read, and a strict locale binds the
-English to one, so a date renders its month by number and the calendars
-join the other calendar systems in `xtask/src/intl.rs`'s unnamed list.
+of those signs. The first four are named in no locale: no vetted Nepali
+source for their month names has been read, and a strict locale binds
+the English to one, so a date renders its month by number. Assam's
+months are named: the gazette's own spellings in `en-Latn` (Bohag, Jeth,
+Ahar, Saon, Bhado, Ahin, Kati, Aghun, Puh, Magh, Phagun, Chot) and, in
+`ne-Deva-NP`, `hi-Deva-IN` and `sa-Deva`, the Sanskrit names the twelve
+months are (वैशाख to चैत्र), as the Bangladeshi calendar's are, with the
+era as भास्कराब्द. The calendar systems themselves stay in
+`xtask/src/intl.rs`'s unnamed list.
 
 **The eras.** Bengal counts the Bengali San: Sewell and Dikshit (art. 71,
 p. 43) make Bengali San 1300 the year of A.D. 1893–94 and say it "runs
@@ -130,21 +145,28 @@ The Odisha column under `SANKRANTI_DAY`, the civil day, matches 96/120.
   prints them on the civil day, where every other edition, before and
   after, prints a sankranti before dawn on the day before. The edition
   contradicts itself; the SDK follows the other nine.
-- *Kerala, Simha 2023.* The sankranti fell at 13:32 IST on 17 August
-  2023 (the book prints 13:33), a minute and a half before the
-  three-fifths mark at Thiruvananthapuram; the rule gives 17 August and
-  the column prints the 18th. A boundary case inside the spread of the
-  sunrise conventions and the places a column could be reckoned for.
+- *Kerala, Simha 2023: a print error in the* Rashtriya Panchang. The
+  sankranti fell at 13:32 IST on 17 August 2023 (the book prints 13:33),
+  a minute and a half before the three-fifths mark at
+  Thiruvananthapuram; the rule gives 17 August and the column prints the
+  18th. The Kerala Gazette prints 28 August 2023 as 12 Chingam 1199, so
+  Chingam began on the 17th, the SDK's day: the column's 18th is its
+  slip, not a miss of the rule ([Kerala's own print](#keralas-own-print)).
+  How near the mark the sunrise convention and the place leave it is
+  C1307.
 - *Kerala, Mesha (Vishu).* The column's 2018 and later editions fit the
   sunrise-to-sunrise day for Mesha alone: sankrantis at 20:23 (2020) and
   21:04 (2024) printed the same day, at 02:33 (2021) and 03:21 (2025) the
   day before, and at 14:09 (2019) and 14:59 (2023), after the
   three-fifths mark, the same day; six of the ten Mesha rows miss the
-  Malabar rule. The 1992–93 edition and Kerala's own observance of Vishu as
-  reported by third parties fit the Malabar rule. Sewell and Dikshit state
-  one rule for every sign. The SDK ships the Malabar rule for Mesha too
-  and records the *Rashtriya Panchang*'s Mesha rows as a measured
-  divergence until a printed Kerala almanac settles it (C764).
+  Malabar rule. Each is the day before the state's Vishu, the
+  sankranti's sunrise-to-sunrise day, so the column most likely fills
+  Kerala's Mesha cell from its Vishu or sankranti entry (a reading, not a
+  finding). The Kerala Gazette prints Medam 1 by the Malabar rule in
+  every year it covers, including the four (2021, 2023, 2024, 2025) where
+  the two part, so the SDK's Malabar rule for Mesha stands and the
+  column's Mesha rows are a measured divergence with a named cause
+  (C764, closed).
 
 **An earlier list, rejected.** Before the *Rashtriya Panchang* was read,
 Prokerala's Tamil calendar for Chennai (108 months, 2020–2028) was set
@@ -153,6 +175,70 @@ No rule and no uniform shift fitted past 92 (Lahiri) or 110 (Siddhanta),
 and its misses could not be ordered by any cutoff: it is a third
 reckoning, most likely vakya, and not a drik corpus. It has not been set
 against the vakya calendar below.
+
+## Kerala's own print
+
+The Government of Kerala's yearly notification of public holidays (Kerala
+Gazette Extraordinary, General Administration (Co-ordination)
+Department: G.O.(P) No. 16/2020/GAD for 2021, 29/2021 for 2022, 22/2022
+for 2023, 24/2023 for 2024, 34/2024 for 2025 and 14/2025 for 2026) prints
+every holiday with its Christian Era date, its Malayalam Era date
+(day, month from Chingam, Kollam year) and its Saka date, and three
+mastheads print the issue's ME date. Each pair pins its month's first
+day: 73 pairs pin 61 month beginnings, Dhanu 1196 (16 December 2020) to
+Dhanu 1202 (16 December 2026). Vrischikam never appears, since no holiday
+falls in it. It is the state's own print, rank 1, and the transcription
+is cited, not copied (the tests hold each pair as a fact,
+`malayalam_months_match_the_kerala_gazette`).
+
+| | months | `MALAYALAM_SOLAR` | the *Rashtriya Panchang*'s Kerala column |
+|---|---:|---:|---:|
+| the gazette's 61 | 61 | **61/61** | 56/61 |
+
+The column parts from the gazette in five months: the four Medam rows of
+2021, 2023, 2024 and 2025, where it prints the day before, and Chingam
+1199, where it prints 18 August 2023 and the gazette the 17th. In all
+five the gazette prints the Malabar rule's day, which is the SDK's. So:
+
+- **Medam follows the Malabar rule** (C764, closed). Medam 1 is 14 April
+  2021 (sankranti 02:33), 14 April 2022 (08:41), 15 April 2023 (14:59,
+  after the three-fifths mark), 14 April 2024 (21:04 on the 13th),
+  14 April 2025 (03:21) and 14 April 2026 (09:33). Sewell and Dikshit and
+  the Calendar Reform Committee (1955, part C, which states the cutoff as
+  18 ghatikas, "or more correctly" three fifths of the day) name no
+  exception for Mesha, and the gazette shows none.
+- **Chingam 1199 is the column's slip.** Its sankranti fell a minute and
+  a half before the mark; the gazette's 28 August 2023 = 12 Chingam puts
+  the month on the 17th.
+- **The sky is the modern Sun's.** Over the Surya Siddhanta's Sun the
+  same rule at the same place misses 22 of the 61 months (Thulam
+  1197, Chingam 1199, Thulam 1199 and Thulam 1200 among them), since the
+  text's sankrantis fall hours from the modern Sun's and cross the mark
+  or a sunrise (`the_kerala_gazette_reckons_the_modern_sun`). Which ayanamsha Kerala's
+  almanac makers use is unread; the fit is to Lahiri, the *Rashtriya
+  Panchang*'s, at boundaries a few minutes wide (C1309).
+
+**Vishu is not Medam 1.** The gazette prints Vishu on Medam 2 in 2022 and
+2026 (15 April both years), and on Medam 1 in the other four. All six fit
+one rule: Vishu is the first civil day whose sunrise follows the Mesha
+sankranti, the day after the sankranti's sunrise-to-sunrise day. The two
+part when the sankranti falls between sunrise and the three-fifths mark
+(08:41 and 09:33). A test runs the solar engine under
+`SUNRISE_TO_SUNRISE` at Thiruvananthapuram over the regional tables' sky
+and finds the gazette's six days one day after it
+(`crates/ephemeris-builtin/tests/vishu.rs`). No festival pack ships it:
+the rule language keeps a solar day as a calendar's date or as the civil
+day, midnight to midnight, of the Sun's entry into a nakshatra
+(`sunEnters`, the form Mithila's Jur Sital uses, C1230), and Vishu is the
+sunrise day, which no form says; a `sunEnters` one day on gives 4 of the
+6 (C1301).
+
+**A Kerala holiday pack is not built.** The notifications' dated pairs are
+what this page reads; their holiday rows (Onam, Sree Narayana Guru
+Jayanthi and Samadhi, Mannam Jayanthi, Karkidaka Vavu and the rest) are
+not transcribed, and the commonest of them keep a nakshatra or a day in
+a solar month (Thiruvonam in Chingam, Chatayam in Chingam, Kanni 5),
+which the festival rule language has no form for (C1304).
 
 ## The two Tamil schools
 
@@ -271,17 +357,88 @@ method and still printed the vakya months, which the civil Tamil calendar
 may have required then (C1208). `TAMIL_SOLAR` stays drik: the *Rashtriya
 Panchang*'s Tamil Nadu column fits it 120 of 120.
 
+## The Assamese calendar
+
+`calendar.ASSAM_SOLAR` (id 15) is Assam's civil solar calendar, the one
+the Government of Assam prints its holidays in. Its definition:
+
+- **Rule.** `FOLLOWING_DAY`, Bengal's: the sankranti's civil day closes
+  the old month and the next day opens the new. Every Bihu sits on a
+  month boundary in the gazette: Magh Bihu on the last day of Puh and
+  1 Magh, Bohag Bihu on the last day of Chot and 1 and 2 Bohag, Kati Bihu
+  on the last day of Ahin (30 Ahin 1430 and 31 Ahin 1432), where common
+  descriptions say the first of Kati and Magh (C1306).
+- **Sky.** The Surya Siddhanta's Sun, the text's (`SuryaSiddhanta::text()`,
+  `regional_solar::Sky::SuryaSiddhanta`), the sky of the Bikram Sambat
+  table; not the drik Sun of the other four (C1300).
+- **Place and clock.** Guwahati, 26.1445°N 91.7362°E, on IST. The rule
+  reads no sunrise, so the place names the calendar and moves nothing.
+- **Year and era.** The year opens at Mesha (Bohag) and counts the
+  Bhaskarabda, `era.BHASKARABDA`: 1 Bohag 1430 = 15 April 2023 and
+  1 Bohag 1432 = 15 April 2025, so Bhaskarabda = CE − 593 from Bohag to
+  December, the Bengali San's count under Assam's name (and Saka − 515,
+  not "Saka + 15"). The table runs over the years opening 1800 to 2398.
+
+**What was measured.** The General Administration Department's lists of
+holidays for 2023 (No. GAD-14021/18/2022-ESTT-GAD, 28 November 2022) and
+for 2025 (No. E-221561/347, 6 December 2024, with its corrigendum of
+27 December 2024) print every holiday with its Gregorian, Saka and
+Bhaskarabda dates; the 2025 list's dated masthead is one more pair. 34
+pairs pin 27 month beginnings, Aghun 1429 to Puh 1432, with month
+lengths of 29 to 32 days (Saon 1430's 18 August 2023 is its 32nd day).
+The lists' copy names "Concerned Astrologers", who supply the Assamese
+dates. The 2024 and 2026 lists with their Bhaskarabda columns were not
+obtained (C1303).
+
+| sky, under `FOLLOWING_DAY` | the gazette's 27 |
+|---|---:|
+| the Surya Siddhanta's, the text's (`ASSAM_SOLAR`) | **27/27** |
+| the modern Sun's, Lahiri on the true basis (`BENGAL_SOLAR`'s table) | 16/27 |
+
+Eleven of the 27 begin a day later than the drik reckoning gives, since
+the text's sankrantis fall up to about 15 hours after the modern Sun's
+(Tula and Simha the most). Kati Bihu, the last day of Ahin, gives seven
+years of days, three printed by the gazette (17 October 2020, 18 October
+2023 and 2025) and four by press copies of the lists (18 October 2021
+and 2022, 17 October 2024 and 18 October 2026): the text's sky keeps all
+seven, the drik sky three. Each is also 1 Kartik in the Bikram Sambat
+table, another rule on the same sky (`bihu_falls_on_the_assamese_month_ends`).
+
+**The near-midnight rows.** A rough model of the text put three
+gazette months' sankrantis within an hour and a half after IST midnight.
+Recomputed with the SDK's own `SuryaSiddhanta::text()`:
+
+| month | sankranti (SDK, IST) | printed first day |
+|---|---|---|
+| Puh 1430 (Dhanu) | 00:52 on 17 December 2023 | 18 December 2023 |
+| Phagun 1431 (Kumbha) | 01:27 on 13 February 2025 | 14 February 2025 |
+| Aghun 1432 (Vrishchika) | 01:30 on 17 November 2025 | 18 November 2025 |
+
+Each falls after midnight on its day, so the next day opens the month, as
+printed (`the_near_midnight_rows_fall_after_midnight_on_the_text`). No
+gazette sankranti falls within 52 minutes either side of
+midnight, so the data cannot tell IST midnight from Guwahati's local
+midnight (about 13.5 minutes earlier) or from the Calendar Reform
+Committee's tithi test near midnight (C1302). The shipped rule is IST
+midnight, as `BENGAL_SOLAR`'s.
+
+**PAC's Assam footnote.** The *Rashtriya Panchang*'s Bengal & Assam
+column and its one Assam footnote (Ashadha 2020) are PAC's drik
+reckoning, not Assam's civil calendar. The Calendar Reform Committee's
+report (1955, p. 244) adds a near-midnight test to the Bengal rule (a
+sankranti within 24 minutes of midnight goes by the tithi at sunrise,
+Karkata always to the next day and Makara to the third), and read at
+local midnight it accounts for the footnote and for the Bengal column's
+one miss (Vrisha 2021) on the drik Sun. That is a change to the shipped
+Bengal rule and is not made (C1305; C765 closed).
+
 ## Not built
 
-- **Assam.** Assam shares Bengal's column, and the column footnotes
-  where Assam differs. The cases point to a local-midnight rule, the
-  Bengal rule with midnight reckoned at Guwahati rather than on IST:
-  Ashadha 2020 (sankranti 23:53 IST on 14 June; Assam printed 16 June,
-  Bengal 15 June) and Vrisha 2021 (23:25 IST on 14 May; the column
-  prints 16 May, C765's reading). But Shravana 2026 (23:39 IST on
-  16 July) carries no Assam footnote. Two cases of three is not a rule;
-  the calendar waits on C765, and needs a local-midnight variant of
-  `FollowingDay` when built.
+- **North Malabar.** Sewell and Dikshit (art. 52 and 71) and the
+  Calendar Reform Committee open North Malabar's year at Kanni (Kanya),
+  with the same month starts and the year number one less during
+  Chingam. No current print of it was found, and none is shipped
+  (C1308).
 - **Punjab.** The *Rashtriya Panchang* prints Punjab and Haryana in one
   column with Odisha, and that column is reckoned at Bhubaneswar (its
   sunrise decides the pre-dawn sankrantis), not at a place in Punjab. A
@@ -300,6 +457,22 @@ Panchang*'s Tamil Nadu column fits it 120 of 120.
   rank 1 for the month beginnings it prints.
 - *Indian Astronomical Ephemeris* 2018 (Positional Astronomy Centre), the
   beginning of Bengali San 1425.
+- Kerala Gazette Extraordinary, General Administration (Co-ordination)
+  Department, "Public Holidays" notifications G.O.(P) No. 16/2020,
+  29/2021, 22/2022, 24/2023, 34/2024 and 14/2025/GAD (holidays for 2021
+  to 2026, each with its Malayalam Era date); the 2022 and 2026 issues at
+  gad.kerala.gov.in, the others as copies of the signed gazette; rank 1.
+- Government of Assam, General Administration Department, "List of
+  Holidays for 2023 in the State of Assam" (No.
+  GAD-14021/18/2022-ESTT-GAD, 28 November 2022) and "List of Holidays for
+  the Year 2025" (No. E-221561/347, 6 December 2024) with its
+  corrigendum of 27 December 2024, each holiday with its Bhaskarabda
+  date; read through the Internet Archive's copies; rank 1. The 2020
+  Assam Gazette Extraordinary No. 486 (29 November 2019) gives Kati Bihu
+  2020 without a Bhaskarabda column.
+- *Report of the Calendar Reform Committee* (CSIR, New Delhi, 1955),
+  part C, pp. 244–245 and 257–258 and table 16: the Malabar rule's cutoff,
+  the Bengal rule's near-midnight test, the eras and month names; rank 2.
 - *Vakyakarana*, with the *Laghuprakasika* of Sundararaja, ed. T. S.
   Kuppanna Sastri and K. V. Sarma (Madras: Kuppuswami Sastri Research
   Institute, 1962), I.2–4, III.1, III.6–8, the introduction and the

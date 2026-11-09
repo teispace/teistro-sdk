@@ -484,6 +484,12 @@
       "name": "वीर निर्वाण संवत्",
       "prose": "वीर निर्वाण संवत्",
       "iast": "Vīra Nirvāṇa Saṃvat"
+    },
+    "BHASKARABDA": {
+      "short": "भा.",
+      "name": "भास्कराब्द",
+      "prose": "भास्कराब्द",
+      "iast": "Bhāskarābda"
     }
   },
   "avastha_baladi": {

@@ -151,16 +151,350 @@ fn malayalam_months_begin_before_three_fifths_of_the_daylight() {
             (4, 2025, (2025, 8, 17)),
             // Kollam 1199: Simha at 13:33 on 17 August 2023, a minute and
             // a half from the mark: the SDK's sankranti falls before it
-            // (the 17th), the column prints the 18th.
+            // (the 17th), as the Kerala Gazette prints it; the column
+            // prints the 18th, its slip.
             (4, 2023, (2023, 8, 17)),
             // Kollam 1167: Mesha 1992 by the Malabar rule, as printed.
             (0, 1991, (1992, 4, 14)),
             // Kollam 1194: Mesha at 14:09 on 14 April 2019, after the
             // mark: 15 April by the Malabar rule; the 2018 and later
-            // editions print the 14th (C764).
+            // editions print the 14th, the sunrise-to-sunrise day, where
+            // the Kerala Gazette prints the Malabar rule's (C764).
             (0, 2018, (2019, 4, 15)),
         ],
     );
+}
+
+/// The Kerala Gazette's printed pairs, each a Christian Era date and the
+/// Malayalam Era date beside it (Kollam year, month from Chingam, day):
+/// the Government of Kerala's "Public Holidays" notifications for 2021 to
+/// 2026 (G.O.(P) No. 16/2020, 29/2021, 22/2022, 24/2023, 34/2024 and
+/// 14/2025/GAD), each holiday printed with its ME date, and three
+/// mastheads. Every month a pair falls in has its first day pinned by it:
+/// 61 months, 2020-12 to 2026-12.
+const KERALA_GAZETTE: [((i32, u8, u8), (i32, u8, u8)); 73] = [
+    ((2021, 1, 2), (1196, 5, 18)),
+    ((2021, 1, 26), (1196, 6, 13)),
+    ((2021, 3, 11), (1196, 7, 27)),
+    ((2021, 4, 1), (1196, 8, 18)),
+    ((2021, 4, 14), (1196, 9, 1)),
+    ((2021, 7, 20), (1196, 12, 4)),
+    ((2021, 8, 19), (1197, 1, 3)),
+    ((2021, 9, 21), (1197, 2, 5)),
+    ((2021, 10, 19), (1197, 3, 3)),
+    ((2021, 12, 25), (1197, 5, 10)),
+    ((2022, 1, 2), (1197, 5, 18)),
+    ((2022, 1, 26), (1197, 6, 12)),
+    ((2022, 3, 1), (1197, 7, 17)),
+    ((2022, 4, 14), (1197, 9, 1)),
+    ((2022, 4, 15), (1197, 9, 2)),
+    ((2022, 7, 9), (1197, 11, 25)),
+    ((2022, 7, 28), (1197, 12, 12)),
+    ((2022, 8, 18), (1198, 1, 2)),
+    ((2022, 9, 21), (1198, 2, 5)),
+    ((2022, 10, 24), (1198, 3, 7)),
+    ((2022, 10, 27), (1198, 3, 10)),
+    ((2022, 12, 25), (1198, 5, 10)),
+    ((2023, 1, 2), (1198, 5, 18)),
+    ((2023, 1, 26), (1198, 6, 12)),
+    ((2023, 2, 18), (1198, 7, 6)),
+    ((2023, 4, 6), (1198, 8, 23)),
+    ((2023, 4, 14), (1198, 8, 31)),
+    ((2023, 4, 15), (1198, 9, 1)),
+    ((2023, 6, 28), (1198, 11, 13)),
+    ((2023, 7, 17), (1198, 12, 1)),
+    ((2023, 8, 28), (1199, 1, 12)),
+    ((2023, 9, 22), (1199, 2, 5)),
+    ((2023, 10, 5), (1199, 2, 18)),
+    ((2023, 10, 24), (1199, 3, 7)),
+    ((2023, 12, 25), (1199, 5, 9)),
+    ((2024, 1, 2), (1199, 5, 17)),
+    ((2024, 1, 26), (1199, 6, 12)),
+    ((2024, 3, 8), (1199, 7, 24)),
+    ((2024, 3, 28), (1199, 8, 15)),
+    ((2024, 4, 14), (1199, 9, 1)),
+    ((2024, 6, 17), (1199, 11, 3)),
+    ((2024, 7, 16), (1199, 12, 1)),
+    ((2024, 8, 20), (1200, 1, 4)),
+    ((2024, 9, 17), (1200, 2, 1)),
+    ((2024, 10, 31), (1200, 3, 15)),
+    ((2024, 12, 25), (1200, 5, 10)),
+    ((2025, 1, 26), (1200, 6, 13)),
+    ((2025, 2, 26), (1200, 7, 14)),
+    ((2025, 3, 31), (1200, 8, 17)),
+    ((2025, 4, 14), (1200, 9, 1)),
+    ((2025, 6, 6), (1200, 10, 23)),
+    ((2025, 7, 6), (1200, 11, 22)),
+    ((2025, 7, 24), (1200, 12, 8)),
+    ((2025, 8, 15), (1200, 12, 30)),
+    ((2025, 8, 28), (1201, 1, 12)),
+    ((2025, 9, 21), (1201, 2, 5)),
+    ((2025, 10, 1), (1201, 2, 15)),
+    ((2025, 10, 20), (1201, 3, 3)),
+    ((2025, 10, 31), (1201, 3, 14)),
+    ((2025, 12, 25), (1201, 5, 10)),
+    ((2026, 1, 2), (1201, 5, 18)),
+    ((2026, 1, 26), (1201, 6, 12)),
+    ((2026, 2, 15), (1201, 7, 3)),
+    ((2026, 3, 20), (1201, 8, 6)),
+    ((2026, 4, 14), (1201, 9, 1)),
+    ((2026, 4, 15), (1201, 9, 2)),
+    ((2026, 5, 27), (1201, 10, 13)),
+    ((2026, 6, 25), (1201, 11, 11)),
+    ((2026, 8, 12), (1201, 12, 27)),
+    ((2026, 8, 25), (1202, 1, 9)),
+    ((2026, 9, 21), (1202, 2, 5)),
+    ((2026, 10, 20), (1202, 3, 3)),
+    ((2026, 12, 25), (1202, 5, 10)),
+];
+
+/// The first day of each month a printed pair pins, by (year, month).
+fn printed_starts(
+    printed: &[((i32, u8, u8), (i32, u8, u8))],
+) -> std::collections::BTreeMap<(i32, u8), FixedDay> {
+    let mut starts = std::collections::BTreeMap::new();
+    for &((y, m, d), (year, month, day)) in printed {
+        let start = fixed_from_gregorian(y, m, d).plus_days(1 - i64::from(day));
+        let earlier = starts.insert((year, month), start);
+        assert!(
+            earlier.is_none_or(|earlier| earlier == start),
+            "{year}-{month}: the print's own pairs disagree"
+        );
+    }
+    starts
+}
+
+/// Asserts every printed pair is the calendar's date, and returns the
+/// months pinned.
+fn assert_pairs(id: Calendar, printed: &[((i32, u8, u8), (i32, u8, u8))]) -> usize {
+    let system = calendar(id);
+    for &((y, m, d), wanted) in printed {
+        let date = system.date_of(fixed_from_gregorian(y, m, d)).unwrap();
+        assert_eq!(
+            (date.year, date.month, date.day),
+            wanted,
+            "{}: {y}-{m}-{d}",
+            system.region().name
+        );
+    }
+    printed_starts(printed).len()
+}
+
+#[test]
+fn malayalam_months_match_the_kerala_gazette() {
+    // Every pair printed, so every one of the 61 months begins on the
+    // gazette's day, Medam and the minute-scale boundaries included.
+    assert_eq!(assert_pairs(Calendar::MalayalamSolar, &KERALA_GAZETTE), 61);
+}
+
+#[test]
+fn kerala_medam_follows_the_malabar_rule() {
+    // Medam 1 (the Mesha sankranti's month) in the six gazette years: by
+    // the Malabar rule for every sign. The Rashtriya Panchang's Kerala
+    // column prints the day before in 2021, 2023, 2024 and 2025, the
+    // sankranti's sunrise-to-sunrise day (C764, closed for the gazette).
+    for (year, printed) in [
+        (1196, (2021, 4, 14)),
+        (1197, (2022, 4, 14)),
+        (1198, (2023, 4, 15)),
+        (1199, (2024, 4, 14)),
+        (1200, (2025, 4, 14)),
+        (1201, (2026, 4, 14)),
+    ] {
+        let system = calendar(Calendar::MalayalamSolar);
+        assert_eq!(
+            gregorian_from_fixed(system.to_fixed_ymd(year, 9, 1).unwrap()),
+            printed,
+            "Medam {year}"
+        );
+    }
+    // The era: 1 Chingam 1200 is 17 August 2024 and 30 Karkidakam 1200,
+    // the year's last day, 16 August 2025.
+    let system = calendar(Calendar::MalayalamSolar);
+    assert_eq!(
+        gregorian_from_fixed(system.to_fixed_ymd(1200, 1, 1).unwrap()),
+        (2024, 8, 17)
+    );
+    let last = system.month_length(1200, 12).unwrap();
+    assert_eq!(
+        gregorian_from_fixed(system.to_fixed_ymd(1200, 12, last).unwrap()),
+        (2025, 8, 16)
+    );
+}
+
+#[test]
+fn the_kerala_gazette_reckons_the_modern_sun() {
+    // The same rule at the same place over the Surya Siddhanta's Sun
+    // misses 22 of the gazette's 61 months: the text's sankrantis fall
+    // hours from the modern Sun's, across the three-fifths mark (Simha
+    // and Tula among them). The shipped (drik) calendar misses none.
+    let text = teistro_siddhanta::SuryaSiddhanta::text();
+    let engine = MALAYALAM.engine(&text);
+    let mut missed = Vec::new();
+    for ((year, month), printed) in printed_starts(&KERALA_GAZETTE) {
+        let row = engine.year(year).unwrap();
+        let before: i64 = row
+            .months
+            .iter()
+            .take(usize::from(month - 1))
+            .map(|d| i64::from(*d))
+            .sum();
+        if row.start.plus_days(before) != printed {
+            missed.push((year, month));
+        }
+    }
+    for named in [(1197, 3), (1199, 1), (1199, 3), (1200, 3)] {
+        assert!(missed.contains(&named), "{named:?} in {missed:?}");
+    }
+    assert_eq!(missed.len(), 22, "{missed:?}");
+}
+
+/// The Government of Assam's printed pairs, each a Gregorian date and the
+/// Assamese (Bhaskarabda) date beside it (year, month from Bohag, day):
+/// the General Administration Department's "List of Holidays" for 2023
+/// (No. GAD-14021/18/2022-ESTT-GAD of 28 November 2022) and for 2025 (No.
+/// E-221561/347 of 6 December 2024, with its corrigendum of 27 December
+/// 2024, whose dated masthead is the first 2025 pair). 27 months.
+const ASSAM_GAZETTE: [((i32, u8, u8), (i32, u8, u8)); 34] = [
+    ((2022, 11, 28), (1429, 8, 11)),
+    ((2023, 1, 1), (1429, 9, 16)),
+    ((2023, 1, 15), (1429, 9, 30)),
+    ((2023, 1, 16), (1429, 10, 1)),
+    ((2023, 3, 7), (1429, 11, 22)),
+    ((2023, 4, 7), (1429, 12, 23)),
+    ((2023, 4, 14), (1429, 12, 30)),
+    ((2023, 4, 15), (1430, 1, 1)),
+    ((2023, 6, 5), (1430, 2, 21)),
+    ((2023, 6, 29), (1430, 3, 13)),
+    ((2023, 8, 15), (1430, 4, 29)),
+    ((2023, 8, 18), (1430, 4, 32)),
+    ((2023, 8, 27), (1430, 5, 9)),
+    ((2023, 9, 25), (1430, 6, 7)),
+    ((2023, 10, 18), (1430, 6, 30)),
+    ((2023, 10, 21), (1430, 7, 3)),
+    ((2023, 11, 19), (1430, 8, 2)),
+    ((2023, 12, 25), (1430, 9, 8)),
+    ((2024, 12, 6), (1431, 8, 20)),
+    ((2025, 1, 14), (1431, 9, 29)),
+    ((2025, 1, 15), (1431, 10, 1)),
+    ((2025, 2, 12), (1431, 10, 29)),
+    ((2025, 3, 14), (1431, 11, 29)),
+    ((2025, 3, 31), (1431, 12, 17)),
+    ((2025, 4, 14), (1431, 12, 31)),
+    ((2025, 4, 15), (1432, 1, 1)),
+    ((2025, 5, 24), (1432, 2, 9)),
+    ((2025, 8, 15), (1432, 4, 29)),
+    ((2025, 8, 25), (1432, 5, 8)),
+    ((2025, 9, 29), (1432, 6, 12)),
+    ((2025, 10, 18), (1432, 6, 31)),
+    ((2025, 10, 20), (1432, 7, 2)),
+    ((2025, 11, 19), (1432, 8, 2)),
+    ((2025, 12, 25), (1432, 9, 9)),
+];
+
+#[test]
+fn assamese_months_match_the_assam_gazette() {
+    // Every pair printed: 27 months, Saon 1430's 32 days among them.
+    assert_eq!(assert_pairs(Calendar::AssamSolar, &ASSAM_GAZETTE), 27);
+    let system = calendar(Calendar::AssamSolar);
+    assert_eq!(system.month_length(1430, 4).unwrap(), 32);
+    assert_eq!(
+        system.year_start(1432),
+        Some(fixed_from_gregorian(2025, 4, 15))
+    );
+}
+
+#[test]
+fn the_assam_gazette_reckons_the_surya_siddhantas_sun() {
+    // The same rule over the modern Sun is the Bengal calendar's table
+    // (the civil day after, Bengali San = Bhaskarabda): it begins 11 of
+    // the 27 months a day before the gazette.
+    let bengal = calendar(Calendar::BengalSolar);
+    let starts = printed_starts(&ASSAM_GAZETTE);
+    let early = starts
+        .iter()
+        .filter(|((year, month), printed)| {
+            bengal.to_fixed_ymd(*year, *month, 1).unwrap().plus_days(1) == **printed
+        })
+        .count();
+    let held = starts
+        .iter()
+        .filter(|((year, month), printed)| {
+            bengal.to_fixed_ymd(*year, *month, 1).unwrap() == **printed
+        })
+        .count();
+    assert_eq!((held, early), (16, 11));
+}
+
+/// The minutes after the IST midnight that begins a sankranti's civil day.
+fn ist_minutes(
+    instant: teistro_core::quantity::JulianDay<teistro_core::quantity::Utc>,
+) -> (FixedDay, f64) {
+    let (day, fraction) = FixedDay::from_local_jd(instant.get() + 5.5 / 24.0);
+    (day, fraction * 1440.0)
+}
+
+#[test]
+fn the_near_midnight_rows_fall_after_midnight_on_the_text() {
+    // The three gazette months whose Surya Siddhanta sankranti a rough
+    // model put within an hour and a half after midnight: Puh 1430
+    // (Dhanu, 17 December 2023), Phagun 1431 (Kumbha, 13 February 2025)
+    // and Aghun 1432 (Vrishchika, 17 November 2025). On the SDK's own
+    // text each falls after IST midnight on that day (00:52, 01:27 and
+    // 01:30), so the month begins the day after, as printed.
+    let text = teistro_siddhanta::SuryaSiddhanta::text();
+    let engine = ASSAM.engine(&text);
+    for (year, month, day, after) in [
+        (1430, 9_u8, (2023, 12, 17), 52.0),
+        (1431, 11, (2025, 2, 13), 86.0),
+        (1432, 8, (2025, 11, 17), 90.0),
+    ] {
+        let row = engine.year(year).unwrap();
+        let (civil, minutes) = ist_minutes(row.sankrantis[usize::from(month - 1)]);
+        assert_eq!(gregorian_from_fixed(civil), day, "{year}-{month}");
+        assert!(
+            minutes > after,
+            "{year}-{month}: {minutes:.1} minutes after midnight"
+        );
+    }
+    // No printed month's sankranti on the text falls within 52 minutes
+    // of IST midnight (Puh 1430 is the nearest, at 00:52), so no row
+    // tells IST midnight from Guwahati's or from a tithi test (C1302).
+    for ((year, month), _) in printed_starts(&ASSAM_GAZETTE) {
+        let row = engine.year(year).unwrap();
+        let (_, minutes) = ist_minutes(row.sankrantis[usize::from(month - 1)]);
+        assert!(minutes.min(1440.0 - minutes) > 52.0, "{year}-{month}: {minutes:.1}");
+    }
+}
+
+#[test]
+fn bihu_falls_on_the_assamese_month_ends() {
+    // Kati Bihu is the last day of Ahin, the Tula sankranti's day: the
+    // gazette prints 17 October 2020, 18 October 2023 and 2025 (30 and 31
+    // Ahin); press copies of the lists 18 October 2021, 2022 and 2026
+    // and 17 October 2024. Each is also 1 Kartik in the Bikram Sambat table,
+    // another rule (punya kala) on the same sky.
+    let assam = calendar(Calendar::AssamSolar);
+    let nepal = crate::BikramSambat::shipped();
+    for (year, kati_bihu) in [
+        (1427, (2020, 10, 17)),
+        (1428, (2021, 10, 18)),
+        (1429, (2022, 10, 18)),
+        (1430, (2023, 10, 18)),
+        (1431, (2024, 10, 17)),
+        (1432, (2025, 10, 18)),
+        (1433, (2026, 10, 18)),
+    ] {
+        let day = assam.to_fixed_ymd(year, 7, 1).unwrap().plus_days(-1);
+        assert_eq!(gregorian_from_fixed(day), kati_bihu, "Kati Bihu {year}");
+        let kartik = nepal.date_of(day).unwrap();
+        assert_eq!((kartik.month, kartik.day), (7, 1), "{kati_bihu:?}");
+    }
+    // Magh Bihu is the last day of Puh: 15 January 2023 and 14 January 2025.
+    for (year, magh_bihu) in [(1429, (2023, 1, 15)), (1431, (2025, 1, 14))] {
+        let day = assam.to_fixed_ymd(year, 10, 1).unwrap().plus_days(-1);
+        assert_eq!(gregorian_from_fixed(day), magh_bihu, "Magh Bihu {year}");
+    }
 }
 
 #[test]
@@ -186,6 +520,22 @@ fn every_date_names_its_era_and_frame() {
         assert!(!capabilities.needs_ephemeris && !capabilities.needs_place);
         assert_eq!(capabilities.eras, [era]);
     }
+    let assam = calendar(Calendar::AssamSolar);
+    let date = assam.date_of(fixed_from_gregorian(2025, 4, 15)).unwrap();
+    assert_eq!(
+        (date.era.map(|e| (e.era, e.year)), date.month, date.day),
+        (Some((Era::Bhaskarabda, 1432)), 1, 1)
+    );
+    let CalendarResolution::Computed { model } = &date.resolution else {
+        panic!("{:?}", date.resolution);
+    };
+    assert_eq!(model, assam.table().frame);
+    assert!(
+        model.starts_with("Surya Siddhanta (the text, the sine table); +05:30;")
+            && model.ends_with("rule FOLLOWING_DAY"),
+        "{model}"
+    );
+    assert_eq!(assam.capabilities().eras, [Era::Bhaskarabda]);
 }
 
 #[test]

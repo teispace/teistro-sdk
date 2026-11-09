@@ -428,7 +428,8 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
         "no vetted name table for the calendar systems: Bikram Sambat's Devanagari is \
          printed several ways (संवत्, सम्वत्, वि.सं.) and the committee's own masthead has \
          not been read, and the others have no Nepali source at all (the regional \
-         solar calendars' month names neither: their months render by number)",
+         solar calendars' month names neither: their months render by number, \
+         except Assam's, named in Devanagari by the months' Sanskrit names)",
         &[
             "GREGORIAN",
             "JULIAN",
@@ -445,6 +446,7 @@ pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
             "ODIA_SOLAR",
             "MALAYALAM_SOLAR",
             "TAMIL_VAKYA",
+            "ASSAM_SOLAR",
         ],
     ),
     (

@@ -108,3 +108,10 @@ members:
       - text: "Vakyakarana, ed. T. S. Kuppanna Sastri and K. V. Sarma, 1962, I.2-4 and III.1, III.7-8; Manonmani Vilasam suddha vakya almanac, 1997-2021"
         ref: "docs/calendars/regional-solar.md"
     mark: V
+  - key: ASSAM_SOLAR
+    id: 15
+    doc: "Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)"
+    sources:
+      - text: "Government of Assam, General Administration Department, lists of holidays for 2023 and 2025 (Bhaskarabda dates); Sewell and Dikshit, The Indian Calendar, 1896, art. 28"
+        ref: "docs/calendars/regional-solar.md"
+    mark: V

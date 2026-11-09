@@ -164,6 +164,8 @@ class TheCatalogue(unittest.TestCase):
             # `Tradition`'s `ZOROASTRIAN`.
             + 1
             # A record call's `Detail`, `FULL` and `BRIEF`.
+            + 2
+            # `Calendar`'s `ASSAM_SOLAR` and `Era`'s `BHASKARABDA`.
             + 2,
         )
 
