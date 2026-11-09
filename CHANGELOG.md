@@ -12,6 +12,18 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Mithila's star planets are the text's four steps (C1227).**
+**Numbers:** none. No computation changed; `mithila-makaranda` keeps `SuryaPlanets::TEXT`.
+- The Makaranda's three steps for Mars to Saturn are the text's four folded: its manda tables print the
+  text's equation at the anomaly moved by half of itself (Balachandra Rao, Rupa and Venugopal, *Gaṇita
+  Bhāratī* 35, 2013), which is the text's second and third steps in one. Their Mars table is the SDK's
+  third-step equation to 0.001′ (`teistro-siddhanta` `equation` tests), so no separate planet mode is
+  built.
+- The Vishwavidyalaya Panchang's Mars, Mercury, Jupiter, Venus and Saturn on the five Thursdays of its
+  2022-23 pages read (14, 21, 28 July, 27 October, 3 November 2022) are the profile's within 1.35′ at the
+  print's local apparent midnight. The days between are the print's own filling, within 4.3′, but for
+  Mercury on 25 to 27 July, printed a degree low (C1280, C1281; `crates/siddhanta/tests/mithila.rs`).
+
 **Mithila's festival days: the `MITHILA` pack.**
 **Numbers:** none for any existing pack. `MITHILA` is new; a `FollowingRule` may now count back.
 - The `MITHILA` pack (`FestivalPack::Mithila`, `FestivalRule::mithila`, `FollowingRule::mithila`,

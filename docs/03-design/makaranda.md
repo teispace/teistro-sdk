@@ -1,7 +1,7 @@
 # The Makaranda and the Mithila panchang
 
 Status: `built`, 2026-11-08, for SR-16 and A2-8; the festival pack
-(§8) 2026-11-09 (a `siddhanta` profile
+(§8) and the star planets (§4, C1227) 2026-11-09 (a `siddhanta` profile
 that reproduces the almanacs of Mithila). The research was written
 before any code (design page first). Section 3 is read from the sources.
 Section 4 is measured against 162 printed days over eight years, 1980 to
@@ -10,6 +10,9 @@ section 6 is what stays open. It reproduces every printed day's sunrise
 nakshatra and all but one sunrise tithi, and the printed ends within
 minutes (sd 4 to 6, the worst 23). The residual's two sources are
 shown, the Moon's anomaly and the Sun's, but not closed (C1225, C1226).
+The printed star planets are the text's four steps under the bija, which
+are the Makaranda's three: within 1.4′ on every day the print computes
+(C1227, 2026-11-09).
 
 ## 1. Purpose
 
@@ -30,6 +33,7 @@ almanac's.
 | --- | --- | --- | --- |
 | 1 | *Makaranda Sāriṇī* with Viśvanātha's *Udāharaṇa*, Śrī Veṅkaṭeśvara Press, Bombay (1923 print of the 1913 edition), 91 pp. | Internet Archive `in.ernet.dli.2015.405753` (Digital Library of India). Tables are read off the page images; the OCR is unusable | the tithi tables (pp. 1–4), the Moon's equation table (p. 29) |
 | 2 | K. Rupa, Padmaja Venugopal, S. Balachandra Rao, "Makaranda Sāriṇī and allied Saurapakṣa tables — a study", *IJHS* 49.2 (2014) 186–208 | insa.nic.in | the mean daily motions (Table 5.1), the tithi procedure (§§2, 6), the planets' three-step equation (§9) |
+| 2 | S. Balachandra Rao, K. Rupa, Padmaja Venugopal, "An analysis of the mandaphala tables of Makaranda and revision of parameters", *Gaṇita Bhāratī* 35 (2013) 221–240 | ancientindianastronomy.files.wordpress.com | the planets' three operations (§3) and the manda tables rebuilt (§5, Table 5.1) |
 | 2 | D. Pingree, *Sanskrit Astronomical Tables in the United States* (1968), p. 43; *… in England* (1973) | cited by Rupa et al.; **not read here** | the mean motions (Rupa note 6 says they differ slightly from Table 5.1) |
 | print | *Vishwavidyalaya Panchang*, KSDSU Darbhanga, years 1955–56 and 1980–81 to 2022–23 (35 scans) | Internet Archive `vishwavidyalaya-panchang` | the acceptance values: daily tithi and nakshatra ends in ghatis and palas from sunrise, day length, the Sun at *miśramāna*, daily star planets |
 
@@ -189,11 +193,49 @@ SDK (the text's sine table) to bounds set from them.
   bija to the pala on this example, and their place is Mithila. The
   printed days' residual is therefore not in the tables' reading of the
   text. It lies in what the printer does beyond them (C1225, C1226).
-- **The star planets are not modern.** The printed Mars, Mercury,
-  Jupiter, Venus and Saturn of 14 July 2022 are 1.5° to 11.6° from
-  Lahiri's. This almanac, unlike Nepal's committee (C38), prints
-  siddhantic planets. Whether it uses the text's four steps or the
-  Makaranda's three (Rupa §9) is not yet measured (C1227).
+- **The star planets are the text's four steps, which are the
+  Makaranda's three** (C1227). The printed Mars, Mercury, Jupiter, Venus
+  and Saturn are 1.5° to 11.6° from Lahiri's, so this almanac, unlike
+  Nepal's committee (C38), prints siddhantic planets. Balachandra Rao,
+  Rupa and Venugopal (*Gaṇita Bhāratī* 35, 2013, §§3–5) describe the
+  Makaranda's procedure as three operations: the text's half śīghra
+  equation, then one manda equation applied to the mean planet, then the
+  whole śīghra equation. The manda equation is read from tables (pp.
+  14–15) that peak beyond an anomaly of 90°. They rebuild those tables as
+  the text's equation taken at the anomaly moved by half of itself, and
+  match the book to the whole arcminute. That is no new rule: it is the
+  text's second step (half the manda equation to the once-corrected
+  planet) and third (the whole equation at the result, applied to the
+  mean planet) folded into one table. Their Table 5.1 for Mars is the
+  SDK's third-step equation to 0.001′ with exact trigonometry
+  (`equation::tests`). So `SuryaPlanets::TEXT` is the book's method and
+  no separate mode is built. Rounding the equation to whole arcminutes,
+  as the book prints it, was measured and makes the fit slightly worse
+  (rms 0.66′ → 0.77′ on the July Thursdays).
+
+  The print computes its planets once a week, on Thursdays, at
+  *miśramāna* (30 ghatis and half the day after sunrise: the local
+  apparent midnight that ends the date; 46\|54 on 14 July 2022). The days
+  between step by a fixed daily motion, or are filled by hand near a
+  station (C1280). Model (the text's sine table, the Makaranda's bija)
+  less print, arcminutes, at the place the almanac states:
+
+  | Thursday | Mars | Mercury | Jupiter | Venus | Saturn |
+  | --- | --- | --- | --- | --- | --- |
+  | 14 July 2022 (PDF p. 11) | +1.08 | +0.72 | −0.30 | +0.03 | −0.44 |
+  | 21 July | +0.39 | −1.19 | −0.05 | −0.49 | −0.24 |
+  | 28 July | +1.35 | +0.32 | +0.35 | −0.71 | −0.41 |
+  | 27 October (PDF p. 18) | −1.34 | −0.16 | +0.01 | +0.19 | −0.70 |
+  | 3 November | +0.77 | −0.07 | +0.06 | −0.86 | −0.90 |
+
+  All 25 are within 1.35′, rms 0.67′, about the size of the text's sine
+  table against exact trigonometry (14 July: Venus +0.03′ against +1.44′
+  exact). The days between are within 4.3′ (Mars just after its station
+  of 30 October), except Mercury on 25 to 27 July, which the print gives
+  a degree low: its daily step of 1°49′34″ lost a carry (C1281). Without
+  the bija Mercury, Jupiter, Venus and Saturn miss by 1.6° to 5.4°.
+  `crates/siddhanta/tests/mithila.rs` holds the Thursdays within 1.5′ and
+  the other days within 5′ but those three.
 - **Day labels.** The tithi and nakshatra at the model's sunrise agree
   with the printed ones on 161 and 162 of the 162 days. The one tithi
   that falls the other side ends minutes after sunrise.
@@ -228,6 +270,8 @@ pub const MAKARANDA: Bija = Bija {
   `TEXT` stays as built (C37, C1223).
 - The location is the consumer's, as for every profile. The almanac's
   own is 85°30′ E, 26°35′ N.
+- `SuryaPlanets::TEXT` is the Makaranda's planets too: its three steps
+  are the text's four folded (§4, C1227).
 - The check is `crates/siddhanta/tests/mithila.rs` over the data file:
   the day length within 15 palas; tithi ends mean within 2 minutes, at
   least 135 of 156 within 10 and all within 25; nakshatra ends mean
@@ -240,14 +284,12 @@ pub const MAKARANDA: Bija = Bija {
 - C1225 and C1226: the printer's Moon and Sun beyond the text-plus-bija
   tables. The next step is the printer's own method. The almanac's front
   matter names the Makaranda and Narayana Daivajna but not the steps.
-- C1227: the star planets' steps.
 - C1229 (b): the midnight Sun's drift against the bhujāntara, now 2″ to
   11″ of longitude, the size of table rounding. Part (a), the clock, is
   closed: §4.
-- C1227's next step is a planet mode with the Makaranda's three steps,
-  the manda equation in Balachandra Rao, Rupa and Venugopal's form
-  (*Gaṇita Bhāratī* 35, 2013, §§3–5), held against the print's five
-  planets of 14 July 2022 and then a fortnight within 1′. Not built.
+- C1280: how the print fills the days between its Thursdays near a
+  station (Mars, 27 October to 3 November 2022, is not a straight line).
+  It moves no computed value.
 - C1230 to C1232: the festival rules' open points (§8).
 - More years: the scans cover 35. Every new fortnight goes into the
   data file, and the test's counts move with it.

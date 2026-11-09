@@ -434,7 +434,8 @@ pub enum Siddhanta {
 #[serde(tag = "kind", rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum SuryaPlanets {
     /// The text's, by its four steps (II.39 to 45), each from its own
-    /// mean motion under the bija.
+    /// mean motion under the bija. The Makaranda's three steps are the
+    /// same four folded, and Mithila's almanac prints them (C1227).
     #[default]
     Text,
     /// Mars, Mercury, Jupiter, Venus, Saturn and the mean node from the

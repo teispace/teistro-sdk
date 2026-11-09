@@ -22,6 +22,7 @@
 use std::path::Path;
 
 use teistro_calendar::gregorian::fixed_from_gregorian;
+use teistro_core::catalogue::Graha;
 use teistro_core::quantity::{JulianDay, Latitude, Longitude, Ut1};
 use teistro_port_ephemeris::EphemerisProvider;
 use teistro_siddhanta::{Bija, Parameters, SiddhantaProvider, SuryaSiddhanta, Trig};
@@ -50,23 +51,32 @@ fn ghatis(text: &str) -> Option<f64> {
     Some(g.parse::<f64>().expect("ghatis") + p.parse::<f64>().expect("palas") / 60.0)
 }
 
-fn rows() -> Vec<Row> {
-    let path =
-        Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/data/vishwavidyalaya-panchang.txt");
+/// A data file's rows, split on whitespace, its comments and blank lines
+/// left out.
+fn data(name: &str) -> Vec<Vec<String>> {
+    let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/data")
+        .join(name);
     std::fs::read_to_string(path)
-        .expect("the printed days")
+        .expect("a data file")
         .lines()
         .filter(|line| !line.starts_with('#') && !line.trim().is_empty())
-        .map(|line| {
-            let f: Vec<&str> = line.split_whitespace().collect();
-            assert_eq!(f.len(), 6, "{line}");
+        .map(|line| line.split_whitespace().map(String::from).collect())
+        .collect()
+}
+
+fn rows() -> Vec<Row> {
+    data("vishwavidyalaya-panchang.txt")
+        .into_iter()
+        .map(|f| {
+            assert_eq!(f.len(), 6, "{f:?}");
             Row {
-                date: f[0].to_string(),
+                date: f[0].clone(),
                 tithi: f[1].parse().expect("a tithi"),
-                tithi_end: ghatis(f[2]),
+                tithi_end: ghatis(&f[2]),
                 nakshatra: f[3].parse().expect("a nakshatra"),
-                nakshatra_end: ghatis(f[4]),
-                day_length: ghatis(f[5]).expect("a day length"),
+                nakshatra_end: ghatis(&f[4]),
+                day_length: ghatis(&f[5]).expect("a day length"),
             }
         })
         .collect()
@@ -321,5 +331,110 @@ fn the_printed_ingresses_are_the_makarandas_sun() {
         // +11.9 and Mesha -10.2 minutes, about half an arcminute of the
         // Sun at most. Not fitted (C1229 b).
         assert!(minutes.abs() <= 15.0, "{date}: {minutes:+.2} minutes");
+    }
+}
+
+const STARS: [Graha; 5] = [
+    Graha::Mars,
+    Graha::Mercury,
+    Graha::Jupiter,
+    Graha::Venus,
+    Graha::Saturn,
+];
+
+/// `sign|degree|minute|second` to degrees.
+fn longitude(text: &str) -> f64 {
+    let parts: Vec<f64> = text
+        .split('|')
+        .map(|p| p.parse::<f64>().expect("a figure"))
+        .collect();
+    parts[0] * 30.0 + parts[1] + parts[2] / 60.0 + parts[3] / 3600.0
+}
+
+/// One printed day's star planets: the date, whether it is a Thursday,
+/// and Mars, Mercury, Jupiter, Venus and Saturn in degrees.
+struct Planets {
+    date: String,
+    thursday: bool,
+    longitudes: Vec<f64>,
+}
+
+fn planet_rows() -> Vec<Planets> {
+    data("vishwavidyalaya-planets.txt")
+        .into_iter()
+        .map(|f| {
+            assert_eq!(f.len(), 7, "{f:?}");
+            Planets {
+                date: f[0].clone(),
+                thursday: f[1] == "T",
+                longitudes: f[2..].iter().map(|text| longitude(text)).collect(),
+            }
+        })
+        .collect()
+}
+
+/// Each printed star planet less the model's, arcminutes, positive when
+/// the model is ahead, at *miśramāna*: 30 ghatis and half the day after
+/// the model's sunrise, the local apparent midnight that ends the civil
+/// date (C1229 a; the printed 46|54 of 14 July 2022 is that sum).
+fn planet_residuals(model: &SuryaSiddhanta) -> Vec<(String, bool, Graha, f64)> {
+    let mut out = Vec::new();
+    for row in planet_rows() {
+        let (rise, length) = sunrise(model, &row.date);
+        let at = JulianDay::<Ut1>::literal(rise + (30.0 + length / 2.0) / 60.0);
+        for (graha, printed) in STARS.into_iter().zip(&row.longitudes) {
+            let ours = model
+                .graha(graha, at)
+                .expect("a star planet")
+                .longitude
+                .get();
+            let minutes = ((ours - printed + 540.0).rem_euclid(360.0) - 180.0) * 60.0;
+            out.push((row.date.clone(), row.thursday, graha, minutes));
+        }
+    }
+    out
+}
+
+/// C1227: the print's star planets are the text's four steps (II.43 to
+/// 44) under the Makaranda's bija, the very procedure the Makaranda's
+/// three steps tabulate (`equation::four_step`). The print computes them
+/// on Thursdays and fills the days between (C1280).
+#[test]
+fn the_printed_star_planets_are_the_texts_four_steps() {
+    let residuals = planet_residuals(&model(&Bija::MAKARANDA));
+    assert_eq!(residuals.len(), 29 * 5);
+    let thursdays: Vec<_> = residuals.iter().filter(|r| r.1).collect();
+    assert_eq!(thursdays.len(), 25);
+    for (date, _, graha, minutes) in &thursdays {
+        // Measured: within 1.35′ on all 25 (rms 0.7′); 14 July 2022 Mars
+        // +1.08′, Mercury +0.72′, Jupiter −0.30′, Venus +0.03′, Saturn
+        // −0.44′.
+        assert!(minutes.abs() <= 1.5, "{date} {graha:?}: {minutes:+.2}′");
+    }
+    // Without the bija Mercury, Jupiter, Venus and Saturn miss by degrees.
+    for (date, thursday, graha, minutes) in planet_residuals(&model(&Bija::NONE)) {
+        if thursday && graha != Graha::Mars {
+            assert!(minutes.abs() > 60.0, "{date} {graha:?}: {minutes:+.2}′");
+        }
+    }
+}
+
+/// The days between Thursdays step by a constant daily motion (Mars,
+/// Mercury, Venus and Saturn) or by hand near a station (Mars, Jupiter),
+/// so they miss the model by more than the Thursdays do (C1280).
+#[test]
+fn between_thursdays_the_print_fills_in() {
+    // Measured: every other filled day within 4.3′ (Mars on 2 November
+    // 2022, three days after its station).
+    let slips: Vec<_> = planet_residuals(&model(&Bija::MAKARANDA))
+        .into_iter()
+        .filter(|(_, thursday, _, minutes)| !thursday && minutes.abs() > 5.0)
+        .collect();
+    // Mercury's lost carry, 25 to 27 July 2022: a degree, give or take
+    // the filling's own minutes (C1281).
+    assert_eq!(slips.len(), 3, "{slips:?}");
+    for (date, _, graha, minutes) in slips {
+        assert_eq!(graha, Graha::Mercury, "{date}");
+        assert!((minutes - 60.0).abs() <= 5.0, "{date}: {minutes:+.2}′");
     }
 }
