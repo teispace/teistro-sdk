@@ -1,0 +1,218 @@
+# Sanskrit cardinals, in RBNF (UTS #35 Part 3 §6), for `intl.inWords`.
+#
+# A DRAFT the SDK wrote, not CLDR's (CLDR 48 has no sa.xml): every word
+# here waits for the consumer's Sanskrit reviewer (QUESTIONS.md Q42) and
+# every answer spelt from it says `isDraft`. Hand-kept: `cargo xtask gen
+# intl` reads this file, drops the lines starting `#`, parses the rest with
+# the engine's own parser and writes `crates/intl/src/words/drafted.rs`.
+# Change the words here, never in the generated file.
+# docs/03-design/amounts-in-words.md §5 gives the reasoning; C1310 to
+# C1319 the choices a reviewer is asked to confirm.
+#
+# Sources:
+#   K  M. R. Kale, A Higher Sanskrit Grammar (1894; 7th ed. 1931),
+#      §159 (the cardinals 1 to 99, 100, 200, 300, 1000, and the scale
+#      words with their genders), §160 (Panini VI.3.47-49: dvi, tri and
+#      astan become dva, trayas and asta before -vimsati and -trimsat, and
+#      optionally from -catvarimsat on, never before asiti), §161 (the
+#      numbers between the hundreds by adhika, "generally", and the worked
+#      values 101, 112, 150, 1892 and 177639).
+#   W  W. D. Whitney, A Sanskrit Grammar (1879; 2nd ed. 1889), §475 (the
+#      decimal names; d: "in modern time the only numbers in practical use
+#      above thousand are laksa and koti", an Indian sum counted in
+#      crores, lakhs and thousands), §476 (11 to 99 and their sandhi), §477
+#      (una and adhika), §481 (a multiplier compounded with sata or sahasra,
+#      "in later usage more generally"), §§482-485 (inflection: sata and
+#      sahasra neuter, the tens feminine).
+#   L  Bhaskara's Lilavati v. 10-11 (K §159's footnote): eka, dasa, sata,
+#      sahasra, ayuta, laksa, prayuta, koti, ... each ten times the last.
+#
+# How a number reads (K §161): the remainder below the largest scale,
+# itself so read, compounded with adhika ("exceeded by"), then the scale
+# word with its multiplier compounded (W §481: dvisatam, not dve sate),
+# the whole one compound in the neuter (or, for koti, feminine)
+# nominative singular:  1892 = dvanavaty-adhika-asta-sata-adhika-sahasram.
+# The scales are those of the Indian grouping alone, sata, sahasra, laksa,
+# koti (W §475 d), and kotis are counted with a full number (W §475 d's
+# "1-23 crores"), so every i64 is spelt.
+#
+# A `+` marks where one substitution's text meets the next's inside the
+# compound. The speller removes it, and where the text before it ends in
+# a consonant's inherent a and the text after it starts with a vowel it
+# writes the vowel sandhi (a + a = aa, a + e = ai: adhika+asta =
+# adhikaasta, K §161's dvanavatyadhikaastasatadhikasahasram). Every other
+# sandhi is spelt out in the rules themselves.
+
+%spellout-cardinal:
+-x: ऋणम् >>;
+0: शून्यम्;
+1: एकम्;
+2: द्वे;
+3: त्रीणि;
+4: चत्वारि;
+5: =%%stem=;
+20: [>%%p20>]विंशतिः;
+30: [>%%p30>]त्रिंशत्;
+40: [>%%p40>]चत्वारिंशत्;
+50: [>%%p50>]पञ्चाशत्;
+60: [>%%p50>]षष्टिः;
+70: [>%%p50>]सप्ततिः;
+80: अशीतिः;
+81: >%%p80>शीतिः;
+90: नवतिः;
+91: >%%p90>वतिः;
+100: [>%%adhika>+]<%%stem<शतम्;
+1000: [>%%adhika>+]<%%stem<सहस्रम्;
+100000: [>%%adhika>+]<%%before-l<लक्षम्;
+10000000: [>%%adhika>+]<%%before-k<कोटिः;
+
+# A number compounded with adhika: the remainder of the rule above.
+%%adhika:
+1: एकाधिक;
+2: द्व्यधिक;
+3: त्र्यधिक;
+4: चतुरधिक;
+5: पञ्चाधिक;
+6: षडधिक;
+7: सप्ताधिक;
+8: अष्टाधिक;
+9: नवाधिक;
+10: दशाधिक;
+11: एकादशाधिक;
+12: द्वादशाधिक;
+13: त्रयोदशाधिक;
+14: चतुर्दशाधिक;
+15: पञ्चदशाधिक;
+16: षोडशाधिक;
+17: सप्तदशाधिक;
+18: अष्टादशाधिक;
+19: नवदशाधिक;
+20: [>%%p20>]विंशत्यधिक;
+30: [>%%p30>]त्रिंशदधिक;
+40: [>%%p40>]चत्वारिंशदधिक;
+50: [>%%p50>]पञ्चाशदधिक;
+60: [>%%p50>]षष्ट्यधिक;
+70: [>%%p50>]सप्तत्यधिक;
+80: अशीत्यधिक;
+81: >%%p80>शीत्यधिक;
+90: नवत्यधिक;
+91: >%%p90>वत्यधिक;
+100: [>%%adhika>+]<%%stem<शताधिक;
+1000: [>%%adhika>+]<%%stem<सहस्राधिक;
+100000: [>%%adhika>+]<%%before-l<लक्षाधिक;
+10000000: [>%%adhika>+]<%%before-k<कोट्यधिक;
+
+# A multiplier's stem before sata and sahasra (and the nominative of 5 to
+# 19, which is the bare stem, K §159): 1 is left out (satam, sahasram).
+%%stem:
+1: ;
+2: द्वि;
+3: त्रि;
+4: चतुः;
+5: पञ्च;
+6: षट्;
+7: सप्त;
+8: अष्ट;
+9: नव;
+10: दश;
+11: एकादश;
+12: द्वादश;
+13: त्रयोदश;
+14: चतुर्दश;
+15: पञ्चदश;
+16: षोडश;
+17: सप्तदश;
+18: अष्टादश;
+19: नवदश;
+20: [>%%p20>]विंशति;
+30: [>%%p30>]त्रिंशत्;
+40: [>%%p40>]चत्वारिंशत्;
+50: [>%%p50>]पञ्चाशत्;
+60: [>%%p50>]षष्टि;
+70: [>%%p50>]सप्तति;
+80: अशीति;
+81: >%%p80>शीति;
+90: नवति;
+91: >%%p90>वति;
+
+# Before laksa, a voiced l: catur, sad, and -sat assimilated to -sal.
+%%before-l:
+1: =%%stem=;
+4: चतुर्;
+5: =%%stem=;
+6: षड्;
+7: =%%stem=;
+30: [>%%p30>]त्रिंशल्;
+40: [>%%p40>]चत्वारिंशल्;
+50: [>%%p50>]पञ्चाशल्;
+60: =%%stem=;
+
+# Before koti: catus, and from 100 a whole number's compound stem.
+%%before-k:
+1: =%%stem=;
+4: चतुष्;
+5: =%%stem=;
+100: =%%compound=;
+
+# A number of 100 or more as the first member of a compound.
+%%compound:
+100: [>%%adhika>+]<%%stem<शत;
+1000: [>%%adhika>+]<%%stem<सहस्र;
+100000: [>%%adhika>+]<%%before-l<लक्ष;
+10000000: [>%%adhika>+]<%%before-k<कोटि;
+
+# The unit before each ten (K §159, W §476): dva and trayas before
+# -vimsati and -trimsat, and from 40 by the first of K's two forms.
+%%p20:
+1: एक;
+2: द्वा;
+3: त्रयो;
+4: चतुर्;
+5: पञ्च;
+6: षड्;
+7: सप्त;
+8: अष्टा;
+9: नव;
+%%p30:
+1: =%%p20=;
+3: त्रयस्;
+4: चतुस्;
+5: =%%p20=;
+6: षट्;
+7: =%%p20=;
+%%p40:
+1: =%%p20=;
+3: त्रयश्;
+4: चतुश्;
+5: =%%p20=;
+6: षट्;
+7: =%%p20=;
+%%p50:
+1: =%%p20=;
+3: त्रयः;
+4: चतुः;
+5: =%%p20=;
+6: षट्;
+7: =%%p20=;
+# Before asiti, with its a: unchanged dvi and tri (K §160).
+%%p80:
+1: एका;
+2: द्व्य;
+3: त्र्य;
+4: चतुर;
+5: पञ्चा;
+6: षड;
+7: सप्ता;
+8: अष्टा;
+9: नवा;
+# Before navati, with its n: sas makes sannavati (W §476 d).
+%%p90:
+1: एकन;
+2: द्वान;
+3: त्रयोन;
+4: चतुर्न;
+5: पञ्चन;
+6: षण्ण;
+7: सप्तन;
+8: अष्टान;
+9: नवन;

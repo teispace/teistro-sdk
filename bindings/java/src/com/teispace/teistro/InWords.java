@@ -8,11 +8,16 @@ import java.util.Map;
  *
  * @param text the whole, in words
  * @param figure the figures, grouped, in the digits asked for
- * @param rules where the words came from: {@code cldr-<release>/<file>/<rule set>}
+ * @param rules where the words came from: {@code cldr-<release>/<file>/<rule set>}, or
+ *     {@code draft/<file>/<rule set>} (with {@code /iast} in a Latin-script locale) for the SDK's own
+ *     unreviewed rules
  * @param locale the locale the words and units are in
  * @param amount an amount's parts; null for a number
+ * @param isDraft whether any of the text is unreviewed: words from the SDK's drafted rules (Sanskrit), or
+ *     a unit word from a namespace its locale marks draft
  */
-public record InWords(String text, String figure, String rules, String locale, AmountInWords amount) {
+public record InWords(String text, String figure, String rules, String locale, AmountInWords amount,
+        boolean isDraft) {
 
     /**
      * An amount's parts, for an application that composes them its own way.
@@ -41,7 +46,7 @@ public record InWords(String text, String figure, String rules, String locale, A
                     Reads.flag(a, "rounded"));
         }
         return new InWords(Reads.string(o, "text"), Reads.string(o, "figure"), Reads.string(o, "rules"),
-                Reads.string(o, "locale"), parts);
+                Reads.string(o, "locale"), parts, Reads.flag(o, "isDraft"));
     }
 
     /** A count up to 2⁶³ − 1; one wider reads as the double nearest it, cut to a long. */

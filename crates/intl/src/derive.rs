@@ -166,6 +166,7 @@ pub fn derive(
     // The entities: every form transliterated, `iast` kept because it is
     // already in the target's script, and an override last.
     let Some(namespace) = source.namespaces.get(ENTITY_NAMESPACE) else {
+        out.files.extend(messages);
         return Ok(out);
     };
     let mut document = Map::new();
@@ -220,19 +221,22 @@ pub fn derive(
         PathBuf::from(to).join(format!("{ENTITY_NAMESPACE}.json")),
         format!("{}\n", pretty(&Json::Object(document))?),
     ));
+    out.files.extend(messages);
     Ok(out)
 }
 
 /// The message namespaces a derived locale carries beside its entities,
 /// so a Latin-script reader of Sanskrit gets its weekdays, months and
-/// dates in Sanskrit rather than in the fallback's English.
+/// dates (`sdk.calendar`) and the currency words an amount in words is
+/// closed with (`sdk.amount`, `03-design/amounts-in-words.md` §5) in
+/// Sanskrit rather than in the fallback's English.
 ///
 /// ```
 /// use teistro_intl::derive::DERIVED_MESSAGES;
 ///
-/// assert_eq!(DERIVED_MESSAGES, ["sdk.calendar"]);
+/// assert_eq!(DERIVED_MESSAGES, ["sdk.amount", "sdk.calendar"]);
 /// ```
-pub const DERIVED_MESSAGES: [&str; 1] = ["sdk.calendar"];
+pub const DERIVED_MESSAGES: [&str; 2] = ["sdk.amount", "sdk.calendar"];
 
 /// The keys whose messages are names (a weekday, a month), which a Latin
 /// script capitalises; the rest are patterns and phrases, left as the
@@ -509,8 +513,9 @@ mod tests {
             Casing::Names,
         )
         .unwrap_or_else(|e| panic!("{e}"));
-        // The metadata, the calendar's messages and the entities.
-        assert_eq!(derived.files.len(), 3);
+        // The metadata, the currency words, the calendar's messages and
+        // the entities.
+        assert_eq!(derived.files.len(), 4);
         assert_eq!(
             derived.entities, 444,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
@@ -539,6 +544,14 @@ mod tests {
         );
         assert!(meta.contains("\"numberingSystem\": \"latn\""));
         assert!(meta.contains("tathā"), "the list pattern is transliterated");
+        // The currency words come too, still marked unreviewed.
+        assert!(meta.contains("\"sdk.amount\""), "{meta}");
+        let amount = file(&derived, "sdk.amount.json");
+        assert!(amount.contains("{{rūpyakāṇi}}"), "{amount}");
+        assert!(
+            amount.contains(".match $count 1"),
+            "the syntax passes through"
+        );
         // 261 before the vetted name tables' import, and 48 of the 114
         // it added: every record whose Devanagari is exactly the source's
         // Sanskrit (the upagrahas, months, directions and states, and

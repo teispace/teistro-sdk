@@ -2365,7 +2365,8 @@ function theWords(ctx: Context): string {
   const words: InWords = ctx.intl.inWords(asked);
   // @ts-expect-error a grouping takes only its own members
   const misgrouped: InWordsRequest = { number: 5, grouping: 'WESTERN' };
-  return [words.text, words.figure, words.amount?.majorWords ?? '', String(misgrouped)].join();
+  const draft: boolean = words.isDraft;
+  return [words.text, words.figure, words.amount?.majorWords ?? '', String(misgrouped), String(draft)].join();
 }
 
 void theWords;

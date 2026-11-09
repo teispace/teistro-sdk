@@ -181,14 +181,28 @@ void main() {
     );
     expect(lakh.text, 'one lakh fifty thousand');
     expect(lakh.amount, isNull);
+    expect(lakh.isDraft, isFalse);
+    // Sanskrit by the SDK's drafted rules, marked unreviewed (Kale §161's
+    // 1892).
+    final sanskrit = ctx.intl.inWords(
+      const InWordsRequest(number: 1892, locale: 'sa-Deva'),
+    );
+    expect(sanskrit.text, 'द्वानवत्यधिकाष्टशताधिकसहस्रम्');
+    expect(sanskrit.rules, 'draft/sa/spellout-cardinal');
+    expect(sanskrit.isDraft, isTrue);
     expect(
-      () =>
-          ctx.intl.inWords(const InWordsRequest(number: 1, locale: 'sa-Deva')),
+      () => ctx.intl.inWords(
+        const InWordsRequest(
+          number: 1,
+          locale: 'sa-Deva',
+          grouping: WordsGrouping.international,
+        ),
+      ),
       throwsA(
         isA<TeistroException>().having(
           (e) => e.field,
           'field',
-          'inWords.locale',
+          'inWords.grouping',
         ),
       ),
     );

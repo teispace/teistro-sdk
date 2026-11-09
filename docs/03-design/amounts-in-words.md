@@ -3,8 +3,10 @@
 Status: `built`, 2026-10-30: the rules generated from CLDR, the engine in
 `crates/intl` (`teistro_intl::words`), `sdk.intl().in_words`,
 `ts_intl_in_words`, the `intl.inWords` agent tool and every binding.
-Nepali, Hindi and English are spelt; Sanskrit is refused as not yet
-reviewed (C803).
+Nepali, Hindi and English are spelt by CLDR. Sanskrit is spelt by the
+SDK's own drafted rules, built 2026-11-09 and shipped marked unreviewed
+(`isDraft`) until the consumer's reviewer signs the forms off (§5, C803,
+C1310 to C1319).
 
 A cheque, an invoice and a receipt in Nepal and India carry an amount
 twice: in figures and in words. The words are the legal amount: Nepal
@@ -31,7 +33,8 @@ copying with the notice kept; the licence is in
 
 CLDR 48 has no `sa.xml` (nor `mr.xml`); the release is pinned at 48,
 the release ICU4X 2.1's compiled data is built from, so the plural rules
-and the words come from one CLDR.
+and the words come from one CLDR. Sanskrit's rules are the SDK's own
+draft in the same syntax (§5).
 
 **Generated, never typed.** The four XML files sit unedited in
 `crates/intl/cldr/rbnf/` (their SHA-256 in the generated file's header).
@@ -43,6 +46,16 @@ rule with the engine's own parser, and writes them to
 a generator failure, not a silent skip, so a CLDR bump that brings new
 syntax fails loudly. `check-intl` regenerates in memory and fails on any
 difference, so the tables cannot drift from the XML.
+
+**Drafted, never typed either.** A language CLDR has no rules for is
+drafted by hand in the same syntax, in `crates/intl/drafts/rbnf/<file>.txt`
+(only `sa.txt`). The file is the source: `#` lines carry its citations and
+its reasoning, and `gen intl` drops them, keeps the sets
+`spellout-cardinal` reaches, parses them with the same parser and writes
+`crates/intl/src/words/drafted.rs` (`DRAFTED`, the file's SHA-256 in each
+entry), which `check-intl` holds to the file as it holds `cldr.rs` to the
+XML. Words spelt from a drafted file say so: the answer's `rules` is
+`draft/<file>/<rule set>` and `isDraft` is true.
 
 **The interpreter** is a subset of ICU's `RuleBasedNumberFormat` for
 integers, exactly as TR35 §5 (Rule-Based Number Formatting) states it:
@@ -63,7 +76,7 @@ The Indian grouping names every two digits past the thousands: hazar
 Nepali shankh 10¹³. It is the grouping of every Nepali and Hindi rule set
 in CLDR; neither file has another. English has both: `INDIAN` reads
 `en_IN.xml` (lakh, crore) and `INTERNATIONAL` reads `en.xml` (million,
-billion). `INTERNATIONAL` in Nepali or Hindi is refused `UNSUPPORTED`,
+billion). `INTERNATIONAL` in Nepali, Hindi or Sanskrit is refused `UNSUPPORTED`,
 naming the field, since CLDR gives no such words and the SDK does not
 make them up.
 
@@ -76,7 +89,10 @@ The figures follow the same grouping: `12,34,567` for `INDIAN`,
 `1,234,567` for `INTERNATIONAL`, in the digits asked for. Left out, the
 grouping is the locale's own (`_meta.json`'s `grouping`: `[3, 2]` is
 Indian, `[3]` international), so `ne-Deva-NP` and `hi-Deva-IN` write
-Indian and `en-Latn` international unless asked.
+Indian and `en-Latn` international unless asked; a language whose words
+count in the Indian grouping alone (Nepali, Hindi, Sanskrit) takes it
+whatever its locale's figures use, so `sa-Latn`, whose numbers are grouped
+by three, writes `pañcāśatsahasrādhikalakṣam` over `1,50,000`.
 
 **Digits** are `LATN` or `DEVA`, the locale's numbering system when left
 out. They write the figure, and the digits a rule set falls back to past
@@ -136,6 +152,8 @@ amount cannot be extended after it.
 | `en-Latn` (`INDIAN`) | one thousand two hundred thirty-four rupees and fifty-six paisa only |
 | `ne-Deva-NP` | एक हजार दुई सय चौँतिस रुपैयाँ र छपन्न पैसा मात्र |
 | `hi-Deva-IN` (INR) | एक हज़ार दो सौ चौंतीस रुपये और छप्पन पैसे मात्र |
+| `sa-Deva` (INR, draft) | चतुस्त्रिंशदधिकद्विशताधिकसहस्रम् रूप्यकाणि षट्पञ्चाशत् पैसा च मात्रम् |
+| `sa-Latn` (INR, draft) | catustriṃśadadhikadviśatādhikasahasram rūpyakāṇi ṣaṭpañcāśat paisā ca mātram |
 
 ## 4. The API
 
@@ -155,9 +173,12 @@ reads the context's locale when the request names none.
   has; asked of another language it is refused `UNSUPPORTED`.
 
 The answer: `text`, the whole; `figure`, the figures; `rules`, the CLDR
-file and rule set the words came from (`cldr-48/en_IN/spellout-cardinal`);
-and for an amount its parts, the major and minor counts, each count's
-words and unit word, and `rounded`. An application that wants another
+file and rule set the words came from (`cldr-48/en_IN/spellout-cardinal`),
+or the drafted one (`draft/sa/spellout-cardinal`, with `/iast` when
+transliterated for `sa-Latn`); `isDraft`, whether any of the text is
+unreviewed, the drafted words or a unit word from a namespace its locale
+marks draft; and for an amount its parts, the major and minor counts, each
+count's words and unit word, and `rounded`. An application that wants another
 order, a capital initial or a currency symbol composes the parts itself.
 
 It crosses as `ts_intl_in_words(context, request_json, out_json)`, the
@@ -170,26 +191,99 @@ The consumer supplies the Nepali, Hindi and Sanskrit reviewers (Q42,
 decided). The CLDR words are rank 1 and ship as CLDR spells them,
 `शुन्य` and `चौँतिस` included; a reviewer's correction goes to CLDR and
 arrives with the next pin. The words below are the SDK's draft, not
-CLDR's, and wait for review:
+CLDR's, and wait for review (Sanskrit's, `sdk.amount` in `sa-Deva`, are
+marked `draft` in `_meta.json` and say `isDraft`):
 
-| key | `ne-Deva-NP` | `hi-Deva-IN` |
-|---|---|---|
-| `sdk.amount.NPR.major` | रुपैयाँ | नेपाली रुपया, नेपाली रुपये |
-| `sdk.amount.NPR.minor` | पैसा | पैसा, पैसे |
-| `sdk.amount.INR.major` | भारतीय रुपैयाँ | रुपया, रुपये |
-| `sdk.amount.INR.minor` | पैसा | पैसा, पैसे |
-| `sdk.amount.words` | … र … | … और … |
-| `sdk.amount.only` | मात्र | मात्र |
+| key | `ne-Deva-NP` | `hi-Deva-IN` | `sa-Deva` |
+|---|---|---|---|
+| `sdk.amount.NPR.major` | रुपैयाँ | नेपाली रुपया, नेपाली रुपये | नेपालरूप्यकम्, ०रूप्यके, ०रूप्यकाणि |
+| `sdk.amount.NPR.minor` | पैसा | पैसा, पैसे | पैसा |
+| `sdk.amount.INR.major` | भारतीय रुपैयाँ | रुपया, रुपये | रूप्यकम्, रूप्यके, रूप्यकाणि |
+| `sdk.amount.INR.minor` | पैसा | पैसा, पैसे | पैसा |
+| `sdk.amount.words` | … र … | … और … | … … च |
+| `sdk.amount.only` | मात्र | मात्र | मात्रम् |
 
-**Sanskrit** (C803). CLDR has no Sanskrit rules. Whitney's *Sanskrit
-Grammar* §§475–489 (rank 2) gives the cardinals, and with them the
-optional forms the grammar allows for one number (22 as *dvāviṃśati*,
-42 as *dvācatvāriṃśat* or *dvicatvāriṃśat*, 19 as *navadaśa* or
-*ūnaviṃśati*), and a number's case agreement with what it counts. A
-rule set chosen among those without a reviewer would be a guess, so
-`sa` is refused `UNSUPPORTED` with the reason `unreviewed` and the hint
-naming this page, until the consumer's reviewer picks the forms and they
-ship as a rule set of the same shape.
+### Sanskrit, drafted (C803, C1310 to C1319)
+
+CLDR has no Sanskrit rules, so the SDK drafts them, in RBNF's own syntax,
+in `crates/intl/drafts/rbnf/sa.txt` (§1), and every answer spelt from
+them is marked `isDraft` until the consumer's reviewer confirms the forms
+below. The consumer's SR-75 answer, to ship Sanskrit text marked rather
+than wait on Q42, is read to cover these words too.
+
+**Sources.** The words and how they combine are the grammars':
+M. R. Kale, *A Higher Sanskrit Grammar* (1894; 7th ed. 1931, Internet
+Archive) §159 (the cardinals 1 to 99 with every optional form, 100, 200
+as *dviśata* or *dve śate*, 300 as *triśata* or *trīṇi śatāni*, 1000,
+and the scale words with their genders, *lakṣa* neuter, *koṭi*
+feminine), §160 (Pāṇini VI.3.47–49, quoted: *dvi*, *tri* and *aṣṭan* are
+*dvā*, *trayas*, *aṣṭā* before *-viṃśati* and *-triṃśat*, optionally from
+*-catvāriṃśat*, never before *aśīti*) and §161 (the numbers between the
+hundreds "generally expressed by means of *adhika*", with the worked
+values 101, 112, 150, 1892 and 177639); W. D. Whitney, *A Sanskrit
+Grammar* (1879; 1896 issue, Internet Archive) §475 (the decimal names,
+and d: "in modern time the only numbers in practical use above thousand
+are *lakṣa* and *koṭi*", an Indian sum read as "1-23 crores, 45 lakhs,
+67 thousand, eight hundred and ninety"), §476 (11 to 99 and their
+sandhi), §§477–478 (*ūna* and *adhika*), §481 (a multiplier compounded
+with *śata* or *sahasra*, "in later usage more generally"), §§482–486
+(inflection and construction). The rank-1 texts behind them are Pāṇini
+VI.3.47–49 and Bhāskara's *Līlāvatī* vv. 10–11 (the place names *eka*,
+*daśa*, *śata*, *sahasra*, *ayuta*, *lakṣa*, *prayuta*, *koṭi*, …, as
+Kale's §159 footnote prints them).
+
+**How a number reads.** Kale §161's method: the part below the largest
+scale, itself so read, compounded with *adhika* ("exceeded by"), then the
+scale word with its multiplier compounded (Whitney §481: *dviśatam*, not
+*dve śate*), the whole one compound in the nominative singular, neuter
+(*-śatam*, *-sahasram*, *-lakṣam*) or, for *koṭi*, feminine (*-koṭiḥ*).
+Kale's 1892 comes out letter for letter: द्वानवत्यधिकाष्टशताधिकसहस्रम्.
+One word suits a cheque's legal amount: nothing can be added inside it.
+
+| number | `sa-Deva` | `sa-Latn` | from |
+|---|---|---|---|
+| 0 | शून्यम् | śūnyam | C1311 |
+| 1 | एकम् | ekam | K §159, neuter (C1310) |
+| 2 | द्वे | dve | K §159 |
+| 11 | एकादश | ekādaśa | K §159, W §476 |
+| 19 | नवदश | navadaśa | K §159's first form (C1312) |
+| 21 | एकविंशतिः | ekaviṃśatiḥ | K §159 |
+| 42 | द्वाचत्वारिंशत् | dvācatvāriṃśat | K §160 (C1313) |
+| 96 | षण्णवतिः | ṣaṇṇavatiḥ | W §476 d |
+| 99 | नवनवतिः | navanavatiḥ | K §159 (C1312) |
+| 100 | शतम् | śatam | K §159 |
+| 101 | एकाधिकशतम् | ekādhikaśatam | K §161 |
+| 200 | द्विशतम् | dviśatam | K §159, W §481 |
+| 1000 | सहस्रम् | sahasram | K §159 |
+| 1892 | द्वानवत्यधिकाष्टशताधिकसहस्रम् | dvānavatyadhikāṣṭaśatādhikasahasram | K §161 |
+| 1,00,000 | लक्षम् | lakṣam | K §159 |
+| 1,77,639 | नवत्रिंशदधिकषट्शताधिकसप्तसप्ततिसहस्राधिकलक्षम् | … | K §161, with C1312 and C1315 |
+| 1,00,00,000 | कोटिः | koṭiḥ | K §159 |
+| 1,23,45,67,890 | नवत्यधिकाष्टशताधिकसप्तषष्टिसहस्राधिकपञ्चचत्वारिंशल्लक्षाधिकत्रयोविंशत्यधिकशतकोटिः | … | W §475 d (C1314) |
+| −5 | ऋणम् पञ्च | ṛṇam pañca | C1318 |
+
+**The scales** are the Indian grouping's alone: *śata*, *sahasra*,
+*lakṣa*, *koṭi* (Whitney §475 d), and crores are counted with a whole
+number, as Whitney's "1-23 crores", so every `i64` is spelt (10⁹ is
+शतकोटिः, 10¹⁴ कोटिकोटिः). *Līlāvatī*'s further names (*arbuda*, *abja*,
+*kharva*, *nikharva*, *mahāpadma*, *śaṅku*, …) count every power of ten,
+not every second one, and the grammars give no grouping in them (C1314).
+
+**Sandhi.** The rules spell each joint out, as CLDR's Nepali spells each
+number below a hundred: a separate set for a multiplier before *lakṣa*
+(चतुर्, षड्, त्रिंशल्) and before *koṭi* (चतुष्), and the units before each
+ten. One joint cannot be spelt in a rule: *adhika*'s final *a* meeting the
+vowel a following term begins with (अधिक + अष्टशत = अधिकाष्टशत, K §161's
+own 1892). The rules mark it `+`, and the speller closes it by the vowel
+sandhi of a final *a* (a + a = ā, a + e = ai, and so on); a `+` anywhere
+else is dropped. That one step is the only thing the drafted rules ask of
+the speller that CLDR's do not.
+
+**`sa-Latn`** reads the same words transliterated into IAST by the table
+that derives `sa-Latn` from `sa-Deva`, and its `sdk.amount` is derived
+the same way (`DERIVED_MESSAGES`, `intl-engine-and-packs.md`), still
+marked. `VERBOSE` and `INTERNATIONAL` are refused for Sanskrit as for
+Hindi.
 
 ## 6. Tests
 
@@ -206,14 +300,25 @@ ship as a rule set of the same shape.
   words*); 1234.56 NPR in Nepali; the tables in §3.
 - **Rounding:** 0.005 and 0.015 under both rules, 0.004, an `EXACT`
   refusal, a decimal with too many digits for `u64`.
-- **Refusals:** `sa`, `INTERNATIONAL` in Nepali, `VERBOSE` in Hindi, an
-  unknown currency, a fallback unit, a malformed decimal, both or neither
-  of `number` and `amount`.
+- **Sanskrit** (`crates/intl/tests/sanskrit_words.rs`): every worked
+  value of §5 against the section it is read from, Kale's 1892 letter for
+  letter and his 177639 with the draft's two choices substituted, Whitney's
+  Indian sum, `i64::MAX` and `MIN + 1`, `sa-Latn`, an INR amount in both
+  scripts, `isDraft` on every Sanskrit answer and on no other, and the
+  generated table held to the hand-kept file's SHA-256.
+- **Refusals:** `INTERNATIONAL` in Nepali or Sanskrit, `VERBOSE` in Hindi
+  or Sanskrit, an unknown currency, a fallback unit, a malformed decimal,
+  both or neither of `number` and `amount`.
 
 ## 7. Cruxes
 
 - **C803**: Sanskrit's numerals have optional forms; which ship waits on
-  the consumer's reviewer. Refused as unreviewed.
+  the consumer's reviewer. Drafted 2026-11-09 and shipped marked; the
+  choices are C1310 to C1319.
+- **C1310 to C1319**: the drafted Sanskrit's forms, for the reviewer to
+  confirm or change: the citation form, zero and eight, the ninth of each
+  ten, *dvā*/*dvi*, the scales, how the parts join, optional sandhi, the
+  currency words, the closing and negative words, and `sa-Latn`.
 - **C804**: CLDR's Indian English has no arab or kharab, and says
   trillion from 10¹². Shipped as CLDR has it.
 - **C805**: no Nepali text found states a rounding rule below the paisa;

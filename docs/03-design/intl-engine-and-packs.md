@@ -541,6 +541,10 @@ a variant, and the source's `draft` mark carried with the namespace,
 because transliterating a draft does not review it. A namespace the
 derivation does not carry is not marked.
 
+`sdk.amount` is derived the same way (`DERIVED_MESSAGES` lists both):
+`sa-Latn` carries Sanskrit's currency words (SR-49,
+`amounts-in-words.md` §5) transliterated and still marked.
+
 **Sources.** `hi` and `sa` follow CLDR 48 (rank 1) for the Gregorian
 months, the weekdays, the date order (`d MMMM y`, `EEEE, d MMMM y`) and
 Hindi's parts of the day (`सुबह`, `दोपहर`, `शाम`, `रात`, whose hours are the

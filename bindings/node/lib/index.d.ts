@@ -2329,12 +2329,21 @@ export interface InWords {
   readonly text: string;
   /** The figures, grouped, in the digits asked for. */
   readonly figure: string;
-  /** Where the words came from: `cldr-<release>/<file>/<rule set>`. */
+  /**
+   * Where the words came from: `cldr-<release>/<file>/<rule set>`, or
+   * `draft/<file>/<rule set>` (with `/iast` in a Latin-script locale) for
+   * the SDK's own unreviewed rules.
+   */
   readonly rules: string;
   /** The locale the words and units are in. */
   readonly locale: string;
   /** An amount's parts; `null` for a number. */
   readonly amount: AmountInWords | null;
+  /**
+   * Whether any of the text is unreviewed: words from the SDK's drafted
+   * rules (Sanskrit), or a unit word from a namespace its locale marks draft.
+   */
+  readonly isDraft: boolean;
 }
 
 /** A date or a time as text and parts, as `intl.time` and `intl.date` give it. */

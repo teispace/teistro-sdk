@@ -94,7 +94,7 @@ the addendum and not the product. It is a deliberate change from the addendum's 
 
 | SR | Status | Where | Note or question |
 |---|---|---|---|
-| SR-49 | built, Sanskrit not | `intl.inWords`, `ts_intl_in_words` | Amounts in words in ne, hi and en with the Indian grouping (and en's international grouping), a currency's units, and Devanagari or Latin digits, by CLDR 48's rule-based number formats. Sanskrit (`sa`) is refused: CLDR has no Sanskrit rules and the numerals are unreviewed (C803, `03-design/amounts-in-words.md`). |
+| SR-49 | built, Sanskrit unreviewed | `intl.inWords`, `ts_intl_in_words` | Amounts in words in ne, hi and en with the Indian grouping (and en's international grouping), a currency's units, and Devanagari or Latin digits, by CLDR 48's rule-based number formats. Sanskrit (`sa-Deva`, and `sa-Latn` in IAST) is spelt by the SDK's own drafted rules in the same syntax, from Kale's *Higher Sanskrit Grammar* §§159–161 and Whitney's *Sanskrit Grammar* §§475–486 (1892 as द्वानवत्यधिकाष्टशताधिकसहस्रम्, a lakh लक्षम्, a crore कोटिः), with its currency words, and ships marked like SR-75: every Sanskrit answer says `isDraft`. Read first: the forms chosen where the grammar allows two, C1310 to C1319 (`03-design/amounts-in-words.md` §5). |
 
 ## 7. AI, knowledge and MCP (addendum 2)
 

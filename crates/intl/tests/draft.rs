@@ -1,5 +1,6 @@
-//! The unreviewed text: Hindi and Sanskrit `sdk.calendar` ship marked, a
-//! reader sees the mark, and `check-intl` holds it
+//! The unreviewed text: Hindi and Sanskrit `sdk.calendar` and Sanskrit's
+//! `sdk.amount` ship marked, a reader sees the mark, and `check-intl`
+//! holds it
 //! (`docs/03-design/intl-engine-and-packs.md`, "Text not yet reviewed").
 #![allow(
     clippy::unwrap_used,
@@ -30,9 +31,15 @@ fn errors(tree: &Tree) -> Vec<String> {
 #[test]
 fn hindi_and_sanskrit_calendar_text_ships_marked() {
     let tree = tree();
-    // sa-Latn is derived from sa-Deva and keeps its mark.
-    for tag in ["hi-Deva-IN", "sa-Deva", "sa-Latn"] {
-        assert_eq!(tree.locales[tag].meta.draft, ["sdk.calendar"], "{tag}");
+    assert_eq!(tree.locales["hi-Deva-IN"].meta.draft, ["sdk.calendar"]);
+    // Sanskrit's currency words (SR-49) too, and sa-Latn, derived from
+    // sa-Deva, carries both still marked (SR-79).
+    for tag in ["sa-Deva", "sa-Latn"] {
+        assert_eq!(
+            tree.locales[tag].meta.draft,
+            ["sdk.amount", "sdk.calendar"],
+            "{tag}"
+        );
     }
     // The strict locale drafts its day sentences and its rites' names (SR-31),
     // not its calendar words.

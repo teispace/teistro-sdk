@@ -318,9 +318,16 @@ public final class BindingTest {
                         .number(150_000L).locale("en-Latn")
                         .grouping(com.teispace.teistro.request.WordsGrouping.INDIAN).build());
                 same("one lakh fifty thousand", lakh.text(), "a lakh");
-                TeistroException sanskrit = refusal(() -> sky.intl().inWords(
-                        com.teispace.teistro.request.InWordsRequest.builder().number(1L).locale("sa-Deva").build()));
-                same("inWords.locale", sanskrit.field(), "Sanskrit is unreviewed");
+                check(!lakh.isDraft(), "CLDR's words are reviewed");
+                InWords sanskrit = sky.intl().inWords(com.teispace.teistro.request.InWordsRequest.builder()
+                        .number(1892L).locale("sa-Deva").build());
+                same("द्वानवत्यधिकाष्टशताधिकसहस्रम्", sanskrit.text(), "Kale §161's 1892");
+                same("draft/sa/spellout-cardinal", sanskrit.rules(), "the drafted rules");
+                check(sanskrit.isDraft(), "Sanskrit's words say they are unreviewed");
+                TeistroException international = refusal(() -> sky.intl().inWords(
+                        com.teispace.teistro.request.InWordsRequest.builder().number(1L).locale("sa-Deva")
+                                .grouping(com.teispace.teistro.request.WordsGrouping.INTERNATIONAL).build()));
+                same("inWords.grouping", international.field(), "Sanskrit counts in lakhs alone");
                 CivilText dawn = sky.intl().time(com.teispace.teistro.request.TimeTextRequest.builder()
                         .at(com.teispace.teistro.request.ClockTime.builder().hour(6).minute(5).build())
                         .hour12(true).locale("hi-Deva-IN").build());

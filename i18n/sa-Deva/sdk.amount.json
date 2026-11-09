@@ -1,0 +1,12 @@
+{
+  "words": ".input {$shape :string} .match $shape MINOR {{{$minorWords} {$minorUnit}}} BOTH {{{$majorWords} {$majorUnit} {$minorWords} {$minorUnit} च}} * {{{$majorWords} {$majorUnit}}}",
+  "only": "{$amount} मात्रम्",
+  "INR": {
+    "major": ".input {$count :integer} .match $count 1 {{रूप्यकम्}} 2 {{रूप्यके}} * {{रूप्यकाणि}}",
+    "minor": ".input {$count :integer} .match $count * {{पैसा}}"
+  },
+  "NPR": {
+    "major": ".input {$count :integer} .match $count 1 {{नेपालरूप्यकम्}} 2 {{नेपालरूप्यके}} * {{नेपालरूप्यकाणि}}",
+    "minor": ".input {$count :integer} .match $count * {{पैसा}}"
+  }
+}
