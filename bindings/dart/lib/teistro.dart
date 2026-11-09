@@ -1894,6 +1894,9 @@ final class AlmanacArea extends _Area {
   /// rule's day is the published one is the reason, else
   /// [PublishedCause.by] `PUBLISHER`; every change tried is listed.
   ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both; a zone is
+  /// read at each day's offset then.
+  ///
   /// ```dart
   /// final found = modern.almanac.publishedReasons(
   ///   from: Calendar.gregorian.date(2027, 9, 1),
@@ -1908,7 +1911,8 @@ final class AlmanacArea extends _Area {
     required CalendarDate from,
     CalendarDate? to,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     required FestivalRequest festivals,
     List<ReckonedPlace> places = const [],
     Context? sky,
@@ -1920,7 +1924,7 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      ..._clockFields(utcOffsetSeconds, zone),
       'festivals': jsonDecode(festivals._json),
       'places': [
         for (final p in places)
@@ -1929,7 +1933,7 @@ final class AlmanacArea extends _Area {
             'latitudeDeg': p.place.latitudeDeg,
             'longitudeDeg': p.place.longitudeDeg,
             'altitudeM': p.place.altitudeM,
-            'utcOffsetSeconds': p.utcOffsetSeconds,
+            ..._clockFields(p.utcOffsetSeconds, p.zone),
           },
       ],
     });
@@ -2376,6 +2380,9 @@ final class AlmanacArea extends _Area {
   /// not asked; a request comparing nothing is refused as
   /// `disagreements.days`.
   ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both; a zone is
+  /// read at each day's offset then.
+  ///
   /// ```dart
   /// final official = teistro.nepalOfficial(modern: [teimeris()]);
   /// final modern = teistro.context(
@@ -2396,7 +2403,8 @@ final class AlmanacArea extends _Area {
     required CalendarDate from,
     CalendarDate? to,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     bool days = true,
     FestivalRequest? festivals,
   }) {
@@ -2407,7 +2415,7 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      ..._clockFields(utcOffsetSeconds, zone),
       'days': days,
       if (festivals != null) 'festivals': jsonDecode(festivals._json),
     });
@@ -2429,6 +2437,9 @@ final class AlmanacArea extends _Area {
   /// [stampUnixSeconds] is now when left out, and a null (or zero)
   /// [refreshMinutes] writes no refresh interval.
   ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both; a zone is
+  /// read at each day's offset then.
+  ///
   /// ```dart
   /// final ics = sdk.almanac.festivalCalendar(
   ///   from: Calendar.gregorian.date(2026, 1, 1),
@@ -2443,7 +2454,8 @@ final class AlmanacArea extends _Area {
     required CalendarDate from,
     CalendarDate? to,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     required FestivalRequest festivals,
     int? stampUnixSeconds,
     String? name,
@@ -2463,7 +2475,7 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      ..._clockFields(utcOffsetSeconds, zone),
       'festivals': jsonDecode(festivals._json),
       'stampUnixSeconds':
           stampUnixSeconds ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -2554,6 +2566,9 @@ final class AlmanacArea extends _Area {
   /// facts as short sentences from templates, every value from the day's
   /// answer. A locale without the templates is refused on `locale`.
   ///
+  /// The clock is [utcOffsetSeconds] or a [zone], never both; a zone is
+  /// read at each day's offset then.
+  ///
   /// ```dart
   /// final day = sdk.almanac.sentences(
   ///   date: Calendar.gregorian.date(2026, 3, 18), place: kathmandu,
@@ -2564,7 +2579,8 @@ final class AlmanacArea extends _Area {
   DaySentences sentences({
     required CalendarDate date,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     String? locale,
   }) {
     final asked = jsonEncode(<String, Object?>{
@@ -2573,7 +2589,7 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      ..._clockFields(utcOffsetSeconds, zone),
       if (locale != null) 'locale': locale,
     });
     final envelope =
@@ -2637,7 +2653,8 @@ final class AlmanacArea extends _Area {
   NextOccurrence next({
     required double after,
     required Observer place,
-    required int utcOffsetSeconds,
+    int? utcOffsetSeconds,
+    ZoneSpec? zone,
     String? kind,
     String? rule,
     FestivalRequest? festivals,
@@ -2649,7 +2666,7 @@ final class AlmanacArea extends _Area {
       'latitudeDeg': place.latitudeDeg,
       'longitudeDeg': place.longitudeDeg,
       'altitudeM': place.altitudeM,
-      'utcOffsetSeconds': utcOffsetSeconds,
+      ..._clockFields(utcOffsetSeconds, zone),
       if (calendar != null) 'calendar': calendar.key,
       if (kind != null) 'kind': kind,
       if (rule != null) 'rule': rule,
@@ -18016,18 +18033,23 @@ final class ReckonedPlace extends _Value {
   const ReckonedPlace({
     required this.name,
     required this.place,
-    required this.utcOffsetSeconds,
+    this.utcOffsetSeconds,
+    this.zone,
   });
 
   /// How the reason names it.
   final String name;
   final Observer place;
 
-  /// Its civil days' offset from UTC, east positive.
-  final int utcOffsetSeconds;
+  /// Its civil days' offset from UTC, east positive; or [zone], not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone its civil days are read on, at the offset it had then; or
+  /// [utcOffsetSeconds], not both.
+  final ZoneSpec? zone;
 
   @override
-  List<Object?> get _fields => [name, place, utcOffsetSeconds];
+  List<Object?> get _fields => [name, place, utcOffsetSeconds, zone];
 
   /// Its JSON, as the SDK reads it.
   Object? get _wire => <String, Object?>{
@@ -18035,7 +18057,7 @@ final class ReckonedPlace extends _Value {
     'latitudeDeg': place.latitudeDeg,
     'longitudeDeg': place.longitudeDeg,
     'altitudeM': place.altitudeM,
-    'utcOffsetSeconds': utcOffsetSeconds,
+    ..._clockFields(utcOffsetSeconds, zone),
   };
 }
 

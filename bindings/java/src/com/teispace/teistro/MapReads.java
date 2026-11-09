@@ -17,7 +17,7 @@ final class MapReads {
     }
 
     static MundaneChart mundane(Context context, ChartArea chart, MundaneKind kind, Observer place, Integer year,
-            Double from, MundaneKind ingress, MundaneEvent event, int utcOffsetSeconds) {
+            Double from, MundaneKind ingress, MundaneEvent event, Map<String, Object> clock) {
         if (kind == null || place == null) {
             throw Reads.invalid("a mundane chart needs a kind and a place", kind == null ? "kind" : "place");
         }
@@ -26,7 +26,7 @@ final class MapReads {
         asked.put("latitudeDeg", place.latitudeDeg().value());
         asked.put("longitudeDeg", place.longitudeDeg().value());
         asked.put("altitudeM", place.altitudeM().value());
-        asked.put("utcOffsetSeconds", utcOffsetSeconds);
+        asked.putAll(clock);
         if (year != null) {
             asked.put("year", year);
         }

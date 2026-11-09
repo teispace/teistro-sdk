@@ -1383,6 +1383,13 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as refused:
                 sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="hi-Deva-IN")
             self.assertEqual(refused.exception.field, "locale")
+            # The same day asked on Nepal's zone is the day on +05:45; both
+            # clocks together are refused naming `zone`.
+            zone = iana_zone("Asia/Kathmandu")
+            self.assertEqual(sky.almanac.sentences(date=day, place=kathmandu, zone=zone, locale="en-Latn"), en)
+            with self.assertRaises(TeistroError) as both:
+                sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, zone=zone)
+            self.assertEqual(both.exception.field, "sentences.zone")
 
     def test_the_next_sankranti_and_a_packs_festival_are_found(self) -> None:
         """From noon on 1 January 2026 at Kathmandu, Maghe sankranti on the

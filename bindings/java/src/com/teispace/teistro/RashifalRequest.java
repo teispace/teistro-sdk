@@ -8,6 +8,7 @@ import java.util.List;
  *
  * <pre>{@code
  * RashifalRequest week = RashifalRequest.of(first, kathmandu, 20_700).withLast(last);
+ * RashifalRequest zoned = RashifalRequest.of(first, kathmandu, Civil.ianaZone("Asia/Kathmandu"));
  * }</pre>
  *
  * @param first the first day; the period is in its calendar
@@ -20,15 +21,34 @@ import java.util.List;
  * @param events the grahas whose ingresses and stations are reported, as
  *     members or keys (every one but the Moon by default, C360); may be null
  * @param spells Saturn's smaller spells (the 4th and 8th by default, C149); may be null
+ * @param zone the zone each day is read on, at the offset it had then, in place of
+ *     {@code utcOffsetSeconds}, which is then not sent ({@code 03-design/time-and-timezone.md}
+ *     §3.4); may be null, for the offset
  */
 public record RashifalRequest(
         CalendarDate first, CalendarDate last, Observer place, int utcOffsetSeconds,
         com.teispace.teistro.request.Snapshot snapshot,
-        List<?> events, List<Integer> spells) {
+        List<?> events, List<Integer> spells, ZoneSpec zone) {
     /** Keeps the collections unmodifiable. */
     public RashifalRequest {
         events = events == null ? null : List.copyOf(events);
         spells = spells == null ? null : List.copyOf(spells);
+    }
+
+    /**
+     * A period on an offset, as before the zone was a component.
+     *
+     * @param first the first day
+     * @param last the last day; may be null
+     * @param place where
+     * @param utcOffsetSeconds the local clock's offset from UTC, east positive
+     * @param snapshot when in the reference day the sky is read; may be null
+     * @param events the grahas whose ingresses and stations are reported; may be null
+     * @param spells Saturn's smaller spells; may be null
+     */
+    public RashifalRequest(CalendarDate first, CalendarDate last, Observer place, int utcOffsetSeconds,
+            com.teispace.teistro.request.Snapshot snapshot, List<?> events, List<Integer> spells) {
+        this(first, last, place, utcOffsetSeconds, snapshot, events, spells, null);
     }
 
     /**
@@ -40,7 +60,29 @@ public record RashifalRequest(
      * @return the request
      */
     public static RashifalRequest of(CalendarDate first, Observer place, int utcOffsetSeconds) {
-        return new RashifalRequest(first, null, place, utcOffsetSeconds, null, null, null);
+        return new RashifalRequest(first, null, place, utcOffsetSeconds, null, null, null, null);
+    }
+
+    /**
+     * A period of one day on a zone's clock, each day read at the offset the zone had then.
+     *
+     * @param first the first day
+     * @param place where
+     * @param zone the zone, from {@code Civil.ianaZone} and its neighbours
+     * @return the request
+     */
+    public static RashifalRequest of(CalendarDate first, Observer place, ZoneSpec zone) {
+        return new RashifalRequest(first, null, place, 0, null, null, null, zone);
+    }
+
+    /**
+     * The same request on a zone's clock, in place of its offset.
+     *
+     * @param on the zone, from {@code Civil.ianaZone} and its neighbours
+     * @return the request
+     */
+    public RashifalRequest withZone(ZoneSpec on) {
+        return new RashifalRequest(first, last, place, utcOffsetSeconds, snapshot, events, spells, on);
     }
 
     /**
@@ -50,7 +92,7 @@ public record RashifalRequest(
      * @return the request
      */
     public RashifalRequest withLast(CalendarDate day) {
-        return new RashifalRequest(first, day, place, utcOffsetSeconds, snapshot, events, spells);
+        return new RashifalRequest(first, day, place, utcOffsetSeconds, snapshot, events, spells, zone);
     }
 
     /**
@@ -61,7 +103,7 @@ public record RashifalRequest(
      * @return the request
      */
     public RashifalRequest withSnapshot(com.teispace.teistro.request.Snapshot at) {
-        return new RashifalRequest(first, last, place, utcOffsetSeconds, at, events, spells);
+        return new RashifalRequest(first, last, place, utcOffsetSeconds, at, events, spells, zone);
     }
 
     /**
@@ -71,7 +113,7 @@ public record RashifalRequest(
      * @return the request
      */
     public RashifalRequest withEvents(List<?> grahas) {
-        return new RashifalRequest(first, last, place, utcOffsetSeconds, snapshot, grahas, spells);
+        return new RashifalRequest(first, last, place, utcOffsetSeconds, snapshot, grahas, spells, zone);
     }
 
     /**
@@ -81,6 +123,6 @@ public record RashifalRequest(
      * @return the request
      */
     public RashifalRequest withSpells(List<Integer> houses) {
-        return new RashifalRequest(first, last, place, utcOffsetSeconds, snapshot, events, houses);
+        return new RashifalRequest(first, last, place, utcOffsetSeconds, snapshot, events, houses, zone);
     }
 }

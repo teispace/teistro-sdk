@@ -60,7 +60,7 @@ fn request(from_year: i32, years: u16, anniversaries: Vec<Anniversary>) -> Anniv
         from_year,
         years,
         place: kathmandu(),
-        offset: NPT,
+        clock: NPT.into(),
         calendar: Calendar::Gregorian,
         anniversaries,
     }
@@ -561,7 +561,7 @@ fn an_unjudged_occurrence_is_told_and_the_answer_is_written_in_full() {
         Longitude::literal(15.6),
         Altitude::literal(0.0),
     );
-    north.offset = UtcOffset::literal(1, 0, 0);
+    north.clock = UtcOffset::literal(1, 0, 0).into();
     let found = sdk.almanac().anniversaries(&north).unwrap().value;
     assert!(found.unjudged.len() > 3, "{}", found.unjudged.len());
     // The year, and past it by the polar night its last day waits through.

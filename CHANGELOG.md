@@ -148,8 +148,22 @@ rashifal and a rectification's provenance gains `time.clock`, `MANUAL`.
 - A Davison of a partner by zone fixes the partner to its offset first (`Partner::fixed`); `davison` refuses a
   partner still on a zone.
 - Node, Python and Dart take `zone` on each of these calls and records; Java takes a `ZoneSpec` overload of
-  `sankalpa`, `ashauch`, `household`, `deathTime` and `firstYear`, and a partner's `zone` through its request.
-  Parity line `requests-in-zone`.
+  `sankalpa`, `ashauch`, `household`, `deathTime`, `firstYear`, `pakshi`, `mundane`, `sentences`, `next` and
+  `disagreements`, `RashifalRequest.of(.., ZoneSpec)` and `withZone`, `ResearchBirth.inZone`, and a partner's
+  `zone` through its request. Parity line `requests-in-zone`.
+
+**The almanac's range requests asked by zone.**
+**Numbers:** none for a request asked by an offset: its answer and input hash are byte for byte what they were.
+- `sentences`, `next`, `elect`, `people` (the day and each birth), `anniversaries`, `observance`,
+  `publishedReasons` (the request and each place), `festivalCalendar`, `disagreements`, and Rust's
+  `festivals_with_days` and `muhurta_with_days` take `zone` in place of `utcOffsetSeconds`; giving both is refused
+  naming `zone`. The days are read on the zone each; what reckons on one offset reckons on the first day's noon; a
+  search across a clock change is refused (SR-10, `03-design/time-and-timezone.md` §3.4, C1252).
+- Rust: the request types hold `clock: DayClock` in place of `offset` (`ReckonedPlace` and `Person` too);
+  `published_reasons`, `festival_calendar`, `disagreements`, `festival_disagreements`, `festivals_with_days` and
+  `muhurta_with_days` take `impl Into<DayClock>`; `DayClock::offset` gives back a stated offset.
+- Node, Python and Dart take `zone` on each of these calls; Python's `ReckonedPlace` and Dart's gain `zone`, their
+  offset now optional.
 
 **What would settle each uncomputed dasha.**
 **Numbers:** none: a documentation column.

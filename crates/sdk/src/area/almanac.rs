@@ -287,6 +287,76 @@ impl<'a> AlmanacArea<'a> {
         }
     }
 
+    /// This area with no clock of its own, as a request on its own clock
+    /// starts: a stated offset is then read as stated.
+    pub(crate) const fn unclocked(self) -> AlmanacArea<'a> {
+        AlmanacArea {
+            context: self.context,
+            clock: None,
+        }
+    }
+
+    /// The clock this area's almanacs read: the zone's when it is on one,
+    /// `offset` otherwise.
+    pub(crate) fn clock_or<'s>(&'s self, offset: &'s UtcOffset) -> &'s dyn LocalClock {
+        match self.clock {
+            Some(clock) => clock,
+            None => offset,
+        }
+    }
+
+    /// [`AlmanacArea::clocked`] for a range, anchored at its first day's
+    /// noon: the days are read on the zone each, and what reckons on one
+    /// offset reckons on the first day's (C1252).
+    pub(crate) fn clocked_from<T>(
+        self,
+        clock: &crate::DayClock,
+        from: &CalendarDate,
+        work: impl FnOnce(AlmanacArea<'_>, UtcOffset) -> Result<T, Error>,
+    ) -> Result<T, Error> {
+        self.clocked(clock, || Self::noon_of_date(from), work)
+    }
+
+    /// The festivals over a range on `clock`, from no clock of this area's
+    /// own: what a request reckoning several places, skies or contexts
+    /// asks each of them.
+    ///
+    /// # Errors
+    ///
+    /// As [`AlmanacArea::festivals`]; a zone the database does not have.
+    pub(crate) fn festivals_on(
+        self,
+        (from, to): (&CalendarDate, &CalendarDate),
+        place: &Place,
+        clock: &crate::DayClock,
+        request: &FestivalRequest,
+    ) -> Result<Envelope<Observances>, Error> {
+        self.unclocked()
+            .clocked_from(clock, from, |almanac, offset| {
+                almanac.festivals(from, to, place, offset, request)
+            })
+    }
+
+    /// [`AlmanacArea::clocked`] for a range whose whole reckoning runs on
+    /// one offset, as a muhurta search does: a zone that changes its clock
+    /// inside the range is refused on `zone`, as a range's sections are.
+    #[cfg(feature = "muhurta")]
+    pub(crate) fn clocked_steady<T>(
+        self,
+        clock: &crate::DayClock,
+        (from, to): (&CalendarDate, &CalendarDate),
+        work: impl FnOnce(AlmanacArea<'_>, UtcOffset) -> Result<T, Error>,
+    ) -> Result<T, Error> {
+        match clock {
+            crate::DayClock::Offset(offset) => work(self, *offset),
+            crate::DayClock::Zone(zone) => {
+                let read = zone.clock(self.context.zones())?;
+                let offset = Self::steady_offset(from, to, &read, false)?;
+                work(self.on(&read), offset)
+            }
+        }
+    }
+
     /// The offset a range's sections reckon on: the first day's. Sections
     /// take one offset, so over a change they are refused unless no
     /// section was asked.
@@ -318,7 +388,6 @@ impl<'a> AlmanacArea<'a> {
 
     /// The noon of a date's day, in UTC: the instant a range's clock is
     /// read at, away from any midnight change.
-    #[cfg(feature = "pakshi")]
     pub(crate) fn noon_of_date(date: &CalendarDate) -> Result<JulianDay<Utc>, Error> {
         noon_of(system_of(date.calendar)?.fixed_of(date)?)
     }
@@ -397,7 +466,9 @@ impl<'a> AlmanacArea<'a> {
 
     /// As [`AlmanacArea::festivals`], with the range's days beside the
     /// answer, founded once and sealed as [`AlmanacArea::of_each`] seals
-    /// them: what a consumer shows the observances on.
+    /// them: what a consumer shows the observances on. The clock is an
+    /// offset or a zone, a zone as [`AlmanacArea::in_zone`] reads a range
+    /// with festivals beside it.
     ///
     /// # Errors
     ///
@@ -407,7 +478,7 @@ impl<'a> AlmanacArea<'a> {
         from: &CalendarDate,
         to: &CalendarDate,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<crate::DayClock>,
         request: &FestivalRequest,
     ) -> Result<FestivalDays, Error> {
         let asked = AlmanacRequest::new().with_festivals(request.clone());
@@ -416,7 +487,7 @@ impl<'a> AlmanacArea<'a> {
             day_hashes,
             festivals,
             ..
-        } = self.asked(from, to, place, offset, &asked)?;
+        } = clock.into().asked_on(self, (from, to), place, &asked)?;
         let answer = festivals.ok_or_else(|| {
             Error::internal("a request with festivals answered none, which cannot happen")
         })?;

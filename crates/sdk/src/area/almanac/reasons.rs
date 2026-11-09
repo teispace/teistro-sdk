@@ -11,11 +11,12 @@ use teistro_core::catalogue::{Calendar, Kind, write_in_full};
 use teistro_core::envelope::{Envelope, Hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::Place;
-use teistro_core::time::UtcOffset;
 use teistro_panchanga::festival::{Observances, Published, PublishedStatus};
+use teistro_time::ZoneSpec;
 
 use super::AlmanacArea;
-use crate::asked::{DayAsked, offset_of, place_of};
+use crate::DayClock;
+use crate::asked::{DayAsked, place_of};
 use crate::context::Context;
 use crate::festival_request::{FestivalPack, FestivalRequest};
 
@@ -26,8 +27,9 @@ pub struct ReckonedPlace {
     pub name: String,
     /// The place.
     pub place: Place,
-    /// The clock its civil days run on.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
 }
 
 /// One change a published day was tried under, or the reason it differs.
@@ -219,12 +221,14 @@ impl AlmanacArea<'_> {
     pub fn published_reasons(
         self,
         (from, to): (&CalendarDate, &CalendarDate),
-        (place, offset): (&Place, UtcOffset),
+        (place, clock): (&Place, impl Into<DayClock>),
         request: &FestivalRequest,
         places: &[ReckonedPlace],
         skies: &[&Context],
     ) -> Result<Envelope<PublishedReasons>, Error> {
-        let asked = self.festivals(from, to, place, offset, request)?;
+        let clock = clock.into();
+        let mut asked = self.festivals_on((from, to), place, &clock, request)?;
+        clock.seal_answer(&mut asked.provenance);
         let moved = moved(&asked.value);
         if moved.is_empty() {
             return Ok(Envelope::sealing(
@@ -237,7 +241,7 @@ impl AlmanacArea<'_> {
         // Each change asked once, however many days it explains.
         let mut changes: Vec<(PublishedCause, Observances)> = Vec::new();
         for at in places {
-            let answer = self.festivals(from, to, &at.place, at.offset, request)?;
+            let answer = self.festivals_on((from, to), &at.place, &at.clock, request)?;
             changes.push((
                 PublishedCause::Place {
                     name: at.name.clone(),
@@ -246,7 +250,9 @@ impl AlmanacArea<'_> {
             ));
         }
         for sky in skies {
-            let answer = sky.almanac().festivals(from, to, place, offset, request)?;
+            let answer = sky
+                .almanac()
+                .festivals_on((from, to), place, &clock, request)?;
             changes.push((
                 PublishedCause::Sky {
                     profile: sky.profile().to_owned(),
@@ -271,7 +277,7 @@ impl AlmanacArea<'_> {
                 }
             }
             if !replaced.is_empty() {
-                let answer = self.festivals(from, to, place, offset, &other)?;
+                let answer = self.festivals_on((from, to), place, &clock, &other)?;
                 by_pack.push((
                     replaced,
                     PublishedCause::Rule { pack: pack.key() },
@@ -364,8 +370,9 @@ pub struct PublishedReasonsRequest {
     pub to: CalendarDate,
     /// The place.
     pub place: Place,
-    /// The offset its civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
     /// The festival request, with the published sets to explain.
     pub festivals: FestivalRequest,
     /// The places tried, in order.
@@ -383,7 +390,14 @@ pub(crate) struct PlaceAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The offset from UTC the civil days run at, in seconds, east
+    /// positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
 }
 
 /// The request as a binding writes it.
@@ -401,7 +415,14 @@ pub(crate) struct ReasonsAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The offset from UTC the civil days run at, in seconds, east
+    /// positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The festivals, as a festival request with its published sets.
     #[cfg_attr(feature = "schema", schemars(with = "crate::festival_request::Asked"))]
     festivals: Value,
@@ -460,7 +481,7 @@ impl ReasonsAsked {
                 let read = || -> Result<ReckonedPlace, Error> {
                     Ok(ReckonedPlace {
                         place: place_of(at.latitude_deg, at.longitude_deg, at.altitude_m)?,
-                        offset: offset_of(at.utc_offset_seconds)?,
+                        clock: DayClock::asked(at.utc_offset_seconds, at.zone.clone())?,
                         name: at.name.clone(),
                     })
                 };
@@ -471,7 +492,7 @@ impl ReasonsAsked {
             from: self.first.in_calendar(calendar),
             to: self.last.unwrap_or(self.first).in_calendar(calendar),
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             festivals: FestivalRequest::from_json(&self.festivals.to_string())?,
             places,
         })
@@ -493,7 +514,7 @@ impl AlmanacArea<'_> {
     ) -> Result<Envelope<Value>, Error> {
         let Envelope { value, provenance } = self.published_reasons(
             (&asked.from, &asked.to),
-            (&asked.place, asked.offset),
+            (&asked.place, asked.clock.clone()),
             &asked.festivals,
             &asked.places,
             skies,

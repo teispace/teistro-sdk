@@ -518,6 +518,8 @@ public final class BindingTest {
                 same(true, ne.draft(), "Nepali waits on review");
                 same("locale", refusal(() -> committee.almanac().sentences(day, kathmandu, 20_700, "hi-Deva-IN"))
                         .field(), "no Hindi templates");
+                same(en, committee.almanac().sentences(day, kathmandu, Civil.ianaZone("Asia/Kathmandu"), "en-Latn"),
+                        "the day on Nepal's zone");
             }
         });
 
@@ -988,6 +990,11 @@ public final class BindingTest {
                 PakshiDays sealed = sky.almanac().pakshi(tuesday, wednesday, madras, 19_800,
                         PakshiNative.star(Nakshatra.UTTARA_ASHADHA, Paksha.SHUKLA));
                 check(!sealed.provenance().inputHash().isEmpty(), "the request is sealed");
+                // India's zone kept +05:30 in 1984, so its days are the offset's, the zone sealed.
+                PakshiDays zoned = sky.almanac().pakshi(tuesday, wednesday, madras, Civil.ianaZone("Asia/Kolkata"),
+                        PakshiNative.star(Nakshatra.UTTARA_ASHADHA, Paksha.SHUKLA));
+                same(sealed.value(), zoned.value(), "the days on the zone");
+                check(!sealed.provenance().inputHash().equals(zoned.provenance().inputHash()), "the zone is sealed");
                 List<PakshiDay> days = sealed.value();
                 same(2, days.size(), "two days");
                 PakshiDay.Reading first = days.get(0).reading();
@@ -1116,6 +1123,12 @@ public final class BindingTest {
                         ResearchOptions.builder().depth(3).build()));
                 same("research.depth", stray.field(), "a counts study reads no depth");
                 same("uncertaintyStepMinutes", still.field(), "a step is above zero");
+                // Every birth is after Nepal's change, so on its zone each is read on +05:45.
+                List<ResearchBirth> zoned = new java.util.ArrayList<>();
+                for (ResearchBirth birth : births) {
+                    zoned.add(ResearchBirth.inZone(birth.instant(), birth.place(), Civil.ianaZone("Asia/Kathmandu"), 0));
+                }
+                same(table.rows(), sky.research().counts(zoned, yogas, design, null).rows(), "the births on the zone");
             }
         });
 
@@ -2421,6 +2434,12 @@ public final class BindingTest {
                 check(sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700)
                         .withSnapshot(new SnapshotClock(6, 0))).period() != null, "a rashifal at six");
                 check(!read.provenance().inputHash().isEmpty(), "the request is sealed");
+                RashifalSealed zoned = sky.chart().rashifal(
+                        RashifalRequest.of(first, kathmandu, Civil.ianaZone("Asia/Kathmandu")));
+                same(read.answer(), zoned.answer(), "the period on Nepal's zone");
+                same(zoned.provenance().inputHash(), sky.chart().rashifal(RashifalRequest.of(first, kathmandu, 20_700)
+                        .withZone(Civil.ianaZone("Asia/Kathmandu"))).provenance().inputHash(),
+                        "a zone in place of the offset sends the zone alone");
                 same(read.provenance().inputHash(),
                         sky.chart().rashifalMany(List.of(RashifalRequest.of(first, kathmandu, 20_700)), null)
                                 .provenance().inputHash(),

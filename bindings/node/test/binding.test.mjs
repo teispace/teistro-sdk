@@ -4797,6 +4797,15 @@ test('a day is said in sentences and a locale without templates is refused', () 
     () => ctx.almanac.sentences({ ...asked, locale: 'hi-Deva-IN' }),
     (e) => e instanceof TeistroError && e.field === 'locale',
   );
+  // The same day asked on Nepal's zone is the day on +05:45; both clocks
+  // together are refused naming `zone`.
+  const placed = { date: asked.date, place: asked.place };
+  const zone = ianaZone('Asia/Kathmandu');
+  assert.deepEqual(ctx.almanac.sentences({ ...placed, zone, locale: 'en-Latn' }), en);
+  assert.throws(
+    () => ctx.almanac.sentences({ ...asked, zone }),
+    (e) => e instanceof TeistroError && e.field === 'sentences.zone',
+  );
   ctx.dispose();
 });
 

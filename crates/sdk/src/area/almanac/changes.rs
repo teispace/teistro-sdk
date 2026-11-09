@@ -5,7 +5,7 @@
 use serde::{Deserialize, Serialize};
 use teistro_calendar::CalendarDate;
 use teistro_core::catalogue::Calendar;
-use teistro_core::envelope::Envelope;
+use teistro_core::envelope::{Envelope, Provenance, content_hash};
 use teistro_core::error::Error;
 use teistro_core::quantity::Place;
 use teistro_core::time::UtcOffset;
@@ -82,6 +82,51 @@ impl DayClock {
         match self {
             DayClock::Offset(_) => None,
             DayClock::Zone(zone) => Some(zone),
+        }
+    }
+
+    /// The offset, when this clock is one stated: what a reckoning that
+    /// takes a bare offset is handed.
+    ///
+    /// ```
+    /// use teistro::{DayClock, UtcOffset, ZoneSpec};
+    ///
+    /// assert_eq!(DayClock::from(UtcOffset::UTC).offset(), Some(UtcOffset::UTC));
+    /// assert_eq!(DayClock::Zone(ZoneSpec::iana("Asia/Kathmandu")).offset(), None);
+    /// ```
+    #[must_use]
+    pub const fn offset(&self) -> Option<UtcOffset> {
+        match self {
+            DayClock::Offset(offset) => Some(*offset),
+            DayClock::Zone(_) => None,
+        }
+    }
+
+    /// Writes this clock into a request's input record as the request
+    /// asked it: `utcOffsetSeconds` for an offset stated, the record then
+    /// byte for byte what it was, or `zone` (C1252).
+    pub(crate) fn seal_into(&self, input: &mut serde_json::Value) {
+        if let Some(record) = input.as_object_mut() {
+            match self {
+                DayClock::Offset(offset) => {
+                    record.insert(String::from("utcOffsetSeconds"), offset.seconds().into());
+                }
+                DayClock::Zone(zone) => {
+                    record.insert(String::from("zone"), serde_json::json!(zone));
+                }
+            }
+        }
+    }
+
+    /// Joins a zone to an answer whose input hash a reckoning wrote on the
+    /// one offset it was handed, so a request by zone and one by that
+    /// offset seal apart; an offset leaves the hash as it was (C1252).
+    pub(crate) fn seal_answer(&self, provenance: &mut Provenance) {
+        if let DayClock::Zone(zone) = self {
+            provenance.input_hash = content_hash(&serde_json::json!({
+                "inputHash": provenance.input_hash.to_string(),
+                "zone": zone,
+            }));
         }
     }
 

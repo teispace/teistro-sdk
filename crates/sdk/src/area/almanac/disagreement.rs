@@ -12,13 +12,14 @@ use teistro_core::envelope::{Envelope, Hash};
 use teistro_core::error::Error;
 use teistro_core::interval::Interval;
 use teistro_core::quantity::{JulianDay, Place, Utc};
-use teistro_core::time::UtcOffset;
 use teistro_panchanga::almanac::Panchanga;
 use teistro_panchanga::festival::{EkadashiFast, Observance, Observances};
 use teistro_panchanga::span::Span;
+use teistro_time::ZoneSpec;
 
 use super::AlmanacArea;
-use crate::asked::{DayAsked, offset_of, place_of};
+use crate::DayClock;
+use crate::asked::{DayAsked, place_of};
 use crate::context::Context;
 use crate::festival_request::FestivalRequest;
 
@@ -325,10 +326,18 @@ impl AlmanacArea<'_> {
         from: &CalendarDate,
         to: &CalendarDate,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
     ) -> Result<Envelope<DayDisagreements>, Error> {
-        let ours = self.of(from, to, place, offset)?;
-        let theirs = other.almanac().of(from, to, place, offset)?;
+        let clock = clock.into();
+        let days = |area: AlmanacArea<'_>| {
+            area.unclocked()
+                .clocked_from(&clock, from, |almanac, offset| {
+                    almanac.of(from, to, place, offset)
+                })
+        };
+        let mut ours = days(self)?;
+        let theirs = days(other.almanac())?;
+        clock.seal_answer(&mut ours.provenance);
         let days = ours
             .value
             .iter()
@@ -361,13 +370,15 @@ impl AlmanacArea<'_> {
         from: &CalendarDate,
         to: &CalendarDate,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<DayClock>,
         request: &FestivalRequest,
     ) -> Result<Envelope<FestivalDisagreements>, Error> {
-        let ours = self.festivals(from, to, place, offset, request)?;
+        let clock = clock.into();
+        let mut ours = self.festivals_on((from, to), place, &clock, request)?;
         let theirs = other
             .almanac()
-            .festivals(from, to, place, offset, request)?;
+            .festivals_on((from, to), place, &clock, request)?;
+        clock.seal_answer(&mut ours.provenance);
         let (observances, ekadashis) = festivals(&ours.value, &theirs.value);
         Ok(Envelope::sealing(
             FestivalDisagreements {
@@ -467,8 +478,9 @@ pub struct DisagreementRequest {
     pub to: CalendarDate,
     /// The place both reckonings are at.
     pub place: Place,
-    /// The offset their civil days run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
     /// Whether the days are compared.
     pub days: bool,
     /// The festivals compared, when asked.
@@ -490,7 +502,14 @@ pub(crate) struct DisagreementAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The offset from UTC the civil days run at, in seconds, east
+    /// positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     #[serde(default = "compared")]
     days: bool,
     #[serde(default)]
@@ -558,7 +577,7 @@ impl DisagreementAsked {
             from: self.first.in_calendar(calendar),
             to: self.last.unwrap_or(self.first).in_calendar(calendar),
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             days: self.days,
             festivals,
         })
@@ -591,8 +610,13 @@ impl AlmanacArea<'_> {
         asked: &DisagreementRequest,
     ) -> Result<Disagreements, Error> {
         let days = if asked.days {
-            let Envelope { value, provenance } =
-                self.disagreements(other, &asked.from, &asked.to, &asked.place, asked.offset)?;
+            let Envelope { value, provenance } = self.disagreements(
+                other,
+                &asked.from,
+                &asked.to,
+                &asked.place,
+                asked.clock.clone(),
+            )?;
             Some(Envelope::sealing(value.in_full()?, provenance))
         } else {
             None
@@ -604,7 +628,7 @@ impl AlmanacArea<'_> {
                     &asked.from,
                     &asked.to,
                     &asked.place,
-                    asked.offset,
+                    asked.clock.clone(),
                     request,
                 )?;
                 Some(Envelope::sealing(value.in_full()?, provenance))

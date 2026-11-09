@@ -80,7 +80,9 @@ impl AlmanacArea<'_> {
     /// the answer, as [`AlmanacArea::of_each`] gives them: the almanac a
     /// consumer electing a time shows beside its windows. The range is
     /// founded once, and the search reads its days from it rather than
-    /// founding them again.
+    /// founding them again. The clock is an offset or a zone; a zone that
+    /// changes its clock inside the range is refused, as the search
+    /// reckons on one offset.
     ///
     /// # Errors
     ///
@@ -90,7 +92,7 @@ impl AlmanacArea<'_> {
         from: &CalendarDate,
         to: &CalendarDate,
         place: &Place,
-        offset: UtcOffset,
+        clock: impl Into<crate::DayClock>,
         request: &MuhurtaRequest,
     ) -> Result<MuhurtaDays, Error> {
         let asked = AlmanacRequest::new().with_muhurta(request.clone());
@@ -99,7 +101,7 @@ impl AlmanacArea<'_> {
             day_hashes,
             muhurta,
             ..
-        } = self.asked(from, to, place, offset, &asked)?;
+        } = clock.into().asked_on(self, (from, to), place, &asked)?;
         let answer = muhurta.ok_or_else(|| {
             Error::internal("a request with a muhurta search answered none, which cannot happen")
         })?;

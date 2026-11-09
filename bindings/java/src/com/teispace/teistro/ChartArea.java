@@ -306,7 +306,32 @@ public final class ChartArea {
      */
     public MundaneChart mundane(MundaneKind kind, Observer place, Integer year, Double from, MundaneKind ingress,
             MundaneEvent event, int utcOffsetSeconds) {
-        return MapReads.mundane(context, this, kind, place, year, from, ingress, event, utcOffsetSeconds);
+        return MapReads.mundane(context, this, kind, place, year, from, ingress, event,
+                AlmanacArea.clock(utcOffsetSeconds));
+    }
+
+    /**
+     * {@link #mundane(MundaneKind, Observer, Integer, Double, MundaneKind, MundaneEvent, int)} on a zone's
+     * clock: the chart cast at the offset the zone had at the moment found
+     * ({@code 03-design/time-and-timezone.md} §3.4).
+     *
+     * <pre>{@code
+     * MundaneChart mesha = sky.chart().mundane(MundaneKind.ARIES_INGRESS, kathmandu, 2026, null, null,
+     *         null, Civil.ianaZone("Asia/Kathmandu"));
+     * }</pre>
+     *
+     * @param kind which moment
+     * @param place where the chart is cast
+     * @param year the year whose moment is asked, or null to give {@code from}
+     * @param from the instant the search starts at, a Julian day (UTC), or null
+     * @param ingress for a lunation, the ingress it precedes; null for Mesha's
+     * @param event for {@link MundaneKind#EVENT}, the event on record; otherwise null
+     * @param zone the zone the moment is read on, from {@code Civil.ianaZone} and its neighbours
+     * @return the moment and the chart cast for it
+     */
+    public MundaneChart mundane(MundaneKind kind, Observer place, Integer year, Double from, MundaneKind ingress,
+            MundaneEvent event, ZoneSpec zone) {
+        return MapReads.mundane(context, this, kind, place, year, from, ingress, event, AlmanacArea.clock(zone));
     }
 
     /**

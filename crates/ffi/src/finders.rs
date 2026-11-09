@@ -29,7 +29,7 @@ use crate::support::{text, with_context, write_plain};
 /// bars that close it.
 ///
 /// `request_json` is `{"calendar", "first", "last", "latitudeDeg",
-/// "longitudeDeg", "altitudeM", "utcOffsetSeconds", "muhurta"}`: the days
+/// "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone", "muhurta"}`: the days
 /// as `{"year", "month", "day"}` in `calendar` (Gregorian when left out),
 /// `last` the first when left out, and `muhurta` the rule set as
 /// `almanac.days` reads it (`rules` an activity's name or rules spelt
@@ -101,7 +101,7 @@ pub unsafe extern "C" fn ts_almanac_elect(
 /// `RULE_AND_SKY` or `PUBLISHED` where the days or months part.
 ///
 /// `request_json` is `{"calendar", "year", "first", "last",
-/// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds",
+/// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds" or "zone",
 /// "traditions"}`: a `year` of `calendar` (Gregorian when left out) or
 /// the days `first` to `last`; `traditions` 1 to 8, each `{"name",
 /// "festivals", "rule", "reckoning"}`, `festivals` a festival request,
@@ -187,7 +187,7 @@ pub unsafe extern "C" fn ts_almanac_observance(
 /// their birth star, and the Moon's house from their Moon.
 ///
 /// `request_json` is `{"calendar", "day", "latitudeDeg", "longitudeDeg",
-/// "altitudeM", "utcOffsetSeconds", "people", "dasha", "depth"}`: `day`
+/// "altitudeM", "utcOffsetSeconds" or "zone", "people", "dasha", "depth"}`: `day`
 /// as `{"year", "month", "day"}` in `calendar` (Gregorian when left out)
 /// at the place given; `people` 1 to 50, each `{"name", "instant",
 /// "latitudeDeg", "longitudeDeg", "altitudeM", "utcOffsetSeconds"}`,

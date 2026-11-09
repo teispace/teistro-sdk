@@ -594,6 +594,31 @@ void main() {
         isA<TeistroException>().having((e) => e.field, 'field', 'locale'),
       ),
     );
+    // The same day asked on Nepal's zone is the day on +05:45; both clocks
+    // together are refused naming `zone`.
+    final zone = ianaZone('Asia/Kathmandu');
+    final zoned = ctx.almanac.sentences(
+      date: day,
+      place: kathmandu,
+      zone: zone,
+      locale: 'en-Latn',
+    );
+    expect(zoned.sentences.map((s) => s.text), en.sentences.map((s) => s.text));
+    expect(
+      () => ctx.almanac.sentences(
+        date: day,
+        place: kathmandu,
+        utcOffsetSeconds: 20700,
+        zone: zone,
+      ),
+      throwsA(
+        isA<TeistroException>().having(
+          (e) => e.field,
+          'field',
+          'sentences.zone',
+        ),
+      ),
+    );
     ctx.dispose();
   });
 

@@ -10,10 +10,12 @@ use teistro_core::error::Error;
 use teistro_core::quantity::Place;
 use teistro_core::time::UtcOffset;
 use teistro_intl::{Intl, Params};
+use teistro_time::ZoneSpec;
 
 use super::AlmanacArea;
 use super::day_plan::{DAY_KEYS, DayPlan, day_sentences};
-use crate::asked::{DayAsked, offset_of, place_of};
+use crate::DayClock;
+use crate::asked::{DayAsked, place_of};
 
 /// The field a sentence request's refusals are named under.
 const SENTENCES: &str = "sentences";
@@ -36,8 +38,9 @@ pub struct SentencesRequest {
     pub date: CalendarDate,
     /// The place.
     pub place: Place,
-    /// The offset the civil day and its times run at.
-    pub offset: UtcOffset,
+    /// The clock its civil days run on: an offset stated, or a zone each
+    /// instant is read at the offset of then.
+    pub clock: DayClock,
     /// The locale to say the day in; the context's when left out.
     pub locale: Option<String>,
 }
@@ -56,7 +59,14 @@ pub(crate) struct SentencesAsked {
     longitude_deg: f64,
     #[serde(default)]
     altitude_m: f64,
-    utc_offset_seconds: i32,
+    /// The offset from UTC the civil days run at, in seconds, east
+    /// positive; or `zone`, not both.
+    #[serde(default)]
+    utc_offset_seconds: Option<i32>,
+    /// The zone each instant is read on, at its offset then; or
+    /// `utcOffsetSeconds`, not both.
+    #[serde(default)]
+    zone: Option<ZoneSpec>,
     /// The locale to say the day in; the context's when left out.
     #[serde(default)]
     locale: Option<String>,
@@ -92,7 +102,7 @@ impl SentencesAsked {
         Ok(SentencesRequest {
             date: self.date.in_calendar(calendar),
             place: place_of(self.latitude_deg, self.longitude_deg, self.altitude_m)?,
-            offset: offset_of(self.utc_offset_seconds)?,
+            clock: DayClock::asked(self.utc_offset_seconds, self.zone)?,
             locale: self.locale,
         })
     }
@@ -188,6 +198,22 @@ impl AlmanacArea<'_> {
     /// the templates, which a fallback does not answer; otherwise as
     /// [`AlmanacArea::day`].
     pub fn sentences(self, asked: &SentencesRequest) -> Result<Envelope<DaySentences>, Error> {
+        let mut answer = self.unclocked().clocked(
+            &asked.clock,
+            || Self::noon_of_date(&asked.date),
+            |almanac, offset| almanac.sentences_on(asked, offset),
+        )?;
+        asked.clock.seal_answer(&mut answer.provenance);
+        Ok(answer)
+    }
+
+    /// [`AlmanacArea::sentences`] on `offset`, or on the zone this area
+    /// is on.
+    fn sentences_on(
+        self,
+        asked: &SentencesRequest,
+        offset: UtcOffset,
+    ) -> Result<Envelope<DaySentences>, Error> {
         let tag = {
             let intl = self.context.locale_engine();
             let tag = asked
@@ -197,8 +223,8 @@ impl AlmanacArea<'_> {
             templates_in(&intl, &tag)?;
             tag
         };
-        let day = self.day(&asked.date, &asked.place, asked.offset)?;
-        let DayPlan { plan, withheld } = day_sentences(&day.value, &asked.offset);
+        let day = self.day(&asked.date, &asked.place, offset)?;
+        let DayPlan { plan, withheld } = day_sentences(&day.value, self.clock_or(&offset));
         let intl = self.context.locale_engine();
         // The answer is a draft when any sentence drew on text no reviewer
         // has signed (Q42, C987): the mark is the pack's own, so a

@@ -18,7 +18,8 @@ final class ResearchReads {
         out.put("latitudeDeg", birth.place().latitudeDeg().value());
         out.put("longitudeDeg", birth.place().longitudeDeg().value());
         out.put("altitudeM", birth.place().altitudeM().value());
-        out.put("utcOffsetSeconds", birth.utcOffsetSeconds());
+        out.putAll(birth.zone() == null ? AlmanacArea.clock(birth.utcOffsetSeconds())
+                : AlmanacArea.clock(birth.zone()));
         out.put("uncertaintyMinutes", birth.uncertaintyMinutes());
         return out;
     }

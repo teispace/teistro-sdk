@@ -638,7 +638,7 @@ fn a_published_day_is_explained_by_the_first_change_that_gives_it() {
             Longitude::literal(-157.8583),
             Altitude::literal(0.0),
         ),
-        offset: UtcOffset::literal(-10, 0, 0),
+        clock: UtcOffset::literal(-10, 0, 0).into(),
     };
     let request =
         plain
