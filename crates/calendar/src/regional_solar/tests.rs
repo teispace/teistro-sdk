@@ -165,6 +165,10 @@ fn malayalam_months_begin_before_three_fifths_of_the_daylight() {
     );
 }
 
+/// A printed pair: a Gregorian date and the regional date beside it, each
+/// as (year, month, day).
+type Pair = ((i32, u8, u8), (i32, u8, u8));
+
 /// The Kerala Gazette's printed pairs, each a Christian Era date and the
 /// Malayalam Era date beside it (Kollam year, month from Chingam, day):
 /// the Government of Kerala's "Public Holidays" notifications for 2021 to
@@ -172,7 +176,7 @@ fn malayalam_months_begin_before_three_fifths_of_the_daylight() {
 /// 14/2025/GAD), each holiday printed with its ME date, and three
 /// mastheads. Every month a pair falls in has its first day pinned by it:
 /// 61 months, 2020-12 to 2026-12.
-const KERALA_GAZETTE: [((i32, u8, u8), (i32, u8, u8)); 73] = [
+const KERALA_GAZETTE: [Pair; 73] = [
     ((2021, 1, 2), (1196, 5, 18)),
     ((2021, 1, 26), (1196, 6, 13)),
     ((2021, 3, 11), (1196, 7, 27)),
@@ -249,9 +253,7 @@ const KERALA_GAZETTE: [((i32, u8, u8), (i32, u8, u8)); 73] = [
 ];
 
 /// The first day of each month a printed pair pins, by (year, month).
-fn printed_starts(
-    printed: &[((i32, u8, u8), (i32, u8, u8))],
-) -> std::collections::BTreeMap<(i32, u8), FixedDay> {
+fn printed_starts(printed: &[Pair]) -> std::collections::BTreeMap<(i32, u8), FixedDay> {
     let mut starts = std::collections::BTreeMap::new();
     for &((y, m, d), (year, month, day)) in printed {
         let start = fixed_from_gregorian(y, m, d).plus_days(1 - i64::from(day));
@@ -266,7 +268,7 @@ fn printed_starts(
 
 /// Asserts every printed pair is the calendar's date, and returns the
 /// months pinned.
-fn assert_pairs(id: Calendar, printed: &[((i32, u8, u8), (i32, u8, u8))]) -> usize {
+fn assert_pairs(id: Calendar, printed: &[Pair]) -> usize {
     let system = calendar(id);
     for &((y, m, d), wanted) in printed {
         let date = system.date_of(fixed_from_gregorian(y, m, d)).unwrap();
@@ -355,7 +357,7 @@ fn the_kerala_gazette_reckons_the_modern_sun() {
 /// (No. GAD-14021/18/2022-ESTT-GAD of 28 November 2022) and for 2025 (No.
 /// E-221561/347 of 6 December 2024, with its corrigendum of 27 December
 /// 2024, whose dated masthead is the first 2025 pair). 27 months.
-const ASSAM_GAZETTE: [((i32, u8, u8), (i32, u8, u8)); 34] = [
+const ASSAM_GAZETTE: [Pair; 34] = [
     ((2022, 11, 28), (1429, 8, 11)),
     ((2023, 1, 1), (1429, 9, 16)),
     ((2023, 1, 15), (1429, 9, 30)),
@@ -450,7 +452,7 @@ fn the_near_midnight_rows_fall_after_midnight_on_the_text() {
         (1432, 8, (2025, 11, 17), 90.0),
     ] {
         let row = engine.year(year).unwrap();
-        let (civil, minutes) = ist_minutes(row.sankrantis[usize::from(month - 1)]);
+        let (civil, minutes) = ist_minutes(*row.sankrantis.get(usize::from(month - 1)).unwrap());
         assert_eq!(gregorian_from_fixed(civil), day, "{year}-{month}");
         assert!(
             minutes > after,
@@ -462,8 +464,11 @@ fn the_near_midnight_rows_fall_after_midnight_on_the_text() {
     // tells IST midnight from Guwahati's or from a tithi test (C1302).
     for ((year, month), _) in printed_starts(&ASSAM_GAZETTE) {
         let row = engine.year(year).unwrap();
-        let (_, minutes) = ist_minutes(row.sankrantis[usize::from(month - 1)]);
-        assert!(minutes.min(1440.0 - minutes) > 52.0, "{year}-{month}: {minutes:.1}");
+        let (_, minutes) = ist_minutes(*row.sankrantis.get(usize::from(month - 1)).unwrap());
+        assert!(
+            minutes.min(1440.0 - minutes) > 52.0,
+            "{year}-{month}: {minutes:.1}"
+        );
     }
 }
 
