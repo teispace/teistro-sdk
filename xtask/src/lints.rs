@@ -2387,16 +2387,23 @@ impl Manifest {
             .filter(|name| self.list(name).iter().any(|entry| crate_of(entry)))
             .cloned()
             .collect();
-        // Narrowed until every entry of every family is a crate or a
-        // family, so a feature that also turns on a tier is not one.
+        // A family may also turn on a feature of a crate it reaches: the
+        // `rashifal` family turns on `teistro-interpret/rashifal`, the
+        // composer that reads its readings.
+        let feature_of = |entry: &str| {
+            entry.starts_with("teistro-") && entry.contains('/') && !entry.contains("ephemeris")
+        };
+        // Narrowed until every entry of every family is a crate, a crate's
+        // feature or a family, so a feature that also turns on a tier is
+        // not one.
         loop {
             let before = families.len();
             let kept: Vec<String> = families
                 .iter()
                 .filter(|name| {
-                    self.list(name)
-                        .iter()
-                        .all(|entry| crate_of(entry) || families.contains(entry))
+                    self.list(name).iter().all(|entry| {
+                        crate_of(entry) || feature_of(entry) || families.contains(entry)
+                    })
                 })
                 .cloned()
                 .collect();
