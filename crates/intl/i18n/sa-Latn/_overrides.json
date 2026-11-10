@@ -218,5 +218,25 @@
   "era.HIJRI": {
     "name": "Hijri",
     "prose": "Hijri"
+  },
+  "dasha_family.RELEASING": {
+    "name": "Zodiacal Releasing",
+    "prose": "Zodiacal Releasing"
+  },
+  "dasha_family.PROFECTION": {
+    "name": "Profection",
+    "prose": "Profection"
+  },
+  "dasha_family.FIRDARIA": {
+    "name": "Firdaria",
+    "prose": "Firdaria"
+  },
+  "dasha_family.DECENNIALS": {
+    "name": "Decennials",
+    "prose": "Decennials"
+  },
+  "star_class.RADIO_SOURCE": {
+    "name": "Radio source",
+    "prose": "Radio source"
   }
 }

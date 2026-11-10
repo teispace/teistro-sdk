@@ -3180,5 +3180,197 @@
       "name": "ग्रस्त",
       "prose": "ग्रस्त"
     }
+  },
+  "ayanamsha_category": {
+    "VEDIC_STANDARD": {
+      "name": "वैदिक मानक",
+      "prose": "वैदिक मानक"
+    },
+    "VEDIC_CLASSICAL": {
+      "name": "वैदिक शास्त्रीय",
+      "prose": "वैदिक शास्त्रीय"
+    },
+    "STAR_ANCHORED": {
+      "name": "ताराधारित",
+      "prose": "ताराधारित"
+    },
+    "WESTERN_SIDEREAL": {
+      "name": "पाश्चात्य निरयन",
+      "prose": "पाश्चात्य निरयन"
+    },
+    "GALACTIC": {
+      "name": "आकाशगङ्गाधारित",
+      "prose": "आकाशगङ्गाधारित"
+    },
+    "HISTORICAL": {
+      "name": "ऐतिहासिक",
+      "prose": "ऐतिहासिक"
+    },
+    "EPOCH": {
+      "name": "युगादि",
+      "prose": "युगादि"
+    }
+  },
+  "bala_scheme": {
+    "PARASHARA": {
+      "name": "पाराशर",
+      "prose": "पाराशर",
+      "iast": "Pārāśara"
+    },
+    "PARASHARA_EXTENDED": {
+      "name": "पाराशर (विस्तृत)",
+      "prose": "पाराशर (विस्तृत)"
+    }
+  },
+  "body_class": {
+    "LUMINARY": {
+      "name": "प्रकाशग्रह",
+      "prose": "प्रकाशग्रह",
+      "iast": "Prakāśagraha"
+    },
+    "PLANET": {
+      "name": "ताराग्रह",
+      "prose": "ताराग्रह",
+      "iast": "Tārāgraha"
+    },
+    "NODE": {
+      "name": "छायाग्रह",
+      "prose": "छायाग्रह",
+      "iast": "Chāyāgraha"
+    },
+    "OUTER": {
+      "name": "बाह्यग्रह",
+      "prose": "बाह्यग्रह"
+    }
+  },
+  "chart_layout": {
+    "NORTH_INDIAN": {
+      "name": "उत्तरभारतीय शैली",
+      "prose": "उत्तरभारतीय शैली"
+    },
+    "SOUTH_INDIAN": {
+      "name": "दक्षिणभारतीय शैली",
+      "prose": "दक्षिणभारतीय शैली"
+    },
+    "EAST_INDIAN": {
+      "name": "पूर्वभारतीय शैली",
+      "prose": "पूर्वभारतीय शैली"
+    },
+    "NEPALI_LOTUS": {
+      "name": "अष्टदलपद्म",
+      "prose": "अष्टदलपद्म"
+    },
+    "SUDARSHAN_CHAKRA": {
+      "name": "सुदर्शनचक्र",
+      "prose": "सुदर्शनचक्र"
+    },
+    "WESTERN_WHEEL": {
+      "name": "पाश्चात्यचक्र",
+      "prose": "पाश्चात्यचक्र"
+    }
+  },
+  "dasha_family": {
+    "UDU": {
+      "name": "उडु",
+      "prose": "उडु"
+    },
+    "RASHI": {
+      "name": "राशि",
+      "prose": "राशि"
+    },
+    "GRAHA": {
+      "name": "ग्रह",
+      "prose": "ग्रह"
+    },
+    "KALACHAKRA": {
+      "name": "कालचक्र",
+      "prose": "कालचक्र"
+    },
+    "SCALE": {
+      "name": "वर्षमापित",
+      "prose": "वर्षमापित"
+    },
+    "COMPOSITION": {
+      "name": "संयोजित",
+      "prose": "संयोजित"
+    },
+    "OWN": {
+      "name": "स्वतन्त्रनियम",
+      "prose": "स्वतन्त्रनियम"
+    },
+    "RELEASING": {
+      "name": "जोडिएकल रिलीजिंग",
+      "prose": "जोडिएकल रिलीजिंग"
+    },
+    "PROFECTION": {
+      "name": "प्रोफेक्शन",
+      "prose": "प्रोफेक्शन"
+    },
+    "FIRDARIA": {
+      "name": "फिरदारिया",
+      "prose": "फिरदारिया"
+    },
+    "DECENNIALS": {
+      "name": "डिसेनियल्स",
+      "prose": "डिसेनियल्स"
+    }
+  },
+  "degeneracy": {
+    "NONE": {
+      "name": "सर्वेषु अक्षांशेषु परिभाषित",
+      "prose": "सर्वेषु अक्षांशेषु परिभाषित"
+    },
+    "POLAR_UNDEFINED": {
+      "name": "ध्रुवप्रदेशे अपरिभाषित",
+      "prose": "ध्रुवप्रदेशे अपरिभाषित"
+    }
+  },
+  "point_family": {
+    "ANGLE": {
+      "name": "केन्द्र",
+      "prose": "केन्द्र"
+    },
+    "SPECIAL_LAGNA": {
+      "name": "विशेषलग्न",
+      "prose": "विशेषलग्न"
+    },
+    "UPAGRAHA_SOLAR": {
+      "name": "उपग्रह (सूर्यात्)",
+      "prose": "उपग्रह (सूर्यात्)"
+    },
+    "UPAGRAHA_DAY": {
+      "name": "उपग्रह (दिनमानात्)",
+      "prose": "उपग्रह (दिनमानात्)"
+    },
+    "ARUDHA": {
+      "name": "आरूढ",
+      "prose": "आरूढ"
+    },
+    "SPHUTA": {
+      "name": "स्फुट",
+      "prose": "स्फुट"
+    },
+    "JAIMINI": {
+      "name": "जैमिनि",
+      "prose": "जैमिनि"
+    },
+    "MIDPOINT": {
+      "name": "मध्यबिन्दु",
+      "prose": "मध्यबिन्दु"
+    }
+  },
+  "star_class": {
+    "STAR": {
+      "name": "तारा",
+      "prose": "तारा"
+    },
+    "RADIO_SOURCE": {
+      "name": "रेडियो स्रोत",
+      "prose": "रेडियो स्रोत"
+    },
+    "DIRECTION": {
+      "name": "आकाशदिशा",
+      "prose": "आकाशदिशा"
+    }
   }
 }
