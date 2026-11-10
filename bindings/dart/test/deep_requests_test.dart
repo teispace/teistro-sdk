@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 478 of the examples' 493 members.
+/// The cases compare 490 of the examples' 505 members.
 library;
 
 import 'dart:convert';
@@ -323,7 +323,7 @@ void main() {
       'almanac.days',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 30,
+      members: 32,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -458,8 +458,19 @@ void main() {
             regions: ['x'],
             tradition: Tradition.buddhist,
           ),
+          nakshatraInMonth: DatedRuleNakshatraInMonth(
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            nakshatra: Nakshatra.bharani,
+            twice: FestivalWhich.later,
+          ),
           source: 'x',
-          sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
+          sunEnters: DatedRuleSunEnters(
+            days: 1,
+            nakshatra: Nakshatra.bharani,
+            reckoning: DayReckoning.sunrise,
+          ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
@@ -735,7 +746,7 @@ void main() {
       'almanac.digest',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 30,
+      members: 32,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -870,8 +881,19 @@ void main() {
             regions: ['x'],
             tradition: Tradition.buddhist,
           ),
+          nakshatraInMonth: DatedRuleNakshatraInMonth(
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            nakshatra: Nakshatra.bharani,
+            twice: FestivalWhich.later,
+          ),
           source: 'x',
-          sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
+          sunEnters: DatedRuleSunEnters(
+            days: 1,
+            nakshatra: Nakshatra.bharani,
+            reckoning: DayReckoning.sunrise,
+          ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
@@ -1164,7 +1186,7 @@ void main() {
       'almanac.festival_calendar',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 30,
+      members: 32,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1299,8 +1321,19 @@ void main() {
             regions: ['x'],
             tradition: Tradition.buddhist,
           ),
+          nakshatraInMonth: DatedRuleNakshatraInMonth(
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            nakshatra: Nakshatra.bharani,
+            twice: FestivalWhich.later,
+          ),
           source: 'x',
-          sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
+          sunEnters: DatedRuleSunEnters(
+            days: 1,
+            nakshatra: Nakshatra.bharani,
+            reckoning: DayReckoning.sunrise,
+          ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
@@ -1587,7 +1620,7 @@ void main() {
       'almanac.next',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 30,
+      members: 32,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1722,8 +1755,19 @@ void main() {
             regions: ['x'],
             tradition: Tradition.buddhist,
           ),
+          nakshatraInMonth: DatedRuleNakshatraInMonth(
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            nakshatra: Nakshatra.bharani,
+            twice: FestivalWhich.later,
+          ),
           source: 'x',
-          sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
+          sunEnters: DatedRuleSunEnters(
+            days: 1,
+            nakshatra: Nakshatra.bharani,
+            reckoning: DayReckoning.sunrise,
+          ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
@@ -1859,7 +1903,7 @@ void main() {
       'almanac.observance',
       path: ['traditions', 0, 'festivals', 'rules'],
       dropping: [],
-      members: 30,
+      members: 32,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -1994,8 +2038,19 @@ void main() {
             regions: ['x'],
             tradition: Tradition.buddhist,
           ),
+          nakshatraInMonth: DatedRuleNakshatraInMonth(
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            nakshatra: Nakshatra.bharani,
+            twice: FestivalWhich.later,
+          ),
           source: 'x',
-          sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
+          sunEnters: DatedRuleSunEnters(
+            days: 1,
+            nakshatra: Nakshatra.bharani,
+            reckoning: DayReckoning.sunrise,
+          ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),
@@ -2172,7 +2227,7 @@ void main() {
       'almanac.publishedReasons',
       path: ['festivals', 'rules'],
       dropping: [],
-      members: 30,
+      members: 32,
       written: FestivalRulesValue([
         FestivalRuleItemSaitRule(SaitRule(
           choose: SaitChoice.latest,
@@ -2307,8 +2362,19 @@ void main() {
             regions: ['x'],
             tradition: Tradition.buddhist,
           ),
+          nakshatraInMonth: DatedRuleNakshatraInMonth(
+            calendar: Calendar.julian,
+            days: 1,
+            month: 1,
+            nakshatra: Nakshatra.bharani,
+            twice: FestivalWhich.later,
+          ),
           source: 'x',
-          sunEnters: DatedRuleSunEnters(days: 1, nakshatra: Nakshatra.bharani),
+          sunEnters: DatedRuleSunEnters(
+            days: 1,
+            nakshatra: Nakshatra.bharani,
+            reckoning: DayReckoning.sunrise,
+          ),
         )),
         FestivalRuleItemFestivalRule(FestivalRule(
           at: WindowDayMuhurta(from: 1, to: 1),

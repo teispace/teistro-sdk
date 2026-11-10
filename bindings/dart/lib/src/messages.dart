@@ -38,6 +38,17 @@ enum AshubhaYogaKey {
   final String key;
 }
 
+enum AuspiciousnessKey {
+  auspicious('auspiciousness.AUSPICIOUS'),
+  inauspicious('auspiciousness.INAUSPICIOUS'),
+  mixed('auspiciousness.MIXED'),
+  highlyInauspicious('auspiciousness.HIGHLY_INAUSPICIOUS');
+
+  const AuspiciousnessKey(this.key);
+
+  final String key;
+}
+
 enum AvasthaBaladiKey {
   bala('avastha_baladi.BALA'),
   kumara('avastha_baladi.KUMARA'),
@@ -181,6 +192,29 @@ enum AyanamshaKey {
   final String key;
 }
 
+enum AyanamshaCategoryKey {
+  vedicStandard('ayanamsha_category.VEDIC_STANDARD'),
+  vedicClassical('ayanamsha_category.VEDIC_CLASSICAL'),
+  starAnchored('ayanamsha_category.STAR_ANCHORED'),
+  westernSidereal('ayanamsha_category.WESTERN_SIDEREAL'),
+  galactic('ayanamsha_category.GALACTIC'),
+  historical('ayanamsha_category.HISTORICAL'),
+  epoch('ayanamsha_category.EPOCH');
+
+  const AyanamshaCategoryKey(this.key);
+
+  final String key;
+}
+
+enum BalaSchemeKey {
+  parashara('bala_scheme.PARASHARA'),
+  parasharaExtended('bala_scheme.PARASHARA_EXTENDED');
+
+  const BalaSchemeKey(this.key);
+
+  final String key;
+}
+
 enum BhadraVasaKey {
   svarga('bhadra_vasa.SVARGA'),
   martya('bhadra_vasa.MARTYA'),
@@ -200,9 +234,46 @@ enum BlackoutKindKey {
   sankranti('blackout_kind.SANKRANTI'),
   holashtaka('blackout_kind.HOLASHTAKA'),
   guruAsta('blackout_kind.GURU_ASTA'),
-  shukraAsta('blackout_kind.SHUKRA_ASTA');
+  shukraAsta('blackout_kind.SHUKRA_ASTA'),
+  kharmas('blackout_kind.KHARMAS'),
+  eclipseStar('blackout_kind.ECLIPSE_STAR'),
+  eclipseVedha('blackout_kind.ECLIPSE_VEDHA');
 
   const BlackoutKindKey(this.key);
+
+  final String key;
+}
+
+enum BodyClassKey {
+  luminary('body_class.LUMINARY'),
+  planet('body_class.PLANET'),
+  node('body_class.NODE'),
+  outer('body_class.OUTER');
+
+  const BodyClassKey(this.key);
+
+  final String key;
+}
+
+enum CalendarKey {
+  gregorian('calendar.GREGORIAN'),
+  julian('calendar.JULIAN'),
+  mixed('calendar.MIXED'),
+  isoWeek('calendar.ISO_WEEK'),
+  bikramSambat('calendar.BIKRAM_SAMBAT'),
+  indianLunisolar('calendar.INDIAN_LUNISOLAR'),
+  indianNational('calendar.INDIAN_NATIONAL'),
+  hijriTabular('calendar.HIJRI_TABULAR'),
+  tibetanPhugpa('calendar.TIBETAN_PHUGPA'),
+  bangladeshi('calendar.BANGLADESHI'),
+  tamilSolar('calendar.TAMIL_SOLAR'),
+  bengalSolar('calendar.BENGAL_SOLAR'),
+  odiaSolar('calendar.ODIA_SOLAR'),
+  malayalamSolar('calendar.MALAYALAM_SOLAR'),
+  tamilVakya('calendar.TAMIL_VAKYA'),
+  assamSolar('calendar.ASSAM_SOLAR');
+
+  const CalendarKey(this.key);
 
   final String key;
 }
@@ -222,6 +293,36 @@ enum CharaKarakaKey {
   final String key;
 }
 
+enum ChartKindKey {
+  natal('chart_kind.NATAL'),
+  transit('chart_kind.TRANSIT'),
+  event('chart_kind.EVENT'),
+  prashna('chart_kind.PRASHNA'),
+  return$('chart_kind.RETURN'),
+  relocated('chart_kind.RELOCATED'),
+  composite('chart_kind.COMPOSITE'),
+  mundane('chart_kind.MUNDANE');
+
+  const ChartKindKey(this.key);
+
+  final String key;
+}
+
+enum ChartLayoutKey {
+  northIndian('chart_layout.NORTH_INDIAN'),
+  southIndian('chart_layout.SOUTH_INDIAN'),
+  eastIndian('chart_layout.EAST_INDIAN'),
+  nepaliLotus('chart_layout.NEPALI_LOTUS'),
+  sudarshanChakra('chart_layout.SUDARSHAN_CHAKRA'),
+  westernWheel('chart_layout.WESTERN_WHEEL'),
+  nepaliCircle('chart_layout.NEPALI_CIRCLE'),
+  northIndianPetals('chart_layout.NORTH_INDIAN_PETALS');
+
+  const ChartLayoutKey(this.key);
+
+  final String key;
+}
+
 enum ChoghadiyaKey {
   udveg('choghadiya.UDVEG'),
   char('choghadiya.CHAR'),
@@ -232,6 +333,24 @@ enum ChoghadiyaKey {
   rog('choghadiya.ROG');
 
   const ChoghadiyaKey(this.key);
+
+  final String key;
+}
+
+enum DashaFamilyKey {
+  udu('dasha_family.UDU'),
+  rashi('dasha_family.RASHI'),
+  graha('dasha_family.GRAHA'),
+  kalachakra('dasha_family.KALACHAKRA'),
+  scale('dasha_family.SCALE'),
+  composition('dasha_family.COMPOSITION'),
+  own('dasha_family.OWN'),
+  releasing('dasha_family.RELEASING'),
+  profection('dasha_family.PROFECTION'),
+  firdaria('dasha_family.FIRDARIA'),
+  decennials('dasha_family.DECENNIALS');
+
+  const DashaFamilyKey(this.key);
 
   final String key;
 }
@@ -265,7 +384,23 @@ enum DashaSystemKey {
   sthira('dasha_system.STHIRA'),
   varnada('dasha_system.VARNADA'),
   yogardha('dasha_system.YOGARDHA'),
-  sudarshanaChakra('dasha_system.SUDARSHANA_CHAKRA');
+  sudarshanaChakra('dasha_system.SUDARSHANA_CHAKRA'),
+  shattrimshaSama('dasha_system.SHATTRIMSHA_SAMA'),
+  tithiAshtottari('dasha_system.TITHI_ASHTOTTARI'),
+  tithiYogini('dasha_system.TITHI_YOGINI'),
+  yogaVimshottari('dasha_system.YOGA_VIMSHOTTARI'),
+  karanaChaturashiti('dasha_system.KARANA_CHATURASHITI'),
+  aayu('dasha_system.AAYU'),
+  sudasa('dasha_system.SUDASA'),
+  patyayini('dasha_system.PATYAYINI'),
+  mudda('dasha_system.MUDDA'),
+  varshaNarayana('dasha_system.VARSHA_NARAYANA'),
+  varshaYogini('dasha_system.VARSHA_YOGINI'),
+  releasingFortune('dasha_system.RELEASING_FORTUNE'),
+  releasingDaimon('dasha_system.RELEASING_DAIMON'),
+  profection('dasha_system.PROFECTION'),
+  firdaria('dasha_system.FIRDARIA'),
+  decennials('dasha_system.DECENNIALS');
 
   const DashaSystemKey(this.key);
 
@@ -278,6 +413,15 @@ enum DayMarkerKey {
   vinchudo('day_marker.VINCHUDO');
 
   const DayMarkerKey(this.key);
+
+  final String key;
+}
+
+enum DegeneracyKey {
+  none('degeneracy.NONE'),
+  polarUndefined('degeneracy.POLAR_UNDEFINED');
+
+  const DegeneracyKey(this.key);
 
   final String key;
 }
@@ -309,7 +453,17 @@ enum DeityKey {
   varuna('deity.VARUNA'),
   ajaEkapada('deity.AJA_EKAPADA'),
   ahirbudhnya('deity.AHIRBUDHNYA'),
-  pushan('deity.PUSHAN');
+  pushan('deity.PUSHAN'),
+  chandra('deity.CHANDRA'),
+  durga('deity.DURGA'),
+  kamadeva('deity.KAMADEVA'),
+  kartikeya('deity.KARTIKEYA'),
+  shani('deity.SHANI'),
+  shiva('deity.SHIVA'),
+  shukra('deity.SHUKRA'),
+  surya('deity.SURYA'),
+  tvashta('deity.TVASHTA'),
+  vidhata('deity.VIDHATA');
 
   const DeityKey(this.key);
 
@@ -360,7 +514,8 @@ enum EraKey {
   commonEra('era.COMMON_ERA'),
   beforeCommonEra('era.BEFORE_COMMON_ERA'),
   viraNirvana('era.VIRA_NIRVANA'),
-  bhaskarabda('era.BHASKARABDA');
+  bhaskarabda('era.BHASKARABDA'),
+  hijri('era.HIJRI');
 
   const EraKey(this.key);
 
@@ -796,7 +951,21 @@ enum FestivalKey {
   durgaPanchami('festival.DURGA_PANCHAMI'),
   durgaShashthi('festival.DURGA_SHASHTHI'),
   kaliPuja('festival.KALI_PUJA'),
-  birsaMundaJayanti('festival.BIRSA_MUNDA_JAYANTI');
+  birsaMundaJayanti('festival.BIRSA_MUNDA_JAYANTI'),
+  vishu('festival.VISHU'),
+  mannamJayanthi('festival.MANNAM_JAYANTHI'),
+  maundyThursday('festival.MAUNDY_THURSDAY'),
+  easter('festival.EASTER'),
+  karkidakaVavu('festival.KARKIDAKA_VAVU'),
+  firstOnam('festival.FIRST_ONAM'),
+  thiruvonam('festival.THIRUVONAM'),
+  thirdOnam('festival.THIRD_ONAM'),
+  fourthOnam('festival.FOURTH_ONAM'),
+  sreeNarayanaGuruJayanthi('festival.SREE_NARAYANA_GURU_JAYANTHI'),
+  sreeNarayanaGuruSamadhi('festival.SREE_NARAYANA_GURU_SAMADHI'),
+  ayyankaliJayanthi('festival.AYYANKALI_JAYANTHI'),
+  avaniAvittom('festival.AVANI_AVITTOM'),
+  ayyaVaikundaSwamiJayanthi('festival.AYYA_VAIKUNDA_SWAMI_JAYANTHI');
 
   const FestivalKey(this.key);
 
@@ -820,6 +989,16 @@ enum GanaKey {
   rakshasa('gana.RAKSHASA');
 
   const GanaKey(this.key);
+
+  final String key;
+}
+
+enum GenderKey {
+  male('gender.MALE'),
+  female('gender.FEMALE'),
+  neutral('gender.NEUTRAL');
+
+  const GenderKey(this.key);
 
   final String key;
 }
@@ -848,9 +1027,22 @@ enum GrahaKey {
   venus('graha.VENUS'),
   saturn('graha.SATURN'),
   rahu('graha.RAHU'),
-  ketu('graha.KETU');
+  ketu('graha.KETU'),
+  uranus('graha.URANUS'),
+  neptune('graha.NEPTUNE'),
+  pluto('graha.PLUTO');
 
   const GrahaKey(this.key);
+
+  final String key;
+}
+
+enum GunaKey {
+  sattva('guna.SATTVA'),
+  rajas('guna.RAJAS'),
+  tamas('guna.TAMAS');
+
+  const GunaKey(this.key);
 
   final String key;
 }
@@ -912,9 +1104,29 @@ enum KaranaKey {
   final String key;
 }
 
+enum KootaKey {
+  varna('koota.VARNA'),
+  vashya('koota.VASHYA'),
+  tara('koota.TARA'),
+  yoni('koota.YONI'),
+  grahaMaitri('koota.GRAHA_MAITRI'),
+  gana('koota.GANA'),
+  bhakoot('koota.BHAKOOT'),
+  nadi('koota.NADI'),
+  rajju('koota.RAJJU'),
+  vedha('koota.VEDHA'),
+  streeDeergha('koota.STREE_DEERGHA'),
+  mahendra('koota.MAHENDRA');
+
+  const KootaKey(this.key);
+
+  final String key;
+}
+
 enum LunarEclipseKindKey {
   partial('lunar_eclipse_kind.PARTIAL'),
-  total('lunar_eclipse_kind.TOTAL');
+  total('lunar_eclipse_kind.TOTAL'),
+  penumbral('lunar_eclipse_kind.PENUMBRAL');
 
   const LunarEclipseKindKey(this.key);
 
@@ -936,6 +1148,30 @@ enum MasaKey {
   phalguna('masa.PHALGUNA');
 
   const MasaKey(this.key);
+
+  final String key;
+}
+
+enum ModalityKey {
+  chara('modality.CHARA'),
+  sthira('modality.STHIRA'),
+  dwiswabhava('modality.DWISWABHAVA');
+
+  const ModalityKey(this.key);
+
+  final String key;
+}
+
+enum MuhurtaNatureKey {
+  dhruva('muhurta_nature.DHRUVA'),
+  chara('muhurta_nature.CHARA'),
+  ugra('muhurta_nature.UGRA'),
+  kshipra('muhurta_nature.KSHIPRA'),
+  mridu('muhurta_nature.MRIDU'),
+  mishra('muhurta_nature.MISHRA'),
+  tikshna('muhurta_nature.TIKSHNA');
+
+  const MuhurtaNatureKey(this.key);
 
   final String key;
 }
@@ -1020,7 +1256,8 @@ enum NakshatraKey {
 
 enum NatureKey {
   benefic('nature.BENEFIC'),
-  malefic('nature.MALEFIC');
+  malefic('nature.MALEFIC'),
+  neutral('nature.NEUTRAL');
 
   const NatureKey(this.key);
 
@@ -1044,6 +1281,15 @@ enum PanchakaKey {
   roga('panchaka.ROGA');
 
   const PanchakaKey(this.key);
+
+  final String key;
+}
+
+enum ParityKey {
+  odd('parity.ODD'),
+  even('parity.EVEN');
+
+  const ParityKey(this.key);
 
   final String key;
 }
@@ -1078,9 +1324,54 @@ enum PointKey {
   ardhaprahara('point.ARDHAPRAHARA'),
   karakamsha('point.KARAKAMSHA'),
   a1('point.A1'),
-  a12('point.A12');
+  a12('point.A12'),
+  mc('point.MC'),
+  descendant('point.DESCENDANT'),
+  ic('point.IC'),
+  vighatiLagna('point.VIGHATI_LAGNA'),
+  sreeLagna('point.SREE_LAGNA'),
+  induLagna('point.INDU_LAGNA'),
+  bhriguBindu('point.BHRIGU_BINDU'),
+  yogi('point.YOGI'),
+  avayogi('point.AVAYOGI'),
+  sahayogi('point.SAHAYOGI'),
+  trisphuta('point.TRISPHUTA'),
+  chatussphuta('point.CHATUSSPHUTA'),
+  panchasphuta('point.PANCHASPHUTA'),
+  pranaSphuta('point.PRANA_SPHUTA'),
+  dehaSphuta('point.DEHA_SPHUTA'),
+  mrityuSphuta('point.MRITYU_SPHUTA'),
+  beejaSphuta('point.BEEJA_SPHUTA'),
+  kshetraSphuta('point.KSHETRA_SPHUTA'),
+  yamaghantaka('point.YAMAGHANTAKA'),
+  swamsha('point.SWAMSHA'),
+  a2('point.A2'),
+  a3('point.A3'),
+  a4('point.A4'),
+  a5('point.A5'),
+  a6('point.A6'),
+  a7('point.A7'),
+  a8('point.A8'),
+  a9('point.A9'),
+  a10('point.A10'),
+  a11('point.A11');
 
   const PointKey(this.key);
+
+  final String key;
+}
+
+enum PointFamilyKey {
+  angle('point_family.ANGLE'),
+  specialLagna('point_family.SPECIAL_LAGNA'),
+  upagrahaSolar('point_family.UPAGRAHA_SOLAR'),
+  upagrahaDay('point_family.UPAGRAHA_DAY'),
+  arudha('point_family.ARUDHA'),
+  sphuta('point_family.SPHUTA'),
+  jaimini('point_family.JAIMINI'),
+  midpoint('point_family.MIDPOINT');
+
+  const PointFamilyKey(this.key);
 
   final String key;
 }
@@ -1116,6 +1407,16 @@ enum RelationshipKey {
   final String key;
 }
 
+enum RisingKey {
+  sirshodaya('rising.SIRSHODAYA'),
+  prishtodaya('rising.PRISHTODAYA'),
+  ubhayodaya('rising.UBHAYODAYA');
+
+  const RisingKey(this.key);
+
+  final String key;
+}
+
 enum RituKey {
   vasanta('ritu.VASANTA'),
   grishma('ritu.GRISHMA'),
@@ -1133,7 +1434,8 @@ enum RulerDayRuleKey {
   sunrise('ruler_day_rule.SUNRISE'),
   newMoon('ruler_day_rule.NEW_MOON'),
   garga('ruler_day_rule.GARGA'),
-  vara('ruler_day_rule.VARA');
+  vara('ruler_day_rule.VARA'),
+  daylight('ruler_day_rule.DAYLIGHT');
 
   const RulerDayRuleKey(this.key);
 
@@ -1142,7 +1444,8 @@ enum RulerDayRuleKey {
 
 enum RulerTextKey {
   jyotirnibandha('ruler_text.JYOTIRNIBANDHA'),
-  naradaSamhita('ruler_text.NARADA_SAMHITA');
+  naradaSamhita('ruler_text.NARADA_SAMHITA'),
+  navanayaka('ruler_text.NAVANAYAKA');
 
   const RulerTextKey(this.key);
 
@@ -1216,6 +1519,15 @@ enum SamvatsaraKey {
   final String key;
 }
 
+enum SexKey {
+  male('sex.MALE'),
+  female('sex.FEMALE');
+
+  const SexKey(this.key);
+
+  final String key;
+}
+
 enum ShivaVasaKey {
   kailasa('shiva_vasa.KAILASA'),
   gauri('shiva_vasa.GAURI'),
@@ -1232,9 +1544,156 @@ enum ShivaVasaKey {
 
 enum SolarEclipseKindKey {
   partial('solar_eclipse_kind.PARTIAL'),
-  total('solar_eclipse_kind.TOTAL');
+  total('solar_eclipse_kind.TOTAL'),
+  annular('solar_eclipse_kind.ANNULAR'),
+  hybrid('solar_eclipse_kind.HYBRID');
 
   const SolarEclipseKindKey(this.key);
+
+  final String key;
+}
+
+enum StarKey {
+  sheratan('star.SHERATAN'),
+  bharani('star.BHARANI'),
+  alcyone('star.ALCYONE'),
+  aldebaran('star.ALDEBARAN'),
+  meissa('star.MEISSA'),
+  betelgeuse('star.BETELGEUSE'),
+  pollux('star.POLLUX'),
+  asellusAustralis('star.ASELLUS_AUSTRALIS'),
+  ashlesha('star.ASHLESHA'),
+  regulus('star.REGULUS'),
+  zosma('star.ZOSMA'),
+  denebola('star.DENEBOLA'),
+  algorab('star.ALGORAB'),
+  spica('star.SPICA'),
+  arcturus('star.ARCTURUS'),
+  zubenelgenubi('star.ZUBENELGENUBI'),
+  dschubba('star.DSCHUBBA'),
+  antares('star.ANTARES'),
+  shaula('star.SHAULA'),
+  kausMedia('star.KAUS_MEDIA'),
+  nunki('star.NUNKI'),
+  vega('star.VEGA'),
+  altair('star.ALTAIR'),
+  rotanev('star.ROTANEV'),
+  hydor('star.HYDOR'),
+  markab('star.MARKAB'),
+  algenib('star.ALGENIB'),
+  revati('star.REVATI'),
+  canopus('star.CANOPUS'),
+  sirius('star.SIRIUS'),
+  capella('star.CAPELLA'),
+  polaris('star.POLARIS'),
+  dubhe('star.DUBHE'),
+  merak('star.MERAK'),
+  phecda('star.PHECDA'),
+  alioth('star.ALIOTH'),
+  mizar('star.MIZAR'),
+  alkaid('star.ALKAID'),
+  achernar('star.ACHERNAR'),
+  acrux('star.ACRUX'),
+  adhara('star.ADHARA'),
+  ain('star.AIN'),
+  albaldah('star.ALBALDAH'),
+  albireo('star.ALBIREO'),
+  alderamin('star.ALDERAMIN'),
+  algedi('star.ALGEDI'),
+  algieba('star.ALGIEBA'),
+  algol('star.ALGOL'),
+  alhena('star.ALHENA'),
+  aljanah('star.ALJANAH'),
+  almach('star.ALMACH'),
+  alnair('star.ALNAIR'),
+  alnasl('star.ALNASL'),
+  alnilam('star.ALNILAM'),
+  alnitak('star.ALNITAK'),
+  alphard('star.ALPHARD'),
+  alphecca('star.ALPHECCA'),
+  alpheratz('star.ALPHERATZ'),
+  alsephina('star.ALSEPHINA'),
+  alshain('star.ALSHAIN'),
+  aludra('star.ALUDRA'),
+  ankaa('star.ANKAA'),
+  ascella('star.ASCELLA'),
+  aspidiske('star.ASPIDISKE'),
+  atria('star.ATRIA'),
+  avior('star.AVIOR'),
+  bellatrix('star.BELLATRIX'),
+  caph('star.CAPH'),
+  castor('star.CASTOR'),
+  chamukuy('star.CHAMUKUY'),
+  deneb('star.DENEB'),
+  diphda('star.DIPHDA'),
+  elnath('star.ELNATH'),
+  enif('star.ENIF'),
+  errai('star.ERRAI'),
+  fang('star.FANG'),
+  fomalhaut('star.FOMALHAUT'),
+  gacrux('star.GACRUX'),
+  hadar('star.HADAR'),
+  hamal('star.HAMAL'),
+  heze('star.HEZE'),
+  izar('star.IZAR'),
+  kausAustralis('star.KAUS_AUSTRALIS'),
+  kausBorealis('star.KAUS_BOREALIS'),
+  kitalpha('star.KITALPHA'),
+  kornephoros('star.KORNEPHOROS'),
+  marfik('star.MARFIK'),
+  menkalinan('star.MENKALINAN'),
+  menkar('star.MENKAR'),
+  menkent('star.MENKENT'),
+  miaplacidus('star.MIAPLACIDUS'),
+  mimosa('star.MIMOSA'),
+  mintaka('star.MINTAKA'),
+  mirach('star.MIRACH'),
+  mirfak('star.MIRFAK'),
+  naos('star.NAOS'),
+  nihal('star.NIHAL'),
+  peacock('star.PEACOCK'),
+  procyon('star.PROCYON'),
+  rasalgethi('star.RASALGETHI'),
+  rasalhague('star.RASALHAGUE'),
+  rigel('star.RIGEL'),
+  rigilKentaurus('star.RIGIL_KENTAURUS'),
+  sabik('star.SABIK'),
+  sadalbari('star.SADALBARI'),
+  sadalmelik('star.SADALMELIK'),
+  sadalsuud('star.SADALSUUD'),
+  sadr('star.SADR'),
+  saiph('star.SAIPH'),
+  sargas('star.SARGAS'),
+  scheat('star.SCHEAT'),
+  schedar('star.SCHEDAR'),
+  seginus('star.SEGINUS'),
+  sheliak('star.SHELIAK'),
+  skat('star.SKAT'),
+  suhail('star.SUHAIL'),
+  syrma('star.SYRMA'),
+  thuban('star.THUBAN'),
+  tureis('star.TUREIS'),
+  unukalhai('star.UNUKALHAI'),
+  vindemiatrix('star.VINDEMIATRIX'),
+  wezen('star.WEZEN'),
+  yedPrior('star.YED_PRIOR'),
+  zaniah('star.ZANIAH'),
+  zubeneschamali('star.ZUBENESCHAMALI'),
+  sgrAStar('star.SGR_A_STAR'),
+  galacticPole('star.GALACTIC_POLE'),
+  galacticPoleIau1958('star.GALACTIC_POLE_IAU1958');
+
+  const StarKey(this.key);
+
+  final String key;
+}
+
+enum StarClassKey {
+  star('star_class.STAR'),
+  radioSource('star_class.RADIO_SOURCE'),
+  direction('star_class.DIRECTION');
+
+  const StarClassKey(this.key);
 
   final String key;
 }
@@ -1266,6 +1725,37 @@ enum TatwaKey {
   akasha('tatwa.AKASHA');
 
   const TatwaKey(this.key);
+
+  final String key;
+}
+
+enum TibetanAnimalKey {
+  mouse('tibetan_animal.MOUSE'),
+  ox('tibetan_animal.OX'),
+  tiger('tibetan_animal.TIGER'),
+  rabbit('tibetan_animal.RABBIT'),
+  dragon('tibetan_animal.DRAGON'),
+  snake('tibetan_animal.SNAKE'),
+  horse('tibetan_animal.HORSE'),
+  sheep('tibetan_animal.SHEEP'),
+  monkey('tibetan_animal.MONKEY'),
+  bird('tibetan_animal.BIRD'),
+  dog('tibetan_animal.DOG'),
+  pig('tibetan_animal.PIG');
+
+  const TibetanAnimalKey(this.key);
+
+  final String key;
+}
+
+enum TibetanElementKey {
+  wood('tibetan_element.WOOD'),
+  fire('tibetan_element.FIRE'),
+  earth('tibetan_element.EARTH'),
+  iron('tibetan_element.IRON'),
+  water('tibetan_element.WATER');
+
+  const TibetanElementKey(this.key);
 
   final String key;
 }
@@ -1303,6 +1793,18 @@ enum TithiKey {
   amavasya('tithi.AMAVASYA');
 
   const TithiKey(this.key);
+
+  final String key;
+}
+
+enum TithiClassKey {
+  nanda('tithi_class.NANDA'),
+  bhadra('tithi_class.BHADRA'),
+  jaya('tithi_class.JAYA'),
+  rikta('tithi_class.RIKTA'),
+  purna('tithi_class.PURNA');
+
+  const TithiClassKey(this.key);
 
   final String key;
 }
@@ -1358,7 +1860,10 @@ enum VaiseshikamsaKey {
   dhanvantari('vaiseshikamsa.DHANVANTARI'),
   suryakanta('vaiseshikamsa.SURYAKANTA'),
   vidruma('vaiseshikamsa.VIDRUMA'),
-  goloka('vaiseshikamsa.GOLOKA');
+  goloka('vaiseshikamsa.GOLOKA'),
+  kusuma('vaiseshikamsa.KUSUMA'),
+  chakrasimhasana('vaiseshikamsa.CHAKRASIMHASANA'),
+  shrivallabha('vaiseshikamsa.SHRIVALLABHA');
 
   const VaiseshikamsaKey(this.key);
 
@@ -1394,7 +1899,13 @@ enum VargaKey {
   d30('varga.D30'),
   d40('varga.D40'),
   d45('varga.D45'),
-  d60('varga.D60');
+  d60('varga.D60'),
+  d1('varga.D1'),
+  d5('varga.D5'),
+  d6('varga.D6'),
+  d8('varga.D8'),
+  d11('varga.D11'),
+  d150('varga.D150');
 
   const VargaKey(this.key);
 
@@ -1445,7 +1956,9 @@ enum YearOfficeKey {
   dhanyadhipati('year_office.DHANYADHIPATI'),
   meghadhipati('year_office.MEGHADHIPATI'),
   rasadhipati('year_office.RASADHIPATI'),
-  nirasadhipati('year_office.NIRASADHIPATI');
+  nirasadhipati('year_office.NIRASADHIPATI'),
+  senadhipati('year_office.SENADHIPATI'),
+  arghadhipati('year_office.ARGHADHIPATI');
 
   const YearOfficeKey(this.key);
 
@@ -2091,6 +2604,17 @@ final class MessagesSdkEntityAshubhaYoga {
   EntityForms get yamaghanta => _r.entity('ashubha_yoga.YAMAGHANTA');
 }
 
+final class MessagesSdkEntityAuspiciousness {
+  const MessagesSdkEntityAuspiciousness(this._r);
+
+  final Renderer _r;
+
+  EntityForms get auspicious => _r.entity('auspiciousness.AUSPICIOUS');
+  EntityForms get highlyInauspicious => _r.entity('auspiciousness.HIGHLY_INAUSPICIOUS');
+  EntityForms get inauspicious => _r.entity('auspiciousness.INAUSPICIOUS');
+  EntityForms get mixed => _r.entity('auspiciousness.MIXED');
+}
+
 final class MessagesSdkEntityAvasthaBaladi {
   const MessagesSdkEntityAvasthaBaladi(this._r);
 
@@ -2234,6 +2758,29 @@ final class MessagesSdkEntityAyanamsha {
   EntityForms get yukteshwar => _r.entity('ayanamsha.YUKTESHWAR');
 }
 
+final class MessagesSdkEntityAyanamshaCategory {
+  const MessagesSdkEntityAyanamshaCategory(this._r);
+
+  final Renderer _r;
+
+  EntityForms get epoch => _r.entity('ayanamsha_category.EPOCH');
+  EntityForms get galactic => _r.entity('ayanamsha_category.GALACTIC');
+  EntityForms get historical => _r.entity('ayanamsha_category.HISTORICAL');
+  EntityForms get starAnchored => _r.entity('ayanamsha_category.STAR_ANCHORED');
+  EntityForms get vedicClassical => _r.entity('ayanamsha_category.VEDIC_CLASSICAL');
+  EntityForms get vedicStandard => _r.entity('ayanamsha_category.VEDIC_STANDARD');
+  EntityForms get westernSidereal => _r.entity('ayanamsha_category.WESTERN_SIDEREAL');
+}
+
+final class MessagesSdkEntityBalaScheme {
+  const MessagesSdkEntityBalaScheme(this._r);
+
+  final Renderer _r;
+
+  EntityForms get parashara => _r.entity('bala_scheme.PARASHARA');
+  EntityForms get parasharaExtended => _r.entity('bala_scheme.PARASHARA_EXTENDED');
+}
+
 final class MessagesSdkEntityBhadraVasa {
   const MessagesSdkEntityBhadraVasa(this._r);
 
@@ -2251,13 +2798,50 @@ final class MessagesSdkEntityBlackoutKind {
 
   EntityForms get adhikaMasa => _r.entity('blackout_kind.ADHIKA_MASA');
   EntityForms get chaturmas => _r.entity('blackout_kind.CHATURMAS');
+  EntityForms get eclipseStar => _r.entity('blackout_kind.ECLIPSE_STAR');
+  EntityForms get eclipseVedha => _r.entity('blackout_kind.ECLIPSE_VEDHA');
   EntityForms get guruAsta => _r.entity('blackout_kind.GURU_ASTA');
   EntityForms get holashtaka => _r.entity('blackout_kind.HOLASHTAKA');
+  EntityForms get kharmas => _r.entity('blackout_kind.KHARMAS');
   EntityForms get kshayaMasa => _r.entity('blackout_kind.KSHAYA_MASA');
   EntityForms get pitruPaksha => _r.entity('blackout_kind.PITRU_PAKSHA');
   EntityForms get samsarpa => _r.entity('blackout_kind.SAMSARPA');
   EntityForms get sankranti => _r.entity('blackout_kind.SANKRANTI');
   EntityForms get shukraAsta => _r.entity('blackout_kind.SHUKRA_ASTA');
+}
+
+final class MessagesSdkEntityBodyClass {
+  const MessagesSdkEntityBodyClass(this._r);
+
+  final Renderer _r;
+
+  EntityForms get luminary => _r.entity('body_class.LUMINARY');
+  EntityForms get node => _r.entity('body_class.NODE');
+  EntityForms get outer => _r.entity('body_class.OUTER');
+  EntityForms get planet => _r.entity('body_class.PLANET');
+}
+
+final class MessagesSdkEntityCalendar {
+  const MessagesSdkEntityCalendar(this._r);
+
+  final Renderer _r;
+
+  EntityForms get assamSolar => _r.entity('calendar.ASSAM_SOLAR');
+  EntityForms get bangladeshi => _r.entity('calendar.BANGLADESHI');
+  EntityForms get bengalSolar => _r.entity('calendar.BENGAL_SOLAR');
+  EntityForms get bikramSambat => _r.entity('calendar.BIKRAM_SAMBAT');
+  EntityForms get gregorian => _r.entity('calendar.GREGORIAN');
+  EntityForms get hijriTabular => _r.entity('calendar.HIJRI_TABULAR');
+  EntityForms get indianLunisolar => _r.entity('calendar.INDIAN_LUNISOLAR');
+  EntityForms get indianNational => _r.entity('calendar.INDIAN_NATIONAL');
+  EntityForms get isoWeek => _r.entity('calendar.ISO_WEEK');
+  EntityForms get julian => _r.entity('calendar.JULIAN');
+  EntityForms get malayalamSolar => _r.entity('calendar.MALAYALAM_SOLAR');
+  EntityForms get mixed => _r.entity('calendar.MIXED');
+  EntityForms get odiaSolar => _r.entity('calendar.ODIA_SOLAR');
+  EntityForms get tamilSolar => _r.entity('calendar.TAMIL_SOLAR');
+  EntityForms get tamilVakya => _r.entity('calendar.TAMIL_VAKYA');
+  EntityForms get tibetanPhugpa => _r.entity('calendar.TIBETAN_PHUGPA');
 }
 
 final class MessagesSdkEntityCharaKaraka {
@@ -2275,6 +2859,36 @@ final class MessagesSdkEntityCharaKaraka {
   EntityForms get putrakaraka => _r.entity('chara_karaka.PUTRAKARAKA');
 }
 
+final class MessagesSdkEntityChartKind {
+  const MessagesSdkEntityChartKind(this._r);
+
+  final Renderer _r;
+
+  EntityForms get composite => _r.entity('chart_kind.COMPOSITE');
+  EntityForms get event => _r.entity('chart_kind.EVENT');
+  EntityForms get mundane => _r.entity('chart_kind.MUNDANE');
+  EntityForms get natal => _r.entity('chart_kind.NATAL');
+  EntityForms get prashna => _r.entity('chart_kind.PRASHNA');
+  EntityForms get relocated => _r.entity('chart_kind.RELOCATED');
+  EntityForms get return$ => _r.entity('chart_kind.RETURN');
+  EntityForms get transit => _r.entity('chart_kind.TRANSIT');
+}
+
+final class MessagesSdkEntityChartLayout {
+  const MessagesSdkEntityChartLayout(this._r);
+
+  final Renderer _r;
+
+  EntityForms get eastIndian => _r.entity('chart_layout.EAST_INDIAN');
+  EntityForms get nepaliCircle => _r.entity('chart_layout.NEPALI_CIRCLE');
+  EntityForms get nepaliLotus => _r.entity('chart_layout.NEPALI_LOTUS');
+  EntityForms get northIndian => _r.entity('chart_layout.NORTH_INDIAN');
+  EntityForms get northIndianPetals => _r.entity('chart_layout.NORTH_INDIAN_PETALS');
+  EntityForms get southIndian => _r.entity('chart_layout.SOUTH_INDIAN');
+  EntityForms get sudarshanChakra => _r.entity('chart_layout.SUDARSHAN_CHAKRA');
+  EntityForms get westernWheel => _r.entity('chart_layout.WESTERN_WHEEL');
+}
+
 final class MessagesSdkEntityChoghadiya {
   const MessagesSdkEntityChoghadiya(this._r);
 
@@ -2289,39 +2903,73 @@ final class MessagesSdkEntityChoghadiya {
   EntityForms get udveg => _r.entity('choghadiya.UDVEG');
 }
 
+final class MessagesSdkEntityDashaFamily {
+  const MessagesSdkEntityDashaFamily(this._r);
+
+  final Renderer _r;
+
+  EntityForms get composition => _r.entity('dasha_family.COMPOSITION');
+  EntityForms get decennials => _r.entity('dasha_family.DECENNIALS');
+  EntityForms get firdaria => _r.entity('dasha_family.FIRDARIA');
+  EntityForms get graha => _r.entity('dasha_family.GRAHA');
+  EntityForms get kalachakra => _r.entity('dasha_family.KALACHAKRA');
+  EntityForms get own => _r.entity('dasha_family.OWN');
+  EntityForms get profection => _r.entity('dasha_family.PROFECTION');
+  EntityForms get rashi => _r.entity('dasha_family.RASHI');
+  EntityForms get releasing => _r.entity('dasha_family.RELEASING');
+  EntityForms get scale => _r.entity('dasha_family.SCALE');
+  EntityForms get udu => _r.entity('dasha_family.UDU');
+}
+
 final class MessagesSdkEntityDashaSystem {
   const MessagesSdkEntityDashaSystem(this._r);
 
   final Renderer _r;
 
+  EntityForms get aayu => _r.entity('dasha_system.AAYU');
   EntityForms get ashtakavarga => _r.entity('dasha_system.ASHTAKAVARGA');
   EntityForms get ashtottari => _r.entity('dasha_system.ASHTOTTARI');
   EntityForms get chara => _r.entity('dasha_system.CHARA');
   EntityForms get chaturashitiSama => _r.entity('dasha_system.CHATURASHITI_SAMA');
+  EntityForms get decennials => _r.entity('dasha_system.DECENNIALS');
   EntityForms get drig => _r.entity('dasha_system.DRIG');
   EntityForms get dwadashottari => _r.entity('dasha_system.DWADASHOTTARI');
   EntityForms get dwisaptatiSama => _r.entity('dasha_system.DWISAPTATI_SAMA');
+  EntityForms get firdaria => _r.entity('dasha_system.FIRDARIA');
   EntityForms get kalachakra => _r.entity('dasha_system.KALACHAKRA');
   EntityForms get karaka => _r.entity('dasha_system.KARAKA');
+  EntityForms get karanaChaturashiti => _r.entity('dasha_system.KARANA_CHATURASHITI');
   EntityForms get mandooka => _r.entity('dasha_system.MANDOOKA');
+  EntityForms get mudda => _r.entity('dasha_system.MUDDA');
   EntityForms get naisargika => _r.entity('dasha_system.NAISARGIKA');
   EntityForms get narayana => _r.entity('dasha_system.NARAYANA');
   EntityForms get niryanaShoola => _r.entity('dasha_system.NIRYANA_SHOOLA');
   EntityForms get padanadhamsa => _r.entity('dasha_system.PADANADHAMSA');
   EntityForms get panchaswara => _r.entity('dasha_system.PANCHASWARA');
   EntityForms get panchottari => _r.entity('dasha_system.PANCHOTTARI');
+  EntityForms get patyayini => _r.entity('dasha_system.PATYAYINI');
+  EntityForms get profection => _r.entity('dasha_system.PROFECTION');
+  EntityForms get releasingDaimon => _r.entity('dasha_system.RELEASING_DAIMON');
+  EntityForms get releasingFortune => _r.entity('dasha_system.RELEASING_FORTUNE');
   EntityForms get shashtihayani => _r.entity('dasha_system.SHASHTIHAYANI');
   EntityForms get shatabdika => _r.entity('dasha_system.SHATABDIKA');
+  EntityForms get shattrimshaSama => _r.entity('dasha_system.SHATTRIMSHA_SAMA');
   EntityForms get shodashottari => _r.entity('dasha_system.SHODASHOTTARI');
   EntityForms get shoola => _r.entity('dasha_system.SHOOLA');
   EntityForms get sthira => _r.entity('dasha_system.STHIRA');
   EntityForms get sudarshanaChakra => _r.entity('dasha_system.SUDARSHANA_CHAKRA');
+  EntityForms get sudasa => _r.entity('dasha_system.SUDASA');
   EntityForms get tara => _r.entity('dasha_system.TARA');
+  EntityForms get tithiAshtottari => _r.entity('dasha_system.TITHI_ASHTOTTARI');
+  EntityForms get tithiYogini => _r.entity('dasha_system.TITHI_YOGINI');
   EntityForms get tribhagi => _r.entity('dasha_system.TRIBHAGI');
   EntityForms get trikona => _r.entity('dasha_system.TRIKONA');
   EntityForms get varnada => _r.entity('dasha_system.VARNADA');
+  EntityForms get varshaNarayana => _r.entity('dasha_system.VARSHA_NARAYANA');
+  EntityForms get varshaYogini => _r.entity('dasha_system.VARSHA_YOGINI');
   EntityForms get vimshottari => _r.entity('dasha_system.VIMSHOTTARI');
   EntityForms get yogardha => _r.entity('dasha_system.YOGARDHA');
+  EntityForms get yogaVimshottari => _r.entity('dasha_system.YOGA_VIMSHOTTARI');
   EntityForms get yogini => _r.entity('dasha_system.YOGINI');
 }
 
@@ -2333,6 +2981,15 @@ final class MessagesSdkEntityDayMarker {
   EntityForms get gandanta => _r.entity('day_marker.GANDANTA');
   EntityForms get gandaMula => _r.entity('day_marker.GANDA_MULA');
   EntityForms get vinchudo => _r.entity('day_marker.VINCHUDO');
+}
+
+final class MessagesSdkEntityDegeneracy {
+  const MessagesSdkEntityDegeneracy(this._r);
+
+  final Renderer _r;
+
+  EntityForms get none => _r.entity('degeneracy.NONE');
+  EntityForms get polarUndefined => _r.entity('degeneracy.POLAR_UNDEFINED');
 }
 
 final class MessagesSdkEntityDeity {
@@ -2350,8 +3007,12 @@ final class MessagesSdkEntityDeity {
   EntityForms get bhaga => _r.entity('deity.BHAGA');
   EntityForms get brahma => _r.entity('deity.BRAHMA');
   EntityForms get brihaspati => _r.entity('deity.BRIHASPATI');
+  EntityForms get chandra => _r.entity('deity.CHANDRA');
+  EntityForms get durga => _r.entity('deity.DURGA');
   EntityForms get indra => _r.entity('deity.INDRA');
   EntityForms get indragni => _r.entity('deity.INDRAGNI');
+  EntityForms get kamadeva => _r.entity('deity.KAMADEVA');
+  EntityForms get kartikeya => _r.entity('deity.KARTIKEYA');
   EntityForms get mitra => _r.entity('deity.MITRA');
   EntityForms get naga => _r.entity('deity.NAGA');
   EntityForms get nirriti => _r.entity('deity.NIRRITI');
@@ -2359,10 +3020,16 @@ final class MessagesSdkEntityDeity {
   EntityForms get pushan => _r.entity('deity.PUSHAN');
   EntityForms get rudra => _r.entity('deity.RUDRA');
   EntityForms get savitr => _r.entity('deity.SAVITR');
+  EntityForms get shani => _r.entity('deity.SHANI');
+  EntityForms get shiva => _r.entity('deity.SHIVA');
+  EntityForms get shukra => _r.entity('deity.SHUKRA');
   EntityForms get soma => _r.entity('deity.SOMA');
+  EntityForms get surya => _r.entity('deity.SURYA');
+  EntityForms get tvashta => _r.entity('deity.TVASHTA');
   EntityForms get varuna => _r.entity('deity.VARUNA');
   EntityForms get vasu => _r.entity('deity.VASU');
   EntityForms get vayu => _r.entity('deity.VAYU');
+  EntityForms get vidhata => _r.entity('deity.VIDHATA');
   EntityForms get vishnu => _r.entity('deity.VISHNU');
   EntityForms get vishvadeva => _r.entity('deity.VISHVADEVA');
   EntityForms get vishvakarma => _r.entity('deity.VISHVAKARMA');
@@ -2412,6 +3079,7 @@ final class MessagesSdkEntityEra {
   EntityForms get bhaskarabda => _r.entity('era.BHASKARABDA');
   EntityForms get buddha => _r.entity('era.BUDDHA');
   EntityForms get commonEra => _r.entity('era.COMMON_ERA');
+  EntityForms get hijri => _r.entity('era.HIJRI');
   EntityForms get kali => _r.entity('era.KALI');
   EntityForms get kollam => _r.entity('era.KOLLAM');
   EntityForms get nepalSambat => _r.entity('era.NEPAL_SAMBAT');
@@ -2460,7 +3128,10 @@ final class MessagesSdkEntityFestival {
   EntityForms get ashunyaShayana => _r.entity('festival.ASHUNYA_SHAYANA');
   EntityForms get ashvinaAyambilOli => _r.entity('festival.ASHVINA_AYAMBIL_OLI');
   EntityForms get ashvinaAyambilOliEnd => _r.entity('festival.ASHVINA_AYAMBIL_OLI_END');
+  EntityForms get avaniAvittom => _r.entity('festival.AVANI_AVITTOM');
   EntityForms get avidhavaNavami => _r.entity('festival.AVIDHAVA_NAVAMI');
+  EntityForms get ayyankaliJayanthi => _r.entity('festival.AYYANKALI_JAYANTHI');
+  EntityForms get ayyaVaikundaSwamiJayanthi => _r.entity('festival.AYYA_VAIKUNDA_SWAMI_JAYANTHI');
   EntityForms get bahidyoBoyegu => _r.entity('festival.BAHIDYO_BOYEGU');
   EntityForms get baisakhSnanEnds => _r.entity('festival.BAISAKH_SNAN_ENDS');
   EntityForms get bakhumada => _r.entity('festival.BAKHUMADA');
@@ -2549,6 +3220,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get dwadashiShraddha => _r.entity('festival.DWADASHI_SHRADDHA');
   EntityForms get dwitiyaShraddha => _r.entity('festival.DWITIYA_SHRADDHA');
   EntityForms get earthquakeSafetyDay => _r.entity('festival.EARTHQUAKE_SAFETY_DAY');
+  EntityForms get easter => _r.entity('festival.EASTER');
   EntityForms get easterSaturday => _r.entity('festival.EASTER_SATURDAY');
   EntityForms get ekadashiGaudiya => _r.entity('festival.EKADASHI_GAUDIYA');
   EntityForms get ekadashiShraddha => _r.entity('festival.EKADASHI_SHRADDHA');
@@ -2558,6 +3230,8 @@ final class MessagesSdkEntityFestival {
   EntityForms get electionDay => _r.entity('festival.ELECTION_DAY');
   EntityForms get faguPurnima => _r.entity('festival.FAGU_PURNIMA');
   EntityForms get falgunandaJayanti => _r.entity('festival.FALGUNANDA_JAYANTI');
+  EntityForms get firstOnam => _r.entity('festival.FIRST_ONAM');
+  EntityForms get fourthOnam => _r.entity('festival.FOURTH_ONAM');
   EntityForms get fulkharkaGangajamunaMela => _r.entity('festival.FULKHARKA_GANGAJAMUNA_MELA');
   EntityForms get gaiduPuja => _r.entity('festival.GAIDU_PUJA');
   EntityForms get gaiJatra => _r.entity('festival.GAI_JATRA');
@@ -2643,6 +3317,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get kanyaSankranti => _r.entity('festival.KANYA_SANKRANTI');
   EntityForms get karakaChaturthi => _r.entity('festival.KARAKA_CHATURTHI');
   EntityForms get karkataSankranti => _r.entity('festival.KARKATA_SANKRANTI');
+  EntityForms get karkidakaVavu => _r.entity('festival.KARKIDAKA_VAVU');
   EntityForms get kartikSnanBegins => _r.entity('festival.KARTIK_SNAN_BEGINS');
   EntityForms get kartikSnanEnds => _r.entity('festival.KARTIK_SNAN_ENDS');
   EntityForms get kashiBadaGaneshUtsav => _r.entity('festival.KASHI_BADA_GANESH_UTSAV');
@@ -2687,12 +3362,14 @@ final class MessagesSdkEntityFestival {
   EntityForms get makaraSankranti => _r.entity('festival.MAKARA_SANKRANTI');
   EntityForms get makarSnan => _r.entity('festival.MAKAR_SNAN');
   EntityForms get mangalaChaturthi => _r.entity('festival.MANGALA_CHATURTHI');
+  EntityForms get mannamJayanthi => _r.entity('festival.MANNAM_JAYANTHI');
   EntityForms get martyrsDay => _r.entity('festival.MARTYRS_DAY');
   EntityForms get mastaPurnima => _r.entity('festival.MASTA_PURNIMA');
   EntityForms get mataTirthaAunsi => _r.entity('festival.MATA_TIRTHA_AUNSI');
   EntityForms get matsyanarayanaMela => _r.entity('festival.MATSYANARAYANA_MELA');
   EntityForms get matsyaJayanti => _r.entity('festival.MATSYA_JAYANTI');
   EntityForms get maunaPanchami => _r.entity('festival.MAUNA_PANCHAMI');
+  EntityForms get maundyThursday => _r.entity('festival.MAUNDY_THURSDAY');
   EntityForms get meshaSankranti => _r.entity('festival.MESHA_SANKRANTI');
   EntityForms get mhaPuja => _r.entity('festival.MHA_PUJA');
   EntityForms get minaSankranti => _r.entity('festival.MINA_SANKRANTI');
@@ -2794,6 +3471,8 @@ final class MessagesSdkEntityFestival {
   EntityForms get somavatiAmavasya => _r.entity('festival.SOMAVATI_AMAVASYA');
   EntityForms get sonamLhosar => _r.entity('festival.SONAM_LHOSAR');
   EntityForms get sorhaShraddhaArambha => _r.entity('festival.SORHA_SHRADDHA_ARAMBHA');
+  EntityForms get sreeNarayanaGuruJayanthi => _r.entity('festival.SREE_NARAYANA_GURU_JAYANTHI');
+  EntityForms get sreeNarayanaGuruSamadhi => _r.entity('festival.SREE_NARAYANA_GURU_SAMADHI');
   EntityForms get suryaPuja => _r.entity('festival.SURYA_PUJA');
   EntityForms get suryaShashthi => _r.entity('festival.SURYA_SHASHTHI');
   EntityForms get swasthaniVratBegins => _r.entity('festival.SWASTHANI_VRAT_BEGINS');
@@ -2804,6 +3483,8 @@ final class MessagesSdkEntityFestival {
   EntityForms get thakurPanchananBarmaJayanti => _r.entity('festival.THAKUR_PANCHANAN_BARMA_JAYANTI');
   EntityForms get thankotMahalaxmiJatra => _r.entity('festival.THANKOT_MAHALAXMI_JATRA');
   EntityForms get thimiBalkumariJatra => _r.entity('festival.THIMI_BALKUMARI_JATRA');
+  EntityForms get thirdOnam => _r.entity('festival.THIRD_ONAM');
+  EntityForms get thiruvonam => _r.entity('festival.THIRUVONAM');
   EntityForms get tilakundaChaturthi => _r.entity('festival.TILAKUNDA_CHATURTHI');
   EntityForms get tokhaChandeshwariJatra => _r.entity('festival.TOKHA_CHANDESHWARI_JATRA');
   EntityForms get tokhaSapanTirthaSnan => _r.entity('festival.TOKHA_SAPAN_TIRTHA_SNAN');
@@ -2832,6 +3513,7 @@ final class MessagesSdkEntityFestival {
   EntityForms get vijayaDashami => _r.entity('festival.VIJAYA_DASHAMI');
   EntityForms get vijayaEkadashi => _r.entity('festival.VIJAYA_EKADASHI');
   EntityForms get viraNirvanaNewYear => _r.entity('festival.VIRA_NIRVANA_NEW_YEAR');
+  EntityForms get vishu => _r.entity('festival.VISHU');
   EntityForms get vishwakarmaPuja => _r.entity('festival.VISHWAKARMA_PUJA');
   EntityForms get vivahPanchami => _r.entity('festival.VIVAH_PANCHAMI');
   EntityForms get vivekanandaJayanti => _r.entity('festival.VIVEKANANDA_JAYANTI');
@@ -2877,6 +3559,16 @@ final class MessagesSdkEntityGana {
   EntityForms get rakshasa => _r.entity('gana.RAKSHASA');
 }
 
+final class MessagesSdkEntityGender {
+  const MessagesSdkEntityGender(this._r);
+
+  final Renderer _r;
+
+  EntityForms get female => _r.entity('gender.FEMALE');
+  EntityForms get male => _r.entity('gender.MALE');
+  EntityForms get neutral => _r.entity('gender.NEUTRAL');
+}
+
 final class MessagesSdkEntityGowri {
   const MessagesSdkEntityGowri(this._r);
 
@@ -2902,10 +3594,23 @@ final class MessagesSdkEntityGraha {
   EntityForms get mars => _r.entity('graha.MARS');
   EntityForms get mercury => _r.entity('graha.MERCURY');
   EntityForms get moon => _r.entity('graha.MOON');
+  EntityForms get neptune => _r.entity('graha.NEPTUNE');
+  EntityForms get pluto => _r.entity('graha.PLUTO');
   EntityForms get rahu => _r.entity('graha.RAHU');
   EntityForms get saturn => _r.entity('graha.SATURN');
   EntityForms get sun => _r.entity('graha.SUN');
+  EntityForms get uranus => _r.entity('graha.URANUS');
   EntityForms get venus => _r.entity('graha.VENUS');
+}
+
+final class MessagesSdkEntityGuna {
+  const MessagesSdkEntityGuna(this._r);
+
+  final Renderer _r;
+
+  EntityForms get rajas => _r.entity('guna.RAJAS');
+  EntityForms get sattva => _r.entity('guna.SATTVA');
+  EntityForms get tamas => _r.entity('guna.TAMAS');
 }
 
 final class MessagesSdkEntityHouseSystem {
@@ -2965,12 +3670,32 @@ final class MessagesSdkEntityKarana {
   EntityForms get vishti => _r.entity('karana.VISHTI');
 }
 
+final class MessagesSdkEntityKoota {
+  const MessagesSdkEntityKoota(this._r);
+
+  final Renderer _r;
+
+  EntityForms get bhakoot => _r.entity('koota.BHAKOOT');
+  EntityForms get gana => _r.entity('koota.GANA');
+  EntityForms get grahaMaitri => _r.entity('koota.GRAHA_MAITRI');
+  EntityForms get mahendra => _r.entity('koota.MAHENDRA');
+  EntityForms get nadi => _r.entity('koota.NADI');
+  EntityForms get rajju => _r.entity('koota.RAJJU');
+  EntityForms get streeDeergha => _r.entity('koota.STREE_DEERGHA');
+  EntityForms get tara => _r.entity('koota.TARA');
+  EntityForms get varna => _r.entity('koota.VARNA');
+  EntityForms get vashya => _r.entity('koota.VASHYA');
+  EntityForms get vedha => _r.entity('koota.VEDHA');
+  EntityForms get yoni => _r.entity('koota.YONI');
+}
+
 final class MessagesSdkEntityLunarEclipseKind {
   const MessagesSdkEntityLunarEclipseKind(this._r);
 
   final Renderer _r;
 
   EntityForms get partial => _r.entity('lunar_eclipse_kind.PARTIAL');
+  EntityForms get penumbral => _r.entity('lunar_eclipse_kind.PENUMBRAL');
   EntityForms get total => _r.entity('lunar_eclipse_kind.TOTAL');
 }
 
@@ -2991,6 +3716,30 @@ final class MessagesSdkEntityMasa {
   EntityForms get phalguna => _r.entity('masa.PHALGUNA');
   EntityForms get shravana => _r.entity('masa.SHRAVANA');
   EntityForms get vaishakha => _r.entity('masa.VAISHAKHA');
+}
+
+final class MessagesSdkEntityModality {
+  const MessagesSdkEntityModality(this._r);
+
+  final Renderer _r;
+
+  EntityForms get chara => _r.entity('modality.CHARA');
+  EntityForms get dwiswabhava => _r.entity('modality.DWISWABHAVA');
+  EntityForms get sthira => _r.entity('modality.STHIRA');
+}
+
+final class MessagesSdkEntityMuhurtaNature {
+  const MessagesSdkEntityMuhurtaNature(this._r);
+
+  final Renderer _r;
+
+  EntityForms get chara => _r.entity('muhurta_nature.CHARA');
+  EntityForms get dhruva => _r.entity('muhurta_nature.DHRUVA');
+  EntityForms get kshipra => _r.entity('muhurta_nature.KSHIPRA');
+  EntityForms get mishra => _r.entity('muhurta_nature.MISHRA');
+  EntityForms get mridu => _r.entity('muhurta_nature.MRIDU');
+  EntityForms get tikshna => _r.entity('muhurta_nature.TIKSHNA');
+  EntityForms get ugra => _r.entity('muhurta_nature.UGRA');
 }
 
 final class MessagesSdkEntityMuhurtaYoga {
@@ -3078,6 +3827,7 @@ final class MessagesSdkEntityNature {
 
   EntityForms get benefic => _r.entity('nature.BENEFIC');
   EntityForms get malefic => _r.entity('nature.MALEFIC');
+  EntityForms get neutral => _r.entity('nature.NEUTRAL');
 }
 
 final class MessagesSdkEntityPaksha {
@@ -3101,6 +3851,15 @@ final class MessagesSdkEntityPanchaka {
   EntityForms get roga => _r.entity('panchaka.ROGA');
 }
 
+final class MessagesSdkEntityParity {
+  const MessagesSdkEntityParity(this._r);
+
+  final Renderer _r;
+
+  EntityForms get even => _r.entity('parity.EVEN');
+  EntityForms get odd => _r.entity('parity.ODD');
+}
+
 final class MessagesSdkEntityPaya {
   const MessagesSdkEntityPaya(this._r);
 
@@ -3118,24 +3877,69 @@ final class MessagesSdkEntityPoint {
   final Renderer _r;
 
   EntityForms get a1 => _r.entity('point.A1');
+  EntityForms get a10 => _r.entity('point.A10');
+  EntityForms get a11 => _r.entity('point.A11');
   EntityForms get a12 => _r.entity('point.A12');
+  EntityForms get a2 => _r.entity('point.A2');
+  EntityForms get a3 => _r.entity('point.A3');
+  EntityForms get a4 => _r.entity('point.A4');
+  EntityForms get a5 => _r.entity('point.A5');
+  EntityForms get a6 => _r.entity('point.A6');
+  EntityForms get a7 => _r.entity('point.A7');
+  EntityForms get a8 => _r.entity('point.A8');
+  EntityForms get a9 => _r.entity('point.A9');
   EntityForms get ardhaprahara => _r.entity('point.ARDHAPRAHARA');
+  EntityForms get avayogi => _r.entity('point.AVAYOGI');
+  EntityForms get beejaSphuta => _r.entity('point.BEEJA_SPHUTA');
   EntityForms get bhavaLagna => _r.entity('point.BHAVA_LAGNA');
+  EntityForms get bhriguBindu => _r.entity('point.BHRIGU_BINDU');
+  EntityForms get chatussphuta => _r.entity('point.CHATUSSPHUTA');
+  EntityForms get dehaSphuta => _r.entity('point.DEHA_SPHUTA');
+  EntityForms get descendant => _r.entity('point.DESCENDANT');
   EntityForms get dhuma => _r.entity('point.DHUMA');
   EntityForms get ghatiLagna => _r.entity('point.GHATI_LAGNA');
   EntityForms get gulika => _r.entity('point.GULIKA');
   EntityForms get horaLagna => _r.entity('point.HORA_LAGNA');
+  EntityForms get ic => _r.entity('point.IC');
   EntityForms get indrachapa => _r.entity('point.INDRACHAPA');
+  EntityForms get induLagna => _r.entity('point.INDU_LAGNA');
   EntityForms get kala => _r.entity('point.KALA');
   EntityForms get karakamsha => _r.entity('point.KARAKAMSHA');
+  EntityForms get kshetraSphuta => _r.entity('point.KSHETRA_SPHUTA');
   EntityForms get lagna => _r.entity('point.LAGNA');
   EntityForms get mandi => _r.entity('point.MANDI');
+  EntityForms get mc => _r.entity('point.MC');
   EntityForms get mrityu => _r.entity('point.MRITYU');
+  EntityForms get mrityuSphuta => _r.entity('point.MRITYU_SPHUTA');
+  EntityForms get panchasphuta => _r.entity('point.PANCHASPHUTA');
   EntityForms get parivesha => _r.entity('point.PARIVESHA');
   EntityForms get pranapadaLagna => _r.entity('point.PRANAPADA_LAGNA');
+  EntityForms get pranaSphuta => _r.entity('point.PRANA_SPHUTA');
+  EntityForms get sahayogi => _r.entity('point.SAHAYOGI');
+  EntityForms get sreeLagna => _r.entity('point.SREE_LAGNA');
+  EntityForms get swamsha => _r.entity('point.SWAMSHA');
+  EntityForms get trisphuta => _r.entity('point.TRISPHUTA');
   EntityForms get upaketu => _r.entity('point.UPAKETU');
   EntityForms get varnadaLagna => _r.entity('point.VARNADA_LAGNA');
+  EntityForms get vighatiLagna => _r.entity('point.VIGHATI_LAGNA');
   EntityForms get vyatipata => _r.entity('point.VYATIPATA');
+  EntityForms get yamaghantaka => _r.entity('point.YAMAGHANTAKA');
+  EntityForms get yogi => _r.entity('point.YOGI');
+}
+
+final class MessagesSdkEntityPointFamily {
+  const MessagesSdkEntityPointFamily(this._r);
+
+  final Renderer _r;
+
+  EntityForms get angle => _r.entity('point_family.ANGLE');
+  EntityForms get arudha => _r.entity('point_family.ARUDHA');
+  EntityForms get jaimini => _r.entity('point_family.JAIMINI');
+  EntityForms get midpoint => _r.entity('point_family.MIDPOINT');
+  EntityForms get specialLagna => _r.entity('point_family.SPECIAL_LAGNA');
+  EntityForms get sphuta => _r.entity('point_family.SPHUTA');
+  EntityForms get upagrahaDay => _r.entity('point_family.UPAGRAHA_DAY');
+  EntityForms get upagrahaSolar => _r.entity('point_family.UPAGRAHA_SOLAR');
 }
 
 final class MessagesSdkEntityRashi {
@@ -3169,6 +3973,16 @@ final class MessagesSdkEntityRelationship {
   EntityForms get neutral => _r.entity('relationship.NEUTRAL');
 }
 
+final class MessagesSdkEntityRising {
+  const MessagesSdkEntityRising(this._r);
+
+  final Renderer _r;
+
+  EntityForms get prishtodaya => _r.entity('rising.PRISHTODAYA');
+  EntityForms get sirshodaya => _r.entity('rising.SIRSHODAYA');
+  EntityForms get ubhayodaya => _r.entity('rising.UBHAYODAYA');
+}
+
 final class MessagesSdkEntityRitu {
   const MessagesSdkEntityRitu(this._r);
 
@@ -3187,6 +4001,7 @@ final class MessagesSdkEntityRulerDayRule {
 
   final Renderer _r;
 
+  EntityForms get daylight => _r.entity('ruler_day_rule.DAYLIGHT');
   EntityForms get garga => _r.entity('ruler_day_rule.GARGA');
   EntityForms get newMoon => _r.entity('ruler_day_rule.NEW_MOON');
   EntityForms get sunrise => _r.entity('ruler_day_rule.SUNRISE');
@@ -3200,6 +4015,7 @@ final class MessagesSdkEntityRulerText {
 
   EntityForms get jyotirnibandha => _r.entity('ruler_text.JYOTIRNIBANDHA');
   EntityForms get naradaSamhita => _r.entity('ruler_text.NARADA_SAMHITA');
+  EntityForms get navanayaka => _r.entity('ruler_text.NAVANAYAKA');
 }
 
 final class MessagesSdkEntitySamvatsara {
@@ -3269,6 +4085,15 @@ final class MessagesSdkEntitySamvatsara {
   EntityForms get yuva => _r.entity('samvatsara.YUVA');
 }
 
+final class MessagesSdkEntitySex {
+  const MessagesSdkEntitySex(this._r);
+
+  final Renderer _r;
+
+  EntityForms get female => _r.entity('sex.FEMALE');
+  EntityForms get male => _r.entity('sex.MALE');
+}
+
 final class MessagesSdkEntityShivaVasa {
   const MessagesSdkEntityShivaVasa(this._r);
 
@@ -3288,8 +4113,174 @@ final class MessagesSdkEntitySolarEclipseKind {
 
   final Renderer _r;
 
+  EntityForms get annular => _r.entity('solar_eclipse_kind.ANNULAR');
+  EntityForms get hybrid => _r.entity('solar_eclipse_kind.HYBRID');
   EntityForms get partial => _r.entity('solar_eclipse_kind.PARTIAL');
   EntityForms get total => _r.entity('solar_eclipse_kind.TOTAL');
+}
+
+final class MessagesSdkEntityStar {
+  const MessagesSdkEntityStar(this._r);
+
+  final Renderer _r;
+
+  EntityForms get achernar => _r.entity('star.ACHERNAR');
+  EntityForms get acrux => _r.entity('star.ACRUX');
+  EntityForms get adhara => _r.entity('star.ADHARA');
+  EntityForms get ain => _r.entity('star.AIN');
+  EntityForms get albaldah => _r.entity('star.ALBALDAH');
+  EntityForms get albireo => _r.entity('star.ALBIREO');
+  EntityForms get alcyone => _r.entity('star.ALCYONE');
+  EntityForms get aldebaran => _r.entity('star.ALDEBARAN');
+  EntityForms get alderamin => _r.entity('star.ALDERAMIN');
+  EntityForms get algedi => _r.entity('star.ALGEDI');
+  EntityForms get algenib => _r.entity('star.ALGENIB');
+  EntityForms get algieba => _r.entity('star.ALGIEBA');
+  EntityForms get algol => _r.entity('star.ALGOL');
+  EntityForms get algorab => _r.entity('star.ALGORAB');
+  EntityForms get alhena => _r.entity('star.ALHENA');
+  EntityForms get alioth => _r.entity('star.ALIOTH');
+  EntityForms get aljanah => _r.entity('star.ALJANAH');
+  EntityForms get alkaid => _r.entity('star.ALKAID');
+  EntityForms get almach => _r.entity('star.ALMACH');
+  EntityForms get alnair => _r.entity('star.ALNAIR');
+  EntityForms get alnasl => _r.entity('star.ALNASL');
+  EntityForms get alnilam => _r.entity('star.ALNILAM');
+  EntityForms get alnitak => _r.entity('star.ALNITAK');
+  EntityForms get alphard => _r.entity('star.ALPHARD');
+  EntityForms get alphecca => _r.entity('star.ALPHECCA');
+  EntityForms get alpheratz => _r.entity('star.ALPHERATZ');
+  EntityForms get alsephina => _r.entity('star.ALSEPHINA');
+  EntityForms get alshain => _r.entity('star.ALSHAIN');
+  EntityForms get altair => _r.entity('star.ALTAIR');
+  EntityForms get aludra => _r.entity('star.ALUDRA');
+  EntityForms get ankaa => _r.entity('star.ANKAA');
+  EntityForms get antares => _r.entity('star.ANTARES');
+  EntityForms get arcturus => _r.entity('star.ARCTURUS');
+  EntityForms get ascella => _r.entity('star.ASCELLA');
+  EntityForms get asellusAustralis => _r.entity('star.ASELLUS_AUSTRALIS');
+  EntityForms get ashlesha => _r.entity('star.ASHLESHA');
+  EntityForms get aspidiske => _r.entity('star.ASPIDISKE');
+  EntityForms get atria => _r.entity('star.ATRIA');
+  EntityForms get avior => _r.entity('star.AVIOR');
+  EntityForms get bellatrix => _r.entity('star.BELLATRIX');
+  EntityForms get betelgeuse => _r.entity('star.BETELGEUSE');
+  EntityForms get bharani => _r.entity('star.BHARANI');
+  EntityForms get canopus => _r.entity('star.CANOPUS');
+  EntityForms get capella => _r.entity('star.CAPELLA');
+  EntityForms get caph => _r.entity('star.CAPH');
+  EntityForms get castor => _r.entity('star.CASTOR');
+  EntityForms get chamukuy => _r.entity('star.CHAMUKUY');
+  EntityForms get deneb => _r.entity('star.DENEB');
+  EntityForms get denebola => _r.entity('star.DENEBOLA');
+  EntityForms get diphda => _r.entity('star.DIPHDA');
+  EntityForms get dschubba => _r.entity('star.DSCHUBBA');
+  EntityForms get dubhe => _r.entity('star.DUBHE');
+  EntityForms get elnath => _r.entity('star.ELNATH');
+  EntityForms get enif => _r.entity('star.ENIF');
+  EntityForms get errai => _r.entity('star.ERRAI');
+  EntityForms get fang => _r.entity('star.FANG');
+  EntityForms get fomalhaut => _r.entity('star.FOMALHAUT');
+  EntityForms get gacrux => _r.entity('star.GACRUX');
+  EntityForms get galacticPole => _r.entity('star.GALACTIC_POLE');
+  EntityForms get galacticPoleIau1958 => _r.entity('star.GALACTIC_POLE_IAU1958');
+  EntityForms get hadar => _r.entity('star.HADAR');
+  EntityForms get hamal => _r.entity('star.HAMAL');
+  EntityForms get heze => _r.entity('star.HEZE');
+  EntityForms get hydor => _r.entity('star.HYDOR');
+  EntityForms get izar => _r.entity('star.IZAR');
+  EntityForms get kausAustralis => _r.entity('star.KAUS_AUSTRALIS');
+  EntityForms get kausBorealis => _r.entity('star.KAUS_BOREALIS');
+  EntityForms get kausMedia => _r.entity('star.KAUS_MEDIA');
+  EntityForms get kitalpha => _r.entity('star.KITALPHA');
+  EntityForms get kornephoros => _r.entity('star.KORNEPHOROS');
+  EntityForms get marfik => _r.entity('star.MARFIK');
+  EntityForms get markab => _r.entity('star.MARKAB');
+  EntityForms get meissa => _r.entity('star.MEISSA');
+  EntityForms get menkalinan => _r.entity('star.MENKALINAN');
+  EntityForms get menkar => _r.entity('star.MENKAR');
+  EntityForms get menkent => _r.entity('star.MENKENT');
+  EntityForms get merak => _r.entity('star.MERAK');
+  EntityForms get miaplacidus => _r.entity('star.MIAPLACIDUS');
+  EntityForms get mimosa => _r.entity('star.MIMOSA');
+  EntityForms get mintaka => _r.entity('star.MINTAKA');
+  EntityForms get mirach => _r.entity('star.MIRACH');
+  EntityForms get mirfak => _r.entity('star.MIRFAK');
+  EntityForms get mizar => _r.entity('star.MIZAR');
+  EntityForms get naos => _r.entity('star.NAOS');
+  EntityForms get nihal => _r.entity('star.NIHAL');
+  EntityForms get nunki => _r.entity('star.NUNKI');
+  EntityForms get peacock => _r.entity('star.PEACOCK');
+  EntityForms get phecda => _r.entity('star.PHECDA');
+  EntityForms get polaris => _r.entity('star.POLARIS');
+  EntityForms get pollux => _r.entity('star.POLLUX');
+  EntityForms get procyon => _r.entity('star.PROCYON');
+  EntityForms get rasalgethi => _r.entity('star.RASALGETHI');
+  EntityForms get rasalhague => _r.entity('star.RASALHAGUE');
+  EntityForms get regulus => _r.entity('star.REGULUS');
+  EntityForms get revati => _r.entity('star.REVATI');
+  EntityForms get rigel => _r.entity('star.RIGEL');
+  EntityForms get rigilKentaurus => _r.entity('star.RIGIL_KENTAURUS');
+  EntityForms get rotanev => _r.entity('star.ROTANEV');
+  EntityForms get sabik => _r.entity('star.SABIK');
+  EntityForms get sadalbari => _r.entity('star.SADALBARI');
+  EntityForms get sadalmelik => _r.entity('star.SADALMELIK');
+  EntityForms get sadalsuud => _r.entity('star.SADALSUUD');
+  EntityForms get sadr => _r.entity('star.SADR');
+  EntityForms get saiph => _r.entity('star.SAIPH');
+  EntityForms get sargas => _r.entity('star.SARGAS');
+  EntityForms get scheat => _r.entity('star.SCHEAT');
+  EntityForms get schedar => _r.entity('star.SCHEDAR');
+  EntityForms get seginus => _r.entity('star.SEGINUS');
+  EntityForms get sgrAStar => _r.entity('star.SGR_A_STAR');
+  EntityForms get shaula => _r.entity('star.SHAULA');
+  EntityForms get sheliak => _r.entity('star.SHELIAK');
+  EntityForms get sheratan => _r.entity('star.SHERATAN');
+  EntityForms get sirius => _r.entity('star.SIRIUS');
+  EntityForms get skat => _r.entity('star.SKAT');
+  EntityForms get spica => _r.entity('star.SPICA');
+  EntityForms get suhail => _r.entity('star.SUHAIL');
+  EntityForms get syrma => _r.entity('star.SYRMA');
+  EntityForms get thuban => _r.entity('star.THUBAN');
+  EntityForms get tureis => _r.entity('star.TUREIS');
+  EntityForms get unukalhai => _r.entity('star.UNUKALHAI');
+  EntityForms get vega => _r.entity('star.VEGA');
+  EntityForms get vindemiatrix => _r.entity('star.VINDEMIATRIX');
+  EntityForms get wezen => _r.entity('star.WEZEN');
+  EntityForms get yedPrior => _r.entity('star.YED_PRIOR');
+  EntityForms get zaniah => _r.entity('star.ZANIAH');
+  EntityForms get zosma => _r.entity('star.ZOSMA');
+  EntityForms get zubenelgenubi => _r.entity('star.ZUBENELGENUBI');
+  EntityForms get zubeneschamali => _r.entity('star.ZUBENESCHAMALI');
+}
+
+final class MessagesSdkEntityStarClass {
+  const MessagesSdkEntityStarClass(this._r);
+
+  final Renderer _r;
+
+  EntityForms get direction => _r.entity('star_class.DIRECTION');
+  EntityForms get radioSource => _r.entity('star_class.RADIO_SOURCE');
+  EntityForms get star => _r.entity('star_class.STAR');
+}
+
+final class MessagesSdkEntityState {
+  const MessagesSdkEntityState(this._r);
+
+  final Renderer _r;
+
+  EntityForms get combust => _r.entity('state.COMBUST');
+  EntityForms get eclipsed => _r.entity('state.ECLIPSED');
+  EntityForms get gandanta => _r.entity('state.GANDANTA');
+  EntityForms get maranaKarakaSthana => _r.entity('state.MARANA_KARAKA_STHANA');
+  EntityForms get mrityuBhaga => _r.entity('state.MRITYU_BHAGA');
+  EntityForms get planetaryWar => _r.entity('state.PLANETARY_WAR');
+  EntityForms get pushkaraBhaga => _r.entity('state.PUSHKARA_BHAGA');
+  EntityForms get pushkaraNavamsa => _r.entity('state.PUSHKARA_NAVAMSA');
+  EntityForms get retrograde => _r.entity('state.RETROGRADE');
+  EntityForms get sandhi => _r.entity('state.SANDHI');
+  EntityForms get stationary => _r.entity('state.STATIONARY');
+  EntityForms get vargottama => _r.entity('state.VARGOTTAMA');
 }
 
 final class MessagesSdkEntityTatwa {
@@ -3302,6 +4293,37 @@ final class MessagesSdkEntityTatwa {
   EntityForms get jala => _r.entity('tatwa.JALA');
   EntityForms get prithvi => _r.entity('tatwa.PRITHVI');
   EntityForms get vayu => _r.entity('tatwa.VAYU');
+}
+
+final class MessagesSdkEntityTibetanAnimal {
+  const MessagesSdkEntityTibetanAnimal(this._r);
+
+  final Renderer _r;
+
+  EntityForms get bird => _r.entity('tibetan_animal.BIRD');
+  EntityForms get dog => _r.entity('tibetan_animal.DOG');
+  EntityForms get dragon => _r.entity('tibetan_animal.DRAGON');
+  EntityForms get horse => _r.entity('tibetan_animal.HORSE');
+  EntityForms get monkey => _r.entity('tibetan_animal.MONKEY');
+  EntityForms get mouse => _r.entity('tibetan_animal.MOUSE');
+  EntityForms get ox => _r.entity('tibetan_animal.OX');
+  EntityForms get pig => _r.entity('tibetan_animal.PIG');
+  EntityForms get rabbit => _r.entity('tibetan_animal.RABBIT');
+  EntityForms get sheep => _r.entity('tibetan_animal.SHEEP');
+  EntityForms get snake => _r.entity('tibetan_animal.SNAKE');
+  EntityForms get tiger => _r.entity('tibetan_animal.TIGER');
+}
+
+final class MessagesSdkEntityTibetanElement {
+  const MessagesSdkEntityTibetanElement(this._r);
+
+  final Renderer _r;
+
+  EntityForms get earth => _r.entity('tibetan_element.EARTH');
+  EntityForms get fire => _r.entity('tibetan_element.FIRE');
+  EntityForms get iron => _r.entity('tibetan_element.IRON');
+  EntityForms get water => _r.entity('tibetan_element.WATER');
+  EntityForms get wood => _r.entity('tibetan_element.WOOD');
 }
 
 final class MessagesSdkEntityTithi {
@@ -3341,6 +4363,18 @@ final class MessagesSdkEntityTithi {
   EntityForms get shuklaTritiya => _r.entity('tithi.SHUKLA_TRITIYA');
 }
 
+final class MessagesSdkEntityTithiClass {
+  const MessagesSdkEntityTithiClass(this._r);
+
+  final Renderer _r;
+
+  EntityForms get bhadra => _r.entity('tithi_class.BHADRA');
+  EntityForms get jaya => _r.entity('tithi_class.JAYA');
+  EntityForms get nanda => _r.entity('tithi_class.NANDA');
+  EntityForms get purna => _r.entity('tithi_class.PURNA');
+  EntityForms get rikta => _r.entity('tithi_class.RIKTA');
+}
+
 final class MessagesSdkEntityTradition {
   const MessagesSdkEntityTradition(this._r);
 
@@ -3372,6 +4406,7 @@ final class MessagesSdkEntityVaiseshikamsa {
 
   EntityForms get bhedaka => _r.entity('vaiseshikamsa.BHEDAKA');
   EntityForms get brahmaloka => _r.entity('vaiseshikamsa.BRAHMALOKA');
+  EntityForms get chakrasimhasana => _r.entity('vaiseshikamsa.CHAKRASIMHASANA');
   EntityForms get chamara => _r.entity('vaiseshikamsa.CHAMARA');
   EntityForms get chandanavana => _r.entity('vaiseshikamsa.CHANDANAVANA');
   EntityForms get chatra => _r.entity('vaiseshikamsa.CHATRA');
@@ -3384,6 +4419,7 @@ final class MessagesSdkEntityVaiseshikamsa {
   EntityForms get kerala => _r.entity('vaiseshikamsa.KERALA');
   EntityForms get kimshuka => _r.entity('vaiseshikamsa.KIMSHUKA');
   EntityForms get kundala => _r.entity('vaiseshikamsa.KUNDALA');
+  EntityForms get kusuma => _r.entity('vaiseshikamsa.KUSUMA');
   EntityForms get mukuta => _r.entity('vaiseshikamsa.MUKUTA');
   EntityForms get nagapushpa => _r.entity('vaiseshikamsa.NAGAPUSHPA');
   EntityForms get paravata => _r.entity('vaiseshikamsa.PARAVATA');
@@ -3391,6 +4427,7 @@ final class MessagesSdkEntityVaiseshikamsa {
   EntityForms get purnachandra => _r.entity('vaiseshikamsa.PURNACHANDRA');
   EntityForms get shakravahana => _r.entity('vaiseshikamsa.SHAKRAVAHANA');
   EntityForms get shridhama => _r.entity('vaiseshikamsa.SHRIDHAMA');
+  EntityForms get shrivallabha => _r.entity('vaiseshikamsa.SHRIVALLABHA');
   EntityForms get simhasana => _r.entity('vaiseshikamsa.SIMHASANA');
   EntityForms get suryakanta => _r.entity('vaiseshikamsa.SURYAKANTA');
   EntityForms get uchchaishrava => _r.entity('vaiseshikamsa.UCHCHAISHRAVA');
@@ -3418,8 +4455,11 @@ final class MessagesSdkEntityVarga {
 
   final Renderer _r;
 
+  EntityForms get d1 => _r.entity('varga.D1');
   EntityForms get d10 => _r.entity('varga.D10');
+  EntityForms get d11 => _r.entity('varga.D11');
   EntityForms get d12 => _r.entity('varga.D12');
+  EntityForms get d150 => _r.entity('varga.D150');
   EntityForms get d16 => _r.entity('varga.D16');
   EntityForms get d2 => _r.entity('varga.D2');
   EntityForms get d20 => _r.entity('varga.D20');
@@ -3430,8 +4470,11 @@ final class MessagesSdkEntityVarga {
   EntityForms get d4 => _r.entity('varga.D4');
   EntityForms get d40 => _r.entity('varga.D40');
   EntityForms get d45 => _r.entity('varga.D45');
+  EntityForms get d5 => _r.entity('varga.D5');
+  EntityForms get d6 => _r.entity('varga.D6');
   EntityForms get d60 => _r.entity('varga.D60');
   EntityForms get d7 => _r.entity('varga.D7');
+  EntityForms get d8 => _r.entity('varga.D8');
   EntityForms get d9 => _r.entity('varga.D9');
 }
 
@@ -3477,6 +4520,7 @@ final class MessagesSdkEntityYearOffice {
 
   final Renderer _r;
 
+  EntityForms get arghadhipati => _r.entity('year_office.ARGHADHIPATI');
   EntityForms get dhanyadhipati => _r.entity('year_office.DHANYADHIPATI');
   EntityForms get mantri => _r.entity('year_office.MANTRI');
   EntityForms get meghadhipati => _r.entity('year_office.MEGHADHIPATI');
@@ -3484,6 +4528,7 @@ final class MessagesSdkEntityYearOffice {
   EntityForms get raja => _r.entity('year_office.RAJA');
   EntityForms get rasadhipati => _r.entity('year_office.RASADHIPATI');
   EntityForms get sasyadhipati => _r.entity('year_office.SASYADHIPATI');
+  EntityForms get senadhipati => _r.entity('year_office.SENADHIPATI');
 }
 
 final class MessagesSdkEntityYoga {
@@ -3548,6 +4593,7 @@ final class MessagesSdkEntity {
 
   MessagesSdkEntityAgniVasa get agniVasa => MessagesSdkEntityAgniVasa(_r);
   MessagesSdkEntityAshubhaYoga get ashubhaYoga => MessagesSdkEntityAshubhaYoga(_r);
+  MessagesSdkEntityAuspiciousness get auspiciousness => MessagesSdkEntityAuspiciousness(_r);
   MessagesSdkEntityAvasthaBaladi get avasthaBaladi => MessagesSdkEntityAvasthaBaladi(_r);
   MessagesSdkEntityAvasthaCheshta get avasthaCheshta => MessagesSdkEntityAvasthaCheshta(_r);
   MessagesSdkEntityAvasthaDeeptadi get avasthaDeeptadi => MessagesSdkEntityAvasthaDeeptadi(_r);
@@ -3556,12 +4602,20 @@ final class MessagesSdkEntity {
   MessagesSdkEntityAvasthaSayanadi get avasthaSayanadi => MessagesSdkEntityAvasthaSayanadi(_r);
   MessagesSdkEntityAyana get ayana => MessagesSdkEntityAyana(_r);
   MessagesSdkEntityAyanamsha get ayanamsha => MessagesSdkEntityAyanamsha(_r);
+  MessagesSdkEntityAyanamshaCategory get ayanamshaCategory => MessagesSdkEntityAyanamshaCategory(_r);
+  MessagesSdkEntityBalaScheme get balaScheme => MessagesSdkEntityBalaScheme(_r);
   MessagesSdkEntityBhadraVasa get bhadraVasa => MessagesSdkEntityBhadraVasa(_r);
   MessagesSdkEntityBlackoutKind get blackoutKind => MessagesSdkEntityBlackoutKind(_r);
+  MessagesSdkEntityBodyClass get bodyClass => MessagesSdkEntityBodyClass(_r);
+  MessagesSdkEntityCalendar get calendar => MessagesSdkEntityCalendar(_r);
   MessagesSdkEntityCharaKaraka get charaKaraka => MessagesSdkEntityCharaKaraka(_r);
+  MessagesSdkEntityChartKind get chartKind => MessagesSdkEntityChartKind(_r);
+  MessagesSdkEntityChartLayout get chartLayout => MessagesSdkEntityChartLayout(_r);
   MessagesSdkEntityChoghadiya get choghadiya => MessagesSdkEntityChoghadiya(_r);
+  MessagesSdkEntityDashaFamily get dashaFamily => MessagesSdkEntityDashaFamily(_r);
   MessagesSdkEntityDashaSystem get dashaSystem => MessagesSdkEntityDashaSystem(_r);
   MessagesSdkEntityDayMarker get dayMarker => MessagesSdkEntityDayMarker(_r);
+  MessagesSdkEntityDegeneracy get degeneracy => MessagesSdkEntityDegeneracy(_r);
   MessagesSdkEntityDeity get deity => MessagesSdkEntityDeity(_r);
   MessagesSdkEntityDignity get dignity => MessagesSdkEntityDignity(_r);
   MessagesSdkEntityDirection get direction => MessagesSdkEntityDirection(_r);
@@ -3570,13 +4624,18 @@ final class MessagesSdkEntity {
   MessagesSdkEntityFestival get festival => MessagesSdkEntityFestival(_r);
   MessagesSdkEntityFestivalKind get festivalKind => MessagesSdkEntityFestivalKind(_r);
   MessagesSdkEntityGana get gana => MessagesSdkEntityGana(_r);
+  MessagesSdkEntityGender get gender => MessagesSdkEntityGender(_r);
   MessagesSdkEntityGowri get gowri => MessagesSdkEntityGowri(_r);
   MessagesSdkEntityGraha get graha => MessagesSdkEntityGraha(_r);
+  MessagesSdkEntityGuna get guna => MessagesSdkEntityGuna(_r);
   MessagesSdkEntityHouseSystem get houseSystem => MessagesSdkEntityHouseSystem(_r);
   MessagesSdkEntityKaala get kaala => MessagesSdkEntityKaala(_r);
   MessagesSdkEntityKarana get karana => MessagesSdkEntityKarana(_r);
+  MessagesSdkEntityKoota get koota => MessagesSdkEntityKoota(_r);
   MessagesSdkEntityLunarEclipseKind get lunarEclipseKind => MessagesSdkEntityLunarEclipseKind(_r);
   MessagesSdkEntityMasa get masa => MessagesSdkEntityMasa(_r);
+  MessagesSdkEntityModality get modality => MessagesSdkEntityModality(_r);
+  MessagesSdkEntityMuhurtaNature get muhurtaNature => MessagesSdkEntityMuhurtaNature(_r);
   MessagesSdkEntityMuhurtaYoga get muhurtaYoga => MessagesSdkEntityMuhurtaYoga(_r);
   MessagesSdkEntityMundaneKind get mundaneKind => MessagesSdkEntityMundaneKind(_r);
   MessagesSdkEntityNadi get nadi => MessagesSdkEntityNadi(_r);
@@ -3584,18 +4643,28 @@ final class MessagesSdkEntity {
   MessagesSdkEntityNature get nature => MessagesSdkEntityNature(_r);
   MessagesSdkEntityPaksha get paksha => MessagesSdkEntityPaksha(_r);
   MessagesSdkEntityPanchaka get panchaka => MessagesSdkEntityPanchaka(_r);
+  MessagesSdkEntityParity get parity => MessagesSdkEntityParity(_r);
   MessagesSdkEntityPaya get paya => MessagesSdkEntityPaya(_r);
   MessagesSdkEntityPoint get point => MessagesSdkEntityPoint(_r);
+  MessagesSdkEntityPointFamily get pointFamily => MessagesSdkEntityPointFamily(_r);
   MessagesSdkEntityRashi get rashi => MessagesSdkEntityRashi(_r);
   MessagesSdkEntityRelationship get relationship => MessagesSdkEntityRelationship(_r);
+  MessagesSdkEntityRising get rising => MessagesSdkEntityRising(_r);
   MessagesSdkEntityRitu get ritu => MessagesSdkEntityRitu(_r);
   MessagesSdkEntityRulerDayRule get rulerDayRule => MessagesSdkEntityRulerDayRule(_r);
   MessagesSdkEntityRulerText get rulerText => MessagesSdkEntityRulerText(_r);
   MessagesSdkEntitySamvatsara get samvatsara => MessagesSdkEntitySamvatsara(_r);
+  MessagesSdkEntitySex get sex => MessagesSdkEntitySex(_r);
   MessagesSdkEntityShivaVasa get shivaVasa => MessagesSdkEntityShivaVasa(_r);
   MessagesSdkEntitySolarEclipseKind get solarEclipseKind => MessagesSdkEntitySolarEclipseKind(_r);
+  MessagesSdkEntityStar get star => MessagesSdkEntityStar(_r);
+  MessagesSdkEntityStarClass get starClass => MessagesSdkEntityStarClass(_r);
+  MessagesSdkEntityState get state => MessagesSdkEntityState(_r);
   MessagesSdkEntityTatwa get tatwa => MessagesSdkEntityTatwa(_r);
+  MessagesSdkEntityTibetanAnimal get tibetanAnimal => MessagesSdkEntityTibetanAnimal(_r);
+  MessagesSdkEntityTibetanElement get tibetanElement => MessagesSdkEntityTibetanElement(_r);
   MessagesSdkEntityTithi get tithi => MessagesSdkEntityTithi(_r);
+  MessagesSdkEntityTithiClass get tithiClass => MessagesSdkEntityTithiClass(_r);
   MessagesSdkEntityTradition get tradition => MessagesSdkEntityTradition(_r);
   MessagesSdkEntityTridosha get tridosha => MessagesSdkEntityTridosha(_r);
   MessagesSdkEntityVaiseshikamsa get vaiseshikamsa => MessagesSdkEntityVaiseshikamsa(_r);

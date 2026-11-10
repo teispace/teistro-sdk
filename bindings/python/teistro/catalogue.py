@@ -3299,13 +3299,19 @@ class ChartLayout(Catalogued):
     """The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise"""
 
     NEPALI_LOTUS = 3
-    """The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals"""
+    """The Nepali lotus: twelve equal petals inside a circle, houses fixed, house 1 the top petal, running anticlockwise"""
 
     SUDARSHAN_CHAKRA = 4
     """The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun"""
 
     WESTERN_WHEEL = 5
     """The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock"""
+
+    NEPALI_CIRCLE = 6
+    """The Nepali round chart: a circle cut on a square grid about a hub that names the chart, houses fixed, house 1 above the hub, running anticlockwise"""
+
+    NORTH_INDIAN_PETALS = 7
+    """North Indian drawn with petals: the same fixed houses and anchors, each kendra bounded by ogee curves, the diagonals meeting at a swastika hub"""
 
     UNKNOWN = -1
     """A member this build does not know: from a newer library, or
@@ -7296,6 +7302,8 @@ _KEYS: dict[str, dict[int, str]] = {
         3: "NEPALI_LOTUS",
         4: "SUDARSHAN_CHAKRA",
         5: "WESTERN_WHEEL",
+        6: "NEPALI_CIRCLE",
+        7: "NORTH_INDIAN_PETALS",
         -1: "UNKNOWN",
     },
     "Vaiseshikamsa": {

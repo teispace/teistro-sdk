@@ -9,12 +9,13 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+ * The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
  *
  * @param days How many civil days after the entry's, 0 for that day, at most `Dated::MOST_DAYS`. Null leaves the SDK's default.
  * @param nakshatra The nakshatra entered.
+ * @param reckoning Which day holds the entry: the civil day, midnight to midnight, when left out, or the day from sunrise to the next. Null leaves the SDK's default.
  */
-public record DatedRuleSunEnters(Integer days, com.teispace.teistro.Nakshatra nakshatra) implements RequestJson {
+public record DatedRuleSunEnters(Integer days, com.teispace.teistro.Nakshatra nakshatra, DayReckoning reckoning) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -36,7 +37,7 @@ public record DatedRuleSunEnters(Integer days, com.teispace.teistro.Nakshatra na
      * @param nakshatra The nakshatra entered.
      */
     public DatedRuleSunEnters(com.teispace.teistro.Nakshatra nakshatra) {
-        this(null, nakshatra);
+        this(null, nakshatra, null);
     }
 
     /**
@@ -53,6 +54,7 @@ public record DatedRuleSunEnters(Integer days, com.teispace.teistro.Nakshatra na
     public static final class Builder {
         private Integer days;
         private com.teispace.teistro.Nakshatra nakshatra;
+        private DayReckoning reckoning;
 
         private Builder() {}
 
@@ -79,13 +81,24 @@ public record DatedRuleSunEnters(Integer days, com.teispace.teistro.Nakshatra na
         }
 
         /**
+         * Sets {@code reckoning}.
+         *
+         * @param reckoning Which day holds the entry: the civil day, midnight to midnight, when left out, or the day from sunrise to the next. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder reckoning(DayReckoning reckoning) {
+            this.reckoning = reckoning;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public DatedRuleSunEnters build() {
-            return new DatedRuleSunEnters(days, nakshatra);
+            return new DatedRuleSunEnters(days, nakshatra, reckoning);
         }
     }
 
@@ -100,7 +113,8 @@ public record DatedRuleSunEnters(Integer days, com.teispace.teistro.Nakshatra na
         Map<String, Object> json = Read.object(raw, "DatedRuleSunEnters");
         return new DatedRuleSunEnters(
             Read.orNull(json.get("days"), present -> Read.int32(present, "DatedRuleSunEnters.days")),
-            Read.member(Read.required(json.get("nakshatra"), "DatedRuleSunEnters.nakshatra"), "DatedRuleSunEnters.nakshatra", com.teispace.teistro.Nakshatra::byKey));
+            Read.member(Read.required(json.get("nakshatra"), "DatedRuleSunEnters.nakshatra"), "DatedRuleSunEnters.nakshatra", com.teispace.teistro.Nakshatra::byKey),
+            Read.orNull(json.get("reckoning"), present -> Read.member(present, "DatedRuleSunEnters.reckoning", DayReckoning::byKey)));
     }
 
     @Override
@@ -110,6 +124,9 @@ public record DatedRuleSunEnters(Integer days, com.teispace.teistro.Nakshatra na
             json.put("days", days);
         }
         json.put("nakshatra", nakshatra.fullKey());
+        if (reckoning != null) {
+            json.put("reckoning", reckoning.toJson());
+        }
         return json;
     }
 }

@@ -2668,6 +2668,8 @@ export const ChartLayout = /* @__PURE__ */ Object.freeze({
   NepaliLotus: 'chart_layout.NEPALI_LOTUS',
   SudarshanChakra: 'chart_layout.SUDARSHAN_CHAKRA',
   WesternWheel: 'chart_layout.WESTERN_WHEEL',
+  NepaliCircle: 'chart_layout.NEPALI_CIRCLE',
+  NorthIndianPetals: 'chart_layout.NORTH_INDIAN_PETALS',
 });
 
 /**
@@ -2681,6 +2683,8 @@ export const ChartLayoutById = /* @__PURE__ */ new Map([
   [3, 'chart_layout.NEPALI_LOTUS'],
   [4, 'chart_layout.SUDARSHAN_CHAKRA'],
   [5, 'chart_layout.WESTERN_WHEEL'],
+  [6, 'chart_layout.NEPALI_CIRCLE'],
+  [7, 'chart_layout.NORTH_INDIAN_PETALS'],
 ]);
 
 /** Every Vaiseshikamsa by name. */

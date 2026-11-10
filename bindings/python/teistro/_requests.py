@@ -663,6 +663,7 @@ __all__ = [
     "DatedRuleCivilDate",
     "DatedRuleCivilWeekday",
     "DatedRuleEaster",
+    "DatedRuleNakshatraInMonth",
     "DatedRuleSunEnters",
     "Guard",
     "InAdhika",
@@ -747,6 +748,8 @@ __all__ = [
     "EkadashiKinds",
     "SkippedDay",
     "Computus",
+    "FestivalWhich",
+    "DayReckoning",
     "Predicate",
     "PredicateCase",
     "PredicateJoined",
@@ -758,7 +761,6 @@ __all__ = [
     "TaraReading",
     "GhataRow",
     "Portion",
-    "FestivalWhich",
     "FestivalCase",
     "DayEdge",
     "Tara",
@@ -3939,7 +3941,7 @@ class PublishedSet(TypedDict, total=False):
     """Its version; a correction is a higher one."""
 
 
-FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL'], Sequence[FestivalRuleItem]]"
+FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL', 'INDIA_KERALA'], Sequence[FestivalRuleItem]]"
 """The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key."""
 
 
@@ -5277,7 +5279,7 @@ class PublishedEntryWithdraw(TypedDict, total=False):
     """Where the publisher says it."""
 
 
-FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
+FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL', 'INDIA_KERALA'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
 """A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule."""
 
 
@@ -8344,13 +8346,13 @@ class DatedRule(TypedDict, total=False):
     """An observance on a date of a calendar."""
 
     civilDate: DatedRuleCivilDate
-    """A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+    """A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."""
 
     civilWeekday: DatedRuleCivilWeekday
-    """The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+    """The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."""
 
     easter: DatedRuleEaster
-    """The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+    """The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."""
 
     key: Required[str]
     """The rule's key in its pack, `"MAKARA_SANKRANTI"`."""
@@ -8358,11 +8360,14 @@ class DatedRule(TypedDict, total=False):
     meta: FestivalMeta
     """What the rule's festival is, as sourced (`03-design/festival-metadata.md`); a field no source gives stays unset, and a rule with none leaves it out."""
 
+    nakshatraInMonth: DatedRuleNakshatraInMonth
+    """The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."""
+
     source: Required[str]
     """Where the rule is stated."""
 
     sunEnters: DatedRuleSunEnters
-    """The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+    """The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."""
 
 
 class FestivalRule(TypedDict, total=False):
@@ -9224,7 +9229,7 @@ EkadashiVedha: TypeAlias = Literal['ARUNODAYA', 'SUNRISE']
 
 
 class DatedRuleCivilDate(TypedDict, total=False):
-    """A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+    """A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."""
 
     calendar: Required[Union[_catalogue.Calendar, str]]
     """The calendar the date is in."""
@@ -9240,7 +9245,7 @@ class DatedRuleCivilDate(TypedDict, total=False):
 
 
 class DatedRuleCivilWeekday(TypedDict, total=False):
-    """The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+    """The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."""
 
     calendar: Required[Union[_catalogue.Calendar, str]]
     """The calendar the month is in."""
@@ -9256,7 +9261,7 @@ class DatedRuleCivilWeekday(TypedDict, total=False):
 
 
 class DatedRuleEaster(TypedDict, total=False):
-    """The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+    """The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."""
 
     computus: Required[Computus]
     """Which churches' reckoning of Easter."""
@@ -9265,14 +9270,36 @@ class DatedRuleEaster(TypedDict, total=False):
     """The days from Easter Sunday, 0 for that day, at most `Dated::EASTER_DAYS` either way."""
 
 
+class DatedRuleNakshatraInMonth(TypedDict, total=False):
+    """The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."""
+
+    calendar: Required[Union[_catalogue.Calendar, str]]
+    """The calendar the month is in."""
+
+    days: int
+    """How many civil days after the star's day, before it when negative, 0 for that day; at most `Dated::MOST_DAYS` either way."""
+
+    month: Required[int]
+    """The month, 1 for the first."""
+
+    nakshatra: Required[Union[_catalogue.Nakshatra, str]]
+    """The nakshatra."""
+
+    twice: Required[FestivalWhich]
+    """Which of two occurrences in one month keeps the day."""
+
+
 class DatedRuleSunEnters(TypedDict, total=False):
-    """The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given."""
+    """The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given."""
 
     days: int
     """How many civil days after the entry's, 0 for that day, at most `Dated::MOST_DAYS`."""
 
     nakshatra: Required[Union[_catalogue.Nakshatra, str]]
     """The nakshatra entered."""
+
+    reckoning: DayReckoning
+    """Which day holds the entry: the civil day, midnight to midnight, when left out, or the day from sunrise to the next."""
 
 
 class Guard(TypedDict, total=False):
@@ -10087,6 +10114,22 @@ Computus: TypeAlias = Literal['GREGORIAN', 'JULIAN']
 """
 
 
+FestivalWhich: TypeAlias = Literal['EARLIER', 'LATER']
+"""One of the two days a tithi is judged between.
+
+`EARLIER`: The earlier.
+`LATER`: The later.
+"""
+
+
+DayReckoning: TypeAlias = Literal['CIVIL', 'SUNRISE']
+"""Which day holds an instant, for a rule kept on the day of the Sun's entry (`Dated::SunEnters`).
+
+`CIVIL`: The civil day, local midnight to the next: the day a patro prints the entry on (C696).
+`SUNRISE`: The day from its sunrise to the next: the day a Kerala almanac reckons the sankranti in, whose next day is Vishu (C1301).
+"""
+
+
 Predicate: TypeAlias = "Union[PredicateCase, PredicateJoined, PredicateStands, PredicateLasts, PredicateWholly, PredicateGreater, PredicateOnVara]"
 """Something a guard asks of the two days."""
 
@@ -10222,14 +10265,6 @@ class Portion(TypedDict, total=False):
 
     which: Required[int]
     """Which of them, 1 to `parts`."""
-
-
-FestivalWhich: TypeAlias = Literal['EARLIER', 'LATER']
-"""One of the two days a tithi is judged between.
-
-`EARLIER`: The earlier.
-`LATER`: The later.
-"""
 
 
 FestivalCase: TypeAlias = Literal['EARLIER_ONLY', 'LATER_ONLY', 'BOTH', 'NEITHER', 'EQUAL_PARTS', 'UNEQUAL_PARTS']

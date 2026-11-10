@@ -4266,7 +4266,7 @@ typedef enum ts_chart_layout {
      */
     TS_CHART_LAYOUT_EAST_INDIAN = 2,
     /**
-     * The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals
+     * The Nepali lotus: twelve equal petals inside a circle, houses fixed, house 1 the top petal, running anticlockwise
      */
     TS_CHART_LAYOUT_NEPALI_LOTUS = 3,
     /**
@@ -4277,6 +4277,14 @@ typedef enum ts_chart_layout {
      * The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock
      */
     TS_CHART_LAYOUT_WESTERN_WHEEL = 5,
+    /**
+     * The Nepali round chart: a circle cut on a square grid about a hub that names the chart, houses fixed, house 1 above the hub, running anticlockwise
+     */
+    TS_CHART_LAYOUT_NEPALI_CIRCLE = 6,
+    /**
+     * North Indian drawn with petals: the same fixed houses and anchors, each kendra bounded by ogee curves, the diagonals meeting at a swastika hub
+     */
+    TS_CHART_LAYOUT_NORTH_INDIAN_PETALS = 7,
     /** A member this build does not know: from a newer library or a runtime registration. */
     TS_CHART_LAYOUT_UNKNOWN = -1,
 } ts_chart_layout;
@@ -9992,14 +10000,19 @@ struct ts_panchanga_request {
      * days from that festival rule's day (§9.4), one with a `civilDate`
      * or a `civilWeekday` a rule kept on a date of a calendar, one with
      * a `sunEnters` a rule kept on the civil day the Sun enters a
-     * `nakshatra`, or `days` after it, one with an `easter` a rule kept
+     * `nakshatra`, or its sunrise day when `reckoning` is `SUNRISE`, or
+     * `days` after it, one with a `nakshatraInMonth` a rule kept on the
+     * day a `nakshatra` holds in a `month` of a `calendar`, the later or
+     * earlier of two as `twice` says, or `days` from it, one with an
+     * `easter` a rule kept
      * `days` from Easter Sunday by a `GREGORIAN` or `JULIAN` `computus`
      * (`festival-rule-language.md` §3.6), the rest festival rules,
      * each kept on a `tithi` or on a `nakshatra` in a `paksha` (§9.7). A
      * catalogue member may be written bare or in full. The answer comes
      * back in the `festivals` section, over this blob's own days founded
      * once, with the two days before and the two after, and as many more
-     * as a rule counts from another's day or the Sun's entry, founded
+     * as a rule counts from another's day, the Sun's entry or a star's
+     * day, and a month either side for a star in a month, founded
      * beside them
      * (`03-design/festival-rules.md` §7). Null for none, which costs
      * nothing. Refusals are named from the record every binding calls

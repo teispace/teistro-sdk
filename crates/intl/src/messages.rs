@@ -4086,6 +4086,10 @@ pub mod sdk {
         pub mod ashubha_yoga {
         }
 
+        /// The `auspiciousness` group.
+        pub mod auspiciousness {
+        }
+
         /// The `avastha_baladi` group.
         pub mod avastha_baladi {
         }
@@ -4118,6 +4122,14 @@ pub mod sdk {
         pub mod ayanamsha {
         }
 
+        /// The `ayanamsha_category` group.
+        pub mod ayanamsha_category {
+        }
+
+        /// The `bala_scheme` group.
+        pub mod bala_scheme {
+        }
+
         /// The `bhadra_vasa` group.
         pub mod bhadra_vasa {
         }
@@ -4126,12 +4138,32 @@ pub mod sdk {
         pub mod blackout_kind {
         }
 
+        /// The `body_class` group.
+        pub mod body_class {
+        }
+
+        /// The `calendar` group.
+        pub mod calendar {
+        }
+
         /// The `chara_karaka` group.
         pub mod chara_karaka {
         }
 
+        /// The `chart_kind` group.
+        pub mod chart_kind {
+        }
+
+        /// The `chart_layout` group.
+        pub mod chart_layout {
+        }
+
         /// The `choghadiya` group.
         pub mod choghadiya {
+        }
+
+        /// The `dasha_family` group.
+        pub mod dasha_family {
         }
 
         /// The `dasha_system` group.
@@ -4140,6 +4172,10 @@ pub mod sdk {
 
         /// The `day_marker` group.
         pub mod day_marker {
+        }
+
+        /// The `degeneracy` group.
+        pub mod degeneracy {
         }
 
         /// The `deity` group.
@@ -4174,12 +4210,20 @@ pub mod sdk {
         pub mod gana {
         }
 
+        /// The `gender` group.
+        pub mod gender {
+        }
+
         /// The `gowri` group.
         pub mod gowri {
         }
 
         /// The `graha` group.
         pub mod graha {
+        }
+
+        /// The `guna` group.
+        pub mod guna {
         }
 
         /// The `house_system` group.
@@ -4194,12 +4238,24 @@ pub mod sdk {
         pub mod karana {
         }
 
+        /// The `koota` group.
+        pub mod koota {
+        }
+
         /// The `lunar_eclipse_kind` group.
         pub mod lunar_eclipse_kind {
         }
 
         /// The `masa` group.
         pub mod masa {
+        }
+
+        /// The `modality` group.
+        pub mod modality {
+        }
+
+        /// The `muhurta_nature` group.
+        pub mod muhurta_nature {
         }
 
         /// The `muhurta_yoga` group.
@@ -4230,6 +4286,10 @@ pub mod sdk {
         pub mod panchaka {
         }
 
+        /// The `parity` group.
+        pub mod parity {
+        }
+
         /// The `paya` group.
         pub mod paya {
         }
@@ -4238,12 +4298,20 @@ pub mod sdk {
         pub mod point {
         }
 
+        /// The `point_family` group.
+        pub mod point_family {
+        }
+
         /// The `rashi` group.
         pub mod rashi {
         }
 
         /// The `relationship` group.
         pub mod relationship {
+        }
+
+        /// The `rising` group.
+        pub mod rising {
         }
 
         /// The `ritu` group.
@@ -4262,6 +4330,10 @@ pub mod sdk {
         pub mod samvatsara {
         }
 
+        /// The `sex` group.
+        pub mod sex {
+        }
+
         /// The `shiva_vasa` group.
         pub mod shiva_vasa {
         }
@@ -4270,12 +4342,36 @@ pub mod sdk {
         pub mod solar_eclipse_kind {
         }
 
+        /// The `star` group.
+        pub mod star {
+        }
+
+        /// The `star_class` group.
+        pub mod star_class {
+        }
+
+        /// The `state` group.
+        pub mod state {
+        }
+
         /// The `tatwa` group.
         pub mod tatwa {
         }
 
+        /// The `tibetan_animal` group.
+        pub mod tibetan_animal {
+        }
+
+        /// The `tibetan_element` group.
+        pub mod tibetan_element {
+        }
+
         /// The `tithi` group.
         pub mod tithi {
+        }
+
+        /// The `tithi_class` group.
+        pub mod tithi_class {
         }
 
         /// The `tradition` group.
