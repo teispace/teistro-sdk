@@ -266,7 +266,7 @@
     "KARTIKEYA": {
       "name": "कार्तिकेय",
       "prose": "कार्तिकेय",
-      "iast": "Kārttikeya"
+      "iast": "Kārtikeya"
     },
     "SHANI": {
       "name": "शनि",
@@ -2551,7 +2551,7 @@
     "SHATTRIMSHA_SAMA": {
       "name": "षट्त्रिंशत्सम दशा",
       "prose": "षट्त्रिंशत्सम दशा",
-      "iast": "Ṣaṭtriṁśatsama Daśā"
+      "iast": "Ṣaṭtriṃśatsama Daśā"
     },
     "TITHI_ASHTOTTARI": {
       "name": "तिथि अष्टोत्तरी दशा",
@@ -2566,7 +2566,7 @@
     "YOGA_VIMSHOTTARI": {
       "name": "योग विंशोत्तरी दशा",
       "prose": "योग विंशोत्तरी दशा",
-      "iast": "Yoga Viṁśottarī Daśā"
+      "iast": "Yoga Viṃśottarī Daśā"
     },
     "KARANA_CHATURASHITI": {
       "name": "करण चतुरशीतिसम दशा",
@@ -3179,7 +3179,7 @@
     "PUSHKARA_NAVAMSA": {
       "name": "पुष्करनवांश",
       "prose": "पुष्करनवांश",
-      "iast": "Puṣkara Navāṃśa"
+      "iast": "Puṣkaranavāṃśa"
     },
     "PUSHKARA_BHAGA": {
       "name": "पुष्करभाग",
@@ -3194,7 +3194,7 @@
     "MARANA_KARAKA_STHANA": {
       "name": "मरणकारकस्थान",
       "prose": "मरणकारकस्थान",
-      "iast": "Maraṇakāraka Sthāna"
+      "iast": "Maraṇakārakasthāna"
     },
     "ECLIPSED": {
       "name": "ग्रस्त",

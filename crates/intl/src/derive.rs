@@ -627,9 +627,10 @@ mod tests {
         // `ṁ` where IAST writes `ṃ`. 331 with five of the six ritus: the
         // source writes शरद without the virama the Sanskrit stem śarad
         // takes, which the shipped overrides restore. 343 with the year's
-        // rulers, each named in the texts' own Sanskrit.
+        // rulers, each named in the texts' own Sanskrit. 475 once every
+        // listed member was named (SR-12), each Sanskrit term with its IAST.
         assert_eq!(
-            derived.agreeing, 343,
+            derived.agreeing, 475,
             "the derived names that are letter for letter the sources' own iast form"
         );
     }
