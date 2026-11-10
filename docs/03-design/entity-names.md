@@ -344,6 +344,13 @@ old policy stand:
   A Western proper name is written in Devanagari by the one scheme below,
   and `sa-Latn` carries the English for it as an override (§3), so the
   derivation never turns a transliteration back into nonsense.
+- **What was checked.** The Lhosar animals and the outer grahas' usage
+  were read again in their sources for this pass. The other citations
+  below (Santhanam's BPHS, *Muhurta Chintamani*, Burgess's *Surya
+  Siddhanta*, Pingree and Morrissey, *Brihat Samhita* 13, the Hindi
+  terminology commission's lists) name where a term is found but were
+  not re-read page by page; a correction that finds a page saying
+  otherwise overturns the name.
 
 So the unnamed list in `xtask/src/intl.rs` is empty: all 348 members it
 held are named in `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN` and `sa-Deva`. A
