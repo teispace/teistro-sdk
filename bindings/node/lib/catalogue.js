@@ -302,6 +302,7 @@ export const Kind = /* @__PURE__ */ Object.freeze({
   MundaneKind: 'mundane_kind',
   VastuYoni: 'vastu_yoni',
   VyayaKind: 'vyaya_kind',
+  ChartFrame: 'chart_frame',
 });
 
 /**
@@ -393,6 +394,7 @@ export const KindById = /* @__PURE__ */ new Map([
   [130, 'mundane_kind'],
   [160, 'vastu_yoni'],
   [161, 'vyaya_kind'],
+  [162, 'chart_frame'],
 ]);
 
 /** Every Graha by name. */
@@ -3275,6 +3277,25 @@ export const VyayaKindById = /* @__PURE__ */ new Map([
   [0, 'vyaya_kind.PISHACHA'],
   [1, 'vyaya_kind.RAKSHASA'],
   [2, 'vyaya_kind.YAKSHA'],
+]);
+
+/** Every ChartFrame by name. */
+export const ChartFrame = /* @__PURE__ */ Object.freeze({
+  Lagna: 'chart_frame.LAGNA',
+  Moon: 'chart_frame.MOON',
+  Sun: 'chart_frame.SUN',
+  Bhava: 'chart_frame.BHAVA',
+});
+
+/**
+ * Every ChartFrame by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export const ChartFrameById = /* @__PURE__ */ new Map([
+  [0, 'chart_frame.LAGNA'],
+  [1, 'chart_frame.MOON'],
+  [2, 'chart_frame.SUN'],
+  [3, 'chart_frame.BHAVA'],
 ]);
 
 /** Every Status by name. */

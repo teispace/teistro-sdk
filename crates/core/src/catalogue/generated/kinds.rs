@@ -192,9 +192,11 @@ pub enum Kind {
     VastuYoni = 160,
     /// The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).
     VyayaKind = 161,
+    /// What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
+    ChartFrame = 162,
 }
 
-const BY_NAME: [(&str, Kind); 88] = [
+const BY_NAME: [(&str, Kind); 89] = [
     ("agni_vasa", Kind::AgniVasa),
     ("ashubha_yoga", Kind::AshubhaYoga),
     ("auspiciousness", Kind::Auspiciousness),
@@ -213,6 +215,7 @@ const BY_NAME: [(&str, Kind); 88] = [
     ("body_class", Kind::BodyClass),
     ("calendar", Kind::Calendar),
     ("chara_karaka", Kind::CharaKaraka),
+    ("chart_frame", Kind::ChartFrame),
     ("chart_kind", Kind::ChartKind),
     ("chart_layout", Kind::ChartLayout),
     ("choghadiya", Kind::Choghadiya),
@@ -287,7 +290,7 @@ const BY_NAME: [(&str, Kind); 88] = [
 
 impl Kind {
     /// Every kind, by number.
-    pub const ALL: [Kind; 88] = [
+    pub const ALL: [Kind; 89] = [
         Kind::Graha,
         Kind::Rashi,
         Kind::Nakshatra,
@@ -376,6 +379,7 @@ impl Kind {
         Kind::MundaneKind,
         Kind::VastuYoni,
         Kind::VyayaKind,
+        Kind::ChartFrame,
     ];
 
     /// The kind's name, the first segment of its members' full keys.
@@ -476,6 +480,7 @@ impl Kind {
             Kind::MundaneKind => "mundane_kind",
             Kind::VastuYoni => "vastu_yoni",
             Kind::VyayaKind => "vyaya_kind",
+            Kind::ChartFrame => "chart_frame",
         }
     }
 
@@ -590,6 +595,7 @@ impl Kind {
             Kind::MundaneKind => 13,
             Kind::VastuYoni => 8,
             Kind::VyayaKind => 3,
+            Kind::ChartFrame => 4,
         }
     }
 
@@ -705,6 +711,7 @@ impl Kind {
             130 => Some(Kind::MundaneKind),
             160 => Some(Kind::VastuYoni),
             161 => Some(Kind::VyayaKind),
+            162 => Some(Kind::ChartFrame),
             _ => None,
         }
     }

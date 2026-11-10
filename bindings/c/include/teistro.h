@@ -543,6 +543,10 @@ typedef enum ts_kind {
      * The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).
      */
     TS_KIND_VYAYA_KIND = 161,
+    /**
+     * What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
+     */
+    TS_KIND_CHART_FRAME = 162,
 } ts_kind;
 
 /**
@@ -5134,6 +5138,30 @@ typedef enum ts_vyaya_kind {
 } ts_vyaya_kind;
 
 /**
+ * What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_FRAME << 16) | member`.
+ */
+typedef enum ts_chart_frame {
+    /**
+     * The lagna's sign as house 1: the janma kundali
+     */
+    TS_CHART_FRAME_LAGNA = 0,
+    /**
+     * The Moon's sign as house 1, the grahas in their signs: the rashi (chandra) kundali
+     */
+    TS_CHART_FRAME_MOON = 1,
+    /**
+     * The Sun's sign as house 1, the grahas in their signs: the surya kundali
+     */
+    TS_CHART_FRAME_SUN = 2,
+    /**
+     * The bhava chalit: each house keeps the sign the lagna gives it, and each graha stands in the bhava the chart's cusps put it in
+     */
+    TS_CHART_FRAME_BHAVA = 3,
+    /** A member this build does not know: from a newer library or a runtime registration. */
+    TS_CHART_FRAME_UNKNOWN = -1,
+} ts_chart_frame;
+
+/**
  * The status of a call, with the code it has at the C boundary.
  */
 typedef enum ts_status {
@@ -8983,9 +9011,11 @@ struct ts_chart_request {
     size_t varga_count;
     /**
      * Which charts to draw, and in which layouts, in the order they should
-     * be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
-     * catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
-     * count of zero for none.
+     * be answered in: each `layout_id << 16 | from_id << 8 | varga_id`, a
+     * `chart_layout` catalogue id, a `chart_frame` id (`LAGNA`, 0, counts
+     * from the lagna, so a pair packed before frames existed reads as it
+     * did) and a `Varga` id, `D1` for the founded chart. Null with a count
+     * of zero for none.
      *
      * Packed, as `sections` is a bit set, so the request carries one array
      * and one count rather than two arrays that must agree; every ergonomic

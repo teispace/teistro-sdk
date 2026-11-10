@@ -948,9 +948,11 @@ final class ChartRequestStruct extends ffi.Struct {
   external int vargaCount;
 
   /// Which charts to draw, and in which layouts, in the order they should
-  /// be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
-  /// catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
-  /// count of zero for none.
+  /// be answered in: each `layout_id << 16 | from_id << 8 | varga_id`, a
+  /// `chart_layout` catalogue id, a `chart_frame` id (`LAGNA`, 0, counts
+  /// from the lagna, so a pair packed before frames existed reads as it
+  /// did) and a `Varga` id, `D1` for the founded chart. Null with a count
+  /// of zero for none.
   ///
   /// Packed, as `sections` is a bit set, so the request carries one array
   /// and one count rather than two arrays that must agree; every ergonomic
@@ -4837,9 +4839,11 @@ final class ChartRequest {
   final List<Varga> vargas;
 
   /// Which charts to draw, and in which layouts, in the order they should
-  /// be answered in: each `layout_id << 16 | varga_id`, a `chart_layout`
-  /// catalogue id and a `Varga` id, `D1` for the founded chart. Null with a
-  /// count of zero for none.
+  /// be answered in: each `layout_id << 16 | from_id << 8 | varga_id`, a
+  /// `chart_layout` catalogue id, a `chart_frame` id (`LAGNA`, 0, counts
+  /// from the lagna, so a pair packed before frames existed reads as it
+  /// did) and a `Varga` id, `D1` for the founded chart. Null with a count
+  /// of zero for none.
   ///
   /// Packed, as `sections` is a bit set, so the request carries one array
   /// and one count rather than two arrays that must agree; every ergonomic

@@ -2260,9 +2260,10 @@ export interface DossierRequest {
 }
 
 /**
- * A drawing: a layout of a divisional chart.
+ * A drawing: a layout of a divisional chart, its houses counted from the lagna unless `countsFrom` names the Moon, the Sun or the bhavas.
  */
 export interface DrawingAsked {
+  readonly countsFrom?: Member<catalogue.ChartFrame>;
   readonly layout: Member<catalogue.ChartLayout> | (string & {});
   readonly varga: Member<catalogue.Varga>;
 }

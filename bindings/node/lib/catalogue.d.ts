@@ -302,7 +302,8 @@ export type Kind =
   | 'tridosha'
   | 'mundane_kind'
   | 'vastu_yoni'
-  | 'vyaya_kind';
+  | 'vyaya_kind'
+  | 'chart_frame';
 
 /** Every Kind by name; the values are the strings the union accepts. */
 export declare const Kind: {
@@ -642,6 +643,10 @@ export declare const Kind: {
    * The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).
    */
   readonly VyayaKind: 'vyaya_kind';
+  /**
+   * What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
+   */
+  readonly ChartFrame: 'chart_frame';
 };
 
 /**
@@ -6720,6 +6725,37 @@ export declare const VyayaKind: {
  * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
  */
 export declare const VyayaKindById: ReadonlyMap<number, VyayaKind>;
+
+/**
+ * What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_FRAME << 16) | member`.
+ */
+export type ChartFrame = 'chart_frame.LAGNA' | 'chart_frame.MOON' | 'chart_frame.SUN' | 'chart_frame.BHAVA' | 'unknown';
+
+/** Every ChartFrame by name; the values are the strings the union accepts. */
+export declare const ChartFrame: {
+  /**
+   * The lagna's sign as house 1: the janma kundali
+   */
+  readonly Lagna: 'chart_frame.LAGNA';
+  /**
+   * The Moon's sign as house 1, the grahas in their signs: the rashi (chandra) kundali
+   */
+  readonly Moon: 'chart_frame.MOON';
+  /**
+   * The Sun's sign as house 1, the grahas in their signs: the surya kundali
+   */
+  readonly Sun: 'chart_frame.SUN';
+  /**
+   * The bhava chalit: each house keeps the sign the lagna gives it, and each graha stands in the bhava the chart's cusps put it in
+   */
+  readonly Bhava: 'chart_frame.BHAVA';
+};
+
+/**
+ * Every ChartFrame by the id the boundary carries, so a column of ids or a
+ * computed index reads as a member: `RashiById.get(Math.floor(lon / 30))`.
+ */
+export declare const ChartFrameById: ReadonlyMap<number, ChartFrame>;
 
 /**
  * The status of a call, with the code it has at the C boundary.

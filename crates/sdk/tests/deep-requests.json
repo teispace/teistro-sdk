@@ -4172,6 +4172,7 @@
       },
       "drawings": [
         {
+          "countsFrom": "chart_frame.MOON",
           "layout": "chart_layout.SOUTH_INDIAN",
           "varga": "varga.D2"
         }

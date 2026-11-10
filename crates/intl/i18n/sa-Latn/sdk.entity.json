@@ -5248,6 +5248,28 @@
       "prose": "Dalayuktottarabhāratīyaśailī"
     }
   },
+  "chart_frame": {
+    "LAGNA": {
+      "short": "La",
+      "name": "Lagnakuṇḍalī",
+      "prose": "Lagnakuṇḍalī"
+    },
+    "MOON": {
+      "short": "Caṃ",
+      "name": "Candrakuṇḍalī",
+      "prose": "Candrakuṇḍalī"
+    },
+    "SUN": {
+      "short": "Sū",
+      "name": "Sūryakuṇḍalī",
+      "prose": "Sūryakuṇḍalī"
+    },
+    "BHAVA": {
+      "short": "Bhā",
+      "name": "Bhāvacalitakuṇḍalī",
+      "prose": "Bhāvacalitakuṇḍalī"
+    }
+  },
   "dasha_family": {
     "UDU": {
       "name": "Uḍu",

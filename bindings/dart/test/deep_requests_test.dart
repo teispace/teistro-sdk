@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 532 of the examples' 547 members.
+/// The cases compare 533 of the examples' 548 members.
 library;
 
 import 'dart:convert';
@@ -2892,7 +2892,7 @@ void main() {
       'chart.found',
       path: [],
       dropping: [['antiscia'], ['considerations'], ['dignities'], ['dossier'], ['fortitudes', 'almuten'], ['fortitudes', 'dignities'], ['fortitudes', 'rules'], ['fortitudes', 'scores'], ['harmonic'], ['hits'], ['lalkitab'], ['lots'], ['masaPravesha'], ['matching'], ['perfection'], ['prashna'], ['progressions'], ['rectification'], ['rules'], ['sarvatobhadra', 'motion'], ['synastry', 'antiscia'], ['synastry', 'orbs'], ['synastry', 'partner'], ['varsha'], ['westernAspects'], ['westernConfigurations', 'orbs']],
-      members: 6,
+      members: 7,
       written: ChartFoundRequest(
         altitudeM: 1.5,
         ashtakavarga: true,
@@ -2901,7 +2901,13 @@ void main() {
         bhavaBala: true,
         dashaPhala: true,
         dashas: [DashaSystem.ashtottari],
-        drawings: [DrawingAsked(layout: ChartLayout.southIndian, varga: Varga.d2)],
+        drawings: [
+          DrawingAsked(
+            countsFrom: ChartFrame.moon,
+            layout: ChartLayout.southIndian,
+            varga: Varga.d2,
+          ),
+        ],
         fortitudes: FortitudeRequest(),
         gochar: GocharRequest(ashtakavarga: true, from: GocharFrom.lagna, instants: [1.5]),
         houses: true,

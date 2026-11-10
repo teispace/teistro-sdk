@@ -342,7 +342,9 @@ enum Kind {
   /// The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's.
   vastuYoni(160, 'vastu_yoni'),
   /// The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).
-  vyayaKind(161, 'vyaya_kind');
+  vyayaKind(161, 'vyaya_kind'),
+  /// What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
+  chartFrame(162, 'chart_frame');
 
   const Kind(this.id, this.key);
 
@@ -5429,6 +5431,51 @@ enum VyayaKind implements KeyOf<VyayaKind> {
 
   /// The member with a key, or `null` for one this build does not know.
   static VyayaKind? byKey(String key) {
+    final wanted = key.contains('.') ? key.split('.').last : key;
+    for (final member in values) {
+      if (member.key == wanted) return member;
+    }
+    return null;
+  }
+}
+
+/// What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_FRAME << 16) | member`.
+enum ChartFrame implements KeyOf<ChartFrame> {
+  /// The lagna's sign as house 1: the janma kundali
+  lagna(0, 'LAGNA'),
+  /// The Moon's sign as house 1, the grahas in their signs: the rashi (chandra) kundali
+  moon(1, 'MOON'),
+  /// The Sun's sign as house 1, the grahas in their signs: the surya kundali
+  sun(2, 'SUN'),
+  /// The bhava chalit: each house keeps the sign the lagna gives it, and each graha stands in the bhava the chart's cusps put it in
+  bhava(3, 'BHAVA'),
+
+  /// A member this build does not know: from a newer library, or
+  /// registered at run time.
+  unknown(-1, 'UNKNOWN');
+
+  const ChartFrame(this.id, this.key);
+
+  /// The id the C boundary carries.
+  final int id;
+
+  /// The key every pack, fixture and serialised result spells it with.
+  final String key;
+
+  /// The full key, as every pack and fixture spells it.
+  @override
+  String get fullKey => 'chart_frame.$key';
+
+  /// A member a context registered under `key`, bare (`ACME_KERALA`).
+  static Registered<ChartFrame> registered(String key) => Registered._('chart_frame.$key');
+
+  /// The member with an id; one this build does not know is
+  /// [unknown], so a `switch` over the result stays exhaustive.
+  static ChartFrame byId(int id) =>
+      values.firstWhere((member) => member.id == id, orElse: () => ChartFrame.unknown);
+
+  /// The member with a key, or `null` for one this build does not know.
+  static ChartFrame? byKey(String key) {
     final wanted = key.contains('.') ? key.split('.').last : key;
     for (final member in values) {
       if (member.key == wanted) return member;

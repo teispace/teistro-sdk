@@ -9,12 +9,13 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * A drawing: a layout of a divisional chart.
+ * A drawing: a layout of a divisional chart, its houses counted from the lagna unless `countsFrom` names the Moon, the Sun or the bhavas.
  *
+ * @param countsFrom The {@code countsFrom} field. Null leaves the SDK's default.
  * @param layout The {@code layout} field.
  * @param varga The {@code varga} field.
  */
-public record DrawingAsked(Keyed<com.teispace.teistro.ChartLayout> layout, com.teispace.teistro.Varga varga) implements RequestJson {
+public record DrawingAsked(com.teispace.teistro.ChartFrame countsFrom, Keyed<com.teispace.teistro.ChartLayout> layout, com.teispace.teistro.Varga varga) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -28,6 +29,79 @@ public record DrawingAsked(Keyed<com.teispace.teistro.ChartLayout> layout, com.t
     }
 
     /**
+     * The required fields alone: every optional field is left out, and the SDK's
+     * default stands.
+     *
+     * @param layout The {@code layout} field.
+     * @param varga The {@code varga} field.
+     */
+    public DrawingAsked(Keyed<com.teispace.teistro.ChartLayout> layout, com.teispace.teistro.Varga varga) {
+        this(null, layout, varga);
+    }
+
+    /**
+     * A builder, every field unset: an unset optional field is left out, and the
+     * SDK's default stands.
+     *
+     * @return the builder
+     */
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    /** Builds a {@link DrawingAsked} a field at a time. */
+    public static final class Builder {
+        private com.teispace.teistro.ChartFrame countsFrom;
+        private Keyed<com.teispace.teistro.ChartLayout> layout;
+        private com.teispace.teistro.Varga varga;
+
+        private Builder() {}
+
+        /**
+         * Sets {@code countsFrom}.
+         *
+         * @param countsFrom The {@code countsFrom} field. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder countsFrom(com.teispace.teistro.ChartFrame countsFrom) {
+            this.countsFrom = countsFrom;
+            return this;
+        }
+
+        /**
+         * Sets {@code layout}.
+         *
+         * @param layout The {@code layout} field.
+         * @return this builder
+         */
+        public Builder layout(Keyed<com.teispace.teistro.ChartLayout> layout) {
+            this.layout = layout;
+            return this;
+        }
+
+        /**
+         * Sets {@code varga}.
+         *
+         * @param varga The {@code varga} field.
+         * @return this builder
+         */
+        public Builder varga(com.teispace.teistro.Varga varga) {
+            this.varga = varga;
+            return this;
+        }
+
+        /**
+         * The record.
+         *
+         * @return the record
+         * @throws NullPointerException naming a required field left unset
+         */
+        public DrawingAsked build() {
+            return new DrawingAsked(countsFrom, layout, varga);
+        }
+    }
+
+    /**
      * A {@code DrawingAsked} from its JSON, as {@code Json.read} answers it.
      *
      * @param raw the JSON value
@@ -37,6 +111,7 @@ public record DrawingAsked(Keyed<com.teispace.teistro.ChartLayout> layout, com.t
     public static DrawingAsked of(Object raw) {
         Map<String, Object> json = Read.object(raw, "DrawingAsked");
         return new DrawingAsked(
+            Read.orNull(json.get("countsFrom"), present -> Read.member(present, "DrawingAsked.countsFrom", com.teispace.teistro.ChartFrame::byKey)),
             Keyed.of(Read.required(json.get("layout"), "DrawingAsked.layout"), "DrawingAsked.layout", com.teispace.teistro.ChartLayout::byKey),
             Read.member(Read.required(json.get("varga"), "DrawingAsked.varga"), "DrawingAsked.varga", com.teispace.teistro.Varga::byKey));
     }
@@ -44,6 +119,9 @@ public record DrawingAsked(Keyed<com.teispace.teistro.ChartLayout> layout, com.t
     @Override
     public Object toJson() {
         Map<String, Object> json = new LinkedHashMap<>();
+        if (countsFrom != null) {
+            json.put("countsFrom", countsFrom.fullKey());
+        }
         json.put("layout", layout.toJson());
         json.put("varga", varga.fullKey());
         return json;

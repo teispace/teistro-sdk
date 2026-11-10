@@ -4879,6 +4879,10 @@ pub mod sdk {
         pub mod chara_karaka {
         }
 
+        /// The `chart_frame` group.
+        pub mod chart_frame {
+        }
+
         /// The `chart_kind` group.
         pub mod chart_kind {
         }

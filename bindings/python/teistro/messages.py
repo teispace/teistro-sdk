@@ -259,6 +259,15 @@ class CharaKarakaKey(enum.StrEnum):
     PITRIKARAKA = "chara_karaka.PITRIKARAKA"
 
 
+class ChartFrameKey(enum.StrEnum):
+    """A `chart_frame` as a message names it: the full catalogue key."""
+
+    LAGNA = "chart_frame.LAGNA"
+    MOON = "chart_frame.MOON"
+    SUN = "chart_frame.SUN"
+    BHAVA = "chart_frame.BHAVA"
+
+
 class ChartKindKey(enum.StrEnum):
     """A `chart_kind` as a message names it: the full catalogue key."""
 
@@ -2956,6 +2965,11 @@ class MessagesSdkEntity:
     def chara_karaka(self) -> MessagesSdkEntityCharaKaraka:
         """The messages under `chara_karaka`."""
         return MessagesSdkEntityCharaKaraka(self._r)
+
+    @property
+    def chart_frame(self) -> MessagesSdkEntityChartFrame:
+        """The messages under `chart_frame`."""
+        return MessagesSdkEntityChartFrame(self._r)
 
     @property
     def chart_kind(self) -> MessagesSdkEntityChartKind:
@@ -10117,6 +10131,34 @@ class MessagesSdkEntityChartKind:
     def transit(self) -> EntityForms:
         """The forms of `chart_kind.TRANSIT` in the current locale."""
         return self._r.entity("chart_kind.TRANSIT")
+
+
+class MessagesSdkEntityChartFrame:
+    """The messages under `MessagesSdkEntityChartFrame`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    @property
+    def bhava(self) -> EntityForms:
+        """The forms of `chart_frame.BHAVA` in the current locale."""
+        return self._r.entity("chart_frame.BHAVA")
+
+    @property
+    def lagna(self) -> EntityForms:
+        """The forms of `chart_frame.LAGNA` in the current locale."""
+        return self._r.entity("chart_frame.LAGNA")
+
+    @property
+    def moon(self) -> EntityForms:
+        """The forms of `chart_frame.MOON` in the current locale."""
+        return self._r.entity("chart_frame.MOON")
+
+    @property
+    def sun(self) -> EntityForms:
+        """The forms of `chart_frame.SUN` in the current locale."""
+        return self._r.entity("chart_frame.SUN")
 
 
 class MessagesSdkEntityCharaKaraka:

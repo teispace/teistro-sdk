@@ -748,6 +748,12 @@
           "value": 161,
           "doc": "The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).",
           "key": "vyaya_kind"
+        },
+        {
+          "name": "ChartFrame",
+          "value": 162,
+          "doc": "What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.",
+          "key": "chart_frame"
         }
       ],
       "source": "catalogue/catalogue.json"
@@ -7383,6 +7389,39 @@
       "source": "catalogue/catalogue.json"
     },
     {
+      "name": "ChartFrame",
+      "doc": "What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_FRAME << 16) | member`.",
+      "repr": "u16",
+      "kind": "chart_frame",
+      "values": [
+        {
+          "name": "Lagna",
+          "value": 0,
+          "doc": "The lagna's sign as house 1: the janma kundali",
+          "key": "LAGNA"
+        },
+        {
+          "name": "Moon",
+          "value": 1,
+          "doc": "The Moon's sign as house 1, the grahas in their signs: the rashi (chandra) kundali",
+          "key": "MOON"
+        },
+        {
+          "name": "Sun",
+          "value": 2,
+          "doc": "The Sun's sign as house 1, the grahas in their signs: the surya kundali",
+          "key": "SUN"
+        },
+        {
+          "name": "Bhava",
+          "value": 3,
+          "doc": "The bhava chalit: each house keeps the sign the lagna gives it, and each graha stands in the bhava the chart's cusps put it in",
+          "key": "BHAVA"
+        }
+      ],
+      "source": "catalogue/catalogue.json"
+    },
+    {
       "name": "Status",
       "doc": "The status of a call, with the code it has at the C boundary.",
       "repr": "i32",
@@ -13735,7 +13774,7 @@
             },
             "mutable": false
           },
-          "doc": "Which charts to draw, and in which layouts, in the order they should\nbe answered in: each `layout_id << 16 | varga_id`, a `chart_layout`\ncatalogue id and a `Varga` id, `D1` for the founded chart. Null with a\ncount of zero for none.\n\nPacked, as `sections` is a bit set, so the request carries one array\nand one count rather than two arrays that must agree; every ergonomic\nlayer takes named pairs and writes the bits (`03-design/chart-geometry.md`).",
+          "doc": "Which charts to draw, and in which layouts, in the order they should\nbe answered in: each `layout_id << 16 | from_id << 8 | varga_id`, a\n`chart_layout` catalogue id, a `chart_frame` id (`LAGNA`, 0, counts\nfrom the lagna, so a pair packed before frames existed reads as it\ndid) and a `Varga` id, `D1` for the founded chart. Null with a count\nof zero for none.\n\nPacked, as `sections` is a bit set, so the request carries one array\nand one count rather than two arrays that must agree; every ergonomic\nlayer takes named pairs and writes the bits (`03-design/chart-geometry.md`).",
           "meta": {
             "len": "drawing_count"
           }

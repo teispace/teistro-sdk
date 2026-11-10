@@ -23630,6 +23630,84 @@
           "unverified": []
         }
       ]
+    },
+    {
+      "kind": "chart_frame",
+      "number": 162,
+      "version": 1,
+      "doc": "What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.",
+      "types": {},
+      "attributes": {},
+      "members": [
+        {
+          "key": "LAGNA",
+          "id": 0,
+          "doc": "The lagna's sign as house 1: the janma kundali",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "printed Nepali janma patrikas",
+              "ref": "the ल chart of a second printer's form and the जन्मकुण्डली of the first, read 2026-11-10"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "MOON",
+          "id": 1,
+          "doc": "The Moon's sign as house 1, the grahas in their signs: the rashi (chandra) kundali",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "printed Nepali janma patrikas",
+              "ref": "the रा chart of a second printer's form and the राशिकुण्डली of the first, read 2026-11-10: house 1 holds the Moon's sign, the houses follow in order"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "SUN",
+          "id": 2,
+          "doc": "The Sun's sign as house 1, the grahas in their signs: the surya kundali",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "BPHS",
+              "ref": "the Sudarshana chakra's third ring, the houses counted from the Sun"
+            }
+          ],
+          "mark": "T",
+          "unverified": []
+        },
+        {
+          "key": "BHAVA",
+          "id": 3,
+          "doc": "The bhava chalit: each house keeps the sign the lagna gives it, and each graha stands in the bhava the chart's cusps put it in",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "printed Nepali janma patrikas",
+              "ref": "the भा chart of a second printer's form and the चलितकुण्डली of the first, read 2026-11-10: the house numbers as the ल chart's, the grahas moved by bhava"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        }
+      ]
     }
   ],
   "open_kinds": [

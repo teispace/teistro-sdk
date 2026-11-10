@@ -2666,7 +2666,9 @@ class DossierRequest(TypedDict, total=False):
 
 
 class DrawingAsked(TypedDict, total=False):
-    """A drawing: a layout of a divisional chart."""
+    """A drawing: a layout of a divisional chart, its houses counted from the lagna unless `countsFrom` names the Moon, the Sun or the bhavas."""
+
+    countsFrom: Union[_catalogue.ChartFrame, str]
 
     layout: Required[Union[_catalogue.ChartLayout, str]]
 

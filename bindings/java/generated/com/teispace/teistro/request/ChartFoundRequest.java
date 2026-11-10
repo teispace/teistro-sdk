@@ -22,7 +22,7 @@ import java.util.Objects;
  * @param dashas The {@code dashas} field. Null leaves the SDK's default.
  * @param dignities How a chart's dignities are read: the sect's rule, the terms and triplicities, and the scores. Null leaves the SDK's default.
  * @param dossier What a dossier writes and how. Null leaves the SDK's default.
- * @param drawings A drawing: a layout of a divisional chart. Null leaves the SDK's default.
+ * @param drawings A drawing: a layout of a divisional chart, its houses counted from the lagna unless `countsFrom` names the Moon, the Sun or the bhavas. Null leaves the SDK's default.
  * @param fortitudes How a chart's fortitudes are read: its essential dignities' request, and the accidental table's rules and scores. Null leaves the SDK's default.
  * @param gochar `GocharRequest` as the bindings write it. Null leaves the SDK's default.
  * @param harmonic What a chart's harmonic is asked: which, and the orb of a meeting. Null leaves the SDK's default.
@@ -289,7 +289,7 @@ public record ChartFoundRequest(Double altitudeM, AntisciaRequest antiscia, Bool
         /**
          * Sets {@code drawings}.
          *
-         * @param drawings A drawing: a layout of a divisional chart. Null leaves the SDK's default.
+         * @param drawings A drawing: a layout of a divisional chart, its houses counted from the lagna unless `countsFrom` names the Moon, the Sun or the bhavas. Null leaves the SDK's default.
          * @return this builder
          */
         public Builder drawings(List<DrawingAsked> drawings) {
