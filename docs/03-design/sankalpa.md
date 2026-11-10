@@ -1,7 +1,7 @@
 # The time a sankalpa recites
 
-Status: `implemented` (the structured parts); the rendered text waits on a
-vetted Sanskrit template (§5). P2-3 of the consumer brief.
+Status: `implemented`: the structured parts, and the words by a tradition's
+template (§5, SR-29). P2-3 of the consumer brief.
 
 A sankalpa is the resolve spoken before a rite. Its first half places the
 rite in time: the year of the sixty-year cycle, the half of the year, the
@@ -107,20 +107,68 @@ is `CAPABILITY`. An instant that falls in no day's window (a polar day
 the policy leaves undefined, so the day before has no next sunrise) is
 `OUT_OF_RANGE`: a sankalpa that cannot say which day it is says nothing.
 
-## 5. Not yet: the words
+## 5. The words: a tradition's template (SR-29)
 
-The brief asks for the rendered text too, and for which tradition's
-template made it. The place formula and the Sanskrit inflections (the
-locative *samvatsare*, *ayane*, *ritau*, *māse*, *pakṣe*, *tithau*,
-*vāsare*, the nakshatra and yoga names inflected, Nepal's *Himavatkhande*
-form) are template data in the `sa` locale pack, and that pack's messages
-are not written yet (`locale-coverage-measured.md`: `sa-Deva` names 332
-members and translates no message). They wait on a vetted source or a
-reviewer who reads Sanskrit, never on a machine stub. When they come, the
-template is a message whose arguments are these parts, so nothing here
-changes. Which tradition's template is the default is decided with the
-template, because the source that vets the words is the one that gives a
-tradition's form; nothing is chosen ahead of it.
+The words are a message in the locale packs, one a tradition, filled with
+the parts above and the slots the caller gives. A tradition is its message
+key; `sdk.almanac().sankalpa_words(&sankalpa, &asked, tradition, locale)`
+answers `SankalpaWords { tradition, locale, params, text }`, and the
+answer names its tradition. A consumer registers another tradition by
+loading a pack that carries its own key and asking by that key: the
+parameters are the ones `sankalpa_params` lists, so a template may use
+any of them and leave the rest. A key no loaded locale carries is refused
+`UNSUPPORTED` on `tradition`.
+
+**The slots** (`SankalpaFor`): `performer` (the name with its title, in
+the nominative, as spoken before *aham*), `gotra` (the stem), `purpose`
+(the rite in the accusative), and optionally `river`, `kshetra` and
+`pitris` (`father`, `grandfather`, `greatGrandfather`, as stems). A slot
+left blank is refused, named under `sankalpa`; a slot left out is not
+spoken.
+
+**The shipped tradition, `sdk.sankalpa.himavatkhande`**, the Nepal form.
+Its sources:
+
+- *Karmakanda Bhaskara* (Dadhiram Marasini, ed. Venimadhava Dhakal,
+  Mahendra Sanskrit University, Beljhundi, Dang, VS 2054; archive.org
+  `qmln_karmakanda-bhaskara-…`), p. 500, the tarpana sankalpa: the
+  general form the template follows word for word, from *hariḥ oṃ tatsat*
+  through *brahmaṇo dvitīyaparārdhe śrīśvetavārāhakalpe … kaliprathamacaraṇe
+  bhāratavarṣe bharatakhaṇḍe jambūdvīpe āryāvartāntargate*, the river and
+  holy ground (*amukanadyāḥ samīpe amukakṣetre*), *bauddhāvatāre*, the
+  samvatsara among the sixty, the Vikrama year, ayana, ritu, month, paksha,
+  weekday and tithi, the Sun's, Moon's and Jupiter's signs, and *amukagotrotpanno
+  … amukaśarmā'ham*. p. 164, the kanyadana mahasankalpa, adds the place
+  *himavatparvataikadeśe* and the nakshatra, yoga and karana. p. 477, the
+  Mahalaya shraddha, names the pitris: *amukasagotrāṇām
+  asmatpitṛpitāmahaprapitāmahānām amukāmukāmukaśarmaṇāṃ …
+  vasurudrādityasvarūpāṇām*.
+- *Sankalpa Ratnavali* (Harinath Pyakuryal, Kathmandu 1983), p. 10, a
+  worked sankalpa: *… āryāvartāntargate nepāladeśe pāśupate kṣetre …
+  kauṇḍinyagotraḥ … harināthaśarmā … vāgmatīsnānam ahaṃ kariṣye*; pp. 11 ff.
+  explain each slot.
+- *Aryavarta Panchanga* VS 2082, PDF p. 44, a prayaschitta sankalpa citing
+  *Karmakanda Bhaskara* (2054): *āryāvartāntargatabrahmāvartaikanepāladeśe*,
+  the month *saureṇa* or *cāndreṇa*, and the title by varna (*śarmā*,
+  *varmā*, *gupta*; *devī* for a woman).
+
+The template says the place as *āryāvartāntargate himavatparvataikadeśe
+nepāladeśe*. "Himavatkhaṇḍe", the name the brief uses, was not found in
+any print read; the key keeps it as the tradition's name (C1343). The
+lunar month is *Karmakanda Bhaskara*'s, with *adhika* compounded before an
+adhika month (C1345). The Gita Press *Nitya Karma Puja Prakash* gives the
+Indian form (`notes/research/source-links.md` §6); it is not shipped, and
+a consumer who wants it loads it as a tradition.
+
+The template is said in Devanagari in `sa-Deva`, `ne-Deva-NP` and
+`hi-Deva-IN` (the words are Sanskrit in each) and in IAST in `en-Latn` and
+`sa-Latn`. The locatives of the ayana and ritu are entity forms
+(`locative`: *uttarāyaṇe*, *vasantartau* …). The weekday's stem (*ravi*,
+*soma*, *bhauma* …) is the template's own sub-message, a `.match` on
+`varaKey`: as an entity form, *guru* and *budha* would fold to the
+planets' names and make a lexicon search for "guru" ambiguous. The other
+members are compounded as their stems, as the print does
+(*amukanakṣatre*).
 
 Ashauch, the other half of P2-3, has its default: `DHARMASINDHU`, decided
 2026-10-27 under the maintainer's delegation (`ashauch.md`, C713).
