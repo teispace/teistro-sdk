@@ -47,7 +47,7 @@ fn hindi_and_sanskrit_calendar_text_ships_marked() {
         tree.locales["ne-Deva-NP"].meta.draft,
         ["sdk.day", "sdk.rite"]
     );
-    assert!(tree.locales["en-Latn"].meta.draft.is_empty());
+    assert_eq!(tree.locales["en-Latn"].meta.draft, Vec::<String>::new());
     let report = Intl::from_tree(&tree).unwrap().report();
     let hindi = report
         .locales
