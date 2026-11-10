@@ -142,5 +142,81 @@
   "ritu.SHARAD": {
     "name": "Śarad",
     "prose": "Śarad"
+  },
+  "dasha_system.RELEASING_FORTUNE": {
+    "name": "Zodiacal Releasing from Fortune",
+    "prose": "Zodiacal Releasing from Fortune"
+  },
+  "dasha_system.RELEASING_DAIMON": {
+    "name": "Zodiacal Releasing from Daimon",
+    "prose": "Zodiacal Releasing from Daimon"
+  },
+  "dasha_system.PROFECTION": {
+    "name": "Annual Profection",
+    "prose": "Annual Profection"
+  },
+  "dasha_system.FIRDARIA": {
+    "name": "Firdaria",
+    "prose": "Firdaria"
+  },
+  "dasha_system.DECENNIALS": {
+    "name": "Decennials",
+    "prose": "Decennials"
+  },
+  "calendar.GREGORIAN": {
+    "name": "Gregorian calendar",
+    "prose": "Gregorian calendar"
+  },
+  "calendar.JULIAN": {
+    "name": "Julian calendar",
+    "prose": "Julian calendar"
+  },
+  "calendar.MIXED": {
+    "name": "Julian–Gregorian calendar",
+    "prose": "Julian–Gregorian calendar"
+  },
+  "calendar.ISO_WEEK": {
+    "name": "ISO week date",
+    "prose": "ISO week date"
+  },
+  "calendar.HIJRI_TABULAR": {
+    "name": "Tabular Hijri calendar",
+    "prose": "Tabular Hijri calendar"
+  },
+  "calendar.TIBETAN_PHUGPA": {
+    "name": "Tibetan calendar (Phugpa)",
+    "prose": "Tibetan calendar (Phugpa)"
+  },
+  "calendar.BANGLADESHI": {
+    "name": "Bangladeshi Bengali calendar",
+    "prose": "Bangladeshi Bengali calendar"
+  },
+  "calendar.TAMIL_SOLAR": {
+    "name": "Tamil solar calendar",
+    "prose": "Tamil solar calendar"
+  },
+  "calendar.BENGAL_SOLAR": {
+    "name": "Bengali solar calendar",
+    "prose": "Bengali solar calendar"
+  },
+  "calendar.ODIA_SOLAR": {
+    "name": "Odia solar calendar",
+    "prose": "Odia solar calendar"
+  },
+  "calendar.MALAYALAM_SOLAR": {
+    "name": "Malayalam solar calendar",
+    "prose": "Malayalam solar calendar"
+  },
+  "calendar.TAMIL_VAKYA": {
+    "name": "Tamil vakya calendar",
+    "prose": "Tamil vakya calendar"
+  },
+  "calendar.ASSAM_SOLAR": {
+    "name": "Assamese solar calendar",
+    "prose": "Assamese solar calendar"
+  },
+  "era.HIJRI": {
+    "name": "Hijri",
+    "prose": "Hijri"
   }
 }

@@ -1033,12 +1033,11 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 15] = [
         "\
         the five upagrahas and the special lagnas are points with \
         longitudes, and `positions` says a **graha's** degree in the same \
-        sentence a point's would need. BPHS now names the Bhava, Hora and \
-        Ghati lagnas, the Varnada, the Pranapada, four more upagrahas, the \
-        karakamsha and two padas, so what is missing for those is the \
-        sentence; the angles, the sphutas, the yogi points and the other \
-        lagnas still have no name for it to put in",
-        &["point"],
+        sentence a point's would need. Every point is named now, the \
+        angles, the sphutas, the yogi points and the other lagnas with \
+        the rest (`entity-names.md` §4e), so what is missing is **the \
+        sentence**",
+        &[],
     ),
     ("HOUSES", &["houses"], "", &[]),
     (
@@ -1092,16 +1091,16 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 15] = [
         "VAISESHIKAMSA",
         &[],
         "\
-        **three of its designations are still unnamed.** BPHS 6.43-51 names \
-        27 of the 30, but the e-text misprints Kusuma, Chakrasimhasana and \
-        Shrivallabha, so `vaiseshikamsa` stays on the unnamed list for \
-        those and a composer would print a key for a graha that earned \
-        one. This row once called it the cheapest of the six on the \
-        strength of *being catalogued*, which is the conflation this page \
-        had been making in prose. It also names a graha under four \
-        schemes at once, which is `VIMSHOPAKA`'s knob, and carries an `impaired` flag that decides \
-        whether the name it earned is auspicious",
-        &["vaiseshikamsa"],
+        **the sentence.** All 30 designations are named now: BPHS 6.43-51 \
+        names 27, and the three its e-text misprints (Kusuma, \
+        Shakrasimhasana, Shrivallabha) are spelled as the printed editions \
+        read them (`entity-names.md` §4e). This row once called it the \
+        cheapest of the six on the strength of *being catalogued*, which is \
+        the conflation this page had been making in prose. It also names a \
+        graha under four schemes at once, which is `VIMSHOPAKA`'s knob, and \
+        carries an `impaired` flag that decides whether the name it earned \
+        is auspicious",
+        &[],
     ),
     ("DASHA_PHALA", &["dashaPhala"], "", &[]),
     (
@@ -1125,12 +1124,12 @@ const SECTION_SAYS: [(&str, &[&str], &str, &[&str]); 15] = [
         "OUTER",
         &[],
         "\
-        Uranus, Neptune and Pluto, placed beside the nine. `positions` \
-        would say them in the sentence it says a graha's degree in, but \
-        **no strict locale names them**: the vetted graha table stops at \
-        the nine, so the sentence has no word to put in. The wheel waits \
-        on the same names (`western-outer-planets.md` step 5)",
-        &["graha"],
+        Uranus, Neptune and Pluto, placed beside the nine. Every locale \
+        names them now (अरुण, वरुण, यम; `entity-names.md` §4e), so what is \
+        missing is the **composer**: `positions` would say them in the \
+        sentence it says a graha's degree in, and the wheel waits on the \
+        same step (`western-outer-planets.md` step 5)",
+        &[],
     ),
     (
         "AVAKAHADA",

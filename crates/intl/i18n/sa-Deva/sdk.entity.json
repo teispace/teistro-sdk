@@ -406,6 +406,30 @@
       "iast": "Ketu",
       "glyph": "☋",
       "gender": "n"
+    },
+    "URANUS": {
+      "short": "अरु",
+      "name": "अरुण",
+      "prose": "अरुण",
+      "iast": "Aruṇa",
+      "glyph": "♅",
+      "gender": "m"
+    },
+    "NEPTUNE": {
+      "short": "वरु",
+      "name": "वरुण",
+      "prose": "वरुण",
+      "iast": "Varuṇa",
+      "glyph": "♆",
+      "gender": "m"
+    },
+    "PLUTO": {
+      "short": "यम",
+      "name": "यम",
+      "prose": "यम",
+      "iast": "Yama",
+      "glyph": "♇",
+      "gender": "m"
     }
   },
   "point": {
@@ -450,6 +474,139 @@
       "name": "मान्दि",
       "prose": "मान्दि",
       "iast": "Māndi"
+    },
+    "MC": {
+      "name": "मध्यलग्न",
+      "prose": "मध्यलग्न",
+      "glyph": "MC"
+    },
+    "DESCENDANT": {
+      "name": "अस्तलग्न",
+      "prose": "अस्तलग्न",
+      "glyph": "Dsc"
+    },
+    "IC": {
+      "name": "पाताललग्न",
+      "prose": "पाताललग्न",
+      "glyph": "IC"
+    },
+    "VIGHATI_LAGNA": {
+      "name": "विघटीलग्न",
+      "prose": "विघटीलग्न"
+    },
+    "SREE_LAGNA": {
+      "name": "श्रीलग्न",
+      "prose": "श्रीलग्न"
+    },
+    "INDU_LAGNA": {
+      "name": "इन्दुलग्न",
+      "prose": "इन्दुलग्न"
+    },
+    "BHRIGU_BINDU": {
+      "name": "भृगुबिन्दु",
+      "prose": "भृगुबिन्दु"
+    },
+    "YOGI": {
+      "name": "योगी बिन्दु",
+      "prose": "योगी बिन्दु"
+    },
+    "AVAYOGI": {
+      "name": "अवयोगी बिन्दु",
+      "prose": "अवयोगी बिन्दु"
+    },
+    "SAHAYOGI": {
+      "name": "सहयोगी बिन्दु",
+      "prose": "सहयोगी बिन्दु"
+    },
+    "TRISPHUTA": {
+      "name": "त्रिस्फुट",
+      "prose": "त्रिस्फुट"
+    },
+    "CHATUSSPHUTA": {
+      "name": "चतुःस्फुट",
+      "prose": "चतुःस्फुट"
+    },
+    "PANCHASPHUTA": {
+      "name": "पञ्चस्फुट",
+      "prose": "पञ्चस्फुट"
+    },
+    "PRANA_SPHUTA": {
+      "name": "प्राणस्फुट",
+      "prose": "प्राणस्फुट"
+    },
+    "DEHA_SPHUTA": {
+      "name": "देहस्फुट",
+      "prose": "देहस्फुट"
+    },
+    "MRITYU_SPHUTA": {
+      "name": "मृत्युस्फुट",
+      "prose": "मृत्युस्फुट"
+    },
+    "BEEJA_SPHUTA": {
+      "name": "बीजस्फुट",
+      "prose": "बीजस्फुट"
+    },
+    "KSHETRA_SPHUTA": {
+      "name": "क्षेत्रस्फुट",
+      "prose": "क्षेत्रस्फुट"
+    },
+    "YAMAGHANTAKA": {
+      "name": "यमघण्टक",
+      "prose": "यमघण्टक"
+    },
+    "SWAMSHA": {
+      "name": "स्वांश",
+      "prose": "स्वांश"
+    },
+    "A2": {
+      "name": "धनपद",
+      "prose": "धनपद",
+      "glyph": "A2"
+    },
+    "A3": {
+      "name": "भ्रातृपद",
+      "prose": "भ्रातृपद",
+      "glyph": "A3"
+    },
+    "A4": {
+      "name": "मातृपद",
+      "prose": "मातृपद",
+      "glyph": "A4"
+    },
+    "A5": {
+      "name": "मन्त्रपद",
+      "prose": "मन्त्रपद",
+      "glyph": "A5"
+    },
+    "A6": {
+      "name": "शत्रुपद",
+      "prose": "शत्रुपद",
+      "glyph": "A6"
+    },
+    "A7": {
+      "name": "दारपद",
+      "prose": "दारपद",
+      "glyph": "A7"
+    },
+    "A8": {
+      "name": "मृत्युपद",
+      "prose": "मृत्युपद",
+      "glyph": "A8"
+    },
+    "A9": {
+      "name": "भाग्यपद",
+      "prose": "भाग्यपद",
+      "glyph": "A9"
+    },
+    "A10": {
+      "name": "राज्यपद",
+      "prose": "राज्यपद",
+      "glyph": "A10"
+    },
+    "A11": {
+      "name": "लाभपद",
+      "prose": "लाभपद",
+      "glyph": "A11"
     }
   },
   "karana": {
@@ -2340,6 +2497,81 @@
       "name": "कालचक्र दशा",
       "prose": "कालचक्र दशा",
       "iast": "Kālacakra Daśā"
+    },
+    "SHATTRIMSHA_SAMA": {
+      "name": "षट्त्रिंशत्सम दशा",
+      "prose": "षट्त्रिंशत्सम दशा",
+      "iast": "Ṣaṭtriṁśatsama Daśā"
+    },
+    "TITHI_ASHTOTTARI": {
+      "name": "तिथि अष्टोत्तरी दशा",
+      "prose": "तिथि अष्टोत्तरी दशा",
+      "iast": "Tithi Aṣṭottarī Daśā"
+    },
+    "TITHI_YOGINI": {
+      "name": "तिथि योगिनी दशा",
+      "prose": "तिथि योगिनी दशा",
+      "iast": "Tithi Yoginī Daśā"
+    },
+    "YOGA_VIMSHOTTARI": {
+      "name": "योग विंशोत्तरी दशा",
+      "prose": "योग विंशोत्तरी दशा",
+      "iast": "Yoga Viṁśottarī Daśā"
+    },
+    "KARANA_CHATURASHITI": {
+      "name": "करण चतुरशीतिसम दशा",
+      "prose": "करण चतुरशीतिसम दशा",
+      "iast": "Karaṇa Caturaśītisama Daśā"
+    },
+    "AAYU": {
+      "name": "आयुर्दशा",
+      "prose": "आयुर्दशा",
+      "iast": "Āyurdaśā"
+    },
+    "SUDASA": {
+      "name": "सुदशा",
+      "prose": "सुदशा",
+      "iast": "Sudaśā"
+    },
+    "PATYAYINI": {
+      "name": "पात्यायिनी दशा",
+      "prose": "पात्यायिनी दशा",
+      "iast": "Pātyāyinī Daśā"
+    },
+    "MUDDA": {
+      "name": "मुद्दा दशा",
+      "prose": "मुद्दा दशा",
+      "iast": "Muddā Daśā"
+    },
+    "VARSHA_NARAYANA": {
+      "name": "वर्ष नारायण दशा",
+      "prose": "वर्ष नारायण दशा",
+      "iast": "Varṣa Nārāyaṇa Daśā"
+    },
+    "VARSHA_YOGINI": {
+      "name": "वर्ष योगिनी दशा",
+      "prose": "वर्ष योगिनी दशा",
+      "iast": "Varṣa Yoginī Daśā"
+    },
+    "RELEASING_FORTUNE": {
+      "name": "जोडिएकल रिलीजिंग (फोर्च्यून)",
+      "prose": "जोडिएकल रिलीजिंग (फोर्च्यून)"
+    },
+    "RELEASING_DAIMON": {
+      "name": "जोडिएकल रिलीजिंग (डाइमन)",
+      "prose": "जोडिएकल रिलीजिंग (डाइमन)"
+    },
+    "PROFECTION": {
+      "name": "वार्षिक प्रोफेक्शन",
+      "prose": "वार्षिक प्रोफेक्शन"
+    },
+    "FIRDARIA": {
+      "name": "फिरदारिया",
+      "prose": "फिरदारिया"
+    },
+    "DECENNIALS": {
+      "name": "डिसेनियल्स",
+      "prose": "डिसेनियल्स"
     }
   },
   "year_office": {
@@ -2406,6 +2638,170 @@
       "name": "वार",
       "prose": "वार",
       "iast": "Vāra"
+    }
+  },
+  "calendar": {
+    "GREGORIAN": {
+      "name": "ग्रेगोरियन दिनदर्शिका",
+      "prose": "ग्रेगोरियन दिनदर्शिका"
+    },
+    "JULIAN": {
+      "name": "जूलियन दिनदर्शिका",
+      "prose": "जूलियन दिनदर्शिका"
+    },
+    "MIXED": {
+      "name": "जूलियन-ग्रेगोरियन दिनदर्शिका",
+      "prose": "जूलियन-ग्रेगोरियन दिनदर्शिका"
+    },
+    "ISO_WEEK": {
+      "name": "ISO सप्ताह दिनाङ्क",
+      "prose": "ISO सप्ताह दिनाङ्क"
+    },
+    "BIKRAM_SAMBAT": {
+      "name": "विक्रम संवत्",
+      "prose": "विक्रम संवत्",
+      "iast": "Vikrama Saṃvat"
+    },
+    "INDIAN_LUNISOLAR": {
+      "name": "चान्द्रसौर पञ्चाङ्ग",
+      "prose": "चान्द्रसौर पञ्चाङ्ग",
+      "iast": "Cāndrasaura Pañcāṅga"
+    },
+    "INDIAN_NATIONAL": {
+      "name": "भारतीय राष्ट्रिय पञ्चाङ्ग",
+      "prose": "भारतीय राष्ट्रिय पञ्चाङ्ग",
+      "iast": "Bhāratīya Rāṣṭriya Pañcāṅga"
+    },
+    "HIJRI_TABULAR": {
+      "name": "हिजरी दिनदर्शिका (गणितीय)",
+      "prose": "हिजरी दिनदर्शिका (गणितीय)"
+    },
+    "TIBETAN_PHUGPA": {
+      "name": "तिब्बती पञ्चाङ्ग (फुग्पा)",
+      "prose": "तिब्बती पञ्चाङ्ग (फुग्पा)"
+    },
+    "BANGLADESHI": {
+      "name": "बाङ्गलादेशीय बङ्गाब्द पञ्चाङ्ग",
+      "prose": "बाङ्गलादेशीय बङ्गाब्द पञ्चाङ्ग"
+    },
+    "TAMIL_SOLAR": {
+      "name": "तमिल सौर पञ्चाङ्ग",
+      "prose": "तमिल सौर पञ्चाङ्ग"
+    },
+    "BENGAL_SOLAR": {
+      "name": "वङ्गीय सौर पञ्चाङ्ग",
+      "prose": "वङ्गीय सौर पञ्चाङ्ग"
+    },
+    "ODIA_SOLAR": {
+      "name": "ओडिया सौर पञ्चाङ्ग",
+      "prose": "ओडिया सौर पञ्चाङ्ग"
+    },
+    "MALAYALAM_SOLAR": {
+      "name": "मलयालम सौर पञ्चाङ्ग",
+      "prose": "मलयालम सौर पञ्चाङ्ग"
+    },
+    "TAMIL_VAKYA": {
+      "name": "तमिल वाक्य पञ्चाङ्ग",
+      "prose": "तमिल वाक्य पञ्चाङ्ग"
+    },
+    "ASSAM_SOLAR": {
+      "name": "असमीय सौर पञ्चाङ्ग",
+      "prose": "असमीय सौर पञ्चाङ्ग"
+    }
+  },
+  "era": {
+    "HIJRI": {
+      "short": "हि.सं.",
+      "name": "हिजरी संवत्",
+      "prose": "हिजरी संवत्"
+    }
+  },
+  "chart_kind": {
+    "NATAL": {
+      "name": "जन्मकुण्डली",
+      "prose": "जन्मकुण्डली",
+      "iast": "Janmakuṇḍalī"
+    },
+    "TRANSIT": {
+      "name": "गोचरकुण्डली",
+      "prose": "गोचरकुण्डली",
+      "iast": "Gocarakuṇḍalī"
+    },
+    "EVENT": {
+      "name": "घटनाकुण्डली",
+      "prose": "घटनाकुण्डली",
+      "iast": "Ghaṭanākuṇḍalī"
+    },
+    "PRASHNA": {
+      "name": "प्रश्नकुण्डली",
+      "prose": "प्रश्नकुण्डली",
+      "iast": "Praśnakuṇḍalī"
+    },
+    "RETURN": {
+      "name": "पुनरागमनकुण्डली",
+      "prose": "पुनरागमनकुण्डली",
+      "iast": "Punarāgamanakuṇḍalī"
+    },
+    "RELOCATED": {
+      "name": "स्थानान्तरितकुण्डली",
+      "prose": "स्थानान्तरितकुण्डली",
+      "iast": "Sthānāntaritakuṇḍalī"
+    },
+    "COMPOSITE": {
+      "name": "संयुक्तकुण्डली",
+      "prose": "संयुक्तकुण्डली",
+      "iast": "Saṃyuktakuṇḍalī"
+    },
+    "MUNDANE": {
+      "name": "मेदिनीकुण्डली",
+      "prose": "मेदिनीकुण्डली",
+      "iast": "Medinīkuṇḍalī"
+    }
+  },
+  "nature": {
+    "NEUTRAL": {
+      "name": "सम",
+      "prose": "सम"
+    }
+  },
+  "vaiseshikamsa": {
+    "KUSUMA": {
+      "name": "कुसुम",
+      "prose": "कुसुम"
+    },
+    "CHAKRASIMHASANA": {
+      "name": "शक्रसिंहासन",
+      "prose": "शक्रसिंहासन"
+    },
+    "SHRIVALLABHA": {
+      "name": "श्रीवल्लभ",
+      "prose": "श्रीवल्लभ"
+    }
+  },
+  "varga": {
+    "D1": {
+      "name": "राशि",
+      "prose": "राशि"
+    },
+    "D5": {
+      "name": "पञ्चमांश",
+      "prose": "पञ्चमांश"
+    },
+    "D6": {
+      "name": "षष्ठांश",
+      "prose": "षष्ठांश"
+    },
+    "D8": {
+      "name": "अष्टमांश",
+      "prose": "अष्टमांश"
+    },
+    "D11": {
+      "name": "रुद्रांश",
+      "prose": "रुद्रांश"
+    },
+    "D150": {
+      "name": "नाड्यंश",
+      "prose": "नाड्यंश"
     }
   }
 }

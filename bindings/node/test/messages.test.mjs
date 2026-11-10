@@ -69,7 +69,7 @@ test("an entity's forms come from the locale, not from the caller", () => {
 test('an entity the locale does not carry is refused by name', () => {
   const ctx = context();
   assert.throws(
-    () => ctx.intl.entity('graha.PLUTO'),
+    () => ctx.intl.entity('graha.NOT_A_GRAHA'),
     (error) => error.status === 'UNSUPPORTED' && error.field === 'key',
   );
 });
