@@ -228,18 +228,13 @@ fn the_rulers_are_named_in_nepali() {
         name(RulerText::NaradaSamhita.full_key()).as_deref(),
         Some("नारदसंहिता")
     );
-    let unnamed = [
-        YearOffice::Senadhipati.full_key(),
-        YearOffice::Arghadhipati.full_key(),
-        RulerText::Navanayaka.full_key(),
-        RulerDayRule::Daylight.full_key(),
-    ];
+    // Every office, text and rule is named since SR-12.
     for ruler in &year.rulers {
         let keys = std::iter::once(ruler.office.full_key())
             .chain(ruler.texts.iter().map(|text| text.full_key()))
             .chain(ruler.readings.iter().map(|reading| reading.rule.full_key()));
         for key in keys {
-            assert_eq!(name(key).is_some(), !unnamed.contains(&key), "{key}");
+            assert!(name(key).is_some(), "{key}");
         }
     }
 }
