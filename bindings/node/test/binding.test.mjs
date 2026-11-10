@@ -1491,12 +1491,22 @@ test('a theme writes each drawing as SVG, and a wrong one is refused by its fiel
       advance: 0.6,
       line_height: 1.25,
       baseline_shift: 0.35,
+      body_colours: { 'graha.SUN': '#e53935' },
     },
-    content: { body_form: 'GLYPH', cell_label: 'HOUSE', lagna_mark: false, retrograde_mark: null, degrees: true },
+    content: {
+      body_form: 'GLYPH',
+      cell_label: 'HOUSE',
+      lagna_mark: false,
+      retrograde_mark: '*',
+      retrograde_place: 'BEFORE',
+      mark_nodes: true,
+      degrees: true,
+      minutes: true,
+    },
   };
   const custom = ctx.chart.found({ ...request, theme: every }).drawings[0].svg;
   assert.match(custom, /viewBox="0 0 600 600"/u);
-  assert.match(custom, /data-body="graha\.SUN">☉/u);
+  assert.match(custom, /fill="#e53935" text-anchor="middle" data-body="graha\.SUN">☉ [०-९]+°[०-९]{2}'/u, 'its own colour, and the minute in the locale\'s digits');
 
   assert.throws(
     () => ctx.chart.found({ ...request, theme: { style: { ink: 'black' } } }),

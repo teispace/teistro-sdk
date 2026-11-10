@@ -1249,6 +1249,10 @@ fn dart_facades_are_declared(root: &Path, outcome: &mut Outcome) {
 /// each with why it stays.
 const KEPT_TWINS: &[(&str, &str)] = &[
     (
+        "MarkPlace",
+        "where a theme writes the retrograde mark beside a name; the generated `SkippedDay` is a calendar's skipped day, before or after, and shares its two keys by coincidence",
+    ),
+    (
         "ChartDisagreementRequest",
         "types the two births as `ComparedBirth` (a place, an offset, the dashas and rules compared), which the generated `ChartDisagreementsRequest` leaves as raw JSON",
     ),

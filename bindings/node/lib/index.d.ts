@@ -5015,6 +5015,8 @@ export interface ThemeStyle {
   readonly line_height?: number;
   /** How far below a line's centre its baseline sits, in ems. */
   readonly baseline_shift?: number;
+  /** A body's own colour by its key (`graha.SUN`), as `#rrggbb`; a body it does not name is written in the ink. */
+  readonly body_colours?: Readonly<Record<string, string>>;
 }
 
 /** What a drawing says: every field optional, over the theme it extends. */
@@ -5025,10 +5027,16 @@ export interface ThemeContent {
   readonly cell_label?: 'AUTO' | 'SIGN_NUMBER' | 'SIGN_SHORT' | 'SIGN_GLYPH' | 'HOUSE' | 'NOTHING';
   /** Whether the lagna is written first in the cell it stands in. */
   readonly lagna_mark?: boolean;
-  /** What is written after a retrograde graha's name, or null for nothing. */
+  /** What marks a retrograde graha, or null for nothing. */
   readonly retrograde_mark?: string | null;
-  /** Whether a graha's degree follows its name, on the founded chart. */
+  /** Where the retrograde mark is written: after the name and its degree, or before the name. */
+  readonly retrograde_place?: 'BEFORE' | 'AFTER';
+  /** Whether the nodes carry the retrograde mark when they move backwards. */
+  readonly mark_nodes?: boolean;
+  /** Whether a graha's degree follows its name, on the founded chart, in the locale's digits. */
   readonly degrees?: boolean;
+  /** Whether a degree is followed by its minute, two digits and a prime. */
+  readonly minutes?: boolean;
 }
 
 /** What a chart answers by rule, as the SDK writes it. */

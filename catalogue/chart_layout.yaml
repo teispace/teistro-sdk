@@ -54,3 +54,10 @@ members:
       - text: "printed Nepali janma patrikas"
         ref: "one scan of a second printer's form, read 2026-11-10: the ल, रा, न and भा charts"
     mark: V
+  - key: NORTH_INDIAN_PETALS
+    id: 7
+    doc: "North Indian drawn with petals: the same fixed houses and anchors, each kendra bounded by ogee curves, the diagonals meeting at a swastika hub"
+    sources:
+      - text: "a Nepali app's kundali view, read 2026-11-10"
+        ref: "one screenshot: the curves' midpoints and vertices, the hub, and each house's number"
+    mark: V

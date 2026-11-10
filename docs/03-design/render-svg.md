@@ -91,13 +91,29 @@ Document + Context + Content ─compose──▶  Labels
   - the stroke width;
   - the font family;
   - the body, label and mark sizes as fractions of the size;
-  - the baseline shift, as a fraction of an em.
+  - the baseline shift, as a fraction of an em;
+  - a colour per body, by its key (`body_colours`, `{"graha.MARS":
+    "#e53935"}`), each validated as the other colours are; a body it does
+    not name is written in the ink, and the empty map, the default, keeps
+    every drawing's bytes.
 - **`Content`** is what the drawing says. The façade reads it to compose
   the labels, and the renderer never sees it:
   - which form a body is written in: `SHORT` or `GLYPH`;
   - what a cell's label shows: its sign, its house or nothing;
   - whether a retrograde body is marked, and with which string;
-  - whether the degree is written.
+  - where the mark goes (`retrograde_place`): `AFTER` the name and its
+    degree, the default, or `BEFORE` the name, as `*श`;
+  - whether the nodes are marked too (`mark_nodes`). Off by default:
+    their mean motion is always backwards, so the mark says nothing, but
+    a consumer's app writes it on रा and के;
+  - whether the degree is written, in the locale's digits;
+  - whether the minute follows it (`minutes`), two digits and a prime,
+    `र २६°३२'`. Off by default. The minute is the floor of the degree's
+    fraction, so a degree and its minute never read 60.
+
+  Each option's default writes what the SDK wrote before it existed, so a
+  theme that names none of them draws the same bytes (chart-geometry
+  §7h).
 - **`Theme`** is one `Style` and one `Content`, serialised together, so
   a consumer stores and passes one record. `Theme::light()` and
   `Theme::dark()` ship.
@@ -260,7 +276,7 @@ A wheel's bodies are not stacked; each is drawn at its degree (§4).
     `ThemeContent`.
   - Python: `TypedDict`s under strict mypy.
   - Dart: `ChartTheme.light`, `ChartTheme.dark` and `copyWith`, over
-    `ThemeStyle`, `ThemeContent`, `BodyForm` and `CellLabel`.
+    `ThemeStyle`, `ThemeContent`, `BodyForm`, `CellLabel` and `MarkPlace`.
 
   Each reads the SVG back as `drawing.svg`. The Node test sets every field
   a record can name, so a key the SDK does not read fails a test rather
@@ -305,7 +321,8 @@ A wheel's bodies are not stacked; each is drawn at its degree (§4).
 ## 8. What this design does not settle
 
 - **A vetted retrograde marker per script.** `Content` carries it as a
-  string written after the name, and the shipped themes use the Latin
+  string written after the name (or before it, by `retrograde_place`),
+  and the shipped themes use the Latin
   `(R)`, which a Devanagari chart shows as `बु(R)`. That is a visible
   fallback. No Devanagari marker ships until a source names one.
 - **Outer planets on the wheel**, which arrive when the chart's bodies

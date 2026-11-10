@@ -12,7 +12,8 @@
 //! - [`layout`]: a layout as a row, and the checks that refuse a wrong one
 //!   by the cell it gets wrong;
 //! - [`rows`]: the North, South and East Indian charts, the Nepali lotus and
-//!   round chart, the Sudarshan Chakra and the Western wheel, each cited;
+//!   round chart, the Sudarshan Chakra, the Western wheel and North Indian
+//!   drawn with petals, each cited;
 //! - [`clock`]: the directions a radial layout and the Nepali charts need,
 //!   the same on every platform;
 //! - [`place`](mod@place): a chart placed in a layout, every cell carrying both its sign

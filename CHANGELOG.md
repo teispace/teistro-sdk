@@ -28,6 +28,19 @@ as Nepali Lhosar reports name them. `intl.entity("graha.PLUTO")` and every
 other catalogue key now resolve, so the Node and Dart tests of a refused
 entity ask for a key no catalogue has.
 
+**North Indian drawn with petals, and four theme options a Nepali app's chart writes (SR-36).**
+**Numbers:** none computed; a new layout's drawing, and every existing drawing keeps its bytes under a theme that names none of the new options.
+- A new layout, `NORTH_INDIAN_PETALS` (`chart_layout` id 7), from a consumer's screenshot of a Nepali app's
+  kundali view: North Indian's houses and anchors, each kendra bounded by ogee curves (two quadratic steps
+  from a side's midpoint to a vertex at 37/128 of the diagonal), the diagonals ending at a swastika hub that
+  the kendras' inner edges draw. Held to the screenshot's twelve numbers, and its curves' right half to the
+  left half's mirror, bit for bit (`03-design/chart-geometry.md` §7h).
+- `Style.body_colours`: a colour per body by its key, validated as `#rrggbb`; a body it does not name is
+  written in the ink.
+- `Content.retrograde_place` (`AFTER`, the default, or `BEFORE`, as `*श`), `Content.mark_nodes` (off by
+  default) and `Content.minutes` (off by default: `र २६°३२'`, in the locale's digits). Typed in Node,
+  Python and Dart (`MarkPlace`).
+
 **The Nepali charts as printed janma patrikas draw them (SR-36).**
 **Numbers:** none computed; the `NEPALI_LOTUS` drawing changes (its cells' outlines, anchors and frame), and a drawing in any other layout keeps its bytes.
 - `NEPALI_LOTUS` is redrawn from two printed patrikas: twelve equal petals radiating from the centre inside

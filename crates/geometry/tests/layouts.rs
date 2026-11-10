@@ -19,7 +19,7 @@
 
 use teistro_core::catalogue::{Graha, Rashi};
 use teistro_geometry::layout::{Cell, Direction, Grid, Holds, Hub, Reference};
-use teistro_geometry::path::Point;
+use teistro_geometry::path::{Point, Segment};
 use teistro_geometry::{Body, Layout, Placements, place, rows};
 
 /// A figure's printed numbers: where each is printed, in the figure's
@@ -194,6 +194,31 @@ const NORTH: Figure = Figure {
     ],
 };
 
+/// A consumer's kundali view of North Indian drawn with petals (a 550 px
+/// square at (12, 22) of a 571 by 592 screenshot), drawn for a lagna in
+/// sign 2: house 1 the top kendra shows 2, and the signs rise
+/// anticlockwise. Only the geometry and the numbers are transcribed.
+const PETALS_VIEW: Figure = Figure {
+    left: 12.0,
+    top: 22.0,
+    side: 550.0,
+    lagna: Rashi::Taurus,
+    numbers: &[
+        (287.0, 95.0, 2),
+        (197.0, 68.0, 3),
+        (58.0, 206.0, 4),
+        (87.0, 296.0, 5),
+        (58.0, 384.0, 6),
+        (197.0, 523.0, 7),
+        (287.0, 495.0, 8),
+        (376.0, 523.0, 9),
+        (513.0, 384.0, 10),
+        (487.0, 296.0, 11),
+        (513.0, 206.0, 12),
+        (376.0, 68.0, 1),
+    ],
+};
+
 /// A grid layout's grid, for a test to break.
 fn grid(layout: &mut Layout) -> &mut Grid {
     layout.shape.as_grid_mut().expect("a grid layout")
@@ -292,6 +317,46 @@ fn the_square_charts_are_the_figures_they_cite() {
     holds_to(&rows::east_indian(), &EAST);
     holds_to(&rows::south_indian(), &SOUTH);
     holds_to(&rows::north_indian(), &NORTH);
+    holds_to(&rows::north_indian_petals(), &PETALS_VIEW);
+}
+
+/// A curve as its three points' bits: start, control and end.
+type Curve = [(u64, u64); 3];
+
+fn bits(point: Point) -> (u64, u64) {
+    (point.x.to_bits(), point.y.to_bits())
+}
+
+#[test]
+fn the_petals_right_half_is_its_left_half_mirrored_to_the_bit() {
+    let layout = rows::north_indian_petals();
+    let mut curves: Vec<Curve> = Vec::new();
+    for cell in &layout.shape.as_grid().unwrap().cells {
+        let mut from = cell.outline.start;
+        for &step in &cell.outline.segments {
+            if let Segment::Quad { control, to } = step {
+                curves.push([bits(from), bits(control), bits(to)]);
+            }
+            from = step.end();
+        }
+    }
+    // Sixteen curves, each drawn by the kendra and the corner cell either
+    // side of it.
+    assert_eq!(curves.len(), 32);
+    let mirror = |(x, y): (u64, u64)| ((1.0 - f64::from_bits(x)).to_bits(), y);
+    let drawn = |curve: Curve| {
+        let back = [curve[2], curve[1], curve[0]];
+        curves.contains(&curve) || curves.contains(&back)
+    };
+    let left: Vec<&Curve> = curves
+        .iter()
+        .filter(|curve| curve.iter().all(|&(x, _)| f64::from_bits(x) <= 0.5))
+        .collect();
+    assert_eq!(left.len(), 16, "half the curves are left of the middle");
+    for curve in left {
+        let mirrored = [mirror(curve[0]), mirror(curve[1]), mirror(curve[2])];
+        assert!(drawn(mirrored), "{curve:?} has no mirror");
+    }
 }
 
 #[test]

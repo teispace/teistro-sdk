@@ -55,8 +55,9 @@ mod marks;
 mod svg;
 
 pub use labels::Labels;
-pub use theme::{BodyForm, CellLabel, Content, ShippedTheme, Style, Theme};
+pub use theme::{BodyForm, CellLabel, Content, MarkPlace, ShippedTheme, Style, Theme};
 
+use teistro_core::KeyId;
 use teistro_core::error::Error;
 use teistro_geometry::{Hub, Placed, PlacedCell, Point};
 
@@ -258,7 +259,7 @@ fn draw_stack(out: &mut String, cell: &PlacedCell, label: &str, labels: &Labels,
         let body = Text {
             at: line.at,
             font: arranged.font,
-            fill: &style.ink,
+            fill: ink_of(*body, style),
             data: Some(("data-body", body.to_string())),
             says: name,
         };
@@ -332,12 +333,21 @@ fn draw_marks(out: &mut String, placed: &Placed, labels: &Labels, style: &Style)
         let words = Text {
             at,
             font: style.mark_size,
-            fill: &style.ink,
+            fill: ink_of(mark.body, style),
             data: Some(("data-body", mark.body.to_string())),
             says: name,
         };
         write_text(out, &words, style);
     }
+}
+
+/// The colour a body's name is written in: its own, where the style names
+/// one, and the ink where it does not.
+fn ink_of(body: KeyId, style: &Style) -> &str {
+    style
+        .body_colours
+        .get(&body.to_string())
+        .unwrap_or(&style.ink)
 }
 
 /// How much more ring than its words a mark is given.
