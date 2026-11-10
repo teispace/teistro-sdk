@@ -145,6 +145,8 @@ pub(super) type Measured = (Vec<Row>, Vec<(i32, String, MonthDay, bool)>);
 pub(super) struct Notices {
     /// The pack.
     pub(super) pack: FestivalPack,
+    /// The sky the pack is reckoned under.
+    pub(super) sky: Sky,
     /// Where the list is measured, on India's clock.
     pub(super) place: Place,
     /// Each year's notice.
@@ -163,10 +165,36 @@ pub(super) struct Notices {
     pub(super) unnoticed: i32,
 }
 
+/// The sky a list is reckoned under.
+#[derive(Clone, Copy)]
+pub(super) enum Sky {
+    /// The modern (drik) sky: the built-in ephemeris under the default
+    /// profile.
+    Drik,
+    /// The vakya almanac's: the `tamil-vakya` profile over the Surya
+    /// Siddhanta, the built-in ephemeris beneath it for the sunrises its
+    /// days are counted from (`calendars/vakya.md`).
+    Vakya,
+}
+
+impl Sky {
+    /// A context reckoning under this sky.
+    fn context(self) -> Result<Context, String> {
+        let builder = match self {
+            Sky::Drik => Context::builder().ephemeris([Ephemeris::Builtin]),
+            Sky::Vakya => Context::builder()
+                .profile("tamil-vakya")
+                .ephemeris([Ephemeris::SuryaSiddhanta, Ephemeris::Builtin]),
+        };
+        builder.build().map_err(|e| e.to_string())
+    }
+}
+
 /// The central list.
 fn central() -> Notices {
     Notices {
         pack: FestivalPack::IndiaCentral,
+        sky: Sky::Drik,
         place: place(),
         years: &NOTICES,
         listed: &LISTED,
@@ -190,6 +218,19 @@ impl Row {
         self.found
             .as_ref()
             .is_some_and(|day| (day.month, day.day) == self.listed)
+    }
+
+    /// The day found, marked when it parts from the list.
+    fn found_cell(&self) -> String {
+        let found = self.found.as_ref().map_or_else(
+            || String::from("none"),
+            |day| format!("{}/{}", day.month, day.day),
+        );
+        if self.agrees() {
+            found
+        } else {
+            format!("{found} ✗")
+        }
     }
 }
 
@@ -262,10 +303,7 @@ impl Notices {
     /// Every year's rows and printed days, and a problem for every
     /// parting no entry names.
     pub(super) fn compare(&self, problems: &mut Vec<String>) -> Result<Measured, String> {
-        let context = Context::builder()
-            .ephemeris([Ephemeris::Builtin])
-            .build()
-            .map_err(|e| e.to_string())?;
+        let context = self.sky.context()?;
         let mut rows = Vec::new();
         let mut printed = Vec::new();
         for (&(year, _), &expected) in self.years.iter().zip(self.printed) {
@@ -298,29 +336,46 @@ impl Notices {
         Ok((rows, printed))
     }
 
-    /// The rows' table, less the fixed days, and the parting's causes.
+    /// The rows' table, less the fixed days.
     pub(super) fn rows_table(&self, rows: &[Row]) -> String {
-        let body: Vec<Vec<String>> = rows
-            .iter()
-            .filter(|row| !self.civil.iter().any(|civil| civil.0 == row.rule))
+        let body: Vec<Vec<String>> = self
+            .reckoned(rows)
             .map(|row| {
-                let found = row.found.as_ref().map_or_else(
-                    || String::from("none"),
-                    |day| format!("{}/{}", day.month, day.day),
-                );
                 vec![
                     row.year.to_string(),
                     row.rule.to_owned(),
                     format!("{}/{}", row.listed.0, row.listed.1),
-                    if row.agrees() {
-                        found
-                    } else {
-                        format!("{found} ✗")
-                    },
+                    row.found_cell(),
                 ]
             })
             .collect();
         table(&["year", "rule", "listed", "found"], &body)
+    }
+
+    /// The rows' table, less the fixed days, beside the same rows under
+    /// another sky: `rows` and `other` are one comparison's, in one order,
+    /// and `heads` names the two skies' columns.
+    pub(super) fn rows_beside(&self, rows: &[Row], other: &[Row], heads: [&str; 2]) -> String {
+        let body: Vec<Vec<String>> = self
+            .reckoned(rows)
+            .zip(self.reckoned(other))
+            .map(|(row, beside)| {
+                vec![
+                    row.year.to_string(),
+                    row.rule.to_owned(),
+                    format!("{}/{}", row.listed.0, row.listed.1),
+                    row.found_cell(),
+                    beside.found_cell(),
+                ]
+            })
+            .collect();
+        table(&["year", "rule", "listed", heads[0], heads[1]], &body)
+    }
+
+    /// The rows but the fixed days.
+    fn reckoned<'a>(&'a self, rows: &'a [Row]) -> impl Iterator<Item = &'a Row> {
+        rows.iter()
+            .filter(|row| !self.civil.iter().any(|civil| civil.0 == row.rule))
     }
 
     /// Each parting, as a list item with its cause.

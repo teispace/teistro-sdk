@@ -102,6 +102,18 @@ pub enum FestivalPack {
     /// moon, marked subject to the sighting, and Ayya Vaikunda Swami's
     /// birthday.
     IndiaKerala,
+    /// Tamil Nadu's public holidays (`03-design/tamil-nadu-holidays.md`,
+    /// [`FestivalRule::india_tamil_nadu`]): the Public (Miscellaneous)
+    /// Department's yearly order by rule, each day the central list also
+    /// holds by [`FestivalPack::IndiaCentral`]'s rule, Tamil Nadu's own
+    /// days by the Tamil month of the vakya school (Pongal, Thiruvalluvar
+    /// Day and Uzhavar Thirunal on Thai 1 to 3, Tamil New Year on
+    /// Chithirai 1, Thai Poosam on its star in Thai), Ayutha Pooja the day
+    /// before Vijaya Dasami, and the four days set by the moon as printed,
+    /// marked subject to the sighting. The state keeps its lunar days by
+    /// the vakya almanac, so the pack meets the print under the
+    /// `tamil-vakya` profile.
+    IndiaTamilNadu,
 }
 
 /// Puts each rule's sourced values on it, from `of` its key.
@@ -123,7 +135,7 @@ fn by_text(key: &str) -> FestivalMeta {
 
 impl FestivalPack {
     /// Every pack the SDK ships.
-    pub const ALL: [FestivalPack; 11] = [
+    pub const ALL: [FestivalPack; 12] = [
         FestivalPack::Dharmasindhu,
         FestivalPack::Nepal,
         FestivalPack::NepalPanchanga,
@@ -135,6 +147,7 @@ impl FestivalPack {
         FestivalPack::IndiaMaharashtra,
         FestivalPack::IndiaWestBengal,
         FestivalPack::IndiaKerala,
+        FestivalPack::IndiaTamilNadu,
     ];
 
     /// Its key, as a request names it.
@@ -152,6 +165,7 @@ impl FestivalPack {
             FestivalPack::IndiaMaharashtra => "INDIA_MAHARASHTRA",
             FestivalPack::IndiaWestBengal => "INDIA_WEST_BENGAL",
             FestivalPack::IndiaKerala => "INDIA_KERALA",
+            FestivalPack::IndiaTamilNadu => "INDIA_TAMIL_NADU",
         }
     }
 
@@ -174,6 +188,7 @@ impl FestivalPack {
             FestivalPack::IndiaMaharashtra => FestivalRule::india_maharashtra(),
             FestivalPack::IndiaWestBengal => FestivalRule::india_west_bengal(),
             FestivalPack::IndiaKerala => FestivalRule::india_kerala(),
+            FestivalPack::IndiaTamilNadu => FestivalRule::india_tamil_nadu(),
         }
     }
 
@@ -191,7 +206,8 @@ impl FestivalPack {
             | FestivalPack::Mithila
             | FestivalPack::IndiaMaharashtra
             | FestivalPack::IndiaWestBengal
-            | FestivalPack::IndiaKerala => Vec::new(),
+            | FestivalPack::IndiaKerala
+            | FestivalPack::IndiaTamilNadu => Vec::new(),
             FestivalPack::Gaudiya => stamped(vec![EkadashiRule::hari_bhakti_vilasa()], by_text),
         }
     }
@@ -213,6 +229,7 @@ impl FestivalPack {
             FestivalPack::IndiaMaharashtra => DatedRule::india_maharashtra(),
             FestivalPack::IndiaWestBengal => DatedRule::india_west_bengal(),
             FestivalPack::IndiaKerala => DatedRule::india_kerala(),
+            FestivalPack::IndiaTamilNadu => DatedRule::india_tamil_nadu(),
         }
     }
 
@@ -229,7 +246,8 @@ impl FestivalPack {
             | FestivalPack::Mithila
             | FestivalPack::IndiaMaharashtra
             | FestivalPack::IndiaWestBengal
-            | FestivalPack::IndiaKerala => Vec::new(),
+            | FestivalPack::IndiaKerala
+            | FestivalPack::IndiaTamilNadu => Vec::new(),
             FestivalPack::Nepal => SaitRule::nepal(),
             FestivalPack::NepalPanchanga => {
                 let mut saits = SaitRule::nepal();
@@ -258,6 +276,7 @@ impl FestivalPack {
             FestivalPack::IndiaMaharashtra => FollowingRule::india_maharashtra(),
             FestivalPack::IndiaWestBengal => FollowingRule::india_west_bengal(),
             FestivalPack::IndiaKerala => FollowingRule::india_kerala(),
+            FestivalPack::IndiaTamilNadu => FollowingRule::india_tamil_nadu(),
         }
     }
 
@@ -269,6 +288,7 @@ impl FestivalPack {
             FestivalPack::IndiaMaharashtra => vec![PublishedSet::india_maharashtra()],
             FestivalPack::IndiaWestBengal => vec![PublishedSet::india_west_bengal()],
             FestivalPack::IndiaKerala => vec![PublishedSet::india_kerala()],
+            FestivalPack::IndiaTamilNadu => vec![PublishedSet::india_tamil_nadu()],
             _ => Vec::new(),
         }
     }

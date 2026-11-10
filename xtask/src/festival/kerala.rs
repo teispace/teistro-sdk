@@ -16,7 +16,7 @@ use teistro::FestivalPack;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 
 use super::MonthDay;
-use super::india::{Measured, Notices, printed_table};
+use super::india::{Measured, Notices, Sky, printed_table};
 
 /// Each year's notification of the General Administration
 /// (Co-ordination) Department, and the copy read (rank 1).
@@ -203,6 +203,7 @@ fn thiruvananthapuram() -> Place {
 fn kerala() -> Notices {
     Notices {
         pack: FestivalPack::IndiaKerala,
+        sky: Sky::Drik,
         place: thiruvananthapuram(),
         years: &NOTICES,
         listed: &LISTED,

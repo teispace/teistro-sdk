@@ -6242,10 +6242,11 @@ export interface AnniversaryDayRule {
  * the panchanga prints, each rule fitted to the committee's editions and
  * citing its page (§10); India's central holidays, the Jain festivals,
  * Maharashtra's public holidays (`03-design/maharashtra-holidays.md`),
- * West Bengal's (`03-design/west-bengal-holidays.md`), or Kerala's
- * (`03-design/kerala-holidays.md`).
+ * West Bengal's (`03-design/west-bengal-holidays.md`), Kerala's
+ * (`03-design/kerala-holidays.md`), or Tamil Nadu's
+ * (`03-design/tamil-nadu-holidays.md`).
  */
-export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA';
+export type FestivalPack = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | 'INDIA_TAMIL_NADU';
 
 /**
  * An observance kept on a date of a calendar
