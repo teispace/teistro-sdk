@@ -136,6 +136,19 @@ read; a `sunEnters` rule left without `reckoning` is the civil day, with its spe
   `P.Phal.`), each no wider than its name (`docs/03-design/entity-names.md` §4e). Typed in every
   binding, translated in XLIFF, not looked up by the lexicon.
 - Every locale's pack budget is raised about a tenth over its new size.
+**A month grid's cells (SR-84).**
+**Numbers:** none for any value: the nutation reuse below gives the same bits. A month of cells costs 5.3 ms
+native (November 2026, Kathmandu, built-in ephemeris, Apple silicon); the same month's full days went from
+24.8 ms to 19.0 ms.
+- `almanac.cells` (`ts_almanac_cells`, `AlmanacArea::cells`, every binding's `almanac.cells` and the agent
+  server's tool) answers, for each date of a range of up to 366 in any shipped calendar, its sunrise, vara,
+  the tithi at sunrise and its paksha, the lunar month and its kind, every tithi ending before the next
+  sunrise, and whether the date is `PLAIN`, `KSHAYA`, `VRIDDHI` or `VRIDDHI_AND_KSHAYA`; with a festival
+  request, each date's festival keys and the observances beside them. A zone reads each date on its own
+  offset. Each sunrise and tithi is the full day's, to the bit, tested over 2026 at Kathmandu, a Bikram
+  Sambat month and Tromsø's polar winter (`03-design/month-cells.md`).
+- The corrections step takes the nutation in longitude from the SDK's obliquity at the same instant, rather
+  than summing the IAU 2000B series a second time. The series was 40% of a month of cells' time.
 
 **Names for the ashauch, rite and first-year answers (SR-31).**
 **Numbers:** none.

@@ -84,6 +84,7 @@ impl core::fmt::Debug for AlmanacArea<'_> {
 }
 
 mod anniversaries;
+mod cells;
 mod changes;
 mod day_plan;
 mod digest;
@@ -108,6 +109,9 @@ mod sentences;
 #[cfg(feature = "schema")]
 pub(crate) use anniversaries::AnniversariesAsked;
 pub use anniversaries::{AnniversariesRequest, MOST_ANNIVERSARIES, MOST_YEARS};
+#[cfg(feature = "schema")]
+pub(crate) use cells::CellsAsked;
+pub use cells::{CellsRequest, DayCells};
 #[cfg(feature = "schema")]
 pub(crate) use changes::ChangesAsked;
 pub use changes::{ChangesRequest, DayClock};

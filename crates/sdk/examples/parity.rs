@@ -814,6 +814,7 @@ fn the_surface(report: &mut Report) {
         ("almanac.festival_calendar", "present"),
         ("almanac.festivals", "present"),
         ("almanac.changes", "present"),
+        ("almanac.cells", "present"),
         ("almanac.in_zone", "present"),
         ("almanac.next", "present"),
         ("almanac.sentences", "present"),
@@ -7533,6 +7534,40 @@ fn the_zones(report: &mut Report, place: &Place, offset: UtcOffset) {
             wire_key(&first.kind),
             first.from,
             first.to
+        ),
+    );
+    the_cells(report, &sky, place, offset);
+}
+
+/// November 2026's calendar cells (`03-design/month-cells.md`): how many,
+/// the first's sunrise tithi and kind, then how many cells are kshaya and
+/// vriddhi and how many tithis end in the month.
+fn the_cells(report: &mut Report, sky: &Context, place: &Place, offset: UtcOffset) {
+    let cells = sky
+        .almanac()
+        .cells(&teistro::CellsRequest {
+            first: CalendarDate::defined(Calendar::Gregorian, 2026, 11, 1),
+            last: CalendarDate::defined(Calendar::Gregorian, 2026, 11, 30),
+            place: *place,
+            clock: teistro::DayClock::Offset(offset),
+            festivals: None,
+        })
+        .expect("a month of cells")
+        .value
+        .cells;
+    let counted = |kind: teistro::CellKind| cells.iter().filter(|cell| cell.kind == kind).count();
+    let opening = cells.first().expect("a cell a date");
+    put(
+        report,
+        "almanac-cells",
+        format!(
+            "{} {} {} {} {} {}",
+            cells.len(),
+            opening.tithi.full_key(),
+            tag(&opening.kind),
+            counted(teistro::CellKind::Kshaya),
+            counted(teistro::CellKind::Vriddhi),
+            cells.iter().map(|cell| cell.ends.len()).sum::<usize>()
         ),
     );
 }

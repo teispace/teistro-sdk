@@ -2821,6 +2821,59 @@ impl Observances {
         self.added.retain(|found| kept(&found.key));
     }
 
+    /// The keys of what is kept on one date: the festivals, the fasts,
+    /// the dated days, the anniversaries and the published days added, in
+    /// that order, each key once. What a month grid's cell lists
+    /// ([`crate::cell::with_festivals`]).
+    ///
+    /// ```
+    /// use teistro_calendar::CalendarDate;
+    /// use teistro_core::catalogue::Calendar;
+    /// use teistro_panchanga::festival::Observances;
+    ///
+    /// let day = CalendarDate::defined(Calendar::Gregorian, 2026, 11, 1);
+    /// assert!(Observances::default().keys_on(&day).is_empty());
+    /// ```
+    #[must_use]
+    pub fn keys_on(&self, date: &CalendarDate) -> Vec<String> {
+        let mut keys: Vec<String> = Vec::new();
+        let on = self
+            .observances
+            .iter()
+            .filter(|found| found.day == *date)
+            .map(|found| &found.rule)
+            .chain(
+                self.ekadashis
+                    .iter()
+                    .filter(|found| found.day == *date)
+                    .map(|found| &found.rule),
+            )
+            .chain(
+                self.dated
+                    .iter()
+                    .filter(|found| found.day == *date)
+                    .map(|found| &found.rule),
+            )
+            .chain(
+                self.anniversaries
+                    .iter()
+                    .filter(|found| found.observance.day == *date)
+                    .map(|found| &found.key),
+            )
+            .chain(
+                self.added
+                    .iter()
+                    .filter(|found| found.day == *date)
+                    .map(|found| &found.key),
+            );
+        for key in on {
+            if !keys.contains(key) {
+                keys.push(key.clone());
+            }
+        }
+        keys
+    }
+
     /// Where an answer names catalogue members, and of which kind: a list
     /// of [`Observances`], then a dotted path through each item. What a
     /// boundary section writes in full; the crate's tests hold it to

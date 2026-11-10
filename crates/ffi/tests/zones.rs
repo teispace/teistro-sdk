@@ -14,7 +14,7 @@ use core::ffi::CStr;
 
 use teistro_core::Status;
 use teistro_ffi::context::TsEphemeris;
-use teistro_ffi::panchanga::ts_almanac_changes;
+use teistro_ffi::panchanga::{ts_almanac_cells, ts_almanac_changes};
 use teistro_ffi::string::TsString;
 use teistro_ffi::time::{ts_time_load_zones, ts_time_zone_database};
 
@@ -112,5 +112,28 @@ fn a_changes_request_is_read_strictly_and_names_one_clock() {
     assert_eq!(
         ctx.last_error().2.as_deref(),
         Some("changes.utcOffsetSeconds")
+    );
+}
+
+#[test]
+fn a_cells_request_is_read_strictly_and_names_one_clock() {
+    let ctx = Ctx::with_ephemeris(0, TsEphemeris::None, None, None, None).unwrap();
+    let asked = |request: &CStr| {
+        let mut out = TsString::empty();
+        // SAFETY: a live context, a NUL-terminated request and a writable slot.
+        let status = unsafe { ts_almanac_cells(ctx.handle, request.as_ptr(), &raw mut out) };
+        if status == Status::Ok {
+            drop(owned(out));
+        }
+        status
+    };
+    assert_eq!(asked(c"{\"first\": 1}"), Status::InvalidArg);
+    assert_eq!(
+        asked(c"{\"first\": {\"year\": 2026, \"month\": 11, \"day\": 1}, \"latitudeDeg\": 27.7, \"longitudeDeg\": 85.3}"),
+        Status::InvalidArg
+    );
+    assert_eq!(
+        ctx.last_error().2.as_deref(),
+        Some("cells.utcOffsetSeconds")
     );
 }

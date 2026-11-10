@@ -103,10 +103,10 @@ pub use almanac::{
     FestivalDisagreements, LimbChange, LimbDisagreement, ReckonedLimb, SuppliedEvent,
 };
 #[cfg(feature = "schema")]
-pub(crate) use almanac::{AnniversariesAsked, ChangesAsked, NextAsked, SentencesAsked};
+pub(crate) use almanac::{AnniversariesAsked, CellsAsked, ChangesAsked, NextAsked, SentencesAsked};
 pub use almanac::{
-    AnniversariesRequest, ChangesRequest, DayClock, MOST_ANNIVERSARIES, MOST_YEARS, NextOccurrence,
-    NextRequest, NextTarget,
+    AnniversariesRequest, CellsRequest, ChangesRequest, DayCells, DayClock, MOST_ANNIVERSARIES,
+    MOST_YEARS, NextOccurrence, NextRequest, NextTarget,
 };
 pub use almanac::{
     ChangeTried, PublishedCause, PublishedReason, PublishedReasons, PublishedReasonsRequest,

@@ -3205,6 +3205,30 @@ def main() -> None:
             "almanac-changes",
             f"{len(changes.points)} {first_change.kind} {first_change.from_key} {first_change.to_key}",
         )
+        # November 2026's calendar cells (`03-design/month-cells.md`).
+        cells = zoned.almanac.cells(
+            {
+                "first": {"year": 2026, "month": 11, "day": 1},
+                "last": {"year": 2026, "month": 11, "day": 30},
+                "latitudeDeg": place.latitude_deg,
+                "longitudeDeg": place.longitude_deg,
+                "altitudeM": place.altitude_m,
+                "utcOffsetSeconds": 20700,
+            }
+        ).cells
+        put(
+            "almanac-cells",
+            " ".join(
+                [
+                    str(len(cells)),
+                    cells[0].tithi.full_key,
+                    cells[0].kind,
+                    str(sum(1 for cell in cells if cell.kind == "KSHAYA")),
+                    str(sum(1 for cell in cells if cell.kind == "VRIDDHI")),
+                    str(sum(len(cell.ends) for cell in cells)),
+                ]
+            ),
+        )
 
     # ── The eclipses ──────────────────────────────────────────────────
     # September 2025 at Kathmandu over the built-in sky, which the test
@@ -3447,6 +3471,7 @@ def main() -> None:
         ("almanac.published_reasons", ctx.almanac.published_reasons),
         ("almanac.published_from_signed", ctx.almanac.published_from_signed),
         ("almanac.changes", ctx.almanac.changes),
+        ("almanac.cells", ctx.almanac.cells),
         ("almanac.in_zone", ctx.almanac.in_zone),
         ("time.load_zones", ctx.time.load_zones),
         ("time.zone_database", ctx.time.zone_database),

@@ -4376,6 +4376,42 @@ class AnEngine(WithLibrary):
                 ctx.almanac.navatara("ABHIJIT")
             self.assertEqual(refused.exception.field, "navatara.birth")
 
+    def test_a_month_of_cells_is_the_full_days_own(self) -> None:
+        """Each cell's sunrise and sunrise tithi are its full day's, the
+        tithis ending in the day are listed, and festivals are keyed onto
+        their dates only when asked (`03-design/month-cells.md`)."""
+        from teistro.catalogue import Tithi
+
+        record = {
+            "first": {"year": 2026, "month": 10, "day": 1},
+            "last": {"year": 2026, "month": 10, "day": 31},
+            "latitudeDeg": 27.7172,
+            "longitudeDeg": 85.324,
+            "altitudeM": 1400,
+            "utcOffsetSeconds": 20700,
+        }
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
+            month = ctx.almanac.cells(record)
+            self.assertEqual(len(month.cells), 31)
+            self.assertIsNone(month.observances)
+            self.assertTrue(all(isinstance(cell.tithi, Tithi) for cell in month.cells))
+            self.assertTrue(all(cell.ends[-1].at <= cell.next_sunrise for cell in month.cells if cell.ends))
+            self.assertTrue(all(cell.kind in ("PLAIN", "KSHAYA", "VRIDDHI", "VRIDDHI_AND_KSHAYA") for cell in month.cells))
+            days = ctx.almanac.of(
+                from_date=month.cells[0].date,
+                to_date=month.cells[1].date,
+                place=Observer(latitude_deg=Latitude(27.7172), longitude_deg=Longitude(85.324), altitude_m=Altitude(1400)),
+                utc_offset_seconds=20700,
+            )
+            self.assertEqual(days[0].day.sunrise, month.cells[0].sunrise)
+            kept = ctx.almanac.cells({**record, "festivals": {"rules": "NEPAL"}})
+            assert kept.observances is not None
+            self.assertTrue(any(cell.festivals for cell in kept.cells))
+            self.assertEqual([cell.sunrise for cell in kept.cells], [cell.sunrise for cell in month.cells])
+            with self.assertRaises(TeistroError) as refused:
+                ctx.almanac.cells({**record, "kinds": []})
+            self.assertEqual(refused.exception.field, "cells")
+
     def test_a_measure_reads_into_its_aayadi_without_a_sky(self) -> None:
         """*Muhurta Chintamani* XII v. 3 with Mahidhara's gloss: Anuradha's
         owner, Rohini and the lion give 203, 29 by 7 hastas; v. 11's ten

@@ -74,8 +74,8 @@ pub use area::{
     LimbDisagreement, ReckonedLimb, SuppliedEvent, TimeArea, ZoneDatabase, ZoneDatabaseSource,
 };
 pub use area::{
-    AnniversariesRequest, ChangesRequest, DayClock, MOST_ANNIVERSARIES, MOST_YEARS, NextOccurrence,
-    NextRequest, NextTarget,
+    AnniversariesRequest, CellsRequest, ChangesRequest, DayCells, DayClock, MOST_ANNIVERSARIES,
+    MOST_YEARS, NextOccurrence, NextRequest, NextTarget,
 };
 #[cfg(feature = "chart")]
 pub use area::{Answers, ChartArea, InterpretArea, Interpreted, MatchingArea, NamingArea, Plans};
@@ -332,6 +332,9 @@ pub use teistro_vargas::chart::{Axis, VargaChart};
 pub use teistro_geometry as geometry;
 pub use teistro_geometry::{Drawing, Layout, Layouts, Placed};
 pub use teistro_panchanga::change::{ChangeKind, ChangePoint, ChangePoints};
+// What a month grid prints of a date: `sdk.almanac().cells` answers with
+// these (`03-design/month-cells.md`).
+pub use teistro_panchanga::cell::{CellKind, DayCell, TithiEnd};
 pub use teistro_time::{ZONE_PACK_FORMAT, ZonePack};
 // The first-party renderer: a drawing as SVG, themed as data
 // (`03-design/render-svg.md`). Not behind a feature: it is pure Rust with

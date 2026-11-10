@@ -292,6 +292,7 @@ const Map<String, Type> _records = {
   'almanac.deathTime': DeathTimeQuery,
   'almanac.household': HouseholdQuery,
   'almanac.changes': ChangesRequest,
+  'almanac.cells': CellsRequest,
   'almanac.days': AlmanacDaysRequest,
   'almanac.digest': DigestRequest,
   'almanac.festival_calendar': FestivalCalendarRequest,

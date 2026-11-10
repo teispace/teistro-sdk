@@ -1550,6 +1550,20 @@ public final class ParityRunner {
                 ChangePoints.Point point = changes.points().get(0);
                 put("almanac-changes", changes.points().size() + " " + point.kind() + " " + point.from() + " "
                         + point.to());
+                // November 2026's calendar cells (03-design/month-cells.md).
+                List<DayCells.Cell> cells = zoned.almanac().cells(
+                        com.teispace.teistro.request.CellsRequest.builder()
+                                .first(new com.teispace.teistro.request.DayAsked(1, 11, 2026))
+                                .last(new com.teispace.teistro.request.DayAsked(30, 11, 2026))
+                                .latitudeDeg(place.latitudeDeg().value())
+                                .longitudeDeg(place.longitudeDeg().value())
+                                .altitudeM(place.altitudeM().value())
+                                .utcOffsetSeconds(20_700)
+                                .build()).cells();
+                put("almanac-cells", cells.size() + " " + cells.get(0).tithi().fullKey() + " " + cells.get(0).kind()
+                        + " " + cells.stream().filter(cell -> cell.kind() == DayCells.Kind.KSHAYA).count()
+                        + " " + cells.stream().filter(cell -> cell.kind() == DayCells.Kind.VRIDDHI).count()
+                        + " " + cells.stream().mapToInt(cell -> cell.ends().size()).sum());
             }
 
             // ── The lagna table and the homa ahuti ────────────────────────
@@ -1727,6 +1741,7 @@ public final class ParityRunner {
             surface("almanac.published_reasons", () -> ctx.almanac().publishedReasons(day, day, place, 0, null,
                     List.of(), null));
             surface("almanac.changes", () -> ctx.almanac().changes(null));
+            surface("almanac.cells", () -> ctx.almanac().cells(null));
             surface("almanac.in_zone", () -> ctx.almanac().inZone(null, null, null, null));
             surface("time.load_zones", () -> ctx.time().loadZones(null, null, null, null));
             surface("time.zone_database", () -> ctx.time().zoneDatabase());

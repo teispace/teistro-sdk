@@ -519,6 +519,46 @@ final class AlmanacReads {
                 member(v, "jupiter", "Rashi", Rashi::byKey)), provenance(envelope));
     }
 
+    /** {@code ts_almanac_cells}'s answer: each cell, its members resolved, and the observances when asked. */
+    static DayCells cellsAnswer(String text) {
+        Map<?, ?> envelope = Reads.object(Json.read(text));
+        Map<?, ?> v = Reads.object(envelope, "value");
+        List<DayCells.Cell> cells = Reads.each(v, "cells", raw -> {
+            Map<?, ?> c = Reads.object(raw);
+            Map<?, ?> m = Reads.object(c, "month");
+            return new DayCells.Cell(
+                    Reads.serdeDate(Reads.field(c, "date")),
+                    member(c, "vara", "Vara", Vara::byKey),
+                    Reads.number(c, "sunrise"),
+                    Reads.number(c, "nextSunrise"),
+                    Reads.flag(c, "normal"),
+                    member(c, "tithi", "Tithi", Tithi::byKey),
+                    member(c, "paksha", "Paksha", Paksha::byKey),
+                    new Month(
+                            member(m, "month", "Masa", Masa::byKey),
+                            member(m, "amanta", "Masa", Masa::byKey),
+                            member(m, "purnimanta", "Masa", Masa::byKey),
+                            member(m, "paksha", "Paksha", Paksha::byKey),
+                            member(m, "convention", "LunarMonth", LunarMonth::byKey),
+                            member(m, "kind", "MonthKind", MonthKind::byKey)),
+                    Reads.each(c, "ends", end -> {
+                        Map<?, ?> e = Reads.object(end);
+                        return new DayCells.TithiEnd(member(e, "tithi", "Tithi", Tithi::byKey),
+                                Reads.number(e, "at"), Reads.flag(e, "kshaya"));
+                    }),
+                    DayCells.Kind.of(Reads.string(c, "kind")),
+                    c.containsKey("festivals") ? Reads.each(c, "festivals", Reads::string) : List.of());
+        });
+        java.util.Optional<FestivalAnswer> observances = java.util.Optional.empty();
+        if (v.get("observances") != null) {
+            Map<String, Object> section = new java.util.LinkedHashMap<>();
+            section.put("value", v.get("observances"));
+            section.put("provenance", envelope.get("provenance"));
+            observances = java.util.Optional.of(festivalsAnswer(Json.write(section)));
+        }
+        return new DayCells(cells, observances, provenance(envelope));
+    }
+
     /** {@code ts_almanac_ashauch}'s answer: the period, its members resolved, with the provenance beside it. */
     static AshauchAnswer ashauchAnswer(String text) {
         Map<?, ?> envelope = Reads.object(Json.read(text));

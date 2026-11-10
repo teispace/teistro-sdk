@@ -8358,6 +8358,22 @@ export declare class AlmanacArea {
    * list (`03-design/change-points.md`).
    */
   changes(request: ChangesRequest): ChangePoints;
+  /**
+   * **What a month grid prints of every date in a range**
+   * (`03-design/month-cells.md`): the sunrise tithi and its paksha, the
+   * lunar month, the tithis ending before the next sunrise, kshaya or
+   * vriddhi, and the festivals when asked. Each sunrise and tithi is the
+   * full day's, to the bit. At most 366 dates.
+   *
+   * @example
+   * const { cells } = sdk.almanac.cells({
+   *   from: { calendar: 'GREGORIAN', year: 2026, month: 11, day: 1 },
+   *   to: { year: 2026, month: 11, day: 30 },
+   *   place: { latitude: 27.7172, longitude: 85.324, altitude: 1400 },
+   *   zone: { kind: 'IANA', zone: 'Asia/Kathmandu' },
+   * });
+   */
+  cells(request: CellsOptions): DayCells;
 
   /**
    * Every rule of a festival pack with what it is, and the fields no source
@@ -8619,6 +8635,71 @@ export interface ChangePoint {
   readonly from: string;
   /** The catalogue key of the member that began. */
   readonly to: string;
+}
+
+/** A range of dates, as `almanac.cells` reads it. */
+export interface CellsOptions {
+  /** The first date, and the calendar the dates are in. */
+  readonly from: { readonly calendar?: Calendar; readonly year: number; readonly month: number; readonly day: number };
+  /** The last date, in the same calendar; `from` when left out. At most 366 dates in all. */
+  readonly to?: { readonly year: number; readonly month: number; readonly day: number };
+  /** Where, in degrees and metres. */
+  readonly place: { readonly latitude: number; readonly longitude: number; readonly altitude?: number };
+  /** The local clock's offset from UTC in seconds, east positive; or `zone`, not both. */
+  readonly utcOffsetSeconds?: number;
+  /** The zone, each date on its own offset; or `utcOffsetSeconds`, not both. */
+  readonly zone?: ZoneSpec;
+  /** The festivals to list on each cell; none when left out. */
+  readonly festivals?: FestivalRequest;
+}
+
+/** How a cell's tithis stand against its sunrises (`03-design/month-cells.md`). */
+export type CellKind = 'PLAIN' | 'KSHAYA' | 'VRIDDHI' | 'VRIDDHI_AND_KSHAYA';
+
+/** A tithi that ends after a cell's sunrise and at or before the next. */
+export interface TithiEnd {
+  /** The tithi. */
+  readonly tithi: Tithi;
+  /** The instant it ends, a UTC Julian day. */
+  readonly at: number;
+  /** Whether it also began after the cell's sunrise: a kshaya tithi, which names no date. */
+  readonly kshaya: boolean;
+}
+
+/** What a month grid prints of one date. */
+export interface DayCell {
+  /** The civil date, in the calendar asked. */
+  readonly date: CalendarDate;
+  /** Its weekday, from this sunrise to the next. */
+  readonly vara: Vara;
+  /** Its sunrise, a UTC Julian day: the full day's, to the bit. */
+  readonly sunrise: number;
+  /** The next sunrise, a UTC Julian day. */
+  readonly nextSunrise: number;
+  /** Whether the Sun rose and set; a polar day is read under the profile's policy. */
+  readonly normal: boolean;
+  /** The tithi at the sunrise: the date's name. */
+  readonly tithi: Tithi;
+  /** That tithi's paksha. */
+  readonly paksha: Paksha;
+  /** The lunar month at the sunrise, with its kind. */
+  readonly month: Month;
+  /** Every tithi ending after the sunrise and at or before the next, in order. */
+  readonly ends: readonly TithiEnd[];
+  /** Whether a tithi is skipped or repeated here. */
+  readonly kind: CellKind;
+  /** The keys of what is kept on this date; empty unless festivals were asked. */
+  readonly festivals: readonly string[];
+}
+
+/** A range's calendar cells, frozen. */
+export interface DayCells {
+  /** One cell a date, in order. */
+  readonly cells: readonly DayCell[];
+  /** The observances the cells' `festivals` name; null when none were asked. */
+  readonly observances: FestivalAnswer | null;
+  /** What computed it, and the clock it was asked on. */
+  readonly provenance: Provenance;
 }
 
 /** A range's change points, sorted, with the window they were read over. */

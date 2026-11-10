@@ -1934,6 +1934,26 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a month of cells is its days' own", () -> {
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                // October 2026 at Kathmandu (03-design/month-cells.md).
+                DayCells month = sky.almanac().cells(com.teispace.teistro.request.CellsRequest.builder()
+                        .first(new com.teispace.teistro.request.DayAsked(1, 10, 2026))
+                        .last(new com.teispace.teistro.request.DayAsked(31, 10, 2026))
+                        .latitudeDeg(27.7172).longitudeDeg(85.324).altitudeM(1400)
+                        .utcOffsetSeconds(20_700).build());
+                same(31, month.cells().size(), "a cell a date");
+                check(month.observances().isEmpty(), "no festivals unless asked");
+                for (int i = 1; i < month.cells().size(); i++) {
+                    same(month.cells().get(i - 1).nextSunrise(), month.cells().get(i).sunrise(),
+                            "each cell ends where the next begins");
+                }
+                check(month.cells().stream().allMatch(cell -> cell.ends().stream()
+                        .allMatch(end -> end.at() <= cell.nextSunrise())), "the tithis end inside their cells");
+            }
+        });
+
         tests.put("a measure reads into its aayadi without a sky", () -> {
             try (Context sky = teistro.context(ContextOptions.builder().ephemeris(Ephemeris.BUILTIN).build())) {
                 // Muhurta Chintamani XII v. 3 with Mahidhara's gloss: Anuradha's owner,
