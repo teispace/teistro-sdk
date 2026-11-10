@@ -1180,8 +1180,10 @@ __all__ = [
     # The divisional charts: the catalogue member a caller names and the
     # three shapes a chart's `vargas` answers with.
     "Varga",
-    # Chart geometry: the layouts a chart is drawn in, and what a drawing is.
+    # Chart geometry: the layouts a chart is drawn in, what a drawing counts
+    # its houses from, and what a drawing is.
     "ChartLayout",
+    "ChartFrame",
     "Drawing",
     "DrawingAsk",
     "LayoutRow",
