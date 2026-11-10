@@ -1,9 +1,9 @@
 {
   "schema": "teistro-costs/1",
-  "commit": "dbd46a886b56781391307237d0ceb6ac071b262b",
+  "commit": "a9d9bfe30441a94a49cd4d9d7b1d53ae372e40bd",
   "rustc": "rustc 1.99.1 (58cf8f9c3 2026-10-13)",
   "target": "x86_64-linux",
-  "floor": 27099375,
+  "floor": 27794596,
   "entries": [
     {
       "name": "unit",
@@ -15,8 +15,8 @@
         "altitudeM": 1400,
         "utcOffsetSeconds": 20700
       },
-      "first": 19071237,
-      "again": 4684515
+      "first": 19072022,
+      "again": 4686361
     },
     {
       "name": "chart.found",
@@ -44,8 +44,8 @@
           "through": 1
         }
       },
-      "first": 393900658,
-      "again": 24949515
+      "first": 393903302,
+      "again": 24961914
     },
     {
       "name": "chart.disagreements",
@@ -75,8 +75,8 @@
         },
         "at": 2461000.5
       },
-      "first": 59076135,
-      "again": 38245023
+      "first": 59120204,
+      "again": 38315274
     },
     {
       "name": "almanac.days",
@@ -107,8 +107,8 @@
         "nepalSambat": true,
         "sky": true
       },
-      "first": 3359751712,
-      "again": 1337458944
+      "first": 3359463860,
+      "again": 1338202456
     },
     {
       "name": "matching.naam",
@@ -117,8 +117,8 @@
         "bride": "सीता",
         "groom": "राम"
       },
-      "first": 321373,
-      "again": 318684
+      "first": 325889,
+      "again": 319616
     },
     {
       "name": "naming.syllables",
@@ -129,8 +129,8 @@
           "rashi": "CAPRICORN"
         }
       },
-      "first": 420002,
-      "again": 400512
+      "first": 425222,
+      "again": 401423
     },
     {
       "name": "naming.read",
@@ -146,8 +146,8 @@
           }
         }
       },
-      "first": 427228,
-      "again": 299240
+      "first": 436205,
+      "again": 299788
     },
     {
       "name": "naming.check",
@@ -162,8 +162,8 @@
           "pada": 3
         }
       },
-      "first": 296873,
-      "again": 273803
+      "first": 299483,
+      "again": 273937
     },
     {
       "name": "naming.of",
@@ -174,8 +174,8 @@
           "pada": 1
         }
       },
-      "first": 68547,
-      "again": 49862
+      "first": 71816,
+      "again": 49982
     },
     {
       "name": "naming.suggest",
@@ -212,8 +212,8 @@
           ]
         }
       },
-      "first": 362672,
-      "again": 333717
+      "first": 361898,
+      "again": 335742
     },
     {
       "name": "time.resolve",
@@ -234,8 +234,8 @@
           "zone": "Asia/Kathmandu"
         }
       },
-      "first": 121043,
-      "again": 105623
+      "first": 122590,
+      "again": 106024
     },
     {
       "name": "time.civil",
@@ -248,8 +248,8 @@
         },
         "calendar": "BIKRAM_SAMBAT"
       },
-      "first": 108899,
-      "again": 75583
+      "first": 114329,
+      "again": 75018
     },
     {
       "name": "time.convert",
@@ -259,8 +259,8 @@
         "from": "UTC",
         "to": "TT"
       },
-      "first": 33331,
-      "again": 29959
+      "first": 34273,
+      "again": 29938
     },
     {
       "name": "calendar.convert",
@@ -273,8 +273,8 @@
         },
         "into": "calendar.BIKRAM_SAMBAT"
       },
-      "first": 84255,
-      "again": 48188
+      "first": 86084,
+      "again": 48538
     },
     {
       "name": "calendar.add",
@@ -289,8 +289,8 @@
         "months": 1,
         "overflow": "CARRY"
       },
-      "first": 102575,
-      "again": 63239
+      "first": 102191,
+      "again": 63385
     },
     {
       "name": "calendar.between",
@@ -309,8 +309,8 @@
         },
         "overflow": "CONSTRAIN"
       },
-      "first": 99743,
-      "again": 59756
+      "first": 99218,
+      "again": 59271
     },
     {
       "name": "numerology.profile",
@@ -326,8 +326,8 @@
           "masters": "NONE"
         }
       },
-      "first": 270892,
-      "again": 265923
+      "first": 274776,
+      "again": 267464
     },
     {
       "name": "almanac.navatara",
@@ -335,8 +335,8 @@
       "request": {
         "birth": "ASHWINI"
       },
-      "first": 261970,
-      "again": 260148
+      "first": 267984,
+      "again": 261330
     },
     {
       "name": "almanac.aayadi",
@@ -348,8 +348,8 @@
         "owner": "ANURADHA",
         "measure": "SPLIT"
       },
-      "first": 201507,
-      "again": 201254
+      "first": 205511,
+      "again": 201766
     },
     {
       "name": "intl.inWords",
@@ -365,8 +365,8 @@
         "locale": "ne-Deva-NP",
         "grouping": "INDIAN"
       },
-      "first": 1226584,
-      "again": 139771
+      "first": 1748874,
+      "again": 140913
     },
     {
       "name": "intl.time",
@@ -379,8 +379,8 @@
         "hour12": true,
         "locale": "ne-Deva-NP"
       },
-      "first": 129371,
-      "again": 105122
+      "first": 133388,
+      "again": 106797
     },
     {
       "name": "intl.date",
@@ -395,8 +395,8 @@
         "style": "FULL",
         "locale": "hi-Deva-IN"
       },
-      "first": 277648,
-      "again": 160043
+      "first": 282260,
+      "again": 160986
     },
     {
       "name": "intl.lexicon",
@@ -408,8 +408,8 @@
           "vara"
         ]
       },
-      "first": 45363236,
-      "again": 1277631
+      "first": 46201651,
+      "again": 1284488
     },
     {
       "name": "intl.lookup",
@@ -422,8 +422,8 @@
           "graha"
         ]
       },
-      "first": 75036622,
-      "again": 501945
+      "first": 76663697,
+      "again": 506539
     },
     {
       "name": "intl.dates",
@@ -431,8 +431,8 @@
       "request": {
         "text": "बिसं २०८२ कात्तिक १५ गते, अर्थात् 1 November 2025"
       },
-      "first": 5736844,
-      "again": 153571
+      "first": 6008155,
+      "again": 153260
     },
     {
       "name": "verify.claims",
@@ -445,8 +445,8 @@
         "altitudeM": 1400,
         "utcOffsetSeconds": 20700
       },
-      "first": 1429597461,
-      "again": 293695862
+      "first": 1431239201,
+      "again": 293719442
     },
     {
       "name": "verify.issue",
@@ -462,8 +462,8 @@
           "into": "calendar.BIKRAM_SAMBAT"
         }
       },
-      "first": 3119575,
-      "again": 3093793
+      "first": 3126343,
+      "again": 3099195
     },
     {
       "name": "verify.receipt",
@@ -764,8 +764,8 @@
         },
         "tzdb": "2026c"
       },
-      "first": 6405174,
-      "again": 6167708
+      "first": 6361229,
+      "again": 6170281
     },
     {
       "name": "almanac.digest",
@@ -785,8 +785,8 @@
           "rules": "NEPAL"
         }
       },
-      "first": 290253002,
-      "again": 117487575
+      "first": 290263451,
+      "again": 117459386
     },
     {
       "name": "almanac.festival_calendar",
@@ -813,8 +813,8 @@
         "name": "Nepal",
         "refreshMinutes": 0
       },
-      "first": 504104433,
-      "again": 207303636
+      "first": 504105780,
+      "again": 207307765
     },
     {
       "name": "almanac.changes",
@@ -842,8 +842,8 @@
           "SUN_SIGN"
         ]
       },
-      "first": 92187520,
-      "again": 17667720
+      "first": 92192224,
+      "again": 17667582
     },
     {
       "name": "almanac.anniversaries",
@@ -881,8 +881,8 @@
           }
         ]
       },
-      "first": 32143601833,
-      "again": 29856558314
+      "first": 32143620898,
+      "again": 29856013094
     },
     {
       "name": "almanac.next",
@@ -899,8 +899,8 @@
         },
         "limitDays": 400
       },
-      "first": 3101245542,
-      "again": 1422390645
+      "first": 3100831117,
+      "again": 1422232044
     },
     {
       "name": "almanac.sentences",
@@ -917,8 +917,8 @@
         "utcOffsetSeconds": 20700,
         "locale": "ne-Deva-NP"
       },
-      "first": 198596776,
-      "again": 31204251
+      "first": 198636925,
+      "again": 31250245
     },
     {
       "name": "almanac.publishedReasons",
@@ -972,8 +972,8 @@
           }
         ]
       },
-      "first": 479210822,
-      "again": 202377206
+      "first": 479243632,
+      "again": 202392427
     },
     {
       "name": "almanac.pakshi",
@@ -997,8 +997,8 @@
           "bird": "COCK"
         }
       },
-      "first": 201873105,
-      "again": 49511895
+      "first": 201875423,
+      "again": 49491222
     },
     {
       "name": "almanac.sankalpa",
@@ -1011,8 +1011,8 @@
         "utcOffsetSeconds": 20700,
         "ayana": "TROPICAL"
       },
-      "first": 1372768468,
-      "again": 301083574
+      "first": 1372788967,
+      "again": 301080723
     },
     {
       "name": "almanac.ashauch",
@@ -1031,8 +1031,8 @@
           }
         }
       },
-      "first": 533109176,
-      "again": 157669084
+      "first": 533079356,
+      "again": 157703434
     },
     {
       "name": "almanac.household",
@@ -1083,8 +1083,8 @@
           ]
         }
       },
-      "first": 727241083,
-      "again": 333032985
+      "first": 727220196,
+      "again": 333148678
     },
     {
       "name": "almanac.ashauchKin",
@@ -1103,8 +1103,8 @@
           "livingForebears": 1
         }
       },
-      "first": 99263,
-      "again": 91354
+      "first": 100804,
+      "again": 91148
     },
     {
       "name": "almanac.ashauchRite",
@@ -1116,8 +1116,8 @@
           "noOtherWay": true
         }
       },
-      "first": 60730,
-      "again": 52500
+      "first": 64823,
+      "again": 53040
     },
     {
       "name": "almanac.deathTime",
@@ -1130,8 +1130,8 @@
         "at": 2461051.677083,
         "crematedAt": 2461052.0
       },
-      "first": 1713028081,
-      "again": 661303018
+      "first": 1713027500,
+      "again": 661360256
     },
     {
       "name": "almanac.festivalPack",
@@ -1139,8 +1139,8 @@
       "request": {
         "pack": "INDIA_CENTRAL"
       },
-      "first": 1748094,
-      "again": 1834249
+      "first": 1750230,
+      "again": 1826664
     },
     {
       "name": "almanac.firstYear",
@@ -1157,8 +1157,8 @@
           "firstYearAdhika": "NIJA"
         }
       },
-      "first": 3095213432,
-      "again": 1331507226
+      "first": 3095508941,
+      "again": 1331499350
     },
     {
       "name": "chart.rashifal",
@@ -1184,8 +1184,8 @@
         ],
         "baseline": "WEEKLY"
       },
-      "first": 183070655,
-      "again": 43623821
+      "first": 183071475,
+      "again": 43555936
     },
     {
       "name": "research.study",
@@ -1232,8 +1232,8 @@
           ]
         }
       },
-      "first": 58840212,
-      "again": 14912756
+      "first": 58835758,
+      "again": 14948537
     },
     {
       "name": "chart.mundane",
@@ -1246,8 +1246,8 @@
         "altitudeM": 1400,
         "utcOffsetSeconds": 20700
       },
-      "first": 50087791,
-      "again": 4669266
+      "first": 50092670,
+      "again": 4670663
     },
     {
       "name": "chart.relocated",
@@ -1268,8 +1268,8 @@
         ],
         "houseSystem": "PLACIDUS"
       },
-      "first": 20096563,
-      "again": 4192199
+      "first": 20098171,
+      "again": 4192545
     },
     {
       "name": "chart.astrocartography",
@@ -1284,8 +1284,8 @@
         "stepDeg": 5,
         "latitudeLimitDeg": 80
       },
-      "first": 21220186,
-      "again": 5330479
+      "first": 21221499,
+      "again": 5332703
     },
     {
       "name": "almanac.skyView",
@@ -1309,8 +1309,8 @@
         "pressureHpa": 1013.25,
         "temperatureC": 15
       },
-      "first": 11821160,
-      "again": 4311879
+      "first": 11823626,
+      "again": 4309772
     },
     {
       "name": "almanac.elect",
@@ -1335,8 +1335,8 @@
           "most": 3
         }
       },
-      "first": 5747178524,
-      "again": 2210094371
+      "first": 5746664487,
+      "again": 2209776071
     },
     {
       "name": "almanac.observance",
@@ -1364,8 +1364,8 @@
           }
         ]
       },
-      "first": 3905870450,
-      "again": 2342392278
+      "first": 3905336002,
+      "again": 2342762181
     },
     {
       "name": "almanac.people",
@@ -1398,8 +1398,8 @@
           }
         ]
       },
-      "first": 240283472,
-      "again": 60777118
+      "first": 240324446,
+      "again": 60761282
     }
   ]
 }
