@@ -914,6 +914,7 @@ pub fn records() -> Vec<Record> {
     all.push(sky_view_record());
     all.extend(ashauch_records());
     all.extend(almanac_lookup_records());
+    all.extend(sankalpa_records());
     all.extend(time_records());
     all.extend(engine_records());
     all.push(verify_record());
@@ -1484,9 +1485,8 @@ fn ashauch_records() -> [Record; 6] {
 }
 
 /// The rest of the almanac's records: what a pack holds, a digest, the next
-/// day of a rule, why a published day differs, a sankalpa's time, and
-/// the sankalpa in words.
-fn almanac_lookup_records() -> [Record; 7] {
+/// day of a rule, the day in sentences, and why a published day differs.
+fn almanac_lookup_records() -> [Record; 5] {
     [
         Record {
             name: "almanac.festivalPack",
@@ -1572,6 +1572,13 @@ fn almanac_lookup_records() -> [Record; 7] {
             brief: Brief::Whole,
             schemas: schemas!(crate::area::ReasonsAsked => crate::PublishedReasons),
         },
+    ]
+}
+
+/// A sankalpa's records (`03-design/sankalpa.md`): the time it recites,
+/// and the sankalpa in words by a tradition's template.
+fn sankalpa_records() -> [Record; 2] {
+    [
         Record {
             name: "almanac.sankalpa",
             boundary: "ts_almanac_sankalpa",
