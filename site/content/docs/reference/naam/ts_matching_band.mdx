@@ -7,11 +7,52 @@ A guna total graded into bands and said in words (`03-design/matching.md`, "Grad
 
 `request_json` is `{"total"}`, with `"dushkuta"` (whether the signs stand 2/12, 6/8 or 9/5; false when left out), `"shipped"` (a shipped table: `MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or `ARYAVARTA`) or `"bands"` (a consumer's own table, `{name, source, rows}`, each row `{band, from, clears?, bhakoot?}`), and `"locale"` (the context's when left out). A key it does not read, a total outside 0 to 36, an unknown table, both tables or a table that leaves a total ungraded is `INVALID_ARG`, named under `band`; a locale not loaded is `UNSUPPORTED` on `band.locale`.
 
+<Tabs items={['Node', 'Python', 'Dart', 'Java', 'Rust', 'C']}>
+<Tab value="Node">
+
+```js
+ctx.matching.band
+```
+
+</Tab>
+<Tab value="Python">
+
+```python
+ctx.matching.band
+```
+
+</Tab>
+<Tab value="Dart">
+
+```dart
+ctx.matching.band
+```
+
+</Tab>
+<Tab value="Java">
+
+```java
+ctx.matching().band
+```
+
+</Tab>
+<Tab value="Rust">
+
+```rust
+sdk.matching().band
+```
+
+</Tab>
+<Tab value="C">
+
 ```c
 ts_status ts_matching_band(const ts_context * context, const char * request_json, ts_string * out_json);
 ```
 
-No operation of a context calls this by name. A binding calls it itself, opening the library, freeing what the library handed back or reading an error, or offers it outside a context, as the library's version and the fixed-day arithmetic are.
+</Tab>
+</Tabs>
+
+Reached from `matching.band` on the surface; [the surface](/docs/surface) says how each binding spells a path.
 
 ## Parameters
 
