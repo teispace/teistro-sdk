@@ -4424,6 +4424,13 @@ class TeistroLibrary:
             ctypes.POINTER(_StringStruct),
         ]
         self.ts_almanac_sankalpa.restype = ctypes.c_int32
+        self.ts_almanac_sankalpa_words: Any = library.ts_almanac_sankalpa_words
+        self.ts_almanac_sankalpa_words.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_almanac_sankalpa_words.restype = ctypes.c_int32
         self.ts_almanac_ashauch: Any = library.ts_almanac_ashauch
         self.ts_almanac_ashauch.argtypes = [
             ctypes.POINTER(_Context),
@@ -4529,6 +4536,13 @@ class TeistroLibrary:
             ctypes.POINTER(_BlobStruct),
         ]
         self.ts_naam_milan.restype = ctypes.c_int32
+        self.ts_matching_band: Any = library.ts_matching_band
+        self.ts_matching_band.argtypes = [
+            ctypes.POINTER(_Context),
+            ctypes.c_char_p,
+            ctypes.POINTER(_StringStruct),
+        ]
+        self.ts_matching_band.restype = ctypes.c_int32
         self.ts_chart_relocated: Any = library.ts_chart_relocated
         self.ts_chart_relocated.argtypes = [
             ctypes.POINTER(_Context),
@@ -5952,6 +5966,41 @@ class TeistroContext:
             json = _take_string(self._lib, _out_json)
             return json
 
+    def almanac_sankalpa_words(self, request_json: str) -> str:
+        """A sankalpa said in words by a tradition's template
+        (`03-design/sankalpa.md` §5, SR-29), answered with `{value,
+        provenance}` as canonical JSON: `value` is `{tradition, locale, params,
+        text}`, `params` the slots the template was given (each as
+        `ts_intl_render` takes it, to say it again in another locale) and
+        `text` the words; the provenance is the time's.
+
+        `request_json` is `ts_almanac_sankalpa`'s request with `"slots"`
+        (`{performer, gotra, purpose, river?, kshetra?, pitris?}`, `pitris`
+        `{father, grandfather, greatGrandfather}`), and optionally
+        `"tradition"` (a template's message key, `sdk.sankalpa.himavatkhande`
+        when left out) and `"locale"` (the context's when left out). A key it
+        does not read, an instant, place or offset out of range, or a slot left
+        blank is `INVALID_ARG`, named under `sankalpaWords`; a locale not
+        loaded or a tradition no loaded pack carries is `UNSUPPORTED` on
+        `sankalpaWords.locale` or `sankalpaWords.tradition`; otherwise as
+        `ts_almanac_sankalpa`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_almanac_sankalpa_words(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
+
     def almanac_ashauch(self, request_json: str) -> str:
         """The period of impurity after a birth or a death at a place
         (`03-design/ashauch.md`), answered with `{value, provenance}` as
@@ -6462,6 +6511,40 @@ class TeistroContext:
             owned.clear()
             blob = _take_blob(self._lib, _out_blob)
             return blob
+
+    def matching_band(self, request_json: str) -> str:
+        """A guna total graded into bands and said in words
+        (`03-design/matching.md`, "Grading a total into bands", SR-39),
+        answered as canonical JSON `{total, dushkuta, band, bands, row, locale,
+        words, text}`: `band` the band's key (`UNFIT`, `FIT`, `MIDDLING`,
+        `GOOD`, `EXCELLENT`), `bands` the table's name, `row` the row that gave
+        it, `words` the band in words and `text` the total with it.
+
+        `request_json` is `{"total"}`, with `"dushkuta"` (whether the signs
+        stand 2/12, 6/8 or 9/5; false when left out), `"shipped"` (a shipped
+        table: `MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or
+        `ARYAVARTA`) or `"bands"` (a consumer's own table, `{name, source,
+        rows}`, each row `{band, from, clears?, bhakoot?}`), and `"locale"`
+        (the context's when left out). A key it does not read, a total outside
+        0 to 36, an unknown table, both tables or a table that leaves a total
+        ungraded is `INVALID_ARG`, named under `band`; a locale not loaded is
+        `UNSUPPORTED` on `band.locale`.
+        """
+        with self._lock:
+            owned: list[Any] = []
+            _request_json = request_json.encode("utf-8")
+            owned.append(_request_json)
+            _out_json = _StringStruct()
+            status = Status(self._lib.ts_matching_band(
+                self._raw,
+                _request_json,
+                ctypes.byref(_out_json),
+            ))
+            if status != Status.OK:
+                self._raise(status)
+            owned.clear()
+            json = _take_string(self._lib, _out_json)
+            return json
 
     def chart_relocated(self, request_json: str) -> str:
         """**A chart recast at other places** (`03-design/astrocartography.md`):

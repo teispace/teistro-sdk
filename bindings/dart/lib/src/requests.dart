@@ -1105,6 +1105,69 @@ final class SankalpaRequest extends _Request {
   List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, longitudeDeg, utcOffsetSeconds, zone];
 }
 
+/// The words' request as a binding writes it.
+final class SankalpaWordsRequest extends _Request {
+  const SankalpaWordsRequest({
+    this.altitudeM = 0.0,
+    required this.at,
+    this.ayana = AyanaReckoning.sidereal,
+    required this.latitudeDeg,
+    this.locale,
+    required this.longitudeDeg,
+    required this.slots,
+    this.tradition,
+    this.utcOffsetSeconds,
+    this.zone,
+  });
+
+  /// The place's height above sea level in metres, 0 when left out.
+  final double altitudeM;
+
+  /// The instant of the rite, a UTC Julian day.
+  final double at;
+
+  /// How the ayana is reckoned: `SIDEREAL` when left out.
+  final AyanaReckoning ayana;
+
+  /// The place's latitude, degrees north positive.
+  final double latitudeDeg;
+
+  /// The locale the words are in; the context's when left out.
+  final String? locale;
+
+  /// The place's longitude, degrees east positive.
+  final double longitudeDeg;
+
+  /// The performer, gotra, purpose, and optionally the river, the holy ground and the three generations of pitris.
+  final SankalpaFor slots;
+
+  /// The tradition, its template's message key: `sdk.sankalpa.himavatkhande` when left out, or a key a loaded pack carries.
+  final String? tradition;
+
+  /// The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+  final int? utcOffsetSeconds;
+
+  /// The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+  final Object? zone;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'altitudeM': altitudeM,
+    'at': at,
+    'ayana': ayana.key,
+    'latitudeDeg': latitudeDeg,
+    if (locale case final localeValue?) 'locale': localeValue,
+    'longitudeDeg': longitudeDeg,
+    'slots': slots._wire,
+    if (tradition case final traditionValue?) 'tradition': traditionValue,
+    if (utcOffsetSeconds case final utcOffsetSecondsValue?) 'utcOffsetSeconds': utcOffsetSecondsValue,
+    if (zone case final zoneValue?) 'zone': zoneValue,
+  };
+
+  @override
+  List<Object?> get _fields => [altitudeM, at, ayana, latitudeDeg, locale, longitudeDeg, slots, tradition, utcOffsetSeconds, zone];
+}
+
 /// The request as a binding writes it.
 final class SentencesRequest extends _Request {
   const SentencesRequest({
@@ -1920,6 +1983,44 @@ final class TimeTextRequest extends _Request {
 
   @override
   List<Object?> get _fields => [at, digits, hour12, locale, style];
+}
+
+/// A total to grade, the table to grade it by and the locale to say it in.
+final class BandRequest extends _Request {
+  const BandRequest({
+    this.bands,
+    this.dushkuta = false,
+    this.locale,
+    this.shipped,
+    required this.total,
+  });
+
+  /// A consumer's own table; or `shipped`, not both.
+  final GunaBands? bands;
+
+  /// Whether the two Moons' signs stand 2/12, 6/8 or 9/5 (*dushkuta*), lifted or not; `false` when left out.
+  final bool dushkuta;
+
+  /// The locale the words are in; the context's when left out.
+  final String? locale;
+
+  /// A shipped table by name (`MUHURTA_MARTANDA`, `NEPALI_ALMANAC` or `ARYAVARTA`); or `bands`, not both. `MUHURTA_MARTANDA` when both are left out.
+  final String? shipped;
+
+  /// The total, out of 36.
+  final double total;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    if (bands case final bandsValue?) 'bands': bandsValue._wire,
+    'dushkuta': dushkuta,
+    if (locale case final localeValue?) 'locale': localeValue,
+    if (shipped case final shippedValue?) 'shipped': shippedValue,
+    'total': total,
+  };
+
+  @override
+  List<Object?> get _fields => [bands, dushkuta, locale, shipped, total];
 }
 
 /// Two names to match star to star, and the readings they are matched under. Naam milan needs no chart, so this is the whole request.
@@ -3260,6 +3361,49 @@ enum AyanaReckoning implements _Keyed {
   final String key;
 }
 
+/// Who resolves, where, and to what: the slots a tradition's template leaves to the caller, written as they are to be spoken.
+final class SankalpaFor extends _Request {
+  const SankalpaFor({
+    required this.gotra,
+    this.kshetra,
+    required this.performer,
+    this.pitris,
+    required this.purpose,
+    this.river,
+  });
+
+  /// The gotra's stem (`कौण्डिन्य`), which the template compounds.
+  final String gotra;
+
+  /// The holy ground, as a stem (`पाशुपत`); left out, the template says none.
+  final String? kshetra;
+
+  /// The performer's name with its title, in the nominative, as spoken before *aham* (`हरिनाथशर्मा`).
+  final String performer;
+
+  /// The three generations, for a rite for the forebears (a shraddha, a tarpana); left out, the template names none.
+  final Pitris? pitris;
+
+  /// The rite resolved on, in the accusative (`गणेशपूजनम्`), as spoken before *kariṣye*.
+  final String purpose;
+
+  /// The river the place is near, as a stem (`वाग्मती`); left out, the template says none.
+  final String? river;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'gotra': gotra,
+    if (kshetra case final kshetraValue?) 'kshetra': kshetraValue,
+    'performer': performer,
+    if (pitris case final pitrisValue?) 'pitris': pitrisValue._wire,
+    'purpose': purpose,
+    if (river case final riverValue?) 'river': riverValue,
+  };
+
+  @override
+  List<Object?> get _fields => [gotra, kshetra, performer, pitris, purpose, river];
+}
+
 /// How a body is placed on the angles (C1155), written `"IN_MUNDO"` or `"ZODIACAL"`.
 enum Projection implements _Keyed {
   /// The body where it stands, its ecliptic latitude kept, against the true horizon: the practice of astrocartography's maps.
@@ -4061,6 +4205,34 @@ enum TimeStyle implements _Keyed {
   /// The key the wire spells it with.
   @override
   final String key;
+}
+
+/// A table of bands: rows in order, the last that applies giving the band. The first row must take every total (`from` 0, `AT_LEAST`, `ANY`), so no total is left without one.
+final class GunaBands extends _Request {
+  const GunaBands({
+    required this.name,
+    required this.rows,
+    required this.source,
+  });
+
+  /// The table's name, which the grade carries.
+  final String name;
+
+  /// The rows, in order: the last that applies gives the band.
+  final List<BandRow> rows;
+
+  /// Where its rows come from.
+  final String source;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'name': name,
+    'rows': [for (final e0 in rows) e0._wire],
+    'source': source,
+  };
+
+  @override
+  List<Object?> get _fields => [name, rows, source];
 }
 
 /// The readings two names are matched under.
@@ -6094,6 +6266,34 @@ enum PakshiSubLengths implements _Keyed {
   final String key;
 }
 
+/// The three generations of pitris a rite for the forebears names, the father first, each as the stem the template compounds (*Rāma*, not *Rāmaśarmā*).
+final class Pitris extends _Request {
+  const Pitris({
+    required this.father,
+    required this.grandfather,
+    required this.greatGrandfather,
+  });
+
+  /// The father (*pitṛ*).
+  final String father;
+
+  /// The father's father (*pitāmaha*).
+  final String grandfather;
+
+  /// The father's father's father (*prapitāmaha*).
+  final String greatGrandfather;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'father': father,
+    'grandfather': grandfather,
+    'greatGrandfather': greatGrandfather,
+  };
+
+  @override
+  List<Object?> get _fields => [father, grandfather, greatGrandfather];
+}
+
 /// What a reading of the dignities chooses.
 final class DignityRules extends _Request {
   const DignityRules({
@@ -7205,6 +7405,39 @@ final class WordsAmountValueDecimal extends WordsAmountValue {
 
   @override
   List<Object?> get _fields => [value];
+}
+
+/// One row of a table: the band a total takes when it clears `from` and the signs stand as `bhakoot` says.
+final class BandRow extends _Request {
+  const BandRow({
+    required this.band,
+    this.bhakoot = BhakootStanding.any,
+    this.clears = Clears.atLeast,
+    required this.from,
+  });
+
+  /// The band.
+  final GunaBand band;
+
+  /// How the signs must stand; `ANY` when left out.
+  final BhakootStanding bhakoot;
+
+  /// How the total clears it; `AT_LEAST` when left out.
+  final Clears clears;
+
+  /// The threshold, out of 36.
+  final double from;
+
+  @override
+  Map<String, Object?> get _wire => <String, Object?>{
+    'band': band.key,
+    'bhakoot': bhakoot.key,
+    'clears': clears.key,
+    'from': from,
+  };
+
+  @override
+  List<Object?> get _fields => [band, bhakoot, clears, from];
 }
 
 /// The readings a name is taken under; each default is the one no source read contradicts.
@@ -11204,6 +11437,56 @@ enum TambiraMover implements _Keyed {
   final String key;
 }
 
+/// A band a total falls in. The words for each are the `sdk.matching.band` message's, in every locale that carries it.
+enum GunaBand implements _Keyed {
+  /// Not fit for marriage: below the floor (*aśubha*, *nindya*, "does not join").
+  unfit('UNFIT'),
+  /// Above the floor, with no band named above it: *Muhurta Martanda*'s *śubha*.
+  fit('FIT'),
+  /// *Madhyama*: above the floor, up to 20.
+  middling('MIDDLING'),
+  /// *Uttama* (*śreṣṭha* in one almanac): above 20, up to 30.
+  good('GOOD'),
+  /// *Ati-uttama* (*uttama* in one almanac): above 30.
+  excellent('EXCELLENT');
+
+  const GunaBand(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// How the two signs must stand for a row to apply: the almanacs' *satkuta* and *dushkuta*, read from the signs alone (2/12, 6/8 and 9/5 are the dushkuta), whether or not a lift restores the Bhakoot.
+enum BhakootStanding implements _Keyed {
+  /// Either way.
+  any('ANY'),
+  /// The signs stand well: no 2/12, 6/8 or 9/5.
+  satkuta('SATKUTA'),
+  /// The signs stand 2/12, 6/8 or 9/5.
+  dushkuta('DUSHKUTA');
+
+  const BhakootStanding(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
+/// How a total clears a row's threshold.
+enum Clears implements _Keyed {
+  /// The total is the threshold or more ("18 or more").
+  atLeast('AT_LEAST'),
+  /// The total is more than the threshold ("above 18").
+  above('ABOVE');
+
+  const Clears(this.key);
+
+  /// The key the wire spells it with.
+  @override
+  final String key;
+}
+
 /// Where a name in Abhijit's row stands when a koota needs one of the 108 padas (C292).
 enum AbhijitPada implements _Keyed {
   /// Refused, naming this knob: no source read places it.
@@ -15017,6 +15300,9 @@ abstract final class Records {
   /// `almanac.sankalpa`, whose request is [SankalpaRequest].
   static const almanacSankalpa = RecordOf<SankalpaRequest>._('almanac.sankalpa');
 
+  /// `almanac.sankalpaWords`, whose request is [SankalpaWordsRequest].
+  static const almanacSankalpaWords = RecordOf<SankalpaWordsRequest>._('almanac.sankalpaWords');
+
   /// `almanac.sentences`, whose request is [SentencesRequest].
   static const almanacSentences = RecordOf<SentencesRequest>._('almanac.sentences');
 
@@ -15067,6 +15353,9 @@ abstract final class Records {
 
   /// `intl.time`, whose request is [TimeTextRequest].
   static const intlTime = RecordOf<TimeTextRequest>._('intl.time');
+
+  /// `matching.band`, whose request is [BandRequest].
+  static const matchingBand = RecordOf<BandRequest>._('matching.band');
 
   /// `matching.naam`, whose request is [NaamRequest].
   static const matchingNaam = RecordOf<NaamRequest>._('matching.naam');
@@ -15133,6 +15422,7 @@ abstract final class Records {
     almanacPeople,
     almanacPublishedReasons,
     almanacSankalpa,
+    almanacSankalpaWords,
     almanacSentences,
     almanacSkyView,
     calendarAdd,
@@ -15150,6 +15440,7 @@ abstract final class Records {
     intlLexicon,
     intlLookup,
     intlTime,
+    matchingBand,
     matchingNaam,
     namingCheck,
     namingOf,

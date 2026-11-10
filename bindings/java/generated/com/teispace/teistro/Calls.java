@@ -1027,6 +1027,37 @@ final class Calls {
     }
 
     /**
+     * `ts_almanac_sankalpa_words`: A sankalpa said in words by a tradition's template
+     * (`03-design/sankalpa.md` §5, SR-29), answered with `{value,
+     * provenance}` as canonical JSON: `value` is `{tradition, locale, params,
+     * text}`, `params` the slots the template was given (each as
+     * `ts_intl_render` takes it, to say it again in another locale) and
+     * `text` the words; the provenance is the time's.
+     *
+     * `request_json` is `ts_almanac_sankalpa`'s request with `"slots"`
+     * (`{performer, gotra, purpose, river?, kshetra?, pitris?}`, `pitris`
+     * `{father, grandfather, greatGrandfather}`), and optionally
+     * `"tradition"` (a template's message key, `sdk.sankalpa.himavatkhande`
+     * when left out) and `"locale"` (the context's when left out). A key it
+     * does not read, an instant, place or offset out of range, or a slot left
+     * blank is `INVALID_ARG`, named under `sankalpaWords`; a locale not
+     * loaded or a tradition no loaded pack carries is `UNSUPPORTED` on
+     * `sankalpaWords.locale` or `sankalpaWords.tradition`; otherwise as
+     * `ts_almanac_sankalpa`.
+     */
+    static String almanacSankalpaWords(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_almanac_sankalpa_words.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
+        }
+    }
+
+    /**
      * `ts_almanac_ashauch`: The period of impurity after a birth or a death at a place
      * (`03-design/ashauch.md`), answered with `{value, provenance}` as
      * canonical JSON.
@@ -1474,6 +1505,36 @@ final class Calls {
                 throw refused(lib, context, status);
             }
             return taken(lib, outBlob);
+        }
+    }
+
+    /**
+     * `ts_matching_band`: A guna total graded into bands and said in words
+     * (`03-design/matching.md`, "Grading a total into bands", SR-39),
+     * answered as canonical JSON `{total, dushkuta, band, bands, row, locale,
+     * words, text}`: `band` the band's key (`UNFIT`, `FIT`, `MIDDLING`,
+     * `GOOD`, `EXCELLENT`), `bands` the table's name, `row` the row that gave
+     * it, `words` the band in words and `text` the total with it.
+     *
+     * `request_json` is `{"total"}`, with `"dushkuta"` (whether the signs
+     * stand 2/12, 6/8 or 9/5; false when left out), `"shipped"` (a shipped
+     * table: `MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or
+     * `ARYAVARTA`) or `"bands"` (a consumer's own table, `{name, source,
+     * rows}`, each row `{band, from, clears?, bhakoot?}`), and `"locale"`
+     * (the context's when left out). A key it does not read, a total outside
+     * 0 to 36, an unknown table, both tables or a table that leaves a total
+     * ungraded is `INVALID_ARG`, named under `band`; a locale not loaded is
+     * `UNSUPPORTED` on `band.locale`.
+     */
+    static String matchingBand(Native lib, MemorySegment context, String requestJson) {
+        try (Arena arena = Arena.ofConfined()) {
+            MemorySegment requestJsonRaw = Boundary.cString(arena, Objects.requireNonNull(requestJson, "requestJson"));
+            MemorySegment outJson = arena.allocate(Native.TsString.LAYOUT);
+            int status = Boundary.call(() -> (int) lib.ts_matching_band.invokeExact(context, requestJsonRaw, outJson));
+            if (status != 0) {
+                throw refused(lib, context, status);
+            }
+            return owned(lib, outJson);
         }
     }
 

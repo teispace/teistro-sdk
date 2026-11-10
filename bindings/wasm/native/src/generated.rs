@@ -5245,6 +5245,42 @@ impl Context {
         Ok(take_string(&mut out_json))
     }
 
+    /// A sankalpa said in words by a tradition's template
+    /// (`03-design/sankalpa.md` §5, SR-29), answered with `{value,
+    /// provenance}` as canonical JSON: `value` is `{tradition, locale, params,
+    /// text}`, `params` the slots the template was given (each as
+    /// `ts_intl_render` takes it, to say it again in another locale) and
+    /// `text` the words; the provenance is the time's.
+    ///
+    /// `request_json` is `ts_almanac_sankalpa`'s request with `"slots"`
+    /// (`{performer, gotra, purpose, river?, kshetra?, pitris?}`, `pitris`
+    /// `{father, grandfather, greatGrandfather}`), and optionally
+    /// `"tradition"` (a template's message key, `sdk.sankalpa.himavatkhande`
+    /// when left out) and `"locale"` (the context's when left out). A key it
+    /// does not read, an instant, place or offset out of range, or a slot left
+    /// blank is `INVALID_ARG`, named under `sankalpaWords`; a locale not
+    /// loaded or a tradition no loaded pack carries is `UNSUPPORTED` on
+    /// `sankalpaWords.locale` or `sankalpaWords.tradition`; otherwise as
+    /// `ts_almanac_sankalpa`.
+    #[wasm_bindgen(js_name = almanacSankalpaWords)]
+    pub fn almanac_sankalpa_words(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::panchanga::ts_almanac_sankalpa_words(
+                self.handle,
+                request_json.as_ptr(),
+                &raw mut out_json,
+            )
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
+    }
+
     /// The period of impurity after a birth or a death at a place
     /// (`03-design/ashauch.md`), answered with `{value, provenance}` as
     /// canonical JSON.
@@ -5757,6 +5793,37 @@ impl Context {
         self.leave()?;
         self.check(status)?;
         Ok(take_blob(&mut out_blob))
+    }
+
+    /// A guna total graded into bands and said in words
+    /// (`03-design/matching.md`, "Grading a total into bands", SR-39),
+    /// answered as canonical JSON `{total, dushkuta, band, bands, row, locale,
+    /// words, text}`: `band` the band's key (`UNFIT`, `FIT`, `MIDDLING`,
+    /// `GOOD`, `EXCELLENT`), `bands` the table's name, `row` the row that gave
+    /// it, `words` the band in words and `text` the total with it.
+    ///
+    /// `request_json` is `{"total"}`, with `"dushkuta"` (whether the signs
+    /// stand 2/12, 6/8 or 9/5; false when left out), `"shipped"` (a shipped
+    /// table: `MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or
+    /// `ARYAVARTA`) or `"bands"` (a consumer's own table, `{name, source,
+    /// rows}`, each row `{band, from, clears?, bhakoot?}`), and `"locale"`
+    /// (the context's when left out). A key it does not read, a total outside
+    /// 0 to 36, an unknown table, both tables or a table that leaves a total
+    /// ungraded is `INVALID_ARG`, named under `band`; a locale not loaded is
+    /// `UNSUPPORTED` on `band.locale`.
+    #[wasm_bindgen(js_name = matchingBand)]
+    pub fn matching_band(&self, request_json: String) -> Result<String> {
+        let request_json =
+            std::ffi::CString::new(request_json).map_err(|e| Error::from_reason(e.to_string()))?;
+        let mut out_json = ffi::string::TsString::empty();
+        self.enter();
+        // SAFETY: the handle is live and every pointer is valid for the call.
+        let status = unsafe {
+            ffi::naam::ts_matching_band(self.handle, request_json.as_ptr(), &raw mut out_json)
+        };
+        self.leave()?;
+        self.check(status)?;
+        Ok(take_string(&mut out_json))
     }
 
     /// **A chart recast at other places** (`03-design/astrocartography.md`):

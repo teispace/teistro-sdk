@@ -666,6 +666,52 @@ export interface SankalpaRequest {
 }
 
 /**
+ * The words' request as a binding writes it.
+ */
+export interface SankalpaWordsRequest {
+  /**
+   * The place's height above sea level in metres, 0 when left out.
+   */
+  readonly altitudeM?: number;
+  /**
+   * The instant of the rite, a UTC Julian day.
+   */
+  readonly at: number;
+  /**
+   * How the ayana is reckoned: `SIDEREAL` when left out.
+   */
+  readonly ayana?: AyanaReckoning;
+  /**
+   * The place's latitude, degrees north positive.
+   */
+  readonly latitudeDeg: number;
+  /**
+   * The locale the words are in; the context's when left out.
+   */
+  readonly locale?: string | null;
+  /**
+   * The place's longitude, degrees east positive.
+   */
+  readonly longitudeDeg: number;
+  /**
+   * The performer, gotra, purpose, and optionally the river, the holy ground and the three generations of pitris.
+   */
+  readonly slots: SankalpaFor;
+  /**
+   * The tradition, its template's message key: `sdk.sankalpa.himavatkhande` when left out, or a key a loaded pack carries.
+   */
+  readonly tradition?: string | null;
+  /**
+   * The offset from UTC the place's civil days run at, in seconds, east positive; or `zone`, not both.
+   */
+  readonly utcOffsetSeconds?: number | null;
+  /**
+   * The zone each instant is read on, at its offset then; or `utcOffsetSeconds`, not both.
+   */
+  readonly zone?: ZoneSpec | null;
+}
+
+/**
  * The request as a binding writes it.
  */
 export interface SentencesRequest {
@@ -1079,6 +1125,32 @@ export interface TimeTextRequest {
    * How much of it.
    */
   readonly style?: TimeStyle;
+}
+
+/**
+ * A total to grade, the table to grade it by and the locale to say it in.
+ */
+export interface BandRequest {
+  /**
+   * A consumer's own table; or `shipped`, not both.
+   */
+  readonly bands?: GunaBands | null;
+  /**
+   * Whether the two Moons' signs stand 2/12, 6/8 or 9/5 (*dushkuta*), lifted or not; `false` when left out.
+   */
+  readonly dushkuta?: boolean;
+  /**
+   * The locale the words are in; the context's when left out.
+   */
+  readonly locale?: string | null;
+  /**
+   * A shipped table by name (`MUHURTA_MARTANDA`, `NEPALI_ALMANAC` or `ARYAVARTA`); or `bands`, not both. `MUHURTA_MARTANDA` when both are left out.
+   */
+  readonly shipped?: string | null;
+  /**
+   * The total, out of 36.
+   */
+  readonly total: number;
 }
 
 /**
@@ -2041,6 +2113,36 @@ export interface ReckonedPlace {
 export type AyanaReckoning = 'SIDEREAL' | 'TROPICAL';
 
 /**
+ * Who resolves, where, and to what: the slots a tradition's template leaves to the caller, written as they are to be spoken.
+ */
+export interface SankalpaFor {
+  /**
+   * The gotra's stem (`कौण्डिन्य`), which the template compounds.
+   */
+  readonly gotra: string;
+  /**
+   * The holy ground, as a stem (`पाशुपत`); left out, the template says none.
+   */
+  readonly kshetra?: string | null;
+  /**
+   * The performer's name with its title, in the nominative, as spoken before *aham* (`हरिनाथशर्मा`).
+   */
+  readonly performer: string;
+  /**
+   * The three generations, for a rite for the forebears (a shraddha, a tarpana); left out, the template names none.
+   */
+  readonly pitris?: Pitris | null;
+  /**
+   * The rite resolved on, in the accusative (`गणेशपूजनम्`), as spoken before *kariṣye*.
+   */
+  readonly purpose: string;
+  /**
+   * The river the place is near, as a stem (`वाग्मती`); left out, the template says none.
+   */
+  readonly river?: string | null;
+}
+
+/**
  * How a body is placed on the angles (C1155), written `"IN_MUNDO"` or `"ZODIACAL"`.
  *
  * `IN_MUNDO`: The body where it stands, its ecliptic latitude kept, against the true horizon: the practice of astrocartography's maps.
@@ -2864,6 +2966,24 @@ export interface ClockTime {
  * `LONG`: Hours, minutes and seconds.
  */
 export type TimeStyle = 'NUMERIC' | 'LONG';
+
+/**
+ * A table of bands: rows in order, the last that applies giving the band. The first row must take every total (`from` 0, `AT_LEAST`, `ANY`), so no total is left without one.
+ */
+export interface GunaBands {
+  /**
+   * The table's name, which the grade carries.
+   */
+  readonly name: string;
+  /**
+   * The rows, in order: the last that applies gives the band.
+   */
+  readonly rows: readonly BandRow[];
+  /**
+   * Where its rows come from.
+   */
+  readonly source: string;
+}
 
 /**
  * The readings two names are matched under.
@@ -3979,6 +4099,24 @@ export type PakshiRelations = 'AGASTYA' | 'PULIPPANI';
 export type PakshiSubLengths = 'AGASTYA' | 'PULIPPANI';
 
 /**
+ * The three generations of pitris a rite for the forebears names, the father first, each as the stem the template compounds (*Rāma*, not *Rāmaśarmā*).
+ */
+export interface Pitris {
+  /**
+   * The father (*pitṛ*).
+   */
+  readonly father: string;
+  /**
+   * The father's father (*pitāmaha*).
+   */
+  readonly grandfather: string;
+  /**
+   * The father's father's father (*prapitāmaha*).
+   */
+  readonly greatGrandfather: string;
+}
+
+/**
  * How wide an aspect may be before it no longer holds (C240).
  */
 export type OrbModel = OrbModelLeo | OrbModelMoieties | OrbModelByAspect;
@@ -4999,6 +5137,28 @@ export type WordsRounding = 'HALF_UP' | 'HALF_EVEN' | 'EXACT';
 export type WordsAmountValue =
   | { readonly minor: number }
   | { readonly decimal: string };
+
+/**
+ * One row of a table: the band a total takes when it clears `from` and the signs stand as `bhakoot` says.
+ */
+export interface BandRow {
+  /**
+   * The band.
+   */
+  readonly band: GunaBand;
+  /**
+   * How the signs must stand; `ANY` when left out.
+   */
+  readonly bhakoot?: BhakootStanding;
+  /**
+   * How the total clears it; `AT_LEAST` when left out.
+   */
+  readonly clears?: Clears;
+  /**
+   * The threshold, out of 36.
+   */
+  readonly from: number;
+}
 
 /**
  * The readings a name is taken under; each default is the one no source read contradicts.
@@ -7663,6 +7823,34 @@ export type MoonBenefic = 'ALWAYS' | 'WAXING';
 export type TambiraMover = 'KARYESHA' | 'EITHER_LORD';
 
 /**
+ * A band a total falls in. The words for each are the `sdk.matching.band` message's, in every locale that carries it.
+ *
+ * `UNFIT`: Not fit for marriage: below the floor (*aśubha*, *nindya*, "does not join").
+ * `FIT`: Above the floor, with no band named above it: *Muhurta Martanda*'s *śubha*.
+ * `MIDDLING`: *Madhyama*: above the floor, up to 20.
+ * `GOOD`: *Uttama* (*śreṣṭha* in one almanac): above 20, up to 30.
+ * `EXCELLENT`: *Ati-uttama* (*uttama* in one almanac): above 30.
+ */
+export type GunaBand = 'UNFIT' | 'FIT' | 'MIDDLING' | 'GOOD' | 'EXCELLENT';
+
+/**
+ * How the two signs must stand for a row to apply: the almanacs' *satkuta* and *dushkuta*, read from the signs alone (2/12, 6/8 and 9/5 are the dushkuta), whether or not a lift restores the Bhakoot.
+ *
+ * `ANY`: Either way.
+ * `SATKUTA`: The signs stand well: no 2/12, 6/8 or 9/5.
+ * `DUSHKUTA`: The signs stand 2/12, 6/8 or 9/5.
+ */
+export type BhakootStanding = 'ANY' | 'SATKUTA' | 'DUSHKUTA';
+
+/**
+ * How a total clears a row's threshold.
+ *
+ * `AT_LEAST`: The total is the threshold or more ("18 or more").
+ * `ABOVE`: The total is more than the threshold ("above 18").
+ */
+export type Clears = 'AT_LEAST' | 'ABOVE';
+
+/**
  * Where a name in Abhijit's row stands when a koota needs one of the 108 padas (C292).
  *
  * `REFUSE`: Refused, naming this knob: no source read places it.
@@ -10212,6 +10400,7 @@ export interface RecordRequests {
   readonly 'almanac.people': PeopleRequest;
   readonly 'almanac.publishedReasons': PublishedReasonsRequest;
   readonly 'almanac.sankalpa': SankalpaRequest;
+  readonly 'almanac.sankalpaWords': SankalpaWordsRequest;
   readonly 'almanac.sentences': SentencesRequest;
   readonly 'almanac.skyView': SkyViewRequest;
   readonly 'calendar.add': AddAsked;
@@ -10229,6 +10418,7 @@ export interface RecordRequests {
   readonly 'intl.lexicon': LexiconRequest;
   readonly 'intl.lookup': LookupRequest;
   readonly 'intl.time': TimeTextRequest;
+  readonly 'matching.band': BandRequest;
   readonly 'matching.naam': NaamRequest;
   readonly 'naming.check': NamingCheckRequest;
   readonly 'naming.of': NamingOfRequest;

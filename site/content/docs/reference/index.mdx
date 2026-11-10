@@ -3,7 +3,7 @@ title: Reference
 description: Every entry point of the Teistro C ABI, generated from the API description.
 ---
 
-The SDK has one boundary: a C ABI of 103 entry points over 28 structs and 186 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
+The SDK has one boundary: a C ABI of 105 entry points over 28 structs and 186 enums. Every binding's mechanical layer is generated from a description of it, `idl/api.json`, which is extracted from the boundary crates' own source and gated by `cargo xtask check-ffi`. These pages are generated from that same description, so a page cannot describe an entry point the library does not have.
 
 ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 
@@ -127,6 +127,7 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 | [`ts_almanac_disagreements`](panchanga/ts_almanac_disagreements) | Compares this context's reckoning of a range with another's at one place (`03-design/setup-disagreements.md`) and answers with `{days, festivals}` as canonical JSON, each the `{value, provenance}` of one comparison asked, sealed by this context's provenance, and null when not asked. |
 | [`ts_almanac_published_reasons`](panchanga/ts_almanac_published_reasons) | Says why each published day of a festival answer differs from the rule's (`03-design/published-overrides.md` §4) and answers with `{value, provenance}` as canonical JSON, sealed by this context's provenance, every catalogue member a full key. |
 | [`ts_almanac_sankalpa`](panchanga/ts_almanac_sankalpa) | The time a sankalpa recites at an instant and a place (`03-design/sankalpa.md`), answered with `{value, provenance}` as canonical JSON, every catalogue member a full key. |
+| [`ts_almanac_sankalpa_words`](panchanga/ts_almanac_sankalpa_words) | A sankalpa said in words by a tradition's template (`03-design/sankalpa.md` §5, SR-29), answered with `{value, provenance}` as canonical JSON: `value` is `{tradition, locale, params, text}`, `params` the slots the template was given (each as `ts_intl_render` takes it, to say it again in another locale) and `text` the words; the provenance is the time's. |
 | [`ts_almanac_ashauch`](panchanga/ts_almanac_ashauch) | The period of impurity after a birth or a death at a place (`03-design/ashauch.md`), answered with `{value, provenance}` as canonical JSON. |
 | [`ts_almanac_household`](panchanga/ts_almanac_household) | Several births and deaths and several observers at a place (`03-design/ashauch.md` §11), answered with `{value, provenance}` as canonical JSON. |
 | [`ts_almanac_ashauch_kin`](panchanga/ts_almanac_ashauch_kin) | The ashauch relation and sapinda degree a path in a family gives (`03-design/ashauch.md` §10), answered as canonical JSON. |
@@ -147,6 +148,7 @@ ABI version **1**, SDK **1.0.0-rc.1**, symbol prefix `ts_`.
 | entry point | what it does |
 |---|---|
 | [`ts_naam_milan`](naam/ts_naam_milan) | Matches two names star to star (naam milan) and answers with the `naam` blob: each name's first syllable in the śatapada cakra, the varga koota, and the Ashta Koota and the ten considerations of the two name stars (`03-design/matching.md`, C291 to C296). |
+| [`ts_matching_band`](naam/ts_matching_band) | A guna total graded into bands and said in words (`03-design/matching.md`, "Grading a total into bands", SR-39), answered as canonical JSON `{total, dushkuta, band, bands, row, locale, words, text}`: `band` the band's key (`UNFIT`, `FIT`, `MIDDLING`, `GOOD`, `EXCELLENT`), `bands` the table's name, `row` the row that gave it, `words` the band in words and `text` the total with it. |
 
 ### Mapping
 

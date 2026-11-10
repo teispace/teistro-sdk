@@ -2046,6 +2046,8 @@ typedef TsAlmanacPublishedReasonsNative = ffi.Int32 Function(ffi.Pointer<Context
 typedef TsAlmanacPublishedReasonsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSankalpaNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacSankalpaDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacSankalpaWordsNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsAlmanacSankalpaWordsDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacAshauchNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacAshauchDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsAlmanacHouseholdNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2076,6 +2078,8 @@ typedef TsAlmanacSkyViewNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Po
 typedef TsAlmanacSkyViewDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsNaamMilanNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
 typedef TsNaamMilanDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<BlobStruct>);
+typedef TsMatchingBandNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
+typedef TsMatchingBandDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsChartRelocatedNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsChartRelocatedDart = int Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
 typedef TsChartAstrocartographyNative = ffi.Int32 Function(ffi.Pointer<Context>, ffi.Pointer<ffi.Char>, ffi.Pointer<StringStruct>);
@@ -2199,6 +2203,7 @@ final class TeistroLibrary {
         ts_almanac_disagreements = library.lookupFunction<TsAlmanacDisagreementsNative, TsAlmanacDisagreementsDart>('ts_almanac_disagreements'),
         ts_almanac_published_reasons = library.lookupFunction<TsAlmanacPublishedReasonsNative, TsAlmanacPublishedReasonsDart>('ts_almanac_published_reasons'),
         ts_almanac_sankalpa = library.lookupFunction<TsAlmanacSankalpaNative, TsAlmanacSankalpaDart>('ts_almanac_sankalpa'),
+        ts_almanac_sankalpa_words = library.lookupFunction<TsAlmanacSankalpaWordsNative, TsAlmanacSankalpaWordsDart>('ts_almanac_sankalpa_words'),
         ts_almanac_ashauch = library.lookupFunction<TsAlmanacAshauchNative, TsAlmanacAshauchDart>('ts_almanac_ashauch'),
         ts_almanac_household = library.lookupFunction<TsAlmanacHouseholdNative, TsAlmanacHouseholdDart>('ts_almanac_household'),
         ts_almanac_ashauch_kin = library.lookupFunction<TsAlmanacAshauchKinNative, TsAlmanacAshauchKinDart>('ts_almanac_ashauch_kin'),
@@ -2214,6 +2219,7 @@ final class TeistroLibrary {
         ts_almanac_changes = library.lookupFunction<TsAlmanacChangesNative, TsAlmanacChangesDart>('ts_almanac_changes'),
         ts_almanac_sky_view = library.lookupFunction<TsAlmanacSkyViewNative, TsAlmanacSkyViewDart>('ts_almanac_sky_view'),
         ts_naam_milan = library.lookupFunction<TsNaamMilanNative, TsNaamMilanDart>('ts_naam_milan'),
+        ts_matching_band = library.lookupFunction<TsMatchingBandNative, TsMatchingBandDart>('ts_matching_band'),
         ts_chart_relocated = library.lookupFunction<TsChartRelocatedNative, TsChartRelocatedDart>('ts_chart_relocated'),
         ts_chart_astrocartography = library.lookupFunction<TsChartAstrocartographyNative, TsChartAstrocartographyDart>('ts_chart_astrocartography'),
         ts_chart_mundane = library.lookupFunction<TsChartMundaneNative, TsChartMundaneDart>('ts_chart_mundane'),
@@ -2751,6 +2757,25 @@ final class TeistroLibrary {
   /// `OUT_OF_RANGE`.
   final TsAlmanacSankalpaDart ts_almanac_sankalpa;
 
+  /// A sankalpa said in words by a tradition's template
+  /// (`03-design/sankalpa.md` §5, SR-29), answered with `{value,
+  /// provenance}` as canonical JSON: `value` is `{tradition, locale, params,
+  /// text}`, `params` the slots the template was given (each as
+  /// `ts_intl_render` takes it, to say it again in another locale) and
+  /// `text` the words; the provenance is the time's.
+  ///
+  /// `request_json` is `ts_almanac_sankalpa`'s request with `"slots"`
+  /// (`{performer, gotra, purpose, river?, kshetra?, pitris?}`, `pitris`
+  /// `{father, grandfather, greatGrandfather}`), and optionally
+  /// `"tradition"` (a template's message key, `sdk.sankalpa.himavatkhande`
+  /// when left out) and `"locale"` (the context's when left out). A key it
+  /// does not read, an instant, place or offset out of range, or a slot left
+  /// blank is `INVALID_ARG`, named under `sankalpaWords`; a locale not
+  /// loaded or a tradition no loaded pack carries is `UNSUPPORTED` on
+  /// `sankalpaWords.locale` or `sankalpaWords.tradition`; otherwise as
+  /// `ts_almanac_sankalpa`.
+  final TsAlmanacSankalpaWordsDart ts_almanac_sankalpa_words;
+
   /// The period of impurity after a birth or a death at a place
   /// (`03-design/ashauch.md`), answered with `{value, provenance}` as
   /// canonical JSON.
@@ -3021,6 +3046,24 @@ final class TeistroLibrary {
   /// way, or an Abhijit syllable while `abhijit` refuses is `INVALID_ARG`,
   /// named under `naam.bride` or `naam.groom`.
   final TsNaamMilanDart ts_naam_milan;
+
+  /// A guna total graded into bands and said in words
+  /// (`03-design/matching.md`, "Grading a total into bands", SR-39),
+  /// answered as canonical JSON `{total, dushkuta, band, bands, row, locale,
+  /// words, text}`: `band` the band's key (`UNFIT`, `FIT`, `MIDDLING`,
+  /// `GOOD`, `EXCELLENT`), `bands` the table's name, `row` the row that gave
+  /// it, `words` the band in words and `text` the total with it.
+  ///
+  /// `request_json` is `{"total"}`, with `"dushkuta"` (whether the signs
+  /// stand 2/12, 6/8 or 9/5; false when left out), `"shipped"` (a shipped
+  /// table: `MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or
+  /// `ARYAVARTA`) or `"bands"` (a consumer's own table, `{name, source,
+  /// rows}`, each row `{band, from, clears?, bhakoot?}`), and `"locale"`
+  /// (the context's when left out). A key it does not read, a total outside
+  /// 0 to 36, an unknown table, both tables or a table that leaves a total
+  /// ungraded is `INVALID_ARG`, named under `band`; a locale not loaded is
+  /// `UNSUPPORTED` on `band.locale`.
+  final TsMatchingBandDart ts_matching_band;
 
   /// **A chart recast at other places** (`03-design/astrocartography.md`):
   /// each place's ascendant, midheaven and twelve cusps at one instant, in
@@ -7224,6 +7267,34 @@ final class TeistroContext implements ffi.Finalizable {
     });
   }
 
+  /// A sankalpa said in words by a tradition's template
+  /// (`03-design/sankalpa.md` §5, SR-29), answered with `{value,
+  /// provenance}` as canonical JSON: `value` is `{tradition, locale, params,
+  /// text}`, `params` the slots the template was given (each as
+  /// `ts_intl_render` takes it, to say it again in another locale) and
+  /// `text` the words; the provenance is the time's.
+  ///
+  /// `request_json` is `ts_almanac_sankalpa`'s request with `"slots"`
+  /// (`{performer, gotra, purpose, river?, kshetra?, pitris?}`, `pitris`
+  /// `{father, grandfather, greatGrandfather}`), and optionally
+  /// `"tradition"` (a template's message key, `sdk.sankalpa.himavatkhande`
+  /// when left out) and `"locale"` (the context's when left out). A key it
+  /// does not read, an instant, place or offset out of range, or a slot left
+  /// blank is `INVALID_ARG`, named under `sankalpaWords`; a locale not
+  /// loaded or a tradition no loaded pack carries is `UNSUPPORTED` on
+  /// `sankalpaWords.locale` or `sankalpaWords.tradition`; otherwise as
+  /// `ts_almanac_sankalpa`.
+  String almanacSankalpaWords(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_almanac_sankalpa_words(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
+    });
+  }
+
   /// The period of impurity after a birth or a death at a place
   /// (`03-design/ashauch.md`), answered with `{value, provenance}` as
   /// canonical JSON.
@@ -7627,6 +7698,33 @@ final class TeistroContext implements ffi.Finalizable {
         final status = _lib.ts_naam_milan(_handle, rawrequestJson, outBlob);
         if (status != 0) _fail(status);
         return _takeBlob(_lib, outBlob);
+    });
+  }
+
+  /// A guna total graded into bands and said in words
+  /// (`03-design/matching.md`, "Grading a total into bands", SR-39),
+  /// answered as canonical JSON `{total, dushkuta, band, bands, row, locale,
+  /// words, text}`: `band` the band's key (`UNFIT`, `FIT`, `MIDDLING`,
+  /// `GOOD`, `EXCELLENT`), `bands` the table's name, `row` the row that gave
+  /// it, `words` the band in words and `text` the total with it.
+  ///
+  /// `request_json` is `{"total"}`, with `"dushkuta"` (whether the signs
+  /// stand 2/12, 6/8 or 9/5; false when left out), `"shipped"` (a shipped
+  /// table: `MUHURTA_MARTANDA`, the default, `NEPALI_ALMANAC` or
+  /// `ARYAVARTA`) or `"bands"` (a consumer's own table, `{name, source,
+  /// rows}`, each row `{band, from, clears?, bhakoot?}`), and `"locale"`
+  /// (the context's when left out). A key it does not read, a total outside
+  /// 0 to 36, an unknown table, both tables or a table that leaves a total
+  /// ungraded is `INVALID_ARG`, named under `band`; a locale not loaded is
+  /// `UNSUPPORTED` on `band.locale`.
+  String matchingBand(String requestJson) {
+    _alive();
+    return pkg_ffi.using((arena) {
+        final rawrequestJson = requestJson.toNativeUtf8(allocator: arena).cast<ffi.Char>();
+        final outJson = arena<StringStruct>();
+        final status = _lib.ts_matching_band(_handle, rawrequestJson, outJson);
+        if (status != 0) _fail(status);
+        return _takeString(_lib, outJson);
     });
   }
 
