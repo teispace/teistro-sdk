@@ -604,11 +604,11 @@ class TheLocaleEngine(WithLibrary):
         self.assertEqual((words.amount.major, words.amount.minor, words.amount.rounded), (1234, 56, False))
         lakh = self.ctx.intl.in_words({"number": 150000, "locale": "en-Latn", "grouping": "INDIAN"})
         self.assertEqual((lakh.text, lakh.amount, lakh.is_draft), ("one lakh fifty thousand", None, False))
-        # Sanskrit by the SDK's drafted rules, marked unreviewed (Kale §161's 1892).
+        # Sanskrit by the SDK's own rules (Kale §161's 1892).
         sanskrit = self.ctx.intl.in_words({"number": 1892, "locale": "sa-Deva"})
         self.assertEqual(
             (sanskrit.text, sanskrit.rules, sanskrit.is_draft),
-            ("द्वानवत्यधिकाष्टशताधिकसहस्रम्", "draft/sa/spellout-cardinal", True),
+            ("द्वानवत्यधिकाष्टशताधिकसहस्रम्", "teistro/sa/spellout-cardinal", False),
         )
         cases: List[Tuple[InWordsRequest, str]] = [
             ({"number": 1, "locale": "sa-Deva", "grouping": "INTERNATIONAL"}, "inWords.grouping"),
@@ -628,7 +628,7 @@ class TheLocaleEngine(WithLibrary):
         self.assertEqual(dawn.text, "सुबह ६:०५")
         self.assertEqual((dawn.parts[0].kind, dawn.parts[0].text), ("DAY_PERIOD", "सुबह"))
         self.assertEqual("".join(part.text for part in dawn.parts), dawn.text)
-        self.assertTrue(dawn.is_draft)
+        self.assertFalse(dawn.is_draft)
         self.assertFalse(dawn.is_fallback)
         day: DateTextRequest = {
             "at": {"calendar": "calendar.GREGORIAN", "year": 2026, "month": 10, "day": 31},
@@ -1391,10 +1391,10 @@ class AnEngine(WithLibrary):
             self.assertFalse(en.draft)
             ne = sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="ne-Deva-NP")
             self.assertEqual(ne.sentences[0].text, "यो दिन बुधबार हो।")
-            self.assertTrue(ne.draft)
+            self.assertFalse(ne.draft)
             hi = sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="hi-Deva-IN")
             self.assertEqual(hi.sentences[0].text, "यह दिन बुधवार है।")
-            self.assertTrue(hi.draft)
+            self.assertFalse(hi.draft)
             with self.assertRaises(TeistroError) as refused:
                 sky.almanac.sentences(date=day, place=kathmandu, utc_offset_seconds=20700, locale="xx-Latn")
             self.assertEqual(refused.exception.field, "locale")

@@ -582,7 +582,7 @@ void main() {
       locale: 'ne-Deva-NP',
     );
     expect(ne.sentences.first.text, 'यो दिन बुधबार हो।');
-    expect(ne.draft, isTrue);
+    expect(ne.draft, isFalse);
     final hi = ctx.almanac.sentences(
       date: day,
       place: kathmandu,
@@ -590,7 +590,7 @@ void main() {
       locale: 'hi-Deva-IN',
     );
     expect(hi.sentences.first.text, 'यह दिन बुधवार है।');
-    expect(hi.draft, isTrue);
+    expect(hi.draft, isFalse);
     expect(
       () => ctx.almanac.sentences(
         date: day,

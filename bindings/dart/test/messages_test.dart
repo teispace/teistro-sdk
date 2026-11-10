@@ -182,14 +182,14 @@ void main() {
     expect(lakh.text, 'one lakh fifty thousand');
     expect(lakh.amount, isNull);
     expect(lakh.isDraft, isFalse);
-    // Sanskrit by the SDK's drafted rules, marked unreviewed (Kale §161's
+    // Sanskrit by the SDK's own rules (Kale §161's
     // 1892).
     final sanskrit = ctx.intl.inWords(
       const InWordsRequest(number: 1892, locale: 'sa-Deva'),
     );
     expect(sanskrit.text, 'द्वानवत्यधिकाष्टशताधिकसहस्रम्');
-    expect(sanskrit.rules, 'draft/sa/spellout-cardinal');
-    expect(sanskrit.isDraft, isTrue);
+    expect(sanskrit.rules, 'teistro/sa/spellout-cardinal');
+    expect(sanskrit.isDraft, isFalse);
     expect(
       () => ctx.intl.inWords(
         const InWordsRequest(
@@ -332,7 +332,7 @@ void main() {
     expect(dawn.text, 'सुबह ६:०५');
     expect(dawn.parts.first.kind, 'DAY_PERIOD');
     expect(dawn.parts.map((part) => part.text).join(), dawn.text);
-    expect(dawn.isDraft, isTrue);
+    expect(dawn.isDraft, isFalse);
   });
 
   test('the accessors are a tree over any renderer', () {

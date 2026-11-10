@@ -318,12 +318,12 @@ public final class BindingTest {
                         .number(150_000L).locale("en-Latn")
                         .grouping(com.teispace.teistro.request.WordsGrouping.INDIAN).build());
                 same("one lakh fifty thousand", lakh.text(), "a lakh");
-                check(!lakh.isDraft(), "CLDR's words are reviewed");
+                check(!lakh.isDraft(), "CLDR's words are final");
                 InWords sanskrit = sky.intl().inWords(com.teispace.teistro.request.InWordsRequest.builder()
                         .number(1892L).locale("sa-Deva").build());
                 same("द्वानवत्यधिकाष्टशताधिकसहस्रम्", sanskrit.text(), "Kale §161's 1892");
-                same("draft/sa/spellout-cardinal", sanskrit.rules(), "the drafted rules");
-                check(sanskrit.isDraft(), "Sanskrit's words say they are unreviewed");
+                same("teistro/sa/spellout-cardinal", sanskrit.rules(), "the drafted rules");
+                check(!sanskrit.isDraft(), "Sanskrit's words are final");
                 TeistroException international = refusal(() -> sky.intl().inWords(
                         com.teispace.teistro.request.InWordsRequest.builder().number(1L).locale("sa-Deva")
                                 .grouping(com.teispace.teistro.request.WordsGrouping.INTERNATIONAL).build()));
@@ -333,7 +333,7 @@ public final class BindingTest {
                         .hour12(true).locale("hi-Deva-IN").build());
                 same("सुबह ६:०५", dawn.text(), "the locale's clock");
                 same("DAY_PERIOD", dawn.parts().get(0).kind(), "the day's part is typed");
-                check(dawn.isDraft(), "Hindi's calendar text says it is unreviewed");
+                check(!dawn.isDraft(), "Hindi's calendar text is final");
                 Lexicon months = sky.intl().lexicon(com.teispace.teistro.request.LexiconRequest.builder()
                         .locale("ne").kinds(java.util.List.of("masa")).build());
                 same("ne-Deva-NP", months.locale(), "a short tag means the loaded one");
@@ -522,10 +522,10 @@ public final class BindingTest {
                 same(false, en.draft(), "English is not a draft");
                 DaySentences ne = committee.almanac().sentences(day, kathmandu, 20_700, "ne-Deva-NP");
                 same("यो दिन बुधबार हो।", ne.sentences().get(0).text(), "the vara in Nepali");
-                same(true, ne.draft(), "Nepali waits on review");
+                same(false, ne.draft(), "Nepali is final");
                 DaySentences hi = committee.almanac().sentences(day, kathmandu, 20_700, "hi-Deva-IN");
                 same("यह दिन बुधवार है।", hi.sentences().get(0).text(), "the vara in Hindi");
-                same(true, hi.draft(), "Hindi waits on review");
+                same(false, hi.draft(), "Hindi is final");
                 same("locale", refusal(() -> committee.almanac().sentences(day, kathmandu, 20_700, "xx-Latn"))
                         .field(), "a locale not loaded");
                 same(en, committee.almanac().sentences(day, kathmandu, Civil.ianaZone("Asia/Kathmandu"), "en-Latn"),

@@ -585,7 +585,6 @@ mod tests {
         let mut tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
         if let Some(hindi) = tree.locales.get_mut("hi-Deva-IN") {
             hindi.namespaces.remove("sdk.condition");
-            hindi.meta.draft.retain(|name| name != "sdk.condition");
         }
         let mut intl = Intl::from_tree(&tree).unwrap_or_else(|e| panic!("{e}"));
         intl.set_locale("hi-Deva-IN")

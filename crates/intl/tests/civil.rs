@@ -95,7 +95,7 @@ fn a_part_is_found_wherever_the_locale_writes_it() {
     assert_eq!(hindi.parts[0].kind, CivilPartKind::DayPeriod);
     assert_eq!(hindi.parts[0].text, "सुबह");
     assert_eq!(hindi.parts[2].text, "६");
-    assert!(hindi.is_draft && !hindi.is_fallback);
+    assert!(!hindi.is_draft && !hindi.is_fallback);
     assert_eq!(
         (hindi.locale.as_str(), hindi.resolved_from.as_str()),
         ("hi-Deva-IN", "hi-Deva-IN")
@@ -154,7 +154,7 @@ fn the_dates_read_as_cldr_orders_them() {
     );
     assert_eq!(hindi.text, "शनिवार, ३१ अक्टूबर २०२६");
     assert_eq!(hindi.parts[0].kind, CivilPartKind::Weekday);
-    assert!(hindi.is_draft);
+    assert!(!hindi.is_draft);
     let numeric = date(&intl, &format!(r#"{{{day}, "locale": "hi-Deva-IN"}}"#));
     assert_eq!(numeric.text, "३१/१०/२०२६");
     let sanskrit = date(
@@ -228,11 +228,10 @@ fn a_locale_without_the_text_falls_back_and_says_so() {
             .is_fallback
         );
     }
-    // `sa-Latn` carries its calendar, derived from `sa-Deva` and still a
-    // draft (SR-79).
+    // `sa-Latn` carries its calendar, derived from `sa-Deva` (SR-79).
     let request = r#"{"at": {"hour": 1, "minute": 2}, "hour12": true, "locale": "sa-Latn"}"#;
     let derived = time(&intl, request);
-    assert!(!derived.is_fallback && derived.is_draft);
+    assert!(!derived.is_fallback && !derived.is_draft);
     assert_eq!(derived.resolved_from, "sa-Latn");
     // Without it, the locale answers from its fallback and says so.
     let mut tree = Tree::load(&sdk_root()).expect("the sources");

@@ -521,6 +521,21 @@ mod tests {
         assert_eq!(super::sentence_cased(""), "");
     }
 
+    /// A final source derives a final locale: no draft list at all.
+    #[test]
+    fn a_final_source_derives_no_draft_list() {
+        let derived = derive(
+            &tree(),
+            "sa-Deva",
+            "sa-Latn",
+            &BTreeMap::new(),
+            Casing::Names,
+        )
+        .unwrap_or_else(|e| panic!("{e}"));
+        let meta = file(&derived, "_meta.json");
+        assert!(!meta.contains("\"draft\""), "{meta}");
+    }
+
     /// A derived file's text by its name.
     fn file<'a>(derived: &'a super::Derived, name: &str) -> &'a str {
         derived
@@ -532,8 +547,17 @@ mod tests {
 
     #[test]
     fn a_latin_locale_is_derived_from_the_devanagari_one() {
+        // Marked draft, as a third party's unreviewed source would be, so
+        // the test sees the mark carried across.
+        let mut source = tree();
+        if let Some(sanskrit) = source.locales.get_mut("sa-Deva") {
+            sanskrit.meta.draft = DERIVED_MESSAGES
+                .iter()
+                .map(|name| (*name).to_owned())
+                .collect();
+        }
         let derived = derive(
-            &tree(),
+            &source,
             "sa-Deva",
             "sa-Latn",
             &BTreeMap::new(),
@@ -586,8 +610,7 @@ mod tests {
         }
         assert!(meta.contains("\"numberingSystem\": \"latn\""));
         assert!(meta.contains("tathā"), "the list pattern is transliterated");
-        // The currency words come too, still marked unreviewed.
-        assert!(meta.contains("\"sdk.amount\""), "{meta}");
+        // The currency words come too.
         let amount = file(&derived, "sdk.amount.json");
         assert!(amount.contains("{{rūpyakāṇi}}"), "{amount}");
         assert!(

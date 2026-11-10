@@ -1,8 +1,8 @@
-//! The unreviewed text: Hindi and Sanskrit `sdk.calendar` and composed
-//! text (SR-38), Sanskrit's `sdk.amount`, and the rashifal (SR-37) and
-//! rites (SR-31) ship marked, a reader sees the mark, and `check-intl`
-//! holds it (`docs/03-design/intl-engine-and-packs.md`, "Text not yet
-//! reviewed").
+//! The draft mark: no shipped namespace carries it (every pack is final,
+//! the maintainer reviewing after shipping, QUESTIONS.md Q42), and a pack
+//! a third party marks draft still says so to a reader, travels in a
+//! bundle, and is held by `check-intl`
+//! (`docs/03-design/intl-engine-and-packs.md`, "Draft text").
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
@@ -19,6 +19,15 @@ fn tree() -> Tree {
     Tree::load(&sdk_root()).expect("the sources")
 }
 
+/// The shipped tree with one locale's namespaces marked draft, as a third
+/// party's unreviewed pack would mark them.
+fn marked(tag: &str, namespaces: &[&str]) -> Tree {
+    let mut tree = tree();
+    tree.locales.get_mut(tag).unwrap().meta.draft =
+        namespaces.iter().map(|name| (*name).to_owned()).collect();
+    tree
+}
+
 fn errors(tree: &Tree) -> Vec<String> {
     validate(tree)
         .diagnostics
@@ -28,57 +37,16 @@ fn errors(tree: &Tree) -> Vec<String> {
         .collect()
 }
 
-/// Every namespace Hindi and Sanskrit write is a draft: the calendar's
-/// words, and the composed text SR-38 added.
-const DRAFTED: [&str; 9] = [
-    "sdk.aspect",
-    "sdk.calendar",
-    "sdk.condition",
-    "sdk.day",
-    "sdk.karaka",
-    "sdk.naming",
-    "sdk.phala",
-    "sdk.reading",
-    "sdk.reason",
-];
-
-/// The composed namespaces with one locale's own further draft, sorted as
-/// `_meta.json` lists them.
-fn drafted(extra: &str) -> Vec<String> {
-    let mut all: Vec<String> = DRAFTED.iter().map(|name| (*name).to_owned()).collect();
-    all.push(extra.to_owned());
-    all.sort();
-    all
-}
-
-/// This pin comes off only with the reviewer named in QUESTIONS.md Q42.
+/// Every shipped locale is final: a mark added back is a decision, made in
+/// the change that adds it.
 #[test]
-fn hindi_and_sanskrit_text_ships_marked() {
+fn no_shipped_text_is_a_draft() {
     let tree = tree();
-    // Hindi drafts the rashifal (SR-37) beside the composed text; Sanskrit
-    // its currency words (SR-49). sa-Latn carries sa-Deva's drafts across
-    // with the text it derives: transliterating a draft does not review it.
-    assert_eq!(
-        tree.locales["hi-Deva-IN"].meta.draft,
-        drafted("sdk.rashifal")
-    );
-    for tag in ["sa-Deva", "sa-Latn"] {
-        assert_eq!(tree.locales[tag].meta.draft, drafted("sdk.amount"), "{tag}");
+    for (tag, locale) in &tree.locales {
+        assert_eq!(locale.meta.draft, Vec::<String>::new(), "{tag}");
     }
-    // The strict locale drafts its day sentences, its rashifal (SR-37) and
-    // its rites' names (SR-31), not its calendar words.
-    assert_eq!(
-        tree.locales["ne-Deva-NP"].meta.draft,
-        ["sdk.day", "sdk.rashifal", "sdk.rite"]
-    );
-    assert_eq!(tree.locales["en-Latn"].meta.draft, Vec::<String>::new());
     let report = Intl::from_tree(&tree).unwrap().report();
-    let hindi = report
-        .locales
-        .iter()
-        .find(|l| l.tag == "hi-Deva-IN")
-        .unwrap();
-    assert_eq!(hindi.draft, drafted("sdk.rashifal"));
+    assert!(report.locales.iter().all(|locale| locale.draft.is_empty()));
 }
 
 /// The parameters of one message of each composed namespace, by name.
@@ -111,14 +79,14 @@ fn composed(name: &str) -> Params {
 }
 
 /// Renders each case in its locale: the text, from that locale itself,
-/// and marked a draft.
+/// and final.
 fn says(cases: &[(&str, &str, &str, &str)]) {
     let intl = Intl::from_tree(&tree()).unwrap();
     for (tag, key, name, text) in cases {
         let said = intl.render_in(tag, key, &composed(name));
         assert_eq!(said.text, *text, "{tag} {key}");
         assert_eq!(said.resolved_from.as_deref(), Some(*tag), "{tag} {key}");
-        assert!(said.is_draft, "{tag} {key} is a draft");
+        assert!(!said.is_draft, "{tag} {key} is final");
     }
 }
 
@@ -126,7 +94,7 @@ fn says(cases: &[(&str, &str, &str, &str)]) {
 /// Houses and padas take the Sanskrit ordinal Hindi panchangas print; a
 /// rank reads Hindi's ordinal categories, where 3 is `two` and 6 `many`.
 #[test]
-fn the_composed_text_speaks_hindi_and_says_it_is_a_draft() {
+fn the_composed_text_speaks_hindi() {
     says(&[
         (
             "hi-Deva-IN",
@@ -167,7 +135,7 @@ fn the_composed_text_speaks_hindi_and_says_it_is_a_draft() {
 /// its slot (`गुरुः`, `मेषराशौ`) and has a dual, which no plural category
 /// names, so an exact `2` carries it.
 #[test]
-fn the_composed_text_speaks_sanskrit_and_says_it_is_a_draft() {
+fn the_composed_text_speaks_sanskrit() {
     says(&[
         (
             "sa-Deva",
@@ -213,7 +181,7 @@ fn the_composed_text_speaks_sanskrit_and_says_it_is_a_draft() {
 
 #[test]
 fn a_render_says_when_draft_text_answered() {
-    let mut intl = Intl::from_tree(&tree()).unwrap();
+    let mut intl = Intl::from_tree(&marked("hi-Deva-IN", &["sdk.calendar", "sdk.reason"])).unwrap();
     let day = params([
         ("masa", Value::Entity("masa.CHAITRA".into())),
         ("kind", Value::Str("ADHIKA".into())),
@@ -238,7 +206,7 @@ fn a_render_says_when_draft_text_answered() {
             .is_draft
     );
 
-    // Reached through a function inside a message of a reviewed namespace.
+    // Reached through a function inside a message of a final namespace.
     intl.set_locale("hi-Deva-IN").unwrap();
     let inside = intl.render_source("{$at :time hour12=true}", &at).unwrap();
     assert_eq!(inside.text, "सुबह ६:०५");
@@ -265,14 +233,14 @@ fn check_intl_holds_the_mark() {
     assert!(errors(&strict).is_empty(), "{:?}", errors(&strict));
 
     let mut absent = tree();
-    absent.locales.get_mut("sa-Deva").unwrap().meta.draft = vec!["sdk.amount".into()];
+    absent.locales.get_mut("sa-Deva").unwrap().meta.draft = vec!["sdk.rite".into()];
     assert!(
         errors(&absent)
             .iter()
             .any(|e| e.contains("no such namespace"))
     );
 
-    let mut patched = tree();
+    let mut patched = marked("hi-Deva-IN", &["sdk.calendar"]);
     let namespace = patched
         .locales
         .get_mut("hi-Deva-IN")
@@ -290,7 +258,7 @@ fn check_intl_holds_the_mark() {
 
 #[test]
 fn the_mark_travels_in_a_bundle_and_a_reviewers_pack_lifts_it() {
-    let tree = tree();
+    let tree = marked("hi-Deva-IN", &["sdk.calendar", "sdk.reason"]);
     let hindi = &tree.locales["hi-Deva-IN"];
     let mut intl = Intl::from_tree(&tree).unwrap();
 
@@ -306,7 +274,7 @@ fn the_mark_travels_in_a_bundle_and_a_reviewers_pack_lifts_it() {
         .iter()
         .find(|l| l.tag == "hi-Deva-IN")
         .unwrap();
-    assert_eq!(loaded.draft, drafted("sdk.rashifal"));
+    assert_eq!(loaded.draft, ["sdk.calendar", "sdk.reason"]);
 
     // The same namespace, signed off, carried by a pack with metadata.
     let mut reviewed = hindi.clone();
@@ -332,10 +300,10 @@ fn the_mark_travels_in_a_bundle_and_a_reviewers_pack_lifts_it() {
     );
 }
 
-/// SR-31: a rite's name in Nepali says it is a draft; in English it does not,
-/// and a day count takes its plural.
+/// SR-31: a rite's name renders in English and Nepali, both final, and a
+/// day count takes its plural.
 #[test]
-fn a_rites_name_renders_and_the_nepali_says_it_is_a_draft() {
+fn a_rites_name_renders_in_english_and_nepali() {
     let intl = Intl::from_tree(&tree()).unwrap();
     let verdict = params([("verdict", Value::Str("GOES_ON".into()))]);
     let english = intl.render_in("en-Latn", "sdk.rite.riteVerdict", &verdict);
@@ -343,7 +311,7 @@ fn a_rites_name_renders_and_the_nepali_says_it_is_a_draft() {
     assert!(!english.is_draft);
     let nepali = intl.render_in("ne-Deva-NP", "sdk.rite.riteVerdict", &verdict);
     assert_eq!(nepali.text, "चल्छ");
-    assert!(nepali.is_draft);
+    assert!(!nepali.is_draft);
     let days = |n: i64| {
         let count = params([("days", Value::Int(n))]);
         intl.render_in("en-Latn", "sdk.rite.ashauchDays", &count)

@@ -1,4 +1,4 @@
-//! Sanskrit numbers and amounts in words, by the SDK's drafted rules
+//! Sanskrit numbers and amounts in words, by the SDK's own rules
 //! (`crates/intl/drafts/rbnf/sa.txt`, `docs/03-design/amounts-in-words.md`
 //! §5): each worked value asserted against the grammar that gives it, and
 //! every answer marked unreviewed until the consumer's reviewer (Q42)
@@ -27,7 +27,7 @@ fn asked(intl: &Intl, json: &str) -> InWords {
 
 fn words(intl: &Intl, n: i64, locale: &str) -> String {
     let answer = asked(intl, &format!(r#"{{"number": {n}, "locale": "{locale}"}}"#));
-    assert!(answer.is_draft, "{n} in {locale} is the SDK's draft");
+    assert!(!answer.is_draft, "{n} in {locale} is final");
     answer.text
 }
 
@@ -139,7 +139,7 @@ fn whitneys_indian_sum_counts_its_crores() {
         "नवत्यधिकाष्टशताधिकसप्तषष्टिसहस्राधिकपञ्चचत्वारिंशल्लक्षाधिकत्रयोविंशत्यधिकशतकोटिः"
     );
     assert_eq!(answer.figure, "१,२३,४५,६७,८९०");
-    assert_eq!(answer.rules, "draft/sa/spellout-cardinal");
+    assert_eq!(answer.rules, "teistro/sa/spellout-cardinal");
     // Every i64 is spelt: crores count with a whole number.
     for n in [i64::MAX, i64::MIN + 1] {
         let text = words(&intl, n, "sa-Deva");
@@ -169,7 +169,7 @@ fn the_latin_locale_reads_the_same_words_transliterated() {
     // though `sa-Latn` groups its other numbers by three.
     assert_eq!(lakh.figure, "1,50,000");
     assert_eq!(lakh.text, "pañcāśatsahasrādhikalakṣam");
-    assert_eq!(lakh.rules, "draft/sa/spellout-cardinal/iast");
+    assert_eq!(lakh.rules, "teistro/sa/spellout-cardinal/iast");
 }
 
 #[test]
@@ -184,7 +184,7 @@ fn an_amount_reads_in_rupees_and_paisa() {
         "चतुस्त्रिंशदधिकद्विशताधिकसहस्रम् रूप्यकाणि षट्पञ्चाशत् पैसा च मात्रम्"
     );
     assert_eq!(cheque.figure, "१,२३४.५६");
-    assert!(cheque.is_draft);
+    assert!(!cheque.is_draft);
     let parts = cheque.amount.unwrap();
     assert_eq!(parts.major_unit, "रूप्यकाणि");
     assert_eq!(parts.minor_words.as_deref(), Some("षट्पञ्चाशत्"));
@@ -219,12 +219,12 @@ fn an_amount_reads_in_rupees_and_paisa() {
         "catustriṃśadadhikadviśatādhikasahasram rūpyakāṇi ṣaṭpañcāśat paisā ca mātram"
     );
     assert_eq!(latin.figure, "1,234.56");
-    assert!(latin.is_draft);
+    assert!(!latin.is_draft);
 }
 
-/// Every other language's words are reviewed, CLDR's, and say so.
+/// Every other language's words are CLDR's, and say so; none is a draft.
 #[test]
-fn only_the_draft_says_draft() {
+fn every_other_language_reads_cldrs_rules() {
     let intl = intl();
     for locale in ["en-Latn", "ne-Deva-NP", "hi-Deva-IN"] {
         let answer = asked(
