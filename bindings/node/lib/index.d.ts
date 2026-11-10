@@ -333,6 +333,9 @@ import type {
   RiteBeginning,
   RiteQuery,
   RiteVerdict,
+  BandRequest,
+  GunaBand,
+  SankalpaWordsRequest,
 } from './requests.js';
 
 export * from './catalogue.js';
@@ -8097,6 +8100,19 @@ export declare class AlmanacArea {
    */
   sankalpa(request: SankalpaRequest): SankalpaAnswer;
   /**
+   * **The sankalpa in words** (`03-design/sankalpa.md` §5): a tradition's
+   * template filled with the time at the instant and place and the
+   * caller's slots. The request is the wire's (`latitudeDeg` and the
+   * rest); a refusal is named under `sankalpaWords`.
+   *
+   * @example
+   * const { value } = sdk.almanac.sankalpaWords({
+   *   at: 2461055.59375, latitudeDeg: 27.7172, longitudeDeg: 85.324, utcOffsetSeconds: 20700,
+   *   slots: { performer: 'हरिनाथशर्मा', gotra: 'कौण्डिन्य', purpose: 'गणेशपूजनम्' },
+   * });
+   */
+  sankalpaWords(request: SankalpaWordsRequest): SankalpaWordsAnswer;
+  /**
    * **The period of impurity after a birth or a death** at a place
    * (`03-design/ashauch.md`): from when, until when, and by which clause,
    * counted in sunrise days under the table (the *Dharmasindhu*'s when
@@ -8706,6 +8722,26 @@ export interface SankalpaRequest {
   readonly zone?: ZoneSpec;
   /** How the ayana turns: at Makara and Karka sankranti, or at the solstices; `'SIDEREAL'` when left out. */
   readonly ayana?: 'SIDEREAL' | 'TROPICAL';
+}
+
+/** What `almanac.sankalpaWords` answers, frozen to its leaves. */
+export interface SankalpaWordsAnswer {
+  /** The words. */
+  readonly value: SankalpaWords;
+  /** What computed the time, and the hash of `value`. */
+  readonly provenance: Provenance;
+}
+
+/** A sankalpa said by a tradition's template (`03-design/sankalpa.md` §5). */
+export interface SankalpaWords {
+  /** The tradition: the template's message key. */
+  readonly tradition: string;
+  /** The locale it was said in. */
+  readonly locale: string;
+  /** The slots the template was given, as `intl.render` takes them, to say it again in another locale. */
+  readonly params: Readonly<Record<string, unknown>>;
+  /** The words. */
+  readonly text: string;
 }
 
 /** What `almanac.sankalpa` answers, frozen to its leaves. */
@@ -9477,6 +9513,37 @@ export declare class MatchingArea {
    * console.log(read.bride.nakshatra, read.varga.relation, read.ashta.total);
    */
   naam(bride: string, groom: string, rules?: NaamRules): NaamMilan;
+  /**
+   * **A guna total graded into bands** (`03-design/matching.md`): the band
+   * a total out of 36 takes in a shipped table or a consumer's own, with
+   * the band in words and the total said with it. A refusal is named
+   * under `band`.
+   *
+   * @example
+   * const said = ctx.matching.band({ total: 28, shipped: 'NEPALI_ALMANAC', locale: 'en-Latn' });
+   * console.log(said.band, said.text); // GOOD 28 of 36 gunas: a good match
+   */
+  band(request: BandRequest): BandWords;
+}
+
+/** What `matching.band` answers, frozen. */
+export interface BandWords {
+  /** The total, out of 36. */
+  readonly total: number;
+  /** Whether the signs were taken to stand 2/12, 6/8 or 9/5. */
+  readonly dushkuta: boolean;
+  /** The band. */
+  readonly band: GunaBand;
+  /** The table's name. */
+  readonly bands: string;
+  /** The row of the table that gave the band, from 0. */
+  readonly row: number;
+  /** The locale the words are in. */
+  readonly locale: string;
+  /** The band in words: the `sdk.matching.band` message. */
+  readonly words: string;
+  /** The total with its band: the `sdk.matching.graded` message. */
+  readonly text: string;
 }
 
 /** One claim a text makes of the time, and what it was found to be. */

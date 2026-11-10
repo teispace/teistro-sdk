@@ -215,6 +215,15 @@ from ._requests import (
     KinKeeps as KinKeeps,
     RiteBeginning as RiteBeginning,
     RiteVerdict as RiteVerdict,
+    BandRequest as BandRequest,
+    BandRow as BandRow,
+    BhakootStanding as BhakootStanding,
+    Clears as Clears,
+    GunaBand as GunaBand,
+    GunaBands as GunaBands,
+    Pitris as Pitris,
+    SankalpaFor as SankalpaFor,
+    SankalpaWordsRequest as SankalpaWordsRequest,
     HouseholdTie as HouseholdTie,
     AshauchSex as AshauchSex,
     AshauchTable as AshauchTable,
@@ -1609,6 +1618,18 @@ __all__ = [
     "LunarYears",
     "Sankalpa",
     "SankalpaAnswer",
+    "SankalpaWords",
+    "SankalpaWordsAnswer",
+    "SankalpaWordsRequest",
+    "SankalpaFor",
+    "Pitris",
+    "BandWords",
+    "BandRequest",
+    "BandRow",
+    "BhakootStanding",
+    "Clears",
+    "GunaBand",
+    "GunaBands",
     "AshauchSex",
     "AshauchKind",
     "AshauchRelation",
@@ -4195,6 +4216,36 @@ class AlmanacArea(_Area):
         answered = self._context._through_provider(lambda: self._context.inner.almanac_sankalpa(json.dumps(asked)))
         return _sankalpa_answer(answered)
 
+    def sankalpa_words(self, request: SankalpaWordsRequest) -> "SankalpaWordsAnswer":
+        """**The sankalpa in words** (`03-design/sankalpa.md` §5): a
+        tradition's template (`tradition`, `"sdk.sankalpa.himavatkhande"`
+        when left out, or a key a loaded pack carries) filled with the time
+        `almanac.sankalpa` reckons at the instant and place, and the
+        performer, gotra, purpose, river, holy ground and pitris in
+        `slots`, in `locale` or the context's. The request is the wire's,
+        `latitudeDeg` and the rest; a refusal is named under
+        `sankalpaWords`.
+
+        >>> # said = ctx.almanac.sankalpa_words({"at": 2461055.59375, "latitudeDeg": 27.7172,
+        >>> #     "longitudeDeg": 85.324, "utcOffsetSeconds": 20700, "locale": "sa-Deva",
+        >>> #     "slots": {"performer": "हरिनाथशर्मा", "gotra": "कौण्डिन्य", "purpose": "गणेशपूजनम्"}})
+        >>> # said.value.text  # 'हरिः ॐ तत्सत् …'
+        """
+        answered = self._context._through_provider(
+            lambda: self._context.inner.almanac_sankalpa_words(json.dumps(request))
+        )
+        envelope = json.loads(answered)
+        value = envelope["value"]
+        return SankalpaWordsAnswer(
+            value=SankalpaWords(
+                tradition=value["tradition"],
+                locale=value["locale"],
+                params=value["params"],
+                text=value["text"],
+            ),
+            provenance=decode_provenance(envelope["provenance"]),
+        )
+
     def ashauch(
         self,
         *,
@@ -4986,6 +5037,30 @@ class MatchingArea(_Area):
             varga=VargaKoota(bride_name.varga, groom_name.varga, VargaRelation(d.relation)),
             ashta=_matchings_in(d.matchings, d.matching_kootas, 1)[0],
             porutham=_poruthams_in(d.poruthams, d.porutham_rows, 1)[0],
+        )
+
+    def band(self, request: BandRequest) -> "BandWords":
+        """**A guna total graded into bands** (`03-design/matching.md`,
+        "Grading a total into bands"): the band a total out of 36 takes in
+        a shipped table (`shipped`: `"MUHURTA_MARTANDA"`, the default,
+        `"NEPALI_ALMANAC"` or `"ARYAVARTA"`) or a consumer's own
+        (`bands`), with the band in words and the total said with it, in
+        `locale` or the context's. A refusal is named under `band`.
+
+        >>> said = sdk.matching.band({"total": 28, "shipped": "NEPALI_ALMANAC", "locale": "en-Latn"})  # doctest: +SKIP
+        >>> said.text  # doctest: +SKIP
+        '28 of 36 gunas: a good match'
+        """
+        value = json.loads(self._context.inner.matching_band(json.dumps(request)))
+        return BandWords(
+            total=value["total"],
+            dushkuta=value["dushkuta"],
+            band=value["band"],
+            bands=value["bands"],
+            row=value["row"],
+            locale=value["locale"],
+            words=value["words"],
+            text=value["text"],
         )
 
 
@@ -11669,6 +11744,62 @@ class Sankalpa:
 
     jupiter: Rashi
     """Jupiter's sidereal sign at the rite."""
+
+
+@dataclass(frozen=True)
+class SankalpaWords:
+    """A sankalpa said by a tradition's template (`03-design/sankalpa.md` §5)."""
+
+    tradition: str
+    """The tradition: the template's message key."""
+
+    locale: str
+    """The locale it was said in."""
+
+    params: Mapping[str, Any]
+    """The slots the template was given, as `intl.render` takes them, to
+    say it again in another locale."""
+
+    text: str
+    """The words."""
+
+
+@dataclass(frozen=True)
+class SankalpaWordsAnswer:
+    """What `almanac.sankalpa_words` answers."""
+
+    value: SankalpaWords
+    provenance: Provenance
+    """What computed the time, and the hash of `value`."""
+
+
+@dataclass(frozen=True)
+class BandWords:
+    """What `matching.band` answers: a total's band and the words for it."""
+
+    total: float
+    """The total, out of 36."""
+
+    dushkuta: bool
+    """Whether the signs were taken to stand 2/12, 6/8 or 9/5."""
+
+    band: GunaBand
+    """The band."""
+
+    bands: str
+    """The table's name."""
+
+    row: int
+    """The row of the table that gave the band, from 0."""
+
+    locale: str
+    """The locale the words are in."""
+
+    words: str
+    """The band in words: the `sdk.matching.band` message."""
+
+    text: str
+    """The total with its band: the `sdk.matching.graded` message."""
 
 
 @dataclass(frozen=True)

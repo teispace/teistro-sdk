@@ -1370,6 +1370,151 @@ void _engineTests() {
     );
   });
 
+  // A total graded by Muhurta Martanda's floor, by the bands Nepal's
+  // almanacs print and by a consumer's own table, and said in English and
+  // Nepali (`03-design/matching.md`, SR-39).
+  test('a guna total is graded into bands and said in words', () {
+    final ctx = teistro.context();
+    addTearDown(ctx.dispose);
+    final said = ctx.matching.band(
+      const BandRequest(
+        total: 28,
+        shipped: 'NEPALI_ALMANAC',
+        locale: 'en-Latn',
+      ),
+    );
+    expect(
+      [said.band, said.bands, said.words, said.text],
+      [
+        GunaBand.good,
+        'NEPALI_ALMANAC',
+        'a good match',
+        '28 of 36 gunas: a good match',
+      ],
+    );
+    expect(
+      ctx.matching.band(const BandRequest(total: 28, locale: 'en-Latn')).band,
+      GunaBand.fit,
+    );
+    expect(
+      ctx.matching
+          .band(
+            const BandRequest(
+              total: 17,
+              dushkuta: true,
+              shipped: 'NEPALI_ALMANAC',
+            ),
+          )
+          .band,
+      GunaBand.unfit,
+    );
+    expect(
+      ctx.matching
+          .band(const BandRequest(total: 17, shipped: 'NEPALI_ALMANAC'))
+          .band,
+      GunaBand.middling,
+    );
+    expect(
+      ctx.matching
+          .band(
+            const BandRequest(
+              total: 28,
+              shipped: 'NEPALI_ALMANAC',
+              locale: 'ne-Deva-NP',
+            ),
+          )
+          .text,
+      '३६ मध्ये २८ गुण: उत्तम',
+    );
+    final own = ctx.matching.band(
+      const BandRequest(
+        total: 22,
+        bands: GunaBands(
+          name: 'MINE',
+          source: 'a consumer',
+          rows: [
+            BandRow(band: GunaBand.unfit, from: 0),
+            BandRow(band: GunaBand.excellent, from: 22),
+          ],
+        ),
+      ),
+    );
+    expect([own.band, own.bands, own.row], [GunaBand.excellent, 'MINE', 1]);
+    for (final (request, field) in [
+      (const BandRequest(total: 37), 'band.total'),
+      (const BandRequest(total: 20, shipped: 'LAHIRI'), 'band.shipped'),
+      (const BandRequest(total: 20, locale: 'xx-Latn'), 'band.locale'),
+    ]) {
+      expect(
+        () => ctx.matching.band(request),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+  });
+
+  // The Himavatkhande template filled with the time at Kathmandu on 15
+  // January 2026 and a performer's slots, in Sanskrit and in IAST
+  // (`03-design/sankalpa.md` §5, SR-29).
+  test('a sankalpa is said in words by its tradition\'s template', () {
+    final sky = teistro.context(
+      profile: 'nepali-drik',
+      ephemeris: const [NamedEphemeris(Ephemeris.builtin)],
+    );
+    addTearDown(sky.dispose);
+    SankalpaWordsRequest asked(
+      String locale, {
+      String gotra = 'कौण्डिन्य',
+      String? tradition,
+    }) => SankalpaWordsRequest(
+      at: 2461055.59375,
+      latitudeDeg: 27.7172,
+      longitudeDeg: 85.324,
+      altitudeM: 1400,
+      utcOffsetSeconds: 20700,
+      locale: locale,
+      tradition: tradition,
+      slots: SankalpaFor(
+        performer: 'हरिनाथशर्मा',
+        gotra: gotra,
+        purpose: 'वाग्मतीस्नानम्',
+        river: 'वाग्मती',
+        kshetra: 'पाशुपत',
+      ),
+    );
+    final said = sky.almanac.sankalpaWords(asked('sa-Deva'));
+    expect(said.provenance.inputHash, isNotEmpty);
+    expect(
+      [said.value.tradition, said.value.locale],
+      ['sdk.sankalpa.himavatkhande', 'sa-Deva'],
+    );
+    expect(said.value.text, startsWith('हरिः ॐ तत्सत्'));
+    for (final piece in [
+      'वाग्मतीनद्याः समीपे पाशुपतक्षेत्रे पुण्यभूमौ',
+      '२०८२ वैक्रमाब्दे',
+      'गुरुवासरान्वितायां',
+      'कौण्डिन्यगोत्रोत्पन्नः हरिनाथशर्मा अहं वाग्मतीस्नानम् करिष्ये ।',
+    ]) {
+      expect(said.value.text, contains(piece));
+    }
+    expect(said.value.params['vara'], {r'$entity': 'vara.GURUVARA'});
+    expect(
+      sky.almanac.sankalpaWords(asked('en-Latn')).value.text,
+      startsWith('hariḥ oṃ tatsat'),
+    );
+    for (final (request, field) in [
+      (asked('sa-Deva', gotra: ' '), 'sankalpaWords.slots.gotra'),
+      (
+        asked('sa-Deva', tradition: 'sdk.sankalpa.nowhere'),
+        'sankalpaWords.tradition',
+      ),
+    ]) {
+      expect(
+        () => sky.almanac.sankalpaWords(request),
+        throwsA(isA<TeistroException>().having((e) => e.field, 'field', field)),
+      );
+    }
+  });
+
   // 08:00 on 15 January 2026 in Kathmandu, the morning after Makara
   // sankranti: Siddharthi's year, Magha (purnimanta) and Shishira at
   // sunrise, Krishna Dwadashi in Jyeshtha at the rite, the Sun in Capricorn

@@ -5846,6 +5846,84 @@ test('two charts say where they disagree', () => {
  * and Jupiter in Gemini; at 04:00 it is still the 14th's, and the
  * tropical ayana turned at the solstice (`03-design/sankalpa.md`).
  */
+test('a guna total is graded into bands and said in words', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN' });
+  const said = ctx.matching.band({ total: 28, shipped: 'NEPALI_ALMANAC', locale: 'en-Latn' });
+  assert.ok(Object.isFrozen(said), 'frozen');
+  assert.deepEqual(
+    [said.band, said.bands, said.words, said.text],
+    ['GOOD', 'NEPALI_ALMANAC', 'a good match', '28 of 36 gunas: a good match'],
+  );
+  // Muhurta Martanda's floor is the default: above 18, and no band above it.
+  assert.equal(ctx.matching.band({ total: 28, locale: 'en-Latn' }).band, 'FIT');
+  // The almanacs join a dushkuta match at 18 and a satkuta one above 16.
+  assert.equal(ctx.matching.band({ total: 17, dushkuta: true, shipped: 'NEPALI_ALMANAC' }).band, 'UNFIT');
+  assert.equal(ctx.matching.band({ total: 17, shipped: 'NEPALI_ALMANAC' }).band, 'MIDDLING');
+  assert.equal(
+    ctx.matching.band({ total: 28, shipped: 'NEPALI_ALMANAC', locale: 'ne-Deva-NP' }).text,
+    '३६ मध्ये २८ गुण: उत्तम',
+  );
+  const own = ctx.matching.band({
+    total: 22,
+    bands: { name: 'MINE', source: 'a consumer', rows: [{ band: 'UNFIT', from: 0 }, { band: 'EXCELLENT', from: 22 }] },
+  });
+  assert.deepEqual([own.band, own.bands, own.row], ['EXCELLENT', 'MINE', 1]);
+  for (const [request, field] of [
+    [{ total: 37 }, 'band.total'],
+    [{ total: 20, shipped: 'LAHIRI' }, 'band.shipped'],
+    [{ total: 20, bands: { name: 'X', source: '', rows: [{ band: 'FIT', from: 18 }] } }, 'band.bands.rows[0]'],
+    [{ total: 20, locale: 'xx-Latn' }, 'band.locale'],
+  ]) {
+    assert.throws(
+      () => ctx.matching.band(request),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
+test('a sankalpa is said in words by its tradition\'s template', () => {
+  const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
+  const asked = {
+    at: 2461055.59375,
+    latitudeDeg: 27.7172,
+    longitudeDeg: 85.324,
+    altitudeM: 1400,
+    utcOffsetSeconds: 20700,
+    slots: { performer: 'हरिनाथशर्मा', gotra: 'कौण्डिन्य', purpose: 'वाग्मतीस्नानम्', river: 'वाग्मती', kshetra: 'पाशुपत' },
+  };
+  const { value, provenance } = ctx.almanac.sankalpaWords({ ...asked, locale: 'sa-Deva' });
+  assert.equal(typeof provenance.inputHash, 'string', 'the request is sealed');
+  assert.equal(value.tradition, 'sdk.sankalpa.himavatkhande');
+  assert.equal(value.locale, 'sa-Deva');
+  assert.ok(value.text.startsWith('हरिः ॐ तत्सत्'), value.text);
+  for (const piece of [
+    'वाग्मतीनद्याः समीपे पाशुपतक्षेत्रे पुण्यभूमौ',
+    '२०८२ वैक्रमाब्दे',
+    'गुरुवासरान्वितायां',
+    'कौण्डिन्यगोत्रोत्पन्नः हरिनाथशर्मा अहं वाग्मतीस्नानम् करिष्ये ।',
+  ]) {
+    assert.ok(value.text.includes(piece), piece);
+  }
+  assert.equal(value.params.vara.$entity, 'vara.GURUVARA');
+  // The same slots, said in IAST.
+  assert.ok(ctx.almanac.sankalpaWords({ ...asked, locale: 'en-Latn' }).value.text.startsWith('hariḥ oṃ tatsat'));
+  for (const [request, field] of [
+    [{ ...asked, slots: { ...asked.slots, gotra: ' ' } }, 'sankalpaWords.slots.gotra'],
+    [{ ...asked, tradition: 'sdk.sankalpa.nowhere' }, 'sankalpaWords.tradition'],
+    [{ ...asked, locale: 'xx-Latn' }, 'sankalpaWords.locale'],
+    [{ ...asked, utcOffsetSeconds: 999999 }, 'sankalpaWords.utcOffsetSeconds'],
+  ]) {
+    assert.throws(
+      () => ctx.almanac.sankalpaWords(request),
+      (error) => error instanceof TeistroError && error.field === field,
+      field,
+    );
+  }
+  ctx.dispose();
+});
+
 test('an almanac says the time a sankalpa recites', () => {
   const ctx = context({ testProvider: false, ephemeris: 'BUILTIN', profile: 'nepali-drik' });
   const kathmandu = { latitude: 27.7172, longitude: 85.324, altitude: 1400 };

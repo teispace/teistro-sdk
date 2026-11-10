@@ -592,6 +592,38 @@ public final class AlmanacArea {
     }
 
     /**
+     * <b>The sankalpa in words</b> ({@code 03-design/sankalpa.md} §5): a tradition's template
+     * ({@code tradition}, {@code sdk.sankalpa.himavatkhande} when left out, or a key a loaded pack
+     * carries) filled with the time {@link #sankalpa(double, Observer, int,
+     * com.teispace.teistro.request.AyanaReckoning)} reckons at the instant and place, and the performer,
+     * gotra, purpose, river, holy ground and pitris in {@code slots}, in the request's locale or the
+     * context's. A refusal is named under {@code sankalpaWords}.
+     *
+     * <pre>{@code
+     * SankalpaWordsAnswer said = sky.almanac().sankalpaWords(SankalpaWordsRequest.builder()
+     *         .at(2_461_055.593_75).latitudeDeg(27.7172).longitudeDeg(85.324).utcOffsetSeconds(20_700)
+     *         .slots(new SankalpaFor("कौण्डिन्य", "हरिनाथशर्मा", "गणेशपूजनम्")).locale("sa-Deva").build());
+     * String text = said.value().text(); // हरिः ॐ तत्सत् …
+     * }</pre>
+     *
+     * @param request the instant, the place, its clock, the slots, and optionally the tradition and locale
+     * @return the words, sealed
+     */
+    public SankalpaWordsAnswer sankalpaWords(com.teispace.teistro.request.SankalpaWordsRequest request) {
+        String json = Json.write(request);
+        Map<?, ?> envelope = Reads.object(Json.read(
+                context.locked((lib, raw) -> Calls.almanacSankalpaWords(lib, raw, json))));
+        Map<?, ?> value = Reads.object(envelope, "value");
+        return new SankalpaWordsAnswer(
+                new SankalpaWords(
+                        Reads.string(value, "tradition"),
+                        Reads.string(value, "locale"),
+                        java.util.Collections.unmodifiableMap(Reads.object(value, "params")),
+                        Reads.string(value, "text")),
+                com.teispace.teistro.record.Provenance.of(Reads.field(envelope, "provenance")));
+    }
+
+    /**
      * <b>The period of impurity after a birth or a death</b> at a place ({@code 03-design/ashauch.md}):
      * from when, until when, and by which clause. The span is a count of sunrise days, the day the
      * event falls in the first and an event at night given to a day by the table's night rule; {@code n}
