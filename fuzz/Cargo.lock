@@ -931,6 +931,7 @@ dependencies = [
  "teistro-gochar",
  "teistro-houses",
  "teistro-intl",
+ "teistro-rashifal",
  "teistro-rules",
  "teistro-state",
  "teistro-strength",

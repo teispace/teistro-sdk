@@ -6,21 +6,13 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 
 | locale | completeness | members named | | messages translated | |
 |---|---|---:|---:|---:|---:|
-| `en-Latn` | strict | 448 of 537 | 83.4% | 202 of 202 | 100.0% |
-| `hi-Deva-IN` | base | 333 of 537 | 62.0% | 82 of 202 | 40.6% |
-| `ne-Deva-NP` | strict | 448 of 537 | 83.4% | 202 of 202 | 100.0% |
-| `sa-Deva` | base | 332 of 537 | 61.8% | 82 of 202 | 40.6% |
-| `sa-Latn` | base | 332 of 537 | 61.8% | 82 of 202 | 40.6% |
+| `en-Latn` | strict | 537 of 537 | 100.0% | 230 of 230 | 100.0% |
+| `hi-Deva-IN` | base | 423 of 537 | 78.8% | 217 of 230 | 94.3% |
+| `ne-Deva-NP` | strict | 537 of 537 | 100.0% | 230 of 230 | 100.0% |
+| `sa-Deva` | base | 422 of 537 | 78.6% | 214 of 230 | 93.0% |
+| `sa-Latn` | base | 422 of 537 | 78.6% | 214 of 230 | 93.0% |
 
-537 members of 43 kinds, 202 messages.
-
-`hi-Deva-IN` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.calendar`.
-
-`ne-Deva-NP` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.day`, `sdk.rite`.
-
-`sa-Deva` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.amount`, `sdk.calendar`.
-
-`sa-Latn` ships unreviewed, marked draft on every render (QUESTIONS.md Q42): `sdk.amount`, `sdk.calendar`.
+537 members of 43 kinds, 230 messages.
 
 ## By kind
 
@@ -34,17 +26,17 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `avastha_sayanadi` | 12 | 12 | 0 | 12 | 0 | 0 |
 | `ayana` | 2 | 2 | 2 | 2 | 2 | 2 |
 | `ayanamsha` | 47 | 47 | 47 | 47 | 47 | 47 |
-| `calendar` | 16 | 0 | 0 | 0 | 0 | 0 |
-| `chart_kind` | 8 | 0 | 0 | 0 | 0 | 0 |
+| `calendar` | 16 | 16 | 16 | 16 | 16 | 16 |
+| `chart_kind` | 8 | 8 | 8 | 8 | 8 | 8 |
 | `choghadiya` | 7 | 7 | 7 | 7 | 7 | 7 |
-| `dasha_system` | 45 | 29 | 18 | 29 | 18 | 18 |
+| `dasha_system` | 45 | 45 | 34 | 45 | 34 | 34 |
 | `day_marker` | 3 | 3 | 0 | 3 | 0 | 0 |
 | `dignity` | 11 | 11 | 11 | 11 | 11 | 11 |
 | `direction` | 8 | 8 | 8 | 8 | 8 | 8 |
-| `era` | 12 | 11 | 1 | 11 | 0 | 0 |
+| `era` | 12 | 12 | 2 | 12 | 1 | 1 |
 | `gana` | 3 | 3 | 3 | 3 | 3 | 3 |
 | `gowri` | 8 | 8 | 0 | 8 | 0 | 0 |
-| `graha` | 12 | 9 | 9 | 9 | 9 | 9 |
+| `graha` | 12 | 12 | 12 | 12 | 12 | 12 |
 | `house_system` | 22 | 22 | 22 | 22 | 22 | 22 |
 | `kaala` | 3 | 3 | 3 | 3 | 3 | 3 |
 | `karana` | 11 | 11 | 11 | 11 | 11 | 11 |
@@ -52,20 +44,20 @@ A **member** is a catalogue key a document can carry (its schema names the kind)
 | `muhurta_yoga` | 7 | 7 | 5 | 7 | 5 | 5 |
 | `nadi` | 3 | 3 | 3 | 3 | 3 | 3 |
 | `nakshatra` | 27 | 27 | 27 | 27 | 27 | 27 |
-| `nature` | 3 | 2 | 0 | 2 | 0 | 0 |
+| `nature` | 3 | 3 | 1 | 3 | 1 | 1 |
 | `paksha` | 2 | 2 | 2 | 2 | 2 | 2 |
 | `panchaka` | 5 | 5 | 5 | 5 | 5 | 5 |
 | `paya` | 4 | 4 | 0 | 4 | 0 | 0 |
-| `point` | 49 | 19 | 8 | 19 | 8 | 8 |
+| `point` | 49 | 49 | 38 | 49 | 38 | 38 |
 | `rashi` | 12 | 12 | 12 | 12 | 12 | 12 |
 | `relationship` | 5 | 5 | 5 | 5 | 5 | 5 |
 | `ritu` | 6 | 6 | 6 | 6 | 6 | 6 |
 | `shiva_vasa` | 7 | 7 | 0 | 7 | 0 | 0 |
 | `tithi` | 30 | 30 | 30 | 30 | 30 | 30 |
-| `tithi_class` | 5 | 0 | 0 | 0 | 0 | 0 |
-| `vaiseshikamsa` | 30 | 27 | 0 | 27 | 0 | 0 |
+| `tithi_class` | 5 | 5 | 5 | 5 | 5 | 5 |
+| `vaiseshikamsa` | 30 | 30 | 3 | 30 | 3 | 3 |
 | `vara` | 7 | 7 | 7 | 7 | 7 | 7 |
-| `varga` | 21 | 15 | 0 | 15 | 0 | 0 |
+| `varga` | 21 | 21 | 7 | 21 | 7 | 7 |
 | `varna` | 5 | 5 | 5 | 5 | 5 | 5 |
 | `yoga` | 27 | 27 | 27 | 27 | 27 | 27 |
 | `yoni` | 14 | 14 | 14 | 14 | 14 | 14 |
