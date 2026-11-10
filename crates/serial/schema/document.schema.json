@@ -4062,6 +4062,25 @@
       ],
       "type": "object"
     },
+    "Hub": {
+      "description": "A circle no cell holds, where a renderer writes which chart is drawn.",
+      "properties": {
+        "centre": {
+          "$ref": "#/$defs/UnitPoint",
+          "description": "The circle's centre."
+        },
+        "radius": {
+          "description": "Its radius, a fraction of the square's side.",
+          "format": "double",
+          "type": "number"
+        }
+      },
+      "required": [
+        "centre",
+        "radius"
+      ],
+      "type": "object"
+    },
     "Interval": {
       "description": "A half-open interval of time, `[from, to)`.",
       "properties": {
@@ -6076,6 +6095,17 @@
             "$ref": "#/$defs/Path"
           },
           "type": "array"
+        },
+        "hub": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Hub"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "The layout's hub, where the chart's name is written; absent from a layout with none."
         },
         "layout": {
           "description": "The layout's key.",

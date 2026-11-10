@@ -1561,3 +1561,159 @@ The days the notifications print are not reckoned: the five set by the moon, eac
 | 2026 | RAGHUNATH_MURMU_JAYANTI | 5/1 | printed |
 | 2026 | BIR_CHILARAI_JAYANTI | 2/1 | printed |
 
+## 12. Kerala's public holidays against the notifications
+
+`INDIA_KERALA` at Thiruvananthapuram on India's clock, against each year's public holidays to the public offices of the General Administration (Co-ordination) Department's notifications, the occasions they name as falling on a Sunday or a second Saturday, and their restricted holidays. 154 of 156 rows agree.
+
+- 2021: G.O.(P) No. 16/2020/GAD, 22 October 2020: rank 1, a staff site's text of the signed order
+- 2022: G.O.(P) No. 29/2021/GAD, 21 October 2021, Kerala Gazette Extraordinary No. 3060: rank 1, gad.kerala.gov.in
+- 2023: G.O.(P) No. 22/2022/GAD, 26 October 2022, Kerala Gazette Extraordinary No. 3657: rank 1, a copy of the signed gazette
+- 2024: G.O.(P) No. 24/2023/GAD, 4 October 2023, Kerala Gazette Extraordinary No. 3254: rank 1, a copy of the signed gazette
+- 2025: G.O.(P) No. 34/2024/GAD, 14 October 2024: rank 1, a copy of the signed gazette
+- 2026: G.O.(P) No. 14/2025/GAD, 31 October 2025, Kerala Gazette Extraordinary No. 3845: rank 1, gad.kerala.gov.in
+
+| year | rule | listed | found |
+| --- | --- | --- | --- |
+| 2021 | SHIVARATRI | 3/11 | 3/11 |
+| 2021 | MAUNDY_THURSDAY | 4/1 | 4/1 |
+| 2021 | GOOD_FRIDAY | 4/2 | 4/2 |
+| 2021 | EASTER | 4/4 | 4/4 |
+| 2021 | VISHU | 4/14 | 4/14 |
+| 2021 | KARKIDAKA_VAVU | 8/8 | 8/8 |
+| 2021 | FIRST_ONAM | 8/20 | 8/20 |
+| 2021 | THIRUVONAM | 8/21 | 8/21 |
+| 2021 | AVANI_AVITTOM | 8/22 | 8/22 |
+| 2021 | THIRD_ONAM | 8/22 | 8/22 |
+| 2021 | FOURTH_ONAM | 8/23 | 8/23 |
+| 2021 | SREE_NARAYANA_GURU_JAYANTHI | 8/23 | 8/23 |
+| 2021 | JANMASHTAMI | 8/30 | 8/30 |
+| 2021 | SREE_NARAYANA_GURU_SAMADHI | 9/21 | 9/21 |
+| 2021 | MAHA_NAVAMI | 10/14 | 10/14 |
+| 2021 | VIJAYA_DASHAMI | 10/15 | 10/15 |
+| 2021 | LAKSHMI_PUJA | 11/4 | 11/4 |
+| 2022 | SHIVARATRI | 3/1 | 3/1 |
+| 2022 | MAUNDY_THURSDAY | 4/14 | 4/14 |
+| 2022 | GOOD_FRIDAY | 4/15 | 4/15 |
+| 2022 | VISHU | 4/15 | 4/15 |
+| 2022 | EASTER | 4/17 | 4/17 |
+| 2022 | KARKIDAKA_VAVU | 7/28 | 7/28 |
+| 2022 | AVANI_AVITTOM | 8/11 | 8/11 |
+| 2022 | JANMASHTAMI | 8/18 | 8/18 |
+| 2022 | FIRST_ONAM | 9/7 | 9/7 |
+| 2022 | THIRUVONAM | 9/8 | 9/8 |
+| 2022 | THIRD_ONAM | 9/9 | 9/9 |
+| 2022 | FOURTH_ONAM | 9/10 | 9/10 |
+| 2022 | SREE_NARAYANA_GURU_JAYANTHI | 9/10 | 9/10 |
+| 2022 | SREE_NARAYANA_GURU_SAMADHI | 9/21 | 9/21 |
+| 2022 | MAHA_NAVAMI | 10/4 | 10/4 |
+| 2022 | VIJAYA_DASHAMI | 10/5 | 10/5 |
+| 2022 | LAKSHMI_PUJA | 10/24 | 10/24 |
+| 2023 | SHIVARATRI | 2/18 | 2/18 |
+| 2023 | MAUNDY_THURSDAY | 4/6 | 4/6 |
+| 2023 | GOOD_FRIDAY | 4/7 | 4/7 |
+| 2023 | EASTER | 4/9 | 4/9 |
+| 2023 | VISHU | 4/15 | 4/15 |
+| 2023 | KARKIDAKA_VAVU | 7/17 | 7/17 |
+| 2023 | FIRST_ONAM | 8/28 | 8/28 |
+| 2023 | THIRUVONAM | 8/29 | 8/29 |
+| 2023 | AVANI_AVITTOM | 8/30 | 8/30 |
+| 2023 | THIRD_ONAM | 8/30 | 8/30 |
+| 2023 | FOURTH_ONAM | 8/31 | 8/31 |
+| 2023 | SREE_NARAYANA_GURU_JAYANTHI | 8/31 | 8/31 |
+| 2023 | JANMASHTAMI | 9/6 | 9/6 |
+| 2023 | SREE_NARAYANA_GURU_SAMADHI | 9/22 | 9/22 |
+| 2023 | MAHA_NAVAMI | 10/23 | 10/23 |
+| 2023 | VIJAYA_DASHAMI | 10/24 | 10/24 |
+| 2023 | LAKSHMI_PUJA | 11/12 | 11/12 |
+| 2024 | SHIVARATRI | 3/8 | 3/8 |
+| 2024 | MAUNDY_THURSDAY | 3/28 | 3/28 |
+| 2024 | GOOD_FRIDAY | 3/29 | 3/29 |
+| 2024 | EASTER | 3/31 | 3/31 |
+| 2024 | VISHU | 4/14 | 4/14 |
+| 2024 | KARKIDAKA_VAVU | 8/3 | 8/4 ✗ |
+| 2024 | AVANI_AVITTOM | 8/19 | 8/19 |
+| 2024 | SREE_NARAYANA_GURU_JAYANTHI | 8/20 | 8/20 |
+| 2024 | JANMASHTAMI | 8/26 | 8/26 |
+| 2024 | FIRST_ONAM | 9/14 | 9/14 |
+| 2024 | THIRUVONAM | 9/15 | 9/15 |
+| 2024 | THIRD_ONAM | 9/16 | 9/16 |
+| 2024 | FOURTH_ONAM | 9/17 | 9/17 |
+| 2024 | SREE_NARAYANA_GURU_SAMADHI | 9/21 | 9/21 |
+| 2024 | MAHA_NAVAMI | 10/12 | 10/12 |
+| 2024 | VIJAYA_DASHAMI | 10/13 | 10/13 |
+| 2024 | LAKSHMI_PUJA | 10/31 | 10/31 |
+| 2025 | SHIVARATRI | 2/26 | 2/26 |
+| 2025 | VISHU | 4/14 | 4/14 |
+| 2025 | MAUNDY_THURSDAY | 4/17 | 4/17 |
+| 2025 | GOOD_FRIDAY | 4/18 | 4/18 |
+| 2025 | EASTER | 4/20 | 4/20 |
+| 2025 | KARKIDAKA_VAVU | 7/24 | 7/24 |
+| 2025 | AVANI_AVITTOM | 8/9 | 8/9 |
+| 2025 | FIRST_ONAM | 9/4 | 9/4 |
+| 2025 | THIRUVONAM | 9/5 | 9/5 |
+| 2025 | THIRD_ONAM | 9/6 | 9/6 |
+| 2025 | FOURTH_ONAM | 9/7 | 9/7 |
+| 2025 | SREE_NARAYANA_GURU_JAYANTHI | 9/7 | 9/7 |
+| 2025 | JANMASHTAMI | 9/14 | 8/15 ✗ |
+| 2025 | SREE_NARAYANA_GURU_SAMADHI | 9/21 | 9/21 |
+| 2025 | MAHA_NAVAMI | 10/1 | 10/1 |
+| 2025 | VIJAYA_DASHAMI | 10/2 | 10/2 |
+| 2025 | LAKSHMI_PUJA | 10/20 | 10/20 |
+| 2026 | SHIVARATRI | 2/15 | 2/15 |
+| 2026 | MAUNDY_THURSDAY | 4/2 | 4/2 |
+| 2026 | GOOD_FRIDAY | 4/3 | 4/3 |
+| 2026 | EASTER | 4/5 | 4/5 |
+| 2026 | VISHU | 4/15 | 4/15 |
+| 2026 | KARKIDAKA_VAVU | 8/12 | 8/12 |
+| 2026 | FIRST_ONAM | 8/25 | 8/25 |
+| 2026 | THIRUVONAM | 8/26 | 8/26 |
+| 2026 | THIRD_ONAM | 8/27 | 8/27 |
+| 2026 | AVANI_AVITTOM | 8/28 | 8/28 |
+| 2026 | FOURTH_ONAM | 8/28 | 8/28 |
+| 2026 | SREE_NARAYANA_GURU_JAYANTHI | 8/28 | 8/28 |
+| 2026 | JANMASHTAMI | 9/4 | 9/4 |
+| 2026 | SREE_NARAYANA_GURU_SAMADHI | 9/21 | 9/21 |
+| 2026 | MAHA_NAVAMI | 10/20 | 10/20 |
+| 2026 | VIJAYA_DASHAMI | 10/21 | 10/21 |
+| 2026 | LAKSHMI_PUJA | 11/8 | 11/8 |
+
+The 9 civil days stand on their date in all 6 years.
+
+- 2024 KARKIDAKA_VAVU: the new moon runs from 15:51 on 3 August to 16:43 on the 4th, so the sunrise reading takes the 4th; the notice lists the 3rd, the day the new moon holds the sunset (C1322)
+- 2025 JANMASHTAMI: *Dharmasindhu*'s rule keeps the 8th of the lunar month in August, which fell in Karkidakam; the notice lists 14 September, the dark 8th in Chingam (C1320)
+
+The days the notifications print are not reckoned: the four set by the moon, each marked, and Ayya Vaikunda Swami's birthday. 2031, with no notification, holds none.
+
+| year | key | day | stands as |
+| --- | --- | --- | --- |
+| 2021 | EID_AL_FITR | 5/13 | subject to sighting |
+| 2021 | EID_AL_ADHA | 7/20 | subject to sighting |
+| 2021 | MUHARRAM | 8/19 | subject to sighting |
+| 2021 | MAWLID | 10/19 | subject to sighting |
+| 2021 | AYYA_VAIKUNDA_SWAMI_JAYANTHI | 3/12 | printed |
+| 2022 | EID_AL_FITR | 5/2 | subject to sighting |
+| 2022 | EID_AL_ADHA | 7/9 | subject to sighting |
+| 2022 | MUHARRAM | 8/8 | subject to sighting |
+| 2022 | MAWLID | 10/8 | subject to sighting |
+| 2022 | AYYA_VAIKUNDA_SWAMI_JAYANTHI | 3/12 | printed |
+| 2023 | EID_AL_FITR | 4/21 | subject to sighting |
+| 2023 | EID_AL_ADHA | 6/28 | subject to sighting |
+| 2023 | MUHARRAM | 7/28 | subject to sighting |
+| 2023 | MAWLID | 9/27 | subject to sighting |
+| 2023 | AYYA_VAIKUNDA_SWAMI_JAYANTHI | 3/12 | printed |
+| 2024 | EID_AL_FITR | 4/10 | subject to sighting |
+| 2024 | EID_AL_ADHA | 6/17 | subject to sighting |
+| 2024 | MUHARRAM | 7/16 | subject to sighting |
+| 2024 | MAWLID | 9/16 | subject to sighting |
+| 2024 | AYYA_VAIKUNDA_SWAMI_JAYANTHI | 3/12 | printed |
+| 2025 | EID_AL_FITR | 3/31 | subject to sighting |
+| 2025 | EID_AL_ADHA | 6/6 | subject to sighting |
+| 2025 | MUHARRAM | 7/6 | subject to sighting |
+| 2025 | MAWLID | 9/5 | subject to sighting |
+| 2025 | AYYA_VAIKUNDA_SWAMI_JAYANTHI | 3/4 | printed |
+| 2026 | EID_AL_FITR | 3/20 | subject to sighting |
+| 2026 | EID_AL_ADHA | 5/27 | subject to sighting |
+| 2026 | MUHARRAM | 6/25 | subject to sighting |
+| 2026 | MAWLID | 8/25 | subject to sighting |
+| 2026 | AYYA_VAIKUNDA_SWAMI_JAYANTHI | 3/4 | printed |
+

@@ -562,7 +562,7 @@ impl Kind {
             Kind::Kaala => 3,
             Kind::Panchaka => 5,
             Kind::MuhurtaYoga => 7,
-            Kind::ChartLayout => 6,
+            Kind::ChartLayout => 8,
             Kind::Vaiseshikamsa => 30,
             Kind::AvasthaCheshta => 3,
             Kind::GrahaBhava => 0,

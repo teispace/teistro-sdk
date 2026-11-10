@@ -16,8 +16,8 @@ pays each figure twice.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| every path a brief keeps is a property of its record's answer schema, or runs into a value the schema leaves open | **holds** | 0 of 242 disagree |
-| no brief leaves out the tag a `oneOf` branch is told apart by | **holds** | 0 of 242 disagree |
+| every path a brief keeps is a property of its record's answer schema, or runs into a value the schema leaves open | **holds** | 0 of 243 disagree |
+| no brief leaves out the tag a `oneOf` branch is told apart by | **holds** | 0 of 243 disagree |
 | every brief that keeps fields answers its example's value in fewer tokens than the full answer | **holds** | 0 of 18 disagree |
 | every brief that keeps fields belongs to a record whose answer states a schema | **holds** | 0 of 18 disagree |
 | every record set aside here is a record, and refuses its example over the built-in ephemeris | **holds** | 0 of 2 disagree |
@@ -26,13 +26,13 @@ pays each figure twice.
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 343 729 | 100 661 | 29.3% |
-| the value | 325 158 | 97 465 | 30.0% |
-| the provenance | 18 025 | 2390 | 13.3% |
+| the envelope | 344 132 | 101 063 | 29.4% |
+| the value | 325 560 | 97 867 | 30.1% |
+| the provenance | 18 026 | 2390 | 13.3% |
 
 18 of the 52 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
-13 of the 242 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
+13 of the 243 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
 
 Set aside:
 
@@ -67,7 +67,7 @@ value.
 | `almanac.people` | 3742 | 1744 | 46.6% | `day`, `sunrise`, `nextSunrise`, `nakshatra`, `moonSign`, `dasha`, `people.name`, `people.birthStar`, `people.moonSign`, `people.lagna`, `people.dasha`, `people.tara`, `people.chandraHouse`, `people.chandrashtama`, `people.sadeSati`, `people.transits.graha`, `people.transits.house`, `people.transits.verdict`, `people.hits` |
 | `almanac.publishedReasons` | 747 | 118 | 15.8% | the whole value |
 | `almanac.sankalpa` | 1214 | 709 | 58.4% | the whole value |
-| `almanac.sentences` | 3628 | 1010 | 27.8% | `sentences.text`, `locale`, `withheld`, `draft` |
+| `almanac.sentences` | 3630 | 1011 | 27.9% | `sentences.text`, `locale`, `withheld`, `draft` |
 | `almanac.skyView` | 3724 | 622 | 16.7% | `at`, `grahas`, `stars` |
 | `calendar.add` | 149 | 149 | 100.0% | the whole value |
 | `calendar.between` | 28 | 28 | 100.0% | the whole value |
@@ -76,12 +76,12 @@ value.
 | `chart.disagreements` | 1495 | 886 | 59.3% | `otherProfile`, `at`, `compared`, `lagna`, `grahas`, `nakshatra`, `dashas`, `yogas` |
 | `chart.found` | 33 195 | 17 360 | 52.3% | `charts.foundation.instant`, `charts.foundation.place`, `charts.foundation.kind`, `charts.foundation.zodiac`, `charts.foundation.lagna_deg`, `charts.foundation.houses`, `charts.foundation.grahas.graha`, `charts.foundation.grahas.longitude_deg`, `charts.foundation.grahas.speed_deg_per_day`, `charts.foundation.grahas.placement`, `charts.foundation.grahas.house`, `charts.panchanga`, `charts.vargas`, `charts.state`, `charts.aspects`, `charts.points`, `charts.houses`, `charts.ashtakavarga`, `charts.vimshopaka`, `charts.vaiseshikamsa`, `charts.shadbala.grahas.graha`, `charts.shadbala.grahas.rupas`, `charts.shadbala.grahas.required_rupas`, `charts.shadbala.grahas.strong`, `charts.bhava_bala`, `charts.dasha_phala`, `charts.jaimini`, `charts.avakahada`, `charts.moment`, `charts.drawings`, `charts.dashas`, `readings`, `plans`, `sade_sati`, `gochar`, `hits`, `sarvatobhadra`, `dossier`, `dignities`, `fortitudes.scores`, `fortitudes.planets`, `fortitudes.almutens`, `lots.sect`, `lots.lots`, `considerations`, `perfections`, `matchings`, `svgs`, `kp.chart.planets`, `kp.significators`, `kp.ruling`, `prashna`, `remedies`, `lalkitab`, `rectification`, `varsha`, `tithi_pravesha`, `masa_pravesha`, `western` |
 | `chart.mundane` | 752 | 182 | 24.2% | the whole value |
-| `chart.rashifal` | 17 500 | 4641 | 26.5% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline` |
+| `chart.rashifal` | 17 500 | 4641 | 26.5% | `period.first`, `period.last`, `period.instant`, `period.transits`, `period.retrograde`, `period.panchanga`, `period.readings.rashi`, `period.readings.saturn`, `period.readings.events`, `baseline`, `plans` |
 | `chart.relocated` | 1053 | 494 | 46.9% | the whole value |
-| `intl.date` | 237 | 237 | 100.0% | the whole value |
+| `intl.date` | 238 | 238 | 100.0% | the whole value |
 | `intl.dates` | 252 | 252 | 100.0% | the whole value |
 | `intl.inWords` | 218 | 218 | 100.0% | the whole value |
-| `intl.lexicon` | 3193 | 3193 | 100.0% | the whole value |
+| `intl.lexicon` | 3593 | 3593 | 100.0% | the whole value |
 | `intl.lookup` | 329 | 329 | 100.0% | the whole value |
 | `intl.time` | 183 | 183 | 100.0% | the whole value |
 | `matching.naam` | 1293 | 1293 | 100.0% | the whole value |
@@ -152,7 +152,7 @@ marked.
 - `almanac.people`: `people` 2853 (kept), `day` 59 (kept), `nextSunrise` 13 (kept), `sunrise` 13 (kept), `dasha` 10 (kept), `nakshatra` 10 (kept), `moonSign` 9 (kept).
 - `almanac.publishedReasons`: `reasons` 7 (kept).
 - `almanac.sankalpa`: `year` 226 (kept), `date` 82 (kept), `month` 75 (kept), `tithi` 15 (kept), `nakshatra` 14 (kept), `ayana` 13 (kept), `nextSunrise` 13 (kept), `sunrise` 13 (kept), `jupiter` 12 (kept), `karana` 12 (kept), `paksha` 12 (kept), `sun` 12 (kept), `ayanaReckoning` 11 (kept), `moon` 11 (kept), `rituReckoning` 11 (kept), `at` 10 (kept), `ritu` 10 (kept), `vara` 10 (kept), `yoga` 10 (kept).
-- `almanac.sentences`: `sentences` 2833 (kept), `locale` 12 (kept), `withheld` 7 (kept), `draft` 6 (kept).
+- `almanac.sentences`: `sentences` 2833 (kept), `locale` 12 (kept), `draft` 7 (kept), `withheld` 7 (kept).
 - `almanac.skyView`: `ecliptic` 1687, `horizon` 796, `grahas` 262 (kept), `stars` 227 (kept), `atmosphere` 26, `siderealTimeDeg` 14, `obliquityDeg` 13, `at` 9 (kept), `eclipticStepDeg` 8, `horizonStepDeg` 8.
 - `chart.astrocartography`: `lines` 3496 (kept), `greenwichRamcDeg` 14 (kept), `obliquityDeg` 13 (kept), `projection` 12 (kept), `instant` 10 (kept), `toleranceDeg` 10 (kept), `latitudeLimitDeg` 8 (kept), `stepDeg` 6 (kept).
 - `chart.disagreements`: `dashas` 388 (kept), `yogas` 157 (kept), `lagna` 96 (kept), `nakshatra` 83 (kept), `otherSettingsHash` 47, `otherProfile` 15 (kept), `at` 9 (kept), `grahas` 7 (kept), `compared` 6 (kept).
@@ -160,7 +160,7 @@ marked.
 - `chart.mundane`: `instant` 12 (kept), `kind` 12 (kept), `latitudeDeg` 10 (kept), `longitudeDeg` 9 (kept), `utcOffsetSeconds` 9 (kept), `altitudeM` 8 (kept).
 - `chart.rashifal`: `period` 13 293 (kept), `baseline` 3488 (kept).
 - `chart.relocated`: `places` 350 (kept), `obliquityDeg` 13 (kept), `instant` 10 (kept).
-- `intl.lexicon`: `entries` 3171 (kept), `locale` 12 (kept).
+- `intl.lexicon`: `entries` 3571 (kept), `locale` 12 (kept).
 - `matching.naam`: `porutham` 602 (kept), `ashta` 563 (kept), `bride` 41 (kept), `groom` 39 (kept), `varga` 35 (kept).
 - `naming.check`: `check` 985 (kept), `refused` 12 (kept).
 - `naming.read`: `reading` 1097 (kept), `refused` 12 (kept).
