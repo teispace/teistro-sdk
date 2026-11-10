@@ -247,6 +247,56 @@
       "name": "पूषा",
       "prose": "पूषा",
       "iast": "Pūṣā"
+    },
+    "CHANDRA": {
+      "name": "चन्द्र",
+      "prose": "चन्द्र",
+      "iast": "Candra"
+    },
+    "DURGA": {
+      "name": "दुर्गा",
+      "prose": "दुर्गा",
+      "iast": "Durgā"
+    },
+    "KAMADEVA": {
+      "name": "कामदेव",
+      "prose": "कामदेव",
+      "iast": "Kāmadeva"
+    },
+    "KARTIKEYA": {
+      "name": "कार्तिकेय",
+      "prose": "कार्तिकेय",
+      "iast": "Kārttikeya"
+    },
+    "SHANI": {
+      "name": "शनि",
+      "prose": "शनि",
+      "iast": "Śani"
+    },
+    "SHIVA": {
+      "name": "शिव",
+      "prose": "शिव",
+      "iast": "Śiva"
+    },
+    "SHUKRA": {
+      "name": "शुक्र",
+      "prose": "शुक्र",
+      "iast": "Śukra"
+    },
+    "SURYA": {
+      "name": "सूर्य",
+      "prose": "सूर्य",
+      "iast": "Sūrya"
+    },
+    "TVASHTA": {
+      "name": "त्वष्टा",
+      "prose": "त्वष्टा",
+      "iast": "Tvaṣṭā"
+    },
+    "VIDHATA": {
+      "name": "विधाता",
+      "prose": "विधाता",
+      "iast": "Vidhātā"
     }
   },
   "dignity": {
@@ -3917,6 +3967,171 @@
     "HYBRID": {
       "name": "संकर",
       "prose": "संकर"
+    }
+  },
+  "auspiciousness": {
+    "AUSPICIOUS": {
+      "name": "शुभ",
+      "prose": "शुभ",
+      "iast": "Śubha"
+    },
+    "INAUSPICIOUS": {
+      "name": "अशुभ",
+      "prose": "अशुभ",
+      "iast": "Aśubha"
+    },
+    "MIXED": {
+      "name": "मिश्रित",
+      "prose": "मिश्रित"
+    },
+    "HIGHLY_INAUSPICIOUS": {
+      "name": "अति अशुभ",
+      "prose": "अति अशुभ"
+    }
+  },
+  "sex": {
+    "MALE": {
+      "name": "पुरुष",
+      "prose": "पुरुष",
+      "iast": "Puruṣa"
+    },
+    "FEMALE": {
+      "name": "स्त्री",
+      "prose": "स्त्री",
+      "iast": "Strī"
+    }
+  },
+  "parity": {
+    "ODD": {
+      "name": "विषम",
+      "prose": "विषम"
+    },
+    "EVEN": {
+      "name": "सम",
+      "prose": "सम"
+    }
+  },
+  "koota": {
+    "VARNA": {
+      "name": "वर्ण",
+      "prose": "वर्ण",
+      "iast": "Varṇa"
+    },
+    "VASHYA": {
+      "name": "वश्य",
+      "prose": "वश्य",
+      "iast": "Vaśya"
+    },
+    "TARA": {
+      "name": "तारा",
+      "prose": "तारा",
+      "iast": "Tārā"
+    },
+    "YONI": {
+      "name": "योनि",
+      "prose": "योनि",
+      "iast": "Yoni"
+    },
+    "GRAHA_MAITRI": {
+      "name": "ग्रह मैत्री",
+      "prose": "ग्रह मैत्री",
+      "iast": "Grahamaitrī"
+    },
+    "GANA": {
+      "name": "गण",
+      "prose": "गण",
+      "iast": "Gaṇa"
+    },
+    "BHAKOOT": {
+      "name": "भकूट",
+      "prose": "भकूट",
+      "iast": "Bhakūṭa"
+    },
+    "NADI": {
+      "name": "नाड़ी",
+      "prose": "नाड़ी",
+      "iast": "Nāḍī"
+    },
+    "RAJJU": {
+      "name": "रज्जु",
+      "prose": "रज्जु",
+      "iast": "Rajju"
+    },
+    "VEDHA": {
+      "name": "वेध",
+      "prose": "वेध",
+      "iast": "Vedha"
+    },
+    "STREE_DEERGHA": {
+      "name": "स्त्री दीर्घ",
+      "prose": "स्त्री दीर्घ",
+      "iast": "Strīdīrgha"
+    },
+    "MAHENDRA": {
+      "name": "माहेंद्र",
+      "prose": "माहेंद्र",
+      "iast": "Māhendra"
+    }
+  },
+  "state": {
+    "RETROGRADE": {
+      "name": "वक्री",
+      "prose": "वक्री",
+      "iast": "Vakrī"
+    },
+    "STATIONARY": {
+      "name": "स्तंभित",
+      "prose": "स्तंभित",
+      "iast": "Stambhita"
+    },
+    "COMBUST": {
+      "name": "अस्त",
+      "prose": "अस्त",
+      "iast": "Asta"
+    },
+    "PLANETARY_WAR": {
+      "name": "ग्रह युद्ध",
+      "prose": "ग्रह युद्ध",
+      "iast": "Grahayuddha"
+    },
+    "GANDANTA": {
+      "name": "गंडांत",
+      "prose": "गंडांत",
+      "iast": "Gaṇḍānta"
+    },
+    "SANDHI": {
+      "name": "संधि",
+      "prose": "संधि",
+      "iast": "Sandhi"
+    },
+    "VARGOTTAMA": {
+      "name": "वर्गोत्तम",
+      "prose": "वर्गोत्तम",
+      "iast": "Vargottama"
+    },
+    "PUSHKARA_NAVAMSA": {
+      "name": "पुष्कर नवांश",
+      "prose": "पुष्कर नवांश",
+      "iast": "Puṣkara Navāṃśa"
+    },
+    "PUSHKARA_BHAGA": {
+      "name": "पुष्कर भाग",
+      "prose": "पुष्कर भाग",
+      "iast": "Puṣkarabhāga"
+    },
+    "MRITYU_BHAGA": {
+      "name": "मृत्यु भाग",
+      "prose": "मृत्यु भाग",
+      "iast": "Mṛtyubhāga"
+    },
+    "MARANA_KARAKA_STHANA": {
+      "name": "मरण कारक स्थान",
+      "prose": "मरण कारक स्थान",
+      "iast": "Maraṇakāraka Sthāna"
+    },
+    "ECLIPSED": {
+      "name": "ग्रहणग्रस्त",
+      "prose": "ग्रहणग्रस्त"
     }
   }
 }

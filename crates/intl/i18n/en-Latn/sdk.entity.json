@@ -913,6 +913,56 @@
       "name": "Pusha",
       "prose": "Pusha",
       "iast": "Pūṣā"
+    },
+    "CHANDRA": {
+      "name": "Chandra",
+      "prose": "Chandra",
+      "iast": "Candra"
+    },
+    "DURGA": {
+      "name": "Durga",
+      "prose": "Durga",
+      "iast": "Durgā"
+    },
+    "KAMADEVA": {
+      "name": "Kamadeva",
+      "prose": "Kamadeva",
+      "iast": "Kāmadeva"
+    },
+    "KARTIKEYA": {
+      "name": "Kartikeya",
+      "prose": "Kartikeya",
+      "iast": "Kārttikeya"
+    },
+    "SHANI": {
+      "name": "Shani",
+      "prose": "Shani",
+      "iast": "Śani"
+    },
+    "SHIVA": {
+      "name": "Shiva",
+      "prose": "Shiva",
+      "iast": "Śiva"
+    },
+    "SHUKRA": {
+      "name": "Shukra",
+      "prose": "Shukra",
+      "iast": "Śukra"
+    },
+    "SURYA": {
+      "name": "Surya",
+      "prose": "Surya",
+      "iast": "Sūrya"
+    },
+    "TVASHTA": {
+      "name": "Tvashta",
+      "prose": "Tvashta",
+      "iast": "Tvaṣṭā"
+    },
+    "VIDHATA": {
+      "name": "Vidhata",
+      "prose": "Vidhata",
+      "iast": "Vidhātā"
     }
   },
   "dignity": {
@@ -5616,6 +5666,171 @@
       "name": "Rising both ways",
       "prose": "rising both ways",
       "iast": "Ubhayodaya"
+    }
+  },
+  "auspiciousness": {
+    "AUSPICIOUS": {
+      "name": "Auspicious",
+      "prose": "auspicious",
+      "iast": "Śubha"
+    },
+    "INAUSPICIOUS": {
+      "name": "Inauspicious",
+      "prose": "inauspicious",
+      "iast": "Aśubha"
+    },
+    "MIXED": {
+      "name": "Mixed",
+      "prose": "mixed"
+    },
+    "HIGHLY_INAUSPICIOUS": {
+      "name": "Highly inauspicious",
+      "prose": "highly inauspicious"
+    }
+  },
+  "sex": {
+    "MALE": {
+      "name": "Male",
+      "prose": "male",
+      "iast": "Puruṣa"
+    },
+    "FEMALE": {
+      "name": "Female",
+      "prose": "female",
+      "iast": "Strī"
+    }
+  },
+  "parity": {
+    "ODD": {
+      "name": "Odd",
+      "prose": "odd"
+    },
+    "EVEN": {
+      "name": "Even",
+      "prose": "even"
+    }
+  },
+  "koota": {
+    "VARNA": {
+      "name": "Varna",
+      "prose": "Varna",
+      "iast": "Varṇa"
+    },
+    "VASHYA": {
+      "name": "Vashya",
+      "prose": "Vashya",
+      "iast": "Vaśya"
+    },
+    "TARA": {
+      "name": "Tara",
+      "prose": "Tara",
+      "iast": "Tārā"
+    },
+    "YONI": {
+      "name": "Yoni",
+      "prose": "Yoni",
+      "iast": "Yoni"
+    },
+    "GRAHA_MAITRI": {
+      "name": "Graha Maitri",
+      "prose": "Graha Maitri",
+      "iast": "Grahamaitrī"
+    },
+    "GANA": {
+      "name": "Gana",
+      "prose": "Gana",
+      "iast": "Gaṇa"
+    },
+    "BHAKOOT": {
+      "name": "Bhakoot",
+      "prose": "Bhakoot",
+      "iast": "Bhakūṭa"
+    },
+    "NADI": {
+      "name": "Nadi",
+      "prose": "Nadi",
+      "iast": "Nāḍī"
+    },
+    "RAJJU": {
+      "name": "Rajju",
+      "prose": "Rajju",
+      "iast": "Rajju"
+    },
+    "VEDHA": {
+      "name": "Vedha",
+      "prose": "Vedha",
+      "iast": "Vedha"
+    },
+    "STREE_DEERGHA": {
+      "name": "Stree Deergha",
+      "prose": "Stree Deergha",
+      "iast": "Strīdīrgha"
+    },
+    "MAHENDRA": {
+      "name": "Mahendra",
+      "prose": "Mahendra",
+      "iast": "Māhendra"
+    }
+  },
+  "state": {
+    "RETROGRADE": {
+      "name": "Retrograde",
+      "prose": "retrograde",
+      "iast": "Vakrī"
+    },
+    "STATIONARY": {
+      "name": "Stationary",
+      "prose": "stationary",
+      "iast": "Stambhita"
+    },
+    "COMBUST": {
+      "name": "Combust",
+      "prose": "combust",
+      "iast": "Asta"
+    },
+    "PLANETARY_WAR": {
+      "name": "Planetary war",
+      "prose": "planetary war",
+      "iast": "Grahayuddha"
+    },
+    "GANDANTA": {
+      "name": "Gandanta",
+      "prose": "Gandanta",
+      "iast": "Gaṇḍānta"
+    },
+    "SANDHI": {
+      "name": "Sandhi",
+      "prose": "Sandhi",
+      "iast": "Sandhi"
+    },
+    "VARGOTTAMA": {
+      "name": "Vargottama",
+      "prose": "Vargottama",
+      "iast": "Vargottama"
+    },
+    "PUSHKARA_NAVAMSA": {
+      "name": "Pushkara Navamsa",
+      "prose": "Pushkara Navamsa",
+      "iast": "Puṣkara Navāṃśa"
+    },
+    "PUSHKARA_BHAGA": {
+      "name": "Pushkara Bhaga",
+      "prose": "Pushkara Bhaga",
+      "iast": "Puṣkarabhāga"
+    },
+    "MRITYU_BHAGA": {
+      "name": "Mrityu Bhaga",
+      "prose": "Mrityu Bhaga",
+      "iast": "Mṛtyubhāga"
+    },
+    "MARANA_KARAKA_STHANA": {
+      "name": "Marana Karaka Sthana",
+      "prose": "Marana Karaka Sthana",
+      "iast": "Maraṇakāraka Sthāna"
+    },
+    "ECLIPSED": {
+      "name": "Eclipsed",
+      "prose": "eclipsed"
     }
   }
 }
