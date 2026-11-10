@@ -5271,6 +5271,138 @@ pub mod sdk {
 
     }
 
+    /// The `rashifal` group.
+    pub mod rashifal {
+        /// The message `sdk.rashifal.ingress`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rashifal::Ingress;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Ingress {
+        ///     good: String::from("good"),
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     house: 2,
+        ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+        /// };
+        /// assert_eq!(Ingress::KEY, "sdk.rashifal.ingress");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Ingress {
+            /// The `good` parameter.
+            pub good: String,
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `house` parameter.
+            pub house: i64,
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+        }
+
+        impl crate::TypedMessage for Ingress {
+            const KEY: &'static str = "sdk.rashifal.ingress";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("good", crate::Value::Str(self.good.clone())),
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("house", crate::Value::Int(self.house)),
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                ])
+            }
+        }
+
+        /// The message `sdk.rashifal.saturn`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rashifal::Saturn;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Saturn { house: 2, phase: String::from("phase"), spell: String::from("spell") };
+        /// assert_eq!(Saturn::KEY, "sdk.rashifal.saturn");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Saturn {
+            /// The `house` parameter.
+            pub house: i64,
+            /// The `phase` parameter.
+            pub phase: String,
+            /// The `spell` parameter.
+            pub spell: String,
+        }
+
+        impl crate::TypedMessage for Saturn {
+            const KEY: &'static str = "sdk.rashifal.saturn";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("house", crate::Value::Int(self.house)),
+                    ("phase", crate::Value::Str(self.phase.clone())),
+                    ("spell", crate::Value::Str(self.spell.clone())),
+                ])
+            }
+        }
+
+        /// The message `sdk.rashifal.station`.
+        ///
+        /// ```
+        /// use teistro_intl::messages::sdk::rashifal::Station;
+        /// use teistro_intl::source::Tree;
+        /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+        ///
+        /// let message = Station {
+        ///     good: String::from("good"),
+        ///     graha: teistro_core::catalogue::Graha::ALL[0],
+        ///     house: 2,
+        ///     rashi: teistro_core::catalogue::Rashi::ALL[0],
+        ///     turns: String::from("turns"),
+        /// };
+        /// assert_eq!(Station::KEY, "sdk.rashifal.station");
+        /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+        ///     .expect("plural rules for every locale");
+        /// let rendered = intl.render_typed(&message);
+        /// // An entity's record may be a pack's; without it the message says what is missing.
+        /// assert!(!rendered.text.is_empty());
+        /// ```
+        #[derive(Clone, Debug, PartialEq)]
+        pub struct Station {
+            /// The `good` parameter.
+            pub good: String,
+            /// The `graha` parameter.
+            pub graha: teistro_core::catalogue::Graha,
+            /// The `house` parameter.
+            pub house: i64,
+            /// The `rashi` parameter.
+            pub rashi: teistro_core::catalogue::Rashi,
+            /// The `turns` parameter.
+            pub turns: String,
+        }
+
+        impl crate::TypedMessage for Station {
+            const KEY: &'static str = "sdk.rashifal.station";
+            fn params(&self) -> crate::Params {
+                crate::params([
+                    ("good", crate::Value::Str(self.good.clone())),
+                    ("graha", crate::Value::catalogued(self.graha)),
+                    ("house", crate::Value::Int(self.house)),
+                    ("rashi", crate::Value::catalogued(self.rashi)),
+                    ("turns", crate::Value::Str(self.turns.clone())),
+                ])
+            }
+        }
+
+    }
+
     /// The `reading` group.
     pub mod reading {
         /// The message `sdk.reading.effect`.

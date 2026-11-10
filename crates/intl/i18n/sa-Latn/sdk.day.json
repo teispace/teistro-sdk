@@ -1,0 +1,20 @@
+{
+  "vara": "Ayaṃ divasaḥ {$vara :entity kind=vara}ḥ.",
+  "tithi": ".input {$ends :string} .match $ends sameDay {{Tithiḥ {$paksha :entity kind=paksha}pakṣasya {$tithi :entity kind=tithi} {$until :time} paryantam.}} nextDay {{Tithiḥ {$paksha :entity kind=paksha}pakṣasya {$tithi :entity kind=tithi} paradine {$until :time} paryantam.}} allDay {{Tithiḥ {$paksha :entity kind=paksha}pakṣasya {$tithi :entity kind=tithi} sakaladinam.}} * {{Tithiḥ {$paksha :entity kind=paksha}pakṣasya {$tithi :entity kind=tithi} śeṣadinam.}}",
+  "nakshatra": ".input {$ends :string} .match $ends sameDay {{{$nakshatra :entity kind=nakshatra}nakṣatram {$until :time} paryantam.}} nextDay {{{$nakshatra :entity kind=nakshatra}nakṣatram paradine {$until :time} paryantam.}} allDay {{{$nakshatra :entity kind=nakshatra}nakṣatram sakaladinam.}} * {{{$nakshatra :entity kind=nakshatra}nakṣatram śeṣadinam.}}",
+  "yoga": ".input {$ends :string} .match $ends sameDay {{{$yoga :entity kind=yoga}yogaḥ {$until :time} paryantam.}} nextDay {{{$yoga :entity kind=yoga}yogaḥ paradine {$until :time} paryantam.}} allDay {{{$yoga :entity kind=yoga}yogaḥ sakaladinam.}} * {{{$yoga :entity kind=yoga}yogaḥ śeṣadinam.}}",
+  "karana": ".input {$ends :string} .match $ends sameDay {{{$karana :entity kind=karana}karaṇam {$until :time} paryantam.}} nextDay {{{$karana :entity kind=karana}karaṇam paradine {$until :time} paryantam.}} allDay {{{$karana :entity kind=karana}karaṇam sakaladinam.}} * {{{$karana :entity kind=karana}karaṇam śeṣadinam.}}",
+  "sun": "Sūryodayaḥ {$rise :time} samaye, sūryāstaḥ {$set :time} samaye.",
+  "sunUp": "Sūryaḥ sakaladinaṃ kṣitijād upari tiṣṭhati.",
+  "sunDown": "Sūryaḥ sakaladinaṃ kṣitijād adhastiṣṭhati.",
+  "sunSign": "Sūryaḥ {$rashi :entity kind=rashi}rāśau tiṣṭhati.",
+  "sankranti": ".input {$when :string} .match $when nextDay {{Paradine {$at :time} samaye sūryaḥ {$rashi :entity kind=rashi}rāśiṃ praviśati.}} * {{{$at :time} samaye sūryaḥ {$rashi :entity kind=rashi}rāśiṃ praviśati.}}",
+  "moonSign": ".input {$ends :string} .match $ends sameDay {{Candraḥ {$rashi :entity kind=rashi}rāśau {$until :time} paryantam tiṣṭhati.}} nextDay {{Candraḥ {$rashi :entity kind=rashi}rāśau paradine {$until :time} paryantam tiṣṭhati.}} allDay {{Candraḥ {$rashi :entity kind=rashi}rāśau sakaladinam tiṣṭhati.}} * {{Candraḥ {$rashi :entity kind=rashi}rāśau śeṣadinam tiṣṭhati.}}",
+  "moonrise": ".input {$when :string} .match $when nextDay {{Paradine {$at :time} samaye candrodayaḥ.}} * {{{$at :time} samaye candrodayaḥ.}}",
+  "moonset": ".input {$when :string} .match $when nextDay {{Paradine {$at :time} samaye candrāstaḥ.}} * {{{$at :time} samaye candrāstaḥ.}}",
+  "month": ".input {$kind :string} .match $kind adhika {{Cāndramāsaḥ adhikaḥ {$masa :entity kind=masa}māsaḥ.}} * {{Cāndramāsaḥ {$masa :entity kind=masa}māsaḥ.}}",
+  "ritu": "Ṛtuḥ {$ritu :entity kind=ritu}.",
+  "ayana": "Ayanam {$ayana :entity kind=ayana}m.",
+  "kaala": "{$kaala :entity kind=kaala}ḥ {$from :time} ārabhya {$to :time} paryantam.",
+  "abhijit": "Abhijinmuhūrtaḥ {$from :time} ārabhya {$to :time} paryantam."
+}

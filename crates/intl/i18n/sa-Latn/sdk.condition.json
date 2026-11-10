@@ -1,0 +1,13 @@
+{
+  "dignity": "{$graha :entity kind=graha form=prose}ḥ {$dignity :entity kind=dignity}sthāne",
+  "navamsha": "navāṃśe {$graha :entity kind=graha}ḥ {$rashi :entity kind=rashi}rāśau",
+  "vargottama": "{$graha :entity kind=graha form=prose}ḥ vargottamaḥ",
+  "retrograde": "{$graha :entity kind=graha form=prose}ḥ vakrī",
+  "combust": "{$graha :entity kind=graha form=prose}ḥ astaṅgataḥ",
+  "friendship": "{#b}{$graha :entity kind=graha}ḥ{/b} svarāśīśe {$dispositor :entity kind=graha}grahe {$compound :entity kind=relationship}bhāvaṃ vahati: naisargikena {$natural :entity kind=relationship}bhāvaṃ, tātkālikena {$temporary :entity kind=relationship}bhāvam",
+  "age": "{$graha :entity kind=graha}ḥ svarāśau {$age :entity kind=avastha_baladi} ityavasthāyām",
+  "wakefulness": "{$graha :entity kind=graha}ḥ {$wakefulness :entity kind=avastha_jagradadi} ityavasthāyām",
+  "brightness": "{$graha :entity kind=graha}ḥ {$deeptadi :entity kind=avastha_deeptadi} ityavasthāyām",
+  "lajjitadi": "{$graha :entity kind=graha}ḥ {$states :list type=and} ityavasthāsu",
+  "undecided": ".input {$graha :entity kind=graha} .input {$count :integer} .match $count 1 {{{$graha}ḥ {$states :list type=or} iti vā na veti kuṇḍalī na nirṇayati}} * {{{$graha}viṣaye kuṇḍalī eteṣu kimapi na nirṇayati: {$states :list type=or}}}"
+}

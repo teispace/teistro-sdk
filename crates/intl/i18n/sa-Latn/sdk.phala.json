@@ -1,0 +1,23 @@
+{
+  "grahaInBhava": ".input {$graha :entity kind=graha} .input {$bhava :integer} {{{$phala :entity kind=graha_bhava}}}",
+  "lagnaRashi": "{$rashi :entity kind=rashi form=lagnaPhala}",
+  "tithi": "{$tithi :entity kind=tithi form=phala}",
+  "vara": "{$vara :entity kind=vara form=phala}",
+  "nakshatra": "{$nakshatra :entity kind=nakshatra form=phala}",
+  "yoga": "{$yoga :entity kind=yoga form=phala}",
+  "namakarana": "{$nakshatra :entity kind=nakshatra form=namakarana}",
+  "gana": "{$gana :entity kind=gana form=phala}",
+  "nadi": "{$nadi :entity kind=nadi form=phala}",
+  "yoni": "{$yoni :entity kind=yoni form=phala}",
+  "varna": "{$varna :entity kind=varna form=phala}",
+  "tatwa": "{$tatwa :entity kind=tatwa form=phala}",
+  "dashaLord": "{$graha :entity kind=graha form=dashaPhala}",
+  "dashaActivation": "{$graha :entity kind=graha form=dashaActivation}",
+  "avasthaBaladi": "{$avastha :entity kind=avastha_baladi form=phala}",
+  "avasthaJagradadi": "{$avastha :entity kind=avastha_jagradadi form=phala}",
+  "avasthaDeeptadi": "{$avastha :entity kind=avastha_deeptadi form=phala}",
+  "avasthaLajjitadi": "{$avastha :entity kind=avastha_lajjitadi form=phala}",
+  "dignity": "{$dignity :entity kind=dignity form=phala}",
+  "state": "{$state :entity kind=state form=phala}",
+  "sadeSati": ".input {$house :integer} {{{$phala :entity kind=gochar_bhava form=sadeSati}}}"
+}
