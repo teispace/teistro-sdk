@@ -21,7 +21,7 @@ use crate::generated::{Output, check, prune, strays, write};
 const DIR: &str = "crates/render-svg/golden";
 
 /// Every drawing: a layout, the chart it draws, and its name's part for it.
-const DRAWINGS: [(ChartLayout, Varga); 9] = [
+const DRAWINGS: [(ChartLayout, Varga); 10] = [
     (ChartLayout::NorthIndian, Varga::D1),
     (ChartLayout::SouthIndian, Varga::D1),
     (ChartLayout::EastIndian, Varga::D1),
@@ -32,6 +32,7 @@ const DRAWINGS: [(ChartLayout, Varga); 9] = [
     // The round chart's hub names the chart, so both of its names are drawn.
     (ChartLayout::NepaliCircle, Varga::D1),
     (ChartLayout::NepaliCircle, Varga::D9),
+    (ChartLayout::NorthIndianPetals, Varga::D1),
 ];
 
 /// The locales and themes each drawing is made in: a Nepali patrika on

@@ -6895,6 +6895,7 @@ final class ThemeStyle {
     this.advance,
     this.lineHeight,
     this.baselineShift,
+    this.bodyColours,
   });
 
   /// The drawing's width and height, in SVG user units.
@@ -6939,6 +6940,10 @@ final class ThemeStyle {
   /// How far below a line's centre its baseline sits, in ems.
   final double? baselineShift;
 
+  /// A body's own colour by its key (`graha.SUN`), as `#rrggbb`; a body it
+  /// does not name is written in the ink.
+  final Map<String, String>? bodyColours;
+
   // Only what is named: an absent field is the extended theme's.
   Map<String, Object?> _json() => <String, Object?>{
     'size': size,
@@ -6955,6 +6960,7 @@ final class ThemeStyle {
     'advance': advance,
     'line_height': lineHeight,
     'baseline_shift': baselineShift,
+    'body_colours': bodyColours,
   }..removeWhere((_, value) => value == null);
 }
 
@@ -6998,6 +7004,20 @@ enum CellLabel {
   final String key;
 }
 
+/// Where a mark is written beside a body's name.
+enum MarkPlace {
+  /// Before the name.
+  before('BEFORE'),
+
+  /// After the name and its degree.
+  after('AFTER');
+
+  const MarkPlace(this.key);
+
+  /// The key the theme record spells it with.
+  final String key;
+}
+
 /// What a drawing says: every field optional, over the theme it extends.
 final class ThemeContent {
   const ThemeContent({
@@ -7005,7 +7025,10 @@ final class ThemeContent {
     this.cellLabel,
     this.lagnaMark,
     this.retrogradeMark,
+    this.retrogradePlace,
+    this.markNodes,
     this.degrees,
+    this.minutes,
   });
 
   /// The locale form a body is written in.
@@ -7017,11 +7040,21 @@ final class ThemeContent {
   /// Whether the lagna is written first in the cell it stands in.
   final bool? lagnaMark;
 
-  /// What is written after a retrograde graha's name; `''` for nothing.
+  /// What marks a retrograde graha; `''` for nothing.
   final String? retrogradeMark;
 
-  /// Whether a graha's degree follows its name, on the founded chart.
+  /// Where the retrograde mark is written.
+  final MarkPlace? retrogradePlace;
+
+  /// Whether the nodes carry the retrograde mark when they move backwards.
+  final bool? markNodes;
+
+  /// Whether a graha's degree follows its name, on the founded chart, in
+  /// the locale's digits.
   final bool? degrees;
+
+  /// Whether a degree is followed by its minute, two digits and a prime.
+  final bool? minutes;
 
   // Only what is named: an absent field is the extended theme's.
   Map<String, Object?> _json() => <String, Object?>{
@@ -7029,7 +7062,10 @@ final class ThemeContent {
     'cell_label': cellLabel?.key,
     'lagna_mark': lagnaMark,
     'retrograde_mark': retrogradeMark,
+    'retrograde_place': retrogradePlace?.key,
+    'mark_nodes': markNodes,
     'degrees': degrees,
+    'minutes': minutes,
   }..removeWhere((_, value) => value == null);
 }
 

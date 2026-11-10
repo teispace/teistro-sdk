@@ -13,7 +13,7 @@ use teistro_core::error::Error;
 use teistro_core::key::KeyId;
 use teistro_geometry::{Drawing, Placed, PlacedCell};
 use teistro_intl::render::NumberStyle;
-use teistro_render_svg::{BodyForm, CellLabel, Content, Labels, Theme, render};
+use teistro_render_svg::{BodyForm, CellLabel, Content, Labels, MarkPlace, Theme, render};
 use teistro_serial::Document;
 
 use crate::area::ChartArea;
@@ -179,24 +179,43 @@ impl<'c> Composer<'c> {
                     .find(|position| position.graha.key_id() == key)
                 {
                     if self.content.degrees && drawing.varga == Varga::D1 {
+                        let within = position.longitude_deg.rem_euclid(30.0);
+                        let degree = within.floor();
                         #[expect(
                             clippy::cast_possible_truncation,
                             clippy::cast_sign_loss,
-                            reason = "a normalised longitude's degree in its sign is 0 to 29"
+                            reason = "a normalised longitude's degree in its sign is 0 to 29, \
+                                      and the minute in its degree 0 to 59"
                         )]
-                        let degree = (position.longitude_deg.rem_euclid(30.0)).floor() as u32;
+                        let (degree, minute) = (
+                            degree as u32,
+                            // The fraction is exact, and a minute that rounds
+                            // up to 60 is still the degree's last.
+                            (((within - degree) * 60.0).floor() as u32).min(59),
+                        );
                         words.push(' ');
                         words.push_str(&self.number(degree));
                         words.push('°');
+                        if self.content.minutes {
+                            // Two digits, as a minute is written.
+                            if minute < 10 {
+                                words.push_str(&self.number(0));
+                            }
+                            words.push_str(&self.number(minute));
+                            words.push('\'');
+                        }
                     }
                     // The nodes' mean motion is always backwards, so a mark
-                    // on them would say nothing.
+                    // on them says nothing unless the theme asks for it.
                     let node = matches!(position.graha, Graha::Rahu | Graha::Ketu);
                     if let Some(mark) = &self.content.retrograde_mark
                         && position.is_retrograde()
-                        && !node
+                        && (self.content.mark_nodes || !node)
                     {
-                        words.push_str(mark);
+                        match self.content.retrograde_place {
+                            MarkPlace::After => words.push_str(mark),
+                            MarkPlace::Before => words.insert_str(0, mark),
+                        }
                     }
                 }
                 words

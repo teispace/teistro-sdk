@@ -6,6 +6,8 @@
 //! field is refused, because a misspelt colour that silently does nothing
 //! is the mistake a theme record is most likely to hold.
 
+use std::collections::BTreeMap;
+
 use serde::{Deserialize, Serialize};
 use teistro_core::error::Error;
 
@@ -57,6 +59,11 @@ pub struct Style {
     /// How far below a line's centre its baseline sits, in ems: what
     /// `dominant-baseline` would do, done where every renderer honours it.
     pub baseline_shift: f64,
+    /// A body's own colour, by its key (`graha.SUN`), as `#rrggbb`: its
+    /// name is written in it. A body the map does not name is written in
+    /// the ink, so the empty map, the default, draws every body in the ink.
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub body_colours: BTreeMap<String, String>,
 }
 
 /// What a drawing says: read when the labels are composed, never by the
@@ -74,6 +81,10 @@ pub struct Style {
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
 #[serde(default, deny_unknown_fields)]
+#[expect(
+    clippy::struct_excessive_bools,
+    reason = "each is a switch a theme record names by its own key, and none implies another"
+)]
 pub struct Content {
     /// The form a body is written in.
     pub body_form: BodyForm,
@@ -81,12 +92,40 @@ pub struct Content {
     pub cell_label: CellLabel,
     /// Whether the lagna is written first in the cell it stands in.
     pub lagna_mark: bool,
-    /// What is written after a retrograde graha's name, or nothing. The
-    /// nodes are never marked: their mean motion is always backwards.
+    /// What marks a retrograde graha, or nothing.
     pub retrograde_mark: Option<String>,
+    /// Where the retrograde mark is written: after the name and its degree,
+    /// the default, or before the name, as `*श`.
+    pub retrograde_place: MarkPlace,
+    /// Whether the nodes carry the retrograde mark when they move
+    /// backwards. Off by default: their mean motion is always backwards, so
+    /// the mark says nothing, but some charts write it on them.
+    pub mark_nodes: bool,
     /// Whether a graha's degree in its sign follows its name, on a drawing
-    /// of the founded chart.
+    /// of the founded chart, in the locale's digits.
     pub degrees: bool,
+    /// Whether a degree is followed by its minute, two digits and a prime:
+    /// `र २६°३२'`. Off by default, the degree alone.
+    pub minutes: bool,
+}
+
+/// Where a mark is written beside a body's name.
+///
+/// ```
+/// use teistro_render_svg::MarkPlace;
+///
+/// assert_eq!(MarkPlace::default(), MarkPlace::After);
+/// assert_eq!(serde_json::to_value(MarkPlace::Before).unwrap(), "BEFORE");
+/// ```
+#[derive(Clone, Copy, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
+pub enum MarkPlace {
+    /// Before the name.
+    Before,
+    /// After the name and its degree.
+    #[default]
+    After,
 }
 
 /// The locale form a body is written in.
@@ -239,7 +278,10 @@ impl Default for Content {
             cell_label: CellLabel::Auto,
             lagna_mark: true,
             retrograde_mark: Some(String::from("(R)")),
+            retrograde_place: MarkPlace::After,
+            mark_nodes: false,
             degrees: false,
+            minutes: false,
         }
     }
 }
@@ -271,6 +313,7 @@ impl Style {
             advance: 0.62,
             line_height: 1.2,
             baseline_shift: 0.35,
+            body_colours: BTreeMap::new(),
         }
     }
 
@@ -306,12 +349,16 @@ impl Style {
     /// assert_eq!(empty.validate().unwrap_err().field(), Some("style.font_family"));
     /// let huge = Style { stroke: 2.0, ..Style::light() };
     /// assert_eq!(huge.validate().unwrap_err().field(), Some("style.stroke"));
+    /// let mut painted = Style::light();
+    /// painted.body_colours.insert(String::from("graha.MARS"), String::from("red"));
+    /// assert_eq!(painted.validate().unwrap_err().field(), Some("style.body_colours"));
     /// ```
     ///
     /// # Errors
     ///
-    /// A colour that is not `#rrggbb`, an empty font family, or a size or
-    /// fraction that is not a positive finite number in its range.
+    /// A colour that is not `#rrggbb`, a body colour keyed by no body, an
+    /// empty font family, or a size or fraction that is not a positive
+    /// finite number in its range.
     pub fn validate(&self) -> Result<(), Error> {
         for (field, colour) in [
             ("style.background", &self.background),
@@ -324,6 +371,22 @@ impl Style {
                 return Err(refused(
                     field,
                     format!("{colour:?} is not a colour"),
+                    "write it as #rrggbb, for example #1f1f1f",
+                ));
+            }
+        }
+        for (body, colour) in &self.body_colours {
+            if teistro_core::key::parse_key_id(body).is_err() {
+                return Err(refused(
+                    "style.body_colours",
+                    format!("{body:?} is not a body's key"),
+                    "name a body by its key, for example graha.SUN",
+                ));
+            }
+            if !is_colour(colour) {
+                return Err(refused(
+                    "style.body_colours",
+                    format!("{body}'s colour {colour:?} is not a colour"),
                     "write it as #rrggbb, for example #1f1f1f",
                 ));
             }

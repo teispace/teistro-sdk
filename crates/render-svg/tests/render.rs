@@ -375,3 +375,50 @@ fn the_renderer_refuses_what_it_cannot_draw_by_field() {
     assert_eq!(err.field(), Some("labels.bodies"));
     assert!(err.message.contains("graha.KETU"), "{}", err.message);
 }
+
+#[test]
+fn a_body_colour_paints_that_body_alone_and_the_rest_keep_the_ink() {
+    for layout in [rows::north_indian_petals(), rows::western_wheel()] {
+        let placed = drawn(&layout);
+        let labels = labels(&placed, &DEVANAGARI);
+        let mut style = Style::light();
+        style
+            .body_colours
+            .insert(String::from("graha.MARS"), String::from("#e53935"));
+        let svg = render(&placed, &labels, &style).unwrap();
+        let document = Document::parse(&svg).unwrap();
+        let texts: Vec<Node<'_, '_>> = all(&document, "text")
+            .into_iter()
+            .filter(|text| {
+                text.attribute("data-body")
+                    .is_some_and(|key| key.starts_with("graha."))
+            })
+            .collect();
+        assert_eq!(texts.len(), GRAHAS.len(), "{}", layout.key);
+        for text in texts {
+            let expected = if text.attribute("data-body") == Some("graha.MARS") {
+                "#e53935"
+            } else {
+                style.ink.as_str()
+            };
+            assert_eq!(text.attribute("fill"), Some(expected), "{}", layout.key);
+        }
+        // An empty map is the ink everywhere: the bytes are the plain style's.
+        style.body_colours.clear();
+        assert_eq!(
+            render(&placed, &labels, &style).unwrap(),
+            render(&placed, &labels, &Style::light()).unwrap()
+        );
+    }
+
+    let placed = drawn(&rows::north_indian());
+    let good = labels(&placed, &LATIN);
+    for (body, colour) in [("graha.MARS", "red"), ("graha.MARTIAN", "#e53935")] {
+        let mut style = Style::light();
+        style
+            .body_colours
+            .insert(String::from(body), String::from(colour));
+        let err = render(&placed, &good, &style).unwrap_err();
+        assert_eq!(err.field(), Some("style.body_colours"), "{body} {colour}");
+    }
+}

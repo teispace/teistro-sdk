@@ -16081,6 +16081,7 @@ class ThemeStyle(TypedDict, total=False):
     advance: float
     line_height: float
     baseline_shift: float
+    body_colours: Dict[str, str]
 
 
 class ThemeContent(TypedDict, total=False):
@@ -16090,7 +16091,10 @@ class ThemeContent(TypedDict, total=False):
     cell_label: Literal["AUTO", "SIGN_NUMBER", "SIGN_SHORT", "SIGN_GLYPH", "HOUSE", "NOTHING"]
     lagna_mark: bool
     retrograde_mark: Optional[str]
+    retrograde_place: Literal["BEFORE", "AFTER"]
+    mark_nodes: bool
     degrees: bool
+    minutes: bool
 
 
 ShippedTheme = Literal["LIGHT", "DARK"]

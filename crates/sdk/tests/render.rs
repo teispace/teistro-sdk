@@ -12,7 +12,7 @@
 
 use teistro::catalogue::{ChartLayout, Graha, Varga};
 use teistro::quantity::{Altitude, JulianDay, Latitude, Longitude, Place, Utc};
-use teistro::render_svg::{BodyForm, CellLabel, Content, Theme, render};
+use teistro::render_svg::{BodyForm, CellLabel, Content, MarkPlace, Theme, render};
 use teistro::{ChartRequest, Context, Document, Ephemeris, UtcOffset};
 
 fn context(locale: &str) -> Context {
@@ -290,5 +290,73 @@ fn a_round_chart_names_itself_in_its_hub_as_a_patrika_does() {
             svg.contains(&format!("data-hub=\"true\">{navamsha}</text>")),
             "{locale}"
         );
+    }
+}
+
+/// ASCII digits in Devanagari's.
+fn devanagari(ascii: &str) -> String {
+    ascii
+        .chars()
+        .map(|digit| {
+            digit
+                .to_digit(10)
+                .and_then(|value| char::from_u32(0x0966 + value))
+                .unwrap_or(digit)
+        })
+        .collect()
+}
+
+#[test]
+fn a_patrika_app_writes_the_mark_first_the_nodes_marked_and_the_minute_in_its_digits() {
+    let sdk = context("ne-Deva-NP");
+    let document = reading(&sdk);
+    let plain = Content {
+        retrograde_mark: None,
+        ..Content::default()
+    };
+    let content = Content {
+        retrograde_mark: Some(String::from("*")),
+        retrograde_place: MarkPlace::Before,
+        mark_nodes: true,
+        degrees: true,
+        minutes: true,
+        ..Content::default()
+    };
+    let names = sdk.chart().labels(&document, 0, &plain).unwrap();
+    let written = sdk.chart().labels(&document, 0, &content).unwrap();
+    let mut nodes = 0;
+    for position in &document.foundation.grahas {
+        let key = position.graha.key_id();
+        let within = position.longitude_deg.rem_euclid(30.0);
+        let degree = within.floor();
+        let minute = ((within - degree) * 60.0).floor();
+        let mark = if position.is_retrograde() { "*" } else { "" };
+        let expected = format!(
+            "{mark}{} {}°{}'",
+            names.bodies[&key],
+            devanagari(&format!("{degree}")),
+            devanagari(&format!("{minute:02}"))
+        );
+        assert_eq!(written.bodies[&key], expected, "{:?}", position.graha);
+        if matches!(position.graha, Graha::Rahu | Graha::Ketu) && position.is_retrograde() {
+            nodes += 1;
+        }
+    }
+    assert!(nodes > 0, "a node moving backwards is marked");
+    // The defaults leave the nodes unmarked and the degree whole.
+    let default = sdk
+        .chart()
+        .labels(
+            &document,
+            0,
+            &Content {
+                degrees: true,
+                ..Content::default()
+            },
+        )
+        .unwrap();
+    for graha in [Graha::Rahu, Graha::Ketu] {
+        let name = &default.bodies[&graha.key_id()];
+        assert!(!name.contains("(R)") && !name.contains('\''), "{name}");
     }
 }

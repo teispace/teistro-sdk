@@ -5,12 +5,15 @@
 //! | [`north_indian`] | houses | house 1, the top diamond | anticlockwise | Wikipedia, *Kundali (astrology)*, `Kundali_02a.png` |
 //! | [`south_indian`] | signs | Pisces top-left | clockwise | the same article, `Kundali_01a.png` |
 //! | [`east_indian`] | signs | Aries top-centre | anticlockwise | the same article, `Kundali_03a.png` |
-//! | [`nepali_lotus`] | houses | as North Indian | anticlockwise | the baseline application's lotus frame |
+//! | [`nepali_lotus`] | houses | as North Indian | anticlockwise | printed janma patrikas |
 //! | [`sudarshan_chakra`] | three rings of houses | house 1 starting at twelve o'clock | clockwise | the tutorials' ring order; the application's start and direction (crux C47) |
 //! | [`western_wheel`] | the cusps | the ascendant at nine o'clock | anticlockwise | tutorials on reading a chart wheel, which agree |
+//! | [`nepali_circle`] | houses | the cell above the hub | anticlockwise | printed janma patrikas |
+//! | [`north_indian_petals`] | houses | as North Indian | anticlockwise | a consumer's kundali view |
 //!
 //! Every coordinate of the three square figures is a half, a third or a
-//! quarter, reached by IEEE's basic operations, which every platform does
+//! quarter, and every one of the petalled North Indian a dyadic fraction,
+//! reached by IEEE's basic operations, which every platform does
 //! identically; and placement only chooses cells, so nothing here can differ
 //! between architectures (§7).
 
@@ -42,6 +45,7 @@ pub fn shipped() -> Vec<Layout> {
         sudarshan_chakra(),
         western_wheel(),
         nepali_circle(),
+        north_indian_petals(),
     ]
 }
 
@@ -540,6 +544,187 @@ pub fn nepali_circle() -> Layout {
                 centre: CENTRE,
                 radius: HUB_RADIUS,
             }),
+        }),
+    }
+}
+
+/// What the petalled North Indian chart is drawn from.
+const PETALS_VIEW: &str = "a Nepali app's kundali view, read 2026-11-10";
+
+/// Where a kendra's curved edges meet the corner diagonals: 37/128 of the
+/// side along each, where plain North Indian meets them at a quarter (the
+/// view measures 0.291).
+const PETAL_VERTEX: f64 = 37.0 / 128.0;
+
+/// How far in from the side a kendra's curve flattens: the view measures
+/// 0.142 of the side.
+const PETAL_FLAT: f64 = 9.0 / 64.0;
+
+/// Half the side of the hub where the diagonals stop: the view's hub is
+/// about 0.055 of the side across.
+const PETAL_HUB: f64 = 7.0 / 256.0;
+
+/// A point turned a quarter anticlockwise about the square's centre, as a
+/// reader sees it: the top midpoint goes to the left one. Each coordinate
+/// is a dyadic fraction or one minus one, so the turn is exact.
+fn quarter(point: Point) -> Point {
+    p(point.y, 1.0 - point.x)
+}
+
+/// An outline turned `turns` quarters anticlockwise.
+fn turned(outline: &Path, turns: u8) -> Path {
+    let turn = |point: Point| (0..turns).fold(point, |point, _| quarter(point));
+    Path {
+        start: turn(outline.start),
+        segments: outline
+            .segments
+            .iter()
+            .map(|&segment| match segment {
+                Segment::Line { to } => Segment::Line { to: turn(to) },
+                Segment::Quad { control, to } => Segment::Quad {
+                    control: turn(control),
+                    to: turn(to),
+                },
+                Segment::Arc {
+                    centre,
+                    clockwise,
+                    to,
+                } => Segment::Arc {
+                    centre: turn(centre),
+                    clockwise,
+                    to: turn(to),
+                },
+            })
+            .collect(),
+    }
+}
+
+/// North Indian drawn with petals, as a consumer's kundali view draws it:
+/// the same houses, house 1 the top kendra and running anticlockwise, with
+/// North Indian's anchors, but each kendra's four straight edges are ogee
+/// curves, and the corner diagonals stop at a small hub drawn as a
+/// swastika.
+///
+/// Each curve leaves a side's midpoint at right angles to the side,
+/// flattens 9/64 of the side in, and meets the diagonal at 37/128 of it.
+/// It is two quadratic steps through the point halfway along the flat, so
+/// the curve has no corner. The hub's arms are the kendras' inner edges:
+/// each diagonal ends at an arm's tip, and each kendra takes the quarter of
+/// the hub its arm opens towards, so the cells still fill the square.
+///
+/// The figure is drawn once, the top kendra and the two cells left of it,
+/// and turned a quarter at a time; the right half of every curve is the
+/// left half's mirror to the bit (`03-design/chart-geometry.md` §7h).
+///
+/// ```
+/// use teistro_geometry::{Holds, Point, Segment, rows};
+///
+/// let petals = rows::north_indian_petals();
+/// let plain = rows::north_indian();
+/// let (grid, square) = (petals.shape.as_grid().unwrap(), plain.shape.as_grid().unwrap());
+/// // North Indian's houses at North Indian's anchors.
+/// for (cell, same) in grid.cells.iter().zip(&square.cells) {
+///     assert_eq!((cell.holds, cell.label, cell.bodies), (same.holds, same.label, same.bodies));
+/// }
+/// // A kendra is bounded by curves; a corner cell by one.
+/// let quads = |house: usize| {
+///     grid.cells[house - 1].outline.segments.iter().filter(|step| matches!(step, Segment::Quad { .. })).count()
+/// };
+/// assert_eq!((quads(1), quads(2)), (4, 2));
+/// // The hub's quarters are the kendras', each the one its arm opens to.
+/// let holder = |x: f64, y: f64| {
+///     grid.cells.iter().find(|cell| cell.outline.contains(Point::new(x, y))).map(|cell| cell.holds)
+/// };
+/// assert_eq!(holder(0.49, 0.49), Some(Holds::House(1)));
+/// assert_eq!(holder(0.49, 0.51), Some(Holds::House(4)));
+/// assert_eq!(holder(0.51, 0.51), Some(Holds::House(7)));
+/// assert_eq!(holder(0.51, 0.49), Some(Holds::House(10)));
+/// ```
+#[must_use]
+pub fn north_indian_petals() -> Layout {
+    let (v, f, h) = (PETAL_VERTEX, PETAL_FLAT, PETAL_HUB);
+    // Halfway along the flat, where a curve's two steps meet.
+    let q = f64::midpoint(0.5, v);
+    let (low, high) = (0.5 - h, 0.5 + h);
+    let top = p(0.5, 0.0);
+    // The top kendra: out along the right curve, down its diagonal to the
+    // arm's tip, round the hub's arms, up the left diagonal and back along
+    // the left curve.
+    let kendra = Path {
+        start: top,
+        segments: vec![
+            Segment::Quad {
+                control: p(0.5, f),
+                to: p(1.0 - q, f),
+            },
+            Segment::Quad {
+                control: p(1.0 - v, f),
+                to: p(1.0 - v, v),
+            },
+            Segment::Line { to: p(high, low) },
+            Segment::Line { to: p(0.5, low) },
+            Segment::Line { to: CENTRE },
+            Segment::Line { to: p(low, 0.5) },
+            Segment::Line { to: p(low, low) },
+            Segment::Line { to: p(v, v) },
+            Segment::Quad {
+                control: p(v, f),
+                to: p(q, f),
+            },
+            Segment::Quad {
+                control: p(0.5, f),
+                to: top,
+            },
+        ],
+    };
+    // House 2: the corner, the top midpoint, the curve down to the
+    // diagonal, and back along it.
+    let upper = Path {
+        start: p(0.0, 0.0),
+        segments: vec![
+            Segment::Line { to: top },
+            Segment::Quad {
+                control: p(0.5, f),
+                to: p(q, f),
+            },
+            Segment::Quad {
+                control: p(v, f),
+                to: p(v, v),
+            },
+        ],
+    };
+    // House 3: the corner, along the diagonal, and the left kendra's curve
+    // out to the left midpoint, which is the top one's turned a quarter.
+    let lower = Path {
+        start: p(0.0, 0.0),
+        segments: vec![
+            Segment::Line { to: p(v, v) },
+            Segment::Quad {
+                control: p(f, v),
+                to: p(f, q),
+            },
+            Segment::Quad {
+                control: p(f, 0.5),
+                to: p(0.0, 0.5),
+            },
+        ],
+    };
+    let cells = (0..4u8)
+        .flat_map(|turns| {
+            [&kendra, &upper, &lower]
+                .into_iter()
+                .zip(1..)
+                .map(move |(outline, place)| house_cell(3 * turns + place, turned(outline, turns)))
+        })
+        .collect();
+    Layout {
+        key: String::from("NORTH_INDIAN_PETALS"),
+        sources: vec![String::from(PETALS_VIEW)],
+        shape: Shape::Grid(Grid {
+            cells,
+            frame: vec![border()],
+            direction: Direction::Anticlockwise,
+            hub: None,
         }),
     }
 }

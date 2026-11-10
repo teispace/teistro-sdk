@@ -266,7 +266,7 @@ Four rules kept members off:
 
 `chart_layout` is a catalogue kind, so `intl.entity("chart_layout.NEPALI_LOTUS")`
 resolves once a locale names it. No source names the layouts in Nepali,
-so §4's list carries all seven.
+so §4's list carries all eight.
 
 ## 4d. The year's rulers (2026-11-01)
 
@@ -451,7 +451,7 @@ built from the words the packs already use: आकाशगंगा, युग�
 | `ayanamsha_category` | वैदिक मानक, वैदिक शास्त्रीय, तारामा आधारित, पाश्चात्य निरयन, आकाशगंगामा आधारित, ऐतिहासिक, युगादि |
 | `bala_scheme` | पाराशर, पाराशर (विस्तारित) |
 | `body_class` | प्रकाशग्रह, ताराग्रह, छायाग्रह, बाहिरी ग्रह: *tārāgraha* is the Siddhantas' word for the five planets and *chāyāgraha* the nodes' everywhere; *prakāśagraha* is descriptive |
-| `chart_layout` | उत्तर भारतीय शैली, दक्षिण भारतीय शैली, पूर्व भारतीय शैली, अष्टदल पद्म, सुदर्शन चक्र, पाश्चात्य चक्र |
+| `chart_layout` | उत्तर भारतीय शैली, दक्षिण भारतीय शैली, पूर्व भारतीय शैली, द्वादशदल पद्म, सुदर्शन चक्र, पाश्चात्य चक्र, गोलाकार कुण्डली, दलयुक्त उत्तर भारतीय शैली; the lotus is named by its twelve petals, as the printed patrikas draw it (SR-36) |
 | `dasha_family` | नक्षत्र (उडु), राशि, ग्रह, कालचक्र, वर्षमा मापित, संयोजित, स्वतन्त्र नियम, and the four Western families as their systems are written |
 | `degeneracy` | सबै अक्षांशमा परिभाषित, ध्रुव क्षेत्रमा अपरिभाषित |
 | `point_family` | केन्द्र, विशेष लग्न, उपग्रह (सूर्यबाट), उपग्रह (दिनमानबाट), आरूढ, स्फुट, जैमिनि, मध्यबिन्दु |

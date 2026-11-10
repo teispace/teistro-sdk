@@ -1,6 +1,6 @@
 # Chart geometry: layouts as data, and what places a chart in one
 
-Status: `built` — steps 1 to 6 built 2026-09-14 (the renderer in [`render-svg.md`](render-svg.md)); §7f, a consumer's layout from a binding, built 2026-09-15; §7g, the Nepali lotus and round chart redrawn from printed janma patrikas, built 2026-11-10. It builds the first two parts of
+Status: `built` — steps 1 to 6 built 2026-09-14 (the renderer in [`render-svg.md`](render-svg.md)); §7f, a consumer's layout from a binding, built 2026-09-15; §7g, the Nepali lotus and round chart redrawn from printed janma patrikas, built 2026-11-10; §7h, North Indian drawn with petals, built 2026-11-10. It builds the first two parts of
 [ADR-0026](../08-decisions/adr-0026-chart-geometry-and-the-first-party-renderer.md)
 (layouts are data, and geometry lands in Phase 4). The third part, the
 SVG renderer, is built ([`render-svg.md`](render-svg.md)). The research this page rests on was
@@ -42,7 +42,8 @@ Three sources were read against each other:
 
 A fourth was read for the Nepali charts on 2026-11-10 (§7g): three
 printed janma patrikas, photographed, two of one printer's form and one
-of another's.
+of another's. A fifth, for North Indian drawn with petals (§7h): a
+consumer's app's kundali view, one screenshot read the same day.
 
 | layout | what is fixed | where it starts | direction | agreement |
 |---|---|---|---|---|
@@ -51,6 +52,7 @@ of another's.
 | East Indian | the **signs** | Aries in the top-centre cell | anticlockwise | figure and tutorials agree; **the application does not** (C47) |
 | Nepali lotus | the **houses** | house 1 the top petal | anticlockwise | printed janma patrikas, three scans, 2026-11-10: two draw the lotus, and agree |
 | Nepali round chart | the **houses** | house 1 the cell above the hub | anticlockwise | printed janma patrikas, three scans, 2026-11-10: the third draws four round charts, and they agree |
+| North Indian, petals | the **houses** | as North Indian | anticlockwise | a Nepali app's kundali view, one screenshot, 2026-11-10; North Indian's cells, so the North Indian sources agree on the order |
 | Sudarshan Chakra | three rings of **houses** | house 1 at the top | the application draws clockwise | the ring order (lagna inner, Moon, Sun outer) agrees across tutorials; the direction is the application's alone (C47) |
 | Western wheel | the **cusps** | the ascendant at nine o'clock | anticlockwise | every tutorial agrees |
 
@@ -86,7 +88,7 @@ Layout
   sources        citations, as every catalogue row carries
   shape          Grid | Radial
 
-Grid                            (North, South, East Indian, the Nepali charts)
+Grid                            (North, South, East Indian, the Nepali charts, the petals)
   cells [12]     each: outline (a closed path: MoveTo, LineTo, QuadTo, ArcTo)
                        holds    Sign(Rashi) | House(1..=12)
                        label    the anchor of the sign or house number
@@ -192,6 +194,11 @@ where that is won or lost.
 - **The three square grid rows** are rational coordinates, and placement
   only selects cells. There is no arithmetic that could differ between
   architectures.
+- **The petalled North Indian** is dyadic fractions (37/128, 9/64,
+  7/256) and their halves and complements, all exact, drawn once and
+  turned a quarter at a time by `(x, y) → (y, 1 − x)`, which is exact
+  too. A test holds the right half of every curve to the left half's
+  mirror, bit for bit.
 - **The two Nepali rows** are clock directions (§7a) times radii in 32nds,
   and one correctly rounded square root (where the hub's side lines meet
   the circle). IEEE 754 fixes both.
@@ -454,6 +461,49 @@ and the placement test uses the charts' pattern without any birth data.
 - **Reckoning.** The second patrika notes its chart was reckoned by the
   Surya Siddhanta. That is the chart's computation, not its drawing, and
   changes nothing here.
+
+## 7h. North Indian drawn with petals (SR-36)
+
+The consumer sent a screenshot of a Nepali app's kundali view: North
+Indian, with the same fixed houses (house 1 the top kendra,
+anticlockwise) and a number in each cell, drawn with petals. It ships as
+a new row, `NORTH_INDIAN_PETALS`, catalogue id 7. Only the geometry and
+the numbers were transcribed.
+
+- **The cells are North Indian's.** The same houses and the same label
+  and body anchors; only the outlines change. In the screenshot's 550 px
+  square every number stands within 0.005 of the side of North Indian's
+  label anchor, and all twelve land in their cells.
+- **A kendra's edges are ogee curves.** Each runs from a side's midpoint
+  to a vertex on a corner diagonal, measured at 0.291 of the side from
+  the corner, where plain North Indian meets it at 0.25; the row takes
+  37/128. A curve leaves the midpoint at right angles to the side,
+  flattens about 0.142 in (the row takes 9/64) and turns down onto the
+  vertex. It is two quadratic steps: midpoint to the flat's middle,
+  pulled to `(0.5, 9/64)`, then on to the vertex, pulled to the point
+  above it on the flat. The two steps share a tangent where they meet, so
+  the curve has no corner. A corner cell is bounded by one such curve,
+  two sides of the square and its diagonal.
+- **The diagonals stop at a swastika.** The screenshot's diagonals do not
+  meet: each ends at the tip of an arm of a small swastika, about 0.055
+  of the side across (the row's half-side is 7/256), whose arms run from
+  the centre to the middle of each side of its square and turn onto a
+  corner. The arms are the kendras' inner edges, so the hub needs no
+  ornament of its own and no text: each kendra takes the quarter of the
+  hub its arm opens towards, and the twelve cells still fill the square.
+  The swastika turns one way, so the cells are not mirror images; the
+  curves are.
+- **Drawn once.** The top kendra and the two cells left of it are written
+  out, and every other cell is one of them turned a quarter, a half or
+  three quarters (§7).
+
+What the screenshot also writes, the renderer gained as theme options
+whose defaults keep every drawing's bytes ([`render-svg.md`](render-svg.md)
+§3): a colour per body (`style.body_colours`), the retrograde mark before
+the name (`content.retrograde_place`, `*श`), the nodes marked too
+(`content.mark_nodes`), and the minute after the degree in the locale's
+digits (`content.minutes`, `र २६°३२'`). The view writes no space between
+the name and the degree; the SDK keeps its one.
 
 ## 8. Order of work
 
