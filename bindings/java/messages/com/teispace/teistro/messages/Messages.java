@@ -3682,12 +3682,13 @@ public final class Messages {
      * @param iast the `iast` form; empty when the record lacks it
      * @param name the `name` form; empty when the record lacks it
      * @param prose the `prose` form; empty when the record lacks it
+     * @param abbrev the `abbrev` form, or null
      * @param short_ the `short` form, or null
      * @param glyph its glyph, or null
      * @param gender its grammatical gender, or null
      * @param forms every form the locale carries, including any a loaded pack brought
      */
-    public record EntityForms(String iast, String name, String prose, String short_, String glyph, Gender gender, Map<String, String> forms) {
+    public record EntityForms(String iast, String name, String prose, String abbrev, String short_, String glyph, Gender gender, Map<String, String> forms) {
         /**
          * The forms as the boundary hands them out, parsed.
          *
@@ -3703,6 +3704,7 @@ public final class Messages {
                     text(forms, "iast", ""),
                     text(forms, "name", ""),
                     text(forms, "prose", ""),
+                    text(forms, "abbrev", null),
                     text(forms, "short", null),
                     text(forms, "glyph", null),
                     gender(text(forms, "gender", null)),
@@ -4023,6 +4025,31 @@ public final class Messages {
                 public String monthShort(long month) {
                     return r.render("sdk.calendar.ASSAM_SOLAR.monthShort", Map.ofEntries(Map.entry("month", month)));
                 }
+
+                /**
+                 * `sdk.calendar.ASSAM_SOLAR.monthYear`
+                 *
+                 * @param monthName `monthName`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYear(String monthName, long year) {
+                    return r.render("sdk.calendar.ASSAM_SOLAR.monthYear", Map.ofEntries(Map.entry("monthName", monthName), Map.entry("year", year)));
+                }
+
+                /**
+                 * `sdk.calendar.ASSAM_SOLAR.monthYearRange`
+                 *
+                 * @param greatest `greatest`
+                 * @param monthName `monthName`
+                 * @param untilMonthName `untilMonthName`
+                 * @param untilYear `untilYear`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYearRange(String greatest, String monthName, String untilMonthName, long untilYear, long year) {
+                    return r.render("sdk.calendar.ASSAM_SOLAR.monthYearRange", Map.ofEntries(Map.entry("greatest", greatest), Map.entry("monthName", monthName), Map.entry("untilMonthName", untilMonthName), Map.entry("untilYear", untilYear), Map.entry("year", year)));
+                }
             }
 
 
@@ -4117,6 +4144,31 @@ public final class Messages {
                  */
                 public String monthShort(long month) {
                     return r.render("sdk.calendar.BANGLADESHI.monthShort", Map.ofEntries(Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.BANGLADESHI.monthYear`
+                 *
+                 * @param monthName `monthName`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYear(String monthName, long year) {
+                    return r.render("sdk.calendar.BANGLADESHI.monthYear", Map.ofEntries(Map.entry("monthName", monthName), Map.entry("year", year)));
+                }
+
+                /**
+                 * `sdk.calendar.BANGLADESHI.monthYearRange`
+                 *
+                 * @param greatest `greatest`
+                 * @param monthName `monthName`
+                 * @param untilMonthName `untilMonthName`
+                 * @param untilYear `untilYear`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYearRange(String greatest, String monthName, String untilMonthName, long untilYear, long year) {
+                    return r.render("sdk.calendar.BANGLADESHI.monthYearRange", Map.ofEntries(Map.entry("greatest", greatest), Map.entry("monthName", monthName), Map.entry("untilMonthName", untilMonthName), Map.entry("untilYear", untilYear), Map.entry("year", year)));
                 }
             }
 
@@ -4213,6 +4265,31 @@ public final class Messages {
                 public String monthShort(long month) {
                     return r.render("sdk.calendar.BIKRAM_SAMBAT.monthShort", Map.ofEntries(Map.entry("month", month)));
                 }
+
+                /**
+                 * `sdk.calendar.BIKRAM_SAMBAT.monthYear`
+                 *
+                 * @param monthName `monthName`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYear(String monthName, long year) {
+                    return r.render("sdk.calendar.BIKRAM_SAMBAT.monthYear", Map.ofEntries(Map.entry("monthName", monthName), Map.entry("year", year)));
+                }
+
+                /**
+                 * `sdk.calendar.BIKRAM_SAMBAT.monthYearRange`
+                 *
+                 * @param greatest `greatest`
+                 * @param monthName `monthName`
+                 * @param untilMonthName `untilMonthName`
+                 * @param untilYear `untilYear`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYearRange(String greatest, String monthName, String untilMonthName, long untilYear, long year) {
+                    return r.render("sdk.calendar.BIKRAM_SAMBAT.monthYearRange", Map.ofEntries(Map.entry("greatest", greatest), Map.entry("monthName", monthName), Map.entry("untilMonthName", untilMonthName), Map.entry("untilYear", untilYear), Map.entry("year", year)));
+                }
             }
 
 
@@ -4307,6 +4384,31 @@ public final class Messages {
                  */
                 public String monthShort(long month) {
                     return r.render("sdk.calendar.GREGORIAN.monthShort", Map.ofEntries(Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.GREGORIAN.monthYear`
+                 *
+                 * @param monthName `monthName`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYear(String monthName, long year) {
+                    return r.render("sdk.calendar.GREGORIAN.monthYear", Map.ofEntries(Map.entry("monthName", monthName), Map.entry("year", year)));
+                }
+
+                /**
+                 * `sdk.calendar.GREGORIAN.monthYearRange`
+                 *
+                 * @param greatest `greatest`
+                 * @param monthName `monthName`
+                 * @param untilMonthName `untilMonthName`
+                 * @param untilYear `untilYear`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYearRange(String greatest, String monthName, String untilMonthName, long untilYear, long year) {
+                    return r.render("sdk.calendar.GREGORIAN.monthYearRange", Map.ofEntries(Map.entry("greatest", greatest), Map.entry("monthName", monthName), Map.entry("untilMonthName", untilMonthName), Map.entry("untilYear", untilYear), Map.entry("year", year)));
                 }
             }
 
@@ -4403,6 +4505,31 @@ public final class Messages {
                 public String monthShort(long month) {
                     return r.render("sdk.calendar.HIJRI_TABULAR.monthShort", Map.ofEntries(Map.entry("month", month)));
                 }
+
+                /**
+                 * `sdk.calendar.HIJRI_TABULAR.monthYear`
+                 *
+                 * @param monthName `monthName`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYear(String monthName, long year) {
+                    return r.render("sdk.calendar.HIJRI_TABULAR.monthYear", Map.ofEntries(Map.entry("monthName", monthName), Map.entry("year", year)));
+                }
+
+                /**
+                 * `sdk.calendar.HIJRI_TABULAR.monthYearRange`
+                 *
+                 * @param greatest `greatest`
+                 * @param monthName `monthName`
+                 * @param untilMonthName `untilMonthName`
+                 * @param untilYear `untilYear`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYearRange(String greatest, String monthName, String untilMonthName, long untilYear, long year) {
+                    return r.render("sdk.calendar.HIJRI_TABULAR.monthYearRange", Map.ofEntries(Map.entry("greatest", greatest), Map.entry("monthName", monthName), Map.entry("untilMonthName", untilMonthName), Map.entry("untilYear", untilYear), Map.entry("year", year)));
+                }
             }
 
 
@@ -4497,6 +4624,31 @@ public final class Messages {
                  */
                 public String monthShort(long month) {
                     return r.render("sdk.calendar.INDIAN_NATIONAL.monthShort", Map.ofEntries(Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.INDIAN_NATIONAL.monthYear`
+                 *
+                 * @param monthName `monthName`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYear(String monthName, long year) {
+                    return r.render("sdk.calendar.INDIAN_NATIONAL.monthYear", Map.ofEntries(Map.entry("monthName", monthName), Map.entry("year", year)));
+                }
+
+                /**
+                 * `sdk.calendar.INDIAN_NATIONAL.monthYearRange`
+                 *
+                 * @param greatest `greatest`
+                 * @param monthName `monthName`
+                 * @param untilMonthName `untilMonthName`
+                 * @param untilYear `untilYear`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYearRange(String greatest, String monthName, String untilMonthName, long untilYear, long year) {
+                    return r.render("sdk.calendar.INDIAN_NATIONAL.monthYearRange", Map.ofEntries(Map.entry("greatest", greatest), Map.entry("monthName", monthName), Map.entry("untilMonthName", untilMonthName), Map.entry("untilYear", untilYear), Map.entry("year", year)));
                 }
             }
 
@@ -4667,6 +4819,31 @@ public final class Messages {
                 public String monthShort(long month) {
                     return r.render("sdk.calendar.JULIAN.monthShort", Map.ofEntries(Map.entry("month", month)));
                 }
+
+                /**
+                 * `sdk.calendar.JULIAN.monthYear`
+                 *
+                 * @param monthName `monthName`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYear(String monthName, long year) {
+                    return r.render("sdk.calendar.JULIAN.monthYear", Map.ofEntries(Map.entry("monthName", monthName), Map.entry("year", year)));
+                }
+
+                /**
+                 * `sdk.calendar.JULIAN.monthYearRange`
+                 *
+                 * @param greatest `greatest`
+                 * @param monthName `monthName`
+                 * @param untilMonthName `untilMonthName`
+                 * @param untilYear `untilYear`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYearRange(String greatest, String monthName, String untilMonthName, long untilYear, long year) {
+                    return r.render("sdk.calendar.JULIAN.monthYearRange", Map.ofEntries(Map.entry("greatest", greatest), Map.entry("monthName", monthName), Map.entry("untilMonthName", untilMonthName), Map.entry("untilYear", untilYear), Map.entry("year", year)));
+                }
             }
 
 
@@ -4761,6 +4938,31 @@ public final class Messages {
                  */
                 public String monthShort(long month) {
                     return r.render("sdk.calendar.MIXED.monthShort", Map.ofEntries(Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.MIXED.monthYear`
+                 *
+                 * @param monthName `monthName`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYear(String monthName, long year) {
+                    return r.render("sdk.calendar.MIXED.monthYear", Map.ofEntries(Map.entry("monthName", monthName), Map.entry("year", year)));
+                }
+
+                /**
+                 * `sdk.calendar.MIXED.monthYearRange`
+                 *
+                 * @param greatest `greatest`
+                 * @param monthName `monthName`
+                 * @param untilMonthName `untilMonthName`
+                 * @param untilYear `untilYear`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYearRange(String greatest, String monthName, String untilMonthName, long untilYear, long year) {
+                    return r.render("sdk.calendar.MIXED.monthYearRange", Map.ofEntries(Map.entry("greatest", greatest), Map.entry("monthName", monthName), Map.entry("untilMonthName", untilMonthName), Map.entry("untilYear", untilYear), Map.entry("year", year)));
                 }
             }
 
@@ -4861,6 +5063,31 @@ public final class Messages {
                  */
                 public String monthShort(String leap, long month) {
                     return r.render("sdk.calendar.TIBETAN_PHUGPA.monthShort", Map.ofEntries(Map.entry("leap", leap), Map.entry("month", month)));
+                }
+
+                /**
+                 * `sdk.calendar.TIBETAN_PHUGPA.monthYear`
+                 *
+                 * @param monthName `monthName`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYear(String monthName, long year) {
+                    return r.render("sdk.calendar.TIBETAN_PHUGPA.monthYear", Map.ofEntries(Map.entry("monthName", monthName), Map.entry("year", year)));
+                }
+
+                /**
+                 * `sdk.calendar.TIBETAN_PHUGPA.monthYearRange`
+                 *
+                 * @param greatest `greatest`
+                 * @param monthName `monthName`
+                 * @param untilMonthName `untilMonthName`
+                 * @param untilYear `untilYear`
+                 * @param year `year`
+                 * @return the text
+                 */
+                public String monthYearRange(String greatest, String monthName, String untilMonthName, long untilYear, long year) {
+                    return r.render("sdk.calendar.TIBETAN_PHUGPA.monthYearRange", Map.ofEntries(Map.entry("greatest", greatest), Map.entry("monthName", monthName), Map.entry("untilMonthName", untilMonthName), Map.entry("untilYear", untilYear), Map.entry("year", year)));
                 }
             }
 

@@ -9,6 +9,8 @@
   "GREGORIAN": {
     "monthName": ".input {$month :integer} .match $month 1 {{Janavarīmāsaḥ}} 2 {{Pharavarīmāsaḥ}} 3 {{Mārcamāsaḥ}} 4 {{Aprailamāsaḥ}} 5 {{Maīmāsaḥ}} 6 {{Jūnamāsaḥ}} 7 {{Julāīmāsaḥ}} 8 {{Agastamāsaḥ}} 9 {{Sitambaramāsaḥ}} 10 {{Aktūbaramāsaḥ}} 11 {{Navambaramāsaḥ}} 12 {{Disambaramāsaḥ}} * {{{$month}}}",
     "monthShort": ".input {$month :integer} .match $month 1 {{Janavarī}} 2 {{Pharavarī}} 3 {{Mārca}} 4 {{Apraila}} 5 {{Maī}} 6 {{Jūna}} 7 {{Julāī}} 8 {{Agasta}} 9 {{Sitambara}} 10 {{Aktūbara}} 11 {{Navambara}} 12 {{Disambara}} * {{{$month}}}",
+    "monthYear": "{$monthName} {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false}}} * {{{$monthName}–{$untilMonthName} {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": "{$day :integer minimumIntegerDigits=2}/{$month :integer minimumIntegerDigits=2}/{$year :integer useGrouping=false}",
       "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false}",
@@ -18,6 +20,8 @@
   "JULIAN": {
     "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
     "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+    "monthYear": "{sdk.calendar.GREGORIAN.monthYear :msg}",
+    "monthYearRange": "{sdk.calendar.GREGORIAN.monthYearRange :msg}",
     "date": {
       "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
       "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
@@ -27,6 +31,8 @@
   "MIXED": {
     "monthName": "{sdk.calendar.GREGORIAN.monthName :msg}",
     "monthShort": "{sdk.calendar.GREGORIAN.monthShort :msg}",
+    "monthYear": "{sdk.calendar.GREGORIAN.monthYear :msg}",
+    "monthYearRange": "{sdk.calendar.GREGORIAN.monthYearRange :msg}",
     "date": {
       "numeric": "{sdk.calendar.GREGORIAN.date.numeric :msg}",
       "long": "{sdk.calendar.GREGORIAN.date.long :msg}",
@@ -43,6 +49,8 @@
   "BIKRAM_SAMBAT": {
     "monthName": ".input {$month :integer} .match $month 1 {{Vaiśākha}} 2 {{Jyeṣṭha}} 3 {{Āṣāḍha}} 4 {{Śrāvaṇa}} 5 {{Bhādrapada}} 6 {{Āśvina}} 7 {{Kārtika}} 8 {{Mārgaśīrṣa}} 9 {{Pauṣa}} 10 {{Māgha}} 11 {{Phālguna}} 12 {{Caitra}} * {{{$month}}}",
     "monthShort": "{sdk.calendar.BIKRAM_SAMBAT.monthName :msg}",
+    "monthYear": "{$monthName} vi.saṃ. {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} vi.saṃ. {$untilYear :integer useGrouping=false}}} * {{{$monthName}–{$untilMonthName} vi.saṃ. {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": "vi.saṃ. {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
       "long": "{$day :integer} {$monthName} vi.saṃ. {$year :integer useGrouping=false}",
@@ -52,6 +60,8 @@
   "INDIAN_NATIONAL": {
     "monthName": ".input {$month :integer} .match $month 1 {{Caitra}} 2 {{Vaiśākha}} 3 {{Jyeṣṭha}} 4 {{Āṣāḍha}} 5 {{Śrāvaṇa}} 6 {{Bhādra}} 7 {{Āśvina}} 8 {{Kārtika}} 9 {{Agrahāyaṇa}} 10 {{Pauṣa}} 11 {{Māgha}} 12 {{Phālguna}} * {{{$month}}}",
     "monthShort": "{sdk.calendar.INDIAN_NATIONAL.monthName :msg}",
+    "monthYear": "{$monthName} śakābdaḥ {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} śakābdaḥ {$untilYear :integer useGrouping=false}}} * {{{$monthName}–{$untilMonthName} śakābdaḥ {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": "śakābdaḥ {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
       "long": "{$day :integer} {$monthName} śakābdaḥ {$year :integer useGrouping=false}",
@@ -61,6 +71,8 @@
   "HIJRI_TABULAR": {
     "monthName": ".input {$month :integer} .match $month 1 {{Muharrama}} 2 {{Saphara}} 3 {{Rabī-ula-avvala}} 4 {{Rabī-usa-sānī}} 5 {{Jumādā-ula-avvala}} 6 {{Jumādā-usa-sānī}} 7 {{Rajaba}} 8 {{Śābāna}} 9 {{Ramajāna}} 10 {{Śavvāla}} 11 {{Jī-kādā}} 12 {{Jī-hijjā}} * {{{$month}}}",
     "monthShort": "{sdk.calendar.HIJRI_TABULAR.monthName :msg}",
+    "monthYear": "{$monthName} {$year :integer useGrouping=false} hijarī",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false} hijarī}} * {{{$monthName}–{$untilMonthName} {$untilYear :integer useGrouping=false} hijarī}}",
     "date": {
       "numeric": "{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} hijarī",
       "long": "{$day :integer} {$monthName} {$year :integer useGrouping=false} hijarī",
@@ -70,6 +82,8 @@
   "TIBETAN_PHUGPA": {
     "monthName": ".input {$leap :string} .match $leap MONTH {{Adhikamāsaḥ {$month :integer}}} MONTH_AND_DAY {{Adhikamāsaḥ {$month :integer}}} * {{Māsaḥ {$month :integer}}}",
     "monthShort": ".input {$leap :string} .match $leap MONTH {{Adhika {$month :integer}}} MONTH_AND_DAY {{Adhika {$month :integer}}} * {{{$month :integer}}}",
+    "monthYear": "{$monthName} {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} {$untilYear :integer useGrouping=false}}} * {{{$monthName}–{$untilMonthName} {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": ".input {$leap :string} .match $leap MONTH {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (adhikamāsaḥ)}} DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (vṛddhitithiḥ)}} MONTH_AND_DAY {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2} (adhikamāsaḥ, vṛddhitithiḥ)}} * {{{$year :integer useGrouping=false}-{$month :integer minimumIntegerDigits=2}-{$day :integer minimumIntegerDigits=2}}}",
       "long": ".input {$leap :string} .match $leap DAY {{{$monthName}, tithiḥ {$day :integer} (vṛddhitithiḥ), {$year :integer useGrouping=false}}} MONTH_AND_DAY {{{$monthName}, tithiḥ {$day :integer} (vṛddhitithiḥ), {$year :integer useGrouping=false}}} * {{{$monthName}, tithiḥ {$day :integer}, {$year :integer useGrouping=false}}}",
@@ -79,6 +93,8 @@
   "BANGLADESHI": {
     "monthName": ".input {$month :integer} .match $month 1 {{Vaiśākha}} 2 {{Jyeṣṭha}} 3 {{Āṣāḍha}} 4 {{Śrāvaṇa}} 5 {{Bhādra}} 6 {{Āśvina}} 7 {{Kārtika}} 8 {{Agrahāyaṇa}} 9 {{Pauṣa}} 10 {{Māgha}} 11 {{Phālguna}} 12 {{Caitra}} * {{{$month}}}",
     "monthShort": "{sdk.calendar.BANGLADESHI.monthName :msg}",
+    "monthYear": "{$monthName} vaṅgābdaḥ {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} vaṅgābdaḥ {$untilYear :integer useGrouping=false}}} * {{{$monthName}–{$untilMonthName} vaṅgābdaḥ {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": "vaṅgābdaḥ {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
       "long": "{$day :integer} {$monthName} vaṅgābdaḥ {$year :integer useGrouping=false}",
@@ -88,6 +104,8 @@
   "ASSAM_SOLAR": {
     "monthName": ".input {$month :integer} .match $month 1 {{Vaiśākha}} 2 {{Jyeṣṭha}} 3 {{Āṣāḍha}} 4 {{Śrāvaṇa}} 5 {{Bhādra}} 6 {{Āśvina}} 7 {{Kārtika}} 8 {{Agrahāyaṇa}} 9 {{Pauṣa}} 10 {{Māgha}} 11 {{Phālguna}} 12 {{Caitra}} * {{{$month}}}",
     "monthShort": "{sdk.calendar.ASSAM_SOLAR.monthName :msg}",
+    "monthYear": "{$monthName} bhāskarābdaḥ {$year :integer useGrouping=false}",
+    "monthYearRange": ".input {$greatest :string} .match $greatest YEAR {{{$monthName} {$year :integer useGrouping=false} – {$untilMonthName} bhāskarābdaḥ {$untilYear :integer useGrouping=false}}} * {{{$monthName}–{$untilMonthName} bhāskarābdaḥ {$untilYear :integer useGrouping=false}}}",
     "date": {
       "numeric": "bhāskarābdaḥ {$year :integer useGrouping=false}/{$month :integer minimumIntegerDigits=2}/{$day :integer minimumIntegerDigits=2}",
       "long": "{$day :integer} {$monthName} bhāskarābdaḥ {$year :integer useGrouping=false}",

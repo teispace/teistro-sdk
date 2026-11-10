@@ -18,7 +18,11 @@ public enum DateStyle implements RequestJson {
     /**
      * With the weekday's name too.
      */
-    FULL("FULL");
+    FULL("FULL"),
+    /**
+     * The month and its year alone, as a month view's title (SR-86): `sdk.calendar.&lt;CALENDAR&gt;.monthYear`, or `monthYearRange` for a run of months up to `until`.
+     */
+    MONTH_YEAR("MONTH_YEAR");
 
     private final String key;
 

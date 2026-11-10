@@ -2073,6 +2073,7 @@ final class EntityForms {
     required this.iast,
     required this.name,
     required this.prose,
+    this.abbrev,
     this.short,
     this.glyph,
     this.gender,
@@ -2090,6 +2091,7 @@ final class EntityForms {
       iast: text('iast') ?? '',
       name: text('name') ?? '',
       prose: text('prose') ?? '',
+      abbrev: text('abbrev'),
       short: text('short'),
       forms: <String, String>{
         for (final entry in forms.entries)
@@ -2105,6 +2107,7 @@ final class EntityForms {
   final String iast;
   final String name;
   final String prose;
+  final String? abbrev;
   final String? short;
   final String? glyph;
   final Gender? gender;
@@ -2183,6 +2186,10 @@ final class MessagesSdkCalendarAssamSolar {
       _r.render('sdk.calendar.ASSAM_SOLAR.monthName', {'month': month});
   String monthShort({required int month}) =>
       _r.render('sdk.calendar.ASSAM_SOLAR.monthShort', {'month': month});
+  String monthYear({required String monthName, required int year}) =>
+      _r.render('sdk.calendar.ASSAM_SOLAR.monthYear', {'monthName': monthName, 'year': year});
+  String monthYearRange({required String greatest, required String monthName, required String untilMonthName, required int untilYear, required int year}) =>
+      _r.render('sdk.calendar.ASSAM_SOLAR.monthYearRange', {'greatest': greatest, 'monthName': monthName, 'untilMonthName': untilMonthName, 'untilYear': untilYear, 'year': year});
 }
 
 final class MessagesSdkCalendarBangladeshiDate {
@@ -2208,6 +2215,10 @@ final class MessagesSdkCalendarBangladeshi {
       _r.render('sdk.calendar.BANGLADESHI.monthName', {'month': month});
   String monthShort({required int month}) =>
       _r.render('sdk.calendar.BANGLADESHI.monthShort', {'month': month});
+  String monthYear({required String monthName, required int year}) =>
+      _r.render('sdk.calendar.BANGLADESHI.monthYear', {'monthName': monthName, 'year': year});
+  String monthYearRange({required String greatest, required String monthName, required String untilMonthName, required int untilYear, required int year}) =>
+      _r.render('sdk.calendar.BANGLADESHI.monthYearRange', {'greatest': greatest, 'monthName': monthName, 'untilMonthName': untilMonthName, 'untilYear': untilYear, 'year': year});
 }
 
 final class MessagesSdkCalendarBikramSambatDate {
@@ -2233,6 +2244,10 @@ final class MessagesSdkCalendarBikramSambat {
       _r.render('sdk.calendar.BIKRAM_SAMBAT.monthName', {'month': month});
   String monthShort({required int month}) =>
       _r.render('sdk.calendar.BIKRAM_SAMBAT.monthShort', {'month': month});
+  String monthYear({required String monthName, required int year}) =>
+      _r.render('sdk.calendar.BIKRAM_SAMBAT.monthYear', {'monthName': monthName, 'year': year});
+  String monthYearRange({required String greatest, required String monthName, required String untilMonthName, required int untilYear, required int year}) =>
+      _r.render('sdk.calendar.BIKRAM_SAMBAT.monthYearRange', {'greatest': greatest, 'monthName': monthName, 'untilMonthName': untilMonthName, 'untilYear': untilYear, 'year': year});
 }
 
 final class MessagesSdkCalendarGregorianDate {
@@ -2258,6 +2273,10 @@ final class MessagesSdkCalendarGregorian {
       _r.render('sdk.calendar.GREGORIAN.monthName', {'month': month});
   String monthShort({required int month}) =>
       _r.render('sdk.calendar.GREGORIAN.monthShort', {'month': month});
+  String monthYear({required String monthName, required int year}) =>
+      _r.render('sdk.calendar.GREGORIAN.monthYear', {'monthName': monthName, 'year': year});
+  String monthYearRange({required String greatest, required String monthName, required String untilMonthName, required int untilYear, required int year}) =>
+      _r.render('sdk.calendar.GREGORIAN.monthYearRange', {'greatest': greatest, 'monthName': monthName, 'untilMonthName': untilMonthName, 'untilYear': untilYear, 'year': year});
 }
 
 final class MessagesSdkCalendarHijriTabularDate {
@@ -2283,6 +2302,10 @@ final class MessagesSdkCalendarHijriTabular {
       _r.render('sdk.calendar.HIJRI_TABULAR.monthName', {'month': month});
   String monthShort({required int month}) =>
       _r.render('sdk.calendar.HIJRI_TABULAR.monthShort', {'month': month});
+  String monthYear({required String monthName, required int year}) =>
+      _r.render('sdk.calendar.HIJRI_TABULAR.monthYear', {'monthName': monthName, 'year': year});
+  String monthYearRange({required String greatest, required String monthName, required String untilMonthName, required int untilYear, required int year}) =>
+      _r.render('sdk.calendar.HIJRI_TABULAR.monthYearRange', {'greatest': greatest, 'monthName': monthName, 'untilMonthName': untilMonthName, 'untilYear': untilYear, 'year': year});
 }
 
 final class MessagesSdkCalendarIndianNationalDate {
@@ -2308,6 +2331,10 @@ final class MessagesSdkCalendarIndianNational {
       _r.render('sdk.calendar.INDIAN_NATIONAL.monthName', {'month': month});
   String monthShort({required int month}) =>
       _r.render('sdk.calendar.INDIAN_NATIONAL.monthShort', {'month': month});
+  String monthYear({required String monthName, required int year}) =>
+      _r.render('sdk.calendar.INDIAN_NATIONAL.monthYear', {'monthName': monthName, 'year': year});
+  String monthYearRange({required String greatest, required String monthName, required String untilMonthName, required int untilYear, required int year}) =>
+      _r.render('sdk.calendar.INDIAN_NATIONAL.monthYearRange', {'greatest': greatest, 'monthName': monthName, 'untilMonthName': untilMonthName, 'untilYear': untilYear, 'year': year});
 }
 
 final class MessagesSdkCalendarIsoWeekDate {
@@ -2354,6 +2381,10 @@ final class MessagesSdkCalendarJulian {
       _r.render('sdk.calendar.JULIAN.monthName', {'month': month});
   String monthShort({required int month}) =>
       _r.render('sdk.calendar.JULIAN.monthShort', {'month': month});
+  String monthYear({required String monthName, required int year}) =>
+      _r.render('sdk.calendar.JULIAN.monthYear', {'monthName': monthName, 'year': year});
+  String monthYearRange({required String greatest, required String monthName, required String untilMonthName, required int untilYear, required int year}) =>
+      _r.render('sdk.calendar.JULIAN.monthYearRange', {'greatest': greatest, 'monthName': monthName, 'untilMonthName': untilMonthName, 'untilYear': untilYear, 'year': year});
 }
 
 final class MessagesSdkCalendarMixedDate {
@@ -2379,6 +2410,10 @@ final class MessagesSdkCalendarMixed {
       _r.render('sdk.calendar.MIXED.monthName', {'month': month});
   String monthShort({required int month}) =>
       _r.render('sdk.calendar.MIXED.monthShort', {'month': month});
+  String monthYear({required String monthName, required int year}) =>
+      _r.render('sdk.calendar.MIXED.monthYear', {'monthName': monthName, 'year': year});
+  String monthYearRange({required String greatest, required String monthName, required String untilMonthName, required int untilYear, required int year}) =>
+      _r.render('sdk.calendar.MIXED.monthYearRange', {'greatest': greatest, 'monthName': monthName, 'untilMonthName': untilMonthName, 'untilYear': untilYear, 'year': year});
 }
 
 final class MessagesSdkCalendarTibetanPhugpaDate {
@@ -2404,6 +2439,10 @@ final class MessagesSdkCalendarTibetanPhugpa {
       _r.render('sdk.calendar.TIBETAN_PHUGPA.monthName', {'leap': leap, 'month': month});
   String monthShort({required String leap, required int month}) =>
       _r.render('sdk.calendar.TIBETAN_PHUGPA.monthShort', {'leap': leap, 'month': month});
+  String monthYear({required String monthName, required int year}) =>
+      _r.render('sdk.calendar.TIBETAN_PHUGPA.monthYear', {'monthName': monthName, 'year': year});
+  String monthYearRange({required String greatest, required String monthName, required String untilMonthName, required int untilYear, required int year}) =>
+      _r.render('sdk.calendar.TIBETAN_PHUGPA.monthYearRange', {'greatest': greatest, 'monthName': monthName, 'untilMonthName': untilMonthName, 'untilYear': untilYear, 'year': year});
 }
 
 final class MessagesSdkCalendarDatetime {

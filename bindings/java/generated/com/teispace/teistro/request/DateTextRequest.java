@@ -15,8 +15,9 @@ import java.util.Objects;
  * @param digits The digits; the locale's numbering system when left out. Null leaves the SDK's default.
  * @param locale The locale, a loaded tag (`ne-Deva-NP`); the engine's current one when left out. Null leaves the SDK's default.
  * @param style How much of it. Null leaves the SDK's default.
+ * @param until With `MONTH_YEAR`, the last month of a run that starts at `at`'s, in the same calendar and not before it: "October – November 2026", "December 2026 – January 2027". Any day of the month will do. Null leaves the SDK's default.
  */
-public record DateTextRequest(CalendarDay at, WordsDigits digits, String locale, DateStyle style) implements RequestJson {
+public record DateTextRequest(CalendarDay at, WordsDigits digits, String locale, DateStyle style, CalendarDay until) implements RequestJson {
     /**
      * Checks a required field is present and a whole number fits its width, and
      * copies a list or a map so the record's own cannot change.
@@ -35,7 +36,7 @@ public record DateTextRequest(CalendarDay at, WordsDigits digits, String locale,
      * @param at The date, in its own calendar.
      */
     public DateTextRequest(CalendarDay at) {
-        this(at, null, null, null);
+        this(at, null, null, null, null);
     }
 
     /**
@@ -54,6 +55,7 @@ public record DateTextRequest(CalendarDay at, WordsDigits digits, String locale,
         private WordsDigits digits;
         private String locale;
         private DateStyle style;
+        private CalendarDay until;
 
         private Builder() {}
 
@@ -102,13 +104,24 @@ public record DateTextRequest(CalendarDay at, WordsDigits digits, String locale,
         }
 
         /**
+         * Sets {@code until}.
+         *
+         * @param until With `MONTH_YEAR`, the last month of a run that starts at `at`'s, in the same calendar and not before it: "October – November 2026", "December 2026 – January 2027". Any day of the month will do. Null leaves the SDK's default.
+         * @return this builder
+         */
+        public Builder until(CalendarDay until) {
+            this.until = until;
+            return this;
+        }
+
+        /**
          * The record.
          *
          * @return the record
          * @throws NullPointerException naming a required field left unset
          */
         public DateTextRequest build() {
-            return new DateTextRequest(at, digits, locale, style);
+            return new DateTextRequest(at, digits, locale, style, until);
         }
     }
 
@@ -125,7 +138,8 @@ public record DateTextRequest(CalendarDay at, WordsDigits digits, String locale,
             CalendarDay.of(Read.required(json.get("at"), "DateTextRequest.at")),
             Read.orNull(json.get("digits"), present -> Read.member(present, "DateTextRequest.digits", WordsDigits::byKey)),
             Read.orNull(json.get("locale"), present -> Read.text(present, "DateTextRequest.locale")),
-            Read.orNull(json.get("style"), present -> Read.member(present, "DateTextRequest.style", DateStyle::byKey)));
+            Read.orNull(json.get("style"), present -> Read.member(present, "DateTextRequest.style", DateStyle::byKey)),
+            Read.orNull(json.get("until"), present -> CalendarDay.of(present)));
     }
 
     @Override
@@ -140,6 +154,9 @@ public record DateTextRequest(CalendarDay at, WordsDigits digits, String locale,
         }
         if (style != null) {
             json.put("style", style.toJson());
+        }
+        if (until != null) {
+            json.put("until", until.toJson());
         }
         return json;
     }

@@ -1736,6 +1736,7 @@ final class DateTextRequest extends _Request {
     this.digits,
     this.locale,
     this.style = DateStyle.numeric,
+    this.until,
   });
 
   /// The date, in its own calendar.
@@ -1750,16 +1751,20 @@ final class DateTextRequest extends _Request {
   /// How much of it.
   final DateStyle style;
 
+  /// With `MONTH_YEAR`, the last month of a run that starts at `at`'s, in the same calendar and not before it: "October – November 2026", "December 2026 – January 2027". Any day of the month will do.
+  final CalendarDay? until;
+
   @override
   Map<String, Object?> get _wire => <String, Object?>{
     'at': at._wire,
     if (digits case final digitsValue?) 'digits': digitsValue.key,
     if (locale case final localeValue?) 'locale': localeValue,
     'style': style.key,
+    if (until case final untilValue?) 'until': untilValue._wire,
   };
 
   @override
-  List<Object?> get _fields => [at, digits, locale, style];
+  List<Object?> get _fields => [at, digits, locale, style, until];
 }
 
 /// What a caller asks: the dates in a text, in the calendars named.
@@ -3939,7 +3944,9 @@ enum DateStyle implements _Keyed {
   /// With the month's name.
   long('LONG'),
   /// With the weekday's name too.
-  full('FULL');
+  full('FULL'),
+  /// The month and its year alone, as a month view's title (SR-86): `sdk.calendar.<CALENDAR>.monthYear`, or `monthYearRange` for a run of months up to `until`.
+  monthYear('MONTH_YEAR');
 
   const DateStyle(this.key);
 

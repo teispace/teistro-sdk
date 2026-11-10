@@ -518,6 +518,87 @@ pub mod sdk {
                 }
             }
 
+            /// The message `sdk.calendar.ASSAM_SOLAR.monthYear`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::assam_solar::MonthYear;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
+            /// assert_eq!(MonthYear::KEY, "sdk.calendar.ASSAM_SOLAR.monthYear");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYear {
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYear {
+                const KEY: &'static str = "sdk.calendar.ASSAM_SOLAR.monthYear";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.ASSAM_SOLAR.monthYearRange`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::assam_solar::MonthYearRange;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYearRange {
+            ///     greatest: String::from("greatest"),
+            ///     month_name: String::from("monthName"),
+            ///     until_month_name: String::from("untilMonthName"),
+            ///     until_year: 2,
+            ///     year: 2,
+            /// };
+            /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.ASSAM_SOLAR.monthYearRange");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYearRange {
+                /// The `greatest` parameter.
+                pub greatest: String,
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `untilMonthName` parameter.
+                pub until_month_name: String,
+                /// The `untilYear` parameter.
+                pub until_year: i64,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYearRange {
+                const KEY: &'static str = "sdk.calendar.ASSAM_SOLAR.monthYearRange";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("greatest", crate::Value::Str(self.greatest.clone())),
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("untilMonthName", crate::Value::Str(self.until_month_name.clone())),
+                        ("untilYear", crate::Value::Int(self.until_year)),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
         }
 
         /// The `BANGLADESHI` group.
@@ -698,6 +779,87 @@ pub mod sdk {
                 fn params(&self) -> crate::Params {
                     crate::params([
                         ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.BANGLADESHI.monthYear`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::bangladeshi::MonthYear;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
+            /// assert_eq!(MonthYear::KEY, "sdk.calendar.BANGLADESHI.monthYear");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYear {
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYear {
+                const KEY: &'static str = "sdk.calendar.BANGLADESHI.monthYear";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.BANGLADESHI.monthYearRange`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::bangladeshi::MonthYearRange;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYearRange {
+            ///     greatest: String::from("greatest"),
+            ///     month_name: String::from("monthName"),
+            ///     until_month_name: String::from("untilMonthName"),
+            ///     until_year: 2,
+            ///     year: 2,
+            /// };
+            /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.BANGLADESHI.monthYearRange");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYearRange {
+                /// The `greatest` parameter.
+                pub greatest: String,
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `untilMonthName` parameter.
+                pub until_month_name: String,
+                /// The `untilYear` parameter.
+                pub until_year: i64,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYearRange {
+                const KEY: &'static str = "sdk.calendar.BANGLADESHI.monthYearRange";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("greatest", crate::Value::Str(self.greatest.clone())),
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("untilMonthName", crate::Value::Str(self.until_month_name.clone())),
+                        ("untilYear", crate::Value::Int(self.until_year)),
+                        ("year", crate::Value::Int(self.year)),
                     ])
                 }
             }
@@ -886,6 +1048,87 @@ pub mod sdk {
                 }
             }
 
+            /// The message `sdk.calendar.BIKRAM_SAMBAT.monthYear`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::bikram_sambat::MonthYear;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
+            /// assert_eq!(MonthYear::KEY, "sdk.calendar.BIKRAM_SAMBAT.monthYear");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYear {
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYear {
+                const KEY: &'static str = "sdk.calendar.BIKRAM_SAMBAT.monthYear";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.BIKRAM_SAMBAT.monthYearRange`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::bikram_sambat::MonthYearRange;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYearRange {
+            ///     greatest: String::from("greatest"),
+            ///     month_name: String::from("monthName"),
+            ///     until_month_name: String::from("untilMonthName"),
+            ///     until_year: 2,
+            ///     year: 2,
+            /// };
+            /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.BIKRAM_SAMBAT.monthYearRange");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYearRange {
+                /// The `greatest` parameter.
+                pub greatest: String,
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `untilMonthName` parameter.
+                pub until_month_name: String,
+                /// The `untilYear` parameter.
+                pub until_year: i64,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYearRange {
+                const KEY: &'static str = "sdk.calendar.BIKRAM_SAMBAT.monthYearRange";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("greatest", crate::Value::Str(self.greatest.clone())),
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("untilMonthName", crate::Value::Str(self.until_month_name.clone())),
+                        ("untilYear", crate::Value::Int(self.until_year)),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
         }
 
         /// The `GREGORIAN` group.
@@ -1066,6 +1309,87 @@ pub mod sdk {
                 fn params(&self) -> crate::Params {
                     crate::params([
                         ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.GREGORIAN.monthYear`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::gregorian::MonthYear;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
+            /// assert_eq!(MonthYear::KEY, "sdk.calendar.GREGORIAN.monthYear");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYear {
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYear {
+                const KEY: &'static str = "sdk.calendar.GREGORIAN.monthYear";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.GREGORIAN.monthYearRange`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::gregorian::MonthYearRange;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYearRange {
+            ///     greatest: String::from("greatest"),
+            ///     month_name: String::from("monthName"),
+            ///     until_month_name: String::from("untilMonthName"),
+            ///     until_year: 2,
+            ///     year: 2,
+            /// };
+            /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.GREGORIAN.monthYearRange");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYearRange {
+                /// The `greatest` parameter.
+                pub greatest: String,
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `untilMonthName` parameter.
+                pub until_month_name: String,
+                /// The `untilYear` parameter.
+                pub until_year: i64,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYearRange {
+                const KEY: &'static str = "sdk.calendar.GREGORIAN.monthYearRange";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("greatest", crate::Value::Str(self.greatest.clone())),
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("untilMonthName", crate::Value::Str(self.until_month_name.clone())),
+                        ("untilYear", crate::Value::Int(self.until_year)),
+                        ("year", crate::Value::Int(self.year)),
                     ])
                 }
             }
@@ -1254,6 +1578,87 @@ pub mod sdk {
                 }
             }
 
+            /// The message `sdk.calendar.HIJRI_TABULAR.monthYear`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::hijri_tabular::MonthYear;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
+            /// assert_eq!(MonthYear::KEY, "sdk.calendar.HIJRI_TABULAR.monthYear");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYear {
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYear {
+                const KEY: &'static str = "sdk.calendar.HIJRI_TABULAR.monthYear";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.HIJRI_TABULAR.monthYearRange`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::hijri_tabular::MonthYearRange;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYearRange {
+            ///     greatest: String::from("greatest"),
+            ///     month_name: String::from("monthName"),
+            ///     until_month_name: String::from("untilMonthName"),
+            ///     until_year: 2,
+            ///     year: 2,
+            /// };
+            /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.HIJRI_TABULAR.monthYearRange");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYearRange {
+                /// The `greatest` parameter.
+                pub greatest: String,
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `untilMonthName` parameter.
+                pub until_month_name: String,
+                /// The `untilYear` parameter.
+                pub until_year: i64,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYearRange {
+                const KEY: &'static str = "sdk.calendar.HIJRI_TABULAR.monthYearRange";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("greatest", crate::Value::Str(self.greatest.clone())),
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("untilMonthName", crate::Value::Str(self.until_month_name.clone())),
+                        ("untilYear", crate::Value::Int(self.until_year)),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
         }
 
         /// The `INDIAN_NATIONAL` group.
@@ -1434,6 +1839,87 @@ pub mod sdk {
                 fn params(&self) -> crate::Params {
                     crate::params([
                         ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.INDIAN_NATIONAL.monthYear`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::indian_national::MonthYear;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
+            /// assert_eq!(MonthYear::KEY, "sdk.calendar.INDIAN_NATIONAL.monthYear");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYear {
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYear {
+                const KEY: &'static str = "sdk.calendar.INDIAN_NATIONAL.monthYear";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.INDIAN_NATIONAL.monthYearRange`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::indian_national::MonthYearRange;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYearRange {
+            ///     greatest: String::from("greatest"),
+            ///     month_name: String::from("monthName"),
+            ///     until_month_name: String::from("untilMonthName"),
+            ///     until_year: 2,
+            ///     year: 2,
+            /// };
+            /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.INDIAN_NATIONAL.monthYearRange");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYearRange {
+                /// The `greatest` parameter.
+                pub greatest: String,
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `untilMonthName` parameter.
+                pub until_month_name: String,
+                /// The `untilYear` parameter.
+                pub until_year: i64,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYearRange {
+                const KEY: &'static str = "sdk.calendar.INDIAN_NATIONAL.monthYearRange";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("greatest", crate::Value::Str(self.greatest.clone())),
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("untilMonthName", crate::Value::Str(self.until_month_name.clone())),
+                        ("untilYear", crate::Value::Int(self.until_year)),
+                        ("year", crate::Value::Int(self.year)),
                     ])
                 }
             }
@@ -1738,6 +2224,87 @@ pub mod sdk {
                 }
             }
 
+            /// The message `sdk.calendar.JULIAN.monthYear`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::julian::MonthYear;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
+            /// assert_eq!(MonthYear::KEY, "sdk.calendar.JULIAN.monthYear");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYear {
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYear {
+                const KEY: &'static str = "sdk.calendar.JULIAN.monthYear";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.JULIAN.monthYearRange`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::julian::MonthYearRange;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYearRange {
+            ///     greatest: String::from("greatest"),
+            ///     month_name: String::from("monthName"),
+            ///     until_month_name: String::from("untilMonthName"),
+            ///     until_year: 2,
+            ///     year: 2,
+            /// };
+            /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.JULIAN.monthYearRange");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYearRange {
+                /// The `greatest` parameter.
+                pub greatest: String,
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `untilMonthName` parameter.
+                pub until_month_name: String,
+                /// The `untilYear` parameter.
+                pub until_year: i64,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYearRange {
+                const KEY: &'static str = "sdk.calendar.JULIAN.monthYearRange";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("greatest", crate::Value::Str(self.greatest.clone())),
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("untilMonthName", crate::Value::Str(self.until_month_name.clone())),
+                        ("untilYear", crate::Value::Int(self.until_year)),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
         }
 
         /// The `MIXED` group.
@@ -1918,6 +2485,87 @@ pub mod sdk {
                 fn params(&self) -> crate::Params {
                     crate::params([
                         ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.MIXED.monthYear`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::mixed::MonthYear;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
+            /// assert_eq!(MonthYear::KEY, "sdk.calendar.MIXED.monthYear");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYear {
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYear {
+                const KEY: &'static str = "sdk.calendar.MIXED.monthYear";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.MIXED.monthYearRange`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::mixed::MonthYearRange;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYearRange {
+            ///     greatest: String::from("greatest"),
+            ///     month_name: String::from("monthName"),
+            ///     until_month_name: String::from("untilMonthName"),
+            ///     until_year: 2,
+            ///     year: 2,
+            /// };
+            /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.MIXED.monthYearRange");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYearRange {
+                /// The `greatest` parameter.
+                pub greatest: String,
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `untilMonthName` parameter.
+                pub until_month_name: String,
+                /// The `untilYear` parameter.
+                pub until_year: i64,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYearRange {
+                const KEY: &'static str = "sdk.calendar.MIXED.monthYearRange";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("greatest", crate::Value::Str(self.greatest.clone())),
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("untilMonthName", crate::Value::Str(self.until_month_name.clone())),
+                        ("untilYear", crate::Value::Int(self.until_year)),
+                        ("year", crate::Value::Int(self.year)),
                     ])
                 }
             }
@@ -2123,6 +2771,87 @@ pub mod sdk {
                     crate::params([
                         ("leap", crate::Value::Str(self.leap.clone())),
                         ("month", crate::Value::Int(self.month)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.TIBETAN_PHUGPA.monthYear`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::MonthYear;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYear { month_name: String::from("monthName"), year: 2 };
+            /// assert_eq!(MonthYear::KEY, "sdk.calendar.TIBETAN_PHUGPA.monthYear");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYear {
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYear {
+                const KEY: &'static str = "sdk.calendar.TIBETAN_PHUGPA.monthYear";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("year", crate::Value::Int(self.year)),
+                    ])
+                }
+            }
+
+            /// The message `sdk.calendar.TIBETAN_PHUGPA.monthYearRange`.
+            ///
+            /// ```
+            /// use teistro_intl::messages::sdk::calendar::tibetan_phugpa::MonthYearRange;
+            /// use teistro_intl::source::Tree;
+            /// use teistro_intl::{Intl, TypedMessage, sdk_root};
+            ///
+            /// let message = MonthYearRange {
+            ///     greatest: String::from("greatest"),
+            ///     month_name: String::from("monthName"),
+            ///     until_month_name: String::from("untilMonthName"),
+            ///     until_year: 2,
+            ///     year: 2,
+            /// };
+            /// assert_eq!(MonthYearRange::KEY, "sdk.calendar.TIBETAN_PHUGPA.monthYearRange");
+            /// let intl = Intl::from_tree(&Tree::load(&sdk_root()).expect("the SDK's sources"))
+            ///     .expect("plural rules for every locale");
+            /// let rendered = intl.render_typed(&message);
+            /// assert!(rendered.warnings.is_empty(), "{:?}", rendered.warnings);
+            /// assert!(!rendered.text.is_empty());
+            /// ```
+            #[derive(Clone, Debug, PartialEq)]
+            pub struct MonthYearRange {
+                /// The `greatest` parameter.
+                pub greatest: String,
+                /// The `monthName` parameter.
+                pub month_name: String,
+                /// The `untilMonthName` parameter.
+                pub until_month_name: String,
+                /// The `untilYear` parameter.
+                pub until_year: i64,
+                /// The `year` parameter.
+                pub year: i64,
+            }
+
+            impl crate::TypedMessage for MonthYearRange {
+                const KEY: &'static str = "sdk.calendar.TIBETAN_PHUGPA.monthYearRange";
+                fn params(&self) -> crate::Params {
+                    crate::params([
+                        ("greatest", crate::Value::Str(self.greatest.clone())),
+                        ("monthName", crate::Value::Str(self.month_name.clone())),
+                        ("untilMonthName", crate::Value::Str(self.until_month_name.clone())),
+                        ("untilYear", crate::Value::Int(self.until_year)),
+                        ("year", crate::Value::Int(self.year)),
                     ])
                 }
             }

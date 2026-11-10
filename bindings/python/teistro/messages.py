@@ -1906,6 +1906,8 @@ class EntityForms:
 
     prose: str
 
+    abbrev: Optional[str] = None
+
     short: Optional[str] = None
 
     glyph: Optional[str] = None
@@ -1934,6 +1936,7 @@ class EntityForms:
             iast=text("iast") or "",
             name=text("name") or "",
             prose=text("prose") or "",
+            abbrev=text("abbrev"),
             short=text("short"),
             forms={
                 name: value
@@ -11472,6 +11475,20 @@ class MessagesSdkCalendarTibetanPhugpa:
             {"leap": leap, "month": month},
         )
 
+    def month_year(self, *, month_name: str, year: int) -> str:
+        """`sdk.calendar.TIBETAN_PHUGPA.monthYear`"""
+        return self._r.render(
+            "sdk.calendar.TIBETAN_PHUGPA.monthYear",
+            {"monthName": month_name, "year": year},
+        )
+
+    def month_year_range(self, *, greatest: str, month_name: str, until_month_name: str, until_year: int, year: int) -> str:
+        """`sdk.calendar.TIBETAN_PHUGPA.monthYearRange`"""
+        return self._r.render(
+            "sdk.calendar.TIBETAN_PHUGPA.monthYearRange",
+            {"greatest": greatest, "monthName": month_name, "untilMonthName": until_month_name, "untilYear": until_year, "year": year},
+        )
+
 
 class MessagesSdkCalendarTibetanPhugpaDate:
     """The messages under `MessagesSdkCalendarTibetanPhugpaDate`, each rendered by its own key."""
@@ -11528,6 +11545,20 @@ class MessagesSdkCalendarMixed:
             {"month": month},
         )
 
+    def month_year(self, *, month_name: str, year: int) -> str:
+        """`sdk.calendar.MIXED.monthYear`"""
+        return self._r.render(
+            "sdk.calendar.MIXED.monthYear",
+            {"monthName": month_name, "year": year},
+        )
+
+    def month_year_range(self, *, greatest: str, month_name: str, until_month_name: str, until_year: int, year: int) -> str:
+        """`sdk.calendar.MIXED.monthYearRange`"""
+        return self._r.render(
+            "sdk.calendar.MIXED.monthYearRange",
+            {"greatest": greatest, "monthName": month_name, "untilMonthName": until_month_name, "untilYear": until_year, "year": year},
+        )
+
 
 class MessagesSdkCalendarMixedDate:
     """The messages under `MessagesSdkCalendarMixedDate`, each rendered by its own key."""
@@ -11582,6 +11613,20 @@ class MessagesSdkCalendarJulian:
         return self._r.render(
             "sdk.calendar.JULIAN.monthShort",
             {"month": month},
+        )
+
+    def month_year(self, *, month_name: str, year: int) -> str:
+        """`sdk.calendar.JULIAN.monthYear`"""
+        return self._r.render(
+            "sdk.calendar.JULIAN.monthYear",
+            {"monthName": month_name, "year": year},
+        )
+
+    def month_year_range(self, *, greatest: str, month_name: str, until_month_name: str, until_year: int, year: int) -> str:
+        """`sdk.calendar.JULIAN.monthYearRange`"""
+        return self._r.render(
+            "sdk.calendar.JULIAN.monthYearRange",
+            {"greatest": greatest, "monthName": month_name, "untilMonthName": until_month_name, "untilYear": until_year, "year": year},
         )
 
 
@@ -11682,6 +11727,20 @@ class MessagesSdkCalendarIndianNational:
             {"month": month},
         )
 
+    def month_year(self, *, month_name: str, year: int) -> str:
+        """`sdk.calendar.INDIAN_NATIONAL.monthYear`"""
+        return self._r.render(
+            "sdk.calendar.INDIAN_NATIONAL.monthYear",
+            {"monthName": month_name, "year": year},
+        )
+
+    def month_year_range(self, *, greatest: str, month_name: str, until_month_name: str, until_year: int, year: int) -> str:
+        """`sdk.calendar.INDIAN_NATIONAL.monthYearRange`"""
+        return self._r.render(
+            "sdk.calendar.INDIAN_NATIONAL.monthYearRange",
+            {"greatest": greatest, "monthName": month_name, "untilMonthName": until_month_name, "untilYear": until_year, "year": year},
+        )
+
 
 class MessagesSdkCalendarIndianNationalDate:
     """The messages under `MessagesSdkCalendarIndianNationalDate`, each rendered by its own key."""
@@ -11736,6 +11795,20 @@ class MessagesSdkCalendarHijriTabular:
         return self._r.render(
             "sdk.calendar.HIJRI_TABULAR.monthShort",
             {"month": month},
+        )
+
+    def month_year(self, *, month_name: str, year: int) -> str:
+        """`sdk.calendar.HIJRI_TABULAR.monthYear`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_TABULAR.monthYear",
+            {"monthName": month_name, "year": year},
+        )
+
+    def month_year_range(self, *, greatest: str, month_name: str, until_month_name: str, until_year: int, year: int) -> str:
+        """`sdk.calendar.HIJRI_TABULAR.monthYearRange`"""
+        return self._r.render(
+            "sdk.calendar.HIJRI_TABULAR.monthYearRange",
+            {"greatest": greatest, "monthName": month_name, "untilMonthName": until_month_name, "untilYear": until_year, "year": year},
         )
 
 
@@ -11794,6 +11867,20 @@ class MessagesSdkCalendarGregorian:
             {"month": month},
         )
 
+    def month_year(self, *, month_name: str, year: int) -> str:
+        """`sdk.calendar.GREGORIAN.monthYear`"""
+        return self._r.render(
+            "sdk.calendar.GREGORIAN.monthYear",
+            {"monthName": month_name, "year": year},
+        )
+
+    def month_year_range(self, *, greatest: str, month_name: str, until_month_name: str, until_year: int, year: int) -> str:
+        """`sdk.calendar.GREGORIAN.monthYearRange`"""
+        return self._r.render(
+            "sdk.calendar.GREGORIAN.monthYearRange",
+            {"greatest": greatest, "monthName": month_name, "untilMonthName": until_month_name, "untilYear": until_year, "year": year},
+        )
+
 
 class MessagesSdkCalendarGregorianDate:
     """The messages under `MessagesSdkCalendarGregorianDate`, each rendered by its own key."""
@@ -11848,6 +11935,20 @@ class MessagesSdkCalendarBikramSambat:
         return self._r.render(
             "sdk.calendar.BIKRAM_SAMBAT.monthShort",
             {"month": month},
+        )
+
+    def month_year(self, *, month_name: str, year: int) -> str:
+        """`sdk.calendar.BIKRAM_SAMBAT.monthYear`"""
+        return self._r.render(
+            "sdk.calendar.BIKRAM_SAMBAT.monthYear",
+            {"monthName": month_name, "year": year},
+        )
+
+    def month_year_range(self, *, greatest: str, month_name: str, until_month_name: str, until_year: int, year: int) -> str:
+        """`sdk.calendar.BIKRAM_SAMBAT.monthYearRange`"""
+        return self._r.render(
+            "sdk.calendar.BIKRAM_SAMBAT.monthYearRange",
+            {"greatest": greatest, "monthName": month_name, "untilMonthName": until_month_name, "untilYear": until_year, "year": year},
         )
 
 
@@ -11906,6 +12007,20 @@ class MessagesSdkCalendarBangladeshi:
             {"month": month},
         )
 
+    def month_year(self, *, month_name: str, year: int) -> str:
+        """`sdk.calendar.BANGLADESHI.monthYear`"""
+        return self._r.render(
+            "sdk.calendar.BANGLADESHI.monthYear",
+            {"monthName": month_name, "year": year},
+        )
+
+    def month_year_range(self, *, greatest: str, month_name: str, until_month_name: str, until_year: int, year: int) -> str:
+        """`sdk.calendar.BANGLADESHI.monthYearRange`"""
+        return self._r.render(
+            "sdk.calendar.BANGLADESHI.monthYearRange",
+            {"greatest": greatest, "monthName": month_name, "untilMonthName": until_month_name, "untilYear": until_year, "year": year},
+        )
+
 
 class MessagesSdkCalendarBangladeshiDate:
     """The messages under `MessagesSdkCalendarBangladeshiDate`, each rendered by its own key."""
@@ -11960,6 +12075,20 @@ class MessagesSdkCalendarAssamSolar:
         return self._r.render(
             "sdk.calendar.ASSAM_SOLAR.monthShort",
             {"month": month},
+        )
+
+    def month_year(self, *, month_name: str, year: int) -> str:
+        """`sdk.calendar.ASSAM_SOLAR.monthYear`"""
+        return self._r.render(
+            "sdk.calendar.ASSAM_SOLAR.monthYear",
+            {"monthName": month_name, "year": year},
+        )
+
+    def month_year_range(self, *, greatest: str, month_name: str, until_month_name: str, until_year: int, year: int) -> str:
+        """`sdk.calendar.ASSAM_SOLAR.monthYearRange`"""
+        return self._r.render(
+            "sdk.calendar.ASSAM_SOLAR.monthYearRange",
+            {"greatest": greatest, "monthName": month_name, "untilMonthName": until_month_name, "untilYear": until_year, "year": year},
         )
 
 

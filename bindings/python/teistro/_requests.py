@@ -1629,6 +1629,9 @@ class DateTextRequest(TypedDict, total=False):
     style: DateStyle
     """How much of it."""
 
+    until: Optional[CalendarDay]
+    """With `MONTH_YEAR`, the last month of a run that starts at `at`'s, in the same calendar and not before it: "October – November 2026", "December 2026 – January 2027". Any day of the month will do."""
+
 
 class DatesRequest(TypedDict, total=False):
     """What a caller asks: the dates in a text, in the calendars named."""
@@ -3103,12 +3106,13 @@ WordsDigits: TypeAlias = Literal['LATN', 'DEVA']
 """
 
 
-DateStyle: TypeAlias = Literal['NUMERIC', 'LONG', 'FULL']
+DateStyle: TypeAlias = Literal['NUMERIC', 'LONG', 'FULL', 'MONTH_YEAR']
 """How much of a date is written.
 
 `NUMERIC`: In figures.
 `LONG`: With the month's name.
 `FULL`: With the weekday's name too.
+`MONTH_YEAR`: The month and its year alone, as a month view's title (SR-86): `sdk.calendar.<CALENDAR>.monthYear`, or `monthYearRange` for a run of months up to `until`.
 """
 
 
