@@ -1784,6 +1784,10 @@ export function messages(r) {
         ofEight: (p) => r.render('sdk.karaka.ofEight', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
         ofSeven: (p) => r.render('sdk.karaka.ofSeven', { graha: { '$entity': p.graha }, karaka: { '$entity': p.karaka } }),
       },
+      matching: {
+        band: (p) => r.render('sdk.matching.band', { band: p.band }),
+        graded: (p) => r.render('sdk.matching.graded', { band: p.band, total: p.total }),
+      },
       naming: {
         by: (p) => r.render('sdk.naming.by', { by: p.by }),
         clause: (p) => r.render('sdk.naming.clause', { clause: p.clause }),
@@ -1894,6 +1898,13 @@ export function messages(r) {
         riteVerdict: (p) => r.render('sdk.rite.riteVerdict', { verdict: p.verdict }),
         sapindanaAt: (p) => r.render('sdk.rite.sapindanaAt', { at: p.at }),
       },
+      sankalpa: {
+        himavatkhande: (p) => r.render('sdk.sankalpa.himavatkhande', { adhika: p.adhika, ayana: { '$entity': p.ayana }, father: p.father, gotra: p.gotra, grandfather: p.grandfather, greatGrandfather: p.greatGrandfather, hasKshetra: p.hasKshetra, hasPitris: p.hasPitris, hasRiver: p.hasRiver, jupiter: { '$entity': p.jupiter }, karana: { '$entity': p.karana }, kshetra: p.kshetra, masa: { '$entity': p.masa }, moon: { '$entity': p.moon }, nakshatra: { '$entity': p.nakshatra }, paksha: { '$entity': p.paksha }, performer: p.performer, purpose: p.purpose, ritu: { '$entity': p.ritu }, river: p.river, samvatsara: { '$entity': p.samvatsara }, sun: { '$entity': p.sun }, tithi: { '$entity': p.tithi }, vara: { '$entity': p.vara }, varaKey: p.varaKey, vikrama: p.vikrama, yoga: { '$entity': p.yoga } }),
+        himavatkhandeMonth: (p) => r.render('sdk.sankalpa.himavatkhandeMonth', { adhika: p.adhika, masa: { '$entity': p.masa } }),
+        himavatkhandePitris: (p) => r.render('sdk.sankalpa.himavatkhandePitris', { father: p.father, gotra: p.gotra, grandfather: p.grandfather, greatGrandfather: p.greatGrandfather, hasPitris: p.hasPitris, purpose: p.purpose }),
+        himavatkhandePlace: (p) => r.render('sdk.sankalpa.himavatkhandePlace', { hasKshetra: p.hasKshetra, hasRiver: p.hasRiver, kshetra: p.kshetra, river: p.river }),
+        himavatkhandeVara: (p) => r.render('sdk.sankalpa.himavatkhandeVara', { vara: { '$entity': p.vara }, varaKey: p.varaKey }),
+      },
     },
   };
 }
@@ -1906,6 +1917,7 @@ export function entityForms(json) {
     name: forms.name ?? '',
     prose: forms.prose ?? '',
     abbrev: forms.abbrev,
+    locative: forms.locative,
     short: forms.short,
     glyph: forms.glyph,
     gender: forms.gender,

@@ -1908,6 +1908,8 @@ class EntityForms:
 
     abbrev: Optional[str] = None
 
+    locative: Optional[str] = None
+
     short: Optional[str] = None
 
     glyph: Optional[str] = None
@@ -1937,6 +1939,7 @@ class EntityForms:
             name=text("name") or "",
             prose=text("prose") or "",
             abbrev=text("abbrev"),
+            locative=text("locative"),
             short=text("short"),
             forms={
                 name: value
@@ -2006,6 +2009,11 @@ class MessagesSdk:
         return MessagesSdkKaraka(self._r)
 
     @property
+    def matching(self) -> MessagesSdkMatching:
+        """The messages under `matching`."""
+        return MessagesSdkMatching(self._r)
+
+    @property
     def naming(self) -> MessagesSdkNaming:
         """The messages under `naming`."""
         return MessagesSdkNaming(self._r)
@@ -2034,6 +2042,54 @@ class MessagesSdk:
     def rite(self) -> MessagesSdkRite:
         """The messages under `rite`."""
         return MessagesSdkRite(self._r)
+
+    @property
+    def sankalpa(self) -> MessagesSdkSankalpa:
+        """The messages under `sankalpa`."""
+        return MessagesSdkSankalpa(self._r)
+
+
+class MessagesSdkSankalpa:
+    """The messages under `MessagesSdkSankalpa`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def himavatkhande(self, *, adhika: str, ayana: AyanaKey, father: str, gotra: str, grandfather: str, great_grandfather: str, has_kshetra: str, has_pitris: str, has_river: str, jupiter: RashiKey, karana: KaranaKey, kshetra: str, masa: MasaKey, moon: RashiKey, nakshatra: NakshatraKey, paksha: PakshaKey, performer: str, purpose: str, ritu: RituKey, river: str, samvatsara: SamvatsaraKey, sun: RashiKey, tithi: TithiKey, vara: VaraKey, vara_key: str, vikrama: int, yoga: YogaKey) -> str:
+        """`sdk.sankalpa.himavatkhande`"""
+        return self._r.render(
+            "sdk.sankalpa.himavatkhande",
+            {"adhika": adhika, "ayana": {"$entity": ayana.value}, "father": father, "gotra": gotra, "grandfather": grandfather, "greatGrandfather": great_grandfather, "hasKshetra": has_kshetra, "hasPitris": has_pitris, "hasRiver": has_river, "jupiter": {"$entity": jupiter.value}, "karana": {"$entity": karana.value}, "kshetra": kshetra, "masa": {"$entity": masa.value}, "moon": {"$entity": moon.value}, "nakshatra": {"$entity": nakshatra.value}, "paksha": {"$entity": paksha.value}, "performer": performer, "purpose": purpose, "ritu": {"$entity": ritu.value}, "river": river, "samvatsara": {"$entity": samvatsara.value}, "sun": {"$entity": sun.value}, "tithi": {"$entity": tithi.value}, "vara": {"$entity": vara.value}, "varaKey": vara_key, "vikrama": vikrama, "yoga": {"$entity": yoga.value}},
+        )
+
+    def himavatkhande_month(self, *, adhika: str, masa: MasaKey) -> str:
+        """`sdk.sankalpa.himavatkhandeMonth`"""
+        return self._r.render(
+            "sdk.sankalpa.himavatkhandeMonth",
+            {"adhika": adhika, "masa": {"$entity": masa.value}},
+        )
+
+    def himavatkhande_pitris(self, *, father: str, gotra: str, grandfather: str, great_grandfather: str, has_pitris: str, purpose: str) -> str:
+        """`sdk.sankalpa.himavatkhandePitris`"""
+        return self._r.render(
+            "sdk.sankalpa.himavatkhandePitris",
+            {"father": father, "gotra": gotra, "grandfather": grandfather, "greatGrandfather": great_grandfather, "hasPitris": has_pitris, "purpose": purpose},
+        )
+
+    def himavatkhande_place(self, *, has_kshetra: str, has_river: str, kshetra: str, river: str) -> str:
+        """`sdk.sankalpa.himavatkhandePlace`"""
+        return self._r.render(
+            "sdk.sankalpa.himavatkhandePlace",
+            {"hasKshetra": has_kshetra, "hasRiver": has_river, "kshetra": kshetra, "river": river},
+        )
+
+    def himavatkhande_vara(self, *, vara: VaraKey, vara_key: str) -> str:
+        """`sdk.sankalpa.himavatkhandeVara`"""
+        return self._r.render(
+            "sdk.sankalpa.himavatkhandeVara",
+            {"vara": {"$entity": vara.value}, "varaKey": vara_key},
+        )
 
 
 class MessagesSdkRite:
@@ -2757,6 +2813,28 @@ class MessagesSdkNaming:
         return self._r.render(
             "sdk.naming.syllables",
             {"count": count},
+        )
+
+
+class MessagesSdkMatching:
+    """The messages under `MessagesSdkMatching`, each rendered by its own key."""
+
+    def __init__(self, renderer: Renderer) -> None:
+        self._r = renderer
+
+
+    def band(self, *, band: str) -> str:
+        """`sdk.matching.band`"""
+        return self._r.render(
+            "sdk.matching.band",
+            {"band": band},
+        )
+
+    def graded(self, *, band: str, total: float) -> str:
+        """`sdk.matching.graded`"""
+        return self._r.render(
+            "sdk.matching.graded",
+            {"band": band, "total": total},
         )
 
 

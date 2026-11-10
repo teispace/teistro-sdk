@@ -2074,6 +2074,7 @@ final class EntityForms {
     required this.name,
     required this.prose,
     this.abbrev,
+    this.locative,
     this.short,
     this.glyph,
     this.gender,
@@ -2092,6 +2093,7 @@ final class EntityForms {
       name: text('name') ?? '',
       prose: text('prose') ?? '',
       abbrev: text('abbrev'),
+      locative: text('locative'),
       short: text('short'),
       forms: <String, String>{
         for (final entry in forms.entries)
@@ -2108,6 +2110,7 @@ final class EntityForms {
   final String name;
   final String prose;
   final String? abbrev;
+  final String? locative;
   final String? short;
   final String? glyph;
   final Gender? gender;
@@ -4728,6 +4731,17 @@ final class MessagesSdkKaraka {
       _r.render('sdk.karaka.ofSeven', {'graha': {r'$entity': graha.key}, 'karaka': {r'$entity': karaka.key}});
 }
 
+final class MessagesSdkMatching {
+  const MessagesSdkMatching(this._r);
+
+  final Renderer _r;
+
+  String band({required String band}) =>
+      _r.render('sdk.matching.band', {'band': band});
+  String graded({required String band, required num total}) =>
+      _r.render('sdk.matching.graded', {'band': band, 'total': total});
+}
+
 final class MessagesSdkNaming {
   const MessagesSdkNaming(this._r);
 
@@ -4980,6 +4994,23 @@ final class MessagesSdkRite {
       _r.render('sdk.rite.sapindanaAt', {'at': at});
 }
 
+final class MessagesSdkSankalpa {
+  const MessagesSdkSankalpa(this._r);
+
+  final Renderer _r;
+
+  String himavatkhande({required String adhika, required AyanaKey ayana, required String father, required String gotra, required String grandfather, required String greatGrandfather, required String hasKshetra, required String hasPitris, required String hasRiver, required RashiKey jupiter, required KaranaKey karana, required String kshetra, required MasaKey masa, required RashiKey moon, required NakshatraKey nakshatra, required PakshaKey paksha, required String performer, required String purpose, required RituKey ritu, required String river, required SamvatsaraKey samvatsara, required RashiKey sun, required TithiKey tithi, required VaraKey vara, required String varaKey, required int vikrama, required YogaKey yoga}) =>
+      _r.render('sdk.sankalpa.himavatkhande', {'adhika': adhika, 'ayana': {r'$entity': ayana.key}, 'father': father, 'gotra': gotra, 'grandfather': grandfather, 'greatGrandfather': greatGrandfather, 'hasKshetra': hasKshetra, 'hasPitris': hasPitris, 'hasRiver': hasRiver, 'jupiter': {r'$entity': jupiter.key}, 'karana': {r'$entity': karana.key}, 'kshetra': kshetra, 'masa': {r'$entity': masa.key}, 'moon': {r'$entity': moon.key}, 'nakshatra': {r'$entity': nakshatra.key}, 'paksha': {r'$entity': paksha.key}, 'performer': performer, 'purpose': purpose, 'ritu': {r'$entity': ritu.key}, 'river': river, 'samvatsara': {r'$entity': samvatsara.key}, 'sun': {r'$entity': sun.key}, 'tithi': {r'$entity': tithi.key}, 'vara': {r'$entity': vara.key}, 'varaKey': varaKey, 'vikrama': vikrama, 'yoga': {r'$entity': yoga.key}});
+  String himavatkhandeMonth({required String adhika, required MasaKey masa}) =>
+      _r.render('sdk.sankalpa.himavatkhandeMonth', {'adhika': adhika, 'masa': {r'$entity': masa.key}});
+  String himavatkhandePitris({required String father, required String gotra, required String grandfather, required String greatGrandfather, required String hasPitris, required String purpose}) =>
+      _r.render('sdk.sankalpa.himavatkhandePitris', {'father': father, 'gotra': gotra, 'grandfather': grandfather, 'greatGrandfather': greatGrandfather, 'hasPitris': hasPitris, 'purpose': purpose});
+  String himavatkhandePlace({required String hasKshetra, required String hasRiver, required String kshetra, required String river}) =>
+      _r.render('sdk.sankalpa.himavatkhandePlace', {'hasKshetra': hasKshetra, 'hasRiver': hasRiver, 'kshetra': kshetra, 'river': river});
+  String himavatkhandeVara({required VaraKey vara, required String varaKey}) =>
+      _r.render('sdk.sankalpa.himavatkhandeVara', {'vara': {r'$entity': vara.key}, 'varaKey': varaKey});
+}
+
 final class MessagesSdk {
   const MessagesSdk(this._r);
 
@@ -4992,12 +5023,14 @@ final class MessagesSdk {
   MessagesSdkDay get day => MessagesSdkDay(_r);
   MessagesSdkEntity get entity => MessagesSdkEntity(_r);
   MessagesSdkKaraka get karaka => MessagesSdkKaraka(_r);
+  MessagesSdkMatching get matching => MessagesSdkMatching(_r);
   MessagesSdkNaming get naming => MessagesSdkNaming(_r);
   MessagesSdkPhala get phala => MessagesSdkPhala(_r);
   MessagesSdkRashifal get rashifal => MessagesSdkRashifal(_r);
   MessagesSdkReading get reading => MessagesSdkReading(_r);
   MessagesSdkReason get reason => MessagesSdkReason(_r);
   MessagesSdkRite get rite => MessagesSdkRite(_r);
+  MessagesSdkSankalpa get sankalpa => MessagesSdkSankalpa(_r);
 }
 
 final class Messages {
