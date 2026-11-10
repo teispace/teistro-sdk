@@ -109,6 +109,27 @@ none. The mark itself stays built for a third party's pack, and
 `crates/intl/tests/draft.rs` now pins every shipped list empty and tests
 the mark on a tree it marks itself.
 
+**Tamil Nadu's public holidays (SR-03, the fourth state set), held to the print under the vakya sky.**
+**Numbers:** none for any existing pack: a new pack, with no new form. `xtask festival` measures a list under a
+named sky; the four packs measured before keep the modern one, and their rows are unchanged.
+- The pack `INDIA_TAMIL_NADU` (`FestivalPack::IndiaTamilNadu`, `FestivalRule`, `FollowingRule`, `DatedRule` and
+  `PublishedSet::india_tamil_nadu`) holds the Public (Miscellaneous) Department's orders of 2019 to 2026: Pongal,
+  Thiruvalluvar Day and Uzhavar Thirunal on Thai 1 to 3 and Tamil New Year on Chithirai 1 of `TAMIL_VAKYA` (C1351),
+  Thai Poosam on Pushya in Thai, the later of two (`nakshatraInMonth`, C1352), Ayutha Pooja the day before Vijaya
+  Dasami (a `FollowingRule` of −1, C1353), Vijaya Dasami at sunrise, Krishna Jayanthi as *Dharmasindhu*'s
+  Janmashtami (C1355), the Telugu New Year, Vinayakar Chathurthi and Deepavali (the Naraka Chaturdashi, C1356) as
+  Nepal's printed panchanga keeps them, the central list's Mahaveer Jayanthi and fixed days, and the state's dated
+  days with the banks' closing of accounts. The four days set by the moon ship as printed, marked `MOON_SIGHTING`
+  (`03-design/tamil-nadu-holidays.md`).
+- The state reckons its lunar days by the vakya almanac (C1350, decided as measured): at Chennai under the
+  `tamil-vakya` profile 98 of the 102 reckoned rows meet the print, under the modern sky 94. The pack ships for the
+  vakya profile; Vinayakar Chathurthi 2023 meets G.O.(Ms.) No. 528's 18 September, and Krishna Jayanthi meets all
+  eight years with no new clause.
+- `festival-measured.md` §13 holds it under both skies, every parting named: under the vakya sky Deepavali 2021
+  (C1356), Thai Poosam 2024 (C1352), and Vijaya Dasami and Ayutha Pooja 2026 (C1357, C1353). `crates/sdk/tests/tamil_nadu.rs`
+  holds each year's order under the vakya sky.
+- Names in en-Latn, ne-Deva-NP, hi-Deva-IN and sa-Deva (`sa-Latn` derived) for the six new keys.
+
 **Kerala's public holidays (SR-03, the third state set), and two dated forms.**
 **Numbers:** none for any existing pack: a new pack, and two new forms that a rule written before them does not
 read; a `sunEnters` rule left without `reckoning` is the civil day, with its spelling and hash unchanged.

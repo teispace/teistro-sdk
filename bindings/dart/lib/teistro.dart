@@ -18029,7 +18029,17 @@ enum FestivalPack {
   /// Chingam, his Samadhi on Kanni 5), and the days the notifications
   /// print rather than reckon, those set by the moon marked so
   /// (`03-design/kerala-holidays.md`).
-  indiaKerala('INDIA_KERALA');
+  indiaKerala('INDIA_KERALA'),
+
+  /// Tamil Nadu's public holidays: the Public (Miscellaneous) Department's
+  /// yearly order by rule, each day the central list also holds by
+  /// [indiaCentral]'s rule, Tamil Nadu's own days by the Tamil month of the
+  /// vakya school (Pongal, Thiruvalluvar Day and Uzhavar Thirunal on Thai 1
+  /// to 3, Tamil New Year on Chithirai 1, Thai Poosam on its star in Thai),
+  /// Ayutha Pooja the day before Vijaya Dasami, and the days set by the
+  /// moon as printed, marked so; its lunar days meet the print under the
+  /// `tamil-vakya` profile (`03-design/tamil-nadu-holidays.md`).
+  indiaTamilNadu('INDIA_TAMIL_NADU');
 
   const FestivalPack(this.key);
 

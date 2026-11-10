@@ -3616,6 +3616,30 @@
     "AYYA_VAIKUNDA_SWAMI_JAYANTHI": {
       "name": "अय्या वैकुंड स्वामी जयंती",
       "prose": "अय्या वैकुंड स्वामी जयंती"
+    },
+    "THAI_PONGAL": {
+      "name": "पोंगल",
+      "prose": "पोंगल"
+    },
+    "THIRUVALLUVAR_DAY": {
+      "name": "तिरुवल्लुवर दिवस",
+      "prose": "तिरुवल्लुवर दिवस"
+    },
+    "UZHAVAR_THIRUNAL": {
+      "name": "उळवर तिरुनाल",
+      "prose": "उळवर तिरुनाल"
+    },
+    "PUTHANDU": {
+      "name": "तमिल नव वर्ष",
+      "prose": "तमिल नव वर्ष"
+    },
+    "THAI_POOSAM": {
+      "name": "तै पूसम",
+      "prose": "तै पूसम"
+    },
+    "AYUDHA_PUJA": {
+      "name": "आयुध पूजा",
+      "prose": "आयुध पूजा"
     }
   },
   "era": {

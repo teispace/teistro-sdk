@@ -249,7 +249,8 @@ fn a_prompts_argument_completes_from_its_table() {
             "MITHILA",
             "INDIA_MAHARASHTRA",
             "INDIA_WEST_BENGAL",
-            "INDIA_KERALA"
+            "INDIA_KERALA",
+            "INDIA_TAMIL_NADU"
         ])
     );
     let date = complete("birth-chart", "date", "1990");

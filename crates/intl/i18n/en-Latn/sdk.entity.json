@@ -5099,6 +5099,30 @@
     "AYYA_VAIKUNDA_SWAMI_JAYANTHI": {
       "name": "Ayya Vaikunda Swami Jayanthi",
       "prose": "Ayya Vaikunda Swami Jayanthi"
+    },
+    "THAI_PONGAL": {
+      "name": "Pongal",
+      "prose": "Pongal"
+    },
+    "THIRUVALLUVAR_DAY": {
+      "name": "Thiruvalluvar Day",
+      "prose": "Thiruvalluvar Day"
+    },
+    "UZHAVAR_THIRUNAL": {
+      "name": "Uzhavar Thirunal",
+      "prose": "Uzhavar Thirunal"
+    },
+    "PUTHANDU": {
+      "name": "Tamil New Year's Day",
+      "prose": "Tamil New Year's Day"
+    },
+    "THAI_POOSAM": {
+      "name": "Thai Poosam",
+      "prose": "Thai Poosam"
+    },
+    "AYUDHA_PUJA": {
+      "name": "Ayutha Pooja",
+      "prose": "Ayutha Pooja"
     }
   },
   "agni_vasa": {

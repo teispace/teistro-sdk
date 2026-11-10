@@ -15,7 +15,7 @@ use teistro::FestivalPack;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 
 use super::MonthDay;
-use super::india::{Measured, Notices, printed_table};
+use super::india::{Measured, Notices, Sky, printed_table};
 
 /// Each year's notification of the Finance (Audit) Department, and the
 /// copy read: a staff site's copy giving each notification's number, its
@@ -364,6 +364,7 @@ fn kolkata() -> Place {
 fn west_bengal() -> Notices {
     Notices {
         pack: FestivalPack::IndiaWestBengal,
+        sky: Sky::Drik,
         place: kolkata(),
         years: &NOTICES,
         listed: &LISTED,

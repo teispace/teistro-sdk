@@ -38,6 +38,7 @@ mod gaudiya;
 mod india_central;
 mod india_kerala;
 mod india_maharashtra;
+mod india_tamil_nadu;
 mod india_west_bengal;
 mod jain;
 mod mahalaya;

@@ -138,5 +138,6 @@ C1290–C1296 in
   (C1294).
 - The vakya planets (Kujadi) and the node (Rahu) are not built; the
   profile's other bodies are the Surya Siddhanta's (C1297).
-- A Tamil Nadu festival pack is not built; the vakya days reach the
-  existing packs' rules.
+- Tamil Nadu's holiday pack, `INDIA_TAMIL_NADU`, ships for this profile
+  (`03-design/tamil-nadu-holidays.md`, C1350): 98 of its 102 reckoned rows
+  meet the state's orders here, 94 under the modern sky.

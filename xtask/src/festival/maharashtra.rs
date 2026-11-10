@@ -14,7 +14,7 @@ use teistro::FestivalPack;
 use teistro::quantity::{Altitude, Latitude, Longitude, Place};
 
 use super::MonthDay;
-use super::india::{Measured, Notices, printed_table};
+use super::india::{Measured, Notices, Sky, printed_table};
 
 /// Each year's notification of the General Administration Department,
 /// Desk-29, and the rank of the copy read: the gazette page, or a copy
@@ -199,6 +199,7 @@ fn mumbai() -> Place {
 fn maharashtra() -> Notices {
     Notices {
         pack: FestivalPack::IndiaMaharashtra,
+        sky: Sky::Drik,
         place: mumbai(),
         years: &NOTICES,
         listed: &LISTED,

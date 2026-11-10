@@ -10550,7 +10550,7 @@ class MuhurtaAnswer:
     instant among the applied conventions, and the hash of the value."""
 
 
-FestivalPack = Literal["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA", "GAUDIYA", "INDIA_CENTRAL", "JAIN", "MITHILA", "INDIA_MAHARASHTRA", "INDIA_WEST_BENGAL", "INDIA_KERALA"]
+FestivalPack = Literal["DHARMASINDHU", "NEPAL", "NEPAL_PANCHANGA", "PITRI_PAKSHA", "GAUDIYA", "INDIA_CENTRAL", "JAIN", "MITHILA", "INDIA_MAHARASHTRA", "INDIA_WEST_BENGAL", "INDIA_KERALA", "INDIA_TAMIL_NADU"]
 """A pack of festival rules the SDK ships: *Dharmasindhu*'s; those as
 Nepal's national panchanga keeps them (a rite of the daylight on the day
 whose sunrise holds its tithi) with the days it counts from them
@@ -10558,8 +10558,9 @@ whose sunrise holds its tithi) with the days it counts from them
 the panchanga prints, each rule fitted to the committee's editions and
 citing its page (§10); India's central holidays, the Jain festivals,
 Maharashtra's public holidays (`03-design/maharashtra-holidays.md`),
-West Bengal's (`03-design/west-bengal-holidays.md`), or Kerala's
-(`03-design/kerala-holidays.md`)."""
+West Bengal's (`03-design/west-bengal-holidays.md`), Kerala's
+(`03-design/kerala-holidays.md`), or Tamil Nadu's
+(`03-design/tamil-nadu-holidays.md`)."""
 
 
 @dataclass(frozen=True)
