@@ -217,12 +217,17 @@ test('a trial counts what every agent answered inside its span, a second', async
 test('an agent answers inside its span, and refuses a chart whose Sun moved under load', () => {
   withSdk((side) => {
     const all = inputs().slice(0, 2);
+    // The span is sized from the machine's own answer, so a loaded
+    // machine gets a longer one rather than a failure: five charts' time,
+    // and never under 50 ms.
+    const before = performance.now();
     const suns = all.map((input) => side.sun(side.chart(input)));
+    const span = Math.max(0.05, (5 * (performance.now() - before)) / all.length / 1000);
     const startAt = performance.timeOrigin + performance.now();
-    assert.ok(drive({ side, all, suns }, 'chart', startAt, 0.05) > 0);
+    assert.ok(drive({ side, all, suns }, 'chart', startAt, span) > 0);
     const shared = { ...side, sun: (answer) => side.sun(answer) + 1e-9 };
     assert.throws(
-      () => drive({ side: shared, all, suns }, 'chart', startAt, 0.05),
+      () => drive({ side: shared, all, suns }, 'chart', startAt, span),
       /c001: the Sun under load stands at/,
     );
   });
