@@ -192,7 +192,7 @@ impl<'a> IntlArea<'a> {
     /// )?;
     /// let dusk = sdk.intl().time(&asked)?;
     /// assert_eq!(dusk.text, "शाम ६:३०");
-    /// assert!(dusk.is_draft);
+    /// assert!(!dusk.is_draft);
     /// # Ok(())
     /// # }
     /// ```

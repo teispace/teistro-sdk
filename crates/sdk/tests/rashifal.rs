@@ -271,8 +271,7 @@ fn a_batch_reads_each_period_as_it_reads_alone() {
 }
 
 /// SR-37: each sign's reading in words, through the batch a binding sends,
-/// said in every locale that carries the messages and marked draft where
-/// no reviewer has read them (Q42).
+/// said in every locale that carries the messages, and final in each (Q42).
 #[test]
 fn a_batch_asked_for_words_says_each_sign_in_each_locale() {
     let sdk = context();
@@ -299,11 +298,7 @@ fn a_batch_asked_for_words_says_each_sign_in_each_locale() {
     ] {
         assert!(keys.contains(&key), "{key}");
     }
-    for (tag, draft) in [
-        ("en-Latn", false),
-        ("ne-Deva-NP", true),
-        ("hi-Deva-IN", true),
-    ] {
+    for tag in ["en-Latn", "ne-Deva-NP", "hi-Deva-IN"] {
         sdk.intl().set_locale(tag).unwrap();
         for plan in plans {
             for item in plan {
@@ -314,7 +309,7 @@ fn a_batch_asked_for_words_says_each_sign_in_each_locale() {
                     item.key
                 );
                 if item.key.starts_with("sdk.rashifal.") {
-                    assert_eq!(said.is_draft, draft, "{tag} {}", item.key);
+                    assert!(!said.is_draft, "{tag} {} is final", item.key);
                 }
             }
         }
