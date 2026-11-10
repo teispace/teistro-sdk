@@ -5235,6 +5235,16 @@
       "name": "Nirasesha",
       "prose": "nirasesha",
       "iast": "Nīraseśa"
+    },
+    "SENADHIPATI": {
+      "name": "Senadhipati",
+      "prose": "senadhipati",
+      "iast": "Senādhipati"
+    },
+    "ARGHADHIPATI": {
+      "name": "Arghadhipati",
+      "prose": "arghadhipati",
+      "iast": "Arghādhipati"
     }
   },
   "ruler_text": {
@@ -5247,6 +5257,11 @@
       "name": "Narada Samhita",
       "prose": "Narada Samhita",
       "iast": "Nāradasaṃhitā"
+    },
+    "NAVANAYAKA": {
+      "name": "Navanayaka",
+      "prose": "Navanayaka",
+      "iast": "Navanāyaka"
     }
   },
   "ruler_day_rule": {
@@ -5269,6 +5284,11 @@
       "name": "Weekday",
       "prose": "weekday",
       "iast": "Vāra"
+    },
+    "DAYLIGHT": {
+      "name": "Daylight",
+      "prose": "daylight",
+      "iast": "Dinamāna"
     }
   },
   "paya": {
@@ -6575,6 +6595,78 @@
     "GALACTIC_POLE_IAU1958": {
       "name": "North Galactic Pole (IAU 1958)",
       "prose": "North Galactic Pole (IAU 1958)"
+    }
+  },
+  "tibetan_element": {
+    "WOOD": {
+      "name": "Wood",
+      "prose": "wood"
+    },
+    "FIRE": {
+      "name": "Fire",
+      "prose": "fire"
+    },
+    "EARTH": {
+      "name": "Earth",
+      "prose": "earth"
+    },
+    "IRON": {
+      "name": "Iron",
+      "prose": "iron"
+    },
+    "WATER": {
+      "name": "Water",
+      "prose": "water"
+    }
+  },
+  "tibetan_animal": {
+    "MOUSE": {
+      "name": "Mouse",
+      "prose": "mouse"
+    },
+    "OX": {
+      "name": "Ox",
+      "prose": "ox"
+    },
+    "TIGER": {
+      "name": "Tiger",
+      "prose": "tiger"
+    },
+    "RABBIT": {
+      "name": "Rabbit",
+      "prose": "rabbit"
+    },
+    "DRAGON": {
+      "name": "Dragon",
+      "prose": "dragon"
+    },
+    "SNAKE": {
+      "name": "Snake",
+      "prose": "snake"
+    },
+    "HORSE": {
+      "name": "Horse",
+      "prose": "horse"
+    },
+    "SHEEP": {
+      "name": "Sheep",
+      "prose": "sheep"
+    },
+    "MONKEY": {
+      "name": "Monkey",
+      "prose": "monkey"
+    },
+    "BIRD": {
+      "name": "Bird",
+      "prose": "bird"
+    },
+    "DOG": {
+      "name": "Dog",
+      "prose": "dog"
+    },
+    "PIG": {
+      "name": "Pig",
+      "prose": "pig"
     }
   }
 }

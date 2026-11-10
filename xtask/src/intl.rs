@@ -446,10 +446,14 @@ fn every_key_type_is_declared(written: &[Output]) -> i32 {
 }
 
 /// The catalogue members no strict locale names yet, and why each kind has
-/// none: every one of them lacks a vetted source, and the policy refuses a
-/// translated stub (`docs/03-design/entity-names.md` §4). Every kind is
-/// held, not only those a chart document carries: a day page, a match or
-/// a star list hands a reader its keys as surely (C682).
+/// none. Every kind is held, not only those a chart document carries: a
+/// day page, a match or a star list hands a reader its keys as surely
+/// (C682).
+///
+/// Empty since 2026-11-10: every member is named in every strict locale,
+/// each from the sources `docs/03-design/entity-names.md` §4e records. A
+/// member goes here only with the reason no language has a usable name for
+/// it: the SDK names its own text rather than waiting on a reviewer.
 ///
 /// The list fails both ways. A member missing a name that is not here
 /// fails, and so does one here that has since been named, so it can only
@@ -457,43 +461,7 @@ fn every_key_type_is_declared(written: &[Output]) -> i32 {
 /// Readable from [`crate::interpret`], where the composers' queue cites a
 /// kind as the reason a section cannot be said: a reason that names a kind
 /// no longer on this list fails there, so the two cannot drift.
-pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[
-    (
-        "tibetan_element",
-        "the Tibetan calendar's elements and animals; no source for the Lhosar calendar as \
-         printed in Nepal has been read",
-        &["EARTH", "FIRE", "IRON", "WATER", "WOOD"],
-    ),
-    (
-        "tibetan_animal",
-        "the Tibetan calendar's elements and animals; no source for the Lhosar calendar as \
-         printed in Nepal has been read",
-        &[
-            "BIRD", "DOG", "DRAGON", "HORSE", "MONKEY", "MOUSE", "OX", "PIG", "RABBIT", "SHEEP",
-            "SNAKE", "TIGER",
-        ],
-    ),
-    (
-        "year_office",
-        "a patro printed in Nepal names ten office-bearers (Himal Panchanga VS 2082 p. 2) \
-         with neither the commander nor the lord of prices, which only the southern nine \
-         print, in Telugu and Kannada; no Devanagari printing of either has been read",
-        &["SENADHIPATI", "ARGHADHIPATI"],
-    ),
-    (
-        "ruler_text",
-        "the southern nine are a practice printed in Telugu and Kannada, with no verse and \
-         no Devanagari printing of the name read (C1071)",
-        &["NAVANAYAKA"],
-    ),
-    (
-        "ruler_day_rule",
-        "the texts' word for an ingress's day (dina, ahan) is the word the two readings \
-         split on (C1072), so naming the daylight reading by it would choose between them, \
-         and no printed Nepali names the reading",
-        &["DAYLIGHT"],
-    ),
-];
+pub(crate) const UNNAMED: &[(&str, &str, &[&str])] = &[];
 
 /// Every catalogue kind, by name, from the catalogue itself.
 fn catalogue_kinds() -> BTreeSet<String> {
@@ -567,7 +535,9 @@ fn named_or_listed(
         println!("FAIL  {kind}.{key}: named now, so take it off the unnamed list");
         failures += 1;
     }
-    if failures == 0 {
+    if failures == 0 && listed.is_empty() {
+        println!("ok    every catalogue member is named in every strict locale");
+    } else if failures == 0 {
         println!(
             "ok    every catalogue member is named in every strict locale, \
              but {} listed",

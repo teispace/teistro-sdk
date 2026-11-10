@@ -2654,6 +2654,16 @@
       "name": "रसाधिप",
       "prose": "रसाधिप",
       "iast": "Rasādhipa"
+    },
+    "SENADHIPATI": {
+      "name": "सेनाधिपति",
+      "prose": "सेनाधिपति",
+      "iast": "Senādhipati"
+    },
+    "ARGHADHIPATI": {
+      "name": "अर्घाधिपति",
+      "prose": "अर्घाधिपति",
+      "iast": "Arghādhipati"
     }
   },
   "ruler_text": {
@@ -2666,6 +2676,11 @@
       "name": "नारदसंहिता",
       "prose": "नारदसंहिता",
       "iast": "Nāradasaṃhitā"
+    },
+    "NAVANAYAKA": {
+      "name": "नवनायक",
+      "prose": "नवनायक",
+      "iast": "Navanāyaka"
     }
   },
   "ruler_day_rule": {
@@ -2688,6 +2703,11 @@
       "name": "वार",
       "prose": "वार",
       "iast": "Vāra"
+    },
+    "DAYLIGHT": {
+      "name": "दिनमान",
+      "prose": "दिनमान",
+      "iast": "Dinamāna"
     }
   },
   "calendar": {
@@ -3923,6 +3943,78 @@
     "GALACTIC_POLE_IAU1958": {
       "name": "आकाशगङ्गाया उत्तरध्रुव (IAU 1958)",
       "prose": "आकाशगङ्गाया उत्तरध्रुव (IAU 1958)"
+    }
+  },
+  "tibetan_element": {
+    "WOOD": {
+      "name": "काष्ठ",
+      "prose": "काष्ठ"
+    },
+    "FIRE": {
+      "name": "अग्नि",
+      "prose": "अग्नि"
+    },
+    "EARTH": {
+      "name": "पृथ्वी",
+      "prose": "पृथ्वी"
+    },
+    "IRON": {
+      "name": "लोह",
+      "prose": "लोह"
+    },
+    "WATER": {
+      "name": "जल",
+      "prose": "जल"
+    }
+  },
+  "tibetan_animal": {
+    "MOUSE": {
+      "name": "मूषक",
+      "prose": "मूषक"
+    },
+    "OX": {
+      "name": "वृषभ",
+      "prose": "वृषभ"
+    },
+    "TIGER": {
+      "name": "व्याघ्र",
+      "prose": "व्याघ्र"
+    },
+    "RABBIT": {
+      "name": "शशक",
+      "prose": "शशक"
+    },
+    "DRAGON": {
+      "name": "मेघ",
+      "prose": "मेघ"
+    },
+    "SNAKE": {
+      "name": "सर्प",
+      "prose": "सर्प"
+    },
+    "HORSE": {
+      "name": "अश्व",
+      "prose": "अश्व"
+    },
+    "SHEEP": {
+      "name": "मेष",
+      "prose": "मेष"
+    },
+    "MONKEY": {
+      "name": "वानर",
+      "prose": "वानर"
+    },
+    "BIRD": {
+      "name": "पक्षी",
+      "prose": "पक्षी"
+    },
+    "DOG": {
+      "name": "श्वान",
+      "prose": "श्वान"
+    },
+    "PIG": {
+      "name": "वराह",
+      "prose": "वराह"
     }
   }
 }
