@@ -22,15 +22,15 @@ pays each figure twice.
 | every brief that keeps fields belongs to a record whose answer states a schema | **holds** | 0 of 18 disagree |
 | every record set aside here is a record, and refuses its example over the built-in ephemeris | **holds** | 0 of 2 disagree |
 
-## Over 54 records
+## Over 55 records
 
 | | full | brief | brief against full |
 |---|---|---|---|
-| the envelope | 346 029 | 102 464 | 29.6% |
-| the value | 326 841 | 99 148 | 30.3% |
-| the provenance | 18 621 | 2479 | 13.3% |
+| the envelope | 356 595 | 112 525 | 31.6% |
+| the value | 336 787 | 109 094 | 32.4% |
+| the provenance | 19 227 | 2570 | 13.4% |
 
-18 of the 54 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
+18 of the 55 records answered keep fields in brief; the rest answer their whole value, and every one writes the brief provenance (`Brief::PROVENANCE`).
 
 13 of the 243 paths run into a value its schema leaves open, a section the answer carries as any JSON; what lies below is the section's own, unchecked here: `almanac.days` `muhurta.value.windows.at`, `almanac.days` `muhurta.value.windows.barredBy`, `almanac.days` `muhurta.value.windows.score`, `almanac.days` `muhurta.value.closed`, `almanac.days` `muhurta.value.daysJudged`, `almanac.days` `muhurta.value.daysCut`, `almanac.days` `muhurta.value.windowsBlackedOut`, `almanac.days` `muhurta.value.ranking`, `almanac.days` `muhurta.value.unjudged`, `almanac.days` `sky.value.from`, `almanac.days` `sky.value.to`, `almanac.days` `sky.value.sun.state`, `almanac.days` `sky.value.moon.state`.
 
@@ -51,6 +51,7 @@ value.
 | `almanac.ashauch` | 952 | 193 | 20.3% | `key`, `kind`, `relation`, `start`, `end`, `length`, `days` |
 | `almanac.ashauchKin` | 144 | 144 | 100.0% | the whole value |
 | `almanac.ashauchRite` | 106 | 106 | 100.0% | the whole value |
+| `almanac.cells` | 10 566 | 10 061 | 95.2% | the whole value |
 | `almanac.changes` | 763 | 250 | 32.8% | the whole value |
 | `almanac.days` | 151 706 | 11 734 | 7.7% | `days.day`, `days.limbs`, `days.kaalas`, `days.durmuhurtas`, `days.month`, `days.moon`, `days.sun`, `days.omens`, `festivals.value`, `years.value`, `eclipses.value`, `nepalSambat.value`, `muhurta.value.windows.at`, `muhurta.value.windows.barredBy`, `muhurta.value.windows.score`, `muhurta.value.closed`, `muhurta.value.daysJudged`, `muhurta.value.daysCut`, `muhurta.value.windowsBlackedOut`, `muhurta.value.ranking`, `muhurta.value.unjudged`, `sky.value.from`, `sky.value.to`, `sky.value.sun.state`, `sky.value.moon.state` |
 | `almanac.deathTime` | 808 | 310 | 38.4% | the whole value |
@@ -138,6 +139,7 @@ marked.
 - `almanac.aayadi`: `quantities` 713 (kept), `clauses` 123 (kept), `unjudged` 18 (kept), `system` 9 (kept), `vyaya` 6 (kept), `tara` 5 (kept).
 - `almanac.anniversaries`: `anniversaries` 16 404 (kept), `ekadashis` 8 (kept), `observances` 8 (kept), `unjudged` 7 (kept).
 - `almanac.ashauch`: `dayOne` 83, `lastDay` 83, `clause` 64, `dayOneBy` 15, `length` 15 (kept), `end` 11 (kept), `start` 11 (kept), `table` 10, `key` 9 (kept), `relation` 9 (kept), `kind` 8 (kept), `days` 5 (kept).
+- `almanac.cells`: `cells` 9944 (kept).
 - `almanac.changes`: `points` 101 (kept), `window` 32 (kept).
 - `almanac.days`: `sky` 96 695 (kept), `muhurta` 33 782 (kept), `days` 15 108 (kept), `years` 2437 (kept), `festivals` 1239 (kept), `nepalSambat` 880 (kept), `eclipses` 677 (kept), `dayHashes` 115.
 - `almanac.deathTime`: `death` 88 (kept), `cremation` 86 (kept), `table` 10 (kept), `rites` 7 (kept).
