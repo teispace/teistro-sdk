@@ -4072,7 +4072,7 @@ class PublishedSet(TypedDict, total=False):
     """Its version; a correction is a higher one."""
 
 
-FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL', 'INDIA_KERALA'], Sequence[FestivalRuleItem]]"
+FestivalRules: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL', 'INDIA_KERALA', 'INDIA_TAMIL_NADU'], Sequence[FestivalRuleItem]]"
 """The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key."""
 
 
@@ -5440,7 +5440,7 @@ class PublishedEntryWithdraw(TypedDict, total=False):
     """Where the publisher says it."""
 
 
-FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL', 'INDIA_KERALA'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
+FestivalRuleItem: TypeAlias = "Union[Literal['DHARMASINDHU', 'NEPAL', 'NEPAL_PANCHANGA', 'PITRI_PAKSHA', 'GAUDIYA', 'INDIA_CENTRAL', 'JAIN', 'MITHILA', 'INDIA_MAHARASHTRA', 'INDIA_WEST_BENGAL', 'INDIA_KERALA', 'INDIA_TAMIL_NADU'], SaitRule, EkadashiRule, Anniversary, FollowingRule, DatedRule, FestivalRule]"
 """A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule."""
 
 

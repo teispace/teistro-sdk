@@ -9517,6 +9517,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.AYUDHA_PUJA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ayudhaPuja() {
+                    return r.entity("festival.AYUDHA_PUJA");
+                }
+
+                /**
                  * The forms of `festival.AYYANKALI_JAYANTHI` in the current locale.
                  *
                  * @return the forms
@@ -12127,6 +12136,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.PUTHANDU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms puthandu() {
+                    return r.entity("festival.PUTHANDU");
+                }
+
+                /**
                  * The forms of `festival.RABINDRA_JAYANTI` in the current locale.
                  *
                  * @return the forms
@@ -12667,6 +12685,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.THAI_PONGAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms thaiPongal() {
+                    return r.entity("festival.THAI_PONGAL");
+                }
+
+                /**
+                 * The forms of `festival.THAI_POOSAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms thaiPoosam() {
+                    return r.entity("festival.THAI_POOSAM");
+                }
+
+                /**
                  * The forms of `festival.THAKUR_PANCHANAN_BARMA_JAYANTI` in the current locale.
                  *
                  * @return the forms
@@ -12700,6 +12736,15 @@ public final class Messages {
                  */
                 public EntityForms thirdOnam() {
                     return r.entity("festival.THIRD_ONAM");
+                }
+
+                /**
+                 * The forms of `festival.THIRUVALLUVAR_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms thiruvalluvarDay() {
+                    return r.entity("festival.THIRUVALLUVAR_DAY");
                 }
 
                 /**
@@ -12871,6 +12916,15 @@ public final class Messages {
                  */
                 public EntityForms utpattikaEkadashi() {
                     return r.entity("festival.UTPATTIKA_EKADASHI");
+                }
+
+                /**
+                 * The forms of `festival.UZHAVAR_THIRUNAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms uzhavarThirunal() {
+                    return r.entity("festival.UZHAVAR_THIRUNAL");
                 }
 
                 /**
