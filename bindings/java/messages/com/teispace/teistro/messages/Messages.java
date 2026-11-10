@@ -3683,12 +3683,13 @@ public final class Messages {
      * @param name the `name` form; empty when the record lacks it
      * @param prose the `prose` form; empty when the record lacks it
      * @param abbrev the `abbrev` form, or null
+     * @param locative the `locative` form, or null
      * @param short_ the `short` form, or null
      * @param glyph its glyph, or null
      * @param gender its grammatical gender, or null
      * @param forms every form the locale carries, including any a loaded pack brought
      */
-    public record EntityForms(String iast, String name, String prose, String abbrev, String short_, String glyph, Gender gender, Map<String, String> forms) {
+    public record EntityForms(String iast, String name, String prose, String abbrev, String locative, String short_, String glyph, Gender gender, Map<String, String> forms) {
         /**
          * The forms as the boundary hands them out, parsed.
          *
@@ -3705,6 +3706,7 @@ public final class Messages {
                     text(forms, "name", ""),
                     text(forms, "prose", ""),
                     text(forms, "abbrev", null),
+                    text(forms, "locative", null),
                     text(forms, "short", null),
                     text(forms, "glyph", null),
                     gender(text(forms, "gender", null)),
@@ -20188,6 +20190,46 @@ public final class Messages {
 
 
         /**
+         * The messages under `matching`.
+         *
+         * @return the group
+         */
+        public SdkMatching matching() {
+            return new SdkMatching(r);
+        }
+
+        /** The messages under `SdkMatching`, each rendered by its own key. */
+        public static final class SdkMatching {
+            private final Renderer r;
+
+            SdkMatching(Renderer r) {
+                this.r = r;
+            }
+
+            /**
+             * `sdk.matching.band`
+             *
+             * @param band `band`
+             * @return the text
+             */
+            public String band(String band) {
+                return r.render("sdk.matching.band", Map.ofEntries(Map.entry("band", band)));
+            }
+
+            /**
+             * `sdk.matching.graded`
+             *
+             * @param band `band`
+             * @param total `total`
+             * @return the text
+             */
+            public String graded(String band, double total) {
+                return r.render("sdk.matching.graded", Map.ofEntries(Map.entry("band", band), Map.entry("total", total)));
+            }
+        }
+
+
+        /**
          * The messages under `naming`.
          *
          * @return the group
@@ -21331,6 +21373,111 @@ public final class Messages {
              */
             public String sapindanaAt(String at) {
                 return r.render("sdk.rite.sapindanaAt", Map.ofEntries(Map.entry("at", at)));
+            }
+        }
+
+
+        /**
+         * The messages under `sankalpa`.
+         *
+         * @return the group
+         */
+        public SdkSankalpa sankalpa() {
+            return new SdkSankalpa(r);
+        }
+
+        /** The messages under `SdkSankalpa`, each rendered by its own key. */
+        public static final class SdkSankalpa {
+            private final Renderer r;
+
+            SdkSankalpa(Renderer r) {
+                this.r = r;
+            }
+
+            /**
+             * `sdk.sankalpa.himavatkhande`
+             *
+             * @param adhika `adhika`
+             * @param ayana `ayana`
+             * @param father `father`
+             * @param gotra `gotra`
+             * @param grandfather `grandfather`
+             * @param greatGrandfather `greatGrandfather`
+             * @param hasKshetra `hasKshetra`
+             * @param hasPitris `hasPitris`
+             * @param hasRiver `hasRiver`
+             * @param jupiter `jupiter`
+             * @param karana `karana`
+             * @param kshetra `kshetra`
+             * @param masa `masa`
+             * @param moon `moon`
+             * @param nakshatra `nakshatra`
+             * @param paksha `paksha`
+             * @param performer `performer`
+             * @param purpose `purpose`
+             * @param ritu `ritu`
+             * @param river `river`
+             * @param samvatsara `samvatsara`
+             * @param sun `sun`
+             * @param tithi `tithi`
+             * @param vara `vara`
+             * @param varaKey `varaKey`
+             * @param vikrama `vikrama`
+             * @param yoga `yoga`
+             * @return the text
+             */
+            public String himavatkhande(String adhika, AyanaKey ayana, String father, String gotra, String grandfather, String greatGrandfather, String hasKshetra, String hasPitris, String hasRiver, RashiKey jupiter, KaranaKey karana, String kshetra, MasaKey masa, RashiKey moon, NakshatraKey nakshatra, PakshaKey paksha, String performer, String purpose, RituKey ritu, String river, SamvatsaraKey samvatsara, RashiKey sun, TithiKey tithi, VaraKey vara, String varaKey, long vikrama, YogaKey yoga) {
+                return r.render("sdk.sankalpa.himavatkhande", Map.ofEntries(Map.entry("adhika", adhika), Map.entry("ayana", Map.of("$entity", ayana.value())), Map.entry("father", father), Map.entry("gotra", gotra), Map.entry("grandfather", grandfather), Map.entry("greatGrandfather", greatGrandfather), Map.entry("hasKshetra", hasKshetra), Map.entry("hasPitris", hasPitris), Map.entry("hasRiver", hasRiver), Map.entry("jupiter", Map.of("$entity", jupiter.value())), Map.entry("karana", Map.of("$entity", karana.value())), Map.entry("kshetra", kshetra), Map.entry("masa", Map.of("$entity", masa.value())), Map.entry("moon", Map.of("$entity", moon.value())), Map.entry("nakshatra", Map.of("$entity", nakshatra.value())), Map.entry("paksha", Map.of("$entity", paksha.value())), Map.entry("performer", performer), Map.entry("purpose", purpose), Map.entry("ritu", Map.of("$entity", ritu.value())), Map.entry("river", river), Map.entry("samvatsara", Map.of("$entity", samvatsara.value())), Map.entry("sun", Map.of("$entity", sun.value())), Map.entry("tithi", Map.of("$entity", tithi.value())), Map.entry("vara", Map.of("$entity", vara.value())), Map.entry("varaKey", varaKey), Map.entry("vikrama", vikrama), Map.entry("yoga", Map.of("$entity", yoga.value()))));
+            }
+
+            /**
+             * `sdk.sankalpa.himavatkhandeMonth`
+             *
+             * @param adhika `adhika`
+             * @param masa `masa`
+             * @return the text
+             */
+            public String himavatkhandeMonth(String adhika, MasaKey masa) {
+                return r.render("sdk.sankalpa.himavatkhandeMonth", Map.ofEntries(Map.entry("adhika", adhika), Map.entry("masa", Map.of("$entity", masa.value()))));
+            }
+
+            /**
+             * `sdk.sankalpa.himavatkhandePitris`
+             *
+             * @param father `father`
+             * @param gotra `gotra`
+             * @param grandfather `grandfather`
+             * @param greatGrandfather `greatGrandfather`
+             * @param hasPitris `hasPitris`
+             * @param purpose `purpose`
+             * @return the text
+             */
+            public String himavatkhandePitris(String father, String gotra, String grandfather, String greatGrandfather, String hasPitris, String purpose) {
+                return r.render("sdk.sankalpa.himavatkhandePitris", Map.ofEntries(Map.entry("father", father), Map.entry("gotra", gotra), Map.entry("grandfather", grandfather), Map.entry("greatGrandfather", greatGrandfather), Map.entry("hasPitris", hasPitris), Map.entry("purpose", purpose)));
+            }
+
+            /**
+             * `sdk.sankalpa.himavatkhandePlace`
+             *
+             * @param hasKshetra `hasKshetra`
+             * @param hasRiver `hasRiver`
+             * @param kshetra `kshetra`
+             * @param river `river`
+             * @return the text
+             */
+            public String himavatkhandePlace(String hasKshetra, String hasRiver, String kshetra, String river) {
+                return r.render("sdk.sankalpa.himavatkhandePlace", Map.ofEntries(Map.entry("hasKshetra", hasKshetra), Map.entry("hasRiver", hasRiver), Map.entry("kshetra", kshetra), Map.entry("river", river)));
+            }
+
+            /**
+             * `sdk.sankalpa.himavatkhandeVara`
+             *
+             * @param vara `vara`
+             * @param varaKey `varaKey`
+             * @return the text
+             */
+            public String himavatkhandeVara(VaraKey vara, String varaKey) {
+                return r.render("sdk.sankalpa.himavatkhandeVara", Map.ofEntries(Map.entry("vara", Map.of("$entity", vara.value())), Map.entry("varaKey", varaKey)));
             }
         }
 

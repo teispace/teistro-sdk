@@ -32,7 +32,7 @@ function scenario(): string {
 }
 
 // @ts-expect-error a graha is named by its catalogue key
-const wrongEntity: GrahaKey = 'graha.PLUTO';
+const wrongEntity: GrahaKey = 'graha.NOT_A_GRAHA';
 // @ts-expect-error a message key is one of the locale's own
 const wrongKey: MessageKey = 'sdk.reason.nope';
 // @ts-expect-error a bhava is a number
