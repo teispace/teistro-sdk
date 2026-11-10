@@ -1,13 +1,17 @@
 # Entity names for what a document carries
 
-Status: `built`, written 2026-09-14. It derives from
+Status: `built`, written 2026-09-14; every catalogue member named
+2026-11-10 (§4e), under the policy that replaced §4's. It derives from
 [`intl-engine-and-packs.md`](intl-engine-and-packs.md) (the packs and
 their completeness) and from
 [`document-schema.md`](document-schema.md), whose schema is what makes
 the scope below computable. The rule it keeps is
 `02-architecture/03-localization-architecture.md`'s: *no
 machine-translated stubs, because a plausible wrong astrological term is
-worse than a visible fallback*.
+worse than a visible fallback*. Until 2026-11-10 it also kept a member
+unnamed until a vetted source or a reviewer named it; that policy is
+replaced by §4e's, under which the SDK owns its text and names every
+member from the best-supported source it finds.
 
 ## 1. The gap, measured
 
@@ -323,10 +327,213 @@ southern commander, so it is not borrowed. No `draft` mark is needed:
 every name shipped is printed, and a mark is per namespace, so it would
 have drafted every name in `sdk.entity`.
 
+## 4e. Every member named (2026-11-10, SR-12)
+
+**The policy changed.** The maintainer decided on 2026-11-10 that the SDK
+owns its text: nothing ships as a draft, and the maintainer reviews after
+shipping and corrects. A member no longer waits on a reviewer. It is named
+from the best-supported source found, and the reasoning is recorded here,
+kind by kind, so a correction knows what it overturns. Two rules of the
+old policy stand:
+
+- **The ranking of sources.** A text's own term (rank 1) comes first, then
+  a printed almanac or a scholarly table (rank 2), then a dictionary or
+  established usage in print. A name the SDK makes is the last resort, and
+  is said to be one.
+- **No machine translation.** Every name below was chosen, not computed.
+  A Western proper name is written in Devanagari by the one scheme below,
+  and `sa-Latn` carries the English for it as an override (§3), so the
+  derivation never turns a transliteration back into nonsense.
+
+So the unnamed list in `xtask/src/intl.rs` is empty: all 348 members it
+held are named in `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN` and `sa-Deva`. A
+member goes back on it only with the reason no language has a usable name
+for it. `sa-Latn` follows by `gen intl`, with 111 more overrides.
+
+Each record is `name` and `prose`. `iast` is written where the name is a
+Sanskrit term, the same in every locale, as the dasha systems and the
+year's rulers already do. The English `prose` is lower case where the name
+is a common noun (`retrograde`, `natal chart`), as the eclipse kinds' is.
+
+### The texts' kinds
+
+| kind | members | Nepali (Hindi and Sanskrit where they differ) | source and reasoning |
+|---|---|---|---|
+| `dasha_system` | `SHATTRIMSHA_SAMA` | षट्त्रिंशत्सम दशा | BPHS 46.5 counts it by its 36 years; Santhanam's translation and the Sharma edition name it *Shattrimsha Sama*, and the name follows the packs' चतुरशीतिसम and द्विसप्ततिसम |
+| | `TITHI_ASHTOTTARI`, `TITHI_YOGINI`, `YOGA_VIMSHOTTARI`, `KARANA_CHATURASHITI` | तिथि अष्टोत्तरी दशा, तिथि योगिनी दशा, योग विंशोत्तरी दशा, करण चतुरशीतिसम दशा | the established names in Jaimini and Parashari practice (P. V. R. Narasimha Rao's software and its manual): the parent system's name, led by the limb that starts it |
+| | `AAYU` | आयु दशा (sa आयुर्दशा) | BPHS 46.10's three lifespan dashas (पिण्डायु, अंशायु, निसर्गायु) as one system; *āyurdaśā* is the compound, Nepali and Hindi say it apart |
+| | `SUDASA` | सुदशा | Jaimini's dasha from the Sree lagna, as the Jaimini commentaries write it |
+| | `PATYAYINI`, `MUDDA`, `VARSHA_NARAYANA`, `VARSHA_YOGINI` | पात्यायिनी दशा, मुद्दा दशा, वर्ष नारायण दशा, वर्ष योगिनी दशा | the Tajika names (*Tājika Nīlakaṇṭhī*'s पात्यायिनी; *muddā*, from the Persian, as Charak's *Textbook of Varshaphala* prints the Vimshottari scaled to a year) |
+| | `RELEASING_FORTUNE`, `RELEASING_DAIMON`, `PROFECTION`, `FIRDARIA`, `DECENNIALS` | जोडिएकल रिलीजिंग (फोर्च्यून), … (hi with the nukta: ज़ोडिएकल रिलीज़िंग (फ़ॉर्च्यून)) | no Indian text names these Hellenistic time lords. The annual profection is the ancestor of the Tajika *muntha*, but the SDK's system also gives the year's lord, so borrowing *muntha* would say less than it does. They are Western proper names, transliterated by the scheme below, with the English as `sa-Latn` |
+| `point` | `MC`, `DESCENDANT`, `IC` | मध्यलग्न, अस्तलग्न, पाताललग्न | *madhyalagna* is the Siddhantas' word for the ecliptic's point on the meridian (*Siddhānta Śiromaṇi*); *astalagna* is Hindi and Nepali practice's descendant. The IC has no lagna-name in a text read; it is named like the other two from the fourth kendra's own name, *pātāla* (Varahamihira's names of the kendras), and is the one coinage of the three. Glyphs `MC`, `Dsc`, `IC` beside the lagna's `Asc` |
+| | the special lagnas, Bhrigu Bindu, the yogi points | विघटीलग्न, श्रीलग्न, इन्दुलग्न, भृगुबिन्दु, योगी बिन्दु, अवयोगी बिन्दु, सहयोगी बिन्दु | the terms of the Jaimini literature and of practice, spelled as the packs spell घटीलग्न |
+| | the sphutas | त्रिस्फुट, चतुःस्फुट, पञ्चस्फुट (hi पंचस्फुट), प्राणस्फुट, देहस्फुट, मृत्युस्फुट, बीजस्फुट, क्षेत्रस्फुट | *Praśna Mārga*'s terms for the first six; the bija and kshetra sphutas are the fertility sphutas of the same literature |
+| | `YAMAGHANTAKA` | यमघण्टक (hi यमघंटक) | the e-text's यमघण्ट्कः (3.69) has a stray virama; every other print and every almanac writes यमघण्टक |
+| | `SWAMSHA` | स्वांश | the Jaimini Sutras' word for the karakamsha's sign; BPHS also uses it for a graha's own division, and a point is the Jaimini sense |
+| | `A2` to `A11` | धनपद, भ्रातृपद, मातृपद, मन्त्रपद, शत्रुपद, दारपद, मृत्युपद, भाग्यपद, राज्यपद, लाभपद | BPHS ch. 29 calls each the pada of its bhava; practice names the pada by the bhava's own word, as लग्नपद and उपपद already are, and दारपद and मन्त्रपद are the Jaimini Sutras' own. Glyph the designator (`A2`) |
+| `vaiseshikamsa` | `KUSUMA`, `CHAKRASIMHASANA`, `SHRIVALLABHA` | कुसुम, शक्रसिंहासन, श्रीवल्लभ | the e-text's कुमुम and स्रीवल्लभ are slips for the words the other prints and Santhanam give. शक्रसिंहासन, *Indra's throne*, is the e-text's reading and Santhanam's, so the English is *Shakrasimhasana*; the catalogue key keeps its spelling |
+| `varga` | `D1`, `D5`, `D6`, `D8`, `D11`, `D150` | राशि, पञ्चमांश, षष्ठांश, अष्टमांश, रुद्रांश, नाड्यंश | D1 is the chart every almanac prints as the rashi chart, so *rashi* rather than BPHS's क्षेत्र; the other five are the names the varga literature beyond BPHS 6.3-4 uses, D11 as *rudrāṃśa* (also *ekādaśāṃśa*) and D150 as *nāḍyaṃśa* |
+| `nature` | `NEUTRAL` | सम | BPHS 3.11 sorts the grahas into two; *sama* is the word the friendship tables use for the third standing, and the pack's own `dignity.NEUTRAL` |
+| `graha` | `URANUS`, `NEPTUNE`, `PLUTO` | अरुण, वरुण, यम | see below |
+| `era` | `HIJRI` | हिजरी संवत् (hi हिजरी सन्), short हि.सं. | the pack's other eras are *saṃvat* in Nepali; Hindi writes the Hijri year *san*, as Hindi dates print it. English `Hijri`, short `AH` |
+| `calendar` | 16 | see below | |
+| `chart_kind` | 8 | जन्मकुण्डली, गोचर कुण्डली, घटना कुण्डली, प्रश्नकुण्डली, पुनरागमन कुण्डली, स्थानान्तरित कुण्डली, संयुक्त कुण्डली, मेदिनी कुण्डली | *janmakuṇḍalī*, *gocara*, *praśna* and *medinī* (mundane astrology) are the established terms. Return, relocated and composite have none, so they are descriptive, and *punarāgamana* is the SDK's word: the Tajika *varṣapraveśa* names only the solar return |
+
+**The outer grahas.** Nepali usage splits: Nepali Wikipedia titles them
+अरुण, वरुण and यम (its *Solar System* page writes अरुण/अरूण and
+वरुण/बरुण), while print in Nepal also transliterates (युरेनस, नेप्च्युन,
+प्लुटो), and older jyotish print writes हर्षल for Uranus. Hindi has a
+standard: the Commission for Scientific and Technical Terminology's
+अरुण, वरुण and यम, which the NCERT textbooks use. The names are the
+standard's in all three Devanagari locales, since they are Sanskrit words
+and so read the same in each; `short` अरु, वरु, यम; the glyphs ♅ ♆ ♇; and
+masculine gender, the three gods' and the words'. यम is also
+`deity.YAMA`'s name, as सूर्य is both `graha.SUN` and `deity.SURYA`.
+
+**The calendars.** Nepali calls a calendar *pātro*, Hindi *kailēṇḍar*
+for a foreign one and *pañcāṅga* for an Indian one (the Government of
+India's *Bhāratīya Rāṣṭrīya Pañcāṅga* is the national calendar's own Hindi
+name), and Sanskrit *pañcāṅga* for an Indian one and *dinadarśikā*, the
+modern Sanskrit word, for the rest. The Hindu lunisolar calendar and the
+Tamil vakya almanac are *pañcāṅga* in every language, which is what they
+are. Bikram Sambat is the era's own name in Nepali and Sanskrit (विक्रम
+संवत्, as the government and the pack's `era.VIKRAMA` write it); Hindi adds
+(नेपाल), since an Indian reader's *Vikram Samvat* is the lunisolar
+reckoning. The regional solar calendars are named by their region:
+तमिल, बङ्गाली, ओडिया, मलयालम, असमिया सौर. English names each as
+*X calendar*, and the thirteen with a Western or regional name carry their
+English as `sa-Latn` overrides.
+
+### The day page's kinds
+
+`amrit-kalam-and-lagnas.md` §3.2 proposed these from the texts' own terms,
+and they ship as proposed except where noted:
+
+| kind | names | source and reasoning |
+|---|---|---|
+| `tithi_class` | नन्दा, भद्रा, जया, रिक्ता, पूर्णा | *Muhūrta Cintāmaṇi* 1, the five tithi classes; every almanac's tithi table |
+| `modality` | चर, स्थिर, द्विस्वभाव | BPHS 4, the signs' three natures. English Movable, Fixed, Dual |
+| `muhurta_nature` | ध्रुव, चर, उग्र, क्षिप्र, मृदु, मिश्र, तीक्ष्ण | *Muhūrta Cintāmaṇi* 2, the nakshatras' seven natures, by the first name each class is given (ध्रुव before स्थिर, क्षिप्र before लघु) |
+| `guna` | सत्त्व, रज, तम (sa रजस्, तमस्) | Nepali and Hindi write the gunas without the final consonant (सत, रज, तम; रजोगुण); Sanskrit keeps the stem. §3.2's रजस्, तमस् is the Sanskrit only |
+| `gender` | पुरुष, स्त्री, नपुंसक | BPHS 3, the grahas' genders |
+| `rising` | शीर्षोदय, पृष्ठोदय, उभयोदय | BPHS 4 and *Bṛhajjātaka* 1 |
+| `blackout_kind` | खरमास; ग्रहण नक्षत्र (sa ग्रहणनक्षत्र); ग्रहण सूतक (sa ग्रहणवेध) | खरमास is the almanacs' word in Nepal and India. The eclipse's vedha is what almanacs print as *sūtaka*, so Nepali and Hindi take that and Sanskrit the texts' *vedha*; English *Eclipse sutak*. §3.2 proposed ग्रहण वेध throughout |
+| `lunar_eclipse_kind` | उपच्छाया | the term Nepali and Hindi eclipse reports use (*upacchāyā candragrahaṇa*) |
+| `solar_eclipse_kind` | कङ्कणाकार (hi वलयाकार); मिश्रित (hi संकर, sa मिश्र) | Nepali reports call an annular eclipse *kaṅkaṇākāra*, Hindi ones *valayākāra*; Sanskrit follows Nepali. A hybrid has no settled word: मिश्रित in Nepali, §3.2's संकर in Hindi |
+
+### The reading and matching kinds
+
+| kind | names | source and reasoning |
+|---|---|---|
+| `auspiciousness` | शुभ, अशुभ, मिश्रित (sa मिश्र), अति अशुभ (sa अत्यशुभ) | the words every almanac's yoga table uses |
+| `sex` | पुरुष, स्त्री | the yoni tables' *puṃ* and *strī* yoni, as matching tables in Nepali and Hindi print them |
+| `parity` | विषम, सम (sa ओज, युग्म) | Nepali and Hindi say *viṣama* and *sama rāśi*; the texts (BPHS 4, *Bṛhajjātaka* 1) say *oja* and *yugma*, which Sanskrit keeps |
+| `deity` | चन्द्र, दुर्गा, कामदेव, कार्तिकेय, शनि, शिव, शुक्र, सूर्य, त्वष्टा, विधाता | the deities' own names, as the pack's 27 already are |
+| `koota` | वर्ण, वश्य, तारा, योनि, ग्रहमैत्री, गण, भकूट, नाडी (hi नाड़ी), रज्जु, वेध, स्त्रीदीर्घ, माहेन्द्र | *Muhūrta Cintāmaṇi*'s marriage chapter names the eight kootas, and the matching tables of Nepal and India print them so; the four southern ones by the names the same tables use |
+| `state` | वक्री, स्तम्भित, अस्त, ग्रहयुद्ध, गण्डान्त, सन्धि, वर्गोत्तम, पुष्कर नवांश, पुष्करभाग, मृत्युभाग, मरणकारक स्थान, ग्रहणग्रस्त (sa ग्रस्त) | the standard terms. A station has no one text word (the Siddhantas' eight motions name the slowing, not the halt); स्तम्भित is the word Hindi astrology prints for a stationary graha |
+
+### The SDK's own classifications
+
+These are the SDK's sorting, not a text's, so their names are descriptive,
+built from the words the packs already use: आकाशगंगा, युगादि and
+निरयन from the ayanamshas, उपग्रह and लग्न from the points, the *style*
+(शैली) of a chart.
+
+| kind | names (Nepali) |
+|---|---|
+| `ayanamsha_category` | वैदिक मानक, वैदिक शास्त्रीय, तारामा आधारित, पाश्चात्य निरयन, आकाशगंगामा आधारित, ऐतिहासिक, युगादि |
+| `bala_scheme` | पाराशर, पाराशर (विस्तारित) |
+| `body_class` | प्रकाशग्रह, ताराग्रह, छायाग्रह, बाहिरी ग्रह: *tārāgraha* is the Siddhantas' word for the five planets and *chāyāgraha* the nodes' everywhere; *prakāśagraha* is descriptive |
+| `chart_layout` | उत्तर भारतीय शैली, दक्षिण भारतीय शैली, पूर्व भारतीय शैली, अष्टदल पद्म, सुदर्शन चक्र, पाश्चात्य चक्र |
+| `dasha_family` | नक्षत्र (उडु), राशि, ग्रह, कालचक्र, वर्षमा मापित, संयोजित, स्वतन्त्र नियम, and the four Western families as their systems are written |
+| `degeneracy` | सबै अक्षांशमा परिभाषित, ध्रुव क्षेत्रमा अपरिभाषित |
+| `point_family` | केन्द्र, विशेष लग्न, उपग्रह (सूर्यबाट), उपग्रह (दिनमानबाट), आरूढ, स्फुट, जैमिनि, मध्यबिन्दु |
+| `star_class` | तारा, रेडियो स्रोत, आकाशीय दिशा |
+
+Hindi and Sanskrit say the same in their own grammar (तारा-आधारित,
+ताराधारित; उपग्रह (सूर्य से), उपग्रह (सूर्यात्)).
+
+### The stars
+
+**A traditional Indian name where one exists** (38 of the 128), with its
+IAST:
+
+- the **28 nakshatra yogataras** take their nakshatra's name, spelled as
+  the pack's `nakshatra` kind spells it: the catalogue's own identification
+  of each (Spica the yogatara of Chitra, Aldebaran of Rohini, Vega of
+  Abhijit), which follows the *Sūrya Siddhānta* ch. 8 as Burgess (1860)
+  identifies its stars and Pingree and Morrissey, "On the identification
+  of the yogatārās of the Indian nakṣatras" (*JHA* 20, 1989);
+- **Canopus** अगस्त्य and **Capella** ब्रह्महृदय, both in *Sūrya Siddhānta*
+  8.20-21 and so identified by Burgess;
+- **Sirius** लुब्धक, the hunter, as Nepali and Hindi name the star and
+  Monier-Williams glosses *lubdhaka* (the Siddhanta's *mṛgavyādha* is the
+  same hunter);
+- **Polaris** ध्रुवतारा (sa ध्रुव), its name in Nepali and Hindi;
+- the **six Saptarshi stars** the table carries: Dubhe क्रतु, Merak पुलह,
+  Phecda पुलस्त्य, Alioth अङ्गिरा (hi अंगिरा, sa अङ्गिरस्), Mizar वसिष्ठ and
+  Alkaid मरीचि. *Bṛhatsaṃhitā* 13 lists the seven from the east, Marichi
+  first, with Arundhati beside Vasishtha, which fixes the order on the
+  Plough (Alcor beside Mizar).
+
+Hindi Wikipedia's coinages for Western stars (राजन्य for Rigel, प्रश्वा for
+Procyon) have no source behind them and are not taken. Burgess's *Agni*
+for beta Tauri (Elnath) is left too: the identification is his
+conjecture, and a star called अग्नि beside `tatwa.AGNI` would mislead.
+
+**Every other star is its IAU name in Devanagari**, by one scheme:
+
+- the name is written as English says it (the IAU Working Group on Star
+  Names' list gives the spellings), not letter by letter: Achernar
+  एकर्नार, Fomalhaut फ़ोमलहॉट, Scheat शीट;
+- **Hindi** writes the nukta for *z* and *f* and ॉ for the open *o*, as
+  Hindi writes English loans (फ़ोमलहॉट, इज़ार);
+- **Nepali and Sanskrit** write no nukta and ो for ॉ (फोमलहोट, इजार), as
+  Nepali orthography does;
+- a name of two words keeps them apart (कौस ऑस्ट्रेलिस);
+- Sagittarius A* is धनु A*, the constellation's Indian name with the
+  IAU's designator, and the galactic poles आकाशगंगाको उत्तरी ध्रुव, in the
+  words the pack's galactic ayanamshas already use.
+
+English is the IAU name. `sa-Latn` carries the IAU name for the 87
+transliterated stars as an override; the 38 traditional names and the
+three descriptive ones derive.
+
+### The Tibetan year, and the year's rulers
+
+**The Tibetan elements and animals** are named as Nepali Lhosar reports
+write them. *Kantipur*'s Gyalpo Lhosar report (28 February 2025) lists the
+twelve years "मुसा, गाई, बाघ, खरायो, ड्रागन (मेघ), सर्प, घोडा, भेडा, बाँदर, चरा,
+कुकुर र बराह", and *Gorkhapatra*'s Sonam Lhosar reports write the last one
+सुँगुर. The pig is सुँगुर, the plain word: बराह is the boar and the
+Sherpa report's alone. The elements are the plain words of the year
+names (काठे सर्प, फलामे बाघ, आगो घोडा, पानी खरायो): काठ, आगो, माटो, फलाम,
+पानी. Hindi takes the Hindi words for the same (काष्ठ, अग्नि, पृथ्वी, लौह, जल;
+चूहा, बैल, बाघ, खरगोश, ड्रैगन, सर्प, घोड़ा, भेड़, बंदर, पक्षी, कुत्ता, सूअर), and
+Sanskrit the Sanskrit (मूषक, वृषभ, व्याघ्र, शशक, …). The dragon is मेघ in
+Sanskrit, after the Nepali report's gloss: the Tibetan *'brug* is the
+thunder-dragon, and Sanskrit has no dragon.
+
+**The year's rulers.** `SENADHIPATI` सेनाधिपति and `ARGHADHIPATI`
+अर्घाधिपति keep the titles of office the southern panchangas print (in
+Telugu and Kannada script), written in Devanagari: no northern almanac
+read seats them, so no shorter northern form exists, and the catalogue key
+is the title. `NAVANAYAKA` is नवनायक, *the nine leaders*, the southern
+almanacs' own word. `DAYLIGHT` is दिनमान: §4d left it unnamed because the
+texts' *dina* is the word the two readings split on, and *dinamāna* is not
+*dina*: it is the almanacs' word for the span of daylight, which is
+exactly the reading's rule (the day whose daylight holds the ingress). So
+it names the reading without taking a side on what *dina* meant.
+
 ## 5. What this does not settle
 
-- **Names for the listed members.** Each needs a rank-1 or rank-2
-  source, or a native reviewer's sign-off recorded with the change. The
-  list is where that work is tracked.
+- **The maintainer's review.** The names ship final and are corrected
+  after shipping; §4e names the choices most open to a second reading
+  (the outer grahas, the IC, the station, the Hellenistic transliterations,
+  the calendars' nouns).
 - **`short` forms and genders** for the imported kinds, which the
-  source does not vet.
+  source does not vet. The outer grahas and the Hijri era carry a
+  `short`; no other new record does.
+- **Hindi and Sanskrit beyond the list.** §4e named the members no strict
+  locale had. The kinds Hindi and Sanskrit still fall back to English for
+  (`varga`, `tradition`, the BPHS points named in §4c) are a separate pass.

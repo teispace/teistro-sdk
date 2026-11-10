@@ -12,6 +12,22 @@ the previous release, not by nobody having looked.
 
 ## Unreleased
 
+**Every catalogue member has a name (SR-12).**
+**Numbers:** 348 members named in each of `en-Latn`, `ne-Deva-NP`, `hi-Deva-IN` and `sa-Deva` (1,392 records), across 38 kinds, 128 of them stars; `sa-Latn` derives them, with 111 more overrides; the unnamed list holds 0, from 348. No computed number moves.
+The SDK now owns its text: a name ships from the best-supported source
+found and the maintainer corrects after shipping, so no member waits on a
+reviewer. Each kind's names and sources are in
+`03-design/entity-names.md` §4e: the dasha systems, points, vargas and
+vaiseshikamsas from BPHS and the Jaimini and Tajika literature (the
+e-text's misprints read as the other prints give them); the day page's
+kinds as `amrit-kalam-and-lagnas.md` §3.2 proposed them; the kootas and
+graha states in their standard terms; the outer grahas as अरुण, वरुण and
+यम; the stars' yogataras and ten more by their Indian names and the rest
+by their IAU names in one documented Devanagari scheme; the Tibetan years
+as Nepali Lhosar reports name them. `intl.entity("graha.PLUTO")` and every
+other catalogue key now resolve, so the Node and Dart tests of a refused
+entity ask for a key no catalogue has.
+
 **Every shipped pack is final: no namespace is a draft (Q42).**
 **Numbers:** 0 draft namespaces in any shipped locale, from 10 in `hi-Deva-IN`, 10 in `sa-Deva` and `sa-Latn`, and 3 in `ne-Deva-NP`.
 The maintainer took the review of the Hindi, Sanskrit and Nepali text on,
