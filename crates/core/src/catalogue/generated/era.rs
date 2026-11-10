@@ -45,11 +45,14 @@ pub enum Era {
     Hijri = 9,
     /// Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada
     ViraNirvana = 10,
+    /// Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name
+    Bhaskarabda = 11,
 }
 
-const BY_KEY: [(&str, Era); 11] = [
+const BY_KEY: [(&str, Era); 12] = [
     ("BEFORE_COMMON_ERA", Era::BeforeCommonEra),
     ("BENGALI", Era::Bengali),
+    ("BHASKARABDA", Era::Bhaskarabda),
     ("BUDDHA", Era::Buddha),
     ("COMMON_ERA", Era::CommonEra),
     ("HIJRI", Era::Hijri),
@@ -69,7 +72,7 @@ impl Era {
     pub const KIND: Kind = Kind::Era;
 
     /// Every member, in id order.
-    pub const ALL: [Era; 11] = [
+    pub const ALL: [Era; 12] = [
         Era::Vikrama,
         Era::Shaka,
         Era::Kali,
@@ -81,6 +84,7 @@ impl Era {
         Era::BeforeCommonEra,
         Era::Hijri,
         Era::ViraNirvana,
+        Era::Bhaskarabda,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -104,6 +108,7 @@ impl Era {
             Era::BeforeCommonEra => "BEFORE_COMMON_ERA",
             Era::Hijri => "HIJRI",
             Era::ViraNirvana => "VIRA_NIRVANA",
+            Era::Bhaskarabda => "BHASKARABDA",
         }
     }
 
@@ -128,6 +133,7 @@ impl Era {
             Era::BeforeCommonEra => "era.BEFORE_COMMON_ERA",
             Era::Hijri => "era.HIJRI",
             Era::ViraNirvana => "era.VIRA_NIRVANA",
+            Era::Bhaskarabda => "era.BHASKARABDA",
         }
     }
 
@@ -152,6 +158,7 @@ impl Era {
             Era::BeforeCommonEra => "Before the common era; year 1 BCE is astronomical year 0",
             Era::Hijri => "Hijri, the years after the Hijra (AH); before 1 AH is astronomical year 0",
             Era::ViraNirvana => "Vira Nirvana Samvat, the Jain era from Mahavira's nirvana: the Kartikadi Vikrama year plus 470, turning at Kartika Shukla Pratipada",
+            Era::Bhaskarabda => "Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name",
         }
     }
 
@@ -176,6 +183,7 @@ impl Era {
             Era::BeforeCommonEra => None,
             Era::Hijri => None,
             Era::ViraNirvana => None,
+            Era::Bhaskarabda => None,
         }
     }
 
@@ -200,6 +208,7 @@ impl Era {
             Era::BeforeCommonEra => Mark::Verified,
             Era::Hijri => Mark::Verified,
             Era::ViraNirvana => Mark::Verified,
+            Era::Bhaskarabda => Mark::Verified,
         }
     }
 
@@ -224,6 +233,7 @@ impl Era {
             Era::BeforeCommonEra => false,
             Era::Hijri => false,
             Era::ViraNirvana => false,
+            Era::Bhaskarabda => false,
         }
     }
 
@@ -249,6 +259,7 @@ impl Era {
             Era::BeforeCommonEra => &[Source { text: "calendar-gregorian-julian", reference: "docs/03-design/calendar-gregorian-julian.md" }],
             Era::Hijri => &[Source { text: "Reingold and Dershowitz, Calendrical Calculations, ch. 7", reference: "docs/calendars/hijri.md" }],
             Era::ViraNirvana => &[Source { text: "Sircar, Indian Epigraphy (1965), pp. 321-322", reference: "docs/03-design/vira-nirvana-and-jain-festivals.md" }, Source { text: "Jinasena, Harivamsha (783 CE): 605 years and 5 months before the Shaka era", reference: "docs/03-design/vira-nirvana-and-jain-festivals.md" }],
+            Era::Bhaskarabda => &[Source { text: "Government of Assam, General Administration Department, list of holidays for 2025 (1 Bohag 1432 = 15 April 2025)", reference: "docs/calendars/regional-solar.md" }],
         }
     }
 
@@ -273,6 +284,7 @@ impl Era {
             Era::BeforeCommonEra => &[],
             Era::Hijri => &[],
             Era::ViraNirvana => &[],
+            Era::Bhaskarabda => &[],
         }
     }
 
@@ -321,7 +333,7 @@ impl Era {
     /// use teistro_core::catalogue::Era;
     ///
     /// assert_eq!(Era::from_id(0), Some(Era::Vikrama));
-    /// assert_eq!(Era::from_id(11), None);
+    /// assert_eq!(Era::from_id(12), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Era> {
@@ -337,6 +349,7 @@ impl Era {
             8 => Some(Era::BeforeCommonEra),
             9 => Some(Era::Hijri),
             10 => Some(Era::ViraNirvana),
+            11 => Some(Era::Bhaskarabda),
             _ => None,
         }
     }

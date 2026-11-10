@@ -1,0 +1,12 @@
+{
+  "words": ".input {$shape :string} .match $shape MINOR {{{$minorWords} {$minorUnit}}} BOTH {{{$majorWords} {$majorUnit} {$minorWords} {$minorUnit} ca}} * {{{$majorWords} {$majorUnit}}}",
+  "only": "{$amount} mātram",
+  "INR": {
+    "major": ".input {$count :integer} .match $count 1 {{rūpyakam}} 2 {{rūpyake}} * {{rūpyakāṇi}}",
+    "minor": ".input {$count :integer} .match $count * {{paisā}}"
+  },
+  "NPR": {
+    "major": ".input {$count :integer} .match $count 1 {{nepālarūpyakam}} 2 {{nepālarūpyake}} * {{nepālarūpyakāṇi}}",
+    "minor": ".input {$count :integer} .match $count * {{paisā}}"
+  }
+}

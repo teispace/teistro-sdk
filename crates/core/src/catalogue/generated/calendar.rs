@@ -53,9 +53,12 @@ pub enum Calendar {
     MalayalamSolar = 13,
     /// Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha
     TamilVakya = 14,
+    /// Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)
+    AssamSolar = 15,
 }
 
-const BY_KEY: [(&str, Calendar); 15] = [
+const BY_KEY: [(&str, Calendar); 16] = [
+    ("ASSAM_SOLAR", Calendar::AssamSolar),
     ("BANGLADESHI", Calendar::Bangladeshi),
     ("BENGAL_SOLAR", Calendar::BengalSolar),
     ("BIKRAM_SAMBAT", Calendar::BikramSambat),
@@ -81,7 +84,7 @@ impl Calendar {
     pub const KIND: Kind = Kind::Calendar;
 
     /// Every member, in id order.
-    pub const ALL: [Calendar; 15] = [
+    pub const ALL: [Calendar; 16] = [
         Calendar::Gregorian,
         Calendar::Julian,
         Calendar::Mixed,
@@ -97,6 +100,7 @@ impl Calendar {
         Calendar::OdiaSolar,
         Calendar::MalayalamSolar,
         Calendar::TamilVakya,
+        Calendar::AssamSolar,
     ];
 
     /// The key inside the kind (`SUN`).
@@ -124,6 +128,7 @@ impl Calendar {
             Calendar::OdiaSolar => "ODIA_SOLAR",
             Calendar::MalayalamSolar => "MALAYALAM_SOLAR",
             Calendar::TamilVakya => "TAMIL_VAKYA",
+            Calendar::AssamSolar => "ASSAM_SOLAR",
         }
     }
 
@@ -152,6 +157,7 @@ impl Calendar {
             Calendar::OdiaSolar => "calendar.ODIA_SOLAR",
             Calendar::MalayalamSolar => "calendar.MALAYALAM_SOLAR",
             Calendar::TamilVakya => "calendar.TAMIL_VAKYA",
+            Calendar::AssamSolar => "calendar.ASSAM_SOLAR",
         }
     }
 
@@ -180,6 +186,7 @@ impl Calendar {
             Calendar::OdiaSolar => "Odia solar: months from the sunrise-to-sunrise day of the sidereal sankranti at Bhubaneswar, Saka years from Mesha",
             Calendar::MalayalamSolar => "Malayalam solar: months from the sidereal sankranti by the afternoon (Malabar) rule at Thiruvananthapuram, Kollam years from Simha",
             Calendar::TamilVakya => "Tamil vakya: the vakya almanacs' months, from the Vakyakarana's sankranti by the sunset rule on its own daytime, Saka years from Mesha",
+            Calendar::AssamSolar => "Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)",
         }
     }
 
@@ -208,6 +215,7 @@ impl Calendar {
             Calendar::OdiaSolar => None,
             Calendar::MalayalamSolar => None,
             Calendar::TamilVakya => None,
+            Calendar::AssamSolar => None,
         }
     }
 
@@ -236,6 +244,7 @@ impl Calendar {
             Calendar::OdiaSolar => Mark::Verified,
             Calendar::MalayalamSolar => Mark::Verified,
             Calendar::TamilVakya => Mark::Verified,
+            Calendar::AssamSolar => Mark::Verified,
         }
     }
 
@@ -264,6 +273,7 @@ impl Calendar {
             Calendar::OdiaSolar => false,
             Calendar::MalayalamSolar => false,
             Calendar::TamilVakya => false,
+            Calendar::AssamSolar => false,
         }
     }
 
@@ -293,6 +303,7 @@ impl Calendar {
             Calendar::OdiaSolar => &[Source { text: "Sewell and Dikshit, The Indian Calendar, 1896, art. 28; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27", reference: "docs/calendars/regional-solar.md" }],
             Calendar::MalayalamSolar => &[Source { text: "Sewell and Dikshit, The Indian Calendar, 1896, arts. 28 and 71; Rashtriya Panchang, 1992-93 and 2018-19 to 2026-27", reference: "docs/calendars/regional-solar.md" }],
             Calendar::TamilVakya => &[Source { text: "Vakyakarana, ed. T. S. Kuppanna Sastri and K. V. Sarma, 1962, I.2-4 and III.1, III.7-8; Manonmani Vilasam suddha vakya almanac, 1997-2021", reference: "docs/calendars/regional-solar.md" }],
+            Calendar::AssamSolar => &[Source { text: "Government of Assam, General Administration Department, lists of holidays for 2023 and 2025 (Bhaskarabda dates); Sewell and Dikshit, The Indian Calendar, 1896, art. 28", reference: "docs/calendars/regional-solar.md" }],
         }
     }
 
@@ -321,6 +332,7 @@ impl Calendar {
             Calendar::OdiaSolar => &[],
             Calendar::MalayalamSolar => &[],
             Calendar::TamilVakya => &[],
+            Calendar::AssamSolar => &[],
         }
     }
 
@@ -369,7 +381,7 @@ impl Calendar {
     /// use teistro_core::catalogue::Calendar;
     ///
     /// assert_eq!(Calendar::from_id(0), Some(Calendar::Gregorian));
-    /// assert_eq!(Calendar::from_id(15), None);
+    /// assert_eq!(Calendar::from_id(16), None);
     /// ```
     #[must_use]
     pub const fn from_id(id: u16) -> Option<Calendar> {
@@ -389,6 +401,7 @@ impl Calendar {
             12 => Some(Calendar::OdiaSolar),
             13 => Some(Calendar::MalayalamSolar),
             14 => Some(Calendar::TamilVakya),
+            15 => Some(Calendar::AssamSolar),
             _ => None,
         }
     }

@@ -126,7 +126,7 @@ carries an instruction that nothing has ever asked for.
 
 | proposed rule | verdict | measured |
 |---|---|---|
-| some shipped profile names a module override | **holds** | 8 of 8 do |
+| some shipped profile names a module override | **holds** | 9 of 9 do |
 
 | profile | placement | chalit | overrides |
 |---|---|---|---|
@@ -135,6 +135,7 @@ carries an instruction that nothing has ever asked for.
 | `parashari-classical` | `WHOLE_SIGN` | `SRIPATI` | `kp` to `PLACIDUS` |
 | `surya-siddhanta` | `WHOLE_SIGN` | `SRIPATI` | `kp` to `PLACIDUS` |
 | `mithila-makaranda` | `WHOLE_SIGN` | `SRIPATI` | `kp` to `PLACIDUS` |
+| `tamil-vakya` | `WHOLE_SIGN` | `SRIPATI` | `kp` to `PLACIDUS` |
 | `kp-default` | `PLACIDUS` | `PLACIDUS` | `kp` to `PLACIDUS` |
 | `western-tropical-default` | `PLACIDUS` | `PLACIDUS` | `kp` to `PLACIDUS` |
 | `conformance-baseline` | `WHOLE_SIGN` | `VEHLOW` | `kp` to `PLACIDUS` |

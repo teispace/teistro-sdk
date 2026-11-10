@@ -13215,6 +13215,23 @@
           ],
           "mark": "V",
           "unverified": []
+        },
+        {
+          "key": "ASSAM_SOLAR",
+          "id": 15,
+          "doc": "Assam solar: Assam's months, from the day after the Surya Siddhanta sankranti's civil day, Bhaskarabda years from Mesha (Bohag)",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Government of Assam, General Administration Department, lists of holidays for 2023 and 2025 (Bhaskarabda dates); Sewell and Dikshit, The Indian Calendar, 1896, art. 28",
+              "ref": "docs/calendars/regional-solar.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
         }
       ]
     },
@@ -13412,6 +13429,23 @@
             {
               "text": "Jinasena, Harivamsha (783 CE): 605 years and 5 months before the Shaka era",
               "ref": "docs/03-design/vira-nirvana-and-jain-festivals.md"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "BHASKARABDA",
+          "id": 11,
+          "doc": "Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "Government of Assam, General Administration Department, list of holidays for 2025 (1 Bohag 1432 = 15 April 2025)",
+              "ref": "docs/calendars/regional-solar.md"
             }
           ],
           "mark": "V",

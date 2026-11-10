@@ -1917,6 +1917,7 @@ export const Calendar = /* @__PURE__ */ Object.freeze({
   OdiaSolar: 'calendar.ODIA_SOLAR',
   MalayalamSolar: 'calendar.MALAYALAM_SOLAR',
   TamilVakya: 'calendar.TAMIL_VAKYA',
+  AssamSolar: 'calendar.ASSAM_SOLAR',
 });
 
 /**
@@ -1939,6 +1940,7 @@ export const CalendarById = /* @__PURE__ */ new Map([
   [12, 'calendar.ODIA_SOLAR'],
   [13, 'calendar.MALAYALAM_SOLAR'],
   [14, 'calendar.TAMIL_VAKYA'],
+  [15, 'calendar.ASSAM_SOLAR'],
 ]);
 
 /** Every Era by name. */
@@ -1954,6 +1956,7 @@ export const Era = /* @__PURE__ */ Object.freeze({
   BeforeCommonEra: 'era.BEFORE_COMMON_ERA',
   Hijri: 'era.HIJRI',
   ViraNirvana: 'era.VIRA_NIRVANA',
+  Bhaskarabda: 'era.BHASKARABDA',
 });
 
 /**
@@ -1972,6 +1975,7 @@ export const EraById = /* @__PURE__ */ new Map([
   [8, 'era.BEFORE_COMMON_ERA'],
   [9, 'era.HIJRI'],
   [10, 'era.VIRA_NIRVANA'],
+  [11, 'era.BHASKARABDA'],
 ]);
 
 /** Every BodyClass by name. */

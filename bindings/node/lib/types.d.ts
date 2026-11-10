@@ -441,7 +441,8 @@ export interface ContextOptions {
   /**
    * The shipped profile's id (`parashari-classical`, `nepali-drik`,
    * `nepali-committee`, `surya-siddhanta`, `mithila-makaranda`,
-   * `kp-default`, `western-tropical-default`, `conformance-baseline`).
+   * `tamil-vakya`, `kp-default`, `western-tropical-default`,
+   * `conformance-baseline`).
    * @example parashari-classical
    * @nullable
    */

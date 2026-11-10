@@ -64,6 +64,11 @@ public enum Era implements Catalogued {
      */
     VIRA_NIRVANA(10, "VIRA_NIRVANA"),
 
+    /**
+     * Bhaskarabda, Assam's solar era: years from the Mesha sankranti (Bohag), CE - 593, the Bengali San's count under Assam's name
+     */
+    BHASKARABDA(11, "BHASKARABDA"),
+
     /** A member this build does not know: from a newer library, or registered at run time. */
     UNKNOWN(-1, "UNKNOWN");
 
