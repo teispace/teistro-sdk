@@ -448,19 +448,16 @@
       "prose": "Upapada"
     },
     "MC": {
-      "short": "MC",
       "name": "Midheaven",
       "prose": "the Midheaven",
       "glyph": "MC"
     },
     "DESCENDANT": {
-      "short": "Ds",
       "name": "Descendant",
       "prose": "the Descendant",
       "glyph": "Dsc"
     },
     "IC": {
-      "short": "IC",
       "name": "Imum Coeli",
       "prose": "the Imum Coeli",
       "glyph": "IC"
