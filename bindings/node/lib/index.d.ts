@@ -4946,6 +4946,14 @@ export interface LayoutRing {
   readonly counts_from: 'LAGNA' | 'MOON' | 'SUN' | 'CUSPS' | 'ZODIAC';
 }
 
+/** A circle no cell holds, where the chart's name is written. */
+export interface LayoutHub {
+  /** The circle's centre. */
+  readonly centre: UnitPoint;
+  /** Its radius, a fraction of the square's side. */
+  readonly radius: number;
+}
+
 /** Twelve cells fixed in the row, or rings computed per chart. */
 export type LayoutShape =
   | {
@@ -4953,6 +4961,8 @@ export type LayoutShape =
       readonly cells: readonly LayoutCell[];
       readonly frame: readonly Outline[];
       readonly direction: 'clockwise' | 'anticlockwise';
+      /** The circle at the centre that names the chart, as a Nepali round chart prints ल or न there; absent for a layout with none. */
+      readonly hub?: LayoutHub;
     }
   | {
       readonly kind: 'RADIAL';
@@ -5121,6 +5131,8 @@ export interface Drawing {
     readonly at: UnitPoint;
     readonly longitudeDeg: number;
   }[];
+  /** The layout's hub, where the chart's name is written; absent for a layout with none. */
+  readonly hub?: LayoutHub;
 }
 
 /** One divisional chart of a founded chart. */

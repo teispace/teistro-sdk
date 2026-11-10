@@ -4,9 +4,10 @@
 //!
 //! Structure is not correctness: a layout can pass every structural check
 //! with two signs swapped. So each square layout is also held to the figure
-//! it cites. Each number the figure prints is transcribed once, as the
-//! point it is printed at and the sign it names, and must land in the
-//! cell that shows that sign.
+//! it cites, and each Nepali chart to the printed janma patrika it is drawn
+//! from. Each number the figure prints is transcribed once, as the point it
+//! is printed at and the sign it names, and must land in the cell that
+//! shows that sign.
 
 #![allow(
     clippy::unwrap_used,
@@ -16,10 +17,10 @@
     reason = "tests fail by panicking and index their own fixtures"
 )]
 
-use teistro_core::catalogue::Rashi;
-use teistro_geometry::layout::{Cell, Direction, Grid, Holds, Reference};
+use teistro_core::catalogue::{Graha, Rashi};
+use teistro_geometry::layout::{Cell, Direction, Grid, Holds, Hub, Reference};
 use teistro_geometry::path::Point;
-use teistro_geometry::{Layout, Placements, place, rows};
+use teistro_geometry::{Body, Layout, Placements, place, rows};
 
 /// A figure's printed numbers: where each is printed, in the figure's
 /// pixels, and the sign number (1 for Aries) it names.
@@ -34,10 +35,97 @@ struct Figure {
 }
 
 impl Figure {
-    fn point(&self, x: f64, y: f64) -> Point {
-        Point::new((x - self.left) / self.side, (y - self.top) / self.side)
+    fn points(&self) -> Vec<(f64, f64, u16, Point)> {
+        self.numbers
+            .iter()
+            .map(|&(x, y, number)| {
+                let point = Point::new((x - self.left) / self.side, (y - self.top) / self.side);
+                (x, y, number, point)
+            })
+            .collect()
     }
 }
+
+/// The radius both Nepali rows draw their circle at, which a photograph's
+/// circle is scaled to.
+const NEPALI_RADIUS: f64 = 15.0 / 32.0;
+
+/// A printed round chart, photographed: a page photographed at an angle is
+/// foreshortened, so its circle is measured across and down separately, from
+/// the chart's own centre (where the petals meet, or the hub's centre), in
+/// the photograph's pixels. Each number is where the patrika prints it and
+/// the sign it names. Only the chart's geometry and its numbers are
+/// transcribed; the patrikas are private and are not in the repository.
+struct Photo {
+    centre: (f64, f64),
+    radius: (f64, f64),
+    lagna: Rashi,
+    numbers: &'static [(f64, f64, u16)],
+}
+
+impl Photo {
+    fn points(&self) -> Vec<(f64, f64, u16, Point)> {
+        let ((cx, cy), (rx, ry)) = (self.centre, self.radius);
+        self.numbers
+            .iter()
+            .map(|&(x, y, number)| {
+                let point = Point::new(
+                    0.5 + (x - cx) / rx * NEPALI_RADIUS,
+                    0.5 + (y - cy) / ry * NEPALI_RADIUS,
+                );
+                (x, y, number, point)
+            })
+            .collect()
+    }
+}
+
+/// The first scan's जन्मकुण्डली, a lotus of twelve petals, read from page 3
+/// at 300 dpi (a 600 by 560 crop): drawn for a lagna in sign 1, so each
+/// number is both the sign and the house, 1 at the top and rising
+/// anticlockwise.
+const LOTUS_PRINT: Photo = Photo {
+    centre: (277.0, 285.0),
+    radius: (259.5, 243.0),
+    lagna: Rashi::Aries,
+    numbers: &[
+        (269.0, 151.0, 1),
+        (197.0, 171.0, 2),
+        (155.0, 224.0, 3),
+        (139.0, 286.0, 4),
+        (163.0, 350.0, 5),
+        (208.0, 392.0, 6),
+        (277.0, 392.0, 7),
+        (350.0, 390.0, 8),
+        (386.0, 334.0, 9),
+        (413.0, 274.0, 10),
+        (396.0, 214.0, 11),
+        (343.0, 168.0, 12),
+    ],
+};
+
+/// The third scan's ल chart, the first of its four round charts, read from
+/// page 3 at 300 dpi (a 480 by 540 crop), from the hub's centre: the same
+/// lagna in sign 1. Each number sits beside the hub, in the cell the grid's
+/// lines and diagonals cut.
+const ROUND_PRINT: Photo = Photo {
+    centre: (229.0, 261.0),
+    radius: (205.5, 246.5),
+    lagna: Rashi::Aries,
+    numbers: &[
+        (220.0, 187.0, 1),
+        (165.0, 172.0, 2),
+        (122.0, 192.0, 3),
+        (150.0, 272.0, 4),
+        (135.0, 330.0, 5),
+        (160.0, 370.0, 6),
+        (227.0, 345.0, 7),
+        (295.0, 372.0, 8),
+        (320.0, 335.0, 9),
+        (305.0, 272.0, 10),
+        (325.0, 190.0, 11),
+        (290.0, 145.0, 12),
+    ],
+};
 
 /// `Kundali_03a.png`: a sign-fixed chart, so its numbers are signs.
 const EAST: Figure = Figure {
@@ -113,9 +201,18 @@ fn grid(layout: &mut Layout) -> &mut Grid {
 
 /// Every printed number lands in the cell showing that sign.
 fn holds_to(layout: &Layout, figure: &Figure) {
-    let placed = place(layout, &Placements::new(figure.lagna)).unwrap();
-    for &(x, y, number) in figure.numbers {
-        let point = figure.point(x, y);
+    lands(layout, figure.lagna, &figure.points());
+}
+
+/// Every number a photographed patrika prints lands in the cell showing
+/// that sign.
+fn holds_to_print(layout: &Layout, photo: &Photo) {
+    lands(layout, photo.lagna, &photo.points());
+}
+
+fn lands(layout: &Layout, lagna: Rashi, points: &[(f64, f64, u16, Point)]) {
+    let placed = place(layout, &Placements::new(lagna)).unwrap();
+    for &(x, y, number, point) in points {
         let holder = placed
             .cells
             .iter()
@@ -226,23 +323,143 @@ fn a_ring_turned_by_one_cell_passes_every_check_and_fails_its_figure() {
 }
 
 #[test]
-fn the_lotus_is_the_north_indian_chart_drawn_as_petals() {
-    // The same figure's points, in the lotus: every house where North
-    // Indian has it. The points sit near each cell's inner corner, where a
-    // petal's curve is farthest from a straight edge, so this is not
-    // satisfied by accident.
-    holds_to(&rows::nepali_lotus(), &NORTH);
-    // And the petals fill the square as the diamonds do.
+fn the_nepali_charts_are_the_patrikas_they_are_drawn_from() {
+    holds_to_print(&rows::nepali_lotus(), &LOTUS_PRINT);
+    holds_to_print(&rows::nepali_circle(), &ROUND_PRINT);
+    // Both are drawn in a circle of the radius the photographs are scaled
+    // to: the frame's second path starts at its top.
+    for layout in [rows::nepali_lotus(), rows::nepali_circle()] {
+        let circle = &layout.shape.as_grid().unwrap().frame[1];
+        assert_eq!(
+            circle.start,
+            Point::new(0.5, 0.5 - NEPALI_RADIUS),
+            "{}",
+            layout.key
+        );
+    }
+}
+
+#[test]
+fn the_patrikas_grahas_land_where_they_are_written() {
+    // Both scans' chart, anonymised to its pattern: the lagna in sign 1,
+    // the Moon, Jupiter and Saturn in 2, Rahu in 3, Mars in 4, the Sun,
+    // Mercury and Venus in 5 and Ketu in 9, as the printed sphuta table
+    // gives them and both patrikas write them.
+    let written: [(Graha, u16); 9] = [
+        (Graha::Moon, 2),
+        (Graha::Jupiter, 2),
+        (Graha::Saturn, 2),
+        (Graha::Rahu, 3),
+        (Graha::Mars, 4),
+        (Graha::Sun, 5),
+        (Graha::Mercury, 5),
+        (Graha::Venus, 5),
+        (Graha::Ketu, 9),
+    ];
+    let chart = written
+        .iter()
+        .fold(Placements::new(Rashi::Aries), |chart, &(graha, sign)| {
+            chart.with(Body::in_sign(
+                graha.key_id(),
+                Rashi::from_id(sign - 1).unwrap(),
+            ))
+        });
+    for (layout, photo) in [
+        (rows::nepali_lotus(), &LOTUS_PRINT),
+        (rows::nepali_circle(), &ROUND_PRINT),
+    ] {
+        let placed = place(&layout, &chart).unwrap();
+        let printed = photo.points();
+        for &(graha, sign) in &written {
+            let holder = placed
+                .cells
+                .iter()
+                .find(|cell| cell.bodies.contains(&graha.key_id()))
+                .unwrap();
+            // The lagna is sign 1, so the sign is the house, and the cell is
+            // the one the patrika prints that number in.
+            assert_eq!(
+                (holder.sign.id() + 1, u16::from(holder.house)),
+                (sign, sign),
+                "{}: {}",
+                layout.key,
+                graha.key()
+            );
+            let &(.., at) = printed
+                .iter()
+                .find(|(.., number, _)| *number == sign)
+                .unwrap();
+            assert!(
+                holder.outline.contains(at),
+                "{}: {} is not in the cell the patrika writes {sign} in",
+                layout.key,
+                graha.key()
+            );
+        }
+        // Lagna's own cell is house 1, at the top, and is marked.
+        let lagna: Vec<_> = placed.cells.iter().filter(|cell| cell.lagna).collect();
+        assert_eq!(lagna.len(), 1);
+        assert_eq!((lagna[0].house, lagna[0].sign), (1, Rashi::Aries));
+    }
+}
+
+#[test]
+#[should_panic(expected = "the figure prints")]
+fn a_lotus_turned_by_one_petal_fails_its_patrika() {
+    // Every house moved one petal along still passes every structural check.
+    let mut turned = rows::nepali_lotus();
+    for cell in &mut grid(&mut turned).cells {
+        if let Holds::House(house) = cell.holds {
+            cell.holds = Holds::House(house % 12 + 1);
+        }
+    }
+    turned.validate().expect("structurally, nothing is wrong");
+    holds_to_print(&turned, &LOTUS_PRINT);
+}
+
+#[test]
+fn the_lotus_is_twelve_equal_petals_and_the_round_chart_is_not_twelve_wedges() {
+    // The lotus: every petal the same area, each a clock hour apart. The
+    // background shows between the tips, so the petals cover less than the
+    // circle.
     let lotus = rows::nepali_lotus();
-    let area: f64 = lotus
+    let petals: Vec<f64> = lotus
         .shape
         .as_grid()
         .unwrap()
         .cells
         .iter()
         .map(|cell| cell.outline.area())
-        .sum();
-    assert!((area - 1.0).abs() < 1e-3, "the petals cover {area}");
+        .collect();
+    assert!(
+        petals.iter().all(|area| (area - petals[0]).abs() < 1e-12),
+        "{petals:?}"
+    );
+    let disc = std::f64::consts::PI * NEPALI_RADIUS * NEPALI_RADIUS;
+    let covered: f64 = petals.iter().sum();
+    assert!(
+        covered < disc,
+        "the petals cover {covered} of a disc of {disc}"
+    );
+
+    // The round chart: a square grid in the circle, so an edge cell (house
+    // 1) and a corner cell (house 2) differ, and the hub holds none.
+    let round = rows::nepali_circle();
+    let grid = round.shape.as_grid().unwrap();
+    let (edge, corner) = (grid.cells[0].outline.area(), grid.cells[1].outline.area());
+    assert!((edge - corner).abs() > 1e-3, "{edge} and {corner}");
+    let hub = grid.hub.expect("the round chart names its chart in a hub");
+    let cells: f64 = grid.cells.iter().map(|cell| cell.outline.area()).sum();
+    let square = (2.0 * NEPALI_RADIUS / 5.0).powi(2);
+    assert!(
+        (cells + square - disc).abs() < 1e-3,
+        "the cells and the hub's square fill the disc"
+    );
+    assert!(
+        grid.cells
+            .iter()
+            .all(|cell| !cell.outline.contains(hub.centre))
+    );
 }
 
 /// A shipped layout, broken one way, and the field the refusal must name.
@@ -297,6 +514,20 @@ fn each_check_refuses_the_row_it_should() {
     let mut short = rows::north_indian();
     grid(&mut short).cells.pop();
     refuses(&short, "shape.cells");
+
+    // A hub a cell holds, and one that leaves the square.
+    let mut held = rows::nepali_circle();
+    grid(&mut held).hub = Some(Hub {
+        centre: Point::new(0.5, 0.2),
+        radius: 0.05,
+    });
+    refuses(&held, "shape.hub");
+    let mut beyond = rows::nepali_circle();
+    grid(&mut beyond).hub = Some(Hub {
+        centre: Point::new(0.98, 0.5),
+        radius: 0.05,
+    });
+    refuses(&beyond, "shape.hub");
 
     // No source, and a key that is not one.
     let mut uncited = rows::north_indian();

@@ -17,7 +17,7 @@ use teistro_core::math;
 use teistro_vargas::chart::VargaChart;
 
 use crate::clock;
-use crate::layout::{Direction, Grid, Holds, Layout, Radial, Reference, Ring, Shape};
+use crate::layout::{Direction, Grid, Holds, Hub, Layout, Radial, Reference, Ring, Shape};
 use crate::path::{Path, Point, Segment};
 
 /// One body as placement reads it.
@@ -281,6 +281,10 @@ pub struct Placed {
     /// The bodies at their longitudes, for a layout with a ring drawn by
     /// longitude; empty otherwise.
     pub marks: Vec<Mark>,
+    /// The layout's hub, where the chart's name is written; absent from a
+    /// layout with none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hub: Option<Hub>,
 }
 
 /// Places a chart in a layout.
@@ -317,6 +321,7 @@ pub fn place(layout: &Layout, chart: &Placements) -> Result<Placed, Error> {
             cells: place_grid(grid, chart),
             frame: grid.frame.clone(),
             marks: Vec::new(),
+            hub: grid.hub,
         }),
         Shape::Radial(radial) => place_radial(&layout.key, radial, chart),
     }
@@ -346,7 +351,7 @@ fn place_grid(grid: &Grid, chart: &Placements) -> Vec<PlacedCell> {
 }
 
 /// The square's centre, which every ring turns about.
-const CENTRE: Point = Point::new(0.5, 0.5);
+pub(crate) const CENTRE: Point = Point::new(0.5, 0.5);
 
 /// A direction from the centre: a whole number of half hours on the clock,
 /// exact on every platform, or a bearing in degrees from a longitude, which
@@ -427,6 +432,7 @@ fn place_radial(key: &str, radial: &Radial, chart: &Placements) -> Result<Placed
         cells,
         frame: radial_frame(radial),
         marks,
+        hub: None,
     })
 }
 
@@ -604,7 +610,9 @@ fn radial_frame(radial: &Radial) -> Vec<Path> {
     radii.into_iter().map(circle).collect()
 }
 
-fn circle(radius: f64) -> Path {
+/// A circle about the square's centre, drawn as two half turns from twelve
+/// o'clock, so its points are the clock's and the same on every platform.
+pub(crate) fn circle(radius: f64) -> Path {
     let top = clock::at(CENTRE, radius, 0);
     Path {
         start: top,

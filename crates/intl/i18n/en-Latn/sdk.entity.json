@@ -2904,6 +2904,7 @@
       "prose": "Saptamsha"
     },
     "D9": {
+      "short": "D9",
       "name": "Navamsha",
       "prose": "Navamsha"
     },
@@ -5926,8 +5927,8 @@
       "prose": "East Indian"
     },
     "NEPALI_LOTUS": {
-      "name": "Nepali lotus (Ashtadala Padma)",
-      "prose": "Nepali lotus (Ashtadala Padma)"
+      "name": "Nepali lotus (Dvadashadala Padma)",
+      "prose": "Nepali lotus (Dvadashadala Padma)"
     },
     "SUDARSHAN_CHAKRA": {
       "name": "Sudarshana Chakra",
@@ -5936,6 +5937,14 @@
     "WESTERN_WHEEL": {
       "name": "Western wheel",
       "prose": "Western wheel"
+    },
+    "NEPALI_CIRCLE": {
+      "name": "Nepali round chart",
+      "prose": "Nepali round chart"
+    },
+    "NORTH_INDIAN_PETALS": {
+      "name": "North Indian with petals",
+      "prose": "North Indian with petals"
     }
   },
   "dasha_family": {

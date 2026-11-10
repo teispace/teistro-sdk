@@ -266,7 +266,7 @@ Four rules kept members off:
 
 `chart_layout` is a catalogue kind, so `intl.entity("chart_layout.NEPALI_LOTUS")`
 resolves once a locale names it. No source names the layouts in Nepali,
-so §4's list carries all six.
+so §4's list carries all seven.
 
 ## 4d. The year's rulers (2026-11-01)
 

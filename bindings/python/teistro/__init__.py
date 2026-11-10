@@ -1186,6 +1186,7 @@ __all__ = [
     "ThemeStyle",
     "DrawnCell",
     "DrawnMark",
+    "LayoutHub",
     "Outline",
     "UnitPoint",
     "LineSegment",
@@ -13515,6 +13516,17 @@ class DrawnCell:
 
 
 @dataclass(frozen=True)
+class LayoutHub:
+    """A circle no cell holds, where the chart's name is written."""
+
+    centre: UnitPoint
+    """The circle's centre."""
+
+    radius: float
+    """Its radius, a fraction of the square's side."""
+
+
+@dataclass(frozen=True)
 class DrawnMark:
     """A body drawn at its own degree on a wheel."""
 
@@ -13536,6 +13548,14 @@ class UnitPointRow(TypedDict):
 
     x: float
     y: float
+
+
+class LayoutHubRow(TypedDict):
+    """A grid's hub, as a row spells it: the circle where the chart's name
+    is written."""
+
+    centre: UnitPointRow
+    radius: float
 
 
 class SegmentRow(TypedDict, total=False):
@@ -13582,13 +13602,14 @@ class LayoutRingRow(TypedDict):
 
 
 class LayoutShapeRow(TypedDict, total=False):
-    """Twelve cells fixed in the row (`kind` `GRID`: `cells`, `frame`), or
-    rings computed per chart (`kind` `RADIAL`: `rings`, `starts_at`); both
-    carry `direction`."""
+    """Twelve cells fixed in the row (`kind` `GRID`: `cells`, `frame`, and
+    `hub` where the chart's name is written), or rings computed per chart
+    (`kind` `RADIAL`: `rings`, `starts_at`); both carry `direction`."""
 
     kind: Literal["GRID", "RADIAL"]
     cells: List[LayoutCellRow]
     frame: List[OutlineRow]
+    hub: LayoutHubRow
     rings: List[LayoutRingRow]
     starts_at: int
     direction: Literal["CLOCKWISE", "ANTICLOCKWISE"]
@@ -19321,6 +19342,10 @@ class Drawing:
     """The drawing as SVG, in the request's theme and the context's locale;
     `None` when the request gave no theme."""
 
+    hub: Optional[LayoutHub] = None
+    """The layout's hub, where the chart's name is written; `None` for a
+    layout with none."""
+
 
 def _member(kind: Any, key: str) -> Any:
     """A catalogue member by its bare key, or a refusal naming both."""
@@ -19385,7 +19410,12 @@ def _drawing(raw: Mapping[str, Any], svg: Optional[str]) -> Drawing:
             )
             for mark in placed["marks"]
         ],
+        hub=_hub(placed.get("hub")),
     )
+
+
+def _hub(raw: Optional[Mapping[str, Any]]) -> Optional[LayoutHub]:
+    return None if raw is None else LayoutHub(centre=_point(raw["centre"]), radius=float(raw["radius"]))
 
 
 def _placed_fields(columns: Any, i: int) -> dict[str, Any]:

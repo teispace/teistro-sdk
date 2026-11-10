@@ -896,7 +896,18 @@ final class VedicReads {
                 cells,
                 JsonRead.list(JsonRead.at(placed, "frame")).stream().map(VedicReads::outline).toList(),
                 marks,
+                hub(placed),
                 svg);
+    }
+
+    /** A drawing's hub, which the JSON writes only for a layout that has one. */
+    private static LayoutHub hub(Object placed) {
+        Object hub = JsonRead.object(placed).get("hub");
+        if (hub == null) {
+            return null;
+        }
+        return new LayoutHub(
+                unitPoint(JsonRead.at(hub, "centre")), JsonRead.decimal(JsonRead.at(hub, "radius")));
     }
 
     // ---- vargas, grahas, houses ----

@@ -11,6 +11,8 @@ import java.util.List;
  * @param cells The cells, in the layout's order.
  * @param frame The lines drawn that hold nothing.
  * @param marks Each body at its own degree, on a wheel; empty for a grid.
+ * @param hub The layout's hub, where the chart's name is written; null for a layout with none.
+ *     May be null.
  * @param svg The drawing as SVG, in the request's theme and the context's locale; null when the
  *     request gave no theme. May be null.
  */
@@ -20,6 +22,7 @@ public record Drawing(
         List<DrawnCell> cells,
         List<Outline> frame,
         List<DrawnMark> marks,
+        LayoutHub hub,
         String svg) {
     /** The value, its lists copied and unmodifiable. */
     public Drawing {

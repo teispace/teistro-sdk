@@ -37,6 +37,7 @@
 //!     cells: placed.cells.iter().map(|cell| cell.sign.id().to_string()).collect(),
 //!     bodies: BTreeMap::from([(Graha::Sun.key_id(), String::from("Su"))]),
 //!     lagna: Some(String::from("As")),
+//!     hub: None,
 //! };
 //! let svg = render(&placed, &labels, &Style::light())?;
 //! assert!(svg.starts_with("<svg xmlns=\"http://www.w3.org/2000/svg\""));
@@ -57,7 +58,7 @@ pub use labels::Labels;
 pub use theme::{BodyForm, CellLabel, Content, ShippedTheme, Style, Theme};
 
 use teistro_core::error::Error;
-use teistro_geometry::{Placed, PlacedCell, Point};
+use teistro_geometry::{Hub, Placed, PlacedCell, Point};
 
 use crate::fit::{Clear, Metrics, stack, to_unit};
 use crate::svg::{number, path_data, text, width_in_chars};
@@ -80,6 +81,7 @@ use crate::svg::{number, path_data, text, width_in_chars};
 ///     cells: placed.cells.iter().map(|cell| cell.sign.id().to_string()).collect(),
 ///     bodies: BTreeMap::from([(Graha::Sun.key_id(), String::from("Su"))]),
 ///     lagna: Some(String::from("As")),
+///     hub: None,
 /// };
 /// use teistro_render_svg::{Style, render};
 ///
@@ -139,6 +141,9 @@ pub fn render(placed: &Placed, labels: &Labels, style: &Style) -> Result<String,
         number(&mut out, style.stroke * scale);
         out.push_str("\"/>");
     }
+    if let (Some(hub), Some(name)) = (placed.hub, labels.hub.as_deref()) {
+        draw_hub(&mut out, hub, name, style);
+    }
     draw_marks(&mut out, placed, labels, style);
     out.push_str("</svg>");
     Ok(out)
@@ -187,7 +192,7 @@ fn draw_cell(
                 at: cell.label,
                 font: style.label_size,
                 fill,
-                body: None,
+                data: None,
                 says: label,
             },
             style,
@@ -244,7 +249,7 @@ fn draw_stack(out: &mut String, cell: &PlacedCell, label: &str, labels: &Labels,
             at: line.at,
             font: arranged.font,
             fill: &style.accent,
-            body: Some(String::from("point.LAGNA")),
+            data: Some(("data-body", String::from("point.LAGNA"))),
             says: lagna,
         };
         write_text(out, &lagna, style);
@@ -254,11 +259,33 @@ fn draw_stack(out: &mut String, cell: &PlacedCell, label: &str, labels: &Labels,
             at: line.at,
             font: arranged.font,
             fill: &style.ink,
-            body: Some(body.to_string()),
+            data: Some(("data-body", body.to_string())),
             says: name,
         };
         write_text(out, &body, style);
     }
+}
+
+/// The chart's name in the hub, in the accent: at a body's size where it
+/// fits, and smaller where its estimated box would leave the hub's circle,
+/// as a long name such as `Navamsha` would.
+fn draw_hub(out: &mut String, hub: Hub, name: &str, style: &Style) {
+    if name.is_empty() {
+        return;
+    }
+    // The box's half diagonal, per unit of font size; `sqrt` is correctly
+    // rounded on every platform.
+    let half_width = to_unit(width_in_chars(name)) * style.advance / 2.0;
+    let half_height = style.line_height / 2.0;
+    let fits = hub.radius / (half_width * half_width + half_height * half_height).sqrt();
+    let name = Text {
+        at: hub.centre,
+        font: fits.min(style.body_size),
+        fill: &style.accent,
+        data: Some(("data-hub", String::from("true"))),
+        says: name,
+    };
+    write_text(out, &name, style);
 }
 
 /// A wheel's bodies at their degrees: each written at the ring's anchor
@@ -306,7 +333,7 @@ fn draw_marks(out: &mut String, placed: &Placed, labels: &Labels, style: &Style)
             at,
             font: style.mark_size,
             fill: &style.ink,
-            body: Some(mark.body.to_string()),
+            data: Some(("data-body", mark.body.to_string())),
             says: name,
         };
         write_text(out, &words, style);
@@ -322,8 +349,9 @@ struct Text<'a> {
     at: Point,
     font: f64,
     fill: &'a str,
-    /// The body it names, for a consumer that makes the drawing interactive.
-    body: Option<String>,
+    /// The attribute naming what it is, for a consumer that makes the
+    /// drawing interactive: `data-body` and the body's key, `data-hub`.
+    data: Option<(&'static str, String)>,
     says: &'a str,
 }
 
@@ -342,8 +370,8 @@ fn write_text(out: &mut String, piece: &Text<'_>, style: &Style) {
     attribute(out, "font-family", &style.font_family);
     attribute(out, "fill", piece.fill);
     out.push_str(" text-anchor=\"middle\"");
-    if let Some(body) = &piece.body {
-        attribute(out, "data-body", body);
+    if let Some((name, value)) = &piece.data {
+        attribute(out, name, value);
     }
     out.push('>');
     text(out, piece.says);

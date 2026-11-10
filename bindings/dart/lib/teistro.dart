@@ -6373,17 +6373,19 @@ sealed class LayoutShape {
         ],
         frame: [for (final path in objects('frame')) Outline._of(path)],
         direction: direction,
+        hub: LayoutHub._maybe(raw['hub']),
       ),
       final kind => throw StateError('a layout shaped as $kind'),
     };
   }
 
   Map<String, Object?> _json() => switch (this) {
-    GridShape(:final cells, :final frame) => {
+    GridShape(:final cells, :final frame, :final hub) => {
       'kind': 'GRID',
       'cells': [for (final cell in cells) cell._json()],
       'frame': [for (final path in frame) path._json()],
       'direction': direction.key,
+      if (hub != null) 'hub': hub._json(),
     },
     RadialShape(:final rings, :final startsAt) => {
       'kind': 'RADIAL',
@@ -6400,6 +6402,7 @@ final class GridShape extends LayoutShape {
     required this.cells,
     required this.frame,
     required LayoutDirection direction,
+    this.hub,
   }) : super(direction);
 
   /// The twelve cells, in the order the row lists them.
@@ -6407,6 +6410,32 @@ final class GridShape extends LayoutShape {
 
   /// Lines drawn that hold nothing: the border, a divider.
   final List<Outline> frame;
+
+  /// The circle at the centre that names the chart, as a Nepali round
+  /// chart prints ल or न there; null for a layout with none.
+  final LayoutHub? hub;
+}
+
+/// A circle no cell holds, where the chart's name is written.
+final class LayoutHub {
+  const LayoutHub({required this.centre, required this.radius});
+
+  /// The circle's centre.
+  final UnitPoint centre;
+
+  /// Its radius, a fraction of the square's side.
+  final double radius;
+
+  static LayoutHub? _maybe(Object? raw) {
+    if (raw == null) return null;
+    final hub = raw as Map<String, Object?>;
+    return LayoutHub(
+      centre: UnitPoint._of(hub['centre']! as Map<String, Object?>),
+      radius: (hub['radius']! as num).toDouble(),
+    );
+  }
+
+  Map<String, Object?> _json() => {'centre': centre._json(), 'radius': radius};
 }
 
 /// Rings of sectors computed from the chart, innermost first.
@@ -7039,6 +7068,7 @@ final class Drawing {
     required this.cells,
     required this.frame,
     required this.marks,
+    this.hub,
     this.svg,
   });
 
@@ -7061,6 +7091,10 @@ final class Drawing {
 
   /// Each body at its own degree, on a wheel; empty for a grid.
   final List<DrawnMark> marks;
+
+  /// The layout's hub, where the chart's name is written; null for a
+  /// layout with none.
+  final LayoutHub? hub;
 
   factory Drawing._of(Map<String, Object?> raw, String? svg) {
     final placed = raw['placed']! as Map<String, Object?>;
@@ -7101,6 +7135,7 @@ final class Drawing {
             longitudeDeg: (mark['longitude_deg']! as num).toDouble(),
           ),
       ],
+      hub: LayoutHub._maybe(placed['hub']),
     );
   }
 }

@@ -119,6 +119,19 @@ impl<'c> Composer<'c> {
                 .content
                 .lagna_mark
                 .then(|| self.form("point.LAGNA", "short")),
+            hub: placed.hub.map(|_| self.chart_name(drawing.varga)),
+        }
+    }
+
+    /// The chart's name a hub carries, as a Nepali round chart prints it:
+    /// the lagna's short form for the founded chart (ल), and a divisional
+    /// chart's short form (न for the navamsha), or its name where the
+    /// locale gives no short form.
+    fn chart_name(&self, varga: Varga) -> String {
+        if varga == Varga::D1 {
+            self.form("point.LAGNA", "short")
+        } else {
+            self.form(varga.full_key(), "short")
         }
     }
 

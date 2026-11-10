@@ -11,10 +11,10 @@
 //!   curves the lotus needs;
 //! - [`layout`]: a layout as a row, and the checks that refuse a wrong one
 //!   by the cell it gets wrong;
-//! - [`rows`]: the North, South and East Indian charts, the Nepali lotus, the
-//!   Sudarshan Chakra and the Western wheel, each cited;
-//! - [`clock`]: the directions a radial layout needs, the same on every
-//!   platform;
+//! - [`rows`]: the North, South and East Indian charts, the Nepali lotus and
+//!   round chart, the Sudarshan Chakra and the Western wheel, each cited;
+//! - [`clock`]: the directions a radial layout and the Nepali charts need,
+//!   the same on every platform;
 //! - [`place`](mod@place): a chart placed in a layout, every cell carrying both its sign
 //!   and its house;
 //! - [`registry`]: the shipped layouts and a consumer's own, looked up by key.
@@ -26,8 +26,10 @@
 //! - **Layouts are two kinds.** The square charts are cells fixed in the
 //!   row; the Sudarshan Chakra's rings and a Western wheel's houses are
 //!   computed per chart.
-//! - **The lotus is the North Indian chart drawn as petals**, the same
-//!   houses in the same places with curved edges.
+//! - **The Nepali charts are printed, not invented.** The lotus is twelve
+//!   equal petals about the centre and the round chart a circle cut on a
+//!   square grid about a hub, both house 1 at the top and anticlockwise, as
+//!   three printed janma patrikas draw them.
 //!
 //! ```
 //! use teistro_core::catalogue::{Graha, Rashi};
@@ -59,7 +61,7 @@ pub mod registry;
 pub mod rows;
 
 pub use drawing::{Drawing, draw};
-pub use layout::{Cell, Direction, Grid, Holds, Layout, Radial, Reference, Ring, Shape};
+pub use layout::{Cell, Direction, Grid, Holds, Hub, Layout, Radial, Reference, Ring, Shape};
 pub use path::{Path, Point, Segment};
 pub use place::{Body, Mark, Placed, PlacedCell, Placements, place};
 pub use registry::Layouts;

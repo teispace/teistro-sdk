@@ -108,6 +108,30 @@ pub struct Grid {
     pub frame: Vec<Path>,
     /// The way the signs or houses run.
     pub direction: Direction,
+    /// The circle at the chart's centre that names the chart, as a Nepali
+    /// round chart prints ल or न there; absent from a layout with none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hub: Option<Hub>,
+}
+
+/// A circle no cell holds, where a renderer writes which chart is drawn.
+///
+/// ```
+/// use teistro_geometry::rows;
+///
+/// let round = rows::nepali_circle();
+/// let hub = round.shape.as_grid().unwrap().hub.unwrap();
+/// assert_eq!((hub.centre.x, hub.centre.y), (0.5, 0.5));
+/// // The square charts have none.
+/// assert!(rows::north_indian().shape.as_grid().unwrap().hub.is_none());
+/// ```
+#[derive(Clone, Copy, Debug, PartialEq, Serialize, Deserialize)]
+#[cfg_attr(feature = "schema", derive(schemars::JsonSchema))]
+pub struct Hub {
+    /// The circle's centre.
+    pub centre: Point,
+    /// Its radius, a fraction of the square's side.
+    pub radius: f64,
 }
 
 /// What a radial ring counts its first house from.
@@ -372,7 +396,51 @@ fn validate_grid(grid: &Grid) -> Result<(), Error> {
         }
     }
     cells_do_not_overlap(&grid.cells)?;
+    if let Some(hub) = grid.hub {
+        hub_is_free(hub, &grid.cells)?;
+    }
     runs_the_declared_way(grid)
+}
+
+/// A hub lies inside the square, and no cell holds its centre or the four
+/// points halfway to its edge, so the chart's name is written where no
+/// sign or house is.
+fn hub_is_free(hub: Hub, cells: &[Cell]) -> Result<(), Error> {
+    let Hub { centre, radius } = hub;
+    let inside = radius > 0.0
+        && centre.x - radius >= 0.0
+        && centre.x + radius <= 1.0
+        && centre.y - radius >= 0.0
+        && centre.y + radius <= 1.0;
+    if !inside {
+        return Err(refused(
+            "shape.hub",
+            format!(
+                "a hub of radius {radius} about ({}, {}) is not a circle inside the square",
+                centre.x, centre.y
+            ),
+        ));
+    }
+    let half = radius / 2.0;
+    let probes = [
+        centre,
+        Point::new(centre.x - half, centre.y),
+        Point::new(centre.x + half, centre.y),
+        Point::new(centre.x, centre.y - half),
+        Point::new(centre.x, centre.y + half),
+    ];
+    for (index, cell) in cells.iter().enumerate() {
+        if let Some(held) = probes.iter().find(|&&probe| cell.outline.contains(probe)) {
+            return Err(refused(
+                "shape.hub",
+                format!(
+                    "cell {index} holds ({}, {}), inside the hub",
+                    held.x, held.y
+                ),
+            ));
+        }
+    }
+    Ok(())
 }
 
 /// A radial layout's rings nest without overlapping inside the square, its

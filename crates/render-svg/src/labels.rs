@@ -16,7 +16,7 @@ use crate::svg::is_xml_char;
 use crate::theme::refused;
 
 /// What a drawing writes: a title, each cell's label, each body's name,
-/// and the lagna's.
+/// the lagna's, and the chart's name where the layout has a hub for it.
 ///
 /// ```
 /// # use std::collections::BTreeMap;
@@ -31,6 +31,7 @@ use crate::theme::refused;
 ///     cells: placed.cells.iter().map(|cell| cell.sign.id().to_string()).collect(),
 ///     bodies: BTreeMap::from([(Graha::Sun.key_id(), String::from("Su"))]),
 ///     lagna: Some(String::from("As")),
+///     hub: None,
 /// };
 /// assert!(labels.check(&placed).is_ok());
 /// # Ok::<(), teistro_core::error::Error>(())
@@ -48,6 +49,10 @@ pub struct Labels {
     /// The lagna's name, written first in the cell it stands in; nothing
     /// when a theme does not mark it.
     pub lagna: Option<String>,
+    /// The chart's name, written in the layout's hub (ल for the lagna's
+    /// chart on a Nepali round chart); nothing where the layout has no hub.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub hub: Option<String>,
 }
 
 impl Labels {
@@ -67,6 +72,7 @@ impl Labels {
     ///     cells: placed.cells.iter().map(|cell| cell.sign.id().to_string()).collect(),
     ///     bodies: BTreeMap::from([(Graha::Sun.key_id(), String::from("Su"))]),
     ///     lagna: Some(String::from("As")),
+    ///     hub: None,
     /// };
     /// assert!(labels.check(&placed).is_ok());
     /// // A body the labels do not name is refused by the field.
@@ -112,7 +118,8 @@ impl Labels {
             .map(|title| ("labels.title", title))
             .chain(self.cells.iter().map(|cell| ("labels.cells", cell)))
             .chain(self.bodies.values().map(|body| ("labels.bodies", body)))
-            .chain(self.lagna.iter().map(|lagna| ("labels.lagna", lagna)));
+            .chain(self.lagna.iter().map(|lagna| ("labels.lagna", lagna)))
+            .chain(self.hub.iter().map(|hub| ("labels.hub", hub)));
         for (field, text) in strings {
             if let Some(bad) = text.chars().find(|&c| !is_xml_char(c)) {
                 return Err(refused(
@@ -161,6 +168,7 @@ mod tests {
                 .collect(),
             bodies: BTreeMap::from([(Graha::Sun.key_id(), String::from("Su"))]),
             lagna: Some(String::from("As")),
+            hub: None,
         }
     }
 
@@ -193,5 +201,9 @@ mod tests {
             control.check(&placed).unwrap_err().field(),
             Some("labels.lagna")
         );
+
+        let mut hub = named(&placed);
+        hub.hub = Some(String::from("\u{0}"));
+        assert_eq!(hub.check(&placed).unwrap_err().field(), Some("labels.hub"));
     }
 }

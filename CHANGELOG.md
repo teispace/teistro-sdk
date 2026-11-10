@@ -28,6 +28,18 @@ as Nepali Lhosar reports name them. `intl.entity("graha.PLUTO")` and every
 other catalogue key now resolve, so the Node and Dart tests of a refused
 entity ask for a key no catalogue has.
 
+**The Nepali charts as printed janma patrikas draw them (SR-36).**
+**Numbers:** none computed; the `NEPALI_LOTUS` drawing changes (its cells' outlines, anchors and frame), and a drawing in any other layout keeps its bytes.
+- `NEPALI_LOTUS` is redrawn from two printed patrikas: twelve equal petals radiating from the centre inside
+  a circle, house 1's petal at twelve o'clock, anticlockwise. It replaces the North Indian diamonds with
+  curved edges, which had no source but the baseline application.
+- A new layout, `NEPALI_CIRCLE` (`chart_layout` id 6), from a third: a circle cut on a square grid about a
+  hub, house 1 above the hub, anticlockwise. A grid row and a placed chart gain an optional `hub`, in every
+  binding, and the renderer writes the chart's name there (`Labels.hub`): ल for D1 and न for D9 in Nepali,
+  Hindi and Sanskrit, `As` and `D9` in English. `varga.D9` gains a `short` form in all four locales.
+- Both are held to points transcribed from the scans, and the first scan's grahas to the cells it writes
+  them in (`03-design/chart-geometry.md` §7g). The default layout is unchanged.
+
 **Every shipped pack is final: no namespace is a draft (Q42).**
 **Numbers:** 0 draft namespaces in any shipped locale, from 10 in `hi-Deva-IN`, 10 in `sa-Deva` and `sa-Latn`, and 3 in `ne-Deva-NP`.
 The maintainer took the review of the Hindi, Sanskrit and Nepali text on,

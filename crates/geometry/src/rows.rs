@@ -16,8 +16,10 @@
 
 use teistro_core::catalogue::Rashi;
 
-use crate::layout::{Cell, Direction, Grid, Holds, Layout, Radial, Reference, Ring, Shape};
+use crate::clock;
+use crate::layout::{Cell, Direction, Grid, Holds, Hub, Layout, Radial, Reference, Ring, Shape};
 use crate::path::{Path, Point, Segment};
+use crate::place::{CENTRE, circle};
 
 /// Every layout the SDK ships, in catalogue order; a test holds the two to
 /// the same list both ways.
@@ -39,6 +41,7 @@ pub fn shipped() -> Vec<Layout> {
         nepali_lotus(),
         sudarshan_chakra(),
         western_wheel(),
+        nepali_circle(),
     ]
 }
 
@@ -62,9 +65,8 @@ fn sign(index: u16) -> Rashi {
     Rashi::from_id(index % 12).unwrap_or(Rashi::Aries)
 }
 
-/// The North Indian houses' anchors, shared with the lotus, whose petals
-/// sit on the same topology: where the number and the bodies of house `n`
-/// go, from the baseline application's chart (in units of 1/400).
+/// The North Indian houses' anchors: where the number and the bodies of
+/// house `n` go, from the baseline application's chart (in units of 1/400).
 const HOUSE_ANCHORS: [((f64, f64), (f64, f64)); 12] = [
     ((200.0, 55.0), (200.0, 110.0)),
     ((135.0, 35.0), (100.0, 40.0)),
@@ -136,6 +138,7 @@ pub fn north_indian() -> Layout {
                 .collect(),
             frame: vec![border()],
             direction: Direction::Anticlockwise,
+            hub: None,
         }),
     }
 }
@@ -191,6 +194,7 @@ pub fn south_indian() -> Layout {
             cells,
             frame: vec![border(), square(0.25, 0.25, 0.75, 0.75)],
             direction: Direction::Clockwise,
+            hub: None,
         }),
     }
 }
@@ -251,6 +255,7 @@ pub fn east_indian() -> Layout {
             cells,
             frame: vec![border()],
             direction: Direction::Anticlockwise,
+            hub: None,
         }),
     }
 }
@@ -342,143 +347,199 @@ pub fn western_wheel() -> Layout {
     }
 }
 
-/// The lotus's petals as the baseline application draws them, verbatim, in
-/// its 400 by 266.67 space that it stretches half again vertically, with the
-/// house each outlines.
-const LOTUS_PETALS: [(u8, &str); 12] = [
-    (
-        1,
-        "M 200,0 Q 200,36.3636 241.665,38.095 Q 283.33,39.8264 283.33,76.19 L 210 123.33 L 200 123.33 L 200 133.33 L 190 133.33 L 190 123.33 L 116.67 76.19 Q 116.67,39.8264 158.335,38.095 Q 200,36.3636 200,0 z",
-    ),
-    (
-        10,
-        "M 283.33 76.19 Q 319.6936,76.19 341.665,104.76 Q 363.6364,133.33 400,133.33 Q 363.6364,133.33 341.665,162.665 Q 319.6936,192 283.33,192 L 210,143.33 L 210,133.33 L 200 133.33 L 200 123.33 L 210 123.33 z",
-    ),
-    (
-        7,
-        "M 200,133.33 L 210,133.33 L 210,143.33 L 283.33,192 Q 283.33,228.3636 241.665,229.335 Q 200,230.3064 200,266.67 Q 200,230.3064 158.335,229.335 Q 116.67,228.3636 116.67,192 L 190,143.33 L 200,143.33 z",
-    ),
-    (
-        4,
-        "M 200,133.33 L 200,143.33 L 190,143.33 L 116.67,192 Q 80.3064,192 58.335,162.665 Q 36.3636,133.33 0,133.33 Q 36.3636,133.33 58.335,104.76 Q 80.3064,76.19 116.67,76.19 L 190,123.33 L 190,133.33 z",
-    ),
-    (
-        12,
-        "M 200,0 Q 200,36.3636 241.665,38.095 Q 283.33,39.8264 283.33,76.19 L 400, 0 z",
-    ),
-    (
-        2,
-        "M 116.67,76.19 Q 116.67,39.8264 158.335,38.095 Q 200,36.3636 200,0 L 0, 0 z",
-    ),
-    (
-        3,
-        "M 0,133.33 Q 36.3636,133.33 58.335,104.76 Q 80.3064,76.19 116.67,76.19 L 0, 0 z",
-    ),
-    (
-        5,
-        "M 116.67,192 Q 80.3064,192 58.335,162.665 Q 36.3636,133.33 0,133.33 L 0, 266.67 z",
-    ),
-    (
-        6,
-        "M 200,266.67 Q 200,230.3064 158.335,229.335 Q 116.67,228.3636 116.67,192 L 0, 266.67 z",
-    ),
-    (
-        8,
-        "M 283.33,192 Q 283.33,228.3636 241.665,229.335 Q 200,230.3064 200,266.67 L 400, 266.67 z",
-    ),
-    (
-        9,
-        "M 400,133.33 Q 363.6364,133.33 341.665,162.665 Q 319.6936,192 283.33,192 L 400, 266.67 z",
-    ),
-    (
-        11,
-        "M 283.33,76.19 Q 319.6936,76.19 341.665,104.76 Q 363.6364,133.33 400,133.33 L 400, 0 z",
-    ),
-];
+/// What the two Nepali charts are drawn from.
+const PATRIKAS: &str = "printed Nepali janma patrikas, three scans of two printers' forms read \
+                        2026-11-10: the lotus (जन्मकुण्डली, चलितकुण्डली, राशिकुण्डली) on two, \
+                        the round charts (ल, रा, न, भा) on the third";
 
-/// The source's values that are thirds written to two places, and the thirds
-/// they are. Without them the lotus's bottom edge sits at 1.0000125 and
-/// its centre is not the centre.
-const LOTUS_THIRDS: [(f64, f64); 6] = [
-    (116.67, 350.0 / 3.0),
-    (123.33, 370.0 / 3.0),
-    (133.33, 400.0 / 3.0),
-    (143.33, 430.0 / 3.0),
-    (266.67, 800.0 / 3.0),
-    (283.33, 850.0 / 3.0),
-];
+/// The radius of the circle both Nepali charts are drawn in: the print sets
+/// it in a decorated square, and 15/32 leaves a thirty-second of margin.
+const NEPALI_RADIUS: f64 = 15.0 / 32.0;
 
-/// The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as
-/// petals, their edges quadratic curves.
+/// The direction house `house`'s cell faces, in half hours clockwise from
+/// twelve: house 1 at the top and the rest anticlockwise, a clock hour each,
+/// as both Nepali charts run.
+fn facing(house: u8) -> u32 {
+    (24 - 2 * (u32::from(house).saturating_sub(1) % 12)) % 24
+}
+
+/// How far out along the line it shares with its neighbour a petal stays
+/// with it, and where that line pulls the petal's curve to the tip.
+const PETAL_SHARED: f64 = 7.0 / 32.0;
+const PETAL_PULL: f64 = 11.0 / 32.0;
+
+/// Where a petal's number and bodies go along its axis: the number towards
+/// the tip, the bodies where the petal is widest.
+const PETAL_LABEL: f64 = 3.0 / 8.0;
+const PETAL_BODIES: f64 = 1.0 / 4.0;
+
+/// The Nepali lotus as printed janma patrikas draw it: twelve equal petals
+/// radiating from the centre inside a circle, house 1's petal at twelve
+/// o'clock and the houses running anticlockwise, a clock hour apart, so the
+/// petals are North Indian's houses in North Indian's order.
+///
+/// Each petal shares with its neighbour the line half an hour off its axis
+/// for its inner half, as the print's petals touch, then curves to a tip on
+/// the circle; the background shows between the tips. Every point is a
+/// clock direction times a radius in 32nds, so the row is the same on every
+/// platform (`03-design/chart-geometry.md` §7).
 ///
 /// ```
-/// use teistro_geometry::{Holds, Segment, rows};
+/// use teistro_geometry::{Holds, Point, Segment, rows};
 ///
 /// let lotus = rows::nepali_lotus();
 /// let grid = lotus.shape.as_grid().unwrap();
-/// // The North Indian houses, drawn with curved edges.
-/// assert_eq!(grid.cells[0].holds, Holds::House(1));
-/// assert!(grid.cells.iter().any(|cell| cell.outline.segments.iter().any(|step| matches!(step, Segment::Quad { .. }))));
+/// // House 1's petal points to twelve o'clock, house 4's to nine.
+/// let petal = |house: u8| grid.cells.iter().find(|cell| cell.holds == Holds::House(house)).unwrap();
+/// assert!(petal(1).outline.contains(Point::new(0.5, 0.2)));
+/// assert!(petal(4).outline.contains(Point::new(0.2, 0.5)));
+/// // Twelve equal petals: each encloses the same area.
+/// let first = petal(1).outline.area();
+/// assert!(grid.cells.iter().all(|cell| (cell.outline.area() - first).abs() < 1e-12));
+/// // Curved to their tips.
+/// assert!(petal(7).outline.segments.iter().any(|step| matches!(step, Segment::Quad { .. })));
 /// ```
 #[must_use]
 pub fn nepali_lotus() -> Layout {
-    let cells = LOTUS_PETALS
-        .iter()
-        .map(|&(house, d)| house_cell(house, lotus_path(d)))
+    let cells = (1..=12u8)
+        .map(|house| {
+            let axis = facing(house);
+            let (right, left) = ((axis + 1) % 24, (axis + 23) % 24);
+            let outline = Path {
+                start: CENTRE,
+                segments: vec![
+                    Segment::Line {
+                        to: clock::at(CENTRE, PETAL_SHARED, right),
+                    },
+                    Segment::Quad {
+                        control: clock::at(CENTRE, PETAL_PULL, right),
+                        to: clock::at(CENTRE, NEPALI_RADIUS, axis),
+                    },
+                    Segment::Quad {
+                        control: clock::at(CENTRE, PETAL_PULL, left),
+                        to: clock::at(CENTRE, PETAL_SHARED, left),
+                    },
+                ],
+            };
+            Cell {
+                outline,
+                holds: Holds::House(house),
+                label: clock::at(CENTRE, PETAL_LABEL, axis),
+                bodies: clock::at(CENTRE, PETAL_BODIES, axis),
+            }
+        })
         .collect();
     Layout {
         key: String::from("NEPALI_LOTUS"),
-        sources: vec![String::from(
-            "the baseline application's kundali lotus frame, as drawn to its readers",
-        )],
+        sources: vec![String::from(PATRIKAS)],
         shape: Shape::Grid(Grid {
             cells,
-            frame: vec![border()],
+            frame: vec![border(), circle(NEPALI_RADIUS)],
             direction: Direction::Anticlockwise,
+            hub: None,
         }),
     }
 }
 
-/// One of the lotus's path strings in the unit square. The source uses
-/// only absolute `M`, `L` and `Q` commands and `z`, so that is all this
-/// reads; a command it does not know would be a changed source and fails
-/// the layout's validation rather than passing silently.
-fn lotus_path(d: &str) -> Path {
-    let thirds = |value: f64| {
-        LOTUS_THIRDS
-            .iter()
-            .find(|(written, _)| (value - written).abs() < 1e-9)
-            .map_or(value, |(_, exact)| *exact)
-    };
-    let point = |x: f64, y: f64| p(thirds(x) / 400.0, thirds(y) * 1.5 / 400.0);
-    let mut numbers = d
-        .split(|c: char| c.is_whitespace() || c == ',' || c.is_ascii_alphabetic())
-        .filter(|token| !token.is_empty())
-        .map(|token| token.parse::<f64>().unwrap_or(f64::NAN));
-    let mut take = || numbers.next().unwrap_or(f64::NAN);
-    let mut path = Path {
-        start: p(f64::NAN, f64::NAN),
-        segments: Vec::new(),
-    };
-    for command in d.chars().filter(char::is_ascii_alphabetic) {
-        match command {
-            'M' => {
-                let (x, y) = (take(), take());
-                path.start = point(x, y);
+/// Half the side of the round chart's hub square: a fifth of the circle's
+/// radius, as the print measures (0.205 and 0.209 of it, down and across).
+const HUB_HALF: f64 = NEPALI_RADIUS / 5.0;
+
+/// The hub's circle, inside its square.
+const HUB_RADIUS: f64 = HUB_HALF * 0.75;
+
+/// Where the numbers and the bodies go: in an edge cell along its axis, the
+/// number beside the hub; in a corner cell along the clock hour it faces.
+const EDGE_LABEL: f64 = 1.0 / 8.0;
+const EDGE_BODIES: f64 = 9.0 / 32.0;
+const CORNER_LABEL: f64 = 1.0 / 4.0;
+const CORNER_BODIES: f64 = 3.0 / 8.0;
+
+/// The Nepali round chart as a printed janma patrika draws it: a circle cut
+/// on a square grid. The lines of a central square's four sides run out to
+/// the circle, and the square's diagonals run from its corners to the
+/// circle, so the topology is the East Indian chart's, clipped to a circle.
+/// The square is the hub, where the print names the chart (ल, रा, न, भा).
+/// The houses are fixed, house 1 the cell above the hub, running
+/// anticlockwise; an edge cell spans about 23° of the circle and a corner
+/// cell about 34°, so the cells are not equal wedges.
+///
+/// ```
+/// use teistro_geometry::{Holds, Point, rows};
+///
+/// let round = rows::nepali_circle();
+/// let grid = round.shape.as_grid().unwrap();
+/// let cell = |house: u8| grid.cells.iter().find(|cell| cell.holds == Holds::House(house)).unwrap();
+/// // House 1 above the hub, house 2 the upper half of the top-left corner,
+/// // house 3 its lower half, house 4 left of the hub.
+/// assert!(cell(1).outline.contains(Point::new(0.5, 0.2)));
+/// assert!(cell(2).outline.contains(Point::new(0.3, 0.2)));
+/// assert!(cell(3).outline.contains(Point::new(0.2, 0.3)));
+/// assert!(cell(4).outline.contains(Point::new(0.2, 0.5)));
+/// // The hub holds no house.
+/// assert!(grid.cells.iter().all(|cell| !cell.outline.contains(Point::new(0.5, 0.5))));
+/// ```
+#[must_use]
+pub fn nepali_circle() -> Layout {
+    let (low, high) = (0.5 - HUB_HALF, 0.5 + HUB_HALF);
+    // Where the lines of the hub's sides meet the circle.
+    let reach = (NEPALI_RADIUS * NEPALI_RADIUS - HUB_HALF * HUB_HALF).sqrt();
+    let (near, far) = (0.5 - reach, 0.5 + reach);
+    let corner = |half_hours: u32| clock::at(CENTRE, NEPALI_RADIUS, half_hours);
+    let (top_right, bottom_right, bottom_left, top_left) =
+        (corner(3), corner(9), corner(15), corner(21));
+    // Each house: the hub's corners it touches, clockwise about the centre,
+    // and the arc of the circle it runs anticlockwise along.
+    let houses: [(Vec<Point>, Point, Point); 12] = [
+        (vec![p(low, low), p(high, low)], p(high, near), p(low, near)),
+        (vec![p(low, low)], p(low, near), top_left),
+        (vec![p(low, low)], top_left, p(near, low)),
+        (vec![p(low, high), p(low, low)], p(near, low), p(near, high)),
+        (vec![p(low, high)], p(near, high), bottom_left),
+        (vec![p(low, high)], bottom_left, p(low, far)),
+        (vec![p(high, high), p(low, high)], p(low, far), p(high, far)),
+        (vec![p(high, high)], p(high, far), bottom_right),
+        (vec![p(high, high)], bottom_right, p(far, high)),
+        (vec![p(high, low), p(high, high)], p(far, high), p(far, low)),
+        (vec![p(high, low)], p(far, low), top_right),
+        (vec![p(high, low)], top_right, p(high, near)),
+    ];
+    let cells = (1..=12u8)
+        .zip(houses)
+        .map(|(house, (hub, from, to))| {
+            let mut segments: Vec<Segment> =
+                hub.iter().skip(1).map(|&to| Segment::Line { to }).collect();
+            segments.push(Segment::Line { to: from });
+            segments.push(Segment::Arc {
+                centre: CENTRE,
+                clockwise: false,
+                to,
+            });
+            let start = hub.first().copied().unwrap_or(CENTRE);
+            let (label, bodies) = if house % 3 == 1 {
+                (EDGE_LABEL, EDGE_BODIES)
+            } else {
+                (CORNER_LABEL, CORNER_BODIES)
+            };
+            Cell {
+                outline: Path { start, segments },
+                holds: Holds::House(house),
+                label: clock::at(CENTRE, label, facing(house)),
+                bodies: clock::at(CENTRE, bodies, facing(house)),
             }
-            'L' => {
-                let (x, y) = (take(), take());
-                path.segments.push(Segment::Line { to: point(x, y) });
-            }
-            'Q' => {
-                let (cx, cy, x, y) = (take(), take(), take(), take());
-                path.segments.push(Segment::Quad {
-                    control: point(cx, cy),
-                    to: point(x, y),
-                });
-            }
-            _ => {}
-        }
+        })
+        .collect();
+    Layout {
+        key: String::from("NEPALI_CIRCLE"),
+        sources: vec![String::from(PATRIKAS)],
+        shape: Shape::Grid(Grid {
+            cells,
+            frame: vec![border(), circle(NEPALI_RADIUS), circle(HUB_RADIUS)],
+            direction: Direction::Anticlockwise,
+            hub: Some(Hub {
+                centre: CENTRE,
+                radius: HUB_RADIUS,
+            }),
+        }),
     }
-    path
 }
