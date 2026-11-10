@@ -330,6 +330,9 @@ class Kind(Member):
     vyaya_kind = 161
     """The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195)."""
 
+    chart_frame = 162
+    """What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in."""
+
 
 class Graha(Catalogued):
     """The nine grahas of the Parashari tradition and the three outer planets. Members are the catalogue's ids; the full key id is `(TS_KIND_GRAHA << 16) | member`."""
@@ -4024,6 +4027,27 @@ class VyayaKind(Catalogued):
     """
 
 
+class ChartFrame(Catalogued):
+    """What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_FRAME << 16) | member`."""
+
+    LAGNA = 0
+    """The lagna's sign as house 1: the janma kundali"""
+
+    MOON = 1
+    """The Moon's sign as house 1, the grahas in their signs: the rashi (chandra) kundali"""
+
+    SUN = 2
+    """The Sun's sign as house 1, the grahas in their signs: the surya kundali"""
+
+    BHAVA = 3
+    """The bhava chalit: each house keeps the sign the lagna gives it, and each graha stands in the bhava the chart's cusps put it in"""
+
+    UNKNOWN = -1
+    """A member this build does not know: from a newer library, or
+    registered at run time.
+    """
+
+
 class Status(Member):
     """The status of a call, with the code it has at the C boundary."""
 
@@ -6309,6 +6333,7 @@ _KEYS: dict[str, dict[int, str]] = {
         130: "mundane_kind",
         160: "vastu_yoni",
         161: "vyaya_kind",
+        162: "chart_frame",
     },
     "Graha": {
         0: "SUN",
@@ -7541,6 +7566,13 @@ _KEYS: dict[str, dict[int, str]] = {
         2: "YAKSHA",
         -1: "UNKNOWN",
     },
+    "ChartFrame": {
+        0: "LAGNA",
+        1: "MOON",
+        2: "SUN",
+        3: "BHAVA",
+        -1: "UNKNOWN",
+    },
     "Status": {
         0: "OK",
         -1: "INVALID_ARG",
@@ -8319,4 +8351,5 @@ _KINDS: dict[str, str] = {
     "MundaneKind": "mundane_kind",
     "VastuYoni": "vastu_yoni",
     "VyayaKind": "vyaya_kind",
+    "ChartFrame": "chart_frame",
 }

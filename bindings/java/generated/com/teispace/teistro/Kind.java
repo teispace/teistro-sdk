@@ -427,7 +427,12 @@ public enum Kind implements Member {
     /**
      * The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195).
      */
-    VYAYA_KIND(161, "vyaya_kind");
+    VYAYA_KIND(161, "vyaya_kind"),
+
+    /**
+     * What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in.
+     */
+    CHART_FRAME(162, "chart_frame");
 
     private static final Kind[] MEMBERS = values();
 

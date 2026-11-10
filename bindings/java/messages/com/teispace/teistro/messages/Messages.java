@@ -692,6 +692,33 @@ public final class Messages {
         }
     }
 
+    /** A `chart_frame` as a message names it: the full catalogue key. */
+    public enum ChartFrameKey {
+        /** `chart_frame.LAGNA`. */
+        LAGNA("chart_frame.LAGNA"),
+        /** `chart_frame.MOON`. */
+        MOON("chart_frame.MOON"),
+        /** `chart_frame.SUN`. */
+        SUN("chart_frame.SUN"),
+        /** `chart_frame.BHAVA`. */
+        BHAVA("chart_frame.BHAVA");
+
+        private final String value;
+
+        ChartFrameKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `chart_kind` as a message names it: the full catalogue key. */
     public enum ChartKindKey {
         /** `chart_kind.NATAL`. */
@@ -7547,6 +7574,61 @@ public final class Messages {
                  */
                 public EntityForms putrakaraka() {
                     return r.entity("chara_karaka.PUTRAKARAKA");
+                }
+            }
+
+
+            /**
+             * The messages under `chart_frame`.
+             *
+             * @return the group
+             */
+            public SdkEntityChartFrame chartFrame() {
+                return new SdkEntityChartFrame(r);
+            }
+
+            /** The messages under `SdkEntityChartFrame`, each rendered by its own key. */
+            public static final class SdkEntityChartFrame {
+                private final Renderer r;
+
+                SdkEntityChartFrame(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `chart_frame.BHAVA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhava() {
+                    return r.entity("chart_frame.BHAVA");
+                }
+
+                /**
+                 * The forms of `chart_frame.LAGNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms lagna() {
+                    return r.entity("chart_frame.LAGNA");
+                }
+
+                /**
+                 * The forms of `chart_frame.MOON` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms moon() {
+                    return r.entity("chart_frame.MOON");
+                }
+
+                /**
+                 * The forms of `chart_frame.SUN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sun() {
+                    return r.entity("chart_frame.SUN");
                 }
             }
 

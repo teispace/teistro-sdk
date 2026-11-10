@@ -95,6 +95,7 @@ A kind: a family of entities sharing one key type. The number is the high half o
 | `TS_KIND_MUNDANE_KIND` | 130 | Which mundane chart a moment is found for: an ingress, the lunation before one, an eclipse, a great conjunction, or an event on record (`03-design/mundane-charts.md`). |
 | `TS_KIND_VASTU_YONI` | 160 | The eight of the banner series a vastu measure's remainder names, the aaya of Samarangana Sutradhara and Muhurta Chintamani and the yoni of Mayamata and Manasara (`03-design/aayadi.md`); the fruits in the members' docs are Samarangana XXVI vv. 21-22's. |
 | `TS_KIND_VYAYA_KIND` | 161 | The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size beside the aaya (`03-design/aayadi.md`, crux C1195). |
+| `TS_KIND_CHART_FRAME` | 162 | What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in. |
 
 ## ts_graha
 
@@ -1662,6 +1663,17 @@ The three vyayas of Samarangana Sutradhara XXVI vv. 36-37, by the vyaya's size b
 | `TS_VYAYA_KIND_PISHACHA` | 0 | Piśāca, a vyaya equal to the aaya |
 | `TS_VYAYA_KIND_RAKSHASA` | 1 | Rākṣasa, a vyaya greater than the aaya |
 | `TS_VYAYA_KIND_YAKSHA` | 2 | Yakṣa, a vyaya less than the aaya, the good one (v. 48) |
+
+## ts_chart_frame
+
+What a drawn chart counts its houses from: the lagna, the Moon or the Sun as house 1, or the bhavas, each graha in the house its cusps put it in. Members are the catalogue's ids; the full key id is `(TS_KIND_CHART_FRAME << 16) | member`.
+
+| member | value | what it is |
+|---|---|---|
+| `TS_CHART_FRAME_LAGNA` | 0 | The lagna's sign as house 1: the janma kundali |
+| `TS_CHART_FRAME_MOON` | 1 | The Moon's sign as house 1, the grahas in their signs: the rashi (chandra) kundali |
+| `TS_CHART_FRAME_SUN` | 2 | The Sun's sign as house 1, the grahas in their signs: the surya kundali |
+| `TS_CHART_FRAME_BHAVA` | 3 | The bhava chalit: each house keeps the sign the lagna gives it, and each graha stands in the bhava the chart's cusps put it in |
 
 ## ts_status
 

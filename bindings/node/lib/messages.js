@@ -387,6 +387,12 @@ export function messages(r) {
           pitrikaraka: () => r.entity('chara_karaka.PITRIKARAKA'),
           putrakaraka: () => r.entity('chara_karaka.PUTRAKARAKA'),
         },
+        chartFrame: {
+          bhava: () => r.entity('chart_frame.BHAVA'),
+          lagna: () => r.entity('chart_frame.LAGNA'),
+          moon: () => r.entity('chart_frame.MOON'),
+          sun: () => r.entity('chart_frame.SUN'),
+        },
         chartKind: {
           composite: () => r.entity('chart_kind.COMPOSITE'),
           event: () => r.entity('chart_kind.EVENT'),

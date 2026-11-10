@@ -86,6 +86,7 @@ mod tridosha;
 mod mundane_kind;
 mod vastu_yoni;
 mod vyaya_kind;
+mod chart_frame;
 
 pub use kinds::Kind;
 pub use graha::*;
@@ -172,6 +173,7 @@ pub use tridosha::*;
 pub use mundane_kind::*;
 pub use vastu_yoni::*;
 pub use vyaya_kind::*;
+pub use chart_frame::*;
 
 use crate::key::KeyId;
 
@@ -272,6 +274,7 @@ pub fn resolve(kind: Kind, key: &str) -> Option<KeyId> {
         Kind::MundaneKind => MundaneKind::from_key(key).map(MundaneKind::key_id),
         Kind::VastuYoni => VastuYoni::from_key(key).map(VastuYoni::key_id),
         Kind::VyayaKind => VyayaKind::from_key(key).map(VyayaKind::key_id),
+        Kind::ChartFrame => ChartFrame::from_key(key).map(ChartFrame::key_id),
         _ => None,
     }
 }
@@ -370,6 +373,7 @@ pub fn key_of(id: KeyId) -> Option<&'static str> {
         Kind::MundaneKind => MundaneKind::from_id(id.id()).map(MundaneKind::key),
         Kind::VastuYoni => VastuYoni::from_id(id.id()).map(VastuYoni::key),
         Kind::VyayaKind => VyayaKind::from_id(id.id()).map(VyayaKind::key),
+        Kind::ChartFrame => ChartFrame::from_id(id.id()).map(ChartFrame::key),
         _ => None,
     }
 }

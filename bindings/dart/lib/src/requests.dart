@@ -3472,12 +3472,15 @@ enum Projection implements _Keyed {
   final String key;
 }
 
-/// A drawing: a layout of a divisional chart.
+/// A drawing: a layout of a divisional chart, its houses counted from the lagna unless `countsFrom` names the Moon, the Sun or the bhavas.
 final class DrawingAsked extends _Request {
   const DrawingAsked({
+    this.countsFrom = ChartFrame.lagna,
     required this.layout,
     required this.varga,
   });
+
+  final ChartFrame countsFrom;
 
   final KeyOf<ChartLayout> layout;
 
@@ -3485,12 +3488,13 @@ final class DrawingAsked extends _Request {
 
   @override
   Map<String, Object?> get _wire => <String, Object?>{
+    'countsFrom': countsFrom.key,
     'layout': layout.fullKey,
     'varga': varga.key,
   };
 
   @override
-  List<Object?> get _fields => [layout, varga];
+  List<Object?> get _fields => [countsFrom, layout, varga];
 }
 
 /// How a chart's fortitudes are read: its essential dignities' request, and the accidental table's rules and scores.

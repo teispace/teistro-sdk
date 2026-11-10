@@ -1214,5 +1214,11 @@
     "PISHACHA": {},
     "RAKSHASA": {},
     "YAKSHA": {}
+  },
+  "chart_frame": {
+    "LAGNA": {},
+    "MOON": {},
+    "SUN": {},
+    "BHAVA": {}
   }
 }

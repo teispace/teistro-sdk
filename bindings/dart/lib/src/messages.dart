@@ -293,6 +293,17 @@ enum CharaKarakaKey {
   final String key;
 }
 
+enum ChartFrameKey {
+  lagna('chart_frame.LAGNA'),
+  moon('chart_frame.MOON'),
+  sun('chart_frame.SUN'),
+  bhava('chart_frame.BHAVA');
+
+  const ChartFrameKey(this.key);
+
+  final String key;
+}
+
 enum ChartKindKey {
   natal('chart_kind.NATAL'),
   transit('chart_kind.TRANSIT'),
@@ -2901,6 +2912,17 @@ final class MessagesSdkEntityCharaKaraka {
   EntityForms get putrakaraka => _r.entity('chara_karaka.PUTRAKARAKA');
 }
 
+final class MessagesSdkEntityChartFrame {
+  const MessagesSdkEntityChartFrame(this._r);
+
+  final Renderer _r;
+
+  EntityForms get bhava => _r.entity('chart_frame.BHAVA');
+  EntityForms get lagna => _r.entity('chart_frame.LAGNA');
+  EntityForms get moon => _r.entity('chart_frame.MOON');
+  EntityForms get sun => _r.entity('chart_frame.SUN');
+}
+
 final class MessagesSdkEntityChartKind {
   const MessagesSdkEntityChartKind(this._r);
 
@@ -4651,6 +4673,7 @@ final class MessagesSdkEntity {
   MessagesSdkEntityBodyClass get bodyClass => MessagesSdkEntityBodyClass(_r);
   MessagesSdkEntityCalendar get calendar => MessagesSdkEntityCalendar(_r);
   MessagesSdkEntityCharaKaraka get charaKaraka => MessagesSdkEntityCharaKaraka(_r);
+  MessagesSdkEntityChartFrame get chartFrame => MessagesSdkEntityChartFrame(_r);
   MessagesSdkEntityChartKind get chartKind => MessagesSdkEntityChartKind(_r);
   MessagesSdkEntityChartLayout get chartLayout => MessagesSdkEntityChartLayout(_r);
   MessagesSdkEntityChoghadiya get choghadiya => MessagesSdkEntityChoghadiya(_r);
