@@ -577,15 +577,25 @@ mod tests {
     /// locale too, so `hi-Deva-IN` — which names every graha, rashi and
     /// nakshatra — rendered **identical English**, measured at 0 of 433
     /// items differing on `interpret-measured.md`. It is 374 now.
+    ///
+    /// Hindi has carried the composed text since SR-38, so the test takes
+    /// `sdk.condition` away to keep the case it is about.
     #[test]
     fn a_locale_with_names_and_no_messages_still_says_its_names() {
-        let mut intl = engine("hi-Deva-IN");
+        let mut tree = Tree::load(&sdk_root()).unwrap_or_else(|e| panic!("{e}"));
+        if let Some(hindi) = tree.locales.get_mut("hi-Deva-IN") {
+            hindi.namespaces.remove("sdk.condition");
+            hindi.meta.draft.retain(|name| name != "sdk.condition");
+        }
+        let mut intl = Intl::from_tree(&tree).unwrap_or_else(|e| panic!("{e}"));
+        intl.set_locale("hi-Deva-IN")
+            .unwrap_or_else(|e| panic!("{e}"));
         let said = intl.render(
             "sdk.condition.retrograde",
             &params([("graha", Value::entity("graha.SUN"))]),
         );
         // The frame is English, and says so.
-        assert!(said.is_fallback, "hi-Deva-IN carries no sdk.condition");
+        assert!(said.is_fallback, "this hi-Deva-IN carries no sdk.condition");
         assert_eq!(said.resolved_from.as_deref(), Some("en-Latn"));
         // The name is not.
         let Some(named) = intl.entity_from("hi-Deva-IN", "graha.SUN") else {

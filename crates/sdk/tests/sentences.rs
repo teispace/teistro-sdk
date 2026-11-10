@@ -1,6 +1,7 @@
 //! A day in sentences through the context (`03-design/day-in-sentences.md`):
 //! the sentences in each language, read back against the day's answer, a
 //! locale without templates refused, and a polar place across a year.
+//! Hindi and Sanskrit carry drafts of the templates since SR-38.
 
 #![allow(
     clippy::unwrap_used,
@@ -92,20 +93,58 @@ fn a_day_says_its_own_answer_in_english_and_nepali() {
     );
 }
 
+/// Hindi and Sanskrit say the day in their own drafts (SR-38), every
+/// sentence in each and each answer marked a draft until Q42's reviewers
+/// sign it; `sa-Latn` is `sa-Deva`'s text in the Latin script.
+#[test]
+fn hindi_and_sanskrit_say_the_day_as_drafts() {
+    let sdk = context("{}");
+    let english = sdk
+        .almanac()
+        .sentences(&asked((2026, 3, 18), KATHMANDU, NEPAL, Some("en-Latn")))
+        .unwrap()
+        .value;
+    for (locale, vara) in [
+        ("hi-Deva-IN", "यह दिन बुधवार है।"),
+        ("sa-Deva", "अयं दिवसः बुधवारः।"),
+        ("sa-Latn", "Ayaṃ divasaḥ Budhavāraḥ."),
+    ] {
+        let said = sdk
+            .almanac()
+            .sentences(&asked((2026, 3, 18), KATHMANDU, NEPAL, Some(locale)))
+            .unwrap()
+            .value;
+        assert!(said.draft, "{locale} waits on its reviewer (Q42)");
+        assert_eq!(said.locale, locale);
+        assert_eq!(said.sentences.len(), english.sentences.len(), "{locale}");
+        assert_eq!(said.sentences[0].text, vara, "{locale}");
+    }
+}
+
 /// A locale with no templates is refused by name rather than answered in
-/// its fallback's language, and one not loaded is refused for that.
+/// its fallback's language, and one not loaded is refused for that. Every
+/// shipped locale carries them, so the one refused is loaded from a pack
+/// without `sdk.day`.
 #[test]
 fn a_locale_without_templates_is_refused_and_says_why() {
     let sdk = context("{}");
-    for locale in ["hi-Deva-IN", "sa-Deva", "sa-Latn"] {
-        let refused = sdk
-            .almanac()
-            .sentences(&asked((2026, 3, 18), KATHMANDU, NEPAL, Some(locale)))
-            .unwrap_err();
-        assert_eq!(refused.status, Status::Unsupported);
-        assert_eq!(refused.field(), Some("locale"));
-        assert!(refused.message.contains("Q42"), "{refused}");
-    }
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../i18n");
+    let tree = teistro::Tree::load(&root).unwrap();
+    let mut marathi = tree.locales["hi-Deva-IN"].clone();
+    marathi.tag = String::from("mr-Deva-IN");
+    marathi.meta.locale = String::from("mr-Deva-IN");
+    marathi.namespaces.remove("sdk.day");
+    marathi.meta.draft.retain(|name| name != "sdk.day");
+    sdk.intl()
+        .load_pack(&teistro::pack::build_bundle(&marathi).unwrap())
+        .unwrap();
+    let refused = sdk
+        .almanac()
+        .sentences(&asked((2026, 3, 18), KATHMANDU, NEPAL, Some("mr-Deva-IN")))
+        .unwrap_err();
+    assert_eq!(refused.status, Status::Unsupported);
+    assert_eq!(refused.field(), Some("locale"));
+    assert!(refused.message.contains("no templates"), "{refused}");
     let unknown = sdk
         .almanac()
         .sentences(&asked((2026, 3, 18), KATHMANDU, NEPAL, Some("xx-Latn")))

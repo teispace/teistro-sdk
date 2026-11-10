@@ -1,7 +1,8 @@
-//! The unreviewed text: Hindi and Sanskrit `sdk.calendar` and Sanskrit's
-//! `sdk.amount` ship marked, a reader sees the mark, and `check-intl`
-//! holds it
-//! (`docs/03-design/intl-engine-and-packs.md`, "Text not yet reviewed").
+//! The unreviewed text: Hindi and Sanskrit `sdk.calendar` and composed
+//! text (SR-38), Sanskrit's `sdk.amount`, and the rashifal (SR-37) and
+//! rites (SR-31) ship marked, a reader sees the mark, and `check-intl`
+//! holds it (`docs/03-design/intl-engine-and-packs.md`, "Text not yet
+//! reviewed").
 #![allow(
     clippy::unwrap_used,
     clippy::expect_used,
@@ -27,22 +28,39 @@ fn errors(tree: &Tree) -> Vec<String> {
         .collect()
 }
 
+/// Every namespace Hindi and Sanskrit write is a draft: the calendar's
+/// words, and the composed text SR-38 added.
+const DRAFTED: [&str; 9] = [
+    "sdk.aspect",
+    "sdk.calendar",
+    "sdk.condition",
+    "sdk.day",
+    "sdk.karaka",
+    "sdk.naming",
+    "sdk.phala",
+    "sdk.reading",
+    "sdk.reason",
+];
+
+/// The composed namespaces with one locale's own further draft, sorted as
+/// `_meta.json` lists them.
+fn drafted(extra: &str) -> Vec<String> {
+    let mut all: Vec<String> = DRAFTED.iter().map(|name| (*name).to_owned()).collect();
+    all.push(extra.to_owned());
+    all.sort();
+    all
+}
+
 /// This pin comes off only with the reviewer named in QUESTIONS.md Q42.
 #[test]
-fn hindi_and_sanskrit_calendar_text_ships_marked() {
+fn hindi_and_sanskrit_text_ships_marked() {
     let tree = tree();
-    assert_eq!(
-        tree.locales["hi-Deva-IN"].meta.draft,
-        ["sdk.calendar", "sdk.rashifal", "sdk.reason"]
-    );
-    // Sanskrit's currency words (SR-49) too, and sa-Latn, derived from
-    // sa-Deva, carries both still marked (SR-79).
+    // Hindi drafts the rashifal (SR-37) beside the composed text; Sanskrit
+    // its currency words (SR-49). sa-Latn carries sa-Deva's drafts across
+    // with the text it derives: transliterating a draft does not review it.
+    assert_eq!(tree.locales["hi-Deva-IN"].meta.draft, drafted("sdk.rashifal"));
     for tag in ["sa-Deva", "sa-Latn"] {
-        assert_eq!(
-            tree.locales[tag].meta.draft,
-            ["sdk.amount", "sdk.calendar"],
-            "{tag}"
-        );
+        assert_eq!(tree.locales[tag].meta.draft, drafted("sdk.amount"), "{tag}");
     }
     // The strict locale drafts its day sentences, its rashifal (SR-37) and
     // its rites' names (SR-31), not its calendar words.
@@ -57,7 +75,137 @@ fn hindi_and_sanskrit_calendar_text_ships_marked() {
         .iter()
         .find(|l| l.tag == "hi-Deva-IN")
         .unwrap();
-    assert_eq!(hindi.draft, ["sdk.calendar", "sdk.rashifal", "sdk.reason"]);
+    assert_eq!(hindi.draft, drafted("sdk.rashifal"));
+}
+
+/// The parameters of one message of each composed namespace, by name.
+fn composed(name: &str) -> Params {
+    let entity = |key: &str| Value::Entity(key.into());
+    match name {
+        "jupiterInTheFifth" => {
+            params([("graha", entity("graha.JUPITER")), ("bhava", Value::Int(5))])
+        }
+        "saturn" => params([("graha", entity("graha.SATURN"))]),
+        "sunday" => params([("vara", entity("vara.RAVIVARA"))]),
+        "long" => params([
+            ("rule", Value::Str("R".into())),
+            ("class", Value::Str("long".into())),
+        ]),
+        "atmakaraka" => params([
+            ("graha", entity("graha.SUN")),
+            ("karaka", entity("chara_karaka.ATMAKARAKA")),
+        ]),
+        "mutual" => params([
+            ("first", entity("graha.MARS")),
+            ("second", entity("graha.SATURN")),
+        ]),
+        "aries" => params([("rashi", entity("rashi.ARIES"))]),
+        other => {
+            let (name, n) = other.split_once('=').expect("a name=count");
+            params([(name, Value::Int(n.parse().expect("a count")))])
+        }
+    }
+}
+
+/// Renders each case in its locale: the text, from that locale itself,
+/// and marked a draft.
+fn says(cases: &[(&str, &str, &str, &str)]) {
+    let intl = Intl::from_tree(&tree()).unwrap();
+    for (tag, key, name, text) in cases {
+        let said = intl.render_in(tag, key, &composed(name));
+        assert_eq!(said.text, *text, "{tag} {key}");
+        assert_eq!(said.resolved_from.as_deref(), Some(*tag), "{tag} {key}");
+        assert!(said.is_draft, "{tag} {key} is a draft");
+    }
+}
+
+/// One message of each composed namespace (SR-38) as Hindi says it.
+/// Houses and padas take the Sanskrit ordinal Hindi panchangas print; a
+/// rank reads Hindi's ordinal categories, where 3 is `two` and 6 `many`.
+#[test]
+fn the_composed_text_speaks_hindi_and_says_it_is_a_draft() {
+    says(&[
+        (
+            "hi-Deva-IN",
+            "sdk.reason.grahaInBhava",
+            "jupiterInTheFifth",
+            "गुरु पंचम भाव में",
+        ),
+        (
+            "hi-Deva-IN",
+            "sdk.condition.retrograde",
+            "saturn",
+            "शनि वक्री है",
+        ),
+        // No locale's entity table has a `phala` form yet, so the name stands in.
+        ("hi-Deva-IN", "sdk.phala.vara", "sunday", "रविवार"),
+        ("hi-Deva-IN", "sdk.reading.lifeClass", "long", "दीर्घायु"),
+        (
+            "hi-Deva-IN",
+            "sdk.karaka.ofSeven",
+            "atmakaraka",
+            "सात कारकों में सूर्य आत्मकारक है",
+        ),
+        (
+            "hi-Deva-IN",
+            "sdk.aspect.mutual",
+            "mutual",
+            "मंगल और शनि की परस्पर दृष्टि है",
+        ),
+        ("hi-Deva-IN", "sdk.naming.syllables", "count=2", "२ अक्षर"),
+        ("hi-Deva-IN", "sdk.day.sunSign", "aries", "सूर्य मेष राशि में है।"),
+        ("hi-Deva-IN", "sdk.reason.strength.rank", "rank=3", "३रा"),
+        ("hi-Deva-IN", "sdk.reason.strength.rank", "rank=6", "६ठा"),
+    ]);
+}
+
+/// One message of each composed namespace (SR-38) as Sanskrit says it,
+/// and the derived Latin script. Sanskrit gives a stem its case through
+/// its slot (`गुरुः`, `मेषराशौ`) and has a dual, which no plural category
+/// names, so an exact `2` carries it.
+#[test]
+fn the_composed_text_speaks_sanskrit_and_says_it_is_a_draft() {
+    says(&[
+        (
+            "sa-Deva",
+            "sdk.reason.grahaInBhava",
+            "jupiterInTheFifth",
+            "गुरुः पञ्चमे भावे",
+        ),
+        ("sa-Deva", "sdk.condition.retrograde", "saturn", "शनिः वक्री"),
+        ("sa-Deva", "sdk.phala.vara", "sunday", "रविवार"),
+        ("sa-Deva", "sdk.reading.lifeClass", "long", "दीर्घायुः"),
+        (
+            "sa-Deva",
+            "sdk.karaka.ofSeven",
+            "atmakaraka",
+            "सप्तसु कारकेषु सूर्यः आत्मकारकः",
+        ),
+        (
+            "sa-Deva",
+            "sdk.aspect.mutual",
+            "mutual",
+            "मंगल-शनिग्रहौ परस्परं पश्यतः",
+        ),
+        ("sa-Deva", "sdk.naming.syllables", "count=1", "१ अक्षरम्"),
+        ("sa-Deva", "sdk.naming.syllables", "count=2", "२ अक्षरे"),
+        ("sa-Deva", "sdk.naming.syllables", "count=3", "३ अक्षराणि"),
+        ("sa-Deva", "sdk.day.sunSign", "aries", "सूर्यः मेषराशौ तिष्ठति।"),
+        // Derived: the same text in IAST, the danda a full stop, a
+        // sentence capitalised.
+        (
+            "sa-Latn",
+            "sdk.reason.grahaInBhava",
+            "jupiterInTheFifth",
+            "Guruḥ pañcame bhāve",
+        ),
+        (
+            "sa-Latn",
+            "sdk.day.sunSign",
+            "aries",
+            "Sūryaḥ Meṣarāśau tiṣṭhati.",
+        ),
+    ]);
 }
 
 #[test]
@@ -114,7 +262,7 @@ fn check_intl_holds_the_mark() {
     assert!(errors(&strict).is_empty(), "{:?}", errors(&strict));
 
     let mut absent = tree();
-    absent.locales.get_mut("sa-Deva").unwrap().meta.draft = vec!["sdk.reading".into()];
+    absent.locales.get_mut("sa-Deva").unwrap().meta.draft = vec!["sdk.amount".into()];
     assert!(
         errors(&absent)
             .iter()
@@ -155,7 +303,7 @@ fn the_mark_travels_in_a_bundle_and_a_reviewers_pack_lifts_it() {
         .iter()
         .find(|l| l.tag == "hi-Deva-IN")
         .unwrap();
-    assert_eq!(loaded.draft, ["sdk.calendar", "sdk.rashifal", "sdk.reason"]);
+    assert_eq!(loaded.draft, drafted("sdk.rashifal"));
 
     // The same namespace, signed off, carried by a pack with metadata.
     let mut reviewed = hindi.clone();

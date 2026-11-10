@@ -34,6 +34,19 @@ the previous release, not by nobody having looked.
   text is unreviewed (Q42) and ships marked draft: `ne-Deva-NP` drafts `sdk.rashifal`, and `hi-Deva-IN`
   drafts `sdk.rashifal` and `sdk.reason`.
 
+**Hindi and Sanskrit composed text, as drafts (SR-38).**
+**Numbers:** none.
+- `hi-Deva-IN` and `sa-Deva` carry `sdk.reason`, `sdk.condition`, `sdk.phala`, `sdk.reading`,
+  `sdk.karaka`, `sdk.aspect`, `sdk.naming` and `sdk.day`, 107 messages each, written by hand from the
+  English and Nepali and marked draft until Q42's reviewers sign them. A Hindi reading said its sentences
+  in English around Hindi names ("गुरु in the 5th house") and now says "गुरु पंचम भाव में"; Sanskrit says
+  "गुरुः पञ्चमे भावे". `sa-Latn` derives all eight from `sa-Deva`, marks and all ("Guruḥ pañcame bhāve"),
+  and opens a day's sentence with a capital.
+- `almanac.sentences` answers `hi-Deva-IN`, `sa-Deva` and `sa-Latn` with `draft: true` where it refused
+  them on `locale`. A locale loaded without `sdk.day` is still refused, and the message no longer names
+  Q42.
+- The bundled locales grow: `hi-Deva-IN` to 127,163 bytes, `sa-Deva` to 96,364, `sa-Latn` to 75,565.
+
 **A clock on the minute reads that minute (SR-77).**
 **Numbers:** `civil_of` and `time().civil_of` move a reading by at most four of the Julian day's last bits
 (about 0.19 ms in the present era) when it lies that close to a whole second, onto the second. No

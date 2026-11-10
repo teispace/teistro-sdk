@@ -156,9 +156,13 @@ pub fn derive(
     // its syntax as it was.
     for name in DERIVED_MESSAGES {
         if let Some(namespace) = source.namespaces.get(name) {
+            let sentences = SENTENCE_NAMESPACES.contains(&name);
             out.files.push((
                 PathBuf::from(to).join(format!("{name}.json")),
-                format!("{}\n", pretty(&derived_messages(namespace, &latin)?)?),
+                format!(
+                    "{}\n",
+                    pretty(&derived_messages(namespace, sentences, &latin)?)?
+                ),
             ));
         }
     }
@@ -225,16 +229,38 @@ pub fn derive(
 
 /// The message namespaces a derived locale carries beside its entities,
 /// so a Latin-script reader of Sanskrit gets its weekdays, months and
-/// dates (`sdk.calendar`) and the currency words an amount in words is
-/// closed with (`sdk.amount`, `03-design/amounts-in-words.md` §5) in
-/// Sanskrit rather than in the fallback's English.
+/// dates, the composed text (SR-38) and the currency words an amount in
+/// words is closed with (`sdk.amount`, `03-design/amounts-in-words.md` §5)
+/// in Sanskrit rather than in the fallback's English. A namespace listed
+/// here and absent from the source is skipped, so the list may name what
+/// the source has yet to write.
 ///
 /// ```
 /// use teistro_intl::derive::DERIVED_MESSAGES;
 ///
-/// assert_eq!(DERIVED_MESSAGES, ["sdk.amount", "sdk.calendar"]);
+/// assert_eq!(DERIVED_MESSAGES[0], "sdk.calendar");
+/// assert!(DERIVED_MESSAGES.contains(&"sdk.reason"));
+/// assert!(DERIVED_MESSAGES.contains(&"sdk.amount"));
 /// ```
-pub const DERIVED_MESSAGES: [&str; 2] = ["sdk.amount", "sdk.calendar"];
+pub const DERIVED_MESSAGES: [&str; 10] = [
+    "sdk.calendar",
+    "sdk.reason",
+    "sdk.condition",
+    "sdk.phala",
+    "sdk.reading",
+    "sdk.karaka",
+    "sdk.aspect",
+    "sdk.naming",
+    "sdk.day",
+    "sdk.amount",
+];
+
+/// The namespaces whose messages are sentences, which a Latin script
+/// opens with a capital, as the base's English ones are (`The Sun rises
+/// at …`); the rest are phrases a reader sets inside their own text, left
+/// as the transliteration writes them. Listed, for the reason
+/// [`NAMED_MESSAGES`] is.
+const SENTENCE_NAMESPACES: [&str; 1] = ["sdk.day"];
 
 /// The keys whose messages are names (a weekday, a month), which a Latin
 /// script capitalises; the rest are patterns and phrases, left as the
@@ -252,6 +278,7 @@ const NAMED_MESSAGES: [&str; 5] = [
 /// keys as a source file writes it.
 fn derived_messages(
     namespace: &Namespace,
+    sentences: bool,
     latin: &dyn Fn(&str) -> Result<String, String>,
 ) -> Result<Json, String> {
     let mut document = Map::new();
@@ -259,10 +286,11 @@ fn derived_messages(
         let Some(Entry::Message(text)) = namespace.entries.get(key) else {
             continue;
         };
-        let named = key
-            .rsplit('.')
-            .next()
-            .is_some_and(|last| NAMED_MESSAGES.contains(&last));
+        let named = sentences
+            || key
+                .rsplit('.')
+                .next()
+                .is_some_and(|last| NAMED_MESSAGES.contains(&last));
         let mut path: Vec<&str> = key.split('.').collect();
         let Some(leaf) = path.pop() else {
             continue;
@@ -287,7 +315,8 @@ fn derived_messages(
 
 /// A `MessageFormat 2` source with each run of Devanagari transliterated
 /// and everything else, the syntax and its placeholders, kept. In a name's
-/// message a run that opens a variant, or the message, is capitalised.
+/// message, or a sentence's, a run that opens a variant, or the message,
+/// is capitalised.
 fn transliterated_message(
     text: &str,
     named: bool,
@@ -511,9 +540,10 @@ mod tests {
             Casing::Names,
         )
         .unwrap_or_else(|e| panic!("{e}"));
-        // The metadata, the currency words, the calendar's messages and
-        // the entities.
-        assert_eq!(derived.files.len(), 4);
+        // The metadata, the entities, and a file for each namespace listed:
+        // the calendar's, the currency words (SR-49) and the composed text
+        // (SR-38).
+        assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
             derived.entities, 444,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
@@ -534,12 +564,26 @@ mod tests {
             "a name's message is capitalised"
         );
         assert!(calendar.contains("{$day :integer}"), "the syntax is kept");
+        // The composed text: a phrase is left as written, a sentence opens
+        // with a capital, and a stem's case ending follows its slot.
+        let reason = file(&derived, "sdk.reason.json");
+        assert!(
+            reason.contains("1 {{{$graha}ḥ prathame bhāve}}"),
+            "a phrase keeps the transliteration's case"
+        );
+        let day = file(&derived, "sdk.day.json");
+        assert!(
+            day.contains("\"Sūryaḥ sakaladinaṃ"),
+            "a sentence opens with a capital"
+        );
         let meta = file(&derived, "_meta.json");
         assert!(meta.contains("\"locale\": \"sa-Latn\""));
-        assert!(
-            meta.contains("\"sdk.calendar\""),
-            "the derived draft stays a draft"
-        );
+        for name in DERIVED_MESSAGES {
+            assert!(
+                meta.contains(&format!("\"{name}\"")),
+                "the derived draft {name} stays a draft"
+            );
+        }
         assert!(meta.contains("\"numberingSystem\": \"latn\""));
         assert!(meta.contains("tathā"), "the list pattern is transliterated");
         // The currency words come too, still marked unreviewed.

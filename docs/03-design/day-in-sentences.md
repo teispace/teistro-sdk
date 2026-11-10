@@ -83,13 +83,15 @@ answer English under a Hindi tag. So:
 |---|---|
 | `en-Latn` | sentences |
 | `ne-Deva-NP` | sentences, `draft: true` (§6) |
-| `hi-Deva-IN`, `sa-Deva`, `sa-Latn` | `UNSUPPORTED` on `locale`: no templates, waiting on Q42's reviewers |
+| `hi-Deva-IN`, `sa-Deva`, `sa-Latn` | sentences, `draft: true` (SR-38; `sa-Latn` derived from `sa-Deva`) |
+| loaded without `sdk.day` | `UNSUPPORTED` on `locale`: no templates |
 | not loaded | `UNSUPPORTED` on `locale`, listing the locales |
 
 The check reads what is loaded, so a consumer who loads a pack carrying `sdk.day`
-in Hindi gets sentences in Hindi with no change here. That is the no-dead-ends
-route until a reviewed pack ships. No Hindi or Sanskrit text is written here and
-nothing is machine-stubbed.
+gets sentences in its language with no change here, and a reviewer's pack
+replaces a draft. Until SR-38 Hindi and Sanskrit were refused here; they now
+carry hand-written drafts (`intl-engine-and-packs.md`, "The composed text,
+drafted"), and nothing is machine-stubbed.
 
 ## 4. A polar day
 

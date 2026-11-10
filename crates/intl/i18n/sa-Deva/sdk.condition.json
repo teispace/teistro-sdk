@@ -1,0 +1,13 @@
+{
+  "dignity": "{$graha :entity kind=graha form=prose}ः {$dignity :entity kind=dignity}स्थाने",
+  "navamsha": "नवांशे {$graha :entity kind=graha}ः {$rashi :entity kind=rashi}राशौ",
+  "vargottama": "{$graha :entity kind=graha form=prose}ः वर्गोत्तमः",
+  "retrograde": "{$graha :entity kind=graha form=prose}ः वक्री",
+  "combust": "{$graha :entity kind=graha form=prose}ः अस्तङ्गतः",
+  "friendship": "{#b}{$graha :entity kind=graha}ः{/b} स्वराशीशे {$dispositor :entity kind=graha}ग्रहे {$compound :entity kind=relationship}भावं वहति: नैसर्गिकेन {$natural :entity kind=relationship}भावं, तात्कालिकेन {$temporary :entity kind=relationship}भावम्",
+  "age": "{$graha :entity kind=graha}ः स्वराशौ {$age :entity kind=avastha_baladi} इत्यवस्थायाम्",
+  "wakefulness": "{$graha :entity kind=graha}ः {$wakefulness :entity kind=avastha_jagradadi} इत्यवस्थायाम्",
+  "brightness": "{$graha :entity kind=graha}ः {$deeptadi :entity kind=avastha_deeptadi} इत्यवस्थायाम्",
+  "lajjitadi": "{$graha :entity kind=graha}ः {$states :list type=and} इत्यवस्थासु",
+  "undecided": ".input {$graha :entity kind=graha} .input {$count :integer} .match $count 1 {{{$graha}ः {$states :list type=or} इति वा न वेति कुण्डली न निर्णयति}} * {{{$graha}विषये कुण्डली एतेषु किमपि न निर्णयति: {$states :list type=or}}}"
+}

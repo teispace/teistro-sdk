@@ -1,0 +1,9 @@
+{
+  "pada": ".input {$pada :integer select=ordinal} .input {$nakshatra :entity kind=nakshatra} .match $pada 1 {{{$nakshatra}नक्षत्रस्य प्रथमपादे नामाक्षरं {$syllable}}} 2 {{{$nakshatra}नक्षत्रस्य द्वितीयपादे नामाक्षरं {$syllable}}} 3 {{{$nakshatra}नक्षत्रस्य तृतीयपादे नामाक्षरं {$syllable}}} 4 {{{$nakshatra}नक्षत्रस्य चतुर्थपादे नामाक्षरं {$syllable}}} * {{{$nakshatra}नक्षत्रस्य {$pada}तमपादे नामाक्षरं {$syllable}}}",
+  "by": ".input {$by :string} .match $by CELL {{पादस्य स्वाक्षरम्}} PAIRED {{युग्मरूपेण पठितम् अक्षरम्}} SUBSTITUTE {{प्रतिनिध्यक्षरम्}} * {{पादाक्षरम्}}",
+  "syllables": ".input {$count :integer} .match $count 1 {{{$count} अक्षरम्}} 2 {{{$count} अक्षरे}} * {{{$count} अक्षराणि}}",
+  "counted": ".input {$counted :string} .match $counted SOUNDED {{लिखितानुसारं गणितम्, अन्त्याकारसहितम्}} SILENT {{उच्चारणानुसारं गणितम्, अन्त्याकारं विना}} * {{स्वरानुसारं गणितम्}}",
+  "clause": ".input {$clause :string} .match $clause SONANT_INITIAL {{घोषवदादि}} SEMIVOWEL_WITHIN {{प्रथमवर्णात् परम् अन्तःस्थयुक्तम्}} VISARGA_FINAL {{विसर्गान्तम्}} TWO_OR_FOUR_SYLLABLES {{द्व्यक्षरं चतुरक्षरं वा}} EVEN_FOR_A_BOY {{पुंसो युग्माक्षरम्}} ODD_FOR_A_GIRL {{स्त्रिया अयुग्माक्षरम्}} LONG_A_FOR_A_GIRL {{स्त्रिया आकारान्तम्}} NO_FINAL_L_OR_R {{न लान्तं न रान्तम्}} * {{अन्यो नियमः}}",
+  "holds": ".input {$holds :string} .match $holds yes {{सिद्धम्}} * {{असिद्धम्}}",
+  "source": ".input {$source :string} .match $source PARASKARA {{पारस्करगृह्यसूत्रम्}} ASHVALAYANA {{आश्वलायनगृह्यसूत्रम्}} APASTAMBA_HIRANYAKESHIN {{धर्मसिन्धूद्धृतौ आपस्तम्बहिरण्यकेशिनौ}} * {{गृह्यसूत्रम्}}"
+}

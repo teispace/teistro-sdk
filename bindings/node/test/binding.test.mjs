@@ -4784,8 +4784,8 @@ test('a span says which sunrises it held and when it ended in ghatis', () => {
 
 /**
  * A day in sentences (`03-design/day-in-sentences.md`): English and Nepali
- * say the same day, Hindi is refused on `locale`, and Tromso under the
- * midnight sun says so.
+ * say the same day, Hindi says it as a draft, a locale not loaded is
+ * refused on `locale`, and Tromso under the midnight sun says so.
  */
 test('a day is said in sentences and a locale without templates is refused', () => {
   const ctx = new Context({ ephemeris: catalogue.Ephemeris.SuryaSiddhanta });
@@ -4801,8 +4801,11 @@ test('a day is said in sentences and a locale without templates is refused', () 
   assert.equal(ne.sentences[0].text, 'यो दिन बुधबार हो।');
   assert.equal(ne.draft, true);
   assert.ok(Object.isFrozen(ne));
+  const hi = ctx.almanac.sentences({ ...asked, locale: 'hi-Deva-IN' });
+  assert.equal(hi.sentences[0].text, 'यह दिन बुधवार है।');
+  assert.equal(hi.draft, true);
   assert.throws(
-    () => ctx.almanac.sentences({ ...asked, locale: 'hi-Deva-IN' }),
+    () => ctx.almanac.sentences({ ...asked, locale: 'xx-Latn' }),
     (e) => e instanceof TeistroError && e.field === 'locale',
   );
   // The same day asked on Nepal's zone is the day on +05:45; both clocks

@@ -1,0 +1,20 @@
+{
+  "vara": "अयं दिवसः {$vara :entity kind=vara}ः।",
+  "tithi": ".input {$ends :string} .match $ends sameDay {{तिथिः {$paksha :entity kind=paksha}पक्षस्य {$tithi :entity kind=tithi} {$until :time} पर्यन्तम्।}} nextDay {{तिथिः {$paksha :entity kind=paksha}पक्षस्य {$tithi :entity kind=tithi} परदिने {$until :time} पर्यन्तम्।}} allDay {{तिथिः {$paksha :entity kind=paksha}पक्षस्य {$tithi :entity kind=tithi} सकलदिनम्।}} * {{तिथिः {$paksha :entity kind=paksha}पक्षस्य {$tithi :entity kind=tithi} शेषदिनम्।}}",
+  "nakshatra": ".input {$ends :string} .match $ends sameDay {{{$nakshatra :entity kind=nakshatra}नक्षत्रम् {$until :time} पर्यन्तम्।}} nextDay {{{$nakshatra :entity kind=nakshatra}नक्षत्रम् परदिने {$until :time} पर्यन्तम्।}} allDay {{{$nakshatra :entity kind=nakshatra}नक्षत्रम् सकलदिनम्।}} * {{{$nakshatra :entity kind=nakshatra}नक्षत्रम् शेषदिनम्।}}",
+  "yoga": ".input {$ends :string} .match $ends sameDay {{{$yoga :entity kind=yoga}योगः {$until :time} पर्यन्तम्।}} nextDay {{{$yoga :entity kind=yoga}योगः परदिने {$until :time} पर्यन्तम्।}} allDay {{{$yoga :entity kind=yoga}योगः सकलदिनम्।}} * {{{$yoga :entity kind=yoga}योगः शेषदिनम्।}}",
+  "karana": ".input {$ends :string} .match $ends sameDay {{{$karana :entity kind=karana}करणम् {$until :time} पर्यन्तम्।}} nextDay {{{$karana :entity kind=karana}करणम् परदिने {$until :time} पर्यन्तम्।}} allDay {{{$karana :entity kind=karana}करणम् सकलदिनम्।}} * {{{$karana :entity kind=karana}करणम् शेषदिनम्।}}",
+  "sun": "सूर्योदयः {$rise :time} समये, सूर्यास्तः {$set :time} समये।",
+  "sunUp": "सूर्यः सकलदिनं क्षितिजाद् उपरि तिष्ठति।",
+  "sunDown": "सूर्यः सकलदिनं क्षितिजाद् अधस्तिष्ठति।",
+  "sunSign": "सूर्यः {$rashi :entity kind=rashi}राशौ तिष्ठति।",
+  "sankranti": ".input {$when :string} .match $when nextDay {{परदिने {$at :time} समये सूर्यः {$rashi :entity kind=rashi}राशिं प्रविशति।}} * {{{$at :time} समये सूर्यः {$rashi :entity kind=rashi}राशिं प्रविशति।}}",
+  "moonSign": ".input {$ends :string} .match $ends sameDay {{चन्द्रः {$rashi :entity kind=rashi}राशौ {$until :time} पर्यन्तम् तिष्ठति।}} nextDay {{चन्द्रः {$rashi :entity kind=rashi}राशौ परदिने {$until :time} पर्यन्तम् तिष्ठति।}} allDay {{चन्द्रः {$rashi :entity kind=rashi}राशौ सकलदिनम् तिष्ठति।}} * {{चन्द्रः {$rashi :entity kind=rashi}राशौ शेषदिनम् तिष्ठति।}}",
+  "moonrise": ".input {$when :string} .match $when nextDay {{परदिने {$at :time} समये चन्द्रोदयः।}} * {{{$at :time} समये चन्द्रोदयः।}}",
+  "moonset": ".input {$when :string} .match $when nextDay {{परदिने {$at :time} समये चन्द्रास्तः।}} * {{{$at :time} समये चन्द्रास्तः।}}",
+  "month": ".input {$kind :string} .match $kind adhika {{चान्द्रमासः अधिकः {$masa :entity kind=masa}मासः।}} * {{चान्द्रमासः {$masa :entity kind=masa}मासः।}}",
+  "ritu": "ऋतुः {$ritu :entity kind=ritu}।",
+  "ayana": "अयनम् {$ayana :entity kind=ayana}म्।",
+  "kaala": "{$kaala :entity kind=kaala}ः {$from :time} आरभ्य {$to :time} पर्यन्तम्।",
+  "abhijit": "अभिजिन्मुहूर्तः {$from :time} आरभ्य {$to :time} पर्यन्तम्।"
+}

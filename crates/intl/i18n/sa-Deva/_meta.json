@@ -39,6 +39,14 @@
   },
   "draft": [
     "sdk.amount",
-    "sdk.calendar"
+    "sdk.aspect",
+    "sdk.calendar",
+    "sdk.condition",
+    "sdk.day",
+    "sdk.karaka",
+    "sdk.naming",
+    "sdk.phala",
+    "sdk.reading",
+    "sdk.reason"
   ]
 }

@@ -573,6 +573,39 @@ draft departs from it and says so:
 Every string is a draft for the consumer's reviewer; the ones least
 certain are listed in the hand-back and in `consumers/addendum-3.md`.
 
+**The composed text, drafted (SR-38).** `hi-Deva-IN` and `sa-Deva` carry
+the eight composed namespaces `ne-Deva-NP` carries (`sdk.reason`,
+`sdk.condition`, `sdk.phala`, `sdk.reading`, `sdk.karaka`, `sdk.aspect`,
+`sdk.naming`, `sdk.day`; 107 messages each), written by hand from the
+English and the Nepali, every placeholder, `.input` and selector kept,
+and each namespace drafted in `_meta.json` until Q42's reviewers sign it.
+`sa-Latn` derives all eight beside `sdk.calendar` (`DERIVED_MESSAGES`)
+and keeps the marks; its day sentences open with a capital, as the
+English ones do (`SENTENCE_NAMESPACES`), and the rest are phrases a
+reader sets inside their own text. `sdk.phala` is entity forms with no
+words of its own, the same in every locale. What a reviewer should read
+first:
+
+- Hindi numbers a house or a pada as Hindi panchangas print it, with
+  the Sanskrit ordinal (`पंचम भाव में`), which takes a postposition
+  unchanged. A rank is abbreviated by Hindi's CLDR ordinal categories
+  (`१ला`, `३रा`, `४था`, `६ठा`, `५वाँ`).
+- Sanskrit's entity names are stems, so a sentence gives each its case
+  through the slot: a compound (`मेषराशौ`, `गुरुदशा`, `सूर्यग्रहेण`), the
+  visarga every graha stem takes in the nominative (`गुरुः`, `शनिः`), or
+  `इति` after a term cited as itself (`बाल इत्यवस्थायाम्`). A list of
+  names stands uninflected in apposition (`भागिनो ग्रहाः: …`). No sandhi
+  is made across a slot (`सूर्यः अस्तङ्गतः`), and a point takes the
+  masculine visarga (`लग्नः`) where the neuter is as usual.
+- Sanskrit has neither CLDR rule, so the twelve houses and four padas
+  match exactly (`प्रथमे भावे` … `द्वादशे भावे`), and a count matches 1
+  and 2 for its dual (`२ अक्षरे`), as a duration does.
+- The naming clauses follow the gṛhyasūtras' own words where they have
+  them (`घोषवदादि`, `द्व्यक्षरं चतुरक्षरं वा`, `पुंसो युग्माक्षरम्`).
+
+Each composed sentence now answers in the locale asked, so a day in
+sentences (`day-in-sentences.md`) answers Hindi and Sanskrit as drafts.
+
 ## 7. Validation
 
 The gates, in one report with a coverage table and diagnostics sorted
