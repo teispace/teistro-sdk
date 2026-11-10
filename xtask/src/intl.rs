@@ -12,7 +12,8 @@ use teistro_core::key::KeyId;
 
 use teistro_intl::derive::{Casing, derive, overrides_of};
 use teistro_intl::generate::{
-    Model, RustPaths, dart, java, javascript, python, rust, typescript_declarations,
+    Model, RustPaths, dart, every_message_test, java, javascript, python, rust,
+    typescript_declarations,
 };
 use teistro_intl::source::{Completeness, Tree};
 use teistro_intl::validate;
@@ -30,6 +31,9 @@ pub(crate) const SOURCES: &str = "crates/intl/i18n";
 const FORMER_SOURCES: &str = "i18n";
 
 const MESSAGES: &str = "crates/intl/src/messages.rs";
+/// The test that renders every typed message, since llvm's coverage runs
+/// none of the accessors' doctests.
+const EVERY_MESSAGE: &str = "crates/intl/tests/every_message.rs";
 /// The typed accessors each binding ships: the same model, in the shape
 /// its language reads (`03-design/intl-engine-and-packs.md`).
 const NODE_MESSAGES: &str = "bindings/node/lib/messages.js";
@@ -206,6 +210,7 @@ fn outputs(root: &Path) -> Vec<Output> {
     outputs.push(Output::new(DRAFTED_RULES, drafted_rules(root)));
     outputs.extend([
         Output::new(MESSAGES, rust(&model, RustPaths::SDK)),
+        Output::new(EVERY_MESSAGE, every_message_test(&model)),
         Output::new(NODE_MESSAGES, javascript(&model)),
         Output::new(NODE_MESSAGE_TYPES, typescript_declarations(&model)),
         Output::new(DART_MESSAGES, dart(&model)),
