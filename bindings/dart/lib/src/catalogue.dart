@@ -4178,12 +4178,16 @@ enum ChartLayout implements KeyOf<ChartLayout> {
   southIndian(1, 'SOUTH_INDIAN'),
   /// The East Indian (Bengali, Odia, Assamese) chart: signs fixed, Aries top-centre, running anticlockwise
   eastIndian(2, 'EAST_INDIAN'),
-  /// The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals
+  /// The Nepali lotus: twelve equal petals inside a circle, houses fixed, house 1 the top petal, running anticlockwise
   nepaliLotus(3, 'NEPALI_LOTUS'),
   /// The Sudarshan Chakra: three rings of houses counted from the lagna, the Moon and the Sun
   sudarshanChakra(4, 'SUDARSHAN_CHAKRA'),
   /// The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock
   westernWheel(5, 'WESTERN_WHEEL'),
+  /// The Nepali round chart: a circle cut on a square grid about a hub that names the chart, houses fixed, house 1 above the hub, running anticlockwise
+  nepaliCircle(6, 'NEPALI_CIRCLE'),
+  /// North Indian drawn with petals: the same fixed houses and anchors, each kendra bounded by ogee curves, the diagonals meeting at a swastika hub
+  northIndianPetals(7, 'NORTH_INDIAN_PETALS'),
 
   /// A member this build does not know: from a newer library, or
   /// registered at run time.

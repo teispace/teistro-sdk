@@ -102,6 +102,33 @@ public final class Messages {
         }
     }
 
+    /** A `auspiciousness` as a message names it: the full catalogue key. */
+    public enum AuspiciousnessKey {
+        /** `auspiciousness.AUSPICIOUS`. */
+        AUSPICIOUS("auspiciousness.AUSPICIOUS"),
+        /** `auspiciousness.INAUSPICIOUS`. */
+        INAUSPICIOUS("auspiciousness.INAUSPICIOUS"),
+        /** `auspiciousness.MIXED`. */
+        MIXED("auspiciousness.MIXED"),
+        /** `auspiciousness.HIGHLY_INAUSPICIOUS`. */
+        HIGHLY_INAUSPICIOUS("auspiciousness.HIGHLY_INAUSPICIOUS");
+
+        private final String value;
+
+        AuspiciousnessKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `avastha_baladi` as a message names it: the full catalogue key. */
     public enum AvasthaBaladiKey {
         /** `avastha_baladi.BALA`. */
@@ -428,6 +455,62 @@ public final class Messages {
         }
     }
 
+    /** A `ayanamsha_category` as a message names it: the full catalogue key. */
+    public enum AyanamshaCategoryKey {
+        /** `ayanamsha_category.VEDIC_STANDARD`. */
+        VEDIC_STANDARD("ayanamsha_category.VEDIC_STANDARD"),
+        /** `ayanamsha_category.VEDIC_CLASSICAL`. */
+        VEDIC_CLASSICAL("ayanamsha_category.VEDIC_CLASSICAL"),
+        /** `ayanamsha_category.STAR_ANCHORED`. */
+        STAR_ANCHORED("ayanamsha_category.STAR_ANCHORED"),
+        /** `ayanamsha_category.WESTERN_SIDEREAL`. */
+        WESTERN_SIDEREAL("ayanamsha_category.WESTERN_SIDEREAL"),
+        /** `ayanamsha_category.GALACTIC`. */
+        GALACTIC("ayanamsha_category.GALACTIC"),
+        /** `ayanamsha_category.HISTORICAL`. */
+        HISTORICAL("ayanamsha_category.HISTORICAL"),
+        /** `ayanamsha_category.EPOCH`. */
+        EPOCH("ayanamsha_category.EPOCH");
+
+        private final String value;
+
+        AyanamshaCategoryKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `bala_scheme` as a message names it: the full catalogue key. */
+    public enum BalaSchemeKey {
+        /** `bala_scheme.PARASHARA`. */
+        PARASHARA("bala_scheme.PARASHARA"),
+        /** `bala_scheme.PARASHARA_EXTENDED`. */
+        PARASHARA_EXTENDED("bala_scheme.PARASHARA_EXTENDED");
+
+        private final String value;
+
+        BalaSchemeKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `bhadra_vasa` as a message names it: the full catalogue key. */
     public enum BhadraVasaKey {
         /** `bhadra_vasa.SVARGA`. */
@@ -472,11 +555,95 @@ public final class Messages {
         /** `blackout_kind.GURU_ASTA`. */
         GURU_ASTA("blackout_kind.GURU_ASTA"),
         /** `blackout_kind.SHUKRA_ASTA`. */
-        SHUKRA_ASTA("blackout_kind.SHUKRA_ASTA");
+        SHUKRA_ASTA("blackout_kind.SHUKRA_ASTA"),
+        /** `blackout_kind.KHARMAS`. */
+        KHARMAS("blackout_kind.KHARMAS"),
+        /** `blackout_kind.ECLIPSE_STAR`. */
+        ECLIPSE_STAR("blackout_kind.ECLIPSE_STAR"),
+        /** `blackout_kind.ECLIPSE_VEDHA`. */
+        ECLIPSE_VEDHA("blackout_kind.ECLIPSE_VEDHA");
 
         private final String value;
 
         BlackoutKindKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `body_class` as a message names it: the full catalogue key. */
+    public enum BodyClassKey {
+        /** `body_class.LUMINARY`. */
+        LUMINARY("body_class.LUMINARY"),
+        /** `body_class.PLANET`. */
+        PLANET("body_class.PLANET"),
+        /** `body_class.NODE`. */
+        NODE("body_class.NODE"),
+        /** `body_class.OUTER`. */
+        OUTER("body_class.OUTER");
+
+        private final String value;
+
+        BodyClassKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `calendar` as a message names it: the full catalogue key. */
+    public enum CalendarKey {
+        /** `calendar.GREGORIAN`. */
+        GREGORIAN("calendar.GREGORIAN"),
+        /** `calendar.JULIAN`. */
+        JULIAN("calendar.JULIAN"),
+        /** `calendar.MIXED`. */
+        MIXED("calendar.MIXED"),
+        /** `calendar.ISO_WEEK`. */
+        ISO_WEEK("calendar.ISO_WEEK"),
+        /** `calendar.BIKRAM_SAMBAT`. */
+        BIKRAM_SAMBAT("calendar.BIKRAM_SAMBAT"),
+        /** `calendar.INDIAN_LUNISOLAR`. */
+        INDIAN_LUNISOLAR("calendar.INDIAN_LUNISOLAR"),
+        /** `calendar.INDIAN_NATIONAL`. */
+        INDIAN_NATIONAL("calendar.INDIAN_NATIONAL"),
+        /** `calendar.HIJRI_TABULAR`. */
+        HIJRI_TABULAR("calendar.HIJRI_TABULAR"),
+        /** `calendar.TIBETAN_PHUGPA`. */
+        TIBETAN_PHUGPA("calendar.TIBETAN_PHUGPA"),
+        /** `calendar.BANGLADESHI`. */
+        BANGLADESHI("calendar.BANGLADESHI"),
+        /** `calendar.TAMIL_SOLAR`. */
+        TAMIL_SOLAR("calendar.TAMIL_SOLAR"),
+        /** `calendar.BENGAL_SOLAR`. */
+        BENGAL_SOLAR("calendar.BENGAL_SOLAR"),
+        /** `calendar.ODIA_SOLAR`. */
+        ODIA_SOLAR("calendar.ODIA_SOLAR"),
+        /** `calendar.MALAYALAM_SOLAR`. */
+        MALAYALAM_SOLAR("calendar.MALAYALAM_SOLAR"),
+        /** `calendar.TAMIL_VAKYA`. */
+        TAMIL_VAKYA("calendar.TAMIL_VAKYA"),
+        /** `calendar.ASSAM_SOLAR`. */
+        ASSAM_SOLAR("calendar.ASSAM_SOLAR");
+
+        private final String value;
+
+        CalendarKey(String value) {
             this.value = value;
         }
 
@@ -525,6 +692,76 @@ public final class Messages {
         }
     }
 
+    /** A `chart_kind` as a message names it: the full catalogue key. */
+    public enum ChartKindKey {
+        /** `chart_kind.NATAL`. */
+        NATAL("chart_kind.NATAL"),
+        /** `chart_kind.TRANSIT`. */
+        TRANSIT("chart_kind.TRANSIT"),
+        /** `chart_kind.EVENT`. */
+        EVENT("chart_kind.EVENT"),
+        /** `chart_kind.PRASHNA`. */
+        PRASHNA("chart_kind.PRASHNA"),
+        /** `chart_kind.RETURN`. */
+        RETURN("chart_kind.RETURN"),
+        /** `chart_kind.RELOCATED`. */
+        RELOCATED("chart_kind.RELOCATED"),
+        /** `chart_kind.COMPOSITE`. */
+        COMPOSITE("chart_kind.COMPOSITE"),
+        /** `chart_kind.MUNDANE`. */
+        MUNDANE("chart_kind.MUNDANE");
+
+        private final String value;
+
+        ChartKindKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `chart_layout` as a message names it: the full catalogue key. */
+    public enum ChartLayoutKey {
+        /** `chart_layout.NORTH_INDIAN`. */
+        NORTH_INDIAN("chart_layout.NORTH_INDIAN"),
+        /** `chart_layout.SOUTH_INDIAN`. */
+        SOUTH_INDIAN("chart_layout.SOUTH_INDIAN"),
+        /** `chart_layout.EAST_INDIAN`. */
+        EAST_INDIAN("chart_layout.EAST_INDIAN"),
+        /** `chart_layout.NEPALI_LOTUS`. */
+        NEPALI_LOTUS("chart_layout.NEPALI_LOTUS"),
+        /** `chart_layout.SUDARSHAN_CHAKRA`. */
+        SUDARSHAN_CHAKRA("chart_layout.SUDARSHAN_CHAKRA"),
+        /** `chart_layout.WESTERN_WHEEL`. */
+        WESTERN_WHEEL("chart_layout.WESTERN_WHEEL"),
+        /** `chart_layout.NEPALI_CIRCLE`. */
+        NEPALI_CIRCLE("chart_layout.NEPALI_CIRCLE"),
+        /** `chart_layout.NORTH_INDIAN_PETALS`. */
+        NORTH_INDIAN_PETALS("chart_layout.NORTH_INDIAN_PETALS");
+
+        private final String value;
+
+        ChartLayoutKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `choghadiya` as a message names it: the full catalogue key. */
     public enum ChoghadiyaKey {
         /** `choghadiya.UDVEG`. */
@@ -545,6 +782,47 @@ public final class Messages {
         private final String value;
 
         ChoghadiyaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `dasha_family` as a message names it: the full catalogue key. */
+    public enum DashaFamilyKey {
+        /** `dasha_family.UDU`. */
+        UDU("dasha_family.UDU"),
+        /** `dasha_family.RASHI`. */
+        RASHI("dasha_family.RASHI"),
+        /** `dasha_family.GRAHA`. */
+        GRAHA("dasha_family.GRAHA"),
+        /** `dasha_family.KALACHAKRA`. */
+        KALACHAKRA("dasha_family.KALACHAKRA"),
+        /** `dasha_family.SCALE`. */
+        SCALE("dasha_family.SCALE"),
+        /** `dasha_family.COMPOSITION`. */
+        COMPOSITION("dasha_family.COMPOSITION"),
+        /** `dasha_family.OWN`. */
+        OWN("dasha_family.OWN"),
+        /** `dasha_family.RELEASING`. */
+        RELEASING("dasha_family.RELEASING"),
+        /** `dasha_family.PROFECTION`. */
+        PROFECTION("dasha_family.PROFECTION"),
+        /** `dasha_family.FIRDARIA`. */
+        FIRDARIA("dasha_family.FIRDARIA"),
+        /** `dasha_family.DECENNIALS`. */
+        DECENNIALS("dasha_family.DECENNIALS");
+
+        private final String value;
+
+        DashaFamilyKey(String value) {
             this.value = value;
         }
 
@@ -617,7 +895,39 @@ public final class Messages {
         /** `dasha_system.YOGARDHA`. */
         YOGARDHA("dasha_system.YOGARDHA"),
         /** `dasha_system.SUDARSHANA_CHAKRA`. */
-        SUDARSHANA_CHAKRA("dasha_system.SUDARSHANA_CHAKRA");
+        SUDARSHANA_CHAKRA("dasha_system.SUDARSHANA_CHAKRA"),
+        /** `dasha_system.SHATTRIMSHA_SAMA`. */
+        SHATTRIMSHA_SAMA("dasha_system.SHATTRIMSHA_SAMA"),
+        /** `dasha_system.TITHI_ASHTOTTARI`. */
+        TITHI_ASHTOTTARI("dasha_system.TITHI_ASHTOTTARI"),
+        /** `dasha_system.TITHI_YOGINI`. */
+        TITHI_YOGINI("dasha_system.TITHI_YOGINI"),
+        /** `dasha_system.YOGA_VIMSHOTTARI`. */
+        YOGA_VIMSHOTTARI("dasha_system.YOGA_VIMSHOTTARI"),
+        /** `dasha_system.KARANA_CHATURASHITI`. */
+        KARANA_CHATURASHITI("dasha_system.KARANA_CHATURASHITI"),
+        /** `dasha_system.AAYU`. */
+        AAYU("dasha_system.AAYU"),
+        /** `dasha_system.SUDASA`. */
+        SUDASA("dasha_system.SUDASA"),
+        /** `dasha_system.PATYAYINI`. */
+        PATYAYINI("dasha_system.PATYAYINI"),
+        /** `dasha_system.MUDDA`. */
+        MUDDA("dasha_system.MUDDA"),
+        /** `dasha_system.VARSHA_NARAYANA`. */
+        VARSHA_NARAYANA("dasha_system.VARSHA_NARAYANA"),
+        /** `dasha_system.VARSHA_YOGINI`. */
+        VARSHA_YOGINI("dasha_system.VARSHA_YOGINI"),
+        /** `dasha_system.RELEASING_FORTUNE`. */
+        RELEASING_FORTUNE("dasha_system.RELEASING_FORTUNE"),
+        /** `dasha_system.RELEASING_DAIMON`. */
+        RELEASING_DAIMON("dasha_system.RELEASING_DAIMON"),
+        /** `dasha_system.PROFECTION`. */
+        PROFECTION("dasha_system.PROFECTION"),
+        /** `dasha_system.FIRDARIA`. */
+        FIRDARIA("dasha_system.FIRDARIA"),
+        /** `dasha_system.DECENNIALS`. */
+        DECENNIALS("dasha_system.DECENNIALS");
 
         private final String value;
 
@@ -647,6 +957,29 @@ public final class Messages {
         private final String value;
 
         DayMarkerKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `degeneracy` as a message names it: the full catalogue key. */
+    public enum DegeneracyKey {
+        /** `degeneracy.NONE`. */
+        NONE("degeneracy.NONE"),
+        /** `degeneracy.POLAR_UNDEFINED`. */
+        POLAR_UNDEFINED("degeneracy.POLAR_UNDEFINED");
+
+        private final String value;
+
+        DegeneracyKey(String value) {
             this.value = value;
         }
 
@@ -715,7 +1048,27 @@ public final class Messages {
         /** `deity.AHIRBUDHNYA`. */
         AHIRBUDHNYA("deity.AHIRBUDHNYA"),
         /** `deity.PUSHAN`. */
-        PUSHAN("deity.PUSHAN");
+        PUSHAN("deity.PUSHAN"),
+        /** `deity.CHANDRA`. */
+        CHANDRA("deity.CHANDRA"),
+        /** `deity.DURGA`. */
+        DURGA("deity.DURGA"),
+        /** `deity.KAMADEVA`. */
+        KAMADEVA("deity.KAMADEVA"),
+        /** `deity.KARTIKEYA`. */
+        KARTIKEYA("deity.KARTIKEYA"),
+        /** `deity.SHANI`. */
+        SHANI("deity.SHANI"),
+        /** `deity.SHIVA`. */
+        SHIVA("deity.SHIVA"),
+        /** `deity.SHUKRA`. */
+        SHUKRA("deity.SHUKRA"),
+        /** `deity.SURYA`. */
+        SURYA("deity.SURYA"),
+        /** `deity.TVASHTA`. */
+        TVASHTA("deity.TVASHTA"),
+        /** `deity.VIDHATA`. */
+        VIDHATA("deity.VIDHATA");
 
         private final String value;
 
@@ -832,7 +1185,9 @@ public final class Messages {
         /** `era.VIRA_NIRVANA`. */
         VIRA_NIRVANA("era.VIRA_NIRVANA"),
         /** `era.BHASKARABDA`. */
-        BHASKARABDA("era.BHASKARABDA");
+        BHASKARABDA("era.BHASKARABDA"),
+        /** `era.HIJRI`. */
+        HIJRI("era.HIJRI");
 
         private final String value;
 
@@ -935,6 +1290,31 @@ public final class Messages {
         }
     }
 
+    /** A `gender` as a message names it: the full catalogue key. */
+    public enum GenderKey {
+        /** `gender.MALE`. */
+        MALE("gender.MALE"),
+        /** `gender.FEMALE`. */
+        FEMALE("gender.FEMALE"),
+        /** `gender.NEUTRAL`. */
+        NEUTRAL("gender.NEUTRAL");
+
+        private final String value;
+
+        GenderKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `gowri` as a message names it: the full catalogue key. */
     public enum GowriKey {
         /** `gowri.UTHI`. */
@@ -989,11 +1369,42 @@ public final class Messages {
         /** `graha.RAHU`. */
         RAHU("graha.RAHU"),
         /** `graha.KETU`. */
-        KETU("graha.KETU");
+        KETU("graha.KETU"),
+        /** `graha.URANUS`. */
+        URANUS("graha.URANUS"),
+        /** `graha.NEPTUNE`. */
+        NEPTUNE("graha.NEPTUNE"),
+        /** `graha.PLUTO`. */
+        PLUTO("graha.PLUTO");
 
         private final String value;
 
         GrahaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `guna` as a message names it: the full catalogue key. */
+    public enum GunaKey {
+        /** `guna.SATTVA`. */
+        SATTVA("guna.SATTVA"),
+        /** `guna.RAJAS`. */
+        RAJAS("guna.RAJAS"),
+        /** `guna.TAMAS`. */
+        TAMAS("guna.TAMAS");
+
+        private final String value;
+
+        GunaKey(String value) {
             this.value = value;
         }
 
@@ -1136,12 +1547,57 @@ public final class Messages {
         }
     }
 
+    /** A `koota` as a message names it: the full catalogue key. */
+    public enum KootaKey {
+        /** `koota.VARNA`. */
+        VARNA("koota.VARNA"),
+        /** `koota.VASHYA`. */
+        VASHYA("koota.VASHYA"),
+        /** `koota.TARA`. */
+        TARA("koota.TARA"),
+        /** `koota.YONI`. */
+        YONI("koota.YONI"),
+        /** `koota.GRAHA_MAITRI`. */
+        GRAHA_MAITRI("koota.GRAHA_MAITRI"),
+        /** `koota.GANA`. */
+        GANA("koota.GANA"),
+        /** `koota.BHAKOOT`. */
+        BHAKOOT("koota.BHAKOOT"),
+        /** `koota.NADI`. */
+        NADI("koota.NADI"),
+        /** `koota.RAJJU`. */
+        RAJJU("koota.RAJJU"),
+        /** `koota.VEDHA`. */
+        VEDHA("koota.VEDHA"),
+        /** `koota.STREE_DEERGHA`. */
+        STREE_DEERGHA("koota.STREE_DEERGHA"),
+        /** `koota.MAHENDRA`. */
+        MAHENDRA("koota.MAHENDRA");
+
+        private final String value;
+
+        KootaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `lunar_eclipse_kind` as a message names it: the full catalogue key. */
     public enum LunarEclipseKindKey {
         /** `lunar_eclipse_kind.PARTIAL`. */
         PARTIAL("lunar_eclipse_kind.PARTIAL"),
         /** `lunar_eclipse_kind.TOTAL`. */
-        TOTAL("lunar_eclipse_kind.TOTAL");
+        TOTAL("lunar_eclipse_kind.TOTAL"),
+        /** `lunar_eclipse_kind.PENUMBRAL`. */
+        PENUMBRAL("lunar_eclipse_kind.PENUMBRAL");
 
         private final String value;
 
@@ -1189,6 +1645,64 @@ public final class Messages {
         private final String value;
 
         MasaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `modality` as a message names it: the full catalogue key. */
+    public enum ModalityKey {
+        /** `modality.CHARA`. */
+        CHARA("modality.CHARA"),
+        /** `modality.STHIRA`. */
+        STHIRA("modality.STHIRA"),
+        /** `modality.DWISWABHAVA`. */
+        DWISWABHAVA("modality.DWISWABHAVA");
+
+        private final String value;
+
+        ModalityKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `muhurta_nature` as a message names it: the full catalogue key. */
+    public enum MuhurtaNatureKey {
+        /** `muhurta_nature.DHRUVA`. */
+        DHRUVA("muhurta_nature.DHRUVA"),
+        /** `muhurta_nature.CHARA`. */
+        CHARA("muhurta_nature.CHARA"),
+        /** `muhurta_nature.UGRA`. */
+        UGRA("muhurta_nature.UGRA"),
+        /** `muhurta_nature.KSHIPRA`. */
+        KSHIPRA("muhurta_nature.KSHIPRA"),
+        /** `muhurta_nature.MRIDU`. */
+        MRIDU("muhurta_nature.MRIDU"),
+        /** `muhurta_nature.MISHRA`. */
+        MISHRA("muhurta_nature.MISHRA"),
+        /** `muhurta_nature.TIKSHNA`. */
+        TIKSHNA("muhurta_nature.TIKSHNA");
+
+        private final String value;
+
+        MuhurtaNatureKey(String value) {
             this.value = value;
         }
 
@@ -1383,7 +1897,9 @@ public final class Messages {
         /** `nature.BENEFIC`. */
         BENEFIC("nature.BENEFIC"),
         /** `nature.MALEFIC`. */
-        MALEFIC("nature.MALEFIC");
+        MALEFIC("nature.MALEFIC"),
+        /** `nature.NEUTRAL`. */
+        NEUTRAL("nature.NEUTRAL");
 
         private final String value;
 
@@ -1440,6 +1956,29 @@ public final class Messages {
         private final String value;
 
         PanchakaKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `parity` as a message names it: the full catalogue key. */
+    public enum ParityKey {
+        /** `parity.ODD`. */
+        ODD("parity.ODD"),
+        /** `parity.EVEN`. */
+        EVEN("parity.EVEN");
+
+        private final String value;
+
+        ParityKey(String value) {
             this.value = value;
         }
 
@@ -1519,11 +2058,106 @@ public final class Messages {
         /** `point.A1`. */
         A1("point.A1"),
         /** `point.A12`. */
-        A12("point.A12");
+        A12("point.A12"),
+        /** `point.MC`. */
+        MC("point.MC"),
+        /** `point.DESCENDANT`. */
+        DESCENDANT("point.DESCENDANT"),
+        /** `point.IC`. */
+        IC("point.IC"),
+        /** `point.VIGHATI_LAGNA`. */
+        VIGHATI_LAGNA("point.VIGHATI_LAGNA"),
+        /** `point.SREE_LAGNA`. */
+        SREE_LAGNA("point.SREE_LAGNA"),
+        /** `point.INDU_LAGNA`. */
+        INDU_LAGNA("point.INDU_LAGNA"),
+        /** `point.BHRIGU_BINDU`. */
+        BHRIGU_BINDU("point.BHRIGU_BINDU"),
+        /** `point.YOGI`. */
+        YOGI("point.YOGI"),
+        /** `point.AVAYOGI`. */
+        AVAYOGI("point.AVAYOGI"),
+        /** `point.SAHAYOGI`. */
+        SAHAYOGI("point.SAHAYOGI"),
+        /** `point.TRISPHUTA`. */
+        TRISPHUTA("point.TRISPHUTA"),
+        /** `point.CHATUSSPHUTA`. */
+        CHATUSSPHUTA("point.CHATUSSPHUTA"),
+        /** `point.PANCHASPHUTA`. */
+        PANCHASPHUTA("point.PANCHASPHUTA"),
+        /** `point.PRANA_SPHUTA`. */
+        PRANA_SPHUTA("point.PRANA_SPHUTA"),
+        /** `point.DEHA_SPHUTA`. */
+        DEHA_SPHUTA("point.DEHA_SPHUTA"),
+        /** `point.MRITYU_SPHUTA`. */
+        MRITYU_SPHUTA("point.MRITYU_SPHUTA"),
+        /** `point.BEEJA_SPHUTA`. */
+        BEEJA_SPHUTA("point.BEEJA_SPHUTA"),
+        /** `point.KSHETRA_SPHUTA`. */
+        KSHETRA_SPHUTA("point.KSHETRA_SPHUTA"),
+        /** `point.YAMAGHANTAKA`. */
+        YAMAGHANTAKA("point.YAMAGHANTAKA"),
+        /** `point.SWAMSHA`. */
+        SWAMSHA("point.SWAMSHA"),
+        /** `point.A2`. */
+        A2("point.A2"),
+        /** `point.A3`. */
+        A3("point.A3"),
+        /** `point.A4`. */
+        A4("point.A4"),
+        /** `point.A5`. */
+        A5("point.A5"),
+        /** `point.A6`. */
+        A6("point.A6"),
+        /** `point.A7`. */
+        A7("point.A7"),
+        /** `point.A8`. */
+        A8("point.A8"),
+        /** `point.A9`. */
+        A9("point.A9"),
+        /** `point.A10`. */
+        A10("point.A10"),
+        /** `point.A11`. */
+        A11("point.A11");
 
         private final String value;
 
         PointKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `point_family` as a message names it: the full catalogue key. */
+    public enum PointFamilyKey {
+        /** `point_family.ANGLE`. */
+        ANGLE("point_family.ANGLE"),
+        /** `point_family.SPECIAL_LAGNA`. */
+        SPECIAL_LAGNA("point_family.SPECIAL_LAGNA"),
+        /** `point_family.UPAGRAHA_SOLAR`. */
+        UPAGRAHA_SOLAR("point_family.UPAGRAHA_SOLAR"),
+        /** `point_family.UPAGRAHA_DAY`. */
+        UPAGRAHA_DAY("point_family.UPAGRAHA_DAY"),
+        /** `point_family.ARUDHA`. */
+        ARUDHA("point_family.ARUDHA"),
+        /** `point_family.SPHUTA`. */
+        SPHUTA("point_family.SPHUTA"),
+        /** `point_family.JAIMINI`. */
+        JAIMINI("point_family.JAIMINI"),
+        /** `point_family.MIDPOINT`. */
+        MIDPOINT("point_family.MIDPOINT");
+
+        private final String value;
+
+        PointFamilyKey(String value) {
             this.value = value;
         }
 
@@ -1609,6 +2243,31 @@ public final class Messages {
         }
     }
 
+    /** A `rising` as a message names it: the full catalogue key. */
+    public enum RisingKey {
+        /** `rising.SIRSHODAYA`. */
+        SIRSHODAYA("rising.SIRSHODAYA"),
+        /** `rising.PRISHTODAYA`. */
+        PRISHTODAYA("rising.PRISHTODAYA"),
+        /** `rising.UBHAYODAYA`. */
+        UBHAYODAYA("rising.UBHAYODAYA");
+
+        private final String value;
+
+        RisingKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `ritu` as a message names it: the full catalogue key. */
     public enum RituKey {
         /** `ritu.VASANTA`. */
@@ -1649,7 +2308,9 @@ public final class Messages {
         /** `ruler_day_rule.GARGA`. */
         GARGA("ruler_day_rule.GARGA"),
         /** `ruler_day_rule.VARA`. */
-        VARA("ruler_day_rule.VARA");
+        VARA("ruler_day_rule.VARA"),
+        /** `ruler_day_rule.DAYLIGHT`. */
+        DAYLIGHT("ruler_day_rule.DAYLIGHT");
 
         private final String value;
 
@@ -1672,7 +2333,9 @@ public final class Messages {
         /** `ruler_text.JYOTIRNIBANDHA`. */
         JYOTIRNIBANDHA("ruler_text.JYOTIRNIBANDHA"),
         /** `ruler_text.NARADA_SAMHITA`. */
-        NARADA_SAMHITA("ruler_text.NARADA_SAMHITA");
+        NARADA_SAMHITA("ruler_text.NARADA_SAMHITA"),
+        /** `ruler_text.NAVANAYAKA`. */
+        NAVANAYAKA("ruler_text.NAVANAYAKA");
 
         private final String value;
 
@@ -1829,6 +2492,29 @@ public final class Messages {
         }
     }
 
+    /** A `sex` as a message names it: the full catalogue key. */
+    public enum SexKey {
+        /** `sex.MALE`. */
+        MALE("sex.MALE"),
+        /** `sex.FEMALE`. */
+        FEMALE("sex.FEMALE");
+
+        private final String value;
+
+        SexKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `shiva_vasa` as a message names it: the full catalogue key. */
     public enum ShivaVasaKey {
         /** `shiva_vasa.KAILASA`. */
@@ -1867,11 +2553,315 @@ public final class Messages {
         /** `solar_eclipse_kind.PARTIAL`. */
         PARTIAL("solar_eclipse_kind.PARTIAL"),
         /** `solar_eclipse_kind.TOTAL`. */
-        TOTAL("solar_eclipse_kind.TOTAL");
+        TOTAL("solar_eclipse_kind.TOTAL"),
+        /** `solar_eclipse_kind.ANNULAR`. */
+        ANNULAR("solar_eclipse_kind.ANNULAR"),
+        /** `solar_eclipse_kind.HYBRID`. */
+        HYBRID("solar_eclipse_kind.HYBRID");
 
         private final String value;
 
         SolarEclipseKindKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `star` as a message names it: the full catalogue key. */
+    public enum StarKey {
+        /** `star.SHERATAN`. */
+        SHERATAN("star.SHERATAN"),
+        /** `star.BHARANI`. */
+        BHARANI("star.BHARANI"),
+        /** `star.ALCYONE`. */
+        ALCYONE("star.ALCYONE"),
+        /** `star.ALDEBARAN`. */
+        ALDEBARAN("star.ALDEBARAN"),
+        /** `star.MEISSA`. */
+        MEISSA("star.MEISSA"),
+        /** `star.BETELGEUSE`. */
+        BETELGEUSE("star.BETELGEUSE"),
+        /** `star.POLLUX`. */
+        POLLUX("star.POLLUX"),
+        /** `star.ASELLUS_AUSTRALIS`. */
+        ASELLUS_AUSTRALIS("star.ASELLUS_AUSTRALIS"),
+        /** `star.ASHLESHA`. */
+        ASHLESHA("star.ASHLESHA"),
+        /** `star.REGULUS`. */
+        REGULUS("star.REGULUS"),
+        /** `star.ZOSMA`. */
+        ZOSMA("star.ZOSMA"),
+        /** `star.DENEBOLA`. */
+        DENEBOLA("star.DENEBOLA"),
+        /** `star.ALGORAB`. */
+        ALGORAB("star.ALGORAB"),
+        /** `star.SPICA`. */
+        SPICA("star.SPICA"),
+        /** `star.ARCTURUS`. */
+        ARCTURUS("star.ARCTURUS"),
+        /** `star.ZUBENELGENUBI`. */
+        ZUBENELGENUBI("star.ZUBENELGENUBI"),
+        /** `star.DSCHUBBA`. */
+        DSCHUBBA("star.DSCHUBBA"),
+        /** `star.ANTARES`. */
+        ANTARES("star.ANTARES"),
+        /** `star.SHAULA`. */
+        SHAULA("star.SHAULA"),
+        /** `star.KAUS_MEDIA`. */
+        KAUS_MEDIA("star.KAUS_MEDIA"),
+        /** `star.NUNKI`. */
+        NUNKI("star.NUNKI"),
+        /** `star.VEGA`. */
+        VEGA("star.VEGA"),
+        /** `star.ALTAIR`. */
+        ALTAIR("star.ALTAIR"),
+        /** `star.ROTANEV`. */
+        ROTANEV("star.ROTANEV"),
+        /** `star.HYDOR`. */
+        HYDOR("star.HYDOR"),
+        /** `star.MARKAB`. */
+        MARKAB("star.MARKAB"),
+        /** `star.ALGENIB`. */
+        ALGENIB("star.ALGENIB"),
+        /** `star.REVATI`. */
+        REVATI("star.REVATI"),
+        /** `star.CANOPUS`. */
+        CANOPUS("star.CANOPUS"),
+        /** `star.SIRIUS`. */
+        SIRIUS("star.SIRIUS"),
+        /** `star.CAPELLA`. */
+        CAPELLA("star.CAPELLA"),
+        /** `star.POLARIS`. */
+        POLARIS("star.POLARIS"),
+        /** `star.DUBHE`. */
+        DUBHE("star.DUBHE"),
+        /** `star.MERAK`. */
+        MERAK("star.MERAK"),
+        /** `star.PHECDA`. */
+        PHECDA("star.PHECDA"),
+        /** `star.ALIOTH`. */
+        ALIOTH("star.ALIOTH"),
+        /** `star.MIZAR`. */
+        MIZAR("star.MIZAR"),
+        /** `star.ALKAID`. */
+        ALKAID("star.ALKAID"),
+        /** `star.ACHERNAR`. */
+        ACHERNAR("star.ACHERNAR"),
+        /** `star.ACRUX`. */
+        ACRUX("star.ACRUX"),
+        /** `star.ADHARA`. */
+        ADHARA("star.ADHARA"),
+        /** `star.AIN`. */
+        AIN("star.AIN"),
+        /** `star.ALBALDAH`. */
+        ALBALDAH("star.ALBALDAH"),
+        /** `star.ALBIREO`. */
+        ALBIREO("star.ALBIREO"),
+        /** `star.ALDERAMIN`. */
+        ALDERAMIN("star.ALDERAMIN"),
+        /** `star.ALGEDI`. */
+        ALGEDI("star.ALGEDI"),
+        /** `star.ALGIEBA`. */
+        ALGIEBA("star.ALGIEBA"),
+        /** `star.ALGOL`. */
+        ALGOL("star.ALGOL"),
+        /** `star.ALHENA`. */
+        ALHENA("star.ALHENA"),
+        /** `star.ALJANAH`. */
+        ALJANAH("star.ALJANAH"),
+        /** `star.ALMACH`. */
+        ALMACH("star.ALMACH"),
+        /** `star.ALNAIR`. */
+        ALNAIR("star.ALNAIR"),
+        /** `star.ALNASL`. */
+        ALNASL("star.ALNASL"),
+        /** `star.ALNILAM`. */
+        ALNILAM("star.ALNILAM"),
+        /** `star.ALNITAK`. */
+        ALNITAK("star.ALNITAK"),
+        /** `star.ALPHARD`. */
+        ALPHARD("star.ALPHARD"),
+        /** `star.ALPHECCA`. */
+        ALPHECCA("star.ALPHECCA"),
+        /** `star.ALPHERATZ`. */
+        ALPHERATZ("star.ALPHERATZ"),
+        /** `star.ALSEPHINA`. */
+        ALSEPHINA("star.ALSEPHINA"),
+        /** `star.ALSHAIN`. */
+        ALSHAIN("star.ALSHAIN"),
+        /** `star.ALUDRA`. */
+        ALUDRA("star.ALUDRA"),
+        /** `star.ANKAA`. */
+        ANKAA("star.ANKAA"),
+        /** `star.ASCELLA`. */
+        ASCELLA("star.ASCELLA"),
+        /** `star.ASPIDISKE`. */
+        ASPIDISKE("star.ASPIDISKE"),
+        /** `star.ATRIA`. */
+        ATRIA("star.ATRIA"),
+        /** `star.AVIOR`. */
+        AVIOR("star.AVIOR"),
+        /** `star.BELLATRIX`. */
+        BELLATRIX("star.BELLATRIX"),
+        /** `star.CAPH`. */
+        CAPH("star.CAPH"),
+        /** `star.CASTOR`. */
+        CASTOR("star.CASTOR"),
+        /** `star.CHAMUKUY`. */
+        CHAMUKUY("star.CHAMUKUY"),
+        /** `star.DENEB`. */
+        DENEB("star.DENEB"),
+        /** `star.DIPHDA`. */
+        DIPHDA("star.DIPHDA"),
+        /** `star.ELNATH`. */
+        ELNATH("star.ELNATH"),
+        /** `star.ENIF`. */
+        ENIF("star.ENIF"),
+        /** `star.ERRAI`. */
+        ERRAI("star.ERRAI"),
+        /** `star.FANG`. */
+        FANG("star.FANG"),
+        /** `star.FOMALHAUT`. */
+        FOMALHAUT("star.FOMALHAUT"),
+        /** `star.GACRUX`. */
+        GACRUX("star.GACRUX"),
+        /** `star.HADAR`. */
+        HADAR("star.HADAR"),
+        /** `star.HAMAL`. */
+        HAMAL("star.HAMAL"),
+        /** `star.HEZE`. */
+        HEZE("star.HEZE"),
+        /** `star.IZAR`. */
+        IZAR("star.IZAR"),
+        /** `star.KAUS_AUSTRALIS`. */
+        KAUS_AUSTRALIS("star.KAUS_AUSTRALIS"),
+        /** `star.KAUS_BOREALIS`. */
+        KAUS_BOREALIS("star.KAUS_BOREALIS"),
+        /** `star.KITALPHA`. */
+        KITALPHA("star.KITALPHA"),
+        /** `star.KORNEPHOROS`. */
+        KORNEPHOROS("star.KORNEPHOROS"),
+        /** `star.MARFIK`. */
+        MARFIK("star.MARFIK"),
+        /** `star.MENKALINAN`. */
+        MENKALINAN("star.MENKALINAN"),
+        /** `star.MENKAR`. */
+        MENKAR("star.MENKAR"),
+        /** `star.MENKENT`. */
+        MENKENT("star.MENKENT"),
+        /** `star.MIAPLACIDUS`. */
+        MIAPLACIDUS("star.MIAPLACIDUS"),
+        /** `star.MIMOSA`. */
+        MIMOSA("star.MIMOSA"),
+        /** `star.MINTAKA`. */
+        MINTAKA("star.MINTAKA"),
+        /** `star.MIRACH`. */
+        MIRACH("star.MIRACH"),
+        /** `star.MIRFAK`. */
+        MIRFAK("star.MIRFAK"),
+        /** `star.NAOS`. */
+        NAOS("star.NAOS"),
+        /** `star.NIHAL`. */
+        NIHAL("star.NIHAL"),
+        /** `star.PEACOCK`. */
+        PEACOCK("star.PEACOCK"),
+        /** `star.PROCYON`. */
+        PROCYON("star.PROCYON"),
+        /** `star.RASALGETHI`. */
+        RASALGETHI("star.RASALGETHI"),
+        /** `star.RASALHAGUE`. */
+        RASALHAGUE("star.RASALHAGUE"),
+        /** `star.RIGEL`. */
+        RIGEL("star.RIGEL"),
+        /** `star.RIGIL_KENTAURUS`. */
+        RIGIL_KENTAURUS("star.RIGIL_KENTAURUS"),
+        /** `star.SABIK`. */
+        SABIK("star.SABIK"),
+        /** `star.SADALBARI`. */
+        SADALBARI("star.SADALBARI"),
+        /** `star.SADALMELIK`. */
+        SADALMELIK("star.SADALMELIK"),
+        /** `star.SADALSUUD`. */
+        SADALSUUD("star.SADALSUUD"),
+        /** `star.SADR`. */
+        SADR("star.SADR"),
+        /** `star.SAIPH`. */
+        SAIPH("star.SAIPH"),
+        /** `star.SARGAS`. */
+        SARGAS("star.SARGAS"),
+        /** `star.SCHEAT`. */
+        SCHEAT("star.SCHEAT"),
+        /** `star.SCHEDAR`. */
+        SCHEDAR("star.SCHEDAR"),
+        /** `star.SEGINUS`. */
+        SEGINUS("star.SEGINUS"),
+        /** `star.SHELIAK`. */
+        SHELIAK("star.SHELIAK"),
+        /** `star.SKAT`. */
+        SKAT("star.SKAT"),
+        /** `star.SUHAIL`. */
+        SUHAIL("star.SUHAIL"),
+        /** `star.SYRMA`. */
+        SYRMA("star.SYRMA"),
+        /** `star.THUBAN`. */
+        THUBAN("star.THUBAN"),
+        /** `star.TUREIS`. */
+        TUREIS("star.TUREIS"),
+        /** `star.UNUKALHAI`. */
+        UNUKALHAI("star.UNUKALHAI"),
+        /** `star.VINDEMIATRIX`. */
+        VINDEMIATRIX("star.VINDEMIATRIX"),
+        /** `star.WEZEN`. */
+        WEZEN("star.WEZEN"),
+        /** `star.YED_PRIOR`. */
+        YED_PRIOR("star.YED_PRIOR"),
+        /** `star.ZANIAH`. */
+        ZANIAH("star.ZANIAH"),
+        /** `star.ZUBENESCHAMALI`. */
+        ZUBENESCHAMALI("star.ZUBENESCHAMALI"),
+        /** `star.SGR_A_STAR`. */
+        SGR_A_STAR("star.SGR_A_STAR"),
+        /** `star.GALACTIC_POLE`. */
+        GALACTIC_POLE("star.GALACTIC_POLE"),
+        /** `star.GALACTIC_POLE_IAU1958`. */
+        GALACTIC_POLE_IAU1958("star.GALACTIC_POLE_IAU1958");
+
+        private final String value;
+
+        StarKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `star_class` as a message names it: the full catalogue key. */
+    public enum StarClassKey {
+        /** `star_class.STAR`. */
+        STAR("star_class.STAR"),
+        /** `star_class.RADIO_SOURCE`. */
+        RADIO_SOURCE("star_class.RADIO_SOURCE"),
+        /** `star_class.DIRECTION`. */
+        DIRECTION("star_class.DIRECTION");
+
+        private final String value;
+
+        StarClassKey(String value) {
             this.value = value;
         }
 
@@ -1957,6 +2947,78 @@ public final class Messages {
         }
     }
 
+    /** A `tibetan_animal` as a message names it: the full catalogue key. */
+    public enum TibetanAnimalKey {
+        /** `tibetan_animal.MOUSE`. */
+        MOUSE("tibetan_animal.MOUSE"),
+        /** `tibetan_animal.OX`. */
+        OX("tibetan_animal.OX"),
+        /** `tibetan_animal.TIGER`. */
+        TIGER("tibetan_animal.TIGER"),
+        /** `tibetan_animal.RABBIT`. */
+        RABBIT("tibetan_animal.RABBIT"),
+        /** `tibetan_animal.DRAGON`. */
+        DRAGON("tibetan_animal.DRAGON"),
+        /** `tibetan_animal.SNAKE`. */
+        SNAKE("tibetan_animal.SNAKE"),
+        /** `tibetan_animal.HORSE`. */
+        HORSE("tibetan_animal.HORSE"),
+        /** `tibetan_animal.SHEEP`. */
+        SHEEP("tibetan_animal.SHEEP"),
+        /** `tibetan_animal.MONKEY`. */
+        MONKEY("tibetan_animal.MONKEY"),
+        /** `tibetan_animal.BIRD`. */
+        BIRD("tibetan_animal.BIRD"),
+        /** `tibetan_animal.DOG`. */
+        DOG("tibetan_animal.DOG"),
+        /** `tibetan_animal.PIG`. */
+        PIG("tibetan_animal.PIG");
+
+        private final String value;
+
+        TibetanAnimalKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `tibetan_element` as a message names it: the full catalogue key. */
+    public enum TibetanElementKey {
+        /** `tibetan_element.WOOD`. */
+        WOOD("tibetan_element.WOOD"),
+        /** `tibetan_element.FIRE`. */
+        FIRE("tibetan_element.FIRE"),
+        /** `tibetan_element.EARTH`. */
+        EARTH("tibetan_element.EARTH"),
+        /** `tibetan_element.IRON`. */
+        IRON("tibetan_element.IRON"),
+        /** `tibetan_element.WATER`. */
+        WATER("tibetan_element.WATER");
+
+        private final String value;
+
+        TibetanElementKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
     /** A `tithi` as a message names it: the full catalogue key. */
     public enum TithiKey {
         /** `tithi.SHUKLA_PRATIPADA`. */
@@ -2023,6 +3085,35 @@ public final class Messages {
         private final String value;
 
         TithiKey(String value) {
+            this.value = value;
+        }
+
+        /**
+         * The value as the engine writes it.
+         *
+         * @return the value
+         */
+        public String value() {
+            return value;
+        }
+    }
+
+    /** A `tithi_class` as a message names it: the full catalogue key. */
+    public enum TithiClassKey {
+        /** `tithi_class.NANDA`. */
+        NANDA("tithi_class.NANDA"),
+        /** `tithi_class.BHADRA`. */
+        BHADRA("tithi_class.BHADRA"),
+        /** `tithi_class.JAYA`. */
+        JAYA("tithi_class.JAYA"),
+        /** `tithi_class.RIKTA`. */
+        RIKTA("tithi_class.RIKTA"),
+        /** `tithi_class.PURNA`. */
+        PURNA("tithi_class.PURNA");
+
+        private final String value;
+
+        TithiClassKey(String value) {
             this.value = value;
         }
 
@@ -2149,7 +3240,13 @@ public final class Messages {
         /** `vaiseshikamsa.VIDRUMA`. */
         VIDRUMA("vaiseshikamsa.VIDRUMA"),
         /** `vaiseshikamsa.GOLOKA`. */
-        GOLOKA("vaiseshikamsa.GOLOKA");
+        GOLOKA("vaiseshikamsa.GOLOKA"),
+        /** `vaiseshikamsa.KUSUMA`. */
+        KUSUMA("vaiseshikamsa.KUSUMA"),
+        /** `vaiseshikamsa.CHAKRASIMHASANA`. */
+        CHAKRASIMHASANA("vaiseshikamsa.CHAKRASIMHASANA"),
+        /** `vaiseshikamsa.SHRIVALLABHA`. */
+        SHRIVALLABHA("vaiseshikamsa.SHRIVALLABHA");
 
         private final String value;
 
@@ -2231,7 +3328,19 @@ public final class Messages {
         /** `varga.D45`. */
         D45("varga.D45"),
         /** `varga.D60`. */
-        D60("varga.D60");
+        D60("varga.D60"),
+        /** `varga.D1`. */
+        D1("varga.D1"),
+        /** `varga.D5`. */
+        D5("varga.D5"),
+        /** `varga.D6`. */
+        D6("varga.D6"),
+        /** `varga.D8`. */
+        D8("varga.D8"),
+        /** `varga.D11`. */
+        D11("varga.D11"),
+        /** `varga.D150`. */
+        D150("varga.D150");
 
         private final String value;
 
@@ -2353,7 +3462,11 @@ public final class Messages {
         /** `year_office.RASADHIPATI`. */
         RASADHIPATI("year_office.RASADHIPATI"),
         /** `year_office.NIRASADHIPATI`. */
-        NIRASADHIPATI("year_office.NIRASADHIPATI");
+        NIRASADHIPATI("year_office.NIRASADHIPATI"),
+        /** `year_office.SENADHIPATI`. */
+        SENADHIPATI("year_office.SENADHIPATI"),
+        /** `year_office.ARGHADHIPATI`. */
+        ARGHADHIPATI("year_office.ARGHADHIPATI");
 
         private final String value;
 
@@ -4619,6 +5732,61 @@ public final class Messages {
 
 
             /**
+             * The messages under `auspiciousness`.
+             *
+             * @return the group
+             */
+            public SdkEntityAuspiciousness auspiciousness() {
+                return new SdkEntityAuspiciousness(r);
+            }
+
+            /** The messages under `SdkEntityAuspiciousness`, each rendered by its own key. */
+            public static final class SdkEntityAuspiciousness {
+                private final Renderer r;
+
+                SdkEntityAuspiciousness(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `auspiciousness.AUSPICIOUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms auspicious() {
+                    return r.entity("auspiciousness.AUSPICIOUS");
+                }
+
+                /**
+                 * The forms of `auspiciousness.HIGHLY_INAUSPICIOUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms highlyInauspicious() {
+                    return r.entity("auspiciousness.HIGHLY_INAUSPICIOUS");
+                }
+
+                /**
+                 * The forms of `auspiciousness.INAUSPICIOUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms inauspicious() {
+                    return r.entity("auspiciousness.INAUSPICIOUS");
+                }
+
+                /**
+                 * The forms of `auspiciousness.MIXED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mixed() {
+                    return r.entity("auspiciousness.MIXED");
+                }
+            }
+
+
+            /**
              * The messages under `avastha_baladi`.
              *
              * @return the group
@@ -5554,6 +6722,125 @@ public final class Messages {
 
 
             /**
+             * The messages under `ayanamsha_category`.
+             *
+             * @return the group
+             */
+            public SdkEntityAyanamshaCategory ayanamshaCategory() {
+                return new SdkEntityAyanamshaCategory(r);
+            }
+
+            /** The messages under `SdkEntityAyanamshaCategory`, each rendered by its own key. */
+            public static final class SdkEntityAyanamshaCategory {
+                private final Renderer r;
+
+                SdkEntityAyanamshaCategory(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `ayanamsha_category.EPOCH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms epoch() {
+                    return r.entity("ayanamsha_category.EPOCH");
+                }
+
+                /**
+                 * The forms of `ayanamsha_category.GALACTIC` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms galactic() {
+                    return r.entity("ayanamsha_category.GALACTIC");
+                }
+
+                /**
+                 * The forms of `ayanamsha_category.HISTORICAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms historical() {
+                    return r.entity("ayanamsha_category.HISTORICAL");
+                }
+
+                /**
+                 * The forms of `ayanamsha_category.STAR_ANCHORED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms starAnchored() {
+                    return r.entity("ayanamsha_category.STAR_ANCHORED");
+                }
+
+                /**
+                 * The forms of `ayanamsha_category.VEDIC_CLASSICAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vedicClassical() {
+                    return r.entity("ayanamsha_category.VEDIC_CLASSICAL");
+                }
+
+                /**
+                 * The forms of `ayanamsha_category.VEDIC_STANDARD` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vedicStandard() {
+                    return r.entity("ayanamsha_category.VEDIC_STANDARD");
+                }
+
+                /**
+                 * The forms of `ayanamsha_category.WESTERN_SIDEREAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms westernSidereal() {
+                    return r.entity("ayanamsha_category.WESTERN_SIDEREAL");
+                }
+            }
+
+
+            /**
+             * The messages under `bala_scheme`.
+             *
+             * @return the group
+             */
+            public SdkEntityBalaScheme balaScheme() {
+                return new SdkEntityBalaScheme(r);
+            }
+
+            /** The messages under `SdkEntityBalaScheme`, each rendered by its own key. */
+            public static final class SdkEntityBalaScheme {
+                private final Renderer r;
+
+                SdkEntityBalaScheme(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `bala_scheme.PARASHARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms parashara() {
+                    return r.entity("bala_scheme.PARASHARA");
+                }
+
+                /**
+                 * The forms of `bala_scheme.PARASHARA_EXTENDED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms parasharaExtended() {
+                    return r.entity("bala_scheme.PARASHARA_EXTENDED");
+                }
+            }
+
+
+            /**
              * The messages under `bhadra_vasa`.
              *
              * @return the group
@@ -5635,6 +6922,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `blackout_kind.ECLIPSE_STAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms eclipseStar() {
+                    return r.entity("blackout_kind.ECLIPSE_STAR");
+                }
+
+                /**
+                 * The forms of `blackout_kind.ECLIPSE_VEDHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms eclipseVedha() {
+                    return r.entity("blackout_kind.ECLIPSE_VEDHA");
+                }
+
+                /**
                  * The forms of `blackout_kind.GURU_ASTA` in the current locale.
                  *
                  * @return the forms
@@ -5650,6 +6955,15 @@ public final class Messages {
                  */
                 public EntityForms holashtaka() {
                     return r.entity("blackout_kind.HOLASHTAKA");
+                }
+
+                /**
+                 * The forms of `blackout_kind.KHARMAS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kharmas() {
+                    return r.entity("blackout_kind.KHARMAS");
                 }
 
                 /**
@@ -5695,6 +7009,224 @@ public final class Messages {
                  */
                 public EntityForms shukraAsta() {
                     return r.entity("blackout_kind.SHUKRA_ASTA");
+                }
+            }
+
+
+            /**
+             * The messages under `body_class`.
+             *
+             * @return the group
+             */
+            public SdkEntityBodyClass bodyClass() {
+                return new SdkEntityBodyClass(r);
+            }
+
+            /** The messages under `SdkEntityBodyClass`, each rendered by its own key. */
+            public static final class SdkEntityBodyClass {
+                private final Renderer r;
+
+                SdkEntityBodyClass(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `body_class.LUMINARY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms luminary() {
+                    return r.entity("body_class.LUMINARY");
+                }
+
+                /**
+                 * The forms of `body_class.NODE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms node() {
+                    return r.entity("body_class.NODE");
+                }
+
+                /**
+                 * The forms of `body_class.OUTER` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms outer() {
+                    return r.entity("body_class.OUTER");
+                }
+
+                /**
+                 * The forms of `body_class.PLANET` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms planet() {
+                    return r.entity("body_class.PLANET");
+                }
+            }
+
+
+            /**
+             * The messages under `calendar`.
+             *
+             * @return the group
+             */
+            public SdkEntityCalendar calendar() {
+                return new SdkEntityCalendar(r);
+            }
+
+            /** The messages under `SdkEntityCalendar`, each rendered by its own key. */
+            public static final class SdkEntityCalendar {
+                private final Renderer r;
+
+                SdkEntityCalendar(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `calendar.ASSAM_SOLAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms assamSolar() {
+                    return r.entity("calendar.ASSAM_SOLAR");
+                }
+
+                /**
+                 * The forms of `calendar.BANGLADESHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bangladeshi() {
+                    return r.entity("calendar.BANGLADESHI");
+                }
+
+                /**
+                 * The forms of `calendar.BENGAL_SOLAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bengalSolar() {
+                    return r.entity("calendar.BENGAL_SOLAR");
+                }
+
+                /**
+                 * The forms of `calendar.BIKRAM_SAMBAT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bikramSambat() {
+                    return r.entity("calendar.BIKRAM_SAMBAT");
+                }
+
+                /**
+                 * The forms of `calendar.GREGORIAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gregorian() {
+                    return r.entity("calendar.GREGORIAN");
+                }
+
+                /**
+                 * The forms of `calendar.HIJRI_TABULAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms hijriTabular() {
+                    return r.entity("calendar.HIJRI_TABULAR");
+                }
+
+                /**
+                 * The forms of `calendar.INDIAN_LUNISOLAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms indianLunisolar() {
+                    return r.entity("calendar.INDIAN_LUNISOLAR");
+                }
+
+                /**
+                 * The forms of `calendar.INDIAN_NATIONAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms indianNational() {
+                    return r.entity("calendar.INDIAN_NATIONAL");
+                }
+
+                /**
+                 * The forms of `calendar.ISO_WEEK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms isoWeek() {
+                    return r.entity("calendar.ISO_WEEK");
+                }
+
+                /**
+                 * The forms of `calendar.JULIAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms julian() {
+                    return r.entity("calendar.JULIAN");
+                }
+
+                /**
+                 * The forms of `calendar.MALAYALAM_SOLAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms malayalamSolar() {
+                    return r.entity("calendar.MALAYALAM_SOLAR");
+                }
+
+                /**
+                 * The forms of `calendar.MIXED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mixed() {
+                    return r.entity("calendar.MIXED");
+                }
+
+                /**
+                 * The forms of `calendar.ODIA_SOLAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms odiaSolar() {
+                    return r.entity("calendar.ODIA_SOLAR");
+                }
+
+                /**
+                 * The forms of `calendar.TAMIL_SOLAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tamilSolar() {
+                    return r.entity("calendar.TAMIL_SOLAR");
+                }
+
+                /**
+                 * The forms of `calendar.TAMIL_VAKYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tamilVakya() {
+                    return r.entity("calendar.TAMIL_VAKYA");
+                }
+
+                /**
+                 * The forms of `calendar.TIBETAN_PHUGPA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tibetanPhugpa() {
+                    return r.entity("calendar.TIBETAN_PHUGPA");
                 }
             }
 
@@ -5791,6 +7323,188 @@ public final class Messages {
 
 
             /**
+             * The messages under `chart_kind`.
+             *
+             * @return the group
+             */
+            public SdkEntityChartKind chartKind() {
+                return new SdkEntityChartKind(r);
+            }
+
+            /** The messages under `SdkEntityChartKind`, each rendered by its own key. */
+            public static final class SdkEntityChartKind {
+                private final Renderer r;
+
+                SdkEntityChartKind(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `chart_kind.COMPOSITE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms composite() {
+                    return r.entity("chart_kind.COMPOSITE");
+                }
+
+                /**
+                 * The forms of `chart_kind.EVENT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms event() {
+                    return r.entity("chart_kind.EVENT");
+                }
+
+                /**
+                 * The forms of `chart_kind.MUNDANE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mundane() {
+                    return r.entity("chart_kind.MUNDANE");
+                }
+
+                /**
+                 * The forms of `chart_kind.NATAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms natal() {
+                    return r.entity("chart_kind.NATAL");
+                }
+
+                /**
+                 * The forms of `chart_kind.PRASHNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms prashna() {
+                    return r.entity("chart_kind.PRASHNA");
+                }
+
+                /**
+                 * The forms of `chart_kind.RELOCATED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms relocated() {
+                    return r.entity("chart_kind.RELOCATED");
+                }
+
+                /**
+                 * The forms of `chart_kind.RETURN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms return_() {
+                    return r.entity("chart_kind.RETURN");
+                }
+
+                /**
+                 * The forms of `chart_kind.TRANSIT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms transit() {
+                    return r.entity("chart_kind.TRANSIT");
+                }
+            }
+
+
+            /**
+             * The messages under `chart_layout`.
+             *
+             * @return the group
+             */
+            public SdkEntityChartLayout chartLayout() {
+                return new SdkEntityChartLayout(r);
+            }
+
+            /** The messages under `SdkEntityChartLayout`, each rendered by its own key. */
+            public static final class SdkEntityChartLayout {
+                private final Renderer r;
+
+                SdkEntityChartLayout(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `chart_layout.EAST_INDIAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms eastIndian() {
+                    return r.entity("chart_layout.EAST_INDIAN");
+                }
+
+                /**
+                 * The forms of `chart_layout.NEPALI_CIRCLE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nepaliCircle() {
+                    return r.entity("chart_layout.NEPALI_CIRCLE");
+                }
+
+                /**
+                 * The forms of `chart_layout.NEPALI_LOTUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nepaliLotus() {
+                    return r.entity("chart_layout.NEPALI_LOTUS");
+                }
+
+                /**
+                 * The forms of `chart_layout.NORTH_INDIAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms northIndian() {
+                    return r.entity("chart_layout.NORTH_INDIAN");
+                }
+
+                /**
+                 * The forms of `chart_layout.NORTH_INDIAN_PETALS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms northIndianPetals() {
+                    return r.entity("chart_layout.NORTH_INDIAN_PETALS");
+                }
+
+                /**
+                 * The forms of `chart_layout.SOUTH_INDIAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms southIndian() {
+                    return r.entity("chart_layout.SOUTH_INDIAN");
+                }
+
+                /**
+                 * The forms of `chart_layout.SUDARSHAN_CHAKRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sudarshanChakra() {
+                    return r.entity("chart_layout.SUDARSHAN_CHAKRA");
+                }
+
+                /**
+                 * The forms of `chart_layout.WESTERN_WHEEL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms westernWheel() {
+                    return r.entity("chart_layout.WESTERN_WHEEL");
+                }
+            }
+
+
+            /**
              * The messages under `choghadiya`.
              *
              * @return the group
@@ -5873,6 +7587,124 @@ public final class Messages {
 
 
             /**
+             * The messages under `dasha_family`.
+             *
+             * @return the group
+             */
+            public SdkEntityDashaFamily dashaFamily() {
+                return new SdkEntityDashaFamily(r);
+            }
+
+            /** The messages under `SdkEntityDashaFamily`, each rendered by its own key. */
+            public static final class SdkEntityDashaFamily {
+                private final Renderer r;
+
+                SdkEntityDashaFamily(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `dasha_family.COMPOSITION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms composition() {
+                    return r.entity("dasha_family.COMPOSITION");
+                }
+
+                /**
+                 * The forms of `dasha_family.DECENNIALS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms decennials() {
+                    return r.entity("dasha_family.DECENNIALS");
+                }
+
+                /**
+                 * The forms of `dasha_family.FIRDARIA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms firdaria() {
+                    return r.entity("dasha_family.FIRDARIA");
+                }
+
+                /**
+                 * The forms of `dasha_family.GRAHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms graha() {
+                    return r.entity("dasha_family.GRAHA");
+                }
+
+                /**
+                 * The forms of `dasha_family.KALACHAKRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kalachakra() {
+                    return r.entity("dasha_family.KALACHAKRA");
+                }
+
+                /**
+                 * The forms of `dasha_family.OWN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms own() {
+                    return r.entity("dasha_family.OWN");
+                }
+
+                /**
+                 * The forms of `dasha_family.PROFECTION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms profection() {
+                    return r.entity("dasha_family.PROFECTION");
+                }
+
+                /**
+                 * The forms of `dasha_family.RASHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rashi() {
+                    return r.entity("dasha_family.RASHI");
+                }
+
+                /**
+                 * The forms of `dasha_family.RELEASING` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms releasing() {
+                    return r.entity("dasha_family.RELEASING");
+                }
+
+                /**
+                 * The forms of `dasha_family.SCALE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms scale() {
+                    return r.entity("dasha_family.SCALE");
+                }
+
+                /**
+                 * The forms of `dasha_family.UDU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms udu() {
+                    return r.entity("dasha_family.UDU");
+                }
+            }
+
+
+            /**
              * The messages under `dasha_system`.
              *
              * @return the group
@@ -5887,6 +7719,15 @@ public final class Messages {
 
                 SdkEntityDashaSystem(Renderer r) {
                     this.r = r;
+                }
+
+                /**
+                 * The forms of `dasha_system.AAYU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms aayu() {
+                    return r.entity("dasha_system.AAYU");
                 }
 
                 /**
@@ -5926,6 +7767,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.DECENNIALS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms decennials() {
+                    return r.entity("dasha_system.DECENNIALS");
+                }
+
+                /**
                  * The forms of `dasha_system.DRIG` in the current locale.
                  *
                  * @return the forms
@@ -5953,6 +7803,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.FIRDARIA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms firdaria() {
+                    return r.entity("dasha_system.FIRDARIA");
+                }
+
+                /**
                  * The forms of `dasha_system.KALACHAKRA` in the current locale.
                  *
                  * @return the forms
@@ -5971,12 +7830,30 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.KARANA_CHATURASHITI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms karanaChaturashiti() {
+                    return r.entity("dasha_system.KARANA_CHATURASHITI");
+                }
+
+                /**
                  * The forms of `dasha_system.MANDOOKA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms mandooka() {
                     return r.entity("dasha_system.MANDOOKA");
+                }
+
+                /**
+                 * The forms of `dasha_system.MUDDA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mudda() {
+                    return r.entity("dasha_system.MUDDA");
                 }
 
                 /**
@@ -6034,6 +7911,42 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.PATYAYINI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms patyayini() {
+                    return r.entity("dasha_system.PATYAYINI");
+                }
+
+                /**
+                 * The forms of `dasha_system.PROFECTION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms profection() {
+                    return r.entity("dasha_system.PROFECTION");
+                }
+
+                /**
+                 * The forms of `dasha_system.RELEASING_DAIMON` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms releasingDaimon() {
+                    return r.entity("dasha_system.RELEASING_DAIMON");
+                }
+
+                /**
+                 * The forms of `dasha_system.RELEASING_FORTUNE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms releasingFortune() {
+                    return r.entity("dasha_system.RELEASING_FORTUNE");
+                }
+
+                /**
                  * The forms of `dasha_system.SHASHTIHAYANI` in the current locale.
                  *
                  * @return the forms
@@ -6049,6 +7962,15 @@ public final class Messages {
                  */
                 public EntityForms shatabdika() {
                     return r.entity("dasha_system.SHATABDIKA");
+                }
+
+                /**
+                 * The forms of `dasha_system.SHATTRIMSHA_SAMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shattrimshaSama() {
+                    return r.entity("dasha_system.SHATTRIMSHA_SAMA");
                 }
 
                 /**
@@ -6088,12 +8010,39 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.SUDASA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sudasa() {
+                    return r.entity("dasha_system.SUDASA");
+                }
+
+                /**
                  * The forms of `dasha_system.TARA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms tara() {
                     return r.entity("dasha_system.TARA");
+                }
+
+                /**
+                 * The forms of `dasha_system.TITHI_ASHTOTTARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tithiAshtottari() {
+                    return r.entity("dasha_system.TITHI_ASHTOTTARI");
+                }
+
+                /**
+                 * The forms of `dasha_system.TITHI_YOGINI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tithiYogini() {
+                    return r.entity("dasha_system.TITHI_YOGINI");
                 }
 
                 /**
@@ -6124,6 +8073,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `dasha_system.VARSHA_NARAYANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms varshaNarayana() {
+                    return r.entity("dasha_system.VARSHA_NARAYANA");
+                }
+
+                /**
+                 * The forms of `dasha_system.VARSHA_YOGINI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms varshaYogini() {
+                    return r.entity("dasha_system.VARSHA_YOGINI");
+                }
+
+                /**
                  * The forms of `dasha_system.VIMSHOTTARI` in the current locale.
                  *
                  * @return the forms
@@ -6139,6 +8106,15 @@ public final class Messages {
                  */
                 public EntityForms yogardha() {
                     return r.entity("dasha_system.YOGARDHA");
+                }
+
+                /**
+                 * The forms of `dasha_system.YOGA_VIMSHOTTARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yogaVimshottari() {
+                    return r.entity("dasha_system.YOGA_VIMSHOTTARI");
                 }
 
                 /**
@@ -6194,6 +8170,43 @@ public final class Messages {
                  */
                 public EntityForms vinchudo() {
                     return r.entity("day_marker.VINCHUDO");
+                }
+            }
+
+
+            /**
+             * The messages under `degeneracy`.
+             *
+             * @return the group
+             */
+            public SdkEntityDegeneracy degeneracy() {
+                return new SdkEntityDegeneracy(r);
+            }
+
+            /** The messages under `SdkEntityDegeneracy`, each rendered by its own key. */
+            public static final class SdkEntityDegeneracy {
+                private final Renderer r;
+
+                SdkEntityDegeneracy(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `degeneracy.NONE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms none() {
+                    return r.entity("degeneracy.NONE");
+                }
+
+                /**
+                 * The forms of `degeneracy.POLAR_UNDEFINED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms polarUndefined() {
+                    return r.entity("degeneracy.POLAR_UNDEFINED");
                 }
             }
 
@@ -6306,6 +8319,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `deity.CHANDRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chandra() {
+                    return r.entity("deity.CHANDRA");
+                }
+
+                /**
+                 * The forms of `deity.DURGA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms durga() {
+                    return r.entity("deity.DURGA");
+                }
+
+                /**
                  * The forms of `deity.INDRA` in the current locale.
                  *
                  * @return the forms
@@ -6321,6 +8352,24 @@ public final class Messages {
                  */
                 public EntityForms indragni() {
                     return r.entity("deity.INDRAGNI");
+                }
+
+                /**
+                 * The forms of `deity.KAMADEVA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kamadeva() {
+                    return r.entity("deity.KAMADEVA");
+                }
+
+                /**
+                 * The forms of `deity.KARTIKEYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kartikeya() {
+                    return r.entity("deity.KARTIKEYA");
                 }
 
                 /**
@@ -6387,12 +8436,57 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `deity.SHANI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shani() {
+                    return r.entity("deity.SHANI");
+                }
+
+                /**
+                 * The forms of `deity.SHIVA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shiva() {
+                    return r.entity("deity.SHIVA");
+                }
+
+                /**
+                 * The forms of `deity.SHUKRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shukra() {
+                    return r.entity("deity.SHUKRA");
+                }
+
+                /**
                  * The forms of `deity.SOMA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms soma() {
                     return r.entity("deity.SOMA");
+                }
+
+                /**
+                 * The forms of `deity.SURYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms surya() {
+                    return r.entity("deity.SURYA");
+                }
+
+                /**
+                 * The forms of `deity.TVASHTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tvashta() {
+                    return r.entity("deity.TVASHTA");
                 }
 
                 /**
@@ -6420,6 +8514,15 @@ public final class Messages {
                  */
                 public EntityForms vayu() {
                     return r.entity("deity.VAYU");
+                }
+
+                /**
+                 * The forms of `deity.VIDHATA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vidhata() {
+                    return r.entity("deity.VIDHATA");
                 }
 
                 /**
@@ -6729,6 +8832,15 @@ public final class Messages {
                  */
                 public EntityForms commonEra() {
                     return r.entity("era.COMMON_ERA");
+                }
+
+                /**
+                 * The forms of `era.HIJRI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms hijri() {
+                    return r.entity("era.HIJRI");
                 }
 
                 /**
@@ -7076,12 +9188,39 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.AVANI_AVITTOM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms avaniAvittom() {
+                    return r.entity("festival.AVANI_AVITTOM");
+                }
+
+                /**
                  * The forms of `festival.AVIDHAVA_NAVAMI` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms avidhavaNavami() {
                     return r.entity("festival.AVIDHAVA_NAVAMI");
+                }
+
+                /**
+                 * The forms of `festival.AYYANKALI_JAYANTHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ayyankaliJayanthi() {
+                    return r.entity("festival.AYYANKALI_JAYANTHI");
+                }
+
+                /**
+                 * The forms of `festival.AYYA_VAIKUNDA_SWAMI_JAYANTHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ayyaVaikundaSwamiJayanthi() {
+                    return r.entity("festival.AYYA_VAIKUNDA_SWAMI_JAYANTHI");
                 }
 
                 /**
@@ -7877,6 +10016,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.EASTER` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms easter() {
+                    return r.entity("festival.EASTER");
+                }
+
+                /**
                  * The forms of `festival.EASTER_SATURDAY` in the current locale.
                  *
                  * @return the forms
@@ -7955,6 +10103,24 @@ public final class Messages {
                  */
                 public EntityForms falgunandaJayanti() {
                     return r.entity("festival.FALGUNANDA_JAYANTI");
+                }
+
+                /**
+                 * The forms of `festival.FIRST_ONAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms firstOnam() {
+                    return r.entity("festival.FIRST_ONAM");
+                }
+
+                /**
+                 * The forms of `festival.FOURTH_ONAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms fourthOnam() {
+                    return r.entity("festival.FOURTH_ONAM");
                 }
 
                 /**
@@ -8723,6 +10889,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.KARKIDAKA_VAVU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms karkidakaVavu() {
+                    return r.entity("festival.KARKIDAKA_VAVU");
+                }
+
+                /**
                  * The forms of `festival.KARTIK_SNAN_BEGINS` in the current locale.
                  *
                  * @return the forms
@@ -9119,6 +11294,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.MANNAM_JAYANTHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mannamJayanthi() {
+                    return r.entity("festival.MANNAM_JAYANTHI");
+                }
+
+                /**
                  * The forms of `festival.MARTYRS_DAY` in the current locale.
                  *
                  * @return the forms
@@ -9170,6 +11354,15 @@ public final class Messages {
                  */
                 public EntityForms maunaPanchami() {
                     return r.entity("festival.MAUNA_PANCHAMI");
+                }
+
+                /**
+                 * The forms of `festival.MAUNDY_THURSDAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms maundyThursday() {
+                    return r.entity("festival.MAUNDY_THURSDAY");
                 }
 
                 /**
@@ -10082,6 +12275,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `festival.SREE_NARAYANA_GURU_JAYANTHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sreeNarayanaGuruJayanthi() {
+                    return r.entity("festival.SREE_NARAYANA_GURU_JAYANTHI");
+                }
+
+                /**
+                 * The forms of `festival.SREE_NARAYANA_GURU_SAMADHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sreeNarayanaGuruSamadhi() {
+                    return r.entity("festival.SREE_NARAYANA_GURU_SAMADHI");
+                }
+
+                /**
                  * The forms of `festival.SURYA_PUJA` in the current locale.
                  *
                  * @return the forms
@@ -10169,6 +12380,24 @@ public final class Messages {
                  */
                 public EntityForms thimiBalkumariJatra() {
                     return r.entity("festival.THIMI_BALKUMARI_JATRA");
+                }
+
+                /**
+                 * The forms of `festival.THIRD_ONAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms thirdOnam() {
+                    return r.entity("festival.THIRD_ONAM");
+                }
+
+                /**
+                 * The forms of `festival.THIRUVONAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms thiruvonam() {
+                    return r.entity("festival.THIRUVONAM");
                 }
 
                 /**
@@ -10421,6 +12650,15 @@ public final class Messages {
                  */
                 public EntityForms viraNirvanaNewYear() {
                     return r.entity("festival.VIRA_NIRVANA_NEW_YEAR");
+                }
+
+                /**
+                 * The forms of `festival.VISHU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vishu() {
+                    return r.entity("festival.VISHU");
                 }
 
                 /**
@@ -10725,6 +12963,52 @@ public final class Messages {
 
 
             /**
+             * The messages under `gender`.
+             *
+             * @return the group
+             */
+            public SdkEntityGender gender() {
+                return new SdkEntityGender(r);
+            }
+
+            /** The messages under `SdkEntityGender`, each rendered by its own key. */
+            public static final class SdkEntityGender {
+                private final Renderer r;
+
+                SdkEntityGender(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `gender.FEMALE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms female() {
+                    return r.entity("gender.FEMALE");
+                }
+
+                /**
+                 * The forms of `gender.MALE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms male() {
+                    return r.entity("gender.MALE");
+                }
+
+                /**
+                 * The forms of `gender.NEUTRAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms neutral() {
+                    return r.entity("gender.NEUTRAL");
+                }
+            }
+
+
+            /**
              * The messages under `gowri`.
              *
              * @return the group
@@ -10878,6 +13162,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `graha.NEPTUNE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms neptune() {
+                    return r.entity("graha.NEPTUNE");
+                }
+
+                /**
+                 * The forms of `graha.PLUTO` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms pluto() {
+                    return r.entity("graha.PLUTO");
+                }
+
+                /**
                  * The forms of `graha.RAHU` in the current locale.
                  *
                  * @return the forms
@@ -10905,12 +13207,67 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `graha.URANUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms uranus() {
+                    return r.entity("graha.URANUS");
+                }
+
+                /**
                  * The forms of `graha.VENUS` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms venus() {
                     return r.entity("graha.VENUS");
+                }
+            }
+
+
+            /**
+             * The messages under `guna`.
+             *
+             * @return the group
+             */
+            public SdkEntityGuna guna() {
+                return new SdkEntityGuna(r);
+            }
+
+            /** The messages under `SdkEntityGuna`, each rendered by its own key. */
+            public static final class SdkEntityGuna {
+                private final Renderer r;
+
+                SdkEntityGuna(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `guna.RAJAS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rajas() {
+                    return r.entity("guna.RAJAS");
+                }
+
+                /**
+                 * The forms of `guna.SATTVA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sattva() {
+                    return r.entity("guna.SATTVA");
+                }
+
+                /**
+                 * The forms of `guna.TAMAS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tamas() {
+                    return r.entity("guna.TAMAS");
                 }
             }
 
@@ -11297,6 +13654,133 @@ public final class Messages {
 
 
             /**
+             * The messages under `koota`.
+             *
+             * @return the group
+             */
+            public SdkEntityKoota koota() {
+                return new SdkEntityKoota(r);
+            }
+
+            /** The messages under `SdkEntityKoota`, each rendered by its own key. */
+            public static final class SdkEntityKoota {
+                private final Renderer r;
+
+                SdkEntityKoota(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `koota.BHAKOOT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhakoot() {
+                    return r.entity("koota.BHAKOOT");
+                }
+
+                /**
+                 * The forms of `koota.GANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gana() {
+                    return r.entity("koota.GANA");
+                }
+
+                /**
+                 * The forms of `koota.GRAHA_MAITRI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms grahaMaitri() {
+                    return r.entity("koota.GRAHA_MAITRI");
+                }
+
+                /**
+                 * The forms of `koota.MAHENDRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mahendra() {
+                    return r.entity("koota.MAHENDRA");
+                }
+
+                /**
+                 * The forms of `koota.NADI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nadi() {
+                    return r.entity("koota.NADI");
+                }
+
+                /**
+                 * The forms of `koota.RAJJU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rajju() {
+                    return r.entity("koota.RAJJU");
+                }
+
+                /**
+                 * The forms of `koota.STREE_DEERGHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms streeDeergha() {
+                    return r.entity("koota.STREE_DEERGHA");
+                }
+
+                /**
+                 * The forms of `koota.TARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tara() {
+                    return r.entity("koota.TARA");
+                }
+
+                /**
+                 * The forms of `koota.VARNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms varna() {
+                    return r.entity("koota.VARNA");
+                }
+
+                /**
+                 * The forms of `koota.VASHYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vashya() {
+                    return r.entity("koota.VASHYA");
+                }
+
+                /**
+                 * The forms of `koota.VEDHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vedha() {
+                    return r.entity("koota.VEDHA");
+                }
+
+                /**
+                 * The forms of `koota.YONI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yoni() {
+                    return r.entity("koota.YONI");
+                }
+            }
+
+
+            /**
              * The messages under `lunar_eclipse_kind`.
              *
              * @return the group
@@ -11320,6 +13804,15 @@ public final class Messages {
                  */
                 public EntityForms partial() {
                     return r.entity("lunar_eclipse_kind.PARTIAL");
+                }
+
+                /**
+                 * The forms of `lunar_eclipse_kind.PENUMBRAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms penumbral() {
+                    return r.entity("lunar_eclipse_kind.PENUMBRAL");
                 }
 
                 /**
@@ -11456,6 +13949,134 @@ public final class Messages {
                  */
                 public EntityForms vaishakha() {
                     return r.entity("masa.VAISHAKHA");
+                }
+            }
+
+
+            /**
+             * The messages under `modality`.
+             *
+             * @return the group
+             */
+            public SdkEntityModality modality() {
+                return new SdkEntityModality(r);
+            }
+
+            /** The messages under `SdkEntityModality`, each rendered by its own key. */
+            public static final class SdkEntityModality {
+                private final Renderer r;
+
+                SdkEntityModality(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `modality.CHARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chara() {
+                    return r.entity("modality.CHARA");
+                }
+
+                /**
+                 * The forms of `modality.DWISWABHAVA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dwiswabhava() {
+                    return r.entity("modality.DWISWABHAVA");
+                }
+
+                /**
+                 * The forms of `modality.STHIRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sthira() {
+                    return r.entity("modality.STHIRA");
+                }
+            }
+
+
+            /**
+             * The messages under `muhurta_nature`.
+             *
+             * @return the group
+             */
+            public SdkEntityMuhurtaNature muhurtaNature() {
+                return new SdkEntityMuhurtaNature(r);
+            }
+
+            /** The messages under `SdkEntityMuhurtaNature`, each rendered by its own key. */
+            public static final class SdkEntityMuhurtaNature {
+                private final Renderer r;
+
+                SdkEntityMuhurtaNature(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `muhurta_nature.CHARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chara() {
+                    return r.entity("muhurta_nature.CHARA");
+                }
+
+                /**
+                 * The forms of `muhurta_nature.DHRUVA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dhruva() {
+                    return r.entity("muhurta_nature.DHRUVA");
+                }
+
+                /**
+                 * The forms of `muhurta_nature.KSHIPRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kshipra() {
+                    return r.entity("muhurta_nature.KSHIPRA");
+                }
+
+                /**
+                 * The forms of `muhurta_nature.MISHRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mishra() {
+                    return r.entity("muhurta_nature.MISHRA");
+                }
+
+                /**
+                 * The forms of `muhurta_nature.MRIDU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mridu() {
+                    return r.entity("muhurta_nature.MRIDU");
+                }
+
+                /**
+                 * The forms of `muhurta_nature.TIKSHNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tikshna() {
+                    return r.entity("muhurta_nature.TIKSHNA");
+                }
+
+                /**
+                 * The forms of `muhurta_nature.UGRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ugra() {
+                    return r.entity("muhurta_nature.UGRA");
                 }
             }
 
@@ -12020,6 +14641,15 @@ public final class Messages {
                 public EntityForms malefic() {
                     return r.entity("nature.MALEFIC");
                 }
+
+                /**
+                 * The forms of `nature.NEUTRAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms neutral() {
+                    return r.entity("nature.NEUTRAL");
+                }
             }
 
 
@@ -12125,6 +14755,43 @@ public final class Messages {
 
 
             /**
+             * The messages under `parity`.
+             *
+             * @return the group
+             */
+            public SdkEntityParity parity() {
+                return new SdkEntityParity(r);
+            }
+
+            /** The messages under `SdkEntityParity`, each rendered by its own key. */
+            public static final class SdkEntityParity {
+                private final Renderer r;
+
+                SdkEntityParity(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `parity.EVEN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms even() {
+                    return r.entity("parity.EVEN");
+                }
+
+                /**
+                 * The forms of `parity.ODD` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms odd() {
+                    return r.entity("parity.ODD");
+                }
+            }
+
+
+            /**
              * The messages under `paya`.
              *
              * @return the group
@@ -12206,12 +14873,102 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.A10` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a10() {
+                    return r.entity("point.A10");
+                }
+
+                /**
+                 * The forms of `point.A11` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a11() {
+                    return r.entity("point.A11");
+                }
+
+                /**
                  * The forms of `point.A12` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms a12() {
                     return r.entity("point.A12");
+                }
+
+                /**
+                 * The forms of `point.A2` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a2() {
+                    return r.entity("point.A2");
+                }
+
+                /**
+                 * The forms of `point.A3` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a3() {
+                    return r.entity("point.A3");
+                }
+
+                /**
+                 * The forms of `point.A4` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a4() {
+                    return r.entity("point.A4");
+                }
+
+                /**
+                 * The forms of `point.A5` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a5() {
+                    return r.entity("point.A5");
+                }
+
+                /**
+                 * The forms of `point.A6` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a6() {
+                    return r.entity("point.A6");
+                }
+
+                /**
+                 * The forms of `point.A7` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a7() {
+                    return r.entity("point.A7");
+                }
+
+                /**
+                 * The forms of `point.A8` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a8() {
+                    return r.entity("point.A8");
+                }
+
+                /**
+                 * The forms of `point.A9` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms a9() {
+                    return r.entity("point.A9");
                 }
 
                 /**
@@ -12224,12 +14981,66 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.AVAYOGI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms avayogi() {
+                    return r.entity("point.AVAYOGI");
+                }
+
+                /**
+                 * The forms of `point.BEEJA_SPHUTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms beejaSphuta() {
+                    return r.entity("point.BEEJA_SPHUTA");
+                }
+
+                /**
                  * The forms of `point.BHAVA_LAGNA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms bhavaLagna() {
                     return r.entity("point.BHAVA_LAGNA");
+                }
+
+                /**
+                 * The forms of `point.BHRIGU_BINDU` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhriguBindu() {
+                    return r.entity("point.BHRIGU_BINDU");
+                }
+
+                /**
+                 * The forms of `point.CHATUSSPHUTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chatussphuta() {
+                    return r.entity("point.CHATUSSPHUTA");
+                }
+
+                /**
+                 * The forms of `point.DEHA_SPHUTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dehaSphuta() {
+                    return r.entity("point.DEHA_SPHUTA");
+                }
+
+                /**
+                 * The forms of `point.DESCENDANT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms descendant() {
+                    return r.entity("point.DESCENDANT");
                 }
 
                 /**
@@ -12269,12 +15080,30 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.IC` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ic() {
+                    return r.entity("point.IC");
+                }
+
+                /**
                  * The forms of `point.INDRACHAPA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms indrachapa() {
                     return r.entity("point.INDRACHAPA");
+                }
+
+                /**
+                 * The forms of `point.INDU_LAGNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms induLagna() {
+                    return r.entity("point.INDU_LAGNA");
                 }
 
                 /**
@@ -12296,6 +15125,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.KSHETRA_SPHUTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kshetraSphuta() {
+                    return r.entity("point.KSHETRA_SPHUTA");
+                }
+
+                /**
                  * The forms of `point.LAGNA` in the current locale.
                  *
                  * @return the forms
@@ -12314,12 +15152,39 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.MC` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mc() {
+                    return r.entity("point.MC");
+                }
+
+                /**
                  * The forms of `point.MRITYU` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms mrityu() {
                     return r.entity("point.MRITYU");
+                }
+
+                /**
+                 * The forms of `point.MRITYU_SPHUTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mrityuSphuta() {
+                    return r.entity("point.MRITYU_SPHUTA");
+                }
+
+                /**
+                 * The forms of `point.PANCHASPHUTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms panchasphuta() {
+                    return r.entity("point.PANCHASPHUTA");
                 }
 
                 /**
@@ -12341,6 +15206,51 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.PRANA_SPHUTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms pranaSphuta() {
+                    return r.entity("point.PRANA_SPHUTA");
+                }
+
+                /**
+                 * The forms of `point.SAHAYOGI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sahayogi() {
+                    return r.entity("point.SAHAYOGI");
+                }
+
+                /**
+                 * The forms of `point.SREE_LAGNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sreeLagna() {
+                    return r.entity("point.SREE_LAGNA");
+                }
+
+                /**
+                 * The forms of `point.SWAMSHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms swamsha() {
+                    return r.entity("point.SWAMSHA");
+                }
+
+                /**
+                 * The forms of `point.TRISPHUTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms trisphuta() {
+                    return r.entity("point.TRISPHUTA");
+                }
+
+                /**
                  * The forms of `point.UPAKETU` in the current locale.
                  *
                  * @return the forms
@@ -12359,12 +15269,130 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `point.VIGHATI_LAGNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vighatiLagna() {
+                    return r.entity("point.VIGHATI_LAGNA");
+                }
+
+                /**
                  * The forms of `point.VYATIPATA` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms vyatipata() {
                     return r.entity("point.VYATIPATA");
+                }
+
+                /**
+                 * The forms of `point.YAMAGHANTAKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yamaghantaka() {
+                    return r.entity("point.YAMAGHANTAKA");
+                }
+
+                /**
+                 * The forms of `point.YOGI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yogi() {
+                    return r.entity("point.YOGI");
+                }
+            }
+
+
+            /**
+             * The messages under `point_family`.
+             *
+             * @return the group
+             */
+            public SdkEntityPointFamily pointFamily() {
+                return new SdkEntityPointFamily(r);
+            }
+
+            /** The messages under `SdkEntityPointFamily`, each rendered by its own key. */
+            public static final class SdkEntityPointFamily {
+                private final Renderer r;
+
+                SdkEntityPointFamily(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `point_family.ANGLE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms angle() {
+                    return r.entity("point_family.ANGLE");
+                }
+
+                /**
+                 * The forms of `point_family.ARUDHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms arudha() {
+                    return r.entity("point_family.ARUDHA");
+                }
+
+                /**
+                 * The forms of `point_family.JAIMINI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms jaimini() {
+                    return r.entity("point_family.JAIMINI");
+                }
+
+                /**
+                 * The forms of `point_family.MIDPOINT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms midpoint() {
+                    return r.entity("point_family.MIDPOINT");
+                }
+
+                /**
+                 * The forms of `point_family.SPECIAL_LAGNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms specialLagna() {
+                    return r.entity("point_family.SPECIAL_LAGNA");
+                }
+
+                /**
+                 * The forms of `point_family.SPHUTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sphuta() {
+                    return r.entity("point_family.SPHUTA");
+                }
+
+                /**
+                 * The forms of `point_family.UPAGRAHA_DAY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms upagrahaDay() {
+                    return r.entity("point_family.UPAGRAHA_DAY");
+                }
+
+                /**
+                 * The forms of `point_family.UPAGRAHA_SOLAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms upagrahaSolar() {
+                    return r.entity("point_family.UPAGRAHA_SOLAR");
                 }
             }
 
@@ -12561,6 +15589,52 @@ public final class Messages {
 
 
             /**
+             * The messages under `rising`.
+             *
+             * @return the group
+             */
+            public SdkEntityRising rising() {
+                return new SdkEntityRising(r);
+            }
+
+            /** The messages under `SdkEntityRising`, each rendered by its own key. */
+            public static final class SdkEntityRising {
+                private final Renderer r;
+
+                SdkEntityRising(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `rising.PRISHTODAYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms prishtodaya() {
+                    return r.entity("rising.PRISHTODAYA");
+                }
+
+                /**
+                 * The forms of `rising.SIRSHODAYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sirshodaya() {
+                    return r.entity("rising.SIRSHODAYA");
+                }
+
+                /**
+                 * The forms of `rising.UBHAYODAYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ubhayodaya() {
+                    return r.entity("rising.UBHAYODAYA");
+                }
+            }
+
+
+            /**
              * The messages under `ritu`.
              *
              * @return the group
@@ -12651,6 +15725,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `ruler_day_rule.DAYLIGHT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms daylight() {
+                    return r.entity("ruler_day_rule.DAYLIGHT");
+                }
+
+                /**
                  * The forms of `ruler_day_rule.GARGA` in the current locale.
                  *
                  * @return the forms
@@ -12721,6 +15804,15 @@ public final class Messages {
                  */
                 public EntityForms naradaSamhita() {
                     return r.entity("ruler_text.NARADA_SAMHITA");
+                }
+
+                /**
+                 * The forms of `ruler_text.NAVANAYAKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms navanayaka() {
+                    return r.entity("ruler_text.NAVANAYAKA");
                 }
             }
 
@@ -13285,6 +16377,43 @@ public final class Messages {
 
 
             /**
+             * The messages under `sex`.
+             *
+             * @return the group
+             */
+            public SdkEntitySex sex() {
+                return new SdkEntitySex(r);
+            }
+
+            /** The messages under `SdkEntitySex`, each rendered by its own key. */
+            public static final class SdkEntitySex {
+                private final Renderer r;
+
+                SdkEntitySex(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `sex.FEMALE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms female() {
+                    return r.entity("sex.FEMALE");
+                }
+
+                /**
+                 * The forms of `sex.MALE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms male() {
+                    return r.entity("sex.MALE");
+                }
+            }
+
+
+            /**
              * The messages under `shiva_vasa`.
              *
              * @return the group
@@ -13384,6 +16513,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `solar_eclipse_kind.ANNULAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms annular() {
+                    return r.entity("solar_eclipse_kind.ANNULAR");
+                }
+
+                /**
+                 * The forms of `solar_eclipse_kind.HYBRID` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms hybrid() {
+                    return r.entity("solar_eclipse_kind.HYBRID");
+                }
+
+                /**
                  * The forms of `solar_eclipse_kind.PARTIAL` in the current locale.
                  *
                  * @return the forms
@@ -13399,6 +16546,1350 @@ public final class Messages {
                  */
                 public EntityForms total() {
                     return r.entity("solar_eclipse_kind.TOTAL");
+                }
+            }
+
+
+            /**
+             * The messages under `star`.
+             *
+             * @return the group
+             */
+            public SdkEntityStar star() {
+                return new SdkEntityStar(r);
+            }
+
+            /** The messages under `SdkEntityStar`, each rendered by its own key. */
+            public static final class SdkEntityStar {
+                private final Renderer r;
+
+                SdkEntityStar(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `star.ACHERNAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms achernar() {
+                    return r.entity("star.ACHERNAR");
+                }
+
+                /**
+                 * The forms of `star.ACRUX` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms acrux() {
+                    return r.entity("star.ACRUX");
+                }
+
+                /**
+                 * The forms of `star.ADHARA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms adhara() {
+                    return r.entity("star.ADHARA");
+                }
+
+                /**
+                 * The forms of `star.AIN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ain() {
+                    return r.entity("star.AIN");
+                }
+
+                /**
+                 * The forms of `star.ALBALDAH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms albaldah() {
+                    return r.entity("star.ALBALDAH");
+                }
+
+                /**
+                 * The forms of `star.ALBIREO` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms albireo() {
+                    return r.entity("star.ALBIREO");
+                }
+
+                /**
+                 * The forms of `star.ALCYONE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alcyone() {
+                    return r.entity("star.ALCYONE");
+                }
+
+                /**
+                 * The forms of `star.ALDEBARAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms aldebaran() {
+                    return r.entity("star.ALDEBARAN");
+                }
+
+                /**
+                 * The forms of `star.ALDERAMIN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alderamin() {
+                    return r.entity("star.ALDERAMIN");
+                }
+
+                /**
+                 * The forms of `star.ALGEDI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms algedi() {
+                    return r.entity("star.ALGEDI");
+                }
+
+                /**
+                 * The forms of `star.ALGENIB` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms algenib() {
+                    return r.entity("star.ALGENIB");
+                }
+
+                /**
+                 * The forms of `star.ALGIEBA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms algieba() {
+                    return r.entity("star.ALGIEBA");
+                }
+
+                /**
+                 * The forms of `star.ALGOL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms algol() {
+                    return r.entity("star.ALGOL");
+                }
+
+                /**
+                 * The forms of `star.ALGORAB` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms algorab() {
+                    return r.entity("star.ALGORAB");
+                }
+
+                /**
+                 * The forms of `star.ALHENA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alhena() {
+                    return r.entity("star.ALHENA");
+                }
+
+                /**
+                 * The forms of `star.ALIOTH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alioth() {
+                    return r.entity("star.ALIOTH");
+                }
+
+                /**
+                 * The forms of `star.ALJANAH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms aljanah() {
+                    return r.entity("star.ALJANAH");
+                }
+
+                /**
+                 * The forms of `star.ALKAID` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alkaid() {
+                    return r.entity("star.ALKAID");
+                }
+
+                /**
+                 * The forms of `star.ALMACH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms almach() {
+                    return r.entity("star.ALMACH");
+                }
+
+                /**
+                 * The forms of `star.ALNAIR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alnair() {
+                    return r.entity("star.ALNAIR");
+                }
+
+                /**
+                 * The forms of `star.ALNASL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alnasl() {
+                    return r.entity("star.ALNASL");
+                }
+
+                /**
+                 * The forms of `star.ALNILAM` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alnilam() {
+                    return r.entity("star.ALNILAM");
+                }
+
+                /**
+                 * The forms of `star.ALNITAK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alnitak() {
+                    return r.entity("star.ALNITAK");
+                }
+
+                /**
+                 * The forms of `star.ALPHARD` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alphard() {
+                    return r.entity("star.ALPHARD");
+                }
+
+                /**
+                 * The forms of `star.ALPHECCA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alphecca() {
+                    return r.entity("star.ALPHECCA");
+                }
+
+                /**
+                 * The forms of `star.ALPHERATZ` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alpheratz() {
+                    return r.entity("star.ALPHERATZ");
+                }
+
+                /**
+                 * The forms of `star.ALSEPHINA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alsephina() {
+                    return r.entity("star.ALSEPHINA");
+                }
+
+                /**
+                 * The forms of `star.ALSHAIN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms alshain() {
+                    return r.entity("star.ALSHAIN");
+                }
+
+                /**
+                 * The forms of `star.ALTAIR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms altair() {
+                    return r.entity("star.ALTAIR");
+                }
+
+                /**
+                 * The forms of `star.ALUDRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms aludra() {
+                    return r.entity("star.ALUDRA");
+                }
+
+                /**
+                 * The forms of `star.ANKAA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ankaa() {
+                    return r.entity("star.ANKAA");
+                }
+
+                /**
+                 * The forms of `star.ANTARES` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms antares() {
+                    return r.entity("star.ANTARES");
+                }
+
+                /**
+                 * The forms of `star.ARCTURUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms arcturus() {
+                    return r.entity("star.ARCTURUS");
+                }
+
+                /**
+                 * The forms of `star.ASCELLA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ascella() {
+                    return r.entity("star.ASCELLA");
+                }
+
+                /**
+                 * The forms of `star.ASELLUS_AUSTRALIS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms asellusAustralis() {
+                    return r.entity("star.ASELLUS_AUSTRALIS");
+                }
+
+                /**
+                 * The forms of `star.ASHLESHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ashlesha() {
+                    return r.entity("star.ASHLESHA");
+                }
+
+                /**
+                 * The forms of `star.ASPIDISKE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms aspidiske() {
+                    return r.entity("star.ASPIDISKE");
+                }
+
+                /**
+                 * The forms of `star.ATRIA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms atria() {
+                    return r.entity("star.ATRIA");
+                }
+
+                /**
+                 * The forms of `star.AVIOR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms avior() {
+                    return r.entity("star.AVIOR");
+                }
+
+                /**
+                 * The forms of `star.BELLATRIX` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bellatrix() {
+                    return r.entity("star.BELLATRIX");
+                }
+
+                /**
+                 * The forms of `star.BETELGEUSE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms betelgeuse() {
+                    return r.entity("star.BETELGEUSE");
+                }
+
+                /**
+                 * The forms of `star.BHARANI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bharani() {
+                    return r.entity("star.BHARANI");
+                }
+
+                /**
+                 * The forms of `star.CANOPUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms canopus() {
+                    return r.entity("star.CANOPUS");
+                }
+
+                /**
+                 * The forms of `star.CAPELLA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms capella() {
+                    return r.entity("star.CAPELLA");
+                }
+
+                /**
+                 * The forms of `star.CAPH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms caph() {
+                    return r.entity("star.CAPH");
+                }
+
+                /**
+                 * The forms of `star.CASTOR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms castor() {
+                    return r.entity("star.CASTOR");
+                }
+
+                /**
+                 * The forms of `star.CHAMUKUY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chamukuy() {
+                    return r.entity("star.CHAMUKUY");
+                }
+
+                /**
+                 * The forms of `star.DENEB` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms deneb() {
+                    return r.entity("star.DENEB");
+                }
+
+                /**
+                 * The forms of `star.DENEBOLA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms denebola() {
+                    return r.entity("star.DENEBOLA");
+                }
+
+                /**
+                 * The forms of `star.DIPHDA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms diphda() {
+                    return r.entity("star.DIPHDA");
+                }
+
+                /**
+                 * The forms of `star.DSCHUBBA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dschubba() {
+                    return r.entity("star.DSCHUBBA");
+                }
+
+                /**
+                 * The forms of `star.DUBHE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dubhe() {
+                    return r.entity("star.DUBHE");
+                }
+
+                /**
+                 * The forms of `star.ELNATH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms elnath() {
+                    return r.entity("star.ELNATH");
+                }
+
+                /**
+                 * The forms of `star.ENIF` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms enif() {
+                    return r.entity("star.ENIF");
+                }
+
+                /**
+                 * The forms of `star.ERRAI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms errai() {
+                    return r.entity("star.ERRAI");
+                }
+
+                /**
+                 * The forms of `star.FANG` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms fang() {
+                    return r.entity("star.FANG");
+                }
+
+                /**
+                 * The forms of `star.FOMALHAUT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms fomalhaut() {
+                    return r.entity("star.FOMALHAUT");
+                }
+
+                /**
+                 * The forms of `star.GACRUX` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gacrux() {
+                    return r.entity("star.GACRUX");
+                }
+
+                /**
+                 * The forms of `star.GALACTIC_POLE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms galacticPole() {
+                    return r.entity("star.GALACTIC_POLE");
+                }
+
+                /**
+                 * The forms of `star.GALACTIC_POLE_IAU1958` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms galacticPoleIau1958() {
+                    return r.entity("star.GALACTIC_POLE_IAU1958");
+                }
+
+                /**
+                 * The forms of `star.HADAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms hadar() {
+                    return r.entity("star.HADAR");
+                }
+
+                /**
+                 * The forms of `star.HAMAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms hamal() {
+                    return r.entity("star.HAMAL");
+                }
+
+                /**
+                 * The forms of `star.HEZE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms heze() {
+                    return r.entity("star.HEZE");
+                }
+
+                /**
+                 * The forms of `star.HYDOR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms hydor() {
+                    return r.entity("star.HYDOR");
+                }
+
+                /**
+                 * The forms of `star.IZAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms izar() {
+                    return r.entity("star.IZAR");
+                }
+
+                /**
+                 * The forms of `star.KAUS_AUSTRALIS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kausAustralis() {
+                    return r.entity("star.KAUS_AUSTRALIS");
+                }
+
+                /**
+                 * The forms of `star.KAUS_BOREALIS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kausBorealis() {
+                    return r.entity("star.KAUS_BOREALIS");
+                }
+
+                /**
+                 * The forms of `star.KAUS_MEDIA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kausMedia() {
+                    return r.entity("star.KAUS_MEDIA");
+                }
+
+                /**
+                 * The forms of `star.KITALPHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kitalpha() {
+                    return r.entity("star.KITALPHA");
+                }
+
+                /**
+                 * The forms of `star.KORNEPHOROS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kornephoros() {
+                    return r.entity("star.KORNEPHOROS");
+                }
+
+                /**
+                 * The forms of `star.MARFIK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms marfik() {
+                    return r.entity("star.MARFIK");
+                }
+
+                /**
+                 * The forms of `star.MARKAB` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms markab() {
+                    return r.entity("star.MARKAB");
+                }
+
+                /**
+                 * The forms of `star.MEISSA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms meissa() {
+                    return r.entity("star.MEISSA");
+                }
+
+                /**
+                 * The forms of `star.MENKALINAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms menkalinan() {
+                    return r.entity("star.MENKALINAN");
+                }
+
+                /**
+                 * The forms of `star.MENKAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms menkar() {
+                    return r.entity("star.MENKAR");
+                }
+
+                /**
+                 * The forms of `star.MENKENT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms menkent() {
+                    return r.entity("star.MENKENT");
+                }
+
+                /**
+                 * The forms of `star.MERAK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms merak() {
+                    return r.entity("star.MERAK");
+                }
+
+                /**
+                 * The forms of `star.MIAPLACIDUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms miaplacidus() {
+                    return r.entity("star.MIAPLACIDUS");
+                }
+
+                /**
+                 * The forms of `star.MIMOSA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mimosa() {
+                    return r.entity("star.MIMOSA");
+                }
+
+                /**
+                 * The forms of `star.MINTAKA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mintaka() {
+                    return r.entity("star.MINTAKA");
+                }
+
+                /**
+                 * The forms of `star.MIRACH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mirach() {
+                    return r.entity("star.MIRACH");
+                }
+
+                /**
+                 * The forms of `star.MIRFAK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mirfak() {
+                    return r.entity("star.MIRFAK");
+                }
+
+                /**
+                 * The forms of `star.MIZAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mizar() {
+                    return r.entity("star.MIZAR");
+                }
+
+                /**
+                 * The forms of `star.NAOS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms naos() {
+                    return r.entity("star.NAOS");
+                }
+
+                /**
+                 * The forms of `star.NIHAL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nihal() {
+                    return r.entity("star.NIHAL");
+                }
+
+                /**
+                 * The forms of `star.NUNKI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nunki() {
+                    return r.entity("star.NUNKI");
+                }
+
+                /**
+                 * The forms of `star.PEACOCK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms peacock() {
+                    return r.entity("star.PEACOCK");
+                }
+
+                /**
+                 * The forms of `star.PHECDA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms phecda() {
+                    return r.entity("star.PHECDA");
+                }
+
+                /**
+                 * The forms of `star.POLARIS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms polaris() {
+                    return r.entity("star.POLARIS");
+                }
+
+                /**
+                 * The forms of `star.POLLUX` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms pollux() {
+                    return r.entity("star.POLLUX");
+                }
+
+                /**
+                 * The forms of `star.PROCYON` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms procyon() {
+                    return r.entity("star.PROCYON");
+                }
+
+                /**
+                 * The forms of `star.RASALGETHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rasalgethi() {
+                    return r.entity("star.RASALGETHI");
+                }
+
+                /**
+                 * The forms of `star.RASALHAGUE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rasalhague() {
+                    return r.entity("star.RASALHAGUE");
+                }
+
+                /**
+                 * The forms of `star.REGULUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms regulus() {
+                    return r.entity("star.REGULUS");
+                }
+
+                /**
+                 * The forms of `star.REVATI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms revati() {
+                    return r.entity("star.REVATI");
+                }
+
+                /**
+                 * The forms of `star.RIGEL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rigel() {
+                    return r.entity("star.RIGEL");
+                }
+
+                /**
+                 * The forms of `star.RIGIL_KENTAURUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rigilKentaurus() {
+                    return r.entity("star.RIGIL_KENTAURUS");
+                }
+
+                /**
+                 * The forms of `star.ROTANEV` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rotanev() {
+                    return r.entity("star.ROTANEV");
+                }
+
+                /**
+                 * The forms of `star.SABIK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sabik() {
+                    return r.entity("star.SABIK");
+                }
+
+                /**
+                 * The forms of `star.SADALBARI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sadalbari() {
+                    return r.entity("star.SADALBARI");
+                }
+
+                /**
+                 * The forms of `star.SADALMELIK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sadalmelik() {
+                    return r.entity("star.SADALMELIK");
+                }
+
+                /**
+                 * The forms of `star.SADALSUUD` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sadalsuud() {
+                    return r.entity("star.SADALSUUD");
+                }
+
+                /**
+                 * The forms of `star.SADR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sadr() {
+                    return r.entity("star.SADR");
+                }
+
+                /**
+                 * The forms of `star.SAIPH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms saiph() {
+                    return r.entity("star.SAIPH");
+                }
+
+                /**
+                 * The forms of `star.SARGAS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sargas() {
+                    return r.entity("star.SARGAS");
+                }
+
+                /**
+                 * The forms of `star.SCHEAT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms scheat() {
+                    return r.entity("star.SCHEAT");
+                }
+
+                /**
+                 * The forms of `star.SCHEDAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms schedar() {
+                    return r.entity("star.SCHEDAR");
+                }
+
+                /**
+                 * The forms of `star.SEGINUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms seginus() {
+                    return r.entity("star.SEGINUS");
+                }
+
+                /**
+                 * The forms of `star.SGR_A_STAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sgrAStar() {
+                    return r.entity("star.SGR_A_STAR");
+                }
+
+                /**
+                 * The forms of `star.SHAULA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shaula() {
+                    return r.entity("star.SHAULA");
+                }
+
+                /**
+                 * The forms of `star.SHELIAK` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sheliak() {
+                    return r.entity("star.SHELIAK");
+                }
+
+                /**
+                 * The forms of `star.SHERATAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sheratan() {
+                    return r.entity("star.SHERATAN");
+                }
+
+                /**
+                 * The forms of `star.SIRIUS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sirius() {
+                    return r.entity("star.SIRIUS");
+                }
+
+                /**
+                 * The forms of `star.SKAT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms skat() {
+                    return r.entity("star.SKAT");
+                }
+
+                /**
+                 * The forms of `star.SPICA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms spica() {
+                    return r.entity("star.SPICA");
+                }
+
+                /**
+                 * The forms of `star.SUHAIL` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms suhail() {
+                    return r.entity("star.SUHAIL");
+                }
+
+                /**
+                 * The forms of `star.SYRMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms syrma() {
+                    return r.entity("star.SYRMA");
+                }
+
+                /**
+                 * The forms of `star.THUBAN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms thuban() {
+                    return r.entity("star.THUBAN");
+                }
+
+                /**
+                 * The forms of `star.TUREIS` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tureis() {
+                    return r.entity("star.TUREIS");
+                }
+
+                /**
+                 * The forms of `star.UNUKALHAI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms unukalhai() {
+                    return r.entity("star.UNUKALHAI");
+                }
+
+                /**
+                 * The forms of `star.VEGA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vega() {
+                    return r.entity("star.VEGA");
+                }
+
+                /**
+                 * The forms of `star.VINDEMIATRIX` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vindemiatrix() {
+                    return r.entity("star.VINDEMIATRIX");
+                }
+
+                /**
+                 * The forms of `star.WEZEN` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms wezen() {
+                    return r.entity("star.WEZEN");
+                }
+
+                /**
+                 * The forms of `star.YED_PRIOR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms yedPrior() {
+                    return r.entity("star.YED_PRIOR");
+                }
+
+                /**
+                 * The forms of `star.ZANIAH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms zaniah() {
+                    return r.entity("star.ZANIAH");
+                }
+
+                /**
+                 * The forms of `star.ZOSMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms zosma() {
+                    return r.entity("star.ZOSMA");
+                }
+
+                /**
+                 * The forms of `star.ZUBENELGENUBI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms zubenelgenubi() {
+                    return r.entity("star.ZUBENELGENUBI");
+                }
+
+                /**
+                 * The forms of `star.ZUBENESCHAMALI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms zubeneschamali() {
+                    return r.entity("star.ZUBENESCHAMALI");
+                }
+            }
+
+
+            /**
+             * The messages under `star_class`.
+             *
+             * @return the group
+             */
+            public SdkEntityStarClass starClass() {
+                return new SdkEntityStarClass(r);
+            }
+
+            /** The messages under `SdkEntityStarClass`, each rendered by its own key. */
+            public static final class SdkEntityStarClass {
+                private final Renderer r;
+
+                SdkEntityStarClass(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `star_class.DIRECTION` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms direction() {
+                    return r.entity("star_class.DIRECTION");
+                }
+
+                /**
+                 * The forms of `star_class.RADIO_SOURCE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms radioSource() {
+                    return r.entity("star_class.RADIO_SOURCE");
+                }
+
+                /**
+                 * The forms of `star_class.STAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms star() {
+                    return r.entity("star_class.STAR");
+                }
+            }
+
+
+            /**
+             * The messages under `state`.
+             *
+             * @return the group
+             */
+            public SdkEntityState state() {
+                return new SdkEntityState(r);
+            }
+
+            /** The messages under `SdkEntityState`, each rendered by its own key. */
+            public static final class SdkEntityState {
+                private final Renderer r;
+
+                SdkEntityState(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `state.COMBUST` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms combust() {
+                    return r.entity("state.COMBUST");
+                }
+
+                /**
+                 * The forms of `state.ECLIPSED` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms eclipsed() {
+                    return r.entity("state.ECLIPSED");
+                }
+
+                /**
+                 * The forms of `state.GANDANTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms gandanta() {
+                    return r.entity("state.GANDANTA");
+                }
+
+                /**
+                 * The forms of `state.MARANA_KARAKA_STHANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms maranaKarakaSthana() {
+                    return r.entity("state.MARANA_KARAKA_STHANA");
+                }
+
+                /**
+                 * The forms of `state.MRITYU_BHAGA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mrityuBhaga() {
+                    return r.entity("state.MRITYU_BHAGA");
+                }
+
+                /**
+                 * The forms of `state.PLANETARY_WAR` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms planetaryWar() {
+                    return r.entity("state.PLANETARY_WAR");
+                }
+
+                /**
+                 * The forms of `state.PUSHKARA_BHAGA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms pushkaraBhaga() {
+                    return r.entity("state.PUSHKARA_BHAGA");
+                }
+
+                /**
+                 * The forms of `state.PUSHKARA_NAVAMSA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms pushkaraNavamsa() {
+                    return r.entity("state.PUSHKARA_NAVAMSA");
+                }
+
+                /**
+                 * The forms of `state.RETROGRADE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms retrograde() {
+                    return r.entity("state.RETROGRADE");
+                }
+
+                /**
+                 * The forms of `state.SANDHI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sandhi() {
+                    return r.entity("state.SANDHI");
+                }
+
+                /**
+                 * The forms of `state.STATIONARY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms stationary() {
+                    return r.entity("state.STATIONARY");
+                }
+
+                /**
+                 * The forms of `state.VARGOTTAMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms vargottama() {
+                    return r.entity("state.VARGOTTAMA");
                 }
             }
 
@@ -13463,6 +17954,197 @@ public final class Messages {
                  */
                 public EntityForms vayu() {
                     return r.entity("tatwa.VAYU");
+                }
+            }
+
+
+            /**
+             * The messages under `tibetan_animal`.
+             *
+             * @return the group
+             */
+            public SdkEntityTibetanAnimal tibetanAnimal() {
+                return new SdkEntityTibetanAnimal(r);
+            }
+
+            /** The messages under `SdkEntityTibetanAnimal`, each rendered by its own key. */
+            public static final class SdkEntityTibetanAnimal {
+                private final Renderer r;
+
+                SdkEntityTibetanAnimal(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `tibetan_animal.BIRD` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bird() {
+                    return r.entity("tibetan_animal.BIRD");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.DOG` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dog() {
+                    return r.entity("tibetan_animal.DOG");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.DRAGON` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms dragon() {
+                    return r.entity("tibetan_animal.DRAGON");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.HORSE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms horse() {
+                    return r.entity("tibetan_animal.HORSE");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.MONKEY` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms monkey() {
+                    return r.entity("tibetan_animal.MONKEY");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.MOUSE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms mouse() {
+                    return r.entity("tibetan_animal.MOUSE");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.OX` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms ox() {
+                    return r.entity("tibetan_animal.OX");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.PIG` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms pig() {
+                    return r.entity("tibetan_animal.PIG");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.RABBIT` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rabbit() {
+                    return r.entity("tibetan_animal.RABBIT");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.SHEEP` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms sheep() {
+                    return r.entity("tibetan_animal.SHEEP");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.SNAKE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms snake() {
+                    return r.entity("tibetan_animal.SNAKE");
+                }
+
+                /**
+                 * The forms of `tibetan_animal.TIGER` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms tiger() {
+                    return r.entity("tibetan_animal.TIGER");
+                }
+            }
+
+
+            /**
+             * The messages under `tibetan_element`.
+             *
+             * @return the group
+             */
+            public SdkEntityTibetanElement tibetanElement() {
+                return new SdkEntityTibetanElement(r);
+            }
+
+            /** The messages under `SdkEntityTibetanElement`, each rendered by its own key. */
+            public static final class SdkEntityTibetanElement {
+                private final Renderer r;
+
+                SdkEntityTibetanElement(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `tibetan_element.EARTH` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms earth() {
+                    return r.entity("tibetan_element.EARTH");
+                }
+
+                /**
+                 * The forms of `tibetan_element.FIRE` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms fire() {
+                    return r.entity("tibetan_element.FIRE");
+                }
+
+                /**
+                 * The forms of `tibetan_element.IRON` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms iron() {
+                    return r.entity("tibetan_element.IRON");
+                }
+
+                /**
+                 * The forms of `tibetan_element.WATER` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms water() {
+                    return r.entity("tibetan_element.WATER");
+                }
+
+                /**
+                 * The forms of `tibetan_element.WOOD` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms wood() {
+                    return r.entity("tibetan_element.WOOD");
                 }
             }
 
@@ -13757,6 +18439,70 @@ public final class Messages {
 
 
             /**
+             * The messages under `tithi_class`.
+             *
+             * @return the group
+             */
+            public SdkEntityTithiClass tithiClass() {
+                return new SdkEntityTithiClass(r);
+            }
+
+            /** The messages under `SdkEntityTithiClass`, each rendered by its own key. */
+            public static final class SdkEntityTithiClass {
+                private final Renderer r;
+
+                SdkEntityTithiClass(Renderer r) {
+                    this.r = r;
+                }
+
+                /**
+                 * The forms of `tithi_class.BHADRA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms bhadra() {
+                    return r.entity("tithi_class.BHADRA");
+                }
+
+                /**
+                 * The forms of `tithi_class.JAYA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms jaya() {
+                    return r.entity("tithi_class.JAYA");
+                }
+
+                /**
+                 * The forms of `tithi_class.NANDA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms nanda() {
+                    return r.entity("tithi_class.NANDA");
+                }
+
+                /**
+                 * The forms of `tithi_class.PURNA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms purna() {
+                    return r.entity("tithi_class.PURNA");
+                }
+
+                /**
+                 * The forms of `tithi_class.RIKTA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms rikta() {
+                    return r.entity("tithi_class.RIKTA");
+                }
+            }
+
+
+            /**
              * The messages under `tradition`.
              *
              * @return the group
@@ -13920,6 +18666,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `vaiseshikamsa.CHAKRASIMHASANA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms chakrasimhasana() {
+                    return r.entity("vaiseshikamsa.CHAKRASIMHASANA");
+                }
+
+                /**
                  * The forms of `vaiseshikamsa.CHAMARA` in the current locale.
                  *
                  * @return the forms
@@ -14028,6 +18783,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `vaiseshikamsa.KUSUMA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms kusuma() {
+                    return r.entity("vaiseshikamsa.KUSUMA");
+                }
+
+                /**
                  * The forms of `vaiseshikamsa.MUKUTA` in the current locale.
                  *
                  * @return the forms
@@ -14088,6 +18852,15 @@ public final class Messages {
                  */
                 public EntityForms shridhama() {
                     return r.entity("vaiseshikamsa.SHRIDHAMA");
+                }
+
+                /**
+                 * The forms of `vaiseshikamsa.SHRIVALLABHA` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms shrivallabha() {
+                    return r.entity("vaiseshikamsa.SHRIVALLABHA");
                 }
 
                 /**
@@ -14246,6 +19019,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `varga.D1` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d1() {
+                    return r.entity("varga.D1");
+                }
+
+                /**
                  * The forms of `varga.D10` in the current locale.
                  *
                  * @return the forms
@@ -14255,12 +19037,30 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `varga.D11` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d11() {
+                    return r.entity("varga.D11");
+                }
+
+                /**
                  * The forms of `varga.D12` in the current locale.
                  *
                  * @return the forms
                  */
                 public EntityForms d12() {
                     return r.entity("varga.D12");
+                }
+
+                /**
+                 * The forms of `varga.D150` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d150() {
+                    return r.entity("varga.D150");
                 }
 
                 /**
@@ -14354,6 +19154,24 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `varga.D5` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d5() {
+                    return r.entity("varga.D5");
+                }
+
+                /**
+                 * The forms of `varga.D6` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d6() {
+                    return r.entity("varga.D6");
+                }
+
+                /**
                  * The forms of `varga.D60` in the current locale.
                  *
                  * @return the forms
@@ -14369,6 +19187,15 @@ public final class Messages {
                  */
                 public EntityForms d7() {
                     return r.entity("varga.D7");
+                }
+
+                /**
+                 * The forms of `varga.D8` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms d8() {
+                    return r.entity("varga.D8");
                 }
 
                 /**
@@ -14601,6 +19428,15 @@ public final class Messages {
                 }
 
                 /**
+                 * The forms of `year_office.ARGHADHIPATI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms arghadhipati() {
+                    return r.entity("year_office.ARGHADHIPATI");
+                }
+
+                /**
                  * The forms of `year_office.DHANYADHIPATI` in the current locale.
                  *
                  * @return the forms
@@ -14661,6 +19497,15 @@ public final class Messages {
                  */
                 public EntityForms sasyadhipati() {
                     return r.entity("year_office.SASYADHIPATI");
+                }
+
+                /**
+                 * The forms of `year_office.SENADHIPATI` in the current locale.
+                 *
+                 * @return the forms
+                 */
+                public EntityForms senadhipati() {
+                    return r.entity("year_office.SENADHIPATI");
                 }
             }
 

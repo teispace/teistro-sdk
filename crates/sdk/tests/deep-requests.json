@@ -555,10 +555,18 @@
               ],
               "tradition": "tradition.BUDDHIST"
             },
+            "nakshatraInMonth": {
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "nakshatra": "nakshatra.BHARANI",
+              "twice": "LATER"
+            },
             "source": "x",
             "sunEnters": {
               "days": 1,
-              "nakshatra": "nakshatra.BHARANI"
+              "nakshatra": "nakshatra.BHARANI",
+              "reckoning": "SUNRISE"
             }
           },
           {
@@ -1167,10 +1175,18 @@
               ],
               "tradition": "tradition.BUDDHIST"
             },
+            "nakshatraInMonth": {
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "nakshatra": "nakshatra.BHARANI",
+              "twice": "LATER"
+            },
             "source": "x",
             "sunEnters": {
               "days": 1,
-              "nakshatra": "nakshatra.BHARANI"
+              "nakshatra": "nakshatra.BHARANI",
+              "reckoning": "SUNRISE"
             }
           },
           {
@@ -1794,10 +1810,18 @@
               ],
               "tradition": "tradition.BUDDHIST"
             },
+            "nakshatraInMonth": {
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "nakshatra": "nakshatra.BHARANI",
+              "twice": "LATER"
+            },
             "source": "x",
             "sunEnters": {
               "days": 1,
-              "nakshatra": "nakshatra.BHARANI"
+              "nakshatra": "nakshatra.BHARANI",
+              "reckoning": "SUNRISE"
             }
           },
           {
@@ -2370,10 +2394,18 @@
               ],
               "tradition": "tradition.BUDDHIST"
             },
+            "nakshatraInMonth": {
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "nakshatra": "nakshatra.BHARANI",
+              "twice": "LATER"
+            },
             "source": "x",
             "sunEnters": {
               "days": 1,
-              "nakshatra": "nakshatra.BHARANI"
+              "nakshatra": "nakshatra.BHARANI",
+              "reckoning": "SUNRISE"
             }
           },
           {
@@ -2731,10 +2763,18 @@
                   ],
                   "tradition": "tradition.BUDDHIST"
                 },
+                "nakshatraInMonth": {
+                  "calendar": "calendar.JULIAN",
+                  "days": 1,
+                  "month": 1,
+                  "nakshatra": "nakshatra.BHARANI",
+                  "twice": "LATER"
+                },
                 "source": "x",
                 "sunEnters": {
                   "days": 1,
-                  "nakshatra": "nakshatra.BHARANI"
+                  "nakshatra": "nakshatra.BHARANI",
+                  "reckoning": "SUNRISE"
                 }
               },
               {
@@ -3149,10 +3189,18 @@
               ],
               "tradition": "tradition.BUDDHIST"
             },
+            "nakshatraInMonth": {
+              "calendar": "calendar.JULIAN",
+              "days": 1,
+              "month": 1,
+              "nakshatra": "nakshatra.BHARANI",
+              "twice": "LATER"
+            },
             "source": "x",
             "sunEnters": {
               "days": 1,
-              "nakshatra": "nakshatra.BHARANI"
+              "nakshatra": "nakshatra.BHARANI",
+              "reckoning": "SUNRISE"
             }
           },
           {

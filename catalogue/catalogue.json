@@ -20196,15 +20196,15 @@
         {
           "key": "NEPALI_LOTUS",
           "id": 3,
-          "doc": "The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals",
+          "doc": "The Nepali lotus: twelve equal petals inside a circle, houses fixed, house 1 the top petal, running anticlockwise",
           "glyph": null,
           "aliases": [],
           "deprecated": false,
           "attributes": null,
           "sources": [
             {
-              "text": "baseline-engine",
-              "ref": "the application's kundali lotus frame"
+              "text": "printed Nepali janma patrikas",
+              "ref": "two scans of one printer's form, read 2026-11-10: the जन्मकुण्डली, चलितकुण्डली and राशिकुण्डली lotuses"
             }
           ],
           "mark": "V",
@@ -20243,6 +20243,40 @@
             {
               "text": "tutorials on reading an astrological chart wheel",
               "ref": "the first house's cusp at nine o'clock, the houses anticlockwise"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NEPALI_CIRCLE",
+          "id": 6,
+          "doc": "The Nepali round chart: a circle cut on a square grid about a hub that names the chart, houses fixed, house 1 above the hub, running anticlockwise",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "printed Nepali janma patrikas",
+              "ref": "one scan of a second printer's form, read 2026-11-10: the ल, रा, न and भा charts"
+            }
+          ],
+          "mark": "V",
+          "unverified": []
+        },
+        {
+          "key": "NORTH_INDIAN_PETALS",
+          "id": 7,
+          "doc": "North Indian drawn with petals: the same fixed houses and anchors, each kendra bounded by ogee curves, the diagonals meeting at a swastika hub",
+          "glyph": null,
+          "aliases": [],
+          "deprecated": false,
+          "attributes": null,
+          "sources": [
+            {
+              "text": "a Nepali app's kundali view, read 2026-11-10",
+              "ref": "one screenshot: the curves' midpoints and vertices, the hub, and each house's number"
             }
           ],
           "mark": "V",

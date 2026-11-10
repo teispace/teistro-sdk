@@ -5540,6 +5540,8 @@ export type ChartLayout =
   | 'chart_layout.NEPALI_LOTUS'
   | 'chart_layout.SUDARSHAN_CHAKRA'
   | 'chart_layout.WESTERN_WHEEL'
+  | 'chart_layout.NEPALI_CIRCLE'
+  | 'chart_layout.NORTH_INDIAN_PETALS'
   | 'unknown';
 
 /** Every ChartLayout by name; the values are the strings the union accepts. */
@@ -5557,7 +5559,7 @@ export declare const ChartLayout: {
    */
   readonly EastIndian: 'chart_layout.EAST_INDIAN';
   /**
-   * The Nepali lotus (Ashtadala Padma): the North Indian houses drawn as petals
+   * The Nepali lotus: twelve equal petals inside a circle, houses fixed, house 1 the top petal, running anticlockwise
    */
   readonly NepaliLotus: 'chart_layout.NEPALI_LOTUS';
   /**
@@ -5568,6 +5570,14 @@ export declare const ChartLayout: {
    * The Western chart wheel: houses between the cusps inside the zodiac, the ascendant at nine o'clock
    */
   readonly WesternWheel: 'chart_layout.WESTERN_WHEEL';
+  /**
+   * The Nepali round chart: a circle cut on a square grid about a hub that names the chart, houses fixed, house 1 above the hub, running anticlockwise
+   */
+  readonly NepaliCircle: 'chart_layout.NEPALI_CIRCLE';
+  /**
+   * North Indian drawn with petals: the same fixed houses and anchors, each kendra bounded by ogee curves, the diagonals meeting at a swastika hub
+   */
+  readonly NorthIndianPetals: 'chart_layout.NORTH_INDIAN_PETALS';
 };
 
 /**

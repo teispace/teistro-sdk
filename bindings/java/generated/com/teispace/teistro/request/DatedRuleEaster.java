@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+ * The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
  *
  * @param computus Which churches' reckoning of Easter.
  * @param days The days from Easter Sunday, 0 for that day, at most `Dated::EASTER_DAYS` either way. Null leaves the SDK's default.

@@ -569,10 +569,11 @@ mod tests {
         // (SR-38).
         assert_eq!(derived.files.len(), 2 + DERIVED_MESSAGES.len());
         assert_eq!(
-            derived.entities, 792,
+            derived.entities, 795,
             "408 until the 18 dasha systems were named, 426 until the six ritus, \
              432 until the year's six offices, two texts and four rules, 444 until \
-             every listed member was named (SR-12)"
+             every listed member was named (SR-12), 792 until the round and petalled \
+             charts and the navamsha's short form (SR-36)"
         );
         assert!(derived.stale.is_empty(), "{:?}", derived.stale);
 

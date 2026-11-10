@@ -4,6 +4,7 @@
 export type Gender = 'm' | 'f' | 'n';
 export type AgniVasaKey = 'agni_vasa.PRITHVI' | 'agni_vasa.SVARGA' | 'agni_vasa.PATALA';
 export type AshubhaYogaKey = 'ashubha_yoga.DAGDHA' | 'ashubha_yoga.VISHA' | 'ashubha_yoga.HUTASHANA' | 'ashubha_yoga.YAMAGHANTA';
+export type AuspiciousnessKey = 'auspiciousness.AUSPICIOUS' | 'auspiciousness.INAUSPICIOUS' | 'auspiciousness.MIXED' | 'auspiciousness.HIGHLY_INAUSPICIOUS';
 export type AvasthaBaladiKey = 'avastha_baladi.BALA' | 'avastha_baladi.KUMARA' | 'avastha_baladi.YUVA' | 'avastha_baladi.VRIDDHA' | 'avastha_baladi.MRITA';
 export type AvasthaCheshtaKey = 'avastha_cheshta.DRISHTI' | 'avastha_cheshta.CHESHTA' | 'avastha_cheshta.VICHESHTA';
 export type AvasthaDeeptadiKey = 'avastha_deeptadi.DEEPTA' | 'avastha_deeptadi.SWASTHA' | 'avastha_deeptadi.MUDITA' | 'avastha_deeptadi.SHANTA' | 'avastha_deeptadi.DINA' | 'avastha_deeptadi.DUKHI' | 'avastha_deeptadi.VIKALA' | 'avastha_deeptadi.KHALA' | 'avastha_deeptadi.KOPA';
@@ -12,59 +13,81 @@ export type AvasthaLajjitadiKey = 'avastha_lajjitadi.LAJJITA' | 'avastha_lajjita
 export type AvasthaSayanadiKey = 'avastha_sayanadi.SHAYANA' | 'avastha_sayanadi.UPAVESHANA' | 'avastha_sayanadi.NETRAPANI' | 'avastha_sayanadi.PRAKASHANA' | 'avastha_sayanadi.GAMANA' | 'avastha_sayanadi.AGAMANA' | 'avastha_sayanadi.SABHA' | 'avastha_sayanadi.AGAMA' | 'avastha_sayanadi.BHOJANA' | 'avastha_sayanadi.NRITYALIPSA' | 'avastha_sayanadi.KAUTUKA' | 'avastha_sayanadi.NIDRA';
 export type AyanaKey = 'ayana.UTTARAYANA' | 'ayana.DAKSHINAYANA';
 export type AyanamshaKey = 'ayanamsha.FAGAN_BRADLEY' | 'ayanamsha.LAHIRI' | 'ayanamsha.DELUCE' | 'ayanamsha.RAMAN' | 'ayanamsha.USHASHASHI' | 'ayanamsha.KRISHNAMURTI' | 'ayanamsha.DJWHAL_KHUL' | 'ayanamsha.YUKTESHWAR' | 'ayanamsha.JN_BHASIN' | 'ayanamsha.BABYL_KUGLER1' | 'ayanamsha.BABYL_KUGLER2' | 'ayanamsha.BABYL_KUGLER3' | 'ayanamsha.BABYL_HUBER' | 'ayanamsha.BABYL_ETPSC' | 'ayanamsha.ALDEBARAN_15TAU' | 'ayanamsha.HIPPARCHOS' | 'ayanamsha.SASSANIAN' | 'ayanamsha.GALCENT_0SAG' | 'ayanamsha.J2000' | 'ayanamsha.J1900' | 'ayanamsha.B1950' | 'ayanamsha.SURYASIDDHANTA' | 'ayanamsha.SURYASIDDHANTA_MSUN' | 'ayanamsha.ARYABHATA' | 'ayanamsha.ARYABHATA_MSUN' | 'ayanamsha.SS_REVATI' | 'ayanamsha.SS_CITRA' | 'ayanamsha.TRUE_CHITRA' | 'ayanamsha.TRUE_REVATI' | 'ayanamsha.TRUE_PUSHYA' | 'ayanamsha.GALCENT_RGILBRAND' | 'ayanamsha.GALEQU_IAU1958' | 'ayanamsha.GALEQU_TRUE' | 'ayanamsha.GALEQU_MULA' | 'ayanamsha.GALALIGN_MARDYKS' | 'ayanamsha.TRUE_MULA' | 'ayanamsha.GALCENT_MULA_WILHELM' | 'ayanamsha.ARYABHATA_522' | 'ayanamsha.BABYL_BRITTON' | 'ayanamsha.TRUE_SHEORAN' | 'ayanamsha.GALCENT_COCHRANE' | 'ayanamsha.GALEQU_FIORENZA' | 'ayanamsha.VALENS_MOON' | 'ayanamsha.LAHIRI_1940' | 'ayanamsha.LAHIRI_VP285' | 'ayanamsha.KRISHNAMURTI_VP291' | 'ayanamsha.LAHIRI_ICRC';
+export type AyanamshaCategoryKey = 'ayanamsha_category.VEDIC_STANDARD' | 'ayanamsha_category.VEDIC_CLASSICAL' | 'ayanamsha_category.STAR_ANCHORED' | 'ayanamsha_category.WESTERN_SIDEREAL' | 'ayanamsha_category.GALACTIC' | 'ayanamsha_category.HISTORICAL' | 'ayanamsha_category.EPOCH';
+export type BalaSchemeKey = 'bala_scheme.PARASHARA' | 'bala_scheme.PARASHARA_EXTENDED';
 export type BhadraVasaKey = 'bhadra_vasa.SVARGA' | 'bhadra_vasa.MARTYA' | 'bhadra_vasa.PATALA';
-export type BlackoutKindKey = 'blackout_kind.CHATURMAS' | 'blackout_kind.ADHIKA_MASA' | 'blackout_kind.SAMSARPA' | 'blackout_kind.KSHAYA_MASA' | 'blackout_kind.PITRU_PAKSHA' | 'blackout_kind.SANKRANTI' | 'blackout_kind.HOLASHTAKA' | 'blackout_kind.GURU_ASTA' | 'blackout_kind.SHUKRA_ASTA';
+export type BlackoutKindKey = 'blackout_kind.CHATURMAS' | 'blackout_kind.ADHIKA_MASA' | 'blackout_kind.SAMSARPA' | 'blackout_kind.KSHAYA_MASA' | 'blackout_kind.PITRU_PAKSHA' | 'blackout_kind.SANKRANTI' | 'blackout_kind.HOLASHTAKA' | 'blackout_kind.GURU_ASTA' | 'blackout_kind.SHUKRA_ASTA' | 'blackout_kind.KHARMAS' | 'blackout_kind.ECLIPSE_STAR' | 'blackout_kind.ECLIPSE_VEDHA';
+export type BodyClassKey = 'body_class.LUMINARY' | 'body_class.PLANET' | 'body_class.NODE' | 'body_class.OUTER';
+export type CalendarKey = 'calendar.GREGORIAN' | 'calendar.JULIAN' | 'calendar.MIXED' | 'calendar.ISO_WEEK' | 'calendar.BIKRAM_SAMBAT' | 'calendar.INDIAN_LUNISOLAR' | 'calendar.INDIAN_NATIONAL' | 'calendar.HIJRI_TABULAR' | 'calendar.TIBETAN_PHUGPA' | 'calendar.BANGLADESHI' | 'calendar.TAMIL_SOLAR' | 'calendar.BENGAL_SOLAR' | 'calendar.ODIA_SOLAR' | 'calendar.MALAYALAM_SOLAR' | 'calendar.TAMIL_VAKYA' | 'calendar.ASSAM_SOLAR';
 export type CharaKarakaKey = 'chara_karaka.ATMAKARAKA' | 'chara_karaka.AMATYAKARAKA' | 'chara_karaka.BHRATRIKARAKA' | 'chara_karaka.MATRIKARAKA' | 'chara_karaka.PUTRAKARAKA' | 'chara_karaka.GNATIKARAKA' | 'chara_karaka.DARAKARAKA' | 'chara_karaka.PITRIKARAKA';
+export type ChartKindKey = 'chart_kind.NATAL' | 'chart_kind.TRANSIT' | 'chart_kind.EVENT' | 'chart_kind.PRASHNA' | 'chart_kind.RETURN' | 'chart_kind.RELOCATED' | 'chart_kind.COMPOSITE' | 'chart_kind.MUNDANE';
+export type ChartLayoutKey = 'chart_layout.NORTH_INDIAN' | 'chart_layout.SOUTH_INDIAN' | 'chart_layout.EAST_INDIAN' | 'chart_layout.NEPALI_LOTUS' | 'chart_layout.SUDARSHAN_CHAKRA' | 'chart_layout.WESTERN_WHEEL' | 'chart_layout.NEPALI_CIRCLE' | 'chart_layout.NORTH_INDIAN_PETALS';
 export type ChoghadiyaKey = 'choghadiya.UDVEG' | 'choghadiya.CHAR' | 'choghadiya.LAABH' | 'choghadiya.AMRIT' | 'choghadiya.KAAL' | 'choghadiya.SHUBHA' | 'choghadiya.ROG';
-export type DashaSystemKey = 'dasha_system.VIMSHOTTARI' | 'dasha_system.ASHTOTTARI' | 'dasha_system.DWADASHOTTARI' | 'dasha_system.PANCHOTTARI' | 'dasha_system.SHATABDIKA' | 'dasha_system.CHATURASHITI_SAMA' | 'dasha_system.DWISAPTATI_SAMA' | 'dasha_system.YOGINI' | 'dasha_system.TRIBHAGI' | 'dasha_system.CHARA' | 'dasha_system.NARAYANA' | 'dasha_system.PADANADHAMSA' | 'dasha_system.TRIKONA' | 'dasha_system.DRIG' | 'dasha_system.SHOOLA' | 'dasha_system.NIRYANA_SHOOLA' | 'dasha_system.MANDOOKA' | 'dasha_system.KALACHAKRA' | 'dasha_system.SHODASHOTTARI' | 'dasha_system.SHASHTIHAYANI' | 'dasha_system.NAISARGIKA' | 'dasha_system.TARA' | 'dasha_system.KARAKA' | 'dasha_system.ASHTAKAVARGA' | 'dasha_system.PANCHASWARA' | 'dasha_system.STHIRA' | 'dasha_system.VARNADA' | 'dasha_system.YOGARDHA' | 'dasha_system.SUDARSHANA_CHAKRA';
+export type DashaFamilyKey = 'dasha_family.UDU' | 'dasha_family.RASHI' | 'dasha_family.GRAHA' | 'dasha_family.KALACHAKRA' | 'dasha_family.SCALE' | 'dasha_family.COMPOSITION' | 'dasha_family.OWN' | 'dasha_family.RELEASING' | 'dasha_family.PROFECTION' | 'dasha_family.FIRDARIA' | 'dasha_family.DECENNIALS';
+export type DashaSystemKey = 'dasha_system.VIMSHOTTARI' | 'dasha_system.ASHTOTTARI' | 'dasha_system.DWADASHOTTARI' | 'dasha_system.PANCHOTTARI' | 'dasha_system.SHATABDIKA' | 'dasha_system.CHATURASHITI_SAMA' | 'dasha_system.DWISAPTATI_SAMA' | 'dasha_system.YOGINI' | 'dasha_system.TRIBHAGI' | 'dasha_system.CHARA' | 'dasha_system.NARAYANA' | 'dasha_system.PADANADHAMSA' | 'dasha_system.TRIKONA' | 'dasha_system.DRIG' | 'dasha_system.SHOOLA' | 'dasha_system.NIRYANA_SHOOLA' | 'dasha_system.MANDOOKA' | 'dasha_system.KALACHAKRA' | 'dasha_system.SHODASHOTTARI' | 'dasha_system.SHASHTIHAYANI' | 'dasha_system.NAISARGIKA' | 'dasha_system.TARA' | 'dasha_system.KARAKA' | 'dasha_system.ASHTAKAVARGA' | 'dasha_system.PANCHASWARA' | 'dasha_system.STHIRA' | 'dasha_system.VARNADA' | 'dasha_system.YOGARDHA' | 'dasha_system.SUDARSHANA_CHAKRA' | 'dasha_system.SHATTRIMSHA_SAMA' | 'dasha_system.TITHI_ASHTOTTARI' | 'dasha_system.TITHI_YOGINI' | 'dasha_system.YOGA_VIMSHOTTARI' | 'dasha_system.KARANA_CHATURASHITI' | 'dasha_system.AAYU' | 'dasha_system.SUDASA' | 'dasha_system.PATYAYINI' | 'dasha_system.MUDDA' | 'dasha_system.VARSHA_NARAYANA' | 'dasha_system.VARSHA_YOGINI' | 'dasha_system.RELEASING_FORTUNE' | 'dasha_system.RELEASING_DAIMON' | 'dasha_system.PROFECTION' | 'dasha_system.FIRDARIA' | 'dasha_system.DECENNIALS';
 export type DayMarkerKey = 'day_marker.GANDA_MULA' | 'day_marker.GANDANTA' | 'day_marker.VINCHUDO';
-export type DeityKey = 'deity.ASHWINI_KUMARA' | 'deity.YAMA' | 'deity.AGNI' | 'deity.BRAHMA' | 'deity.SOMA' | 'deity.RUDRA' | 'deity.ADITI' | 'deity.BRIHASPATI' | 'deity.NAGA' | 'deity.PITRU' | 'deity.BHAGA' | 'deity.ARYAMAN' | 'deity.SAVITR' | 'deity.VISHVAKARMA' | 'deity.VAYU' | 'deity.INDRAGNI' | 'deity.MITRA' | 'deity.INDRA' | 'deity.NIRRITI' | 'deity.APAS' | 'deity.VISHVADEVA' | 'deity.VISHNU' | 'deity.VASU' | 'deity.VARUNA' | 'deity.AJA_EKAPADA' | 'deity.AHIRBUDHNYA' | 'deity.PUSHAN';
+export type DegeneracyKey = 'degeneracy.NONE' | 'degeneracy.POLAR_UNDEFINED';
+export type DeityKey = 'deity.ASHWINI_KUMARA' | 'deity.YAMA' | 'deity.AGNI' | 'deity.BRAHMA' | 'deity.SOMA' | 'deity.RUDRA' | 'deity.ADITI' | 'deity.BRIHASPATI' | 'deity.NAGA' | 'deity.PITRU' | 'deity.BHAGA' | 'deity.ARYAMAN' | 'deity.SAVITR' | 'deity.VISHVAKARMA' | 'deity.VAYU' | 'deity.INDRAGNI' | 'deity.MITRA' | 'deity.INDRA' | 'deity.NIRRITI' | 'deity.APAS' | 'deity.VISHVADEVA' | 'deity.VISHNU' | 'deity.VASU' | 'deity.VARUNA' | 'deity.AJA_EKAPADA' | 'deity.AHIRBUDHNYA' | 'deity.PUSHAN' | 'deity.CHANDRA' | 'deity.DURGA' | 'deity.KAMADEVA' | 'deity.KARTIKEYA' | 'deity.SHANI' | 'deity.SHIVA' | 'deity.SHUKRA' | 'deity.SURYA' | 'deity.TVASHTA' | 'deity.VIDHATA';
 export type DignityKey = 'dignity.DEEP_EXALTED' | 'dignity.EXALTED' | 'dignity.MOOLTRIKONA' | 'dignity.OWN_SIGN' | 'dignity.GREAT_FRIEND' | 'dignity.FRIEND' | 'dignity.NEUTRAL' | 'dignity.ENEMY' | 'dignity.GREAT_ENEMY' | 'dignity.DEBILITATED' | 'dignity.DEEP_DEBILITATED';
 export type DirectionKey = 'direction.EAST' | 'direction.WEST' | 'direction.NORTH' | 'direction.SOUTH' | 'direction.NORTHEAST' | 'direction.NORTHWEST' | 'direction.SOUTHEAST' | 'direction.SOUTHWEST';
-export type EraKey = 'era.VIKRAMA' | 'era.SHAKA' | 'era.KALI' | 'era.NEPAL_SAMBAT' | 'era.BUDDHA' | 'era.KOLLAM' | 'era.BENGALI' | 'era.COMMON_ERA' | 'era.BEFORE_COMMON_ERA' | 'era.VIRA_NIRVANA' | 'era.BHASKARABDA';
+export type EraKey = 'era.VIKRAMA' | 'era.SHAKA' | 'era.KALI' | 'era.NEPAL_SAMBAT' | 'era.BUDDHA' | 'era.KOLLAM' | 'era.BENGALI' | 'era.COMMON_ERA' | 'era.BEFORE_COMMON_ERA' | 'era.VIRA_NIRVANA' | 'era.BHASKARABDA' | 'era.HIJRI';
 export type FastKindKey = 'fast_kind.UPAVASA' | 'fast_kind.EKABHAKTA' | 'fast_kind.NAKTA' | 'fast_kind.AYACHITA' | 'fast_kind.PHALAHARA' | 'fast_kind.KSHIRAHARA' | 'fast_kind.JALAHARA';
-export type FestivalKey = 'festival.RAMA_NAVAMI' | 'festival.JANMASHTAMI' | 'festival.VIJAYA_DASHAMI' | 'festival.LAKSHMI_PUJA' | 'festival.HARITALIKA' | 'festival.NAVARATRA_ARAMBHA' | 'festival.YAMA_DWITIYA' | 'festival.SHIVARATRI' | 'festival.RAKSHABANDHAN' | 'festival.BALI_PRATIPADA' | 'festival.HOLIKA' | 'festival.UPAKARMA_MADHYANDINA' | 'festival.UPAKARMA_TAITTIRIYA' | 'festival.UPAKARMA_SAMAVEDI' | 'festival.PURNIMA_VRATA' | 'festival.HOLI_HILLS' | 'festival.HOLI_TERAI' | 'festival.EKADASHI_SMARTA' | 'festival.EKADASHI_SMARTA_RENUNCIANT' | 'festival.EKADASHI_VAISHNAVA' | 'festival.EKADASHI_GAUDIYA' | 'festival.JANMASHTAMI_VAISHNAVA' | 'festival.RAMA_NAVAMI_VAISHNAVA' | 'festival.NRISIMHA_CHATURDASHI' | 'festival.RADHASHTAMI_VAISHNAVA' | 'festival.GAURA_PURNIMA' | 'festival.CHAITE_DASHAIN' | 'festival.SETO_MACHHINDRANATH_JATRA' | 'festival.PARASHURAMA_JAYANTI' | 'festival.SHANKARACHARYA_JAYANTI' | 'festival.GANGA_SAPTAMI' | 'festival.SITA_NAVAMI' | 'festival.KURMA_JAYANTI' | 'festival.DASHAHARA_SNANA_ARAMBHA' | 'festival.GOSAIKUNDA_SNANA_ARAMBHA' | 'festival.KUMARA_JATRA' | 'festival.GANGA_DASHAHARA' | 'festival.GOSAIKUNDA_SNANA_SAMAPTI' | 'festival.HATYAMOCHANA_SNANA' | 'festival.NIRJALA_EKADASHI' | 'festival.ANALA_PUNHI' | 'festival.DILA_CHARHE' | 'festival.DURVA_ASHTAMI' | 'festival.AJA_EKADASHI' | 'festival.CHATHA' | 'festival.GANESHA_CHATURTHI' | 'festival.RISHI_PANCHAMI' | 'festival.GAURA_SAPTAMI' | 'festival.AMUKTABHARANA_SAPTAMI' | 'festival.HILE_JATRA' | 'festival.VAMANA_DWADASHI' | 'festival.PRATIPADA_SHRADDHA' | 'festival.DWITIYA_SHRADDHA' | 'festival.TRITIYA_SHRADDHA' | 'festival.CHATURTHI_SHRADDHA' | 'festival.PANCHAMI_SHRADDHA' | 'festival.SHASHTHI_SHRADDHA' | 'festival.SAPTAMI_SHRADDHA' | 'festival.ASHTAMI_SHRADDHA' | 'festival.NAVAMI_SHRADDHA' | 'festival.DASHAMI_SHRADDHA' | 'festival.EKADASHI_SHRADDHA' | 'festival.DWADASHI_SHRADDHA' | 'festival.TRAYODASHI_SHRADDHA' | 'festival.CHATURDASHI_SHRADDHA' | 'festival.AMAVASYA_SHRADDHA' | 'festival.SORHA_SHRADDHA_ARAMBHA' | 'festival.KALI_YUGADI' | 'festival.UPANGA_LALITA_VRATA' | 'festival.KUCHHI_BHOYE' | 'festival.YAMAPANCHAKA_ARAMBHA' | 'festival.DHANVANTARI_JAYANTI' | 'festival.LAXMI_PRASAD_DEVKOTA_JAYANTI' | 'festival.MHA_PUJA' | 'festival.NEPAL_SAMBAT_NEW_YEAR' | 'festival.HARIBODHINI_EKADASHI' | 'festival.BHISHMA_PANCHAKA_ARAMBHA' | 'festival.TULASI_VIVAHA' | 'festival.PASHUPATI_HALESI_MELA' | 'festival.BALA_CHATURDASHI' | 'festival.DATTATREYA_JAYANTI' | 'festival.NUWAKOT_DUPCHESHWAR_MELA' | 'festival.PISHACHAMOCHANA_SHRADDHA' | 'festival.GAIDU_PUJA' | 'festival.PAUSHA_PUTRADA_EKADASHI' | 'festival.LAI_CHARHE' | 'festival.TILAKUNDA_CHATURTHI' | 'festival.CHAMPA_SHASHTHI' | 'festival.BHIMA_EKADASHI' | 'festival.VIJAYA_EKADASHI' | 'festival.SHILA_CHARHE' | 'festival.DVAPARA_YUGADI' | 'festival.PAHAN_CHARHE' | 'festival.GHODE_JATRA' | 'festival.MATSYANARAYANA_MELA' | 'festival.MATSYA_JAYANTI' | 'festival.VAISHAKHA_SNANA_ARAMBHA' | 'festival.PRADOSHA_VRATA' | 'festival.MANGALA_CHATURTHI' | 'festival.RAVI_SAPTAMI' | 'festival.BHAUMASHTAMI' | 'festival.BUDHASHTAMI' | 'festival.SOMAVATI_AMAVASYA' | 'festival.CHANDRODAYA' | 'festival.SANKASHTA_CHATURTHI' | 'festival.KARAKA_CHATURTHI' | 'festival.MESHA_SANKRANTI' | 'festival.VRISHABHA_SANKRANTI' | 'festival.MITHUNA_SANKRANTI' | 'festival.KARKATA_SANKRANTI' | 'festival.SIMHA_SANKRANTI' | 'festival.KANYA_SANKRANTI' | 'festival.TULA_SANKRANTI' | 'festival.VRISHCHIKA_SANKRANTI' | 'festival.DHANU_SANKRANTI' | 'festival.MAKARA_SANKRANTI' | 'festival.KUMBHA_SANKRANTI' | 'festival.MINA_SANKRANTI' | 'festival.LOKTANTRA_DIWAS' | 'festival.CONSTITUTION_DAY' | 'festival.PRITHVI_JAYANTI' | 'festival.EARTHQUAKE_SAFETY_DAY' | 'festival.SONAM_LHOSAR' | 'festival.TAMU_LHOSAR' | 'festival.MARTYRS_DAY' | 'festival.DEMOCRACY_DAY' | 'festival.GYALPO_LHOSAR' | 'festival.SAMVATSARA_ARAMBHA' | 'festival.GAURI_VRAT' | 'festival.MAHAVIR_JAYANTI' | 'festival.BALAJU_BAISDHARA_MELA' | 'festival.HANUMAN_JAYANTI' | 'festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA' | 'festival.CHANGUNARAYAN_CHHINNAMASTA_KILESHWOR_MULRATH_JATRA' | 'festival.MATA_TIRTHA_AUNSI' | 'festival.RATO_MACHHINDRANATH_RATHAROHAN' | 'festival.AKSHAYA_TRITIYA' | 'festival.TRETAYUGADI' | 'festival.RATO_MACHHINDRANATH_RATH_JATRA_BEGINS' | 'festival.PASHUPATINATH_DAMAN_PUSHPARPAN' | 'festival.MOHINI_EKADASHI' | 'festival.BAISAKH_SNAN_ENDS' | 'festival.BUDDHA_JAYANTI' | 'festival.CHANDI_PURNIMA' | 'festival.GORAKHNATH_JAYANTI' | 'festival.UBHAULI' | 'festival.APARA_EKADASHI' | 'festival.SHANI_JAYANTI' | 'festival.BHAKTAPUR_CHANDI_BHAGAWATI_JATRA' | 'festival.KUMAR_SHASHTHI' | 'festival.SITHI_NAKHA' | 'festival.VAYU_ASHTAMI' | 'festival.GANGA_PUJA' | 'festival.GURU_PADMASAMBHAVA_JAYANTI' | 'festival.RAMESHWAR_PUJA' | 'festival.JYA_PUNHI' | 'festival.KABIR_JAYANTI' | 'festival.MASTA_PURNIMA' | 'festival.BHAL_BHAL_ASHTAMI' | 'festival.DEOPATAN_TRISHUL_JATRA' | 'festival.NAKWA_DISHI' | 'festival.JAGANNATH_RATH_JATRA' | 'festival.DEOPATAN_GANGAMAI_RATH_JATRA' | 'festival.SURYA_PUJA' | 'festival.CHATURMAS_BEGINS' | 'festival.HARISHAYANI_EKADASHI' | 'festival.DAKSHINAMURTI_PUJA' | 'festival.DILLA_PUNHI' | 'festival.GURU_PURNIMA' | 'festival.KAMIKA_EKADASHI' | 'festival.GUNLA_BEGINS' | 'festival.DHAPAKHEL_NAGDAHA' | 'festival.NAG_PANCHAMI' | 'festival.TULSIDAS_JAYANTI' | 'festival.YALA_PANCHADAN' | 'festival.SHRAWAN_PUTRADA_EKADASHI' | 'festival.KWATI_PUNHI' | 'festival.SANSKRIT_DAY' | 'festival.GAI_JATRA' | 'festival.ROPAI_JATRA' | 'festival.CHANDRA_SHASHTHI' | 'festival.GUGA_NAVAMI' | 'festival.KUSHE_AUNSI' | 'festival.MOTIRAM_JAYANTI' | 'festival.GUNLA_ENDS' | 'festival.DAR_KHANE_DIN' | 'festival.KOKHAJA_BIYE' | 'festival.SURYA_SHASHTHI' | 'festival.KAYA_ASHTAMI' | 'festival.ADUKHA_NAVAMI' | 'festival.HARIPARIVARTINI_EKADASHI' | 'festival.INDRADHWAJA_UTTHAN' | 'festival.ANANTA_CHATURDASHI' | 'festival.INDRA_JATRA' | 'festival.BHAKTAPUR_SIDDHA_POKHARI_MELA' | 'festival.CHONAM_PARVA' | 'festival.INDRADAHA_SNAN' | 'festival.PUNCHALI_BHUJA' | 'festival.GATILA' | 'festival.JITIYA' | 'festival.INDIRA_EKADASHI' | 'festival.MAGHA_SHRADDHA' | 'festival.AVIDHAVA_NAVAMI' | 'festival.SANYASI_MAHALAYA' | 'festival.BHARANI_SHRADDHA' | 'festival.PACHALI_BHAIRAV_JATRA' | 'festival.BILVA_NIMANTRAN' | 'festival.PHULPATI' | 'festival.MAHA_ASHTAMI' | 'festival.BUDDHAVATAR' | 'festival.MAHA_NAVAMI' | 'festival.SYAKWA_TYAKWA' | 'festival.CHAALA' | 'festival.DEVI_VISARJAN' | 'festival.KHADGA_JATRA' | 'festival.ANNAPURNA_JATRA' | 'festival.PAPANKUSHA_EKADASHI' | 'festival.KHANCHI_SARAI_PARVA' | 'festival.AKHILBALI_PURTI' | 'festival.SHREEGHA_JATRA' | 'festival.ARGHA_SARAI_PARVA' | 'festival.KARTIK_SNAN_BEGINS' | 'festival.KATIN_PUNHI' | 'festival.RADHASHTAMI' | 'festival.RAMA_EKADASHI' | 'festival.DHANTERAS' | 'festival.KAG_TIHAR' | 'festival.SWONTI_CHARHE' | 'festival.KUKUR_TIHAR' | 'festival.NARAK_CHATURDASHI' | 'festival.GOVARDHAN_PUJA' | 'festival.HALI_TIHAR' | 'festival.CHHATH' | 'festival.GOPASHTAMI' | 'festival.MUKHA_ASHTAMI' | 'festival.SILANGA_MAHARUDRA_KOTIHOM_MELA' | 'festival.HETAUDA_KUSHMANDA_SAROBAR_MELA' | 'festival.KUSHMANDA_NAVAMI' | 'festival.SAKWO_CHANGU_WONE' | 'festival.SATYAYUGADI' | 'festival.BALAMBU_MAHALAXMI_JATRA' | 'festival.FULKHARKA_GANGAJAMUNA_MELA' | 'festival.CHANGUNARAYAN_AKHANDA_DEEP_DARSHAN' | 'festival.SHIVA_BAIKUNTHA_CHATURDASHI' | 'festival.CHATURMAS_ENDS' | 'festival.GURU_NANAK_JAYANTI' | 'festival.KARTIK_SNAN_ENDS' | 'festival.THANKOT_MAHALAXMI_JATRA' | 'festival.GUHYESHWARI_JATRA' | 'festival.UTPATTIKA_EKADASHI' | 'festival.BALA_CHATURDASHI_BALA' | 'festival.SHADANANDA_JAYANTI' | 'festival.VIVAH_PANCHAMI' | 'festival.BAKHUMADA' | 'festival.PANGA_VAISHNAVI_DEVI_JATRA' | 'festival.KIRTIPUR_INDRAYANI_JATRA' | 'festival.GITA_JAYANTI' | 'festival.MOKSHADA_EKADASHI' | 'festival.DHANYA_PURNIMA' | 'festival.UDHAULI' | 'festival.YOMARI_PUNHI' | 'festival.SAFALA_EKADASHI' | 'festival.GAYA_MAUNI_AUNSI' | 'festival.TOL_LHOSAR' | 'festival.SETO_MACHHINDRANATH_SNAN' | 'festival.MUSYADULI' | 'festival.CHANGUNARAYAN_KALASH_JATRA' | 'festival.MAGH_SNAN_BEGINS' | 'festival.SWASTHANI_VRAT_BEGINS' | 'festival.SHATTILA_EKADASHI' | 'festival.ARYAGHAT_MADHAV_NARAYAN_MELA' | 'festival.SHREE_BALLABH_JAYANTI' | 'festival.BASANTA_PANCHAMI' | 'festival.SKANDA_SHASHTHI' | 'festival.ACHALA_SAPTAMI' | 'festival.BHISHMASHTAMI' | 'festival.DRONA_NAVAMI' | 'festival.SHALYA_DASHAMI' | 'festival.BHISHMA_DWADASHI' | 'festival.CHANGU_MADHAV_NARAYAN_MELA' | 'festival.WATU_MAGH_JATRA' | 'festival.MAGH_SNAN_ENDS' | 'festival.SWASTHANI_VRAT_ENDS' | 'festival.CHIR_SWAYEGU' | 'festival.AMALAKI_EKADASHI' | 'festival.GOVINDA_DWADASHI' | 'festival.NALA_MACHHINDRANATH_RATH_JATRA' | 'festival.SHITALASHTAMI' | 'festival.PAPMOCHANI_EKADASHI' | 'festival.KOKA_KAUSHIKI_SANGAM_MELA' | 'festival.VARUTHINI_EKADASHI' | 'festival.YOGINI_EKADASHI' | 'festival.KOJAGRAT_PURNIMA' | 'festival.KAMADA_EKADASHI' | 'festival.SI_PUNHI' | 'festival.HAYAGRIVA_JAYANTI' | 'festival.SHIVA_PAVITRAROPAN' | 'festival.ARJUNDHARA_MELA' | 'festival.WALKE_PARVA' | 'festival.KALKI_JAYANTI' | 'festival.VARAHA_JAYANTI' | 'festival.PANAUTI_JATRA' | 'festival.PANAUTI_SNAN_MELA' | 'festival.BAHIDYO_BOYEGU' | 'festival.LALITPUR_NARSINGH_JATRA' | 'festival.GOVATSA_DWADASHI' | 'festival.KASHI_BADA_GANESH_UTSAV' | 'festival.NARASIMHA_JAYANTI' | 'festival.PADMINI_EKADASHI' | 'festival.PARAMA_EKADASHI' | 'festival.TOKHA_SAPAN_TIRTHA_SNAN' | 'festival.YOSIN_PATAN' | 'festival.BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA' | 'festival.TOKHA_CHANDESHWARI_JATRA' | 'festival.THIMI_BALKUMARI_JATRA' | 'festival.BHAKTAPUR_BRAHMAYANI_JATRA' | 'festival.BHAKTAPUR_CHHUMA_GANESH_JATRA' | 'festival.BISKET_JATRA_ENDS' | 'festival.KANDAKARAK_PUJA' | 'festival.KHEER_KHANE_DIN' | 'festival.KIRTIPUR_BAGH_BHAIRAV_JATRA' | 'festival.VISHWAKARMA_PUJA' | 'festival.MAGHI_THARU' | 'festival.MAKAR_SNAN' | 'festival.DEVGHAT_MAKAR_SNAN' | 'festival.BISKET_JATRA_BEGINS' | 'festival.BHUMIRAJ' | 'festival.BHUMI_PUJA' | 'festival.CHHANDA_DIWAS' | 'festival.KIRAT_SAMAJ_SUDHAR_DIWAS' | 'festival.LAW_DAY' | 'festival.REPUBLIC_DAY' | 'festival.CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY' | 'festival.NATIONAL_PADDY_DAY' | 'festival.BHANU_JAYANTI' | 'festival.NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING' | 'festival.CIVIL_SERVICE_DAY' | 'festival.NATIONAL_CHILDREN_S_DAY' | 'festival.VASTU_DIWAS' | 'festival.FALGUNANDA_JAYANTI' | 'festival.LEKHNATH_PAUDYAL_JAYANTI' | 'festival.ARANIKO_MEMORIAL_DAY' | 'festival.ELECTION_DAY' | 'festival.NEW_YEAR_S_DAY_AD' | 'festival.INTERNATIONAL_WOMEN_S_DAY' | 'festival.WORLD_WATER_DAY' | 'festival.WORLD_TUBERCULOSIS_DAY' | 'festival.INTERNATIONAL_LABOUR_DAY' | 'festival.WORLD_PRESS_FREEDOM_DAY' | 'festival.WORLD_RED_CROSS_DAY' | 'festival.WORLD_NO_TOBACCO_DAY' | 'festival.WORLD_ENVIRONMENT_DAY' | 'festival.INTERNATIONAL_SPORTS_JOURNALISTS_DAY' | 'festival.WORLD_POPULATION_DAY' | 'festival.INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES' | 'festival.INTERNATIONAL_LITERACY_DAY' | 'festival.INTERNATIONAL_DAY_OF_PEACE' | 'festival.WORLD_TOURISM_DAY' | 'festival.UNITED_NATIONS_DAY' | 'festival.WORLD_DIABETES_DAY' | 'festival.INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES' | 'festival.HUMAN_RIGHTS_DAY' | 'festival.CHRISTMAS' | 'festival.INDIA_REPUBLIC_DAY' | 'festival.INDIA_INDEPENDENCE_DAY' | 'festival.GANDHI_JAYANTI' | 'festival.GOOD_FRIDAY' | 'festival.HOLI' | 'festival.FAGU_PURNIMA' | 'festival.ASHUNYA_SHAYANA' | 'festival.MAHAVIR_NIRVANA' | 'festival.VIRA_NIRVANA_NEW_YEAR' | 'festival.PARYUSHANA' | 'festival.SAMVATSARI' | 'festival.PARYUSHANA_TRAYODASHI' | 'festival.SAMVATSARI_PANCHAMI' | 'festival.DASA_LAKSHANA' | 'festival.CHAITRA_AYAMBIL_OLI' | 'festival.CHAITRA_AYAMBIL_OLI_END' | 'festival.ASHVINA_AYAMBIL_OLI' | 'festival.ASHVINA_AYAMBIL_OLI_END' | 'festival.JAIN_PARVA_DVITIYA' | 'festival.JAIN_PARVA_PANCHAMI' | 'festival.JAIN_PARVA_ASHTAMI' | 'festival.JAIN_PARVA_EKADASHI' | 'festival.JAIN_PARVA_CHATURDASHI' | 'festival.JAIN_PARVA_PURNIMA' | 'festival.JAIN_PARVA_AMAVASYA' | 'festival.MAUNA_PANCHAMI' | 'festival.MADHUSHRAVANI_ARAMBHA' | 'festival.MADHUSHRAVANI_SAMAPTI' | 'festival.CHAURCHAN' | 'festival.OTHGAN' | 'festival.SAMA_CHAKEVA_ARAMBHA' | 'festival.SAMA_CHAKEVA_VISARJANA' | 'festival.VIDYAPATI_SMRITI_DIVAS' | 'festival.JUR_SITAL' | 'festival.CHHATRAPATI_SHIVAJI_JAYANTI' | 'festival.AMBEDKAR_JAYANTI' | 'festival.MAHARASHTRA_DAY' | 'festival.BANK_ACCOUNTS_CLOSING' | 'festival.VIVEKANANDA_JAYANTI' | 'festival.NETAJI_JAYANTI' | 'festival.THAKUR_PANCHANAN_BARMA_JAYANTI' | 'festival.DOLA_YATRA' | 'festival.HARICHAND_THAKUR_JAYANTI' | 'festival.EASTER_SATURDAY' | 'festival.POHELA_BOISHAKH' | 'festival.RABINDRA_JAYANTI' | 'festival.HUL_DIWAS' | 'festival.DURGA_CHATURTHI' | 'festival.DURGA_PANCHAMI' | 'festival.DURGA_SHASHTHI' | 'festival.KALI_PUJA' | 'festival.BIRSA_MUNDA_JAYANTI';
+export type FestivalKey = 'festival.RAMA_NAVAMI' | 'festival.JANMASHTAMI' | 'festival.VIJAYA_DASHAMI' | 'festival.LAKSHMI_PUJA' | 'festival.HARITALIKA' | 'festival.NAVARATRA_ARAMBHA' | 'festival.YAMA_DWITIYA' | 'festival.SHIVARATRI' | 'festival.RAKSHABANDHAN' | 'festival.BALI_PRATIPADA' | 'festival.HOLIKA' | 'festival.UPAKARMA_MADHYANDINA' | 'festival.UPAKARMA_TAITTIRIYA' | 'festival.UPAKARMA_SAMAVEDI' | 'festival.PURNIMA_VRATA' | 'festival.HOLI_HILLS' | 'festival.HOLI_TERAI' | 'festival.EKADASHI_SMARTA' | 'festival.EKADASHI_SMARTA_RENUNCIANT' | 'festival.EKADASHI_VAISHNAVA' | 'festival.EKADASHI_GAUDIYA' | 'festival.JANMASHTAMI_VAISHNAVA' | 'festival.RAMA_NAVAMI_VAISHNAVA' | 'festival.NRISIMHA_CHATURDASHI' | 'festival.RADHASHTAMI_VAISHNAVA' | 'festival.GAURA_PURNIMA' | 'festival.CHAITE_DASHAIN' | 'festival.SETO_MACHHINDRANATH_JATRA' | 'festival.PARASHURAMA_JAYANTI' | 'festival.SHANKARACHARYA_JAYANTI' | 'festival.GANGA_SAPTAMI' | 'festival.SITA_NAVAMI' | 'festival.KURMA_JAYANTI' | 'festival.DASHAHARA_SNANA_ARAMBHA' | 'festival.GOSAIKUNDA_SNANA_ARAMBHA' | 'festival.KUMARA_JATRA' | 'festival.GANGA_DASHAHARA' | 'festival.GOSAIKUNDA_SNANA_SAMAPTI' | 'festival.HATYAMOCHANA_SNANA' | 'festival.NIRJALA_EKADASHI' | 'festival.ANALA_PUNHI' | 'festival.DILA_CHARHE' | 'festival.DURVA_ASHTAMI' | 'festival.AJA_EKADASHI' | 'festival.CHATHA' | 'festival.GANESHA_CHATURTHI' | 'festival.RISHI_PANCHAMI' | 'festival.GAURA_SAPTAMI' | 'festival.AMUKTABHARANA_SAPTAMI' | 'festival.HILE_JATRA' | 'festival.VAMANA_DWADASHI' | 'festival.PRATIPADA_SHRADDHA' | 'festival.DWITIYA_SHRADDHA' | 'festival.TRITIYA_SHRADDHA' | 'festival.CHATURTHI_SHRADDHA' | 'festival.PANCHAMI_SHRADDHA' | 'festival.SHASHTHI_SHRADDHA' | 'festival.SAPTAMI_SHRADDHA' | 'festival.ASHTAMI_SHRADDHA' | 'festival.NAVAMI_SHRADDHA' | 'festival.DASHAMI_SHRADDHA' | 'festival.EKADASHI_SHRADDHA' | 'festival.DWADASHI_SHRADDHA' | 'festival.TRAYODASHI_SHRADDHA' | 'festival.CHATURDASHI_SHRADDHA' | 'festival.AMAVASYA_SHRADDHA' | 'festival.SORHA_SHRADDHA_ARAMBHA' | 'festival.KALI_YUGADI' | 'festival.UPANGA_LALITA_VRATA' | 'festival.KUCHHI_BHOYE' | 'festival.YAMAPANCHAKA_ARAMBHA' | 'festival.DHANVANTARI_JAYANTI' | 'festival.LAXMI_PRASAD_DEVKOTA_JAYANTI' | 'festival.MHA_PUJA' | 'festival.NEPAL_SAMBAT_NEW_YEAR' | 'festival.HARIBODHINI_EKADASHI' | 'festival.BHISHMA_PANCHAKA_ARAMBHA' | 'festival.TULASI_VIVAHA' | 'festival.PASHUPATI_HALESI_MELA' | 'festival.BALA_CHATURDASHI' | 'festival.DATTATREYA_JAYANTI' | 'festival.NUWAKOT_DUPCHESHWAR_MELA' | 'festival.PISHACHAMOCHANA_SHRADDHA' | 'festival.GAIDU_PUJA' | 'festival.PAUSHA_PUTRADA_EKADASHI' | 'festival.LAI_CHARHE' | 'festival.TILAKUNDA_CHATURTHI' | 'festival.CHAMPA_SHASHTHI' | 'festival.BHIMA_EKADASHI' | 'festival.VIJAYA_EKADASHI' | 'festival.SHILA_CHARHE' | 'festival.DVAPARA_YUGADI' | 'festival.PAHAN_CHARHE' | 'festival.GHODE_JATRA' | 'festival.MATSYANARAYANA_MELA' | 'festival.MATSYA_JAYANTI' | 'festival.VAISHAKHA_SNANA_ARAMBHA' | 'festival.PRADOSHA_VRATA' | 'festival.MANGALA_CHATURTHI' | 'festival.RAVI_SAPTAMI' | 'festival.BHAUMASHTAMI' | 'festival.BUDHASHTAMI' | 'festival.SOMAVATI_AMAVASYA' | 'festival.CHANDRODAYA' | 'festival.SANKASHTA_CHATURTHI' | 'festival.KARAKA_CHATURTHI' | 'festival.MESHA_SANKRANTI' | 'festival.VRISHABHA_SANKRANTI' | 'festival.MITHUNA_SANKRANTI' | 'festival.KARKATA_SANKRANTI' | 'festival.SIMHA_SANKRANTI' | 'festival.KANYA_SANKRANTI' | 'festival.TULA_SANKRANTI' | 'festival.VRISHCHIKA_SANKRANTI' | 'festival.DHANU_SANKRANTI' | 'festival.MAKARA_SANKRANTI' | 'festival.KUMBHA_SANKRANTI' | 'festival.MINA_SANKRANTI' | 'festival.LOKTANTRA_DIWAS' | 'festival.CONSTITUTION_DAY' | 'festival.PRITHVI_JAYANTI' | 'festival.EARTHQUAKE_SAFETY_DAY' | 'festival.SONAM_LHOSAR' | 'festival.TAMU_LHOSAR' | 'festival.MARTYRS_DAY' | 'festival.DEMOCRACY_DAY' | 'festival.GYALPO_LHOSAR' | 'festival.SAMVATSARA_ARAMBHA' | 'festival.GAURI_VRAT' | 'festival.MAHAVIR_JAYANTI' | 'festival.BALAJU_BAISDHARA_MELA' | 'festival.HANUMAN_JAYANTI' | 'festival.BISHALNAGAR_VAISHNAVI_DEVI_JATRA' | 'festival.CHANGUNARAYAN_CHHINNAMASTA_KILESHWOR_MULRATH_JATRA' | 'festival.MATA_TIRTHA_AUNSI' | 'festival.RATO_MACHHINDRANATH_RATHAROHAN' | 'festival.AKSHAYA_TRITIYA' | 'festival.TRETAYUGADI' | 'festival.RATO_MACHHINDRANATH_RATH_JATRA_BEGINS' | 'festival.PASHUPATINATH_DAMAN_PUSHPARPAN' | 'festival.MOHINI_EKADASHI' | 'festival.BAISAKH_SNAN_ENDS' | 'festival.BUDDHA_JAYANTI' | 'festival.CHANDI_PURNIMA' | 'festival.GORAKHNATH_JAYANTI' | 'festival.UBHAULI' | 'festival.APARA_EKADASHI' | 'festival.SHANI_JAYANTI' | 'festival.BHAKTAPUR_CHANDI_BHAGAWATI_JATRA' | 'festival.KUMAR_SHASHTHI' | 'festival.SITHI_NAKHA' | 'festival.VAYU_ASHTAMI' | 'festival.GANGA_PUJA' | 'festival.GURU_PADMASAMBHAVA_JAYANTI' | 'festival.RAMESHWAR_PUJA' | 'festival.JYA_PUNHI' | 'festival.KABIR_JAYANTI' | 'festival.MASTA_PURNIMA' | 'festival.BHAL_BHAL_ASHTAMI' | 'festival.DEOPATAN_TRISHUL_JATRA' | 'festival.NAKWA_DISHI' | 'festival.JAGANNATH_RATH_JATRA' | 'festival.DEOPATAN_GANGAMAI_RATH_JATRA' | 'festival.SURYA_PUJA' | 'festival.CHATURMAS_BEGINS' | 'festival.HARISHAYANI_EKADASHI' | 'festival.DAKSHINAMURTI_PUJA' | 'festival.DILLA_PUNHI' | 'festival.GURU_PURNIMA' | 'festival.KAMIKA_EKADASHI' | 'festival.GUNLA_BEGINS' | 'festival.DHAPAKHEL_NAGDAHA' | 'festival.NAG_PANCHAMI' | 'festival.TULSIDAS_JAYANTI' | 'festival.YALA_PANCHADAN' | 'festival.SHRAWAN_PUTRADA_EKADASHI' | 'festival.KWATI_PUNHI' | 'festival.SANSKRIT_DAY' | 'festival.GAI_JATRA' | 'festival.ROPAI_JATRA' | 'festival.CHANDRA_SHASHTHI' | 'festival.GUGA_NAVAMI' | 'festival.KUSHE_AUNSI' | 'festival.MOTIRAM_JAYANTI' | 'festival.GUNLA_ENDS' | 'festival.DAR_KHANE_DIN' | 'festival.KOKHAJA_BIYE' | 'festival.SURYA_SHASHTHI' | 'festival.KAYA_ASHTAMI' | 'festival.ADUKHA_NAVAMI' | 'festival.HARIPARIVARTINI_EKADASHI' | 'festival.INDRADHWAJA_UTTHAN' | 'festival.ANANTA_CHATURDASHI' | 'festival.INDRA_JATRA' | 'festival.BHAKTAPUR_SIDDHA_POKHARI_MELA' | 'festival.CHONAM_PARVA' | 'festival.INDRADAHA_SNAN' | 'festival.PUNCHALI_BHUJA' | 'festival.GATILA' | 'festival.JITIYA' | 'festival.INDIRA_EKADASHI' | 'festival.MAGHA_SHRADDHA' | 'festival.AVIDHAVA_NAVAMI' | 'festival.SANYASI_MAHALAYA' | 'festival.BHARANI_SHRADDHA' | 'festival.PACHALI_BHAIRAV_JATRA' | 'festival.BILVA_NIMANTRAN' | 'festival.PHULPATI' | 'festival.MAHA_ASHTAMI' | 'festival.BUDDHAVATAR' | 'festival.MAHA_NAVAMI' | 'festival.SYAKWA_TYAKWA' | 'festival.CHAALA' | 'festival.DEVI_VISARJAN' | 'festival.KHADGA_JATRA' | 'festival.ANNAPURNA_JATRA' | 'festival.PAPANKUSHA_EKADASHI' | 'festival.KHANCHI_SARAI_PARVA' | 'festival.AKHILBALI_PURTI' | 'festival.SHREEGHA_JATRA' | 'festival.ARGHA_SARAI_PARVA' | 'festival.KARTIK_SNAN_BEGINS' | 'festival.KATIN_PUNHI' | 'festival.RADHASHTAMI' | 'festival.RAMA_EKADASHI' | 'festival.DHANTERAS' | 'festival.KAG_TIHAR' | 'festival.SWONTI_CHARHE' | 'festival.KUKUR_TIHAR' | 'festival.NARAK_CHATURDASHI' | 'festival.GOVARDHAN_PUJA' | 'festival.HALI_TIHAR' | 'festival.CHHATH' | 'festival.GOPASHTAMI' | 'festival.MUKHA_ASHTAMI' | 'festival.SILANGA_MAHARUDRA_KOTIHOM_MELA' | 'festival.HETAUDA_KUSHMANDA_SAROBAR_MELA' | 'festival.KUSHMANDA_NAVAMI' | 'festival.SAKWO_CHANGU_WONE' | 'festival.SATYAYUGADI' | 'festival.BALAMBU_MAHALAXMI_JATRA' | 'festival.FULKHARKA_GANGAJAMUNA_MELA' | 'festival.CHANGUNARAYAN_AKHANDA_DEEP_DARSHAN' | 'festival.SHIVA_BAIKUNTHA_CHATURDASHI' | 'festival.CHATURMAS_ENDS' | 'festival.GURU_NANAK_JAYANTI' | 'festival.KARTIK_SNAN_ENDS' | 'festival.THANKOT_MAHALAXMI_JATRA' | 'festival.GUHYESHWARI_JATRA' | 'festival.UTPATTIKA_EKADASHI' | 'festival.BALA_CHATURDASHI_BALA' | 'festival.SHADANANDA_JAYANTI' | 'festival.VIVAH_PANCHAMI' | 'festival.BAKHUMADA' | 'festival.PANGA_VAISHNAVI_DEVI_JATRA' | 'festival.KIRTIPUR_INDRAYANI_JATRA' | 'festival.GITA_JAYANTI' | 'festival.MOKSHADA_EKADASHI' | 'festival.DHANYA_PURNIMA' | 'festival.UDHAULI' | 'festival.YOMARI_PUNHI' | 'festival.SAFALA_EKADASHI' | 'festival.GAYA_MAUNI_AUNSI' | 'festival.TOL_LHOSAR' | 'festival.SETO_MACHHINDRANATH_SNAN' | 'festival.MUSYADULI' | 'festival.CHANGUNARAYAN_KALASH_JATRA' | 'festival.MAGH_SNAN_BEGINS' | 'festival.SWASTHANI_VRAT_BEGINS' | 'festival.SHATTILA_EKADASHI' | 'festival.ARYAGHAT_MADHAV_NARAYAN_MELA' | 'festival.SHREE_BALLABH_JAYANTI' | 'festival.BASANTA_PANCHAMI' | 'festival.SKANDA_SHASHTHI' | 'festival.ACHALA_SAPTAMI' | 'festival.BHISHMASHTAMI' | 'festival.DRONA_NAVAMI' | 'festival.SHALYA_DASHAMI' | 'festival.BHISHMA_DWADASHI' | 'festival.CHANGU_MADHAV_NARAYAN_MELA' | 'festival.WATU_MAGH_JATRA' | 'festival.MAGH_SNAN_ENDS' | 'festival.SWASTHANI_VRAT_ENDS' | 'festival.CHIR_SWAYEGU' | 'festival.AMALAKI_EKADASHI' | 'festival.GOVINDA_DWADASHI' | 'festival.NALA_MACHHINDRANATH_RATH_JATRA' | 'festival.SHITALASHTAMI' | 'festival.PAPMOCHANI_EKADASHI' | 'festival.KOKA_KAUSHIKI_SANGAM_MELA' | 'festival.VARUTHINI_EKADASHI' | 'festival.YOGINI_EKADASHI' | 'festival.KOJAGRAT_PURNIMA' | 'festival.KAMADA_EKADASHI' | 'festival.SI_PUNHI' | 'festival.HAYAGRIVA_JAYANTI' | 'festival.SHIVA_PAVITRAROPAN' | 'festival.ARJUNDHARA_MELA' | 'festival.WALKE_PARVA' | 'festival.KALKI_JAYANTI' | 'festival.VARAHA_JAYANTI' | 'festival.PANAUTI_JATRA' | 'festival.PANAUTI_SNAN_MELA' | 'festival.BAHIDYO_BOYEGU' | 'festival.LALITPUR_NARSINGH_JATRA' | 'festival.GOVATSA_DWADASHI' | 'festival.KASHI_BADA_GANESH_UTSAV' | 'festival.NARASIMHA_JAYANTI' | 'festival.PADMINI_EKADASHI' | 'festival.PARAMA_EKADASHI' | 'festival.TOKHA_SAPAN_TIRTHA_SNAN' | 'festival.YOSIN_PATAN' | 'festival.BHAKTAPUR_MAHAKALI_MAHALAXMI_JATRA' | 'festival.TOKHA_CHANDESHWARI_JATRA' | 'festival.THIMI_BALKUMARI_JATRA' | 'festival.BHAKTAPUR_BRAHMAYANI_JATRA' | 'festival.BHAKTAPUR_CHHUMA_GANESH_JATRA' | 'festival.BISKET_JATRA_ENDS' | 'festival.KANDAKARAK_PUJA' | 'festival.KHEER_KHANE_DIN' | 'festival.KIRTIPUR_BAGH_BHAIRAV_JATRA' | 'festival.VISHWAKARMA_PUJA' | 'festival.MAGHI_THARU' | 'festival.MAKAR_SNAN' | 'festival.DEVGHAT_MAKAR_SNAN' | 'festival.BISKET_JATRA_BEGINS' | 'festival.BHUMIRAJ' | 'festival.BHUMI_PUJA' | 'festival.CHHANDA_DIWAS' | 'festival.KIRAT_SAMAJ_SUDHAR_DIWAS' | 'festival.LAW_DAY' | 'festival.REPUBLIC_DAY' | 'festival.CASTE_BASED_DISCRIMINATION_AND_UNTOUCHABILITY_ELIMINATION_DAY' | 'festival.NATIONAL_PADDY_DAY' | 'festival.BHANU_JAYANTI' | 'festival.NATIONAL_DAY_AGAINST_HUMAN_TRAFFICKING' | 'festival.CIVIL_SERVICE_DAY' | 'festival.NATIONAL_CHILDREN_S_DAY' | 'festival.VASTU_DIWAS' | 'festival.FALGUNANDA_JAYANTI' | 'festival.LEKHNATH_PAUDYAL_JAYANTI' | 'festival.ARANIKO_MEMORIAL_DAY' | 'festival.ELECTION_DAY' | 'festival.NEW_YEAR_S_DAY_AD' | 'festival.INTERNATIONAL_WOMEN_S_DAY' | 'festival.WORLD_WATER_DAY' | 'festival.WORLD_TUBERCULOSIS_DAY' | 'festival.INTERNATIONAL_LABOUR_DAY' | 'festival.WORLD_PRESS_FREEDOM_DAY' | 'festival.WORLD_RED_CROSS_DAY' | 'festival.WORLD_NO_TOBACCO_DAY' | 'festival.WORLD_ENVIRONMENT_DAY' | 'festival.INTERNATIONAL_SPORTS_JOURNALISTS_DAY' | 'festival.WORLD_POPULATION_DAY' | 'festival.INTERNATIONAL_DAY_OF_THE_WORLD_S_INDIGENOUS_PEOPLES' | 'festival.INTERNATIONAL_LITERACY_DAY' | 'festival.INTERNATIONAL_DAY_OF_PEACE' | 'festival.WORLD_TOURISM_DAY' | 'festival.UNITED_NATIONS_DAY' | 'festival.WORLD_DIABETES_DAY' | 'festival.INTERNATIONAL_DAY_OF_PERSONS_WITH_DISABILITIES' | 'festival.HUMAN_RIGHTS_DAY' | 'festival.CHRISTMAS' | 'festival.INDIA_REPUBLIC_DAY' | 'festival.INDIA_INDEPENDENCE_DAY' | 'festival.GANDHI_JAYANTI' | 'festival.GOOD_FRIDAY' | 'festival.HOLI' | 'festival.FAGU_PURNIMA' | 'festival.ASHUNYA_SHAYANA' | 'festival.MAHAVIR_NIRVANA' | 'festival.VIRA_NIRVANA_NEW_YEAR' | 'festival.PARYUSHANA' | 'festival.SAMVATSARI' | 'festival.PARYUSHANA_TRAYODASHI' | 'festival.SAMVATSARI_PANCHAMI' | 'festival.DASA_LAKSHANA' | 'festival.CHAITRA_AYAMBIL_OLI' | 'festival.CHAITRA_AYAMBIL_OLI_END' | 'festival.ASHVINA_AYAMBIL_OLI' | 'festival.ASHVINA_AYAMBIL_OLI_END' | 'festival.JAIN_PARVA_DVITIYA' | 'festival.JAIN_PARVA_PANCHAMI' | 'festival.JAIN_PARVA_ASHTAMI' | 'festival.JAIN_PARVA_EKADASHI' | 'festival.JAIN_PARVA_CHATURDASHI' | 'festival.JAIN_PARVA_PURNIMA' | 'festival.JAIN_PARVA_AMAVASYA' | 'festival.MAUNA_PANCHAMI' | 'festival.MADHUSHRAVANI_ARAMBHA' | 'festival.MADHUSHRAVANI_SAMAPTI' | 'festival.CHAURCHAN' | 'festival.OTHGAN' | 'festival.SAMA_CHAKEVA_ARAMBHA' | 'festival.SAMA_CHAKEVA_VISARJANA' | 'festival.VIDYAPATI_SMRITI_DIVAS' | 'festival.JUR_SITAL' | 'festival.CHHATRAPATI_SHIVAJI_JAYANTI' | 'festival.AMBEDKAR_JAYANTI' | 'festival.MAHARASHTRA_DAY' | 'festival.BANK_ACCOUNTS_CLOSING' | 'festival.VIVEKANANDA_JAYANTI' | 'festival.NETAJI_JAYANTI' | 'festival.THAKUR_PANCHANAN_BARMA_JAYANTI' | 'festival.DOLA_YATRA' | 'festival.HARICHAND_THAKUR_JAYANTI' | 'festival.EASTER_SATURDAY' | 'festival.POHELA_BOISHAKH' | 'festival.RABINDRA_JAYANTI' | 'festival.HUL_DIWAS' | 'festival.DURGA_CHATURTHI' | 'festival.DURGA_PANCHAMI' | 'festival.DURGA_SHASHTHI' | 'festival.KALI_PUJA' | 'festival.BIRSA_MUNDA_JAYANTI' | 'festival.VISHU' | 'festival.MANNAM_JAYANTHI' | 'festival.MAUNDY_THURSDAY' | 'festival.EASTER' | 'festival.KARKIDAKA_VAVU' | 'festival.FIRST_ONAM' | 'festival.THIRUVONAM' | 'festival.THIRD_ONAM' | 'festival.FOURTH_ONAM' | 'festival.SREE_NARAYANA_GURU_JAYANTHI' | 'festival.SREE_NARAYANA_GURU_SAMADHI' | 'festival.AYYANKALI_JAYANTHI' | 'festival.AVANI_AVITTOM' | 'festival.AYYA_VAIKUNDA_SWAMI_JAYANTHI';
 export type FestivalKindKey = 'festival_kind.GAZETTED' | 'festival_kind.RELIGIOUS_CULTURAL' | 'festival_kind.REGIONAL_ETHNIC' | 'festival_kind.OBSERVANCE';
 export type GanaKey = 'gana.DEVA' | 'gana.MANUSHYA' | 'gana.RAKSHASA';
+export type GenderKey = 'gender.MALE' | 'gender.FEMALE' | 'gender.NEUTRAL';
 export type GowriKey = 'gowri.UTHI' | 'gowri.AMIRTHAM' | 'gowri.ROGAM' | 'gowri.LAABAM' | 'gowri.DHANAM' | 'gowri.SUGAM' | 'gowri.SORAM' | 'gowri.VISHAM';
-export type GrahaKey = 'graha.SUN' | 'graha.MOON' | 'graha.MARS' | 'graha.MERCURY' | 'graha.JUPITER' | 'graha.VENUS' | 'graha.SATURN' | 'graha.RAHU' | 'graha.KETU';
+export type GrahaKey = 'graha.SUN' | 'graha.MOON' | 'graha.MARS' | 'graha.MERCURY' | 'graha.JUPITER' | 'graha.VENUS' | 'graha.SATURN' | 'graha.RAHU' | 'graha.KETU' | 'graha.URANUS' | 'graha.NEPTUNE' | 'graha.PLUTO';
+export type GunaKey = 'guna.SATTVA' | 'guna.RAJAS' | 'guna.TAMAS';
 export type HouseSystemKey = 'house_system.WHOLE_SIGN' | 'house_system.PLACIDUS' | 'house_system.KOCH' | 'house_system.REGIOMONTANUS' | 'house_system.CAMPANUS' | 'house_system.EQUAL' | 'house_system.MERIDIAN' | 'house_system.ALCABITIUS' | 'house_system.PORPHYRY' | 'house_system.TOPOCENTRIC' | 'house_system.MORINUS' | 'house_system.SRIPATI' | 'house_system.EQUAL_MC' | 'house_system.EQUAL_ARIES' | 'house_system.VEHLOW' | 'house_system.CARTER' | 'house_system.HORIZON' | 'house_system.SUNSHINE' | 'house_system.PULLEN_SD' | 'house_system.PULLEN_SR' | 'house_system.KRUSINSKI' | 'house_system.APC';
 export type KaalaKey = 'kaala.RAHU_KAALA' | 'kaala.YAMAGHANDA' | 'kaala.GULIKA_KAALA';
 export type KaranaKey = 'karana.BAVA' | 'karana.BALAVA' | 'karana.KAULAVA' | 'karana.TAITILA' | 'karana.GARIJA' | 'karana.VANIJA' | 'karana.VISHTI' | 'karana.SHAKUNI' | 'karana.CHATUSHPADA' | 'karana.NAGA' | 'karana.KIMSTUGHNA';
-export type LunarEclipseKindKey = 'lunar_eclipse_kind.PARTIAL' | 'lunar_eclipse_kind.TOTAL';
+export type KootaKey = 'koota.VARNA' | 'koota.VASHYA' | 'koota.TARA' | 'koota.YONI' | 'koota.GRAHA_MAITRI' | 'koota.GANA' | 'koota.BHAKOOT' | 'koota.NADI' | 'koota.RAJJU' | 'koota.VEDHA' | 'koota.STREE_DEERGHA' | 'koota.MAHENDRA';
+export type LunarEclipseKindKey = 'lunar_eclipse_kind.PARTIAL' | 'lunar_eclipse_kind.TOTAL' | 'lunar_eclipse_kind.PENUMBRAL';
 export type MasaKey = 'masa.CHAITRA' | 'masa.VAISHAKHA' | 'masa.JYESHTHA' | 'masa.ASHADHA' | 'masa.SHRAVANA' | 'masa.BHADRAPADA' | 'masa.ASHWINA' | 'masa.KARTIKA' | 'masa.MARGASHIRSHA' | 'masa.PAUSHA' | 'masa.MAGHA' | 'masa.PHALGUNA';
+export type ModalityKey = 'modality.CHARA' | 'modality.STHIRA' | 'modality.DWISWABHAVA';
+export type MuhurtaNatureKey = 'muhurta_nature.DHRUVA' | 'muhurta_nature.CHARA' | 'muhurta_nature.UGRA' | 'muhurta_nature.KSHIPRA' | 'muhurta_nature.MRIDU' | 'muhurta_nature.MISHRA' | 'muhurta_nature.TIKSHNA';
 export type MuhurtaYogaKey = 'muhurta_yoga.AMRIT_SIDDHI' | 'muhurta_yoga.SARVARTHA_SIDDHI' | 'muhurta_yoga.SIDDHA' | 'muhurta_yoga.DWIPUSHKAR' | 'muhurta_yoga.TRIPUSHKAR' | 'muhurta_yoga.RAVI_PUSHYA' | 'muhurta_yoga.GURU_PUSHYA';
 export type MundaneKindKey = 'mundane_kind.MESHA_SANKRANTI' | 'mundane_kind.MAKARA_SANKRANTI' | 'mundane_kind.ARIES_INGRESS' | 'mundane_kind.CANCER_INGRESS' | 'mundane_kind.LIBRA_INGRESS' | 'mundane_kind.CAPRICORN_INGRESS' | 'mundane_kind.NEW_MOON_BEFORE_INGRESS' | 'mundane_kind.FULL_MOON_BEFORE_INGRESS' | 'mundane_kind.SYZYGY_BEFORE_INGRESS' | 'mundane_kind.SOLAR_ECLIPSE' | 'mundane_kind.LUNAR_ECLIPSE' | 'mundane_kind.GREAT_CONJUNCTION' | 'mundane_kind.EVENT';
 export type NadiKey = 'nadi.AADI' | 'nadi.MADHYA' | 'nadi.ANTYA';
 export type NakshatraKey = 'nakshatra.ASHWINI' | 'nakshatra.BHARANI' | 'nakshatra.KRITTIKA' | 'nakshatra.ROHINI' | 'nakshatra.MRIGASHIRA' | 'nakshatra.ARDRA' | 'nakshatra.PUNARVASU' | 'nakshatra.PUSHYA' | 'nakshatra.ASHLESHA' | 'nakshatra.MAGHA' | 'nakshatra.PURVA_PHALGUNI' | 'nakshatra.UTTARA_PHALGUNI' | 'nakshatra.HASTA' | 'nakshatra.CHITRA' | 'nakshatra.SWATI' | 'nakshatra.VISHAKHA' | 'nakshatra.ANURADHA' | 'nakshatra.JYESHTHA' | 'nakshatra.MULA' | 'nakshatra.PURVA_ASHADHA' | 'nakshatra.UTTARA_ASHADHA' | 'nakshatra.SHRAVANA' | 'nakshatra.DHANISHTHA' | 'nakshatra.SHATABHISHA' | 'nakshatra.PURVA_BHADRAPADA' | 'nakshatra.UTTARA_BHADRAPADA' | 'nakshatra.REVATI';
-export type NatureKey = 'nature.BENEFIC' | 'nature.MALEFIC';
+export type NatureKey = 'nature.BENEFIC' | 'nature.MALEFIC' | 'nature.NEUTRAL';
 export type PakshaKey = 'paksha.SHUKLA' | 'paksha.KRISHNA';
 export type PanchakaKey = 'panchaka.MRITYU' | 'panchaka.AGNI' | 'panchaka.RAJA' | 'panchaka.CHORA' | 'panchaka.ROGA';
+export type ParityKey = 'parity.ODD' | 'parity.EVEN';
 export type PayaKey = 'paya.SUVARNA' | 'paya.RAJATA' | 'paya.TAMRA' | 'paya.LOHA';
-export type PointKey = 'point.LAGNA' | 'point.DHUMA' | 'point.VYATIPATA' | 'point.PARIVESHA' | 'point.INDRACHAPA' | 'point.UPAKETU' | 'point.GULIKA' | 'point.MANDI' | 'point.BHAVA_LAGNA' | 'point.HORA_LAGNA' | 'point.GHATI_LAGNA' | 'point.VARNADA_LAGNA' | 'point.PRANAPADA_LAGNA' | 'point.KALA' | 'point.MRITYU' | 'point.ARDHAPRAHARA' | 'point.KARAKAMSHA' | 'point.A1' | 'point.A12';
+export type PointKey = 'point.LAGNA' | 'point.DHUMA' | 'point.VYATIPATA' | 'point.PARIVESHA' | 'point.INDRACHAPA' | 'point.UPAKETU' | 'point.GULIKA' | 'point.MANDI' | 'point.BHAVA_LAGNA' | 'point.HORA_LAGNA' | 'point.GHATI_LAGNA' | 'point.VARNADA_LAGNA' | 'point.PRANAPADA_LAGNA' | 'point.KALA' | 'point.MRITYU' | 'point.ARDHAPRAHARA' | 'point.KARAKAMSHA' | 'point.A1' | 'point.A12' | 'point.MC' | 'point.DESCENDANT' | 'point.IC' | 'point.VIGHATI_LAGNA' | 'point.SREE_LAGNA' | 'point.INDU_LAGNA' | 'point.BHRIGU_BINDU' | 'point.YOGI' | 'point.AVAYOGI' | 'point.SAHAYOGI' | 'point.TRISPHUTA' | 'point.CHATUSSPHUTA' | 'point.PANCHASPHUTA' | 'point.PRANA_SPHUTA' | 'point.DEHA_SPHUTA' | 'point.MRITYU_SPHUTA' | 'point.BEEJA_SPHUTA' | 'point.KSHETRA_SPHUTA' | 'point.YAMAGHANTAKA' | 'point.SWAMSHA' | 'point.A2' | 'point.A3' | 'point.A4' | 'point.A5' | 'point.A6' | 'point.A7' | 'point.A8' | 'point.A9' | 'point.A10' | 'point.A11';
+export type PointFamilyKey = 'point_family.ANGLE' | 'point_family.SPECIAL_LAGNA' | 'point_family.UPAGRAHA_SOLAR' | 'point_family.UPAGRAHA_DAY' | 'point_family.ARUDHA' | 'point_family.SPHUTA' | 'point_family.JAIMINI' | 'point_family.MIDPOINT';
 export type RashiKey = 'rashi.ARIES' | 'rashi.TAURUS' | 'rashi.GEMINI' | 'rashi.CANCER' | 'rashi.LEO' | 'rashi.VIRGO' | 'rashi.LIBRA' | 'rashi.SCORPIO' | 'rashi.SAGITTARIUS' | 'rashi.CAPRICORN' | 'rashi.AQUARIUS' | 'rashi.PISCES';
 export type RelationshipKey = 'relationship.GREAT_FRIEND' | 'relationship.FRIEND' | 'relationship.NEUTRAL' | 'relationship.ENEMY' | 'relationship.GREAT_ENEMY';
+export type RisingKey = 'rising.SIRSHODAYA' | 'rising.PRISHTODAYA' | 'rising.UBHAYODAYA';
 export type RituKey = 'ritu.VASANTA' | 'ritu.GRISHMA' | 'ritu.VARSHA' | 'ritu.SHARAD' | 'ritu.HEMANTA' | 'ritu.SHISHIRA';
-export type RulerDayRuleKey = 'ruler_day_rule.SUNRISE' | 'ruler_day_rule.NEW_MOON' | 'ruler_day_rule.GARGA' | 'ruler_day_rule.VARA';
-export type RulerTextKey = 'ruler_text.JYOTIRNIBANDHA' | 'ruler_text.NARADA_SAMHITA';
+export type RulerDayRuleKey = 'ruler_day_rule.SUNRISE' | 'ruler_day_rule.NEW_MOON' | 'ruler_day_rule.GARGA' | 'ruler_day_rule.VARA' | 'ruler_day_rule.DAYLIGHT';
+export type RulerTextKey = 'ruler_text.JYOTIRNIBANDHA' | 'ruler_text.NARADA_SAMHITA' | 'ruler_text.NAVANAYAKA';
 export type SamvatsaraKey = 'samvatsara.PRABHAVA' | 'samvatsara.VIBHAVA' | 'samvatsara.SHUKLA' | 'samvatsara.PRAMODOOTA' | 'samvatsara.PRAJOTPATTI' | 'samvatsara.ANGIRAS' | 'samvatsara.SHRIMUKHA' | 'samvatsara.BHAVA' | 'samvatsara.YUVA' | 'samvatsara.DHAATA' | 'samvatsara.ISHVARA' | 'samvatsara.BAHUDHANYA' | 'samvatsara.PRAMATHI' | 'samvatsara.VIKRAMA' | 'samvatsara.VRISHA' | 'samvatsara.CHITRABHANU' | 'samvatsara.SUBHANU' | 'samvatsara.TAARANA' | 'samvatsara.PAARTHIVA' | 'samvatsara.VYAYA' | 'samvatsara.SARVAJIT' | 'samvatsara.SARVADHARI' | 'samvatsara.VIRODHI' | 'samvatsara.VIKRITA' | 'samvatsara.KHARA' | 'samvatsara.NANDANA' | 'samvatsara.VIJAYA' | 'samvatsara.JAYA' | 'samvatsara.MANMATHA' | 'samvatsara.DURMUKHI' | 'samvatsara.HEVILAMBI' | 'samvatsara.VILAMBI' | 'samvatsara.VIKARI' | 'samvatsara.SHARVARI' | 'samvatsara.PLAVA' | 'samvatsara.SHUBHAKRIT' | 'samvatsara.SHOBHAKRIT' | 'samvatsara.KRODHI' | 'samvatsara.VISHVAVASU' | 'samvatsara.PARABHAVA' | 'samvatsara.PLAVANGA' | 'samvatsara.KILAKA' | 'samvatsara.SAUMYA' | 'samvatsara.SADHARANA' | 'samvatsara.VIRODHIKRIT' | 'samvatsara.PARIDHAAVI' | 'samvatsara.PRAMADICHA' | 'samvatsara.ANANDA' | 'samvatsara.RAKSHASA' | 'samvatsara.NALA' | 'samvatsara.PINGALA' | 'samvatsara.KALAYUKTA' | 'samvatsara.SIDDHARTHI' | 'samvatsara.RAUDRA' | 'samvatsara.DURMATI' | 'samvatsara.DUNDUBHI' | 'samvatsara.RUDHIRODGARI' | 'samvatsara.RAKTAKSHI' | 'samvatsara.KRODHANA' | 'samvatsara.AKSHAYA';
+export type SexKey = 'sex.MALE' | 'sex.FEMALE';
 export type ShivaVasaKey = 'shiva_vasa.KAILASA' | 'shiva_vasa.GAURI' | 'shiva_vasa.VRISHABHA' | 'shiva_vasa.SABHA' | 'shiva_vasa.BHOJANA' | 'shiva_vasa.KRIDA' | 'shiva_vasa.SHMASHANA';
-export type SolarEclipseKindKey = 'solar_eclipse_kind.PARTIAL' | 'solar_eclipse_kind.TOTAL';
+export type SolarEclipseKindKey = 'solar_eclipse_kind.PARTIAL' | 'solar_eclipse_kind.TOTAL' | 'solar_eclipse_kind.ANNULAR' | 'solar_eclipse_kind.HYBRID';
+export type StarKey = 'star.SHERATAN' | 'star.BHARANI' | 'star.ALCYONE' | 'star.ALDEBARAN' | 'star.MEISSA' | 'star.BETELGEUSE' | 'star.POLLUX' | 'star.ASELLUS_AUSTRALIS' | 'star.ASHLESHA' | 'star.REGULUS' | 'star.ZOSMA' | 'star.DENEBOLA' | 'star.ALGORAB' | 'star.SPICA' | 'star.ARCTURUS' | 'star.ZUBENELGENUBI' | 'star.DSCHUBBA' | 'star.ANTARES' | 'star.SHAULA' | 'star.KAUS_MEDIA' | 'star.NUNKI' | 'star.VEGA' | 'star.ALTAIR' | 'star.ROTANEV' | 'star.HYDOR' | 'star.MARKAB' | 'star.ALGENIB' | 'star.REVATI' | 'star.CANOPUS' | 'star.SIRIUS' | 'star.CAPELLA' | 'star.POLARIS' | 'star.DUBHE' | 'star.MERAK' | 'star.PHECDA' | 'star.ALIOTH' | 'star.MIZAR' | 'star.ALKAID' | 'star.ACHERNAR' | 'star.ACRUX' | 'star.ADHARA' | 'star.AIN' | 'star.ALBALDAH' | 'star.ALBIREO' | 'star.ALDERAMIN' | 'star.ALGEDI' | 'star.ALGIEBA' | 'star.ALGOL' | 'star.ALHENA' | 'star.ALJANAH' | 'star.ALMACH' | 'star.ALNAIR' | 'star.ALNASL' | 'star.ALNILAM' | 'star.ALNITAK' | 'star.ALPHARD' | 'star.ALPHECCA' | 'star.ALPHERATZ' | 'star.ALSEPHINA' | 'star.ALSHAIN' | 'star.ALUDRA' | 'star.ANKAA' | 'star.ASCELLA' | 'star.ASPIDISKE' | 'star.ATRIA' | 'star.AVIOR' | 'star.BELLATRIX' | 'star.CAPH' | 'star.CASTOR' | 'star.CHAMUKUY' | 'star.DENEB' | 'star.DIPHDA' | 'star.ELNATH' | 'star.ENIF' | 'star.ERRAI' | 'star.FANG' | 'star.FOMALHAUT' | 'star.GACRUX' | 'star.HADAR' | 'star.HAMAL' | 'star.HEZE' | 'star.IZAR' | 'star.KAUS_AUSTRALIS' | 'star.KAUS_BOREALIS' | 'star.KITALPHA' | 'star.KORNEPHOROS' | 'star.MARFIK' | 'star.MENKALINAN' | 'star.MENKAR' | 'star.MENKENT' | 'star.MIAPLACIDUS' | 'star.MIMOSA' | 'star.MINTAKA' | 'star.MIRACH' | 'star.MIRFAK' | 'star.NAOS' | 'star.NIHAL' | 'star.PEACOCK' | 'star.PROCYON' | 'star.RASALGETHI' | 'star.RASALHAGUE' | 'star.RIGEL' | 'star.RIGIL_KENTAURUS' | 'star.SABIK' | 'star.SADALBARI' | 'star.SADALMELIK' | 'star.SADALSUUD' | 'star.SADR' | 'star.SAIPH' | 'star.SARGAS' | 'star.SCHEAT' | 'star.SCHEDAR' | 'star.SEGINUS' | 'star.SHELIAK' | 'star.SKAT' | 'star.SUHAIL' | 'star.SYRMA' | 'star.THUBAN' | 'star.TUREIS' | 'star.UNUKALHAI' | 'star.VINDEMIATRIX' | 'star.WEZEN' | 'star.YED_PRIOR' | 'star.ZANIAH' | 'star.ZUBENESCHAMALI' | 'star.SGR_A_STAR' | 'star.GALACTIC_POLE' | 'star.GALACTIC_POLE_IAU1958';
+export type StarClassKey = 'star_class.STAR' | 'star_class.RADIO_SOURCE' | 'star_class.DIRECTION';
 export type StateKey = 'state.RETROGRADE' | 'state.STATIONARY' | 'state.COMBUST' | 'state.PLANETARY_WAR' | 'state.GANDANTA' | 'state.SANDHI' | 'state.VARGOTTAMA' | 'state.PUSHKARA_NAVAMSA' | 'state.PUSHKARA_BHAGA' | 'state.MRITYU_BHAGA' | 'state.MARANA_KARAKA_STHANA' | 'state.ECLIPSED';
 export type TatwaKey = 'tatwa.AGNI' | 'tatwa.PRITHVI' | 'tatwa.VAYU' | 'tatwa.JALA' | 'tatwa.AKASHA';
+export type TibetanAnimalKey = 'tibetan_animal.MOUSE' | 'tibetan_animal.OX' | 'tibetan_animal.TIGER' | 'tibetan_animal.RABBIT' | 'tibetan_animal.DRAGON' | 'tibetan_animal.SNAKE' | 'tibetan_animal.HORSE' | 'tibetan_animal.SHEEP' | 'tibetan_animal.MONKEY' | 'tibetan_animal.BIRD' | 'tibetan_animal.DOG' | 'tibetan_animal.PIG';
+export type TibetanElementKey = 'tibetan_element.WOOD' | 'tibetan_element.FIRE' | 'tibetan_element.EARTH' | 'tibetan_element.IRON' | 'tibetan_element.WATER';
 export type TithiKey = 'tithi.SHUKLA_PRATIPADA' | 'tithi.SHUKLA_DVITIYA' | 'tithi.SHUKLA_TRITIYA' | 'tithi.SHUKLA_CHATURTHI' | 'tithi.SHUKLA_PANCHAMI' | 'tithi.SHUKLA_SHASHTHI' | 'tithi.SHUKLA_SAPTAMI' | 'tithi.SHUKLA_ASHTAMI' | 'tithi.SHUKLA_NAVAMI' | 'tithi.SHUKLA_DASHAMI' | 'tithi.SHUKLA_EKADASHI' | 'tithi.SHUKLA_DWADASHI' | 'tithi.SHUKLA_TRAYODASHI' | 'tithi.SHUKLA_CHATURDASHI' | 'tithi.PURNIMA' | 'tithi.KRISHNA_PRATIPADA' | 'tithi.KRISHNA_DVITIYA' | 'tithi.KRISHNA_TRITIYA' | 'tithi.KRISHNA_CHATURTHI' | 'tithi.KRISHNA_PANCHAMI' | 'tithi.KRISHNA_SHASHTHI' | 'tithi.KRISHNA_SAPTAMI' | 'tithi.KRISHNA_ASHTAMI' | 'tithi.KRISHNA_NAVAMI' | 'tithi.KRISHNA_DASHAMI' | 'tithi.KRISHNA_EKADASHI' | 'tithi.KRISHNA_DWADASHI' | 'tithi.KRISHNA_TRAYODASHI' | 'tithi.KRISHNA_CHATURDASHI' | 'tithi.AMAVASYA';
+export type TithiClassKey = 'tithi_class.NANDA' | 'tithi_class.BHADRA' | 'tithi_class.JAYA' | 'tithi_class.RIKTA' | 'tithi_class.PURNA';
 export type TraditionKey = 'tradition.HINDU' | 'tradition.BUDDHIST' | 'tradition.JAIN' | 'tradition.SIKH' | 'tradition.ISLAMIC' | 'tradition.CHRISTIAN' | 'tradition.ZOROASTRIAN';
 export type TridoshaKey = 'tridosha.VATA' | 'tridosha.PITTA' | 'tridosha.KAPHA';
-export type VaiseshikamsaKey = 'vaiseshikamsa.KIMSHUKA' | 'vaiseshikamsa.VYANJANA' | 'vaiseshikamsa.CHAMARA' | 'vaiseshikamsa.CHATRA' | 'vaiseshikamsa.KUNDALA' | 'vaiseshikamsa.MUKUTA' | 'vaiseshikamsa.PARIJATA' | 'vaiseshikamsa.UTTAMA' | 'vaiseshikamsa.GOPURA' | 'vaiseshikamsa.SIMHASANA' | 'vaiseshikamsa.PARAVATA' | 'vaiseshikamsa.DEVALOKA' | 'vaiseshikamsa.BRAHMALOKA' | 'vaiseshikamsa.SHAKRAVAHANA' | 'vaiseshikamsa.SHRIDHAMA' | 'vaiseshikamsa.BHEDAKA' | 'vaiseshikamsa.NAGAPUSHPA' | 'vaiseshikamsa.KANDUKA' | 'vaiseshikamsa.KERALA' | 'vaiseshikamsa.KALPAVRIKSHA' | 'vaiseshikamsa.CHANDANAVANA' | 'vaiseshikamsa.PURNACHANDRA' | 'vaiseshikamsa.UCHCHAISHRAVA' | 'vaiseshikamsa.DHANVANTARI' | 'vaiseshikamsa.SURYAKANTA' | 'vaiseshikamsa.VIDRUMA' | 'vaiseshikamsa.GOLOKA';
+export type VaiseshikamsaKey = 'vaiseshikamsa.KIMSHUKA' | 'vaiseshikamsa.VYANJANA' | 'vaiseshikamsa.CHAMARA' | 'vaiseshikamsa.CHATRA' | 'vaiseshikamsa.KUNDALA' | 'vaiseshikamsa.MUKUTA' | 'vaiseshikamsa.PARIJATA' | 'vaiseshikamsa.UTTAMA' | 'vaiseshikamsa.GOPURA' | 'vaiseshikamsa.SIMHASANA' | 'vaiseshikamsa.PARAVATA' | 'vaiseshikamsa.DEVALOKA' | 'vaiseshikamsa.BRAHMALOKA' | 'vaiseshikamsa.SHAKRAVAHANA' | 'vaiseshikamsa.SHRIDHAMA' | 'vaiseshikamsa.BHEDAKA' | 'vaiseshikamsa.NAGAPUSHPA' | 'vaiseshikamsa.KANDUKA' | 'vaiseshikamsa.KERALA' | 'vaiseshikamsa.KALPAVRIKSHA' | 'vaiseshikamsa.CHANDANAVANA' | 'vaiseshikamsa.PURNACHANDRA' | 'vaiseshikamsa.UCHCHAISHRAVA' | 'vaiseshikamsa.DHANVANTARI' | 'vaiseshikamsa.SURYAKANTA' | 'vaiseshikamsa.VIDRUMA' | 'vaiseshikamsa.GOLOKA' | 'vaiseshikamsa.KUSUMA' | 'vaiseshikamsa.CHAKRASIMHASANA' | 'vaiseshikamsa.SHRIVALLABHA';
 export type VaraKey = 'vara.RAVIVARA' | 'vara.SOMAVARA' | 'vara.MANGALAVARA' | 'vara.BUDHAVARA' | 'vara.GURUVARA' | 'vara.SHUKRAVARA' | 'vara.SHANIVARA';
-export type VargaKey = 'varga.D2' | 'varga.D3' | 'varga.D4' | 'varga.D7' | 'varga.D9' | 'varga.D10' | 'varga.D12' | 'varga.D16' | 'varga.D20' | 'varga.D24' | 'varga.D27' | 'varga.D30' | 'varga.D40' | 'varga.D45' | 'varga.D60';
+export type VargaKey = 'varga.D2' | 'varga.D3' | 'varga.D4' | 'varga.D7' | 'varga.D9' | 'varga.D10' | 'varga.D12' | 'varga.D16' | 'varga.D20' | 'varga.D24' | 'varga.D27' | 'varga.D30' | 'varga.D40' | 'varga.D45' | 'varga.D60' | 'varga.D1' | 'varga.D5' | 'varga.D6' | 'varga.D8' | 'varga.D11' | 'varga.D150';
 export type VarnaKey = 'varna.BRAHMIN' | 'varna.KSHATRIYA' | 'varna.VAISHYA' | 'varna.SHUDRA' | 'varna.MLECCHA';
 export type VastuYoniKey = 'vastu_yoni.DHVAJA' | 'vastu_yoni.DHUMA' | 'vastu_yoni.SIMHA' | 'vastu_yoni.SHVAN' | 'vastu_yoni.VRISHA' | 'vastu_yoni.KHARA' | 'vastu_yoni.GAJA' | 'vastu_yoni.KAKA';
 export type VyayaKindKey = 'vyaya_kind.PISHACHA' | 'vyaya_kind.RAKSHASA' | 'vyaya_kind.YAKSHA';
-export type YearOfficeKey = 'year_office.RAJA' | 'year_office.MANTRI' | 'year_office.SASYADHIPATI' | 'year_office.DHANYADHIPATI' | 'year_office.MEGHADHIPATI' | 'year_office.RASADHIPATI' | 'year_office.NIRASADHIPATI';
+export type YearOfficeKey = 'year_office.RAJA' | 'year_office.MANTRI' | 'year_office.SASYADHIPATI' | 'year_office.DHANYADHIPATI' | 'year_office.MEGHADHIPATI' | 'year_office.RASADHIPATI' | 'year_office.NIRASADHIPATI' | 'year_office.SENADHIPATI' | 'year_office.ARGHADHIPATI';
 export type YogaKey = 'yoga.VISHKAMBHA' | 'yoga.PRITI' | 'yoga.AYUSHMAN' | 'yoga.SAUBHAGYA' | 'yoga.SHOBHANA' | 'yoga.ATIGANDA' | 'yoga.SUKARMA' | 'yoga.DHRITI' | 'yoga.SHOOLA' | 'yoga.GANDA' | 'yoga.VRIDDHI' | 'yoga.DHRUVA' | 'yoga.VYAGHATA' | 'yoga.HARSHANA' | 'yoga.VAJRA' | 'yoga.SIDDHI' | 'yoga.VYATIPATA' | 'yoga.VARIYANA' | 'yoga.PARIGHA' | 'yoga.SHIVA' | 'yoga.SIDDHA' | 'yoga.SADHYA' | 'yoga.SHUBHA' | 'yoga.SHUKLA' | 'yoga.BRAHMA' | 'yoga.INDRA' | 'yoga.VAIDHRITI';
 export type YoniKey = 'yoni.HORSE' | 'yoni.ELEPHANT' | 'yoni.GOAT' | 'yoni.SERPENT' | 'yoni.DOG' | 'yoni.CAT' | 'yoni.RAT' | 'yoni.COW' | 'yoni.BUFFALO' | 'yoni.TIGER' | 'yoni.DEER' | 'yoni.MONKEY' | 'yoni.MONGOOSE' | 'yoni.LION';
-export type EntityKey = AgniVasaKey | AshubhaYogaKey | AvasthaBaladiKey | AvasthaCheshtaKey | AvasthaDeeptadiKey | AvasthaJagradadiKey | AvasthaLajjitadiKey | AvasthaSayanadiKey | AyanaKey | AyanamshaKey | BhadraVasaKey | BlackoutKindKey | CharaKarakaKey | ChoghadiyaKey | DashaSystemKey | DayMarkerKey | DeityKey | DignityKey | DirectionKey | EraKey | FastKindKey | FestivalKey | FestivalKindKey | GanaKey | GowriKey | GrahaKey | HouseSystemKey | KaalaKey | KaranaKey | LunarEclipseKindKey | MasaKey | MuhurtaYogaKey | MundaneKindKey | NadiKey | NakshatraKey | NatureKey | PakshaKey | PanchakaKey | PayaKey | PointKey | RashiKey | RelationshipKey | RituKey | RulerDayRuleKey | RulerTextKey | SamvatsaraKey | ShivaVasaKey | SolarEclipseKindKey | StateKey | TatwaKey | TithiKey | TraditionKey | TridoshaKey | VaiseshikamsaKey | VaraKey | VargaKey | VarnaKey | VastuYoniKey | VyayaKindKey | YearOfficeKey | YogaKey | YoniKey;
+export type EntityKey = AgniVasaKey | AshubhaYogaKey | AuspiciousnessKey | AvasthaBaladiKey | AvasthaCheshtaKey | AvasthaDeeptadiKey | AvasthaJagradadiKey | AvasthaLajjitadiKey | AvasthaSayanadiKey | AyanaKey | AyanamshaKey | AyanamshaCategoryKey | BalaSchemeKey | BhadraVasaKey | BlackoutKindKey | BodyClassKey | CalendarKey | CharaKarakaKey | ChartKindKey | ChartLayoutKey | ChoghadiyaKey | DashaFamilyKey | DashaSystemKey | DayMarkerKey | DegeneracyKey | DeityKey | DignityKey | DirectionKey | EraKey | FastKindKey | FestivalKey | FestivalKindKey | GanaKey | GenderKey | GowriKey | GrahaKey | GunaKey | HouseSystemKey | KaalaKey | KaranaKey | KootaKey | LunarEclipseKindKey | MasaKey | ModalityKey | MuhurtaNatureKey | MuhurtaYogaKey | MundaneKindKey | NadiKey | NakshatraKey | NatureKey | PakshaKey | PanchakaKey | ParityKey | PayaKey | PointKey | PointFamilyKey | RashiKey | RelationshipKey | RisingKey | RituKey | RulerDayRuleKey | RulerTextKey | SamvatsaraKey | SexKey | ShivaVasaKey | SolarEclipseKindKey | StarKey | StarClassKey | StateKey | TatwaKey | TibetanAnimalKey | TibetanElementKey | TithiKey | TithiClassKey | TraditionKey | TridoshaKey | VaiseshikamsaKey | VaraKey | VargaKey | VarnaKey | VastuYoniKey | VyayaKindKey | YearOfficeKey | YogaKey | YoniKey;
 export type MessageKey = 'sdk.amount.words' | 'sdk.amount.only' | 'sdk.amount.INR.major' | 'sdk.amount.INR.minor' | 'sdk.amount.NPR.major' | 'sdk.amount.NPR.minor' | 'sdk.aspect.cast' | 'sdk.aspect.mutual' | 'sdk.calendar.weekdayName' | 'sdk.calendar.weekdayShort' | 'sdk.calendar.lunarMonth' | 'sdk.calendar.nepalSambatMonth' | 'sdk.calendar.nepalSambatHalf' | 'sdk.calendar.nepalSambatDate' | 'sdk.calendar.parana' | 'sdk.calendar.GREGORIAN.monthName' | 'sdk.calendar.GREGORIAN.monthShort' | 'sdk.calendar.GREGORIAN.date.numeric' | 'sdk.calendar.GREGORIAN.date.long' | 'sdk.calendar.GREGORIAN.date.full' | 'sdk.calendar.JULIAN.monthName' | 'sdk.calendar.JULIAN.monthShort' | 'sdk.calendar.JULIAN.date.numeric' | 'sdk.calendar.JULIAN.date.long' | 'sdk.calendar.JULIAN.date.full' | 'sdk.calendar.MIXED.monthName' | 'sdk.calendar.MIXED.monthShort' | 'sdk.calendar.MIXED.date.numeric' | 'sdk.calendar.MIXED.date.long' | 'sdk.calendar.MIXED.date.full' | 'sdk.calendar.ISO_WEEK.date.numeric' | 'sdk.calendar.ISO_WEEK.date.long' | 'sdk.calendar.ISO_WEEK.date.full' | 'sdk.calendar.BIKRAM_SAMBAT.monthName' | 'sdk.calendar.BIKRAM_SAMBAT.monthShort' | 'sdk.calendar.BIKRAM_SAMBAT.date.numeric' | 'sdk.calendar.BIKRAM_SAMBAT.date.long' | 'sdk.calendar.BIKRAM_SAMBAT.date.full' | 'sdk.calendar.INDIAN_NATIONAL.monthName' | 'sdk.calendar.INDIAN_NATIONAL.monthShort' | 'sdk.calendar.INDIAN_NATIONAL.date.numeric' | 'sdk.calendar.INDIAN_NATIONAL.date.long' | 'sdk.calendar.INDIAN_NATIONAL.date.full' | 'sdk.calendar.HIJRI_TABULAR.monthName' | 'sdk.calendar.HIJRI_TABULAR.monthShort' | 'sdk.calendar.HIJRI_TABULAR.date.numeric' | 'sdk.calendar.HIJRI_TABULAR.date.long' | 'sdk.calendar.HIJRI_TABULAR.date.full' | 'sdk.calendar.TIBETAN_PHUGPA.monthName' | 'sdk.calendar.TIBETAN_PHUGPA.monthShort' | 'sdk.calendar.TIBETAN_PHUGPA.date.numeric' | 'sdk.calendar.TIBETAN_PHUGPA.date.long' | 'sdk.calendar.TIBETAN_PHUGPA.date.full' | 'sdk.calendar.BANGLADESHI.monthName' | 'sdk.calendar.BANGLADESHI.monthShort' | 'sdk.calendar.BANGLADESHI.date.numeric' | 'sdk.calendar.BANGLADESHI.date.long' | 'sdk.calendar.BANGLADESHI.date.full' | 'sdk.calendar.ASSAM_SOLAR.monthName' | 'sdk.calendar.ASSAM_SOLAR.monthShort' | 'sdk.calendar.ASSAM_SOLAR.date.numeric' | 'sdk.calendar.ASSAM_SOLAR.date.long' | 'sdk.calendar.ASSAM_SOLAR.date.full' | 'sdk.calendar.time.numeric' | 'sdk.calendar.time.long' | 'sdk.calendar.time.numeric12' | 'sdk.calendar.time.long12' | 'sdk.calendar.datetime.join' | 'sdk.calendar.datetime.inZone' | 'sdk.calendar.ghati.numeric' | 'sdk.calendar.ghati.long' | 'sdk.calendar.duration.day' | 'sdk.calendar.duration.hour' | 'sdk.calendar.duration.minute' | 'sdk.calendar.duration.second' | 'sdk.calendar.duration.daysHours' | 'sdk.calendar.duration.hoursMinutes' | 'sdk.calendar.duration.hoursMinutesSeconds' | 'sdk.calendar.dayPeriod.am' | 'sdk.calendar.dayPeriod.pm' | 'sdk.calendar.dayPeriod.morning' | 'sdk.calendar.dayPeriod.afternoon' | 'sdk.calendar.dayPeriod.evening' | 'sdk.calendar.dayPeriod.night' | 'sdk.condition.dignity' | 'sdk.condition.navamsha' | 'sdk.condition.vargottama' | 'sdk.condition.retrograde' | 'sdk.condition.combust' | 'sdk.condition.friendship' | 'sdk.condition.age' | 'sdk.condition.wakefulness' | 'sdk.condition.brightness' | 'sdk.condition.lajjitadi' | 'sdk.condition.undecided' | 'sdk.day.vara' | 'sdk.day.tithi' | 'sdk.day.nakshatra' | 'sdk.day.yoga' | 'sdk.day.karana' | 'sdk.day.sun' | 'sdk.day.sunUp' | 'sdk.day.sunDown' | 'sdk.day.sunSign' | 'sdk.day.sankranti' | 'sdk.day.moonSign' | 'sdk.day.moonrise' | 'sdk.day.moonset' | 'sdk.day.month' | 'sdk.day.ritu' | 'sdk.day.ayana' | 'sdk.day.kaala' | 'sdk.day.abhijit' | 'sdk.karaka.ofSeven' | 'sdk.karaka.ofEight' | 'sdk.naming.pada' | 'sdk.naming.by' | 'sdk.naming.syllables' | 'sdk.naming.counted' | 'sdk.naming.clause' | 'sdk.naming.holds' | 'sdk.naming.source' | 'sdk.phala.grahaInBhava' | 'sdk.phala.lagnaRashi' | 'sdk.phala.tithi' | 'sdk.phala.vara' | 'sdk.phala.nakshatra' | 'sdk.phala.yoga' | 'sdk.phala.namakarana' | 'sdk.phala.gana' | 'sdk.phala.nadi' | 'sdk.phala.yoni' | 'sdk.phala.varna' | 'sdk.phala.tatwa' | 'sdk.phala.dashaLord' | 'sdk.phala.dashaActivation' | 'sdk.phala.avasthaBaladi' | 'sdk.phala.avasthaJagradadi' | 'sdk.phala.avasthaDeeptadi' | 'sdk.phala.avasthaLajjitadi' | 'sdk.phala.dignity' | 'sdk.phala.state' | 'sdk.phala.sadeSati' | 'sdk.rashifal.saturn' | 'sdk.rashifal.ingress' | 'sdk.rashifal.station' | 'sdk.reading.effect' | 'sdk.reading.says' | 'sdk.reading.timing' | 'sdk.reading.lifeSpan' | 'sdk.reading.lifeClass' | 'sdk.reading.participants' | 'sdk.reading.status' | 'sdk.reading.severity' | 'sdk.reason.appName' | 'sdk.reason.welcome' | 'sdk.reason.grahaInBhava' | 'sdk.reason.bhavaInRashi' | 'sdk.reason.chalitShift' | 'sdk.reason.grahaInRashi' | 'sdk.reason.pointInRashi' | 'sdk.reason.grahaAt' | 'sdk.reason.pointAt' | 'sdk.reason.exactLongitude' | 'sdk.reason.conjunction' | 'sdk.reason.rashiNature' | 'sdk.reason.greeting' | 'sdk.reason.lordship' | 'sdk.reason.occupants' | 'sdk.reason.strength.score' | 'sdk.reason.strength.meets' | 'sdk.reason.strength.rank' | 'sdk.reason.dasha.phase' | 'sdk.reason.dasha.place' | 'sdk.reason.dasha.points' | 'sdk.reason.dasha.favour' | 'sdk.reason.panchanga.tithi' | 'sdk.reason.panchanga.vara' | 'sdk.reason.panchanga.nakshatra' | 'sdk.reason.panchanga.pada' | 'sdk.reason.panchanga.yoga' | 'sdk.reason.panchanga.karana' | 'sdk.reason.panchanga.byDay' | 'sdk.reason.bhavaBala' | 'sdk.reason.vimshopaka' | 'sdk.reason.ashtakavarga' | 'sdk.reason.sarvashtakavarga' | 'sdk.reason.gochar.from' | 'sdk.reason.gochar.transit' | 'sdk.reason.gochar.vedha' | 'sdk.reason.gochar.fruition' | 'sdk.reason.gochar.ashtakavarga' | 'sdk.rite.ashauchKind' | 'sdk.rite.ashauchLength' | 'sdk.rite.ashauchDays' | 'sdk.rite.relation' | 'sdk.rite.clause' | 'sdk.rite.rite' | 'sdk.rite.riteVerdict' | 'sdk.rite.riteBeginning' | 'sdk.rite.kinKeeps' | 'sdk.rite.firstYearRite' | 'sdk.rite.riteForm' | 'sdk.rite.sapindanaAt' | 'sdk.rite.anniversaryKind';
 
 export interface DateValue { readonly calendar: string; readonly year: number; readonly month: number; readonly day: number; }
@@ -285,6 +308,12 @@ export interface Messages {
         readonly visha: () => EntityForms;
         readonly yamaghanta: () => EntityForms;
       };
+      readonly auspiciousness: {
+        readonly auspicious: () => EntityForms;
+        readonly highlyInauspicious: () => EntityForms;
+        readonly inauspicious: () => EntityForms;
+        readonly mixed: () => EntityForms;
+      };
       readonly avasthaBaladi: {
         readonly bala: () => EntityForms;
         readonly kumara: () => EntityForms;
@@ -388,6 +417,19 @@ export interface Messages {
         readonly valensMoon: () => EntityForms;
         readonly yukteshwar: () => EntityForms;
       };
+      readonly ayanamshaCategory: {
+        readonly epoch: () => EntityForms;
+        readonly galactic: () => EntityForms;
+        readonly historical: () => EntityForms;
+        readonly starAnchored: () => EntityForms;
+        readonly vedicClassical: () => EntityForms;
+        readonly vedicStandard: () => EntityForms;
+        readonly westernSidereal: () => EntityForms;
+      };
+      readonly balaScheme: {
+        readonly parashara: () => EntityForms;
+        readonly parasharaExtended: () => EntityForms;
+      };
       readonly bhadraVasa: {
         readonly martya: () => EntityForms;
         readonly patala: () => EntityForms;
@@ -396,13 +438,40 @@ export interface Messages {
       readonly blackoutKind: {
         readonly adhikaMasa: () => EntityForms;
         readonly chaturmas: () => EntityForms;
+        readonly eclipseStar: () => EntityForms;
+        readonly eclipseVedha: () => EntityForms;
         readonly guruAsta: () => EntityForms;
         readonly holashtaka: () => EntityForms;
+        readonly kharmas: () => EntityForms;
         readonly kshayaMasa: () => EntityForms;
         readonly pitruPaksha: () => EntityForms;
         readonly samsarpa: () => EntityForms;
         readonly sankranti: () => EntityForms;
         readonly shukraAsta: () => EntityForms;
+      };
+      readonly bodyClass: {
+        readonly luminary: () => EntityForms;
+        readonly node: () => EntityForms;
+        readonly outer: () => EntityForms;
+        readonly planet: () => EntityForms;
+      };
+      readonly calendar: {
+        readonly assamSolar: () => EntityForms;
+        readonly bangladeshi: () => EntityForms;
+        readonly bengalSolar: () => EntityForms;
+        readonly bikramSambat: () => EntityForms;
+        readonly gregorian: () => EntityForms;
+        readonly hijriTabular: () => EntityForms;
+        readonly indianLunisolar: () => EntityForms;
+        readonly indianNational: () => EntityForms;
+        readonly isoWeek: () => EntityForms;
+        readonly julian: () => EntityForms;
+        readonly malayalamSolar: () => EntityForms;
+        readonly mixed: () => EntityForms;
+        readonly odiaSolar: () => EntityForms;
+        readonly tamilSolar: () => EntityForms;
+        readonly tamilVakya: () => EntityForms;
+        readonly tibetanPhugpa: () => EntityForms;
       };
       readonly charaKaraka: {
         readonly amatyakaraka: () => EntityForms;
@@ -414,6 +483,26 @@ export interface Messages {
         readonly pitrikaraka: () => EntityForms;
         readonly putrakaraka: () => EntityForms;
       };
+      readonly chartKind: {
+        readonly composite: () => EntityForms;
+        readonly event: () => EntityForms;
+        readonly mundane: () => EntityForms;
+        readonly natal: () => EntityForms;
+        readonly prashna: () => EntityForms;
+        readonly relocated: () => EntityForms;
+        readonly return: () => EntityForms;
+        readonly transit: () => EntityForms;
+      };
+      readonly chartLayout: {
+        readonly eastIndian: () => EntityForms;
+        readonly nepaliCircle: () => EntityForms;
+        readonly nepaliLotus: () => EntityForms;
+        readonly northIndian: () => EntityForms;
+        readonly northIndianPetals: () => EntityForms;
+        readonly southIndian: () => EntityForms;
+        readonly sudarshanChakra: () => EntityForms;
+        readonly westernWheel: () => EntityForms;
+      };
       readonly choghadiya: {
         readonly amrit: () => EntityForms;
         readonly char: () => EntityForms;
@@ -423,41 +512,74 @@ export interface Messages {
         readonly shubha: () => EntityForms;
         readonly udveg: () => EntityForms;
       };
+      readonly dashaFamily: {
+        readonly composition: () => EntityForms;
+        readonly decennials: () => EntityForms;
+        readonly firdaria: () => EntityForms;
+        readonly graha: () => EntityForms;
+        readonly kalachakra: () => EntityForms;
+        readonly own: () => EntityForms;
+        readonly profection: () => EntityForms;
+        readonly rashi: () => EntityForms;
+        readonly releasing: () => EntityForms;
+        readonly scale: () => EntityForms;
+        readonly udu: () => EntityForms;
+      };
       readonly dashaSystem: {
+        readonly aayu: () => EntityForms;
         readonly ashtakavarga: () => EntityForms;
         readonly ashtottari: () => EntityForms;
         readonly chara: () => EntityForms;
         readonly chaturashitiSama: () => EntityForms;
+        readonly decennials: () => EntityForms;
         readonly drig: () => EntityForms;
         readonly dwadashottari: () => EntityForms;
         readonly dwisaptatiSama: () => EntityForms;
+        readonly firdaria: () => EntityForms;
         readonly kalachakra: () => EntityForms;
         readonly karaka: () => EntityForms;
+        readonly karanaChaturashiti: () => EntityForms;
         readonly mandooka: () => EntityForms;
+        readonly mudda: () => EntityForms;
         readonly naisargika: () => EntityForms;
         readonly narayana: () => EntityForms;
         readonly niryanaShoola: () => EntityForms;
         readonly padanadhamsa: () => EntityForms;
         readonly panchaswara: () => EntityForms;
         readonly panchottari: () => EntityForms;
+        readonly patyayini: () => EntityForms;
+        readonly profection: () => EntityForms;
+        readonly releasingDaimon: () => EntityForms;
+        readonly releasingFortune: () => EntityForms;
         readonly shashtihayani: () => EntityForms;
         readonly shatabdika: () => EntityForms;
+        readonly shattrimshaSama: () => EntityForms;
         readonly shodashottari: () => EntityForms;
         readonly shoola: () => EntityForms;
         readonly sthira: () => EntityForms;
         readonly sudarshanaChakra: () => EntityForms;
+        readonly sudasa: () => EntityForms;
         readonly tara: () => EntityForms;
+        readonly tithiAshtottari: () => EntityForms;
+        readonly tithiYogini: () => EntityForms;
         readonly tribhagi: () => EntityForms;
         readonly trikona: () => EntityForms;
         readonly varnada: () => EntityForms;
+        readonly varshaNarayana: () => EntityForms;
+        readonly varshaYogini: () => EntityForms;
         readonly vimshottari: () => EntityForms;
         readonly yogardha: () => EntityForms;
+        readonly yogaVimshottari: () => EntityForms;
         readonly yogini: () => EntityForms;
       };
       readonly dayMarker: {
         readonly gandanta: () => EntityForms;
         readonly gandaMula: () => EntityForms;
         readonly vinchudo: () => EntityForms;
+      };
+      readonly degeneracy: {
+        readonly none: () => EntityForms;
+        readonly polarUndefined: () => EntityForms;
       };
       readonly deity: {
         readonly aditi: () => EntityForms;
@@ -470,8 +592,12 @@ export interface Messages {
         readonly bhaga: () => EntityForms;
         readonly brahma: () => EntityForms;
         readonly brihaspati: () => EntityForms;
+        readonly chandra: () => EntityForms;
+        readonly durga: () => EntityForms;
         readonly indra: () => EntityForms;
         readonly indragni: () => EntityForms;
+        readonly kamadeva: () => EntityForms;
+        readonly kartikeya: () => EntityForms;
         readonly mitra: () => EntityForms;
         readonly naga: () => EntityForms;
         readonly nirriti: () => EntityForms;
@@ -479,10 +605,16 @@ export interface Messages {
         readonly pushan: () => EntityForms;
         readonly rudra: () => EntityForms;
         readonly savitr: () => EntityForms;
+        readonly shani: () => EntityForms;
+        readonly shiva: () => EntityForms;
+        readonly shukra: () => EntityForms;
         readonly soma: () => EntityForms;
+        readonly surya: () => EntityForms;
+        readonly tvashta: () => EntityForms;
         readonly varuna: () => EntityForms;
         readonly vasu: () => EntityForms;
         readonly vayu: () => EntityForms;
+        readonly vidhata: () => EntityForms;
         readonly vishnu: () => EntityForms;
         readonly vishvadeva: () => EntityForms;
         readonly vishvakarma: () => EntityForms;
@@ -517,6 +649,7 @@ export interface Messages {
         readonly bhaskarabda: () => EntityForms;
         readonly buddha: () => EntityForms;
         readonly commonEra: () => EntityForms;
+        readonly hijri: () => EntityForms;
         readonly kali: () => EntityForms;
         readonly kollam: () => EntityForms;
         readonly nepalSambat: () => EntityForms;
@@ -555,7 +688,10 @@ export interface Messages {
         readonly ashunyaShayana: () => EntityForms;
         readonly ashvinaAyambilOli: () => EntityForms;
         readonly ashvinaAyambilOliEnd: () => EntityForms;
+        readonly avaniAvittom: () => EntityForms;
         readonly avidhavaNavami: () => EntityForms;
+        readonly ayyankaliJayanthi: () => EntityForms;
+        readonly ayyaVaikundaSwamiJayanthi: () => EntityForms;
         readonly bahidyoBoyegu: () => EntityForms;
         readonly baisakhSnanEnds: () => EntityForms;
         readonly bakhumada: () => EntityForms;
@@ -644,6 +780,7 @@ export interface Messages {
         readonly dwadashiShraddha: () => EntityForms;
         readonly dwitiyaShraddha: () => EntityForms;
         readonly earthquakeSafetyDay: () => EntityForms;
+        readonly easter: () => EntityForms;
         readonly easterSaturday: () => EntityForms;
         readonly ekadashiGaudiya: () => EntityForms;
         readonly ekadashiShraddha: () => EntityForms;
@@ -653,6 +790,8 @@ export interface Messages {
         readonly electionDay: () => EntityForms;
         readonly faguPurnima: () => EntityForms;
         readonly falgunandaJayanti: () => EntityForms;
+        readonly firstOnam: () => EntityForms;
+        readonly fourthOnam: () => EntityForms;
         readonly fulkharkaGangajamunaMela: () => EntityForms;
         readonly gaiduPuja: () => EntityForms;
         readonly gaiJatra: () => EntityForms;
@@ -738,6 +877,7 @@ export interface Messages {
         readonly kanyaSankranti: () => EntityForms;
         readonly karakaChaturthi: () => EntityForms;
         readonly karkataSankranti: () => EntityForms;
+        readonly karkidakaVavu: () => EntityForms;
         readonly kartikSnanBegins: () => EntityForms;
         readonly kartikSnanEnds: () => EntityForms;
         readonly kashiBadaGaneshUtsav: () => EntityForms;
@@ -782,12 +922,14 @@ export interface Messages {
         readonly makaraSankranti: () => EntityForms;
         readonly makarSnan: () => EntityForms;
         readonly mangalaChaturthi: () => EntityForms;
+        readonly mannamJayanthi: () => EntityForms;
         readonly martyrsDay: () => EntityForms;
         readonly mastaPurnima: () => EntityForms;
         readonly mataTirthaAunsi: () => EntityForms;
         readonly matsyanarayanaMela: () => EntityForms;
         readonly matsyaJayanti: () => EntityForms;
         readonly maunaPanchami: () => EntityForms;
+        readonly maundyThursday: () => EntityForms;
         readonly meshaSankranti: () => EntityForms;
         readonly mhaPuja: () => EntityForms;
         readonly minaSankranti: () => EntityForms;
@@ -889,6 +1031,8 @@ export interface Messages {
         readonly somavatiAmavasya: () => EntityForms;
         readonly sonamLhosar: () => EntityForms;
         readonly sorhaShraddhaArambha: () => EntityForms;
+        readonly sreeNarayanaGuruJayanthi: () => EntityForms;
+        readonly sreeNarayanaGuruSamadhi: () => EntityForms;
         readonly suryaPuja: () => EntityForms;
         readonly suryaShashthi: () => EntityForms;
         readonly swasthaniVratBegins: () => EntityForms;
@@ -899,6 +1043,8 @@ export interface Messages {
         readonly thakurPanchananBarmaJayanti: () => EntityForms;
         readonly thankotMahalaxmiJatra: () => EntityForms;
         readonly thimiBalkumariJatra: () => EntityForms;
+        readonly thirdOnam: () => EntityForms;
+        readonly thiruvonam: () => EntityForms;
         readonly tilakundaChaturthi: () => EntityForms;
         readonly tokhaChandeshwariJatra: () => EntityForms;
         readonly tokhaSapanTirthaSnan: () => EntityForms;
@@ -927,6 +1073,7 @@ export interface Messages {
         readonly vijayaDashami: () => EntityForms;
         readonly vijayaEkadashi: () => EntityForms;
         readonly viraNirvanaNewYear: () => EntityForms;
+        readonly vishu: () => EntityForms;
         readonly vishwakarmaPuja: () => EntityForms;
         readonly vivahPanchami: () => EntityForms;
         readonly vivekanandaJayanti: () => EntityForms;
@@ -961,6 +1108,11 @@ export interface Messages {
         readonly manushya: () => EntityForms;
         readonly rakshasa: () => EntityForms;
       };
+      readonly gender: {
+        readonly female: () => EntityForms;
+        readonly male: () => EntityForms;
+        readonly neutral: () => EntityForms;
+      };
       readonly gowri: {
         readonly amirtham: () => EntityForms;
         readonly dhanam: () => EntityForms;
@@ -977,10 +1129,18 @@ export interface Messages {
         readonly mars: () => EntityForms;
         readonly mercury: () => EntityForms;
         readonly moon: () => EntityForms;
+        readonly neptune: () => EntityForms;
+        readonly pluto: () => EntityForms;
         readonly rahu: () => EntityForms;
         readonly saturn: () => EntityForms;
         readonly sun: () => EntityForms;
+        readonly uranus: () => EntityForms;
         readonly venus: () => EntityForms;
+      };
+      readonly guna: {
+        readonly rajas: () => EntityForms;
+        readonly sattva: () => EntityForms;
+        readonly tamas: () => EntityForms;
       };
       readonly houseSystem: {
         readonly alcabitius: () => EntityForms;
@@ -1024,8 +1184,23 @@ export interface Messages {
         readonly vanija: () => EntityForms;
         readonly vishti: () => EntityForms;
       };
+      readonly koota: {
+        readonly bhakoot: () => EntityForms;
+        readonly gana: () => EntityForms;
+        readonly grahaMaitri: () => EntityForms;
+        readonly mahendra: () => EntityForms;
+        readonly nadi: () => EntityForms;
+        readonly rajju: () => EntityForms;
+        readonly streeDeergha: () => EntityForms;
+        readonly tara: () => EntityForms;
+        readonly varna: () => EntityForms;
+        readonly vashya: () => EntityForms;
+        readonly vedha: () => EntityForms;
+        readonly yoni: () => EntityForms;
+      };
       readonly lunarEclipseKind: {
         readonly partial: () => EntityForms;
+        readonly penumbral: () => EntityForms;
         readonly total: () => EntityForms;
       };
       readonly masa: {
@@ -1041,6 +1216,20 @@ export interface Messages {
         readonly phalguna: () => EntityForms;
         readonly shravana: () => EntityForms;
         readonly vaishakha: () => EntityForms;
+      };
+      readonly modality: {
+        readonly chara: () => EntityForms;
+        readonly dwiswabhava: () => EntityForms;
+        readonly sthira: () => EntityForms;
+      };
+      readonly muhurtaNature: {
+        readonly chara: () => EntityForms;
+        readonly dhruva: () => EntityForms;
+        readonly kshipra: () => EntityForms;
+        readonly mishra: () => EntityForms;
+        readonly mridu: () => EntityForms;
+        readonly tikshna: () => EntityForms;
+        readonly ugra: () => EntityForms;
       };
       readonly muhurtaYoga: {
         readonly amritSiddhi: () => EntityForms;
@@ -1103,6 +1292,7 @@ export interface Messages {
       readonly nature: {
         readonly benefic: () => EntityForms;
         readonly malefic: () => EntityForms;
+        readonly neutral: () => EntityForms;
       };
       readonly paksha: {
         readonly krishna: () => EntityForms;
@@ -1115,6 +1305,10 @@ export interface Messages {
         readonly raja: () => EntityForms;
         readonly roga: () => EntityForms;
       };
+      readonly parity: {
+        readonly even: () => EntityForms;
+        readonly odd: () => EntityForms;
+      };
       readonly paya: {
         readonly loha: () => EntityForms;
         readonly rajata: () => EntityForms;
@@ -1123,24 +1317,64 @@ export interface Messages {
       };
       readonly point: {
         readonly a1: () => EntityForms;
+        readonly a10: () => EntityForms;
+        readonly a11: () => EntityForms;
         readonly a12: () => EntityForms;
+        readonly a2: () => EntityForms;
+        readonly a3: () => EntityForms;
+        readonly a4: () => EntityForms;
+        readonly a5: () => EntityForms;
+        readonly a6: () => EntityForms;
+        readonly a7: () => EntityForms;
+        readonly a8: () => EntityForms;
+        readonly a9: () => EntityForms;
         readonly ardhaprahara: () => EntityForms;
+        readonly avayogi: () => EntityForms;
+        readonly beejaSphuta: () => EntityForms;
         readonly bhavaLagna: () => EntityForms;
+        readonly bhriguBindu: () => EntityForms;
+        readonly chatussphuta: () => EntityForms;
+        readonly dehaSphuta: () => EntityForms;
+        readonly descendant: () => EntityForms;
         readonly dhuma: () => EntityForms;
         readonly ghatiLagna: () => EntityForms;
         readonly gulika: () => EntityForms;
         readonly horaLagna: () => EntityForms;
+        readonly ic: () => EntityForms;
         readonly indrachapa: () => EntityForms;
+        readonly induLagna: () => EntityForms;
         readonly kala: () => EntityForms;
         readonly karakamsha: () => EntityForms;
+        readonly kshetraSphuta: () => EntityForms;
         readonly lagna: () => EntityForms;
         readonly mandi: () => EntityForms;
+        readonly mc: () => EntityForms;
         readonly mrityu: () => EntityForms;
+        readonly mrityuSphuta: () => EntityForms;
+        readonly panchasphuta: () => EntityForms;
         readonly parivesha: () => EntityForms;
         readonly pranapadaLagna: () => EntityForms;
+        readonly pranaSphuta: () => EntityForms;
+        readonly sahayogi: () => EntityForms;
+        readonly sreeLagna: () => EntityForms;
+        readonly swamsha: () => EntityForms;
+        readonly trisphuta: () => EntityForms;
         readonly upaketu: () => EntityForms;
         readonly varnadaLagna: () => EntityForms;
+        readonly vighatiLagna: () => EntityForms;
         readonly vyatipata: () => EntityForms;
+        readonly yamaghantaka: () => EntityForms;
+        readonly yogi: () => EntityForms;
+      };
+      readonly pointFamily: {
+        readonly angle: () => EntityForms;
+        readonly arudha: () => EntityForms;
+        readonly jaimini: () => EntityForms;
+        readonly midpoint: () => EntityForms;
+        readonly specialLagna: () => EntityForms;
+        readonly sphuta: () => EntityForms;
+        readonly upagrahaDay: () => EntityForms;
+        readonly upagrahaSolar: () => EntityForms;
       };
       readonly rashi: {
         readonly aquarius: () => EntityForms;
@@ -1163,6 +1397,11 @@ export interface Messages {
         readonly greatFriend: () => EntityForms;
         readonly neutral: () => EntityForms;
       };
+      readonly rising: {
+        readonly prishtodaya: () => EntityForms;
+        readonly sirshodaya: () => EntityForms;
+        readonly ubhayodaya: () => EntityForms;
+      };
       readonly ritu: {
         readonly grishma: () => EntityForms;
         readonly hemanta: () => EntityForms;
@@ -1172,6 +1411,7 @@ export interface Messages {
         readonly vasanta: () => EntityForms;
       };
       readonly rulerDayRule: {
+        readonly daylight: () => EntityForms;
         readonly garga: () => EntityForms;
         readonly newMoon: () => EntityForms;
         readonly sunrise: () => EntityForms;
@@ -1180,6 +1420,7 @@ export interface Messages {
       readonly rulerText: {
         readonly jyotirnibandha: () => EntityForms;
         readonly naradaSamhita: () => EntityForms;
+        readonly navanayaka: () => EntityForms;
       };
       readonly samvatsara: {
         readonly akshaya: () => EntityForms;
@@ -1243,6 +1484,10 @@ export interface Messages {
         readonly vyaya: () => EntityForms;
         readonly yuva: () => EntityForms;
       };
+      readonly sex: {
+        readonly female: () => EntityForms;
+        readonly male: () => EntityForms;
+      };
       readonly shivaVasa: {
         readonly bhojana: () => EntityForms;
         readonly gauri: () => EntityForms;
@@ -1253,8 +1498,159 @@ export interface Messages {
         readonly vrishabha: () => EntityForms;
       };
       readonly solarEclipseKind: {
+        readonly annular: () => EntityForms;
+        readonly hybrid: () => EntityForms;
         readonly partial: () => EntityForms;
         readonly total: () => EntityForms;
+      };
+      readonly star: {
+        readonly achernar: () => EntityForms;
+        readonly acrux: () => EntityForms;
+        readonly adhara: () => EntityForms;
+        readonly ain: () => EntityForms;
+        readonly albaldah: () => EntityForms;
+        readonly albireo: () => EntityForms;
+        readonly alcyone: () => EntityForms;
+        readonly aldebaran: () => EntityForms;
+        readonly alderamin: () => EntityForms;
+        readonly algedi: () => EntityForms;
+        readonly algenib: () => EntityForms;
+        readonly algieba: () => EntityForms;
+        readonly algol: () => EntityForms;
+        readonly algorab: () => EntityForms;
+        readonly alhena: () => EntityForms;
+        readonly alioth: () => EntityForms;
+        readonly aljanah: () => EntityForms;
+        readonly alkaid: () => EntityForms;
+        readonly almach: () => EntityForms;
+        readonly alnair: () => EntityForms;
+        readonly alnasl: () => EntityForms;
+        readonly alnilam: () => EntityForms;
+        readonly alnitak: () => EntityForms;
+        readonly alphard: () => EntityForms;
+        readonly alphecca: () => EntityForms;
+        readonly alpheratz: () => EntityForms;
+        readonly alsephina: () => EntityForms;
+        readonly alshain: () => EntityForms;
+        readonly altair: () => EntityForms;
+        readonly aludra: () => EntityForms;
+        readonly ankaa: () => EntityForms;
+        readonly antares: () => EntityForms;
+        readonly arcturus: () => EntityForms;
+        readonly ascella: () => EntityForms;
+        readonly asellusAustralis: () => EntityForms;
+        readonly ashlesha: () => EntityForms;
+        readonly aspidiske: () => EntityForms;
+        readonly atria: () => EntityForms;
+        readonly avior: () => EntityForms;
+        readonly bellatrix: () => EntityForms;
+        readonly betelgeuse: () => EntityForms;
+        readonly bharani: () => EntityForms;
+        readonly canopus: () => EntityForms;
+        readonly capella: () => EntityForms;
+        readonly caph: () => EntityForms;
+        readonly castor: () => EntityForms;
+        readonly chamukuy: () => EntityForms;
+        readonly deneb: () => EntityForms;
+        readonly denebola: () => EntityForms;
+        readonly diphda: () => EntityForms;
+        readonly dschubba: () => EntityForms;
+        readonly dubhe: () => EntityForms;
+        readonly elnath: () => EntityForms;
+        readonly enif: () => EntityForms;
+        readonly errai: () => EntityForms;
+        readonly fang: () => EntityForms;
+        readonly fomalhaut: () => EntityForms;
+        readonly gacrux: () => EntityForms;
+        readonly galacticPole: () => EntityForms;
+        readonly galacticPoleIau1958: () => EntityForms;
+        readonly hadar: () => EntityForms;
+        readonly hamal: () => EntityForms;
+        readonly heze: () => EntityForms;
+        readonly hydor: () => EntityForms;
+        readonly izar: () => EntityForms;
+        readonly kausAustralis: () => EntityForms;
+        readonly kausBorealis: () => EntityForms;
+        readonly kausMedia: () => EntityForms;
+        readonly kitalpha: () => EntityForms;
+        readonly kornephoros: () => EntityForms;
+        readonly marfik: () => EntityForms;
+        readonly markab: () => EntityForms;
+        readonly meissa: () => EntityForms;
+        readonly menkalinan: () => EntityForms;
+        readonly menkar: () => EntityForms;
+        readonly menkent: () => EntityForms;
+        readonly merak: () => EntityForms;
+        readonly miaplacidus: () => EntityForms;
+        readonly mimosa: () => EntityForms;
+        readonly mintaka: () => EntityForms;
+        readonly mirach: () => EntityForms;
+        readonly mirfak: () => EntityForms;
+        readonly mizar: () => EntityForms;
+        readonly naos: () => EntityForms;
+        readonly nihal: () => EntityForms;
+        readonly nunki: () => EntityForms;
+        readonly peacock: () => EntityForms;
+        readonly phecda: () => EntityForms;
+        readonly polaris: () => EntityForms;
+        readonly pollux: () => EntityForms;
+        readonly procyon: () => EntityForms;
+        readonly rasalgethi: () => EntityForms;
+        readonly rasalhague: () => EntityForms;
+        readonly regulus: () => EntityForms;
+        readonly revati: () => EntityForms;
+        readonly rigel: () => EntityForms;
+        readonly rigilKentaurus: () => EntityForms;
+        readonly rotanev: () => EntityForms;
+        readonly sabik: () => EntityForms;
+        readonly sadalbari: () => EntityForms;
+        readonly sadalmelik: () => EntityForms;
+        readonly sadalsuud: () => EntityForms;
+        readonly sadr: () => EntityForms;
+        readonly saiph: () => EntityForms;
+        readonly sargas: () => EntityForms;
+        readonly scheat: () => EntityForms;
+        readonly schedar: () => EntityForms;
+        readonly seginus: () => EntityForms;
+        readonly sgrAStar: () => EntityForms;
+        readonly shaula: () => EntityForms;
+        readonly sheliak: () => EntityForms;
+        readonly sheratan: () => EntityForms;
+        readonly sirius: () => EntityForms;
+        readonly skat: () => EntityForms;
+        readonly spica: () => EntityForms;
+        readonly suhail: () => EntityForms;
+        readonly syrma: () => EntityForms;
+        readonly thuban: () => EntityForms;
+        readonly tureis: () => EntityForms;
+        readonly unukalhai: () => EntityForms;
+        readonly vega: () => EntityForms;
+        readonly vindemiatrix: () => EntityForms;
+        readonly wezen: () => EntityForms;
+        readonly yedPrior: () => EntityForms;
+        readonly zaniah: () => EntityForms;
+        readonly zosma: () => EntityForms;
+        readonly zubenelgenubi: () => EntityForms;
+        readonly zubeneschamali: () => EntityForms;
+      };
+      readonly starClass: {
+        readonly direction: () => EntityForms;
+        readonly radioSource: () => EntityForms;
+        readonly star: () => EntityForms;
+      };
+      readonly state: {
+        readonly combust: () => EntityForms;
+        readonly eclipsed: () => EntityForms;
+        readonly gandanta: () => EntityForms;
+        readonly maranaKarakaSthana: () => EntityForms;
+        readonly mrityuBhaga: () => EntityForms;
+        readonly planetaryWar: () => EntityForms;
+        readonly pushkaraBhaga: () => EntityForms;
+        readonly pushkaraNavamsa: () => EntityForms;
+        readonly retrograde: () => EntityForms;
+        readonly sandhi: () => EntityForms;
+        readonly stationary: () => EntityForms;
+        readonly vargottama: () => EntityForms;
       };
       readonly tatwa: {
         readonly agni: () => EntityForms;
@@ -1262,6 +1658,27 @@ export interface Messages {
         readonly jala: () => EntityForms;
         readonly prithvi: () => EntityForms;
         readonly vayu: () => EntityForms;
+      };
+      readonly tibetanAnimal: {
+        readonly bird: () => EntityForms;
+        readonly dog: () => EntityForms;
+        readonly dragon: () => EntityForms;
+        readonly horse: () => EntityForms;
+        readonly monkey: () => EntityForms;
+        readonly mouse: () => EntityForms;
+        readonly ox: () => EntityForms;
+        readonly pig: () => EntityForms;
+        readonly rabbit: () => EntityForms;
+        readonly sheep: () => EntityForms;
+        readonly snake: () => EntityForms;
+        readonly tiger: () => EntityForms;
+      };
+      readonly tibetanElement: {
+        readonly earth: () => EntityForms;
+        readonly fire: () => EntityForms;
+        readonly iron: () => EntityForms;
+        readonly water: () => EntityForms;
+        readonly wood: () => EntityForms;
       };
       readonly tithi: {
         readonly amavasya: () => EntityForms;
@@ -1295,6 +1712,13 @@ export interface Messages {
         readonly shuklaTrayodashi: () => EntityForms;
         readonly shuklaTritiya: () => EntityForms;
       };
+      readonly tithiClass: {
+        readonly bhadra: () => EntityForms;
+        readonly jaya: () => EntityForms;
+        readonly nanda: () => EntityForms;
+        readonly purna: () => EntityForms;
+        readonly rikta: () => EntityForms;
+      };
       readonly tradition: {
         readonly buddhist: () => EntityForms;
         readonly christian: () => EntityForms;
@@ -1312,6 +1736,7 @@ export interface Messages {
       readonly vaiseshikamsa: {
         readonly bhedaka: () => EntityForms;
         readonly brahmaloka: () => EntityForms;
+        readonly chakrasimhasana: () => EntityForms;
         readonly chamara: () => EntityForms;
         readonly chandanavana: () => EntityForms;
         readonly chatra: () => EntityForms;
@@ -1324,6 +1749,7 @@ export interface Messages {
         readonly kerala: () => EntityForms;
         readonly kimshuka: () => EntityForms;
         readonly kundala: () => EntityForms;
+        readonly kusuma: () => EntityForms;
         readonly mukuta: () => EntityForms;
         readonly nagapushpa: () => EntityForms;
         readonly paravata: () => EntityForms;
@@ -1331,6 +1757,7 @@ export interface Messages {
         readonly purnachandra: () => EntityForms;
         readonly shakravahana: () => EntityForms;
         readonly shridhama: () => EntityForms;
+        readonly shrivallabha: () => EntityForms;
         readonly simhasana: () => EntityForms;
         readonly suryakanta: () => EntityForms;
         readonly uchchaishrava: () => EntityForms;
@@ -1348,8 +1775,11 @@ export interface Messages {
         readonly somavara: () => EntityForms;
       };
       readonly varga: {
+        readonly d1: () => EntityForms;
         readonly d10: () => EntityForms;
+        readonly d11: () => EntityForms;
         readonly d12: () => EntityForms;
+        readonly d150: () => EntityForms;
         readonly d16: () => EntityForms;
         readonly d2: () => EntityForms;
         readonly d20: () => EntityForms;
@@ -1360,8 +1790,11 @@ export interface Messages {
         readonly d4: () => EntityForms;
         readonly d40: () => EntityForms;
         readonly d45: () => EntityForms;
+        readonly d5: () => EntityForms;
+        readonly d6: () => EntityForms;
         readonly d60: () => EntityForms;
         readonly d7: () => EntityForms;
+        readonly d8: () => EntityForms;
         readonly d9: () => EntityForms;
       };
       readonly varna: {
@@ -1387,6 +1820,7 @@ export interface Messages {
         readonly yaksha: () => EntityForms;
       };
       readonly yearOffice: {
+        readonly arghadhipati: () => EntityForms;
         readonly dhanyadhipati: () => EntityForms;
         readonly mantri: () => EntityForms;
         readonly meghadhipati: () => EntityForms;
@@ -1394,6 +1828,7 @@ export interface Messages {
         readonly raja: () => EntityForms;
         readonly rasadhipati: () => EntityForms;
         readonly sasyadhipati: () => EntityForms;
+        readonly senadhipati: () => EntityForms;
       };
       readonly yoga: {
         readonly atiganda: () => EntityForms;

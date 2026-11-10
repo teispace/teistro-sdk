@@ -40,6 +40,9 @@ public sealed interface FestivalRules extends RequestJson permits FestivalRules.
     /** {@code INDIA_WEST_BENGAL}. */
     FestivalRules INDIA_WEST_BENGAL = Key.INDIA_WEST_BENGAL;
 
+    /** {@code INDIA_KERALA}. */
+    FestivalRules INDIA_KERALA = Key.INDIA_KERALA;
+
     /**
      * The value, as a {@code FestivalRules}.
      *
@@ -113,7 +116,11 @@ public sealed interface FestivalRules extends RequestJson permits FestivalRules.
         /**
          * {@code INDIA_WEST_BENGAL}.
          */
-        INDIA_WEST_BENGAL("INDIA_WEST_BENGAL");
+        INDIA_WEST_BENGAL("INDIA_WEST_BENGAL"),
+        /**
+         * {@code INDIA_KERALA}.
+         */
+        INDIA_KERALA("INDIA_KERALA");
 
         private final String key;
 

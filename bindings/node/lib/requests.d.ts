@@ -3815,7 +3815,7 @@ export interface PublishedSet {
 /**
  * The rules: a pack the SDK ships, by name, or a list whose items each name a pack or spell a rule out; a later rule replaces an earlier one with its key.
  */
-export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | readonly FestivalRuleItem[];
+export type FestivalRules = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | readonly FestivalRuleItem[];
 
 /**
  * How asta is seen: a criterion the SDK names, or one spelt out.
@@ -5404,7 +5404,7 @@ export interface PublishedEntryWithdraw {
 /**
  * A pack the SDK ships, by name, or a rule spelt out, told apart by its keys: the first kind whose keys it carries any one of, else a festival rule.
  */
-export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
+export type FestivalRuleItem = 'DHARMASINDHU' | 'NEPAL' | 'NEPAL_PANCHANGA' | 'PITRI_PAKSHA' | 'GAUDIYA' | 'INDIA_CENTRAL' | 'JAIN' | 'MITHILA' | 'INDIA_MAHARASHTRA' | 'INDIA_WEST_BENGAL' | 'INDIA_KERALA' | SaitRule | EkadashiRule | Anniversary | FollowingRule | DatedRule | FestivalRule;
 
 /**
  * How visibility is decided.
@@ -7861,15 +7861,15 @@ export interface FollowingRule {
  */
 export interface DatedRule {
   /**
-   * A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+   * A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
    */
   readonly civilDate?: DatedRuleCivilDate;
   /**
-   * The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+   * The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
    */
   readonly civilWeekday?: DatedRuleCivilWeekday;
   /**
-   * The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+   * The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
    */
   readonly easter?: DatedRuleEaster;
   /**
@@ -7881,11 +7881,15 @@ export interface DatedRule {
    */
   readonly meta?: FestivalMeta;
   /**
+   * The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+   */
+  readonly nakshatraInMonth?: DatedRuleNakshatraInMonth;
+  /**
    * Where the rule is stated.
    */
   readonly source: string;
   /**
-   * The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+   * The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
    */
   readonly sunEnters?: DatedRuleSunEnters;
 }
@@ -8883,7 +8887,7 @@ export interface EkadashiTable {
 export type EkadashiVedha = 'ARUNODAYA' | 'SUNRISE';
 
 /**
- * A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+ * A day of a month of `calendar`, 1 for the first; a negative day counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
  */
 export interface DatedRuleCivilDate {
   /**
@@ -8905,7 +8909,7 @@ export interface DatedRuleCivilDate {
 }
 
 /**
- * The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+ * The `nth` `weekday` of a month of `calendar`; a negative `nth` counts back from the month's end, -1 for its last. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
  */
 export interface DatedRuleCivilWeekday {
   /**
@@ -8927,7 +8931,7 @@ export interface DatedRuleCivilWeekday {
 }
 
 /**
- * The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+ * The day `days` days after Easter Sunday by `computus`, before it when negative: Good Friday at -2, Pentecost at 49. A year the computus does not reckon (the Gregorian before 1583) keeps none. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
  */
 export interface DatedRuleEaster {
   /**
@@ -8941,7 +8945,33 @@ export interface DatedRuleEaster {
 }
 
 /**
- * The civil day, local midnight to the next, in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the Sun's entry into Ardra, and the भूमि पूजा three days on (C696). Exactly one of `civilDate`, `civilWeekday`, `sunEnters` or `easter` is given.
+ * The day `nakshatra` holds in a month of `calendar`, a solar calendar's for the days Kerala keeps by the star of a Malayalam month: Onam on Thiruvonam (Shravana) in Chingam, Sree Narayana Guru's birthday on Chatayam (Shatabhisha) in it (C1304). An occurrence of the star is kept on the first day whose sunrise it holds, or, when it holds no sunrise, on the day it runs in; a month holding two occurrences keeps the one `twice` names. `days` counts civil days from that day, as the Onam days around Thiruvonam are kept. Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
+ */
+export interface DatedRuleNakshatraInMonth {
+  /**
+   * The calendar the month is in.
+   */
+  readonly calendar: Member<catalogue.Calendar>;
+  /**
+   * How many civil days after the star's day, before it when negative, 0 for that day; at most [`Dated::MOST_DAYS`] either way.
+   */
+  readonly days?: number;
+  /**
+   * The month, 1 for the first.
+   */
+  readonly month: number;
+  /**
+   * The nakshatra.
+   */
+  readonly nakshatra: Member<catalogue.Nakshatra>;
+  /**
+   * Which of two occurrences in one month keeps the day.
+   */
+  readonly twice: FestivalWhich;
+}
+
+/**
+ * The day in which the sidereal Sun enters `nakshatra` in the almanac's own sky, or the day `days` civil days after it: भूमिरज on the civil day of the Sun's entry into Ardra, and the भूमि पूजा three days on (C696); Vishu on the day after the sunrise day of its entry into Ashwini, the first of Mesha (C1301). Exactly one of `civilDate`, `civilWeekday`, `sunEnters`, `nakshatraInMonth` or `easter` is given.
  */
 export interface DatedRuleSunEnters {
   /**
@@ -8952,6 +8982,10 @@ export interface DatedRuleSunEnters {
    * The nakshatra entered.
    */
   readonly nakshatra: Member<catalogue.Nakshatra>;
+  /**
+   * Which day holds the entry: the civil day, midnight to midnight, when left out, or the day from sunrise to the next.
+   */
+  readonly reckoning?: DayReckoning;
 }
 
 /**
@@ -9942,6 +9976,22 @@ export type SkippedDay = 'BEFORE' | 'AFTER';
 export type Computus = 'GREGORIAN' | 'JULIAN';
 
 /**
+ * One of the two days a tithi is judged between.
+ *
+ * `EARLIER`: The earlier.
+ * `LATER`: The later.
+ */
+export type FestivalWhich = 'EARLIER' | 'LATER';
+
+/**
+ * Which day holds an instant, for a rule kept on the day of the Sun's entry ([`Dated::SunEnters`]).
+ *
+ * `CIVIL`: The civil day, local midnight to the next: the day a patro prints the entry on (C696).
+ * `SUNRISE`: The day from its sunrise to the next: the day a Kerala almanac reckons the sankranti in, whose next day is Vishu (C1301).
+ */
+export type DayReckoning = 'CIVIL' | 'SUNRISE';
+
+/**
  * Something a guard asks of the two days.
  */
 export type Predicate = PredicateCase | PredicateJoined | PredicateStands | PredicateLasts | PredicateWholly | PredicateGreater | PredicateOnVara;
@@ -10096,14 +10146,6 @@ export interface Portion {
    */
   readonly which: number;
 }
-
-/**
- * One of the two days a tithi is judged between.
- *
- * `EARLIER`: The earlier.
- * `LATER`: The later.
- */
-export type FestivalWhich = 'EARLIER' | 'LATER';
 
 /**
  * How the tithi held the rite's time on the two days (pp. 6–7).

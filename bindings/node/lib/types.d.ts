@@ -1819,14 +1819,19 @@ export interface PanchangaRequest {
    * days from that festival rule's day (§9.4), one with a `civilDate`
    * or a `civilWeekday` a rule kept on a date of a calendar, one with
    * a `sunEnters` a rule kept on the civil day the Sun enters a
-   * `nakshatra`, or `days` after it, one with an `easter` a rule kept
+   * `nakshatra`, or its sunrise day when `reckoning` is `SUNRISE`, or
+   * `days` after it, one with a `nakshatraInMonth` a rule kept on the
+   * day a `nakshatra` holds in a `month` of a `calendar`, the later or
+   * earlier of two as `twice` says, or `days` from it, one with an
+   * `easter` a rule kept
    * `days` from Easter Sunday by a `GREGORIAN` or `JULIAN` `computus`
    * (`festival-rule-language.md` §3.6), the rest festival rules,
    * each kept on a `tithi` or on a `nakshatra` in a `paksha` (§9.7). A
    * catalogue member may be written bare or in full. The answer comes
    * back in the `festivals` section, over this blob's own days founded
    * once, with the two days before and the two after, and as many more
-   * as a rule counts from another's day or the Sun's entry, founded
+   * as a rule counts from another's day, the Sun's entry or a star's
+   * day, and a month either side for a star in a month, founded
    * beside them
    * (`03-design/festival-rules.md` §7). Null for none, which costs
    * nothing. Refusals are named from the record every binding calls
