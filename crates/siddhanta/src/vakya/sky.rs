@@ -396,6 +396,32 @@ mod tests {
     }
 
     #[test]
+    fn a_place_with_no_sunrise_has_no_vakya_day() {
+        // Tromsø in December: the Sun stays below the horizon all day.
+        let tromso = Place::new(
+            Latitude::literal(69.6492),
+            Longitude::literal(18.9553),
+            Altitude::literal(0.0),
+        );
+        let sky = sky().at(tromso);
+        let winter = NOON + 90.0;
+        assert!(sky.day_of(winter).is_err());
+    }
+
+    #[test]
+    fn a_body_the_texts_cannot_place_is_out_of_range() {
+        let sky = sky();
+        let frame = sky.capabilities().native_frame;
+        // Far outside every text's span, the ephemeris beside the almanac
+        // refuses the Sun, and the sky says so rather than reckoning it.
+        let jds = [1.0e7];
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], frame);
+        if let Ok(columns) = sky.positions(&request) {
+            assert!(!columns.at(0, 0).is_some_and(|cell| cell.is_ok()));
+        }
+    }
+
+    #[test]
     fn every_other_part_of_the_sky_is_the_texts() {
         let sky = sky();
         let parts = &sky.parts;
