@@ -2066,6 +2066,44 @@ final class AlmanacArea extends _Area {
     );
   }
 
+  /// **The sankalpa in words** (`03-design/sankalpa.md` §5): a
+  /// tradition's template ([SankalpaWordsRequest.tradition],
+  /// `sdk.sankalpa.himavatkhande` when left out, or a key a loaded pack
+  /// carries) filled with the time [sankalpa] reckons at the instant and
+  /// place, and the performer, gotra, purpose, river, holy ground and
+  /// pitris in [SankalpaWordsRequest.slots], in the request's locale or
+  /// the context's. A refusal is named under `sankalpaWords`.
+  ///
+  /// ```dart
+  /// final said = sdk.almanac.sankalpaWords(const SankalpaWordsRequest(
+  ///   at: 2461055.59375, latitudeDeg: 27.7172, longitudeDeg: 85.324,
+  ///   utcOffsetSeconds: 20700, locale: 'sa-Deva',
+  ///   slots: SankalpaFor(performer: 'हरिनाथशर्मा', gotra: 'कौण्डिन्य', purpose: 'गणेशपूजनम्'),
+  /// ));
+  /// print(said.value.text); // हरिः ॐ तत्सत् …
+  /// ```
+  SankalpaWordsAnswer sankalpaWords(SankalpaWordsRequest request) {
+    final envelope =
+        jsonDecode(
+              _context._guarded(
+                () => _context._inner.almanacSankalpaWords(jsonEncode(request)),
+              ),
+            )
+            as Map<String, Object?>;
+    final value = envelope['value']! as Map<String, Object?>;
+    return SankalpaWordsAnswer(
+      value: SankalpaWords(
+        tradition: value['tradition']! as String,
+        locale: value['locale']! as String,
+        params: Map.unmodifiable(value['params']! as Map<String, Object?>),
+        text: value['text']! as String,
+      ),
+      provenance: Provenance.fromJson(
+        envelope['provenance']! as Map<String, Object?>,
+      ),
+    );
+  }
+
   /// **The period of impurity after a birth or a death** at a place
   /// (`03-design/ashauch.md`): from when, until when, and by which clause.
   /// The span is a count of sunrise days, the day the event falls in the
@@ -2969,6 +3007,73 @@ final class MatchingArea extends _Area {
       porutham: _poruthamsIn(d.poruthams, d.poruthamRows, 1).single,
     );
   }
+
+  /// **A guna total graded into bands** (`03-design/matching.md`,
+  /// "Grading a total into bands"): the band a total out of 36 takes in a
+  /// shipped table ([BandRequest.shipped]: `MUHURTA_MARTANDA`, the
+  /// default, `NEPALI_ALMANAC` or `ARYAVARTA`) or a consumer's own
+  /// ([BandRequest.bands]), with the band in words and the total said
+  /// with it. A refusal is named under `band`.
+  ///
+  /// ```dart
+  /// final said = sdk.matching.band(
+  ///   const BandRequest(total: 28, shipped: 'NEPALI_ALMANAC', locale: 'en-Latn'),
+  /// );
+  /// print(said.text); // 28 of 36 gunas: a good match
+  /// ```
+  BandWords band(BandRequest request) {
+    final value =
+        jsonDecode(_context._inner.matchingBand(jsonEncode(request)))
+            as Map<String, Object?>;
+    return BandWords(
+      total: (value['total']! as num).toDouble(),
+      dushkuta: value['dushkuta']! as bool,
+      band: GunaBand.values.firstWhere((band) => band.key == value['band']),
+      bands: value['bands']! as String,
+      row: value['row']! as int,
+      locale: value['locale']! as String,
+      words: value['words']! as String,
+      text: value['text']! as String,
+    );
+  }
+}
+
+/// What [MatchingArea.band] answers: a total's band and the words for it.
+final class BandWords {
+  const BandWords({
+    required this.total,
+    required this.dushkuta,
+    required this.band,
+    required this.bands,
+    required this.row,
+    required this.locale,
+    required this.words,
+    required this.text,
+  });
+
+  /// The total, out of 36.
+  final double total;
+
+  /// Whether the signs were taken to stand 2/12, 6/8 or 9/5.
+  final bool dushkuta;
+
+  /// The band.
+  final GunaBand band;
+
+  /// The table's name.
+  final String bands;
+
+  /// The row of the table that gave the band, from 0.
+  final int row;
+
+  /// The locale the words are in.
+  final String locale;
+
+  /// The band in words: the `sdk.matching.band` message.
+  final String words;
+
+  /// The total with its band: the `sdk.matching.graded` message.
+  final String text;
 }
 
 /// `sdk.numerology` — a name and a birth date under Balliett's letter
@@ -20508,6 +20613,40 @@ final class Sankalpa extends _Value {
     moon,
     jupiter,
   ];
+}
+
+/// A sankalpa said by a tradition's template (`03-design/sankalpa.md` §5).
+final class SankalpaWords {
+  const SankalpaWords({
+    required this.tradition,
+    required this.locale,
+    required this.params,
+    required this.text,
+  });
+
+  /// The tradition: the template's message key.
+  final String tradition;
+
+  /// The locale it was said in.
+  final String locale;
+
+  /// The slots the template was given, as `intl.render` takes them, to
+  /// say it again in another locale.
+  final Map<String, Object?> params;
+
+  /// The words.
+  final String text;
+}
+
+/// What [AlmanacArea.sankalpaWords] answers.
+final class SankalpaWordsAnswer {
+  const SankalpaWordsAnswer({required this.value, required this.provenance});
+
+  /// The words.
+  final SankalpaWords value;
+
+  /// What computed the time, and the hash of [value].
+  final Provenance provenance;
 }
 
 /// What `almanac.sankalpa` answers.

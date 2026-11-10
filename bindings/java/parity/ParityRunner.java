@@ -1684,6 +1684,7 @@ public final class ParityRunner {
             surface("keys.id", () -> ctx.keys().id(""));
             surface("keys.name", () -> ctx.keys().name(0));
             surface("matching.naam", () -> ctx.matching().naam("", ""));
+            surface("matching.band", () -> ctx.matching().band(null));
             surface("naming.syllables", () -> ctx.naming().syllables(null, null));
             surface("naming.read", () -> ctx.naming().read(List.of(), null));
             surface("naming.check", () -> ctx.naming().check(List.of(), null, null));
@@ -1718,6 +1719,7 @@ public final class ParityRunner {
             surface("almanac.day", () -> ctx.almanac().day(day, place, 0));
             surface("almanac.pakshi", () -> ctx.almanac().pakshi(day, day, place, 0, new PakshiNative.Bird("OWL")));
             surface("almanac.sankalpa", () -> ctx.almanac().sankalpa(0, place, 0, null));
+            surface("almanac.sankalpa_words", () -> ctx.almanac().sankalpaWords(null));
             surface("almanac.ashauch", () -> ctx.almanac().ashauch(null, place, 0));
             surface("almanac.first_year", () -> ctx.almanac().firstYear(null, place, 0));
             surface("almanac.navatara", () -> ctx.almanac().navatara(null));

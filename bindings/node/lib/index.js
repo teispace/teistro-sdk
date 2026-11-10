@@ -7561,6 +7561,30 @@ export class MatchingArea extends Area {
       porutham: poruthamsIn(d, 1)[0],
     });
   }
+
+  /**
+   * **A guna total graded into bands** (`03-design/matching.md`, "Grading
+   * a total into bands"): the band a total out of 36 takes in a shipped
+   * table (`shipped`: `'MUHURTA_MARTANDA'`, the default, `'NEPALI_ALMANAC'`
+   * or `'ARYAVARTA'`) or a consumer's own (`bands`), with the band in
+   * words and the total said with it, in `locale` or the context's. A
+   * refusal is named under `band`.
+   *
+   * @example
+   * const said = sdk.matching.band({ total: 28, shipped: 'NEPALI_ALMANAC', locale: 'en-Latn' });
+   * said.band; // 'GOOD'
+   * said.text; // '28 of 36 gunas: a good match'
+   *
+   * @param {object} request a `BandRequest`: `total`, and optionally
+   *   `dushkuta`, `shipped` or `bands`, and `locale`
+   * @returns {object} `{ total, dushkuta, band, bands, row, locale, words, text }`
+   */
+  band(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError("band: expected a request, e.g. { total: 28, shipped: 'NEPALI_ALMANAC' }");
+    }
+    return deepFreeze(JSON.parse(run(this, (inner) => inner.matchingBand(JSON.stringify(request)))));
+  }
 }
 
 /**
@@ -8235,6 +8259,40 @@ export class AlmanacArea extends Area {
       value: { ...value, date: dateFrom(value.date) },
       provenance: decodeProvenance(provenance),
     });
+  }
+
+  /**
+   * **The sankalpa in words** (`03-design/sankalpa.md` §5): a tradition's
+   * template (`tradition`, `'sdk.sankalpa.himavatkhande'` when left out,
+   * or a key a loaded pack carries) filled with the time `almanac.sankalpa`
+   * reckons at the instant and place, and the performer, gotra, purpose,
+   * river, holy ground and pitris in `slots`, in `locale` or the
+   * context's. The request is the wire's, `latitudeDeg` and the rest. A
+   * refusal is named under `sankalpaWords`.
+   *
+   * @example
+   * const { value } = sdk.almanac.sankalpaWords({
+   *   at: 2461055.59375,
+   *   latitudeDeg: 27.7172,
+   *   longitudeDeg: 85.324,
+   *   utcOffsetSeconds: 20700,
+   *   slots: { performer: 'हरिनाथशर्मा', gotra: 'कौण्डिन्य', purpose: 'गणेशपूजनम्' },
+   *   locale: 'sa-Deva',
+   * });
+   * value.text; // 'हरिः ॐ तत्सत् …'
+   *
+   * @param {object} request a `SankalpaWordsRequest`
+   * @returns {{ value: object, provenance: object }} `value` is
+   *   `{ tradition, locale, params, text }`
+   */
+  sankalpaWords(request) {
+    if (typeof request !== 'object' || request === null || Array.isArray(request)) {
+      throw new TypeError('sankalpaWords: expected a request, e.g. { at, latitudeDeg, longitudeDeg, utcOffsetSeconds, slots }');
+    }
+    const { value, provenance } = JSON.parse(
+      run(this, (inner) => inner.almanacSankalpaWords(JSON.stringify(request))),
+    );
+    return deepFreeze({ value, provenance: decodeProvenance(provenance) });
   }
 
   /**

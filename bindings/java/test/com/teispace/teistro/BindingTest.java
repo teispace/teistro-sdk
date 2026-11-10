@@ -2743,6 +2743,83 @@ public final class BindingTest {
             }
         });
 
+        tests.put("a guna total is graded into bands and said in words", () -> {
+            // A total graded by Muhurta Martanda's floor, by the bands Nepal's
+            // almanacs print and by a consumer's own table, and said in English
+            // and Nepali (03-design/matching.md, SR-39).
+            try (Context sky = teistro.context()) {
+                var good = com.teispace.teistro.request.GunaBand.GOOD;
+                BandWords said = sky.matching().band(com.teispace.teistro.request.BandRequest.builder()
+                        .total(28).shipped("NEPALI_ALMANAC").locale("en-Latn").build());
+                same(List.of(good, "NEPALI_ALMANAC", "a good match", "28 of 36 gunas: a good match"),
+                        List.of(said.band(), said.bands(), said.words(), said.text()), "the almanacs' good band");
+                same(com.teispace.teistro.request.GunaBand.FIT,
+                        sky.matching().band(new com.teispace.teistro.request.BandRequest(28)).band(),
+                        "Muhurta Martanda's floor is the default");
+                same(com.teispace.teistro.request.GunaBand.UNFIT,
+                        sky.matching().band(com.teispace.teistro.request.BandRequest.builder()
+                                .total(17).dushkuta(true).shipped("NEPALI_ALMANAC").build()).band(),
+                        "a dushkuta match joins at 18");
+                same(com.teispace.teistro.request.GunaBand.MIDDLING,
+                        sky.matching().band(com.teispace.teistro.request.BandRequest.builder()
+                                .total(17).shipped("NEPALI_ALMANAC").build()).band(),
+                        "a satkuta one above 16");
+                same("३६ मध्ये २८ गुण: उत्तम",
+                        sky.matching().band(com.teispace.teistro.request.BandRequest.builder()
+                                .total(28).shipped("NEPALI_ALMANAC").locale("ne-Deva-NP").build()).text(),
+                        "said in Nepali");
+                var mine = new com.teispace.teistro.request.GunaBands("MINE", List.of(
+                        new com.teispace.teistro.request.BandRow(com.teispace.teistro.request.GunaBand.UNFIT, 0),
+                        new com.teispace.teistro.request.BandRow(com.teispace.teistro.request.GunaBand.EXCELLENT, 22)),
+                        "a consumer");
+                BandWords own = sky.matching().band(com.teispace.teistro.request.BandRequest.builder()
+                        .total(22).bands(mine).build());
+                same(List.of(com.teispace.teistro.request.GunaBand.EXCELLENT, "MINE", 1),
+                        List.of(own.band(), own.bands(), own.row()), "a consumer's own table");
+                same("band.total", refusal(() -> sky.matching().band(
+                        new com.teispace.teistro.request.BandRequest(37))).field(), "a total above 36");
+                same("band.shipped", refusal(() -> sky.matching().band(com.teispace.teistro.request.BandRequest
+                        .builder().total(20).shipped("LAHIRI").build())).field(), "an unknown table");
+                same("band.locale", refusal(() -> sky.matching().band(com.teispace.teistro.request.BandRequest
+                        .builder().total(20).locale("xx-Latn").build())).field(), "a locale not loaded");
+            }
+        });
+
+        tests.put("a sankalpa is said in words by its tradition's template", () -> {
+            // The Himavatkhande template filled with the time at Kathmandu on 15
+            // January 2026 and a performer's slots, in Sanskrit and in IAST
+            // (03-design/sankalpa.md §5, SR-29).
+            java.util.function.BiFunction<String, String, com.teispace.teistro.request.SankalpaWordsRequest.Builder>
+                    asked = (locale, gotra) -> com.teispace.teistro.request.SankalpaWordsRequest.builder()
+                            .at(2_461_055.593_75).latitudeDeg(27.7172).longitudeDeg(85.324).altitudeM(1400)
+                            .utcOffsetSeconds(20_700).locale(locale)
+                            .slots(com.teispace.teistro.request.SankalpaFor.builder().performer("हरिनाथशर्मा")
+                                    .gotra(gotra).purpose("वाग्मतीस्नानम्").river("वाग्मती").kshetra("पाशुपत")
+                                    .build());
+            try (Context sky = teistro.context(ContextOptions.builder().profile("nepali-drik")
+                    .ephemeris(Ephemeris.BUILTIN).build())) {
+                SankalpaWordsAnswer said = sky.almanac().sankalpaWords(asked.apply("sa-Deva", "कौण्डिन्य").build());
+                check(!said.provenance().inputHash().isEmpty(), "the request is sealed");
+                same(List.of("sdk.sankalpa.himavatkhande", "sa-Deva"),
+                        List.of(said.value().tradition(), said.value().locale()), "the default tradition");
+                String text = said.value().text();
+                check(text.startsWith("हरिः ॐ तत्सत्"), text);
+                for (String piece : List.of("वाग्मतीनद्याः समीपे पाशुपतक्षेत्रे पुण्यभूमौ", "२०८२ वैक्रमाब्दे",
+                        "गुरुवासरान्वितायां", "कौण्डिन्यगोत्रोत्पन्नः हरिनाथशर्मा अहं वाग्मतीस्नानम् करिष्ये ।")) {
+                    check(text.contains(piece), piece);
+                }
+                same(Map.of("$entity", "vara.GURUVARA"), said.value().params().get("vara"), "the vara's entity");
+                check(sky.almanac().sankalpaWords(asked.apply("en-Latn", "कौण्डिन्य").build()).value().text()
+                        .startsWith("hariḥ oṃ tatsat"), "said in IAST");
+                same("sankalpaWords.slots.gotra",
+                        refusal(() -> sky.almanac().sankalpaWords(asked.apply("sa-Deva", " ").build())).field(),
+                        "a blank gotra");
+                same("sankalpaWords.tradition", refusal(() -> sky.almanac().sankalpaWords(
+                        asked.apply("sa-Deva", "कौण्डिन्य").tradition("sdk.sankalpa.nowhere").build())).field(),
+                        "an unknown tradition");
+            }
+        });
+
         tests.put("an almanac says the time a sankalpa recites", () -> {
             // 08:00 on 15 January 2026 in Kathmandu, the morning after Makara
             // sankranti: Siddharthi's year, Magha (purnimanta) and Shishira at

@@ -246,6 +246,11 @@ import type {
   FestivalCalendarRequest,
   Sankalpa,
   SankalpaAnswer,
+  SankalpaWordsAnswer,
+  BandWords,
+  BandRequest,
+  GunaBand,
+  SankalpaWordsRequest,
   SankalpaRequest,
   Ashauch,
   AshauchAnswer,
@@ -1493,6 +1498,31 @@ function theSankalpa(ctx: Context): string {
   return `${tithi} ${masa} ${sun} ${vara} ${date.year} ${value.year.samvatsara} ${answer.provenance.inputHash}`;
 }
 void theSankalpa;
+
+// A total graded by a shipped table or a consumer's own, its band one of
+// the five keys; a sankalpa said in words by a tradition's template.
+function theBandsAndTheWords(ctx: Context): string {
+  const asked: BandRequest = { total: 17, dushkuta: true, shipped: 'NEPALI_ALMANAC' };
+  const said: BandWords = ctx.matching.band(asked);
+  const band: GunaBand = said.band;
+  const own: BandWords = ctx.matching.band({
+    total: 22,
+    bands: { name: 'MINE', source: '', rows: [{ band: 'UNFIT', from: 0 }, { band: 'GOOD', from: 22, clears: 'AT_LEAST' }] },
+  });
+  // @ts-expect-error a band is one of the five keys
+  const wrong: BandWords = ctx.matching.band({ total: 22, bands: { name: 'X', source: '', rows: [{ band: 'FAIR', from: 0 }] } });
+  void wrong;
+  const words: SankalpaWordsRequest = {
+    at: 2461055.59375,
+    latitudeDeg: 27.7172,
+    longitudeDeg: 85.324,
+    utcOffsetSeconds: 20700,
+    slots: { performer: 'हरिनाथशर्मा', gotra: 'कौण्डिन्य', purpose: 'गणेशपूजनम्', pitris: { father: 'राम', grandfather: 'हरि', greatGrandfather: 'शिव' } },
+  };
+  const answer: SankalpaWordsAnswer = ctx.almanac.sankalpaWords(words);
+  return `${band} ${said.text} ${own.row} ${answer.value.tradition} ${answer.value.text} ${answer.provenance.inputHash}`;
+}
+void theBandsAndTheWords;
 
 // An ashauch's request by its tagged event, its answer's clause narrowed
 // by its tag, and a period already running read back from an answer.

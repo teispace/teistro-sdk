@@ -17,6 +17,11 @@ from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from teistro import (
     Detail,
     SankalpaRequest,
+    BandRequest,
+    BandWords,
+    GunaBands,
+    SankalpaWordsAnswer,
+    SankalpaWordsRequest,
     decode_digest,
     ActivityRules,
     EkadashiRule,
@@ -1135,6 +1140,82 @@ class AnEngine(WithLibrary):
             with self.assertRaises(TeistroError) as early:
                 ctx.calendar.tibetan_year(1026)
             self.assertEqual(early.exception.field, "year")
+
+    def test_a_guna_total_is_graded_into_bands_and_said_in_words(self) -> None:
+        """A total graded by Muhurta Martanda's floor, by the bands Nepal's
+        almanacs print and by a consumer's own table, and said in English
+        and Nepali (`03-design/matching.md`, SR-39)."""
+        with self.teistro.context() as ctx:
+            said: BandWords = ctx.matching.band({"total": 28, "shipped": "NEPALI_ALMANAC", "locale": "en-Latn"})
+            self.assertEqual(
+                (said.band, said.bands, said.words, said.text),
+                ("GOOD", "NEPALI_ALMANAC", "a good match", "28 of 36 gunas: a good match"),
+            )
+            self.assertEqual(ctx.matching.band({"total": 28, "locale": "en-Latn"}).band, "FIT")
+            self.assertEqual(ctx.matching.band({"total": 17, "dushkuta": True, "shipped": "NEPALI_ALMANAC"}).band, "UNFIT")
+            self.assertEqual(ctx.matching.band({"total": 17, "shipped": "NEPALI_ALMANAC"}).band, "MIDDLING")
+            ne = ctx.matching.band({"total": 28, "shipped": "NEPALI_ALMANAC", "locale": "ne-Deva-NP"})
+            self.assertEqual(ne.text, "३६ मध्ये २८ गुण: उत्तम")
+            mine: GunaBands = {
+                "name": "MINE",
+                "source": "a consumer",
+                "rows": [{"band": "UNFIT", "from": 0}, {"band": "EXCELLENT", "from": 22}],
+            }
+            own = ctx.matching.band({"total": 22, "bands": mine})
+            self.assertEqual((own.band, own.bands, own.row), ("EXCELLENT", "MINE", 1))
+            refused: List[Tuple[BandRequest, str]] = [
+                ({"total": 37}, "band.total"),
+                ({"total": 20, "shipped": "LAHIRI"}, "band.shipped"),
+                ({"total": 20, "locale": "xx-Latn"}, "band.locale"),
+            ]
+            for request, field in refused:
+                with self.assertRaises(TeistroError) as refusal:
+                    ctx.matching.band(request)
+                self.assertEqual(refusal.exception.field, field)
+
+    def test_a_sankalpa_is_said_in_words_by_its_traditions_template(self) -> None:
+        """The Himavatkhande template filled with the time at Kathmandu on
+        15 January 2026 and a performer's slots, in Sanskrit and in IAST
+        (`03-design/sankalpa.md` §5, SR-29)."""
+        def asked(locale: str, gotra: str = "कौण्डिन्य", tradition: str = "sdk.sankalpa.himavatkhande") -> SankalpaWordsRequest:
+            return {
+                "at": 2461055.59375,
+                "latitudeDeg": 27.7172,
+                "longitudeDeg": 85.324,
+                "altitudeM": 1400,
+                "utcOffsetSeconds": 20700,
+                "slots": {
+                    "performer": "हरिनाथशर्मा",
+                    "gotra": gotra,
+                    "purpose": "वाग्मतीस्नानम्",
+                    "river": "वाग्मती",
+                    "kshetra": "पाशुपत",
+                },
+                "tradition": tradition,
+                "locale": locale,
+            }
+
+        with self.teistro.context(profile="nepali-drik", ephemeris=Ephemeris.BUILTIN) as ctx:
+            said: SankalpaWordsAnswer = ctx.almanac.sankalpa_words(asked("sa-Deva"))
+            self.assertTrue(said.provenance.input_hash)
+            self.assertEqual((said.value.tradition, said.value.locale), ("sdk.sankalpa.himavatkhande", "sa-Deva"))
+            self.assertTrue(said.value.text.startswith("हरिः ॐ तत्सत्"))
+            for piece in (
+                "वाग्मतीनद्याः समीपे पाशुपतक्षेत्रे पुण्यभूमौ",
+                "२०८२ वैक्रमाब्दे",
+                "गुरुवासरान्वितायां",
+                "कौण्डिन्यगोत्रोत्पन्नः हरिनाथशर्मा अहं वाग्मतीस्नानम् करिष्ये ।",
+            ):
+                self.assertIn(piece, said.value.text)
+            self.assertEqual(said.value.params["vara"], {"$entity": "vara.GURUVARA"})
+            latin = ctx.almanac.sankalpa_words(asked("en-Latn"))
+            self.assertTrue(latin.value.text.startswith("hariḥ oṃ tatsat"))
+            with self.assertRaises(TeistroError) as blank:
+                ctx.almanac.sankalpa_words(asked("sa-Deva", gotra=" "))
+            self.assertEqual(blank.exception.field, "sankalpaWords.slots.gotra")
+            with self.assertRaises(TeistroError) as unknown:
+                ctx.almanac.sankalpa_words(asked("sa-Deva", tradition="sdk.sankalpa.nowhere"))
+            self.assertEqual(unknown.exception.field, "sankalpaWords.tradition")
 
     def test_an_almanac_says_the_time_a_sankalpa_recites(self) -> None:
         """08:00 on 15 January 2026 in Kathmandu, the morning after Makara

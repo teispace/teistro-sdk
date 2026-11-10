@@ -78,6 +78,38 @@ public final class MatchingArea {
                 MatchReads.poruthamsIn(d.poruthams(), d.poruthamRows(), 1).get(0));
     }
 
+    /**
+     * <b>A guna total graded into bands</b> ({@code 03-design/matching.md}, "Grading a total into
+     * bands"): the band a total out of 36 takes in a shipped table ({@code shipped}:
+     * {@code MUHURTA_MARTANDA}, the default, {@code NEPALI_ALMANAC} or {@code ARYAVARTA}) or a consumer's
+     * own ({@code bands}), with the band in words and the total said with it, in the request's locale or
+     * the context's. A refusal is named under {@code band}.
+     *
+     * <pre>{@code
+     * BandWords said = sky.matching().band(BandRequest.builder().total(28).shipped("NEPALI_ALMANAC").build());
+     * GunaBand band = said.band(); // GOOD
+     * }</pre>
+     *
+     * @param request the total, and optionally the dushkuta flag, a table and a locale
+     * @return the band and its words
+     */
+    public BandWords band(com.teispace.teistro.request.BandRequest request) {
+        String json = Json.write(request);
+        Map<?, ?> value = Reads.object(Json.read(context.locked((lib, raw) -> Calls.matchingBand(lib, raw, json))));
+        String band = Reads.string(value, "band");
+        return new BandWords(
+                Reads.number(value, "total"),
+                Reads.flag(value, "dushkuta"),
+                com.teispace.teistro.request.GunaBand.byKey(band)
+                        .orElseThrow(() -> Reads.internal("the library drew a GunaBand this build does not know: "
+                                + band)),
+                Reads.string(value, "bands"),
+                Reads.integer(value, "row"),
+                Reads.string(value, "locale"),
+                Reads.string(value, "words"),
+                Reads.string(value, "text"));
+    }
+
     private static NameSyllable name(Naam.NaamNames n, int at) {
         return new NameSyllable(n.cell(at), n.abhijit(at) == 1 ? null : Nakshatra.of(n.nakshatra(at)), n.quarter(at),
                 NameVarga.of(n.varga(at)));
