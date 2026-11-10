@@ -69,6 +69,9 @@ pub use role::MatchRole;
 mod band_names;
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
+mod band_tests;
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
 mod doshas_tests;
 #[cfg(test)]
 #[cfg_attr(coverage_nightly, coverage(off))]
