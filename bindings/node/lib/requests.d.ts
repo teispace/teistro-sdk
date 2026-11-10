@@ -973,6 +973,10 @@ export interface DateTextRequest {
    * How much of it.
    */
   readonly style?: DateStyle;
+  /**
+   * With `MONTH_YEAR`, the last month of a run that starts at `at`'s, in the same calendar and not before it: "October – November 2026", "December 2026 – January 2027". Any day of the month will do.
+   */
+  readonly until?: CalendarDay | null;
 }
 
 /**
@@ -2789,8 +2793,9 @@ export type WordsDigits = 'LATN' | 'DEVA';
  * `NUMERIC`: In figures.
  * `LONG`: With the month's name.
  * `FULL`: With the weekday's name too.
+ * `MONTH_YEAR`: The month and its year alone, as a month view's title (SR-86): `sdk.calendar.<CALENDAR>.monthYear`, or `monthYearRange` for a run of months up to `until`.
  */
-export type DateStyle = 'NUMERIC' | 'LONG' | 'FULL';
+export type DateStyle = 'NUMERIC' | 'LONG' | 'FULL' | 'MONTH_YEAR';
 
 /**
  * An amount of a currency.

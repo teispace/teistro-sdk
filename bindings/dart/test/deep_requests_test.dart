@@ -16,7 +16,7 @@
 /// from both sides; where it is required, the generated records below it
 /// are held instead.
 ///
-/// The cases compare 490 of the examples' 505 members.
+/// The cases compare 492 of the examples' 507 members.
 library;
 
 import 'dart:convert';
@@ -3321,7 +3321,7 @@ void main() {
       'intl.date',
       path: [],
       dropping: [],
-      members: 2,
+      members: 4,
       written: DateTextRequest(
         at: CalendarDay(
           calendar: Calendar.julian,
@@ -3334,6 +3334,14 @@ void main() {
         digits: WordsDigits.deva,
         locale: 'hi-Deva-IN',
         style: DateStyle.long,
+        until: CalendarDay(
+          calendar: Calendar.julian,
+          day: 1,
+          era: EraNumber(era: Era.shaka, year: 1),
+          leap: Leap.day,
+          month: 1,
+          year: 1,
+        ),
       ).toJson(),
     );
   });

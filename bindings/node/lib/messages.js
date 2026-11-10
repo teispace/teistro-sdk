@@ -30,6 +30,8 @@ export function messages(r) {
           },
           monthName: (p) => r.render('sdk.calendar.ASSAM_SOLAR.monthName', { month: p.month }),
           monthShort: (p) => r.render('sdk.calendar.ASSAM_SOLAR.monthShort', { month: p.month }),
+          monthYear: (p) => r.render('sdk.calendar.ASSAM_SOLAR.monthYear', { monthName: p.monthName, year: p.year }),
+          monthYearRange: (p) => r.render('sdk.calendar.ASSAM_SOLAR.monthYearRange', { greatest: p.greatest, monthName: p.monthName, untilMonthName: p.untilMonthName, untilYear: p.untilYear, year: p.year }),
         },
         bangladeshi: {
           date: {
@@ -39,6 +41,8 @@ export function messages(r) {
           },
           monthName: (p) => r.render('sdk.calendar.BANGLADESHI.monthName', { month: p.month }),
           monthShort: (p) => r.render('sdk.calendar.BANGLADESHI.monthShort', { month: p.month }),
+          monthYear: (p) => r.render('sdk.calendar.BANGLADESHI.monthYear', { monthName: p.monthName, year: p.year }),
+          monthYearRange: (p) => r.render('sdk.calendar.BANGLADESHI.monthYearRange', { greatest: p.greatest, monthName: p.monthName, untilMonthName: p.untilMonthName, untilYear: p.untilYear, year: p.year }),
         },
         bikramSambat: {
           date: {
@@ -48,6 +52,8 @@ export function messages(r) {
           },
           monthName: (p) => r.render('sdk.calendar.BIKRAM_SAMBAT.monthName', { month: p.month }),
           monthShort: (p) => r.render('sdk.calendar.BIKRAM_SAMBAT.monthShort', { month: p.month }),
+          monthYear: (p) => r.render('sdk.calendar.BIKRAM_SAMBAT.monthYear', { monthName: p.monthName, year: p.year }),
+          monthYearRange: (p) => r.render('sdk.calendar.BIKRAM_SAMBAT.monthYearRange', { greatest: p.greatest, monthName: p.monthName, untilMonthName: p.untilMonthName, untilYear: p.untilYear, year: p.year }),
         },
         gregorian: {
           date: {
@@ -57,6 +63,8 @@ export function messages(r) {
           },
           monthName: (p) => r.render('sdk.calendar.GREGORIAN.monthName', { month: p.month }),
           monthShort: (p) => r.render('sdk.calendar.GREGORIAN.monthShort', { month: p.month }),
+          monthYear: (p) => r.render('sdk.calendar.GREGORIAN.monthYear', { monthName: p.monthName, year: p.year }),
+          monthYearRange: (p) => r.render('sdk.calendar.GREGORIAN.monthYearRange', { greatest: p.greatest, monthName: p.monthName, untilMonthName: p.untilMonthName, untilYear: p.untilYear, year: p.year }),
         },
         hijriTabular: {
           date: {
@@ -66,6 +74,8 @@ export function messages(r) {
           },
           monthName: (p) => r.render('sdk.calendar.HIJRI_TABULAR.monthName', { month: p.month }),
           monthShort: (p) => r.render('sdk.calendar.HIJRI_TABULAR.monthShort', { month: p.month }),
+          monthYear: (p) => r.render('sdk.calendar.HIJRI_TABULAR.monthYear', { monthName: p.monthName, year: p.year }),
+          monthYearRange: (p) => r.render('sdk.calendar.HIJRI_TABULAR.monthYearRange', { greatest: p.greatest, monthName: p.monthName, untilMonthName: p.untilMonthName, untilYear: p.untilYear, year: p.year }),
         },
         indianNational: {
           date: {
@@ -75,6 +85,8 @@ export function messages(r) {
           },
           monthName: (p) => r.render('sdk.calendar.INDIAN_NATIONAL.monthName', { month: p.month }),
           monthShort: (p) => r.render('sdk.calendar.INDIAN_NATIONAL.monthShort', { month: p.month }),
+          monthYear: (p) => r.render('sdk.calendar.INDIAN_NATIONAL.monthYear', { monthName: p.monthName, year: p.year }),
+          monthYearRange: (p) => r.render('sdk.calendar.INDIAN_NATIONAL.monthYearRange', { greatest: p.greatest, monthName: p.monthName, untilMonthName: p.untilMonthName, untilYear: p.untilYear, year: p.year }),
         },
         isoWeek: {
           date: {
@@ -91,6 +103,8 @@ export function messages(r) {
           },
           monthName: (p) => r.render('sdk.calendar.JULIAN.monthName', { month: p.month }),
           monthShort: (p) => r.render('sdk.calendar.JULIAN.monthShort', { month: p.month }),
+          monthYear: (p) => r.render('sdk.calendar.JULIAN.monthYear', { monthName: p.monthName, year: p.year }),
+          monthYearRange: (p) => r.render('sdk.calendar.JULIAN.monthYearRange', { greatest: p.greatest, monthName: p.monthName, untilMonthName: p.untilMonthName, untilYear: p.untilYear, year: p.year }),
         },
         mixed: {
           date: {
@@ -100,6 +114,8 @@ export function messages(r) {
           },
           monthName: (p) => r.render('sdk.calendar.MIXED.monthName', { month: p.month }),
           monthShort: (p) => r.render('sdk.calendar.MIXED.monthShort', { month: p.month }),
+          monthYear: (p) => r.render('sdk.calendar.MIXED.monthYear', { monthName: p.monthName, year: p.year }),
+          monthYearRange: (p) => r.render('sdk.calendar.MIXED.monthYearRange', { greatest: p.greatest, monthName: p.monthName, untilMonthName: p.untilMonthName, untilYear: p.untilYear, year: p.year }),
         },
         tibetanPhugpa: {
           date: {
@@ -109,6 +125,8 @@ export function messages(r) {
           },
           monthName: (p) => r.render('sdk.calendar.TIBETAN_PHUGPA.monthName', { leap: p.leap, month: p.month }),
           monthShort: (p) => r.render('sdk.calendar.TIBETAN_PHUGPA.monthShort', { leap: p.leap, month: p.month }),
+          monthYear: (p) => r.render('sdk.calendar.TIBETAN_PHUGPA.monthYear', { monthName: p.monthName, year: p.year }),
+          monthYearRange: (p) => r.render('sdk.calendar.TIBETAN_PHUGPA.monthYearRange', { greatest: p.greatest, monthName: p.monthName, untilMonthName: p.untilMonthName, untilYear: p.untilYear, year: p.year }),
         },
         datetime: {
           inZone: (p) => r.render('sdk.calendar.datetime.inZone', { at: { '$instant': p.at }, zone: p.zone }),
@@ -1887,6 +1905,7 @@ export function entityForms(json) {
     iast: forms.iast ?? '',
     name: forms.name ?? '',
     prose: forms.prose ?? '',
+    abbrev: forms.abbrev,
     short: forms.short,
     glyph: forms.glyph,
     gender: forms.gender,

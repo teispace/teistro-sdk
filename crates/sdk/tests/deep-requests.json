@@ -4925,7 +4925,18 @@
       },
       "digits": "DEVA",
       "locale": "hi-Deva-IN",
-      "style": "LONG"
+      "style": "LONG",
+      "until": {
+        "calendar": "calendar.JULIAN",
+        "day": 1,
+        "era": {
+          "era": "era.SHAKA",
+          "year": 1
+        },
+        "leap": "DAY",
+        "month": 1,
+        "year": 1
+      }
     }
   },
   {
