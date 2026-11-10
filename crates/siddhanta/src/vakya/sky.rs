@@ -305,3 +305,125 @@ impl EphemerisProvider for VakyaSky {
         self.parts.horizon_event(request)
     }
 }
+
+#[cfg(test)]
+#[cfg_attr(coverage_nightly, coverage(off))]
+mod tests {
+    use teistro_core::catalogue::Ayanamsha;
+    use teistro_port_ephemeris::TestProvider;
+
+    use super::*;
+
+    fn sky() -> VakyaSky {
+        VakyaSky::new(Box::new(TestProvider::new()))
+    }
+
+    /// 18 September 2023, noon at Chennai, in UT1.
+    const NOON: f64 = 2_460_206.0;
+
+    #[test]
+    fn the_sky_names_itself_and_moves_to_another_place() {
+        let madurai = Place::new(
+            Latitude::literal(9.9252),
+            Longitude::literal(78.1198),
+            Altitude::literal(0.0),
+        );
+        let sky = sky().at(madurai);
+        assert_eq!(sky.place(), madurai);
+        assert!(format!("{sky:?}").contains("VakyaSky"));
+        let identity = sky.capabilities().identity;
+        assert_eq!(identity.name, "vakyakarana");
+        assert!(identity.data_version.contains("Vakyakarana"));
+    }
+
+    #[test]
+    fn the_sun_and_moon_are_the_almanacs_and_the_rest_the_texts() {
+        let sky = sky();
+        let frame = sky.capabilities().native_frame;
+        let jds = [NOON];
+        let bodies = [Body::Sun, Body::Moon, Body::Mars];
+        let mut request = PositionRequest::new(&jds, TimeScale::Ut1, &bodies, frame);
+        let columns = sky.positions(&request).unwrap();
+        let (sun, moon) = (columns.at(0, 0).unwrap(), columns.at(0, 1).unwrap());
+        // The Sun moves about a degree a day and the Moon about thirteen;
+        // the analytic latitude and distance are the vakya's flat ones.
+        assert!((0.9..1.1).contains(&sun.lon_speed), "{}", sun.lon_speed);
+        assert!((11.0..16.0).contains(&moon.lon_speed), "{}", moon.lon_speed);
+        assert_eq!((moon.lat, moon.dist), (0.0, 1.0));
+        // Mars is the text's, untouched: the ephemeris beside it answers.
+        let text = sky.parts.positions(&request).unwrap();
+        assert_eq!(columns.at(0, 2), text.at(0, 2));
+        // Asked without speeds, the places stand and the speeds are none.
+        request.speeds = false;
+        let still = sky.positions(&request).unwrap();
+        assert_eq!(still.at(0, 0).unwrap().lon, sun.lon);
+        assert_eq!(still.at(0, 0).unwrap().lon_speed, 0.0);
+    }
+
+    #[test]
+    fn an_instant_before_sunrise_belongs_to_the_day_before() {
+        let sky = sky();
+        let (day, rise, next) = sky.day_of(NOON).unwrap();
+        assert!(rise < NOON && NOON < next);
+        // Chennai's midnight, before the day's sunrise, is yesterday's.
+        let (before, _, ends) = sky.day_of(rise - 0.25).unwrap();
+        assert_eq!(before, day - 1);
+        assert!((ends - rise).abs() < 1e-9);
+    }
+
+    #[test]
+    fn the_kept_sunrises_are_forgotten_whole_past_their_limit() {
+        let sky = sky();
+        let jds: Vec<f64> = (0..KEPT_SUNRISES + 10)
+            .map(|day| NOON + f64::from(u32::try_from(day).unwrap()))
+            .collect();
+        let frame = sky.capabilities().native_frame;
+        let request = PositionRequest::new(&jds, TimeScale::Ut1, &[Body::Sun], frame);
+        let columns = sky.positions(&request).unwrap();
+        assert!(columns.at(jds.len() - 1, 0).unwrap().is_ok());
+        let kept = sky.sunrises.lock().unwrap().len();
+        assert!(kept < KEPT_SUNRISES, "{kept}");
+        // A day asked again reads the kept sunrise, the same to the bit.
+        let last = jds[jds.len() - 1];
+        assert_eq!(sky.day_of(last).unwrap(), sky.day_of(last).unwrap());
+    }
+
+    #[test]
+    fn every_other_part_of_the_sky_is_the_texts() {
+        let sky = sky();
+        let parts = &sky.parts;
+        assert_eq!(
+            sky.obliquity(NOON, TimeScale::Ut1).unwrap(),
+            parts.obliquity(NOON, TimeScale::Ut1).unwrap()
+        );
+        assert_eq!(
+            sky.delta_t_seconds(NOON).unwrap(),
+            parts.delta_t_seconds(NOON).unwrap()
+        );
+        assert_eq!(
+            sky.ayanamsha_deg(NOON, TimeScale::Ut1, Ayanamsha::Suryasiddhanta)
+                .unwrap(),
+            parts
+                .ayanamsha_deg(NOON, TimeScale::Ut1, Ayanamsha::Suryasiddhanta)
+                .unwrap()
+        );
+        let angles = AnglesRequest {
+            jd: NOON,
+            scale: TimeScale::Ut1,
+            place: CHENNAI,
+        };
+        assert_eq!(sky.angles(&angles).unwrap(), parts.angles(&angles).unwrap());
+        let rise = HorizonRequest {
+            body: Body::Sun,
+            kind: HorizonEventKind::Rise,
+            place: CHENNAI,
+            from: JulianDay::<Ut1>::try_new(NOON - 0.5).unwrap(),
+            window_days: 1.0,
+            horizon: Horizon::UPPER_LIMB_REFRACTION,
+        };
+        assert_eq!(
+            sky.horizon_event(&rise).unwrap(),
+            parts.horizon_event(&rise).unwrap()
+        );
+    }
+}
